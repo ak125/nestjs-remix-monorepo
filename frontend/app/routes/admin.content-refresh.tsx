@@ -13,10 +13,10 @@ import {
   RefreshCw,
   Check,
   X,
-  Clock,
   FileText,
   CheckCircle2,
   XCircle,
+  SkipForward,
   Zap,
   Filter,
 } from "lucide-react";
@@ -159,6 +159,7 @@ const PAGE_TYPE_LABELS: Record<string, string> = {
   R3_conseils: "R3 Conseils",
   R3_guide_achat: "R3 Guide Achat",
   R4_reference: "R4 Reference",
+  R5_diagnostic: "R5 Diagnostic",
 };
 
 // ── Helpers ──
@@ -383,12 +384,6 @@ export default function AdminContentRefresh() {
       kpis={
         <KpiGrid columns={4}>
           <KpiCard
-            title="Pending"
-            value={displayCounts.pending || 0}
-            icon={Clock}
-            variant="warning"
-          />
-          <KpiCard
             title="Draft"
             value={displayCounts.draft || 0}
             icon={FileText}
@@ -396,9 +391,18 @@ export default function AdminContentRefresh() {
           />
           <KpiCard
             title="Published"
-            value={displayCounts.published || 0}
+            value={
+              (displayCounts.published || 0) +
+              (displayCounts.auto_published || 0)
+            }
             icon={CheckCircle2}
             variant="success"
+          />
+          <KpiCard
+            title="Skipped (no RAG)"
+            value={displayCounts.skipped || 0}
+            icon={SkipForward}
+            variant="default"
           />
           <KpiCard
             title="Failed"
@@ -531,6 +535,7 @@ export default function AdminContentRefresh() {
                 <SelectItem value="R3_conseils">R3 Conseils</SelectItem>
                 <SelectItem value="R3_guide_achat">R3 Guide Achat</SelectItem>
                 <SelectItem value="R4_reference">R4 Reference</SelectItem>
+                <SelectItem value="R5_diagnostic">R5 Diagnostic</SelectItem>
               </Select>
             </div>
             <div className="flex items-end gap-2">

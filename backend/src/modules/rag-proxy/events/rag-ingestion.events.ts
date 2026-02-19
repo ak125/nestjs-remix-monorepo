@@ -6,6 +6,8 @@ export interface RagIngestionCompletedEvent {
   status: 'done' | 'failed';
   completedAt: number;
   affectedGammes: string[];
+  /** Diagnostic slugs affected by this ingestion (R5) */
+  affectedDiagnostics?: string[];
   validationSummary?: {
     totalFiles: number;
     validFiles: number;

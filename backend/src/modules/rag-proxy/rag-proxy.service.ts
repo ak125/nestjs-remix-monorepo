@@ -1243,12 +1243,14 @@ export class RagProxyService {
     },
   ): void {
     const affectedGammes = this.detectAffectedGammes();
+    const affectedDiagnostics = this.detectAffectedDiagnostics();
     const event: RagIngestionCompletedEvent = {
       jobId,
       source,
       status: 'done',
       completedAt: Math.floor(Date.now() / 1000),
       affectedGammes,
+      ...(affectedDiagnostics.length > 0 ? { affectedDiagnostics } : {}),
     };
 
     if (validationResult) {
@@ -1267,6 +1269,9 @@ export class RagProxyService {
     this.eventEmitter.emit(RAG_INGESTION_COMPLETED, event);
     this.logger.log(
       `Emitted ${RAG_INGESTION_COMPLETED}: jobId=${jobId}, source=${source}, gammes=[${affectedGammes.join(', ')}]` +
+        (affectedDiagnostics.length > 0
+          ? `, diagnostics=[${affectedDiagnostics.join(', ')}]`
+          : '') +
         (event.validationSummary
           ? `, validated=${event.validationSummary.validFiles}, quarantined=${event.validationSummary.quarantinedFiles}`
           : ''),
@@ -1409,6 +1414,42 @@ export class RagProxyService {
     } catch {
       return [];
     }
+  }
+
+  /**
+   * Scan diagnostic/ directory for recently modified .md files.
+   * Returns array of diagnostic slugs from __seo_observable whose
+   * cluster_id matches a modified RAG diagnostic file.
+   */
+  private detectAffectedDiagnostics(): string[] {
+    const knowledgePath =
+      process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+    const diagDir = path.join(knowledgePath, 'diagnostic');
+    const cutoff = Date.now() - 30 * 60 * 1000;
+    const results: string[] = [];
+
+    try {
+      const files = readdirSync(diagDir).filter(
+        (f) => f.endsWith('.md') && !f.includes('.backup'),
+      );
+
+      for (const file of files) {
+        try {
+          const fullPath = path.join(diagDir, file);
+          if (statSync(fullPath).mtimeMs <= cutoff) continue;
+
+          // File name without .md = potential cluster_id match
+          const baseName = file.replace('.md', '');
+          results.push(baseName);
+        } catch {
+          // Skip unreadable files
+        }
+      }
+    } catch {
+      // Directory may not exist
+    }
+
+    return results;
   }
 
   /**

@@ -738,6 +738,128 @@ export class DiagnosticService extends SupabaseBaseService {
   }
 
   /**
+   * Refresh a diagnostic from RAG knowledge files.
+   * Called by ContentRefreshProcessor for R5_diagnostic jobs.
+   *
+   * @param diagnosticSlug - The slug of the diagnostic (e.g., "bruit-embrayage")
+   * @returns Result with skipped/updated/confidence/flags
+   */
+  async refreshFromRag(diagnosticSlug: string): Promise<{
+    skipped: boolean;
+    updated: boolean;
+    confidence: number;
+    flags: string[];
+  }> {
+    // 1. Look up the observable by slug
+    const { data: observable, error } = await this.supabase
+      .from('__seo_observable')
+      .select('id, slug, cluster_id, symptom_description, sign_description')
+      .eq('slug', diagnosticSlug)
+      .single();
+
+    if (error || !observable) {
+      this.logger.warn(
+        `refreshFromRag: observable not found for slug=${diagnosticSlug}`,
+      );
+      return {
+        skipped: true,
+        updated: false,
+        confidence: 0,
+        flags: ['OBSERVABLE_NOT_FOUND'],
+      };
+    }
+
+    // 2. Find matching RAG file via cluster_id (e.g., "embrayage" → "embrayage.md")
+    const clusterId = observable.cluster_id as string | null;
+    const slugBase = diagnosticSlug.split('-').slice(1).join('-'); // "bruit-embrayage" → "embrayage"
+
+    // Try cluster_id first, then slug-derived name
+    const candidates = [clusterId, slugBase, diagnosticSlug].filter(
+      Boolean,
+    ) as string[];
+    let ragData: ReturnType<typeof this.parseRagDiagnosticFile> = null;
+    for (const candidate of candidates) {
+      ragData = this.parseRagDiagnosticFile(candidate);
+      if (ragData) break;
+    }
+
+    if (
+      !ragData ||
+      (ragData.symptoms.length === 0 && ragData.causes.length === 0)
+    ) {
+      return {
+        skipped: true,
+        updated: false,
+        confidence: 0,
+        flags: ['NO_DIAGNOSTIC_RAG_DOC'],
+      };
+    }
+
+    // 3. Build updated fields
+    const flags: string[] = [];
+    const updates: Record<string, unknown> = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (ragData.symptoms.length > 0) {
+      updates.symptom_description = ragData.symptoms
+        .map(
+          (s) =>
+            `<p><strong>${s.label}</strong> — ${s.when}. ${s.characteristic}.</p>`,
+        )
+        .join('\n');
+      flags.push('SYMPTOMS_UPDATED');
+    }
+
+    if (ragData.causes.length > 0) {
+      updates.sign_description = ragData.causes
+        .map(
+          (c) =>
+            `<p><strong>${c.name}</strong> (probabilité: ${c.probability}) — ${c.solution}.</p>`,
+        )
+        .join('\n');
+      flags.push('CAUSES_UPDATED');
+
+      updates.recommended_actions = ragData.causes.slice(0, 4).map((cause) => ({
+        action: cause.solution,
+        urgency: cause.urgency.toLowerCase().includes('haute')
+          ? 'high'
+          : 'medium',
+        skill_level: 'professional',
+        duration: '1-2h',
+      }));
+      flags.push('ACTIONS_UPDATED');
+    }
+
+    // 4. Update the observable
+    const { error: updateError } = await this.supabase
+      .from('__seo_observable')
+      .update(updates)
+      .eq('id', observable.id);
+
+    if (updateError) {
+      this.logger.error(
+        `refreshFromRag: update failed for ${diagnosticSlug}: ${updateError.message}`,
+      );
+      return {
+        skipped: false,
+        updated: false,
+        confidence: 0,
+        flags: ['UPDATE_FAILED'],
+      };
+    }
+
+    const confidence =
+      ragData.symptoms.length >= 2 && ragData.causes.length >= 2 ? 0.85 : 0.65;
+
+    this.logger.log(
+      `refreshFromRag: updated ${diagnosticSlug} — ${ragData.symptoms.length} symptoms, ${ragData.causes.length} causes, confidence=${confidence}`,
+    );
+
+    return { skipped: false, updated: true, confidence, flags };
+  }
+
+  /**
    * Parse RAG diagnostic file for enriched content
    */
   private parseRagDiagnosticFile(pgAlias: string): {

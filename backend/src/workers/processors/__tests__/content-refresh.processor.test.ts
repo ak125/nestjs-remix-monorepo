@@ -57,6 +57,10 @@ jest.mock('../../../modules/seo/services/reference.service', () => ({
   ReferenceService: jest.fn(),
 }));
 
+jest.mock('../../../modules/seo/services/diagnostic.service', () => ({
+  DiagnosticService: jest.fn(),
+}));
+
 // ── Now import the processor ──
 
 import { ContentRefreshProcessor } from '../content-refresh.processor';
@@ -85,6 +89,7 @@ const mockSupabaseFrom = jest.fn().mockReturnValue({
 const mockBuyingGuideEnricher = { enrich: jest.fn() };
 const mockConseilEnricher = { enrichSingle: jest.fn() };
 const mockReferenceService = { refreshSingleGamme: jest.fn() };
+const mockDiagnosticService = { refreshFromRag: jest.fn() };
 const mockConfigService = {
   get: jest.fn((key: string, defaultVal?: string) => {
     if (key === 'CONTENT_AUTO_PUBLISH_THRESHOLD') return '101';
@@ -102,6 +107,7 @@ beforeAll(() => {
   processor.buyingGuideEnricher = mockBuyingGuideEnricher;
   processor.conseilEnricher = mockConseilEnricher;
   processor.referenceService = mockReferenceService;
+  processor.diagnosticService = mockDiagnosticService;
 });
 
 beforeEach(() => {
@@ -301,5 +307,49 @@ describe('ContentRefreshProcessor — RAG-as-Optional-Overlay', () => {
     expect(result.qualityScore).toBe(0);
     expect(result.qualityFlags).toContain('EXCEPTION');
     expect(result.errorMessage).toContain('Connection timeout');
+  });
+
+  // Test 9: R5 sans RAG doc → skipped
+  it('should set status=skipped when R5 diagnostic has no RAG doc', async () => {
+    mockDiagnosticService.refreshFromRag.mockResolvedValue({
+      skipped: true,
+      updated: false,
+      confidence: 0,
+      flags: ['NO_DIAGNOSTIC_RAG_DOC'],
+    });
+
+    const result: ContentRefreshResult = await processor.handleContentRefresh({
+      data: {
+        refreshLogId: 1,
+        diagnosticSlug: 'vibration-turbo',
+        pageType: 'R5_diagnostic',
+      },
+    } as any);
+
+    expect(result.status).toBe('skipped');
+    expect(result.qualityScore).toBeNull();
+    expect(result.qualityFlags).toContain('NO_DIAGNOSTIC_RAG_DOC');
+  });
+
+  // Test 10: R5 avec RAG doc → draft
+  it('should set status=draft when R5 diagnostic has RAG data', async () => {
+    mockDiagnosticService.refreshFromRag.mockResolvedValue({
+      skipped: false,
+      updated: true,
+      confidence: 0.85,
+      flags: ['SYMPTOMS_UPDATED', 'CAUSES_UPDATED', 'ACTIONS_UPDATED'],
+    });
+
+    const result: ContentRefreshResult = await processor.handleContentRefresh({
+      data: {
+        refreshLogId: 1,
+        diagnosticSlug: 'bruit-embrayage',
+        pageType: 'R5_diagnostic',
+      },
+    } as any);
+
+    expect(result.status).toBe('draft');
+    expect(result.qualityScore).toBe(85);
+    expect(result.qualityFlags).toContain('SYMPTOMS_UPDATED');
   });
 });

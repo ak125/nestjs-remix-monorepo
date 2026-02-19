@@ -25,6 +25,7 @@ import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
 import { BuyingGuideEnricherService } from '../modules/admin/services/buying-guide-enricher.service';
 import { ConseilEnricherService } from '../modules/admin/services/conseil-enricher.service';
 import { ReferenceService } from '../modules/seo/services/reference.service';
+import { DiagnosticService } from '../modules/seo/services/diagnostic.service';
 
 @Module({
   imports: [
@@ -79,6 +80,7 @@ import { ReferenceService } from '../modules/seo/services/reference.service';
     BuyingGuideEnricherService,
     ConseilEnricherService,
     ReferenceService,
+    DiagnosticService,
 
     // Services
     // SitemapStreamingService, // DESACTIVE

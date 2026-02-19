@@ -12,7 +12,13 @@ export const RefreshStatusQueryDto = z.object({
     .enum(['pending', 'processing', 'draft', 'failed', 'skipped', 'published'])
     .optional(),
   page_type: z
-    .enum(['R1_pieces', 'R3_conseils', 'R3_guide_achat', 'R4_reference'])
+    .enum([
+      'R1_pieces',
+      'R3_conseils',
+      'R3_guide_achat',
+      'R4_reference',
+      'R5_diagnostic',
+    ])
     .optional(),
   pg_alias: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(200).default(50),

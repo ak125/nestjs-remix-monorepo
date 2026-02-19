@@ -10,9 +10,13 @@ import {
   RAG_INGESTION_COMPLETED,
   type RagIngestionCompletedEvent,
 } from '../../rag-proxy/events/rag-ingestion.events';
-import type { ContentRefreshJobData } from '../../../workers/types/content-refresh.types';
+import type {
+  ContentRefreshJobData,
+  ContentRefreshJobDataR5,
+} from '../../../workers/types/content-refresh.types';
 
-type PageType = 'R1_pieces' | 'R3_conseils' | 'R3_guide_achat' | 'R4_reference';
+/** Gamme-based page types (R5 is diagnostic-slug-based, handled separately) */
+type GammePageType = ContentRefreshJobData['pageType'];
 
 @Injectable()
 export class ContentRefreshService extends SupabaseBaseService {
@@ -52,6 +56,21 @@ export class ContentRefreshService extends SupabaseBaseService {
         `rag_${event.source}_ingest`,
       );
     }
+
+    // Queue R5 diagnostic refresh for affected diagnostic files
+    const diagnostics = event.affectedDiagnostics || [];
+    if (diagnostics.length > 0) {
+      this.logger.log(
+        `Affected diagnostics: [${diagnostics.join(', ')}]. Queueing R5 refresh...`,
+      );
+      for (const diagBaseName of diagnostics) {
+        await this.queueRefreshForDiagnostic(
+          diagBaseName,
+          event.jobId,
+          `rag_${event.source}_ingest`,
+        );
+      }
+    }
   }
 
   /**
@@ -61,7 +80,7 @@ export class ContentRefreshService extends SupabaseBaseService {
     pgAlias: string,
     triggerJobId: string,
     triggerSource: string,
-  ): Promise<PageType[]> {
+  ): Promise<GammePageType[]> {
     // Resolve pg_alias → pg_id
     const { data: gamme } = await this.client
       .from('pieces_gamme')
@@ -81,7 +100,7 @@ export class ContentRefreshService extends SupabaseBaseService {
     const pageTypes = await this.determinePageTypes(pgId, pgAlias);
 
     // Queue a job for each page type
-    const queued: PageType[] = [];
+    const queued: GammePageType[] = [];
     for (const pageType of pageTypes) {
       const created = await this.createAndQueueJob(
         pgId,
@@ -100,12 +119,52 @@ export class ContentRefreshService extends SupabaseBaseService {
   }
 
   /**
+   * Queue R5 diagnostic refresh jobs for diagnostics matching a RAG file basename.
+   * Looks up __seo_observable slugs whose cluster_id matches the file basename.
+   */
+  async queueRefreshForDiagnostic(
+    ragFileBaseName: string,
+    triggerJobId: string,
+    triggerSource: string,
+  ): Promise<string[]> {
+    // Find observables whose cluster_id matches the RAG file name
+    const { data: observables } = await this.client
+      .from('__seo_observable')
+      .select('slug')
+      .eq('cluster_id', ragFileBaseName)
+      .limit(50);
+
+    if (!observables || observables.length === 0) {
+      this.logger.debug(
+        `No observables found for diagnostic RAG file: ${ragFileBaseName}`,
+      );
+      return [];
+    }
+
+    const queued: string[] = [];
+    for (const obs of observables) {
+      const slug = obs.slug as string;
+      const created = await this.createAndQueueDiagnosticJob(
+        slug,
+        triggerJobId,
+        triggerSource,
+      );
+      if (created) queued.push(slug);
+    }
+
+    this.logger.log(
+      `Queued ${queued.length} R5 diagnostic refresh jobs for RAG file ${ragFileBaseName}: [${queued.join(', ')}]`,
+    );
+    return queued;
+  }
+
+  /**
    * Manual trigger: queue refresh for one or more gammes.
    */
-  async triggerManualRefresh(
-    pgAliases: string[],
-  ): Promise<{ queued: Array<{ pgAlias: string; pageTypes: PageType[] }> }> {
-    const results: Array<{ pgAlias: string; pageTypes: PageType[] }> = [];
+  async triggerManualRefresh(pgAliases: string[]): Promise<{
+    queued: Array<{ pgAlias: string; pageTypes: GammePageType[] }>;
+  }> {
+    const results: Array<{ pgAlias: string; pageTypes: GammePageType[] }> = [];
 
     for (const pgAlias of pgAliases) {
       const pageTypes = await this.queueRefreshForGamme(
@@ -270,8 +329,8 @@ export class ContentRefreshService extends SupabaseBaseService {
   private async determinePageTypes(
     pgId: number,
     pgAlias: string,
-  ): Promise<PageType[]> {
-    const types: PageType[] = [];
+  ): Promise<GammePageType[]> {
+    const types: GammePageType[] = [];
 
     // R1/R3 Guide Achat: check if purchase guide exists
     const { count: pgCount } = await this.client
@@ -309,7 +368,7 @@ export class ContentRefreshService extends SupabaseBaseService {
   private async createAndQueueJob(
     pgId: number,
     pgAlias: string,
-    pageType: PageType,
+    pageType: GammePageType,
     triggerJobId: string,
     triggerSource: string,
   ): Promise<boolean> {
@@ -350,6 +409,52 @@ export class ContentRefreshService extends SupabaseBaseService {
     });
 
     // Update tracking row with BullMQ job ID
+    await this.client
+      .from('__rag_content_refresh_log')
+      .update({ bullmq_job_id: String(job.id) })
+      .eq('id', row.id);
+
+    return true;
+  }
+
+  private async createAndQueueDiagnosticJob(
+    diagnosticSlug: string,
+    triggerJobId: string,
+    triggerSource: string,
+  ): Promise<boolean> {
+    const { data: row, error } = await this.client
+      .from('__rag_content_refresh_log')
+      .insert({
+        pg_id: 0,
+        pg_alias: diagnosticSlug,
+        page_type: 'R5_diagnostic',
+        status: 'pending',
+        trigger_source: triggerSource,
+        trigger_job_id: triggerJobId,
+      })
+      .select('id')
+      .single();
+
+    if (error) {
+      this.logger.warn(
+        `Skipping duplicate R5 refresh: ${diagnosticSlug} (${error.message})`,
+      );
+      return false;
+    }
+
+    const jobData: ContentRefreshJobDataR5 = {
+      refreshLogId: row.id as number,
+      diagnosticSlug,
+      pageType: 'R5_diagnostic',
+    };
+
+    const job = await this.seoMonitorQueue.add('content-refresh', jobData, {
+      attempts: 2,
+      backoff: { type: 'exponential', delay: 30000 },
+      removeOnComplete: 200,
+      removeOnFail: 500,
+    });
+
     await this.client
       .from('__rag_content_refresh_log')
       .update({ bullmq_job_id: String(job.id) })

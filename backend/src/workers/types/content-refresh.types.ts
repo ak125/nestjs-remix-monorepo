@@ -1,9 +1,29 @@
+export type PageType =
+  | 'R1_pieces'
+  | 'R3_conseils'
+  | 'R3_guide_achat'
+  | 'R4_reference'
+  | 'R5_diagnostic';
+
+/** Job data for gamme-based refresh (R1, R3, R4) */
 export interface ContentRefreshJobData {
   refreshLogId: number;
   pgId: number;
   pgAlias: string;
-  pageType: 'R1_pieces' | 'R3_conseils' | 'R3_guide_achat' | 'R4_reference';
+  pageType: Exclude<PageType, 'R5_diagnostic'>;
 }
+
+/** Job data for diagnostic refresh (R5) — keyed by diagnosticSlug, NOT pgAlias */
+export interface ContentRefreshJobDataR5 {
+  refreshLogId: number;
+  diagnosticSlug: string;
+  pageType: 'R5_diagnostic';
+}
+
+/** Union of all job data types */
+export type AnyContentRefreshJobData =
+  | ContentRefreshJobData
+  | ContentRefreshJobDataR5;
 
 export interface ContentRefreshResult {
   status: 'draft' | 'failed' | 'skipped' | 'auto_published';

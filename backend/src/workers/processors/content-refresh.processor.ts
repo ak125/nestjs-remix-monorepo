@@ -6,8 +6,9 @@ import { ConfigService } from '@nestjs/config';
 import { BuyingGuideEnricherService } from '../../modules/admin/services/buying-guide-enricher.service';
 import { ConseilEnricherService } from '../../modules/admin/services/conseil-enricher.service';
 import { ReferenceService } from '../../modules/seo/services/reference.service';
+import { DiagnosticService } from '../../modules/seo/services/diagnostic.service';
 import type {
-  ContentRefreshJobData,
+  AnyContentRefreshJobData,
   ContentRefreshResult,
 } from '../types/content-refresh.types';
 
@@ -20,18 +21,24 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly buyingGuideEnricher: BuyingGuideEnricherService,
     private readonly conseilEnricher: ConseilEnricherService,
     private readonly referenceService: ReferenceService,
+    private readonly diagnosticService: DiagnosticService,
   ) {
     super(configService);
   }
 
   @Process('content-refresh')
   async handleContentRefresh(
-    job: Job<ContentRefreshJobData>,
+    job: Job<AnyContentRefreshJobData>,
   ): Promise<ContentRefreshResult> {
-    const { refreshLogId, pgId, pgAlias, pageType } = job.data;
+    const { refreshLogId, pageType } = job.data;
+    // R5 uses diagnosticSlug, gamme-based types use pgId/pgAlias
+    const pgId = 'pgId' in job.data ? job.data.pgId : 0;
+    const pgAlias = 'pgAlias' in job.data ? job.data.pgAlias : '';
+    const diagnosticSlug =
+      'diagnosticSlug' in job.data ? job.data.diagnosticSlug : '';
 
     this.logger.log(
-      `Processing content-refresh: pgAlias=${pgAlias}, pageType=${pageType}, logId=${refreshLogId}`,
+      `Processing content-refresh: ${diagnosticSlug || pgAlias}, pageType=${pageType}, logId=${refreshLogId}`,
     );
 
     // Mark as processing
@@ -140,6 +147,22 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           break;
         }
 
+        case 'R5_diagnostic': {
+          // R5 = symptom-slug-first, keyed by diagnosticSlug
+          const diagResult =
+            await this.diagnosticService.refreshFromRag(diagnosticSlug);
+
+          if (diagResult.skipped) {
+            ragSkipped = true;
+            ragSkipReason = 'NO_DIAGNOSTIC_RAG_DOC';
+            qualityFlags = ['NO_DIAGNOSTIC_RAG_DOC'];
+          } else if (diagResult.updated) {
+            qualityScore = diagResult.confidence >= 0.8 ? 85 : 65;
+            qualityFlags = diagResult.flags;
+          }
+          break;
+        }
+
         default:
           errorMessage = `Unknown page type: ${pageType}`;
           qualityFlags = ['UNKNOWN_PAGE_TYPE'];
@@ -212,6 +235,13 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             .update({ is_published: true })
             .eq('slug', pgAlias);
         }
+
+        if (pageType === 'R5_diagnostic' && finalStatus === 'auto_published') {
+          await this.client
+            .from('__seo_observable')
+            .update({ is_published: true })
+            .eq('slug', diagnosticSlug);
+        }
       }
 
       // Update tracking log
@@ -234,7 +264,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         .eq('id', refreshLogId);
 
       this.logger.log(
-        `Content-refresh complete: ${pgAlias}/${pageType} → ${finalStatus}` +
+        `Content-refresh complete: ${diagnosticSlug || pgAlias}/${pageType} → ${finalStatus}` +
           (ragSkipped
             ? ` (ragSkipped: ${ragSkipReason})`
             : ` (score=${qualityScore}, threshold=${autoPublishThreshold})`),

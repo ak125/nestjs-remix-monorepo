@@ -88,8 +88,10 @@ interface PageContract {
   risk?: { explanation?: string; consequences?: string[] };
   antiMistakes?: string[];
   howToChoose?: string[];
+  howToChooseInline?: string;
   faq?: Array<{ q: string; a: string }>;
   diagnosticTree?: Array<{ if: string; then: string }>;
+  associatedPieces?: string[];
 }
 
 @Injectable()
@@ -158,6 +160,12 @@ export class ConseilEnricherService extends SupabaseBaseService {
         sectionsUpdated: 0,
         reason: 'NO_PAGE_CONTRACT',
       };
+    }
+
+    // 2b. Extract associated pieces from markdown body (for S7)
+    const associatedPieces = this.extractAssociatedPieces(ragContent);
+    if (associatedPieces.length > 0) {
+      contract.associatedPieces = associatedPieces;
     }
 
     // 3. Load existing conseil sections
@@ -271,9 +279,14 @@ export class ConseilEnricherService extends SupabaseBaseService {
     const antiMistakes = this.extractYamlList(fm, 'antiMistakes');
     if (antiMistakes.length > 0) contract.antiMistakes = antiMistakes;
 
-    // howToChoose
+    // howToChoose (can be a list or an inline string)
     const howToChoose = this.extractYamlList(fm, 'howToChoose');
-    if (howToChoose.length > 0) contract.howToChoose = howToChoose;
+    if (howToChoose.length > 0) {
+      contract.howToChoose = howToChoose;
+    } else {
+      const howInline = this.extractYamlInline(fm, 'howToChoose');
+      if (howInline) contract.howToChooseInline = howInline;
+    }
 
     // faq
     const faqs = this.extractYamlFaq(fm);
@@ -296,15 +309,27 @@ export class ConseilEnricherService extends SupabaseBaseService {
   private extractYamlList(fm: string, key: string): string[] {
     const keyIdx = fm.indexOf(`${key}:`);
     if (keyIdx < 0) return [];
+
+    // Determine indentation of the key itself
+    const lineStart = fm.lastIndexOf('\n', keyIdx) + 1;
+    const keyIndent = keyIdx - lineStart;
+
     const afterKey = fm.substring(keyIdx);
     const lines = afterKey.split('\n').slice(1);
     const items: string[] = [];
+
     for (const line of lines) {
+      if (!line.trim()) continue; // skip empty lines
+
       const m = line.match(/^\s+-\s+['"]?(.+?)['"]?\s*$/);
       if (m) {
         items.push(m[1].trim());
-      } else if (line.trim() && !line.match(/^\s/)) {
-        break;
+      } else {
+        // Non-list line: break if at same or lower indent as the key
+        const indent = line.search(/\S/);
+        if (indent >= 0 && indent <= keyIndent) {
+          break;
+        }
       }
     }
     return items;
@@ -313,26 +338,44 @@ export class ConseilEnricherService extends SupabaseBaseService {
   private extractYamlFaq(fm: string): Array<{ q: string; a: string }> {
     const faqIdx = fm.indexOf('faq:');
     if (faqIdx < 0) return [];
+
+    // Determine indentation of the faq key
+    const lineStart = fm.lastIndexOf('\n', faqIdx) + 1;
+    const keyIndent = faqIdx - lineStart;
+
     const faqs: Array<{ q: string; a: string }> = [];
     const afterFaq = fm.substring(faqIdx);
     const lines = afterFaq.split('\n').slice(1);
     let currentQ = '';
     let currentA = '';
     for (const line of lines) {
+      if (!line.trim()) continue;
+
+      // Break if at same or lower indent as the faq key (new sibling key)
+      const indent = line.search(/\S/);
+      if (indent >= 0 && indent <= keyIndent && !line.trim().startsWith('-')) {
+        break;
+      }
+
       const qMatch = line.match(
         /^\s+-?\s*(?:question|q):\s*['"]?(.+?)['"]?\s*$/,
       );
       const aMatch = line.match(/^\s+-?\s*(?:answer|a):\s*['"]?(.+?)['"]?\s*$/);
       if (qMatch) {
+        currentQ = qMatch[1].trim();
+        // Push pair as soon as both Q and A are available (handles answer-first YAML)
         if (currentQ && currentA) {
           faqs.push({ q: currentQ, a: currentA });
+          currentQ = '';
+          currentA = '';
         }
-        currentQ = qMatch[1].trim();
-        currentA = '';
       } else if (aMatch) {
         currentA = aMatch[1].trim();
-      } else if (line.trim() && !line.match(/^\s/)) {
-        break;
+        if (currentQ && currentA) {
+          faqs.push({ q: currentQ, a: currentA });
+          currentQ = '';
+          currentA = '';
+        }
       }
     }
     if (currentQ && currentA) {
@@ -346,12 +389,23 @@ export class ConseilEnricherService extends SupabaseBaseService {
   ): Array<{ if: string; then: string }> {
     const treeIdx = fm.indexOf('diagnostic_tree:');
     if (treeIdx < 0) return [];
+
+    const lineStart = fm.lastIndexOf('\n', treeIdx) + 1;
+    const keyIndent = treeIdx - lineStart;
+
     const nodes: Array<{ if: string; then: string }> = [];
     const afterTree = fm.substring(treeIdx);
     const lines = afterTree.split('\n').slice(1);
     let currentIf = '';
     let currentThen = '';
     for (const line of lines) {
+      if (!line.trim()) continue;
+
+      const indent = line.search(/\S/);
+      if (indent >= 0 && indent <= keyIndent && !line.trim().startsWith('-')) {
+        break;
+      }
+
       const ifMatch = line.match(/^\s+-?\s*if:\s*['"]?(.+?)['"]?\s*$/);
       const thenMatch = line.match(/^\s+then:\s*['"]?(.+?)['"]?\s*$/);
       if (ifMatch) {
@@ -362,14 +416,53 @@ export class ConseilEnricherService extends SupabaseBaseService {
         currentThen = '';
       } else if (thenMatch) {
         currentThen = thenMatch[1].trim();
-      } else if (line.trim() && !line.match(/^\s/)) {
-        break;
       }
     }
     if (currentIf && currentThen) {
       nodes.push({ if: currentIf, then: currentThen });
     }
     return nodes;
+  }
+
+  /**
+   * Extract inline YAML value (single string after key:).
+   * Returns null if the value is empty or the key is not found.
+   */
+  private extractYamlInline(fm: string, key: string): string | null {
+    const regex = new RegExp(`^\\s*${key}:\\s+(.+)$`, 'm');
+    const match = fm.match(regex);
+    if (!match) return null;
+    const value = match[1].trim().replace(/^['"]|['"]$/g, '');
+    return value.length > 10 ? value : null;
+  }
+
+  /**
+   * Extract associated pieces from the markdown body "## Pièces Associées" section.
+   * Returns gamme-alias-style strings (e.g. "courroie-d-accessoire").
+   */
+  private extractAssociatedPieces(content: string): string[] {
+    const fmEnd = content.indexOf('\n---', 4);
+    if (fmEnd < 0) return [];
+    const markdownBody = content.substring(fmEnd + 4);
+
+    const sectionMatch = markdownBody.match(
+      /##\s*Pi[èe]ces\s+Associ[ée]es[^\n]*\n([\s\S]*?)(?=\n##\s|$)/i,
+    );
+    if (!sectionMatch) return [];
+
+    const pieces: string[] = [];
+    const lines = sectionMatch[1].split('\n');
+    for (const line of lines) {
+      const m = line.match(/^[-*]\s+(\S+)/);
+      if (m) {
+        const alias = m[1].trim();
+        // Must look like a gamme alias: lowercase, hyphens, letters
+        if (/^[a-z][a-z0-9-]+$/.test(alias) && alias.length >= 4) {
+          pieces.push(alias);
+        }
+      }
+    }
+    return pieces;
   }
 
   // ── Fallback: Parse from mechanical_rules + diagnostic_tree ──
@@ -495,13 +588,19 @@ export class ConseilEnricherService extends SupabaseBaseService {
           const qMatch = line.match(/^\s+-?\s*question:\s*(.+)$/);
           const aMatch = line.match(/^\s+answer:\s*(.+)$/);
           if (qMatch) {
+            currentQ = qMatch[1].trim();
             if (currentQ && currentA) {
               faqs.push({ q: currentQ, a: currentA });
+              currentQ = '';
+              currentA = '';
             }
-            currentQ = qMatch[1].trim();
-            currentA = '';
           } else if (aMatch) {
             currentA = aMatch[1].trim();
+            if (currentQ && currentA) {
+              faqs.push({ q: currentQ, a: currentA });
+              currentQ = '';
+              currentA = '';
+            }
           } else if (
             line.trim() &&
             !line.match(/^\s/) &&
@@ -657,10 +756,13 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const content = parts.join('<br>');
       const hasNumbers = /\d/.test(content);
 
-      if (
+      const shouldUpdateS2 =
         !existingS2 ||
-        (hasNumbers && !/\d/.test(existingS2.sgc_content || ''))
-      ) {
+        (hasNumbers &&
+          !/\d/.test(existingS2.sgc_content || '') &&
+          content.length >= (existingS2.sgc_content?.length || 0) * 0.5);
+
+      if (shouldUpdateS2) {
         actions.push({
           type: SECTION_TYPES.S2,
           action: existingS2 ? 'update' : 'create',
@@ -672,19 +774,27 @@ export class ConseilEnricherService extends SupabaseBaseService {
     }
 
     // S3 Comment choisir — create if missing (only 5 exist in DB!)
-    if (contract.howToChoose?.length) {
+    {
       const existingS3 = existing.get(SECTION_TYPES.S3);
       if (!existingS3) {
-        const items = contract.howToChoose
-          .map((item) => `- ${item}`)
-          .join('<br>');
-        actions.push({
-          type: SECTION_TYPES.S3,
-          action: 'create',
-          title: `Comment choisir vos ${gammeName} :`,
-          content: `Pour choisir les bons ${gammeName} pour votre véhicule :<br>${items}`,
-          order: SECTION_ORDERS.S3,
-        });
+        let s3Content = '';
+        if (contract.howToChoose?.length) {
+          const items = contract.howToChoose
+            .map((item) => `- ${item}`)
+            .join('<br>');
+          s3Content = `Pour choisir les bons ${gammeName} pour votre véhicule :<br>${items}`;
+        } else if (contract.howToChooseInline) {
+          s3Content = contract.howToChooseInline;
+        }
+        if (s3Content.length > 30) {
+          actions.push({
+            type: SECTION_TYPES.S3,
+            action: 'create',
+            title: `Comment choisir vos ${gammeName} :`,
+            content: s3Content,
+            order: SECTION_ORDERS.S3,
+          });
+        }
       }
     }
 
@@ -740,22 +850,30 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     }
 
-    // S7 Pièces associées — update with syncParts links
-    if (contract.intro?.syncParts && contract.intro.syncParts.length > 0) {
+    // S7 Pièces associées — prefer markdown associated pieces over syncParts
+    {
       const existingS7 = existing.get(SECTION_TYPES.S7);
-      const links = contract.intro.syncParts
-        .map(
-          (p) => `- <b><a href="/pieces/${p}">${p.replace(/-/g, ' ')}</a></b>`,
-        )
-        .join('<br>');
       if (!existingS7) {
-        actions.push({
-          type: SECTION_TYPES.S7,
-          action: 'create',
-          title: `Pièces à contrôler et à remplacer avec les ${gammeName} :`,
-          content: links,
-          order: SECTION_ORDERS.S7,
-        });
+        const pieces =
+          contract.associatedPieces && contract.associatedPieces.length > 0
+            ? contract.associatedPieces
+            : null;
+
+        if (pieces && pieces.length > 0) {
+          const links = pieces
+            .map(
+              (p) =>
+                `- <b><a href="/pieces/${p}">${p.replace(/-/g, ' ')}</a></b>`,
+            )
+            .join('<br>');
+          actions.push({
+            type: SECTION_TYPES.S7,
+            action: 'create',
+            title: `Pièces à contrôler et à remplacer avec les ${gammeName} :`,
+            content: links,
+            order: SECTION_ORDERS.S7,
+          });
+        }
       }
     }
 
