@@ -97,6 +97,7 @@ export class ReferenceService extends SupabaseBaseService {
       .from('__seo_reference')
       .select('*')
       .eq('pg_id', pgId)
+      .eq('is_published', true)
       .maybeSingle();
 
     if (error || !data) return null;
