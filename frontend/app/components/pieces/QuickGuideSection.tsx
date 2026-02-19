@@ -126,8 +126,8 @@ const QuickGuideSection = memo(function QuickGuideSection({
       title: "À quoi ça sert",
       icon: <Wrench className="w-5 h-5" />,
       summary: guide.intro?.role
-        ? guide.intro.role.length > 80
-          ? guide.intro.role.substring(0, 80).trim() + "…"
+        ? guide.intro.role.length > 120
+          ? guide.intro.role.substring(0, 120).trim() + "…"
           : guide.intro.role
         : `Rôle des ${pluralName} dans votre véhicule.`,
       color: "blue",

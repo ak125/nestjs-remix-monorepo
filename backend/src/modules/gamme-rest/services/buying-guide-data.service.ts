@@ -1052,6 +1052,35 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       ];
     }
 
+    if (familyKey === 'suspension') {
+      return [
+        {
+          id: 'city',
+          label: 'Ville / chaussée dégradée',
+          recommendation:
+            'Amortisseur gaz bitubes (Monroe Original, KYB Premium) : confort sur nids de poule et ralentisseurs.',
+        },
+        {
+          id: 'highway',
+          label: 'Route / autoroute',
+          recommendation:
+            'Amortisseur monotube (Sachs Super Touring, KYB Excel-G) : stabilité et tenue de cap à vitesse élevée.',
+        },
+        {
+          id: 'sport-load',
+          label: 'Sport / charge lourde',
+          recommendation:
+            'Amortisseur renforcé (Bilstein B4/B6, Monroe Adventure) : résistance à la surcharge et conduite dynamique.',
+        },
+        {
+          id: 'offroad',
+          label: 'Tout-terrain / remorquage',
+          recommendation:
+            'Amortisseur longue course (Monroe Reflex, Bilstein B8) : débattement accru pour pistes et remorques.',
+        },
+      ];
+    }
+
     return [
       {
         id: 'daily',

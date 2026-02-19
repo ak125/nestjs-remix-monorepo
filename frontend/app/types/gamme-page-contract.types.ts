@@ -596,6 +596,19 @@ export const SubstitutionSchema = z
   .nullable()
   .optional();
 
+// --- Reference R4 (Tier 3) ---
+
+export const ReferenceSchema = z
+  .object({
+    slug: z.string(),
+    title: z.string(),
+    definition: z.string(),
+    roleMecanique: z.string().nullable(),
+    canonicalUrl: z.string().nullable(),
+  })
+  .nullable()
+  .optional();
+
 // --- Map section name → schema (pour validation par section) ---
 
 export const TIER2_SCHEMAS = {
@@ -614,4 +627,5 @@ export const TIER3_SCHEMAS = {
   purchaseGuideData: PurchaseGuideDataSchema,
   gammeBuyingGuide: GammeBuyingGuideSchema,
   substitution: SubstitutionSchema,
+  reference: ReferenceSchema,
 } as const;

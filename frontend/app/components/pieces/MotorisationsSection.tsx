@@ -40,6 +40,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
   motorisations,
   familleColor = "from-blue-950 via-indigo-900 to-purple-900",
   familleName = "pièces",
+  totalCount,
 }: MotorisationsSectionProps) {
   const [showAllVehicles, setShowAllVehicles] = useState(false);
 
@@ -89,9 +90,11 @@ const MotorisationsSection = memo(function MotorisationsSection({
           <div className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2.5 rounded-full shadow-lg border border-white/20 w-fit">
             <TrendingUp className="w-5 h-5 text-white" />
             <span className="text-white font-bold text-lg">
-              {motorisations.items.length}
+              {totalCount || motorisations.items.length}
             </span>
-            <span className="text-white/90 text-sm font-medium">véhicules</span>
+            <span className="text-white/90 text-sm font-medium">
+              motorisations
+            </span>
           </div>
         </div>
       </div>
@@ -157,7 +160,8 @@ const MotorisationsSection = memo(function MotorisationsSection({
                   <div className="flex-1 min-w-0">
                     {/* Titre avec meilleure hiérarchie */}
                     <h3 className="font-bold text-gray-900 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-gray-900 group-hover:to-gray-600 transition-all duration-300 mb-2.5 text-base sm:text-lg leading-tight">
-                      {motorisation.marque_name} {motorisation.modele_name}
+                      {motorisation.title ||
+                        `${motorisation.marque_name} ${motorisation.modele_name}`}
                     </h3>
 
                     {/* Badges avec meilleur spacing */}
@@ -177,18 +181,17 @@ const MotorisationsSection = memo(function MotorisationsSection({
                       📅 {motorisation.periode}
                     </p>
 
-                    {/* Description propre - template SEO sans erreurs grammaticales */}
+                    {/* Conseil SEO (fragment2 du backend) */}
+                    {motorisation.advice && (
+                      <p className="text-xs text-indigo-700 bg-indigo-50 rounded px-2 py-1 mb-2 line-clamp-1">
+                        Conseil : {motorisation.advice}
+                      </p>
+                    )}
+
+                    {/* Description SEO unique par motorisation (backend buildDescription) */}
                     <p className="text-sm text-gray-700 leading-relaxed mb-4">
-                      {(() => {
-                        const plural = pluralizePieceName(
-                          familleName.toLowerCase(),
-                        );
-                        return plural.charAt(0).toUpperCase() + plural.slice(1);
-                      })()}{" "}
-                      compatibles avec votre {motorisation.marque_name}{" "}
-                      {motorisation.modele_name} {motorisation.type_name}.
-                      Sélectionnez l'essieu (avant/arrière) pour afficher les
-                      références disponibles.
+                      {motorisation.description ||
+                        `${pluralizePieceName(familleName.toLowerCase()).replace(/^./, (c) => c.toUpperCase())} compatibles avec votre ${motorisation.marque_name} ${motorisation.modele_name} ${motorisation.type_name}. Sélectionnez l'essieu (avant/arrière) pour afficher les références disponibles.`}
                     </p>
 
                     {/* CTA amélioré */}

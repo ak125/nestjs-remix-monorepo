@@ -75,7 +75,8 @@ export const DecisionGridSection = memo(function DecisionGridSection({
                   <Target className="w-5 h-5" />
                 </span>
                 <h2 className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-tight text-slate-900">
-                  Quel type de {pluralName} selon votre usage ?
+                  Quel type {/^[aeiouhAEIOUH]/.test(pluralName) ? "d'" : "de "}
+                  {pluralName} selon votre usage ?
                 </h2>
               </div>
             </CardHeader>

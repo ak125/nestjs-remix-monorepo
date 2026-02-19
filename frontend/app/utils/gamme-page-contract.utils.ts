@@ -116,14 +116,13 @@ export function parseGammePageData(raw: unknown): ParseResult {
     informations: tier2.informations as GammePageDataV1["informations"],
     seoSwitches: tier2.seoSwitches as GammePageDataV1["seoSwitches"],
     guide: tier2.guide as GammePageDataV1["guide"],
-    selectedVehicle:
-      input.selectedVehicle as GammePageDataV1["selectedVehicle"],
     // Tier 3
     purchaseGuideData:
       tier3.purchaseGuideData as GammePageDataV1["purchaseGuideData"],
     gammeBuyingGuide:
       tier3.gammeBuyingGuide as GammePageDataV1["gammeBuyingGuide"],
     substitution: tier3.substitution as GammePageDataV1["substitution"],
+    reference: tier3.reference as GammePageDataV1["reference"],
   };
 
   return { data, degraded };

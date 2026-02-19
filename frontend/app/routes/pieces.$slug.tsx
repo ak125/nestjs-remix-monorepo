@@ -214,65 +214,18 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const currentUrl = new URL(request.url);
     const pathname = currentUrl.pathname;
 
-    const [apiData, switchesResponse, substitutionResponse] = await Promise.all(
-      [
-        fetchGammePageData(gammeId, { signal: controller.signal }),
-        fetch(`${API_URL}/api/blog/seo-switches/${gammeId}`, {
+    const [apiData, substitutionResponse] = await Promise.all([
+      fetchGammePageData(gammeId, { signal: controller.signal }),
+      // 🔄 Substitution API pour données enrichies (412/410 handling)
+      fetch(
+        `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
+        {
           signal: controller.signal,
-        })
-          .then((res) => (res.ok ? res.json() : { data: [] }))
-          .catch(() => ({ data: [] })),
-        // 🔄 Substitution API pour données enrichies (412/410 handling)
-        fetch(
-          `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
-          {
-            signal: controller.signal,
-          },
-        )
-          .then((res) => (res.ok ? res.json() : null))
-          .catch(() => null),
-      ],
-    ).finally(() => clearTimeout(timeoutId));
-
-    // 🔗 Mapper les switches SEO pour ancres variées
-    interface SeoSwitch {
-      sis_id: string;
-      sis_alias?: string;
-      sis_content: string;
-    }
-    const rawSwitches: SeoSwitch[] = switchesResponse?.data || [];
-    const verbSwitches = rawSwitches
-      .filter(
-        (s) =>
-          s.sis_alias?.startsWith("verb_") || s.sis_alias?.includes("action"),
+        },
       )
-      .map((s) => ({ id: s.sis_id, content: s.sis_content }));
-    const nounSwitches = rawSwitches
-      .filter(
-        (s) =>
-          s.sis_alias?.startsWith("noun_") || !s.sis_alias?.startsWith("verb_"),
-      )
-      .map((s) => ({ id: s.sis_id, content: s.sis_content }));
-
-    const seoSwitches =
-      rawSwitches.length > 0
-        ? {
-            verbs:
-              verbSwitches.length > 0
-                ? verbSwitches
-                : rawSwitches.map((s) => ({
-                    id: s.sis_id,
-                    content: s.sis_content,
-                  })),
-            nouns: nounSwitches,
-            verbCount: verbSwitches.length || rawSwitches.length,
-            nounCount: nounSwitches.length,
-          }
-        : undefined;
-
-    logger.log(
-      `🔗 SEO Switches chargés: ${rawSwitches.length} (verbs: ${seoSwitches?.verbCount || 0})`,
-    );
+        .then((res) => (res.ok ? res.json() : null))
+        .catch(() => null),
+    ]).finally(() => clearTimeout(timeoutId));
 
     // Mapper hero → content
     const heroData = apiData.hero;
@@ -333,7 +286,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       equipementiers: apiData.equipementiers,
       conseils: apiData.conseils,
       informations: apiData.informations,
-      seoSwitches,
+      seoSwitches: apiData.seoSwitches,
       guide: apiData.guideAchat
         ? {
             ...apiData.guideAchat,
@@ -343,6 +296,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       purchaseGuideData: apiData.purchaseGuideData,
       gammeBuyingGuide: apiData.gammeBuyingGuide,
       substitution: substitutionResponse,
+      reference: apiData.reference,
     });
 
     if (degraded.length > 0) {
