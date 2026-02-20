@@ -186,9 +186,11 @@ Tu connais les codes de chaque plateforme et sais créer des posts qui génèren
 Ta mission : polir le texte pour le rendre plus naturel, engageant et optimisé pour le clic Google.
 Règles strictes :
 - Maximum 160 caractères (OBLIGATOIRE)
-- Garder le nom de la pièce et le CTA livraison
+- Garder le nom de la pièce et le CTA livraison 24-48h
 - Ton professionnel automobile, pas de jargon marketing
-- Inclure un verbe d'action (remplacez, découvrez, commandez)
+- INTERDICTION de commencer par "Découvrez" ou "Trouvez" — trop générique
+- Commencer DIRECTEMENT par le nom de la pièce suivi de deux-points, ou par un bénéfice technique concret
+- Varier les structures : "Pièce : fonction technique. CTA." ou "Fonction + pièce compatible. CTA."
 - NE PAS inventer de données techniques absentes du brouillon
 - Répondre UNIQUEMENT avec la méta-description polie, rien d'autre`,
     user: (ctx) => {
