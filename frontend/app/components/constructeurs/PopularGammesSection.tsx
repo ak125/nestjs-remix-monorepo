@@ -226,25 +226,6 @@ export function PopularGammesSection({
             );
           })}
         </div>
-
-        {/* Données structurées Schema.org - ItemList simple (pas Product car ce sont des catégories) */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "ItemList",
-              name: `Pièces détachées populaires ${brandName}`,
-              numberOfItems: gammes.length,
-              itemListElement: gammes.map((gamme, index) => ({
-                "@type": "ListItem",
-                position: index + 1,
-                name: `${gamme.pg_name} ${brandName}`,
-                url: `https://www.automecanik.com${gamme.link || `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`}`,
-              })),
-            }),
-          }}
-        />
       </div>
     </section>
   );

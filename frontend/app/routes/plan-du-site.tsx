@@ -28,6 +28,11 @@ export const meta: MetaFunction = () => [
       "Plan du site Automecanik : accédez facilement à notre catalogue complet de pièces détachées, constructeurs automobiles, guides et services.",
   },
   { name: "robots", content: "index, follow" },
+  {
+    tagName: "link",
+    rel: "canonical",
+    href: "https://www.automecanik.com/plan-du-site",
+  },
 ];
 
 interface Gamme {

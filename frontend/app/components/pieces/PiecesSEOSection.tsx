@@ -7,7 +7,6 @@
  */
 
 import { memo } from "react";
-import { Alert } from "~/components/ui/alert";
 import { type SEOEnrichedContent } from "../../types/pieces-route.types";
 import {
   cleanOrphanParagraphs,
@@ -15,6 +14,7 @@ import {
 } from "../../utils/seo-clean.utils";
 // SEO Components - HtmlContent pour maillage interne
 import { HtmlContent } from "../seo/HtmlContent";
+import { Alert } from "~/components/ui/alert";
 
 interface PiecesSEOSectionProps {
   content: SEOEnrichedContent;
@@ -41,9 +41,9 @@ export const PiecesSEOSection = memo(function PiecesSEOSection({
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       {/* En-tête SEO */}
       <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-        <h1 className="text-3xl font-bold text-gray-900 leading-tight">
+        <h2 className="text-3xl font-bold text-gray-900 leading-tight">
           {cleanH1}
-        </h1>
+        </h2>
       </div>
 
       <div className="p-6 space-y-8">
