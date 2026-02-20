@@ -1862,13 +1862,27 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       }
     }
 
+    // Read current state to avoid overwriting a better draft_source
+    const { data: current } = await this.client
+      .from('__seo_gamme')
+      .select('sg_draft_source, sg_draft_llm_model, sg_descrip_draft')
+      .eq('sg_pg_id', pgId)
+      .single();
+
+    // Don't regress from pipeline+llm to pipeline
+    const mergedDraftSource =
+      current?.sg_draft_source === 'pipeline+llm' && draftSource === 'pipeline'
+        ? 'pipeline+llm'
+        : draftSource;
+    const mergedLlmModel = llmModel || current?.sg_draft_llm_model || null;
+
     const { error } = await this.client
       .from('__seo_gamme')
       .update({
         sg_content_draft: finalContent,
-        sg_draft_source: draftSource,
+        sg_draft_source: mergedDraftSource,
         sg_draft_updated_at: new Date().toISOString(),
-        sg_draft_llm_model: llmModel,
+        sg_draft_llm_model: mergedLlmModel,
       })
       .eq('sg_pg_id', pgId);
 
@@ -1878,9 +1892,86 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       );
     } else {
       this.logger.log(
-        `sg_content_draft written for pgId=${pgId} (${finalContent.length} chars, source=${draftSource})`,
+        `sg_content_draft written for pgId=${pgId} (${finalContent.length} chars, source=${mergedDraftSource})`,
       );
     }
+
+    // Fallback: generate sg_descrip_draft if ConseilEnricher didn't run
+    if (!current?.sg_descrip_draft) {
+      await this.writeSeoDescripDraftFallback(pgId, gammeName);
+    }
+  }
+
+  /**
+   * Fallback: generate sg_descrip_draft when ConseilEnricher (R3_conseils) was skipped.
+   * Uses a simple template from the gamme name + optional LLM polish.
+   */
+  private async writeSeoDescripDraftFallback(
+    pgId: string,
+    gammeName: string,
+  ): Promise<void> {
+    const label = gammeName.replace(/-/g, ' ');
+    const templateDescrip = `${label.charAt(0).toUpperCase() + label.slice(1)} : sélectionnez votre véhicule pour les références compatibles. Livraison 24-48h.`;
+
+    let finalDescrip = templateDescrip;
+    let draftSource = 'pipeline';
+    let llmModel: string | null = null;
+
+    if (this.aiContentService) {
+      try {
+        const result = await this.aiContentService.generateContent({
+          type: 'seo_descrip_polish',
+          prompt: `Polish meta description for ${gammeName}`,
+          tone: 'professional',
+          language: 'fr',
+          maxLength: 200,
+          temperature: 0.3,
+          context: { draft: templateDescrip, gammeName: label },
+          useCache: true,
+        });
+        const polished = result.content.trim();
+        if (polished.length > 0 && polished.length <= 160) {
+          finalDescrip = polished;
+          draftSource = 'pipeline+llm';
+          llmModel = result.metadata.model;
+          this.logger.log(
+            `LLM polished sg_descrip (fallback) for pgId=${pgId} (${polished.length} chars)`,
+          );
+        }
+      } catch (err) {
+        this.logger.warn(
+          `LLM descrip fallback failed for pgId=${pgId}: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    }
+
+    // Only update descrip columns, preserve content columns
+    const { data: currentState } = await this.client
+      .from('__seo_gamme')
+      .select('sg_draft_source, sg_draft_llm_model')
+      .eq('sg_pg_id', pgId)
+      .single();
+
+    const mergedSource =
+      draftSource === 'pipeline+llm' ||
+      currentState?.sg_draft_source === 'pipeline+llm'
+        ? 'pipeline+llm'
+        : draftSource;
+
+    await this.client
+      .from('__seo_gamme')
+      .update({
+        sg_descrip_draft: finalDescrip,
+        sg_draft_source: mergedSource,
+        sg_draft_updated_at: new Date().toISOString(),
+        sg_draft_llm_model:
+          llmModel || currentState?.sg_draft_llm_model || null,
+      })
+      .eq('sg_pg_id', pgId);
+
+    this.logger.log(
+      `sg_descrip_draft fallback written for pgId=${pgId} (${finalDescrip.length} chars, source=${mergedSource})`,
+    );
   }
 
   private isIntroRoleMismatch(introRole: string, gammeName: string): boolean {
