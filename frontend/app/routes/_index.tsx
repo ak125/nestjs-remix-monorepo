@@ -1181,7 +1181,7 @@ export default function RedesignPreview() {
               value={domain.label}
               className="mt-0"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {(domain.families === null
                   ? catalogFamilies
                   : catalogFamilies.filter((cat) =>
@@ -1200,12 +1200,12 @@ export default function RedesignPreview() {
                           className="flex items-start gap-3 w-full text-left h-auto p-0 hover:bg-transparent"
                         >
                           <CardContent className="flex items-start gap-3 p-3.5 sm:p-4 w-full">
-                            <div className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-100">
+                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-100">
                               {cat.img ? (
                                 <img
                                   src={cat.img}
                                   alt={cat.n}
-                                  className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
+                                  className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
                                   loading="lazy"
                                 />
                               ) : (
@@ -1269,12 +1269,12 @@ export default function RedesignPreview() {
                 <Link to={`/constructeurs/${b.slug}-${b.id}.html`}>
                   <Card className="group hover:border-[#e8590c] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 rounded-2xl border-[1.5px]">
                     <CardContent className="flex flex-col items-center justify-center py-3 px-2 gap-1.5">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden group-hover:bg-orange-50 transition-colors">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden group-hover:bg-orange-50 transition-colors">
                         {b.logo ? (
                           <img
                             src={b.logo}
                             alt={b.name}
-                            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                            className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
                             loading="lazy"
                           />
                         ) : (
@@ -1327,8 +1327,8 @@ export default function RedesignPreview() {
             <Reveal key={title} delay={i * 80}>
               <Card className="bg-white/[0.06] border-white/10 hover:bg-white/[0.09] hover:border-white/20 transition-all duration-200 rounded-2xl">
                 <CardContent className="p-4 sm:p-5 text-center">
-                  <div className="w-11 h-11 sm:w-[52px] sm:h-[52px] rounded-2xl bg-[#e8590c]/15 flex items-center justify-center mx-auto mb-2.5 sm:mb-3">
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#e8590c]" />
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#e8590c]/15 flex items-center justify-center mx-auto mb-2.5 sm:mb-3">
+                    <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-[#e8590c]" />
                   </div>
                   <div className="text-sm sm:text-[15px] font-semibold text-white mb-0.5">
                     {title}
@@ -1376,7 +1376,7 @@ export default function RedesignPreview() {
           title="Meilleures ventes"
           sub="Les pièces auto les plus demandées par nos clients"
         />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {BESTSELLERS.map((item, i) => (
             <Reveal key={item.name} delay={Math.min(i * 60, 300)}>
               <Link to={item.link}>
@@ -1387,11 +1387,11 @@ export default function RedesignPreview() {
                       {item.promo}
                     </Badge>
                   )}
-                  <div className="aspect-square bg-slate-50 flex items-center justify-center p-3 sm:p-4 overflow-hidden">
+                  <div className="aspect-square bg-slate-50 flex items-center justify-center p-2 sm:p-3 overflow-hidden">
                     <img
                       src={`${IMG_PROXY_FAMILIES}/${item.img}`}
                       alt={item.name}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-contain transition-transform duration-300"
                       loading="lazy"
                     />
                   </div>
@@ -1421,10 +1421,10 @@ export default function RedesignPreview() {
                       {Array.from({ length: 5 }, (_, s) => (
                         <Star
                           key={s}
-                          className={`w-3 h-3 ${s < Math.round(item.rating) ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"}`}
+                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${s < Math.round(item.rating) ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"}`}
                         />
                       ))}
-                      <span className="text-[10px] text-slate-400 ml-1">
+                      <span className="text-[11px] text-slate-500 ml-1">
                         ({item.reviews})
                       </span>
                     </div>
@@ -1432,7 +1432,7 @@ export default function RedesignPreview() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-full mt-2 h-9 text-xs font-semibold border-[#0d1b3e]/20 text-[#0d1b3e] hover:bg-[#e8590c] hover:text-white hover:border-[#e8590c] rounded-lg transition-colors"
+                      className="w-full mt-2 h-9 text-xs font-semibold bg-[#e8590c]/10 text-[#e8590c] border-[#e8590c]/20 hover:bg-[#e8590c] hover:text-white hover:border-[#e8590c] rounded-lg transition-colors"
                     >
                       <span>Voir le produit</span>
                     </Button>
@@ -1513,7 +1513,7 @@ export default function RedesignPreview() {
             Tout ce qu&apos;il faut savoir avant de commander
           </p>
         </div>
-        <Accordion type="single" collapsible className="space-y-2">
+        <Accordion type="single" collapsible className="space-y-3">
           {faqList.map((faq, i) => (
             <AccordionItem
               key={i}
@@ -1591,11 +1591,8 @@ export default function RedesignPreview() {
           }}
         >
           <div
-            className="marquee-anim flex items-center gap-6 sm:gap-10"
-            style={{
-              animation: "marquee 30s linear infinite",
-              width: "max-content",
-            }}
+            className="marquee-anim flex items-center gap-6 sm:gap-10 w-max"
+            style={{ animation: "marquee 30s linear infinite" }}
           >
             {[...equipMarquee, ...equipMarquee].map((e, i) => (
               <div

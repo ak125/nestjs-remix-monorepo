@@ -12,7 +12,6 @@
 import { Truck } from "lucide-react";
 import React, { useState, useMemo, useCallback, memo } from "react";
 
-import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
 import { trackAddToCart } from "../../utils/analytics";
@@ -20,6 +19,7 @@ import { hasStockAvailable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
 import { PieceDetailModal } from "./PieceDetailModal";
 import { ProductGallery } from "./ProductGallery";
+import { logger } from "~/utils/logger";
 
 // ⚡ Mappings de couleurs pré-calculés (hors du render loop)
 const RELIABILITY_COLORS = [
@@ -199,7 +199,7 @@ const PieceCard = memo(function PieceCard({
 
       {/* Image Zone */}
       <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-slate-50 via-white to-slate-100 flex-1">
-        <div className="absolute inset-2 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center p-1">
           <div className="relative w-full h-full">
             <ProductGallery
               images={galleryImages}
@@ -529,7 +529,7 @@ export function PiecesGridView({
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         <PieceDetailModal
           pieceId={selectedPieceId}
           vehicleMarque={vehicleMarque}
