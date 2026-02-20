@@ -21,6 +21,7 @@ import {
   Search,
   ShoppingCart,
   ScanLine,
+  User,
   X,
   Phone,
   Truck,
@@ -187,7 +188,10 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
         <div className="flex items-center gap-2 lg:gap-8">
           {/* Burger Menu Mobile avec animation */}
           <div className="lg:hidden">
-            <NavbarMobile user={user} />
+            <NavbarMobile
+              user={user}
+              onSearchClick={() => setShowSearch(true)}
+            />
           </div>
 
           {/* Logo avec effet hover premium - compact au scroll */}
@@ -418,10 +422,6 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
               aria-label="Notifications"
             >
               <Bell className="w-5 h-5 text-white group-hover:text-semantic-warning transition-all duration-300 group-hover:rotate-12" />
-              {/* Dot indicator pour nouvelles notifs - optimisé pour LCP (pas d'animate-ping) */}
-              <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500 ring-2 ring-[#0d1b3e]"></span>
-              </span>
             </Link>
           )}
 
@@ -429,18 +429,20 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
           {user ? (
             <UserDropdownMenu user={user} />
           ) : (
-            <div className="hidden md:flex items-center gap-2 ml-2">
+            <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-2">
               <Link
                 to="/login"
                 rel="nofollow"
-                className="px-4 py-2 text-sm font-semibold text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-normal"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center md:px-4 md:py-2 text-sm font-semibold text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-normal"
+                aria-label="Connexion"
               >
-                Connexion
+                <User className="w-5 h-5 md:hidden" />
+                <span className="hidden md:inline">Connexion</span>
               </Link>
               <Link
                 to="/register"
                 rel="nofollow"
-                className="relative px-5 py-2 text-sm font-semibold bg-semantic-action text-semantic-action-contrast hover:bg-semantic-action/90 rounded-lg transition-all duration-normal hover:shadow-lg hover:scale-105 active:scale-95 overflow-hidden group"
+                className="hidden md:flex relative px-5 py-2 text-sm font-semibold bg-semantic-action text-semantic-action-contrast hover:bg-semantic-action/90 rounded-lg transition-all duration-normal hover:shadow-lg hover:scale-105 active:scale-95 overflow-hidden group"
               >
                 {/* Shine effect */}
                 <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-slowest" />

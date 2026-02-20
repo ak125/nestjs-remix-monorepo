@@ -16,10 +16,12 @@ import { Link } from "@remix-run/react";
 import { ShoppingBag, X } from "lucide-react";
 import { memo } from "react";
 
-import { Badge } from "~/components/ui";
 import { cn } from "../../lib/utils";
 import { useRootCart } from "../../root";
 import { Sheet, SheetContent, SheetClose } from "../ui/sheet";
+import { Badge } from "~/components/ui";
+
+const FREE_SHIPPING_THRESHOLD = 150;
 
 interface CartSidebarSimpleProps {
   isOpen: boolean;
@@ -78,12 +80,12 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
         <div
           className={cn(
             "px-4 py-4 border-b",
-            subtotal >= 150
+            subtotal >= FREE_SHIPPING_THRESHOLD
               ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
               : "bg-gradient-to-r from-blue-50 to-indigo-50",
           )}
         >
-          {subtotal >= 150 ? (
+          {subtotal >= FREE_SHIPPING_THRESHOLD ? (
             <div className="flex items-center gap-3">
               <span className="text-2xl animate-bounce">🎉</span>
               <div>
@@ -95,23 +97,27 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-semibold text-gray-800">
-                  🚚 Livraison gratuite dès 150€
+                  🚚 Livraison gratuite dès {FREE_SHIPPING_THRESHOLD}€
                 </span>
                 <span className="text-xs font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-full">
-                  {Math.round((subtotal / 150) * 100)}%
+                  {Math.round((subtotal / FREE_SHIPPING_THRESHOLD) * 100)}%
                 </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                 <div
                   className="bg-gradient-to-r from-blue-500 to-green-500 h-2.5 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min((subtotal / 150) * 100, 100)}%` }}
+                  style={{
+                    width: `${Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)}%`,
+                  }}
                 />
               </div>
               <div className="mt-2 text-center bg-amber-50 border border-amber-200 rounded-lg py-1.5 px-2">
                 <p className="text-xs text-gray-700">
                   💡 Plus que{" "}
                   <span className="font-bold text-blue-600">
-                    {formatPrice(Math.max(150 - subtotal, 0))}
+                    {formatPrice(
+                      Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0),
+                    )}
                   </span>{" "}
                   pour débloquer !
                 </p>
@@ -154,7 +160,7 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
                 )}
 
                 {/* Livraison - Affichée uniquement si gratuite */}
-                {subtotal >= 150 && (
+                {subtotal >= FREE_SHIPPING_THRESHOLD && (
                   <div className="flex justify-between items-center bg-green-50 -mx-4 px-4 py-2 rounded border border-green-200">
                     <span className="text-green-700">🚚 Livraison</span>
                     <span className="text-green-600 font-bold">✓ OFFERTE</span>

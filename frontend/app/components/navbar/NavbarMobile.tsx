@@ -237,12 +237,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-700"
                 >
                   <BookOpen className="h-5 w-5 text-primary" />
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">Blog</span>
-                    <span className="bg-success text-success-foreground text-xs px-1.5 py-0.5 rounded-full font-semibold">
-                      Nouveau
-                    </span>
-                  </div>
+                  <span className="font-medium">Blog</span>
                 </Link>
               </SheetClose>
             </li>
@@ -255,12 +250,7 @@ export const NavbarMobile = memo(function NavbarMobile({
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-orange-50 transition-colors text-gray-700"
                 >
                   <ScanLine className="h-5 w-5 text-orange-500" />
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">Diagnostic auto</span>
-                    <span className="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-semibold">
-                      Nouveau
-                    </span>
-                  </div>
+                  <span className="font-medium">Diagnostic auto</span>
                 </Link>
               </SheetClose>
             </li>

@@ -192,14 +192,10 @@ export const UserDropdownMenu = memo(function UserDropdownMenu({
               to="/notifications"
               className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg hover:bg-orange-50 transition-all group"
             >
-              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors relative">
+              <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center group-hover:bg-orange-200 transition-colors">
                 <Bell className="h-4 w-4 text-orange-600" />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               </div>
-              <div className="flex flex-col flex-1">
-                <span className="font-semibold text-sm">Notifications</span>
-                <span className="text-xs text-slate-500">3 non lues</span>
-              </div>
+              <span className="font-semibold text-sm">Notifications</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
