@@ -89,6 +89,16 @@ interface PageContract {
   associatedPieces?: string[];
 }
 
+/** Classified supplementary content from web/PDF ingestion files */
+interface SupplementaryClassification {
+  symptoms: string[];
+  procedures: string[];
+  errors: string[];
+  definitions: string[];
+  faq: Array<{ q: string; a: string }>;
+  specs: string[];
+}
+
 @Injectable()
 export class ConseilEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(ConseilEnricherService.name);
@@ -108,6 +118,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
   async enrichSingle(
     pgId: string,
     pgAlias: string,
+    supplementaryFiles: string[] = [],
   ): Promise<ConseilEnrichResult> {
     // 1. Load RAG knowledge doc (API first, disk fallback)
     let ragContent: string;
@@ -130,6 +141,24 @@ export class ConseilEnricherService extends SupabaseBaseService {
     }
 
     if (!ragContent || ragContent.length < 100) {
+      // No primary doc — try supplementary files as sole source
+      if (supplementaryFiles.length > 0) {
+        const classified =
+          this.loadAndClassifySupplementary(supplementaryFiles);
+        const hasSupplementary =
+          classified.definitions.length > 0 ||
+          classified.symptoms.length > 0 ||
+          classified.procedures.length > 0;
+        if (hasSupplementary) {
+          this.logger.log(
+            `No primary RAG doc for ${pgAlias}, building contract from ${supplementaryFiles.length} supplementary files`,
+          );
+          const contract: PageContract = {};
+          this.mergeSupplementaryIntoContract(contract, classified, pgAlias);
+          // Jump to step 3 below with this contract (always supplementary-enriched)
+          return this.executeEnrichment(pgId, pgAlias, contract, true);
+        }
+      }
       return {
         status: 'skipped',
         score: 0,
@@ -147,6 +176,23 @@ export class ConseilEnricherService extends SupabaseBaseService {
       contract = this.parseFromMechanicalRules(ragContent);
     }
     if (!contract) {
+      // No parseable contract — try supplementary files
+      if (supplementaryFiles.length > 0) {
+        const classified =
+          this.loadAndClassifySupplementary(supplementaryFiles);
+        const hasSupplementary =
+          classified.definitions.length > 0 ||
+          classified.symptoms.length > 0 ||
+          classified.procedures.length > 0;
+        if (hasSupplementary) {
+          this.logger.log(
+            `No page_contract for ${pgAlias}, building from ${supplementaryFiles.length} supplementary files`,
+          );
+          contract = {};
+          this.mergeSupplementaryIntoContract(contract, classified, pgAlias);
+          return this.executeEnrichment(pgId, pgAlias, contract, true);
+        }
+      }
       return {
         status: 'skipped',
         score: 0,
@@ -163,11 +209,51 @@ export class ConseilEnricherService extends SupabaseBaseService {
       contract.associatedPieces = associatedPieces;
     }
 
+    // 2c. Merge supplementary RAG content into contract
+    let supplementaryEnriched = false;
+    if (supplementaryFiles.length > 0) {
+      const classified = this.loadAndClassifySupplementary(supplementaryFiles);
+      supplementaryEnriched = this.mergeSupplementaryIntoContract(
+        contract,
+        classified,
+        pgAlias,
+      );
+      this.logger.log(
+        `Merged supplementary content for ${pgAlias} (modified=${supplementaryEnriched}): ` +
+          `${classified.definitions.length} defs, ${classified.symptoms.length} symptoms, ` +
+          `${classified.procedures.length} procedures, ${classified.errors.length} errors`,
+      );
+    }
+
+    // 3-7. Execute enrichment pipeline (shared with supplementary-only path)
+    return this.executeEnrichment(
+      pgId,
+      pgAlias,
+      contract,
+      supplementaryEnriched,
+    );
+  }
+
+  /**
+   * Steps 3-7 of enrichment: load existing, plan, validate, write.
+   * Extracted to be reusable from supplementary-only fallback path.
+   */
+  private async executeEnrichment(
+    pgId: string,
+    pgAlias: string,
+    contract: PageContract,
+    hasSupplementary = false,
+  ): Promise<ConseilEnrichResult> {
     // 3. Load existing conseil sections
     const existing = await this.loadExistingSections(pgId);
 
     // 4. Plan actions for each section
-    const actions = this.planActions(existing, contract, pgAlias);
+    const actions = this.planActions(
+      existing,
+      contract,
+      pgAlias,
+      hasSupplementary,
+    );
 
     // 5. Filter out skips
     const writeActions = actions.filter((a) => a.action !== 'skip');
@@ -680,6 +766,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     >,
     contract: PageContract,
     pgAlias: string,
+    hasSupplementary = false,
   ): SectionAction[] {
     const actions: SectionAction[] = [];
     const gammeName = pgAlias.replace(/-/g, ' ');
@@ -687,9 +774,12 @@ export class ConseilEnricherService extends SupabaseBaseService {
     // S1 Fonction — update if RAG has richer intro
     if (contract.intro?.role) {
       const existingS1 = existing.get(SECTION_TYPES.S1);
+      // Fair comparison: strip HTML from existing before comparing lengths
+      const existingPlainLen = existingS1
+        ? this.stripHtml(existingS1.sgc_content || '').length
+        : 0;
       const ragRicher =
-        !existingS1 ||
-        contract.intro.role.length > (existingS1.sgc_content?.length || 0);
+        !existingS1 || contract.intro.role.length > existingPlainLen;
       if (ragRicher) {
         const syncParts = contract.intro.syncParts || [];
         const syncHtml =
@@ -755,7 +845,8 @@ export class ConseilEnricherService extends SupabaseBaseService {
         !existingS2 ||
         (hasNumbers &&
           !/\d/.test(existingS2.sgc_content || '') &&
-          content.length >= (existingS2.sgc_content?.length || 0) * 0.5);
+          content.length >= (existingS2.sgc_content?.length || 0) * 0.5) ||
+        hasSupplementary;
 
       if (shouldUpdateS2) {
         actions.push({
@@ -774,25 +865,23 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const s3Substantial =
         existingS3 &&
         (existingS3.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
-      if (!s3Substantial) {
-        let s3Content = '';
-        if (contract.howToChoose?.length) {
-          const items = contract.howToChoose
-            .map((item) => `- ${item}`)
-            .join('<br>');
-          s3Content = `Pour choisir les bons ${gammeName} pour votre véhicule :<br>${items}`;
-        } else if (contract.howToChooseInline) {
-          s3Content = contract.howToChooseInline;
-        }
-        if (s3Content.length > 30) {
-          actions.push({
-            type: SECTION_TYPES.S3,
-            action: existingS3 ? 'update' : 'create',
-            title: `Comment choisir vos ${gammeName} :`,
-            content: s3Content,
-            order: SECTION_ORDERS.S3,
-          });
-        }
+      let s3Content = '';
+      if (contract.howToChoose?.length) {
+        const items = contract.howToChoose
+          .map((item) => `- ${item}`)
+          .join('<br>');
+        s3Content = `Pour choisir les bons ${gammeName} pour votre véhicule :<br>${items}`;
+      } else if (contract.howToChooseInline) {
+        s3Content = contract.howToChooseInline;
+      }
+      if (s3Content.length > 30 && (!s3Substantial || hasSupplementary)) {
+        actions.push({
+          type: SECTION_TYPES.S3,
+          action: existingS3 ? 'update' : 'create',
+          title: `Comment choisir vos ${gammeName} :`,
+          content: s3Content,
+          order: SECTION_ORDERS.S3,
+        });
       }
     }
 
@@ -803,10 +892,10 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const s4dSubstantial =
         existingS4D &&
         (existingS4D.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
-      if (!s4dSubstantial) {
-        const steps = contract.diagnosticTree
-          .map((node) => `- Si ${node.if} → ${node.then}`)
-          .join('<br>');
+      const steps = contract.diagnosticTree
+        .map((node) => `- Si ${node.if} → ${node.then}`)
+        .join('<br>');
+      if (!s4dSubstantial || hasSupplementary) {
         actions.push({
           type: SECTION_TYPES.S4_DEPOSE,
           action: existingS4D ? 'update' : 'create',
@@ -823,10 +912,10 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const s5Substantial =
         existingS5 &&
         (existingS5.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
-      if (!s5Substantial) {
-        const items = contract.antiMistakes
-          .map((item) => `- ${item}`)
-          .join('<br>');
+      const items = contract.antiMistakes
+        .map((item) => `- ${item}`)
+        .join('<br>');
+      if (!s5Substantial || hasSupplementary) {
         actions.push({
           type: SECTION_TYPES.S5,
           action: existingS5 ? 'update' : 'create',
@@ -843,10 +932,10 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const s6Substantial =
         existingS6 &&
         (existingS6.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
-      if (!s6Substantial) {
-        const checks = contract.diagnosticTree
-          .map((node) => `- Vérifier : ${node.then}`)
-          .join('<br>');
+      const checks = contract.diagnosticTree
+        .map((node) => `- Vérifier : ${node.then}`)
+        .join('<br>');
+      if (!s6Substantial || hasSupplementary) {
         actions.push({
           type: SECTION_TYPES.S6,
           action: existingS6 ? 'update' : 'create',
@@ -858,6 +947,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     }
 
     // S7 Pièces associées — prefer markdown associated pieces over syncParts
+    // (no supplementary override — supplementary files don't contain associated pieces)
     {
       const existingS7 = existing.get(SECTION_TYPES.S7);
       const s7Substantial =
@@ -893,13 +983,13 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const s8Substantial =
         existingS8 &&
         (existingS8.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
-      if (!s8Substantial) {
-        const faqHtml = contract.faq
-          .map(
-            (f) =>
-              `<details><summary><b>${f.q}</b></summary><p>${f.a}</p></details>`,
-          )
-          .join('\n');
+      const faqHtml = contract.faq
+        .map(
+          (f) =>
+            `<details><summary><b>${f.q}</b></summary><p>${f.a}</p></details>`,
+        )
+        .join('\n');
+      if (!s8Substantial || hasSupplementary) {
         actions.push({
           type: SECTION_TYPES.S8,
           action: existingS8 ? 'update' : 'create',
@@ -996,6 +1086,10 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
   // ── Write sections to DB ──
 
+  /**
+   * Batch upsert all sections in a single HTTP call (= single DB transaction).
+   * Prevents partial writes if the connection drops mid-enrichment.
+   */
   private async writeSections(
     pgId: string,
     actions: SectionAction[],
@@ -1009,57 +1103,449 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     >,
   ): Promise<{ created: number; updated: number }> {
-    let created = 0;
-    let updated = 0;
+    const writeActions = actions.filter((a) => a.action !== 'skip');
+    if (writeActions.length === 0) return { created: 0, updated: 0 };
 
-    for (const action of actions) {
-      if (action.action === 'skip') continue;
-
+    const upsertRows = writeActions.map((action) => {
       const existingRow = existing.get(action.type);
+      return {
+        sgc_id:
+          existingRow?.sgc_id ?? `conseil-${pgId}-${action.type}-${Date.now()}`,
+        sgc_pg_id: pgId,
+        sgc_section_type: action.type,
+        sgc_title: action.title,
+        sgc_content: action.content,
+        sgc_order: action.order,
+      };
+    });
 
-      if (action.action === 'update' && existingRow) {
-        const { error } = await this.client
-          .from('__seo_gamme_conseil')
-          .update({
-            sgc_title: action.title,
-            sgc_content: action.content,
-          })
-          .eq('sgc_id', existingRow.sgc_id);
+    const { error } = await this.client
+      .from('__seo_gamme_conseil')
+      .upsert(upsertRows, { onConflict: 'sgc_id,sgc_pg_id' });
 
-        if (error) {
-          this.logger.error(
-            `Failed to update conseil section ${action.type} for pgId=${pgId}: ${error.message}`,
-          );
-        } else {
-          updated++;
-          this.logger.log(
-            `Updated conseil section ${action.type} for pgId=${pgId}`,
-          );
-        }
-      } else if (action.action === 'create') {
-        const newId = `conseil-${pgId}-${action.type}-${Date.now()}`;
-        const { error } = await this.client.from('__seo_gamme_conseil').insert({
-          sgc_id: newId,
-          sgc_pg_id: pgId,
-          sgc_section_type: action.type,
-          sgc_title: action.title,
-          sgc_content: action.content,
-          sgc_order: action.order,
-        });
+    if (error) {
+      this.logger.error(
+        `Failed to batch upsert ${upsertRows.length} conseil sections for pgId=${pgId}: ${error.message}`,
+      );
+      return { created: 0, updated: 0 };
+    }
 
-        if (error) {
-          this.logger.error(
-            `Failed to create conseil section ${action.type} for pgId=${pgId}: ${error.message}`,
-          );
-        } else {
-          created++;
-          this.logger.log(
-            `Created conseil section ${action.type} for pgId=${pgId}`,
-          );
-        }
+    const created = writeActions.filter((a) => a.action === 'create').length;
+    const updated = writeActions.filter((a) => a.action === 'update').length;
+    this.logger.log(
+      `Batch upserted ${upsertRows.length} conseil sections for pgId=${pgId} (${created} created, ${updated} updated)`,
+    );
+    return { created, updated };
+  }
+
+  // ── Supplementary RAG Content Integration ──
+
+  /** OEM brands to strip from supplementary content (anonymization) */
+  private static readonly OEM_BRANDS = [
+    'DENSO',
+    'Bosch',
+    'Valeo',
+    'Continental',
+    'Hella',
+    'Sachs',
+    'LuK',
+    'TRW',
+    'Brembo',
+    'ATE',
+    'Delphi',
+    'SKF',
+    'INA',
+    'FAG',
+    'Gates',
+    'Dayco',
+    'NGK',
+    'Magneti Marelli',
+    'ZF',
+    'Aisin',
+    'NTN',
+    'SNR',
+    'Febi',
+    'Meyle',
+    'Lemförder',
+    'Corteco',
+    'Elring',
+    'Mahle',
+    'Mann',
+    'Behr',
+    'Pierburg',
+    'Hengst',
+    'Bilstein',
+    'Monroe',
+    'KYB',
+  ];
+
+  /**
+   * Load supplementary files, clean, anonymize, and classify their content
+   * into section-appropriate buckets.
+   */
+  private loadAndClassifySupplementary(
+    filePaths: string[],
+  ): SupplementaryClassification {
+    const result: SupplementaryClassification = {
+      symptoms: [],
+      procedures: [],
+      errors: [],
+      definitions: [],
+      faq: [],
+      specs: [],
+    };
+
+    for (const filePath of filePaths) {
+      try {
+        if (!existsSync(filePath)) continue;
+        const raw = readFileSync(filePath, 'utf-8');
+
+        // Strip YAML frontmatter
+        const body = raw.replace(/^---\n[\s\S]*?\n---\n?/, '').trim();
+        if (body.length < 100) continue;
+
+        // Clean HTML artifacts + anonymize brand names
+        const cleaned = this.anonymizeContent(this.cleanWebContent(body));
+        if (cleaned.length < 50) continue;
+
+        // Classify paragraphs into section buckets
+        this.classifyContent(cleaned, result);
+      } catch {
+        this.logger.warn(`Skipping unreadable supplementary file: ${filePath}`);
       }
     }
 
-    return { created, updated };
+    return result;
+  }
+
+  /** Strip HTML tags, markdown headings, images, nav breadcrumbs, and collapse whitespace */
+  private cleanWebContent(text: string): string {
+    return (
+      text
+        .replace(/<[^>]+>/g, ' ') // Strip HTML tags
+        .replace(/!\[.*?\]\(.*?\)/g, '') // Strip image markdown
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // [text](url) → text
+        .replace(/^[^.\n]{0,80}\|[^.\n]*$/gm, '') // Strip breadcrumb/nav lines (contains |)
+        .replace(/^.*\s-\s.*\s-\s.*$/gm, '') // Strip breadcrumb lines (2+ separated dashes)
+        .replace(/^(?:Recherche|Produits|Products|Menu)\b.*$/gim, '') // Strip nav header lines
+        // Inline navigation phrases (from web scrapes)
+        .replace(/Recherche\s+Produit/gi, '')
+        .replace(/Retourner\s+\w+/gi, '')
+        .replace(/Informations?\s+g[ée]n[ée]rales?/gi, '')
+        .replace(/Caract[ée]ristiques?\s+et\s+avantages?/gi, '')
+        .replace(/Types?\s+et\s+caract[ée]ristiques?/gi, '')
+        .replace(/Catalogues?\s+et\s+brochures?/gi, '')
+        .replace(/Installation\s+et\s+d[ée]tection\s+des\s+pannes?/gi, '')
+        .replace(/Comment\s+installer(?!\s+[a-zéè])/gi, '') // "Comment installer" nav tab (not "Comment installer un...")
+        .replace(/^-\s+\S{1,20}$/gm, '') // Strip single-word bullet items (nav crumbs)
+        .replace(/\n{3,}/g, '\n\n') // Collapse excess newlines
+        .replace(/\s{3,}/g, ' ') // Collapse excess inline spaces
+        .replace(/^[-•]\s*/gm, '- ') // Normalize bullets
+        .trim()
+    );
+  }
+
+  /** Remove all OEM brand mentions and self-promotional phrases */
+  private anonymizeContent(text: string): string {
+    let result = text;
+    for (const brand of ConseilEnricherService.OEM_BRANDS) {
+      const escaped = brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      result = result.replace(new RegExp(`\\b${escaped}\\b\\s*`, 'gi'), '');
+    }
+    // Remove self-promotional phrases
+    result = result.replace(
+      /\b(chez|par|de|from)\s+(nous|notre|our)\b[^.]*\./gi,
+      '',
+    );
+    // Remove third-party URLs
+    result = result.replace(/https?:\/\/[^\s)]+/g, '');
+    return result.replace(/\s{2,}/g, ' ').trim();
+  }
+
+  /**
+   * Classify text chunks into section-appropriate buckets using keyword heuristics.
+   */
+  private classifyContent(
+    text: string,
+    result: SupplementaryClassification,
+  ): void {
+    const chunks = text
+      .split(/\n(?=#{1,3}\s)|(?:\n\s*\n)/)
+      .filter((c) => c.trim().length > 30);
+
+    for (const chunk of chunks) {
+      const lower = chunk.toLowerCase();
+      const heading = chunk.match(/^#{1,3}\s+(.+)/)?.[1]?.toLowerCase() || '';
+
+      // Procedures FIRST — more specific keywords, avoids "panne" in procedural text
+      // being misclassified as symptoms
+      if (
+        this.matchesPatterns(lower, heading, [
+          /remplacement/,
+          /installation/,
+          /d[eé]montage/,
+          /remontage/,
+          /proc[eé]dure/,
+          /[eé]tape/,
+          /comment.*installer/,
+          /monter/,
+          /d[eé]poser/,
+          /reposer/,
+          /retirer/,
+          /d[eé]brancher/,
+        ])
+      ) {
+        const items = this.extractListItems(chunk);
+        result.procedures.push(
+          ...(items.length > 0 ? items : [this.truncateText(chunk, 300)]),
+        );
+        continue;
+      }
+
+      if (
+        this.matchesPatterns(lower, heading, [
+          /sympt[oô]me/,
+          /signe/,
+          /voyant/,
+          /d[eé]faillance/,
+          /panne/,
+          /bruit anormal/,
+          /vibration/,
+          /anomalie/,
+          /usure/,
+          /d[eé]tect/,
+          /diagnostic/,
+        ])
+      ) {
+        const items = this.extractListItems(chunk);
+        result.symptoms.push(
+          ...(items.length > 0 ? items : [this.truncateText(chunk, 200)]),
+        );
+        continue;
+      }
+
+      if (
+        this.matchesPatterns(lower, heading, [
+          /erreur/,
+          /attention/,
+          /ne\s+pas/,
+          /[eé]viter/,
+          /risque/,
+          /danger/,
+          /pr[eé]caution/,
+          /avertissement/,
+        ])
+      ) {
+        const items = this.extractListItems(chunk);
+        result.errors.push(
+          ...(items.length > 0 ? items : [this.truncateText(chunk, 200)]),
+        );
+        continue;
+      }
+
+      if (
+        /\?/.test(heading) ||
+        /faq|question.*fr[eé]quent/i.test(heading) ||
+        lower.split('?').length - 1 >= 2
+      ) {
+        const faqs = this.extractInlineFaq(chunk);
+        if (faqs.length > 0) {
+          result.faq.push(...faqs);
+          continue;
+        }
+      }
+
+      if (
+        this.matchesPatterns(lower, heading, [
+          /comment.*fonctionne/,
+          /c.?est quoi/,
+          /d[eé]finition/,
+          /caract[eé]ristique/,
+          /avantage/,
+          /fonctionnement/,
+          /technologie/,
+          /principe/,
+          /types?\b/,
+        ])
+      ) {
+        result.definitions.push(this.truncateText(chunk, 300));
+        continue;
+      }
+
+      if (
+        (
+          lower.match(/\d+\s*(mm|kg|nm|bar|volt|amp[eè]re|kw|cv|rpm|ohm)/g) ||
+          []
+        ).length >= 2
+      ) {
+        result.specs.push(this.truncateText(chunk, 200));
+        continue;
+      }
+
+      if (chunk.length >= 200) {
+        result.definitions.push(this.truncateText(chunk, 200));
+      }
+    }
+  }
+
+  private matchesPatterns(
+    lower: string,
+    heading: string,
+    patterns: RegExp[],
+  ): boolean {
+    return patterns.some((p) => p.test(lower) || p.test(heading));
+  }
+
+  private extractListItems(chunk: string): string[] {
+    return chunk
+      .split('\n')
+      .map((line) =>
+        line
+          .replace(/^[-•*\d.)\s]+/, '')
+          .replace(/^#{1,4}\s+/, '')
+          .trim(),
+      )
+      .filter(
+        (line) =>
+          line.length >= 15 &&
+          line.length <= 300 &&
+          !line.includes('|') && // Skip breadcrumb/nav lines
+          !/^(Produits|Products)\b/i.test(line), // Skip product nav headers
+      );
+  }
+
+  private extractInlineFaq(chunk: string): Array<{ q: string; a: string }> {
+    const faqs: Array<{ q: string; a: string }> = [];
+    const lines = chunk.split('\n');
+    for (let i = 0; i < lines.length; i++) {
+      const qMatch = lines[i].match(/^#{1,4}\s+(.+\?)\s*$/);
+      if (!qMatch) continue;
+      const question = qMatch[1].trim();
+      const answerLines: string[] = [];
+      for (let j = i + 1; j < lines.length; j++) {
+        if (lines[j].match(/^#{1,4}\s/)) break;
+        const trimmed = lines[j].trim();
+        if (trimmed) answerLines.push(trimmed);
+      }
+      const answer = answerLines.join(' ');
+      if (question.length >= 10 && answer.length >= 20) {
+        faqs.push({ q: question, a: answer });
+      }
+    }
+    return faqs;
+  }
+
+  private truncateText(text: string, maxLen: number): string {
+    const cleaned = text.replace(/^#{1,4}\s+.+\n/, '').trim();
+    if (cleaned.length <= maxLen) return cleaned;
+    return cleaned.slice(0, maxLen).replace(/\s+\S*$/, '') + '...';
+  }
+
+  /** Strip HTML tags and entities for fair text-length comparison */
+  private stripHtml(html: string): string {
+    return html
+      .replace(/<[^>]+>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .trim();
+  }
+
+  /**
+   * Merge classified supplementary content into an existing PageContract.
+   * Deduplication by prefix-40-chars, capped at 5 items per section.
+   */
+  private mergeSupplementaryIntoContract(
+    contract: PageContract,
+    supplementary: SupplementaryClassification,
+    pgAlias: string,
+  ): boolean {
+    const gammeName = pgAlias.replace(/-/g, ' ');
+    let modified = false;
+
+    // S1 (definitions) → enrich intro.role
+    if (supplementary.definitions.length > 0) {
+      const bestDef = supplementary.definitions.sort(
+        (a, b) => b.length - a.length,
+      )[0];
+      if (!contract.intro?.role) {
+        contract.intro = { ...contract.intro, role: bestDef };
+        modified = true;
+      } else if (bestDef.length > contract.intro.role.length * 1.3) {
+        contract.intro.role += '. ' + this.truncateText(bestDef, 150);
+        modified = true;
+      }
+    }
+
+    // S2 (symptoms) → deduplicate + append max 5
+    if (supplementary.symptoms.length > 0) {
+      const existing = new Set(
+        (contract.symptoms || []).map((s) => s.toLowerCase().slice(0, 40)),
+      );
+      const newItems = supplementary.symptoms.filter(
+        (s) => !existing.has(s.toLowerCase().slice(0, 40)),
+      );
+      if (newItems.length > 0) {
+        contract.symptoms = [
+          ...(contract.symptoms || []),
+          ...newItems.slice(0, 5),
+        ];
+        modified = true;
+      }
+    }
+
+    // S4 (procedures) → replace only if primary weak (< 3 items)
+    if (supplementary.procedures.length >= 3) {
+      if ((contract.diagnosticTree?.length || 0) < 3) {
+        contract.diagnosticTree = supplementary.procedures
+          .slice(0, 8)
+          .map((step, i) => ({ if: `Étape ${i + 1}`, then: step }));
+        modified = true;
+      }
+    }
+
+    // S5 (errors) → deduplicate + append max 5
+    if (supplementary.errors.length > 0) {
+      const existing = new Set(
+        (contract.antiMistakes || []).map((e) => e.toLowerCase().slice(0, 40)),
+      );
+      const newItems = supplementary.errors.filter(
+        (e) => !existing.has(e.toLowerCase().slice(0, 40)),
+      );
+      if (newItems.length > 0) {
+        contract.antiMistakes = [
+          ...(contract.antiMistakes || []),
+          ...newItems.slice(0, 5),
+        ];
+        modified = true;
+      }
+    }
+
+    // S8 (FAQ) → deduplicate + append max 5
+    if (supplementary.faq.length > 0) {
+      const existing = new Set(
+        (contract.faq || []).map((f) => f.q.toLowerCase().slice(0, 40)),
+      );
+      const newFaqs = supplementary.faq.filter(
+        (f) => !existing.has(f.q.toLowerCase().slice(0, 40)),
+      );
+      if (newFaqs.length > 0) {
+        contract.faq = [...(contract.faq || []), ...newFaqs.slice(0, 5)];
+        modified = true;
+      }
+    }
+
+    // S3 (howToChoose from specs) → fill only if empty
+    if (
+      supplementary.specs.length > 0 &&
+      !contract.howToChoose?.length &&
+      !contract.howToChooseInline
+    ) {
+      contract.howToChooseInline = `Pour choisir les bons ${gammeName}, vérifiez : ${supplementary.specs.slice(0, 3).join('. ')}.`;
+      modified = true;
+    }
+
+    return modified;
   }
 }

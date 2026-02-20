@@ -73,7 +73,10 @@ export class AdminContentRefreshController {
       throw new BadRequestException('Provide pgAlias or pgAliases');
     }
 
-    return this.contentRefreshService.triggerManualRefresh(aliases);
+    return this.contentRefreshService.triggerManualRefresh(
+      aliases,
+      parsed.data.supplementaryFiles,
+    );
   }
 
   /**

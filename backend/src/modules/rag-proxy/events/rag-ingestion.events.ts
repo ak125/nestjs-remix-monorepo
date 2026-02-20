@@ -6,6 +6,8 @@ export interface RagIngestionCompletedEvent {
   status: 'done' | 'failed';
   completedAt: number;
   affectedGammes: string[];
+  /** Map of gamme alias → absolute paths of supplementary files that triggered this gamme */
+  affectedGammesMap?: Record<string, string[]>;
   /** Diagnostic slugs affected by this ingestion (R5) */
   affectedDiagnostics?: string[];
   validationSummary?: {

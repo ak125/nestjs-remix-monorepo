@@ -82,12 +82,17 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
   async enrich(
     pgIds: string[],
     dryRun: boolean,
+    supplementaryFiles: string[] = [],
   ): Promise<(EnrichmentResult | EnrichDryRunResult)[]> {
     const results: (EnrichmentResult | EnrichDryRunResult)[] = [];
 
     for (const pgId of pgIds) {
       try {
-        const result = await this.enrichSingle(pgId, dryRun);
+        const result = await this.enrichSingle(
+          pgId,
+          dryRun,
+          supplementaryFiles,
+        );
         results.push(result);
       } catch (error) {
         this.logger.error(
@@ -119,6 +124,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
   private async enrichSingle(
     pgId: string,
     dryRun: boolean,
+    supplementaryFiles: string[] = [],
   ): Promise<EnrichmentResult | EnrichDryRunResult> {
     // 1. Fetch gamme metadata
     const meta = await this.fetchGammeMetadata(pgId);
@@ -132,7 +138,11 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     );
 
     // 2. Enrich from RAG: search + parse markdown (0 LLM)
-    const sectionResults = await this.enrichFromRag(gammeName, family);
+    const sectionResults = await this.enrichFromRag(
+      gammeName,
+      family,
+      supplementaryFiles,
+    );
 
     // 3. Calculate quality score
     const allFlags: GammeContentQualityFlag[] = [];
@@ -254,6 +264,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
   private async enrichFromRag(
     gammeName: string,
     family: string,
+    supplementaryFiles: string[] = [],
   ): Promise<Record<string, SectionValidationResult>> {
     const results: Record<string, SectionValidationResult> = {};
 
@@ -336,9 +347,35 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     }
 
     // Merge full document contents
-    const allContent = [gammeContent, guideContent]
-      .filter(Boolean)
-      .join('\n\n');
+    let allContent = [gammeContent, guideContent].filter(Boolean).join('\n\n');
+
+    // Append supplementary RAG files (web/PDF ingested content, anonymized)
+    if (supplementaryFiles.length > 0) {
+      let appendedCount = 0;
+      for (const fp of supplementaryFiles) {
+        try {
+          if (!existsSync(fp)) continue;
+          let body = readFileSync(fp, 'utf-8');
+          // Strip YAML frontmatter
+          body = body.replace(/^---\n[\s\S]*?\n---\n?/, '');
+          if (body.trim().length < 50) continue;
+          // Anonymize: remove OEM brand names
+          body = this.anonymizeContent(body);
+          allContent += '\n\n' + body;
+          appendedCount++;
+        } catch (err) {
+          this.logger.warn(
+            `Failed to read supplementary file ${fp}: ${err instanceof Error ? err.message : err}`,
+          );
+        }
+      }
+      if (appendedCount > 0) {
+        this.logger.log(
+          `Appended ${appendedCount} supplementary files to buying guide content`,
+        );
+      }
+    }
+
     const confidence = 1.0; // Full verified docs, not search results
     const citation = sources.join(' + ');
 
@@ -1554,6 +1591,68 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     }
 
     this.logger.log(`Buying guide updated for pgId=${pgId}`);
+  }
+
+  // ── Anonymization (shared with ConseilEnricherService) ──
+
+  private static readonly OEM_BRANDS = [
+    'DENSO',
+    'Bosch',
+    'Valeo',
+    'Continental',
+    'Hella',
+    'Sachs',
+    'LuK',
+    'TRW',
+    'Brembo',
+    'ATE',
+    'Delphi',
+    'SKF',
+    'INA',
+    'FAG',
+    'Gates',
+    'Dayco',
+    'NGK',
+    'Magneti Marelli',
+    'ZF',
+    'Aisin',
+    'NTN',
+    'SNR',
+    'Febi',
+    'Bilstein',
+    'Monroe',
+    'KYB',
+    'Sachs',
+    'Lemforder',
+    'Meyle',
+    'Corteco',
+    'Elring',
+    'Victor Reinz',
+    'Mahle',
+    'Mann Filter',
+    'Purflux',
+  ];
+
+  /**
+   * Remove OEM brand names, self-promotional phrases, and third-party URLs.
+   * Content must read as AutoMecanik technical knowledge, not manufacturer copy.
+   */
+  private anonymizeContent(text: string): string {
+    let result = text;
+    for (const brand of BuyingGuideEnricherService.OEM_BRANDS) {
+      const escaped = brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      result = result.replace(new RegExp(`\\b${escaped}\\b\\s*`, 'gi'), '');
+      result = result.replace(new RegExp(`\\s*\\b${escaped}\\b`, 'gi'), '');
+    }
+    // Remove self-promotional phrases
+    result = result.replace(
+      /\b(chez|par|de|from)\s+(nous|notre|our)\b[^.]*\./gi,
+      '',
+    );
+    // Remove third-party URLs
+    result = result.replace(/https?:\/\/[^\s)]+/g, '');
+    // Clean multiple spaces
+    return result.replace(/\s{2,}/g, ' ').trim();
   }
 
   /**

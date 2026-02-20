@@ -50,11 +50,14 @@ export class ContentRefreshService extends SupabaseBaseService {
       `RAG ingestion ${event.jobId} completed. Affected gammes: [${gammes.join(', ')}]. Queueing content refresh...`,
     );
 
+    const gammesMap = event.affectedGammesMap || {};
     for (const pgAlias of gammes) {
+      const supplementaryFiles = gammesMap[pgAlias] || [];
       await this.queueRefreshForGamme(
         pgAlias,
         event.jobId,
         `rag_${event.source}_ingest`,
+        supplementaryFiles,
       );
     }
 
@@ -81,6 +84,7 @@ export class ContentRefreshService extends SupabaseBaseService {
     pgAlias: string,
     triggerJobId: string,
     triggerSource: string,
+    supplementaryFiles: string[] = [],
   ): Promise<GammePageType[]> {
     // Resolve pg_alias → pg_id
     const { data: gamme } = await this.client
@@ -109,6 +113,7 @@ export class ContentRefreshService extends SupabaseBaseService {
         pageType,
         triggerJobId,
         triggerSource,
+        supplementaryFiles,
       );
       if (created) queued.push(pageType);
     }
@@ -162,7 +167,10 @@ export class ContentRefreshService extends SupabaseBaseService {
   /**
    * Manual trigger: queue refresh for one or more gammes.
    */
-  async triggerManualRefresh(pgAliases: string[]): Promise<{
+  async triggerManualRefresh(
+    pgAliases: string[],
+    supplementaryFiles: string[] = [],
+  ): Promise<{
     queued: Array<{ pgAlias: string; pageTypes: GammePageType[] }>;
   }> {
     const results: Array<{ pgAlias: string; pageTypes: GammePageType[] }> = [];
@@ -172,6 +180,7 @@ export class ContentRefreshService extends SupabaseBaseService {
         pgAlias,
         'manual',
         'manual',
+        supplementaryFiles,
       );
       results.push({ pgAlias, pageTypes });
     }
@@ -498,6 +507,7 @@ export class ContentRefreshService extends SupabaseBaseService {
     pageType: GammePageType,
     triggerJobId: string,
     triggerSource: string,
+    supplementaryFiles: string[] = [],
   ): Promise<boolean> {
     // Insert tracking row (partial unique index prevents duplicates)
     const { data: row, error } = await this.client
@@ -526,6 +536,7 @@ export class ContentRefreshService extends SupabaseBaseService {
       pgId,
       pgAlias,
       pageType,
+      ...(supplementaryFiles.length > 0 ? { supplementaryFiles } : {}),
     };
 
     const job = await this.seoMonitorQueue.add('content-refresh', jobData, {
