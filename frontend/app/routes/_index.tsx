@@ -14,7 +14,6 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
-  ChevronUp,
   Cog,
   Mail,
   Phone,
@@ -27,7 +26,7 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import DarkSection from "~/components/layout/DarkSection";
 import PageSection from "~/components/layout/PageSection";
@@ -755,15 +754,8 @@ export default function RedesignPreview() {
 
   const navigate = useNavigate();
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
-  const [showScrollTop, setShowScrollTop] = useState(false);
   const [mineCode, setMineCode] = useState("");
   const [refQuery, setRefQuery] = useState("");
-
-  useEffect(() => {
-    const onScroll = () => setShowScrollTop(window.scrollY > 400);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -1625,20 +1617,6 @@ export default function RedesignPreview() {
           </div>
         </div>
       </section>
-
-      {/* ════════════════════════════════════════
-          SCROLL TO TOP
-         ════════════════════════════════════════ */}
-      {showScrollTop && (
-        <Button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-50 w-11 h-11 rounded-full shadow-2xl text-white bg-[#e8590c] hover:bg-[#d9480f] transition-all duration-300 hover:scale-110"
-          size="icon"
-          aria-label="Retour en haut"
-        >
-          <ChevronUp className="w-5 h-5" />
-        </Button>
-      )}
     </div>
   );
 }

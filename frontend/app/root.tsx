@@ -17,6 +17,7 @@ import {
   useLocation,
 } from "@remix-run/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ChevronUp } from "lucide-react";
 import {
   Component,
   lazy,
@@ -41,9 +42,11 @@ import {
   NotificationContainer,
   NotificationProvider,
 } from "./components/notifications/NotificationContainer";
+import { Button } from "./components/ui/button";
 // @ts-ignore
 import stylesheet from "./global.css?url";
 import { usePageRoleDataAttrs } from "./hooks/usePageRole";
+import { useScrollBehavior } from "./hooks/useScrollBehavior";
 import { VehicleProvider } from "./hooks/useVehiclePersistence";
 // @ts-ignore
 import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
@@ -255,6 +258,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
   // 🎯 Phase 5 SEO: Récupérer les data-attributes du rôle de page
   const pageRoleAttrs = usePageRoleDataAttrs();
+  const { showScrollTop, scrollToTop } = useScrollBehavior();
 
   // Extraire les valeurs primitives pour éviter les re-renders en boucle
   // (les dépendances d'objets causent des boucles infinies)
@@ -379,6 +383,16 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </main>
       <Footer />
       <NotificationContainer />
+      {showScrollTop && (
+        <Button
+          onClick={scrollToTop}
+          className="fixed bottom-20 md:bottom-8 right-20 md:right-24 z-50 w-11 h-11 rounded-full shadow-2xl text-white bg-[#e8590c] hover:bg-[#d9480f] transition-all duration-300 hover:scale-110"
+          size="icon"
+          aria-label="Retour en haut"
+        >
+          <ChevronUp className="w-5 h-5" />
+        </Button>
+      )}
       {!location.pathname.startsWith("/admin") && <ChatWidgetSafe />}
     </div>
   );

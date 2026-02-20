@@ -26,15 +26,9 @@ import { Link } from "@remix-run/react";
 import { Phone } from "lucide-react";
 import { memo } from "react";
 
-export interface TopBarConfig {
-  tagline?: string;
-  phone?: string;
-  email?: string;
-  showQuickLinks?: boolean;
-}
+import { SITE_CONFIG } from "~/config/site";
 
 interface TopBarProps {
-  config?: TopBarConfig;
   user?: {
     firstName?: string;
     lastName?: string;
@@ -42,19 +36,7 @@ interface TopBarProps {
   } | null;
 }
 
-const DEFAULT_CONFIG: TopBarConfig = {
-  tagline: "Pièces auto à prix pas cher",
-  phone: "01 23 45 67 89",
-  email: "contact@automecanik.com",
-  showQuickLinks: true,
-};
-
-export const TopBar = memo(function TopBar({
-  config = DEFAULT_CONFIG,
-  user,
-}: TopBarProps) {
-  const mergedConfig = { ...DEFAULT_CONFIG, ...config };
-
+export const TopBar = memo(function TopBar({ user }: TopBarProps) {
   // 👤 Greeting personnalisé (pattern PHP legacy)
   const getUserGreeting = (): string => {
     if (!user) return "";
@@ -75,9 +57,9 @@ export const TopBar = memo(function TopBar({
           {/* 🎯 Left: Contact info - Version premium */}
           <div className="flex items-center gap-5">
             {/* Phone - Contact direct avec animation */}
-            {mergedConfig.phone && (
+            {SITE_CONFIG.contact.phone.display && (
               <a
-                href={`tel:${mergedConfig.phone.replace(/\s/g, "")}`}
+                href={`tel:${SITE_CONFIG.contact.phone.raw}`}
                 className="group flex items-center gap-2.5 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:scale-105"
                 title="Appelez-nous pour un support immédiat"
               >
@@ -86,16 +68,16 @@ export const TopBar = memo(function TopBar({
                   <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </div>
                 <span className="font-bold text-sm tracking-wide">
-                  {mergedConfig.phone}
+                  {SITE_CONFIG.contact.phone.display}
                 </span>
               </a>
             )}
 
             {/* Badge promo - Plus visible et attractif */}
             <div className="flex items-center gap-2.5 px-3.5 py-1.5 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 border-2 border-green-300/60 dark:border-green-800/50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105">
-              <span className="text-xl">🚚</span>
+              <span className="text-xl">{SITE_CONFIG.promo.icon}</span>
               <span className="text-xs font-bold text-green-700 dark:text-green-300 tracking-wide">
-                Livraison gratuite dès 100€
+                {SITE_CONFIG.promo.text}
               </span>
             </div>
           </div>
@@ -124,34 +106,32 @@ export const TopBar = memo(function TopBar({
               </>
             )}
 
-            {/* Quick links - Design premium */}
-            {mergedConfig.showQuickLinks && (
-              <div className="flex items-center gap-4">
-                <Link
-                  to="/aide"
-                  className="group text-slate-700 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 font-semibold text-xs relative"
-                >
-                  Aide
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300" />
-                </Link>
+            {/* Quick links */}
+            <div className="flex items-center gap-4">
+              <Link
+                to="/aide"
+                className="group text-slate-700 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 font-semibold text-xs relative"
+              >
+                Aide
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300" />
+              </Link>
 
-                <Link
-                  to="/contact"
-                  className="group text-slate-700 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 font-semibold text-xs relative"
-                >
-                  Contact
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300" />
-                </Link>
+              <Link
+                to="/contact"
+                className="group text-slate-700 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 font-semibold text-xs relative"
+              >
+                Contact
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300" />
+              </Link>
 
-                <Link
-                  to="/cgv"
-                  className="group text-slate-700 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 font-semibold text-xs relative"
-                >
-                  CGV
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300" />
-                </Link>
-              </div>
-            )}
+              <Link
+                to="/cgv"
+                className="group text-slate-700 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-200 font-semibold text-xs relative"
+              >
+                CGV
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300" />
+              </Link>
+            </div>
           </div>
         </div>
       </div>
