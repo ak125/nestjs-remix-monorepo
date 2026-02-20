@@ -49,7 +49,7 @@ import { GammeRestModule } from './modules/gamme-rest/gamme-rest.module'; // �
 import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module Workers BullMQ pour jobs asynchrones !
 // ⛔ DÉSACTIVÉ P0.1-P0.2 (2026-02-02) - Modules DEV ONLY, ne doivent pas être en PROD
 // Voir docs/MIGRATION_PLAN_DEV_PREPROD_PROD.md pour détails
-// import { AiContentModule } from './modules/ai-content/ai-content.module'; // DEV ONLY - LLM deps
+import { AiContentModule } from './modules/ai-content/ai-content.module';
 // import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module'; // DEV ONLY - Experimental
 import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module';
 import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Dockerfile: shared-types copié (2026-02-02)
@@ -184,7 +184,7 @@ import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 
     WorkerModule, // 🔄 ACTIVÉ - Module Workers BullMQ (sitemaps, cache, SEO monitor) !
 
     // ⛔ DÉSACTIVÉ P0.1-P0.2 (2026-02-02) - Modules DEV ONLY
-    // AiContentModule,        // DEV ONLY - LLM deps (Claude/Groq/OpenAI)
+    ...(process.env.LLM_POLISH_ENABLED === 'true' ? [AiContentModule] : []),
     // KnowledgeGraphModule,   // DEV ONLY - AI-COS reasoning experimental
     ...(process.env.RAG_ENABLED === 'true' ? [RagProxyModule] : []),
     RmModule, // ✅ RÉACTIVÉ - Fix Dockerfile shared-types (2026-02-02)

@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
+import { AiContentService } from '../../ai-content/ai-content.service';
 import { ConfigService } from '@nestjs/config';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -107,6 +108,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly ragService: RagProxyService,
+    @Optional() private readonly aiContentService?: AiContentService,
   ) {
     super(configService);
   }
@@ -1632,15 +1634,55 @@ export class ConseilEnricherService extends SupabaseBaseService {
     contract: PageContract,
     pgAlias: string,
   ): Promise<void> {
-    const draftDescrip = this.composeSeoDescrip(contract, pgAlias);
-    if (!draftDescrip) return;
+    const templateDescrip = this.composeSeoDescrip(contract, pgAlias);
+    if (!templateDescrip) return;
+
+    let finalDescrip = templateDescrip;
+    let draftSource = 'pipeline';
+    let llmModel: string | null = null;
+
+    if (this.aiContentService) {
+      try {
+        const result = await this.aiContentService.generateContent({
+          type: 'seo_descrip_polish',
+          prompt: `Polish meta description for ${pgAlias}`,
+          tone: 'professional',
+          language: 'fr',
+          maxLength: 200,
+          temperature: 0.3,
+          context: {
+            draft: templateDescrip,
+            gammeName: pgAlias.replace(/-/g, ' '),
+          },
+          useCache: true,
+        });
+        const polished = result.content.trim();
+        if (polished.length > 0 && polished.length <= 160) {
+          finalDescrip = polished;
+          draftSource = 'pipeline+llm';
+          llmModel = result.metadata.model;
+          this.logger.log(
+            `LLM polished sg_descrip for pgId=${pgId} (${polished.length} chars, model=${llmModel})`,
+          );
+        } else {
+          this.logger.warn(
+            `LLM polish rejected for pgId=${pgId}: length=${polished.length}, using template`,
+          );
+        }
+      } catch (err) {
+        this.logger.warn(
+          `LLM polish failed for pgId=${pgId}, using template: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    }
 
     const { error } = await this.client
       .from('__seo_gamme')
       .update({
-        sg_descrip_draft: draftDescrip,
-        sg_draft_source: 'pipeline',
+        sg_descrip_draft: finalDescrip,
+        sg_draft_source: draftSource,
         sg_draft_updated_at: new Date().toISOString(),
+        sg_draft_llm_model: llmModel,
       })
       .eq('sg_pg_id', pgId);
 
@@ -1650,7 +1692,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       );
     } else {
       this.logger.log(
-        `sg_descrip_draft written for pgId=${pgId} (${draftDescrip.length} chars)`,
+        `sg_descrip_draft written for pgId=${pgId} (${finalDescrip.length} chars, source=${draftSource})`,
       );
     }
   }

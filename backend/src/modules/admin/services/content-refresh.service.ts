@@ -474,7 +474,7 @@ export class ContentRefreshService extends SupabaseBaseService {
     const { data, error } = await this.client
       .from('__seo_gamme')
       .select(
-        'sg_pg_id, sg_descrip, sg_descrip_draft, sg_content_draft, sg_draft_source, sg_draft_updated_at',
+        'sg_pg_id, sg_descrip, sg_descrip_draft, sg_content_draft, sg_draft_source, sg_draft_updated_at, sg_draft_llm_model',
       )
       .or('sg_descrip_draft.not.is.null,sg_content_draft.not.is.null')
       .order('sg_draft_updated_at', { ascending: false });

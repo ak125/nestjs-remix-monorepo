@@ -65,6 +65,7 @@ import { ProductsModule } from '../products/products.module';
 import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMonitorSchedulerService
 import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineService + GooglebotDetectorService
 import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour RagProxyService (enrichissement buying guide)
+import { AiContentModule } from '../ai-content/ai-content.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour Rag
     WorkerModule, // 📊 Import pour accès à SeoMonitorSchedulerService
     SeoModule, // 🚀 Import pour accès aux services SEO (risk flags, googlebot)
     RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
+    ...(process.env.LLM_POLISH_ENABLED === 'true' ? [AiContentModule] : []),
     BullModule.registerQueue({ name: 'seo-monitor' }), // 🔄 Queue pour ContentRefreshService
   ],
   controllers: [

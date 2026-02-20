@@ -8,6 +8,8 @@ export const ContentTypeSchema = z.enum([
   'blog_article',
   'social_media',
   'email_campaign',
+  'seo_descrip_polish',
+  'seo_content_polish',
 ]);
 
 export type ContentType = z.infer<typeof ContentTypeSchema>;

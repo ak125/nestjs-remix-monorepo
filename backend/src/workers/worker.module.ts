@@ -22,6 +22,7 @@ import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.ser
 
 // Dependencies for ContentRefreshProcessor
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
+import { AiContentModule } from '../modules/ai-content/ai-content.module';
 import { BuyingGuideEnricherService } from '../modules/admin/services/buying-guide-enricher.service';
 import { ConseilEnricherService } from '../modules/admin/services/conseil-enricher.service';
 import { ReferenceService } from '../modules/seo/services/reference.service';
@@ -66,6 +67,7 @@ import { DiagnosticService } from '../modules/seo/services/diagnostic.service';
 
     // Modules for ContentRefreshProcessor dependencies
     RagProxyModule,
+    ...(process.env.LLM_POLISH_ENABLED === 'true' ? [AiContentModule] : []),
   ],
 
   providers: [

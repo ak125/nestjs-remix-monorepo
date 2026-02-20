@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
+import { AiContentService } from '../../ai-content/ai-content.service';
 import { ConfigService } from '@nestjs/config';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -70,6 +71,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly ragService: RagProxyService,
+    @Optional() private readonly aiContentService?: AiContentService,
   ) {
     super(configService);
   }
@@ -1814,15 +1816,59 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     gammeName: string,
     sections: Record<string, SectionValidationResult>,
   ): Promise<void> {
-    const draftContent = this.composeSeoContent(gammeName, sections);
-    if (!draftContent) return;
+    const templateContent = this.composeSeoContent(gammeName, sections);
+    if (!templateContent) return;
+
+    let finalContent = templateContent;
+    let draftSource = 'pipeline';
+    let llmModel: string | null = null;
+
+    if (this.aiContentService) {
+      try {
+        const result = await this.aiContentService.generateContent({
+          type: 'seo_content_polish',
+          prompt: `Polish SEO content for ${gammeName}`,
+          tone: 'professional',
+          language: 'fr',
+          maxLength: 2000,
+          temperature: 0.4,
+          context: {
+            draft: templateContent,
+            gammeName: gammeName,
+          },
+          useCache: true,
+        });
+        const polished = result.content.trim();
+        if (
+          polished.length >= 100 &&
+          polished.includes('<h2>') &&
+          polished.length <= templateContent.length * 1.3
+        ) {
+          finalContent = polished;
+          draftSource = 'pipeline+llm';
+          llmModel = result.metadata.model;
+          this.logger.log(
+            `LLM polished sg_content for pgId=${pgId} (${polished.length} chars, model=${llmModel})`,
+          );
+        } else {
+          this.logger.warn(
+            `LLM polish rejected for pgId=${pgId}: length=${polished.length}, hasH2=${polished.includes('<h2>')}, using template`,
+          );
+        }
+      } catch (err) {
+        this.logger.warn(
+          `LLM polish failed for pgId=${pgId}, using template: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      }
+    }
 
     const { error } = await this.client
       .from('__seo_gamme')
       .update({
-        sg_content_draft: draftContent,
-        sg_draft_source: 'pipeline',
+        sg_content_draft: finalContent,
+        sg_draft_source: draftSource,
         sg_draft_updated_at: new Date().toISOString(),
+        sg_draft_llm_model: llmModel,
       })
       .eq('sg_pg_id', pgId);
 
@@ -1832,7 +1878,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       );
     } else {
       this.logger.log(
-        `sg_content_draft written for pgId=${pgId} (${draftContent.length} chars)`,
+        `sg_content_draft written for pgId=${pgId} (${finalContent.length} chars, source=${draftSource})`,
       );
     }
   }
