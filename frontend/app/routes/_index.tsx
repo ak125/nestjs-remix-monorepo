@@ -3,7 +3,7 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useNavigate } from "@remix-run/react";
 import {
   type LucideIcon,
   Activity,
@@ -18,6 +18,7 @@ import {
   Cog,
   Mail,
   Phone,
+  Search,
   Shield,
   ShoppingCart,
   Star,
@@ -752,8 +753,11 @@ export default function RedesignPreview() {
       ? loaderData.faqs.map((f) => ({ q: f.question, a: f.answer }))
       : FAQ_DATA;
 
+  const navigate = useNavigate();
   const [expandedCat, setExpandedCat] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [mineCode, setMineCode] = useState("");
+  const [refQuery, setRefQuery] = useState("");
 
   useEffect(() => {
     const onScroll = () => setShowScrollTop(window.scrollY > 400);
@@ -865,9 +869,147 @@ export default function RedesignPreview() {
               </span>
             </h1>
 
-            {/* Sélecteur de véhicule */}
-            <div className="max-w-3xl mx-auto">
-              <VehicleSelector enableTypeMineSearch={true} />
+            {/* Search box with tabs */}
+            <div className="bg-white/[0.07] border border-white/[0.12] rounded-2xl overflow-hidden backdrop-blur-xl">
+              <Tabs defaultValue="vehicule">
+                <TabsList className="w-full h-auto rounded-none bg-black/15 p-0 gap-0">
+                  <TabsTrigger
+                    value="vehicule"
+                    className="flex-1 rounded-none min-h-[44px] gap-1.5 text-xs sm:text-sm font-semibold text-white/45 data-[state=active]:bg-white data-[state=active]:text-[#0d1b3e] data-[state=active]:shadow-none border-0 px-2 sm:px-5"
+                  >
+                    <Car className="w-3.5 h-3.5 flex-shrink-0" /> Par
+                    v&eacute;hicule
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="mine"
+                    className="flex-1 rounded-none min-h-[44px] gap-1.5 text-xs sm:text-sm font-semibold text-white/45 data-[state=active]:bg-white data-[state=active]:text-[#0d1b3e] data-[state=active]:shadow-none border-0 px-2 sm:px-5"
+                  >
+                    🔢 Type Mine
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="reference"
+                    className="flex-1 rounded-none min-h-[44px] gap-1.5 text-xs sm:text-sm font-semibold text-white/45 data-[state=active]:bg-white data-[state=active]:text-[#0d1b3e] data-[state=active]:shadow-none border-0 px-2 sm:px-5"
+                  >
+                    <Search className="w-3.5 h-3.5 flex-shrink-0" />{" "}
+                    R&eacute;f&eacute;rence
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* TAB: Par véhicule */}
+                <TabsContent
+                  value="vehicule"
+                  className="mt-0 bg-white p-4 sm:p-5"
+                >
+                  <VehicleSelector
+                    mode="compact"
+                    className="flex-wrap gap-2"
+                    context="homepage"
+                  />
+                </TabsContent>
+
+                {/* TAB: Type Mine */}
+                <TabsContent value="mine" className="mt-0 bg-white p-4 sm:p-5">
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                    <span className="w-[18px] h-[18px] rounded-full bg-[#0d1b3e] text-white text-[9px] font-bold grid place-items-center flex-shrink-0">
+                      1
+                    </span>
+                    Num&eacute;ro de Type Mine ou CNIT
+                  </label>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (mineCode.length >= 5) {
+                        navigate(`/search/mine?code=${mineCode.toUpperCase()}`);
+                      }
+                    }}
+                    className="flex flex-col sm:flex-row gap-2.5"
+                  >
+                    <div className="relative flex-1">
+                      <Car className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-slate-400" />
+                      <Input
+                        value={mineCode}
+                        onChange={(e) =>
+                          setMineCode(e.target.value.toUpperCase())
+                        }
+                        placeholder="Ex : M10RENVP0A5G35"
+                        maxLength={20}
+                        className="min-h-[44px] pl-10 bg-slate-50 border-slate-200 rounded-xl text-[15px] font-bold tracking-[2.5px] font-mono uppercase focus-visible:border-[#e8590c] focus-visible:ring-[#e8590c]/10"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={mineCode.length < 5}
+                      className="min-h-[46px] rounded-xl px-6 font-bold text-sm uppercase tracking-wide bg-[#e8590c] hover:bg-[#d9480f] text-white shadow-[0_4px_14px_rgba(232,89,12,0.3)] whitespace-nowrap disabled:opacity-50"
+                    >
+                      <Search className="w-[18px] h-[18px] mr-2" /> Rechercher
+                    </Button>
+                  </form>
+                  <p className="text-[11px] text-slate-400 mt-2.5 flex items-center gap-1">
+                    💡 Trouvez ce num&eacute;ro sur votre carte grise,
+                    rep&egrave;re D.2.1
+                  </p>
+                </TabsContent>
+
+                {/* TAB: Référence */}
+                <TabsContent
+                  value="reference"
+                  className="mt-0 bg-white p-4 sm:p-5"
+                >
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                    <Search className="w-3.5 h-3.5" /> Rechercher par
+                    r&eacute;f&eacute;rence ou nom de pi&egrave;ce
+                  </label>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (refQuery.trim()) {
+                        navigate(
+                          `/recherche?q=${encodeURIComponent(refQuery.trim())}`,
+                        );
+                      }
+                    }}
+                    className="flex flex-col sm:flex-row gap-2.5"
+                  >
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Input
+                        value={refQuery}
+                        onChange={(e) => setRefQuery(e.target.value)}
+                        placeholder="Référence OE, marque ou nom de pièce…"
+                        className="min-h-[44px] pl-10 bg-slate-50 border-slate-200 rounded-xl text-sm focus-visible:border-[#e8590c] focus-visible:ring-[#e8590c]/10"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={!refQuery.trim()}
+                      className="min-h-[46px] rounded-xl px-6 font-bold text-sm uppercase tracking-wide bg-[#e8590c] hover:bg-[#d9480f] text-white shadow-[0_4px_14px_rgba(232,89,12,0.3)] whitespace-nowrap disabled:opacity-50"
+                    >
+                      <Search className="w-[18px] h-[18px] mr-2" /> Rechercher
+                    </Button>
+                  </form>
+                  <div className="flex flex-wrap gap-1 mt-2.5">
+                    {[
+                      "7701208265",
+                      "P68050",
+                      "Plaquettes Clio 4",
+                      "KD457.74",
+                      "Filtre huile Golf 7",
+                    ].map((ex) => (
+                      <Badge
+                        key={ex}
+                        variant="secondary"
+                        className="px-2.5 py-1 bg-slate-100 rounded-full text-[10px] font-semibold text-slate-500 cursor-pointer hover:bg-slate-200 hover:text-slate-900 transition-colors border-0"
+                        onClick={() => {
+                          setRefQuery(ex);
+                          navigate(`/recherche?q=${encodeURIComponent(ex)}`);
+                        }}
+                      >
+                        {ex}
+                      </Badge>
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
         </section>
