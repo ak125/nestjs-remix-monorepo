@@ -9,6 +9,7 @@ import {
 import React, { useState, memo } from "react";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
+import { sanitizeAdvice } from "~/utils/sanitize-advice";
 
 interface MotorisationItem {
   title: string;
@@ -181,12 +182,17 @@ const MotorisationsSection = memo(function MotorisationsSection({
                       📅 {motorisation.periode}
                     </p>
 
-                    {/* Conseil SEO (fragment2 du backend) */}
-                    {motorisation.advice && (
-                      <p className="text-xs text-indigo-700 bg-indigo-50 rounded px-2 py-1 mb-2 line-clamp-1">
-                        Conseil : {motorisation.advice}
-                      </p>
-                    )}
+                    {/* Conseil SEO (fragment2 du backend, sanitized) */}
+                    {(() => {
+                      const cleanAdvice = motorisation.advice
+                        ? sanitizeAdvice(motorisation.advice)
+                        : null;
+                      return cleanAdvice ? (
+                        <p className="text-xs text-indigo-700 bg-indigo-50 rounded px-2 py-1 mb-2 line-clamp-1">
+                          Conseil : {cleanAdvice}
+                        </p>
+                      ) : null;
+                    })()}
 
                     {/* Description SEO unique par motorisation (backend buildDescription) */}
                     <p className="text-sm text-gray-700 leading-relaxed mb-4">
