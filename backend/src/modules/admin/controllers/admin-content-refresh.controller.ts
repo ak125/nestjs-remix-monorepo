@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   Post,
   Patch,
@@ -7,6 +8,7 @@ import {
   Body,
   Query,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ContentRefreshService } from '../services/content-refresh.service';
 import {
@@ -115,5 +117,55 @@ export class AdminContentRefreshController {
     }
 
     return this.contentRefreshService.rejectRefresh(numId, parsed.data.reason);
+  }
+
+  // ── SEO Gamme Draft Endpoints ──
+
+  /**
+   * GET /api/admin/content-refresh/seo-drafts
+   * List all gammes with pending sg_descrip_draft or sg_content_draft.
+   */
+  @Get('seo-drafts')
+  async listSeoDrafts() {
+    return this.contentRefreshService.listSeoDrafts();
+  }
+
+  /**
+   * GET /api/admin/content-refresh/seo-draft/:pgId
+   * Preview current vs draft for a specific gamme.
+   */
+  @Get('seo-draft/:pgId')
+  async getSeoDraft(@Param('pgId') pgId: string) {
+    const result = await this.contentRefreshService.getSeoDraft(pgId);
+    if (!result) {
+      throw new NotFoundException(`Gamme not found for pgId=${pgId}`);
+    }
+    return result;
+  }
+
+  /**
+   * PATCH /api/admin/content-refresh/seo-draft/:pgId/publish
+   * Publish draft → live, re-baseline QA hash if sg_descrip changed.
+   */
+  @Patch('seo-draft/:pgId/publish')
+  async publishSeoDraft(@Param('pgId') pgId: string) {
+    const result = await this.contentRefreshService.publishSeoDraft(pgId);
+    if (!result.published) {
+      throw new BadRequestException(result.error);
+    }
+    return result;
+  }
+
+  /**
+   * DELETE /api/admin/content-refresh/seo-draft/:pgId
+   * Reject draft: clear draft columns without publishing.
+   */
+  @Delete('seo-draft/:pgId')
+  async rejectSeoDraft(@Param('pgId') pgId: string) {
+    const result = await this.contentRefreshService.rejectSeoDraft(pgId);
+    if (!result.rejected) {
+      throw new BadRequestException(result.error);
+    }
+    return result;
   }
 }

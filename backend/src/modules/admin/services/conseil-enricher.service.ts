@@ -278,6 +278,10 @@ export class ConseilEnricherService extends SupabaseBaseService {
         writeActions,
         existing,
       );
+
+      // 8. Generate sg_descrip draft from enriched contract
+      await this.writeSeoDescripDraft(pgId, contract, pgAlias);
+
       return {
         status: 'draft',
         score: quality.score,
@@ -1547,5 +1551,107 @@ export class ConseilEnricherService extends SupabaseBaseService {
     }
 
     return modified;
+  }
+
+  // ── SEO Descrip Draft Generation ──
+
+  /**
+   * Restore common French accents missing from YAML source files.
+   * Band-aid fix until YAML gamme files are regenerated with proper accents.
+   */
+  private restoreAccents(text: string): string {
+    const ACCENT_MAP: Array<[RegExp, string]> = [
+      [/\bequipements?\b/gi, 'équipement'],
+      [/\belectriques?\b/gi, 'électrique'],
+      [/\bvehicules?\b/gi, 'véhicule'],
+      [/\bverifi/gi, 'vérifi'],
+      [/\bgeneral\b/gi, 'général'],
+      [/\bsecurite\b/gi, 'sécurité'],
+      [/\bprecedent/gi, 'précédent'],
+      [/\bdefaut\b/gi, 'défaut'],
+      [/\bdetect/gi, 'détect'],
+      [/\bdegradation/gi, 'dégradation'],
+      [/\bcontrole\b/gi, 'contrôle'],
+      [/\bmodele\b/gi, 'modèle'],
+      [/\bannee\b/gi, 'année'],
+      [/\bspecifi/gi, 'spécifi'],
+      [/\breferen/gi, 'référen'],
+      [/\bprocedure\b/gi, 'procédure'],
+      [/\bcomplete\b/gi, 'complète'],
+      [/\bpieces\b/gi, 'pièces'],
+      [/\bpiece\b/gi, 'pièce'],
+      [/\belectri/gi, 'électri'],
+      [/\benergie\b/gi, 'énergie'],
+      [/\bnecessaire\b/gi, 'nécessaire'],
+      [/\bpreventif\b/gi, 'préventif'],
+    ];
+    let result = text;
+    for (const [pattern, replacement] of ACCENT_MAP) {
+      result = result.replace(pattern, (match) => {
+        // Preserve plural suffix
+        const suffix =
+          match.endsWith('s') && !replacement.endsWith('s') ? 's' : '';
+        return replacement + suffix;
+      });
+    }
+    return result;
+  }
+
+  /**
+   * Compose a personalized meta description (max 160 chars) from the PageContract.
+   * Structure: function + timing + CTA
+   */
+  private composeSeoDescrip(
+    contract: PageContract,
+    _pgAlias: string,
+  ): string | null {
+    const intro = contract.intro?.role;
+    if (!intro || intro.length < 30) return null;
+
+    // Phrase 1: main function with restored accents (truncated to 80 chars)
+    const func = this.restoreAccents(intro).replace(/\.$/, '').slice(0, 80);
+
+    // Phrase 2: timing if available
+    const km = contract.timing?.km?.[0];
+    const timing = km
+      ? ` Remplacement tous les ${km.toLocaleString('fr-FR')} km.`
+      : '';
+
+    // Phrase 3: call-to-action
+    const cta = ' Livraison 24-48h.';
+
+    const result = `${func}.${timing}${cta}`;
+    return result.length <= 160 ? result : `${func}.${cta}`;
+  }
+
+  /**
+   * Write sg_descrip_draft to __seo_gamme if a meaningful description can be composed.
+   */
+  private async writeSeoDescripDraft(
+    pgId: string,
+    contract: PageContract,
+    pgAlias: string,
+  ): Promise<void> {
+    const draftDescrip = this.composeSeoDescrip(contract, pgAlias);
+    if (!draftDescrip) return;
+
+    const { error } = await this.client
+      .from('__seo_gamme')
+      .update({
+        sg_descrip_draft: draftDescrip,
+        sg_draft_source: 'pipeline',
+        sg_draft_updated_at: new Date().toISOString(),
+      })
+      .eq('sg_pg_id', pgId);
+
+    if (error) {
+      this.logger.warn(
+        `Failed to write sg_descrip_draft for pgId=${pgId}: ${error.message}`,
+      );
+    } else {
+      this.logger.log(
+        `sg_descrip_draft written for pgId=${pgId} (${draftDescrip.length} chars)`,
+      );
+    }
   }
 }

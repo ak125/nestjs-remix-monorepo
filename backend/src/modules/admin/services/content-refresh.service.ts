@@ -455,6 +455,208 @@ export class ContentRefreshService extends SupabaseBaseService {
     };
   }
 
+  // ── SEO Gamme Draft Management ──
+
+  /**
+   * List all gammes with pending draft content (sg_descrip_draft or sg_content_draft).
+   */
+  async listSeoDrafts(): Promise<{
+    drafts: Array<{
+      pg_id: string;
+      pg_alias: string;
+      sg_descrip: string | null;
+      sg_descrip_draft: string | null;
+      sg_content_draft: string | null;
+      sg_draft_source: string | null;
+      sg_draft_updated_at: string | null;
+    }>;
+  }> {
+    const { data, error } = await this.client
+      .from('__seo_gamme')
+      .select(
+        'sg_pg_id, sg_descrip, sg_descrip_draft, sg_content_draft, sg_draft_source, sg_draft_updated_at',
+      )
+      .or('sg_descrip_draft.not.is.null,sg_content_draft.not.is.null')
+      .order('sg_draft_updated_at', { ascending: false });
+
+    if (error) {
+      this.logger.error(`Failed to list SEO drafts: ${error.message}`);
+      return { drafts: [] };
+    }
+
+    // Resolve pg_alias from pieces_gamme
+    const pgIds = (data || []).map((r) => String(r.sg_pg_id));
+    const { data: gammes } = await this.client
+      .from('pieces_gamme')
+      .select('pg_id, pg_alias')
+      .in('pg_id', pgIds);
+
+    const aliasMap = new Map(
+      (gammes || []).map((g) => [String(g.pg_id), g.pg_alias as string]),
+    );
+
+    return {
+      drafts: (data || []).map((r) => ({
+        pg_id: String(r.sg_pg_id),
+        pg_alias: aliasMap.get(String(r.sg_pg_id)) || 'unknown',
+        sg_descrip: r.sg_descrip as string | null,
+        sg_descrip_draft: r.sg_descrip_draft as string | null,
+        sg_content_draft: r.sg_content_draft as string | null,
+        sg_draft_source: r.sg_draft_source as string | null,
+        sg_draft_updated_at: r.sg_draft_updated_at as string | null,
+      })),
+    };
+  }
+
+  /**
+   * Preview draft vs current for a specific gamme.
+   */
+  async getSeoDraft(pgId: string): Promise<{
+    current: { sg_descrip: string | null; sg_content: string | null };
+    draft: {
+      sg_descrip_draft: string | null;
+      sg_content_draft: string | null;
+      sg_draft_source: string | null;
+      sg_draft_updated_at: string | null;
+    };
+  } | null> {
+    const { data, error } = await this.client
+      .from('__seo_gamme')
+      .select(
+        'sg_descrip, sg_content, sg_descrip_draft, sg_content_draft, sg_draft_source, sg_draft_updated_at',
+      )
+      .eq('sg_pg_id', pgId)
+      .single();
+
+    if (error || !data) return null;
+
+    return {
+      current: {
+        sg_descrip: data.sg_descrip as string | null,
+        sg_content: data.sg_content as string | null,
+      },
+      draft: {
+        sg_descrip_draft: data.sg_descrip_draft as string | null,
+        sg_content_draft: data.sg_content_draft as string | null,
+        sg_draft_source: data.sg_draft_source as string | null,
+        sg_draft_updated_at: data.sg_draft_updated_at as string | null,
+      },
+    };
+  }
+
+  /**
+   * Publish draft: copy draft → live, clear draft columns, re-baseline QA hash if sg_descrip changed.
+   */
+  async publishSeoDraft(
+    pgId: string,
+  ): Promise<{ published: boolean; fields: string[]; error?: string }> {
+    // Fetch current + draft
+    const { data, error: fetchErr } = await this.client
+      .from('__seo_gamme')
+      .select('sg_title, sg_h1, sg_descrip, sg_descrip_draft, sg_content_draft')
+      .eq('sg_pg_id', pgId)
+      .single();
+
+    if (fetchErr || !data) {
+      return { published: false, fields: [], error: 'Gamme not found' };
+    }
+
+    const hasDraftDescrip = !!data.sg_descrip_draft;
+    const hasDraftContent = !!data.sg_content_draft;
+
+    if (!hasDraftDescrip && !hasDraftContent) {
+      return { published: false, fields: [], error: 'No draft to publish' };
+    }
+
+    // Build update payload
+    const update: Record<string, unknown> = {
+      sg_descrip_draft: null,
+      sg_content_draft: null,
+      sg_draft_source: null,
+      sg_draft_updated_at: null,
+    };
+    const fields: string[] = [];
+
+    if (hasDraftDescrip) {
+      update.sg_descrip = data.sg_descrip_draft;
+      fields.push('sg_descrip');
+    }
+    if (hasDraftContent) {
+      update.sg_content = data.sg_content_draft;
+      fields.push('sg_content');
+    }
+
+    const { error: updateErr } = await this.client
+      .from('__seo_gamme')
+      .update(update)
+      .eq('sg_pg_id', pgId);
+
+    if (updateErr) {
+      return { published: false, fields: [], error: updateErr.message };
+    }
+
+    // Re-baseline QA hash if sg_descrip changed
+    if (hasDraftDescrip) {
+      const newDescrip = data.sg_descrip_draft as string;
+      const newHash = createHash('md5')
+        .update(
+          [
+            (data.sg_title as string) || '',
+            (data.sg_h1 as string) || '',
+            newDescrip,
+          ].join('||'),
+        )
+        .digest('hex');
+
+      // Resolve pg_alias for the QA table
+      const { data: gamme } = await this.client
+        .from('pieces_gamme')
+        .select('pg_alias')
+        .eq('pg_id', pgId)
+        .single();
+
+      if (gamme?.pg_alias) {
+        await this.client
+          .from('__qa_protected_meta_hash')
+          .update({ seo_hash: newHash })
+          .eq('pg_alias', gamme.pg_alias);
+
+        this.logger.log(
+          `Re-baselined QA seo_hash for pgId=${pgId} after sg_descrip publish`,
+        );
+      }
+    }
+
+    this.logger.log(
+      `Published SEO draft for pgId=${pgId}: [${fields.join(', ')}]`,
+    );
+    return { published: true, fields };
+  }
+
+  /**
+   * Reject draft: clear draft columns without publishing.
+   */
+  async rejectSeoDraft(
+    pgId: string,
+  ): Promise<{ rejected: boolean; error?: string }> {
+    const { error } = await this.client
+      .from('__seo_gamme')
+      .update({
+        sg_descrip_draft: null,
+        sg_content_draft: null,
+        sg_draft_source: null,
+        sg_draft_updated_at: null,
+      })
+      .eq('sg_pg_id', pgId);
+
+    if (error) {
+      return { rejected: false, error: error.message };
+    }
+
+    this.logger.log(`Rejected SEO draft for pgId=${pgId}`);
+    return { rejected: true };
+  }
+
   /** MD5 with '||' separator — mirrors PostgreSQL: md5(coalesce(a,'') || '||' || coalesce(b,'') || '||' || coalesce(c,'')) */
   private md5Gate(...fields: string[]): string {
     return createHash('md5').update(fields.join('||')).digest('hex');

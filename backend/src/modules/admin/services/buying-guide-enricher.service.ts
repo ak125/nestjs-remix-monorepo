@@ -239,6 +239,9 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
 
     await this.upsertBuyingGuide(pgId, updatePayload);
 
+    // Generate sg_content_draft from enriched sections
+    await this.writeSeoContentDraft(pgId, gammeName, sectionResults);
+
     const resultSections: Record<string, SectionResult> = {};
     for (const [key, result] of Object.entries(sectionResults)) {
       resultSections[key] = {
@@ -1057,7 +1060,13 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
   private extractBulletList(section: string): string[] {
     return section
       .split('\n')
-      .map((line) => line.replace(/^[-•*\d.)\s]+/, '').trim())
+      .map((line) =>
+        line
+          .replace(/^[-•*\d.)\s]+/, '') // Strip leading list markers
+          .replace(/\*\*(.+?)\*\*/g, '$1') // Strip **bold** markdown
+          .replace(/\*(.+?)\*/g, '$1') // Strip *italic* markdown
+          .trim(),
+      )
       .filter((line) => line.length >= 10);
   }
 
@@ -1659,6 +1668,175 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
    * Checks if intro_role text describes a different piece than the guide title.
    * Extracts piece name before ':' and checks for shared significant words.
    */
+  // ── SEO Content Draft Generation ──
+
+  /**
+   * Compose sg_content_draft HTML from enriched buying guide sections.
+   * Combines selection criteria, symptoms (from anti_mistakes), and use cases.
+   */
+  /**
+   * Restore common French accents missing from YAML source files.
+   */
+  private restoreAccents(text: string): string {
+    const ACCENT_MAP: Array<[RegExp, string]> = [
+      [/\bequipements?\b/gi, 'équipement'],
+      [/\belectriques?\b/gi, 'électrique'],
+      [/\bvehicules?\b/gi, 'véhicule'],
+      [/\bverifi/gi, 'vérifi'],
+      [/\bgeneral\b/gi, 'général'],
+      [/\bsecurite\b/gi, 'sécurité'],
+      [/\bprecedent/gi, 'précédent'],
+      [/\bdefaut\b/gi, 'défaut'],
+      [/\bdetect/gi, 'détect'],
+      [/\bdegradation/gi, 'dégradation'],
+      [/\bcontrole\b/gi, 'contrôle'],
+      [/\bmodele\b/gi, 'modèle'],
+      [/\bannee\b/gi, 'année'],
+      [/\bspecifi/gi, 'spécifi'],
+      [/\breferen/gi, 'référen'],
+      [/\bprocedure\b/gi, 'procédure'],
+      [/\bcomplete\b/gi, 'complète'],
+      [/\bpieces\b/gi, 'pièces'],
+      [/\bpiece\b/gi, 'pièce'],
+      [/\belectri/gi, 'électri'],
+      [/\benergie\b/gi, 'énergie'],
+      [/\bnecessaire\b/gi, 'nécessaire'],
+      [/\bpreventif\b/gi, 'préventif'],
+    ];
+    let result = text;
+    for (const [pattern, replacement] of ACCENT_MAP) {
+      result = result.replace(pattern, (match) => {
+        const suffix =
+          match.endsWith('s') && !replacement.endsWith('s') ? 's' : '';
+        return replacement + suffix;
+      });
+    }
+    return result;
+  }
+
+  private composeSeoContent(
+    gammeName: string,
+    sections: Record<string, SectionValidationResult>,
+  ): string | null {
+    let html = '';
+    const displayName = gammeName.toLowerCase();
+
+    // Selection criteria → "Comment choisir"
+    const criteria = sections['selection_criteria'];
+    if (
+      criteria?.ok &&
+      Array.isArray(criteria.content) &&
+      criteria.content.length >= 2
+    ) {
+      const items = (
+        criteria.content as Array<{ label: string; guidance: string }>
+      )
+        .filter((c) => !c.guidance.trimEnd().endsWith(':')) // Exclude intro phrases
+        .slice(0, 4);
+      if (items.length >= 2) {
+        html += `<h2>Comment choisir vos ${displayName} ?</h2><ul>`;
+        html += items
+          .map((c) => {
+            const cleanLabel = this.restoreAccents(
+              c.label.replace(/\*\*/g, '').trim(),
+            );
+            const cleanGuidance = this.restoreAccents(
+              c.guidance.replace(/\*\*/g, '').trim(),
+            );
+            // Skip duplication: if guidance starts with label, show only guidance
+            if (
+              cleanGuidance.toLowerCase().startsWith(cleanLabel.toLowerCase())
+            ) {
+              return `<li>${cleanGuidance}</li>`;
+            }
+            return `<li><b>${cleanLabel}</b> — ${cleanGuidance}</li>`;
+          })
+          .join('');
+        html += '</ul>';
+      }
+    }
+
+    // Anti-mistakes → "Erreurs à éviter"
+    const mistakes = sections['anti_mistakes'];
+    if (
+      mistakes?.ok &&
+      Array.isArray(mistakes.content) &&
+      mistakes.content.length >= 2
+    ) {
+      const items = (mistakes.content as string[])
+        .slice(0, 5)
+        .map((m) =>
+          this.restoreAccents(
+            m
+              .replace(/^❌\s*/, '') // Strip leading ❌ emoji
+              .replace(/^[""\u201C]|[""\u201D]$/g, '') // Strip surrounding quotes
+              .replace(/\*\*/g, '') // Strip markdown bold
+              .trim(),
+          ),
+        )
+        .filter((m) => m.length > 5 && !m.endsWith(':')) // Exclude intro phrases
+        .slice(0, 4);
+      if (items.length >= 2) {
+        html += `<h2>Erreurs à éviter</h2><ul>`;
+        html += items.map((m) => `<li>${m}</li>`).join('');
+        html += '</ul>';
+      }
+    }
+
+    // Use cases → "Selon votre usage"
+    const useCases = sections['use_cases'];
+    if (
+      useCases?.ok &&
+      Array.isArray(useCases.content) &&
+      useCases.content.length >= 2
+    ) {
+      const items = (
+        useCases.content as Array<{ label: string; recommendation: string }>
+      ).slice(0, 3);
+      html += `<h2>Selon votre usage</h2><ul>`;
+      html += items
+        .map(
+          (uc) =>
+            `<li><b>${this.restoreAccents(uc.label)}</b> — ${this.restoreAccents(uc.recommendation)}</li>`,
+        )
+        .join('');
+      html += '</ul>';
+    }
+
+    return html.length >= 100 ? html : null;
+  }
+
+  /**
+   * Write sg_content_draft to __seo_gamme if meaningful content can be composed.
+   */
+  private async writeSeoContentDraft(
+    pgId: string,
+    gammeName: string,
+    sections: Record<string, SectionValidationResult>,
+  ): Promise<void> {
+    const draftContent = this.composeSeoContent(gammeName, sections);
+    if (!draftContent) return;
+
+    const { error } = await this.client
+      .from('__seo_gamme')
+      .update({
+        sg_content_draft: draftContent,
+        sg_draft_source: 'pipeline',
+        sg_draft_updated_at: new Date().toISOString(),
+      })
+      .eq('sg_pg_id', pgId);
+
+    if (error) {
+      this.logger.warn(
+        `Failed to write sg_content_draft for pgId=${pgId}: ${error.message}`,
+      );
+    } else {
+      this.logger.log(
+        `sg_content_draft written for pgId=${pgId} (${draftContent.length} chars)`,
+      );
+    }
+  }
+
   private isIntroRoleMismatch(introRole: string, gammeName: string): boolean {
     const colonIdx = introRole.indexOf(':');
     if (colonIdx < 1) return false;
