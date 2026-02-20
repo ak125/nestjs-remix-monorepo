@@ -384,8 +384,11 @@ const VehicleSelector = memo(function VehicleSelector({
 
         {/* Marque */}
         <select
+          id="brand-v2"
           value={selectedBrand?.marque_id || ""}
           onChange={(e) => handleBrandChange(Number(e.target.value))}
+          onFocus={() => !brands.length && !loadingBrands && loadBrands()}
+          disabled={loadingBrands}
           className="flex-1 p-2 border rounded text-base"
           aria-label="Sélectionner la marque"
         >

@@ -3,38 +3,56 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import {
+  type LucideIcon,
+  Activity,
+  ArrowRight,
+  Award,
+  BookOpen,
+  Car,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
-  ScanLine,
+  ChevronUp,
+  Cog,
+  Mail,
+  Phone,
   Shield,
+  ShoppingCart,
+  Star,
+  TrendingUp,
   Truck,
-  Users,
+  Wrench,
+  Zap,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
-// SEO Page Role (Phase 5 - Quasi-Incopiable)
+import DarkSection from "~/components/layout/DarkSection";
+import PageSection from "~/components/layout/PageSection";
+import Reveal from "~/components/layout/Reveal";
+import SectionHeader from "~/components/layout/SectionHeader";
 
-import { EquipementiersCarousel } from "../components/home/EquipementiersCarousel";
-import HomeBlogSection from "../components/home/HomeBlogSection";
-import HomeBottomSections from "../components/home/HomeBottomSections";
-import HomeCertifications from "../components/home/HomeCertifications";
-import HomeFAQSection from "../components/home/HomeFAQSection";
-import HomeSearchCards from "../components/home/HomeSearchCards";
-import ReferenceSearchModal from "../components/home/ReferenceSearchModal";
-
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
-import VehicleSelector from "../components/vehicle/VehicleSelector";
-import { useHomeData } from "../hooks/useHomeData";
-import { useNewsletterState } from "../hooks/useNewsletterState";
-import { useScrollBehavior } from "../hooks/useScrollBehavior";
-import { useSearchState } from "../hooks/useSearchState";
-// hierarchyApi: helpers UI (getFamilyImage, getFamilyColor) - pas d'appel réseau
-import { hierarchyApi } from "../services/api/hierarchy.api";
-import { formatCatalogCount } from "~/utils/format-catalog-count";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from "~/components/ui/carousel";
+import { Input } from "~/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import VehicleSelector from "~/components/vehicle/VehicleSelector";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
@@ -48,69 +66,64 @@ export const handle = {
   }),
 };
 
-export const meta: MetaFunction = () => {
-  return [
-    {
-      title:
-        "Catalogue de pièces détachées auto – Toutes marques & modèles | Automecanik",
-    },
-    {
-      name: "description",
-      content:
-        "Pièces détachées auto pas cher pour toutes marques. Catalogue 400 000+ références, livraison 24-48h, qualité garantie. Filtrez par véhicule.",
-    },
-    {
-      name: "keywords",
-      content:
-        "catalogue pièces auto, catalogue de pièces détachées auto, pièces auto en ligne, catalogue pièces détachées, pièces auto toutes marques, catalogue professionnel pièces auto",
-    },
-    // Canonical
-    { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/" },
-    // Open Graph / Facebook
-    { property: "og:type", content: "website" },
-    {
-      property: "og:title",
-      content: "Catalogue de pièces détachées auto | Automecanik",
-    },
-    {
-      property: "og:description",
-      content:
-        "400 000+ pièces auto en stock pour toutes marques. Livraison 24-48h. Qualité garantie.",
-    },
-    {
-      property: "og:image",
-      content: "https://www.automecanik.com/logo-og.webp",
-    },
-    { property: "og:image:width", content: "1200" },
-    { property: "og:image:height", content: "630" },
-    {
-      property: "og:image:alt",
-      content: "Automecanik - Pièces auto à prix pas cher",
-    },
-    // Twitter
-    { name: "twitter:card", content: "summary_large_image" },
-    { name: "twitter:title", content: "Catalogue pièces auto | Automecanik" },
-    {
-      name: "twitter:description",
-      content:
-        "400 000+ pièces auto en stock pour toutes marques. Livraison 24-48h.",
-    },
-    {
-      name: "twitter:image",
-      content: "https://www.automecanik.com/logo-og.webp",
-    },
-    // Robots
-    { name: "robots", content: "index, follow" },
-    { name: "googlebot", content: "index, follow" },
-  ];
-};
+export const meta: MetaFunction = () => [
+  {
+    title:
+      "Catalogue de pièces détachées auto – Toutes marques & modèles | Automecanik",
+  },
+  {
+    name: "description",
+    content:
+      "Pièces détachées auto pas cher pour toutes marques. Catalogue 400 000+ références, livraison 24-48h, qualité garantie. Filtrez par véhicule.",
+  },
+  {
+    name: "keywords",
+    content:
+      "catalogue pièces auto, catalogue de pièces détachées auto, pièces auto en ligne, catalogue pièces détachées, pièces auto toutes marques, catalogue professionnel pièces auto",
+  },
+  { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/" },
+  { property: "og:type", content: "website" },
+  {
+    property: "og:title",
+    content: "Catalogue de pièces détachées auto | Automecanik",
+  },
+  {
+    property: "og:description",
+    content:
+      "400 000+ pièces auto en stock pour toutes marques. Livraison 24-48h. Qualité garantie.",
+  },
+  {
+    property: "og:image",
+    content: "https://www.automecanik.com/logo-og.webp",
+  },
+  { property: "og:image:width", content: "1200" },
+  { property: "og:image:height", content: "630" },
+  {
+    property: "og:image:alt",
+    content: "Automecanik - Pièces auto à prix pas cher",
+  },
+  { name: "twitter:card", content: "summary_large_image" },
+  { name: "twitter:title", content: "Catalogue pièces auto | Automecanik" },
+  {
+    name: "twitter:description",
+    content:
+      "400 000+ pièces auto en stock pour toutes marques. Livraison 24-48h.",
+  },
+  {
+    name: "twitter:image",
+    content: "https://www.automecanik.com/logo-og.webp",
+  },
+  { name: "robots", content: "index, follow" },
+  { name: "googlebot", content: "index, follow" },
+];
 
-// ✅ Migration /img/* : Preload via proxy Caddy
+// ─── LCP OPTIMIZATION — Preload logos & fonts ───────────
 const IMG_PROXY_LOGOS = "/img/uploads/constructeurs-automobiles/marques-logos";
+const IMG_PROXY_FAMILIES = "/img/uploads/articles/familles-produits";
+const IMG_PROXY_EQUIP = "/img/uploads/equipementiers-automobiles";
 
 export function links() {
   return [
-    // 🚀 LCP Optimization: Preload top 6 brand logos (above-fold, sorted alphabetically)
     {
       rel: "preload",
       as: "image",
@@ -147,8 +160,6 @@ export function links() {
       href: `${IMG_PROXY_LOGOS}/dacia.webp`,
       type: "image/webp",
     },
-
-    // 🚀 Homepage-only: Preload critical fonts (Inter + Montserrat)
     {
       rel: "preload",
       as: "font",
@@ -166,85 +177,599 @@ export function links() {
   ];
 }
 
-/**
- * Loader - Charge les données nécessaires côté serveur
- * ⚡ Utilise RPC optimisée: 1 appel PostgreSQL au lieu de 4 API calls
- * Performance: <150ms au lieu de 400-800ms
- */
 export async function loader({ request }: LoaderFunctionArgs) {
-  const startTime = Date.now();
-
   try {
-    // ⚡ Single RPC call - replaces 4 API calls
-    // Note: Use request origin to avoid localhost outbound connections (EADDRNOTAVAIL)
-    const response = await fetch(
-      getInternalApiUrlFromRequest("/api/catalog/homepage-rpc", request),
-    );
+    const [rpcRes, faqRes] = await Promise.all([
+      fetch(getInternalApiUrlFromRequest("/api/catalog/homepage-rpc", request)),
+      fetch(
+        getInternalApiUrlFromRequest(
+          "/api/support/faq?status=published&limit=5",
+          request,
+        ),
+      ),
+    ]);
 
-    if (!response.ok) {
-      throw new Error(`RPC failed: ${response.status} ${response.statusText}`);
-    }
+    const rpcData = rpcRes.ok ? await rpcRes.json() : null;
+    const faqData = faqRes.ok ? await faqRes.json() : null;
 
-    const rpcData = await response.json();
-
-    if (!rpcData?.success) {
-      throw new Error("RPC returned invalid data");
-    }
-
-    const loadTime = Date.now() - startTime;
-    logger.log(`⚡ Homepage RPC loader: ${loadTime}ms`);
-
-    // ✅ Migration /img/* : Proxy Caddy au lieu d'URL Supabase directe
-    const generateLogoUrl = (filename?: string): string | undefined => {
-      if (!filename) return undefined;
-      return `/img/uploads/constructeurs-automobiles/marques-logos/${filename}`;
-    };
-
-    // Transform RPC response to match expected loader data structure
     return json({
-      equipementiersData: rpcData.equipementiers || [],
-      blogArticlesData: rpcData.blog_articles || [],
-      catalogData: rpcData.catalog || { families: [] },
-      // 🔧 FIX: Transformer brands du format RPC (marque_*) vers format frontend (id, name, slug, logo)
-      brandsData: (rpcData.brands || []).map((brand: any) => ({
-        id: brand.marque_id,
-        name: brand.marque_name,
-        slug: brand.marque_alias,
-        logo: generateLogoUrl(brand.marque_logo),
+      families: (rpcData?.catalog?.families || []) as Array<{
+        mf_id: number;
+        mf_name: string;
+        mf_pic: string;
+        gammes: Array<{ pg_id: number; pg_alias: string; pg_name: string }>;
+      }>,
+      brands: (rpcData?.brands || []).map((b: any) => ({
+        id: b.marque_id as number,
+        name: b.marque_name as string,
+        slug: b.marque_alias as string,
+        logo: b.marque_logo
+          ? `${IMG_PROXY_LOGOS}/${b.marque_logo}`
+          : (undefined as string | undefined),
       })),
-      statsData: rpcData.stats || {},
-      success: true,
-      timestamp: new Date().toISOString(),
-      _performance: {
-        loaderTime: loadTime,
-        rpcTime: rpcData._performance?.rpcTime,
-        cacheHit: rpcData._cache?.hit || false,
+      equipementiers: (rpcData?.equipementiers || []).map((e: any) => ({
+        name:
+          typeof e === "string"
+            ? e
+            : e.pm_name || e.name || e.eq_name || String(e),
+        logo: e.pm_logo || null,
+      })) as Array<{ name: string; logo: string | null }>,
+      blogArticles: (rpcData?.blog_articles || []) as Array<{
+        ba_id: number;
+        ba_title: string;
+        ba_alias: string;
+        ba_descrip: string;
+        ba_preview: string;
+        ba_category?: string;
+        pg_name?: string;
+        pg_alias?: string;
+      }>,
+      faqs: (faqData?.faqs || []) as Array<{
+        id: string;
+        question: string;
+        answer: string;
+      }>,
+      stats: (rpcData?.stats || {}) as {
+        total_pieces?: number;
+        total_families?: number;
+        total_brands?: number;
       },
     });
-  } catch (error) {
-    logger.error("Loader error:", error);
-    // NO fallback - throw error to show ErrorBoundary
-    throw new Response("Homepage data unavailable", { status: 500 });
+  } catch {
+    return json({
+      families: [],
+      brands: [],
+      equipementiers: [],
+      blogArticles: [],
+      faqs: [],
+      stats: {},
+    });
   }
 }
 
-export default function TestHomepageModern() {
-  // Hooks personnalisés pour gérer l'état de la page
-  const homeData = useHomeData();
-  const { showScrollTop, scrollToSection, scrollToTop } = useScrollBehavior();
-  const searchState = useSearchState();
-  const newsletter = useNewsletterState();
+// ─── FALLBACK DATA ───────────────────────────────────────
+const CATS = [
+  {
+    i: "🛢️",
+    pic: "Filtres.webp",
+    n: "Système de filtration",
+    sub: [
+      "Filtre à huile",
+      "Filtre à air",
+      "Filtre à carburant",
+      "Filtre d'habitacle",
+    ],
+  },
+  {
+    i: "🛞",
+    pic: "Freinage.webp",
+    n: "Système de freinage",
+    sub: [
+      "Plaquette de frein",
+      "Disque de frein",
+      "Étrier de frein",
+      "Témoin d'usure de plaquettes de frein",
+    ],
+  },
+  {
+    i: "⛓️",
+    pic: "Courroie_galet_poulie.webp",
+    n: "Courroie, galet, poulie et chaîne",
+    sub: [
+      "Courroie d'accessoire",
+      "Galet tendeur de courroie d'accessoire",
+      "Galet enrouleur de courroie d'accessoire",
+      "Kit de distribution",
+    ],
+  },
+  {
+    i: "🔥",
+    pic: "Allumage_Prechauffage.webp",
+    n: "Allumage / Préchauffage",
+    sub: [
+      "Bougie de préchauffage",
+      "Boîtier de préchauffage",
+      "Bougie d'allumage",
+      "Faisceau d'allumage",
+    ],
+  },
+  {
+    i: "🔧",
+    pic: "Direction.webp",
+    n: "Direction / Train avant",
+    sub: [
+      "Rotule de direction",
+      "Barre de direction",
+      "Rotule de suspension",
+      "Bras de suspension",
+    ],
+  },
+  {
+    i: "🏎️",
+    pic: "Amortisseur.webp",
+    n: "Amortisseur / Suspension",
+    sub: [
+      "Amortisseur",
+      "Butée de suspension",
+      "Butée élastique d'amortisseur",
+      "Ressort de suspension",
+    ],
+  },
+  {
+    i: "⚙️",
+    pic: "Support.webp",
+    n: "Support moteur",
+    sub: ["Support moteur", "Support de boîte de vitesses"],
+  },
+  {
+    i: "🔩",
+    pic: "Embrayage.webp",
+    n: "Embrayage",
+    sub: [
+      "Kit d'embrayage",
+      "Butée d'embrayage hydraulique",
+      "Émetteur d'embrayage",
+      "Récepteur d'embrayage",
+    ],
+  },
+  {
+    i: "🔗",
+    pic: "Transmission.webp",
+    n: "Transmission",
+    sub: [
+      "Cardan",
+      "Soufflet de cardan",
+      "Bague d'étanchéité arbre de roue",
+      "Palier d'arbre",
+    ],
+  },
+  {
+    i: "⚡",
+    pic: "Systeme_electrique.webp",
+    n: "Électrique",
+    sub: ["Alternateur", "Démarreur", "Neiman", "Contacteur démarreur"],
+  },
+  {
+    i: "📡",
+    pic: "Capteurs.webp",
+    n: "Capteurs / Sondes",
+    sub: [
+      "Pressostat d'huile",
+      "Capteur d'impulsion",
+      "Capteur de pression",
+      "Capteur de niveau d'huile",
+    ],
+  },
+  {
+    i: "⛽",
+    pic: "Alimentation.webp",
+    n: "Alimentation Carburant & Air",
+    sub: [
+      "Débitmètre d'air",
+      "Vanne EGR",
+      "Pompe à carburant",
+      "Joint d'injecteur",
+    ],
+  },
+  {
+    i: "🔧",
+    pic: "Moteur.webp",
+    n: "Moteur",
+    sub: [
+      "Joint de culasse",
+      "Joint cache culbuteurs",
+      "Bagues d'étanchéité vilebrequin",
+      "Vis de culasse",
+    ],
+  },
+  {
+    i: "🌡️",
+    pic: "Refroidissement.webp",
+    n: "Refroidissement",
+    sub: [
+      "Pompe à eau",
+      "Radiateur",
+      "Thermostat d'eau",
+      "Sonde de refroidissement",
+    ],
+  },
+  {
+    i: "❄️",
+    pic: "Climatisation.webp",
+    n: "Climatisation",
+    sub: [
+      "Pulseur d'air",
+      "Compresseur de climatisation",
+      "Condenseur de climatisation",
+      "Évaporateur",
+    ],
+  },
+  {
+    i: "💨",
+    pic: "Echappement.webp",
+    n: "Échappement",
+    sub: [
+      "Catalyseur",
+      "Filtre à particules (FAP)",
+      "Sonde lambda",
+      "Joint d'échappement",
+    ],
+  },
+  {
+    i: "💡",
+    pic: "Eclairage.webp",
+    n: "Éclairage / Signalisation",
+    sub: ["Feu avant", "Feu arrière", "Feu clignotant", "Phare antibrouillard"],
+  },
+  {
+    i: "🧹",
+    pic: "Accessoires.webp",
+    n: "Accessoires",
+    sub: [
+      "Balai d'essuie-glace",
+      "Commande d'essuie-glace",
+      "Rétroviseur",
+      "Lève-vitre",
+    ],
+  },
+  {
+    i: "🌀",
+    pic: "Turbo.webp",
+    n: "Turbo / Suralimentation",
+    sub: [
+      "Turbocompresseur",
+      "Gaine de turbo",
+      "Valve de turbo",
+      "Capteur de pression de turbo",
+    ],
+  },
+];
+
+const CATALOG_DOMAINS: {
+  label: string;
+  icon: LucideIcon;
+  families: string[] | null;
+}[] = [
+  { label: "Tout", icon: Car, families: null },
+  {
+    label: "Moteur",
+    icon: Wrench,
+    families: [
+      "Système de filtration",
+      "Alimentation Carburant & Air",
+      "Système d'alimentation",
+      "Allumage / Préchauffage",
+      "Préchauffage et allumage",
+      "Moteur",
+      "Turbo / Suralimentation",
+      "Turbo",
+      "Refroidissement",
+      "Échappement",
+      "Echappement",
+      "Support moteur",
+    ],
+  },
+  {
+    label: "Freinage & Châssis",
+    icon: Shield,
+    families: [
+      "Système de freinage",
+      "Direction / Train avant",
+      "Direction et liaison au sol",
+      "Amortisseur / Suspension",
+      "Amortisseur et suspension",
+    ],
+  },
+  {
+    label: "Transmission",
+    icon: Cog,
+    families: [
+      "Courroie, galet, poulie et chaîne",
+      "Embrayage",
+      "Transmission",
+    ],
+  },
+  {
+    label: "Électrique & Confort",
+    icon: Zap,
+    families: [
+      "Électrique",
+      "Système électrique",
+      "Capteurs / Sondes",
+      "Capteurs",
+      "Climatisation",
+      "Éclairage / Signalisation",
+      "Eclairage",
+      "Accessoires",
+    ],
+  },
+];
+
+const MARQUES = [
+  { n: "Renault", f: "🇫🇷" },
+  { n: "Peugeot", f: "🇫🇷" },
+  { n: "Citroën", f: "🇫🇷" },
+  { n: "Dacia", f: "🇷🇴" },
+  { n: "DS", f: "🇫🇷" },
+  { n: "Volkswagen", f: "🇩🇪" },
+  { n: "BMW", f: "🇩🇪" },
+  { n: "Mercedes", f: "🇩🇪" },
+  { n: "Audi", f: "🇩🇪" },
+  { n: "Opel", f: "🇩🇪" },
+  { n: "Porsche", f: "🇩🇪" },
+  { n: "Toyota", f: "🇯🇵" },
+  { n: "Nissan", f: "🇯🇵" },
+  { n: "Honda", f: "🇯🇵" },
+  { n: "Mazda", f: "🇯🇵" },
+  { n: "Suzuki", f: "🇯🇵" },
+  { n: "Mitsubishi", f: "🇯🇵" },
+  { n: "Ford", f: "🇺🇸" },
+  { n: "Chevrolet", f: "🇺🇸" },
+  { n: "Jeep", f: "🇺🇸" },
+  { n: "Fiat", f: "🇮🇹" },
+  { n: "Alfa Romeo", f: "🇮🇹" },
+  { n: "Lancia", f: "🇮🇹" },
+  { n: "Seat", f: "🇪🇸" },
+  { n: "Cupra", f: "🇪🇸" },
+  { n: "Skoda", f: "🇨🇿" },
+  { n: "Volvo", f: "🇸🇪" },
+  { n: "Saab", f: "🇸🇪" },
+  { n: "Hyundai", f: "🇰🇷" },
+  { n: "Kia", f: "🇰🇷" },
+  { n: "SsangYong", f: "🇰🇷" },
+  { n: "Land Rover", f: "🇬🇧" },
+  { n: "Jaguar", f: "🇬🇧" },
+  { n: "Mini", f: "🇬🇧" },
+  { n: "Smart", f: "🇩🇪" },
+  { n: "Tesla", f: "🇺🇸" },
+];
+
+const EQUIP = [
+  "BOSCH",
+  "VALEO",
+  "TRW",
+  "BREMBO",
+  "SNR",
+  "MONROE",
+  "SKF",
+  "SACHS",
+  "LUK",
+  "GATES",
+  "DAYCO",
+  "MANN",
+];
+
+const BLOG = [
+  {
+    ico: "🛒",
+    t: "Comment choisir ses plaquettes de frein",
+    d: "Organique, semi-métallique ou céramique ? Le guide complet pour faire le bon choix.",
+    tag: "Guide d'achat",
+  },
+  {
+    ico: "📰",
+    t: "Entretien auto : le calendrier par km",
+    d: "Vidange, filtres, distribution, freins — quand changer quoi selon votre kilométrage.",
+    tag: "Entretien",
+  },
+  {
+    ico: "💡",
+    t: "5 pièces à vérifier avant le contrôle technique",
+    d: "Freinage, éclairage, échappement, suspension, direction — la checklist complète.",
+    tag: "Guide",
+  },
+];
+
+const BESTSELLERS = [
+  {
+    name: "Plaquettes de frein",
+    brand: "BREMBO",
+    price: "24,90",
+    oldPrice: "29,90",
+    promo: "-15%",
+    rating: 4.8,
+    reviews: 127,
+    img: "Freinage.webp",
+    link: "/pieces/plaquette-de-frein-402.html",
+  },
+  {
+    name: "Kit de distribution",
+    brand: "GATES",
+    price: "89,90",
+    oldPrice: null,
+    promo: null,
+    rating: 4.9,
+    reviews: 89,
+    img: "Courroie_galet_poulie.webp",
+    link: "/pieces/kit-de-distribution-307.html",
+  },
+  {
+    name: "Filtre à huile",
+    brand: "MANN",
+    price: "6,90",
+    oldPrice: "8,50",
+    promo: "-19%",
+    rating: 4.7,
+    reviews: 203,
+    img: "Filtres.webp",
+    link: "/pieces/filtre-a-huile-7.html",
+  },
+  {
+    name: "Amortisseur avant",
+    brand: "MONROE",
+    price: "39,90",
+    oldPrice: null,
+    promo: null,
+    rating: 4.6,
+    reviews: 74,
+    img: "Amortisseur.webp",
+    link: "/pieces/amortisseur-854.html",
+  },
+  {
+    name: "Courroie accessoire",
+    brand: "DAYCO",
+    price: "12,90",
+    oldPrice: "15,90",
+    promo: "-20%",
+    rating: 4.5,
+    reviews: 156,
+    img: "Courroie_galet_poulie.webp",
+    link: "/pieces/courroie-d-accessoire-10.html",
+  },
+  {
+    name: "Disque de frein",
+    brand: "TRW",
+    price: "19,90",
+    oldPrice: null,
+    promo: null,
+    rating: 4.8,
+    reviews: 112,
+    img: "Freinage.webp",
+    link: "/pieces/disque-de-frein-82.html",
+  },
+];
+
+const STATS = [
+  { value: "50K+", label: "Références", icon: TrendingUp },
+  { value: "120+", label: "Marques auto", icon: Car },
+  { value: "98%", label: "Clients satisfaits", icon: Star },
+  { value: "24-48h", label: "Livraison", icon: Truck },
+];
+
+const FAQ_DATA = [
+  {
+    q: "Comment trouver la bonne pièce pour mon véhicule ?",
+    a: "Utilisez notre sélecteur véhicule en haut de page : choisissez votre constructeur, modèle et motorisation, ou entrez votre numéro de Type Mine (repère D.2.1 sur la carte grise). Vous pouvez aussi rechercher par immatriculation ou référence OE. Toutes les pièces affichées seront 100% compatibles.",
+  },
+  {
+    q: "Quels sont les délais de livraison ?",
+    a: "Les commandes passées avant 15h sont expédiées le jour même. Livraison en 24-48h ouvrées via Colissimo, DHL ou GLS. Point relais disponible. Livraison gratuite dès 50€ d'achat.",
+  },
+  {
+    q: "Les pièces sont-elles garanties ?",
+    a: "Toutes nos pièces sont garanties minimum 2 ans. Pièces neuves de qualité OE des plus grandes marques (BOSCH, VALEO, TRW, BREMBO…). Remplacement ou remboursement en cas de défaut.",
+  },
+  {
+    q: "Comment retourner une pièce ?",
+    a: "Vous disposez de 30 jours après réception pour retourner une pièce. Elle doit être dans son emballage d'origine, non montée. Contactez le service client pour l'étiquette de retour. Remboursement sous 5 jours ouvrés.",
+  },
+  {
+    q: "Proposez-vous des tarifs professionnels ?",
+    a: "Oui, nous proposons des conditions spéciales pour les garages, carrosseries et mécaniciens indépendants. Contactez notre service commercial pour obtenir un devis personnalisé et un accès pro avec remises sur volume.",
+  },
+];
+
+// Reveal, SectionHeader, PageSection, DarkSection, GlassCard → imported from ~/components/layout/
+
+// ═══════════════════════════════════════════════════════════
+// PAGE
+// ═══════════════════════════════════════════════════════════
+export default function RedesignPreview() {
+  const loaderData = useLoaderData<typeof loader>();
+
+  // Merge API data with static fallbacks
+  const catalogFamilies =
+    loaderData.families.length > 0
+      ? loaderData.families.map((f) => ({
+          img: f.mf_pic ? `${IMG_PROXY_FAMILIES}/${f.mf_pic}` : undefined,
+          i: "📦",
+          n: f.mf_name,
+          sub: f.gammes.slice(0, 4).map((g) => g.pg_name),
+          gammes: f.gammes.map((g) => ({
+            name: g.pg_name,
+            link: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
+          })),
+          link: f.gammes[0]
+            ? `/pieces/${f.gammes[0].pg_alias}-${f.gammes[0].pg_id}.html`
+            : "#",
+        }))
+      : CATS.map((c) => ({
+          ...c,
+          img: c.pic ? `${IMG_PROXY_FAMILIES}/${c.pic}` : undefined,
+          gammes: c.sub.map((s) => ({ name: s, link: "#" })),
+          link: "#",
+        }));
+
+  const brandsList =
+    loaderData.brands.length > 0
+      ? loaderData.brands
+      : MARQUES.map((m) => ({
+          id: 0,
+          name: m.n,
+          slug: m.n.toLowerCase().replace(/\s/g, "-"),
+          logo: undefined,
+        }));
+
+  const equipAll =
+    loaderData.equipementiers.length > 0
+      ? loaderData.equipementiers
+      : EQUIP.map((name) => ({ name, logo: null as string | null }));
+
+  const equipMarquee = equipAll.slice(0, 12).map((e) => ({
+    name: e.name,
+    logoUrl: `${IMG_PROXY_EQUIP}/${
+      e.logo ||
+      e.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "") + ".webp"
+    }`,
+  }));
+
+  const blogList =
+    loaderData.blogArticles.length > 0
+      ? loaderData.blogArticles.map((a) => ({
+          ico: "📰",
+          t: a.ba_title,
+          d: a.ba_descrip || a.ba_preview || "",
+          tag: a.pg_name || a.ba_category || "Guide",
+          link: `/blog-pieces-auto/conseils/${a.pg_alias || a.ba_alias}`,
+        }))
+      : BLOG.map((b) => ({ ...b, link: "#" }));
+
+  const faqList =
+    loaderData.faqs.length > 0
+      ? loaderData.faqs.map((f) => ({ q: f.question, a: f.answer }))
+      : FAQ_DATA;
+
+  const [expandedCat, setExpandedCat] = useState<string | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShowScrollTop(window.scrollY > 400);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Schema.org JSON-LD pour SEO - @graph avec WebSite + SearchAction + AutoPartsStore */}
+      {/* Schema.org JSON-LD pour SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@graph": [
-              // 1️⃣ WebSite - Active les sitelinks searchbox Google
               {
                 "@type": "WebSite",
                 "@id": "https://www.automecanik.com/#website",
@@ -262,7 +787,6 @@ export default function TestHomepageModern() {
                   "query-input": "required name=search_term_string",
                 },
               },
-              // 2️⃣ AutoPartsStore - Magasin de pièces auto
               {
                 "@type": "AutoPartsStore",
                 "@id": "https://www.automecanik.com/#store",
@@ -278,456 +802,701 @@ export default function TestHomepageModern() {
                   "@type": "PostalAddress",
                   addressCountry: "FR",
                 },
-                // Note: offers retiré - AutoPartsStore n'exige pas d'offers selon Schema.org
-                // Les pages produit (pieces) ont les vrais prix dynamiques
               },
             ],
           }),
         }}
       />
 
-      {/* 📊 Skip to main content - Accessibilité */}
-      {/* Lien d'accessibilité - Sauter au contenu principal */}
+      {/* Skip to main content - Accessibilité */}
       <a
         href="#catalogue"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:bg-semantic-action focus:text-semantic-action-contrast focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:bg-[#e8590c] focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg"
       >
         Aller au contenu principal
       </a>
 
-      {/* 🎯 HERO SECTION - Version radicale focalisée conversion */}
-      <section
-        id="main-content"
-        className="relative overflow-hidden bg-gradient-to-br from-[#0d1b3e] via-[#0f2347] to-[#162d5a] text-white py-16 md:py-24"
-        aria-label="Section principale"
-        role="banner"
-      >
-        {/* Effet mesh gradient animé en arrière-plan - simplifié */}
-        <div
-          className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary-500/15 via-transparent to-secondary-400/10"
-          aria-hidden="true"
-        ></div>
-        <div
-          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:4rem_4rem]"
-          aria-hidden="true"
-        ></div>
+      {/* CSS animations */}
+      <style>{`
+        @keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+        .tab-pill { transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1); }
+        @media (prefers-reduced-motion: reduce) {
+          .shimmer-anim, .marquee-anim { animation: none !important; }
+        }
+      `}</style>
 
-        {/* Formes décoratives - réduites */}
-        {/* 🚀 LCP OPTIMIZATION: Removed animate-pulse for better LCP score */}
+      {/* ════════════════════════════════════════
+          BANDEAU PROMO — Orange shimmer
+         ════════════════════════════════════════ */}
+      <div className="bg-[#e8590c] text-white text-center py-2 px-4 text-xs sm:text-sm font-semibold relative overflow-hidden leading-snug">
         <div
-          className="absolute top-10 right-10 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl"
-          aria-hidden="true"
-        ></div>
-        <div
-          className="absolute bottom-10 left-10 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl"
-          aria-hidden="true"
-        ></div>
+          className="shimmer-anim absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+          style={{ animation: "shimmer 3s ease-in-out infinite" }}
+        />
+        <span className="relative z-10">
+          Livraison GRATUITE d&egrave;s 150&euro; d&apos;achat &bull; Retours 30
+          jours
+        </span>
+      </div>
 
-        <div className="relative container mx-auto px-4 max-w-5xl">
-          {/* Titre ultra-simple et direct */}
-          <div className="text-center mb-10 animate-in fade-in duration-700">
-            <h1 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
-              <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent">
-                Pièces auto{" "}
-              </span>
-              <span className="bg-gradient-to-r from-primary-400 via-primary-500 to-primary-400 bg-clip-text text-transparent">
+      {/* ════════════════════════════════════════
+          HERO — Vehicle Search with Tabs
+         ════════════════════════════════════════ */}
+      <Reveal>
+        <section className="relative overflow-hidden py-6 sm:py-8 md:py-10 bg-gradient-to-br from-[#0d1b3e] via-[#0f2347] to-[#162d5a]">
+          {/* Decorative */}
+          <div
+            className="absolute top-[10%] -right-[5%] w-48 sm:w-72 h-48 sm:h-72 rounded-full bg-[#e8590c]/10 blur-3xl pointer-events-none"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none"
+            aria-hidden="true"
+          />
+
+          <div className="relative container mx-auto px-4 max-w-[780px] text-center">
+            <h1 className="text-lg sm:text-2xl md:text-[32px] font-extrabold text-white leading-tight mb-1 sm:mb-2 tracking-tight">
+              Pi&egrave;ces auto{" "}
+              <span className="bg-gradient-to-r from-[#e8590c] to-[#f76707] bg-clip-text text-transparent">
                 pas cher
               </span>
             </h1>
-          </div>
 
-          {/* 🚗 SÉLECTEUR DE VÉHICULE GÉANT - FOCUS ABSOLU */}
-          <div className="max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-4 duration-1000 delay-200">
-            <VehicleSelector enableTypeMineSearch={true} />
+            {/* Sélecteur de véhicule */}
+            <div className="max-w-3xl mx-auto">
+              <VehicleSelector enableTypeMineSearch={true} />
+            </div>
           </div>
+        </section>
+      </Reveal>
 
-          {/* 🩺 CTA Diagnostic - Pièce stratégique */}
-          <div className="text-center mt-6 mb-2 animate-in fade-in duration-1000 delay-300">
-            <Link
-              to="/diagnostic-auto"
-              className="inline-flex items-center gap-3 px-6 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold rounded-2xl border border-white/20 hover:border-orange-400/50 transition-all duration-300 hover:scale-105 group"
+      {/* Luminous separator Hero → Conseils */}
+      <div className="h-px bg-gradient-to-r from-transparent via-[#e8590c]/25 to-transparent" />
+
+      {/* ════════════════════════════════════════
+          CONSEILS & DIAGNOSTIC — Dark Glassmorphism
+         ════════════════════════════════════════ */}
+      <DarkSection id="conseils-diagnostic">
+        {/* Header */}
+        <Reveal>
+          <div className="text-center mb-8 md:mb-12">
+            <h2
+              id="conseils-diagnostic-title"
+              className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3 tracking-tight"
             >
-              <ScanLine className="w-5 h-5 text-orange-400 group-hover:scale-110 transition-transform" />
-              <span>Un problème avec votre voiture ?</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-
-          {/* ✨ Trust badges - Micro-format inline */}
-          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6 text-xs md:text-sm text-white/80 animate-in fade-in duration-1000 delay-500">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-              <CheckCircle2 className="w-4 h-4 text-semantic-success" />
-              <span>
-                {formatCatalogCount(homeData.stats?.total_pieces)} pièces
-              </span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-              <Truck className="w-4 h-4 text-primary-400" />
-              <span>Livraison 24-48h</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-              <Shield className="w-4 h-4 text-secondary-400" />
-              <span>Paiement sécurisé</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-              <Users className="w-4 h-4 text-orange-400" />
-              <span>Experts gratuits</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 🔍 RECHERCHE ALTERNATIVE - Version compacte */}
-      <section className="relative py-12 md:py-14 overflow-hidden">
-        {/* Fond dégradé sophistiqué */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-primary-50/30 to-primary-100/20"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-100/20 via-transparent to-transparent"></div>
-
-        {/* Motif décoratif */}
-        <div className="absolute top-0 left-0 w-full h-full opacity-[0.02]">
-          <div className="absolute top-20 left-20 w-72 h-72 bg-primary-500 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 right-20 w-72 h-72 bg-secondary-600 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="relative container mx-auto px-4 max-w-7xl">
-          {/* En-tête */}
-          <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              Trouvez la pièce{" "}
-              <span className="bg-gradient-to-r from-primary-500 to-primary-600 bg-clip-text text-transparent">
-                qu'il vous faut
-              </span>
+              Conseils & <span className="text-[#fb923c]">Diagnostic</span>
             </h2>
-          </div>
-
-          {/* Grille de cartes - Composant extrait */}
-          <HomeSearchCards
-            scrollToSection={scrollToSection}
-            onReferenceSearchClick={() => searchState.setShowSearchBar(true)}
-          />
-        </div>
-      </section>
-
-      {/* Modal de recherche par référence - Composant extrait */}
-      <ReferenceSearchModal
-        isOpen={searchState.showSearchBar}
-        searchReference={searchState.searchReference}
-        onSearchReferenceChange={searchState.setSearchReference}
-        onSubmit={(e) => {
-          e.preventDefault();
-          searchState.handleReferenceSearch();
-        }}
-        onClose={searchState.closeSearchBar}
-      />
-
-      {/* 📂 CATALOGUE COMPLET - Version optimisée */}
-      <section
-        id="catalogue"
-        className="py-12 bg-gradient-to-br from-slate-50 to-primary-50/30 scroll-mt-24"
-      >
-        <div className="container mx-auto px-4">
-          {/* En-tête simplifié */}
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
-              Catalogue pièces auto
-            </h2>
-            <div className="h-1 w-16 bg-gradient-to-r from-primary-500 to-primary-600 mx-auto rounded mb-3"></div>
-            <p className="text-base text-gray-700">
-              Pièces neuves pour toutes marques
+            <div className="h-1 w-16 bg-gradient-to-r from-[#fb923c] to-[#e8590c] mx-auto rounded mb-4" />
+            <p className="text-sm md:text-base text-white/70 max-w-xl mx-auto">
+              L&apos;expertise automobile au service de votre v&eacute;hicule
             </p>
           </div>
+        </Reveal>
 
-          {/* Titre gammes */}
-          <div className="mb-8 text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              Par gamme de pièces
-            </h2>
-            <p className="text-center text-gray-600 text-sm max-w-2xl mx-auto mb-8">
-              Explorez notre catalogue organisé par familles techniques
-            </p>
-          </div>
+        {/* Feature Card: Diagnostic auto */}
+        <Reveal>
+          <Link
+            to="/diagnostic-auto"
+            className="group relative block mb-5 md:mb-6 rounded-2xl border border-white/10 overflow-hidden transition-all duration-300 hover:-translate-y-1"
+            aria-label="Lancer un diagnostic auto"
+          >
+            {/* Glass bg */}
+            <div className="absolute inset-0 bg-white/[0.07] backdrop-blur-sm" />
+            {/* Orange left accent */}
+            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-[#fb923c] via-[#e8590c] to-[#c2410c]" />
+            {/* Hover overlay */}
+            <div className="absolute inset-0 bg-[#e8590c]/0 group-hover:bg-[#e8590c]/5 transition-colors duration-300" />
 
-          {/* Loading state */}
-          {homeData.loadingCatalog && (
-            <div className="text-center py-12">
-              <div className="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-600">Chargement du catalogue...</p>
-            </div>
-          )}
+            <div className="relative p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
+              {/* Icon */}
+              <div className="flex-shrink-0">
+                <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-gradient-to-br from-[#e8590c] to-[#c2410c] flex items-center justify-center shadow-lg shadow-[#e8590c]/25 group-hover:shadow-[#e8590c]/40 group-hover:scale-105 transition-all duration-300">
+                  <Activity className="w-7 h-7 md:w-8 md:h-8 text-white" />
+                </div>
+              </div>
 
-          {/* Grid des familles */}
-          {!homeData.loadingCatalog && homeData.families.length > 0 && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {homeData.families.map((family, index) => {
-                  const familyImage = hierarchyApi.getFamilyImage(family);
-                  const familyColor = hierarchyApi.getFamilyColor(family);
-                  const isExpanded = homeData.expandedFamilies.includes(
-                    family.mf_id,
-                  );
-                  const displayedGammes = isExpanded
-                    ? family.gammes
-                    : family.gammes.slice(0, 4);
-                  // Générer un ID basé sur le nom de la famille pour le scroll navigation
-                  const familySlug = (
-                    family.mf_name_system ||
-                    family.mf_name ||
-                    ""
-                  )
-                    .toLowerCase()
-                    .normalize("NFD")
-                    .replace(/[\u0300-\u036f]/g, "") // Enlever les accents
-                    .replace(/[^a-z0-9]+/g, "-")
-                    .replace(/^-+|-+$/g, "");
-
-                  return (
-                    <Card
-                      key={family.mf_id}
-                      id={`famille-${familySlug}`}
-                      className="group hover:shadow-xl hover:-translate-y-2 transition-all duration-slower overflow-hidden scroll-mt-24"
-                      style={{
-                        animationDelay: `${index * 50}ms`,
-                      }}
-                    >
-                      {/* Image header avec couleur en fond */}
-                      <div
-                        className={`relative h-48 overflow-hidden bg-gradient-to-br ${familyColor}`}
+              {/* Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-xl md:text-2xl font-bold text-white">
+                    Diagnostic auto
+                  </h3>
+                  <Badge className="hidden md:inline-flex bg-[#e8590c]/20 text-[#fb923c] border-[#e8590c]/30 hover:bg-[#e8590c]/20">
+                    Gratuit
+                  </Badge>
+                </div>
+                <p className="text-sm md:text-base text-white/70 leading-relaxed mb-3 md:mb-0">
+                  Identifiez votre panne : vibrations, bruits, voyants moteur
+                  &mdash; causes et solutions par nos experts.
+                </p>
+                {/* Feature tags */}
+                <div className="flex flex-wrap gap-2 md:mt-3">
+                  {["Vibrations", "Bruits moteur", "Voyants", "Freinage"].map(
+                    (tag) => (
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        className="bg-white/[0.06] text-white/60 border-white/10 hover:bg-white/[0.06] font-normal"
                       >
-                        <img
-                          src={familyImage}
-                          alt={family.mf_name_system || family.mf_name}
-                          className="w-full h-full object-contain transition-transform duration-slower group-hover:scale-105"
-                          loading="lazy"
-                          decoding="async"
-                          width="400"
-                          height="300"
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "/images/categories/default.svg";
-                          }}
-                        />
+                        {tag}
+                      </Badge>
+                    ),
+                  )}
+                </div>
+              </div>
 
-                        {/* Titre - overlay qui s'intensifie au hover */}
-                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/80 transition-colors duration-slower">
-                          <h3 className="text-white font-bold text-lg line-clamp-2">
-                            {family.mf_name_system || family.mf_name}
-                          </h3>
-                        </div>
-                      </div>
+              {/* CTA */}
+              <div className="flex-shrink-0 flex items-center gap-2 text-[#fb923c] font-bold text-sm md:text-base">
+                <span className="md:hidden">Diagnostiquer</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
+              </div>
+            </div>
+          </Link>
+        </Reveal>
 
-                      {/* Contenu avec sous-catégories */}
-                      <CardContent className="pt-4">
-                        {/* Description */}
-                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                          {family.mf_description ||
-                            "Découvrez notre sélection complète"}
-                        </p>
+        {/* Secondary cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          {[
+            {
+              icon: BookOpen,
+              t: "Guides d\u2019achat",
+              d: "Distribution, freinage, filtration\u2026",
+              link: "/blog-pieces-auto/guide-achat",
+            },
+            {
+              icon: Wrench,
+              t: "R\u00e9f\u00e9rence technique",
+              d: "Glossaire, d\u00e9finitions, specs OE",
+              link: "/reference-auto",
+            },
+            {
+              icon: Shield,
+              t: "Conseils entretien",
+              d: "Calendrier, astuces m\u00e9canicien, pi\u00e8ces \u00e0 surveiller",
+              link: "/blog-pieces-auto/conseils",
+            },
+          ].map((c, i) => (
+            <Reveal key={c.t} delay={i * 80}>
+              <Link
+                to={c.link}
+                className="group relative flex items-center gap-4 p-4 md:p-5 rounded-xl border border-white/10 bg-white/[0.05] backdrop-blur-sm hover:bg-white/[0.09] hover:border-white/20 transition-all duration-300"
+              >
+                <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-lg bg-white/10 flex items-center justify-center group-hover:bg-white/15 transition-colors duration-300">
+                  <c.icon className="w-5 h-5 md:w-6 md:h-6 text-white/80" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm md:text-base font-semibold text-white mb-0.5">
+                    {c.t}
+                  </h3>
+                  <p className="text-xs text-white/50 line-clamp-1">{c.d}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      </DarkSection>
 
-                        {/* Liste des sous-catégories (4 ou toutes selon isExpanded) */}
-                        <div className="space-y-2.5 mb-4 max-h-96 overflow-y-auto">
-                          {displayedGammes.map((gamme, idx) => {
-                            // Générer l'URL avec fallback si pg_alias manquant
-                            const categoryUrl =
-                              gamme.pg_id && gamme.pg_alias
-                                ? `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`
-                                : `/products/catalog?search=${encodeURIComponent(gamme.pg_name || "")}&gamme=${gamme.pg_id}`;
+      {/* ════════════════════════════════════════
+          CATALOGUE — 19 familles de pièces (Tabs)
+         ════════════════════════════════════════ */}
+      <PageSection id="catalogue">
+        <SectionHeader
+          title="Catalogue pièces auto"
+          sub={`Pièces neuves pour toutes marques — ${catalogFamilies.length} familles techniques`}
+        />
 
-                            return (
-                              <Link
-                                key={idx}
-                                to={categoryUrl}
-                                className="text-sm text-neutral-600 hover:text-primary-600 hover:pl-2 transition-all duration-200 flex items-center gap-2.5 group/item py-1"
-                              >
-                                <span className="w-1.5 h-1.5 bg-neutral-400 rounded-full group-hover/item:bg-primary-500 group-hover/item:scale-125 transition-all" />
-                                <span className="line-clamp-1 font-medium">
-                                  {gamme.pg_name}
-                                </span>
-                              </Link>
-                            );
-                          })}
-                        </div>
+        <Tabs
+          defaultValue="Tout"
+          onValueChange={() => setExpandedCat(null)}
+          className="w-full"
+        >
+          <TabsList className="w-full justify-start overflow-x-auto hide-scroll bg-[#0d1b3e] rounded-2xl p-1.5 mb-5 sm:mb-6 flex-nowrap h-auto shadow-lg">
+            {CATALOG_DOMAINS.map((domain) => {
+              const count = domain.families
+                ? catalogFamilies.filter((c) =>
+                    domain.families!.some((d) => d === c.n),
+                  ).length
+                : catalogFamilies.length;
+              const DomainIcon = domain.icon;
+              return (
+                <TabsTrigger
+                  key={domain.label}
+                  value={domain.label}
+                  className="group tab-pill text-xs sm:text-sm px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl whitespace-nowrap font-semibold flex items-center gap-1.5 sm:gap-2 text-white/50 hover:text-white/80 hover:bg-white/[0.06] data-[state=active]:bg-[#e8590c] data-[state=active]:text-white data-[state=active]:shadow-[0_0_20px_rgba(232,89,12,0.3)]"
+                >
+                  <DomainIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline">{domain.label}</span>
+                  <span className="sm:hidden">
+                    {domain.label.split(" ")[0]}
+                  </span>
+                  <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-white/10 font-medium leading-none group-data-[state=active]:bg-white/20">
+                    {count}
+                  </span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
 
-                        {/* Bouton voir tout/moins */}
-                        {family.gammes_count > 4 && (
-                          <Button
-                            variant="ghost"
-                            onClick={() =>
-                              homeData.toggleFamilyExpansion(family.mf_id)
-                            }
-                            className="w-full px-4 py-2.5 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-primary hover:text-white hover:border-primary transition-colors flex items-center justify-center gap-2"
-                          >
-                            {isExpanded ? (
-                              <>
-                                Voir moins
-                                <ChevronRight className="h-4 w-4 rotate-90" />
-                              </>
-                            ) : (
-                              <>
-                                Pièces de{" "}
-                                {(
-                                  family.mf_name_system ||
-                                  family.mf_name ||
-                                  ""
-                                ).toLowerCase()}
-                                <ChevronRight className="h-4 w-4" />
-                              </>
-                            )}
-                          </Button>
+          {CATALOG_DOMAINS.map((domain) => (
+            <TabsContent
+              key={domain.label}
+              value={domain.label}
+              className="mt-0"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-2.5">
+                {(domain.families === null
+                  ? catalogFamilies
+                  : catalogFamilies.filter((cat) =>
+                      domain.families!.some((d) => d === cat.n),
+                    )
+                ).map((cat, i) => {
+                  const isOpen = expandedCat === cat.n;
+                  return (
+                    <Reveal key={cat.n} delay={Math.min(i * 40, 400)}>
+                      <Card
+                        className={`group transition-all duration-200 rounded-2xl overflow-hidden ${isOpen ? "border-[#e8590c]/30 shadow-lg" : "hover:border-[#e8590c]/20 hover:shadow-lg hover:-translate-y-0.5"}`}
+                      >
+                        <Button
+                          variant="ghost"
+                          onClick={() => setExpandedCat(isOpen ? null : cat.n)}
+                          className="flex items-start gap-3 w-full text-left h-auto p-0 hover:bg-transparent"
+                        >
+                          <CardContent className="flex items-start gap-3 p-3.5 sm:p-4 w-full">
+                            <div className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-100">
+                              {cat.img ? (
+                                <img
+                                  src={cat.img}
+                                  alt={cat.n}
+                                  className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <span className="text-2xl">{cat.i}</span>
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-bold text-slate-900 mb-1">
+                                {cat.n}
+                              </div>
+                              <div className="text-[11px] text-slate-400">
+                                {cat.gammes.length} gammes de pièces
+                              </div>
+                            </div>
+                            <ChevronDown
+                              className={`w-4 h-4 flex-shrink-0 self-center transition-transform duration-200 ${isOpen ? "rotate-180 text-[#e8590c]" : "text-slate-400 group-hover:text-[#e8590c]"}`}
+                            />
+                          </CardContent>
+                        </Button>
+                        {isOpen && (
+                          <div className="border-t border-slate-100 bg-slate-50/50 px-3.5 sm:px-4 py-2.5">
+                            <div className="flex flex-wrap gap-1.5">
+                              {cat.gammes.map((g) => (
+                                <Link key={g.name} to={g.link}>
+                                  <Badge
+                                    variant="secondary"
+                                    className="px-2.5 py-1 bg-white rounded-lg text-[11px] text-slate-600 font-medium hover:bg-orange-50 hover:text-[#e8590c] transition-colors border border-slate-100 hover:border-[#e8590c]/20 cursor-pointer"
+                                  >
+                                    {g.name}
+                                  </Badge>
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
                         )}
-                      </CardContent>
-                    </Card>
+                      </Card>
+                    </Reveal>
                   );
                 })}
               </div>
-            </>
-          )}
+            </TabsContent>
+          ))}
+        </Tabs>
+      </PageSection>
 
-          {/* Message si pas de données */}
-          {!homeData.loadingCatalog && homeData.families.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-xl">
-              <p className="text-gray-600">
-                Aucune famille de produits disponible pour le moment.
-              </p>
-            </div>
-          )}
+      {/* ════════════════════════════════════════
+          CONSTRUCTEURS — 36 marques carousel
+         ════════════════════════════════════════ */}
+      <PageSection id="marques" bg="slate">
+        <SectionHeader
+          title="Par constructeur"
+          sub={`${brandsList.length} marques auto — glissez pour explorer`}
+        />
+        <Carousel opts={{ align: "start", loop: true }} className="w-full">
+          <CarouselContent className="-ml-2.5">
+            {brandsList.map((b) => (
+              <CarouselItem
+                key={b.name}
+                className="pl-2.5 basis-1/2 sm:basis-1/3 md:basis-1/5 lg:basis-[14.28%] xl:basis-[12.5%]"
+              >
+                <Link to={`/constructeurs/${b.slug}-${b.id}.html`}>
+                  <Card className="group hover:border-[#e8590c] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 rounded-2xl border-[1.5px]">
+                    <CardContent className="flex flex-col items-center justify-center py-3 px-2 gap-1.5">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden group-hover:bg-orange-50 transition-colors">
+                        {b.logo ? (
+                          <img
+                            src={b.logo}
+                            alt={b.name}
+                            className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className="text-base sm:text-lg font-bold text-[#0d1b3e]">
+                            {b.name.slice(0, 2).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 text-center truncate w-full group-hover:text-[#e8590c] transition-colors">
+                        {b.name}
+                      </span>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="-left-1 sm:-left-4" />
+          <CarouselNext className="-right-1 sm:-right-4" />
+        </Carousel>
+      </PageSection>
+
+      {/* ════════════════════════════════════════
+          WHY AUTOMECANIK — 4 avantages
+         ════════════════════════════════════════ */}
+      <PageSection bg="navy-gradient">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+          {[
+            {
+              icon: Truck,
+              title: "Livraison 24-48h",
+              desc: "France métropolitaine",
+            },
+            {
+              icon: Shield,
+              title: "Garantie 2 ans",
+              desc: "Pièces origine et adaptables",
+            },
+            {
+              icon: Award,
+              title: "Qualité certifiée",
+              desc: "Marques ISO 9001 / TÜV",
+            },
+            {
+              icon: Phone,
+              title: "Support expert",
+              desc: "Conseillers techniques",
+            },
+          ].map(({ icon: Icon, title, desc }, i) => (
+            <Reveal key={title} delay={i * 80}>
+              <Card className="bg-white/[0.06] border-white/10 hover:bg-white/[0.09] hover:border-white/20 transition-all duration-200 rounded-2xl">
+                <CardContent className="p-4 sm:p-5 text-center">
+                  <div className="w-11 h-11 sm:w-[52px] sm:h-[52px] rounded-2xl bg-[#e8590c]/15 flex items-center justify-center mx-auto mb-2.5 sm:mb-3">
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-[#e8590c]" />
+                  </div>
+                  <div className="text-sm sm:text-[15px] font-semibold text-white mb-0.5">
+                    {title}
+                  </div>
+                  <div className="text-[11px] sm:text-xs text-white/60 leading-relaxed">
+                    {desc}
+                  </div>
+                </CardContent>
+              </Card>
+            </Reveal>
+          ))}
         </div>
-      </section>
+      </PageSection>
 
-      {/* 🎨 MARQUES & CONSTRUCTEURS - Version optimisée */}
-      <section
-        id="toutes-les-marques"
-        className="py-12 bg-white scroll-mt-24"
-        aria-labelledby="marques-title"
-      >
-        <div className="container mx-auto px-4">
-          {/* En-tête simplifié */}
-          <div className="max-w-5xl mx-auto mb-10">
-            <h2
-              id="marques-title"
-              className="text-3xl md:text-4xl font-bold text-gray-900 mb-3 text-center"
-            >
-              Toutes les marques auto
-            </h2>
-            <div className="h-1 w-16 bg-gradient-to-r from-primary-500 to-primary-600 mx-auto rounded mb-4"></div>
-          </div>
+      {/* ════════════════════════════════════════
+          STATS + BESTSELLERS — Social proof
+         ════════════════════════════════════════ */}
+      <PageSection id="bestsellers">
+        {/* Stats bar — dark unified */}
+        <Reveal>
+          <Card className="rounded-2xl bg-[#0d1b3e] border-0 mb-8 md:mb-10 overflow-hidden">
+            <CardContent className="grid grid-cols-2 md:grid-cols-4 p-0">
+              {STATS.map(({ value, label, icon: Icon }, i) => (
+                <div
+                  key={label}
+                  className={`flex items-center gap-3 p-4 sm:p-5 ${i < STATS.length - 1 ? "md:border-r md:border-white/10" : ""}`}
+                >
+                  <Icon className="w-5 h-5 text-[#e8590c] flex-shrink-0" />
+                  <div>
+                    <div className="text-lg sm:text-2xl font-extrabold text-white tracking-tight">
+                      {value}
+                    </div>
+                    <div className="text-[10px] sm:text-xs text-white/50 font-medium">
+                      {label}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </Reveal>
 
-          {/* Titre H2 */}
-          <div className="text-center mb-6">
-            <p className="text-sm text-gray-600">
-              Cliquez sur un logo pour voir les modèles
-            </p>
-          </div>
-
-          {/* Loading state */}
-          {homeData.loadingBrands ? (
-            <div className="text-center py-12">
-              <div className="animate-spin w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-600">Chargement des marques...</p>
-            </div>
-          ) : (
-            <>
-              {/* Grid simple sans groupement alphabétique - Plus lisible */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 max-w-7xl mx-auto mb-16">
-                {homeData.brands
-                  .sort((a, b) => a.name.localeCompare(b.name, "fr"))
-                  .map((brand, index) => (
-                    <Link
-                      key={brand.id}
-                      to={`/constructeurs/${brand.slug}-${brand.id}.html`}
-                      className="group animate-in fade-in duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-4 rounded-lg"
-                      style={{
-                        animationDelay: `${index * 20}ms`,
-                        animationFillMode: "both",
-                      }}
-                      aria-label={`Voir les pièces ${brand.name}`}
+        {/* Bestsellers grid */}
+        <SectionHeader
+          title="Meilleures ventes"
+          sub="Les pièces auto les plus demandées par nos clients"
+        />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+          {BESTSELLERS.map((item, i) => (
+            <Reveal key={item.name} delay={Math.min(i * 60, 300)}>
+              <Link to={item.link}>
+                <Card className="group relative rounded-2xl overflow-hidden border-[1.5px] hover:border-[#e8590c]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                  {/* Promo badge */}
+                  {item.promo && (
+                    <Badge className="absolute top-2 left-2 z-10 bg-red-600 hover:bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md border-0">
+                      {item.promo}
+                    </Badge>
+                  )}
+                  <div className="aspect-square bg-slate-50 flex items-center justify-center p-3 sm:p-4 overflow-hidden">
+                    <img
+                      src={`${IMG_PROXY_FAMILIES}/${item.img}`}
+                      alt={item.name}
+                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  </div>
+                  <CardContent className="p-3 sm:p-3.5 pt-0 sm:pt-0">
+                    <Badge
+                      variant="secondary"
+                      className="mb-1.5 px-2 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-600 rounded-md border-0"
                     >
-                      {/* Card optimale - Équilibre parfait */}
-                      <div className="relative overflow-hidden bg-white rounded-lg border border-neutral-100 hover:border-semantic-info hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 aspect-square">
-                        {/* Logo avec fallback simple */}
-                        <div className="w-full h-full p-3 flex items-center justify-center bg-gray-50">
-                          {brand.logo ? (
-                            <img
-                              src={brand.logo}
-                              alt={`Logo ${brand.name}`}
-                              className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
-                              // 🚀 LCP: First 6 images are eager-loaded (above-fold)
-                              loading={index < 6 ? "eager" : "lazy"}
-                              // @ts-expect-error - fetchpriority is a valid HTML attribute but React types it as fetchPriority
-                              fetchpriority={index < 6 ? "high" : "auto"}
-                              decoding={index < 6 ? "sync" : "async"}
-                              width="200"
-                              height="200"
-                              onError={(e) => {
-                                logger.error(
-                                  "❌ Erreur chargement logo:",
-                                  brand.name,
-                                  brand.logo,
-                                );
-                                e.currentTarget.style.display = "none";
-                                const fallback =
-                                  e.currentTarget.parentElement?.querySelector(
-                                    ".fallback-text",
-                                  );
-                                if (fallback)
-                                  fallback.classList.remove("hidden");
-                              }}
-                            />
-                          ) : null}
-                          <div
-                            className={`fallback-text text-gray-400 text-sm font-bold text-center ${brand.logo ? "hidden" : ""}`}
-                          >
-                            {brand.name.substring(0, 3).toUpperCase()}
-                          </div>
+                      {item.brand}
+                    </Badge>
+                    <div className="text-xs sm:text-sm font-bold text-slate-900 leading-snug line-clamp-2 mb-1">
+                      {item.name}
+                    </div>
+                    {/* Price + old price */}
+                    <div className="flex items-baseline gap-1.5 mb-1">
+                      <span className="text-sm font-bold text-[#e8590c]">
+                        {item.price}&euro;
+                      </span>
+                      {item.oldPrice && (
+                        <span className="text-[11px] text-slate-400 line-through">
+                          {item.oldPrice}&euro;
+                        </span>
+                      )}
+                    </div>
+                    {/* Star rating */}
+                    <div className="flex items-center gap-0.5">
+                      {Array.from({ length: 5 }, (_, s) => (
+                        <Star
+                          key={s}
+                          className={`w-3 h-3 ${s < Math.round(item.rating) ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"}`}
+                        />
+                      ))}
+                      <span className="text-[10px] text-slate-400 ml-1">
+                        ({item.reviews})
+                      </span>
+                    </div>
+                    {/* CTA voir le produit */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full mt-2 h-9 text-xs font-semibold border-[#0d1b3e]/20 text-[#0d1b3e] hover:bg-[#e8590c] hover:text-white hover:border-[#e8590c] rounded-lg transition-colors"
+                    >
+                      <span>Voir le produit</span>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      </PageSection>
+
+      {/* ════════════════════════════════════════
+          BLOG & GUIDES — 3 articles
+         ════════════════════════════════════════ */}
+      <PageSection bg="slate">
+        <SectionHeader
+          title="Blog & Guides"
+          sub="Conseils pratiques pour l'entretien de votre véhicule"
+          linkText="Tous les articles"
+          linkHref="/blog-pieces-auto"
+        />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          {blogList.slice(0, 3).map((article, i) => {
+            const BlogIcon =
+              article.tag === "Guide d'achat"
+                ? ShoppingCart
+                : article.tag === "Entretien"
+                  ? Wrench
+                  : BookOpen;
+            return (
+              <Reveal key={article.t} delay={i * 80}>
+                <Link to={article.link || "#"}>
+                  <Card className="group h-full rounded-2xl border-[1.5px] overflow-hidden hover:border-[#e8590c]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                    <CardContent className="p-5 sm:p-6 flex flex-col h-full">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Badge
+                          variant="secondary"
+                          className="px-2.5 py-0.5 text-[10px] font-semibold bg-orange-50 text-[#e8590c] rounded-full border-0"
+                        >
+                          {article.tag}
+                        </Badge>
+                      </div>
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="w-10 h-10 rounded-lg bg-[#0d1b3e] flex items-center justify-center flex-shrink-0">
+                          <BlogIcon className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug mb-1.5 group-hover:text-[#e8590c] transition-colors">
+                            {article.t}
+                          </h3>
+                          <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                            {article.d}
+                          </p>
                         </div>
                       </div>
-                    </Link>
-                  ))}
-              </div>
-            </>
-          )}
+                      <div className="flex items-center gap-1 mt-3 pt-3 border-t border-slate-100 text-xs font-semibold text-[#e8590c]">
+                        Lire l&apos;article{" "}
+                        <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </Reveal>
+            );
+          })}
+        </div>
+      </PageSection>
 
-          {/* FAQ MODERNE - Composant extrait */}
-          <HomeFAQSection />
+      {/* ════════════════════════════════════════
+          FAQ — Accordion shadcn
+         ════════════════════════════════════════ */}
+      <PageSection maxWidth="3xl">
+        <div className="text-center mb-6">
+          <h2 className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-tight text-slate-900">
+            Questions fr&eacute;quentes
+          </h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Tout ce qu&apos;il faut savoir avant de commander
+          </p>
+        </div>
+        <Accordion type="single" collapsible className="space-y-2">
+          {faqList.map((faq, i) => (
+            <AccordionItem
+              key={i}
+              value={`faq-${i}`}
+              className="border border-slate-200 rounded-xl bg-white overflow-hidden hover:border-[#e8590c]/20 transition-colors data-[state=open]:border-[#e8590c]/20 data-[state=open]:shadow-md"
+            >
+              <AccordionTrigger className="px-4 sm:px-5 py-4 text-sm sm:text-[15px] font-bold text-slate-900 hover:no-underline data-[state=open]:text-[#e8590c]">
+                {faq.q}
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-5 text-sm text-slate-600 leading-relaxed">
+                {faq.a}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </PageSection>
+
+      {/* ════════════════════════════════════════
+          NEWSLETTER
+         ════════════════════════════════════════ */}
+      <Reveal>
+        <PageSection bg="navy" maxWidth="3xl" className="text-center">
+          <div className="w-12 h-12 rounded-full bg-[#e8590c]/15 flex items-center justify-center mx-auto mb-4">
+            <Mail className="w-6 h-6 text-[#e8590c]" />
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1.5">
+            Recevez nos offres exclusives
+          </h2>
+          <p className="text-sm text-white/50 mb-4">
+            Promotions, guides d&apos;entretien et conseils directement dans
+            votre bo&icirc;te mail
+          </p>
+          <div className="flex items-center justify-center gap-4 text-[11px] text-white/40 mb-5">
+            <span className="flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" /> 1x / semaine
+            </span>
+            <span className="flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" /> 0 spam
+            </span>
+            <span className="flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" /> D&eacute;sinscription facile
+            </span>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto">
+            <Input
+              placeholder="Votre adresse email"
+              className="bg-white/10 border-white/15 text-white placeholder:text-white/35 rounded-xl h-11 flex-1 focus-visible:border-[#e8590c] focus-visible:ring-[#e8590c]/15"
+            />
+            <Button className="h-11 px-7 rounded-xl font-bold text-sm bg-[#e8590c] hover:bg-[#d9480f] text-white whitespace-nowrap">
+              S&apos;inscrire <Mail className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        </PageSection>
+      </Reveal>
+
+      {/* ════════════════════════════════════════
+          EQUIPEMENTIERS — titre + marquee + tags
+         ════════════════════════════════════════ */}
+      <section className="py-8 sm:py-10 overflow-hidden">
+        <div className="text-center mb-5 sm:mb-6">
+          <h2 className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-tight text-slate-900">
+            Nos &eacute;quipementiers partenaires
+          </h2>
+          <p className="text-sm text-slate-500 mt-1">
+            Les plus grandes marques de pi&egrave;ces auto
+          </p>
+        </div>
+        <div
+          className="w-full overflow-hidden"
+          style={{
+            maskImage:
+              "linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent)",
+            WebkitMaskImage:
+              "linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent)",
+          }}
+        >
+          <div
+            className="marquee-anim flex items-center gap-6 sm:gap-10"
+            style={{
+              animation: "marquee 30s linear infinite",
+              width: "max-content",
+            }}
+          >
+            {[...equipMarquee, ...equipMarquee].map((e, i) => (
+              <div
+                key={`${e.name}-${i}`}
+                className="flex-shrink-0 h-8 sm:h-10 w-auto"
+              >
+                <img
+                  src={e.logoUrl}
+                  alt={e.name}
+                  title={e.name}
+                  className="h-full w-auto object-contain"
+                  loading="lazy"
+                  onError={(ev) => {
+                    ev.currentTarget.style.display = "none";
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* 🏭 ÉQUIPEMENTIERS - Composant réel intégré */}
-      <EquipementiersCarousel equipementiersData={homeData.equipementiers} />
-
-      {/* 🤝 CERTIFICATIONS - Composant extrait */}
-      <HomeCertifications />
-
-      {/* 📰 BLOG - Composant extrait */}
-      <HomeBlogSection blogArticles={homeData.blogArticles} />
-
-      {/* 🌟 SECTIONS FINALES - Composant extrait : Advantages + Newsletter + Contact CTA */}
-      <HomeBottomSections newsletter={newsletter} />
-
-      {/*  SCROLL TO TOP BUTTON */}
+      {/* ════════════════════════════════════════
+          SCROLL TO TOP
+         ════════════════════════════════════════ */}
       {showScrollTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-50 bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white p-4 rounded-full shadow-2xl hover:shadow-primary-500/50 transition-all duration-300 hover:scale-110 animate-in fade-in slide-in-from-bottom-4"
-          aria-label="Retour en haut de page"
+        <Button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-50 w-11 h-11 rounded-full shadow-2xl text-white bg-[#e8590c] hover:bg-[#d9480f] transition-all duration-300 hover:scale-110"
+          size="icon"
+          aria-label="Retour en haut"
         >
-          <ChevronRight className="w-6 h-6 -rotate-90" />
-        </button>
+          <ChevronUp className="w-5 h-5" />
+        </Button>
       )}
-
-      {/* ====================================
-       * 🔧 MODAL COMPARATEUR - COMMENTÉ
-       * Code complet conservé pour développement futur
-       * Décommenter et réactiver les états + handlers ci-dessus
-       * ==================================== 
-      {showComparator && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
-          onClick={closeComparator}
-        >
-          ... Modal content ...
-        </div>
-      )}
-      */}
     </div>
   );
 }
