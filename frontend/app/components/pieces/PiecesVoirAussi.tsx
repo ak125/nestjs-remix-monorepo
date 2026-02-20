@@ -56,29 +56,8 @@ export const PiecesVoirAussi = memo(function PiecesVoirAussi({
     },
   ].filter((link) => link.url && link.url.startsWith("/"));
 
-  // Schema.org ItemList pour SEO
-  const schemaData = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: "Voir aussi",
-    description: `Liens utiles pour ${gamme.name} ${vehicle.marque} ${vehicle.modele}`,
-    numberOfItems: seoLinks.length,
-    itemListElement: seoLinks.map((link, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      name: link.label,
-      url: `https://www.automecanik.com${link.url}`,
-    })),
-  };
-
   return (
     <section className="container mx-auto px-4 mt-8 mb-12">
-      {/* Schema.org JSON-LD pour SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }}
-      />
-
       <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
           <Link2 className="w-5 h-5 text-blue-600" />
