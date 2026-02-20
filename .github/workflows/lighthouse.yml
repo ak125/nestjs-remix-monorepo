@@ -30,16 +30,18 @@ jobs:
           echo "⏳ Waiting 30s for deployment to restart..."
           sleep 30
 
-      - name: Setup Chrome
-        uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: stable
-        id: setup-chrome
+      - name: Install Chrome
+        run: |
+          if ! command -v google-chrome-stable &> /dev/null; then
+            wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+            sudo dpkg -i google-chrome-stable_current_amd64.deb || sudo apt-get install -yf
+            rm google-chrome-stable_current_amd64.deb
+          fi
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v12
         env:
-          CHROME_PATH: ${{ steps.setup-chrome.outputs.chrome-path }}
+          CHROME_PATH: /usr/bin/google-chrome-stable
         with:
           urls: |
             http://localhost:3000/
