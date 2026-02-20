@@ -11,6 +11,8 @@ export interface ContentRefreshJobData {
   pgId: number;
   pgAlias: string;
   pageType: Exclude<PageType, 'R5_diagnostic'>;
+  /** Absolute paths of supplementary RAG files that triggered this refresh */
+  supplementaryFiles?: string[];
 }
 
 /** Job data for diagnostic refresh (R5) — keyed by diagnosticSlug, NOT pgAlias */
@@ -26,7 +28,7 @@ export type AnyContentRefreshJobData =
   | ContentRefreshJobDataR5;
 
 export interface ContentRefreshResult {
-  status: 'draft' | 'failed' | 'skipped';
+  status: 'draft' | 'failed' | 'skipped' | 'auto_published';
   qualityScore: number | null;
   qualityFlags: string[];
   errorMessage?: string;

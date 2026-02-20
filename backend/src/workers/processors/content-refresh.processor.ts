@@ -1,6 +1,7 @@
 import { Processor, Process } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bull';
+import { createHash } from 'node:crypto';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { BuyingGuideEnricherService } from '../../modules/admin/services/buying-guide-enricher.service';
@@ -26,7 +27,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     super(configService);
   }
 
-  @Process('content-refresh')
+  @Process({ name: 'content-refresh', concurrency: 1 })
   async handleContentRefresh(
     job: Job<AnyContentRefreshJobData>,
   ): Promise<ContentRefreshResult> {
@@ -36,6 +37,11 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     const pgAlias = 'pgAlias' in job.data ? job.data.pgAlias : '';
     const diagnosticSlug =
       'diagnosticSlug' in job.data ? job.data.diagnosticSlug : '';
+    const supplementaryFiles =
+      'supplementaryFiles' in job.data
+        ? ((job.data as { supplementaryFiles?: string[] }).supplementaryFiles ??
+          [])
+        : [];
 
     this.logger.log(
       `Processing content-refresh: ${diagnosticSlug || pgAlias}, pageType=${pageType}, logId=${refreshLogId}`,
@@ -65,6 +71,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           const enrichResults = await this.buyingGuideEnricher.enrich(
             [String(pgId)],
             false,
+            supplementaryFiles,
           );
           const result = enrichResults[0];
           if (result && 'averageConfidence' in result) {
@@ -126,6 +133,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           const conseilResult = await this.conseilEnricher.enrichSingle(
             String(pgId),
             pgAlias,
+            supplementaryFiles,
           );
           qualityScore = conseilResult.score;
           qualityFlags = conseilResult.flags;
@@ -206,6 +214,27 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         finalStatus = 'failed';
       }
 
+      // Auto-publish if quality score >= 85 AND QA SEO guard passes
+      const AUTO_PUBLISH_THRESHOLD = 85;
+      if (
+        finalStatus === 'draft' &&
+        (qualityScore ?? 0) >= AUTO_PUBLISH_THRESHOLD &&
+        pageType !== 'R5_diagnostic'
+      ) {
+        const qaOk = await this.checkQaGuardForGamme(pgId, pgAlias, pageType);
+        if (qaOk) {
+          finalStatus = 'auto_published';
+          await this.markAsPublished(pgId, pgAlias, pageType);
+          this.logger.log(
+            `Auto-published ${pgAlias}/${pageType} (score=${qualityScore})`,
+          );
+        } else {
+          this.logger.log(
+            `QA guard blocked auto-publish for ${pgAlias}/${pageType} — staying draft`,
+          );
+        }
+      }
+
       // Update dependent tables — skip when RAG absent (no content changed)
       if (finalStatus !== 'skipped') {
         if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
@@ -231,6 +260,9 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             finalStatus === 'failed'
               ? errorMessage || 'Quality score below threshold'
               : null,
+          ...(finalStatus === 'auto_published'
+            ? { published_at: now, published_by: 'auto' }
+            : {}),
         })
         .eq('id', refreshLogId);
 
@@ -373,5 +405,112 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     }
 
     return result;
+  }
+
+  /**
+   * QA SEO Guard: check if protected fields for a specific gamme
+   * have been mutated since baseline was captured.
+   * Returns true if safe to auto-publish, false if blocked.
+   */
+  private async checkQaGuardForGamme(
+    pgId: number,
+    pgAlias: string,
+    pageType: string,
+  ): Promise<boolean> {
+    const { data: baseline } = await this.client
+      .from('__qa_protected_meta_hash')
+      .select('seo_hash, ref_hash, h1_override_hash')
+      .eq('pg_alias', pgAlias)
+      .single();
+
+    // No baseline = gamme not protected → safe to publish
+    if (!baseline) return true;
+
+    // Check SEO fields (applies to R1, R3_guide, R3_conseils)
+    if (
+      pageType === 'R1_pieces' ||
+      pageType === 'R3_guide_achat' ||
+      pageType === 'R3_conseils'
+    ) {
+      const { data: seo } = await this.client
+        .from('__seo_gamme')
+        .select('sg_title, sg_h1, sg_descrip')
+        .eq('sg_pg_id', String(pgId))
+        .single();
+
+      if (seo) {
+        const hash = this.md5Gate(
+          (seo.sg_title as string) || '',
+          (seo.sg_h1 as string) || '',
+          (seo.sg_descrip as string) || '',
+        );
+        if (hash !== baseline.seo_hash) return false;
+      }
+    }
+
+    // Check H1 override (applies to R1, R3_guide)
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+      const { data: pg } = await this.client
+        .from('__seo_gamme_purchase_guide')
+        .select('sgpg_h1_override')
+        .eq('sgpg_pg_id', String(pgId))
+        .single();
+
+      if (pg) {
+        const hash = createHash('md5')
+          .update((pg.sgpg_h1_override as string) || '')
+          .digest('hex');
+        if (hash !== baseline.h1_override_hash) return false;
+      }
+    }
+
+    // Check reference fields (applies to R4)
+    if (pageType === 'R4_reference') {
+      const { data: ref } = await this.client
+        .from('__seo_reference')
+        .select('title, meta_description, canonical_url')
+        .eq('slug', pgAlias)
+        .single();
+
+      if (ref) {
+        const hash = this.md5Gate(
+          (ref.title as string) || '',
+          (ref.meta_description as string) || '',
+          (ref.canonical_url as string) || '',
+        );
+        if (hash !== baseline.ref_hash) return false;
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Mark dependent tables as published after auto-publish.
+   * Mirrors logic from ContentRefreshService.publishRefresh().
+   */
+  private async markAsPublished(
+    pgId: number,
+    pgAlias: string,
+    pageType: string,
+  ): Promise<void> {
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+      await this.client
+        .from('__seo_gamme_purchase_guide')
+        .update({ sgpg_is_draft: false })
+        .eq('sgpg_pg_id', String(pgId));
+    }
+
+    if (pageType === 'R4_reference') {
+      await this.client
+        .from('__seo_reference')
+        .update({ is_published: true })
+        .eq('slug', pgAlias);
+    }
+  }
+
+  /** MD5 with '||' separator — mirrors PostgreSQL hash formula */
+  private md5Gate(...fields: string[]): string {
+    return createHash('md5').update(fields.join('||')).digest('hex');
   }
 }
