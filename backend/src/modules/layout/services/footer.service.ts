@@ -419,11 +419,6 @@ export class FooterService {
           icon: 'instagram',
         },
         {
-          platform: 'LinkedIn',
-          url: 'https://linkedin.com/company/automecanik',
-          icon: 'linkedin',
-        },
-        {
           platform: 'YouTube',
           url: 'https://www.youtube.com/@automecanik8508',
           icon: 'youtube',

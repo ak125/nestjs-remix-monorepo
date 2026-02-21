@@ -19,18 +19,16 @@ import {
   Phone,
   Mail,
   Facebook,
-  Twitter,
   Instagram,
-  Linkedin,
 } from "lucide-react";
 import { memo, useState, useEffect } from "react";
 
 // Imports des modules
-import { Alert } from "~/components/ui/alert";
-import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "../../root";
 import { CartIcon } from "../cart/CartIcon";
 import { SearchBar } from "../search/SearchBar";
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 
 interface HeaderData {
   title: string;
@@ -151,10 +149,9 @@ export const HeaderV8Enhanced = memo(function HeaderV8Enhanced({
         social: [
           {
             platform: "facebook",
-            url: "https://facebook.com",
+            url: "https://www.facebook.com/Automecanik63",
             icon: "facebook",
           },
-          { platform: "twitter", url: "https://twitter.com", icon: "twitter" },
         ],
       },
     },
@@ -171,12 +168,8 @@ export const HeaderV8Enhanced = memo(function HeaderV8Enhanced({
     switch (iconName) {
       case "facebook":
         return <Facebook className="w-4 h-4" />;
-      case "twitter":
-        return <Twitter className="w-4 h-4" />;
       case "instagram":
         return <Instagram className="w-4 h-4" />;
-      case "linkedin":
-        return <Linkedin className="w-4 h-4" />;
       default:
         return null;
     }

@@ -15,7 +15,6 @@ import {
   MapPin,
   Facebook,
   Instagram,
-  Linkedin,
   ArrowRight,
   Heart,
   Youtube,
@@ -154,11 +153,6 @@ export const FooterEnhanced = memo(function FooterEnhanced({
         icon: "instagram",
       },
       {
-        platform: "linkedin",
-        url: "https://linkedin.com/company/automecanik",
-        icon: "linkedin",
-      },
-      {
         platform: "youtube",
         url: "https://www.youtube.com/@automecanik8508",
         icon: "youtube",
@@ -198,8 +192,6 @@ export const FooterEnhanced = memo(function FooterEnhanced({
         return <Facebook className="w-5 h-5" />;
       case "instagram":
         return <Instagram className="w-5 h-5" />;
-      case "linkedin":
-        return <Linkedin className="w-5 h-5" />;
       case "youtube":
         return <Youtube className="w-5 h-5" />;
       default:

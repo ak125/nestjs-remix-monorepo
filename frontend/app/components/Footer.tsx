@@ -4,7 +4,6 @@ import {
   Home,
   Instagram,
   LayoutGrid,
-  Linkedin,
   Mail,
   MapPin,
   Phone,
@@ -37,15 +36,6 @@ export const Footer = () => {
                   className="bg-white/10 hover:bg-primary transition-colors p-2.5 rounded-full"
                 >
                   <Facebook size={20} />
-                </a>
-                <a
-                  href="https://linkedin.com/company/automecanik"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Suivez-nous sur LinkedIn"
-                  className="bg-white/10 hover:bg-primary transition-colors p-2.5 rounded-full"
-                >
-                  <Linkedin size={20} />
                 </a>
                 <a
                   href="https://www.instagram.com/automecanik.co"
