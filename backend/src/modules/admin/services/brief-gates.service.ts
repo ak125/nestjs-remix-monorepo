@@ -409,6 +409,7 @@ export class BriefGatesService extends SupabaseBaseService {
     const first500 = normalized.substring(0, 500);
     const intentWords = brief.primary_intent
       .toLowerCase()
+      .replace(/[,.:;!?()\[\]{}'"]/g, ' ')
       .split(/\s+/)
       .filter((w) => w.length > 3 && !STOP_WORDS_FR.has(w));
 
