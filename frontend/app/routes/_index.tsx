@@ -11,11 +11,8 @@ import {
   Award,
   BookOpen,
   Car,
-  CheckCircle2,
-  ChevronDown,
   ChevronRight,
   Cog,
-  Mail,
   Phone,
   Search,
   Shield,
@@ -42,13 +39,6 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-} from "~/components/ui/carousel";
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import VehicleSelector from "~/components/vehicle/VehicleSelector";
@@ -197,6 +187,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         mf_id: number;
         mf_name: string;
         mf_pic: string;
+        mf_description?: string;
         gammes: Array<{ pg_id: number; pg_alias: string; pg_name: string }>;
       }>,
       brands: (rpcData?.brands || []).map((b: any) => ({
@@ -247,12 +238,44 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
+// ─── COULEURS PAR FAMILLE (gradient bg image) ────────────
+const FAMILY_COLORS: Record<string, string> = {
+  "Système de filtration": "from-blue-500 to-blue-700",
+  "Système de freinage": "from-red-600 to-rose-700",
+  "Courroie, galet, poulie et chaîne": "from-slate-600 to-slate-800",
+  "Allumage / Préchauffage": "from-yellow-400 to-amber-600",
+  "Préchauffage et allumage": "from-yellow-400 to-amber-600",
+  "Direction / Train avant": "from-emerald-500 to-teal-600",
+  "Direction et liaison au sol": "from-emerald-500 to-teal-600",
+  "Amortisseur / Suspension": "from-purple-600 to-violet-700",
+  "Amortisseur et suspension": "from-purple-600 to-violet-700",
+  "Support moteur": "from-violet-600 to-purple-800",
+  Embrayage: "from-emerald-600 to-green-700",
+  Transmission: "from-teal-600 to-cyan-700",
+  Électrique: "from-yellow-400 to-amber-600",
+  "Système électrique": "from-yellow-400 to-amber-600",
+  "Capteurs / Sondes": "from-amber-600 to-orange-700",
+  Capteurs: "from-amber-600 to-orange-700",
+  "Alimentation Carburant & Air": "from-lime-500 to-green-600",
+  "Système d'alimentation": "from-lime-500 to-green-600",
+  Moteur: "from-orange-600 to-red-700",
+  Refroidissement: "from-cyan-400 to-blue-600",
+  Climatisation: "from-sky-400 to-cyan-600",
+  Échappement: "from-gray-700 to-neutral-800",
+  "Éclairage / Signalisation": "from-indigo-500 to-blue-700",
+  Eclairage: "from-indigo-500 to-blue-700",
+  Accessoires: "from-fuchsia-500 to-pink-600",
+  "Turbo / Suralimentation": "from-rose-600 to-pink-700",
+  Turbo: "from-rose-600 to-pink-700",
+};
+
 // ─── FALLBACK DATA ───────────────────────────────────────
 const CATS = [
   {
     i: "🛢️",
     pic: "Filtres.webp",
     n: "Système de filtration",
+    desc: "Le système de filtration du véhicule est conçu pour filtrer l'air et les fluides entrant dans le moteur et dans l'habitacle. Les filtres doivent être régulièrement remplacés selon les préconisations des constructeurs automobiles.",
     sub: [
       "Filtre à huile",
       "Filtre à air",
@@ -264,6 +287,7 @@ const CATS = [
     i: "🛞",
     pic: "Freinage.webp",
     n: "Système de freinage",
+    desc: "Le système de freinage est l'élément de sécurité le plus important du véhicule. Il doit être en parfait état de fonctionnement afin d'assurer le freinage à tout instant.",
     sub: [
       "Plaquette de frein",
       "Disque de frein",
@@ -275,6 +299,7 @@ const CATS = [
     i: "⛓️",
     pic: "Courroie_galet_poulie.webp",
     n: "Courroie, galet, poulie et chaîne",
+    desc: "L'entraînement des différents composants du moteur se fait par l'intermédiaire des courroies, des galets et des poulies qui synchronisent l'ensemble des pièces moteur.",
     sub: [
       "Courroie d'accessoire",
       "Galet tendeur de courroie d'accessoire",
@@ -286,6 +311,7 @@ const CATS = [
     i: "🔥",
     pic: "Allumage_Prechauffage.webp",
     n: "Allumage / Préchauffage",
+    desc: "L'allumage du moteur essence et le préchauffage du moteur diesel sont actionnés par les différents composants du système qui assurent le démarrage et la combustion du moteur.",
     sub: [
       "Bougie de préchauffage",
       "Boîtier de préchauffage",
@@ -297,6 +323,7 @@ const CATS = [
     i: "🔧",
     pic: "Direction.webp",
     n: "Direction / Train avant",
+    desc: "Le système de direction est l'ensemble des pièces de liaison au sol et de direction qui assure votre sécurité et le confort de conduite.",
     sub: [
       "Rotule de direction",
       "Barre de direction",
@@ -308,6 +335,7 @@ const CATS = [
     i: "🏎️",
     pic: "Amortisseur.webp",
     n: "Amortisseur / Suspension",
+    desc: "Le système de suspension est l'ensemble des pièces qui garantit l'amortissement des chocs pour une bonne tenue de route lors de la conduite.",
     sub: [
       "Amortisseur",
       "Butée de suspension",
@@ -319,12 +347,14 @@ const CATS = [
     i: "⚙️",
     pic: "Support.webp",
     n: "Support moteur",
+    desc: "La suspension du moteur et de la boîte de vitesses est assurée par des supports qui absorbent les chocs et vibrations lors du fonctionnement du véhicule.",
     sub: ["Support moteur", "Support de boîte de vitesses"],
   },
   {
     i: "🔩",
     pic: "Embrayage.webp",
     n: "Embrayage",
+    desc: "Le système d'embrayage est l'ensemble des composants qui assurent l'accouplement du moteur à la boîte de vitesses pour garantir le passage des vitesses.",
     sub: [
       "Kit d'embrayage",
       "Butée d'embrayage hydraulique",
@@ -336,6 +366,7 @@ const CATS = [
     i: "🔗",
     pic: "Transmission.webp",
     n: "Transmission",
+    desc: "Le système de transmission est l'ensemble des composants qui assure la transmission du mouvement du moteur vers les roues du véhicule.",
     sub: [
       "Cardan",
       "Soufflet de cardan",
@@ -347,12 +378,14 @@ const CATS = [
     i: "⚡",
     pic: "Systeme_electrique.webp",
     n: "Électrique",
+    desc: "Le système électrique est l'ensemble des composants qui assure le démarrage du moteur et la charge électrique des différents accessoires.",
     sub: ["Alternateur", "Démarreur", "Neiman", "Contacteur démarreur"],
   },
   {
     i: "📡",
     pic: "Capteurs.webp",
     n: "Capteurs / Sondes",
+    desc: "Les capteurs sont des composants électroniques qui captent l'information et l'envoient aux différents actionneurs pour assurer le bon fonctionnement du véhicule.",
     sub: [
       "Pressostat d'huile",
       "Capteur d'impulsion",
@@ -364,6 +397,7 @@ const CATS = [
     i: "⛽",
     pic: "Alimentation.webp",
     n: "Alimentation Carburant & Air",
+    desc: "Le système d'alimentation est l'ensemble des éléments qui gèrent l'air et le carburant nécessaire pour le bon fonctionnement du moteur.",
     sub: [
       "Débitmètre d'air",
       "Vanne EGR",
@@ -375,6 +409,7 @@ const CATS = [
     i: "🔧",
     pic: "Moteur.webp",
     n: "Moteur",
+    desc: "L'étanchéité du moteur est l'ensemble des joints et des pièces qui assurent la jointure entre les différents éléments du moteur pour une bonne circulation des fluides.",
     sub: [
       "Joint de culasse",
       "Joint cache culbuteurs",
@@ -386,6 +421,7 @@ const CATS = [
     i: "🌡️",
     pic: "Refroidissement.webp",
     n: "Refroidissement",
+    desc: "Le système de refroidissement est l'ensemble des composants qui font circuler le liquide de refroidissement pour refroidir le moteur.",
     sub: [
       "Pompe à eau",
       "Radiateur",
@@ -397,6 +433,7 @@ const CATS = [
     i: "❄️",
     pic: "Climatisation.webp",
     n: "Climatisation",
+    desc: "Le système de climatisation et chauffage est l'ensemble des composants qui créent l'air frais et chaud circulant du moteur vers l'habitacle.",
     sub: [
       "Pulseur d'air",
       "Compresseur de climatisation",
@@ -408,6 +445,7 @@ const CATS = [
     i: "💨",
     pic: "Echappement.webp",
     n: "Échappement",
+    desc: "Le système d'échappement est l'ensemble des pièces qui font évacuer les gaz d'échappement du moteur.",
     sub: [
       "Catalyseur",
       "Filtre à particules (FAP)",
@@ -419,12 +457,14 @@ const CATS = [
     i: "💡",
     pic: "Eclairage.webp",
     n: "Éclairage / Signalisation",
+    desc: "Le système d'éclairage est l'ensemble des pièces qui éclairent l'avant et l'arrière du véhicule pour la sécurité et le confort de conduite.",
     sub: ["Feu avant", "Feu arrière", "Feu clignotant", "Phare antibrouillard"],
   },
   {
     i: "🧹",
     pic: "Accessoires.webp",
     n: "Accessoires",
+    desc: "Les accessoires sont l'ensemble des pièces utilisées pour la sécurité et le confort de conduite au quotidien.",
     sub: [
       "Balai d'essuie-glace",
       "Commande d'essuie-glace",
@@ -436,6 +476,7 @@ const CATS = [
     i: "🌀",
     pic: "Turbo.webp",
     n: "Turbo / Suralimentation",
+    desc: "Le turbo est un composant de suralimentation qui assure l'augmentation de la puissance du moteur.",
     sub: [
       "Turbocompresseur",
       "Gaine de turbo",
@@ -580,75 +621,6 @@ const BLOG = [
   },
 ];
 
-const BESTSELLERS = [
-  {
-    name: "Plaquettes de frein",
-    brand: "BREMBO",
-    price: "24,90",
-    oldPrice: "29,90",
-    promo: "-15%",
-    rating: 4.8,
-    reviews: 127,
-    img: "Freinage.webp",
-    link: "/pieces/plaquette-de-frein-402.html",
-  },
-  {
-    name: "Kit de distribution",
-    brand: "GATES",
-    price: "89,90",
-    oldPrice: null,
-    promo: null,
-    rating: 4.9,
-    reviews: 89,
-    img: "Courroie_galet_poulie.webp",
-    link: "/pieces/kit-de-distribution-307.html",
-  },
-  {
-    name: "Filtre à huile",
-    brand: "MANN",
-    price: "6,90",
-    oldPrice: "8,50",
-    promo: "-19%",
-    rating: 4.7,
-    reviews: 203,
-    img: "Filtres.webp",
-    link: "/pieces/filtre-a-huile-7.html",
-  },
-  {
-    name: "Amortisseur avant",
-    brand: "MONROE",
-    price: "39,90",
-    oldPrice: null,
-    promo: null,
-    rating: 4.6,
-    reviews: 74,
-    img: "Amortisseur.webp",
-    link: "/pieces/amortisseur-854.html",
-  },
-  {
-    name: "Courroie accessoire",
-    brand: "DAYCO",
-    price: "12,90",
-    oldPrice: "15,90",
-    promo: "-20%",
-    rating: 4.5,
-    reviews: 156,
-    img: "Courroie_galet_poulie.webp",
-    link: "/pieces/courroie-d-accessoire-10.html",
-  },
-  {
-    name: "Disque de frein",
-    brand: "TRW",
-    price: "19,90",
-    oldPrice: null,
-    promo: null,
-    rating: 4.8,
-    reviews: 112,
-    img: "Freinage.webp",
-    link: "/pieces/disque-de-frein-82.html",
-  },
-];
-
 const STATS = [
   { value: "50K+", label: "Références", icon: TrendingUp },
   { value: "120+", label: "Marques auto", icon: Car },
@@ -694,6 +666,8 @@ export default function RedesignPreview() {
           img: f.mf_pic ? `${IMG_PROXY_FAMILIES}/${f.mf_pic}` : undefined,
           i: "📦",
           n: f.mf_name,
+          desc: f.mf_description || "",
+          color: FAMILY_COLORS[f.mf_name] || "from-slate-500 to-slate-700",
           sub: f.gammes.slice(0, 4).map((g) => g.pg_name),
           gammes: f.gammes.map((g) => ({
             name: g.pg_name,
@@ -705,6 +679,8 @@ export default function RedesignPreview() {
         }))
       : CATS.map((c) => ({
           ...c,
+          desc: c.desc || "",
+          color: FAMILY_COLORS[c.n] || "from-slate-500 to-slate-700",
           img: c.pic ? `${IMG_PROXY_FAMILIES}/${c.pic}` : undefined,
           gammes: c.sub.map((s) => ({ name: s, link: "#" })),
           link: "#",
@@ -753,9 +729,9 @@ export default function RedesignPreview() {
       : FAQ_DATA;
 
   const navigate = useNavigate();
-  const [expandedCat, setExpandedCat] = useState<string | null>(null);
   const [mineCode, setMineCode] = useState("");
   const [refQuery, setRefQuery] = useState("");
+  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
 
   return (
     <div className="min-h-screen bg-white">
@@ -792,7 +768,6 @@ export default function RedesignPreview() {
                 url: "https://www.automecanik.com",
                 logo: "https://www.automecanik.com/logo-navbar.webp",
                 image: "https://www.automecanik.com/logo-og.webp",
-                telephone: "+33-1-23-45-67-89",
                 priceRange: "€€",
                 address: {
                   "@type": "PostalAddress",
@@ -854,7 +829,7 @@ export default function RedesignPreview() {
           />
 
           <div className="relative container mx-auto px-4 max-w-[780px] text-center">
-            <h1 className="text-lg sm:text-2xl md:text-[32px] font-extrabold text-white leading-tight mb-1 sm:mb-2 tracking-tight">
+            <h1 className="text-xl sm:text-2xl md:text-[32px] font-extrabold text-white leading-tight mb-1 sm:mb-2 tracking-tight">
               Pi&egrave;ces auto{" "}
               <span className="bg-gradient-to-r from-[#e8590c] to-[#f76707] bg-clip-text text-transparent">
                 pas cher
@@ -1143,11 +1118,7 @@ export default function RedesignPreview() {
           sub={`Pièces neuves pour toutes marques — ${catalogFamilies.length} familles techniques`}
         />
 
-        <Tabs
-          defaultValue="Tout"
-          onValueChange={() => setExpandedCat(null)}
-          className="w-full"
-        >
+        <Tabs defaultValue="Tout" className="w-full">
           <TabsList className="w-full justify-start overflow-x-auto hide-scroll bg-[#0d1b3e] rounded-2xl p-1.5 mb-5 sm:mb-6 flex-nowrap h-auto shadow-lg">
             {CATALOG_DOMAINS.map((domain) => {
               const count = domain.families
@@ -1181,66 +1152,83 @@ export default function RedesignPreview() {
               value={domain.label}
               className="mt-0"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
                 {(domain.families === null
                   ? catalogFamilies
                   : catalogFamilies.filter((cat) =>
                       domain.families!.some((d) => d === cat.n),
                     )
                 ).map((cat, i) => {
-                  const isOpen = expandedCat === cat.n;
+                  const isOpen = expandedCats.has(cat.n);
+                  const displayedGammes = isOpen
+                    ? cat.gammes
+                    : cat.gammes.slice(0, 4);
                   return (
                     <Reveal key={cat.n} delay={Math.min(i * 40, 400)}>
-                      <Card
-                        className={`group transition-all duration-200 rounded-2xl overflow-hidden ${isOpen ? "border-[#e8590c]/30 shadow-lg" : "hover:border-[#e8590c]/20 hover:shadow-lg hover:-translate-y-0.5"}`}
-                      >
-                        <Button
-                          variant="ghost"
-                          onClick={() => setExpandedCat(isOpen ? null : cat.n)}
-                          className="flex items-start gap-3 w-full text-left h-auto p-0 hover:bg-transparent"
+                      <Card className="group transition-all duration-200 rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1">
+                        {/* Image header avec gradient couleur */}
+                        <div
+                          className={`relative h-32 sm:h-48 overflow-hidden bg-gradient-to-br ${cat.color}`}
                         >
-                          <CardContent className="flex items-start gap-3 p-3.5 sm:p-4 w-full">
-                            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0 overflow-hidden border border-slate-100">
-                              {cat.img ? (
-                                <img
-                                  src={cat.img}
-                                  alt={cat.n}
-                                  className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
-                                  loading="lazy"
-                                />
-                              ) : (
-                                <span className="text-2xl">{cat.i}</span>
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-sm font-bold text-slate-900 mb-1">
-                                {cat.n}
-                              </div>
-                              <div className="text-[11px] text-slate-400">
-                                {cat.gammes.length} gammes de pièces
-                              </div>
-                            </div>
-                            <ChevronDown
-                              className={`w-4 h-4 flex-shrink-0 self-center transition-transform duration-200 ${isOpen ? "rotate-180 text-[#e8590c]" : "text-slate-400 group-hover:text-[#e8590c]"}`}
+                          {cat.img ? (
+                            <img
+                              src={cat.img}
+                              alt={cat.n}
+                              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                              loading="lazy"
+                              width="400"
+                              height="300"
                             />
-                          </CardContent>
-                        </Button>
-                        {isOpen && (
-                          <div className="border-t border-slate-100 bg-slate-50/50 px-3.5 sm:px-4 py-2.5">
-                            <div className="flex flex-wrap gap-1.5">
-                              {cat.gammes.map((g) => (
-                                <Link key={g.name} to={g.link}>
-                                  <Badge
-                                    variant="secondary"
-                                    className="px-2.5 py-1 bg-white rounded-lg text-[11px] text-slate-600 font-medium hover:bg-orange-50 hover:text-[#e8590c] transition-colors border border-slate-100 hover:border-[#e8590c]/20 cursor-pointer"
-                                  >
-                                    {g.name}
-                                  </Badge>
-                                </Link>
-                              ))}
-                            </div>
+                          ) : (
+                            <span className="absolute inset-0 flex items-center justify-center text-6xl opacity-40">
+                              {cat.i}
+                            </span>
+                          )}
+                          {/* Overlay titre */}
+                          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/80 transition-colors duration-300">
+                            <h3 className="text-white font-bold text-lg line-clamp-2">
+                              {cat.n}
+                            </h3>
                           </div>
-                        )}
+                        </div>
+                        {/* Contenu : description + badges gammes */}
+                        <CardContent className="pt-4 pb-4">
+                          {cat.desc && (
+                            <p className="text-sm text-slate-500 mb-3 line-clamp-2">
+                              {cat.desc}
+                            </p>
+                          )}
+                          <div className="flex flex-wrap gap-1.5">
+                            {displayedGammes.map((g) => (
+                              <Link key={g.name} to={g.link}>
+                                <Badge
+                                  variant="secondary"
+                                  className="px-2.5 py-1 bg-white rounded-lg text-[11px] text-slate-600 font-medium hover:bg-orange-50 hover:text-[#e8590c] transition-colors border border-slate-100 hover:border-[#e8590c]/20 cursor-pointer"
+                                >
+                                  {g.name}
+                                </Badge>
+                              </Link>
+                            ))}
+                            {cat.gammes.length > 4 && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setExpandedCats((prev) => {
+                                    const next = new Set(prev);
+                                    if (next.has(cat.n)) next.delete(cat.n);
+                                    else next.add(cat.n);
+                                    return next;
+                                  })
+                                }
+                                className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-[#e8590c] hover:bg-orange-50 transition-colors border border-[#e8590c]/20 cursor-pointer"
+                              >
+                                {isOpen
+                                  ? "Voir moins"
+                                  : `+${cat.gammes.length - 4} gammes`}
+                              </button>
+                            )}
+                          </div>
+                        </CardContent>
                       </Card>
                     </Reveal>
                   );
@@ -1249,52 +1237,6 @@ export default function RedesignPreview() {
             </TabsContent>
           ))}
         </Tabs>
-      </PageSection>
-
-      {/* ════════════════════════════════════════
-          CONSTRUCTEURS — 36 marques carousel
-         ════════════════════════════════════════ */}
-      <PageSection id="marques" bg="slate">
-        <SectionHeader
-          title="Par constructeur"
-          sub={`${brandsList.length} marques auto — glissez pour explorer`}
-        />
-        <Carousel opts={{ align: "start", loop: true }} className="w-full">
-          <CarouselContent className="-ml-2.5">
-            {brandsList.map((b) => (
-              <CarouselItem
-                key={b.name}
-                className="pl-2.5 basis-1/2 sm:basis-1/3 md:basis-1/5 lg:basis-[14.28%] xl:basis-[12.5%]"
-              >
-                <Link to={`/constructeurs/${b.slug}-${b.id}.html`}>
-                  <Card className="group hover:border-[#e8590c] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 rounded-2xl border-[1.5px]">
-                    <CardContent className="flex flex-col items-center justify-center py-3 px-2 gap-1.5">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden group-hover:bg-orange-50 transition-colors">
-                        {b.logo ? (
-                          <img
-                            src={b.logo}
-                            alt={b.name}
-                            className="w-14 h-14 sm:w-16 sm:h-16 object-contain"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <span className="text-base sm:text-lg font-bold text-[#0d1b3e]">
-                            {b.name.slice(0, 2).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 text-center truncate w-full group-hover:text-[#e8590c] transition-colors">
-                        {b.name}
-                      </span>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="-left-1 sm:-left-4" />
-          <CarouselNext className="-right-1 sm:-right-4" />
-        </Carousel>
       </PageSection>
 
       {/* ════════════════════════════════════════
@@ -1344,12 +1286,48 @@ export default function RedesignPreview() {
       </PageSection>
 
       {/* ════════════════════════════════════════
-          STATS + BESTSELLERS — Social proof
+          CONSTRUCTEURS — 36 marques grille
          ════════════════════════════════════════ */}
-      <PageSection id="bestsellers">
-        {/* Stats bar — dark unified */}
+      <PageSection id="marques" bg="slate">
+        <SectionHeader
+          title="Par constructeur"
+          sub={`${brandsList.length} marques auto`}
+        />
+        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-9 gap-2.5 sm:gap-3">
+          {brandsList.map((b) => (
+            <Link key={b.name} to={`/constructeurs/${b.slug}-${b.id}.html`}>
+              <Card className="group hover:border-[#e8590c] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 rounded-2xl border-[1.5px]">
+                <CardContent className="flex flex-col items-center justify-center py-3 px-2 gap-1.5">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden group-hover:bg-orange-50 transition-colors">
+                    {b.logo ? (
+                      <img
+                        src={b.logo}
+                        alt={b.name}
+                        className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <span className="text-base sm:text-lg font-bold text-[#0d1b3e]">
+                        {b.name.slice(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500 text-center truncate w-full group-hover:text-[#e8590c] transition-colors">
+                    {b.name}
+                  </span>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </PageSection>
+
+      {/* ════════════════════════════════════════
+          STATS — Social proof
+         ════════════════════════════════════════ */}
+      <PageSection id="stats">
         <Reveal>
-          <Card className="rounded-2xl bg-[#0d1b3e] border-0 mb-8 md:mb-10 overflow-hidden">
+          <Card className="rounded-2xl bg-[#0d1b3e] border-0 overflow-hidden">
             <CardContent className="grid grid-cols-2 md:grid-cols-4 p-0">
               {STATS.map(({ value, label, icon: Icon }, i) => (
                 <div
@@ -1370,78 +1348,6 @@ export default function RedesignPreview() {
             </CardContent>
           </Card>
         </Reveal>
-
-        {/* Bestsellers grid */}
-        <SectionHeader
-          title="Meilleures ventes"
-          sub="Les pièces auto les plus demandées par nos clients"
-        />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {BESTSELLERS.map((item, i) => (
-            <Reveal key={item.name} delay={Math.min(i * 60, 300)}>
-              <Link to={item.link}>
-                <Card className="group relative rounded-2xl overflow-hidden border-[1.5px] hover:border-[#e8590c]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-                  {/* Promo badge */}
-                  {item.promo && (
-                    <Badge className="absolute top-2 left-2 z-10 bg-red-600 hover:bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md border-0">
-                      {item.promo}
-                    </Badge>
-                  )}
-                  <div className="aspect-square bg-slate-50 flex items-center justify-center p-2 sm:p-3 overflow-hidden">
-                    <img
-                      src={`${IMG_PROXY_FAMILIES}/${item.img}`}
-                      alt={item.name}
-                      className="w-full h-full object-contain transition-transform duration-300"
-                      loading="lazy"
-                    />
-                  </div>
-                  <CardContent className="p-3 sm:p-3.5 pt-0 sm:pt-0">
-                    <Badge
-                      variant="secondary"
-                      className="mb-1.5 px-2 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-600 rounded-md border-0"
-                    >
-                      {item.brand}
-                    </Badge>
-                    <div className="text-xs sm:text-sm font-bold text-slate-900 leading-snug line-clamp-2 mb-1">
-                      {item.name}
-                    </div>
-                    {/* Price + old price */}
-                    <div className="flex items-baseline gap-1.5 mb-1">
-                      <span className="text-sm font-bold text-[#e8590c]">
-                        {item.price}&euro;
-                      </span>
-                      {item.oldPrice && (
-                        <span className="text-[11px] text-slate-400 line-through">
-                          {item.oldPrice}&euro;
-                        </span>
-                      )}
-                    </div>
-                    {/* Star rating */}
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }, (_, s) => (
-                        <Star
-                          key={s}
-                          className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${s < Math.round(item.rating) ? "fill-amber-400 text-amber-400" : "fill-slate-200 text-slate-200"}`}
-                        />
-                      ))}
-                      <span className="text-[11px] text-slate-500 ml-1">
-                        ({item.reviews})
-                      </span>
-                    </div>
-                    {/* CTA voir le produit */}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="w-full mt-2 h-9 text-xs font-semibold bg-[#e8590c]/10 text-[#e8590c] border-[#e8590c]/20 hover:bg-[#e8590c] hover:text-white hover:border-[#e8590c] rounded-lg transition-colors"
-                    >
-                      <span>Voir le produit</span>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Link>
-            </Reveal>
-          ))}
-        </div>
       </PageSection>
 
       {/* ════════════════════════════════════════
@@ -1530,44 +1436,6 @@ export default function RedesignPreview() {
           ))}
         </Accordion>
       </PageSection>
-
-      {/* ════════════════════════════════════════
-          NEWSLETTER
-         ════════════════════════════════════════ */}
-      <Reveal>
-        <PageSection bg="navy" maxWidth="3xl" className="text-center">
-          <div className="w-12 h-12 rounded-full bg-[#e8590c]/15 flex items-center justify-center mx-auto mb-4">
-            <Mail className="w-6 h-6 text-[#e8590c]" />
-          </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1.5">
-            Recevez nos offres exclusives
-          </h2>
-          <p className="text-sm text-white/50 mb-4">
-            Promotions, guides d&apos;entretien et conseils directement dans
-            votre bo&icirc;te mail
-          </p>
-          <div className="flex items-center justify-center gap-4 text-[11px] text-white/40 mb-5">
-            <span className="flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" /> 1x / semaine
-            </span>
-            <span className="flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" /> 0 spam
-            </span>
-            <span className="flex items-center gap-1">
-              <CheckCircle2 className="w-3 h-3" /> D&eacute;sinscription facile
-            </span>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2 max-w-lg mx-auto">
-            <Input
-              placeholder="Votre adresse email"
-              className="bg-white/10 border-white/15 text-white placeholder:text-white/35 rounded-xl h-11 flex-1 focus-visible:border-[#e8590c] focus-visible:ring-[#e8590c]/15"
-            />
-            <Button className="h-11 px-7 rounded-xl font-bold text-sm bg-[#e8590c] hover:bg-[#d9480f] text-white whitespace-nowrap">
-              S&apos;inscrire <Mail className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        </PageSection>
-      </Reveal>
 
       {/* ════════════════════════════════════════
           EQUIPEMENTIERS — titre + marquee + tags
