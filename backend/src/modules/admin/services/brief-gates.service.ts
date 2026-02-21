@@ -315,7 +315,10 @@ export class BriefGatesService extends SupabaseBaseService {
 
     for (const forbidden of brief.forbidden_overlap) {
       const pattern = normalizeAccents(forbidden.toLowerCase());
-      if (normalized.includes(pattern)) {
+      // Use word boundary matching to avoid partial matches (e.g. "batterie" in "unbatterie")
+      const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+      if (regex.test(normalized)) {
         hits.push(forbidden);
       }
     }
@@ -417,7 +420,13 @@ export class BriefGatesService extends SupabaseBaseService {
       };
     }
 
-    const found = intentWords.filter((w) => first500.includes(w));
+    // Use word boundary matching to avoid partial matches
+    const matchesWord = (text: string, word: string): boolean => {
+      const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return new RegExp(`\\b${escaped}\\b`, 'i').test(text);
+    };
+
+    const found = intentWords.filter((w) => matchesWord(first500, w));
     const coverage = found.length / intentWords.length;
 
     let verdict: GateResult['verdict'] = 'PASS';
@@ -426,7 +435,7 @@ export class BriefGatesService extends SupabaseBaseService {
 
     const details: string[] = [];
     if (coverage < 0.6) {
-      const missing = intentWords.filter((w) => !first500.includes(w));
+      const missing = intentWords.filter((w) => !matchesWord(first500, w));
       details.push(
         `Coverage ${Math.round(coverage * 100)}% — missing: ${missing.join(', ')}`,
       );
@@ -448,18 +457,29 @@ export class BriefGatesService extends SupabaseBaseService {
       freq[w] = (freq[w] || 0) + 1;
     }
 
-    // Keep top 100 terms by frequency
-    const sorted = Object.entries(freq)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 100);
+    const totalTerms = Object.keys(freq).length;
+
+    // Sub-linear TF: 1 + log(tf) dampens frequent common terms ("disque", "frein")
+    // Pseudo-IDF: log(totalTerms / df) where df = raw count (approximates document frequency)
+    // This gives discriminating terms (rare in this document) higher weight
+    const weighted: Array<[string, number]> = Object.entries(freq).map(
+      ([term, count]) => {
+        const tf = 1 + Math.log(count);
+        const idf = Math.log((totalTerms + 1) / (count + 1)) + 1;
+        return [term, tf * idf];
+      },
+    );
+
+    // Keep top 100 terms by TF-IDF weight
+    const sorted = weighted.sort((a, b) => b[1] - a[1]).slice(0, 100);
 
     // Normalize to unit vector
-    const total = sorted.reduce((s, [, c]) => s + c * c, 0);
+    const total = sorted.reduce((s, [, w]) => s + w * w, 0);
     const norm = Math.sqrt(total) || 1;
 
     const fingerprint: Record<string, number> = {};
-    for (const [term, count] of sorted) {
-      fingerprint[term] = count / norm;
+    for (const [term, weight] of sorted) {
+      fingerprint[term] = weight / norm;
     }
 
     return fingerprint;
