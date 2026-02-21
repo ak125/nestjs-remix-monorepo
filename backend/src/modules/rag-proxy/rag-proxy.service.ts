@@ -3,6 +3,7 @@ import {
   HttpException,
   Logger,
   BadRequestException,
+  ConflictException,
   NotFoundException,
 } from '@nestjs/common';
 import type { Response } from 'express';
@@ -1041,6 +1042,16 @@ export class RagProxyService {
     const jobId = `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const truthLevel = request.truthLevel || 'L3';
 
+    // Prevent concurrent web ingestions
+    const runningJob = Array.from(this.webJobs.values()).find(
+      (j) => j.status === 'running',
+    );
+    if (runningJob) {
+      throw new ConflictException(
+        `Web ingest already running: ${runningJob.jobId} (${runningJob.url})`,
+      );
+    }
+
     const job = {
       jobId,
       url,
@@ -1091,7 +1102,7 @@ export class RagProxyService {
     job.logLines.push(`Running ingest_web.py for ${job.url}`);
     const ingestCmd = [
       'ENV=dev',
-      'python3 /app/scripts/ingest_web.py',
+      'python3 /app/scripts/ingestors/ingest_web.py',
       `--url '${safeUrl}'`,
       `--knowledge-path '${containerTmpPath}'`,
       `--truth-level ${job.truthLevel}`,
@@ -1136,6 +1147,8 @@ export class RagProxyService {
     // Step 4: Reindex the new files in Weaviate
     job.logLines.push('Reindexing...');
     const reindexCmd = [
+      'exec 8>/tmp/rag-global.lock;',
+      "if ! flock -n 8; then echo 'Another RAG operation active (global lock), aborting web reindex'; exit 1; fi;",
       'ENV=dev',
       'WEAVIATE_URL=http://weaviate-prod:8080',
       'python3 /app/scripts/reindex.py',
