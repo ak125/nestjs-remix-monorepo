@@ -112,6 +112,23 @@ const STOP_WORDS_FR = new Set([
 const NUMERIC_CLAIM_REGEX =
   /\d+(?:[.,]\d+)?\s*(?:mm|cm|km|m|Nm|bar|°C|°F|ans?|%|€|EUR|litres?|kg|g|watts?|W|dB|cv|ch)\b/gi;
 
+// ── Marketing number patterns (excluded from attribution gate) ──
+
+const MARKETING_SENTENCE_PATTERNS = [
+  /\blivraison\b/i,
+  /\ben stock\b/i,
+  /\bpi[eè]ces?\s+(en|disponible)/i,
+  /\b24[/-]?48\s*h/i,
+  /\bgarantie\b/i,
+  /\bsatisf(ait|action)\b/i,
+  /\bcommand(e|er|ez)\b/i,
+  /\bprix\b/i,
+  /\btarif\b/i,
+  /\bpromotion\b/i,
+  /\bremise\b/i,
+  /\bfrais\s+de\s+port/i,
+];
+
 // ── Speculative / hedge patterns (for soft hedging gate) ──
 
 const HEDGE_PATTERNS = [
@@ -213,7 +230,19 @@ export class HardGatesService extends SupabaseBaseService {
     evidencePack: EvidenceEntry[] | null,
   ): ExtendedGateResult {
     const text = stripHtml(content);
-    const claims = Array.from(text.matchAll(NUMERIC_CLAIM_REGEX));
+    const allClaims = Array.from(text.matchAll(NUMERIC_CLAIM_REGEX));
+
+    // Filter out claims in marketing sentences (livraison, prix, stock, garantie...)
+    const claims = allClaims.filter((claim) => {
+      const idx = claim.index ?? 0;
+      const sentStart = Math.max(0, text.lastIndexOf('.', idx) + 1);
+      const sentEnd = text.indexOf('.', idx + claim[0].length);
+      const sentence = text.substring(
+        sentStart,
+        sentEnd > 0 ? sentEnd : undefined,
+      );
+      return !MARKETING_SENTENCE_PATTERNS.some((p) => p.test(sentence));
+    });
 
     if (claims.length === 0) {
       return this.makeResult(

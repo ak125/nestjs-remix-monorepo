@@ -293,10 +293,32 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
         if (finalStatus === 'auto_published') {
           await this.markAsPublished(pgId, pgAlias, pageType);
-          this.logger.log(
-            `Auto-published ${pgAlias}/${pageType} (score=${qualityScore}, reason=${result.reason})`,
-          );
         }
+
+        // Unified publish_decision log for rollout monitoring
+        this.logger.log(
+          JSON.stringify({
+            event: 'publish_decision',
+            pgAlias,
+            pageType,
+            finalStatus,
+            reason: result.reason,
+            qualityScore,
+            isCanary:
+              (process.env.CANARY_GAMMES || '')
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+                .includes(pgAlias) ||
+              (process.env.CANARY_GAMMES || '').trim() === '*',
+            hardGatesEnabled: process.env.HARD_GATES_ENABLED === 'true',
+            autoRepairEnabled: process.env.AUTO_REPAIR_ENABLED === 'true',
+            repairPasses: result.repairResult?.totalPasses ?? 0,
+            repairDurationMs: result.repairResult?.durationMs ?? 0,
+            softCanPublish,
+            hedgeCount: hedgeResult.count,
+          }),
+        );
       }
 
       // Update dependent tables — skip when RAG absent (no content changed)
@@ -804,6 +826,19 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         this.logger.warn(
           `Auto-repair pass ${pass}: no content change for ${pgAlias}, stopping`,
         );
+        break;
+      }
+
+      // Min content length guard: abort if repair stripped too much
+      const plainText = content.replace(/<[^>]+>/g, '').trim();
+      if (plainText.length < 200) {
+        this.logger.warn(
+          `Auto-repair pass ${pass}: content too short (${plainText.length} chars) for ${pgAlias}, aborting repair`,
+        );
+        qualityFlags.push('REPAIR_CONTENT_TOO_SHORT');
+        // Revert to pre-repair content
+        await this.writeContentToDb(pgId, pgAlias, pageType, preRepairContent);
+        content = preRepairContent;
         break;
       }
     }
@@ -1319,7 +1354,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       if (/°C/.test(match)) return 'à la température préconisée';
       if (/ans?/.test(match)) return "selon l'usure constatée";
       if (/%/.test(match)) return 'significativement';
-      if (/€/.test(match)) return '';
+      if (/€|EUR/.test(match)) return 'un tarif compétitif';
       return '';
     });
     // Clean up double spaces
@@ -1330,31 +1365,74 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
   private stripNovelTerms(content: string, targets: string[]): string {
     if (targets.length === 0) return content;
     let result = content;
+
+    // Collect all novel terms to check against
+    const terms: string[] = [];
     for (const target of targets) {
-      // Extract actual term from "term:xxx" format
       const term = target.startsWith('term:') ? target.slice(5) : target;
-      if (!term) continue;
-      // Remove sentences containing the novel term
-      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const sentencePattern = new RegExp(
-        `[^.]*\\b${escaped}\\b[^.]*\\.\\s*`,
-        'gi',
-      );
-      result = result.replace(sentencePattern, '');
+      if (term) terms.push(term.toLowerCase());
     }
-    return result.trim();
+    if (terms.length === 0) return result;
+
+    // Split by HTML block elements to avoid orphaning tags
+    // Match <p>, <li>, <div>, <h2-6>, <blockquote> blocks
+    const blockRegex =
+      /(<(?:p|li|div|h[2-6]|blockquote)[^>]*>)([\s\S]*?)(<\/(?:p|li|div|h[2-6]|blockquote)>)/gi;
+
+    result = result.replace(
+      blockRegex,
+      (fullMatch, openTag, inner, _closeTag) => {
+        const plainInner = inner.replace(/<[^>]+>/g, ' ').toLowerCase();
+        // Check if any novel term appears in this block
+        const hasNovelTerm = terms.some((t) => {
+          const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          return new RegExp(`\\b${escaped}\\b`).test(plainInner);
+        });
+        if (hasNovelTerm) return ''; // Remove entire block
+        return fullMatch;
+      },
+    );
+
+    // Clean up leftover whitespace
+    result = result.replace(/\n{3,}/g, '\n\n').trim();
+    return result;
   }
 
   private removeLeakingSentences(content: string, targets: string[]): string {
     if (targets.length === 0) return content;
-    const result = content;
+    let result = content;
+
+    // Split content into HTML blocks for safe removal
+    // We work on block-level elements to avoid orphaning HTML tags
+    const blockTags =
+      /<(?:p|li|div|h[2-6]|tr|blockquote)[^>]*>[\s\S]*?<\/(?:p|li|div|h[2-6]|tr|blockquote)>/gi;
+
     for (const target of targets) {
-      // Extract sentence index from "sentence:N" format
-      const match = target.match(/sentence:(\d+)/);
-      if (!match) continue;
-      // Remove sentences that leak cross-gamme content
-      // Since we can't reliably index sentences in HTML, we remove by content match
+      // Extract the sentence excerpt from the triggerItem issue field
+      // Format: "Technical procedure with numbers for non-target gamme: \"<excerpt>...\""
+      const excerptMatch = target.match(/:\s*"([^"]{10,})\.{0,3}"/);
+      if (!excerptMatch) continue;
+
+      // Use first 40 chars of excerpt as match key (enough to identify uniquely)
+      const excerpt = excerptMatch[1].substring(0, 40).toLowerCase().trim();
+      if (!excerpt) continue;
+
+      // Find and remove the HTML block containing this excerpt
+      result = result.replace(blockTags, (block) => {
+        const blockText = block
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .toLowerCase()
+          .trim();
+        if (blockText.includes(excerpt)) {
+          return ''; // Remove entire block
+        }
+        return block;
+      });
     }
+
+    // Clean up empty whitespace left by removals
+    result = result.replace(/\n{3,}/g, '\n\n').trim();
     return result;
   }
 
