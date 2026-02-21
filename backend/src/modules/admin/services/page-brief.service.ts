@@ -33,6 +33,14 @@ export interface PageBrief {
   created_at: string;
   updated_at: string;
   validated_at: string | null;
+  /** Brief Factory 2.0: link to family template */
+  template_id: number | null;
+  /** Brief Factory 2.0: gamme-specific overrides (override template_json) */
+  overrides_json: Record<string, unknown>;
+  /** Confidence score (0.0 → 1.0): cross-source stability */
+  confidence_score: number | null;
+  /** Coverage score (0.0 → 1.0): % non-empty fields */
+  coverage_score: number | null;
 }
 
 export interface OverlapDetail {
