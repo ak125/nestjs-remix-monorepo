@@ -14,11 +14,11 @@ import {
   Phone,
   MapPin,
   Facebook,
-  Twitter,
   Instagram,
   Linkedin,
   ArrowRight,
   Heart,
+  Youtube,
 } from "lucide-react";
 import { memo, useState, useEffect } from "react";
 import { Button } from "~/components/ui/button";
@@ -143,14 +143,26 @@ export const FooterEnhanced = memo(function FooterEnhanced({
       },
     ],
     social: [
-      { platform: "facebook", url: "https://facebook.com", icon: "facebook" },
-      { platform: "twitter", url: "https://twitter.com", icon: "twitter" },
+      {
+        platform: "facebook",
+        url: "https://www.facebook.com/Automecanik63",
+        icon: "facebook",
+      },
       {
         platform: "instagram",
-        url: "https://instagram.com",
+        url: "https://www.instagram.com/automecanik.co",
         icon: "instagram",
       },
-      { platform: "linkedin", url: "https://linkedin.com", icon: "linkedin" },
+      {
+        platform: "linkedin",
+        url: "https://linkedin.com/company/automecanik",
+        icon: "linkedin",
+      },
+      {
+        platform: "youtube",
+        url: "https://www.youtube.com/@automecanik8508",
+        icon: "youtube",
+      },
     ],
     legal: [
       { label: "CGV", url: "/cgv" },
@@ -184,12 +196,12 @@ export const FooterEnhanced = memo(function FooterEnhanced({
     switch (iconName) {
       case "facebook":
         return <Facebook className="w-5 h-5" />;
-      case "twitter":
-        return <Twitter className="w-5 h-5" />;
       case "instagram":
         return <Instagram className="w-5 h-5" />;
       case "linkedin":
         return <Linkedin className="w-5 h-5" />;
+      case "youtube":
+        return <Youtube className="w-5 h-5" />;
       default:
         return null;
     }

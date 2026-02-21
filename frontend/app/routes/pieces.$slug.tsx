@@ -401,8 +401,9 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
               availableLanguage: ["French"],
             },
             sameAs: [
-              "https://www.facebook.com/automecanik",
-              "https://twitter.com/automecanik",
+              "https://www.facebook.com/Automecanik63",
+              "https://www.instagram.com/automecanik.co",
+              "https://www.youtube.com/@automecanik8508",
             ],
           },
         ],

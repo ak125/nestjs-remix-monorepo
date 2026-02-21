@@ -99,7 +99,7 @@ export class MetaTagsService {
    * Meta tags pour la page d'accueil
    */
   private buildHomeMetaTags(data: Partial<MetaTagsData>): MetaTagsData {
-    const defaultTitle = 'MonEntreprise - Votre boutique en ligne de confiance';
+    const defaultTitle = 'Automecanik - Votre boutique en ligne de confiance';
     const defaultDescription =
       'Découvrez notre large gamme de produits de qualité. Livraison rapide, prix compétitifs et service client exceptionnel.';
 
@@ -113,7 +113,7 @@ export class MetaTagsService {
         'qualité',
         'prix compétitifs',
       ],
-      author: 'MonEntreprise',
+      author: 'Automecanik',
       canonical: data.canonical || '/',
       robots: 'index, follow',
       viewport: 'width=device-width, initial-scale=1',
@@ -125,12 +125,12 @@ export class MetaTagsService {
         description: data.description || defaultDescription,
         image: data.image?.url || '/images/og-home.jpg',
         url: '/',
-        siteName: 'MonEntreprise',
+        siteName: 'Automecanik',
         locale: 'fr_FR',
       },
       twitter: {
         card: 'summary_large_image',
-        site: '@monentreprise',
+        site: '@Automecanik',
         title: data.title || defaultTitle,
         description: data.description || defaultDescription,
         image: data.image?.url || '/images/twitter-home.jpg',
@@ -138,11 +138,11 @@ export class MetaTagsService {
       structured: {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        name: 'MonEntreprise',
-        url: 'https://monentreprise.com',
+        name: 'Automecanik',
+        url: 'https://www.automecanik.com',
         potentialAction: {
           '@type': 'SearchAction',
-          target: 'https://monentreprise.com/search?q={search_term_string}',
+          target: 'https://www.automecanik.com/search?q={search_term_string}',
           'query-input': 'required name=search_term_string',
         },
       },
@@ -153,9 +153,9 @@ export class MetaTagsService {
    * Meta tags pour une page produit
    */
   private buildProductMetaTags(data: Partial<MetaTagsData>): MetaTagsData {
-    const title = data.title || 'Produit - MonEntreprise';
+    const title = data.title || 'Produit - Automecanik';
     const description =
-      data.description || 'Découvrez ce produit sur MonEntreprise';
+      data.description || 'Découvrez ce produit sur Automecanik';
 
     return {
       title,
@@ -169,7 +169,7 @@ export class MetaTagsService {
         description,
         image: data.image?.url || '/images/product-default.jpg',
         url: data.canonical || '',
-        siteName: 'MonEntreprise',
+        siteName: 'Automecanik',
       },
       twitter: {
         card: 'summary_large_image',
@@ -191,7 +191,7 @@ export class MetaTagsService {
    * Meta tags pour une page catégorie
    */
   private buildCategoryMetaTags(data: Partial<MetaTagsData>): MetaTagsData {
-    const title = data.title || 'Catégorie - MonEntreprise';
+    const title = data.title || 'Catégorie - Automecanik';
     const description =
       data.description || 'Explorez notre sélection de produits';
 
@@ -207,7 +207,7 @@ export class MetaTagsService {
         description,
         image: data.image?.url || '/images/category-default.jpg',
         url: data.canonical || '',
-        siteName: 'MonEntreprise',
+        siteName: 'Automecanik',
       },
       twitter: {
         card: 'summary',
@@ -222,14 +222,14 @@ export class MetaTagsService {
    * Meta tags pour un article de blog
    */
   private buildArticleMetaTags(data: Partial<MetaTagsData>): MetaTagsData {
-    const title = data.title || 'Article - MonEntreprise';
+    const title = data.title || 'Article - Automecanik';
     const description = data.description || 'Lisez notre dernier article';
 
     return {
       title,
       description,
       keywords: data.keywords || ['article', 'blog', 'actualités'],
-      author: data.author || 'MonEntreprise',
+      author: data.author || 'Automecanik',
       robots: 'index, follow',
       canonical: data.canonical,
       openGraph: {
@@ -238,7 +238,7 @@ export class MetaTagsService {
         description,
         image: data.image?.url || '/images/article-default.jpg',
         url: data.canonical || '',
-        siteName: 'MonEntreprise',
+        siteName: 'Automecanik',
       },
       twitter: {
         card: 'summary_large_image',
@@ -254,7 +254,7 @@ export class MetaTagsService {
         image: data.image?.url,
         author: {
           '@type': 'Organization',
-          name: data.author || 'MonEntreprise',
+          name: data.author || 'Automecanik',
         },
       },
     };
@@ -265,7 +265,7 @@ export class MetaTagsService {
    */
   private buildAdminMetaTags(data: Partial<MetaTagsData>): MetaTagsData {
     return {
-      title: data.title || 'Administration - MonEntreprise',
+      title: data.title || 'Administration - Automecanik',
       description: "Interface d'administration",
       robots: 'noindex, nofollow',
       viewport: 'width=device-width, initial-scale=1',
@@ -278,8 +278,8 @@ export class MetaTagsService {
    */
   private buildDefaultMetaTags(data: Partial<MetaTagsData>): MetaTagsData {
     return {
-      title: data.title || 'MonEntreprise',
-      description: data.description || 'Bienvenue sur MonEntreprise',
+      title: data.title || 'Automecanik',
+      description: data.description || 'Bienvenue sur Automecanik',
       robots: 'index, follow',
       viewport: 'width=device-width, initial-scale=1',
       charset: 'utf-8',
@@ -292,7 +292,7 @@ export class MetaTagsService {
    */
   private getFallbackMetaTags(): MetaTagsData {
     return {
-      title: 'MonEntreprise',
+      title: 'Automecanik',
       description: 'Boutique en ligne',
       robots: 'index, follow',
       viewport: 'width=device-width, initial-scale=1',

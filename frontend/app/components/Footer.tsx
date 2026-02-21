@@ -10,7 +10,6 @@ import {
   Phone,
   Search,
   ShoppingCart,
-  Twitter,
   User,
   Youtube,
 } from "lucide-react";
@@ -31,22 +30,13 @@ export const Footer = () => {
               </p>
               <div className="flex gap-3">
                 <a
-                  href="https://facebook.com/automecanik"
+                  href="https://www.facebook.com/Automecanik63"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Suivez-nous sur Facebook"
                   className="bg-white/10 hover:bg-primary transition-colors p-2.5 rounded-full"
                 >
                   <Facebook size={20} />
-                </a>
-                <a
-                  href="https://twitter.com/automecanik"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Suivez-nous sur Twitter"
-                  className="bg-white/10 hover:bg-primary transition-colors p-2.5 rounded-full"
-                >
-                  <Twitter size={20} />
                 </a>
                 <a
                   href="https://linkedin.com/company/automecanik"
@@ -58,7 +48,7 @@ export const Footer = () => {
                   <Linkedin size={20} />
                 </a>
                 <a
-                  href="https://instagram.com/automecanik"
+                  href="https://www.instagram.com/automecanik.co"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Suivez-nous sur Instagram"
@@ -67,7 +57,7 @@ export const Footer = () => {
                   <Instagram size={20} />
                 </a>
                 <a
-                  href="https://youtube.com/automecanik"
+                  href="https://www.youtube.com/@automecanik8508"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Suivez-nous sur YouTube"

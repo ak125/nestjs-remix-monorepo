@@ -187,7 +187,7 @@ export class LayoutService {
     return {
       platforms: ['facebook', 'twitter', 'linkedin', 'email'],
       defaultUrl: context === 'admin' ? '/admin' : '/',
-      defaultTitle: `${context.charAt(0).toUpperCase() + context.slice(1)} - MonEntreprise`,
+      defaultTitle: `${context.charAt(0).toUpperCase() + context.slice(1)} - Automecanik`,
     };
   }
 
@@ -196,8 +196,8 @@ export class LayoutService {
    */
   private async getMetaTags(context: string): Promise<MetaTagsConfig> {
     return {
-      title: `${context.charAt(0).toUpperCase() + context.slice(1)} - MonEntreprise`,
-      description: `Interface ${context} de MonEntreprise`,
+      title: `${context.charAt(0).toUpperCase() + context.slice(1)} - Automecanik`,
+      description: `Interface ${context} de Automecanik`,
       robots: context === 'admin' ? 'noindex, nofollow' : 'index, follow',
     };
   }
@@ -207,8 +207,8 @@ export class LayoutService {
    */
   private async getMetaTagsConfig(context: string): Promise<MetaTagsConfig> {
     return {
-      title: `${context.charAt(0).toUpperCase() + context.slice(1)} - MonEntreprise`,
-      description: `Interface ${context} de MonEntreprise`,
+      title: `${context.charAt(0).toUpperCase() + context.slice(1)} - Automecanik`,
+      description: `Interface ${context} de Automecanik`,
       robots: context === 'admin' ? 'noindex, nofollow' : 'index, follow',
     };
   }

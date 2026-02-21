@@ -28,9 +28,10 @@ export const SITE_CONFIG = {
   },
 
   social: {
-    facebook: "https://facebook.com/automecanik",
-    instagram: "https://instagram.com/automecanik",
+    facebook: "https://www.facebook.com/Automecanik63",
+    instagram: "https://www.instagram.com/automecanik.co",
     linkedin: "https://linkedin.com/company/automecanik",
+    youtube: "https://www.youtube.com/@automecanik8508",
   },
 
   features: {

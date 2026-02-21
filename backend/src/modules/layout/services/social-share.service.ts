@@ -106,7 +106,7 @@ export class SocialShareService {
       'og:description': data.description || '',
       'og:image': data.image || '',
       'og:type': 'website',
-      'og:site_name': 'MonEntreprise',
+      'og:site_name': 'Automecanik',
     };
   }
 
@@ -119,7 +119,6 @@ export class SocialShareService {
       'twitter:title': data.title,
       'twitter:description': data.description || '',
       'twitter:image': data.image || '',
-      'twitter:site': '@monentreprise',
     };
   }
 

@@ -364,10 +364,10 @@ export class FooterService {
   private buildPublicFooter(): FooterData {
     return {
       company: {
-        name: 'MonEntreprise',
-        address: '123 Rue de la Paix, 75001 Paris',
-        phone: '+33 1 23 45 67 89',
-        email: 'contact@monentreprise.com',
+        name: 'Automecanik',
+        address: '184 avenue Aristide Briand, 93320 Les Pavillons-sous-Bois',
+        phone: '01 77 69 58 92',
+        email: 'contact@automecanik.com',
       },
       links: [
         {
@@ -410,23 +410,23 @@ export class FooterService {
       social: [
         {
           platform: 'Facebook',
-          url: 'https://facebook.com/monentreprise',
+          url: 'https://www.facebook.com/Automecanik63',
           icon: 'facebook',
         },
         {
-          platform: 'Twitter',
-          url: 'https://twitter.com/monentreprise',
-          icon: 'twitter',
-        },
-        {
           platform: 'Instagram',
-          url: 'https://instagram.com/monentreprise',
+          url: 'https://www.instagram.com/automecanik.co',
           icon: 'instagram',
         },
         {
           platform: 'LinkedIn',
-          url: 'https://linkedin.com/company/monentreprise',
+          url: 'https://linkedin.com/company/automecanik',
           icon: 'linkedin',
+        },
+        {
+          platform: 'YouTube',
+          url: 'https://www.youtube.com/@automecanik8508',
+          icon: 'youtube',
         },
       ],
       legal: [
@@ -435,7 +435,7 @@ export class FooterService {
         { label: 'Conditions générales', url: '/terms' },
         { label: 'Cookies', url: '/cookies' },
       ],
-      copyright: `© ${new Date().getFullYear()} MonEntreprise - Tous droits réservés`,
+      copyright: `© ${new Date().getFullYear()} Automecanik - Tous droits réservés`,
       showNewsletter: true,
     };
   }
