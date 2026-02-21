@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import type {
+  EvidenceEntry,
+  ClaimEntry,
+} from '../../../workers/types/content-refresh.types';
 
 // ── Request ──────────────────────────────────────────────────
 
@@ -64,4 +68,6 @@ export interface EnrichmentResult {
   updated: boolean;
   sectionsUpdated: number;
   skippedSections: string[];
+  evidencePack?: EvidenceEntry[];
+  claims?: ClaimEntry[];
 }

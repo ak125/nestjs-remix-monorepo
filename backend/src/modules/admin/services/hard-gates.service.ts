@@ -5,6 +5,7 @@ import type {
   ExtendedGateResult,
   HardGateName,
   EvidenceEntry,
+  ClaimEntry,
 } from '../../../workers/types/content-refresh.types';
 
 // ── Shared helpers (mirrors brief-gates.service.ts) ──
@@ -170,9 +171,10 @@ export class HardGatesService extends SupabaseBaseService {
     pgAlias: string,
     _pageType: string,
     _pgId: number,
+    claims?: ClaimEntry[],
   ): ExtendedGateResult[] {
     return [
-      this.checkAttribution(content, evidencePack),
+      this.checkAttribution(content, evidencePack, claims),
       this.checkNoGuess(content, allowlist),
       this.checkScopeLeakage(content, pgAlias),
       this.checkContradiction(content),
@@ -188,12 +190,13 @@ export class HardGatesService extends SupabaseBaseService {
     _pageType: string,
     _pgId: number,
     gateNames: HardGateName[],
+    claims?: ClaimEntry[],
   ): ExtendedGateResult[] {
     const results: ExtendedGateResult[] = [];
     for (const name of gateNames) {
       switch (name) {
         case 'attribution':
-          results.push(this.checkAttribution(content, evidencePack));
+          results.push(this.checkAttribution(content, evidencePack, claims));
           break;
         case 'no_guess':
           results.push(this.checkNoGuess(content, allowlist));
@@ -226,6 +229,63 @@ export class HardGatesService extends SupabaseBaseService {
   // ── Gate 1: Attribution ──
 
   checkAttribution(
+    content: string,
+    evidencePack: EvidenceEntry[] | null,
+    claimLedger?: ClaimEntry[],
+  ): ExtendedGateResult {
+    // Fast path: if claims ledger is available, use it directly (more accurate)
+    if (claimLedger && claimLedger.length > 0) {
+      return this.checkAttributionFromClaims(claimLedger);
+    }
+
+    // Fallback: scan HTML for numeric claims (legacy path)
+    return this.checkAttributionFromHtml(content, evidencePack);
+  }
+
+  /** Attribution gate using pre-extracted claim ledger (fast, accurate) */
+  private checkAttributionFromClaims(
+    claimLedger: ClaimEntry[],
+  ): ExtendedGateResult {
+    const totalClaims = claimLedger.length;
+    if (totalClaims === 0) {
+      return this.makeResult(
+        'attribution',
+        'PASS',
+        0,
+        ['No claims in ledger'],
+        THRESHOLDS.attribution,
+      );
+    }
+
+    const unsourcedClaims = claimLedger.filter(
+      (c) => c.status === 'unverified' || c.status === 'blocked',
+    );
+    const ratio = unsourcedClaims.length / totalClaims;
+
+    const unsourced = unsourcedClaims.map((c) => ({
+      location: `${c.sectionKey}:${c.kind}`,
+      issue: `Unsourced ${c.kind}: "${c.rawText}" (status=${c.status})`,
+    }));
+
+    const { warn, fail } = THRESHOLDS.attribution;
+    let verdict: ExtendedGateResult['verdict'] = 'PASS';
+    if (ratio > fail) verdict = 'FAIL';
+    else if (ratio > warn) verdict = 'WARN';
+
+    return this.makeResult(
+      'attribution',
+      verdict,
+      ratio,
+      [
+        `${unsourcedClaims.length}/${totalClaims} claims unsourced (ratio=${ratio.toFixed(2)}, via ledger)`,
+      ],
+      THRESHOLDS.attribution,
+      unsourced,
+    );
+  }
+
+  /** Attribution gate by scanning HTML for numeric claims (legacy fallback) */
+  private checkAttributionFromHtml(
     content: string,
     evidencePack: EvidenceEntry[] | null,
   ): ExtendedGateResult {

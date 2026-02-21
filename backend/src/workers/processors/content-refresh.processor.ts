@@ -10,6 +10,11 @@ import { ReferenceService } from '../../modules/seo/services/reference.service';
 import { DiagnosticService } from '../../modules/seo/services/diagnostic.service';
 import { BriefGatesService } from '../../modules/admin/services/brief-gates.service';
 import { HardGatesService } from '../../modules/admin/services/hard-gates.service';
+import { SectionCompilerService } from '../../modules/admin/services/section-compiler.service';
+import {
+  pageTypeToRole,
+  POLICY_VERSION,
+} from '../../config/content-section-policy';
 import type {
   AnyContentRefreshJobData,
   ContentRefreshResult,
@@ -19,6 +24,7 @@ import type {
   AutoRepairAttempt,
   RepairResult,
   EvidenceEntry,
+  ClaimEntry,
   SafeFallbackDraft,
 } from '../types/content-refresh.types';
 
@@ -34,6 +40,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly diagnosticService: DiagnosticService,
     private readonly briefGatesService: BriefGatesService,
     private readonly hardGatesService: HardGatesService,
+    private readonly sectionCompiler: SectionCompilerService,
   ) {
     super(configService);
   }
@@ -74,6 +81,8 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       // RAG-as-Optional-Overlay: track when RAG is absent (normal condition)
       let ragSkipped = false;
       let ragSkipReason: string | undefined;
+      let evidencePack: EvidenceEntry[] | null = null;
+      let enricherClaims: ClaimEntry[] = [];
 
       switch (pageType) {
         case 'R1_pieces':
@@ -115,6 +124,16 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           } else if (result && 'qualityScore' in result) {
             qualityScore = (result as { qualityScore: number }).qualityScore;
             qualityFlags = (result as { qualityFlags: string[] }).qualityFlags;
+          }
+          // Collect evidence pack from enricher result
+          if (result && 'evidencePack' in result) {
+            evidencePack =
+              (result as { evidencePack?: EvidenceEntry[] }).evidencePack ||
+              null;
+          }
+          // Collect claims from enricher result (Claim Ledger MVP)
+          if (result && 'claims' in result) {
+            enricherClaims = (result as { claims?: ClaimEntry[] }).claims || [];
           }
           break;
         }
@@ -162,6 +181,10 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
               ragSkipReason = conseilResult.reason;
               qualityScore = 100;
             }
+          }
+          // Collect evidence pack from conseil enricher
+          if (conseilResult.evidencePack?.length) {
+            evidencePack = conseilResult.evidencePack;
           }
           break;
         }
@@ -333,6 +356,116 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         }
       }
 
+      // Compute content fingerprint for similarity tracking
+      let contentFingerprint: Record<string, number> | null = null;
+      if (finalStatus !== 'skipped' && pageType !== 'R5_diagnostic') {
+        try {
+          const contentForFp = await this.loadCurrentContent(
+            pgId,
+            pgAlias,
+            pageType,
+          );
+          if (contentForFp) {
+            contentFingerprint =
+              this.briefGatesService.computeContentFingerprint(contentForFp);
+          }
+        } catch (err) {
+          this.logger.warn(
+            `Fingerprint computation failed for ${pgAlias}: ${err instanceof Error ? err.message : err}`,
+          );
+        }
+      }
+
+      // Shadow-write to __seo_role_content (Phase 1: frontend does NOT read yet)
+      if (
+        finalStatus !== 'skipped' &&
+        pageType !== 'R5_diagnostic' &&
+        process.env.ROLE_CONTENT_SHADOW_WRITE === 'true'
+      ) {
+        try {
+          const role = pageTypeToRole(pageType);
+          if (role) {
+            const contentForShadow = await this.loadCurrentContent(
+              pgId,
+              pgAlias,
+              pageType,
+            );
+            // Build raw sections map from content
+            const rawSections: Record<string, string> = {};
+            if (contentForShadow) {
+              rawSections['_full_content'] = contentForShadow;
+            }
+
+            // Compile through SectionCompiler (pass claims for block-early)
+            const compiled = this.sectionCompiler.compile(
+              role,
+              rawSections,
+              enricherClaims,
+              pgAlias.replace(/-/g, ' '),
+              pgAlias,
+            );
+
+            // Compute section fingerprints
+            const sectionFingerprints: Record<
+              string,
+              Record<string, number>
+            > = {};
+            for (const [key, html] of Object.entries(
+              compiled.compiledSections,
+            )) {
+              if (html) {
+                sectionFingerprints[key] =
+                  this.briefGatesService.computeSectionFingerprint(html);
+              }
+            }
+
+            await this.client.from('__seo_role_content').upsert(
+              {
+                pg_id: pgId,
+                page_role: role,
+                brief_id: briefId,
+                brief_version: briefVersion,
+                raw_sections: rawSections,
+                sections: compiled.compiledSections,
+                sections_meta: compiled.sectionsMeta,
+                section_policy_version: POLICY_VERSION,
+                compilation_log: compiled.compilationLog,
+                claims: enricherClaims,
+                evidence_pack: evidencePack || [],
+                quality_score: qualityScore,
+                quality_flags: qualityFlags,
+                word_count: Object.values(compiled.sectionsMeta).reduce(
+                  (sum, m) => sum + m.wordCount,
+                  0,
+                ),
+                content_fingerprint: contentFingerprint,
+                section_fingerprints: sectionFingerprints,
+                source_versions: {
+                  policy_version: POLICY_VERSION,
+                  pipeline_run: new Date().toISOString(),
+                },
+                status: finalStatus,
+                is_draft: finalStatus !== 'auto_published',
+                source_type: 'pipeline',
+                generated_at: new Date().toISOString(),
+                ...(finalStatus === 'auto_published'
+                  ? { published_at: new Date().toISOString() }
+                  : {}),
+              },
+              { onConflict: 'pg_id,page_role' },
+            );
+
+            this.logger.log(
+              `Shadow-write to __seo_role_content: ${pgAlias}/${role} (${Object.keys(compiled.compiledSections).length} sections)`,
+            );
+          }
+        } catch (err) {
+          this.logger.warn(
+            `Shadow-write failed for ${pgAlias}: ${err instanceof Error ? err.message : err}`,
+          );
+        }
+      }
+
       // Update tracking log
       const now = new Date().toISOString();
       await this.client
@@ -356,6 +489,15 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           // Auto-repair traceability (Phase 4+5)
           hard_gate_results: hardGateResults,
           repair_attempts: repairAttempts,
+          // Evidence pack (B1+B2)
+          evidence_pack: evidencePack,
+          evidence_pack_hash: evidencePack
+            ? createHash('sha256')
+                .update(JSON.stringify(evidencePack))
+                .digest('hex')
+            : null,
+          // Content fingerprint for similarity tracking
+          content_fingerprint: contentFingerprint,
         })
         .eq('id', refreshLogId);
 
@@ -961,19 +1103,11 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           });
           break;
         case 'contradiction':
-          actions.push({
-            gate: 'contradiction',
-            strategy:
-              passLevel === 1
-                ? 'keep_evidenced_claim'
-                : 'remove_both_contradictions',
-            description:
-              passLevel === 1
-                ? 'Keep claim with highest evidence confidence'
-                : 'Remove BOTH contradicting claims',
-            passLevel,
-            targets: gate.triggerItems?.map((t) => t.location),
-          });
+          // Contradiction = BLOCK only, zero auto-repair.
+          // Manual review required. Do NOT add to repair plan.
+          this.logger.warn(
+            `Contradiction detected — blocking (no auto-repair). Items: ${gate.triggerItems?.length ?? 0}`,
+          );
           break;
         case 'seo_integrity':
           actions.push({
@@ -1118,21 +1252,18 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
         case 'keep_evidenced_claim':
         case 'remove_both_contradictions': {
-          // Contradiction repair: for now, log and mark as attempted
-          // Full implementation requires sentence-level claim matching with EP
-          const _content = await this.loadCurrentContent(
-            pgId,
-            pgAlias,
-            pageType,
-          );
-          this.logger.log(
-            `Contradiction repair (${action.strategy}) attempted for ${pgAlias}`,
+          // Contradiction = BLOCK only, zero auto-repair (v2.1 policy).
+          // These strategies are legacy — buildRepairPlan no longer emits them.
+          // Kept as fallback for safety; always returns applied: false.
+          this.logger.warn(
+            `Contradiction repair skipped (block-only policy) for ${pgAlias}`,
           );
           return {
             action,
             applied: false,
             itemsAffected: 0,
-            detail: `Contradiction repair strategy ${action.strategy} — requires manual review`,
+            detail:
+              'Contradiction requires manual review — auto-repair disabled (v2.1)',
           };
         }
 

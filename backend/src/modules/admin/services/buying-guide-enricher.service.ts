@@ -14,6 +14,12 @@ import {
   type SectionResult,
   type EnrichmentResult,
 } from '../dto/buying-guide-enrich.dto';
+import type {
+  EvidenceEntry,
+  ClaimEntry,
+  ClaimKind,
+} from '../../../workers/types/content-refresh.types';
+import { createHash } from 'node:crypto';
 import {
   type GammeContentQualityFlag,
   MIN_NARRATIVE_LENGTH,
@@ -144,14 +150,41 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       `Enriching pgId=${pgId} (${gammeName}, family=${family}) dryRun=${dryRun}`,
     );
 
-    // 2. Enrich from RAG: search + parse markdown (0 LLM)
-    const sectionResults = await this.enrichFromRag(
-      gammeName,
-      family,
-      supplementaryFiles,
-    );
+    // 2. Load active brief (if available) for brief-driven enrichment
+    let brief: import('./page-brief.service').PageBrief | null = null;
+    if (this.pageBriefService) {
+      try {
+        brief = await this.pageBriefService.getActiveBrief(
+          parseInt(pgId),
+          'R3_guide',
+        );
+        if (!brief) {
+          // Fallback: try R1 brief
+          brief = await this.pageBriefService.getActiveBrief(
+            parseInt(pgId),
+            'R1',
+          );
+        }
+        if (brief) {
+          this.logger.log(
+            `Brief loaded for pgId=${pgId}: role=${brief.page_role}, v=${brief.version}, confidence=${brief.confidence_score}`,
+          );
+        }
+      } catch (err) {
+        this.logger.warn(
+          `Failed to load brief for pgId=${pgId}: ${err instanceof Error ? err.message : err}`,
+        );
+      }
+    }
 
-    // 3. Calculate quality score
+    // 3. Enrich from RAG: search + parse markdown (0 LLM)
+    const {
+      sections: sectionResults,
+      evidencePack: evidenceEntries,
+      claims,
+    } = await this.enrichFromRag(gammeName, family, supplementaryFiles, brief);
+
+    // 4. Calculate quality score
     const allFlags: GammeContentQualityFlag[] = [];
     for (const result of Object.values(sectionResults)) {
       allFlags.push(...result.flags);
@@ -163,10 +196,10 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     );
     const qualityScore = Math.max(0, 100 - penalty);
 
-    // 4. Anti-wiki gate check
+    // 5. Anti-wiki gate check
     const antiWikiGate = this.checkAntiWikiGate(sectionResults);
 
-    // 5. DryRun → return preview
+    // 6. DryRun → return preview
     if (dryRun) {
       const dryRunSections: Record<string, EnrichDryRunSection> = {};
       for (const [key, result] of Object.entries(sectionResults)) {
@@ -192,7 +225,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       } satisfies EnrichDryRunResult;
     }
 
-    // 6. Write to DB
+    // 7. Write to DB
     const okSections = Object.entries(sectionResults).filter(([, r]) => r.ok);
     const skippedSections = Object.entries(sectionResults)
       .filter(([, r]) => !r.ok)
@@ -206,6 +239,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         updated: false,
         sectionsUpdated: 0,
         skippedSections: Object.keys(sectionResults),
+        evidencePack: evidenceEntries,
       };
     }
 
@@ -271,6 +305,8 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       updated: true,
       sectionsUpdated: okSections.length,
       skippedSections,
+      evidencePack: evidenceEntries,
+      claims,
     };
   }
 
@@ -280,7 +316,12 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     gammeName: string,
     family: string,
     supplementaryFiles: string[] = [],
-  ): Promise<Record<string, SectionValidationResult>> {
+    brief?: import('./page-brief.service').PageBrief | null,
+  ): Promise<{
+    sections: Record<string, SectionValidationResult>;
+    evidencePack: EvidenceEntry[];
+    claims: ClaimEntry[];
+  }> {
     const results: Record<string, SectionValidationResult> = {};
 
     // Build slug from gamme name: "Disque de frein" → "disque-de-frein"
@@ -354,10 +395,14 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       this.logger.warn(`No knowledge docs found for ${gammeName}`);
       const empty = this.failedSection('all', 'No knowledge docs found');
       return {
-        anti_mistakes: empty,
-        selection_criteria: empty,
-        decision_tree: empty,
-        use_cases: empty,
+        sections: {
+          anti_mistakes: empty,
+          selection_criteria: empty,
+          decision_tree: empty,
+          use_cases: empty,
+        },
+        evidencePack: [],
+        claims: [],
       };
     }
 
@@ -686,7 +731,23 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         .join('\n\n'),
     };
 
-    return results;
+    // Build evidence pack from section rawAnswers + source metadata
+    const evidenceEntries: EvidenceEntry[] = [];
+    for (const [sectionKey, section] of Object.entries(results)) {
+      if (!section.ok || !section.rawAnswer) continue;
+      evidenceEntries.push({
+        docId: sources[0] || `gammes.${slug}`,
+        heading: sectionKey,
+        charRange: [-1, -1] as [number, number],
+        rawExcerpt: section.rawAnswer.substring(0, 200),
+        confidence: section.confidence,
+      });
+    }
+
+    // ── Claim Ledger MVP: extract claims from enriched sections ──
+    const claims = this.extractClaims(results, sources, evidenceEntries, brief);
+
+    return { sections: results, evidencePack: evidenceEntries, claims };
   }
 
   // ── Guide doc ID resolver ──
@@ -2004,6 +2065,152 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     this.logger.log(
       `sg_descrip_draft fallback written for pgId=${pgId} (${finalDescrip.length} chars, source=${mergedSource})`,
     );
+  }
+
+  // ── Claim Ledger MVP: extract numeric claims from enriched sections ──
+
+  /**
+   * Extract claims (mileage, dimension, percentage, norm) from enriched sections.
+   * Each claim is matched against the evidence pack to determine verified/unverified status.
+   * Unverified claims will be stripped by SectionCompiler (block-early).
+   */
+  private extractClaims(
+    sections: Record<string, SectionValidationResult>,
+    sources: string[],
+    evidenceEntries: EvidenceEntry[],
+    brief?: import('./page-brief.service').PageBrief | null,
+  ): ClaimEntry[] {
+    const claims: ClaimEntry[] = [];
+
+    // Build a set of sourced numeric values from evidence for verification
+    const sourcedValues = new Set<string>();
+    for (const entry of evidenceEntries) {
+      if (entry.rawExcerpt) {
+        const nums = entry.rawExcerpt.match(
+          /\d+(?:[.,\s]\d+)*\s*(?:mm|cm|km|m|Nm|bar|°C|ans?|%|€|litres?|kg)\b/gi,
+        );
+        if (nums) {
+          for (const n of nums) {
+            sourcedValues.add(this.normalizeClaimValue(n));
+          }
+        }
+      }
+    }
+
+    // Claim extraction patterns by kind
+    const CLAIM_PATTERNS: Array<{
+      kind: ClaimKind;
+      regex: RegExp;
+      unit: string;
+    }> = [
+      // Mileage: "120 000 km", "60000 km", "30 000 - 60 000 km"
+      {
+        kind: 'mileage',
+        regex:
+          /(\d[\d\s.,]*\d?\s*(?:-|à|a)\s*\d[\d\s.,]*\d?\s*km|\d[\d\s.,]*\d?\s*km)\b/gi,
+        unit: 'km',
+      },
+      // Dimension: "mm", "cm", "Nm", "bar", "°C"
+      {
+        kind: 'dimension',
+        regex: /(\d+(?:[.,]\d+)?\s*(?:mm|cm|Nm|bar|°C))\b/gi,
+        unit: '',
+      },
+      // Percentage
+      { kind: 'percentage', regex: /(\d+(?:[.,]\d+)?\s*%)/gi, unit: '%' },
+      // Norms: ISO/ECE/FMVSS + number
+      {
+        kind: 'norm',
+        regex: /\b((?:ISO|ECE|FMVSS|NF|EN)\s*[\w.-]+)\b/gi,
+        unit: '',
+      },
+    ];
+
+    for (const [sectionKey, section] of Object.entries(sections)) {
+      if (!section.ok || !section.rawAnswer) continue;
+
+      const rawText =
+        typeof section.content === 'string'
+          ? section.content
+          : section.rawAnswer;
+
+      if (!rawText) continue;
+
+      const plainText = rawText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+
+      for (const { kind, regex, unit } of CLAIM_PATTERNS) {
+        regex.lastIndex = 0;
+        let match: RegExpExecArray | null;
+        while ((match = regex.exec(plainText)) !== null) {
+          const rawClaimText = match[1] || match[0];
+          const normalizedValue = this.normalizeClaimValue(rawClaimText);
+          const claimUnit = unit || this.inferUnit(rawClaimText);
+
+          // Determine if this claim is sourced
+          const isVerified = sourcedValues.has(normalizedValue);
+
+          // Build stable hash for dedup
+          const id = createHash('sha256')
+            .update(`${kind}:${normalizedValue}:${sectionKey}`)
+            .digest('hex')
+            .substring(0, 16);
+
+          // Find matching evidence entry
+          const matchingEvidence = evidenceEntries.find(
+            (e) =>
+              e.heading === sectionKey &&
+              e.rawExcerpt?.includes(rawClaimText.substring(0, 20)),
+          );
+
+          claims.push({
+            id,
+            kind,
+            rawText: rawClaimText.trim(),
+            value: normalizedValue,
+            unit: claimUnit,
+            sectionKey,
+            sourceRef: isVerified
+              ? `rag:${sources[0] || 'unknown'}#${sectionKey}`
+              : null,
+            evidenceId: matchingEvidence
+              ? `${matchingEvidence.docId}#${matchingEvidence.heading}`
+              : null,
+            status: isVerified ? 'verified' : 'unverified',
+          });
+        }
+      }
+    }
+
+    // Deduplicate by id
+    const seen = new Set<string>();
+    const dedupedClaims = claims.filter((c) => {
+      if (seen.has(c.id)) return false;
+      seen.add(c.id);
+      return true;
+    });
+
+    // Log brief-aware filtering info
+    if (brief && dedupedClaims.length > 0) {
+      const unverifiedCount = dedupedClaims.filter(
+        (c) => c.status === 'unverified',
+      ).length;
+      this.logger.log(
+        `Claims extracted: ${dedupedClaims.length} total, ${unverifiedCount} unverified (brief: ${brief.page_role} v${brief.version})`,
+      );
+    }
+
+    return dedupedClaims;
+  }
+
+  /** Normalize a claim value for comparison: strip spaces, lowercase */
+  private normalizeClaimValue(raw: string): string {
+    return raw.replace(/\s+/g, '').replace(/,/g, '.').toLowerCase().trim();
+  }
+
+  /** Infer unit from raw claim text */
+  private inferUnit(text: string): string {
+    const unitMatch = text.match(/(mm|cm|km|Nm|bar|°C|%|€|litres?|kg|ans?)$/i);
+    return unitMatch ? unitMatch[1].toLowerCase() : '';
   }
 
   private isIntroRoleMismatch(introRole: string, gammeName: string): boolean {

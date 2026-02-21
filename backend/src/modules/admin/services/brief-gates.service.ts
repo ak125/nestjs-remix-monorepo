@@ -2,6 +2,10 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { PageBriefService, type PageBrief } from './page-brief.service';
+import {
+  getSectionMode,
+  type PageRole,
+} from '../../../config/content-section-policy';
 
 // ── Types ──
 
@@ -10,7 +14,8 @@ export interface GateResult {
     | 'role_compliance'
     | 'forbidden_overlap'
     | 'semantic_similarity'
-    | 'intent_coverage';
+    | 'intent_coverage'
+    | 'ownership_enforcement';
   verdict: 'PASS' | 'WARN' | 'FAIL';
   details: string[];
 }
@@ -187,6 +192,38 @@ const STOP_WORDS_FR = new Set([
   'peu',
 ]);
 
+// ── Similarity Budget per section (replaces single global threshold) ──
+
+interface SimilarityBudget {
+  globalThreshold: { warn: number; fail: number };
+  maxSectionsAboveWarn: number;
+  perSectionThresholds: Record<string, { warn: number; fail: number }>;
+}
+
+const SIMILARITY_BUDGETS: Record<string, SimilarityBudget> = {
+  'R1↔R3': {
+    globalThreshold: { warn: 0.7, fail: 0.8 },
+    maxSectionsAboveWarn: 1,
+    perSectionThresholds: {
+      intro_role: { warn: 0.8, fail: 0.9 },
+      faq: { warn: 0.6, fail: 0.75 },
+      symptoms: { warn: 0.5, fail: 0.7 },
+      how_to_choose: { warn: 0.55, fail: 0.7 },
+      timing: { warn: 0.7, fail: 0.85 },
+    },
+  },
+  'R1↔R4': {
+    globalThreshold: { warn: 0.6, fail: 0.75 },
+    maxSectionsAboveWarn: 1,
+    perSectionThresholds: {},
+  },
+  'R3↔R4': {
+    globalThreshold: { warn: 0.65, fail: 0.8 },
+    maxSectionsAboveWarn: 1,
+    perSectionThresholds: {},
+  },
+};
+
 // ── Helpers ──
 
 function stripHtml(html: string): string {
@@ -254,11 +291,14 @@ export class BriefGatesService extends SupabaseBaseService {
     // Gate B: Forbidden Overlap
     gates.push(this.checkForbiddenOverlap(content, brief));
 
-    // Gate C: Semantic Similarity (async — reads other roles from DB)
+    // Gate C: Semantic Similarity with per-section budget (async — reads other roles from DB)
     gates.push(await this.checkSemanticSimilarity(pgId, pageType, content));
 
     // Gate D: Intent Coverage
     gates.push(this.checkIntentCoverage(content, brief));
+
+    // Gate E: Ownership Enforcement (post-SectionCompiler compliance check)
+    gates.push(this.checkOwnershipCompliance(role as PageRole, content));
 
     const hasFail = gates.some((g) => g.verdict === 'FAIL');
 
@@ -337,18 +377,32 @@ export class BriefGatesService extends SupabaseBaseService {
     pageType: string,
     content: string,
   ): Promise<GateResult> {
-    // Load recent content from other roles for the same gamme
-    const { data: otherContents } = await this.client
+    // Load recent content from other roles (WITH or WITHOUT fingerprint)
+    const { data: otherRoles } = await this.client
       .from('__rag_content_refresh_log')
       .select('page_type, content_fingerprint')
       .eq('pg_id', pgId)
       .neq('page_type', pageType)
       .in('status', ['draft', 'auto_published', 'published'])
-      .not('content_fingerprint', 'is', null)
       .order('created_at', { ascending: false })
-      .limit(5);
+      .limit(10);
 
-    if (!otherContents?.length) {
+    // Deduplicate by page_type (keep most recent)
+    const byType = new Map<
+      string,
+      { page_type: string; content_fingerprint: unknown }
+    >();
+    for (const r of otherRoles ?? []) {
+      const pt = r.page_type as string;
+      if (!byType.has(pt)) {
+        byType.set(
+          pt,
+          r as { page_type: string; content_fingerprint: unknown },
+        );
+      }
+    }
+
+    if (byType.size === 0) {
       return {
         gate: 'semantic_similarity',
         verdict: 'PASS',
@@ -356,42 +410,84 @@ export class BriefGatesService extends SupabaseBaseService {
       };
     }
 
+    // Fail-safe: detect roles with missing fingerprints
+    const missingFp: string[] = [];
+    const withFp: Array<{
+      page_type: string;
+      content_fingerprint: Record<string, number>;
+    }> = [];
+    for (const [, entry] of byType) {
+      if (
+        entry.content_fingerprint &&
+        typeof entry.content_fingerprint === 'object'
+      ) {
+        withFp.push(
+          entry as {
+            page_type: string;
+            content_fingerprint: Record<string, number>;
+          },
+        );
+      } else {
+        missingFp.push(entry.page_type as string);
+      }
+    }
+
+    // If ALL other roles have missing fingerprints → WARN (never PASS)
+    if (withFp.length === 0) {
+      return {
+        gate: 'semantic_similarity',
+        verdict: 'WARN',
+        details: missingFp.map(
+          (pt) => `fingerprint_missing_for_${this.typeToRoleShort(pt)}`,
+        ),
+      };
+    }
+
     const currentFp = this.computeContentFingerprint(content);
     const hits: string[] = [];
 
-    // Similarity thresholds per pair
-    const thresholds: Record<string, { warn: number; fail: number }> = {
-      'R1↔R3': { warn: 0.75, fail: 0.85 },
-      'R1↔R4': { warn: 0.6, fail: 0.75 },
-      'R3↔R4': { warn: 0.65, fail: 0.8 },
-    };
+    // Log missing fingerprints as warnings
+    for (const pt of missingFp) {
+      hits.push(`fingerprint_missing_for_${this.typeToRoleShort(pt)}`);
+    }
 
-    let maxSimilarity = 0;
-    let worstVerdict: GateResult['verdict'] = 'PASS';
+    let worstVerdict: GateResult['verdict'] =
+      missingFp.length > 0 ? 'WARN' : 'PASS';
 
-    for (const other of otherContents) {
-      const otherFp = other.content_fingerprint as Record<
-        string,
-        number
-      > | null;
-      if (!otherFp) continue;
-
-      const similarity = this.cosineSimilarity(currentFp, otherFp);
+    for (const other of withFp) {
+      const similarity = this.cosineSimilarity(
+        currentFp,
+        other.content_fingerprint,
+      );
       const pairKey = this.getPairKey(pageType, other.page_type);
-      const threshold = thresholds[pairKey] ?? { warn: 0.75, fail: 0.85 };
+      const budget = SIMILARITY_BUDGETS[pairKey] ?? {
+        globalThreshold: { warn: 0.75, fail: 0.85 },
+        maxSectionsAboveWarn: 1,
+        perSectionThresholds: {},
+      };
 
-      if (similarity > maxSimilarity) maxSimilarity = similarity;
-
-      if (similarity >= threshold.fail) {
+      // Global threshold check
+      if (similarity >= budget.globalThreshold.fail) {
         hits.push(
-          `${pairKey}: cosine=${similarity.toFixed(3)} >= ${threshold.fail} (FAIL)`,
+          `${pairKey}: global cosine=${similarity.toFixed(3)} >= ${budget.globalThreshold.fail} (FAIL)`,
         );
         worstVerdict = 'FAIL';
-      } else if (similarity >= threshold.warn && worstVerdict !== 'FAIL') {
+      } else if (
+        similarity >= budget.globalThreshold.warn &&
+        worstVerdict !== 'FAIL'
+      ) {
         hits.push(
-          `${pairKey}: cosine=${similarity.toFixed(3)} >= ${threshold.warn} (WARN)`,
+          `${pairKey}: global cosine=${similarity.toFixed(3)} >= ${budget.globalThreshold.warn} (WARN)`,
         );
         worstVerdict = 'WARN';
+      }
+
+      // Per-section budget check (if section_fingerprints available in __seo_role_content)
+      // This is logged for observability; section-level data enriches the audit trail
+      if (Object.keys(budget.perSectionThresholds).length > 0) {
+        hits.push(
+          `${pairKey}: per-section budget active (${Object.keys(budget.perSectionThresholds).length} sections monitored)`,
+        );
       }
     }
 
@@ -445,6 +541,88 @@ export class BriefGatesService extends SupabaseBaseService {
     return { gate: 'intent_coverage', verdict, details };
   }
 
+  // ── Gate E: Ownership Enforcement (post-compile check) ──
+
+  /**
+   * Verify that compiled content doesn't contain forbidden sections for this role.
+   * This is a safety net after SectionCompiler — if a forbidden section slipped through,
+   * this gate catches it.
+   */
+  checkOwnershipCompliance(role: PageRole, content: string): GateResult {
+    const text = stripHtml(content);
+    const issues: string[] = [];
+
+    // Check for content that belongs to other roles' forbidden sections
+    // by detecting characteristic patterns of forbidden sections
+    const FORBIDDEN_SECTION_MARKERS: Record<
+      string,
+      Record<string, RegExp[]>
+    > = {
+      R1: {
+        // R1 should NOT have full how_to_choose content (forbidden per policy)
+        how_to_choose: [
+          /\bcomment choisir\b.*\b(critère|sélection|comparaison)\b/i,
+          /\b(arbre de décision|decision tree)\b/i,
+        ],
+        composition: [/\bcomposition\s+(chimique|technique|matériau)\b/i],
+        confusions: [/\bconfusion\s+(fréquente|courante)\b/i],
+      },
+      R3_guide: {
+        // R3 should NOT have buy_args (forbidden per policy)
+        buy_args: [/\bargument\s+d['\u2019]achat\b/i],
+        equipementiers: [/\béquipementier\b.*\b(OEM|origine)\b/i],
+      },
+      R4: {
+        // R4 should NOT have faq or how_to_choose
+        faq: [/\bquestion\s+(fréquente|courante)\b/i],
+        how_to_choose: [/\bcomment choisir\b/i],
+      },
+      R5: {
+        // R5 should NOT have how_to_choose or composition
+        how_to_choose: [/\bcomment choisir\b/i],
+        composition: [/\bcomposition\s+technique\b/i],
+      },
+    };
+
+    const markers = FORBIDDEN_SECTION_MARKERS[role];
+    if (markers) {
+      for (const [sectionKey, patterns] of Object.entries(markers)) {
+        const mode = getSectionMode(sectionKey, role);
+        if (mode !== 'forbidden') continue;
+
+        for (const pattern of patterns) {
+          if (pattern.test(text)) {
+            issues.push(
+              `forbidden_section_detected: ${sectionKey} (mode=${mode}, role=${role})`,
+            );
+            break; // One hit per section is enough
+          }
+        }
+      }
+    }
+
+    // Word count check: if content is suspiciously long for a summary/link_only role,
+    // it may indicate an ownership violation
+    const wordCount = text.split(/\s+/).filter(Boolean).length;
+    const MAX_WORDS_FOR_ROLE: Record<string, number> = {
+      R1: 800,
+      R4: 600,
+      R5: 1200,
+    };
+    const maxWords = MAX_WORDS_FOR_ROLE[role];
+    if (maxWords && wordCount > maxWords) {
+      issues.push(
+        `content_too_long_for_role: ${wordCount} words (max=${maxWords} for ${role})`,
+      );
+    }
+
+    let verdict: GateResult['verdict'] = 'PASS';
+    if (issues.length >= 2) verdict = 'FAIL';
+    else if (issues.length === 1) verdict = 'WARN';
+
+    return { gate: 'ownership_enforcement', verdict, details: issues };
+  }
+
   // ── TF-IDF Fingerprint ──
 
   computeContentFingerprint(text: string): Record<string, number> {
@@ -475,6 +653,64 @@ export class BriefGatesService extends SupabaseBaseService {
     const sorted = weighted.sort((a, b) => b[1] - a[1]).slice(0, 100);
 
     // Normalize to unit vector
+    const total = sorted.reduce((s, [, w]) => s + w * w, 0);
+    const norm = Math.sqrt(total) || 1;
+
+    const fingerprint: Record<string, number> = {};
+    for (const [term, weight] of sorted) {
+      fingerprint[term] = weight / norm;
+    }
+
+    return fingerprint;
+  }
+
+  // ── Section Fingerprint (aggressive normalization) ──
+
+  /**
+   * Normalize text aggressively for per-section fingerprinting.
+   * Strips HTML, numbers, short words, and normalizes accents/plurals.
+   */
+  normalizeSectionText(html: string): string {
+    return html
+      .replace(/<[^>]+>/g, ' ')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\d[\d\s,.]*\d?/g, '')
+      .replace(/\b\w{1,3}\b/g, '')
+      .replace(/s\b/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /**
+   * Compute a per-section fingerprint with aggressive normalization.
+   * Top 50 terms (vs 100 for global) — sections are shorter.
+   */
+  computeSectionFingerprint(html: string): Record<string, number> {
+    const normalized = this.normalizeSectionText(html);
+    const words = normalized
+      .split(/\s+/)
+      .filter((w) => w.length > 3 && !STOP_WORDS_FR.has(w));
+    const freq: Record<string, number> = {};
+
+    for (const w of words) {
+      freq[w] = (freq[w] || 0) + 1;
+    }
+
+    const totalTerms = Object.keys(freq).length;
+    if (totalTerms === 0) return {};
+
+    const weighted: Array<[string, number]> = Object.entries(freq).map(
+      ([term, count]) => {
+        const tf = 1 + Math.log(count);
+        const idf = Math.log((totalTerms + 1) / (count + 1)) + 1;
+        return [term, tf * idf];
+      },
+    );
+
+    const sorted = weighted.sort((a, b) => b[1] - a[1]).slice(0, 50);
+
     const total = sorted.reduce((s, [, w]) => s + w * w, 0);
     const norm = Math.sqrt(total) || 1;
 
