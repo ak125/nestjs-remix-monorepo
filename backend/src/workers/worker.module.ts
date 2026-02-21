@@ -27,6 +27,9 @@ import { BuyingGuideEnricherService } from '../modules/admin/services/buying-gui
 import { ConseilEnricherService } from '../modules/admin/services/conseil-enricher.service';
 import { ReferenceService } from '../modules/seo/services/reference.service';
 import { DiagnosticService } from '../modules/seo/services/diagnostic.service';
+import { BriefGatesService } from '../modules/admin/services/brief-gates.service';
+import { HardGatesService } from '../modules/admin/services/hard-gates.service';
+import { PageBriefService } from '../modules/admin/services/page-brief.service';
 
 @Module({
   imports: [
@@ -86,6 +89,9 @@ import { DiagnosticService } from '../modules/seo/services/diagnostic.service';
     ConseilEnricherService,
     ReferenceService,
     DiagnosticService,
+    PageBriefService, // Used by BriefGatesService + enrichers (brief-aware templates)
+    BriefGatesService, // Pre-publish gates anti-cannibalisation
+    HardGatesService, // Hard gates (attribution, no_guess, scope, contradiction, seo)
 
     // Services
     // SitemapStreamingService, // DESACTIVE

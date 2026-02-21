@@ -10,6 +10,12 @@ export const ContentTypeSchema = z.enum([
   'email_campaign',
   'seo_descrip_polish',
   'seo_content_polish',
+  'seo_content_R1',
+  'seo_content_R3',
+  'seo_content_R4',
+  'seo_descrip_R1',
+  'seo_descrip_R3',
+  'seo_descrip_R4',
 ]);
 
 export type ContentType = z.infer<typeof ContentTypeSchema>;

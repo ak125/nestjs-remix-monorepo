@@ -52,3 +52,114 @@ export interface RagPatchResult {
   /** Source path for provenance tracking */
   sourcePath?: string;
 }
+
+// ── Auto-Repair Types ──
+
+export type HardGateName =
+  | 'attribution'
+  | 'no_guess'
+  | 'scope_leakage'
+  | 'contradiction'
+  | 'seo_integrity';
+
+export interface ExtendedGateResult {
+  gate: HardGateName;
+  verdict: 'PASS' | 'WARN' | 'FAIL';
+  details: string[];
+  /** Measured value (ratio, count, etc.) */
+  measured: number;
+  warnThreshold: number;
+  failThreshold: number;
+  triggerItems?: Array<{
+    location: string;
+    issue: string;
+    evidenceRef?: string;
+  }>;
+}
+
+export type RepairStrategy =
+  // Pass 1: Retrieval tightening
+  | 'retrieval_tighten_scope'
+  | 'retrieval_conservative_reenrich'
+  | 'keep_evidenced_claim'
+  | 'restore_protected_fields'
+  // Pass 2: Conservative rewrite
+  | 'strip_unsourced_numbers'
+  | 'remove_unsourced_sentences'
+  | 'strip_novel_terms'
+  | 'remove_leaking_sentences'
+  | 'remove_both_contradictions'
+  | 'revert_to_pre_repair';
+
+export interface RepairAction {
+  gate: HardGateName;
+  strategy: RepairStrategy;
+  description: string;
+  passLevel: 1 | 2;
+  targets?: string[];
+}
+
+export interface RepairActionResult {
+  action: RepairAction;
+  applied: boolean;
+  itemsAffected: number;
+  detail: string;
+}
+
+export interface AutoRepairAttempt {
+  pass: number;
+  startedAt: string;
+  completedAt: string;
+  failingGatesBefore: HardGateName[];
+  failingGatesAfter: HardGateName[];
+  actions: RepairActionResult[];
+  contentHashBefore: string;
+  contentHashAfter: string;
+  contentChanged: boolean;
+}
+
+export interface RepairResult {
+  allGatesPassed: boolean;
+  totalPasses: number;
+  maxPasses: number;
+  attempts: AutoRepairAttempt[];
+  fallbackApplied: boolean;
+  reasonCode:
+    | 'GATES_CLEAN'
+    | 'REPAIRED'
+    | 'FALLBACK_APPLIED'
+    | 'REPAIR_EXHAUSTED'
+    | 'REPAIR_NO_PROGRESS'
+    | 'REPAIR_DISABLED';
+  durationMs: number;
+}
+
+export interface SafeFallbackDraft {
+  content: string;
+  templateId: 'safe_R1' | 'safe_R3_guide' | 'safe_R3_conseils' | 'safe_R4';
+  gammeName: string;
+  familyLabel: string;
+  generatedAt: string;
+}
+
+/** Evidence entry from RAG knowledge base */
+export interface EvidenceEntry {
+  docId: string;
+  heading: string;
+  charRange: [number, number];
+  rawExcerpt: string;
+  confidence: number;
+  sourceHash?: string;
+}
+
+export interface PublishDecision {
+  action: 'auto_publish' | 'draft' | 'block' | 'skip';
+  reasonCode: string;
+  qualityScore: number | null;
+  softGates: import('../../modules/admin/services/brief-gates.service').GateResult[];
+  hardGates: ExtendedGateResult[] | null;
+  hardGatesObserveOnly: boolean;
+  repairResult: RepairResult | null;
+  isCanary: boolean;
+  qaGuardPassed: boolean | null;
+}

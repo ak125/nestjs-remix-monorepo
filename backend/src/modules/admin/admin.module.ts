@@ -36,6 +36,7 @@ import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 
 // AdminVehicleResolveController supprimé — méthode resolveVehicleTypes jamais implémentée
 import { AdminBuyingGuideController } from './controllers/admin-buying-guide.controller'; // 📖 Buying Guide RAG enrichment
 import { AdminContentRefreshController } from './controllers/admin-content-refresh.controller'; // 🔄 Content Refresh pipeline
+import { AdminPageBriefController } from './controllers/admin-page-brief.controller'; // 📋 Page Briefs SEO
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
 import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // 🎯 Audit Gammes SEO
@@ -48,6 +49,9 @@ import { StockReportService } from './services/stock-report.service';
 import { BuyingGuideEnricherService } from './services/buying-guide-enricher.service'; // 📖 RAG enrichment
 import { ContentRefreshService } from './services/content-refresh.service'; // 🔄 Content Refresh orchestrator
 import { ConseilEnricherService } from './services/conseil-enricher.service'; // 🔄 R3 Conseils enricher
+import { PageBriefService } from './services/page-brief.service'; // 📋 Page Briefs CRUD + overlap
+import { BriefGatesService } from './services/brief-gates.service'; // 🚦 Pre-publish gates anti-cannibalisation
+import { HardGatesService } from './services/hard-gates.service'; // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -103,6 +107,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     // AdminVehicleResolveController supprimé
     AdminBuyingGuideController, // 📖 Buying Guide RAG enrichment - /api/admin/buying-guides/*
     AdminContentRefreshController, // 🔄 Content Refresh pipeline - /api/admin/content-refresh/*
+    AdminPageBriefController, // 📋 Page Briefs SEO - /api/admin/page-briefs/*
   ],
   providers: [
     ConfigurationService,
@@ -125,6 +130,9 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     BuyingGuideEnricherService, // 📖 RAG enrichment service
     ContentRefreshService, // 🔄 Content Refresh orchestrator (event listener + queue)
     ConseilEnricherService, // 🔄 R3 Conseils S1-S8 enricher
+    PageBriefService, // 📋 Page Briefs CRUD + overlap detection
+    BriefGatesService, // 🚦 Pre-publish gates anti-cannibalisation
+    HardGatesService, // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
   ],
   exports: [
     ConfigurationService,
@@ -136,6 +144,9 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     GammeVLevelService,
     StockMovementService,
     StockReportService,
+    PageBriefService, // 📋 Export for WorkerModule (enricher consumption)
+    BriefGatesService, // 🚦 Export for WorkerModule (processor gates)
+    HardGatesService, // 🚦 Export for WorkerModule (hard gates)
   ],
 })
 export class AdminModule {}

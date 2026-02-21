@@ -2,6 +2,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
 import { AiContentService } from '../../ai-content/ai-content.service';
+import { PageBriefService } from './page-brief.service';
 import { ConfigService } from '@nestjs/config';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -72,6 +73,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly ragService: RagProxyService,
     @Optional() private readonly aiContentService?: AiContentService,
+    @Optional() private readonly pageBriefService?: PageBriefService,
   ) {
     super(configService);
   }
@@ -85,6 +87,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     pgIds: string[],
     dryRun: boolean,
     supplementaryFiles: string[] = [],
+    conservativeMode = false,
   ): Promise<(EnrichmentResult | EnrichDryRunResult)[]> {
     const results: (EnrichmentResult | EnrichDryRunResult)[] = [];
 
@@ -94,6 +97,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
           pgId,
           dryRun,
           supplementaryFiles,
+          conservativeMode,
         );
         results.push(result);
       } catch (error) {
@@ -127,6 +131,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     pgId: string,
     dryRun: boolean,
     supplementaryFiles: string[] = [],
+    conservativeMode = false,
   ): Promise<EnrichmentResult | EnrichDryRunResult> {
     // 1. Fetch gamme metadata
     const meta = await this.fetchGammeMetadata(pgId);
@@ -242,7 +247,12 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     await this.upsertBuyingGuide(pgId, updatePayload);
 
     // Generate sg_content_draft from enriched sections
-    await this.writeSeoContentDraft(pgId, gammeName, sectionResults);
+    await this.writeSeoContentDraft(
+      pgId,
+      gammeName,
+      sectionResults,
+      conservativeMode,
+    );
 
     const resultSections: Record<string, SectionResult> = {};
     for (const [key, result] of Object.entries(sectionResults)) {
@@ -1815,27 +1825,33 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     pgId: string,
     gammeName: string,
     sections: Record<string, SectionValidationResult>,
+    conservativeMode = false,
   ): Promise<void> {
     const templateContent = this.composeSeoContent(gammeName, sections);
     if (!templateContent) return;
 
     let finalContent = templateContent;
-    let draftSource = 'pipeline';
+    let draftSource = conservativeMode ? 'pipeline:conservative' : 'pipeline';
     let llmModel: string | null = null;
 
-    if (this.aiContentService) {
+    if (this.aiContentService && !conservativeMode) {
       try {
+        // Brief-aware template selection (Phase 2)
+        const brief =
+          process.env.BRIEF_AWARE_ENABLED === 'true'
+            ? await this.pageBriefService?.getActiveBrief(parseInt(pgId), 'R1')
+            : null;
+
         const result = await this.aiContentService.generateContent({
-          type: 'seo_content_polish',
+          type: brief ? 'seo_content_R1' : 'seo_content_polish',
           prompt: `Polish SEO content for ${gammeName}`,
           tone: 'professional',
           language: 'fr',
           maxLength: 2000,
           temperature: 0.4,
-          context: {
-            draft: templateContent,
-            gammeName: gammeName,
-          },
+          context: brief
+            ? { draft: templateContent, gammeName, brief }
+            : { draft: templateContent, gammeName },
           useCache: true,
         });
         const polished = result.content.trim();
@@ -1845,10 +1861,10 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
           polished.length <= templateContent.length * 1.3
         ) {
           finalContent = polished;
-          draftSource = 'pipeline+llm';
+          draftSource = brief ? 'pipeline+llm+brief' : 'pipeline+llm';
           llmModel = result.metadata.model;
           this.logger.log(
-            `LLM polished sg_content for pgId=${pgId} (${polished.length} chars, model=${llmModel})`,
+            `LLM polished sg_content for pgId=${pgId} (${polished.length} chars, model=${llmModel}, brief=${brief ? 'R1' : 'none'})`,
           );
         } else {
           this.logger.warn(
@@ -1869,10 +1885,11 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       .eq('sg_pg_id', pgId)
       .single();
 
-    // Don't regress from pipeline+llm to pipeline
+    // Don't regress from pipeline+llm (or +brief) to pipeline
     const mergedDraftSource =
-      current?.sg_draft_source === 'pipeline+llm' && draftSource === 'pipeline'
-        ? 'pipeline+llm'
+      current?.sg_draft_source?.includes('pipeline+llm') &&
+      draftSource === 'pipeline'
+        ? current.sg_draft_source
         : draftSource;
     const mergedLlmModel = llmModel || current?.sg_draft_llm_model || null;
 
@@ -1898,7 +1915,11 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
 
     // Fallback: generate sg_descrip_draft if ConseilEnricher didn't run
     if (!current?.sg_descrip_draft) {
-      await this.writeSeoDescripDraftFallback(pgId, gammeName);
+      await this.writeSeoDescripDraftFallback(
+        pgId,
+        gammeName,
+        conservativeMode,
+      );
     }
   }
 
@@ -1909,33 +1930,42 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
   private async writeSeoDescripDraftFallback(
     pgId: string,
     gammeName: string,
+    conservativeMode = false,
   ): Promise<void> {
     const label = gammeName.replace(/-/g, ' ');
     const templateDescrip = `${label.charAt(0).toUpperCase() + label.slice(1)} : sélectionnez votre véhicule pour les références compatibles. Livraison 24-48h.`;
 
     let finalDescrip = templateDescrip;
-    let draftSource = 'pipeline';
+    let draftSource = conservativeMode ? 'pipeline:conservative' : 'pipeline';
     let llmModel: string | null = null;
 
-    if (this.aiContentService) {
+    if (this.aiContentService && !conservativeMode) {
       try {
+        // Brief-aware template selection (Phase 2)
+        const brief =
+          process.env.BRIEF_AWARE_ENABLED === 'true'
+            ? await this.pageBriefService?.getActiveBrief(parseInt(pgId), 'R1')
+            : null;
+
         const result = await this.aiContentService.generateContent({
-          type: 'seo_descrip_polish',
+          type: brief ? 'seo_descrip_R1' : 'seo_descrip_polish',
           prompt: `Polish meta description for ${gammeName}`,
           tone: 'professional',
           language: 'fr',
           maxLength: 200,
           temperature: 0.3,
-          context: { draft: templateDescrip, gammeName: label },
+          context: brief
+            ? { draft: templateDescrip, gammeName: label, brief }
+            : { draft: templateDescrip, gammeName: label },
           useCache: true,
         });
         const polished = result.content.trim();
         if (polished.length > 0 && polished.length <= 160) {
           finalDescrip = polished;
-          draftSource = 'pipeline+llm';
+          draftSource = brief ? 'pipeline+llm+brief' : 'pipeline+llm';
           llmModel = result.metadata.model;
           this.logger.log(
-            `LLM polished sg_descrip (fallback) for pgId=${pgId} (${polished.length} chars)`,
+            `LLM polished sg_descrip (fallback) for pgId=${pgId} (${polished.length} chars, brief=${brief ? 'R1' : 'none'})`,
           );
         }
       } catch (err) {
@@ -1953,9 +1983,11 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       .single();
 
     const mergedSource =
-      draftSource === 'pipeline+llm' ||
-      currentState?.sg_draft_source === 'pipeline+llm'
-        ? 'pipeline+llm'
+      draftSource.includes('pipeline+llm') ||
+      currentState?.sg_draft_source?.includes('pipeline+llm')
+        ? draftSource.includes('pipeline+llm')
+          ? draftSource
+          : (currentState?.sg_draft_source ?? draftSource)
         : draftSource;
 
     await this.client

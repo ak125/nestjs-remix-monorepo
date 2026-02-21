@@ -2,6 +2,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
 import { AiContentService } from '../../ai-content/ai-content.service';
+import { PageBriefService } from './page-brief.service';
 import { ConfigService } from '@nestjs/config';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -109,6 +110,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly ragService: RagProxyService,
     @Optional() private readonly aiContentService?: AiContentService,
+    @Optional() private readonly pageBriefService?: PageBriefService,
   ) {
     super(configService);
   }
@@ -121,6 +123,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     pgId: string,
     pgAlias: string,
     supplementaryFiles: string[] = [],
+    conservativeMode = false,
   ): Promise<ConseilEnrichResult> {
     // 1. Load RAG knowledge doc (API first, disk fallback)
     let ragContent: string;
@@ -158,7 +161,13 @@ export class ConseilEnricherService extends SupabaseBaseService {
           const contract: PageContract = {};
           this.mergeSupplementaryIntoContract(contract, classified, pgAlias);
           // Jump to step 3 below with this contract (always supplementary-enriched)
-          return this.executeEnrichment(pgId, pgAlias, contract, true);
+          return this.executeEnrichment(
+            pgId,
+            pgAlias,
+            contract,
+            true,
+            conservativeMode,
+          );
         }
       }
       return {
@@ -192,7 +201,13 @@ export class ConseilEnricherService extends SupabaseBaseService {
           );
           contract = {};
           this.mergeSupplementaryIntoContract(contract, classified, pgAlias);
-          return this.executeEnrichment(pgId, pgAlias, contract, true);
+          return this.executeEnrichment(
+            pgId,
+            pgAlias,
+            contract,
+            true,
+            conservativeMode,
+          );
         }
       }
       return {
@@ -233,6 +248,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       pgAlias,
       contract,
       supplementaryEnriched,
+      conservativeMode,
     );
   }
 
@@ -245,6 +261,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     pgAlias: string,
     contract: PageContract,
     hasSupplementary = false,
+    conservativeMode = false,
   ): Promise<ConseilEnrichResult> {
     // 3. Load existing conseil sections
     const existing = await this.loadExistingSections(pgId);
@@ -282,7 +299,12 @@ export class ConseilEnricherService extends SupabaseBaseService {
       );
 
       // 8. Generate sg_descrip draft from enriched contract
-      await this.writeSeoDescripDraft(pgId, contract, pgAlias);
+      await this.writeSeoDescripDraft(
+        pgId,
+        contract,
+        pgAlias,
+        conservativeMode,
+      );
 
       return {
         status: 'draft',
@@ -1633,36 +1655,46 @@ export class ConseilEnricherService extends SupabaseBaseService {
     pgId: string,
     contract: PageContract,
     pgAlias: string,
+    conservativeMode = false,
   ): Promise<void> {
     const templateDescrip = this.composeSeoDescrip(contract, pgAlias);
     if (!templateDescrip) return;
 
     let finalDescrip = templateDescrip;
-    let draftSource = 'pipeline';
+    let draftSource = conservativeMode ? 'pipeline:conservative' : 'pipeline';
     let llmModel: string | null = null;
 
-    if (this.aiContentService) {
+    if (this.aiContentService && !conservativeMode) {
       try {
+        // Brief-aware template selection (Phase 2)
+        const brief =
+          process.env.BRIEF_AWARE_ENABLED === 'true'
+            ? await this.pageBriefService?.getActiveBrief(
+                parseInt(pgId),
+                'R3_conseils',
+              )
+            : null;
+
+        const gammeLabelName = pgAlias.replace(/-/g, ' ');
         const result = await this.aiContentService.generateContent({
-          type: 'seo_descrip_polish',
+          type: brief ? 'seo_descrip_R3' : 'seo_descrip_polish',
           prompt: `Polish meta description for ${pgAlias}`,
           tone: 'professional',
           language: 'fr',
           maxLength: 200,
           temperature: 0.3,
-          context: {
-            draft: templateDescrip,
-            gammeName: pgAlias.replace(/-/g, ' '),
-          },
+          context: brief
+            ? { draft: templateDescrip, gammeName: gammeLabelName, brief }
+            : { draft: templateDescrip, gammeName: gammeLabelName },
           useCache: true,
         });
         const polished = result.content.trim();
         if (polished.length > 0 && polished.length <= 160) {
           finalDescrip = polished;
-          draftSource = 'pipeline+llm';
+          draftSource = brief ? 'pipeline+llm+brief' : 'pipeline+llm';
           llmModel = result.metadata.model;
           this.logger.log(
-            `LLM polished sg_descrip for pgId=${pgId} (${polished.length} chars, model=${llmModel})`,
+            `LLM polished sg_descrip for pgId=${pgId} (${polished.length} chars, model=${llmModel}, brief=${brief ? 'R3' : 'none'})`,
           );
         } else {
           this.logger.warn(

@@ -5,6 +5,22 @@ export interface PromptTemplate {
   user: (context: Record<string, any>) => string;
 }
 
+// Sanitize brief fields to prevent prompt injection
+function sanitizeBriefField(value: string): string {
+  return value
+    .replace(/\n{2,}/g, '\n') // collapse multiple newlines
+    .replace(
+      /^(IMPORTANT|SYSTEM|USER|ASSISTANT|IGNORE|OUBLIE|FORGET)\s*:/gim,
+      '[filtered]:',
+    )
+    .replace(/ignore\s+(all\s+)?previous\s+instructions/gi, '[filtered]')
+    .trim();
+}
+
+function sanitizeBriefArray(arr: string[] | undefined): string[] {
+  return (arr ?? []).map(sanitizeBriefField);
+}
+
 export const CONTENT_TEMPLATES: Record<ContentType, PromptTemplate> = {
   generic: {
     system: `Tu es un assistant de rédaction polyvalent et expert.
@@ -212,6 +228,183 @@ Règles strictes :
 - Répondre UNIQUEMENT avec le HTML poli, rien d'autre`,
     user: (ctx) => {
       return `Brouillon HTML à polir :\n${ctx.draft}\n\nNom de la gamme : ${ctx.gammeName}`;
+    },
+  },
+
+  // ── Brief-aware templates (Phase 2 Page Briefs) ──
+
+  seo_content_R1: {
+    system: `Tu es un rédacteur SEO automobile français. Tu reçois un brouillon HTML pour une PAGE TRANSACTIONNELLE (R1) de pièces auto.
+RÔLE DE CETTE PAGE : aider l'utilisateur à CHOISIR et ACHETER la bonne pièce compatible avec son véhicule.
+Tu DOIS respecter STRICTEMENT les contraintes du BRIEF ÉDITORIAL fourni ci-dessous.
+RÈGLES STRICTES :
+- Conserver EXACTEMENT les balises HTML (h2, ul, li, b) et leur ordre
+- NE PAS ajouter de nouvelles sections <h2>
+- NE JAMAIS toucher au H1 (il est immuable)
+- Ton TRANSACTIONNEL : orienter vers la décision d'achat
+- INTERDICTION d'inclure : procédures de montage, étapes 1/2/3, outils nécessaires, couple de serrage, tutoriel
+- Les termes techniques doivent apparaître naturellement, PAS en bourrage
+- Les preuves doivent être intégrées dans le texte, PAS en liste brute
+- NE PAS dépasser la longueur originale de plus de 20%
+- Répondre UNIQUEMENT avec le HTML poli`,
+    user: (ctx) => {
+      if (!ctx.brief)
+        return `Brouillon HTML à polir :\n${ctx.draft}\n\nNom de la gamme : ${ctx.gammeName}`;
+      let prompt = `Brouillon HTML à polir :\n${ctx.draft}\n\nNom de la gamme : ${ctx.gammeName}\n\n`;
+      prompt += `=== BRIEF ÉDITORIAL ===\n`;
+      prompt += `Intention principale : ${sanitizeBriefField(ctx.brief.primary_intent ?? '')}\n`;
+      const angles = sanitizeBriefArray(ctx.brief.angles_obligatoires);
+      if (angles.length)
+        prompt += `\nAngles OBLIGATOIRES à couvrir :\n${angles.map((a: string) => `- ${a}`).join('\n')}\n`;
+      const forbidden = sanitizeBriefArray(ctx.brief.forbidden_overlap);
+      if (forbidden.length)
+        prompt += `\nCONTENU STRICTEMENT INTERDIT (appartient à une autre page) :\n${forbidden.map((f: string) => `- ${f}`).join('\n')}\n`;
+      const termes = sanitizeBriefArray(ctx.brief.termes_techniques);
+      if (termes.length)
+        prompt += `\nTermes techniques à intégrer : ${termes.join(', ')}\n`;
+      const preuves = sanitizeBriefArray(ctx.brief.preuves);
+      if (preuves.length)
+        prompt += `\nDonnées chiffrées à citer :\n${preuves.map((p: string) => `- ${p}`).join('\n')}\n`;
+      const constraints = sanitizeBriefArray(ctx.brief.writing_constraints);
+      if (constraints.length)
+        prompt += `\nContraintes rédactionnelles :\n${constraints.map((c: string) => `- ${c}`).join('\n')}\n`;
+      return prompt;
+    },
+  },
+
+  seo_content_R3: {
+    system: `Tu es un rédacteur technique automobile français. Tu reçois un brouillon HTML pour une PAGE INFORMATIONNELLE (R3) de type guide/conseil.
+RÔLE DE CETTE PAGE : INFORMER et ÉDUQUER l'utilisateur sur l'entretien, le diagnostic et le remplacement de la pièce.
+Tu DOIS respecter STRICTEMENT les contraintes du BRIEF ÉDITORIAL fourni ci-dessous.
+RÈGLES STRICTES :
+- Conserver EXACTEMENT les balises HTML et leur ordre
+- NE JAMAIS toucher au H1 (il est immuable)
+- Ton PÉDAGOGIQUE : expliquer clairement, donner des repères concrets
+- INTERDICTION d'inclure : comparaison de prix entre marques, catalogue produits, call-to-action d'achat direct
+- Privilégier les explications "pourquoi" et "comment savoir si"
+- Les preuves techniques doivent être contextualisées (pas juste des chiffres bruts)
+- NE PAS dépasser la longueur originale de plus de 20%
+- Répondre UNIQUEMENT avec le HTML poli`,
+    user: (ctx) => {
+      if (!ctx.brief)
+        return `Brouillon HTML à polir :\n${ctx.draft}\n\nNom de la gamme : ${ctx.gammeName}`;
+      let prompt = `Brouillon HTML à polir :\n${ctx.draft}\n\nNom de la gamme : ${ctx.gammeName}\n\n`;
+      prompt += `=== BRIEF ÉDITORIAL ===\n`;
+      prompt += `Intention principale : ${sanitizeBriefField(ctx.brief.primary_intent ?? '')}\n`;
+      const angles = sanitizeBriefArray(ctx.brief.angles_obligatoires);
+      if (angles.length)
+        prompt += `\nAngles OBLIGATOIRES à couvrir :\n${angles.map((a: string) => `- ${a}`).join('\n')}\n`;
+      const forbidden = sanitizeBriefArray(ctx.brief.forbidden_overlap);
+      if (forbidden.length)
+        prompt += `\nCONTENU STRICTEMENT INTERDIT (appartient à une autre page) :\n${forbidden.map((f: string) => `- ${f}`).join('\n')}\n`;
+      const termes = sanitizeBriefArray(ctx.brief.termes_techniques);
+      if (termes.length)
+        prompt += `\nTermes techniques à intégrer : ${termes.join(', ')}\n`;
+      const preuves = sanitizeBriefArray(ctx.brief.preuves);
+      if (preuves.length)
+        prompt += `\nDonnées chiffrées à citer :\n${preuves.map((p: string) => `- ${p}`).join('\n')}\n`;
+      const constraints = sanitizeBriefArray(ctx.brief.writing_constraints);
+      if (constraints.length)
+        prompt += `\nContraintes rédactionnelles :\n${constraints.map((c: string) => `- ${c}`).join('\n')}\n`;
+      return prompt;
+    },
+  },
+
+  seo_content_R4: {
+    system: `Tu es un encyclopédiste technique automobile français. Tu reçois un brouillon pour une PAGE DE RÉFÉRENCE (R4) de type glossaire technique.
+RÔLE DE CETTE PAGE : DÉFINIR la pièce avec précision technique, donner des repères stables et neutres.
+Tu DOIS respecter STRICTEMENT les contraintes du BRIEF ÉDITORIAL fourni ci-dessous.
+RÈGLES STRICTES :
+- Ton ENCYCLOPÉDIQUE neutre — pas de marketing, pas de conseil d'achat
+- NE JAMAIS toucher au H1 (il est immuable)
+- INTERDICTION d'inclure : tutoriel, procédure de montage, comparaison prix, "cliquez ici", promotion
+- La définition doit être autonome et stable dans le temps
+- Pas de références à des modèles de véhicules spécifiques
+- Les données techniques doivent être universelles et vérifiables
+- Répondre UNIQUEMENT avec le contenu poli`,
+    user: (ctx) => {
+      if (!ctx.brief)
+        return `Brouillon à polir :\n${ctx.draft}\n\nNom de la gamme : ${ctx.gammeName}`;
+      let prompt = `Brouillon à polir :\n${ctx.draft}\n\nNom de la gamme : ${ctx.gammeName}\n\n`;
+      prompt += `=== BRIEF ÉDITORIAL ===\n`;
+      prompt += `Intention principale : ${sanitizeBriefField(ctx.brief.primary_intent ?? '')}\n`;
+      const angles = sanitizeBriefArray(ctx.brief.angles_obligatoires);
+      if (angles.length)
+        prompt += `\nAngles OBLIGATOIRES à couvrir :\n${angles.map((a: string) => `- ${a}`).join('\n')}\n`;
+      const forbidden = sanitizeBriefArray(ctx.brief.forbidden_overlap);
+      if (forbidden.length)
+        prompt += `\nCONTENU STRICTEMENT INTERDIT (appartient à une autre page) :\n${forbidden.map((f: string) => `- ${f}`).join('\n')}\n`;
+      const termes = sanitizeBriefArray(ctx.brief.termes_techniques);
+      if (termes.length)
+        prompt += `\nTermes techniques à intégrer : ${termes.join(', ')}\n`;
+      const preuves = sanitizeBriefArray(ctx.brief.preuves);
+      if (preuves.length)
+        prompt += `\nDonnées chiffrées à citer :\n${preuves.map((p: string) => `- ${p}`).join('\n')}\n`;
+      return prompt;
+    },
+  },
+
+  seo_descrip_R1: {
+    system: `Tu es un expert SEO automobile français. Tu reçois un brouillon de méta-description pour une PAGE TRANSACTIONNELLE (R1).
+Règles strictes :
+- Maximum 160 caractères (OBLIGATOIRE)
+- Commencer par le nom de la pièce suivi de deux-points
+- Inclure le CTA livraison 24-48h
+- Ton transactionnel : orienter vers l'achat
+- INTERDICTION de commencer par "Découvrez" ou "Trouvez"
+- Répondre UNIQUEMENT avec la méta-description polie`,
+    user: (ctx) => {
+      if (!ctx.brief)
+        return `Brouillon à polir :\n"${ctx.draft}"\n\nNom de la pièce : ${ctx.gammeName}`;
+      let prompt = `Brouillon à polir :\n"${ctx.draft}"\n\nNom de la pièce : ${ctx.gammeName}\n`;
+      prompt += `Intention : ${sanitizeBriefField(ctx.brief.primary_intent ?? '')}\n`;
+      const forbidden = sanitizeBriefArray(ctx.brief.forbidden_overlap);
+      if (forbidden.length)
+        prompt += `INTERDIT de mentionner : ${forbidden.join(', ')}\n`;
+      return prompt;
+    },
+  },
+
+  seo_descrip_R3: {
+    system: `Tu es un expert SEO automobile français. Tu reçois un brouillon de méta-description pour une PAGE INFORMATIONNELLE (R3) de type guide.
+Règles strictes :
+- Maximum 160 caractères (OBLIGATOIRE)
+- Commencer par le nom de la pièce suivi de deux-points
+- CTA : "guide complet" ou "tout savoir"
+- Ton pédagogique : informer et éduquer
+- INTERDICTION de commencer par "Découvrez" ou "Trouvez"
+- INTERDICTION de mentionner des prix ou promotions
+- Répondre UNIQUEMENT avec la méta-description polie`,
+    user: (ctx) => {
+      if (!ctx.brief)
+        return `Brouillon à polir :\n"${ctx.draft}"\n\nNom de la pièce : ${ctx.gammeName}`;
+      let prompt = `Brouillon à polir :\n"${ctx.draft}"\n\nNom de la pièce : ${ctx.gammeName}\n`;
+      prompt += `Intention : ${sanitizeBriefField(ctx.brief.primary_intent ?? '')}\n`;
+      const forbidden = sanitizeBriefArray(ctx.brief.forbidden_overlap);
+      if (forbidden.length)
+        prompt += `INTERDIT de mentionner : ${forbidden.join(', ')}\n`;
+      return prompt;
+    },
+  },
+
+  seo_descrip_R4: {
+    system: `Tu es un expert SEO automobile français. Tu reçois un brouillon de méta-description pour une PAGE DE RÉFÉRENCE (R4) technique.
+Règles strictes :
+- Maximum 160 caractères (OBLIGATOIRE)
+- Commencer par le nom de la pièce suivi de deux-points
+- Ton encyclopédique neutre — pas de CTA commercial
+- INTERDICTION de commencer par "Découvrez" ou "Trouvez"
+- INTERDICTION de mentionner des prix, promotions ou procédures
+- Répondre UNIQUEMENT avec la méta-description polie`,
+    user: (ctx) => {
+      if (!ctx.brief)
+        return `Brouillon à polir :\n"${ctx.draft}"\n\nNom de la pièce : ${ctx.gammeName}`;
+      let prompt = `Brouillon à polir :\n"${ctx.draft}"\n\nNom de la pièce : ${ctx.gammeName}\n`;
+      prompt += `Intention : ${sanitizeBriefField(ctx.brief.primary_intent ?? '')}\n`;
+      const forbidden = sanitizeBriefArray(ctx.brief.forbidden_overlap);
+      if (forbidden.length)
+        prompt += `INTERDIT de mentionner : ${forbidden.join(', ')}\n`;
+      return prompt;
     },
   },
 
