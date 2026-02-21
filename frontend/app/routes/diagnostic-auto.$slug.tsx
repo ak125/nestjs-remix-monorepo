@@ -190,7 +190,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
     { title: `${diagnostic.title} | Diagnostic Auto` },
     { name: "description", content: diagnostic.meta_description },
-    { name: "robots", content: "index, follow" },
+    { name: "robots", content: "noindex, nofollow" },
     // 🔗 Canonical URL (CRITIQUE SEO)
     { tagName: "link", rel: "canonical", href: canonicalUrl },
     // Open Graph

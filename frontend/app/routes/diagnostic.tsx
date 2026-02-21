@@ -110,6 +110,7 @@ export const meta = () => [
     content:
       "Identifiez la panne de votre véhicule en sélectionnant les symptômes observés. Diagnostic intelligent avec recommandations de pièces.",
   },
+  { name: "robots", content: "noindex, nofollow" },
 ];
 
 // Component

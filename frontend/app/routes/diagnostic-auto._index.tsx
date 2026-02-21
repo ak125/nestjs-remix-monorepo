@@ -158,7 +158,7 @@ export const meta: MetaFunction = () => {
       content:
         "Diagnostic automobile gratuit : identifiez bruits, vibrations, voyants. 193 diagnostics avec causes probables et solutions par nos experts.",
     },
-    { name: "robots", content: "index, follow" },
+    { name: "robots", content: "noindex, nofollow" },
     { tagName: "link", rel: "canonical", href: canonicalUrl },
     {
       property: "og:title",
