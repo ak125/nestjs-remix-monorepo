@@ -53,6 +53,47 @@ export interface RagPatchResult {
   sourcePath?: string;
 }
 
+// ── Claim Ledger MVP (4 types) ──
+
+export type ClaimKind = 'mileage' | 'dimension' | 'percentage' | 'norm';
+
+export interface ClaimEntry {
+  /** Stable hash of kind+rawText+sectionKey */
+  id: string;
+  kind: ClaimKind;
+  /** Original text as found in content, e.g. "120 000 - 150 000 km" */
+  rawText: string;
+  /** Normalized value, e.g. "120000-150000" */
+  value: string;
+  /** Unit, e.g. "km", "mm", "%" */
+  unit: string;
+  /** Which section this claim appears in */
+  sectionKey: string;
+  /** Source reference, e.g. "rag:gammes/embrayage.md#timing" */
+  sourceRef: string | null;
+  /** Link to evidence pack entry */
+  evidenceId: string | null;
+  /** verified = backed by source, unverified = no source found, blocked = stripped */
+  status: 'verified' | 'unverified' | 'blocked';
+}
+
+// ── Section Metadata ──
+
+export interface SectionMeta {
+  /** Abstract section key */
+  sectionKey: string;
+  /** Word count after compilation */
+  wordCount: number;
+  /** Content source that produced this section */
+  sourceType: 'db' | 'rag' | 'ai' | 'static' | 'empty';
+  /** Mode applied by SectionCompiler */
+  appliedMode: 'full' | 'summary' | 'link_only' | 'forbidden' | 'empty';
+  /** Whether the section was truncated */
+  wasTruncated: boolean;
+  /** Whether the section was stripped (forbidden) */
+  wasStripped: boolean;
+}
+
 // ── Auto-Repair Types ──
 
 export type HardGateName =
