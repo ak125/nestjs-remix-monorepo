@@ -28,6 +28,8 @@ export class HomepageRpcService extends SupabaseBaseService {
   private readonly CACHE_TTL_SECONDS = 300;
   // Timeout RPC
   private readonly RPC_TIMEOUT_MS = 2000;
+  // Singleflight: partage la promise RPC entre requêtes concurrentes
+  private inflightPromise: Promise<any> | null = null;
 
   constructor(
     private readonly cacheService: CacheService,
@@ -65,17 +67,27 @@ export class HomepageRpcService extends SupabaseBaseService {
       };
     }
 
-    // 2. Cache miss → Appel RPC
+    // 2. Cache miss → Vérifier si un appel RPC est déjà en cours (singleflight)
+    if (this.inflightPromise) {
+      this.logger.debug('⏳ In-flight join homepage RPC');
+      return this.inflightPromise;
+    }
+
+    // 3. Lancer le RPC et partager la promise avec les requêtes concurrentes
     this.logger.debug('❌ CACHE MISS homepage, appel RPC...');
 
-    const result = await this.fetchRpcWithTimeout(startTime);
+    this.inflightPromise = this.fetchRpcWithTimeout(startTime)
+      .then((result) => {
+        this.cacheResult(result).catch((err) =>
+          this.logger.error('Erreur cache homepage:', err),
+        );
+        return result;
+      })
+      .finally(() => {
+        this.inflightPromise = null;
+      });
 
-    // 3. Stocker en cache (async, non-bloquant)
-    this.cacheResult(result).catch((err) =>
-      this.logger.error('Erreur cache homepage:', err),
-    );
-
-    return result;
+    return this.inflightPromise;
   }
 
   /**

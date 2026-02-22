@@ -50,7 +50,7 @@ export class CacheWarmingService
         `✅ Homepage cache warmed: ${homepageResult.success ? 'OK' : 'FAILED'} (${homepageResult.time.toFixed(0)}ms)`,
       );
 
-      // 2. 🚀 LCP V9: Gamme pages — warm ALL indexed gammes (pg_display='1')
+      // 2. 🚀 LCP V9: Gamme pages — warm catalog-linked gammes (~221)
       await this.warmGammePages();
 
       const totalTime = performance.now() - startTime;
@@ -62,16 +62,15 @@ export class CacheWarmingService
 
   /**
    * 🔥 Warm gamme page caches via internal HTTP endpoint
-   * Fetches all pg_ids with pg_display='1' from Supabase,
+   * Fetches active gamme IDs from catalog_gamme (~221 gammes du catalogue actif)
    * then calls POST /api/gamme-rest/cache/warm in batches
    */
   private async warmGammePages() {
     try {
-      // Get all displayed gamme IDs
+      // Get only catalog-linked gamme IDs (~221 instead of 4205 from pieces_gamme)
       const { data: gammes, error } = await this.supabase
-        .from('pieces_gamme')
-        .select('pg_id')
-        .eq('pg_display', '1');
+        .from('catalog_gamme')
+        .select('mc_pg_id');
 
       if (error || !gammes?.length) {
         this.logger.warn(
@@ -80,7 +79,7 @@ export class CacheWarmingService
         return;
       }
 
-      const pgIds = gammes.map((g) => String(g.pg_id));
+      const pgIds = [...new Set(gammes.map((g) => String(g.mc_pg_id)))];
       this.logger.log(
         `🔥 Warming ${pgIds.length} gamme pages via /api/gamme-rest/cache/warm...`,
       );
