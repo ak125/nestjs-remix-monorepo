@@ -8,6 +8,8 @@ import {
   UseGuards,
   Body,
   Logger,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { NextFunction, Request, Response } from 'express';
@@ -189,27 +191,73 @@ export class AuthLoginController {
     @Body() credentials: { email: string; password: string },
     @Req() request: Express.Request,
   ): Promise<Record<string, unknown>> {
+    // Extraire le guest session ID AVANT toute modification de session (même pattern que /authenticate)
+    const cookieHeader = (request as Request).headers?.cookie || '';
+    const guestSessionId = extractGuestSessionId(cookieHeader);
+
+    let loginResult: { user: any; access_token: string };
     try {
-      const loginResult = await this.authService.login(
+      loginResult = await this.authService.login(
         credentials.email,
         credentials.password,
         (request as Request).ip,
       );
-
-      await promisifyLogin(request, loginResult.user);
-      return {
-        success: true,
-        message: 'Connexion réussie',
-        user: loginResult.user,
-        sessionToken: loginResult.access_token,
-      };
     } catch (err: unknown) {
-      return {
-        success: false,
-        error:
-          err instanceof Error ? err.message : 'Erreur lors de la connexion',
-      };
+      const message =
+        err instanceof Error ? err.message : 'Email ou mot de passe incorrect';
+      throw new HttpException(
+        { success: false, error: message, message },
+        HttpStatus.UNAUTHORIZED,
+      );
     }
+
+    // Régénérer la session (sécurité : prévient les attaques session fixation)
+    try {
+      await promisifySessionRegenerate(request.session);
+    } catch (regenerateErr) {
+      this.logger.error(
+        'Erreur régénération session lors du login inline:',
+        regenerateErr,
+      );
+      throw new HttpException(
+        {
+          success: false,
+          error: 'Erreur interne de session',
+          message: 'Erreur interne de session',
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    // Rattacher l'utilisateur à la session régénérée via Passport
+    await promisifyLogin(request, loginResult.user);
+
+    // Fusionner le panier guest vers l'utilisateur authentifié
+    const userId = loginResult.user?.id;
+    if (guestSessionId && userId && guestSessionId !== String(userId)) {
+      try {
+        const mergedCount = await this.cartDataService.mergeCart(
+          guestSessionId,
+          String(userId),
+        );
+        if (mergedCount > 0) {
+          this.logger.log(
+            `[CART-FUSION] Login inline: ${mergedCount} articles fusionnés de ${guestSessionId} vers userId ${userId}`,
+          );
+        }
+      } catch (mergeErr) {
+        this.logger.error(
+          `Erreur fusion panier lors du login inline: ${mergeErr instanceof Error ? mergeErr.message : String(mergeErr)}`,
+        );
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Connexion réussie',
+      user: loginResult.user,
+      sessionToken: loginResult.access_token,
+    };
   }
 
   /**

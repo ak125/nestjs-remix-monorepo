@@ -450,14 +450,24 @@ export default function CheckoutPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: guestEmail, password: loginPassword }),
       });
+
       if (res.ok) {
-        // Reload la page pour récupérer la session
-        window.location.href = "/checkout";
+        const data = await res.json().catch(() => ({ success: true }));
+        if (data.success !== false) {
+          // Session établie + panier fusionné côté serveur → recharger
+          window.location.href = "/checkout";
+        } else {
+          setLoginError(data.error || "Email ou mot de passe incorrect");
+        }
       } else {
-        setLoginError("Email ou mot de passe incorrect");
+        // 401 ou autre erreur HTTP → lire le message d'erreur
+        const data = await res.json().catch(() => ({}));
+        setLoginError(
+          data.message || data.error || "Email ou mot de passe incorrect",
+        );
       }
     } catch {
-      setLoginError("Erreur de connexion");
+      setLoginError("Erreur de connexion. Veuillez réessayer.");
     }
   };
 
