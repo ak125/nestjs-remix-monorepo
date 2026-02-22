@@ -11,7 +11,7 @@
  */
 
 import {
-  defer,
+  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -347,13 +347,20 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           .catch(() => [] as ConseilArray)
       : Promise.resolve([] as ConseilArray);
 
+    // CLS fix: await all 3 parallel fetches (localhost, ~50ms) to avoid layout shift
+    const [adjacentData, seoSwitchesData, conseilData] = await Promise.all([
+      adjacentPromise,
+      seoSwitchesPromise,
+      conseilPromise,
+    ]);
+
     clearTimeout(timeoutId);
-    return defer({
+    return json({
       article,
       pg_alias,
-      adjacentArticles: adjacentPromise,
-      seoSwitches: seoSwitchesPromise,
-      conseil: conseilPromise,
+      adjacentArticles: adjacentData,
+      seoSwitches: seoSwitchesData,
+      conseil: conseilData,
     });
   } catch (error) {
     clearTimeout(timeoutId);
@@ -465,56 +472,9 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 // Composant principal - Réutilise le même design que blog.article.$slug.tsx
 export default function LegacyBlogArticle() {
   const data = useLoaderData<typeof loader>();
-  const { article, pg_alias } = data;
+  const { article, pg_alias, adjacentArticles, seoSwitches, conseil } = data;
   const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState(false);
-
-  // Resolve deferred promises (adjacentArticles, seoSwitches, conseil)
-  const [resolvedAdjacent, setResolvedAdjacent] = useState<{
-    previous: any;
-    next: any;
-  }>({ previous: null, next: null });
-  const [resolvedSeoSwitches, setResolvedSeoSwitches] = useState<any[]>([]);
-  const [resolvedConseil, setResolvedConseil] = useState<ConseilArray>([]);
-
-  useEffect(() => {
-    const adj = data.adjacentArticles;
-    if (adj && typeof (adj as any).then === "function") {
-      (adj as any)
-        .then((r: any) =>
-          setResolvedAdjacent(r ?? { previous: null, next: null }),
-        )
-        .catch(() => null);
-    } else {
-      setResolvedAdjacent(adj as any);
-    }
-  }, [data.adjacentArticles]);
-
-  useEffect(() => {
-    const sw = data.seoSwitches;
-    if (sw && typeof (sw as any).then === "function") {
-      (sw as any)
-        .then((r: any) => setResolvedSeoSwitches(r ?? []))
-        .catch(() => null);
-    } else {
-      setResolvedSeoSwitches(sw as any);
-    }
-  }, [data.seoSwitches]);
-
-  useEffect(() => {
-    const c = data.conseil;
-    if (c && typeof (c as any).then === "function") {
-      (c as any)
-        .then((r: any) => setResolvedConseil(r ?? []))
-        .catch(() => null);
-    } else {
-      setResolvedConseil(c as any);
-    }
-  }, [data.conseil]);
-
-  const conseil = resolvedConseil;
-  const adjacentArticles = resolvedAdjacent;
-  const seoSwitches = resolvedSeoSwitches;
 
   const s1Sections = conseil?.filter((c) => c.sectionType === "S1") ?? [];
   // Quand des sections conseil S1-S8 existent, elles remplacent les H2/H3 article (évite la duplication)
@@ -743,7 +703,7 @@ export default function LegacyBlogArticle() {
                               alt={section.title}
                               width={240}
                               height={176}
-                              className="w-full h-auto object-cover"
+                              className="w-full object-cover aspect-[240/176]"
                               loading="lazy"
                             />
                           </CardContent>
