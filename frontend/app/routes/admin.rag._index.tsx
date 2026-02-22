@@ -97,16 +97,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ),
     ]);
 
-  const corpus: CorpusStats =
+  const rawCorpus =
     corpusRes.status === "fulfilled" && corpusRes.value.ok
       ? await corpusRes.value.json()
-      : {
-          total: 0,
-          byTruthLevel: {},
-          byDocFamily: {},
-          bySourceType: {},
-          ragStatus: "down" as const,
-        };
+      : {};
+
+  const corpus: CorpusStats = {
+    total: rawCorpus.total ?? 0,
+    byTruthLevel: rawCorpus.byTruthLevel ?? {},
+    byDocFamily: rawCorpus.byDocFamily ?? {},
+    bySourceType: rawCorpus.bySourceType ?? {},
+    ragStatus: rawCorpus.ragStatus ?? "down",
+  };
 
   const intents: IntentStats =
     intentsRes.status === "fulfilled" && intentsRes.value.ok
@@ -167,7 +169,7 @@ export default function AdminRagDashboard() {
   const c = displayData.corpus;
   const i = displayData.intents;
   const j = displayData.jobs;
-  const p = displayData.pipeline.counts;
+  const p = displayData.pipeline?.counts ?? {};
 
   const isLoading = refreshFetcher.state !== "idle";
 
