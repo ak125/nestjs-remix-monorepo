@@ -9,10 +9,22 @@ import {
   useNavigate,
   useSearchParams,
 } from "@remix-run/react";
-import { FileText, Search, Upload, ChevronRight } from "lucide-react";
+import {
+  FileText,
+  Search,
+  Upload,
+  ChevronRight,
+  ShieldCheck,
+  BookOpen,
+  AlertTriangle,
+} from "lucide-react";
 import { useMemo, useState } from "react";
-import { DashboardShell } from "~/components/admin/patterns/DashboardShell";
+import {
+  DashboardShell,
+  KpiGrid,
+} from "~/components/admin/patterns/DashboardShell";
 import { FilterBar, FilterGroup } from "~/components/admin/patterns/FilterBar";
+import { KpiCard } from "~/components/admin/patterns/KpiCard";
 import {
   ResponsiveDataTable,
   type DataColumn,
@@ -66,13 +78,6 @@ const TRUTH_STATUS: Record<string, StatusType> = {
   L4: "FAIL",
 };
 
-const FAMILY_BADGE: Record<string, string> = {
-  knowledge: "bg-indigo-100 text-indigo-800",
-  catalog: "bg-emerald-100 text-emerald-800",
-  diagnostic: "bg-orange-100 text-orange-800",
-  media: "bg-purple-100 text-purple-800",
-};
-
 const columns: DataColumn<KnowledgeDoc>[] = [
   {
     key: "title",
@@ -81,11 +86,21 @@ const columns: DataColumn<KnowledgeDoc>[] = [
     sortable: true,
     render: (value, row) => (
       <div>
-        <span className="font-medium text-foreground">
-          {String(value).length > 55
-            ? `${String(value).slice(0, 55)}…`
-            : String(value)}
-        </span>
+        <div className="flex items-center gap-1.5">
+          {String(row.id).startsWith("_quarantine") && (
+            <Badge
+              variant="outline"
+              className="border-warning/30 px-1 text-[10px] text-warning"
+            >
+              QTN
+            </Badge>
+          )}
+          <span className="font-medium text-foreground">
+            {String(value).length > 55
+              ? `${String(value).slice(0, 55)}…`
+              : String(value)}
+          </span>
+        </div>
         <div className="text-xs text-muted-foreground">{String(row.id)}</div>
       </div>
     ),
@@ -94,16 +109,7 @@ const columns: DataColumn<KnowledgeDoc>[] = [
     key: "doc_family",
     header: "Famille",
     mobilePriority: 2,
-    render: (value) => {
-      const family = String(value);
-      return (
-        <span
-          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${FAMILY_BADGE[family] || "bg-gray-100 text-gray-800"}`}
-        >
-          {family}
-        </span>
-      );
-    },
+    render: (value) => <Badge variant="outline">{String(value)}</Badge>,
   },
   {
     key: "truth_level",
@@ -157,6 +163,18 @@ export default function AdminRagDocuments() {
     [documents],
   );
 
+  const counts = useMemo(() => {
+    let l1 = 0;
+    let l2 = 0;
+    let quarantine = 0;
+    for (const d of documents) {
+      if (d.truth_level === "L1") l1++;
+      if (d.truth_level === "L2") l2++;
+      if (d.id.startsWith("_quarantine")) quarantine++;
+    }
+    return { l1, l2, quarantine };
+  }, [documents]);
+
   const activeFilterCount =
     (filterLevel ? 1 : 0) +
     (filterFamily ? 1 : 0) +
@@ -205,18 +223,40 @@ export default function AdminRagDocuments() {
         </div>
       }
       actions={
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="gap-1">
-            <FileText className="h-3 w-3" />
-            {documents.length} total
-          </Badge>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/admin/rag/ingest">
-              <Upload className="mr-1.5 h-3.5 w-3.5" />
-              Ingestion
-            </Link>
-          </Button>
-        </div>
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/admin/rag/ingest">
+            <Upload className="mr-1.5 h-3.5 w-3.5" />
+            Ingestion
+          </Link>
+        </Button>
+      }
+      kpis={
+        <KpiGrid columns={4}>
+          <KpiCard
+            title="Documents"
+            value={documents.length}
+            icon={FileText}
+            variant="info"
+          />
+          <KpiCard
+            title="L1 Constructeur"
+            value={counts.l1}
+            icon={ShieldCheck}
+            variant="success"
+          />
+          <KpiCard
+            title="L2 Technique"
+            value={counts.l2}
+            icon={BookOpen}
+            variant="info"
+          />
+          <KpiCard
+            title="Quarantaine"
+            value={counts.quarantine}
+            icon={AlertTriangle}
+            variant="warning"
+          />
+        </KpiGrid>
       }
       filters={
         <FilterBar activeCount={activeFilterCount} onReset={handleReset}>
@@ -237,7 +277,7 @@ export default function AdminRagDocuments() {
               onValueChange={setFilterLevel}
               className="h-9 rounded-md border border-input bg-background px-3 text-sm"
             >
-              <option value="">Tous niveaux</option>
+              <SelectItem value="">Tous niveaux</SelectItem>
               <SelectItem value="L1">L1 — Constructeur</SelectItem>
               <SelectItem value="L2">L2 — Technique vérifiée</SelectItem>
               <SelectItem value="L3">L3 — Communautaire</SelectItem>
@@ -250,7 +290,7 @@ export default function AdminRagDocuments() {
               onValueChange={setFilterFamily}
               className="h-9 rounded-md border border-input bg-background px-3 text-sm"
             >
-              <option value="">Toutes familles</option>
+              <SelectItem value="">Toutes familles</SelectItem>
               {families.map((f) => (
                 <SelectItem key={f} value={f}>
                   {f}
@@ -264,7 +304,7 @@ export default function AdminRagDocuments() {
               onValueChange={setFilterType}
               className="h-9 rounded-md border border-input bg-background px-3 text-sm"
             >
-              <option value="">Tous types</option>
+              <SelectItem value="">Tous types</SelectItem>
               {sourceTypes.map((t) => (
                 <SelectItem key={t} value={t}>
                   {t}
