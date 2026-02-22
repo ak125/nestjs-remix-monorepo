@@ -8,19 +8,24 @@
  * - Set pré-calculé pour lookups O(1)
  */
 
-import { useState, useMemo, useRef, useCallback } from 'react';
-import { type PieceData, type PiecesFilters, type SortBy, type ViewMode } from '../types/pieces-route.types';
-import { convertStarsToNote } from '../utils/pieces-filters.utils';
+import { useState, useMemo, useRef, useCallback, useTransition } from "react";
+import {
+  type PieceData,
+  type PiecesFilters,
+  type SortBy,
+  type ViewMode,
+} from "../types/pieces-route.types";
+import { convertStarsToNote } from "../utils/pieces-filters.utils";
 
 // ⚡ Helper functions pré-définies (évite recréation à chaque render)
-const getPriceCategory = (price: number): 'low' | 'medium' | 'high' => {
-  if (price < 50) return 'low';
-  if (price < 150) return 'medium';
-  return 'high';
+const getPriceCategory = (price: number): "low" | "medium" | "high" => {
+  if (price < 50) return "low";
+  if (price < 150) return "medium";
+  return "high";
 };
 
 const matchesPriceFilter = (price: number, priceRange: string): boolean => {
-  if (priceRange === 'all') return true;
+  if (priceRange === "all") return true;
   return getPriceCategory(price) === priceRange;
 };
 
@@ -29,7 +34,9 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
   const pieces = useMemo(() => inputPieces ?? [], [inputPieces]);
 
   // ⚡ Collator mis en cache (évite recréation à chaque appel de sort)
-  const collatorRef = useRef(new Intl.Collator('fr', { numeric: true, sensitivity: 'base' }));
+  const collatorRef = useRef(
+    new Intl.Collator("fr", { numeric: true, sensitivity: "base" }),
+  );
 
   // État des filtres
   const [activeFilters, setActiveFilters] = useState<PiecesFilters>({
@@ -42,6 +49,9 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     position: "all",
   });
 
+  // ⚡ useTransition: defer filter recalc so browser paints interaction feedback first
+  const [isFilterPending, startTransition] = useTransition();
+
   const [sortBy, setSortBy] = useState<SortBy>("name");
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [selectedPieces, setSelectedPieces] = useState<number[]>([]);
@@ -51,7 +61,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
   // ⚡ Pré-calculer le Set des marques pour lookups O(1)
   const brandsSet = useMemo(
     () => new Set(activeFilters.brands),
-    [activeFilters.brands]
+    [activeFilters.brands],
   );
 
   // ⚡⚡⚡ ALGORITHME SINGLE-PASS OPTIMISÉ ⚡⚡⚡
@@ -60,16 +70,17 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     filteredProducts,
     dynamicFilterCounts,
     brandAverageNotes,
-    uniqueBrands
+    uniqueBrands,
   } = useMemo(() => {
     // Pré-calculer la recherche une seule fois
-    const searchLower = activeFilters.searchText?.toLowerCase() || '';
+    const searchLower = activeFilters.searchText?.toLowerCase() || "";
     const hasSearch = searchLower.length > 0;
     const hasBrandFilter = brandsSet.size > 0;
-    const hasQualityFilter = activeFilters.quality !== 'all';
-    const hasPriceFilter = activeFilters.priceRange !== 'all';
-    const hasAvailFilter = activeFilters.availability === 'stock';
-    const hasPositionFilter = activeFilters.position && activeFilters.position !== 'all';
+    const hasQualityFilter = activeFilters.quality !== "all";
+    const hasPriceFilter = activeFilters.priceRange !== "all";
+    const hasAvailFilter = activeFilters.availability === "stock";
+    const hasPositionFilter =
+      activeFilters.position && activeFilters.position !== "all";
     const hasNoteFilter = activeFilters.minNote && activeFilters.minNote > 0;
 
     // Structures pour les résultats
@@ -90,8 +101,8 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     for (let i = 0; i < pieces.length; i++) {
       const piece = pieces[i];
       const price = piece.price || 0;
-      const brand = piece.brand || '';
-      const quality = piece.quality || '';
+      const brand = piece.brand || "";
+      const quality = piece.quality || "";
       const note = convertStarsToNote(piece.stars);
 
       // Collecter marques uniques (toujours)
@@ -104,47 +115,81 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
         const existing = brandNotes.get(brand) || { sum: 0, count: 0 };
         brandNotes.set(brand, {
           sum: existing.sum + note,
-          count: existing.count + 1
+          count: existing.count + 1,
         });
       }
 
       // Vérifier recherche textuelle (premier filtre, le plus sélectif)
       if (hasSearch) {
-        const name = (piece.name || '').toLowerCase();
-        const ref = (piece.reference || '').toLowerCase();
+        const name = (piece.name || "").toLowerCase();
+        const ref = (piece.reference || "").toLowerCase();
         const brandLower = brand.toLowerCase();
-        if (!name.includes(searchLower) && !ref.includes(searchLower) && !brandLower.includes(searchLower)) {
+        if (
+          !name.includes(searchLower) &&
+          !ref.includes(searchLower) &&
+          !brandLower.includes(searchLower)
+        ) {
           continue; // Skip cette pièce pour tous les comptages
         }
       }
 
       // Calculer les états de chaque filtre
       const matchesBrand = !hasBrandFilter || brandsSet.has(brand);
-      const matchesQuality = !hasQualityFilter || quality === activeFilters.quality;
-      const matchesPrice = !hasPriceFilter || matchesPriceFilter(price, activeFilters.priceRange);
-      const matchesAvail = !hasAvailFilter || piece.stock === 'En stock';
-      const matchesPosition = !hasPositionFilter || piece.side === activeFilters.position;
+      const matchesQuality =
+        !hasQualityFilter || quality === activeFilters.quality;
+      const matchesPrice =
+        !hasPriceFilter || matchesPriceFilter(price, activeFilters.priceRange);
+      const matchesAvail = !hasAvailFilter || piece.stock === "En stock";
+      const matchesPosition =
+        !hasPositionFilter || piece.side === activeFilters.position;
       const matchesNote = !hasNoteFilter || note >= activeFilters.minNote!;
 
       // ⚡ Comptages dynamiques croisés (exclut le filtre correspondant)
       // Brand count: si passe qualité + prix + dispo (exclut brand filter)
-      if (matchesQuality && matchesPrice && matchesAvail && matchesPosition && matchesNote && brand) {
+      if (
+        matchesQuality &&
+        matchesPrice &&
+        matchesAvail &&
+        matchesPosition &&
+        matchesNote &&
+        brand
+      ) {
         brandCounts.set(brand, (brandCounts.get(brand) || 0) + 1);
       }
 
       // Quality count: si passe brand + prix + dispo (exclut quality filter)
-      if (matchesBrand && matchesPrice && matchesAvail && matchesPosition && matchesNote && quality) {
+      if (
+        matchesBrand &&
+        matchesPrice &&
+        matchesAvail &&
+        matchesPosition &&
+        matchesNote &&
+        quality
+      ) {
         qualityCounts.set(quality, (qualityCounts.get(quality) || 0) + 1);
       }
 
       // Price count: si passe brand + quality + dispo (exclut price filter)
-      if (matchesBrand && matchesQuality && matchesAvail && matchesPosition && matchesNote) {
+      if (
+        matchesBrand &&
+        matchesQuality &&
+        matchesAvail &&
+        matchesPosition &&
+        matchesNote
+      ) {
         const category = getPriceCategory(price);
         priceCounts[category]++;
       }
 
       // ⚡ Ajouter au résultat final si tous les filtres passent
-      if (matchesBrand && matchesQuality && matchesPrice && matchesAvail && matchesPosition && matchesNote) {
+      if (
+        matchesBrand &&
+        matchesQuality &&
+        matchesPrice &&
+        matchesAvail &&
+        matchesPosition &&
+        matchesNote
+      ) {
         filtered.push(piece);
       }
     }
@@ -153,7 +198,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     const collator = collatorRef.current;
     switch (sortBy) {
       case "name":
-        filtered.sort((a, b) => collator.compare(a.name || '', b.name || ''));
+        filtered.sort((a, b) => collator.compare(a.name || "", b.name || ""));
         break;
       case "price-asc":
         filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
@@ -162,7 +207,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
         filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
         break;
       case "brand":
-        filtered.sort((a, b) => collator.compare(a.brand || '', b.brand || ''));
+        filtered.sort((a, b) => collator.compare(a.brand || "", b.brand || ""));
         break;
     }
 
@@ -188,7 +233,9 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     if (!showRecommendations) return [];
 
     return filteredProducts
-      .filter(piece => piece.quality === 'OES' && piece.stars && piece.stars >= 4)
+      .filter(
+        (piece) => piece.quality === "OES" && piece.stars && piece.stars >= 4,
+      )
       .slice(0, 3);
   }, [filteredProducts, showRecommendations]);
 
@@ -196,36 +243,38 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
   const selectedPiecesData = useMemo(() => {
     if (selectedPieces.length === 0) return [];
     const selectedSet = new Set(selectedPieces);
-    return pieces.filter(piece => selectedSet.has(piece.id));
+    return pieces.filter((piece) => selectedSet.has(piece.id));
   }, [pieces, selectedPieces]);
 
-  // Actions mémorisées avec useCallback
+  // Actions mémorisées avec useCallback — wrapped in startTransition for INP
   const resetAllFilters = useCallback(() => {
-    setActiveFilters({
-      brands: [],
-      priceRange: "all",
-      quality: "all",
-      availability: "all",
-      searchText: "",
-      minNote: undefined,
-      position: "all",
+    startTransition(() => {
+      setActiveFilters({
+        brands: [],
+        priceRange: "all",
+        quality: "all",
+        availability: "all",
+        searchText: "",
+        minNote: undefined,
+        position: "all",
+      });
+      setSortBy("name");
     });
-    setSortBy("name");
-  }, []);
+  }, [startTransition]);
 
   const togglePieceSelection = useCallback((pieceId: number) => {
-    setSelectedPieces(prev =>
+    setSelectedPieces((prev) =>
       prev.includes(pieceId)
-        ? prev.filter(id => id !== pieceId)
-        : [...prev, pieceId]
+        ? prev.filter((id) => id !== pieceId)
+        : [...prev, pieceId],
     );
   }, []);
 
   const toggleFavorite = useCallback((pieceId: number) => {
-    setFavoritesPieces(prev =>
+    setFavoritesPieces((prev) =>
       prev.includes(pieceId)
-        ? prev.filter(id => id !== pieceId)
-        : [...prev, pieceId]
+        ? prev.filter((id) => id !== pieceId)
+        : [...prev, pieceId],
     );
   }, []);
 
@@ -234,49 +283,73 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     setFavoritesPieces([]);
   }, []);
 
-  const updateFilters = useCallback((updates: Partial<PiecesFilters>) => {
-    setActiveFilters(prev => ({ ...prev, ...updates }));
-  }, []);
+  const updateFilters = useCallback(
+    (updates: Partial<PiecesFilters>) => {
+      startTransition(() => {
+        setActiveFilters((prev) => ({ ...prev, ...updates }));
+      });
+    },
+    [startTransition],
+  );
 
   // 🆕 Supprimer un filtre individuel (pour les chips)
-  const removeFilter = useCallback((type: keyof PiecesFilters, value?: string) => {
-    setActiveFilters(prev => {
-      const updated = { ...prev };
+  const removeFilter = useCallback(
+    (type: keyof PiecesFilters, value?: string) => {
+      startTransition(() => {
+        setActiveFilters((prev) => {
+          const updated = { ...prev };
 
-      switch (type) {
-        case 'brands':
-          // Supprimer une marque spécifique du tableau
-          if (value) {
-            updated.brands = prev.brands.filter(b => b !== value);
-          } else {
-            updated.brands = [];
+          switch (type) {
+            case "brands":
+              // Supprimer une marque spécifique du tableau
+              if (value) {
+                updated.brands = prev.brands.filter((b) => b !== value);
+              } else {
+                updated.brands = [];
+              }
+              break;
+            case "priceRange":
+              updated.priceRange = "all";
+              break;
+            case "quality":
+              updated.quality = "all";
+              break;
+            case "position":
+              updated.position = "all";
+              break;
+            case "minNote":
+              updated.minNote = undefined;
+              break;
+            case "availability":
+              updated.availability = "all";
+              break;
+            case "searchText":
+              updated.searchText = "";
+              break;
+            default:
+              break;
           }
-          break;
-        case 'priceRange':
-          updated.priceRange = 'all';
-          break;
-        case 'quality':
-          updated.quality = 'all';
-          break;
-        case 'position':
-          updated.position = 'all';
-          break;
-        case 'minNote':
-          updated.minNote = undefined;
-          break;
-        case 'availability':
-          updated.availability = 'all';
-          break;
-        case 'searchText':
-          updated.searchText = '';
-          break;
-        default:
-          break;
-      }
 
-      return updated;
-    });
-  }, []);
+          return updated;
+        });
+      });
+    },
+    [startTransition],
+  );
+
+  // Wrap setActiveFilters so all callers go through startTransition
+  const setActiveFiltersTransitioned = useCallback(
+    (
+      filtersOrUpdater:
+        | PiecesFilters
+        | ((prev: PiecesFilters) => PiecesFilters),
+    ) => {
+      startTransition(() => {
+        setActiveFilters(filtersOrUpdater);
+      });
+    },
+    [startTransition],
+  );
 
   return {
     // État
@@ -286,6 +359,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     selectedPieces,
     favoritesPieces,
     showRecommendations,
+    isFilterPending,
 
     // Données calculées
     filteredProducts,
@@ -296,7 +370,7 @@ export function usePiecesFilters(inputPieces: PieceData[] | undefined | null) {
     brandAverageNotes,
 
     // Actions
-    setActiveFilters,
+    setActiveFilters: setActiveFiltersTransitioned,
     setSortBy,
     setViewMode,
     setShowRecommendations,

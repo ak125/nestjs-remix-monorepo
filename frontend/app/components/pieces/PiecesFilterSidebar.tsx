@@ -9,9 +9,9 @@
 import { DollarSign, Package, RotateCcw, Star } from "lucide-react";
 import { memo } from "react";
 
-import { Badge, FilterSection, ScrollArea } from "~/components/ui";
 import { type PiecesFilters } from "../../types/pieces-route.types";
 import { BrandLogo } from "../ui/BrandLogo";
+import { Badge, FilterSection, ScrollArea } from "~/components/ui";
 
 export interface FilterOptionData {
   id: number | string;
@@ -143,7 +143,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                     onClick={() =>
                       setActiveFilters({ ...activeFilters, position: "all" })
                     }
-                    className={`px-3 py-2 rounded-lg text-[11px] font-bold transition-all duration-200 ${
+                    className={`px-3 py-2 rounded-lg text-[11px] font-bold transition-colors duration-200 ${
                       !activeFilters.position ||
                       activeFilters.position === "all"
                         ? "bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-lg shadow-slate-900/30"
@@ -158,7 +158,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                       onClick={() =>
                         setActiveFilters({ ...activeFilters, position: pos })
                       }
-                      className={`px-3 py-2 rounded-lg text-[11px] font-bold transition-all duration-200 ${
+                      className={`px-3 py-2 rounded-lg text-[11px] font-bold transition-colors duration-200 ${
                         activeFilters.position === pos
                           ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/30"
                           : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
@@ -243,10 +243,10 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                               : parseInt(rating.value),
                         })
                       }
-                      className={`flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-all duration-200 border-2 ${
+                      className={`flex-1 py-2.5 rounded-lg text-[11px] font-bold transition-colors duration-200 border-2 ${
                         isActive
-                          ? `${rating.activeBg} text-white shadow-lg ${rating.shadow || ""} scale-105 ${rating.activeBorder}`
-                          : `${rating.bg} ${rating.text} ${rating.border} hover:scale-102 hover:shadow-md`
+                          ? `${rating.activeBg} text-white shadow-lg ${rating.shadow || ""} ${rating.activeBorder}`
+                          : `${rating.bg} ${rating.text} ${rating.border} hover:shadow-md`
                       }`}
                     >
                       {rating.label}
@@ -325,7 +325,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                             });
                           }
                         }}
-                        className={`relative flex flex-col items-center p-1.5 rounded-lg transition-all duration-200 group ${
+                        className={`relative flex flex-col items-center p-1.5 rounded-lg transition-colors duration-200 group ${
                           isSelected
                             ? "bg-blue-50 border-2 border-blue-500 shadow-md shadow-blue-500/20"
                             : "bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md"
@@ -390,7 +390,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                   onClick={() =>
                     setActiveFilters({ ...activeFilters, quality: "all" })
                   }
-                  className={`w-full py-2.5 px-3 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center justify-between border-2 ${
+                  className={`w-full py-2.5 px-3 rounded-lg text-xs font-semibold transition-colors duration-200 flex items-center justify-between border-2 ${
                     activeFilters.quality === "all"
                       ? "bg-slate-600 text-white border-slate-700 shadow-lg"
                       : "bg-slate-50 text-slate-600 border-slate-300 hover:border-slate-400 hover:shadow-md"
@@ -472,12 +472,12 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                           })
                         }
                         disabled={isDisabled}
-                        className={`py-2.5 px-2 rounded-lg text-[11px] font-bold transition-all duration-200 flex flex-col items-center gap-1 border-2 ${
+                        className={`py-2.5 px-2 rounded-lg text-[11px] font-bold transition-colors duration-200 flex flex-col items-center gap-1 border-2 ${
                           isDisabled
                             ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed opacity-50"
                             : isSelected
-                              ? `${quality.color.activeBg} text-white ${quality.color.border} shadow-lg ${quality.color.shadow} scale-105`
-                              : `${quality.color.bg} ${quality.color.text} ${quality.color.border} hover:shadow-md hover:scale-102`
+                              ? `${quality.color.activeBg} text-white ${quality.color.border} shadow-lg ${quality.color.shadow}`
+                              : `${quality.color.bg} ${quality.color.text} ${quality.color.border} hover:shadow-md`
                         }`}
                       >
                         <span className="leading-tight text-center">
@@ -519,7 +519,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                         priceRange: price.id as any,
                       })
                     }
-                    className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-all duration-200 ${
+                    className={`flex-1 py-2 rounded-lg text-[11px] font-bold transition-colors duration-200 ${
                       activeFilters.priceRange === price.id
                         ? "bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-lg shadow-slate-900/30"
                         : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-800"
@@ -565,7 +565,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
             {/* Bouton reset premium */}
             <button
               onClick={resetAllFilters}
-              className="w-full bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 font-semibold py-2 px-3 rounded-lg text-xs transition-all duration-300 flex items-center justify-center gap-2 border border-slate-300 hover:border-slate-400 shadow-sm hover:shadow-md group"
+              className="w-full bg-gradient-to-r from-slate-100 to-slate-200 hover:from-slate-200 hover:to-slate-300 text-slate-700 font-semibold py-2 px-3 rounded-lg text-xs transition-colors duration-200 flex items-center justify-center gap-2 border border-slate-300 hover:border-slate-400 shadow-sm hover:shadow-md group"
             >
               <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
               Réinitialiser les filtres

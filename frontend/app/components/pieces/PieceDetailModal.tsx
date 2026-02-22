@@ -9,7 +9,6 @@ import { ShoppingCart, ClipboardList, Shield } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { trackViewItem, trackAddToCart } from "../../utils/analytics";
 import { getOptimizedRackImageUrl } from "../../utils/image-optimizer";
@@ -21,6 +20,7 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { BrandLogo } from "../ui/BrandLogo";
+import { logger } from "~/utils/logger";
 
 // Helper pour les images rack via imgproxy
 const getRackImageUrl = (path: string, width: number = 400) => {
@@ -140,13 +140,11 @@ export const PieceDetailModal = memo(function PieceDetailModal({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose]);
 
-  // Bloquer le scroll body
+  // Bloquer le scroll body (rAF to avoid layout thrashing on interaction)
   useEffect(() => {
-    if (pieceId) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    requestAnimationFrame(() => {
+      document.body.style.overflow = pieceId ? "hidden" : "";
+    });
 
     return () => {
       document.body.style.overflow = "";

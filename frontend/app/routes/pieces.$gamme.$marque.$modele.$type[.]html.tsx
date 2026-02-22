@@ -468,6 +468,7 @@ export default function PiecesVehicleRoute() {
     setViewMode,
     resetAllFilters,
     togglePieceSelection,
+    isFilterPending,
   } = usePiecesFilters(data.pieces);
 
   // 📊 Track les impressions de la section "Voir aussi" au montage
@@ -707,46 +708,54 @@ export default function PiecesVehicleRoute() {
               />
 
               {/* Affichage des pièces selon le mode */}
-              {data.grouped_pieces && data.grouped_pieces.length > 0 ? (
-                // Affichage groupé - Composant extrait
-                <PiecesGroupedDisplay
-                  groupedPieces={data.grouped_pieces}
-                  activeFilters={activeFilters}
-                  viewMode={viewMode}
-                  vehicleModele={data.vehicle.modele}
-                  vehicleMarque={data.vehicle.marque}
-                  selectedPieces={selectedPieces}
-                  onSelectPiece={handleSelectPiece}
-                />
-              ) : (
-                // âœ¨ FALLBACK: Affichage simple si pas de groupes
-                <>
-                  {viewMode === "grid" && (
-                    <PiecesGridView
-                      pieces={filteredProducts}
-                      onSelectPiece={handleSelectPiece}
-                      selectedPieces={selectedPieces}
-                      vehicleMarque={data.vehicle.marque}
-                    />
-                  )}
+              <div
+                className={
+                  isFilterPending
+                    ? "opacity-60 transition-opacity duration-150"
+                    : "transition-opacity duration-150"
+                }
+              >
+                {data.grouped_pieces && data.grouped_pieces.length > 0 ? (
+                  // Affichage groupé - Composant extrait
+                  <PiecesGroupedDisplay
+                    groupedPieces={data.grouped_pieces}
+                    activeFilters={activeFilters}
+                    viewMode={viewMode}
+                    vehicleModele={data.vehicle.modele}
+                    vehicleMarque={data.vehicle.marque}
+                    selectedPieces={selectedPieces}
+                    onSelectPiece={handleSelectPiece}
+                  />
+                ) : (
+                  // âœ¨ FALLBACK: Affichage simple si pas de groupes
+                  <>
+                    {viewMode === "grid" && (
+                      <PiecesGridView
+                        pieces={filteredProducts}
+                        onSelectPiece={handleSelectPiece}
+                        selectedPieces={selectedPieces}
+                        vehicleMarque={data.vehicle.marque}
+                      />
+                    )}
 
-                  {viewMode === "list" && (
-                    <PiecesListView
-                      pieces={filteredProducts}
-                      onSelectPiece={handleSelectPiece}
-                      selectedPieces={selectedPieces}
-                    />
-                  )}
-                </>
-              )}
+                    {viewMode === "list" && (
+                      <PiecesListView
+                        pieces={filteredProducts}
+                        onSelectPiece={handleSelectPiece}
+                        selectedPieces={selectedPieces}
+                      />
+                    )}
+                  </>
+                )}
 
-              {viewMode === "comparison" && (
-                <PiecesComparisonView
-                  pieces={filteredProducts}
-                  selectedPieces={selectedPieces}
-                  onRemovePiece={handleRemoveFromComparison}
-                />
-              )}
+                {viewMode === "comparison" && (
+                  <PiecesComparisonView
+                    pieces={filteredProducts}
+                    selectedPieces={selectedPieces}
+                    onRemovePiece={handleRemoveFromComparison}
+                  />
+                )}
+              </div>
 
               {/* Pièces recommandées - Composant avec SEO switches */}
               <PiecesRecommendedSection
