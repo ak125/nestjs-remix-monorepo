@@ -257,11 +257,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return null;
   });
 
-  // 🚀 PARALLÉLISATION: RM V2 + seoSwitches en même temps
-  const [rmV2Response, seoSwitches] = await Promise.all([
-    rmV2Promise,
-    seoSwitchesPromise,
-  ]);
+  // 🚀 LCP V9: seoSwitches deferred (below-fold only, has fallback anchors)
+  const rmV2Response = await rmV2Promise;
 
   // 🔄 SEO: Validation RM V2 - Si échec → 301 redirect vers page gamme
   if (!rmV2Response || !isRmV2DataUsable(rmV2Response, 1)) {
@@ -363,10 +360,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         rmDuration: rmV2Response.duration_ms,
       },
 
-      // === DONNÉES CRITIQUES SECONDAIRES (résolues après RM V2) ===
-      seoSwitches, // Résolu car utilisé dans callback JS
-
       // === DONNÉES STREAMÉES (non-bloquantes, chargées en background) ===
+      // 🚀 LCP V9: seoSwitches deferred (below-fold, fallback anchors in getAnchorText)
+      seoSwitches: seoSwitchesPromise,
       // 🚀 LCP OPTIMIZATION V7: catalogueMameFamille streamé (below-fold)
       catalogueMameFamille: catalogueMameFamillePromise,
       relatedArticles: relatedArticlesPromise,
@@ -539,10 +535,27 @@ export default function PiecesVehicleRoute() {
     }
   }, [availablePositions, activeFilters.position, setActiveFilters]);
 
+  // 🚀 LCP V9: seoSwitches is deferred — resolve promise when available
+  const [resolvedSeoSwitches, setResolvedSeoSwitches] = useState<
+    | { verbs: Array<{ id: number; content: string }>; verbCount: number }
+    | null
+    | undefined
+  >(null);
+  useEffect(() => {
+    const val = data.seoSwitches;
+    if (val && typeof (val as any).then === "function") {
+      (val as any)
+        .then((r: any) => setResolvedSeoSwitches(r ?? null))
+        .catch(() => null);
+    } else {
+      setResolvedSeoSwitches(val as any);
+    }
+  }, [data.seoSwitches]);
+
   // 🔗 Fonction pour générer des ancres SEO variées depuis les switches
   const getAnchorText = useCallback(
     (index: number): string => {
-      const switches = data.seoSwitches?.verbs || [];
+      const switches = resolvedSeoSwitches?.verbs || [];
       if (switches.length > 0) {
         const switchItem = switches[index % switches.length];
         const verb = switchItem?.content || "";
@@ -555,7 +568,7 @@ export default function PiecesVehicleRoute() {
       const defaultAnchors = ["Voir", "Découvrir", "Explorer", "Détails"];
       return defaultAnchors[index % defaultAnchors.length];
     },
-    [data.seoSwitches],
+    [resolvedSeoSwitches],
   );
 
   return (
@@ -739,7 +752,7 @@ export default function PiecesVehicleRoute() {
               <PiecesRecommendedSection
                 pieces={recommendedPieces}
                 visible={viewMode !== "comparison"}
-                seoSwitches={data.seoSwitches}
+                seoSwitches={resolvedSeoSwitches ?? undefined}
                 gamme={data.gamme}
                 vehicle={data.vehicle}
               />

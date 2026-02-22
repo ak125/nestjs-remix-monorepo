@@ -414,6 +414,11 @@ export class GammeResponseBuilderService {
         }
       : null;
 
+    // 🚀 LCP V9: Start reference lookup early (runs in parallel with buying guide)
+    const referencePromise = this.referenceService
+      .getByPgId(pgIdNum)
+      .catch(() => null);
+
     // Récupérer le contrat éditorial puis construire le guide orienté achat.
     const buyingGuideContract =
       await this.buyingGuideService.getBuyingGuideContractV1(pgId);
@@ -480,7 +485,7 @@ export class GammeResponseBuilderService {
           }
         : null;
 
-    // Fetch reference data (optional, non-blocking)
+    // 🚀 LCP V9: Await reference (started in parallel with buying guide above)
     let referenceData: {
       slug: string;
       title: string;
@@ -488,19 +493,15 @@ export class GammeResponseBuilderService {
       roleMecanique: string | null;
       canonicalUrl: string | null;
     } | null = null;
-    try {
-      const ref = await this.referenceService.getByPgId(pgIdNum);
-      if (ref && ref.definition) {
-        referenceData = {
-          slug: ref.slug,
-          title: ref.title,
-          definition: ref.definition,
-          roleMecanique: ref.roleMecanique,
-          canonicalUrl: ref.canonicalUrl,
-        };
-      }
-    } catch {
-      /* non-bloquant — pas de référence = pas d'encart */
+    const ref = await referencePromise;
+    if (ref && ref.definition) {
+      referenceData = {
+        slug: ref.slug,
+        title: ref.title,
+        definition: ref.definition,
+        roleMecanique: ref.roleMecanique,
+        canonicalUrl: ref.canonicalUrl,
+      };
     }
 
     const totalTime = performance.now() - startTime;

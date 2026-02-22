@@ -78,9 +78,6 @@ export const links: LinksFunction = () => [
   // Stylesheets - CSS critique (bloquant)
   { rel: "stylesheet", href: stylesheet },
 
-  // CSS animations - Chargé de façon synchrone pour éviter hydration mismatch
-  { rel: "stylesheet", href: animationsStylesheet },
-
   // DNS Prefetch & Preconnect (Performance SEO Phase 1)
   { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
   { rel: "dns-prefetch", href: "https://fonts.gstatic.com" },
@@ -98,8 +95,7 @@ export const links: LinksFunction = () => [
     crossOrigin: "anonymous",
   },
 
-  // Google Fonts - Chargement non-bloquant (stylesheet only, preload moved to homepage)
-  { rel: "stylesheet", href: GOOGLE_FONTS_URL },
+  // Google Fonts + Animations CSS : chargés en async dans Layout() pour ne pas bloquer le rendu
 
   // Note: Font preloads + brand image preloads déplacés vers _index.tsx (homepage)
   // pour améliorer le LCP sur les pages produit (slow 4G)
@@ -418,6 +414,34 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <Meta />
         <Links />
+        {/* 🚀 LCP: Google Fonts async (non-render-blocking) */}
+        <link
+          rel="preload"
+          href={GOOGLE_FONTS_URL}
+          as="style"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href={GOOGLE_FONTS_URL}
+          media="print"
+          // @ts-expect-error onLoad is valid HTML but not typed in React
+          onLoad="this.media='all'"
+        />
+        <noscript>
+          <link rel="stylesheet" href={GOOGLE_FONTS_URL} />
+        </noscript>
+        {/* 🚀 LCP: Animations CSS deferred (not needed for first paint) */}
+        <link
+          rel="stylesheet"
+          href={animationsStylesheet}
+          media="print"
+          // @ts-expect-error onLoad is valid HTML but not typed in React
+          onLoad="this.media='all'"
+        />
+        <noscript>
+          <link rel="stylesheet" href={animationsStylesheet} />
+        </noscript>
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
         <script
           nonce={nonce}

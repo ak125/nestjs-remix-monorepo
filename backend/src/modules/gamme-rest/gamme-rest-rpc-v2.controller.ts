@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { GammeResponseBuilderService } from './services';
 import { GammeRpcService } from './services/gamme-rpc.service';
+import { CacheService } from '../../cache/cache.service';
 
 interface SupabaseRpcError {
   message?: string;
@@ -34,9 +35,14 @@ interface SupabaseRpcError {
 export class GammeRestRpcV2Controller {
   private readonly logger = new Logger(GammeRestRpcV2Controller.name);
 
+  // 🚀 LCP V9: Cache TTL for fully-built response (after JS processing)
+  private readonly RESPONSE_CACHE_TTL = 3600; // 1h
+  private readonly RESPONSE_CACHE_PREFIX = 'gamme:resp:v2:';
+
   constructor(
     private readonly responseBuilder: GammeResponseBuilderService,
     private readonly rpcService: GammeRpcService,
+    private readonly cacheService: CacheService,
   ) {}
 
   /**
@@ -49,7 +55,24 @@ export class GammeRestRpcV2Controller {
     this.logger.log(`Tentative RPC V2 pour gamme ${pgIdNum}...`);
 
     try {
+      // 🚀 LCP V9: Check response cache (skips ~300-500ms builder processing)
+      const cacheKey = `${this.RESPONSE_CACHE_PREFIX}${pgId}`;
+      const cached = await this.cacheService.get<Record<string, any>>(cacheKey);
+      if (cached) {
+        this.logger.log(`RPC V2 RESPONSE CACHE HIT pour gamme ${pgIdNum}`);
+        return {
+          ...cached,
+          performance: { ...cached.performance, responseCacheHit: true },
+        };
+      }
+
       const result = await this.responseBuilder.buildRpcV2Response(pgId);
+
+      // Cache the fully-built response
+      this.cacheService
+        .set(cacheKey, result, this.RESPONSE_CACHE_TTL)
+        .catch(() => {});
+
       const cacheInfo = '🔄 RPC';
       this.logger.log(
         `RPC V2 SUCCESS ${cacheInfo} pour gamme ${pgIdNum} en ${result.performance?.total_time_ms?.toFixed(0) || 'N/A'}ms`,

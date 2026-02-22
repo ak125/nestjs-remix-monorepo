@@ -10,7 +10,7 @@
  */
 
 import {
-  json,
+  defer,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -181,7 +181,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    // 🚀 Fetch en parallèle : cookie + données gamme + switches SEO + substitution (LCP optimization)
+    // 🚀 LCP V9: Substitution timeout séparé (3s) — ne bloque pas le gamme fetch
+    const subController = new AbortController();
+    const subTimeoutId = setTimeout(() => subController.abort(), 3000);
+
+    // 🚀 Fetch en parallèle : données gamme + substitution (LCP optimization)
     const API_URL = getInternalApiUrl("");
     const currentUrl = new URL(request.url);
     const pathname = currentUrl.pathname;
@@ -192,12 +196,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       fetch(
         `${API_URL}/api/substitution/check?url=${encodeURIComponent(pathname)}`,
         {
-          signal: controller.signal,
+          signal: subController.signal,
         },
       )
         .then((res) => (res.ok ? res.json() : null))
         .catch(() => null),
-    ]).finally(() => clearTimeout(timeoutId));
+    ]).finally(() => {
+      clearTimeout(timeoutId);
+      clearTimeout(subTimeoutId);
+    });
 
     // Mapper hero → content
     const heroData = apiData.hero;
@@ -275,7 +282,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       logger.warn(`[pieces/$slug] Sections degradees: ${degraded.join(", ")}`);
     }
 
-    return json(pageData, {
+    // 🚀 LCP V9: defer() enables progressive HTML streaming
+    // Critical above-fold data is sent immediately, below-fold sections stream after
+    return defer(pageData as unknown as Record<string, unknown>, {
       headers: {
         "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
       },
@@ -290,7 +299,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
+export const meta: MetaFunction<typeof loader> = ({
+  data: rawData,
+  location,
+}) => {
+  // 🚀 LCP V9: defer() changes SerializeFrom type — cast back to known shape
+  const data = rawData as GammePageDataV1 | undefined;
   if (!data || data.status !== 200) {
     return [
       { title: "Page non trouvée" },
@@ -491,7 +505,7 @@ export function headers({
 }
 
 export default function PiecesDetailPage() {
-  const data = useLoaderData<typeof loader>() as GammePageDataV1;
+  const data = useLoaderData<typeof loader>() as unknown as GammePageDataV1;
   const navigation = useNavigation();
   const location = useLocation();
   const navigate = useNavigate();
