@@ -17,6 +17,7 @@ jest.mock('@nestjs/bull', () => ({
 
 jest.mock('@nestjs/common', () => ({
   Injectable: () => () => undefined,
+  Optional: () => () => undefined,
   Logger: jest.fn().mockImplementation(() => ({
     log: jest.fn(),
     warn: jest.fn(),

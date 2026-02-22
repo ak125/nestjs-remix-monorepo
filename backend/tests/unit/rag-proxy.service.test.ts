@@ -14,6 +14,7 @@ import { HttpException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RagProxyService } from '../../src/modules/rag-proxy/rag-proxy.service';
 import { FrontmatterValidatorService } from '../../src/modules/rag-proxy/services/frontmatter-validator.service';
+import { RagCleanupService } from '../../src/modules/rag-proxy/services/rag-cleanup.service';
 
 describe('RagProxyService', () => {
   let service: RagProxyService;
@@ -54,6 +55,7 @@ describe('RagProxyService', () => {
             parseFrontmatter: jest.fn().mockReturnValue({}),
           },
         },
+        { provide: RagCleanupService, useValue: { client: { from: jest.fn() } } },
       ],
     }).compile();
 

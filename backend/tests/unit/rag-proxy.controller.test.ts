@@ -12,6 +12,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { RagProxyController } from '../../src/modules/rag-proxy/rag-proxy.controller';
 import { RagProxyService } from '../../src/modules/rag-proxy/rag-proxy.service';
+import { RagCleanupService } from '../../src/modules/rag-proxy/services/rag-cleanup.service';
 
 describe('RagProxyController', () => {
   let app: INestApplication;
@@ -27,6 +28,7 @@ describe('RagProxyController', () => {
       controllers: [RagProxyController],
       providers: [
         { provide: RagProxyService, useValue: mockRagProxyService },
+        { provide: RagCleanupService, useValue: {} },
       ],
     }).compile();
 
