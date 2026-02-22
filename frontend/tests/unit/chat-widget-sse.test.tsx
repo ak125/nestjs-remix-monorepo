@@ -4,9 +4,7 @@ import { vi } from "vitest";
 import ChatWidget from "~/components/rag/ChatWidget";
 
 vi.mock("~/hooks/useVehiclePersistence", () => ({
-  useVehicle: () => ({
-    vehicle: null,
-  }),
+  useVehiclePersistence: () => [null, vi.fn()],
 }));
 
 vi.mock("~/utils/chat-intent.utils", () => ({
