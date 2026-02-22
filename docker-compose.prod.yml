@@ -22,8 +22,19 @@ services:
       - BOT_GUARD_ENABLED=true
       - BOT_GUARD_BLOCKED_COUNTRIES=CN
       - BOT_GUARD_SUSPICION_THRESHOLD=80
+      # RAG Pipeline Phase 1 - Observe-only (2026-02-21)
+      # Evidence packs collectes mais gates NON bloquants
+      - EVIDENCE_PACK_ENABLED=true
+      - HARD_GATES_ENABLED=false
+      - AUTO_REPAIR_ENABLED=false
+      - SAFE_FALLBACK_ENABLED=false
+      - CANARY_GAMMES=
 
-
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
     container_name: nestjs-remix-monorepo-prod
     # build:
     #   context: .
@@ -40,8 +51,8 @@ services:
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
       interval: 30s
-      timeout: 15s
-      retries: 5
+      timeout: 5s
+      retries: 3
       start_period: 60s
 
   redis_prod:
@@ -54,7 +65,7 @@ services:
       redis-server
       --appendonly yes
       --requirepass ${REDIS_PASSWORD}
-      --maxmemory 256mb
+      --maxmemory 512mb
       --maxmemory-policy allkeys-lru
     volumes: 
       - /dev/volumes/nestjs-remix/production/sessions/:/data

@@ -26,7 +26,7 @@ import {
   Phone,
   Truck,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { SITE_CONFIG } from "../config/site";
 import { useOptionalUser, useRootCart } from "../root";
@@ -49,7 +49,7 @@ function QuickCategoryChip({ href, label }: { href: string; label: string }) {
   );
 }
 
-export const Navbar = ({ logo: _logo }: { logo: string }) => {
+export const Navbar = memo(function Navbar({ logo: _logo }: { logo: string }) {
   const user = useOptionalUser();
 
   // 🛒 Panier: données depuis root loader + état local pour ouverture
@@ -625,4 +625,4 @@ export const Navbar = ({ logo: _logo }: { logo: string }) => {
       )}
     </>
   );
-};
+});

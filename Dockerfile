@@ -39,6 +39,9 @@ ARG CACHEBUST=1
 # Build monorepo (backend + frontend) - force fresh build, no Turbo cache
 RUN echo "Build cache bust: $CACHEBUST" && rm -rf node_modules/.cache && npx turbo run build --force
 
+# Remove devDependencies to reduce image size (~200MB savings)
+RUN npm prune --omit=dev
+
 FROM base AS runner
 WORKDIR /app
 

@@ -1,5 +1,5 @@
 import { TABLES } from '@repo/database-types';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
@@ -95,16 +95,21 @@ interface CacheEntry {
 }
 
 @Injectable()
-export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
+export class VehicleFilteredCatalogV4HybridService
+  extends SupabaseBaseService
+  implements OnModuleDestroy
+{
   protected readonly logger = new Logger(
     VehicleFilteredCatalogV4HybridService.name,
   );
 
   // 💾 Cache en mémoire (remplace Redis pour simplicité)
   private memoryCache = new Map<string, CacheEntry>();
+  private static readonly MAX_CACHE_ENTRIES = 5000;
 
   // 📊 Stats en mémoire pour TTL adaptatif
   private vehicleStats = new Map<number, VehiclePopularityStats>();
+  private static readonly MAX_STATS_ENTRIES = 2000;
 
   // 🎯 Métriques globales
   private globalMetrics = {
@@ -114,10 +119,73 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     topVehicles: [] as number[],
   };
 
+  // 🧹 Cleanup interval
+  private cleanupInterval: ReturnType<typeof setInterval> | null = null;
+
   constructor(rpcGate: RpcGateService) {
     super();
     this.rpcGate = rpcGate;
+    // Cleanup toutes les 10 minutes : purge entrées expirées + éviction LRU
+    this.cleanupInterval = setInterval(() => this.evictStaleEntries(), 600_000);
     this.logger.log('🚀 V4 Hybrid Service initialized with memory cache');
+  }
+
+  onModuleDestroy() {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.memoryCache.clear();
+    this.vehicleStats.clear();
+    this.logger.log('V4 Hybrid Service destroyed, caches cleared');
+  }
+
+  /** Purge expired cache entries + evict oldest when over limit */
+  private evictStaleEntries(): void {
+    const now = Date.now();
+
+    // 1. Purge expired cache entries
+    for (const [key, entry] of this.memoryCache) {
+      if (now > entry.timestamp.getTime() + entry.ttl * 1000) {
+        this.memoryCache.delete(key);
+      }
+    }
+
+    // 2. Evict oldest cache entries if over limit
+    if (
+      this.memoryCache.size >
+      VehicleFilteredCatalogV4HybridService.MAX_CACHE_ENTRIES
+    ) {
+      const sorted = [...this.memoryCache.entries()].sort(
+        (a, b) => a[1].timestamp.getTime() - b[1].timestamp.getTime(),
+      );
+      const toRemove = sorted.slice(
+        0,
+        this.memoryCache.size -
+          VehicleFilteredCatalogV4HybridService.MAX_CACHE_ENTRIES,
+      );
+      for (const [key] of toRemove) this.memoryCache.delete(key);
+    }
+
+    // 3. Evict least-accessed vehicleStats if over limit
+    if (
+      this.vehicleStats.size >
+      VehicleFilteredCatalogV4HybridService.MAX_STATS_ENTRIES
+    ) {
+      const sorted = [...this.vehicleStats.entries()].sort(
+        (a, b) => a[1].lastAccessed.getTime() - b[1].lastAccessed.getTime(),
+      );
+      const toRemove = sorted.slice(
+        0,
+        this.vehicleStats.size -
+          VehicleFilteredCatalogV4HybridService.MAX_STATS_ENTRIES,
+      );
+      for (const [key] of toRemove) this.vehicleStats.delete(key);
+    }
+
+    this.logger.debug(
+      `Cache cleanup: ${this.memoryCache.size} cache entries, ${this.vehicleStats.size} stats entries`,
+    );
   }
 
   /**

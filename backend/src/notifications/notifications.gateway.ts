@@ -36,8 +36,17 @@ export class NotificationsGateway
 
   private logger = new Logger('NotificationsGateway');
   private connectedClients = new Map<string, Socket>();
+  private static readonly MAX_CONNECTIONS = 10_000;
 
   handleConnection(client: Socket) {
+    if (this.connectedClients.size >= NotificationsGateway.MAX_CONNECTIONS) {
+      this.logger.warn(
+        `Connection rejected: max ${NotificationsGateway.MAX_CONNECTIONS} reached (client ${client.id})`,
+      );
+      client.emit('error', { message: 'Server at capacity, try again later' });
+      client.disconnect(true);
+      return;
+    }
     this.logger.log(`Client connected: ${client.id}`);
     this.connectedClients.set(client.id, client);
 

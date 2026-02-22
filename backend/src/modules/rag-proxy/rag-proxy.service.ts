@@ -5,6 +5,7 @@ import {
   BadRequestException,
   ConflictException,
   NotFoundException,
+  OnModuleDestroy,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -39,7 +40,7 @@ const CB_THRESHOLD = 5; // failures before opening
 const CB_RESET_MS = 30_000; // 30s before half-open probe
 
 @Injectable()
-export class RagProxyService {
+export class RagProxyService implements OnModuleDestroy {
   private readonly logger = new Logger(RagProxyService.name);
   private readonly ragUrl: string;
   private readonly ragApiKey: string;
@@ -80,6 +81,11 @@ export class RagProxyService {
       logLines: string[];
     }
   >();
+  private static readonly MAX_WEB_JOBS = 100;
+  private static readonly JOB_RETENTION_MS = 3_600_000; // 1h
+
+  /** Periodic cleanup interval for completed web jobs */
+  private jobCleanupInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private readonly configService: ConfigService,
@@ -95,8 +101,55 @@ export class RagProxyService {
     this.ragPdfDropContainerRoot =
       process.env.RAG_PDF_DROP_CONTAINER_ROOT || '/app/pdfs';
 
+    // Cleanup completed web jobs every 10 minutes
+    this.jobCleanupInterval = setInterval(
+      () => this.cleanupCompletedJobs(),
+      600_000,
+    );
+
     this.logger.log(`RAG Service URL: ${this.ragUrl}`);
     this.logger.log(`RAG PDF staging host root: ${this.ragPdfDropHostRoot}`);
+  }
+
+  onModuleDestroy() {
+    if (this.jobCleanupInterval) {
+      clearInterval(this.jobCleanupInterval);
+      this.jobCleanupInterval = null;
+    }
+    this.webJobs.clear();
+    this.intentStats.clear();
+    this.logger.log('RagProxyService destroyed, jobs and stats cleared');
+  }
+
+  /** Remove completed/failed web jobs older than retention period */
+  private cleanupCompletedJobs(): void {
+    const cutoff = Date.now() - RagProxyService.JOB_RETENTION_MS;
+    let removed = 0;
+    for (const [jobId, job] of this.webJobs) {
+      if (job.status !== 'running' && job.startedAt * 1000 < cutoff) {
+        this.webJobs.delete(jobId);
+        removed++;
+      }
+    }
+    // Also enforce hard cap: keep only MAX_WEB_JOBS most recent
+    if (this.webJobs.size > RagProxyService.MAX_WEB_JOBS) {
+      const sorted = [...this.webJobs.entries()].sort(
+        (a, b) => a[1].startedAt - b[1].startedAt,
+      );
+      const toRemove = sorted.slice(
+        0,
+        this.webJobs.size - RagProxyService.MAX_WEB_JOBS,
+      );
+      for (const [id] of toRemove) {
+        this.webJobs.delete(id);
+        removed++;
+      }
+    }
+    if (removed > 0) {
+      this.logger.debug(
+        `Cleaned up ${removed} completed web jobs, ${this.webJobs.size} remaining`,
+      );
+    }
   }
 
   /** Check circuit breaker before calling RAG service. Throws if open. */

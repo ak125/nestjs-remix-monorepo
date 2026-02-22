@@ -1,5 +1,6 @@
 import {
   defer,
+  type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -23,7 +24,7 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 
 import DarkSection from "~/components/layout/DarkSection";
 import PageSection from "~/components/layout/PageSection";
@@ -237,6 +238,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
     });
   }
 }
+
+export const headers: HeadersFunction = () => ({
+  "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+});
 
 // ─── COULEURS PAR FAMILLE (gradient bg image) ────────────
 const FAMILY_COLORS: Record<string, string> = {
@@ -654,6 +659,89 @@ const FAQ_DATA = [
 // Reveal, SectionHeader, PageSection, DarkSection, GlassCard → imported from ~/components/layout/
 
 // ═══════════════════════════════════════════════════════════
+// Memoized catalog card to avoid re-renders on tab switch
+// ═══════════════════════════════════════════════════════════
+interface CatalogCardProps {
+  cat: {
+    img?: string;
+    i: string;
+    n: string;
+    desc: string;
+    color: string;
+    gammes: Array<{ name: string; link: string }>;
+  };
+  index: number;
+  isOpen: boolean;
+  onToggle: (name: string) => void;
+}
+
+const CatalogFamilyCard = memo(function CatalogFamilyCard({
+  cat,
+  index,
+  isOpen,
+  onToggle,
+}: CatalogCardProps) {
+  const displayedGammes = isOpen ? cat.gammes : cat.gammes.slice(0, 4);
+  return (
+    <Reveal key={cat.n} delay={Math.min(index * 40, 400)}>
+      <Card className="group transition-all duration-200 rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1">
+        <div
+          className={`relative h-32 sm:h-48 overflow-hidden bg-gradient-to-br ${cat.color}`}
+        >
+          {cat.img ? (
+            <img
+              src={cat.img}
+              alt={cat.n}
+              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+              width="400"
+              height="300"
+            />
+          ) : (
+            <span className="absolute inset-0 flex items-center justify-center text-6xl opacity-40">
+              {cat.i}
+            </span>
+          )}
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/80 transition-colors duration-300">
+            <h3 className="text-white font-bold text-lg line-clamp-2">
+              {cat.n}
+            </h3>
+          </div>
+        </div>
+        <CardContent className="pt-4 pb-4">
+          {cat.desc && (
+            <p className="text-sm text-slate-500 mb-3 line-clamp-2">
+              {cat.desc}
+            </p>
+          )}
+          <div className="flex flex-wrap gap-1.5">
+            {displayedGammes.map((g) => (
+              <Link key={g.name} to={g.link}>
+                <Badge
+                  variant="secondary"
+                  className="px-2.5 py-1 bg-white rounded-lg text-[11px] text-slate-600 font-medium hover:bg-orange-50 hover:text-[#e8590c] transition-colors border border-slate-100 hover:border-[#e8590c]/20 cursor-pointer"
+                >
+                  {g.name}
+                </Badge>
+              </Link>
+            ))}
+            {cat.gammes.length > 4 && (
+              <button
+                type="button"
+                onClick={() => onToggle(cat.n)}
+                className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-[#e8590c] hover:bg-orange-50 transition-colors border border-[#e8590c]/20 cursor-pointer"
+              >
+                {isOpen ? "Voir moins" : `+${cat.gammes.length - 4} gammes`}
+              </button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </Reveal>
+  );
+});
+
+// ═══════════════════════════════════════════════════════════
 // PAGE
 // ═══════════════════════════════════════════════════════════
 export default function RedesignPreview() {
@@ -732,6 +820,14 @@ export default function RedesignPreview() {
   const [mineCode, setMineCode] = useState("");
   const [refQuery, setRefQuery] = useState("");
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
+  const toggleCat = useCallback((name: string) => {
+    setExpandedCats((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-white">
@@ -1158,81 +1254,15 @@ export default function RedesignPreview() {
                   : catalogFamilies.filter((cat) =>
                       domain.families!.some((d) => d === cat.n),
                     )
-                ).map((cat, i) => {
-                  const isOpen = expandedCats.has(cat.n);
-                  const displayedGammes = isOpen
-                    ? cat.gammes
-                    : cat.gammes.slice(0, 4);
-                  return (
-                    <Reveal key={cat.n} delay={Math.min(i * 40, 400)}>
-                      <Card className="group transition-all duration-200 rounded-2xl overflow-hidden hover:shadow-xl hover:-translate-y-1">
-                        {/* Image header avec gradient couleur */}
-                        <div
-                          className={`relative h-32 sm:h-48 overflow-hidden bg-gradient-to-br ${cat.color}`}
-                        >
-                          {cat.img ? (
-                            <img
-                              src={cat.img}
-                              alt={cat.n}
-                              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-                              loading="lazy"
-                              width="400"
-                              height="300"
-                            />
-                          ) : (
-                            <span className="absolute inset-0 flex items-center justify-center text-6xl opacity-40">
-                              {cat.i}
-                            </span>
-                          )}
-                          {/* Overlay titre */}
-                          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/80 transition-colors duration-300">
-                            <h3 className="text-white font-bold text-lg line-clamp-2">
-                              {cat.n}
-                            </h3>
-                          </div>
-                        </div>
-                        {/* Contenu : description + badges gammes */}
-                        <CardContent className="pt-4 pb-4">
-                          {cat.desc && (
-                            <p className="text-sm text-slate-500 mb-3 line-clamp-2">
-                              {cat.desc}
-                            </p>
-                          )}
-                          <div className="flex flex-wrap gap-1.5">
-                            {displayedGammes.map((g) => (
-                              <Link key={g.name} to={g.link}>
-                                <Badge
-                                  variant="secondary"
-                                  className="px-2.5 py-1 bg-white rounded-lg text-[11px] text-slate-600 font-medium hover:bg-orange-50 hover:text-[#e8590c] transition-colors border border-slate-100 hover:border-[#e8590c]/20 cursor-pointer"
-                                >
-                                  {g.name}
-                                </Badge>
-                              </Link>
-                            ))}
-                            {cat.gammes.length > 4 && (
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setExpandedCats((prev) => {
-                                    const next = new Set(prev);
-                                    if (next.has(cat.n)) next.delete(cat.n);
-                                    else next.add(cat.n);
-                                    return next;
-                                  })
-                                }
-                                className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-[#e8590c] hover:bg-orange-50 transition-colors border border-[#e8590c]/20 cursor-pointer"
-                              >
-                                {isOpen
-                                  ? "Voir moins"
-                                  : `+${cat.gammes.length - 4} gammes`}
-                              </button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Reveal>
-                  );
-                })}
+                ).map((cat, i) => (
+                  <CatalogFamilyCard
+                    key={cat.n}
+                    cat={cat}
+                    index={i}
+                    isOpen={expandedCats.has(cat.n)}
+                    onToggle={toggleCat}
+                  />
+                ))}
               </div>
             </TabsContent>
           ))}
