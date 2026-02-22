@@ -35,7 +35,8 @@ jobs:
           context: .
           push: true
           tags: massdoc/nestjs-remix-monorepo:${{ inputs.tag || 'production' }}
-          no-cache: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             CACHEBUST=${{ github.sha }}
 

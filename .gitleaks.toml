@@ -1,0 +1,20 @@
+# Gitleaks configuration for AutoMecanik monorepo
+# https://github.com/gitleaks/gitleaks
+
+title = "AutoMecanik Gitleaks Config"
+
+[allowlist]
+  paths = [
+    '''\.env\.example$''',
+    '''\.env\.template$''',
+    '''\.env\.sample$''',
+    '''\.spec/''',
+    '''governance/''',
+    '''\.gitleaks\.toml$''',
+    '''package-lock\.json$''',
+  ]
+  regexes = [
+    '''mock-key-for-ci''',
+    '''cxpojprgwgubzjyqzmoq''',
+    '''https://mock\.supabase\.co''',
+  ]

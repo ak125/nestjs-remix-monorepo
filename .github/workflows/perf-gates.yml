@@ -5,8 +5,8 @@ on:
     branches: [main]
     paths:
       - 'frontend/**'
-      - 'backend/src/modules/catalog/**'
-      - 'backend/src/modules/seo/**'
+      - 'backend/src/**'
+      - 'packages/**'
 
 # Thresholds (from lighthouse-budget.json):
 # - LCP: ≤2500ms (Google "Good")

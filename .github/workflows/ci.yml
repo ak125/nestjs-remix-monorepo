@@ -9,6 +9,7 @@ on:
 permissions:
   actions: write
   contents: read
+  security-events: write
 
 jobs:
   lint:
@@ -33,7 +34,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build Application
         run: npm run build
@@ -63,7 +64,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build Application
         run: npm run build
@@ -73,6 +74,43 @@ jobs:
 
       - name: 🧪 URL Pattern Tests
         run: cd frontend && npm run test -- --run tests/unit/url-patterns.test.ts
+
+      - name: 📦 Bundle size check
+        if: always()
+        run: |
+          if [ -d "frontend/build/client/assets" ]; then
+            JS_SIZE=$(find frontend/build/client/assets -name '*.js' -exec cat {} + 2>/dev/null | wc -c)
+            CSS_SIZE=$(find frontend/build/client/assets -name '*.css' -exec cat {} + 2>/dev/null | wc -c)
+            TOTAL_SIZE=$((JS_SIZE + CSS_SIZE))
+
+            JS_KB=$((JS_SIZE / 1024))
+            CSS_KB=$((CSS_SIZE / 1024))
+            TOTAL_KB=$((TOTAL_SIZE / 1024))
+
+            echo "## 📦 Bundle Size Report" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Asset Type | Size |" >> $GITHUB_STEP_SUMMARY
+            echo "|------------|------|" >> $GITHUB_STEP_SUMMARY
+            echo "| JavaScript | ${JS_KB} KB |" >> $GITHUB_STEP_SUMMARY
+            echo "| CSS | ${CSS_KB} KB |" >> $GITHUB_STEP_SUMMARY
+            echo "| **Total** | **${TOTAL_KB} KB** |" >> $GITHUB_STEP_SUMMARY
+
+            # Budget: script 400KB, total 1800KB (from lighthouse-budget.json)
+            JS_BUDGET=409600
+            TOTAL_BUDGET=1843200
+
+            if [ "$JS_SIZE" -gt "$JS_BUDGET" ]; then
+              echo "| **JS Budget** | ⚠️ EXCEEDED (limit: 400KB) |" >> $GITHUB_STEP_SUMMARY
+              echo "::warning::JS bundle size (${JS_KB}KB) exceeds budget (400KB)"
+            fi
+
+            if [ "$TOTAL_SIZE" -gt "$TOTAL_BUDGET" ]; then
+              echo "| **Total Budget** | ⚠️ EXCEEDED (limit: 1800KB) |" >> $GITHUB_STEP_SUMMARY
+              echo "::warning::Total bundle size (${TOTAL_KB}KB) exceeds budget (1800KB)"
+            fi
+          else
+            echo "ℹ️ No frontend build output found (build may have been skipped)"
+          fi
 
   test:
     name: 🧪 Backend Tests
@@ -92,16 +130,79 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build packages
         run: npm run build
 
       - name: 🧪 Run backend tests
-        run: cd backend && npx jest --ci --verbose
+        run: cd backend && npx jest --ci --verbose --coverage --coverageReporters=text-summary --coverageReporters=json-summary
         env:
           SUPABASE_URL: "https://mock.supabase.co"
           SUPABASE_SERVICE_ROLE_KEY: "mock-key-for-ci"
+
+      - name: 📊 Backend coverage summary
+        if: always()
+        run: |
+          if [ -f backend/coverage/coverage-summary.json ]; then
+            echo "## Backend Test Coverage" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat backend/coverage/coverage-summary.json | node -e "
+              const data = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+              const t = data.total;
+              console.log('Statements : ' + t.statements.pct + '%');
+              console.log('Branches   : ' + t.branches.pct + '%');
+              console.log('Functions  : ' + t.functions.pct + '%');
+              console.log('Lines      : ' + t.lines.pct + '%');
+            "
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+  test-frontend:
+    name: 🧪 Frontend Tests
+    runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: "--max-old-space-size=4096"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build packages
+        run: npm run build
+
+      - name: 🧪 Run frontend unit tests
+        run: cd frontend && npx vitest run --reporter=verbose --coverage
+
+      - name: 🎨 WCAG Contrast Tests
+        run: cd frontend && npm run test:contrast
+
+      - name: 📊 Frontend coverage summary
+        if: always()
+        run: |
+          if [ -f frontend/coverage/coverage-summary.json ]; then
+            echo "## Frontend Test Coverage" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat frontend/coverage/coverage-summary.json | node -e "
+              const data = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+              const t = data.total;
+              console.log('Statements : ' + t.statements.pct + '%');
+              console.log('Branches   : ' + t.branches.pct + '%');
+              console.log('Functions  : ' + t.functions.pct + '%');
+              console.log('Lines      : ' + t.lines.pct + '%');
+            "
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
 
   security:
     name: 🔒 Security Audit
@@ -117,7 +218,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: 🔍 npm audit (backend)
         run: cd backend && npm audit --audit-level=high
@@ -148,7 +249,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: 🔒 Build core modules only
         run: |
@@ -203,6 +304,43 @@ jobs:
 
           echo "✅ Import firewall OK - No violations"
 
+      - name: 🌐 Check for hardcoded URLs/IPs
+        run: |
+          echo "🌐 Checking for hardcoded URLs and IPs in source code..."
+          WARNINGS=0
+
+          # Check for hardcoded IP addresses (exclude localhost, 0.0.0.0, test files)
+          IP_HITS=$(grep -rn --include="*.ts" --include="*.tsx" -E '\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b' \
+            backend/src frontend/app \
+            2>/dev/null | \
+            grep -v 'localhost\|127\.0\.0\.1\|0\.0\.0\.0\|\.test\.\|\.spec\.\|node_modules' || true)
+
+          if [ -n "$IP_HITS" ]; then
+            echo "⚠️ Hardcoded IP addresses found:"
+            echo "$IP_HITS" | head -20
+            WARNINGS=$((WARNINGS + $(echo "$IP_HITS" | wc -l)))
+          fi
+
+          # Check for hardcoded Supabase URLs (should use env vars)
+          SUPA_HITS=$(grep -rn --include="*.ts" --include="*.tsx" \
+            -E 'https://[a-z]+\.supabase\.co' \
+            backend/src frontend/app \
+            2>/dev/null | \
+            grep -v '\.test\.\|\.spec\.\|mock\|example' || true)
+
+          if [ -n "$SUPA_HITS" ]; then
+            echo "⚠️ Hardcoded Supabase URLs found (should use env vars):"
+            echo "$SUPA_HITS" | head -10
+            WARNINGS=$((WARNINGS + $(echo "$SUPA_HITS" | wc -l)))
+          fi
+
+          if [ "$WARNINGS" -gt 0 ]; then
+            echo ""
+            echo "::warning::$WARNINGS hardcoded URL/IP instance(s) found. Consider using environment variables."
+          else
+            echo "✅ No hardcoded URLs/IPs detected in source code"
+          fi
+
   rpc-gate-check:
     name: 🛡️ RPC Safety Gate
     runs-on: ubuntu-latest
@@ -214,35 +352,30 @@ jobs:
         run: |
           echo "🛡️ Checking for direct .rpc() calls (should use callRpc)..."
 
-          # Install ripgrep
-          sudo apt-get update && sudo apt-get install -y ripgrep
-
-          # Count direct .rpc() calls excluding allowed patterns
-          DIRECT_RPC=$(rg -l "\.rpc\(" backend/src --type ts 2>/dev/null | \
-            rg -v "supabase-base.service|callRpc" | wc -l || echo "0")
+          # Find files with .rpc( calls, excluding base service and callRpc wrapper
+          DIRECT_RPC_FILES=$(grep -rl "\.rpc(" backend/src --include="*.ts" 2>/dev/null | \
+            grep -v "supabase-base.service\|callRpc" || true)
+          DIRECT_RPC=$(echo "$DIRECT_RPC_FILES" | grep -c . || echo "0")
 
           echo "Found $DIRECT_RPC files with direct .rpc() calls"
 
-          # List them for visibility
           if [ "$DIRECT_RPC" -gt 0 ]; then
             echo ""
             echo "📋 Files with direct .rpc() calls:"
-            rg -n "\.rpc\(" backend/src --type ts 2>/dev/null | \
-              rg -v "supabase-base.service|callRpc" || true
+            grep -rn "\.rpc(" backend/src --include="*.ts" 2>/dev/null | \
+              grep -v "supabase-base.service\|callRpc" || true
             echo ""
 
             # Known bypass files (debug/internal)
-            BYPASS_COUNT=$(rg -l "\.rpc\(" backend/src --type ts 2>/dev/null | \
-              rg -v "supabase-base.service|callRpc" | \
-              rg "googlebot-detector|enhanced-config|products.service|advice.service" | wc -l || echo "0")
+            BYPASS_COUNT=$(echo "$DIRECT_RPC_FILES" | \
+              grep -c "googlebot-detector\|enhanced-config\|products.service\|advice.service" || echo "0")
 
             UNEXPECTED=$((DIRECT_RPC - BYPASS_COUNT))
 
             if [ "$UNEXPECTED" -gt 0 ]; then
-              echo "⚠️ WARNING: $UNEXPECTED unexpected files with direct .rpc() calls"
+              echo "❌ BLOCKED: $UNEXPECTED unexpected files with direct .rpc() calls"
               echo "All RPC calls should go through callRpc() for governance"
-              # Warning only for now (observe mode)
-              # exit 1
+              exit 1
             else
               echo "✅ Only bypass-allowed files have direct .rpc() calls ($BYPASS_COUNT files)"
             fi
@@ -290,6 +423,116 @@ jobs:
           echo "📋 ADR-010: Checking governance references..."
           echo "✅ ADR compliance: PASS"
 
+  # ============================================
+  # Security & Safety Gates (Phase 2)
+  # ============================================
+
+  gitleaks:
+    name: 🔐 Secrets Detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔐 Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  migration-safety:
+    name: 🗄️ Migration Safety
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: 🗄️ Check new migrations for dangerous operations
+        run: |
+          echo "🗄️ Migration Safety Gate"
+          echo "========================"
+
+          # Get only NEW migration files in this commit/PR
+          NEW_MIGRATIONS=$(git diff --name-only --diff-filter=A HEAD~1 -- 'backend/supabase/migrations/*.sql' 2>/dev/null || true)
+
+          if [ -z "$NEW_MIGRATIONS" ]; then
+            echo "✅ No new migrations to check"
+            exit 0
+          fi
+
+          echo "New migrations found:"
+          echo "$NEW_MIGRATIONS"
+          echo ""
+
+          ERRORS=0
+          WARNINGS=0
+
+          for file in $NEW_MIGRATIONS; do
+            [ ! -f "$file" ] && continue
+            echo ""
+            echo "Checking: $file"
+
+            # P0 BLOCK: DROP TABLE without explicit approval
+            if grep -iE 'DROP\s+TABLE' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
+              echo "  ❌ DROP TABLE detected without '-- APPROVED:' comment"
+              ERRORS=$((ERRORS+1))
+            fi
+
+            # P0 BLOCK: ALTER TABLE DROP COLUMN without explicit approval
+            if grep -iE 'ALTER\s+TABLE.*DROP\s+COLUMN' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
+              echo "  ❌ DROP COLUMN detected without '-- APPROVED:' comment"
+              ERRORS=$((ERRORS+1))
+            fi
+
+            # P0 BLOCK: Disabling RLS
+            if grep -iE 'ALTER\s+TABLE.*DISABLE\s+ROW\s+LEVEL' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
+              echo "  ❌ DISABLE ROW LEVEL SECURITY detected without '-- APPROVED:' comment"
+              ERRORS=$((ERRORS+1))
+            fi
+
+            # P0 BLOCK: DROP POLICY without explicit approval
+            if grep -iE 'DROP\s+POLICY' "$file" | grep -v '\-\- APPROVED:' > /dev/null 2>&1; then
+              echo "  ❌ DROP POLICY detected without '-- APPROVED:' comment"
+              ERRORS=$((ERRORS+1))
+            fi
+
+            # P1 WARN: TRUNCATE
+            if grep -iE 'TRUNCATE' "$file" > /dev/null 2>&1; then
+              echo "  ⚠️  TRUNCATE detected -- verify this is intentional"
+              WARNINGS=$((WARNINGS+1))
+            fi
+
+            # P1 WARN: DELETE without WHERE
+            if grep -iE 'DELETE\s+FROM' "$file" | grep -viE 'WHERE' > /dev/null 2>&1; then
+              echo "  ⚠️  DELETE without WHERE clause detected"
+              WARNINGS=$((WARNINGS+1))
+            fi
+
+            # P1 WARN: Grant to public
+            if grep -iE 'GRANT.*TO\s+public' "$file" > /dev/null 2>&1; then
+              echo "  ⚠️  GRANT TO public detected"
+              WARNINGS=$((WARNINGS+1))
+            fi
+          done
+
+          echo ""
+          echo "========================"
+          if [ "$WARNINGS" -gt 0 ]; then
+            echo "⚠️  $WARNINGS warning(s) (non-blocking)"
+          fi
+
+          if [ "$ERRORS" -gt 0 ]; then
+            echo "❌ $ERRORS dangerous operation(s) without '-- APPROVED:' comment"
+            echo ""
+            echo "To approve: add '-- APPROVED: <reason>' on the same line"
+            exit 1
+          fi
+
+          echo "✅ Migration safety check passed"
+
   build:
     name: 🐳 build
     uses: ./.github/workflows/build.yml
@@ -297,10 +540,44 @@ jobs:
     with:
       tag: preprod
 
+  trivy-scan:
+    name: 🔍 Docker Image Scan
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+    steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Pull preprod image
+        run: docker pull massdoc/nestjs-remix-monorepo:preprod
+
+      - name: 🔍 Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: 'massdoc/nestjs-remix-monorepo:preprod'
+          format: 'table'
+          exit-code: '0'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          timeout: '5m'
+
+      - name: 📊 Trivy summary
+        if: always()
+        run: |
+          echo "## 🔍 Docker Image Security Scan" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Image: \`massdoc/nestjs-remix-monorepo:preprod\`" >> $GITHUB_STEP_SUMMARY
+          echo "Severity: CRITICAL, HIGH (unfixed ignored)" >> $GITHUB_STEP_SUMMARY
+          echo "Mode: **observe** (non-blocking)" >> $GITHUB_STEP_SUMMARY
+
   deploy:
     name: 🧪 Deploy PREPROD
     runs-on: [self-hosted, Linux, X64]
-    needs: [build, lint, typecheck, test, core-build, import-firewall, rpc-gate-check, governance-check]
+    needs: [build, lint, typecheck, test, test-frontend, core-build, import-firewall, rpc-gate-check, governance-check, gitleaks, migration-safety]
     if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
 
     steps:
@@ -367,3 +644,113 @@ jobs:
 
           # Nettoyer les images
           docker image prune -f
+
+      - name: 🔍 API Smoke Tests
+        run: |
+          BASE="http://localhost:3100"
+          FAILED=0
+
+          echo "Testing critical API endpoints..."
+
+          # /api/catalog/families (critical)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/catalog/families" --max-time 10)
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ /api/catalog/families -> $STATUS"
+          else
+            echo "❌ /api/catalog/families -> $STATUS"
+            FAILED=1
+          fi
+
+          # Homepage
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/" --max-time 10)
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ / (homepage) -> $STATUS"
+          else
+            echo "⚠️ / (homepage) -> $STATUS"
+          fi
+
+          # Catalog page
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/pieces/catalogue" --max-time 10)
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ /pieces/catalogue -> $STATUS"
+          else
+            echo "⚠️ /pieces/catalogue -> $STATUS"
+          fi
+
+          if [ "$FAILED" = "1" ]; then
+            echo "❌ Critical API smoke tests failed!"
+            exit 1
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## PREPROD Smoke Tests" >> $GITHUB_STEP_SUMMARY
+          echo "- /health: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- /api/catalog/families: ✅" >> $GITHUB_STEP_SUMMARY
+          echo "- / (homepage): $STATUS" >> $GITHUB_STEP_SUMMARY
+
+      - name: ⏱️ Response Time Baseline
+        run: |
+          BASE="http://localhost:3100"
+          echo "## ⏱️ PREPROD Response Times" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Endpoint | Median (ms) | Budget (ms) | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------------|-------------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          check_timing() {
+            local url="$1"
+            local label="$2"
+            local budget_ms="$3"
+
+            local t1=$(curl -s -o /dev/null -w "%{time_total}" "$url" --max-time 30 | awk '{printf "%.0f", $1 * 1000}')
+            local t2=$(curl -s -o /dev/null -w "%{time_total}" "$url" --max-time 30 | awk '{printf "%.0f", $1 * 1000}')
+            local t3=$(curl -s -o /dev/null -w "%{time_total}" "$url" --max-time 30 | awk '{printf "%.0f", $1 * 1000}')
+
+            local median=$(echo -e "$t1\n$t2\n$t3" | sort -n | sed -n '2p')
+
+            if [ "$median" -gt "$budget_ms" ]; then
+              echo "| $label | ${median} | ${budget_ms} | ⚠️ SLOW |" >> $GITHUB_STEP_SUMMARY
+              echo "::warning::$label response time (${median}ms) exceeds budget (${budget_ms}ms)"
+            else
+              echo "| $label | ${median} | ${budget_ms} | ✅ |" >> $GITHUB_STEP_SUMMARY
+            fi
+          }
+
+          check_timing "$BASE/health" "/health" 200
+          check_timing "$BASE/api/catalog/families" "/api/catalog/families" 1000
+          check_timing "$BASE/" "Homepage" 2000
+          check_timing "$BASE/pieces/catalogue" "/pieces/catalogue" 2000
+
+  e2e-smoke:
+    name: 🎭 E2E Smoke Tests
+    runs-on: [self-hosted, Linux, X64]
+    needs: [deploy]
+    if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: cd frontend && npx playwright install chromium --with-deps
+
+      - name: 🎭 Run critical E2E tests
+        run: cd frontend && npx playwright test tests/e2e/critical-path.spec.ts tests/e2e/url-validation.spec.ts --project=chromium --reporter=github,list
+        env:
+          CI: true
+          PLAYWRIGHT_BASE_URL: http://localhost:3100
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7

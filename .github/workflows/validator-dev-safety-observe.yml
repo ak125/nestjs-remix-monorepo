@@ -1,37 +1,61 @@
-name: 🔒 DEV Safety Gates (Observe)
+name: "\U0001F512 DEV Safety Gates"
 
 on:
   pull_request:
 
 jobs:
-  dev-safety-observe:
-    name: 🔍 DEV Safety Observation
+  dev-safety-blocking:
+    name: "\U0001F512 DEV Safety (Blocking)"
     runs-on: ubuntu-latest
-    continue-on-error: true  # Non-bloquant en mode observe
 
     steps:
-      - name: ⬇️ Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Make scripts executable
+      - name: Make scripts executable
         run: chmod +x tools/validator-gates/*.sh
 
-      - name: 🔒 Run DEV Safety Gates (MODE=observe)
+      - name: "GATE-1: No PROD Supabase (BLOCKING)"
+        env:
+          MODE: block
+        run: bash tools/validator-gates/gate-1-no-prod-supabase.sh
+
+      - name: "GATE-4: Secrets Hygiene (BLOCKING)"
+        env:
+          MODE: block
+        run: bash tools/validator-gates/gate-4-secrets-hygiene.sh
+
+  dev-safety-observe:
+    name: "\U0001F50D DEV Safety (Observe)"
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: chmod +x tools/validator-gates/*.sh
+
+      - name: "GATE-2: MCP Permissions (observe)"
         env:
           MODE: observe
-        run: bash tools/validator-gates/run-all.sh
+        run: bash tools/validator-gates/gate-2-mcp-permissions.sh
 
-      - name: 📊 Summary
+      - name: "GATE-3: Runner Blast-Radius (observe)"
+        env:
+          MODE: observe
+        run: bash tools/validator-gates/gate-3-runner-blast-radius.sh
+
+      - name: Summary
         if: always()
         run: |
           echo "## DEV Safety Gates Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Mode:** observe (non-blocking)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Gates executed:" >> $GITHUB_STEP_SUMMARY
+          echo "**Blocking gates:**" >> $GITHUB_STEP_SUMMARY
           echo "- GATE-1: No PROD Supabase in DEV" >> $GITHUB_STEP_SUMMARY
-          echo "- GATE-2: MCP Permissions Audit" >> $GITHUB_STEP_SUMMARY
-          echo "- GATE-3: Runner Blast-Radius Control" >> $GITHUB_STEP_SUMMARY
           echo "- GATE-4: Secrets Hygiene Check" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "⚠️ **This is observation mode only - violations are reported but do not block the PR.**" >> $GITHUB_STEP_SUMMARY
+          echo "**Observe gates (non-blocking):**" >> $GITHUB_STEP_SUMMARY
+          echo "- GATE-2: MCP Permissions Audit" >> $GITHUB_STEP_SUMMARY
+          echo "- GATE-3: Runner Blast-Radius Control" >> $GITHUB_STEP_SUMMARY
