@@ -20,16 +20,16 @@ import {
 import { BookOpen, Search, ChevronRight, ShoppingCart } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
 
 // Types
 interface ReferenceItem {

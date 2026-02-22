@@ -29,21 +29,10 @@ import { CheckCircle2, Shield, Truck, Users } from "lucide-react";
 import { useEffect, useState, lazy, Suspense } from "react";
 // 🆕 V2 UX Components
 
-import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 // 🚀 LCP OPTIMIZATION: Lazy load below-fold components (économie ~200-400ms)
 // Ces sections ne sont pas visibles au premier paint - différer leur chargement
 // V2: SEOHelmet retiré — meta() est la source unique pour tous les tags <head>
-import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
-import VehicleSelector from "../components/vehicle/VehicleSelector";
-import { hierarchyApi } from "../services/api/hierarchy.api";
 // Note: generateGammeMeta supprimé - on utilise maintenant data.meta du backend
-import { normalizeAlias } from "../utils/url-builder.utils";
-import {
-  getVehicleClient,
-  buildBreadcrumbWithVehicle,
-  storeVehicleClient,
-  type VehicleCookie,
-} from "../utils/vehicle-cookie";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { Error404 } from "~/components/errors/Error404";
 import DarkSection from "~/components/layout/DarkSection";
@@ -63,6 +52,17 @@ import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { Breadcrumbs } from "../components/layout/Breadcrumbs";
+import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
+import VehicleSelector from "../components/vehicle/VehicleSelector";
+import { hierarchyApi } from "../services/api/hierarchy.api";
+import { normalizeAlias } from "../utils/url-builder.utils";
+import {
+  getVehicleClient,
+  buildBreadcrumbWithVehicle,
+  storeVehicleClient,
+  type VehicleCookie,
+} from "../utils/vehicle-cookie";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout

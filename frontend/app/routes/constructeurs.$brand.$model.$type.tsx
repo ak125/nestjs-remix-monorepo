@@ -36,6 +36,9 @@ import {
   FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { Error404, Error410 } from "../components/errors";
 import {
   ModelContentV1Display,
@@ -47,9 +50,6 @@ import { brandColorsService } from "../services/brand-colors.service";
 import { isValidImagePath } from "../utils/image-optimizer";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
 import { normalizeTypeAlias } from "../utils/url-builder.utils";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout

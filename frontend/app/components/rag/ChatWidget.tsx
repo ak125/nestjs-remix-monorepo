@@ -11,10 +11,10 @@
 import { MessageCircle, X, Minimize2 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 
-import ChatInput from "./ChatInput";
-import ChatMessage, { type ChatMessageData } from "./ChatMessage";
 import { useVehiclePersistence } from "~/hooks/useVehiclePersistence";
 import { classifyChatIntent } from "~/utils/chat-intent.utils";
+import ChatInput from "./ChatInput";
+import ChatMessage, { type ChatMessageData } from "./ChatMessage";
 
 interface ChatWidgetProps {
   streamUrl?: string;

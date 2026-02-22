@@ -49,13 +49,6 @@ import { toast } from "sonner";
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 
 // Utils
-import { Badge } from "../components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
 import { ArticleNavigation } from "~/components/blog/ArticleNavigation";
 
 // Components internes
@@ -82,6 +75,13 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
+import { Badge } from "../components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout

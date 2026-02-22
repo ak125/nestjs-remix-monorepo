@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { useMemo, memo } from "react";
 
-import { HtmlContent } from "../seo/HtmlContent";
 import {
   Accordion,
   AccordionContent,
@@ -15,6 +14,7 @@ import {
   AccordionTrigger,
 } from "~/components/ui/accordion";
 import { pluralizePieceName } from "~/lib/seo-utils";
+import { HtmlContent } from "../seo/HtmlContent";
 
 interface CatalogueItem {
   id?: number;

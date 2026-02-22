@@ -9,6 +9,7 @@ import { ShoppingCart, ClipboardList, Shield } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { trackViewItem, trackAddToCart } from "../../utils/analytics";
 import { getOptimizedRackImageUrl } from "../../utils/image-optimizer";
@@ -20,7 +21,6 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { BrandLogo } from "../ui/BrandLogo";
-import { logger } from "~/utils/logger";
 
 // Helper pour les images rack via imgproxy
 const getRackImageUrl = (path: string, width: number = 400) => {

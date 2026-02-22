@@ -9,9 +9,9 @@
 import { DollarSign, Package, RotateCcw, Star } from "lucide-react";
 import { memo } from "react";
 
+import { Badge, FilterSection, ScrollArea } from "~/components/ui";
 import { type PiecesFilters } from "../../types/pieces-route.types";
 import { BrandLogo } from "../ui/BrandLogo";
-import { Badge, FilterSection, ScrollArea } from "~/components/ui";
 
 export interface FilterOptionData {
   id: number | string;

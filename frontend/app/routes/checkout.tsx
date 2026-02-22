@@ -22,8 +22,6 @@ import {
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getOptionalUser } from "../auth/unified.server";
-import { getCart } from "../services/cart.server";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
 
@@ -36,6 +34,8 @@ import { trackBeginCheckout } from "~/utils/analytics";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { getOptionalUser } from "../auth/unified.server";
+import { getCart } from "../services/cart.server";
 
 // Phase 9: PageRole pour analytics
 export const handle = {

@@ -28,6 +28,7 @@ import {
 } from "react";
 import { Toaster } from "sonner";
 
+import { logger } from "~/utils/logger";
 import { getOptionalUser } from "./auth/unified.server";
 import {
   Error401,
@@ -53,7 +54,6 @@ import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser
 import { getCart } from "./services/cart.server";
 import animationsStylesheet from "./styles/animations.css?url";
 import { type CartData } from "./types/cart";
-import { logger } from "~/utils/logger";
 
 const ChatWidget = lazy(() => import("./components/rag/ChatWidget"));
 // @ts-ignore

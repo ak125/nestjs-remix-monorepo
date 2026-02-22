@@ -12,6 +12,7 @@
 import { Truck } from "lucide-react";
 import React, { useState, useRef, useMemo, useCallback, memo } from "react";
 
+import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
 import { trackAddToCart } from "../../utils/analytics";
@@ -19,7 +20,6 @@ import { hasStockAvailable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
 import { PieceDetailModal } from "./PieceDetailModal";
 import { ProductGallery } from "./ProductGallery";
-import { logger } from "~/utils/logger";
 
 // ⚡ Mappings de couleurs pré-calculés (hors du render loop)
 const RELIABILITY_COLORS = [
