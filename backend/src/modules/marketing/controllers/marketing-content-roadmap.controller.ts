@@ -44,12 +44,27 @@ export class MarketingContentRoadmapController {
     return { success: true, data };
   }
 
+  // Pipeline endpoints — MUST be declared BEFORE :id routes (NestJS route ordering)
+  @Get('pipeline-status')
+  async getPipelineStatus() {
+    const data = await this.roadmapService.getPipelineStatus();
+    return { success: true, data };
+  }
+
+  @Post('sync-pipeline')
+  async syncPipeline(@Body() body: { dry_run?: boolean }) {
+    const dryRun = body.dry_run !== false; // default: dry_run=true for safety
+    const data = await this.roadmapService.syncWithPipeline(dryRun);
+    return { success: true, data };
+  }
+
   @Post()
   async create(@Body() body: any) {
     const data = await this.roadmapService.create(body);
     return { success: true, data };
   }
 
+  // Parameterized routes AFTER static routes
   @Patch(':id')
   async update(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
     const data = await this.roadmapService.update(id, body);

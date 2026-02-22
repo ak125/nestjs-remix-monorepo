@@ -9,9 +9,18 @@ import {
   MarketingContentRoadmap,
   RoadmapFilters,
   MarketingKpiSnapshot,
-  CoverageAnalysis,
-  GammeGap,
+  CoverageAnalysisV2,
+  GammeGapV2,
+  GammePipelineStatus,
+  PipelineRunStatus,
+  PipelineStatusResult,
 } from '../interfaces/marketing.interfaces';
+
+/** Safe parseInt — returns null for non-numeric values */
+const toInt = (v: unknown): number | null => {
+  const n = Number.parseInt(String(v ?? ''), 10);
+  return Number.isFinite(n) ? n : null;
+};
 
 @Injectable()
 export class MarketingDataService extends SupabaseBaseService {
@@ -192,65 +201,109 @@ export class MarketingDataService extends SupabaseBaseService {
     };
   }
 
-  async getContentCoverage(): Promise<CoverageAnalysis> {
-    // Cross-table analysis
-    const [gammes, adviceByPg, references, observables, roadmapItems] =
-      await Promise.all([
-        this.supabase
-          .from('pieces_gamme')
-          .select('pg_id, pg_name, pg_alias')
-          .eq('pg_level', '1'),
-        this.supabase.from('__blog_advice').select('ba_pg_id'),
-        this.supabase.from('__seo_reference').select('pg_id'),
-        this.supabase.from('__seo_observable').select('related_gammes'),
-        this.supabase.from('__marketing_content_roadmap').select('pg_id'),
-      ]);
+  async getContentCoverage(): Promise<CoverageAnalysisV2> {
+    // 7 parallel queries — includes pipeline-generated content tables
+    const [
+      gammes,
+      seoConseilRows,
+      seoGuideRows,
+      blogAdviceRows,
+      references,
+      observables,
+      roadmapItems,
+    ] = await Promise.all([
+      this.supabase
+        .from('pieces_gamme')
+        .select('pg_id, pg_name, pg_alias')
+        .eq('pg_level', '1'),
+      this.supabase.from('__seo_gamme_conseil').select('sgc_pg_id'),
+      this.supabase.from('__seo_gamme_purchase_guide').select('sgpg_pg_id'),
+      this.supabase.from('__blog_advice').select('ba_pg_id'),
+      this.supabase.from('__seo_reference').select('pg_id'),
+      this.supabase.from('__seo_observable').select('related_gammes'),
+      this.supabase.from('__marketing_content_roadmap').select('pg_id'),
+    ]);
 
     const allGammes = gammes.data || [];
-    const advicePgIds = new Set(
-      (adviceByPg.data || []).map((a: any) => a.ba_pg_id).filter(Boolean),
-    );
-    const refPgIds = new Set(
-      (references.data || []).map((r: any) => r.pg_id).filter(Boolean),
-    );
-    const roadmapPgIds = new Set(
-      (roadmapItems.data || []).map((r: any) => r.pg_id).filter(Boolean),
-    );
 
-    // Build diagnostic gamme set (related_gammes is an array)
+    // Build Sets with parseInt to fix TEXT vs INTEGER mismatch
+    const conseilSeoPgIds = new Set<number>();
+    for (const r of seoConseilRows.data || []) {
+      const id = toInt((r as any).sgc_pg_id);
+      if (id !== null) conseilSeoPgIds.add(id);
+    }
+
+    const purchaseGuidePgIds = new Set<number>();
+    for (const r of seoGuideRows.data || []) {
+      const id = toInt((r as any).sgpg_pg_id);
+      if (id !== null) purchaseGuidePgIds.add(id);
+    }
+
+    const blogAdvicePgIds = new Set<number>();
+    for (const r of blogAdviceRows.data || []) {
+      const id = toInt((r as any).ba_pg_id);
+      if (id !== null) blogAdvicePgIds.add(id);
+    }
+
+    const refPgIds = new Set<number>();
+    for (const r of references.data || []) {
+      const id = toInt((r as any).pg_id);
+      if (id !== null) refPgIds.add(id);
+    }
+
+    const roadmapPgIds = new Set<number>();
+    for (const r of roadmapItems.data || []) {
+      const id = toInt((r as any).pg_id);
+      if (id !== null) roadmapPgIds.add(id);
+    }
+
     const diagPgIds = new Set<number>();
     for (const obs of observables.data || []) {
       if (obs.related_gammes) {
-        for (const pgId of obs.related_gammes) diagPgIds.add(pgId);
+        for (const pgId of obs.related_gammes) {
+          const id = toInt(pgId);
+          if (id !== null) diagPgIds.add(id);
+        }
       }
     }
 
-    const gaps: GammeGap[] = [];
+    const hasAdvice = (pgId: number) =>
+      conseilSeoPgIds.has(pgId) || blogAdvicePgIds.has(pgId);
+
+    const gaps: GammeGapV2[] = [];
     let withAdvice = 0,
+      withConseilSeo = 0,
+      withPurchaseGuide = 0,
       withRef = 0,
       withDiag = 0,
       withRoadmap = 0;
 
     for (const g of allGammes) {
-      const hasAdvice = advicePgIds.has(g.pg_id);
-      const hasRef = refPgIds.has(g.pg_id);
-      const hasDiag = diagPgIds.has(g.pg_id);
-      const hasRoadmap = roadmapPgIds.has(g.pg_id);
+      const gHasAdvice = hasAdvice(g.pg_id);
+      const gHasConseilSeo = conseilSeoPgIds.has(g.pg_id);
+      const gHasPurchaseGuide = purchaseGuidePgIds.has(g.pg_id);
+      const gHasRef = refPgIds.has(g.pg_id);
+      const gHasDiag = diagPgIds.has(g.pg_id);
+      const gHasRoadmap = roadmapPgIds.has(g.pg_id);
 
-      if (hasAdvice) withAdvice++;
-      if (hasRef) withRef++;
-      if (hasDiag) withDiag++;
-      if (hasRoadmap) withRoadmap++;
+      if (gHasAdvice) withAdvice++;
+      if (gHasConseilSeo) withConseilSeo++;
+      if (gHasPurchaseGuide) withPurchaseGuide++;
+      if (gHasRef) withRef++;
+      if (gHasDiag) withDiag++;
+      if (gHasRoadmap) withRoadmap++;
 
-      if (!hasAdvice || !hasRef || !hasDiag) {
+      if (!gHasAdvice || !gHasRef || !gHasDiag) {
         gaps.push({
           pg_id: g.pg_id,
           pg_name: g.pg_name,
           pg_alias: g.pg_alias,
-          has_advice: hasAdvice,
-          has_reference: hasRef,
-          has_diagnostic: hasDiag,
-          has_roadmap: hasRoadmap,
+          has_advice: gHasAdvice,
+          has_reference: gHasRef,
+          has_diagnostic: gHasDiag,
+          has_roadmap: gHasRoadmap,
+          has_conseil_seo: gHasConseilSeo,
+          has_purchase_guide: gHasPurchaseGuide,
         });
       }
     }
@@ -258,14 +311,14 @@ export class MarketingDataService extends SupabaseBaseService {
     const totalGammes = allGammes.length;
     const coveredCount = allGammes.filter(
       (g) =>
-        advicePgIds.has(g.pg_id) ||
-        refPgIds.has(g.pg_id) ||
-        diagPgIds.has(g.pg_id),
+        hasAdvice(g.pg_id) || refPgIds.has(g.pg_id) || diagPgIds.has(g.pg_id),
     ).length;
 
     return {
       total_gammes: totalGammes,
       gammes_with_advice: withAdvice,
+      gammes_with_conseil_seo: withConseilSeo,
+      gammes_with_purchase_guide: withPurchaseGuide,
       gammes_with_reference: withRef,
       gammes_with_diagnostic: withDiag,
       gammes_with_roadmap: withRoadmap,
@@ -275,6 +328,147 @@ export class MarketingDataService extends SupabaseBaseService {
         (a, b) => (a.has_advice ? 1 : 0) - (b.has_advice ? 1 : 0),
       ),
     };
+  }
+
+  async getPipelineStatus(): Promise<PipelineStatusResult> {
+    type PageType =
+      | 'R1_pieces'
+      | 'R3_conseils'
+      | 'R3_guide_achat'
+      | 'R4_reference';
+
+    const [gammes, pipelineRows] = await Promise.all([
+      this.supabase
+        .from('pieces_gamme')
+        .select('pg_id, pg_name, pg_alias')
+        .eq('pg_level', '1'),
+      this.supabase
+        .from('__rag_content_refresh_log')
+        .select('pg_id, page_type, status, completed_at')
+        .order('completed_at', { ascending: false }),
+    ]);
+
+    // Content presence sets (same pattern as getContentCoverage)
+    const [
+      seoConseilRows,
+      seoGuideRows,
+      blogAdviceRows,
+      references,
+      observables,
+    ] = await Promise.all([
+      this.supabase.from('__seo_gamme_conseil').select('sgc_pg_id'),
+      this.supabase.from('__seo_gamme_purchase_guide').select('sgpg_pg_id'),
+      this.supabase.from('__blog_advice').select('ba_pg_id'),
+      this.supabase.from('__seo_reference').select('pg_id'),
+      this.supabase.from('__seo_observable').select('related_gammes'),
+    ]);
+
+    const conseilPgIds = new Set<number>();
+    for (const r of seoConseilRows.data || []) {
+      const id = toInt((r as any).sgc_pg_id);
+      if (id !== null) conseilPgIds.add(id);
+    }
+    const blogPgIds = new Set<number>();
+    for (const r of blogAdviceRows.data || []) {
+      const id = toInt((r as any).ba_pg_id);
+      if (id !== null) blogPgIds.add(id);
+    }
+    const purchasePgIds = new Set<number>();
+    for (const r of seoGuideRows.data || []) {
+      const id = toInt((r as any).sgpg_pg_id);
+      if (id !== null) purchasePgIds.add(id);
+    }
+    const refPgIds = new Set<number>();
+    for (const r of references.data || []) {
+      const id = toInt((r as any).pg_id);
+      if (id !== null) refPgIds.add(id);
+    }
+    const diagPgIds = new Set<number>();
+    for (const obs of observables.data || []) {
+      if (obs.related_gammes) {
+        for (const pgId of obs.related_gammes) {
+          const id = toInt(pgId);
+          if (id !== null) diagPgIds.add(id);
+        }
+      }
+    }
+
+    // Pivot: key = "pg_id|page_type" → latest status (first seen = most recent)
+    const statusMap = new Map<string, PipelineRunStatus>();
+    const lastRunMap = new Map<number, string>();
+
+    for (const row of pipelineRows.data || []) {
+      const pgId = toInt((row as any).pg_id);
+      const pt = (row as any).page_type as PageType;
+      if (!pgId || !pt) continue;
+
+      const key = `${pgId}|${pt}`;
+      if (!statusMap.has(key)) {
+        statusMap.set(key, (row as any).status as PipelineRunStatus);
+      }
+
+      const completedAt = (row as any).completed_at as string | null;
+      if (completedAt) {
+        const current = lastRunMap.get(pgId);
+        if (!current || completedAt > current) {
+          lastRunMap.set(pgId, completedAt);
+        }
+      }
+    }
+
+    const pick = (pgId: number, pt: PageType): PipelineRunStatus =>
+      statusMap.get(`${pgId}|${pt}`) ?? null;
+
+    const computeOverall = (
+      statuses: PipelineRunStatus[],
+    ): GammePipelineStatus['pipeline_overall'] => {
+      const nonNull = statuses.filter(Boolean);
+      if (nonNull.length === 0) return 'pending';
+      if (nonNull.some((s) => s === 'auto_published' || s === 'published'))
+        return 'published';
+      if (nonNull.some((s) => s === 'failed')) return 'failed';
+      if (nonNull.some((s) => s === 'draft')) return 'in_progress';
+      if (nonNull.every((s) => s === 'skipped')) return 'skipped';
+      return 'pending';
+    };
+
+    const summary = {
+      total: 0,
+      published: 0,
+      in_progress: 0,
+      failed: 0,
+      skipped: 0,
+      pending: 0,
+    };
+
+    const gammeResults: GammePipelineStatus[] = (gammes.data || []).map((g) => {
+      const r1 = pick(g.pg_id, 'R1_pieces');
+      const r3c = pick(g.pg_id, 'R3_conseils');
+      const r3g = pick(g.pg_id, 'R3_guide_achat');
+      const r4 = pick(g.pg_id, 'R4_reference');
+      const overall = computeOverall([r1, r3c, r3g, r4]);
+
+      summary.total++;
+      summary[overall]++;
+
+      return {
+        pg_id: g.pg_id,
+        pg_name: g.pg_name,
+        pg_alias: g.pg_alias,
+        r1_pieces: r1,
+        r3_conseils: r3c,
+        r3_guide_achat: r3g,
+        r4_reference: r4,
+        has_conseil: conseilPgIds.has(g.pg_id) || blogPgIds.has(g.pg_id),
+        has_purchase_guide: purchasePgIds.has(g.pg_id),
+        has_reference: refPgIds.has(g.pg_id),
+        has_diagnostic: diagPgIds.has(g.pg_id),
+        pipeline_last_run: lastRunMap.get(g.pg_id) ?? null,
+        pipeline_overall: overall,
+      };
+    });
+
+    return { gammes: gammeResults, summary };
   }
 
   async createRoadmapItem(

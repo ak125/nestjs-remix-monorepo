@@ -147,3 +147,57 @@ export interface GammeGap {
   has_diagnostic: boolean;
   has_roadmap: boolean;
 }
+
+// ── Pipeline-driven Roadmap types ──
+
+export type PipelineRunStatus =
+  | 'auto_published'
+  | 'published'
+  | 'draft'
+  | 'failed'
+  | 'skipped'
+  | null;
+
+export interface GammePipelineStatus {
+  pg_id: number;
+  pg_name: string;
+  pg_alias: string;
+  r1_pieces: PipelineRunStatus;
+  r3_conseils: PipelineRunStatus;
+  r3_guide_achat: PipelineRunStatus;
+  r4_reference: PipelineRunStatus;
+  has_conseil: boolean;
+  has_purchase_guide: boolean;
+  has_reference: boolean;
+  has_diagnostic: boolean;
+  pipeline_last_run: string | null;
+  pipeline_overall:
+    | 'published'
+    | 'in_progress'
+    | 'pending'
+    | 'failed'
+    | 'skipped';
+}
+
+export interface PipelineStatusResult {
+  gammes: GammePipelineStatus[];
+  summary: {
+    total: number;
+    published: number;
+    in_progress: number;
+    failed: number;
+    skipped: number;
+    pending: number;
+  };
+}
+
+export interface GammeGapV2 extends GammeGap {
+  has_conseil_seo: boolean;
+  has_purchase_guide: boolean;
+}
+
+export interface CoverageAnalysisV2 extends Omit<CoverageAnalysis, 'gaps'> {
+  gammes_with_conseil_seo: number;
+  gammes_with_purchase_guide: number;
+  gaps: GammeGapV2[];
+}

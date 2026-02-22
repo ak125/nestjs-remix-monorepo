@@ -10,7 +10,7 @@
  */
 
 import { Truck } from "lucide-react";
-import React, { useState, useMemo, useCallback, memo } from "react";
+import React, { useState, useRef, useMemo, useCallback, memo } from "react";
 
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
@@ -391,6 +391,7 @@ export function PiecesGridView({
   const { addToCart } = useCart();
 
   // État pour gérer le loading par produit (anti-double-clic)
+  const loadingItemsRef = useRef<Set<number>>(new Set());
   const [loadingItems, setLoadingItems] = useState<Set<number>>(new Set());
 
   // État pour le modal de détail
@@ -399,10 +400,12 @@ export function PiecesGridView({
   // ⚡ Pré-calculer Set pour lookups O(1)
   const selectedSet = useMemo(() => new Set(selectedPieces), [selectedPieces]);
 
-  // ⚡ Handler mémorisé pour ajout panier
+  // ⚡ Handler mémorisé pour ajout panier (useRef guard = pas de stale closure)
   const handleAddToCart = useCallback(
     async (pieceId: number) => {
-      if (loadingItems.has(pieceId)) return;
+      if (loadingItemsRef.current.has(pieceId)) return;
+      loadingItemsRef.current.add(pieceId);
+      setLoadingItems(new Set(loadingItemsRef.current));
 
       const piece = pieces.find((p) => p.id === pieceId);
       if (piece) {
@@ -417,22 +420,17 @@ export function PiecesGridView({
         );
       }
 
-      setLoadingItems((prev) => new Set(prev).add(pieceId));
-
       try {
         await addToCart(pieceId, 1);
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {
         logger.error("❌ Erreur ajout panier:", error);
       } finally {
-        setLoadingItems((prev) => {
-          const next = new Set(prev);
-          next.delete(pieceId);
-          return next;
-        });
+        loadingItemsRef.current.delete(pieceId);
+        setLoadingItems(new Set(loadingItemsRef.current));
       }
     },
-    [pieces, addToCart, loadingItems],
+    [pieces, addToCart],
   );
 
   // ⚡ Handler mémorisé pour ouvrir détail

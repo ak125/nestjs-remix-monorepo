@@ -41,8 +41,8 @@ services:
     #   dockerfile: Dockerfile
     image: massdoc/nestjs-remix-monorepo:production
     restart: always
-    ports:
-      - 3000:3000
+    expose:
+      - "3000"
     volumes:
       - /var/www/sitemaps:/var/www/sitemaps:rw
       - /var/www/crawl-hubs:/var/www/crawl-hubs:rw
