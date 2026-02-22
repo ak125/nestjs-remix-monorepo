@@ -27,8 +27,6 @@ prefix_unused() {
 
 # Liste des fichiers avec des variables inutilisÃ©es simples
 declare -A FILES_TO_FIX=(
-    ["app/components/business/AnalyticsDashboard.tsx"]="LineChart,Line,Legend"
-    ["app/components/business/CustomerIntelligence.tsx"]="LineChart,Line,PieChart,Pie,Cell,ScatterChart,Scatter,riskColors"
     ["app/components/homepage/sections-part3.tsx"]="_brands,_posts"
     ["app/components/homepage/sections-part4.tsx"]="_isChatOpen"
     ["app/components/search/SearchBar.tsx"]="_results,_error,_autocompleteSuggestions"
