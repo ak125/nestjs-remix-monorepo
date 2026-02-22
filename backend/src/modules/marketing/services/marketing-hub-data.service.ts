@@ -7,6 +7,7 @@ import type {
   BrandRule,
   WeeklyPlan,
   GateSummary,
+  PriorityGamme,
 } from '../interfaces/marketing-hub.interfaces';
 
 @Injectable()
@@ -190,6 +191,67 @@ export class MarketingHubDataService extends SupabaseBaseService {
       return [];
     }
     return (data ?? []) as BrandRule[];
+  }
+
+  // ── Gamme Resolution ──
+
+  async resolveGammeAlias(alias: string): Promise<PriorityGamme | null> {
+    const { data, error } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id, pg_alias, pg_name')
+      .eq('pg_alias', alias)
+      .eq('pg_display', '1')
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      this.logger.warn(`resolveGammeAlias: no gamme found for "${alias}"`);
+      return null;
+    }
+
+    return {
+      pg_id: data.pg_id as number,
+      pg_alias: data.pg_alias as string,
+      pg_name: data.pg_name as string,
+      reason: 'manual',
+    };
+  }
+
+  async getTopSeoGammes(limit: number = 8): Promise<PriorityGamme[]> {
+    const { data, error } = await this.supabase
+      .from('__seo_gamme')
+      .select('gamme_id, sg_title')
+      .not('sg_title', 'is', null)
+      .limit(limit * 2);
+
+    if (error || !data || data.length === 0) {
+      return [];
+    }
+
+    const gammeIds = (
+      data as Array<{ gamme_id: number; sg_title: string }>
+    ).map((r) => r.gamme_id);
+
+    const { data: gammes, error: gErr } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id, pg_alias, pg_name')
+      .in('pg_id', gammeIds)
+      .eq('pg_display', '1')
+      .limit(limit);
+
+    if (gErr || !gammes) return [];
+
+    return (
+      gammes as Array<{ pg_id: number; pg_alias: string; pg_name: string }>
+    )
+      .filter((g) => g.pg_alias && g.pg_alias.length > 0)
+      .slice(0, limit)
+      .map((g) => ({
+        pg_id: g.pg_id,
+        pg_alias: g.pg_alias,
+        pg_name: g.pg_name,
+        reason: 'high_traffic' as const,
+      }));
   }
 
   // ── UTM Registry ──

@@ -5,8 +5,9 @@ import { AiContentModule } from '../ai-content/ai-content.module';
 import { MarketingDashboardController } from './controllers/marketing-dashboard.controller';
 import { MarketingBacklinksController } from './controllers/marketing-backlinks.controller';
 import { MarketingContentRoadmapController } from './controllers/marketing-content-roadmap.controller';
-// Hub controller
+// Hub controllers
 import { MarketingSocialPostsController } from './controllers/marketing-social-posts.controller';
+import { MarketingPipelineController } from './controllers/marketing-pipeline.controller';
 // Existing services
 import { MarketingDataService } from './services/marketing-data.service';
 import { MarketingDashboardService } from './services/marketing-dashboard.service';
@@ -27,6 +28,7 @@ import { PublishQueueService } from './services/publish-queue.service';
     MarketingBacklinksController,
     MarketingContentRoadmapController,
     MarketingSocialPostsController,
+    MarketingPipelineController,
   ],
   providers: [
     // Existing

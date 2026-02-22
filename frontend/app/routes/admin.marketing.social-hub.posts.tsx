@@ -16,6 +16,10 @@ import {
   ShieldAlert,
   Download,
   RefreshCw,
+  Wand2,
+  Sparkles,
+  Play,
+  CalendarDays,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -66,6 +70,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Textarea } from "~/components/ui/textarea";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
@@ -109,6 +114,19 @@ interface ChannelData {
   tags?: string[];
   hook_script?: string;
   thumbnail_brief?: string;
+}
+
+interface PipelineStatus {
+  plan_status: string | null;
+  posts: {
+    draft: number;
+    generated: number;
+    gate_passed: number;
+    gate_failed: number;
+    approved: number;
+    published: number;
+  };
+  total: number;
 }
 
 // ── Mappings ──
@@ -183,10 +201,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const params = new URLSearchParams({ week });
   if (status) params.set("status", status);
 
-  const [postsRes] = await Promise.allSettled([
+  const [postsRes, statusRes] = await Promise.allSettled([
     fetch(
       getInternalApiUrlFromRequest(
         `/api/admin/marketing/social/posts?${params.toString()}`,
+        request,
+      ),
+      { headers },
+    ),
+    fetch(
+      getInternalApiUrlFromRequest(
+        `/api/admin/marketing/pipeline/status/${week}`,
         request,
       ),
       { headers },
@@ -198,22 +223,32 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? await postsRes.value.json()
       : { data: [], total: 0 };
 
+  const pipelineData =
+    statusRes.status === "fulfilled" && statusRes.value.ok
+      ? await statusRes.value.json()
+      : null;
+
   return json({
     posts: (postsData.data || []) as SocialPost[],
     total: postsData.total || 0,
     filters: { week, status },
+    pipeline: pipelineData as PipelineStatus | null,
   });
 }
 
 // ── Component ──
 
 export default function SocialHubPostsPage() {
-  const { posts, total, filters } = useLoaderData<typeof loader>();
+  const { posts, total, filters, pipeline } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [previewPost, setPreviewPost] = useState<SocialPost | null>(null);
   const [approvePost, setApprovePost] = useState<SocialPost | null>(null);
   const [loading, setLoading] = useState(false);
+  const [planDialogOpen, setPlanDialogOpen] = useState(false);
+  const [planWeek, setPlanWeek] = useState(filters.week);
+  const [planGammes, setPlanGammes] = useState("");
+  const [pipelineLoading, setPipelineLoading] = useState<string | null>(null);
 
   // ── KPI counts ──
   const counts = {
@@ -313,6 +348,90 @@ export default function SocialHubPostsPage() {
     );
   }
 
+  // ── Pipeline Actions ──
+
+  async function handleGeneratePlan() {
+    setPipelineLoading("plan");
+    try {
+      const aliases = planGammes
+        .split(/[,\n]+/)
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const res = await fetch("/api/admin/marketing/pipeline/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          week_iso: planWeek,
+          ...(aliases.length > 0 ? { gamme_aliases: aliases } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (data.week_iso) {
+        toast.success(
+          `Plan ${planWeek} genere : ${data.plan_json?.length || 0} slots`,
+        );
+        setPlanDialogOpen(false);
+        updateFilter("week", planWeek);
+      } else {
+        toast.error(data.message || "Echec de la generation du plan");
+      }
+    } catch {
+      toast.error("Erreur reseau");
+    } finally {
+      setPipelineLoading(null);
+    }
+  }
+
+  async function handleGenerateCopy() {
+    const week = searchParams.get("week") || filters.week;
+    setPipelineLoading("copy");
+    try {
+      const res = await fetch("/api/admin/marketing/pipeline/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ week_iso: week }),
+      });
+      const data = await res.json();
+      if (data.generated != null) {
+        toast.success(
+          `${data.generated} posts generes, ${data.errors} erreurs`,
+        );
+        setSearchParams(new URLSearchParams(searchParams));
+      } else {
+        toast.error(data.message || "Echec de la generation");
+      }
+    } catch {
+      toast.error("Erreur reseau");
+    } finally {
+      setPipelineLoading(null);
+    }
+  }
+
+  async function handleGateAll() {
+    const week = searchParams.get("week") || filters.week;
+    setPipelineLoading("gate");
+    try {
+      const res = await fetch("/api/admin/marketing/pipeline/gate-all", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ week_iso: week }),
+      });
+      const data = await res.json();
+      if (data.passed != null) {
+        toast.success(
+          `Gates: ${data.passed} passed, ${data.warned} warned, ${data.failed} failed`,
+        );
+        setSearchParams(new URLSearchParams(searchParams));
+      } else {
+        toast.error(data.message || "Echec des gates");
+      }
+    } catch {
+      toast.error("Erreur reseau");
+    } finally {
+      setPipelineLoading(null);
+    }
+  }
+
   return (
     <DashboardShell
       title="Social Hub"
@@ -379,7 +498,65 @@ export default function SocialHubPostsPage() {
                   ))}
                 </Select>
               </div>
-              <div className="flex gap-2 sm:ml-auto">
+              <div className="flex flex-wrap gap-2 sm:ml-auto">
+                {/* Pipeline actions */}
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setPlanWeek(filters.week);
+                    setPlanDialogOpen(true);
+                  }}
+                  disabled={pipelineLoading !== null}
+                >
+                  {pipelineLoading === "plan" ? (
+                    <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <CalendarDays className="mr-1.5 h-3.5 w-3.5" />
+                  )}
+                  Plan
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleGenerateCopy}
+                  disabled={pipelineLoading !== null || !pipeline?.plan_status}
+                  title={
+                    !pipeline?.plan_status
+                      ? "Generez un plan d'abord"
+                      : "Generer le copy pour tous les slots"
+                  }
+                >
+                  {pipelineLoading === "copy" ? (
+                    <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                  )}
+                  Copy
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={handleGateAll}
+                  disabled={
+                    pipelineLoading !== null ||
+                    (pipeline?.posts.generated || 0) === 0
+                  }
+                  title={
+                    (pipeline?.posts.generated || 0) === 0
+                      ? "Pas de posts generated"
+                      : "Lancer les gates sur tous les posts"
+                  }
+                >
+                  {pipelineLoading === "gate" ? (
+                    <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <ShieldCheck className="mr-1.5 h-3.5 w-3.5" />
+                  )}
+                  Gates
+                </Button>
+                {/* Separator */}
+                <div className="w-px bg-border self-stretch" />
+                {/* Export buttons */}
                 <Button
                   variant="outline"
                   size="sm"
@@ -410,6 +587,11 @@ export default function SocialHubPostsPage() {
         </Card>
       }
     >
+      {/* Pipeline Status Bar */}
+      {pipeline && (
+        <PipelineStatusBar pipeline={pipeline} week={filters.week} />
+      )}
+
       {/* Posts Table */}
       <Card>
         <CardHeader className="pb-3">
@@ -609,6 +791,61 @@ export default function SocialHubPostsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Generate Plan Dialog */}
+      <Dialog open={planDialogOpen} onOpenChange={setPlanDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Generer un plan hebdomadaire</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="plan-week">Semaine ISO</Label>
+              <Input
+                id="plan-week"
+                type="text"
+                placeholder="2026-W09"
+                value={planWeek}
+                onChange={(e) => setPlanWeek(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="plan-gammes">
+                Gammes (optionnel, alias separes par virgules)
+              </Label>
+              <Textarea
+                id="plan-gammes"
+                placeholder="disque-frein, plaquette-frein, filtre-a-huile, alternateur"
+                value={planGammes}
+                onChange={(e) => setPlanGammes(e.target.value)}
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">
+                Laissez vide pour auto-detection basee sur le SEO
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setPlanDialogOpen(false)}
+              >
+                Annuler
+              </Button>
+              <Button
+                onClick={handleGeneratePlan}
+                disabled={!planWeek || pipelineLoading === "plan"}
+              >
+                {pipelineLoading === "plan" ? (
+                  <RefreshCw className="mr-1.5 h-4 w-4 animate-spin" />
+                ) : (
+                  <Wand2 className="mr-1.5 h-4 w-4" />
+                )}
+                Generer
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Approve Confirmation */}
       <AlertDialog
         open={!!approvePost}
@@ -645,6 +882,76 @@ export default function SocialHubPostsPage() {
 }
 
 // ── Sub-components ──
+
+function PipelineStatusBar({
+  pipeline,
+  week,
+}: {
+  pipeline: PipelineStatus;
+  week: string;
+}) {
+  const p = pipeline.posts;
+  const steps = [
+    {
+      label: "Plan",
+      value: pipeline.plan_status || "—",
+      active: !!pipeline.plan_status,
+    },
+    {
+      label: "Generated",
+      value:
+        p.generated + p.gate_passed + p.gate_failed + p.approved + p.published,
+      active: p.generated > 0 || p.gate_passed > 0,
+    },
+    {
+      label: "Gated",
+      value: p.gate_passed + p.gate_failed,
+      active: p.gate_passed > 0 || p.gate_failed > 0,
+    },
+    {
+      label: "Approved",
+      value: p.approved + p.published,
+      active: p.approved > 0 || p.published > 0,
+    },
+    { label: "Published", value: p.published, active: p.published > 0 },
+  ];
+
+  return (
+    <Card>
+      <CardContent className="py-3 px-4">
+        <div className="flex items-center gap-1 text-xs">
+          <span className="font-medium text-muted-foreground mr-2">{week}</span>
+          {steps.map((step, i) => (
+            <span key={step.label} className="flex items-center gap-1">
+              {i > 0 && (
+                <Play className="h-2.5 w-2.5 text-muted-foreground/40" />
+              )}
+              <span
+                className={
+                  step.active
+                    ? "font-medium text-foreground"
+                    : "text-muted-foreground"
+                }
+              >
+                {step.label}:{" "}
+                <span
+                  className={step.active ? "text-primary font-semibold" : ""}
+                >
+                  {step.value}
+                </span>
+              </span>
+            </span>
+          ))}
+          {pipeline.total > 0 && (
+            <span className="ml-auto text-muted-foreground">
+              Total: {pipeline.total}
+            </span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 function SocialPreview({
   data,

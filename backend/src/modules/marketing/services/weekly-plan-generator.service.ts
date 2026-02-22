@@ -129,8 +129,25 @@ export class WeeklyPlanGeneratorService {
   }
 
   private async autoDetectPriorityGammes(): Promise<PriorityGamme[]> {
-    // TODO: Query __seo_keywords for high-volume gammes with content gaps
-    // For now, return empty — will be filled by CLI args or coverage analysis
+    // 1. Try SEO gammes with existing content (best candidates)
+    try {
+      const seoGammes = await this.hubData.getTopSeoGammes(12);
+      if (seoGammes.length > 0) {
+        // Filter out recently posted gammes
+        const recentIds = await this.hubData.getRecentGammeIds(28);
+        const fresh = seoGammes.filter((g) => !recentIds.includes(g.pg_id));
+        if (fresh.length >= 4) {
+          this.logger.log(
+            `autoDetect: ${fresh.length} SEO gammes (${fresh.map((g) => g.pg_alias).join(', ')})`,
+          );
+          return fresh.slice(0, 8);
+        }
+      }
+    } catch {
+      this.logger.warn('autoDetect: SEO gammes query failed');
+    }
+
+    // 2. Fallback: coverage gaps
     try {
       const coverage = await this.marketingData.getContentCoverage();
       if (coverage && coverage.gaps) {
@@ -146,7 +163,7 @@ export class WeeklyPlanGeneratorService {
           );
       }
     } catch {
-      this.logger.warn('autoDetectPriorityGammes: coverage unavailable');
+      this.logger.warn('autoDetect: coverage unavailable');
     }
     return [];
   }
