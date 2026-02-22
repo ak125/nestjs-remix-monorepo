@@ -1,5 +1,5 @@
 import {
-  json,
+  defer,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -182,7 +182,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const rpcData = rpcRes.ok ? await rpcRes.json() : null;
     const faqData = faqRes.ok ? await faqRes.json() : null;
 
-    return json({
+    return defer({
       families: (rpcData?.catalog?.families || []) as Array<{
         mf_id: number;
         mf_name: string;
@@ -227,7 +227,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
     });
   } catch {
-    return json({
+    return defer({
       families: [],
       brands: [],
       equipementiers: [],

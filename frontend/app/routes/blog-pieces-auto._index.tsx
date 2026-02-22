@@ -10,6 +10,7 @@
  */
 
 import {
+  defer,
   json,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -243,7 +244,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     );
   }
 
-  return json<LoaderData>(
+  return defer(
     {
       blogData,
       searchParams,
@@ -284,7 +285,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
 // Composant principal optimisé
 export default function BlogIndex() {
-  const { blogData, searchParams } = useLoaderData<typeof loader>();
+  const { blogData, searchParams } = useLoaderData<
+    typeof loader
+  >() as unknown as LoaderData;
   const fetcher = useFetcher();
   const [searchQuery, setSearchQuery] = useState(searchParams.query || "");
   const [selectedType, setSelectedType] = useState(searchParams.type || "");

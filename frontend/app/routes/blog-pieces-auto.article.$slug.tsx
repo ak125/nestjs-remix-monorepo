@@ -1,5 +1,5 @@
 import {
-  json,
+  defer,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -302,7 +302,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     return redirect("/blog-pieces-auto", 301);
   }
 
-  return json<LoaderData>({
+  return defer({
     article,
     relatedArticles,
   });
@@ -310,7 +310,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 // Composant principal
 export default function BlogArticle() {
-  const { article, relatedArticles, error } = useLoaderData<typeof loader>();
+  const { article, relatedArticles } = useLoaderData<
+    typeof loader
+  >() as unknown as LoaderData;
+  const error = !article;
   const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState(false);
 

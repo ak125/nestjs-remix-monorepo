@@ -4,12 +4,13 @@
 // Intention : Sélection de pièces pour un véhicule spécifique
 
 import {
-  json,
+  defer,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import  { type ShouldRevalidateFunctionArgs ,
+import {
+  type ShouldRevalidateFunctionArgs,
   useLoaderData,
   isRouteErrorResponse,
   useRouteError,
@@ -35,9 +36,6 @@ import {
   FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { Error404, Error410 } from "../components/errors";
 import {
   ModelContentV1Display,
@@ -49,6 +47,9 @@ import { brandColorsService } from "../services/brand-colors.service";
 import { isValidImagePath } from "../utils/image-optimizer";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
 import { normalizeTypeAlias } from "../utils/url-builder.utils";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -419,7 +420,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const cached = loaderCache.get(cacheKey);
   if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
     logger.log("✅ [CACHE HIT] Données véhicule en cache:", cacheKey);
-    return json(cached.data);
+    return defer(cached.data as unknown as Record<string, unknown>);
   }
 
   logger.log("🚀 [RPC] Vehicle detail loader avec params:", params);
@@ -551,12 +552,15 @@ export async function loader({ params }: LoaderFunctionArgs) {
     parts: loaderData.popularParts.length,
   });
 
-  return json(loaderData);
+  return defer(loaderData as unknown as Record<string, unknown>);
 }
 
 // 🚗 Générer le breadcrumb structuré Schema.org
 // 🚗 Génère le schema @graph complet: Car + BreadcrumbList
-function generateVehicleSchema(vehicle: VehicleData, breadcrumb: LoaderData["breadcrumb"]) {
+function generateVehicleSchema(
+  vehicle: VehicleData,
+  breadcrumb: LoaderData["breadcrumb"],
+) {
   const baseUrl = "https://www.automecanik.com";
   const canonicalUrl = `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`;
 
@@ -664,7 +668,8 @@ function generateVehicleSchema(vehicle: VehicleData, breadcrumb: LoaderData["bre
 }
 
 // 🎯 Meta function avec SEO optimisé (logique PHP)
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data: rawData }) => {
+  const data = rawData as LoaderData | undefined;
   if (!data) {
     return [
       { title: "Page non trouvée" },

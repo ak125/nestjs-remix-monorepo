@@ -10,7 +10,7 @@
  */
 
 import {
-  json,
+  defer,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -85,7 +85,7 @@ interface RagArticle {
   score: number;
 }
 
-interface LoaderData {
+interface _LoaderData {
   guide: Guide;
   ragArticles: RagArticle[];
 }
@@ -297,7 +297,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       // RAG unavailable — page renders without enrichment
     }
 
-    return json<LoaderData>({ guide, ragArticles });
+    return defer({ guide, ragArticles });
   } catch (error) {
     logger.error("❌ Erreur chargement guide:", error);
     throw new Response("Guide non trouvé", { status: 404 });

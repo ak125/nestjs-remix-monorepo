@@ -1,6 +1,6 @@
 // app/routes/blog-pieces-auto.auto._index.tsx
 import {
-  json,
+  defer,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -130,7 +130,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }),
     );
 
-    return json<LoaderData>({
+    return defer({
       brands: mappedBrands,
       popularModels: mappedModels,
       metadata: metadataData?.success ? metadataData.data : null,
@@ -141,7 +141,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     });
   } catch (e) {
     logger.error("Erreur loader auto:", e);
-    return json<LoaderData>({
+    return defer({
       brands: [],
       popularModels: [],
       stats: { totalBrands: 0, totalModels: 0 },
@@ -152,7 +152,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 /* ===========================
    Meta
 =========================== */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data: rawData }) => {
+  const data = rawData as LoaderData | undefined;
   const metadata = data?.metadata;
   const count = data?.stats?.totalBrands ?? 0;
 
@@ -185,8 +186,9 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
    Page
 =========================== */
 export default function BlogPiecesAutoIndex() {
-  const { brands, popularModels, metadata, stats } =
-    useLoaderData<typeof loader>();
+  const { brands, popularModels, metadata, stats } = useLoaderData<
+    typeof loader
+  >() as unknown as LoaderData;
   const [visibleBrands, setVisibleBrands] = React.useState(50);
   const [searchQuery, setSearchQuery] = React.useState("");
 

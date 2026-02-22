@@ -6,7 +6,7 @@
 // Intention : Sélection de véhicule par marque
 
 import {
-  json,
+  defer,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -27,9 +27,6 @@ import {
 } from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
-import { Error404 } from "~/components/errors/Error404";
-import { logger } from "~/utils/logger";
-import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { PopularGammesSection } from "../components/constructeurs/PopularGammesSection";
 import { RelatedBrandsSection as _RelatedBrandsSection } from "../components/constructeurs/RelatedBrandsSection";
 import { HtmlContent } from "../components/seo/HtmlContent";
@@ -43,6 +40,9 @@ import {
   type RelatedBrand,
   type PopularGamme,
 } from "../types/brand.types";
+import { Error404 } from "~/components/errors/Error404";
+import { logger } from "~/utils/logger";
+import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -265,7 +265,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       });
     }
 
-    return json(bestsellersResponse.data);
+    return defer(bestsellersResponse.data);
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
