@@ -556,7 +556,7 @@ jobs:
         run: docker pull massdoc/nestjs-remix-monorepo:preprod
 
       - name: 🔍 Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@0.34.1
         with:
           image-ref: 'massdoc/nestjs-remix-monorepo:preprod'
           format: 'table'
