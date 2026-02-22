@@ -30,7 +30,7 @@ jobs:
 
       - name: 🐳 Build and Push Image
         if: ${{ github.ref == 'refs/heads/main' }}
-        uses: docker/build-push-action@v5.1.0
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -42,7 +42,7 @@ jobs:
 
       #   - name: 🐳 Build Staging Image
       #     if: ${{ github.ref == 'refs/heads/dev' }}
-      #     uses: docker/build-push-action@v5.1.0
+      #     uses: docker/build-push-action@v6
       #     with:
       #       context: .
       #       push: true
