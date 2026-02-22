@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "@remix-run/react";
-import { Megaphone, BarChart3, Link2, Map } from "lucide-react";
+import { Megaphone, BarChart3, Link2, Map, Share2 } from "lucide-react";
 
 export default function MarketingLayout() {
   const location = useLocation();
@@ -11,6 +11,11 @@ export default function MarketingLayout() {
       name: "Content Roadmap",
       href: "/admin/marketing/content-roadmap",
       icon: Map,
+    },
+    {
+      name: "Social Hub",
+      href: "/admin/marketing/social-hub/posts",
+      icon: Share2,
     },
   ];
 
@@ -29,7 +34,10 @@ export default function MarketingLayout() {
       <nav className="flex gap-2 border-b pb-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
-          const isActive = location.pathname === tab.href;
+          const isActive =
+            tab.href === "/admin/marketing"
+              ? location.pathname === tab.href
+              : location.pathname.startsWith(tab.href);
           return (
             <Link
               key={tab.href}

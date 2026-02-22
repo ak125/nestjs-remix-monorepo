@@ -16,6 +16,9 @@ export const ContentTypeSchema = z.enum([
   'seo_descrip_R1',
   'seo_descrip_R3',
   'seo_descrip_R4',
+  'social_instagram',
+  'social_facebook',
+  'social_youtube',
 ]);
 
 export type ContentType = z.infer<typeof ContentTypeSchema>;

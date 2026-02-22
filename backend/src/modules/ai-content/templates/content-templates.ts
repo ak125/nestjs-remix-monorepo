@@ -2,6 +2,7 @@ import { ContentType, Tone } from '../dto/generate-content.dto';
 
 export interface PromptTemplate {
   system: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   user: (context: Record<string, any>) => string;
 }
 
@@ -408,6 +409,112 @@ Règles strictes :
     },
   },
 
+  // ── Social channel-specific templates (Marketing Hub) ──
+
+  social_instagram: {
+    system: `Tu es un copywriter e-commerce automobile expert Instagram.
+Marque : Automecanik (automecanik.com) | +500 000 references pieces auto.
+REGLES STRICTES :
+- Max 2200 caracteres, 2-3 emojis en debut de ligne, CTA obligatoire
+- 20-25 hashtags EN COMMENTAIRE SEPARE (pas dans le texte), #automecanik en premier
+- Tutoiement obligatoire, ton professionnel mais accessible
+- Francais uniquement, pas d'anglicismes
+- JAMAIS mentionner de concurrents ni de claims non prouves
+- Si prix : uniquement si source DB fournie
+- Livraison : "Livraison gratuite des 150€" (formulation exacte)
+SORTIE : JSON {"caption":"...","hashtags":["#automecanik",...],"format":"carrousel|post|reel|story","visual_brief":"..."}`,
+    user: (ctx) => {
+      const brief = ctx.brief || {};
+      const gamme = sanitizeBriefField(brief.gamme_name || ctx.prompt || '');
+      const points = sanitizeBriefArray(
+        brief.key_selling_points || ctx.features,
+      );
+      let prompt = `Cree un post Instagram pour :\n\nGamme : ${gamme}\n`;
+      if (brief.utm_link) prompt += `Lien UTM : ${brief.utm_link}\n`;
+      if (brief.pillar)
+        prompt += `Pilier : ${sanitizeBriefField(brief.pillar)}\n`;
+      if (brief.format)
+        prompt += `Format : ${sanitizeBriefField(brief.format)}\n`;
+      if (brief.price_range)
+        prompt += `Prix : ${sanitizeBriefField(brief.price_range)}\n`;
+      if (points.length)
+        prompt += `\nArguments :\n${points.map((p: string) => `- ${p}`).join('\n')}\n`;
+      if (brief.blog_excerpt)
+        prompt += `\nExtrait a recycler :\n${sanitizeBriefField(brief.blog_excerpt)}\n`;
+      if (brief.top_review)
+        prompt += `\nReview verifiee : ${sanitizeBriefField(brief.top_review)}\n`;
+      return prompt;
+    },
+  },
+
+  social_facebook: {
+    system: `Tu es un copywriter e-commerce automobile expert Facebook.
+Marque : Automecanik (automecanik.com) | +500 000 references pieces auto.
+REGLES STRICTES :
+- Max 500 caracteres, ton professionnel, vouvoiement accepte
+- Lien DIRECT avec preview (pas "lien en bio"), 3-5 hashtags integres
+- #automecanik obligatoire
+- Francais uniquement
+- JAMAIS mentionner de concurrents ni de claims non prouves
+- Si prix : uniquement si source DB fournie
+- Livraison : "Livraison gratuite des 150€" (formulation exacte)
+SORTIE : JSON {"caption":"...","hashtags":["#automecanik",...],"format":"post|story|reel","link_preview":true}`,
+    user: (ctx) => {
+      const brief = ctx.brief || {};
+      const gamme = sanitizeBriefField(brief.gamme_name || ctx.prompt || '');
+      const points = sanitizeBriefArray(
+        brief.key_selling_points || ctx.features,
+      );
+      let prompt = `Cree un post Facebook pour :\n\nGamme : ${gamme}\n`;
+      if (brief.utm_link) prompt += `Lien : ${brief.utm_link}\n`;
+      if (brief.pillar)
+        prompt += `Pilier : ${sanitizeBriefField(brief.pillar)}\n`;
+      if (brief.price_range)
+        prompt += `Prix : ${sanitizeBriefField(brief.price_range)}\n`;
+      if (points.length)
+        prompt += `\nArguments :\n${points.map((p: string) => `- ${p}`).join('\n')}\n`;
+      if (brief.blog_excerpt)
+        prompt += `\nExtrait :\n${sanitizeBriefField(brief.blog_excerpt)}\n`;
+      return prompt;
+    },
+  },
+
+  social_youtube: {
+    system: `Tu es un createur de contenu video automobile expert YouTube.
+Marque : Automecanik (automecanik.com) | +500 000 references pieces auto.
+REGLES STRICTES :
+- Titre max 100 caracteres, accrocheur
+- Description 200-500 caracteres avec lien UTM
+- 5-15 tags, dont "automecanik" et "pieces auto"
+- Hook (0-5s) : question ou chiffre choc
+- Short (15-60s) : Hook → Probleme → Solution → CTA
+- Video longue (5-15min) : Hook → Chapitres → Outro + CTA
+- Francais uniquement
+- JAMAIS mentionner de concurrents
+- Livraison : "Livraison gratuite des 150€" (formulation exacte)
+SORTIE : JSON {"title":"...","description":"...","tags":["automecanik","pieces auto",...],"format":"short|video_long","hook_script":"...","thumbnail_brief":"..."}`,
+    user: (ctx) => {
+      const brief = ctx.brief || {};
+      const gamme = sanitizeBriefField(brief.gamme_name || ctx.prompt || '');
+      const points = sanitizeBriefArray(
+        brief.key_selling_points || ctx.features,
+      );
+      let prompt = `Cree un contenu YouTube pour :\n\nGamme : ${gamme}\n`;
+      if (brief.utm_link) prompt += `Lien : ${brief.utm_link}\n`;
+      if (brief.pillar)
+        prompt += `Pilier : ${sanitizeBriefField(brief.pillar)}\n`;
+      if (brief.format)
+        prompt += `Format : ${sanitizeBriefField(brief.format)}\n`;
+      if (points.length)
+        prompt += `\nPoints cles :\n${points.map((p: string) => `- ${p}`).join('\n')}\n`;
+      if (brief.blog_excerpt)
+        prompt += `\nExtrait blog :\n${sanitizeBriefField(brief.blog_excerpt)}\n`;
+      if (brief.guide_excerpt)
+        prompt += `\nExtrait guide :\n${sanitizeBriefField(brief.guide_excerpt)}\n`;
+      return prompt;
+    },
+  },
+
   email_campaign: {
     system: `Tu es un expert en email marketing qui crée des campagnes d'emailing performantes.
 Tu sais structurer un email pour maximiser les taux d'ouverture et de clic.`,
@@ -459,6 +566,7 @@ export const TONE_MODIFIERS: Record<Tone, string> = {
 
 export function buildPrompt(
   type: ContentType,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   context: Record<string, any>,
   tone?: Tone,
 ): { system: string; user: string } {

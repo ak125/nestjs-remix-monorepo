@@ -32,6 +32,10 @@ Quand un de ces contextes est detecte, **proposer** le skill correspondant :
 | Production contenu SEO pour une gamme | `/seo-content-architect` | nom gamme |
 | Mention governance, vault, DEC, ledger | `/governance-vault-ops` | — |
 | Bug vehicule, V-Level, compatibilite pieces, cache vehicule | `/vehicle-ops` | diagnose, vlevel, cache, ou quality |
+| Mention plan hebdo, social posts, calendrier marketing | `/marketing-hub plan` | semaine ISO |
+| Mention copywriting social, generation posts IG/FB/YT | `/marketing-hub copy` | semaine ISO |
+| Mention brand gate, compliance, approbation posts | `/marketing-hub gate` | semaine ISO |
+| Mention export manifest, publication social | `/marketing-hub export` | semaine + canal |
 
 ---
 
@@ -40,13 +44,14 @@ Quand un de ces contextes est detecte, **proposer** le skill correspondant :
 ### Chaine CONTENU (sequentielle)
 
 ```
-content-audit → rag-ops → seo-content-architect
+content-audit → rag-ops → seo-content-architect → marketing-hub copy
 ```
 
 1. `/content-audit [page]` detecte lacunes (preuves faibles, FAQ manquante, score < 4/6)
 2. Si corpus RAG insuffisant → proposer `/rag-ops ingest`
 3. Si contenu a produire/reecrire → proposer `/seo-content-architect [gamme]`
-4. Apres production → proposer `/content-audit` pour valider
+4. Si contenu SEO pret et gamme eligible → proposer `/marketing-hub copy [semaine]`
+5. Apres production → proposer `/content-audit` pour valider
 
 ### Chaine UI (sequentielle)
 
@@ -77,6 +82,7 @@ code-review ‖ payment-review ‖ backend-test
 | Skill | Connexions | Note |
 |-------|-----------|------|
 | `vehicle-ops` | ← seo-content-architect, db-migration / → backend-test, frontend-design | Interagit avec chaine CONTENU (V-Level → SEO) et SECURITE (backend-test) sans sequence stricte |
+| `marketing-hub` | ← seo-content-architect, rag-ops / → backend-test | Etend chaine CONTENU avec phase social |
 
 ---
 
