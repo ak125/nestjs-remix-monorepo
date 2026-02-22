@@ -325,11 +325,15 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     const results: Record<string, SectionValidationResult> = {};
 
     // Build slug from gamme name: "Disque de frein" → "disque-de-frein"
+    // NFD normalize decomposes accents: "à" → "a" + combining accent → strip combining → "a"
     const slug = gammeName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .replace(/['']/g, '-')
       .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-{2,}/g, '-');
 
     // Fetch full documents via RAG knowledge API (not chunked)
     let gammeContent = '';
