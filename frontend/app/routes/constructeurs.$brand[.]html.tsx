@@ -272,7 +272,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       throw error;
     }
     logger.error("Erreur récupération bestsellers:", error);
-    throw new Response("Error loading brand page", { status: 500 });
+    throw new Response("Marque non trouvée", { status: 404 });
   }
 }
 

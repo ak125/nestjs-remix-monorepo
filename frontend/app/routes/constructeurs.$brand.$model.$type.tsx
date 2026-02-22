@@ -478,7 +478,17 @@ export async function loader({ params }: LoaderFunctionArgs) {
       logger.error(
         `❌ [RPC] Erreur HTTP ${rpcResponse.status} pour type_id=${type_id}`,
       );
-      throw new Response("Service indisponible", { status: 500 });
+      // Mapper le code HTTP backend vers le bon status frontend
+      if (rpcResponse.status === 404) {
+        throw new Response("Véhicule non trouvé", { status: 404 });
+      }
+      if (rpcResponse.status === 410) {
+        throw new Response("Véhicule supprimé du catalogue", { status: 410 });
+      }
+      // Vrais erreurs serveur → 503 (Google réessaye) au lieu de 500
+      throw new Response("Service temporairement indisponible", {
+        status: 503,
+      });
     }
 
     rpcResult = await rpcResponse.json();
@@ -497,9 +507,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
     if (error instanceof Response) {
       throw error;
     }
-    // Autres erreurs
+    // Autres erreurs → 503 (Google réessaye) au lieu de 500
     logger.error(`❌ [RPC] Erreur fetch pour type_id=${type_id}:`, error);
-    throw new Response("Erreur serveur", { status: 500 });
+    throw new Response("Service temporairement indisponible", { status: 503 });
   }
 
   if (!rpcResult.success || !rpcResult.data?.vehicle) {
