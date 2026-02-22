@@ -158,7 +158,6 @@ export function createSeoMeta(seoData: SeoData): ReturnType<MetaFunction> {
     { name: "twitter:title", content: seoData.title },
     { name: "twitter:description", content: seoData.description },
     { name: "twitter:image", content: seoData.ogImage },
-    { name: "twitter:site", content: "@Automecanik" },
 
     // URL canonique
     { tagName: "link", rel: "canonical", href: seoData.canonical },

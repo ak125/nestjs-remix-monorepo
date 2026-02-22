@@ -4,7 +4,7 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { Link, useLoaderData, useNavigate } from "@remix-run/react";
+import { Await, Link, useLoaderData, useNavigate } from "@remix-run/react";
 import {
   type LucideIcon,
   Activity,
@@ -24,7 +24,7 @@ import {
   Wrench,
   Zap,
 } from "lucide-react";
-import { memo, useCallback, useState } from "react";
+import { Suspense, memo, useCallback, useState } from "react";
 
 import DarkSection from "~/components/layout/DarkSection";
 import PageSection from "~/components/layout/PageSection";
@@ -169,19 +169,30 @@ export function links() {
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  try {
-    const [rpcRes, faqRes] = await Promise.all([
-      fetch(getInternalApiUrlFromRequest("/api/catalog/homepage-rpc", request)),
-      fetch(
-        getInternalApiUrlFromRequest(
-          "/api/support/faq?status=published&limit=5",
-          request,
-        ),
-      ),
-    ]);
+  // FAQ fetch — deferred (below-the-fold, does not block HTML)
+  const faqPromise = fetch(
+    getInternalApiUrlFromRequest(
+      "/api/support/faq?status=published&limit=5",
+      request,
+    ),
+  )
+    .then((res) => (res.ok ? res.json() : null))
+    .then(
+      (data) =>
+        (data?.faqs || []) as Array<{
+          id: string;
+          question: string;
+          answer: string;
+        }>,
+    )
+    .catch(() => [] as Array<{ id: string; question: string; answer: string }>);
 
+  try {
+    // RPC fetch — synchronous (above-the-fold: families, brands, stats)
+    const rpcRes = await fetch(
+      getInternalApiUrlFromRequest("/api/catalog/homepage-rpc", request),
+    );
     const rpcData = rpcRes.ok ? await rpcRes.json() : null;
-    const faqData = faqRes.ok ? await faqRes.json() : null;
 
     return defer({
       families: (rpcData?.catalog?.families || []) as Array<{
@@ -216,11 +227,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         pg_name?: string;
         pg_alias?: string;
       }>,
-      faqs: (faqData?.faqs || []) as Array<{
-        id: string;
-        question: string;
-        answer: string;
-      }>,
+      faqs: faqPromise, // deferred — streams after initial HTML
       stats: (rpcData?.stats || {}) as {
         total_pieces?: number;
         total_families?: number;
@@ -233,7 +240,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       brands: [],
       equipementiers: [],
       blogArticles: [],
-      faqs: [],
+      faqs: faqPromise, // still deferred even on RPC error
       stats: {},
     });
   }
@@ -811,10 +818,8 @@ export default function RedesignPreview() {
         }))
       : BLOG.map((b) => ({ ...b, link: "#" }));
 
-  const faqList =
-    loaderData.faqs.length > 0
-      ? loaderData.faqs.map((f) => ({ q: f.question, a: f.answer }))
-      : FAQ_DATA;
+  // FAQ is deferred — resolved via <Await> in the JSX below
+  const faqsPromise = loaderData.faqs;
 
   const navigate = useNavigate();
   const [mineCode, setMineCode] = useState("");
@@ -912,171 +917,169 @@ export default function RedesignPreview() {
       {/* ════════════════════════════════════════
           HERO — Vehicle Search with Tabs
          ════════════════════════════════════════ */}
-      <Reveal>
-        <section className="relative overflow-hidden py-6 sm:py-8 md:py-10 bg-gradient-to-br from-[#0d1b3e] via-[#0f2347] to-[#162d5a]">
-          {/* Decorative */}
-          <div
-            className="absolute top-[10%] -right-[5%] w-48 sm:w-72 h-48 sm:h-72 rounded-full bg-[#e8590c]/10 blur-3xl pointer-events-none"
-            aria-hidden="true"
-          />
-          <div
-            className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none"
-            aria-hidden="true"
-          />
+      <section className="relative overflow-hidden py-6 sm:py-8 md:py-10 bg-gradient-to-br from-[#0d1b3e] via-[#0f2347] to-[#162d5a]">
+        {/* Decorative */}
+        <div
+          className="absolute top-[10%] -right-[5%] w-48 sm:w-72 h-48 sm:h-72 rounded-full bg-[#e8590c]/10 blur-3xl pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:4rem_4rem] pointer-events-none"
+          aria-hidden="true"
+        />
 
-          <div className="relative container mx-auto px-4 max-w-[780px] text-center">
-            <h1 className="text-xl sm:text-2xl md:text-[32px] font-extrabold text-white leading-tight mb-1 sm:mb-2 tracking-tight">
-              Pi&egrave;ces auto{" "}
-              <span className="bg-gradient-to-r from-[#e8590c] to-[#f76707] bg-clip-text text-transparent">
-                pas cher
-              </span>
-            </h1>
+        <div className="relative container mx-auto px-4 max-w-[780px] text-center">
+          <h1 className="text-xl sm:text-2xl md:text-[32px] font-extrabold text-white leading-tight mb-1 sm:mb-2 tracking-tight">
+            Pi&egrave;ces auto{" "}
+            <span className="bg-gradient-to-r from-[#e8590c] to-[#f76707] bg-clip-text text-transparent">
+              pas cher
+            </span>
+          </h1>
 
-            {/* Search box with tabs */}
-            <div className="bg-white/[0.07] border border-white/[0.12] rounded-2xl overflow-hidden backdrop-blur-xl">
-              <Tabs defaultValue="vehicule">
-                <TabsList className="w-full h-auto rounded-none bg-black/15 p-0 gap-0">
-                  <TabsTrigger
-                    value="vehicule"
-                    className="flex-1 rounded-none min-h-[44px] gap-1.5 text-xs sm:text-sm font-semibold text-white/45 data-[state=active]:bg-white data-[state=active]:text-[#0d1b3e] data-[state=active]:shadow-none border-0 px-2 sm:px-5"
-                  >
-                    <Car className="w-3.5 h-3.5 flex-shrink-0" /> Par
-                    v&eacute;hicule
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="mine"
-                    className="flex-1 rounded-none min-h-[44px] gap-1.5 text-xs sm:text-sm font-semibold text-white/45 data-[state=active]:bg-white data-[state=active]:text-[#0d1b3e] data-[state=active]:shadow-none border-0 px-2 sm:px-5"
-                  >
-                    🔢 Type Mine
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="reference"
-                    className="flex-1 rounded-none min-h-[44px] gap-1.5 text-xs sm:text-sm font-semibold text-white/45 data-[state=active]:bg-white data-[state=active]:text-[#0d1b3e] data-[state=active]:shadow-none border-0 px-2 sm:px-5"
-                  >
-                    <Search className="w-3.5 h-3.5 flex-shrink-0" />{" "}
-                    R&eacute;f&eacute;rence
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* TAB: Par véhicule */}
-                <TabsContent
+          {/* Search box with tabs */}
+          <div className="bg-white/[0.07] border border-white/[0.12] rounded-2xl overflow-hidden backdrop-blur-xl">
+            <Tabs defaultValue="vehicule">
+              <TabsList className="w-full h-auto rounded-none bg-black/15 p-0 gap-0">
+                <TabsTrigger
                   value="vehicule"
-                  className="mt-0 bg-white p-4 sm:p-5"
+                  className="flex-1 rounded-none min-h-[44px] gap-1.5 text-xs sm:text-sm font-semibold text-white/45 data-[state=active]:bg-white data-[state=active]:text-[#0d1b3e] data-[state=active]:shadow-none border-0 px-2 sm:px-5"
                 >
-                  <VehicleSelector
-                    mode="compact"
-                    className="flex-wrap gap-2"
-                    context="homepage"
-                  />
-                </TabsContent>
-
-                {/* TAB: Type Mine */}
-                <TabsContent value="mine" className="mt-0 bg-white p-4 sm:p-5">
-                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
-                    <span className="w-[18px] h-[18px] rounded-full bg-[#0d1b3e] text-white text-[9px] font-bold grid place-items-center flex-shrink-0">
-                      1
-                    </span>
-                    Num&eacute;ro de Type Mine ou CNIT
-                  </label>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (mineCode.length >= 5) {
-                        navigate(`/search/mine?code=${mineCode.toUpperCase()}`);
-                      }
-                    }}
-                    className="flex flex-col sm:flex-row gap-2.5"
-                  >
-                    <div className="relative flex-1">
-                      <Car className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-slate-400" />
-                      <Input
-                        value={mineCode}
-                        onChange={(e) =>
-                          setMineCode(e.target.value.toUpperCase())
-                        }
-                        placeholder="Ex : M10RENVP0A5G35"
-                        maxLength={20}
-                        className="min-h-[44px] pl-10 bg-slate-50 border-slate-200 rounded-xl text-[15px] font-bold tracking-[2.5px] font-mono uppercase focus-visible:border-[#e8590c] focus-visible:ring-[#e8590c]/10"
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      disabled={mineCode.length < 5}
-                      className="min-h-[46px] rounded-xl px-6 font-bold text-sm uppercase tracking-wide bg-[#e8590c] hover:bg-[#d9480f] text-white shadow-[0_4px_14px_rgba(232,89,12,0.3)] whitespace-nowrap disabled:opacity-50"
-                    >
-                      <Search className="w-[18px] h-[18px] mr-2" /> Rechercher
-                    </Button>
-                  </form>
-                  <p className="text-[11px] text-slate-400 mt-2.5 flex items-center gap-1">
-                    💡 Trouvez ce num&eacute;ro sur votre carte grise,
-                    rep&egrave;re D.2.1
-                  </p>
-                </TabsContent>
-
-                {/* TAB: Référence */}
-                <TabsContent
+                  <Car className="w-3.5 h-3.5 flex-shrink-0" /> Par
+                  v&eacute;hicule
+                </TabsTrigger>
+                <TabsTrigger
+                  value="mine"
+                  className="flex-1 rounded-none min-h-[44px] gap-1.5 text-xs sm:text-sm font-semibold text-white/45 data-[state=active]:bg-white data-[state=active]:text-[#0d1b3e] data-[state=active]:shadow-none border-0 px-2 sm:px-5"
+                >
+                  🔢 Type Mine
+                </TabsTrigger>
+                <TabsTrigger
                   value="reference"
-                  className="mt-0 bg-white p-4 sm:p-5"
+                  className="flex-1 rounded-none min-h-[44px] gap-1.5 text-xs sm:text-sm font-semibold text-white/45 data-[state=active]:bg-white data-[state=active]:text-[#0d1b3e] data-[state=active]:shadow-none border-0 px-2 sm:px-5"
                 >
-                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
-                    <Search className="w-3.5 h-3.5" /> Rechercher par
-                    r&eacute;f&eacute;rence ou nom de pi&egrave;ce
-                  </label>
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      if (refQuery.trim()) {
-                        navigate(
-                          `/recherche?q=${encodeURIComponent(refQuery.trim())}`,
-                        );
+                  <Search className="w-3.5 h-3.5 flex-shrink-0" />{" "}
+                  R&eacute;f&eacute;rence
+                </TabsTrigger>
+              </TabsList>
+
+              {/* TAB: Par véhicule */}
+              <TabsContent
+                value="vehicule"
+                className="mt-0 bg-white p-4 sm:p-5"
+              >
+                <VehicleSelector
+                  mode="compact"
+                  className="flex-wrap gap-2"
+                  context="homepage"
+                />
+              </TabsContent>
+
+              {/* TAB: Type Mine */}
+              <TabsContent value="mine" className="mt-0 bg-white p-4 sm:p-5">
+                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                  <span className="w-[18px] h-[18px] rounded-full bg-[#0d1b3e] text-white text-[9px] font-bold grid place-items-center flex-shrink-0">
+                    1
+                  </span>
+                  Num&eacute;ro de Type Mine ou CNIT
+                </label>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (mineCode.length >= 5) {
+                      navigate(`/search/mine?code=${mineCode.toUpperCase()}`);
+                    }
+                  }}
+                  className="flex flex-col sm:flex-row gap-2.5"
+                >
+                  <div className="relative flex-1">
+                    <Car className="absolute left-3 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-slate-400" />
+                    <Input
+                      value={mineCode}
+                      onChange={(e) =>
+                        setMineCode(e.target.value.toUpperCase())
                       }
-                    }}
-                    className="flex flex-col sm:flex-row gap-2.5"
-                  >
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <Input
-                        value={refQuery}
-                        onChange={(e) => setRefQuery(e.target.value)}
-                        placeholder="Référence OE, marque ou nom de pièce…"
-                        className="min-h-[44px] pl-10 bg-slate-50 border-slate-200 rounded-xl text-sm focus-visible:border-[#e8590c] focus-visible:ring-[#e8590c]/10"
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      disabled={!refQuery.trim()}
-                      className="min-h-[46px] rounded-xl px-6 font-bold text-sm uppercase tracking-wide bg-[#e8590c] hover:bg-[#d9480f] text-white shadow-[0_4px_14px_rgba(232,89,12,0.3)] whitespace-nowrap disabled:opacity-50"
-                    >
-                      <Search className="w-[18px] h-[18px] mr-2" /> Rechercher
-                    </Button>
-                  </form>
-                  <div className="flex flex-wrap gap-1 mt-2.5">
-                    {[
-                      "7701208265",
-                      "P68050",
-                      "Plaquettes Clio 4",
-                      "KD457.74",
-                      "Filtre huile Golf 7",
-                    ].map((ex) => (
-                      <Badge
-                        key={ex}
-                        variant="secondary"
-                        className="px-2.5 py-1 bg-slate-100 rounded-full text-[10px] font-semibold text-slate-500 cursor-pointer hover:bg-slate-200 hover:text-slate-900 transition-colors border-0"
-                        onClick={() => {
-                          setRefQuery(ex);
-                          navigate(`/recherche?q=${encodeURIComponent(ex)}`);
-                        }}
-                      >
-                        {ex}
-                      </Badge>
-                    ))}
+                      placeholder="Ex : M10RENVP0A5G35"
+                      maxLength={20}
+                      className="min-h-[44px] pl-10 bg-slate-50 border-slate-200 rounded-xl text-[15px] font-bold tracking-[2.5px] font-mono uppercase focus-visible:border-[#e8590c] focus-visible:ring-[#e8590c]/10"
+                    />
                   </div>
-                </TabsContent>
-              </Tabs>
-            </div>
+                  <Button
+                    type="submit"
+                    disabled={mineCode.length < 5}
+                    className="min-h-[46px] rounded-xl px-6 font-bold text-sm uppercase tracking-wide bg-[#e8590c] hover:bg-[#d9480f] text-white shadow-[0_4px_14px_rgba(232,89,12,0.3)] whitespace-nowrap disabled:opacity-50"
+                  >
+                    <Search className="w-[18px] h-[18px] mr-2" /> Rechercher
+                  </Button>
+                </form>
+                <p className="text-[11px] text-slate-400 mt-2.5 flex items-center gap-1">
+                  💡 Trouvez ce num&eacute;ro sur votre carte grise,
+                  rep&egrave;re D.2.1
+                </p>
+              </TabsContent>
+
+              {/* TAB: Référence */}
+              <TabsContent
+                value="reference"
+                className="mt-0 bg-white p-4 sm:p-5"
+              >
+                <label className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                  <Search className="w-3.5 h-3.5" /> Rechercher par
+                  r&eacute;f&eacute;rence ou nom de pi&egrave;ce
+                </label>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (refQuery.trim()) {
+                      navigate(
+                        `/recherche?q=${encodeURIComponent(refQuery.trim())}`,
+                      );
+                    }
+                  }}
+                  className="flex flex-col sm:flex-row gap-2.5"
+                >
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Input
+                      value={refQuery}
+                      onChange={(e) => setRefQuery(e.target.value)}
+                      placeholder="Référence OE, marque ou nom de pièce…"
+                      className="min-h-[44px] pl-10 bg-slate-50 border-slate-200 rounded-xl text-sm focus-visible:border-[#e8590c] focus-visible:ring-[#e8590c]/10"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={!refQuery.trim()}
+                    className="min-h-[46px] rounded-xl px-6 font-bold text-sm uppercase tracking-wide bg-[#e8590c] hover:bg-[#d9480f] text-white shadow-[0_4px_14px_rgba(232,89,12,0.3)] whitespace-nowrap disabled:opacity-50"
+                  >
+                    <Search className="w-[18px] h-[18px] mr-2" /> Rechercher
+                  </Button>
+                </form>
+                <div className="flex flex-wrap gap-1 mt-2.5">
+                  {[
+                    "7701208265",
+                    "P68050",
+                    "Plaquettes Clio 4",
+                    "KD457.74",
+                    "Filtre huile Golf 7",
+                  ].map((ex) => (
+                    <Badge
+                      key={ex}
+                      variant="secondary"
+                      className="px-2.5 py-1 bg-slate-100 rounded-full text-[10px] font-semibold text-slate-500 cursor-pointer hover:bg-slate-200 hover:text-slate-900 transition-colors border-0"
+                      onClick={() => {
+                        setRefQuery(ex);
+                        navigate(`/recherche?q=${encodeURIComponent(ex)}`);
+                      }}
+                    >
+                      {ex}
+                    </Badge>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
-        </section>
-      </Reveal>
+        </div>
+      </section>
 
       {/* Luminous separator Hero → Conseils */}
       <div className="h-px bg-gradient-to-r from-transparent via-[#e8590c]/25 to-transparent" />
@@ -1438,7 +1441,7 @@ export default function RedesignPreview() {
       </PageSection>
 
       {/* ════════════════════════════════════════
-          FAQ — Accordion shadcn
+          FAQ — Accordion shadcn (deferred)
          ════════════════════════════════════════ */}
       <PageSection maxWidth="3xl">
         <div className="text-center mb-6">
@@ -1449,22 +1452,56 @@ export default function RedesignPreview() {
             Tout ce qu&apos;il faut savoir avant de commander
           </p>
         </div>
-        <Accordion type="single" collapsible className="space-y-3">
-          {faqList.map((faq, i) => (
-            <AccordionItem
-              key={i}
-              value={`faq-${i}`}
-              className="border border-slate-200 rounded-xl bg-white overflow-hidden hover:border-[#e8590c]/20 transition-colors data-[state=open]:border-[#e8590c]/20 data-[state=open]:shadow-md"
-            >
-              <AccordionTrigger className="px-4 sm:px-5 py-4 text-sm sm:text-[15px] font-bold text-slate-900 hover:no-underline data-[state=open]:text-[#e8590c]">
-                {faq.q}
-              </AccordionTrigger>
-              <AccordionContent className="px-4 sm:px-5 text-sm text-slate-600 leading-relaxed">
-                {faq.a}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <Suspense
+          fallback={
+            <Accordion type="single" collapsible className="space-y-3">
+              {FAQ_DATA.map((faq, i) => (
+                <AccordionItem
+                  key={i}
+                  value={`faq-${i}`}
+                  className="border border-slate-200 rounded-xl bg-white overflow-hidden"
+                >
+                  <AccordionTrigger className="px-4 sm:px-5 py-4 text-sm sm:text-[15px] font-bold text-slate-900 hover:no-underline">
+                    {faq.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 sm:px-5 text-sm text-slate-600 leading-relaxed">
+                    {faq.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          }
+        >
+          <Await resolve={faqsPromise} errorElement={null}>
+            {(resolvedFaqs) => {
+              const faqList =
+                resolvedFaqs.length > 0
+                  ? resolvedFaqs.map((f) => ({
+                      q: f.question,
+                      a: f.answer,
+                    }))
+                  : FAQ_DATA;
+              return (
+                <Accordion type="single" collapsible className="space-y-3">
+                  {faqList.map((faq, i) => (
+                    <AccordionItem
+                      key={i}
+                      value={`faq-${i}`}
+                      className="border border-slate-200 rounded-xl bg-white overflow-hidden hover:border-[#e8590c]/20 transition-colors data-[state=open]:border-[#e8590c]/20 data-[state=open]:shadow-md"
+                    >
+                      <AccordionTrigger className="px-4 sm:px-5 py-4 text-sm sm:text-[15px] font-bold text-slate-900 hover:no-underline data-[state=open]:text-[#e8590c]">
+                        {faq.q}
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 sm:px-5 text-sm text-slate-600 leading-relaxed">
+                        {faq.a}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              );
+            }}
+          </Await>
+        </Suspense>
       </PageSection>
 
       {/* ════════════════════════════════════════

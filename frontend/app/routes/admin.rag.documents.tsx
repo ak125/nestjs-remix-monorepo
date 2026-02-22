@@ -18,7 +18,7 @@ import {
   BookOpen,
   AlertTriangle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   DashboardShell,
   KpiGrid,
@@ -109,12 +109,14 @@ const columns: DataColumn<KnowledgeDoc>[] = [
     key: "doc_family",
     header: "Famille",
     mobilePriority: 2,
+    sortable: true,
     render: (value) => <Badge variant="outline">{String(value)}</Badge>,
   },
   {
     key: "truth_level",
     header: "Niveau",
     mobilePriority: 3,
+    sortable: true,
     render: (value) => {
       const level = String(value);
       const status = TRUTH_STATUS[level];
@@ -129,10 +131,12 @@ const columns: DataColumn<KnowledgeDoc>[] = [
     key: "source_type",
     header: "Type",
     mobilePriority: 4,
+    sortable: true,
   },
   {
     key: "category",
     header: "Catégorie",
+    sortable: true,
   },
   {
     key: "id",
@@ -150,6 +154,8 @@ export default function AdminRagDocuments() {
   const [filterLevel, setFilterLevel] = useState("");
   const [filterFamily, setFilterFamily] = useState("");
   const [filterType, setFilterType] = useState("");
+  const [sortKey, setSortKey] = useState<keyof KnowledgeDoc | null>(null);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   const families = useMemo(
     () =>
@@ -182,7 +188,7 @@ export default function AdminRagDocuments() {
     (search ? 1 : 0);
 
   const filtered = useMemo(() => {
-    return documents.filter((doc) => {
+    const result = documents.filter((doc) => {
       if (search) {
         const q = search.toLowerCase();
         const match =
@@ -196,7 +202,38 @@ export default function AdminRagDocuments() {
       if (filterType && doc.source_type !== filterType) return false;
       return true;
     });
-  }, [documents, search, filterLevel, filterFamily, filterType]);
+
+    if (sortKey) {
+      result.sort((a, b) => {
+        const aVal = String(a[sortKey] ?? "").toLowerCase();
+        const bVal = String(b[sortKey] ?? "").toLowerCase();
+        const cmp = aVal.localeCompare(bVal, "fr");
+        return sortDir === "asc" ? cmp : -cmp;
+      });
+    }
+
+    return result;
+  }, [
+    documents,
+    search,
+    filterLevel,
+    filterFamily,
+    filterType,
+    sortKey,
+    sortDir,
+  ]);
+
+  const handleSort = useCallback(
+    (key: keyof KnowledgeDoc) => {
+      if (sortKey === key) {
+        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      } else {
+        setSortKey(key);
+        setSortDir("asc");
+      }
+    },
+    [sortKey],
+  );
 
   const handleReset = () => {
     setSearch("");
@@ -348,7 +385,10 @@ export default function AdminRagDocuments() {
           onRowClick={(row) =>
             navigate(`/admin/rag/documents/${encodeURIComponent(row.id)}`)
           }
-          maxRows={100}
+          sortBy={sortKey ?? undefined}
+          sortDirection={sortDir}
+          onSort={handleSort}
+          pageSize={50}
         />
       )}
     </DashboardShell>

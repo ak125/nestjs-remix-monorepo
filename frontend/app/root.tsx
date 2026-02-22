@@ -1,7 +1,7 @@
 import {
   type LinksFunction,
   type LoaderFunctionArgs,
-  json,
+  defer,
   type MetaFunction,
 } from "@remix-run/node";
 import {
@@ -127,18 +127,16 @@ export const meta: MetaFunction = () => [
 ];
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
-  // Charger user et cart en parallèle pour la performance
-  const [user, cart] = await Promise.all([
-    getOptionalUser({ context }),
-    getCart(request).catch((err) => {
+  // User is synchronous (from context, no HTTP fetch) — resolve immediately
+  const user = await getOptionalUser({ context });
+
+  // Cart is deferred — HTTP loopback fetch does NOT block HTML streaming
+  return defer({
+    user,
+    cart: getCart(request).catch((err) => {
       logger.warn("⚠️ [root.loader] Erreur chargement panier:", err.message);
       return null;
     }),
-  ]);
-
-  return json({
-    user,
-    cart,
     cspNonce: ((context as Record<string, unknown>)?.cspNonce as string) || "",
   });
 };
@@ -155,12 +153,17 @@ export const useOptionalUser = () => {
 };
 
 /**
- * Hook pour accéder aux données du panier depuis le root loader
- * Utilisé par CartSidebarSimple pour avoir les données SSR
+ * Hook pour accéder aux données du panier depuis le root loader.
+ * Avec defer(), cart est une Promise pendant le streaming initial,
+ * puis la valeur résolue après. On retourne null tant que c'est une Promise
+ * (les consumers gèrent déjà null avec des fallbacks).
  */
-export const useRootCart = () => {
+export const useRootCart = (): CartData | null => {
   const data = useRouteLoaderData<typeof loader>("root");
-  return data?.cart || null;
+  const cart = data?.cart;
+  // During streaming, cart is a Promise (thenable) — return null until resolved
+  if (!cart || typeof (cart as any)?.then === "function") return null;
+  return cart as CartData | null;
 };
 
 declare module "@remix-run/node" {

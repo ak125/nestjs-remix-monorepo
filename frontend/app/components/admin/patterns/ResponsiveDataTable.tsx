@@ -12,10 +12,12 @@
 import {
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
   ChevronRight,
   ExternalLink,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { StatusBadge, type StatusType } from "./StatusBadge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import {
@@ -33,7 +35,6 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { cn } from "~/lib/utils";
-import { StatusBadge, type StatusType } from "./StatusBadge";
 
 export interface DataColumn<T> {
   /** Clé de la propriété */
@@ -76,8 +77,10 @@ export interface ResponsiveDataTableProps<T extends Record<string, unknown>> {
   onRowClick?: (row: T) => void;
   /** Classes CSS */
   className?: string;
-  /** Max lignes avant pagination (indice visuel) */
+  /** @deprecated Utiliser pageSize. Conservé pour rétrocompatibilité. */
   maxRows?: number;
+  /** Lignes par page (default 50) */
+  pageSize?: number;
 }
 
 export function ResponsiveDataTable<T extends Record<string, unknown>>({
@@ -91,10 +94,18 @@ export function ResponsiveDataTable<T extends Record<string, unknown>>({
   onSort,
   onRowClick,
   className,
-  maxRows = 50,
+  maxRows,
+  pageSize: pageSizeProp,
 }: ResponsiveDataTableProps<T>) {
+  const perPage = pageSizeProp ?? maxRows ?? 50;
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedRow, setSelectedRow] = useState<T | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Reset to page 1 when data changes (e.g. filter applied)
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [data.length]);
 
   // Colonnes visibles sur mobile (priorité 1-3)
   const mobileColumns = columns
@@ -154,8 +165,11 @@ export function ResponsiveDataTable<T extends Record<string, unknown>>({
     );
   }
 
-  const displayData = data.slice(0, maxRows);
-  const hasMore = data.length > maxRows;
+  const totalPages = Math.ceil(data.length / perPage);
+  const safeCurrentPage = Math.min(currentPage, totalPages || 1);
+  const startIdx = (safeCurrentPage - 1) * perPage;
+  const displayData = data.slice(startIdx, startIdx + perPage);
+  const showPagination = totalPages > 1;
 
   return (
     <div className={className}>
@@ -188,10 +202,13 @@ export function ResponsiveDataTable<T extends Record<string, unknown>>({
           </Card>
         ))}
 
-        {hasMore && (
-          <p className="text-center text-sm text-muted-foreground py-2">
-            +{data.length - maxRows} lignes (utiliser les filtres)
-          </p>
+        {showPagination && (
+          <PaginationBar
+            currentPage={safeCurrentPage}
+            totalPages={totalPages}
+            totalItems={data.length}
+            onPageChange={setCurrentPage}
+          />
         )}
       </div>
 
@@ -249,10 +266,13 @@ export function ResponsiveDataTable<T extends Record<string, unknown>>({
           </TableBody>
         </Table>
 
-        {hasMore && (
-          <div className="p-3 text-center text-sm text-muted-foreground border-t">
-            Affichage {maxRows} sur {data.length} lignes
-          </div>
+        {showPagination && (
+          <PaginationBar
+            currentPage={safeCurrentPage}
+            totalPages={totalPages}
+            totalItems={data.length}
+            onPageChange={setCurrentPage}
+          />
         )}
       </div>
 
@@ -320,6 +340,84 @@ export function ResponsiveDataTable<T extends Record<string, unknown>>({
           )}
         </SheetContent>
       </Sheet>
+    </div>
+  );
+}
+
+function PaginationBar({
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+}) {
+  // Show max 5 page buttons with ellipsis
+  const pages: (number | "...")[] = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (currentPage > 3) pages.push("...");
+    for (
+      let i = Math.max(2, currentPage - 1);
+      i <= Math.min(totalPages - 1, currentPage + 1);
+      i++
+    ) {
+      pages.push(i);
+    }
+    if (currentPage < totalPages - 2) pages.push("...");
+    pages.push(totalPages);
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-2 border-t px-3 py-2">
+      <span className="text-xs text-muted-foreground">
+        {totalItems} résultat{totalItems > 1 ? "s" : ""}
+      </span>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0"
+          disabled={currentPage <= 1}
+          onClick={() => onPageChange(currentPage - 1)}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        {pages.map((p, i) =>
+          p === "..." ? (
+            <span
+              key={`ellipsis-${i}`}
+              className="px-1 text-xs text-muted-foreground"
+            >
+              ...
+            </span>
+          ) : (
+            <Button
+              key={p}
+              variant={p === currentPage ? "default" : "ghost"}
+              size="sm"
+              className="h-8 w-8 p-0 text-xs"
+              onClick={() => onPageChange(p)}
+            >
+              {p}
+            </Button>
+          ),
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0"
+          disabled={currentPage >= totalPages}
+          onClick={() => onPageChange(currentPage + 1)}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
     </div>
   );
 }
