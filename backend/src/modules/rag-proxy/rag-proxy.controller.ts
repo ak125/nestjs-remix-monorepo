@@ -16,6 +16,8 @@ import {
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { RagProxyService } from './rag-proxy.service';
+import { RagCleanupService } from './services/rag-cleanup.service';
+import type { RagDocInput, IngestDecision } from './types/rag-ingest.types';
 import {
   ChatRequestSchema,
   ChatRequestDto,
@@ -45,7 +47,10 @@ import path from 'node:path';
 @ApiTags('RAG')
 @Controller('api/rag')
 export class RagProxyController {
-  constructor(private readonly ragProxyService: RagProxyService) {}
+  constructor(
+    private readonly ragProxyService: RagProxyService,
+    private readonly ragCleanupService: RagCleanupService,
+  ) {}
 
   @Post('chat')
   @HttpCode(HttpStatus.OK)
@@ -244,5 +249,70 @@ export class RagProxyController {
     res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.sendFile(imagePath);
+  }
+
+  // ── Cleanup endpoints (RagCleanupService) ─────────────────────
+
+  @Post('admin/cleanup/decide')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'Dry-run ingestion decision for a single document' })
+  @ApiResponse({ status: 200, description: 'Ingestion decision result' })
+  async cleanupDecide(@Body() body: RagDocInput) {
+    if (
+      !body.title ||
+      !body.content ||
+      !body.source ||
+      !body.domain ||
+      !body.category ||
+      !body.truth_level
+    ) {
+      throw new BadRequestException(
+        'Missing required fields: title, content, source, domain, category, truth_level',
+      );
+    }
+    return this.ragCleanupService.decideIngest(body);
+  }
+
+  @Post('admin/cleanup/apply')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({
+    summary: 'Apply an ingestion decision (upsert/archive/quarantine)',
+  })
+  @ApiResponse({ status: 200, description: 'Applied document ID' })
+  async cleanupApply(
+    @Body() body: { doc: RagDocInput; decision: IngestDecision },
+  ) {
+    if (!body.doc || !body.decision) {
+      throw new BadRequestException('Missing required fields: doc, decision');
+    }
+    return this.ragCleanupService.applyIngest(body.doc, body.decision);
+  }
+
+  @Post('admin/cleanup/batch')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({
+    summary: 'Batch cleanup scan for exact fingerprint duplicates',
+  })
+  @ApiResponse({ status: 200, description: 'Cleanup report' })
+  async cleanupBatch(@Body() body: { mode?: 'dry' | 'commit' }) {
+    const mode = body.mode === 'commit' ? 'commit' : 'dry';
+    return this.ragCleanupService.runCleanupBatch(mode);
+  }
+
+  @Post('admin/cleanup/backfill-fingerprints')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({
+    summary: 'Backfill fingerprints for active docs without one',
+  })
+  @ApiResponse({ status: 200, description: 'Number of fingerprints computed' })
+  async cleanupBackfillFingerprints(@Body() body: { batchSize?: number }) {
+    const batchSize = Math.min(body.batchSize ?? 50, 200);
+    const updated =
+      await this.ragCleanupService.backfillFingerprints(batchSize);
+    return { updated, message: `Backfilled ${updated} fingerprints` };
   }
 }

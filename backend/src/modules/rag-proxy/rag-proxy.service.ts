@@ -26,6 +26,7 @@ import {
   type RagIngestionCompletedEvent,
 } from './events/rag-ingestion.events';
 import { FrontmatterValidatorService } from './services/frontmatter-validator.service';
+import { RagCleanupService } from './services/rag-cleanup.service';
 
 /** Simple circuit breaker state for the RAG external service. */
 interface CircuitBreakerState {
@@ -84,6 +85,7 @@ export class RagProxyService {
     private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
     private readonly frontmatterValidator: FrontmatterValidatorService,
+    private readonly ragCleanupService: RagCleanupService,
   ) {
     // URL externe obligatoire - le RAG est sur un serveur SÉPARÉ (pas Docker local)
     this.ragUrl = this.configService.getOrThrow<string>('RAG_SERVICE_URL');
@@ -149,6 +151,9 @@ export class RagProxyService {
         intent_routing: routing,
       };
 
+      // Étage 1+2: filtres retrieval selon intent
+      const retrievalFilters = this.buildRetrievalFilters(routing.userIntent);
+
       const response = await fetch(`${this.ragUrl}/chat/v2`, {
         method: 'POST',
         headers: {
@@ -160,6 +165,7 @@ export class RagProxyService {
           session_id: request.sessionId,
           locale: 'fr',
           vehicle_context: vehicleContext,
+          filters: retrievalFilters,
         }),
       });
 
@@ -436,6 +442,31 @@ export class RagProxyService {
     return map('choose', 'catalog', 'selection');
   }
 
+  /**
+   * Build retrieval filters based on user intent.
+   * Étage 1: default L1+L2 only.
+   * Étage 2: intent-based opening (troubleshoot→L3, policy→policy docs).
+   */
+  private buildRetrievalFilters(userIntent: string): Record<string, unknown> {
+    const filters: Record<string, unknown> = {
+      truth_levels: ['L1', 'L2'],
+    };
+
+    switch (userIntent) {
+      case 'troubleshoot':
+        filters.truth_levels = ['L1', 'L2', 'L3'];
+        break;
+      case 'policy':
+        filters.include_categories = ['knowledge/policy', 'knowledge/faq'];
+        break;
+      case 'cost':
+        filters.include_categories = ['knowledge/faq'];
+        break;
+    }
+
+    return filters;
+  }
+
   private recordIntentMetric(userIntent: string, confidence: number): void {
     const now = new Date().toISOString();
     const key = this.supportedUserIntents.includes(userIntent as never)
@@ -672,6 +703,10 @@ export class RagProxyService {
   async search(request: SearchRequestDto): Promise<SearchResponseDto> {
     this.cbGuard();
     try {
+      // Étage 1: filtres par défaut (L1+L2 uniquement), overridable par l'appelant
+      const defaultFilters = { truth_levels: ['L1', 'L2'] };
+      const mergedFilters = { ...defaultFilters, ...(request.filters || {}) };
+
       const response = await fetch(`${this.ragUrl}/search`, {
         method: 'POST',
         headers: {
@@ -681,7 +716,7 @@ export class RagProxyService {
         body: JSON.stringify({
           query: request.query,
           limit: request.limit || 10,
-          filters: request.filters,
+          filters: mergedFilters,
         }),
       });
 
@@ -911,43 +946,47 @@ export class RagProxyService {
    */
   async getCorpusStats(): Promise<{
     total: number;
+    byStatus: Record<string, number>;
     byTruthLevel: Record<string, number>;
-    byDocFamily: Record<string, number>;
-    bySourceType: Record<string, number>;
+    byDomain: Record<string, number>;
+    retrievableCount: number;
     ragStatus: 'up' | 'down';
   }> {
     try {
-      const docs = await this.listKnowledgeDocsFull();
+      const { data: rows } = await this.ragCleanupService.client
+        .from('__rag_knowledge')
+        .select('status, truth_level, domain, retrievable');
 
+      const byStatus: Record<string, number> = {};
       const byTruthLevel: Record<string, number> = {};
-      const byDocFamily: Record<string, number> = {};
-      const bySourceType: Record<string, number> = {};
+      const byDomain: Record<string, number> = {};
+      let retrievableCount = 0;
 
-      for (const doc of docs) {
-        byTruthLevel[doc.truth_level] =
-          (byTruthLevel[doc.truth_level] || 0) + 1;
-        if (doc.doc_family) {
-          byDocFamily[doc.doc_family] = (byDocFamily[doc.doc_family] || 0) + 1;
-        }
-        if (doc.source_type) {
-          bySourceType[doc.source_type] =
-            (bySourceType[doc.source_type] || 0) + 1;
-        }
+      for (const row of rows ?? []) {
+        const s = row.status || 'unknown';
+        byStatus[s] = (byStatus[s] || 0) + 1;
+        const tl = row.truth_level || 'unknown';
+        byTruthLevel[tl] = (byTruthLevel[tl] || 0) + 1;
+        const d = row.domain || 'unknown';
+        byDomain[d] = (byDomain[d] || 0) + 1;
+        if (row.retrievable) retrievableCount++;
       }
 
       return {
-        total: docs.length,
+        total: rows?.length ?? 0,
+        byStatus,
         byTruthLevel,
-        byDocFamily,
-        bySourceType,
+        byDomain,
+        retrievableCount,
         ragStatus: 'up',
       };
     } catch {
       return {
         total: 0,
+        byStatus: {},
         byTruthLevel: {},
-        byDocFamily: {},
-        bySourceType: {},
+        byDomain: {},
+        retrievableCount: 0,
         ragStatus: 'down',
       };
     }
