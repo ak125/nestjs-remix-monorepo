@@ -62,6 +62,23 @@ jest.mock('../../../modules/seo/services/diagnostic.service', () => ({
   DiagnosticService: jest.fn(),
 }));
 
+jest.mock('../../../modules/admin/services/brief-gates.service', () => ({
+  BriefGatesService: jest.fn(),
+}));
+
+jest.mock('../../../modules/admin/services/hard-gates.service', () => ({
+  HardGatesService: jest.fn(),
+}));
+
+jest.mock('../../../modules/admin/services/section-compiler.service', () => ({
+  SectionCompilerService: jest.fn(),
+}));
+
+jest.mock('../../../config/content-section-policy', () => ({
+  pageTypeToRole: jest.fn().mockReturnValue('R4'),
+  POLICY_VERSION: 'v1-test',
+}));
+
 // ── Now import the processor ──
 
 import { ContentRefreshProcessor } from '../content-refresh.processor';

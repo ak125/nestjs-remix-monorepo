@@ -7,60 +7,79 @@ const maxWaitTime = 120000; // 2 minutes
 const checkIntervalMs = 500; // Check every 500ms
 let elapsed = 0;
 
-// 🧹 Auto-cleanup old processes to prevent port conflicts
+// 🧹 Auto-cleanup old processes to prevent port conflicts and memory leaks
 function cleanupOldProcesses() {
   console.log('🧹 Checking for old dev processes...');
 
   const currentPid = process.pid;
   const parentPid = process.ppid;
 
-  // Patterns of processes to clean up (but not our own)
-  const processPatterns = [
+  // Helper: kill OLD processes matching a pattern (older than minAgeSec seconds)
+  // This avoids killing sibling processes from the same turbo run
+  function killOldByPattern(pattern, minAgeSec = 30) {
+    try {
+      // Get PIDs with their elapsed time (seconds since start)
+      const lines = execSync(
+        `ps -eo pid,etimes,args | grep -F "${pattern}" | grep -v grep || true`,
+        { encoding: 'utf-8' }
+      ).trim().split('\n').filter(Boolean);
+
+      let killed = 0;
+      lines.forEach(line => {
+        const parts = line.trim().split(/\s+/);
+        const pid = parseInt(parts[0]);
+        const ageSec = parseInt(parts[1]);
+        if (!pid || pid === currentPid || pid === parentPid) return;
+        if (ageSec < minAgeSec) return; // Skip fresh processes (sibling turbo tasks)
+        console.log(`   Killing old process PID ${pid} (${pattern}, age ${ageSec}s)`);
+        execSync(`kill -9 ${pid} 2>/dev/null || true`);
+        killed++;
+      });
+      return killed;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  // Phase 1: Always kill orphan watchers (tsc, tsup) — they accumulate across restarts
+  const watcherPatterns = [
+    'tsc --build --watch',
+    'tsc --watch',
+    'tsup --watch',
+  ];
+
+  let watchersKilled = 0;
+  watcherPatterns.forEach(pattern => {
+    watchersKilled += killOldByPattern(pattern, 30);
+  });
+
+  if (watchersKilled > 0) {
+    console.log(`   Killed ${watchersKilled} orphan watcher(s)`);
+  }
+
+  // Phase 2: Kill server processes only if port 3000 is occupied
+  const serverPatterns = [
     'node dist/main',
     'nodemon.*dist',
   ];
 
   try {
-    // Check if port 3000 is already in use
     const portCheck = execSync('ss -tlnp | grep ":3000 " || true', {
       encoding: 'utf-8',
       stdio: ['pipe', 'pipe', 'pipe']
     }).trim();
 
     if (portCheck) {
-      console.log('⚠️  Port 3000 is in use, cleaning up old processes...');
-
-      processPatterns.forEach(pattern => {
-        try {
-          const pids = execSync(`pgrep -f "${pattern}" || true`, { encoding: 'utf-8' })
-            .trim()
-            .split('\n')
-            .filter(pid => {
-              const pidNum = parseInt(pid);
-              return pid && pidNum !== currentPid && pidNum !== parentPid;
-            });
-
-          pids.forEach(pid => {
-            if (pid) {
-              console.log(`   Killing old process PID ${pid} (${pattern})`);
-              execSync(`kill -9 ${pid} 2>/dev/null || true`);
-            }
-          });
-        } catch (e) {
-          // Ignore errors, process might already be dead
-        }
-      });
-
-      // Wait for port to be released
+      console.log('⚠️  Port 3000 is in use, cleaning up old server processes...');
+      serverPatterns.forEach(pattern => killOldByPattern(pattern, 5));
       console.log('   Waiting for port to be released...');
       execSync('sleep 2');
-      console.log('✅ Old processes cleaned up');
-    } else {
-      console.log('✅ Port 3000 is free');
     }
   } catch (error) {
     console.log('⚠️  Could not check port status:', error.message);
   }
+
+  console.log('✅ Process cleanup done');
 }
 
 // 🚀 Auto-start Redis with Docker

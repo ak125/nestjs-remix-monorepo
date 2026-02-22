@@ -13,6 +13,7 @@
     "start": "cd backend && npm run start",
     "clean-node-modules": "find . -type d -name 'node_modules' -exec rm -rf {} + && find . -name 'package-lock.json' -exec rm -f {} +",
     "clean-turbo-cache": "find . -name '.turbo' -type d -exec rm -rf {} +",
+    "dev:clean": "pkill -f 'tsc --build --watch' ; pkill -f 'tsc --watch' ; pkill -f 'tsup --watch' ; pkill -f turbo ; echo 'Dev processes cleaned'",
     "pipeline:full": "node scripts/mcp-orchestrator.js",
     "migrate:auto": "node scripts/auto-migrate.js",
     "audit:full": "node ../audit-migration-exhaustif.js",
