@@ -43,8 +43,8 @@ export class GammePricePreviewService extends SupabaseBaseService {
         return cached;
       }
 
-      // 2. Call RPC
-      const { data, error } = await this.supabase.rpc(
+      // 2. Call RPC (via governance wrapper)
+      const { data, error } = await this.callRpc<GammePricePreview>(
         'get_gamme_price_preview',
         { p_pg_id: pgId, p_limit: limit },
       );

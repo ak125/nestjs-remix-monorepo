@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { memo, useState, useEffect } from "react";
 
-// Imports des modules
 import { useOptionalUser } from "../../root";
 import { CartIcon } from "../cart/CartIcon";
 import { SearchBar } from "../search/SearchBar";

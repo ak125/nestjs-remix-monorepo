@@ -135,7 +135,7 @@ function handleBrowserRequest(
               [
                 "<https://fonts.googleapis.com>; rel=preconnect",
                 "<https://fonts.gstatic.com>; rel=preconnect; crossorigin",
-                "<https://cxpojprgwgubzjyqzmoq.supabase.co>; rel=preconnect",
+                `<${process.env.VITE_SUPABASE_URL || ""}>; rel=preconnect`,
               ].join(", "),
             );
           }

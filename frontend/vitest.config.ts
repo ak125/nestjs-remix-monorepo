@@ -8,5 +8,15 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['tests/unit/**/*.test.ts', 'tests/unit/**/*.test.tsx'],
     globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'json-summary'],
+      thresholds: {
+        lines: 0,
+        branches: 0,
+        functions: 0,
+        statements: 0,
+      },
+    },
   },
 });

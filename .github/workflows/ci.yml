@@ -33,6 +33,15 @@ jobs:
           node-version: 20
           cache: "npm"
 
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
+            turbo-${{ runner.os }}-
+
       - name: Install dependencies
         run: npm ci
 
@@ -62,6 +71,15 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
+
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
+            turbo-${{ runner.os }}-
 
       - name: Install dependencies
         run: npm ci
@@ -129,6 +147,15 @@ jobs:
           node-version: 20
           cache: "npm"
 
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
+            turbo-${{ runner.os }}-
+
       - name: Install dependencies
         run: npm ci
 
@@ -174,6 +201,15 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
+
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
+            turbo-${{ runner.os }}-
 
       - name: Install dependencies
         run: npm ci
@@ -221,12 +257,10 @@ jobs:
         run: npm ci
 
       - name: 🔍 npm audit (backend)
-        run: cd backend && npm audit --audit-level=high
-        continue-on-error: true
+        run: cd backend && npm audit --audit-level=critical --production
 
       - name: 🔍 npm audit (frontend)
-        run: cd frontend && npm audit --audit-level=high
-        continue-on-error: true
+        run: cd frontend && npm audit --audit-level=critical --production
 
   # ============================================
   # P1.4-P1.5 - Checks Hardening (2026-02-02)
@@ -247,6 +281,15 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
+
+      - name: Restore Turbo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-${{ github.sha }}
+          restore-keys: |
+            turbo-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}-
+            turbo-${{ runner.os }}-
 
       - name: Install dependencies
         run: npm ci
@@ -754,3 +797,48 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report/
           retention-days: 7
+
+  # ============================================
+  # Notifications (Phase 3)
+  # ============================================
+
+  notify-failure:
+    name: 🔔 Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, test, test-frontend, security, core-build, import-firewall, rpc-gate-check, governance-check, gitleaks, migration-safety, build, deploy, e2e-smoke]
+    if: ${{ failure() && github.ref == 'refs/heads/main' }}
+    steps:
+      - name: 🔔 Send Slack notification
+        if: ${{ env.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          FAILED_JOBS=""
+          # Build failure summary from job results
+          echo "CI pipeline failed on main branch"
+
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"❌ CI Pipeline Failed\",
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"❌ *CI Pipeline Failed* on \`main\`\n*Commit:* \`${GITHUB_SHA::7}\`\n*Author:* ${{ github.actor }}\n*Message:* ${{ github.event.head_commit.message }}\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>\"
+                  }
+                }
+              ]
+            }"
+
+      - name: 📊 Failure summary
+        if: always()
+        run: |
+          echo "## ❌ CI Pipeline Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** main" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`${GITHUB_SHA::7}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Author:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details." >> $GITHUB_STEP_SUMMARY

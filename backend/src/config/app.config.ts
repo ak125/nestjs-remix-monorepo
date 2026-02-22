@@ -24,8 +24,7 @@ export function createAppConfig(): AppConfig {
   // Priorité Context7 : variables d'environnement direct d'abord
   const config: AppConfig = {
     supabase: {
-      url:
-        process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co',
+      url: process.env.SUPABASE_URL || '',
       serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
     },
     redis: {
@@ -57,8 +56,7 @@ export function getAppConfig(): AppConfig {
   // Force refresh si l'URL a changé (Context7 fix)
   if (
     appConfigInstance &&
-    appConfigInstance.supabase.url !==
-      (process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co')
+    appConfigInstance.supabase.url !== (process.env.SUPABASE_URL || '')
   ) {
     appConfigInstance = null;
   }

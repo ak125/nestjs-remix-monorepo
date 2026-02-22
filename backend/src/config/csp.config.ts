@@ -13,8 +13,7 @@
 
 export const IMAGE_DOMAINS = {
   /** Supabase Storage - images rack, logos, etc. */
-  SUPABASE:
-    process.env.SUPABASE_URL || 'https://cxpojprgwgubzjyqzmoq.supabase.co',
+  SUPABASE: process.env.SUPABASE_URL || '',
 
   /** imgproxy pour optimisation d'images (resize, webp, avif) */
   IMGPROXY: 'https://www.automecanik.com',

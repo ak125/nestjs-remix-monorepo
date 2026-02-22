@@ -67,8 +67,7 @@ const USE_IMGPROXY_RUNTIME = USE_IMGPROXY;
 const PROXY_BASE_URL = IMAGE_CONFIG.DOMAIN;
 
 // Source pour imgproxy (côté serveur uniquement, l'utilisateur ne voit jamais cette URL)
-const SUPABASE_STORAGE_URL =
-  "https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public";
+const SUPABASE_STORAGE_URL = `${process.env.VITE_SUPABASE_URL || ""}/storage/v1/object/public`;
 const DEFAULT_BUCKET = IMAGE_CONFIG.BUCKETS.UPLOADS;
 
 export interface ImageOptimizationOptions {
