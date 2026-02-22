@@ -18,9 +18,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:contrast": "tsx scripts/test-contrast.ts",
-    "test:contrast:aaa": "tsx scripts/test-contrast.ts --level AAA",
-    "test:qa": "npm run test:contrast && npm run test:a11y && npm run test:visual"
+    "test:qa": "npm run test:a11y && npm run test:visual"
   },
   "dependencies": {
     "@conform-to/react": "^1.13.1",

@@ -36,6 +36,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useState, memo } from "react";
+import { Button } from "~/components/ui/button";
 import {
   Accordion,
   AccordionContent,
@@ -43,7 +44,6 @@ import {
   AccordionTrigger,
 } from "../ui/accordion";
 import { Sheet, SheetContent, SheetClose, SheetTrigger } from "../ui/sheet";
-import { Button } from "~/components/ui/button";
 
 interface NavbarMobileProps {
   user?: {

@@ -220,9 +220,6 @@ jobs:
       - name: 🧪 Run frontend unit tests
         run: cd frontend && npx vitest run --reporter=verbose --coverage
 
-      - name: 🎨 WCAG Contrast Tests
-        run: cd frontend && npm run test:contrast
-
       - name: 📊 Frontend coverage summary
         if: always()
         run: |

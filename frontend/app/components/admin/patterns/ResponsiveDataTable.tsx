@@ -17,7 +17,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { StatusBadge, type StatusType } from "./StatusBadge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import {
@@ -35,6 +34,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { cn } from "~/lib/utils";
+import { StatusBadge, type StatusType } from "./StatusBadge";
 
 export interface DataColumn<T> {
   /** Clé de la propriété */

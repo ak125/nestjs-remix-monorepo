@@ -23,11 +23,11 @@ import {
 } from "lucide-react";
 import { memo, useState, useEffect } from "react";
 
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 import { useOptionalUser } from "../../root";
 import { CartIcon } from "../cart/CartIcon";
 import { SearchBar } from "../search/SearchBar";
-import { Alert } from "~/components/ui/alert";
-import { Button } from "~/components/ui/button";
 
 interface HeaderData {
   title: string;
