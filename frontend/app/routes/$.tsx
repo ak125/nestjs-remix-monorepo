@@ -23,7 +23,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const pathname = url.pathname;
 
-  // 0. Redirections rapides pour patterns connus (évite l'appel API)
+  // 0a. Short-circuit URLs garbage (base64 spam, bots) — évite 3 appels API inutiles
+  if (isGarbageUrl(pathname)) {
+    throw json(
+      { url: pathname, message: "Contenu supprimé" },
+      {
+        status: 410,
+        headers: {
+          "Cache-Control": "public, max-age=86400",
+          "X-Robots-Tag": "noindex",
+        },
+      },
+    );
+  }
+
+  // 0b. Redirections rapides pour patterns connus (évite l'appel API)
   const quickRedirect = resolveKnownPattern(pathname);
   if (quickRedirect) {
     return redirect(quickRedirect, 301);
@@ -207,7 +221,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
         {
           status: 410,
           headers: {
-            "Cache-Control": "public, max-age=3600", // Cache les 410 pour éviter les requêtes répétées
+            "Cache-Control": "public, max-age=86400", // Cache 24h pour accélérer la désindexation
+            "X-Robots-Tag": "noindex",
           },
         },
       );
@@ -246,10 +261,46 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 /**
+ * Détecte les URLs manifestement non-valides (base64 spam, bots, tokens).
+ * Retourne true pour court-circuiter AVANT tout appel API (économie de 3 fetch/requête).
+ */
+function isGarbageUrl(pathname: string): boolean {
+  // Base64-encoded strings: /wl8k5m6HsSkVW3cXi61ZQ==
+  if (/^\/[A-Za-z0-9+/]{8,}={1,2}$/.test(pathname)) return true;
+
+  // Base64-like with special chars in path: /RusC1gZF2/22ANy4XK+TA==
+  if (/[+]/.test(pathname) && /={1,2}$/.test(pathname)) return true;
+
+  // Single segment with no extension, > 20 chars, mostly alphanumeric (hash/token)
+  const segments = pathname.split("/").filter(Boolean);
+  if (
+    segments.length === 1 &&
+    segments[0].length > 20 &&
+    !/\./.test(segments[0]) &&
+    /^[A-Za-z0-9+/=]+$/.test(segments[0])
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Résout les patterns d'URLs connus vers leur nouvelle destination.
  * Exécuté AVANT l'appel API pour une résolution instantanée.
  */
 function resolveKnownPattern(pathname: string): string | null {
+  // /blog-pieces-auto/guide/* → /blog-pieces-auto/guide-achat/* (manque le "-achat")
+  if (
+    pathname.startsWith("/blog-pieces-auto/guide/") &&
+    !pathname.startsWith("/blog-pieces-auto/guide-achat/")
+  ) {
+    return pathname.replace(
+      "/blog-pieces-auto/guide/",
+      "/blog-pieces-auto/guide-achat/",
+    );
+  }
+
   // /blog/* → /blog-pieces-auto/* (legacy blog URLs)
   if (
     pathname.startsWith("/blog/") &&
@@ -310,6 +361,8 @@ async function checkIfOldLink(pathname: string): Promise<boolean> {
       /\.old$/, // URLs finissant par .old
       /\/[0-9]{4}\/old\//, // Patterns avec année et "old"
       /^\/piece\//, // URLs legacy /piece/* (~90K URLs à désindexer)
+      /^\/pieces\/[^/]+\/[^/]+\/[^/]+\/[^/]+\.html\//, // Extra segments après .html (legacy pagination)
+      /^\/reference-auto\//, // Anciennes pages référence
     ];
 
     // Vérifier si l'URL match un pattern d'ancien lien

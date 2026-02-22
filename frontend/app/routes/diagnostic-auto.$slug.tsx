@@ -13,6 +13,7 @@
 
 import {
   json,
+  redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -205,6 +206,20 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const { slug } = params;
   if (!slug) {
     throw new Response("Slug requis", { status: 400 });
+  }
+
+  // Normaliser les slugs avec espaces, majuscules ou accents → 301 vers slug propre
+  const normalized = slug
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  if (normalized !== slug && normalized.length > 0) {
+    return redirect(`/diagnostic-auto/${normalized}`, 301);
   }
 
   const API_URL = process.env.VITE_API_URL || "http://127.0.0.1:3000";
