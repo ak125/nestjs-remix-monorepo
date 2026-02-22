@@ -6,7 +6,8 @@ services:
       - REDIS_URL=redis://redis_preprod:6379
       - REDIS_HOST=redis_preprod
       - REDIS_PORT=6379
-      - NODE_ENV=preprod
+      - NODE_ENV=production
+      - APP_ENV=preprod
       - DATABASE_URL
       - SUPABASE_SERVICE_ROLE_KEY
       - SUPABASE_URL

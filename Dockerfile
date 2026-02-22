@@ -50,8 +50,8 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 remix-api
 USER remix-api
 
-# ENV TZ=Europe/Paris
-# ENV NODE_ENV="production"
+ENV TZ=Europe/Paris
+ENV NODE_ENV="production"
 
 COPY --chown=remix-api:nodejs --from=installer /app/backend/package.json ./backend/package.json
 COPY --chown=remix-api:nodejs --from=installer /app/backend/dist ./backend/dist
