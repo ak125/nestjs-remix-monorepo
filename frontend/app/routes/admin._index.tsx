@@ -58,8 +58,9 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
   try {
+    const cookieHeader = request.headers.get("Cookie") || "";
     logger.log("📊 Chargement des statistiques du dashboard...");
 
     // Initialiser les stats par défaut
@@ -128,6 +129,7 @@ export const loader: LoaderFunction = async () => {
     try {
       const unifiedResponse = await fetch(
         `${getInternalApiUrl("")}/api/dashboard/stats`,
+        { headers: { Cookie: cookieHeader } },
       );
       if (unifiedResponse.ok) {
         const unifiedData = await unifiedResponse.json();
@@ -160,7 +162,8 @@ export const loader: LoaderFunction = async () => {
     // Fallback : Récupérer les vraies données utilisateurs et commandes individuellement
     try {
       const reportsResponse = await fetch(
-        `http://127.0.0.1:3000/api/admin/reports/dashboard`,
+        `${getInternalApiUrl("")}/api/admin/reports/dashboard`,
+        { headers: { Cookie: cookieHeader } },
       );
       if (reportsResponse.ok) {
         const reportsData = await reportsResponse.json();
@@ -183,7 +186,8 @@ export const loader: LoaderFunction = async () => {
     // Récupérer les statistiques produits
     try {
       const productsResponse = await fetch(
-        "http://127.0.0.1:3000/api/admin/products/dashboard",
+        `${getInternalApiUrl("")}/api/admin/products/dashboard`,
+        { headers: { Cookie: cookieHeader } },
       );
       if (productsResponse.ok) {
         const productsData = await productsResponse.json();
@@ -204,6 +208,7 @@ export const loader: LoaderFunction = async () => {
     try {
       const seoResponse = await fetch(
         `${getInternalApiUrl("")}/api/seo/analytics`,
+        { headers: { Cookie: cookieHeader } },
       );
       if (seoResponse.ok) {
         const seoData = await seoResponse.json();
@@ -226,7 +231,8 @@ export const loader: LoaderFunction = async () => {
     // Health check système
     try {
       const healthResponse = await fetch(
-        `http://127.0.0.1:3000/api/admin/system/health`,
+        `${getInternalApiUrl("")}/api/admin/system/health`,
+        { headers: { Cookie: cookieHeader } },
       );
       if (healthResponse.ok) {
         const healthData = await healthResponse.json();

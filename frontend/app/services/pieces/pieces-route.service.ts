@@ -372,6 +372,78 @@ export async function fetchRelatedArticlesForGamme(
 }
 
 /**
+ * 📚 Fetch blog article + related articles en UN SEUL appel API
+ *
+ * Remplace les 2 appels séparés fetchBlogArticle() + fetchRelatedArticlesForGamme()
+ * qui appelaient le même endpoint /api/blog/article/by-gamme/{alias}
+ */
+export async function fetchBlogArticleWithRelated(
+  gamme: GammeData,
+  _vehicle: VehicleData,
+): Promise<{ article: BlogArticle | null; relatedArticles: BlogArticle[] }> {
+  logger.log(`📚 [Blog+Related] Fetching for gamme: ${gamme.alias}`);
+
+  const endpoints = [
+    `${BACKEND_URL}/api/blog/article/by-gamme/${encodeURIComponent(gamme.alias)}`,
+    `${BACKEND_URL}/api/blog/search?q=${encodeURIComponent(gamme.name)}&limit=1`,
+    `${BACKEND_URL}/api/blog/popular?limit=1&category=entretien`,
+    `${BACKEND_URL}/api/blog/homepage`,
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        signal: AbortSignal.timeout(2000),
+      });
+
+      if (!response.ok) continue;
+
+      const data = await response.json();
+
+      // 1. Extraire l'article principal (même logique que parseBlogArticleResponse)
+      const article = parseBlogArticleResponse(data);
+      if (!article) continue;
+
+      // 2. Extraire les articles liés depuis la même réponse
+      const relatedArticles: BlogArticle[] = [article];
+      const d = data as Record<string, unknown>;
+      const articleData = d.data as Record<string, unknown>;
+
+      if (articleData?.relatedArticles) {
+        const related = articleData.relatedArticles as Record<
+          string,
+          unknown
+        >[];
+        if (Array.isArray(related)) {
+          for (const r of related.slice(0, 3)) {
+            if (r?.slug) {
+              relatedArticles.push({
+                id: String(r.id || "related-" + Date.now()),
+                title: String(r.h1 || r.title),
+                excerpt: String(r.excerpt || ""),
+                slug: String(r.slug),
+                image:
+                  normalizeImageUrl(String(r.featuredImage || "")) || undefined,
+                date: String(
+                  r.updatedAt || r.publishedAt || new Date().toISOString(),
+                ),
+                readTime: Number(r.readingTime || 5),
+              });
+            }
+          }
+        }
+      }
+
+      return { article, relatedArticles };
+    } catch {
+      // Continuer vers le prochain endpoint
+    }
+  }
+
+  return { article: null, relatedArticles: [] };
+}
+
+/**
  * 🎯 Interface pour les SEO switches
  */
 export interface SeoSwitches {

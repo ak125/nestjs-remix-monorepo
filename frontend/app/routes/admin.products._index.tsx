@@ -36,12 +36,18 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData, Link, Form } from "@remix-run/react";
+import {
+  useLoaderData,
+  useRouteLoaderData,
+  Link,
+  Form,
+} from "@remix-run/react";
 import { useState } from "react";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
@@ -87,9 +93,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       `🔄 Produits Admin: Chargement page ${page}, limit ${limit}, search: "${search}"`,
     );
 
+    const cookieHeader = request.headers.get("Cookie") || "";
+
     // Appel API produits
-    const apiUrl = `http://127.0.0.1:3000/api/admin/products?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
-    const response = await fetch(apiUrl);
+    const apiUrl = `${getInternalApiUrl("")}/api/admin/products?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
+    const response = await fetch(apiUrl, {
+      headers: { Cookie: cookieHeader },
+    });
 
     if (!response.ok) {
       throw new Error(`API Error: ${response.status}`);
@@ -97,17 +107,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     const productsData: ProductsApiResponse = await response.json();
 
-    // Statistiques produits
-    const statsResponse = await fetch(
-      "http://127.0.0.1:3000/api/admin/products/stats/detailed",
-    );
-    const statsData = statsResponse.ok ? await statsResponse.json() : null;
-
     logger.log(`✅ Produits chargés: ${productsData.data.length} items`);
 
     return json({
       products: productsData,
-      stats: statsData?.stats || null,
       searchQuery: search,
     });
   } catch (error) {
@@ -120,7 +123,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         pagination: { page: 1, limit: 25, total: 0, pages: 0 },
         error: "Erreur de chargement",
       },
-      stats: null,
       searchQuery: "",
       error: String(error),
     });
@@ -128,7 +130,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function AdminProducts() {
-  const { products, stats, searchQuery } = useLoaderData<typeof loader>();
+  const { products, searchQuery } = useLoaderData<typeof loader>();
+  const parentData = useRouteLoaderData("routes/admin") as
+    | { stats: Record<string, number> }
+    | undefined;
+  const stats = parentData?.stats || null;
   const [selectedProducts, setSelectedProducts] = useState<number[]>([]);
 
   const toggleProduct = (productId: number) => {

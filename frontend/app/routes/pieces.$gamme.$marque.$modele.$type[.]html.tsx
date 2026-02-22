@@ -84,8 +84,7 @@ import { useSeoLinkTracking } from "../hooks/useSeoLinkTracking";
 // 🚀 RM API V2 - Complete Read Model (~400ms, single RPC)
 import { fetchRmPageV2 } from "../services/api/rm-api.service";
 import {
-  fetchBlogArticle,
-  fetchRelatedArticlesForGamme,
+  fetchBlogArticleWithRelated,
   fetchSeoSwitches,
 } from "../services/pieces/pieces-route.service";
 
@@ -287,12 +286,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const faqItems = generateFAQ(vehicle, gamme);
   const buyingGuide = generateBuyingGuide(vehicle, gamme);
 
-  // 🚀 LCP OPTIMIZATION V6: blogArticle et relatedArticles streamés via defer()
-  const blogArticlePromise = fetchBlogArticle(gamme, vehicle).catch(() => null);
-  const relatedArticlesPromise = fetchRelatedArticlesForGamme(
-    gamme,
-    vehicle,
-  ).catch(() => []);
+  // 🚀 LCP OPTIMIZATION V6: blogArticle + relatedArticles en UN seul appel API
+  const blogDataPromise = fetchBlogArticleWithRelated(gamme, vehicle).catch(
+    () => ({ article: null, relatedArticles: [] }),
+  );
 
   // 🚀 LCP OPTIMIZATION V8: Catalogue Famille streamé via defer() (below-fold)
   const catalogueMameFamillePromise = buildCataloguePromise(
@@ -365,8 +362,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       seoSwitches: seoSwitchesPromise,
       // 🚀 LCP OPTIMIZATION V7: catalogueMameFamille streamé (below-fold)
       catalogueMameFamille: catalogueMameFamillePromise,
-      relatedArticles: relatedArticlesPromise,
-      blogArticle: blogArticlePromise,
+      blogData: blogDataPromise,
     },
     {
       headers: {
@@ -849,12 +845,11 @@ export default function PiecesVehicleRoute() {
             <div className="h-32 bg-gray-100 animate-pulse rounded-lg mx-4" />
           }
         >
-          <Await resolve={data.relatedArticles}>
-            {(resolvedArticles) => {
-              // Filtrer les nulls et vérifier qu'il y a des articles
-              const validArticles = (resolvedArticles || []).filter(
-                (a): a is NonNullable<typeof a> => a !== null,
-              );
+          <Await resolve={data.blogData}>
+            {(resolvedBlogData) => {
+              const validArticles = (
+                resolvedBlogData?.relatedArticles || []
+              ).filter((a): a is NonNullable<typeof a> => a !== null);
               return validArticles.length > 0 ? (
                 <div className="container mx-auto px-4">
                   <PiecesRelatedArticles

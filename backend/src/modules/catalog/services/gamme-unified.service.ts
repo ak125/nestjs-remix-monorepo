@@ -119,10 +119,45 @@ export class GammeUnifiedService extends SupabaseBaseService {
         );
       }
 
-      // 3. Récupérer les noms des gammes
-      const allGammes = await this.getAllGammes();
+      // 3. Récupérer uniquement les gammes liées dans catalog_gamme (~220 au lieu de ~1000)
+      const catalogGammeIds = (catalogGammes || []).map((cg) => cg.mc_pg_id);
+      const { data: relevantGammes, error: gammeError } = await this.supabase
+        .from(TABLES.pieces_gamme)
+        .select(
+          'pg_id, pg_name, pg_alias, pg_img, pg_display, pg_top, pg_level, pg_parent',
+        )
+        .in('pg_id', catalogGammeIds);
+
+      if (gammeError) {
+        this.logger.warn(
+          '⚠️ Erreur requête ciblée, fallback getAllGammes:',
+          gammeError,
+        );
+      }
+
+      const gammesList: Gamme[] = gammeError
+        ? await this.getAllGammes()
+        : (relevantGammes || []).map((pg) => ({
+            id: pg.pg_id,
+            alias: pg.pg_alias || undefined,
+            name: pg.pg_name,
+            description: undefined,
+            image: pg.pg_img || undefined,
+            is_active: true,
+            is_featured: pg.pg_top === '1',
+            is_displayed: pg.pg_display === '1',
+            family_id: undefined,
+            level: parseInt(pg.pg_level) || 0,
+            sort_order: parseInt(pg.pg_id),
+            products_count: 0,
+          }));
+
+      this.logger.log(`✅ ${gammesList.length} gammes récupérées`);
+
       // Créer une Map avec des clés en string pour éviter les problèmes de type
-      const gammeNameMap = new Map(allGammes.map((g) => [String(g.id), g]));
+      const gammeNameMap = new Map<string, Gamme>(
+        gammesList.map((g): [string, Gamme] => [String(g.id), g]),
+      );
 
       // 4. Construire la hiérarchie
       const familiesWithGammes: FamilyWithGammes[] = (families || [])
