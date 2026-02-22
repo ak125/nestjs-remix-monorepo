@@ -6,7 +6,7 @@
         "persistent": true
       },
       "build": {
-        "outputs": ["backend/dist/**", "frontend/build/**", "packages/*/dist/**"],
+        "outputs": ["dist/**", "build/**"],
         "dependsOn": ["^build"]
       },
       "typecheck": {

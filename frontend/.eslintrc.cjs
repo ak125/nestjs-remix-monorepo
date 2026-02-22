@@ -25,7 +25,6 @@ module.exports = {
 			varsIgnorePattern: '^_',
 			caughtErrorsIgnorePattern: '^_',
 		}],
-		'import/order': 'warn',
 		'jsx-a11y/anchor-has-content': 'off',
 		// UI Lint: Classes Tailwind interdites
 		'no-restricted-syntax': [
