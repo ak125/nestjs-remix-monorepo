@@ -228,6 +228,13 @@ export class CatalogService
    */
   private async getMainCategories(): Promise<CatalogItem[]> {
     try {
+      // Charger les IDs du catalogue actif (~221 gammes)
+      const { data: catalogGammes } = await this.supabase
+        .from(TABLES.catalog_gamme)
+        .select('mc_pg_id');
+      const catalogIds = (catalogGammes || []).map((cg) => cg.mc_pg_id);
+
+      // Requete ciblee sur les gammes actives (evite le plafond Supabase 1000 rows)
       const { data, error } = await this.supabase
         .from(TABLES.pieces_gamme)
         .select(
@@ -241,7 +248,7 @@ export class CatalogService
           pg_level
         `,
         )
-        .eq('pg_display', '1')
+        .in('pg_id', catalogIds)
         .order('pg_level', { ascending: true });
 
       if (error) {

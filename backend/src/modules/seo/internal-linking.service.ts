@@ -169,7 +169,8 @@ export class InternalLinkingService implements OnModuleInit {
     const { data, error } = await this.supabase
       .from(TABLES.seo_gamme_car_switch)
       .select('sgcs_id, sgcs_pg_id, sgcs_alias, sgcs_content')
-      .in('sgcs_alias', ['1', '2']);
+      .in('sgcs_alias', ['1', '2'])
+      .limit(5000);
 
     if (error) {
       this.logger.error('Erreur chargement switches:', error);
@@ -207,7 +208,7 @@ export class InternalLinkingService implements OnModuleInit {
     const { data, error } = await this.supabase
       .from(TABLES.pieces_gamme)
       .select('pg_id, pg_name, pg_alias')
-      .eq('pg_display', true)
+      .eq('pg_display', '1')
       .order('pg_id')
       .limit(200);
 
