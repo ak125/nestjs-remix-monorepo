@@ -162,8 +162,12 @@ export const useRootCart = (): CartData | null => {
   const data = useRouteLoaderData<typeof loader>("root");
   const cart = data?.cart;
   // During streaming, cart is a Promise (thenable) — return null until resolved
-  if (!cart || typeof (cart as any)?.then === "function") return null;
-  return cart as CartData | null;
+  if (
+    !cart ||
+    typeof (cart as unknown as { then?: unknown })?.then === "function"
+  )
+    return null;
+  return cart as unknown as CartData | null;
 };
 
 declare module "@remix-run/node" {
