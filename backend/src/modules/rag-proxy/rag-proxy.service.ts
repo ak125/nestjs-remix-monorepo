@@ -794,27 +794,38 @@ export class RagProxyService {
   async listKnowledgeDocs(prefix?: string): Promise<string[]> {
     this.cbGuard();
     try {
-      const response = await fetch(`${this.ragUrl}/api/knowledge?limit=500`, {
-        headers: { 'X-RAG-API-Key': this.ragApiKey },
-      });
+      const allIds: string[] = [];
+      const perPage = 100;
+      const maxPages = 10;
 
-      if (!response.ok) {
-        throw new Error(`Failed to list knowledge docs: ${response.status}`);
+      for (let page = 1; page <= maxPages; page++) {
+        const response = await fetch(
+          `${this.ragUrl}/api/knowledge?limit=${perPage}&page=${page}`,
+          { headers: { 'X-RAG-API-Key': this.ragApiKey } },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to list knowledge docs: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const docs: Array<{ id?: string; doc_id?: string }> = Array.isArray(
+          data,
+        )
+          ? data
+          : data?.documents || data?.results || [];
+        const ids = docs.map((d) => d.id || d.doc_id || '').filter(Boolean);
+        allIds.push(...ids);
+
+        if (docs.length < perPage) break;
       }
 
-      const data = await response.json();
       this.cbSuccess();
 
-      // Extract IDs from the response (array of doc objects)
-      const docs: Array<{ id?: string; doc_id?: string }> = Array.isArray(data)
-        ? data
-        : data?.documents || data?.results || [];
-      const ids = docs.map((d) => d.id || d.doc_id || '').filter(Boolean);
-
       if (prefix) {
-        return ids.filter((id) => id.startsWith(prefix));
+        return allIds.filter((id) => id.startsWith(prefix));
       }
-      return ids;
+      return allIds;
     } catch (error) {
       if (!(error instanceof HttpException)) {
         this.cbFailure();
@@ -843,22 +854,34 @@ export class RagProxyService {
   > {
     this.cbGuard();
     try {
-      const response = await fetch(`${this.ragUrl}/api/knowledge?limit=500`, {
-        headers: { 'X-RAG-API-Key': this.ragApiKey },
-      });
+      const allDocs: Array<Record<string, unknown>> = [];
+      const perPage = 100;
+      const maxPages = 10; // safety cap: 1000 docs max
 
-      if (!response.ok) {
-        throw new Error(`Failed to list knowledge docs: ${response.status}`);
+      for (let page = 1; page <= maxPages; page++) {
+        const response = await fetch(
+          `${this.ragUrl}/api/knowledge?limit=${perPage}&page=${page}`,
+          { headers: { 'X-RAG-API-Key': this.ragApiKey } },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to list knowledge docs: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const docs: Array<Record<string, unknown>> = Array.isArray(data)
+          ? data
+          : data?.documents || data?.results || [];
+
+        allDocs.push(...docs);
+
+        // Stop when we got fewer than a full page (last page reached)
+        if (docs.length < perPage) break;
       }
 
-      const data = await response.json();
       this.cbSuccess();
 
-      const docs: Array<Record<string, unknown>> = Array.isArray(data)
-        ? data
-        : data?.documents || data?.results || [];
-
-      const mapped = docs.map((d) => ({
+      const mapped = allDocs.map((d) => ({
         id: String(d.id || d.doc_id || ''),
         title: String(d.title || d.id || ''),
         doc_family: String(d.doc_family || ''),
