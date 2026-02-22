@@ -26,8 +26,12 @@ import {
   Megaphone,
   Link2,
   Map,
+  Share2,
   MessageSquare,
   RefreshCw,
+  Activity,
+  ShieldCheck,
+  FilePen,
 } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
@@ -194,6 +198,12 @@ export const AdminSidebar = memo(function AdminSidebar({
           icon: Map,
           description: "Planification contenu",
         },
+        {
+          name: "Social Hub",
+          href: "/admin/marketing/social-hub/posts",
+          icon: Share2,
+          description: "Posts réseaux sociaux",
+        },
       ],
     },
     {
@@ -323,6 +333,24 @@ export const AdminSidebar = memo(function AdminSidebar({
           href: "/admin/rag/ingest",
           icon: Send,
           description: "PDF & URL ingest",
+        },
+        {
+          name: "Pipeline",
+          href: "/admin/rag/pipeline",
+          icon: Activity,
+          description: "Content refresh & gates",
+        },
+        {
+          name: "QA Gate",
+          href: "/admin/rag/qa-gate",
+          icon: ShieldCheck,
+          description: "Champs SEO protégés",
+        },
+        {
+          name: "Drafts SEO",
+          href: "/admin/rag/seo-drafts",
+          icon: FilePen,
+          description: "Review & publish drafts",
         },
       ],
     },

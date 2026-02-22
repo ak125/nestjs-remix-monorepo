@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { GENERIC_PHRASES as SHARED_GENERIC_PHRASES } from '../../../config/buying-guide-quality.constants';
+import type { EvidenceEntry } from '../../../workers/types/content-refresh.types';
 
 // ── Section type constants matching DB values ──
 
@@ -68,6 +69,7 @@ export interface ConseilEnrichResult {
   sectionsCreated: number;
   sectionsUpdated: number;
   reason?: string;
+  evidencePack?: EvidenceEntry[];
 }
 
 interface SectionAction {
@@ -242,14 +244,41 @@ export class ConseilEnricherService extends SupabaseBaseService {
       );
     }
 
+    // Build evidence pack from contract sections
+    const evidenceEntries: EvidenceEntry[] = [];
+    const docId = `gammes.${pgAlias}`;
+    for (const [key, value] of Object.entries(contract)) {
+      if (!value) continue;
+      const excerpt =
+        typeof value === 'string'
+          ? value.substring(0, 200)
+          : Array.isArray(value)
+            ? value
+                .slice(0, 3)
+                .map((v) => (typeof v === 'string' ? v : JSON.stringify(v)))
+                .join('; ')
+                .substring(0, 200)
+            : '';
+      if (excerpt.length < 10) continue;
+      evidenceEntries.push({
+        docId,
+        heading: key,
+        charRange: [-1, -1] as [number, number],
+        rawExcerpt: excerpt,
+        confidence: 1.0,
+      });
+    }
+
     // 3-7. Execute enrichment pipeline (shared with supplementary-only path)
-    return this.executeEnrichment(
+    const result = await this.executeEnrichment(
       pgId,
       pgAlias,
       contract,
       supplementaryEnriched,
       conservativeMode,
     );
+    result.evidencePack = evidenceEntries;
+    return result;
   }
 
   /**
