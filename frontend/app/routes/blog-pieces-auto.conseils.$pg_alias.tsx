@@ -11,7 +11,7 @@
  */
 
 import {
-  json,
+  defer,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -318,82 +318,42 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       return redirect("/blog-pieces-auto/conseils", 301);
     }
 
-    // Charger les articles adjacents (précédent/suivant)
-    let adjacentArticles = { previous: null, next: null };
-    try {
-      const adjacentResponse = await fetch(
-        `${baseUrl}/api/blog/article/${article.slug}/adjacent`,
-        {
+    // Lancer les 3 fetches below-fold en parallele (promises, pas await)
+    const adjacentPromise = fetch(
+      `${baseUrl}/api/blog/article/${article.slug}/adjacent`,
+      { headers: fetchHeaders, signal: controller.signal },
+    )
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d?.data || { previous: null, next: null })
+      .catch(() => ({ previous: null, next: null }));
+
+    const seoSwitchesPromise = article.pg_id
+      ? fetch(`${baseUrl}/api/blog/seo-switches/${article.pg_id}`, {
           headers: fetchHeaders,
           signal: controller.signal,
-        },
-      );
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => d?.data || [])
+          .catch(() => [])
+      : Promise.resolve([]);
 
-      if (adjacentResponse.ok) {
-        const adjacentData = await adjacentResponse.json();
-        adjacentArticles = adjacentData.data;
-      }
-    } catch (error) {
-      logger.error("[Adjacent] Error loading adjacent articles", error);
-      // Silently fail - not critical
-    }
-
-    // Charger les switches SEO pour cette gamme (pg_id)
-    let seoSwitches: Array<{
-      sis_id: string;
-      sis_pg_id: string;
-      sis_alias: string;
-      sis_content: string;
-    }> = [];
-    if (article.pg_id) {
-      try {
-        const switchesResponse = await fetch(
-          `${baseUrl}/api/blog/seo-switches/${article.pg_id}`,
-          {
-            headers: fetchHeaders,
-            signal: controller.signal,
-          },
-        );
-
-        if (switchesResponse.ok) {
-          const switchesData = await switchesResponse.json();
-          seoSwitches = switchesData.data || [];
-        }
-      } catch (error) {
-        logger.error("[SEO] Error loading SEO switches", error);
-        // Silently fail - not critical
-      }
-    }
-
-    // Charger les conseils de remplacement pour cette gamme (pg_id)
-    let conseil = null;
-    if (article.pg_id) {
-      try {
-        const conseilResponse = await fetch(
-          `${baseUrl}/api/blog/conseil/${article.pg_id}`,
-          {
-            headers: fetchHeaders,
-            signal: controller.signal,
-          },
-        );
-
-        if (conseilResponse.ok) {
-          const conseilData = await conseilResponse.json();
-          conseil = conseilData.data;
-        }
-      } catch (error) {
-        logger.error("[CONSEIL] Error loading conseil", error);
-        // Silently fail - not critical
-      }
-    }
+    const conseilPromise = article.pg_id
+      ? fetch(`${baseUrl}/api/blog/conseil/${article.pg_id}`, {
+          headers: fetchHeaders,
+          signal: controller.signal,
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => (d?.data || []) as ConseilArray)
+          .catch(() => [] as ConseilArray)
+      : Promise.resolve([] as ConseilArray);
 
     clearTimeout(timeoutId);
-    return json({
+    return defer({
       article,
       pg_alias,
-      adjacentArticles,
-      seoSwitches: seoSwitches || [],
-      conseil: (conseil || []) as ConseilArray,
+      adjacentArticles: adjacentPromise,
+      seoSwitches: seoSwitchesPromise,
+      conseil: conseilPromise,
     });
   } catch (error) {
     clearTimeout(timeoutId);
@@ -504,10 +464,58 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 
 // Composant principal - Réutilise le même design que blog.article.$slug.tsx
 export default function LegacyBlogArticle() {
-  const { article, pg_alias, adjacentArticles, seoSwitches, conseil } =
-    useLoaderData<typeof loader>();
+  const data = useLoaderData<typeof loader>();
+  const { article, pg_alias } = data;
   const navigate = useNavigate();
   const [isBookmarked, setIsBookmarked] = useState(false);
+
+  // Resolve deferred promises (adjacentArticles, seoSwitches, conseil)
+  const [resolvedAdjacent, setResolvedAdjacent] = useState<{
+    previous: any;
+    next: any;
+  }>({ previous: null, next: null });
+  const [resolvedSeoSwitches, setResolvedSeoSwitches] = useState<any[]>([]);
+  const [resolvedConseil, setResolvedConseil] = useState<ConseilArray>([]);
+
+  useEffect(() => {
+    const adj = data.adjacentArticles;
+    if (adj && typeof (adj as any).then === "function") {
+      (adj as any)
+        .then((r: any) =>
+          setResolvedAdjacent(r ?? { previous: null, next: null }),
+        )
+        .catch(() => null);
+    } else {
+      setResolvedAdjacent(adj as any);
+    }
+  }, [data.adjacentArticles]);
+
+  useEffect(() => {
+    const sw = data.seoSwitches;
+    if (sw && typeof (sw as any).then === "function") {
+      (sw as any)
+        .then((r: any) => setResolvedSeoSwitches(r ?? []))
+        .catch(() => null);
+    } else {
+      setResolvedSeoSwitches(sw as any);
+    }
+  }, [data.seoSwitches]);
+
+  useEffect(() => {
+    const c = data.conseil;
+    if (c && typeof (c as any).then === "function") {
+      (c as any)
+        .then((r: any) => setResolvedConseil(r ?? []))
+        .catch(() => null);
+    } else {
+      setResolvedConseil(c as any);
+    }
+  }, [data.conseil]);
+
+  const conseil = resolvedConseil;
+  const adjacentArticles = resolvedAdjacent;
+  const seoSwitches = resolvedSeoSwitches;
+
   const s1Sections = conseil?.filter((c) => c.sectionType === "S1") ?? [];
   // Quand des sections conseil S1-S8 existent, elles remplacent les H2/H3 article (évite la duplication)
   const hasConseilSections =
