@@ -77,7 +77,7 @@ jobs:
             http://localhost:3000/
             http://localhost:3000/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html
             http://localhost:3000/constructeurs/renault.html
-          budgetPath: ./lighthouse-budget.json
+          budgetPath: ./frontend/lighthouse-budget.json
           uploadArtifacts: true
           temporaryPublicStorage: true
 

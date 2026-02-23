@@ -139,4 +139,58 @@ jobs:
             exit 1
           fi
 
+          # Timing gate — page produit R2 (warning, non-bloquant en prod)
+          echo "⏱️ Testing R2 product page response time..."
+          T1=$(curl -s -o /dev/null -w "%{time_total}" http://localhost:3000/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html --max-time 30 | awk '{printf "%.0f", $1 * 1000}')
+          sleep 2
+          T2=$(curl -s -o /dev/null -w "%{time_total}" http://localhost:3000/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html --max-time 30 | awk '{printf "%.0f", $1 * 1000}')
+          WORST=$(echo -e "$T1\n$T2" | sort -n | tail -1)
+
+          if [ "$WORST" -gt 5000 ]; then
+            echo "⚠️ R2 page response time: ${WORST}ms (threshold: 5000ms)"
+            echo "::warning::Product page slow after deploy: ${WORST}ms — check RPC performance"
+          else
+            echo "✅ R2 page response time: ${WORST}ms (threshold: 5000ms)"
+          fi
+
           echo "🎉 Version ${{ github.ref_name }} deployed to production!"
+
+      - name: 🔔 Notify Slack on success
+        if: ${{ success() && env.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"✅ PROD deployed: ${{ github.ref_name }}\",
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"✅ *Production Deployed*\n*Version:* \`${{ github.ref_name }}\`\n*Author:* ${{ github.actor }}\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>\"
+                  }
+                }
+              ]
+            }"
+
+      - name: 🔔 Notify Slack on failure
+        if: ${{ failure() && env.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"❌ PROD deploy FAILED: ${{ github.ref_name }}\",
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"❌ *Production Deploy FAILED*\n*Version:* \`${{ github.ref_name }}\`\n*Author:* ${{ github.actor }}\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>\"
+                  }
+                }
+              ]
+            }"

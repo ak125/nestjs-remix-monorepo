@@ -759,6 +759,44 @@ jobs:
           check_timing "$BASE/api/catalog/families" "/api/catalog/families" 1000
           check_timing "$BASE/" "Homepage" 2000
           check_timing "$BASE/pieces/catalogue" "/pieces/catalogue" 2000
+          check_timing "$BASE/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html" "R2 Product Page" 3000
+
+      - name: ⏱️ API Timing Gate (blocking)
+        run: |
+          BASE="http://localhost:3100"
+          echo "## ⏱️ API Timing Gate" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| RPC | duration_ms | Budget (ms) | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|-------------|-------------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          FAILED=0
+
+          # Warm up cache for gamme 402 + common vehicle
+          curl -s -o /dev/null "$BASE/api/rm/page-v2?gamme_id=402&vehicle_id=100413&limit=200" --max-time 30
+          sleep 2
+
+          # Test with a different vehicle (cache miss) to measure real RPC time
+          RESPONSE=$(curl -s "$BASE/api/rm/page-v2?gamme_id=402&vehicle_id=57414&limit=200" --max-time 30)
+          DURATION=$(echo "$RESPONSE" | jq -r '.duration_ms // 9999')
+          CACHE_HIT=$(echo "$RESPONSE" | jq -r '.cacheHit // false')
+
+          if [ "$CACHE_HIT" = "true" ]; then
+            echo "ℹ️ Cache hit detected — skipping gate (cache miss test inconclusive)"
+            echo "| rm_get_page_complete_v2 | ${DURATION} (cache hit) | 2000 | ⏭️ SKIP |" >> $GITHUB_STEP_SUMMARY
+          elif [ "$DURATION" -gt 2000 ]; then
+            echo "::error::RM Page V2 RPC took ${DURATION}ms (budget: 2000ms) — possible DB regression"
+            echo "| rm_get_page_complete_v2 | ${DURATION} | 2000 | ❌ FAIL |" >> $GITHUB_STEP_SUMMARY
+            FAILED=1
+          else
+            echo "✅ RM Page V2: ${DURATION}ms (budget: 2000ms)"
+            echo "| rm_get_page_complete_v2 | ${DURATION} | 2000 | ✅ |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "$FAILED" = "1" ]; then
+            echo ""
+            echo "❌ API Timing Gate FAILED — possible performance regression in DB RPCs"
+            exit 1
+          fi
 
   e2e-smoke:
     name: 🎭 E2E Smoke Tests
