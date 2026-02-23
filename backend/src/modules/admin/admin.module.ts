@@ -53,6 +53,7 @@ import { ConseilEnricherService } from './services/conseil-enricher.service'; //
 import { PageBriefService } from './services/page-brief.service'; // 📋 Page Briefs CRUD + overlap
 import { BriefGatesService } from './services/brief-gates.service'; // 🚦 Pre-publish gates anti-cannibalisation
 import { HardGatesService } from './services/hard-gates.service'; // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
+import { KeywordDensityGateService } from './services/keyword-density-gate.service'; // 🚦 Gate F: keyword density check
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -135,6 +136,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     PageBriefService, // 📋 Page Briefs CRUD + overlap detection
     BriefGatesService, // 🚦 Pre-publish gates anti-cannibalisation
     HardGatesService, // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
+    KeywordDensityGateService, // 🚦 Gate F: keyword density (feature flag KEYWORD_DENSITY_GATE_ENABLED)
   ],
   exports: [
     ConfigurationService,

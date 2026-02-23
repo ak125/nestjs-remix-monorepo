@@ -1,4 +1,4 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
+import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { PageBriefService, type PageBrief } from './page-brief.service';
@@ -6,6 +6,7 @@ import {
   getSectionMode,
   type PageRole,
 } from '../../../config/content-section-policy';
+import { KeywordDensityGateService } from './keyword-density-gate.service';
 
 // ── Types ──
 
@@ -15,7 +16,8 @@ export interface GateResult {
     | 'forbidden_overlap'
     | 'semantic_similarity'
     | 'intent_coverage'
-    | 'ownership_enforcement';
+    | 'ownership_enforcement'
+    | 'keyword_density';
   verdict: 'PASS' | 'WARN' | 'FAIL';
   details: string[];
 }
@@ -246,6 +248,9 @@ export class BriefGatesService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     @Optional() private readonly pageBriefService?: PageBriefService,
+    @Optional()
+    @Inject(KeywordDensityGateService)
+    private readonly keywordDensityGate?: KeywordDensityGateService,
   ) {
     super(configService);
   }
@@ -299,6 +304,12 @@ export class BriefGatesService extends SupabaseBaseService {
 
     // Gate E: Ownership Enforcement (post-SectionCompiler compliance check)
     gates.push(this.checkOwnershipCompliance(role as PageRole, content));
+
+    // Gate F: Keyword Density (optional — feature flag KEYWORD_DENSITY_GATE_ENABLED)
+    if (this.keywordDensityGate && this.keywordDensityGate.isEnabled()) {
+      const densityResult = this.keywordDensityGate.check(content, brief);
+      gates.push(densityResult);
+    }
 
     const hasFail = gates.some((g) => g.verdict === 'FAIL');
 
