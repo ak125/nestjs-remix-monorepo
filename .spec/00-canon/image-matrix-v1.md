@@ -141,7 +141,26 @@ La penalite `MISSING_IMAGE` dans le scoring qualite varie selon la class :
 
 ---
 
-## 7. Fallback images
+## 7. Aliases et composants Hero (P2)
+
+6 composants Hero couvrent les 8 intent classes :
+
+| Composant | Intent classes couvertes | hero_policy |
+|-----------|------------------------|-------------|
+| `HeroTransaction` | TRANSACTION | photo |
+| `HeroSelection` | SELECTION | gradient |
+| `HeroGuide` | GUIDE_ACHAT | photo |
+| `HeroBlog` | BLOG_CONSEIL | photo |
+| `HeroDiagnostic` | DIAGNOSTIC, PANNE_SYMPTOME | illustration |
+| `HeroReference` | GLOSSAIRE_REFERENCE | none |
+
+**Aliases :**
+- PANNE_SYMPTOME → `HeroDiagnostic` (meme structure visuelle, prop `severity` pour ajuster l'accent)
+- OUTIL → aucun composant (pas de route active en production, differe)
+
+---
+
+## 8. Fallback images
 
 Quand aucune image specifique n'est disponible :
 
