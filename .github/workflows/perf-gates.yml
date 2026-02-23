@@ -63,6 +63,11 @@ jobs:
           REDIS_URL: redis://localhost:6379
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SESSION_SECRET: ci-perf-test-session-secret-not-for-production-use
+          SYSTEMPAY_SITE_ID: "00000000"
+          PAYBOX_SITE: "0000000"
+          PAYBOX_HMAC_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
 
       - name: Run Lighthouse CI
         id: lighthouse
