@@ -393,8 +393,25 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
     // timing
     const timingNote = fm.match(/^\s+note:\s*['"]?(.+?)['"]?\s*$/m);
-    const timingKm = this.extractYamlList(fm, 'km');
-    const timingYears = this.extractYamlList(fm, 'years');
+    let timingKm = this.extractYamlList(fm, 'km');
+    let timingYears = this.extractYamlList(fm, 'years');
+
+    // Fallback: parse inline km/years strings (e.g. km: "60 000 à 120 000")
+    if (timingKm.length === 0) {
+      const kmInline = this.extractYamlInlineShort(fm, 'km');
+      if (kmInline) {
+        timingKm = (kmInline.match(/[\d\s]+/g) || [])
+          .map((s) => s.replace(/\s/g, ''))
+          .filter((s) => s.length > 0);
+      }
+    }
+    if (timingYears.length === 0) {
+      const yearsInline = this.extractYamlInlineShort(fm, 'years');
+      if (yearsInline) {
+        timingYears = yearsInline.match(/\d+/g) || [];
+      }
+    }
+
     if (timingNote || timingKm.length > 0) {
       contract.timing = {
         note: timingNote?.[1]?.trim(),
@@ -572,6 +589,15 @@ export class ConseilEnricherService extends SupabaseBaseService {
     if (!match) return null;
     const value = match[1].trim().replace(/^['"]|['"]$/g, '');
     return value.length > 10 ? value : null;
+  }
+
+  /** Like extractYamlInline but accepts short values (for km, years). */
+  private extractYamlInlineShort(fm: string, key: string): string | null {
+    const regex = new RegExp(`^\\s*${key}:\\s+(.+)$`, 'm');
+    const match = fm.match(regex);
+    if (!match) return null;
+    const value = match[1].trim().replace(/^['"]|['"]$/g, '');
+    return value.length > 0 ? value : null;
   }
 
   /**
@@ -944,7 +970,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
     // S4_DEPOSE/S4_REPOSE — only touch if RAG has explicit diagnostic_tree with procedures
     // Too risky to overwrite technical procedures without explicit data
-    if (contract.diagnosticTree && contract.diagnosticTree.length >= 3) {
+    if (contract.diagnosticTree && contract.diagnosticTree.length >= 1) {
       const existingS4D = existing.get(SECTION_TYPES.S4_DEPOSE);
       const s4dSubstantial =
         existingS4D &&

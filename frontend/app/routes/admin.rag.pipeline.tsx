@@ -5,8 +5,8 @@ import {
 } from "@remix-run/node";
 import {
   Link,
-  useFetcher,
   useLoaderData,
+  useRevalidator,
   useSearchParams,
 } from "@remix-run/react";
 import {
@@ -148,12 +148,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const status = url.searchParams.get("status") || "";
   const pageType = url.searchParams.get("page_type") || "";
+  const pgAlias = url.searchParams.get("pg_alias") || "";
   const limit = url.searchParams.get("limit") || "50";
   const offset = url.searchParams.get("offset") || "0";
 
   const statusParams = new URLSearchParams();
   if (status) statusParams.set("status", status);
   if (pageType) statusParams.set("page_type", pageType);
+  if (pgAlias) statusParams.set("pg_alias", pgAlias);
   statusParams.set("limit", limit);
   statusParams.set("offset", offset);
 
@@ -191,6 +193,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     filters: {
       status,
       pageType,
+      pgAlias,
       limit: Number(limit),
       offset: Number(offset),
     },
@@ -342,7 +345,7 @@ function GatesSummary({ raw }: { raw: string | null | undefined }) {
 export default function AdminRagPipeline() {
   const { dashboard, items, total, filters } = useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const refreshFetcher = useFetcher<typeof loader>();
+  const revalidator = useRevalidator();
 
   // Trigger form state
   const [triggerAlias, setTriggerAlias] = useState("");
@@ -368,14 +371,10 @@ export default function AdminRagPipeline() {
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
   const [publishItemId, setPublishItemId] = useState<number | null>(null);
 
-  // Use refreshed data if available
-  const displayItems = refreshFetcher.data?.items ?? items;
-  const displayTotal = refreshFetcher.data?.total ?? total;
-  const displayDashboard = refreshFetcher.data?.dashboard ?? dashboard;
-  const displayCounts = displayDashboard.counts;
+  const displayCounts = dashboard.counts;
 
   const currentPage = Math.floor(filters.offset / filters.limit) + 1;
-  const totalPages = Math.ceil(displayTotal / filters.limit);
+  const totalPages = Math.ceil(total / filters.limit);
 
   // ── Handlers ──
 
@@ -420,7 +419,7 @@ export default function AdminRagPipeline() {
       });
     } finally {
       setTriggerSubmitting(false);
-      refreshFetcher.load(`/admin/rag/pipeline?${searchParams.toString()}`);
+      revalidator.revalidate();
     }
   }
 
@@ -447,7 +446,7 @@ export default function AdminRagPipeline() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : String(err));
     } finally {
-      refreshFetcher.load(`/admin/rag/pipeline?${searchParams.toString()}`);
+      revalidator.revalidate();
     }
   }
 
@@ -482,7 +481,7 @@ export default function AdminRagPipeline() {
       setRejectDialogOpen(false);
       setRejectItemId(null);
       setRejectReason("");
-      refreshFetcher.load(`/admin/rag/pipeline?${searchParams.toString()}`);
+      revalidator.revalidate();
     }
   }
 
@@ -514,15 +513,11 @@ export default function AdminRagPipeline() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() =>
-              refreshFetcher.load(
-                `/admin/rag/pipeline?${searchParams.toString()}`,
-              )
-            }
+            onClick={() => revalidator.revalidate()}
             className="gap-1.5"
           >
             <RefreshCw
-              className={`h-3.5 w-3.5 ${refreshFetcher.state !== "idle" ? "animate-spin" : ""}`}
+              className={`h-3.5 w-3.5 ${revalidator.state !== "idle" ? "animate-spin" : ""}`}
             />
             Rafraichir
           </Button>
@@ -690,8 +685,17 @@ export default function AdminRagPipeline() {
                   <SelectItem value="R5_diagnostic">R5 Diagnostic</SelectItem>
                 </Select>
               </div>
+              <div className="space-y-1.5 sm:w-52">
+                <Label htmlFor="filterAlias">Gamme</Label>
+                <Input
+                  id="filterAlias"
+                  placeholder="balais-d-essuie-glace..."
+                  defaultValue={filters.pgAlias}
+                  onChange={(e) => updateFilter("pg_alias", e.target.value)}
+                />
+              </div>
               <Badge variant="secondary" className="h-9 px-3">
-                {displayTotal} resultat{displayTotal !== 1 ? "s" : ""}
+                {total} resultat{total !== 1 ? "s" : ""}
               </Badge>
             </div>
           </CardContent>
@@ -701,7 +705,7 @@ export default function AdminRagPipeline() {
 
         {/* Historique */}
         <Card className="relative">
-          {refreshFetcher.state !== "idle" && (
+          {revalidator.state !== "idle" && (
             <div className="absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-background/60 backdrop-blur-[1px]">
               <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
@@ -718,7 +722,7 @@ export default function AdminRagPipeline() {
             </div>
           </CardHeader>
           <CardContent>
-            {displayItems.length === 0 ? (
+            {items.length === 0 ? (
               <div className="rounded-lg border bg-muted/30 p-8 text-center">
                 <RefreshCw className="mx-auto h-10 w-10 text-muted-foreground/30" />
                 <p className="mt-3 text-sm text-muted-foreground">
@@ -771,7 +775,7 @@ export default function AdminRagPipeline() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {displayItems.map((item) => {
+                      {items.map((item) => {
                         const gates = parseGateResults(item.hard_gate_results);
                         const hasEvidence =
                           item.evidence_pack !== null &&
@@ -935,8 +939,8 @@ export default function AdminRagPipeline() {
                   <div className="mt-4 flex items-center justify-between">
                     <div className="text-xs text-muted-foreground">
                       Affichage {filters.offset + 1} -{" "}
-                      {Math.min(filters.offset + filters.limit, displayTotal)}{" "}
-                      sur {displayTotal}
+                      {Math.min(filters.offset + filters.limit, total)} sur{" "}
+                      {total}
                     </div>
                     <div className="flex items-center gap-1">
                       <Button
@@ -960,9 +964,7 @@ export default function AdminRagPipeline() {
                         variant="outline"
                         size="sm"
                         className="h-7"
-                        disabled={
-                          filters.offset + filters.limit >= displayTotal
-                        }
+                        disabled={filters.offset + filters.limit >= total}
                         onClick={() =>
                           updateFilter(
                             "offset",

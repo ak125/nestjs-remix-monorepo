@@ -243,7 +243,8 @@ export class ContentRefreshService extends SupabaseBaseService {
 
     if (filters.status) query = query.eq('status', filters.status);
     if (filters.page_type) query = query.eq('page_type', filters.page_type);
-    if (filters.pg_alias) query = query.eq('pg_alias', filters.pg_alias);
+    if (filters.pg_alias)
+      query = query.ilike('pg_alias', `%${filters.pg_alias}%`);
 
     query = query
       .order('created_at', { ascending: false })

@@ -10,7 +10,15 @@ export type TriggerRefreshInput = z.infer<typeof TriggerRefreshDto>;
 
 export const RefreshStatusQueryDto = z.object({
   status: z
-    .enum(['pending', 'processing', 'draft', 'failed', 'skipped', 'published'])
+    .enum([
+      'pending',
+      'processing',
+      'draft',
+      'failed',
+      'skipped',
+      'published',
+      'auto_published',
+    ])
     .optional(),
   page_type: z
     .enum([
