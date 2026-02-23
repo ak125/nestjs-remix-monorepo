@@ -195,17 +195,27 @@ export class ContentRefreshService extends SupabaseBaseService {
     counts: Record<string, number>;
     recent: unknown[];
   }> {
-    // Counts by status
-    const { data: statusCounts } = await this.client
-      .from('__rag_content_refresh_log')
-      .select('status')
-      .limit(5000);
+    // Counts by status — use head queries to avoid PostgREST max-rows limit
+    const statusKeys = [
+      'draft',
+      'auto_published',
+      'skipped',
+      'failed',
+      'published',
+    ];
+    const results = await Promise.all(
+      statusKeys.map((s) =>
+        this.client
+          .from('__rag_content_refresh_log')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', s),
+      ),
+    );
 
     const counts: Record<string, number> = {};
-    for (const row of statusCounts || []) {
-      const s = row.status as string;
-      counts[s] = (counts[s] || 0) + 1;
-    }
+    statusKeys.forEach((s, i) => {
+      counts[s] = results[i].count || 0;
+    });
 
     // Recent items
     const { data: recent } = await this.client
@@ -469,6 +479,7 @@ export class ContentRefreshService extends SupabaseBaseService {
       sg_content_draft: string | null;
       sg_draft_source: string | null;
       sg_draft_updated_at: string | null;
+      quality_score: number | null;
     }>;
   }> {
     const { data, error } = await this.client
@@ -495,16 +506,41 @@ export class ContentRefreshService extends SupabaseBaseService {
       (gammes || []).map((g) => [String(g.pg_id), g.pg_alias as string]),
     );
 
+    // Fetch quality scores from pipeline log (latest per pg_alias)
+    const aliases = [...aliasMap.values()];
+    const scoreMap = new Map<string, number | null>();
+    if (aliases.length > 0) {
+      const { data: scores } = await this.client
+        .from('__rag_content_refresh_log')
+        .select('pg_alias, quality_score, completed_at')
+        .in('pg_alias', aliases)
+        .in('status', ['auto_published', 'draft', 'published'])
+        .not('quality_score', 'is', null)
+        .order('completed_at', { ascending: false });
+
+      // Keep only the latest score per pg_alias
+      for (const row of scores || []) {
+        const alias = row.pg_alias as string;
+        if (!scoreMap.has(alias)) {
+          scoreMap.set(alias, row.quality_score as number);
+        }
+      }
+    }
+
     return {
-      drafts: (data || []).map((r) => ({
-        pg_id: String(r.sg_pg_id),
-        pg_alias: aliasMap.get(String(r.sg_pg_id)) || 'unknown',
-        sg_descrip: r.sg_descrip as string | null,
-        sg_descrip_draft: r.sg_descrip_draft as string | null,
-        sg_content_draft: r.sg_content_draft as string | null,
-        sg_draft_source: r.sg_draft_source as string | null,
-        sg_draft_updated_at: r.sg_draft_updated_at as string | null,
-      })),
+      drafts: (data || []).map((r) => {
+        const alias = aliasMap.get(String(r.sg_pg_id)) || 'unknown';
+        return {
+          pg_id: String(r.sg_pg_id),
+          pg_alias: alias,
+          sg_descrip: r.sg_descrip as string | null,
+          sg_descrip_draft: r.sg_descrip_draft as string | null,
+          sg_content_draft: r.sg_content_draft as string | null,
+          sg_draft_source: r.sg_draft_source as string | null,
+          sg_draft_updated_at: r.sg_draft_updated_at as string | null,
+          quality_score: scoreMap.get(alias) ?? null,
+        };
+      }),
     };
   }
 
@@ -711,23 +747,45 @@ export class ContentRefreshService extends SupabaseBaseService {
     triggerSource: string,
     supplementaryFiles: string[] = [],
   ): Promise<boolean> {
-    // Insert tracking row (partial unique index prevents duplicates)
+    // Guard: don't interrupt active jobs
+    const { data: active } = await this.client
+      .from('__rag_content_refresh_log')
+      .select('id')
+      .eq('pg_alias', pgAlias)
+      .eq('page_type', pageType)
+      .in('status', ['pending', 'processing'])
+      .maybeSingle();
+
+    if (active) {
+      this.logger.warn(`Skipping: active job for ${pgAlias}/${pageType}`);
+      return false;
+    }
+
+    // Upsert tracking row (unique index on pg_alias+page_type)
     const { data: row, error } = await this.client
       .from('__rag_content_refresh_log')
-      .insert({
-        pg_id: pgId,
-        pg_alias: pgAlias,
-        page_type: pageType,
-        status: 'pending',
-        trigger_source: triggerSource,
-        trigger_job_id: triggerJobId,
-      })
+      .upsert(
+        {
+          pg_id: pgId,
+          pg_alias: pgAlias,
+          page_type: pageType,
+          status: 'pending',
+          trigger_source: triggerSource,
+          trigger_job_id: triggerJobId,
+          quality_score: null,
+          quality_flags: null,
+          error_message: null,
+          completed_at: null,
+          bullmq_job_id: null,
+        },
+        { onConflict: 'pg_alias,page_type' },
+      )
       .select('id')
       .single();
 
     if (error) {
       this.logger.warn(
-        `Skipping duplicate refresh: ${pgAlias}/${pageType} (${error.message})`,
+        `Failed upsert for ${pgAlias}/${pageType}: ${error.message}`,
       );
       return false;
     }
@@ -762,22 +820,45 @@ export class ContentRefreshService extends SupabaseBaseService {
     triggerJobId: string,
     triggerSource: string,
   ): Promise<boolean> {
+    // Guard: don't interrupt active jobs
+    const { data: active } = await this.client
+      .from('__rag_content_refresh_log')
+      .select('id')
+      .eq('pg_alias', diagnosticSlug)
+      .eq('page_type', 'R5_diagnostic')
+      .in('status', ['pending', 'processing'])
+      .maybeSingle();
+
+    if (active) {
+      this.logger.warn(`Skipping: active diagnostic job for ${diagnosticSlug}`);
+      return false;
+    }
+
+    // Upsert tracking row (unique index on pg_alias+page_type)
     const { data: row, error } = await this.client
       .from('__rag_content_refresh_log')
-      .insert({
-        pg_id: 0,
-        pg_alias: diagnosticSlug,
-        page_type: 'R5_diagnostic',
-        status: 'pending',
-        trigger_source: triggerSource,
-        trigger_job_id: triggerJobId,
-      })
+      .upsert(
+        {
+          pg_id: 0,
+          pg_alias: diagnosticSlug,
+          page_type: 'R5_diagnostic',
+          status: 'pending',
+          trigger_source: triggerSource,
+          trigger_job_id: triggerJobId,
+          quality_score: null,
+          quality_flags: null,
+          error_message: null,
+          completed_at: null,
+          bullmq_job_id: null,
+        },
+        { onConflict: 'pg_alias,page_type' },
+      )
       .select('id')
       .single();
 
     if (error) {
       this.logger.warn(
-        `Skipping duplicate R5 refresh: ${diagnosticSlug} (${error.message})`,
+        `Failed upsert for diagnostic ${diagnosticSlug}: ${error.message}`,
       );
       return false;
     }

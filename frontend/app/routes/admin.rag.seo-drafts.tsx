@@ -5,17 +5,19 @@ import {
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import {
-  FilePen,
-  RefreshCw,
   Check,
-  Trash2,
+  ChevronLeft,
+  ChevronRight,
   Eye,
-  ChevronDown,
-  ChevronUp,
+  FilePen,
   Info,
   MoreHorizontal,
+  RefreshCw,
+  Search,
+  Trash2,
+  XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { DashboardShell } from "~/components/admin/patterns/DashboardShell";
 import { StatusBadge } from "~/components/admin/patterns/StatusBadge";
@@ -33,6 +35,7 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,7 +48,16 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "~/components/ui/hover-card";
+import { Input } from "~/components/ui/input";
+import { Progress } from "~/components/ui/progress";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -69,6 +81,8 @@ import { createNoIndexMeta } from "~/utils/meta-helpers";
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Brouillons SEO - Admin RAG");
 
+// ─── Types ──────────────────────────────────────────────────────
+
 interface SeoDraft {
   pg_id: string;
   pg_alias: string;
@@ -77,6 +91,7 @@ interface SeoDraft {
   sg_content_draft: string | null;
   sg_draft_source: string | null;
   sg_draft_updated_at: string | null;
+  quality_score: number | null;
 }
 
 interface DraftDetail {
@@ -88,6 +103,8 @@ interface DraftDetail {
     sg_draft_updated_at: string | null;
   };
 }
+
+// ─── Loader ─────────────────────────────────────────────────────
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const cookie = request.headers.get("Cookie") || "";
@@ -101,6 +118,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const result = res.ok ? await res.json() : { drafts: [] };
   return json({ drafts: (result.drafts || []) as SeoDraft[] });
 }
+
+// ─── Helpers ────────────────────────────────────────────────────
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "\u2014";
@@ -118,6 +137,177 @@ function truncate(str: string | null, maxLen: number): string {
   return str.length > maxLen ? str.slice(0, maxLen) + "..." : str;
 }
 
+/** Character count color for meta description */
+function metaCharColor(len: number): string {
+  if (len === 0) return "text-muted-foreground";
+  if (len >= 120 && len <= 160) return "text-green-600";
+  if (len < 120) return "text-yellow-600";
+  return "text-red-600";
+}
+
+/** Quality score color classes */
+function scoreColorClass(score: number): string {
+  if (score >= 85) return "bg-green-100 text-green-800";
+  if (score >= 70) return "bg-yellow-100 text-yellow-800";
+  return "bg-red-100 text-red-800";
+}
+
+function scoreProgressClass(score: number): string {
+  if (score >= 85) return "[&>div]:bg-green-500";
+  if (score >= 70) return "[&>div]:bg-yellow-500";
+  return "[&>div]:bg-red-500";
+}
+
+// ─── Word Diff ──────────────────────────────────────────────────
+
+interface DiffSegment {
+  text: string;
+  type: "same" | "added" | "removed";
+}
+
+function wordDiff(oldText: string, newText: string): DiffSegment[] {
+  const oldWords = oldText.split(/(\s+)/);
+  const newWords = newText.split(/(\s+)/);
+
+  // Simple LCS-based diff
+  const m = oldWords.length;
+  const n = newWords.length;
+
+  // Build LCS table
+  const dp: number[][] = Array.from({ length: m + 1 }, () =>
+    Array(n + 1).fill(0),
+  );
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (oldWords[i - 1] === newWords[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+      }
+    }
+  }
+
+  // Backtrack to build diff
+  const segments: DiffSegment[] = [];
+  let i = m;
+  let j = n;
+  const stack: DiffSegment[] = [];
+
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && oldWords[i - 1] === newWords[j - 1]) {
+      stack.push({ text: oldWords[i - 1], type: "same" });
+      i--;
+      j--;
+    } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+      stack.push({ text: newWords[j - 1], type: "added" });
+      j--;
+    } else {
+      stack.push({ text: oldWords[i - 1], type: "removed" });
+      i--;
+    }
+  }
+
+  // Reverse to get correct order and merge consecutive same-type segments
+  stack.reverse();
+  for (const seg of stack) {
+    const last = segments[segments.length - 1];
+    if (last && last.type === seg.type) {
+      last.text += seg.text;
+    } else {
+      segments.push({ ...seg });
+    }
+  }
+
+  return segments;
+}
+
+function DiffDisplay({
+  oldText,
+  newText,
+}: {
+  oldText: string;
+  newText: string;
+}) {
+  if (!oldText && !newText) {
+    return <span className="italic text-muted-foreground text-xs">vide</span>;
+  }
+  if (!oldText) {
+    return (
+      <span className="text-xs text-green-700 bg-green-50 px-0.5 rounded">
+        {newText}
+      </span>
+    );
+  }
+  if (!newText) {
+    return (
+      <span className="text-xs text-red-700 bg-red-50 line-through px-0.5 rounded">
+        {oldText}
+      </span>
+    );
+  }
+
+  const segments = wordDiff(oldText, newText);
+  return (
+    <span className="text-xs leading-relaxed">
+      {segments.map((seg, idx) => {
+        if (seg.type === "same") {
+          return <span key={idx}>{seg.text}</span>;
+        }
+        if (seg.type === "added") {
+          return (
+            <span
+              key={idx}
+              className="bg-green-100 text-green-800 px-0.5 rounded"
+            >
+              {seg.text}
+            </span>
+          );
+        }
+        return (
+          <span
+            key={idx}
+            className="bg-red-100 text-red-800 line-through px-0.5 rounded"
+          >
+            {seg.text}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
+/** Meta char counter badge */
+function MetaCharCounter({ text }: { text: string | null }) {
+  const len = text?.length ?? 0;
+  return (
+    <span className={`text-xs font-mono ${metaCharColor(len)}`}>{len}/160</span>
+  );
+}
+
+/** Quality score badge with mini progress */
+function QualityScoreBadge({ score }: { score: number | null }) {
+  if (score === null || score === undefined) {
+    return <span className="text-sm text-muted-foreground">{"\u2014"}</span>;
+  }
+  return (
+    <div className="flex items-center gap-2">
+      <Progress
+        value={score}
+        max={100}
+        className={`h-1.5 max-w-[50px] flex-1 ${scoreProgressClass(score)}`}
+      />
+      <Badge
+        variant="outline"
+        className={`font-mono text-xs ${scoreColorClass(score)}`}
+      >
+        {score}
+      </Badge>
+    </div>
+  );
+}
+
+// ─── Main Component ─────────────────────────────────────────────
+
 export default function AdminRagSeoDrafts() {
   const { drafts } = useLoaderData<typeof loader>();
   const refreshFetcher = useFetcher<typeof loader>();
@@ -128,6 +318,7 @@ export default function AdminRagSeoDrafts() {
   const [diffData, setDiffData] = useState<DraftDetail | null>(null);
   const [diffAlias, setDiffAlias] = useState("");
   const [diffPgId, setDiffPgId] = useState("");
+  const [diffIndex, setDiffIndex] = useState(0);
 
   // AlertDialog states
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
@@ -137,17 +328,153 @@ export default function AdminRagSeoDrafts() {
   const [rejectItemId, setRejectItemId] = useState("");
   const [rejectItemAlias, setRejectItemAlias] = useState("");
 
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkProcessing, setBulkProcessing] = useState(false);
+
+  // Filters & sort
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterSource, setFilterSource] = useState("all");
+  const [sortBy, setSortBy] = useState<"name" | "date" | "score">("date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
   // Expandable rows
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const displayDrafts = refreshFetcher.data?.drafts ?? drafts;
 
-  async function openDiff(pgId: string, alias: string) {
+  // Derived: filtered + sorted
+  const filteredDrafts = displayDrafts
+    .filter((d) => {
+      if (
+        searchQuery &&
+        !d.pg_alias.toLowerCase().includes(searchQuery.toLowerCase())
+      ) {
+        return false;
+      }
+      if (filterSource !== "all" && d.sg_draft_source !== filterSource) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      const dir = sortDir === "asc" ? 1 : -1;
+      if (sortBy === "name") {
+        return dir * a.pg_alias.localeCompare(b.pg_alias);
+      }
+      if (sortBy === "score") {
+        return dir * ((a.quality_score ?? 0) - (b.quality_score ?? 0));
+      }
+      // date
+      const da = a.sg_draft_updated_at ?? "";
+      const db = b.sg_draft_updated_at ?? "";
+      return dir * da.localeCompare(db);
+    });
+
+  // Unique sources for filter
+  const uniqueSources = [
+    ...new Set(displayDrafts.map((d) => d.sg_draft_source).filter(Boolean)),
+  ] as string[];
+
+  // ─── Bulk Selection ──────────────────────────────
+
+  const handleSelectAll = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        setSelectedIds(filteredDrafts.map((d) => d.pg_id));
+      } else {
+        setSelectedIds([]);
+      }
+    },
+    [filteredDrafts],
+  );
+
+  const handleSelectOne = useCallback((pgId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedIds((prev) => [...prev, pgId]);
+    } else {
+      setSelectedIds((prev) => prev.filter((id) => id !== pgId));
+    }
+  }, []);
+
+  const allSelected =
+    filteredDrafts.length > 0 && selectedIds.length === filteredDrafts.length;
+  const someSelected =
+    selectedIds.length > 0 && selectedIds.length < filteredDrafts.length;
+
+  // ─── Bulk Actions ────────────────────────────────
+
+  async function bulkPublish() {
+    if (selectedIds.length === 0) return;
+    setBulkProcessing(true);
+    let published = 0;
+    const total = selectedIds.length;
+
+    for (const pgId of selectedIds) {
+      try {
+        const res = await fetch(
+          `/api/admin/content-refresh/seo-draft/${pgId}/publish`,
+          { method: "PATCH" },
+        );
+        const data = await res.json();
+        if (res.ok && data.published) {
+          published++;
+          toast.success(`Publie ${published}/${total}`, {
+            id: "bulk-progress",
+          });
+        }
+      } catch {
+        // continue to next
+      }
+    }
+
+    toast.success(`${published}/${total} brouillon(s) publie(s)`, {
+      id: "bulk-progress",
+    });
+    setSelectedIds([]);
+    setBulkProcessing(false);
+    refreshFetcher.load("/admin/rag/seo-drafts");
+  }
+
+  async function bulkReject() {
+    if (selectedIds.length === 0) return;
+    setBulkProcessing(true);
+    let rejected = 0;
+    const total = selectedIds.length;
+
+    for (const pgId of selectedIds) {
+      try {
+        const res = await fetch(
+          `/api/admin/content-refresh/seo-draft/${pgId}`,
+          { method: "DELETE" },
+        );
+        const data = await res.json();
+        if (res.ok && data.rejected) {
+          rejected++;
+          toast.success(`Rejete ${rejected}/${total}`, { id: "bulk-progress" });
+        }
+      } catch {
+        // continue to next
+      }
+    }
+
+    toast.success(`${rejected}/${total} brouillon(s) rejete(s)`, {
+      id: "bulk-progress",
+    });
+    setSelectedIds([]);
+    setBulkProcessing(false);
+    refreshFetcher.load("/admin/rag/seo-drafts");
+  }
+
+  // ─── Sheet Comparison ────────────────────────────
+
+  async function openDiff(pgId: string, alias: string, index?: number) {
     setDiffAlias(alias);
     setDiffPgId(pgId);
     setDiffLoading(true);
     setDiffOpen(true);
     setDiffData(null);
+    if (index !== undefined) setDiffIndex(index);
     try {
       const res = await fetch(`/api/admin/content-refresh/seo-draft/${pgId}`);
       if (res.ok) {
@@ -159,6 +486,19 @@ export default function AdminRagSeoDrafts() {
       setDiffLoading(false);
     }
   }
+
+  function navigateDiff(direction: "prev" | "next") {
+    const newIndex =
+      direction === "prev"
+        ? Math.max(0, diffIndex - 1)
+        : Math.min(filteredDrafts.length - 1, diffIndex + 1);
+    if (newIndex !== diffIndex) {
+      const target = filteredDrafts[newIndex];
+      openDiff(target.pg_id, target.pg_alias, newIndex);
+    }
+  }
+
+  // ─── Single Actions ──────────────────────────────
 
   function openPublishDialog(pgId: string, alias: string) {
     setPublishItemId(pgId);
@@ -221,6 +561,22 @@ export default function AdminRagSeoDrafts() {
     }
   }
 
+  // ─── Toggle sort ─────────────────────────────────
+
+  function toggleSort(col: "name" | "date" | "score") {
+    if (sortBy === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(col);
+      setSortDir(col === "name" ? "asc" : "desc");
+    }
+  }
+
+  const sortIndicator = (col: string) =>
+    sortBy === col ? (sortDir === "asc" ? " \u2191" : " \u2193") : "";
+
+  // ─── Render ──────────────────────────────────────
+
   return (
     <DashboardShell
       title="Brouillons SEO"
@@ -275,6 +631,91 @@ export default function AdminRagSeoDrafts() {
         </AlertDescription>
       </Alert>
 
+      {/* Filters bar */}
+      <Card>
+        <CardContent className="py-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px] max-w-xs">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher une gamme..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-9"
+              />
+            </div>
+            <Select value={filterSource} onValueChange={setFilterSource}>
+              <SelectTrigger className="w-[180px] h-9">
+                <SelectValue placeholder="Toutes origines" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes origines</SelectItem>
+                {uniqueSources.map((src) => (
+                  <SelectItem key={src} value={src}>
+                    {src}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="text-xs text-muted-foreground">
+              {filteredDrafts.length}/{displayDrafts.length} affiche(s)
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Bulk action bar */}
+      {selectedIds.length > 0 && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="py-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <span className="font-medium text-blue-700">
+                {selectedIds.length} brouillon(s) selectionne(s)
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="bg-green-600 hover:bg-green-700 gap-1.5"
+                  onClick={bulkPublish}
+                  disabled={bulkProcessing}
+                >
+                  {bulkProcessing ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Check className="h-3.5 w-3.5" />
+                  )}
+                  Tout publier
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="gap-1.5"
+                  onClick={bulkReject}
+                  disabled={bulkProcessing}
+                >
+                  {bulkProcessing ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5" />
+                  )}
+                  Tout rejeter
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="gap-1.5"
+                  onClick={() => setSelectedIds([])}
+                >
+                  <XCircle className="h-3.5 w-3.5" />
+                  Deselectionner
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Main table */}
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-medium">
@@ -282,11 +723,13 @@ export default function AdminRagSeoDrafts() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {displayDrafts.length === 0 ? (
+          {filteredDrafts.length === 0 ? (
             <div className="rounded-lg border bg-muted/30 p-8 text-center">
               <FilePen className="mx-auto h-10 w-10 text-muted-foreground/30" />
               <p className="mt-3 text-sm text-muted-foreground">
-                Aucun brouillon en attente de validation
+                {displayDrafts.length === 0
+                  ? "Aucun brouillon en attente de validation"
+                  : "Aucun resultat pour les filtres actifs"}
               </p>
             </div>
           ) : (
@@ -294,18 +737,52 @@ export default function AdminRagSeoDrafts() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Gamme</TableHead>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={allSelected}
+                        indeterminate={someSelected}
+                        onCheckedChange={handleSelectAll}
+                      />
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer select-none"
+                      onClick={() => toggleSort("name")}
+                    >
+                      Gamme{sortIndicator("name")}
+                    </TableHead>
                     <TableHead>Origine</TableHead>
-                    <TableHead>Date de creation</TableHead>
-                    <TableHead>Nouveau texte propose</TableHead>
+                    <TableHead
+                      className="cursor-pointer select-none"
+                      onClick={() => toggleSort("score")}
+                    >
+                      Qualite{sortIndicator("score")}
+                    </TableHead>
+                    <TableHead
+                      className="cursor-pointer select-none"
+                      onClick={() => toggleSort("date")}
+                    >
+                      Date{sortIndicator("date")}
+                    </TableHead>
+                    <TableHead>Meta description</TableHead>
                     <TableHead>Apercu</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {displayDrafts.map((draft) => (
+                  {filteredDrafts.map((draft, idx) => (
                     <>
-                      <TableRow key={draft.pg_id} className="hover:bg-muted/50">
+                      <TableRow
+                        key={draft.pg_id}
+                        className={`hover:bg-muted/50 ${selectedIds.includes(draft.pg_id) ? "bg-blue-50/50" : ""}`}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedIds.includes(draft.pg_id)}
+                            onCheckedChange={(checked) =>
+                              handleSelectOne(draft.pg_id, checked)
+                            }
+                          />
+                        </TableCell>
                         <TableCell>
                           <span className="text-sm font-medium">
                             {draft.pg_alias}
@@ -322,30 +799,44 @@ export default function AdminRagSeoDrafts() {
                             </span>
                           )}
                         </TableCell>
+                        <TableCell>
+                          <QualityScoreBadge score={draft.quality_score} />
+                        </TableCell>
                         <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
                           {formatDate(draft.sg_draft_updated_at)}
                         </TableCell>
-                        {/* S7: HoverCard on truncated description */}
-                        <TableCell className="max-w-[200px]">
-                          {draft.sg_descrip_draft &&
-                          draft.sg_descrip_draft.length > 60 ? (
-                            <HoverCard>
-                              <HoverCardTrigger asChild>
-                                <span className="cursor-help text-xs text-muted-foreground underline decoration-dotted">
-                                  {truncate(draft.sg_descrip_draft, 60)}
-                                </span>
-                              </HoverCardTrigger>
-                              <HoverCardContent className="w-80">
-                                <p className="text-xs">
-                                  {draft.sg_descrip_draft}
-                                </p>
-                              </HoverCardContent>
-                            </HoverCard>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">
-                              {truncate(draft.sg_descrip_draft, 60)}
-                            </span>
-                          )}
+                        <TableCell className="max-w-[250px]">
+                          <div className="space-y-1">
+                            {draft.sg_descrip_draft ? (
+                              <>
+                                {draft.sg_descrip_draft.length > 60 ? (
+                                  <HoverCard>
+                                    <HoverCardTrigger asChild>
+                                      <span className="cursor-help text-xs text-muted-foreground underline decoration-dotted">
+                                        {truncate(draft.sg_descrip_draft, 60)}
+                                      </span>
+                                    </HoverCardTrigger>
+                                    <HoverCardContent className="w-80">
+                                      <p className="text-xs">
+                                        {draft.sg_descrip_draft}
+                                      </p>
+                                    </HoverCardContent>
+                                  </HoverCard>
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">
+                                    {draft.sg_descrip_draft}
+                                  </span>
+                                )}
+                                <MetaCharCounter
+                                  text={draft.sg_descrip_draft}
+                                />
+                              </>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">
+                                {"\u2014"}
+                              </span>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           {draft.sg_content_draft ? (
@@ -362,9 +853,9 @@ export default function AdminRagSeoDrafts() {
                               }
                             >
                               {expandedRow === draft.pg_id ? (
-                                <ChevronUp className="h-3 w-3" />
+                                <XCircle className="h-3 w-3" />
                               ) : (
-                                <ChevronDown className="h-3 w-3" />
+                                <Eye className="h-3 w-3" />
                               )}
                               {draft.sg_content_draft.length} car.
                             </Button>
@@ -376,7 +867,6 @@ export default function AdminRagSeoDrafts() {
                             />
                           )}
                         </TableCell>
-                        {/* S8: DropdownMenu for row actions */}
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -392,7 +882,7 @@ export default function AdminRagSeoDrafts() {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
                                 onClick={() =>
-                                  openDiff(draft.pg_id, draft.pg_alias)
+                                  openDiff(draft.pg_id, draft.pg_alias, idx)
                                 }
                               >
                                 <Eye className="mr-2 h-4 w-4" />
@@ -421,11 +911,11 @@ export default function AdminRagSeoDrafts() {
                           </DropdownMenu>
                         </TableCell>
                       </TableRow>
-                      {/* S6: ScrollArea in expanded content */}
+                      {/* Expanded content preview */}
                       {expandedRow === draft.pg_id &&
                         draft.sg_content_draft && (
                           <TableRow key={`${draft.pg_id}-expanded`}>
-                            <TableCell colSpan={6}>
+                            <TableCell colSpan={8}>
                               <ScrollArea className="h-[200px]">
                                 <pre className="rounded-lg border bg-muted/30 p-3 text-xs font-mono whitespace-pre-wrap">
                                   {draft.sg_content_draft}
@@ -443,7 +933,7 @@ export default function AdminRagSeoDrafts() {
         </CardContent>
       </Card>
 
-      {/* S1: AlertDialog for publish confirmation */}
+      {/* Publish confirmation dialog */}
       <AlertDialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -466,7 +956,7 @@ export default function AdminRagSeoDrafts() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* S2: AlertDialog for reject confirmation */}
+      {/* Reject confirmation dialog */}
       <AlertDialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -489,18 +979,43 @@ export default function AdminRagSeoDrafts() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* S4: Sheet for comparison (replaces Dialog) */}
+      {/* Comparison Sheet with diff + prev/next */}
       <Sheet open={diffOpen} onOpenChange={setDiffOpen}>
-        <SheetContent side="right" className="sm:w-[600px] sm:max-w-[600px]">
+        <SheetContent side="right" className="sm:w-[650px] sm:max-w-[650px]">
           <SheetHeader>
-            <SheetTitle>{diffAlias}</SheetTitle>
+            <div className="flex items-center justify-between pr-8">
+              <SheetTitle>{diffAlias}</SheetTitle>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => navigateDiff("prev")}
+                  disabled={diffIndex <= 0}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-xs text-muted-foreground min-w-[3rem] text-center">
+                  {diffIndex + 1}/{filteredDrafts.length}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => navigateDiff("next")}
+                  disabled={diffIndex >= filteredDrafts.length - 1}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
             <SheetDescription>
               Comparaison ancien / nouveau — verifiez les changements avant
               publication
             </SheetDescription>
           </SheetHeader>
 
-          {/* S5: Skeleton during loading */}
+          {/* Loading skeleton */}
           {diffLoading ? (
             <div className="mt-6 space-y-4">
               <div className="space-y-2">
@@ -515,71 +1030,76 @@ export default function AdminRagSeoDrafts() {
           ) : diffData ? (
             <ScrollArea className="mt-6 h-[calc(100vh-220px)]">
               <div className="space-y-6 pr-4">
-                {/* Description SEO */}
+                {/* Description SEO - with diff */}
                 <div className="space-y-3">
-                  <h4 className="text-sm font-medium">
-                    Description SEO (meta description)
-                  </h4>
-                  <div>
-                    <Badge variant="secondary" className="mb-1 text-xs">
-                      Texte actuel
-                    </Badge>
-                    <div className="rounded-md border bg-muted/30 p-3 text-xs">
-                      {diffData.current.sg_descrip || (
-                        <span className="italic text-muted-foreground">
-                          vide
-                        </span>
-                      )}
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium">
+                      Description SEO (meta description)
+                    </h4>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-muted-foreground">
+                        Actuel:{" "}
+                        <MetaCharCounter text={diffData.current.sg_descrip} />
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Nouveau:{" "}
+                        <MetaCharCounter
+                          text={diffData.draft.sg_descrip_draft}
+                        />
+                      </span>
                     </div>
                   </div>
-                  <div>
-                    <Badge
-                      variant="secondary"
-                      className="mb-1 bg-blue-50 text-blue-700 text-xs"
-                    >
-                      Nouveau texte propose
-                    </Badge>
-                    <div className="rounded-md border border-blue-200 bg-blue-50/30 p-3 text-xs">
-                      {diffData.draft.sg_descrip_draft || (
-                        <span className="italic text-muted-foreground">
-                          vide
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
 
-                {/* Contenu de la page */}
-                {(diffData.current.sg_content ||
-                  diffData.draft.sg_content_draft) && (
-                  <div className="space-y-3">
-                    <h4 className="text-sm font-medium">Contenu de la page</h4>
+                  {/* Diff view */}
+                  <div className="rounded-md border p-3">
+                    <DiffDisplay
+                      oldText={diffData.current.sg_descrip || ""}
+                      newText={diffData.draft.sg_descrip_draft || ""}
+                    />
+                  </div>
+
+                  {/* Side-by-side originals (collapsed) */}
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <Badge variant="secondary" className="mb-1 text-xs">
                         Texte actuel
                       </Badge>
-                      <pre className="max-h-[250px] overflow-auto rounded-md border bg-muted/30 p-3 text-xs font-mono whitespace-pre-wrap">
-                        {diffData.current.sg_content || (
+                      <div className="rounded-md border bg-muted/30 p-2 text-xs">
+                        {diffData.current.sg_descrip || (
                           <span className="italic text-muted-foreground">
                             vide
                           </span>
                         )}
-                      </pre>
+                      </div>
                     </div>
                     <div>
                       <Badge
                         variant="secondary"
                         className="mb-1 bg-blue-50 text-blue-700 text-xs"
                       >
-                        Nouveau texte propose
+                        Nouveau propose
                       </Badge>
-                      <pre className="max-h-[250px] overflow-auto rounded-md border border-blue-200 bg-blue-50/30 p-3 text-xs font-mono whitespace-pre-wrap">
-                        {diffData.draft.sg_content_draft || (
+                      <div className="rounded-md border border-blue-200 bg-blue-50/30 p-2 text-xs">
+                        {diffData.draft.sg_descrip_draft || (
                           <span className="italic text-muted-foreground">
                             vide
                           </span>
                         )}
-                      </pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contenu de la page - with diff */}
+                {(diffData.current.sg_content ||
+                  diffData.draft.sg_content_draft) && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium">Contenu de la page</h4>
+                    <div className="max-h-[300px] overflow-auto rounded-md border p-3">
+                      <DiffDisplay
+                        oldText={diffData.current.sg_content || ""}
+                        newText={diffData.draft.sg_content_draft || ""}
+                      />
                     </div>
                   </div>
                 )}
