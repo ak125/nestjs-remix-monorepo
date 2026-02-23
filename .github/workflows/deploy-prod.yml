@@ -90,9 +90,19 @@ jobs:
             exit 1
           fi
 
-          echo "🏥 Running health check..."
-          if ! curl -sf http://localhost:3000/api/catalog/families > /dev/null; then
-            echo "❌ Health check failed - API not responding"
+          echo "🏥 Running health check (inside container)..."
+          RETRIES=3
+          for i in $(seq 1 $RETRIES); do
+            HEALTH=$(docker exec nestjs-remix-monorepo-prod wget -qO- http://localhost:3000/health 2>/dev/null || echo "")
+            if echo "$HEALTH" | grep -q '"status":"ok"'; then
+              echo "✅ /health -> OK (attempt $i/$RETRIES)"
+              break
+            fi
+            echo "⏳ Health check attempt $i/$RETRIES failed, waiting 10s..."
+            sleep 10
+          done
+          if ! echo "$HEALTH" | grep -q '"status":"ok"'; then
+            echo "❌ Health check failed after $RETRIES attempts"
             docker logs nestjs-remix-monorepo-prod --tail 30
             exit 1
           fi
