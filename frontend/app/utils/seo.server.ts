@@ -2,6 +2,9 @@
 import { type MetaFunction } from "@remix-run/node";
 import { logger } from "~/utils/logger";
 
+// Import for local usage within this .server file
+import { type IntentClass, OG_BASE, OG_FALLBACK } from "~/utils/og-constants";
+
 export interface SeoData {
   title?: string;
   description?: string;
@@ -14,21 +17,11 @@ export interface SeoData {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Intent Classes (ref: .spec/00-canon/image-matrix-v1.md)
+// Intent Classes & OG constants (re-exported from og-constants.ts)
 // ═══════════════════════════════════════════════════════════════════════════
 
-export type IntentClass =
-  | "transaction"
-  | "selection"
-  | "guide-achat"
-  | "blog-conseil"
-  | "diagnostic"
-  | "panne-symptome"
-  | "glossaire-reference"
-  | "outil";
-
-export const OG_BASE = "https://www.automecanik.com";
-export const OG_FALLBACK = `${OG_BASE}/logo-og.webp`;
+export { OG_BASE, OG_FALLBACK } from "~/utils/og-constants";
+export type { IntentClass } from "~/utils/og-constants";
 
 /**
  * Resout l'intent class depuis un chemin URL.

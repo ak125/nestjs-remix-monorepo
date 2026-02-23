@@ -9,7 +9,7 @@
  * @see .spec/00-canon/image-matrix-v1.md §3
  */
 
-import { type IntentClass, OG_BASE, OG_FALLBACK } from "~/utils/seo.server";
+import { type IntentClass, OG_BASE, OG_FALLBACK } from "~/utils/og-constants";
 
 const IMGPROXY_BASE = `${OG_BASE}/imgproxy`;
 
