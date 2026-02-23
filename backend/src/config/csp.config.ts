@@ -35,7 +35,7 @@ export const CSP_DIRECTIVES = {
   styleSrc: [
     "'self'",
     "'unsafe-inline'", // Pour Tailwind CSS
-    'https://fonts.googleapis.com',
+    // Google Fonts retiré — fonts self-hosted (LCP Phase 2)
   ],
 
   scriptSrc: [
@@ -57,7 +57,7 @@ export const CSP_DIRECTIVES = {
     'https://region1.google-analytics.com',
   ],
 
-  fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+  fontSrc: ["'self'", 'data:'], // Google Fonts retiré — fonts self-hosted
   objectSrc: ["'none'"],
   mediaSrc: ["'self'"],
   frameSrc: ["'none'"],
