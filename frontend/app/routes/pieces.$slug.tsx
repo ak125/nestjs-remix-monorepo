@@ -51,6 +51,7 @@ import {
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
+import { getOgImageUrl } from "~/utils/og-image.utils";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
@@ -448,16 +449,23 @@ export const meta: MetaFunction<typeof loader> = ({
     result.push({ name: "keywords", content: keywords });
   }
 
+  // OG image — derive from pg_pic if available, fallback to transaction asset
+  const ogImage = getOgImageUrl(data.content?.pg_pic, "transaction");
+
   // Open Graph
   result.push({ property: "og:title", content: title });
   result.push({ property: "og:description", content: description });
   result.push({ property: "og:url", content: canonicalUrl });
   result.push({ property: "og:type", content: "website" });
+  result.push({ property: "og:image", content: ogImage });
+  result.push({ property: "og:image:width", content: "1200" });
+  result.push({ property: "og:image:height", content: "630" });
 
   // Twitter Cards
   result.push({ name: "twitter:card", content: "summary_large_image" });
   result.push({ name: "twitter:title", content: title });
   result.push({ name: "twitter:description", content: description });
+  result.push({ name: "twitter:image", content: ogImage });
 
   // Canonical
   result.push({ tagName: "link", rel: "canonical", href: canonicalUrl });

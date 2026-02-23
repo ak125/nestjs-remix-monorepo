@@ -91,6 +91,17 @@ export const meta: MetaFunction = () => {
     },
     { property: "og:type", content: "website" },
     { property: "og:url", content: canonicalUrl },
+    {
+      property: "og:image",
+      content: "https://www.automecanik.com/images/og/glossaire-reference.webp",
+    },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { name: "twitter:card", content: "summary_large_image" },
+    {
+      name: "twitter:image",
+      content: "https://www.automecanik.com/images/og/glossaire-reference.webp",
+    },
   ];
 };
 

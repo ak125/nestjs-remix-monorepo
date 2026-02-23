@@ -220,8 +220,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     {
       property: "og:image",
       content:
-        guide.featuredImage || "https://www.automecanik.com/logo-navbar.webp",
+        guide.featuredImage ||
+        "https://www.automecanik.com/images/og/guide-achat.webp",
     },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
     { property: "article:published_time", content: guide.publishedAt },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: cleanTitle },
@@ -229,7 +232,8 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     {
       name: "twitter:image",
       content:
-        guide.featuredImage || "https://www.automecanik.com/logo-navbar.webp",
+        guide.featuredImage ||
+        "https://www.automecanik.com/images/og/guide-achat.webp",
     },
     { "script:ld+json": articleSchema },
     { "script:ld+json": breadcrumbSchema },

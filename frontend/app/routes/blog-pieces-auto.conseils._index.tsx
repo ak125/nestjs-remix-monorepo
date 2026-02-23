@@ -192,6 +192,30 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       href: "https://www.automecanik.com/blog-pieces-auto/conseils",
     },
     { name: "robots", content: "index, follow" },
+    {
+      property: "og:title",
+      content: "Montage et entretien - Conseils auto | Automecanik",
+    },
+    {
+      property: "og:description",
+      content: `Découvrez nos ${count} conseils d'experts pour l'entretien et la réparation de votre véhicule.`,
+    },
+    { property: "og:type", content: "website" },
+    {
+      property: "og:url",
+      content: "https://www.automecanik.com/blog-pieces-auto/conseils",
+    },
+    {
+      property: "og:image",
+      content: "https://www.automecanik.com/images/og/blog-conseil.webp",
+    },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { name: "twitter:card", content: "summary_large_image" },
+    {
+      name: "twitter:image",
+      content: "https://www.automecanik.com/images/og/blog-conseil.webp",
+    },
   ];
 };
 

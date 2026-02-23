@@ -694,6 +694,17 @@ export const meta: MetaFunction<typeof loader> = ({ data: rawData }) => {
     { property: "og:title", content: data.seo.title },
     { property: "og:description", content: data.seo.description },
     { property: "og:type", content: "website" },
+    {
+      property: "og:image",
+      content: "https://www.automecanik.com/images/og/selection.webp",
+    },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { name: "twitter:card", content: "summary_large_image" },
+    {
+      name: "twitter:image",
+      content: "https://www.automecanik.com/images/og/selection.webp",
+    },
     // 🚗 JSON-LD @graph: Car + BreadcrumbList pour rich snippets Google
     {
       "script:ld+json": generateVehicleSchema(data.vehicle, data.breadcrumb),

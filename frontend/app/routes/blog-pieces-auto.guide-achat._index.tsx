@@ -223,8 +223,10 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { property: "og:url", content: canonicalUrl },
     {
       property: "og:image",
-      content: "https://www.automecanik.com/logo-navbar.webp",
+      content: "https://www.automecanik.com/images/og/guide-achat.webp",
     },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
     { name: "twitter:card", content: "summary_large_image" },
     {
       name: "twitter:title",
@@ -233,7 +235,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { name: "twitter:description", content: description },
     {
       name: "twitter:image",
-      content: "https://www.automecanik.com/logo-navbar.webp",
+      content: "https://www.automecanik.com/images/og/guide-achat.webp",
     },
     { "script:ld+json": schema },
   ];

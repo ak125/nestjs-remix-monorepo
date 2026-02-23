@@ -131,10 +131,20 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { property: "og:description", content: description },
     { property: "og:type", content: "article" },
     { property: "og:url", content: canonicalUrl },
+    {
+      property: "og:image",
+      content: "https://www.automecanik.com/images/og/glossaire-reference.webp",
+    },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
     // Twitter
-    { name: "twitter:card", content: "summary" },
+    { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: reference.title },
     { name: "twitter:description", content: description },
+    {
+      name: "twitter:image",
+      content: "https://www.automecanik.com/images/og/glossaire-reference.webp",
+    },
     // Article meta (Open Graph enrichi)
     { property: "article:modified_time", content: reference.updatedAt },
     { property: "article:section", content: "Référence Auto" },

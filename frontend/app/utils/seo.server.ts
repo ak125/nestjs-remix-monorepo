@@ -17,7 +17,7 @@ export interface SeoData {
 // Intent Classes (ref: .spec/00-canon/image-matrix-v1.md)
 // ═══════════════════════════════════════════════════════════════════════════
 
-type IntentClass =
+export type IntentClass =
   | "transaction"
   | "selection"
   | "guide-achat"
@@ -27,8 +27,8 @@ type IntentClass =
   | "glossaire-reference"
   | "outil";
 
-const OG_BASE = "https://www.automecanik.com";
-const OG_FALLBACK = `${OG_BASE}/logo-og.webp`;
+export const OG_BASE = "https://www.automecanik.com";
+export const OG_FALLBACK = `${OG_BASE}/logo-og.webp`;
 
 /**
  * Resout l'intent class depuis un chemin URL.
