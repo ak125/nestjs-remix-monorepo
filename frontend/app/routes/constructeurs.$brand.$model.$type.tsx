@@ -49,7 +49,7 @@ import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import { isValidImagePath } from "../utils/image-optimizer";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
-import { normalizeTypeAlias } from "../utils/url-builder.utils";
+import { normalizeAlias, normalizeTypeAlias } from "../utils/url-builder.utils";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -526,10 +526,11 @@ export async function loader({ params }: LoaderFunctionArgs) {
   // ========================================
   const v = rpcResult.data.vehicle;
   const canonicalTypeAlias = normalizeTypeAlias(v.type_alias, v.type_name);
-  const urlTypeAlias = typeParts.slice(0, -1).join("-"); // Tout sauf l'ID
+  const rawUrlTypeAlias = typeParts.slice(0, -1).join("-"); // Tout sauf l'ID
+  const urlTypeAlias = normalizeAlias(rawUrlTypeAlias); // Normaliser (espaces, accents, etc.)
 
   // Si l'alias dans l'URL ne correspond pas à l'alias canonique → 301
-  if (urlTypeAlias && urlTypeAlias !== canonicalTypeAlias) {
+  if (urlTypeAlias !== canonicalTypeAlias) {
     const canonicalUrl = `/constructeurs/${brand}/${model}/${canonicalTypeAlias}-${type_id}.html`;
     logger.log(`🔄 [301] Redirect "${urlTypeAlias}" → "${canonicalTypeAlias}"`);
     return redirect(canonicalUrl, 301);
