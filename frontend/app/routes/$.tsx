@@ -271,6 +271,10 @@ function isGarbageUrl(pathname: string): boolean {
   // Base64-like with special chars in path: /RusC1gZF2/22ANy4XK+TA==
   if (/[+]/.test(pathname) && /={1,2}$/.test(pathname)) return true;
 
+  // Base64 multi-segments: /9/b18R7//FgefToewpP4w==
+  if (/={1,2}$/.test(pathname) && /^\/[A-Za-z0-9+/=]+$/.test(pathname))
+    return true;
+
   // Single segment with no extension, > 20 chars, mostly alphanumeric (hash/token)
   const segments = pathname.split("/").filter(Boolean);
   if (
