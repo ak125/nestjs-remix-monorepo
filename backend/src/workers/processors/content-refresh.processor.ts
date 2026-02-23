@@ -18,6 +18,7 @@ import {
   pageTypeToRole,
   POLICY_VERSION,
 } from '../../config/content-section-policy';
+import { getImagePenalty } from '../../config/buying-guide-quality.constants';
 import type {
   AnyContentRefreshJobData,
   ContentRefreshResult,
@@ -248,6 +249,29 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         default:
           errorMessage = `Unknown page type: ${pageType}`;
           qualityFlags = ['UNKNOWN_PAGE_TYPE'];
+      }
+
+      // ── Image quality check (P0.4 — ref: .spec/00-canon/image-matrix-v1.md §5)
+      // Check pg_img for gamme-based page types; penalty varies by page type
+      if (pgId > 0 && !ragSkipped) {
+        try {
+          const { data: gammeImg } = await this.client
+            .from('pieces_gamme')
+            .select('pg_img')
+            .eq('pg_id', pgId)
+            .single();
+
+          const pgImg = gammeImg?.pg_img as string | null | undefined;
+          if (!pgImg || pgImg === 'no.webp') {
+            const penalty = getImagePenalty('MISSING_IMAGE', pageType);
+            if (penalty > 0) {
+              qualityFlags.push('MISSING_IMAGE');
+              qualityScore = Math.max(0, (qualityScore ?? 0) - penalty);
+            }
+          }
+        } catch {
+          // Non-blocking: image check failure should not break enrichment
+        }
       }
 
       // Inject internal link markers post-enrichment (Gap 3)

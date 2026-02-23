@@ -479,3 +479,33 @@ export function buildProxyImageUrl(bucket: string, path: string): string {
 
   return `${IMAGE_CONFIG.PROXY_BASE}/${bucket}/${path}`;
 }
+
+/**
+ * Construit une URL OG image absolue via imgproxy (1200x630, webp, q85)
+ *
+ * Les URLs OG DOIVENT etre absolues (Facebook/LinkedIn/Twitter l'exigent).
+ * Les parametres imgproxy sont stables pour eviter un re-scrape social.
+ *
+ * @param sourcePath - Chemin relatif Supabase (ex: "articles/gammes-produits/catalogue/disque-frein.jpg")
+ *                     ou URL complete Supabase
+ * @returns URL absolue https://www.automecanik.com/imgproxy/...@webp
+ *
+ * @example
+ * buildOgImageUrl('articles/gammes-produits/catalogue/disque-frein.jpg')
+ * // → 'https://www.automecanik.com/imgproxy/rs:fit:1200:630/q:85/plain/https://www.automecanik.com/storage/v1/object/public/uploads/articles/gammes-produits/catalogue/disque-frein.jpg@webp'
+ *
+ * @example
+ * buildOgImageUrl(null) // → 'https://www.automecanik.com/logo-og.webp'
+ */
+export function buildOgImageUrl(sourcePath?: string | null): string {
+  if (!sourcePath || sourcePath === 'no.webp') {
+    return `${IMAGE_CONFIG.DOMAIN}/logo-og.webp`;
+  }
+
+  // Si deja une URL absolue, l'utiliser directement comme source
+  const sourceUrl = sourcePath.startsWith('http')
+    ? sourcePath
+    : `${IMAGE_CONFIG.DOMAIN}/storage/v1/object/public/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${sourcePath}`;
+
+  return `${IMGPROXY_BASE_URL}/rs:fit:1200:630/q:85/plain/${sourceUrl}@webp`;
+}

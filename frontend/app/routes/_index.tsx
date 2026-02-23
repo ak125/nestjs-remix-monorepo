@@ -43,6 +43,7 @@ import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import VehicleSelector from "~/components/vehicle/VehicleSelector";
+import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
@@ -250,36 +251,7 @@ export const headers: HeadersFunction = () => ({
   "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
 });
 
-// ─── COULEURS PAR FAMILLE (gradient bg image) ────────────
-const FAMILY_COLORS: Record<string, string> = {
-  "Système de filtration": "from-blue-500 to-blue-700",
-  "Système de freinage": "from-red-600 to-rose-700",
-  "Courroie, galet, poulie et chaîne": "from-slate-600 to-slate-800",
-  "Allumage / Préchauffage": "from-yellow-400 to-amber-600",
-  "Préchauffage et allumage": "from-yellow-400 to-amber-600",
-  "Direction / Train avant": "from-emerald-500 to-teal-600",
-  "Direction et liaison au sol": "from-emerald-500 to-teal-600",
-  "Amortisseur / Suspension": "from-purple-600 to-violet-700",
-  "Amortisseur et suspension": "from-purple-600 to-violet-700",
-  "Support moteur": "from-violet-600 to-purple-800",
-  Embrayage: "from-emerald-600 to-green-700",
-  Transmission: "from-teal-600 to-cyan-700",
-  Électrique: "from-yellow-400 to-amber-600",
-  "Système électrique": "from-yellow-400 to-amber-600",
-  "Capteurs / Sondes": "from-amber-600 to-orange-700",
-  Capteurs: "from-amber-600 to-orange-700",
-  "Alimentation Carburant & Air": "from-lime-500 to-green-600",
-  "Système d'alimentation": "from-lime-500 to-green-600",
-  Moteur: "from-orange-600 to-red-700",
-  Refroidissement: "from-cyan-400 to-blue-600",
-  Climatisation: "from-sky-400 to-cyan-600",
-  Échappement: "from-gray-700 to-neutral-800",
-  "Éclairage / Signalisation": "from-indigo-500 to-blue-700",
-  Eclairage: "from-indigo-500 to-blue-700",
-  Accessoires: "from-fuchsia-500 to-pink-600",
-  "Turbo / Suralimentation": "from-rose-600 to-pink-700",
-  Turbo: "from-rose-600 to-pink-700",
-};
+// ─── COULEURS PAR FAMILLE (source unique: family-theme.ts) ────────────
 
 // ─── FALLBACK DATA ───────────────────────────────────────
 const CATS = [
@@ -762,7 +734,7 @@ export default function RedesignPreview() {
           i: "📦",
           n: f.mf_name,
           desc: f.mf_description || "",
-          color: FAMILY_COLORS[f.mf_name] || "from-slate-500 to-slate-700",
+          color: getFamilyTheme(f.mf_name).gradient,
           sub: f.gammes.slice(0, 4).map((g) => g.pg_name),
           gammes: f.gammes.map((g) => ({
             name: g.pg_name,
@@ -775,7 +747,7 @@ export default function RedesignPreview() {
       : CATS.map((c) => ({
           ...c,
           desc: c.desc || "",
-          color: FAMILY_COLORS[c.n] || "from-slate-500 to-slate-700",
+          color: getFamilyTheme(c.n).gradient,
           img: c.pic ? `${IMG_PROXY_FAMILIES}/${c.pic}` : undefined,
           gammes: c.sub.map((s) => ({ name: s, link: "#" })),
           link: "#",

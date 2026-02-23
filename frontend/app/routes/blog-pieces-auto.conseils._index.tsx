@@ -29,6 +29,7 @@ import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -84,146 +85,8 @@ interface LoaderData {
 }
 
 /* ===========================
-   Styles par famille
+   Styles par famille (source unique: family-theme.ts)
 =========================== */
-const FAMILY_COLORS: Record<
-  string,
-  { bg: string; border: string; text: string; gradient: string; badge: string }
-> = {
-  Freinage: {
-    bg: "bg-destructive/5",
-    border: "border-red-300",
-    text: "text-red-800",
-    gradient: "from-red-500 to-red-700",
-    badge: "error",
-  },
-  "Direction et liaison au sol": {
-    bg: "bg-purple-50",
-    border: "border-purple-300",
-    text: "text-purple-800",
-    gradient: "from-purple-500 to-purple-700",
-    badge: "purple",
-  },
-  Embrayage: {
-    bg: "bg-orange-50",
-    border: "border-orange-300",
-    text: "text-orange-800",
-    gradient: "from-orange-500 to-orange-700",
-    badge: "orange",
-  },
-  "Courroie, galet, poulie et chaîne": {
-    bg: "bg-warning/5",
-    border: "border-yellow-300",
-    text: "text-yellow-900",
-    gradient: "from-yellow-500 to-yellow-700",
-    badge: "bg-warning/15 text-yellow-900 border-yellow-300",
-  },
-  Moteur: {
-    bg: "bg-slate-50",
-    border: "border-slate-300",
-    text: "text-slate-800",
-    gradient: "from-slate-600 to-slate-800",
-    badge: "bg-slate-100 text-slate-800 border-slate-300",
-  },
-  "Système d'alimentation": {
-    bg: "bg-success/5",
-    border: "border-green-300",
-    text: "text-green-800",
-    gradient: "from-green-500 to-green-700",
-    badge: "success",
-  },
-  Refroidissement: {
-    bg: "bg-cyan-50",
-    border: "border-cyan-300",
-    text: "text-cyan-800",
-    gradient: "from-cyan-500 to-cyan-700",
-    badge: "bg-cyan-100 text-cyan-800 border-cyan-300",
-  },
-  "Préchauffage et allumage": {
-    bg: "bg-amber-50",
-    border: "border-amber-300",
-    text: "text-amber-900",
-    gradient: "from-amber-500 to-amber-700",
-    badge: "bg-amber-100 text-amber-900 border-amber-300",
-  },
-  Echappement: {
-    bg: "bg-gray-50",
-    border: "border-gray-400",
-    text: "text-gray-800",
-    gradient: "from-gray-600 to-gray-800",
-    badge: "bg-gray-100 text-gray-800 border-gray-400",
-  },
-  "Système électrique": {
-    bg: "bg-primary/5",
-    border: "border-blue-300",
-    text: "text-blue-800",
-    gradient: "from-blue-500 to-blue-700",
-    badge: "info",
-  },
-  Filtres: {
-    bg: "bg-teal-50",
-    border: "border-teal-300",
-    text: "text-teal-800",
-    gradient: "from-teal-500 to-teal-700",
-    badge: "bg-teal-100 text-teal-800 border-teal-300",
-  },
-  Climatisation: {
-    bg: "bg-sky-50",
-    border: "border-sky-300",
-    text: "text-sky-800",
-    gradient: "from-sky-500 to-sky-700",
-    badge: "bg-sky-100 text-sky-800 border-sky-300",
-  },
-  Eclairage: {
-    bg: "bg-warning/5",
-    border: "border-yellow-400",
-    text: "text-yellow-900",
-    gradient: "from-yellow-400 to-yellow-600",
-    badge: "bg-warning/15 text-yellow-900 border-yellow-400",
-  },
-  Transmission: {
-    bg: "bg-indigo-50",
-    border: "border-indigo-300",
-    text: "text-indigo-800",
-    gradient: "from-indigo-500 to-indigo-700",
-    badge: "bg-indigo-100 text-indigo-800 border-indigo-300",
-  },
-  "Support moteur": {
-    bg: "bg-violet-50",
-    border: "border-violet-300",
-    text: "text-violet-800",
-    gradient: "from-violet-500 to-violet-700",
-    badge: "bg-violet-100 text-violet-800 border-violet-300",
-  },
-  Accessoires: {
-    bg: "bg-pink-50",
-    border: "border-pink-300",
-    text: "text-pink-800",
-    gradient: "from-pink-500 to-pink-700",
-    badge: "bg-pink-100 text-pink-800 border-pink-300",
-  },
-  "Amortisseur et suspension": {
-    bg: "bg-fuchsia-50",
-    border: "border-fuchsia-300",
-    text: "text-fuchsia-800",
-    gradient: "from-fuchsia-500 to-fuchsia-700",
-    badge: "bg-fuchsia-100 text-fuchsia-800 border-fuchsia-300",
-  },
-  Turbo: {
-    bg: "bg-rose-50",
-    border: "border-rose-300",
-    text: "text-rose-800",
-    gradient: "from-rose-500 to-rose-700",
-    badge: "bg-rose-100 text-rose-800 border-rose-300",
-  },
-  Autres: {
-    bg: "bg-gray-50",
-    border: "border-gray-300",
-    text: "text-gray-800",
-    gradient: "from-gray-500 to-gray-700",
-    badge: "bg-gray-100 text-gray-800 border-gray-300",
-  },
-};
 
 const FAMILY_ICONS: Record<string, string> = {
   Freinage: "🛑",
@@ -345,8 +208,16 @@ export default function BlogConseilsIndex() {
     return `${views}`;
   };
 
-  const getFamilyColor = (family: string) =>
-    FAMILY_COLORS[family] || FAMILY_COLORS["Autres"];
+  const getFamilyColor = (family: string) => {
+    const theme = getFamilyTheme(family);
+    return {
+      bg: theme.bg,
+      border: theme.border,
+      text: theme.fgStrong,
+      gradient: theme.gradient,
+      badge: theme.badge,
+    };
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">

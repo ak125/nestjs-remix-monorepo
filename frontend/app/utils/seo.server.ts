@@ -13,6 +13,79 @@ export interface SeoData {
   twitterCard?: string;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Intent Classes (ref: .spec/00-canon/image-matrix-v1.md)
+// ═══════════════════════════════════════════════════════════════════════════
+
+type IntentClass =
+  | "transaction"
+  | "selection"
+  | "guide-achat"
+  | "blog-conseil"
+  | "diagnostic"
+  | "panne-symptome"
+  | "glossaire-reference"
+  | "outil";
+
+const OG_BASE = "https://www.automecanik.com";
+const OG_FALLBACK = `${OG_BASE}/logo-og.webp`;
+
+/**
+ * Resout l'intent class depuis un chemin URL.
+ * Mapping defini dans .spec/00-canon/image-matrix-v1.md §6
+ */
+function resolveIntentClass(url: string): IntentClass | null {
+  const path = url.startsWith("/") ? url : `/${url}`;
+
+  if (
+    path.startsWith("/pieces/") ||
+    path.startsWith("/panier") ||
+    path.startsWith("/checkout")
+  ) {
+    return "transaction";
+  }
+  if (
+    path.startsWith("/constructeurs/") ||
+    path.startsWith("/enhanced-vehicle-catalog")
+  ) {
+    return "selection";
+  }
+  if (path.includes("/guide-achat")) {
+    return "guide-achat";
+  }
+  if (
+    path.includes("/conseils") ||
+    path.startsWith("/blog-pieces-auto/conseils")
+  ) {
+    return "blog-conseil";
+  }
+  if (path.startsWith("/diagnostic-auto")) {
+    return "diagnostic";
+  }
+  if (path.startsWith("/panne-auto") || path.startsWith("/symptome-auto")) {
+    return "panne-symptome";
+  }
+  if (path.startsWith("/reference-auto") || path.startsWith("/glossaire")) {
+    return "glossaire-reference";
+  }
+  if (path.startsWith("/outil")) {
+    return "outil";
+  }
+  return null;
+}
+
+/**
+ * Retourne l'URL OG fallback par intent class.
+ * Priorite : image specifique par class → logo-og.webp
+ */
+function getOgFallbackByIntent(url: string): string {
+  const intent = resolveIntentClass(url);
+  if (intent) {
+    return `${OG_BASE}/images/og/${intent}.webp`;
+  }
+  return OG_FALLBACK;
+}
+
 export async function getSeoMetadata(
   url: string,
   fallbacks?: Partial<SeoData>,
@@ -40,9 +113,7 @@ export async function getSeoMetadata(
       keywords: data.meta_keywords || fallbacks?.keywords,
       canonical: `https://www.automecanik.com${url}`,
       ogImage:
-        data.og_image ||
-        fallbacks?.ogImage ||
-        "https://www.automecanik.com/images/og-default.jpg",
+        data.og_image || fallbacks?.ogImage || getOgFallbackByIntent(url),
       ogType: data.og_type || fallbacks?.ogType || "website",
       twitterCard:
         data.twitter_card || fallbacks?.twitterCard || "summary_large_image",
@@ -57,9 +128,7 @@ export async function getSeoMetadata(
       description: fallbacks?.description || generateSmartDescription(url),
       keywords: fallbacks?.keywords,
       canonical: `https://www.automecanik.com${url}`,
-      ogImage:
-        fallbacks?.ogImage ||
-        "https://www.automecanik.com/images/og-default.jpg",
+      ogImage: fallbacks?.ogImage || getOgFallbackByIntent(url),
       ogType: fallbacks?.ogType || "website",
       twitterCard: fallbacks?.twitterCard || "summary_large_image",
       noindex: fallbacks?.noindex || false,
@@ -205,9 +274,7 @@ export function createProductSeoMeta(product: {
     { property: "og:description", content: description },
     {
       property: "og:image",
-      content:
-        product.image ||
-        "https://www.automecanik.com/images/og-product-default.jpg",
+      content: product.image || `${OG_BASE}/images/og/transaction.webp`,
     },
 
     // Twitter
@@ -216,9 +283,7 @@ export function createProductSeoMeta(product: {
     { name: "twitter:description", content: description },
     {
       name: "twitter:image",
-      content:
-        product.image ||
-        "https://www.automecanik.com/images/og-product-default.jpg",
+      content: product.image || `${OG_BASE}/images/og/transaction.webp`,
     },
   ];
 
@@ -263,9 +328,7 @@ export function createArticleSeoMeta(article: {
     { property: "og:description", content: article.description },
     {
       property: "og:image",
-      content:
-        article.image ||
-        "https://www.automecanik.com/images/og-blog-default.jpg",
+      content: article.image || `${OG_BASE}/images/og/blog-conseil.webp`,
     },
     { property: "article:author", content: article.author },
     { property: "article:published_time", content: article.publishedTime },
@@ -276,9 +339,7 @@ export function createArticleSeoMeta(article: {
     { name: "twitter:description", content: article.description },
     {
       name: "twitter:image",
-      content:
-        article.image ||
-        "https://www.automecanik.com/images/og-blog-default.jpg",
+      content: article.image || `${OG_BASE}/images/og/blog-conseil.webp`,
     },
   ];
 

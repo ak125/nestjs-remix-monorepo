@@ -195,9 +195,9 @@ export type BorderRadius =
  */
 export type Transition =
   | 'fast'   // 150ms
-  | 'base'   // 250ms (défaut)
-  | 'slow'   // 350ms
-  | 'slower'; // 500ms
+  | 'base'   // 200ms (défaut)
+  | 'slow'   // 250ms
+  | 'slower'; // 300ms
 
 /**
  * Z-index
@@ -221,9 +221,9 @@ export type ZIndex =
 export type AnimationDuration =
   | 'instant'  // 100ms
   | 'fast'     // 150ms
-  | 'normal'   // 250ms (défaut)
-  | 'slow'     // 350ms
-  | 'slower'   // 500ms
+  | 'normal'   // 200ms (défaut)
+  | 'slow'     // 250ms
+  | 'slower'   // 300ms
   | 'slowest'; // 700ms
 
 /**

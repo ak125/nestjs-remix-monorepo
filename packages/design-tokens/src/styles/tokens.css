@@ -259,9 +259,9 @@
 
   /* Transitions */
   --transition-fast: 150ms;
-  --transition-base: 250ms;
-  --transition-slow: 350ms;
-  --transition-slower: 500ms;
+  --transition-base: 200ms;
+  --transition-slow: 250ms;
+  --transition-slower: 300ms;
 }
 
 /* ========================================

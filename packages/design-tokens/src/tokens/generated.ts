@@ -230,9 +230,9 @@ export const designTokens = {
   },
   "transitions": {
     "fast": "150ms",
-    "base": "250ms",
-    "slow": "350ms",
-    "slower": "500ms"
+    "base": "200ms",
+    "slow": "250ms",
+    "slower": "300ms"
   },
   "zIndex": {
     "dropdown": "1000",
@@ -247,9 +247,9 @@ export const designTokens = {
     "duration": {
       "instant": "100ms",
       "fast": "150ms",
-      "normal": "250ms",
-      "slow": "350ms",
-      "slower": "500ms",
+      "normal": "200ms",
+      "slow": "250ms",
+      "slower": "300ms",
       "slowest": "700ms"
     },
     "easing": {

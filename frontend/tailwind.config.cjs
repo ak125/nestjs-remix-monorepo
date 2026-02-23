@@ -141,9 +141,9 @@ module.exports = {
       transitionDuration: {
         'instant': '100ms',
         'fast': '150ms',
-        'normal': '250ms',
-        'slow': '350ms',
-        'slower': '500ms',
+        'normal': '200ms',
+        'slow': '250ms',
+        'slower': '300ms',
         'slowest': '700ms'
       }
     }

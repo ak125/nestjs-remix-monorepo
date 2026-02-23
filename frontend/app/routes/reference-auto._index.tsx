@@ -23,6 +23,7 @@ import { useState, useMemo, useCallback } from "react";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { Badge } from "../components/ui/badge";
@@ -49,83 +50,15 @@ interface LoaderData {
   total: number;
 }
 
-// Gamme color mapping
-const GAMME_COLORS: Record<
-  string,
-  { bg: string; text: string; border: string; dot: string }
-> = {
-  Freinage: {
-    bg: "bg-red-50",
-    text: "text-red-700",
-    border: "border-t-red-500",
-    dot: "bg-red-500",
-  },
-  Filtration: {
-    bg: "bg-cyan-50",
-    text: "text-cyan-700",
-    border: "border-t-cyan-500",
-    dot: "bg-cyan-500",
-  },
-  Distribution: {
-    bg: "bg-amber-50",
-    text: "text-amber-700",
-    border: "border-t-amber-500",
-    dot: "bg-amber-500",
-  },
-  Embrayage: {
-    bg: "bg-orange-50",
-    text: "text-orange-700",
-    border: "border-t-orange-500",
-    dot: "bg-orange-500",
-  },
-  Suspension: {
-    bg: "bg-blue-50",
-    text: "text-blue-700",
-    border: "border-t-blue-500",
-    dot: "bg-blue-500",
-  },
-  Moteur: {
-    bg: "bg-slate-100",
-    text: "text-slate-700",
-    border: "border-t-slate-600",
-    dot: "bg-slate-600",
-  },
-  Refroidissement: {
-    bg: "bg-teal-50",
-    text: "text-teal-700",
-    border: "border-t-teal-500",
-    dot: "bg-teal-500",
-  },
-  Eclairage: {
-    bg: "bg-yellow-50",
-    text: "text-yellow-700",
-    border: "border-t-yellow-500",
-    dot: "bg-yellow-500",
-  },
-  Electricite: {
-    bg: "bg-purple-50",
-    text: "text-purple-700",
-    border: "border-t-purple-500",
-    dot: "bg-purple-500",
-  },
-};
-
-const DEFAULT_GAMME_COLOR = {
-  bg: "bg-gray-50",
-  text: "text-gray-700",
-  border: "border-t-gray-400",
-  dot: "bg-gray-400",
-};
-
+// Gamme color: delegue a la source unique getFamilyTheme()
 function getGammeColor(gammeName: string | null) {
-  if (!gammeName) return DEFAULT_GAMME_COLOR;
-  // Try exact match first, then partial match
-  const exact = GAMME_COLORS[gammeName];
-  if (exact) return exact;
-  const key = Object.keys(GAMME_COLORS).find((k) =>
-    gammeName.toLowerCase().includes(k.toLowerCase()),
-  );
-  return key ? GAMME_COLORS[key] : DEFAULT_GAMME_COLOR;
+  const theme = getFamilyTheme(gammeName || "");
+  return {
+    bg: theme.bg,
+    text: theme.fg,
+    border: theme.borderAccent,
+    dot: theme.accent,
+  };
 }
 
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");

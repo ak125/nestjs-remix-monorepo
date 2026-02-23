@@ -13,7 +13,7 @@
 | Clarté entité | 0-15 | Entité primaire nommée dans les 100 premiers mots, schema.org correct |
 | GEO-readiness | 0-15 | Paragraphes auto-suffisants, info front-loaded, format extractible |
 | Profondeur contenu | 0-15 | Word count adapté au V-Level, sous-thèmes couverts, FAQ ≥ 3 |
-| Conformité technique | 0-15 | mechanical_rules respectées, family terms présents, source provenance, page_contract exploité |
+| Conformité technique | 0-15 | `domain.*` (v4) ou `mechanical_rules` (legacy) respectées, family terms présents, source provenance, blocs v4 / page_contract exploités |
 
 ---
 
@@ -50,6 +50,9 @@
 | `TOO_LONG` | -8 pts | Section narrative > 420 caractères |
 | `DUPLICATE_ITEMS` | -8 pts | Doublons dans les listes (FAQ, symptômes, critères) |
 | `STALE_SOURCE` | -6 pts | Knowledge doc `updated_at` > 6 mois |
+| `MISSING_IMAGE` | -8/-5/-3/0 pts | `pg_img` absent ou 'no.webp' (penalite conditionnelle par page type) |
+| `MISSING_ALT_TEXT` | -5/-3 pts | Alt text vide dans les images inline du contenu |
+| `INVALID_IMAGE_RATIO` | -3 pts | Ratio image hors spec (inactif V1) |
 
 ---
 
@@ -66,9 +69,11 @@
 
 ---
 
-## Termes purchase_guardrails (additifs)
+## Termes interdits additifs (v4: `domain.must_not_contain` / legacy: `purchase_guardrails.forbidden_terms`)
 
-Les `purchase_guardrails.forbidden_terms` de chaque knowledge doc s'ajoutent **dynamiquement** aux mots interdits globaux.
+Les termes interdits de chaque knowledge doc s'ajoutent **dynamiquement** aux mots interdits globaux :
+- **v4** : `domain.must_not_contain` (array de strings)
+- **Legacy** : `purchase_guardrails.forbidden_terms` (array de strings)
 
 Termes courants dans le corpus :
 - `universel`, `tous modèles`, `adaptable tous`, `compatible tout véhicule`

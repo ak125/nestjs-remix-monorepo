@@ -24,7 +24,10 @@ export type GammeContentQualityFlag =
   | 'SYMPTOMS_TOO_SMALL'
   | 'DUPLICATE_ITEMS'
   | 'MISSING_SOURCE_PROVENANCE'
-  | 'INTRO_ROLE_MISMATCH';
+  | 'INTRO_ROLE_MISMATCH'
+  | 'MISSING_IMAGE'
+  | 'MISSING_ALT_TEXT'
+  | 'INVALID_IMAGE_RATIO';
 
 // ─────────────────────────────────────────────────────────────
 // Contract versions
@@ -129,7 +132,49 @@ export const FLAG_PENALTIES: Record<GammeContentQualityFlag, number> = {
   DUPLICATE_ITEMS: 8,
   MISSING_SOURCE_PROVENANCE: 20,
   INTRO_ROLE_MISMATCH: 25,
+  MISSING_IMAGE: 8, // default; overridden per page type via IMAGE_PENALTIES
+  MISSING_ALT_TEXT: 5, // default; overridden per page type via IMAGE_PENALTIES
+  INVALID_IMAGE_RATIO: 3, // inactive V1 (detection not yet implemented)
 };
+
+// ─────────────────────────────────────────────────────────────
+// Image penalty by page type (ref: .spec/00-canon/image-matrix-v1.md §5)
+// ─────────────────────────────────────────────────────────────
+
+export type ContentPageType =
+  | 'R1_pieces'
+  | 'R3_guide_achat'
+  | 'R3_conseil'
+  | 'R4_reference'
+  | 'R5_diagnostic'
+  | 'R6_panne';
+
+export const IMAGE_PENALTIES: Record<
+  ContentPageType,
+  { MISSING_IMAGE: number; MISSING_ALT_TEXT: number }
+> = {
+  R1_pieces: { MISSING_IMAGE: 8, MISSING_ALT_TEXT: 5 }, // TRANSACTION
+  R3_guide_achat: { MISSING_IMAGE: 8, MISSING_ALT_TEXT: 5 }, // GUIDE_ACHAT
+  R3_conseil: { MISSING_IMAGE: 8, MISSING_ALT_TEXT: 5 }, // BLOG_CONSEIL
+  R5_diagnostic: { MISSING_IMAGE: 5, MISSING_ALT_TEXT: 3 }, // DIAGNOSTIC
+  R6_panne: { MISSING_IMAGE: 5, MISSING_ALT_TEXT: 3 }, // PANNE_SYMPTOME
+  R4_reference: { MISSING_IMAGE: 0, MISSING_ALT_TEXT: 3 }, // GLOSSAIRE_REFERENCE
+};
+
+/**
+ * Retourne la penalite image pour un page type donne.
+ * Les pages SELECTION et OUTIL ne passent pas par le pipeline content-refresh.
+ */
+export function getImagePenalty(
+  flag: 'MISSING_IMAGE' | 'MISSING_ALT_TEXT',
+  pageType: string,
+): number {
+  const penalties = IMAGE_PENALTIES[pageType as ContentPageType];
+  if (penalties) {
+    return penalties[flag];
+  }
+  return FLAG_PENALTIES[flag];
+}
 
 // ─────────────────────────────────────────────────────────────
 // Action markers (actionable verbs in buying guide content)

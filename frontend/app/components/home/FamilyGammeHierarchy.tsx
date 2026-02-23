@@ -4,6 +4,7 @@
 import { Link } from "@remix-run/react";
 import { useState, useEffect, memo } from "react";
 
+import { getFamilyTheme } from "~/utils/family-theme";
 import {
   type FamilyWithGammes,
   type HierarchyStats,
@@ -28,18 +29,7 @@ const getFamilyIcon = (family: FamilyWithGammes): string => {
 };
 
 const getFamilyColor = (family: FamilyWithGammes): string => {
-  const colors = [
-    "bg-primary",
-    "bg-success",
-    "bg-destructive",
-    "bg-purple-500",
-    "bg-warning",
-    "bg-pink-500",
-    "bg-indigo-500",
-    "bg-gray-500",
-  ];
-  const index = parseInt(String(family.mf_id)) % colors.length;
-  return colors[index];
+  return getFamilyTheme(family.mf_id).gradient;
 };
 
 const getFamilyImage = (family: FamilyWithGammes): string => {

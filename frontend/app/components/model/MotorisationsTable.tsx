@@ -16,6 +16,8 @@
 import { Car, Fuel, Zap, Battery } from "lucide-react";
 import { memo } from "react";
 
+import { getEnergyTheme } from "~/utils/family-theme";
+
 export interface MotorisationEntry {
   variante: string;
   puissance: string;
@@ -50,12 +52,10 @@ const energyIcons: Record<string, JSX.Element> = {
   Electrique: <Battery className="w-4 h-4" />,
 };
 
-// Colors for energy types
-const energyColors: Record<string, string> = {
-  Diesel: "bg-gray-700 text-white",
-  Essence: "bg-red-600 text-white",
-  Hybride: "bg-green-600 text-white",
-  Electrique: "bg-blue-500 text-white",
+// Colors for energy types (source unique: family-theme.ts)
+const energyColors = (energy: string): string => {
+  const theme = getEnergyTheme(energy);
+  return `${theme.bg} ${theme.fg}`;
 };
 
 export const MotorisationsTable = memo(function MotorisationsTable({
@@ -264,9 +264,9 @@ function MotorisationRow({
       </td>
       <td className="px-4 py-2.5 text-center">
         <span
-          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
-            energyColors[motorisation.energie] || "bg-gray-500 text-white"
-          }`}
+          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${energyColors(
+            motorisation.energie,
+          )}`}
         >
           {energyIcons[motorisation.energie]}
           {motorisation.energie}
