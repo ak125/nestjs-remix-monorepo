@@ -2,6 +2,8 @@ import { Processor, Process } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bull';
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { BuyingGuideEnricherService } from '../../modules/admin/services/buying-guide-enricher.service';
@@ -10,6 +12,7 @@ import { ReferenceService } from '../../modules/seo/services/reference.service';
 import { DiagnosticService } from '../../modules/seo/services/diagnostic.service';
 import { BriefGatesService } from '../../modules/admin/services/brief-gates.service';
 import { HardGatesService } from '../../modules/admin/services/hard-gates.service';
+import { RagProxyService } from '../../modules/rag-proxy/rag-proxy.service';
 import { SectionCompilerService } from '../../modules/admin/services/section-compiler.service';
 import {
   pageTypeToRole,
@@ -41,6 +44,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly briefGatesService: BriefGatesService,
     private readonly hardGatesService: HardGatesService,
     private readonly sectionCompiler: SectionCompilerService,
+    private readonly ragProxyService: RagProxyService,
   ) {
     super(configService);
   }
@@ -60,6 +64,8 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         ? ((job.data as { supplementaryFiles?: string[] }).supplementaryFiles ??
           [])
         : [];
+    const force =
+      'force' in job.data ? !!(job.data as { force?: boolean }).force : false;
 
     this.logger.log(
       `Processing content-refresh: ${diagnosticSlug || pgAlias}, pageType=${pageType}, logId=${refreshLogId}`,
@@ -83,6 +89,15 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       let ragSkipReason: string | undefined;
       let evidencePack: EvidenceEntry[] | null = null;
       let enricherClaims: ClaimEntry[] = [];
+
+      // Auto-discover supplementary docs from Weaviate when none provided
+      if (supplementaryFiles.length === 0 && pgAlias) {
+        const discovered =
+          await this.discoverSupplementaryFromWeaviate(pgAlias);
+        if (discovered.length > 0) {
+          supplementaryFiles.push(...discovered);
+        }
+      }
 
       switch (pageType) {
         case 'R1_pieces':
@@ -164,6 +179,8 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             String(pgId),
             pgAlias,
             supplementaryFiles,
+            false,
+            force,
           );
           qualityScore = conseilResult.score;
           qualityFlags = conseilResult.flags;
@@ -1318,6 +1335,88 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         itemsAffected: 0,
         detail: `Error: ${msg}`,
       };
+    }
+  }
+
+  // ── Weaviate auto-discovery ──
+
+  /**
+   * Auto-discover supplementary docs from Weaviate for a specific gamme.
+   * Searches across web/, web-catalog/, vehicle/, guides/, reference/ docs.
+   * Returns resolved file paths on the host filesystem.
+   */
+  private async discoverSupplementaryFromWeaviate(
+    pgAlias: string,
+  ): Promise<string[]> {
+    const knowledgePath =
+      process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+
+    try {
+      const query = pgAlias
+        .replace(/-/g, ' ')
+        .replace(/ d /g, " d'")
+        .replace(/ l /g, " l'");
+
+      const searchResult = await this.ragProxyService.search({
+        query,
+        limit: 8,
+        filters: { truth_levels: ['L1', 'L2'] },
+      });
+
+      if (!searchResult?.results?.length) return [];
+
+      // Exclude gammes/ (already read by enricher) and pdf:// (unresolvable)
+      const candidates = searchResult.results.filter((r) => {
+        const sp = r.sourcePath || '';
+        return sp && !sp.startsWith('gammes/') && !sp.startsWith('pdf://');
+      });
+
+      if (candidates.length === 0) return [];
+
+      const searchDirs = [
+        'web',
+        'web-catalog',
+        'vehicle',
+        'guides',
+        'reference',
+        'catalog',
+      ];
+      const filePaths: string[] = [];
+
+      for (const doc of candidates) {
+        const sp = doc.sourcePath || '';
+
+        // Case 1: source_path with slash → direct relative path
+        if (sp.includes('/')) {
+          const fullPath = join(knowledgePath, sp);
+          if (existsSync(fullPath)) {
+            filePaths.push(fullPath);
+          }
+          continue;
+        }
+
+        // Case 2: filename only → search across subdirectories
+        for (const subDir of searchDirs) {
+          const fullPath = join(knowledgePath, subDir, sp);
+          if (existsSync(fullPath)) {
+            filePaths.push(fullPath);
+            break;
+          }
+        }
+      }
+
+      if (filePaths.length > 0) {
+        this.logger.log(
+          `Weaviate discovery for ${pgAlias}: ${filePaths.length} supplementary docs found`,
+        );
+      }
+
+      return filePaths;
+    } catch (err) {
+      this.logger.warn(
+        `Weaviate discovery failed for ${pgAlias}: ${(err as Error).message}`,
+      );
+      return [];
     }
   }
 
