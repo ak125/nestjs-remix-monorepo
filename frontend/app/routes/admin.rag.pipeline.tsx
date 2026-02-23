@@ -349,6 +349,7 @@ export default function AdminRagPipeline() {
 
   // Trigger form state
   const [triggerAlias, setTriggerAlias] = useState("");
+  const [triggerForce, setTriggerForce] = useState(false);
   const [triggerSubmitting, setTriggerSubmitting] = useState(false);
   const [triggerResult, setTriggerResult] = useState<{
     success?: boolean;
@@ -402,7 +403,10 @@ export default function AdminRagPipeline() {
       const res = await fetch("/api/admin/content-refresh/trigger", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pgAlias: alias }),
+        body: JSON.stringify({
+          pgAlias: alias,
+          ...(triggerForce ? { force: true } : {}),
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -601,6 +605,16 @@ export default function AdminRagPipeline() {
                   disabled={triggerSubmitting}
                 />
               </div>
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={triggerForce}
+                  onChange={(e) => setTriggerForce(e.target.checked)}
+                  disabled={triggerSubmitting}
+                  className="rounded border-gray-300"
+                />
+                Forcer re-enrichissement
+              </label>
               <Button
                 type="submit"
                 disabled={triggerSubmitting}
@@ -691,7 +705,10 @@ export default function AdminRagPipeline() {
                   id="filterAlias"
                   placeholder="balais-d-essuie-glace..."
                   defaultValue={filters.pgAlias}
-                  onChange={(e) => updateFilter("pg_alias", e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter")
+                      updateFilter("pg_alias", e.currentTarget.value);
+                  }}
                 />
               </div>
               <Badge variant="secondary" className="h-9 px-3">

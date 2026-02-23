@@ -78,6 +78,7 @@ export class AdminContentRefreshController {
     return this.contentRefreshService.triggerManualRefresh(
       aliases,
       parsed.data.supplementaryFiles,
+      parsed.data.force,
     );
   }
 

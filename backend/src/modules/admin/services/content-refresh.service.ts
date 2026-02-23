@@ -85,6 +85,7 @@ export class ContentRefreshService extends SupabaseBaseService {
     triggerJobId: string,
     triggerSource: string,
     supplementaryFiles: string[] = [],
+    force?: boolean,
   ): Promise<GammePageType[]> {
     // Resolve pg_alias → pg_id
     const { data: gamme } = await this.client
@@ -114,6 +115,7 @@ export class ContentRefreshService extends SupabaseBaseService {
         triggerJobId,
         triggerSource,
         supplementaryFiles,
+        force,
       );
       if (created) queued.push(pageType);
     }
@@ -170,6 +172,7 @@ export class ContentRefreshService extends SupabaseBaseService {
   async triggerManualRefresh(
     pgAliases: string[],
     supplementaryFiles: string[] = [],
+    force?: boolean,
   ): Promise<{
     queued: Array<{ pgAlias: string; pageTypes: GammePageType[] }>;
   }> {
@@ -181,6 +184,7 @@ export class ContentRefreshService extends SupabaseBaseService {
         'manual',
         'manual',
         supplementaryFiles,
+        force,
       );
       results.push({ pgAlias, pageTypes });
     }
@@ -747,6 +751,7 @@ export class ContentRefreshService extends SupabaseBaseService {
     triggerJobId: string,
     triggerSource: string,
     supplementaryFiles: string[] = [],
+    force?: boolean,
   ): Promise<boolean> {
     // Guard: don't interrupt active jobs
     const { data: active } = await this.client
@@ -798,6 +803,7 @@ export class ContentRefreshService extends SupabaseBaseService {
       pgAlias,
       pageType,
       ...(supplementaryFiles.length > 0 ? { supplementaryFiles } : {}),
+      ...(force ? { force } : {}),
     };
 
     const job = await this.seoMonitorQueue.add('content-refresh', jobData, {

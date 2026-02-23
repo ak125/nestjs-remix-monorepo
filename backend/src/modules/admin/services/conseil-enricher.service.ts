@@ -4,6 +4,7 @@ import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
 import { AiContentService } from '../../ai-content/ai-content.service';
 import { PageBriefService } from './page-brief.service';
 import { ConfigService } from '@nestjs/config';
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { GENERIC_PHRASES as SHARED_GENERIC_PHRASES } from '../../../config/buying-guide-quality.constants';
@@ -126,6 +127,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     pgAlias: string,
     supplementaryFiles: string[] = [],
     conservativeMode = false,
+    force = false,
   ): Promise<ConseilEnrichResult> {
     // 1. Load RAG knowledge doc (API first, disk fallback)
     let ragContent: string;
@@ -269,6 +271,33 @@ export class ConseilEnricherService extends SupabaseBaseService {
       });
     }
 
+    // 2d. Auto-detect RAG content change via evidence_pack_hash comparison
+    // Hash must match what the processor stores: sha256(JSON.stringify(evidencePack))
+    let ragChanged = false;
+    if (!force && !supplementaryEnriched && evidenceEntries.length > 0) {
+      const currentHash = createHash('sha256')
+        .update(JSON.stringify(evidenceEntries))
+        .digest('hex');
+      const { data: lastSuccess } = await this.client
+        .from('__rag_content_refresh_log')
+        .select('evidence_pack_hash')
+        .eq('pg_alias', pgAlias)
+        .eq('page_type', 'R3_conseils')
+        .in('status', ['auto_published', 'published'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (
+        lastSuccess?.evidence_pack_hash &&
+        lastSuccess.evidence_pack_hash !== currentHash
+      ) {
+        ragChanged = true;
+        this.logger.log(
+          `Evidence changed for ${pgAlias}: old=${String(lastSuccess.evidence_pack_hash).substring(0, 8)} vs new=${currentHash.substring(0, 8)}`,
+        );
+      }
+    }
+
     // 3-7. Execute enrichment pipeline (shared with supplementary-only path)
     const result = await this.executeEnrichment(
       pgId,
@@ -276,6 +305,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       contract,
       supplementaryEnriched,
       conservativeMode,
+      force || ragChanged,
     );
     result.evidencePack = evidenceEntries;
     return result;
@@ -291,6 +321,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     contract: PageContract,
     hasSupplementary = false,
     conservativeMode = false,
+    force = false,
   ): Promise<ConseilEnrichResult> {
     // 3. Load existing conseil sections
     const existing = await this.loadExistingSections(pgId);
@@ -300,7 +331,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       existing,
       contract,
       pgAlias,
-      hasSupplementary,
+      hasSupplementary || force,
     );
 
     // 5. Filter out skips
@@ -862,7 +893,9 @@ export class ConseilEnricherService extends SupabaseBaseService {
         ? this.stripHtml(existingS1.sgc_content || '').length
         : 0;
       const ragRicher =
-        !existingS1 || contract.intro.role.length > existingPlainLen;
+        !existingS1 ||
+        contract.intro.role.length > existingPlainLen ||
+        hasSupplementary;
       if (ragRicher) {
         const syncParts = contract.intro.syncParts || [];
         const syncHtml =
@@ -1030,13 +1063,13 @@ export class ConseilEnricherService extends SupabaseBaseService {
     }
 
     // S7 Pièces associées — prefer markdown associated pieces over syncParts
-    // (no supplementary override — supplementary files don't contain associated pieces)
+    // (no supplementary override — but force bypasses the substantial check)
     {
       const existingS7 = existing.get(SECTION_TYPES.S7);
       const s7Substantial =
         existingS7 &&
         (existingS7.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
-      if (!s7Substantial) {
+      if (!s7Substantial || hasSupplementary) {
         const pieces =
           contract.associatedPieces && contract.associatedPieces.length > 0
             ? contract.associatedPieces

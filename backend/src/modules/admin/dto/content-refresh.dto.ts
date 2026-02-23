@@ -4,6 +4,7 @@ export const TriggerRefreshDto = z.object({
   pgAlias: z.string().min(1).optional(),
   pgAliases: z.array(z.string().min(1)).optional(),
   supplementaryFiles: z.array(z.string()).optional(),
+  force: z.boolean().optional(),
 });
 
 export type TriggerRefreshInput = z.infer<typeof TriggerRefreshDto>;

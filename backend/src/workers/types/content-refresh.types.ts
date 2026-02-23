@@ -13,6 +13,8 @@ export interface ContentRefreshJobData {
   pageType: Exclude<PageType, 'R5_diagnostic'>;
   /** Absolute paths of supplementary RAG files that triggered this refresh */
   supplementaryFiles?: string[];
+  /** Force re-enrichment even when all sections are already substantial */
+  force?: boolean;
 }
 
 /** Job data for diagnostic refresh (R5) — keyed by diagnosticSlug, NOT pgAlias */
