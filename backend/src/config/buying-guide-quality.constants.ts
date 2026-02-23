@@ -74,6 +74,7 @@ export const MIN_SYMPTOMS = 3;
 
 export const MIN_VERIFIED_CONFIDENCE = 0.8;
 export const MIN_QUALITY_SCORE = 70;
+export const QUALITY_SCORE_ADVISORY = 85; // seuil ingestion recommendations (advisory, non-bloquant)
 
 // ─────────────────────────────────────────────────────────────
 // Generic phrases to detect (wiki-style, low value content)

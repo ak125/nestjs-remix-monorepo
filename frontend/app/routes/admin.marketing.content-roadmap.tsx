@@ -253,6 +253,13 @@ export default function ContentRoadmapPage() {
               variant="info"
               subtitle="gammes avec diag"
             />
+            <KpiCard
+              title="Roadmap"
+              value={coverage.gammes_with_roadmap}
+              icon={Map}
+              variant="info"
+              subtitle="gammes planifiées"
+            />
             {pipeline && (
               <>
                 <KpiCard

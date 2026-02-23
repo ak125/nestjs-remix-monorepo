@@ -18,7 +18,10 @@ import {
   pageTypeToRole,
   POLICY_VERSION,
 } from '../../config/content-section-policy';
-import { getImagePenalty } from '../../config/buying-guide-quality.constants';
+import {
+  getImagePenalty,
+  QUALITY_SCORE_ADVISORY,
+} from '../../config/buying-guide-quality.constants';
 import type {
   AnyContentRefreshJobData,
   ContentRefreshResult,
@@ -32,7 +35,7 @@ import type {
   SafeFallbackDraft,
 } from '../types/content-refresh.types';
 
-@Processor('seo-monitor')
+@Processor('content-refresh')
 export class ContentRefreshProcessor extends SupabaseBaseService {
   protected override readonly logger = new Logger(ContentRefreshProcessor.name);
 
@@ -530,9 +533,9 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         }
       }
 
-      // Generate ingestion recommendations when score < 85
+      // Generate ingestion recommendations when score below advisory threshold
       let ingestionRecommendations: string[] | null = null;
-      if ((qualityScore ?? 0) < 85 && !ragSkipped) {
+      if ((qualityScore ?? 0) < QUALITY_SCORE_ADVISORY && !ragSkipped) {
         ingestionRecommendations = this.generateIngestionRecommendations(
           pageType,
           qualityFlags,

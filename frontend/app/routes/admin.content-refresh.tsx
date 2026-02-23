@@ -58,6 +58,9 @@ import { createNoIndexMeta } from "~/utils/meta-helpers";
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Content Refresh - Admin");
 
+// UI-only thresholds for badge color coding (not the pipeline publication/advisory thresholds)
+const QUALITY_THRESHOLDS = { good: 70, warning: 50 } as const;
+
 // ── Types ──
 
 interface DashboardData {
@@ -181,9 +184,9 @@ function QualityScoreBadge({ score }: { score: number | null }) {
   }
 
   let colorClass = "bg-red-100 text-red-800";
-  if (score >= 70) {
+  if (score >= QUALITY_THRESHOLDS.good) {
     colorClass = "bg-green-100 text-green-800";
-  } else if (score >= 50) {
+  } else if (score >= QUALITY_THRESHOLDS.warning) {
     colorClass = "bg-yellow-100 text-yellow-800";
   }
 
@@ -193,9 +196,9 @@ function QualityScoreBadge({ score }: { score: number | null }) {
         <div className="h-1.5 w-full rounded-full bg-gray-200 overflow-hidden">
           <div
             className={`h-full rounded-full transition-all ${
-              score >= 70
+              score >= QUALITY_THRESHOLDS.good
                 ? "bg-green-500"
-                : score >= 50
+                : score >= QUALITY_THRESHOLDS.warning
                   ? "bg-yellow-500"
                   : "bg-red-500"
             }`}

@@ -67,6 +67,7 @@ import { PageBriefService } from '../modules/admin/services/page-brief.service';
       // { name: 'cache' }, // DESACTIVE temporairement
       // { name: 'email' }, // DESACTIVE temporairement
       { name: 'seo-monitor' },
+      { name: 'content-refresh' },
     ),
 
     // Modules for ContentRefreshProcessor dependencies

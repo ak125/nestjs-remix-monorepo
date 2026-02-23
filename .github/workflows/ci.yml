@@ -717,6 +717,31 @@ jobs:
             echo "⚠️ /pieces/catalogue -> $STATUS"
           fi
 
+          # Admin guard smoke tests (must NOT return 200)
+          echo "Testing admin guards..."
+
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/admin/content-refresh/dashboard" --max-time 10)
+          if [ "$STATUS" = "403" ] || [ "$STATUS" = "401" ]; then
+            echo "✅ admin guard /content-refresh -> $STATUS"
+          elif [ "$STATUS" = "000" ]; then
+            echo "❌ admin guard /content-refresh -> timeout/unreachable"
+            FAILED=1
+          else
+            echo "❌ admin guard /content-refresh -> $STATUS (expected 401/403)"
+            FAILED=1
+          fi
+
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/api/admin/page-briefs" --max-time 10)
+          if [ "$STATUS" = "403" ] || [ "$STATUS" = "401" ]; then
+            echo "✅ admin guard /page-briefs -> $STATUS"
+          elif [ "$STATUS" = "000" ]; then
+            echo "❌ admin guard /page-briefs -> timeout/unreachable"
+            FAILED=1
+          else
+            echo "❌ admin guard /page-briefs -> $STATUS (expected 401/403)"
+            FAILED=1
+          fi
+
           if [ "$FAILED" = "1" ]; then
             echo "❌ Critical API smoke tests failed!"
             exit 1

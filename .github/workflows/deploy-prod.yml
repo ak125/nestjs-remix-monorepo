@@ -138,6 +138,22 @@ jobs:
             echo "⚠️ /api/catalog/families -> unexpected response (non-blocking)"
           fi
 
+          # Admin guard verification (warning only, non-blocking)
+          echo "🛡️ Testing admin guards..."
+          ADMIN_RESP=$($EXEC wget -q --server-response -O /dev/null http://localhost:3000/api/admin/content-refresh/dashboard 2>&1 | grep "HTTP/" | awk '{print $2}')
+          if [ "$ADMIN_RESP" = "403" ] || [ "$ADMIN_RESP" = "401" ]; then
+            echo "✅ admin guard /content-refresh -> $ADMIN_RESP"
+          else
+            echo "⚠️ admin guard /content-refresh -> ${ADMIN_RESP:-unknown} (expected 401/403)"
+          fi
+
+          ADMIN_RESP=$($EXEC wget -q --server-response -O /dev/null http://localhost:3000/api/admin/page-briefs 2>&1 | grep "HTTP/" | awk '{print $2}')
+          if [ "$ADMIN_RESP" = "403" ] || [ "$ADMIN_RESP" = "401" ]; then
+            echo "✅ admin guard /page-briefs -> $ADMIN_RESP"
+          else
+            echo "⚠️ admin guard /page-briefs -> ${ADMIN_RESP:-unknown} (expected 401/403)"
+          fi
+
           if [ "$FAILED" = "1" ]; then
             echo "❌ Validation failed!"
             exit 1

@@ -6,6 +6,8 @@ import { PageBriefService } from './page-brief.service';
 import { ConfigService } from '@nestjs/config';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const yaml = require('js-yaml');
 import { z } from 'zod';
 import {
   SelectionCriterionSchema,
@@ -447,8 +449,9 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       `RAG knowledge docs loaded: ${allContent.length} chars, sources=[${sources.join(', ')}]`,
     );
 
-    // ── Parse page_contract from YAML (fallback data source) ──
-    const pageContract = this.parsePageContractYaml(gammeContent);
+    // ── Parse v4 frontmatter (priority) or legacy page_contract (fallback) ──
+    const v4Data = this.parseV4Frontmatter(gammeContent);
+    const pageContract = v4Data ? null : this.parsePageContractYaml(gammeContent);
 
     // ── Extract anti_mistakes ──
     const errorsSection = this.extractSection(allContent, 'Erreurs a eviter');
@@ -469,7 +472,15 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       if (errorsAlias)
         antiMistakes.push(...this.extractBulletList(errorsAlias));
     }
-    // YAML fallback: page_contract.antiMistakes
+    // v4 structured data: selection.anti_mistakes
+    if (antiMistakes.length < MIN_ANTI_MISTAKES && v4Data?.antiMistakes?.length) {
+      for (const item of v4Data.antiMistakes) {
+        if (!antiMistakes.some((e) => e.toLowerCase() === item.toLowerCase())) {
+          antiMistakes.push(item);
+        }
+      }
+    }
+    // Legacy YAML fallback: page_contract.antiMistakes
     if (
       antiMistakes.length < MIN_ANTI_MISTAKES &&
       pageContract?.antiMistakes?.length
@@ -528,7 +539,39 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       checklistSection || checklistAlt || checklistAlias || '',
     );
     const selectionCriteria = this.buildCriteriaFromCheckList(checklistItems);
-    // YAML fallback: build criteria from page_contract.symptoms + howToChoose
+    // v4 structured data: selection.criteria
+    if (
+      selectionCriteria.length < MIN_SELECTION_CRITERIA &&
+      v4Data?.selectionCriteria?.length
+    ) {
+      for (const criterion of v4Data.selectionCriteria) {
+        if (criterion.length > 5) {
+          selectionCriteria.push({
+            key: `v4-${selectionCriteria.length}`,
+            label: criterion,
+            guidance: criterion,
+            priority: 'recommended',
+          });
+        }
+      }
+    }
+    // v4 fallback: diagnostic.symptoms as criteria (same logic as legacy)
+    if (
+      selectionCriteria.length < MIN_SELECTION_CRITERIA &&
+      v4Data?.symptoms?.length
+    ) {
+      for (const symptom of v4Data.symptoms) {
+        if (symptom.length > 5) {
+          selectionCriteria.push({
+            key: `v4-symptom-${selectionCriteria.length}`,
+            label: symptom,
+            guidance: `Vérifier : ${symptom}`,
+            priority: 'recommended',
+          });
+        }
+      }
+    }
+    // Legacy YAML fallback: build criteria from page_contract.symptoms + howToChoose
     if (
       selectionCriteria.length < MIN_SELECTION_CRITERIA &&
       pageContract?.symptoms?.length
@@ -683,7 +726,17 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         (standardSection || standardAlt || '');
     }
 
-    // Priority 3 (YAML fallback): page_contract.arguments
+    // Priority 3 (v4 structured data): rendering.arguments
+    if (useCases.length < 2 && v4Data?.arguments?.length) {
+      for (const arg of v4Data.arguments) {
+        useCases.push({
+          id: `v4-${useCases.length}`,
+          label: arg.title,
+          recommendation: arg.content,
+        });
+      }
+    }
+    // Priority 4 (legacy YAML fallback): page_contract.arguments
     if (useCases.length < 2 && pageContract?.arguments?.length) {
       for (const arg of pageContract.arguments) {
         useCases.push({
@@ -711,7 +764,8 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
 
     // ── Extract FAQ ──
     const guideFaqs = this.extractFaqFromMarkdown(guideContent);
-    const fmFaqs = this.parseFrontmatterFaq(gammeContent);
+    // v4: use parsed FAQ from yaml.load() (reliable), legacy: regex-based parser
+    const fmFaqs = v4Data?.faq?.length ? v4Data.faq : this.parseFrontmatterFaq(gammeContent);
     const allFaqs = [...guideFaqs];
     for (const faq of fmFaqs) {
       if (
@@ -1040,6 +1094,120 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     }
 
     return Object.keys(result).length > 0 ? result : null;
+  }
+
+  // ── v4 schema frontmatter parser (js-yaml) ──
+
+  /**
+   * Parse v4 schema frontmatter using js-yaml.
+   * Detects v4 via `rendering.quality.version === 'GammeContentContract.v4'`
+   * and returns structured data from the 5 blocs (domain, selection, diagnostic,
+   * maintenance, rendering). Returns null for non-v4 files.
+   *
+   * Same pattern as conseil-enricher.service.ts:parseV4ToPageContract()
+   * and reference.service.ts:parseRagGammeFileV4().
+   */
+  private parseV4Frontmatter(content: string): {
+    faq: Array<{ question: string; answer: string }>;
+    arguments: Array<{ title: string; content: string }>;
+    antiMistakes: string[];
+    symptoms: string[];
+    selectionCriteria: string[];
+    howToChoose: string | null;
+    diagnosticTree: Array<{ if: string; then: string }>;
+  } | null {
+    try {
+      const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+      if (!fmMatch) return null;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const fm = yaml.load(fmMatch[1]) as Record<string, any>;
+      if (!fm) return null;
+
+      // v4 detection — same 3-path check as conseil-enricher
+      const version =
+        fm?.rendering?.quality?.version ||
+        fm?.page_contract?.quality?.version ||
+        fm?.quality?.version;
+      if (version !== 'GammeContentContract.v4') return null;
+
+      const selection = fm.selection || {};
+      const diagnostic = fm.diagnostic || {};
+      const rendering = fm.rendering || {};
+
+      // FAQ: rendering.faq[] → {question, answer}
+      const faq: Array<{ question: string; answer: string }> = (
+        rendering.faq || []
+      ).map((f: { question?: string; answer?: string; q?: string; a?: string }) => ({
+        question: f.question || f.q || '',
+        answer: f.answer || f.a || '',
+      })).filter((f: { question: string; answer: string }) => f.question && f.answer);
+
+      // Arguments: rendering.arguments[] → {title, content}
+      // v4 arguments have {title, icon, source_ref} — adapt to enricher's {title, content} format
+      const args: Array<{ title: string; content: string }> = (
+        rendering.arguments || []
+      ).map((a: { title?: string; icon?: string; source_ref?: string }) => ({
+        title: a.title || '',
+        content: a.title || '', // v4 arguments are label-only, no separate content field
+      })).filter((a: { title: string }) => a.title);
+
+      // Anti-mistakes: selection.anti_mistakes[]
+      const antiMistakes: string[] = (selection.anti_mistakes || []).filter(
+        (s: unknown) => typeof s === 'string' && s.length > 0,
+      );
+
+      // Symptoms: diagnostic.symptoms[].label
+      const symptoms: string[] = (diagnostic.symptoms || [])
+        .map((s: { label?: string } | string) =>
+          typeof s === 'string' ? s : s?.label || '',
+        )
+        .filter((s: string) => s.length > 0);
+
+      // Selection criteria: selection.criteria[]
+      const selectionCriteria: string[] = (selection.criteria || []).filter(
+        (s: unknown) => typeof s === 'string' && s.length > 0,
+      );
+
+      // HowToChoose: join selection.criteria as a single string (legacy compat)
+      const howToChoose =
+        selectionCriteria.length > 0 ? selectionCriteria.join('. ') : null;
+
+      // Diagnostic tree: diagnostic.causes[] → {if, then}
+      const diagnosticTree: Array<{ if: string; then: string }> = (
+        diagnostic.causes || []
+      ).map((c: string) => ({ if: c, then: '' }));
+
+      // Validate: at least 2 useful fields present
+      let fieldCount = 0;
+      if (faq.length > 0) fieldCount++;
+      if (antiMistakes.length > 0) fieldCount++;
+      if (symptoms.length > 0) fieldCount++;
+      if (selectionCriteria.length > 0) fieldCount++;
+      if (args.length > 0) fieldCount++;
+
+      if (fieldCount < 2) {
+        this.logger.warn('v4 frontmatter detected but < 2 useful fields, skipping');
+        return null;
+      }
+
+      this.logger.log(
+        `Parsed v4 frontmatter: ${faq.length} FAQ, ${antiMistakes.length} anti-mistakes, ${symptoms.length} symptoms, ${selectionCriteria.length} criteria, ${args.length} arguments`,
+      );
+
+      return {
+        faq,
+        arguments: args,
+        antiMistakes,
+        symptoms,
+        selectionCriteria,
+        howToChoose,
+        diagnosticTree,
+      };
+    } catch (err) {
+      this.logger.warn(`Failed to parse v4 frontmatter: ${err}`);
+      return null;
+    }
   }
 
   // ── Language filter ──

@@ -36,6 +36,7 @@ import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 
 // AdminVehicleResolveController supprimé — méthode resolveVehicleTypes jamais implémentée
 import { AdminBuyingGuideController } from './controllers/admin-buying-guide.controller'; // 📖 Buying Guide RAG enrichment
 import { AdminContentRefreshController } from './controllers/admin-content-refresh.controller'; // 🔄 Content Refresh pipeline
+import { InternalEnrichController } from './controllers/internal-enrich.controller'; // 🔑 Internal enrichment (API key auth)
 import { AdminPageBriefController } from './controllers/admin-page-brief.controller'; // 📋 Page Briefs SEO
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
@@ -81,7 +82,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     SeoModule, // 🚀 Import pour accès aux services SEO (risk flags, googlebot)
     RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
     ...(process.env.LLM_POLISH_ENABLED === 'true' ? [AiContentModule] : []),
-    BullModule.registerQueue({ name: 'seo-monitor' }), // 🔄 Queue pour ContentRefreshService
+    BullModule.registerQueue({ name: 'content-refresh' }), // 🔄 Queue dédiée ContentRefreshService
   ],
   controllers: [
     ConfigurationController,
@@ -106,6 +107,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     SeoCockpitController, // 🚀 SEO Cockpit Unifié - /api/admin/seo-cockpit/*
     // AdminVehicleResolveController supprimé
     AdminBuyingGuideController, // 📖 Buying Guide RAG enrichment - /api/admin/buying-guides/*
+    InternalEnrichController, // 🔑 Internal enrichment (API key) - /api/internal/buying-guides/*
     AdminContentRefreshController, // 🔄 Content Refresh pipeline - /api/admin/content-refresh/*
     AdminPageBriefController, // 📋 Page Briefs SEO - /api/admin/page-briefs/*
   ],

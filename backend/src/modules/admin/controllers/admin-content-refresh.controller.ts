@@ -7,6 +7,7 @@ import {
   Param,
   Body,
   Query,
+  Req,
   UseGuards,
   BadRequestException,
   NotFoundException,
@@ -105,15 +106,17 @@ export class AdminContentRefreshController {
    * Admin validates and publishes a draft.
    */
   @Patch(':id/publish')
-  async publishRefresh(@Param('id') id: string) {
+  async publishRefresh(@Param('id') id: string, @Req() req: any) {
     const numId = parseInt(id, 10);
     if (isNaN(numId)) {
       throw new BadRequestException('Invalid ID');
     }
-    return this.contentRefreshService.publishRefresh(
-      numId,
-      'admin', // TODO: extract from session
-    );
+    const adminUser =
+      req.user?.email?.trim() ||
+      req.user?.cst_id?.toString() ||
+      req.user?.id?.toString() ||
+      'admin';
+    return this.contentRefreshService.publishRefresh(numId, adminUser);
   }
 
   /**

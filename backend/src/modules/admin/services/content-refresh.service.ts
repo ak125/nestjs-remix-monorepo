@@ -25,7 +25,7 @@ export class ContentRefreshService extends SupabaseBaseService {
 
   constructor(
     configService: ConfigService,
-    @InjectQueue('seo-monitor') private readonly seoMonitorQueue: Queue,
+    @InjectQueue('content-refresh') private readonly contentRefreshQueue: Queue,
   ) {
     super(configService);
   }
@@ -806,7 +806,7 @@ export class ContentRefreshService extends SupabaseBaseService {
       ...(force ? { force } : {}),
     };
 
-    const job = await this.seoMonitorQueue.add('content-refresh', jobData, {
+    const job = await this.contentRefreshQueue.add('content-refresh', jobData, {
       attempts: 2,
       backoff: { type: 'exponential', delay: 30000 },
       removeOnComplete: 200,
@@ -876,7 +876,7 @@ export class ContentRefreshService extends SupabaseBaseService {
       pageType: 'R5_diagnostic',
     };
 
-    const job = await this.seoMonitorQueue.add('content-refresh', jobData, {
+    const job = await this.contentRefreshQueue.add('content-refresh', jobData, {
       attempts: 2,
       backoff: { type: 'exponential', delay: 30000 },
       removeOnComplete: 200,
