@@ -3,12 +3,12 @@ import { useLoaderData } from "@remix-run/react";
 import { Link2, TrendingUp, FileText, Target } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const res = await fetch(
-      getInternalApiUrl("/api/admin/marketing/dashboard"),
+      getInternalApiUrlFromRequest("/api/admin/marketing/dashboard", request),
       {
         headers: { Cookie: request.headers.get("Cookie") || "" },
       },

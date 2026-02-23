@@ -6,9 +6,11 @@ import {
   Param,
   Body,
   Query,
+  UseGuards,
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { PageBriefService } from '../services/page-brief.service';
 import {
   CreatePageBriefDto,
@@ -18,6 +20,7 @@ import {
 } from '../dto/page-brief.dto';
 
 @Controller('api/admin/page-briefs')
+@UseGuards(IsAdminGuard)
 export class AdminPageBriefController {
   constructor(private readonly pageBriefService: PageBriefService) {}
 

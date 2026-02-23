@@ -30,25 +30,46 @@ interface JobStatus {
   returnCode: number | null;
   logPath: string;
   logTail: string[];
+  type?: "pdf" | "web";
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const cookie = request.headers.get("Cookie") || "";
   const jobId = params.jobId || "";
+  const headers = { Cookie: cookie };
 
-  const apiUrl = getInternalApiUrlFromRequest(
+  // Try PDF endpoint first
+  const pdfUrl = getInternalApiUrlFromRequest(
     `/api/rag/admin/ingest/pdf/jobs/${encodeURIComponent(jobId)}?tailLines=500`,
     request,
   );
+  const pdfRes = await fetch(pdfUrl, { headers });
 
-  const response = await fetch(apiUrl, { headers: { Cookie: cookie } });
-
-  if (!response.ok) {
-    throw new Response("Job introuvable", { status: 404 });
+  if (pdfRes.ok) {
+    const job: JobStatus = await pdfRes.json();
+    job.type = "pdf";
+    return json({ job, jobType: "pdf" as const });
   }
 
-  const job: JobStatus = await response.json();
-  return json({ job });
+  // Fallback to WEB endpoint
+  const webUrl = getInternalApiUrlFromRequest(
+    `/api/rag/admin/ingest/web/jobs/${encodeURIComponent(jobId)}`,
+    request,
+  );
+  const webRes = await fetch(webUrl, { headers });
+
+  if (webRes.ok) {
+    const raw = await webRes.json();
+    const job: JobStatus = {
+      ...raw,
+      logPath: raw.logPath ?? "",
+      logTail: raw.logTail ?? [],
+      type: "web",
+    };
+    return json({ job, jobType: "web" as const });
+  }
+
+  throw new Response("Job introuvable", { status: 404 });
 }
 
 const JOB_STATUS: Record<string, StatusType> = {
@@ -93,7 +114,7 @@ function MetaRow({ label, value }: { label: string; value: string }) {
 }
 
 export default function AdminRagIngestJobDetail() {
-  const { job } = useLoaderData<typeof loader>();
+  const { job, jobType } = useLoaderData<typeof loader>();
   const refreshFetcher = useFetcher<typeof loader>();
 
   const displayJob = refreshFetcher.data?.job ?? job;
@@ -115,7 +136,7 @@ export default function AdminRagIngestJobDetail() {
   return (
     <DashboardShell
       title={`Job ${displayJob.jobId.slice(0, 12)}`}
-      description={`Ingestion PDF — ${displayJob.status}`}
+      description={`Ingestion ${jobType === "web" ? "Web" : "PDF"} — ${displayJob.status}`}
       breadcrumb={
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Link to="/admin" className="hover:text-foreground">

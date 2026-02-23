@@ -7,9 +7,11 @@ import {
   Param,
   Body,
   Query,
+  UseGuards,
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { ContentRefreshService } from '../services/content-refresh.service';
 import {
   TriggerRefreshDto,
@@ -18,6 +20,7 @@ import {
 } from '../dto/content-refresh.dto';
 
 @Controller('api/admin/content-refresh')
+@UseGuards(IsAdminGuard)
 export class AdminContentRefreshController {
   constructor(private readonly contentRefreshService: ContentRefreshService) {}
 

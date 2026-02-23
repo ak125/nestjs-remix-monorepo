@@ -24,7 +24,7 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta = () => createNoIndexMeta("Content Roadmap - Admin");
@@ -120,13 +120,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const base = "/api/admin/marketing/content-roadmap";
 
     const [roadmapRes, coverageRes, pipelineRes] = await Promise.all([
-      fetch(getInternalApiUrl(`${base}?${params}`), {
+      fetch(getInternalApiUrlFromRequest(`${base}?${params}`, request), {
         headers: cookieHeader,
       }),
-      fetch(getInternalApiUrl(`${base}/coverage`), {
+      fetch(getInternalApiUrlFromRequest(`${base}/coverage`, request), {
         headers: cookieHeader,
       }),
-      fetch(getInternalApiUrl(`${base}/pipeline-status`), {
+      fetch(getInternalApiUrlFromRequest(`${base}/pipeline-status`, request), {
         headers: cookieHeader,
       }),
     ]);

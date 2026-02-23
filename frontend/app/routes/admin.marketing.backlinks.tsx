@@ -4,7 +4,7 @@ import { Link2, ExternalLink, TrendingUp } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   try {
@@ -18,12 +18,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
     if (min_da) params.set("min_da", min_da);
 
     const [backlinksRes, statsRes] = await Promise.all([
-      fetch(getInternalApiUrl(`/api/admin/marketing/backlinks?${params}`), {
-        headers: { Cookie: request.headers.get("Cookie") || "" },
-      }),
-      fetch(getInternalApiUrl("/api/admin/marketing/backlinks/stats"), {
-        headers: { Cookie: request.headers.get("Cookie") || "" },
-      }),
+      fetch(
+        getInternalApiUrlFromRequest(
+          `/api/admin/marketing/backlinks?${params}`,
+          request,
+        ),
+        {
+          headers: { Cookie: request.headers.get("Cookie") || "" },
+        },
+      ),
+      fetch(
+        getInternalApiUrlFromRequest(
+          "/api/admin/marketing/backlinks/stats",
+          request,
+        ),
+        {
+          headers: { Cookie: request.headers.get("Cookie") || "" },
+        },
+      ),
     ]);
 
     if (!backlinksRes.ok || !statsRes.ok) {
