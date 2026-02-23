@@ -46,6 +46,7 @@ import {
 import { Button } from "./components/ui/button";
 // @ts-ignore
 import stylesheet from "./global.css?url";
+import { useHydrated } from "./hooks/useHydrated";
 import { usePageRoleDataAttrs } from "./hooks/usePageRole";
 import { useScrollBehavior } from "./hooks/useScrollBehavior";
 import { VehicleProvider } from "./hooks/useVehiclePersistence";
@@ -227,8 +228,10 @@ class ChatWidgetErrorBoundary extends Component<
   }
 }
 
-/** Lazy-loaded ChatWidget wrapped in error boundary + suspense */
+/** Lazy-loaded ChatWidget wrapped in error boundary + suspense + hydration guard */
 function ChatWidgetSafe() {
+  const isHydrated = useHydrated();
+  if (!isHydrated) return null;
   return (
     <ChatWidgetErrorBoundary>
       <Suspense fallback={null}>
@@ -353,11 +356,11 @@ function AppShell({ children }: { children: React.ReactNode }) {
         logger.log("🔄 [root] cart:updated → revalidate");
         isRevalidating = true;
         revalidator.revalidate();
-        // Reset le flag après 5 secondes
+        // Reset le flag après 2 secondes
         setTimeout(() => {
           isRevalidating = false;
-        }, 5000);
-      }, 2000);
+        }, 2000);
+      }, 300);
     };
 
     window.addEventListener("cart:updated", handleCartUpdated);
@@ -421,27 +424,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           as="style"
           crossOrigin="anonymous"
         />
-        <link
-          rel="stylesheet"
-          href={GOOGLE_FONTS_URL}
-          media="print"
-          // @ts-expect-error onLoad is valid HTML but not typed in React
-          onLoad="this.media='all'"
-        />
-        <noscript>
-          <link rel="stylesheet" href={GOOGLE_FONTS_URL} />
-        </noscript>
+        <link rel="stylesheet" href={GOOGLE_FONTS_URL} media="all" />
         {/* 🚀 LCP: Animations CSS deferred (not needed for first paint) */}
-        <link
-          rel="stylesheet"
-          href={animationsStylesheet}
-          media="print"
-          // @ts-expect-error onLoad is valid HTML but not typed in React
-          onLoad="this.media='all'"
-        />
-        <noscript>
-          <link rel="stylesheet" href={animationsStylesheet} />
-        </noscript>
+        <link rel="stylesheet" href={animationsStylesheet} media="all" />
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
         <script
           nonce={nonce}

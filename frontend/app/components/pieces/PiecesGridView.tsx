@@ -11,6 +11,7 @@
 
 import { Truck } from "lucide-react";
 import React, { useState, useRef, useMemo, useCallback, memo } from "react";
+import { toast } from "sonner";
 
 import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
@@ -305,7 +306,7 @@ const PieceCard = memo(function PieceCard({
                 ? `Ajouter ${piece.name} au panier`
                 : `${piece.name} indisponible`
             }
-            className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${
+            className={`flex items-center justify-center gap-1.5 px-3 py-2.5 min-h-[44px] min-w-[44px] rounded-lg text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 ${
               !isLoading
                 ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/30"
                 : "bg-indigo-300 text-white cursor-wait"
@@ -421,10 +422,16 @@ export function PiecesGridView({
       }
 
       try {
-        await addToCart(pieceId, 1);
+        const success = await addToCart(pieceId, 1);
+        if (success) {
+          toast.success(`${piece?.name || "Article"} ajouté au panier`);
+        } else {
+          toast.error("Erreur lors de l'ajout au panier");
+        }
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {
         logger.error("❌ Erreur ajout panier:", error);
+        toast.error("Erreur lors de l'ajout au panier");
       } finally {
         loadingItemsRef.current.delete(pieceId);
         setLoadingItems(new Set(loadingItemsRef.current));
