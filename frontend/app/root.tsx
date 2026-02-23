@@ -417,16 +417,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <Meta />
         <Links />
-        {/* 🚀 LCP: Google Fonts async (non-render-blocking) */}
+        {/* 🚀 LCP: Google Fonts — non-render-blocking via media="print" swap */}
         <link
-          rel="preload"
+          rel="stylesheet"
           href={GOOGLE_FONTS_URL}
-          as="style"
+          media="print"
+          // @ts-expect-error onLoad is valid on link elements
+          onLoad="this.media='all'"
           crossOrigin="anonymous"
         />
-        <link rel="stylesheet" href={GOOGLE_FONTS_URL} media="all" />
-        {/* 🚀 LCP: Animations CSS deferred (not needed for first paint) */}
-        <link rel="stylesheet" href={animationsStylesheet} media="all" />
+        <noscript>
+          <link rel="stylesheet" href={GOOGLE_FONTS_URL} />
+        </noscript>
+        {/* 🚀 LCP: Animations CSS — non-render-blocking (not needed for first paint) */}
+        <link
+          rel="stylesheet"
+          href={animationsStylesheet}
+          media="print"
+          // @ts-expect-error onLoad is valid on link elements
+          onLoad="this.media='all'"
+        />
+        <noscript>
+          <link rel="stylesheet" href={animationsStylesheet} />
+        </noscript>
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
         <script
           nonce={nonce}

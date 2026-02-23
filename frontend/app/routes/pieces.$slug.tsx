@@ -49,6 +49,7 @@ import {
   GAMME_PAGE_CONTRACT_VERSION,
 } from "~/types/gamme-page-contract.types";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
+import { ImageOptimizer } from "~/utils/image-optimizer";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOgImageUrl } from "~/utils/og-image.utils";
@@ -180,7 +181,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     // 🚀 Récupération des données avec fallback automatique RPC V2 → Classic
     // ⚠️ Timeout réduit de 180s à 30s pour compatibilité Googlebot (~30s patience)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     // 🚀 LCP V9: Substitution timeout séparé (3s) — ne bloque pas le gamme fetch
     const subController = new AbortController();
@@ -482,22 +483,9 @@ export const meta: MetaFunction<typeof loader> = ({
     result.push({ "script:ld+json": gammeSchema });
   }
 
-  // 🚀 LCP OPTIMIZATION: Preload hero image pour réduire LCP
-  if (data.content?.pg_wall) {
-    result.push({
-      tagName: "link",
-      rel: "preload",
-      as: "image",
-      href: data.content.pg_wall,
-    });
-  } else if (data.content?.pg_pic) {
-    result.push({
-      tagName: "link",
-      rel: "preload",
-      as: "image",
-      href: data.content.pg_pic,
-    });
-  }
+  // 🚀 LCP: pg_wall est un fond décoratif (opacity-25) — PAS l'element LCP (= H1 texte)
+  // Preload supprimé pour libérer la priorité browser vers CSS/fonts (vrais bloqueurs LCP)
+  // pg_pic n'est pas non plus above-fold sur R1
 
   return result;
 };
@@ -535,6 +523,16 @@ export default function PiecesDetailPage() {
       logger.log("⏳ Chargement des données en cours...");
     }
   }, [isLoading]);
+
+  // 🚀 LCP: srcSet responsive pour wallpaper (fond décoratif opacity-25)
+  // Réduit le payload mobile : 640px au lieu de 1920px sur petit écran
+  const wallSrcSet = data?.content?.pg_wall
+    ? ImageOptimizer.getResponsiveSrcSet(
+        data.content.pg_wall.replace(/^\/img\//, ""),
+        [640, 1024, 1920],
+        75,
+      )
+    : undefined;
 
   if (!data || data.status !== 200) {
     return (
@@ -598,13 +596,14 @@ export default function PiecesDetailPage() {
           <div className="absolute inset-0 z-0">
             <img
               src={data.content.pg_wall}
+              srcSet={wallSrcSet}
+              sizes="100vw"
               alt={data.content.pg_name || ""}
               width={1920}
               height={400}
               className="w-full h-full object-cover opacity-25"
               loading="eager"
               decoding="async"
-              fetchPriority="high"
               onError={(e) => {
                 e.currentTarget.src = "/images/placeholder-hero.webp";
                 e.currentTarget.onerror = null;
