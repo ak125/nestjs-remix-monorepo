@@ -32,8 +32,8 @@ import {
 } from "lucide-react";
 import { useMemo } from "react";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
-import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { Error404 } from "~/components/errors/Error404";
+import { HeroGuide } from "~/components/heroes";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -312,12 +312,10 @@ export default function BlogGuidesIndex() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-green-50">
       <BlogPiecesAutoNavigation />
 
-      {/* Header */}
-      <CompactBlogHeader
-        title="Guides d'Achat"
-        description="Conseils d'experts pour choisir vos pieces auto"
-        gradientFrom="from-green-600"
-        gradientTo="to-emerald-600"
+      {/* Hero Guide */}
+      <HeroGuide
+        title="Guides d'Achat Pièces Auto"
+        description="Conseils d'experts pour choisir vos pièces auto"
       />
 
       {/* Hero Guide (le plus recent) */}

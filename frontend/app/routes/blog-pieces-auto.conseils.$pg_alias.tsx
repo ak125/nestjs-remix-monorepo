@@ -26,7 +26,6 @@ import {
 import {
   ArrowLeft,
   Calendar,
-  Clock,
   Eye,
   Share2,
   Bookmark,
@@ -53,7 +52,6 @@ import { ArticleNavigation } from "~/components/blog/ArticleNavigation";
 
 // Components internes
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
-import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 
 // Blog components
 import CTAButton from "~/components/blog/CTAButton";
@@ -61,6 +59,7 @@ import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { TableOfContents } from "~/components/blog/TableOfContents";
 import VehicleCarousel from "~/components/blog/VehicleCarousel";
 import { Error404 } from "~/components/errors/Error404";
+import { HeroBlog } from "~/components/heroes";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 
@@ -570,24 +569,11 @@ export default function LegacyBlogArticle() {
         </div>
       </div>
 
-      {/* Header Compact */}
-      <CompactBlogHeader
+      {/* Hero Blog */}
+      <HeroBlog
         title={article.h1}
-        description={`Publié le ${new Date(article.publishedAt).toLocaleDateString("fr-FR")} • ${article.viewsCount.toLocaleString()} vues`}
-        stats={[
-          {
-            icon: Eye,
-            value: article.viewsCount.toLocaleString(),
-            label: "Vues",
-          },
-          {
-            icon: Clock,
-            value: `${Math.ceil(article.content.split(" ").length / 200)} min`,
-            label: "Lecture",
-          },
-        ]}
-        gradientFrom="from-purple-600"
-        gradientTo="to-pink-600"
+        description={article.excerpt}
+        metaLine={`${new Date(article.publishedAt).toLocaleDateString("fr-FR")} · ${Math.ceil(article.content.split(" ").length / 200)} min · ${article.viewsCount.toLocaleString()} vues`}
       />
 
       <div className="container mx-auto px-4 max-w-6xl py-8">

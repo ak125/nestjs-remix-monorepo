@@ -36,8 +36,8 @@ import {
 
 // UI Components
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
-import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { Error404 } from "~/components/errors/Error404";
+import { HeroGuide } from "~/components/heroes";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -337,12 +337,10 @@ export default function GuideDetailPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-green-50">
       <BlogPiecesAutoNavigation />
 
-      {/* Header */}
-      <CompactBlogHeader
+      {/* Hero Guide */}
+      <HeroGuide
         title={cleanTitle}
-        description={guide.excerpt}
-        gradientFrom="from-green-600"
-        gradientTo="to-emerald-600"
+        description={stripHtmlForMeta(guide.excerpt)}
       />
 
       {/* Back Button */}

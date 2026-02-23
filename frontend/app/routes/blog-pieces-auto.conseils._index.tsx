@@ -24,8 +24,8 @@ import * as React from "react";
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
-import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
 import { Error404 } from "~/components/errors/Error404";
+import { HeroBlog } from "~/components/heroes";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -248,17 +248,11 @@ export default function BlogConseilsIndex() {
       {/* Navigation */}
       <BlogPiecesAutoNavigation />
 
-      {/* Hero Compact */}
-      <CompactBlogHeader
+      {/* Hero Blog */}
+      <HeroBlog
         title="Montage et Entretien"
-        description={`${totalArticles} guides pratiques • ${stats.totalCategories} catégories • ${formatViews(stats.totalViews)} vues`}
-        stats={[
-          { icon: BookOpen, value: totalArticles, label: "Guides" },
-          { icon: Tag, value: stats.totalCategories, label: "Catégories" },
-          { icon: Eye, value: formatViews(stats.totalViews), label: "Vues" },
-        ]}
-        gradientFrom="from-orange-900"
-        gradientTo="to-red-900"
+        description={`${totalArticles} guides pratiques · ${stats.totalCategories} catégories · ${formatViews(stats.totalViews)} vues`}
+        metaLine={`${totalArticles} articles · ${stats.totalCategories} catégories`}
       />
 
       {/* Points clés */}
