@@ -908,7 +908,7 @@ export class ContentRefreshService extends SupabaseBaseService {
       latest_refresh: string | null;
     }>
   > {
-    const { data, error } = await this.client.rpc(
+    const { data, error } = await this.callRpc<Array<Record<string, unknown>>>(
       'get_gamme_composite_scores',
       {
         p_aliases: aliases?.length ? aliases : null,

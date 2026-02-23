@@ -79,6 +79,15 @@ jest.mock('../../../config/content-section-policy', () => ({
   POLICY_VERSION: 'v1-test',
 }));
 
+jest.mock('@nestjs/event-emitter', () => ({
+  EventEmitter2: jest.fn(),
+  OnEvent: () => () => undefined,
+}));
+
+jest.mock('../../../modules/rag-proxy/rag-proxy.service', () => ({
+  RagProxyService: jest.fn(),
+}));
+
 // ── Now import the processor ──
 
 import { ContentRefreshProcessor } from '../content-refresh.processor';
@@ -125,6 +134,7 @@ beforeAll(() => {
   processor.conseilEnricher = mockConseilEnricher;
   processor.referenceService = mockReferenceService;
   processor.diagnosticService = mockDiagnosticService;
+  processor.gammeLocksInProgress = new Set<number>();
 });
 
 beforeEach(() => {
