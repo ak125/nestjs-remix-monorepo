@@ -35,6 +35,9 @@ import type {
 export class ContentRefreshProcessor extends SupabaseBaseService {
   protected override readonly logger = new Logger(ContentRefreshProcessor.name);
 
+  /** In-memory lock to prevent concurrent processing of the same gamme (pgId). */
+  private readonly gammeLocksInProgress = new Set<number>();
+
   constructor(
     configService: ConfigService,
     private readonly buyingGuideEnricher: BuyingGuideEnricherService,
@@ -49,7 +52,10 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     super(configService);
   }
 
-  @Process({ name: 'content-refresh', concurrency: 1 })
+  @Process({
+    name: 'content-refresh',
+    concurrency: parseInt(process.env.PIPELINE_CONCURRENCY || '1', 10),
+  })
   async handleContentRefresh(
     job: Job<AnyContentRefreshJobData>,
   ): Promise<ContentRefreshResult> {
@@ -70,6 +76,20 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     this.logger.log(
       `Processing content-refresh: ${diagnosticSlug || pgAlias}, pageType=${pageType}, logId=${refreshLogId}`,
     );
+
+    // Per-gamme lock: wait if same pgId is already processing (concurrency > 1 safety)
+    if (pgId > 0 && this.gammeLocksInProgress.has(pgId)) {
+      this.logger.log(`Waiting for lock on pgId=${pgId} (${pgAlias})`);
+      const maxWait = 120_000; // 2 min max
+      const start = Date.now();
+      while (
+        this.gammeLocksInProgress.has(pgId) &&
+        Date.now() - start < maxWait
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+    if (pgId > 0) this.gammeLocksInProgress.add(pgId);
 
     // Mark as processing
     await this.client
@@ -158,12 +178,15 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           const refResult =
             await this.referenceService.refreshSingleGamme(pgAlias);
 
-          if (refResult.created) {
-            qualityScore = 80;
-            qualityFlags = ['NEW_ENTRY_CREATED'];
-          } else if (refResult.updated) {
-            qualityScore = 85;
-            qualityFlags = ['EXISTING_ENTRY_UPDATED'];
+          if (refResult.created || refResult.updated) {
+            // Dynamic scoring from RAG data quality (P2 #3)
+            qualityScore =
+              refResult.qualityScore ?? (refResult.created ? 80 : 85);
+            qualityFlags = refResult.qualityFlags ?? [
+              refResult.created
+                ? 'NEW_ENTRY_CREATED'
+                : 'EXISTING_ENTRY_UPDATED',
+            ];
           } else if (refResult.skipped) {
             // No RAG file = normal condition, not an error
             ragSkipped = true;
@@ -483,6 +506,17 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         }
       }
 
+      // Generate ingestion recommendations when score < 85
+      let ingestionRecommendations: string[] | null = null;
+      if ((qualityScore ?? 0) < 85 && !ragSkipped) {
+        ingestionRecommendations = this.generateIngestionRecommendations(
+          pageType,
+          qualityFlags,
+          qualityScore ?? 0,
+          pgAlias,
+        );
+      }
+
       // Update tracking log
       const now = new Date().toISOString();
       await this.client
@@ -515,6 +549,8 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             : null,
           // Content fingerprint for similarity tracking
           content_fingerprint: contentFingerprint,
+          // Ingestion recommendations (P1 #7)
+          ingestion_recommendations: ingestionRecommendations,
         })
         .eq('id', refreshLogId);
 
@@ -552,6 +588,9 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         qualityFlags: ['EXCEPTION'],
         errorMessage: msg,
       };
+    } finally {
+      // Release per-gamme lock
+      if (pgId > 0) this.gammeLocksInProgress.delete(pgId);
     }
   }
 
@@ -1336,6 +1375,69 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         detail: `Error: ${msg}`,
       };
     }
+  }
+
+  // ── Ingestion Recommendations ──
+
+  /**
+   * Generate actionable ingestion recommendations based on quality flags.
+   * Tells admin exactly what to ingest to improve the score.
+   */
+  private generateIngestionRecommendations(
+    pageType: string,
+    flags: string[],
+    score: number,
+    pgAlias: string,
+  ): string[] | null {
+    const recs: string[] = [];
+
+    if (pageType === 'R3_conseils') {
+      if (flags.includes('NO_NUMBERS_IN_S2'))
+        recs.push(
+          'Ingerer un PDF/URL avec des intervalles de remplacement chiffres (km, annees)',
+        );
+      if (flags.includes('S3_TOO_SHORT'))
+        recs.push(
+          'Ingerer un guide technique detaille avec criteres de choix (dimensions, types, marques)',
+        );
+      if (flags.some((f) => f === 'SKIPPED_S4' || f === 'SKIPPED_S5'))
+        recs.push(
+          'Ingerer un catalogue fournisseur avec references et compatibilites',
+        );
+    }
+
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+      if (flags.some((f) => f.startsWith('SKIPPED_')))
+        recs.push(
+          "Ingerer un guide d'achat complet (symptomes, comparatif, FAQ)",
+        );
+    }
+
+    if (pageType === 'R4_reference') {
+      if (flags.includes('NEW_ENTRY_CREATED'))
+        recs.push(
+          `Enrichir le fichier gammes/${pgAlias}.md avec regles_metier et role_negatif`,
+        );
+      if (flags.includes('GENERIC_DEFINITION'))
+        recs.push(
+          'Ingerer un document technique avec definition precise et chiffres',
+        );
+      if (flags.includes('NO_NUMBERS_IN_DEFINITION'))
+        recs.push(
+          'Ingerer un PDF technique avec des donnees chiffrees (dimensions, tolerances)',
+        );
+      if (flags.includes('MISSING_REGLES_METIER'))
+        recs.push(
+          'Ajouter des regles metier dans le fichier RAG de la gamme (min 3 regles)',
+        );
+    }
+
+    if (score < 70 && recs.length === 0)
+      recs.push(
+        'Ingerer au moins 1 PDF technique + 1 URL guide pour cette gamme',
+      );
+
+    return recs.length > 0 ? recs : null;
   }
 
   // ── Weaviate auto-discovery ──

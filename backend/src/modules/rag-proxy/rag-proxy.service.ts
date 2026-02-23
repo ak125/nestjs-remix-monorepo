@@ -797,6 +797,22 @@ export class RagProxyService implements OnModuleDestroy {
           }))
         : [];
 
+      // Hydrate full content when requested (opt-in, uses getKnowledgeDoc per result)
+      if (request.includeFullContent && normalizedResults.length > 0) {
+        for (const result of normalizedResults) {
+          const docId =
+            (result.docId as string) || (result.doc_id as string) || '';
+          if (docId) {
+            try {
+              const fullDoc = await this.getKnowledgeDoc(docId);
+              result.fullContent = fullDoc.content;
+            } catch {
+              /* keep truncated content */
+            }
+          }
+        }
+      }
+
       return {
         results: normalizedResults,
         query: data.query || request.query,
@@ -1289,7 +1305,7 @@ export class RagProxyService implements OnModuleDestroy {
     this.logger.log(`Web ingest job ${job.jobId} completed for ${job.url}`);
 
     // Emit event to trigger content refresh pipeline
-    this.emitIngestionCompleted(job.jobId, 'web', validation);
+    await this.emitIngestionCompleted(job.jobId, 'web', validation);
   }
 
   /** Exec a command inside a docker container with log streaming. */
@@ -1379,7 +1395,7 @@ export class RagProxyService implements OnModuleDestroy {
             );
           }
 
-          this.emitIngestionCompleted(jobId, 'pdf', validationResult);
+          await this.emitIngestionCompleted(jobId, 'pdf', validationResult);
         } else if (
           status.status === 'failed' ||
           status.status === 'error' ||
@@ -1407,19 +1423,19 @@ export class RagProxyService implements OnModuleDestroy {
    * Emit RAG_INGESTION_COMPLETED event after ingestion finishes.
    * Uses explicit file list when available; falls back to mtime scan.
    */
-  private emitIngestionCompleted(
+  private async emitIngestionCompleted(
     jobId: string,
     source: 'pdf' | 'web',
     validationResult?: {
       valid: string[];
       quarantined: Array<{ filename: string; reason: string }>;
     },
-  ): void {
+  ): Promise<void> {
     // Prefer explicit file list from validation (no mtime dependency)
     const validFiles = validationResult?.valid ?? [];
     const affectedGammesMap =
       validFiles.length > 0
-        ? this.resolveGammesFromFiles(validFiles)
+        ? await this.resolveGammesFromFiles(validFiles)
         : this.detectAffectedGammes();
     const affectedGammes = Array.from(affectedGammesMap.keys());
     const affectedDiagnostics = this.detectAffectedDiagnostics();
@@ -1472,7 +1488,9 @@ export class RagProxyService implements OnModuleDestroy {
    * Resolve gamme aliases from an explicit list of validated file paths.
    * Same resolution logic as detectAffectedGammes() but without mtime scanning.
    */
-  private resolveGammesFromFiles(filePaths: string[]): Map<string, string[]> {
+  private async resolveGammesFromFiles(
+    filePaths: string[],
+  ): Promise<Map<string, string[]>> {
     const knowledgePath =
       process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
     const results = new Map<string, string[]>();
@@ -1528,8 +1546,9 @@ export class RagProxyService implements OnModuleDestroy {
           }
         }
 
-        // Strategy 3: title matching against known aliases
+        // Strategy 3: title matching against known aliases (improved)
         const titleMatch = head.match(/^title:\s*"?(.+?)"?\s*$/m);
+        let matched = false;
         if (titleMatch && knownAliases.length > 0) {
           const titleSlug = titleMatch[1]
             .trim()
@@ -1539,7 +1558,11 @@ export class RagProxyService implements OnModuleDestroy {
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
+            // Clean common suffixes: "... | Bosch", "... - Section 3"
+            .replace(/\s*[|–]\s*[a-z][\w\s]*$/i, '')
             .replace(/ - section.*$/i, '')
+            // Remove leading articles: "Des ", "Les ", "Le ", "La ", "L'"
+            .replace(/^(?:des|les|le|la|l'|un|une)\s+/i, '')
             .replace(/[^a-z0-9]+/g, '-')
             .replace(/^-|-$/g, '');
 
@@ -1552,7 +1575,36 @@ export class RagProxyService implements OnModuleDestroy {
               titleSlugDePlural.includes(alias)
             ) {
               addResult(alias, fullPath);
+              matched = true;
               break;
+            }
+          }
+        }
+
+        // Strategy 4: Weaviate search fallback (async)
+        if (!matched) {
+          const snippet = head
+            .replace(/^---[\s\S]*?---/, '')
+            .trim()
+            .slice(0, 200);
+          if (snippet.length > 20) {
+            try {
+              const searchResult = await this.search({
+                query: snippet,
+                limit: 3,
+                filters: { truth_levels: ['L1', 'L2'] },
+              });
+              const gammeDoc = searchResult?.results?.find((r) =>
+                (r.sourcePath || '').startsWith('gammes/'),
+              );
+              if (gammeDoc) {
+                const alias = path.basename(gammeDoc.sourcePath || '', '.md');
+                if (knownAliases.includes(alias)) {
+                  addResult(alias, fullPath);
+                }
+              }
+            } catch {
+              /* Weaviate fallback non-bloquant */
             }
           }
         }

@@ -385,9 +385,13 @@ export class ReferenceService extends SupabaseBaseService {
    * Refresh a single gamme's R4 reference from RAG knowledge.
    * Creates a new DRAFT or updates existing entry (never overwrites is_published).
    */
-  async refreshSingleGamme(
-    pgAlias: string,
-  ): Promise<{ created: boolean; updated: boolean; skipped: boolean }> {
+  async refreshSingleGamme(pgAlias: string): Promise<{
+    created: boolean;
+    updated: boolean;
+    skipped: boolean;
+    qualityScore?: number;
+    qualityFlags?: string[];
+  }> {
     // 1. Find gamme by alias
     const { data: gamme } = await this.supabase
       .from('__pg_gammes')
@@ -462,7 +466,14 @@ export class ReferenceService extends SupabaseBaseService {
       }
 
       this.logger.log(`Updated R4 reference for: ${pgAlias}`);
-      return { created: false, updated: true, skipped: false };
+      const quality = this.scoreRagData(ragData, false);
+      return {
+        created: false,
+        updated: true,
+        skipped: false,
+        qualityScore: quality.score,
+        qualityFlags: quality.flags,
+      };
     }
 
     // 5b. Create new DRAFT entry
@@ -498,7 +509,14 @@ export class ReferenceService extends SupabaseBaseService {
     }
 
     this.logger.log(`Created R4 draft reference for: ${pgAlias}`);
-    return { created: true, updated: false, skipped: false };
+    const quality = this.scoreRagData(ragData, true);
+    return {
+      created: true,
+      updated: false,
+      skipped: false,
+      qualityScore: quality.score,
+      qualityFlags: quality.flags,
+    };
   }
 
   /**
@@ -750,6 +768,73 @@ export class ReferenceService extends SupabaseBaseService {
       createdAt: new Date(row.created_at as string),
       updatedAt: new Date(row.updated_at as string),
     };
+  }
+
+  // ==========================================
+  // Supplementary Doc Extraction for R4
+  // ==========================================
+
+  // ==========================================
+  // Dynamic R4 Scoring from RAG data
+  // ==========================================
+
+  /**
+   * Score RAG data quality on a 0-100 scale.
+   * Uses the same flag logic as validateReferenceQuality but works on raw ragData
+   * without needing a DB round-trip.
+   *
+   * Score mapping: raw 0-6 → 60-100 scale
+   * 6/6=100, 5/6=92, 4/6=83, 3/6=75, 2/6=67, 1/6=62, 0/6=60
+   */
+  private scoreRagData(
+    ragData: {
+      roleSummary: string;
+      mustBeTrue: string[];
+      mustNotContain: string[];
+      symptoms: string[];
+      diagnosticTree?: unknown;
+    },
+    isNew: boolean,
+  ): { score: number; flags: string[] } {
+    const flags: string[] = [];
+
+    // Blocking flags
+    const definition = ragData.roleSummary || '';
+    if (
+      !definition ||
+      definition.length < 300 ||
+      /joue un r[oô]le essentiel/i.test(definition) ||
+      /Son entretien r[eé]gulier garantit/i.test(definition)
+    ) {
+      flags.push('GENERIC_DEFINITION');
+    }
+    if (definition && !/\d/.test(definition)) {
+      flags.push('NO_NUMBERS_IN_DEFINITION');
+    }
+
+    // Warning flags
+    if (!ragData.mustBeTrue || ragData.mustBeTrue.length < 3) {
+      flags.push('MISSING_REGLES_METIER');
+    }
+    if (!ragData.symptoms || ragData.symptoms.length === 0) {
+      flags.push('MISSING_SYMPTOMS');
+    }
+    if (!ragData.mustNotContain || ragData.mustNotContain.length === 0) {
+      flags.push('MISSING_CONFUSIONS');
+    }
+
+    // Raw score 0-6
+    const blockingFlags = ['GENERIC_DEFINITION', 'NO_NUMBERS_IN_DEFINITION'];
+    const blockingCount = flags.filter((f) => blockingFlags.includes(f)).length;
+    const warningCount = flags.filter((f) => !blockingFlags.includes(f)).length;
+    const rawScore = Math.max(0, 6 - blockingCount * 2 - warningCount);
+
+    // Map to 60-100 scale
+    const base = isNew ? 60 : 65;
+    const mapped = base + Math.round((rawScore / 6) * (100 - base));
+    const score = Math.min(100, Math.max(0, mapped));
+
+    return { score, flags };
   }
 
   // ==========================================

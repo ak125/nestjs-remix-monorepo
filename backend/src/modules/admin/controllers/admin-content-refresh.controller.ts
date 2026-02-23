@@ -58,6 +58,21 @@ export class AdminContentRefreshController {
   }
 
   /**
+   * GET /api/admin/content-refresh/composite-scores?aliases=alias1,alias2
+   * Get composite quality scores per gamme (aggregated across all page types).
+   */
+  @Get('composite-scores')
+  async getCompositeScores(@Query('aliases') aliasesParam?: string) {
+    const aliases = aliasesParam
+      ? aliasesParam
+          .split(',')
+          .map((a) => a.trim())
+          .filter(Boolean)
+      : undefined;
+    return this.contentRefreshService.getCompositeScores(aliases);
+  }
+
+  /**
    * POST /api/admin/content-refresh/trigger
    * Manually trigger content refresh for one or more gammes.
    */

@@ -890,4 +890,46 @@ export class ContentRefreshService extends SupabaseBaseService {
 
     return true;
   }
+
+  /**
+   * Get composite quality scores per gamme (aggregated across all page types).
+   * Uses RPC get_gamme_composite_scores for efficient server-side aggregation.
+   */
+  async getCompositeScores(aliases?: string[]): Promise<
+    Array<{
+      pg_alias: string;
+      composite_score: number;
+      r1_score: number | null;
+      r3_guide_score: number | null;
+      r3_conseils_score: number | null;
+      r4_score: number | null;
+      page_types_completed: number;
+      page_types_total: number;
+      latest_refresh: string | null;
+    }>
+  > {
+    const { data, error } = await this.client.rpc(
+      'get_gamme_composite_scores',
+      {
+        p_aliases: aliases?.length ? aliases : null,
+      },
+    );
+
+    if (error) {
+      this.logger.error(`Failed to get composite scores: ${error.message}`);
+      return [];
+    }
+
+    return (data || []).map((row: Record<string, unknown>) => ({
+      pg_alias: row.pg_alias as string,
+      composite_score: Number(row.composite_score) || 0,
+      r1_score: row.r1_score as number | null,
+      r3_guide_score: row.r3_guide_score as number | null,
+      r3_conseils_score: row.r3_conseils_score as number | null,
+      r4_score: row.r4_score as number | null,
+      page_types_completed: row.page_types_completed as number,
+      page_types_total: row.page_types_total as number,
+      latest_refresh: row.latest_refresh as string | null,
+    }));
+  }
 }

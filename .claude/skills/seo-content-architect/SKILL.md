@@ -281,6 +281,86 @@ Extraire le `page_contract` du frontmatter YAML du knowledge doc. Ce contrat fou
 
 > **Pour les pages routeur gamme (R1_ROUTER)** : consulter `references/r1-router-role.md` pour le template des 4 sections (variantes gamme, justification sélecteur, guide sélecteur, promesse post-sélection), les 6 quality gates, le vocabulaire exclusif R1, et les 3 profils gamme (safety-critical / DIY-friendly / pro-only). Budget : 150 mots max.
 
+### Phase 1d — Enrichissement gamme.md (si docs supplementaires disponibles)
+
+**Declencheur** : Phase 1b a trouve des docs supplementaires (web/, pdf/, guides/) via la recherche RAG, ET le gamme.md presente des lacunes (symptoms generiques, timing absent, antiMistakes insuffisants).
+
+**Objectif** : Enrichir le frontmatter YAML du fichier `gammes/{slug}.md` AVANT de rediger, pour que le contenu soit fonde sur des donnees riches et verifiees.
+
+#### Etape 1 — Decouvrir les docs supplementaires
+
+```bash
+# Rechercher les docs non-gamme lies a cette piece
+curl -s -X POST http://localhost:3000/api/rag/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{nom_piece}", "limit": 10, "includeFullContent": true}' \
+  | jq '.results[] | select(.sourcePath | startswith("gammes/") | not) | {title, sourcePath, sourceType, score}'
+```
+
+Filtrer : garder uniquement les docs `web/`, `pdf/`, `guides/` avec `truth_level` L1 ou L2.
+
+#### Etape 2 — Lire et analyser le contenu complet
+
+Pour chaque doc supplementaire trouve, lire le fichier source :
+```
+/opt/automecanik/rag/knowledge/{source_path}
+```
+
+Extraire les donnees structurees pertinentes pour le frontmatter :
+
+| Donnee a extraire | Destination frontmatter | Critere d'extraction |
+|-------------------|------------------------|---------------------|
+| Symptomes de defaillance | `page_contract.symptoms` | Phrases decrivant des signes d'usure, bruits, vibrations, traces |
+| Intervalles de remplacement | `page_contract.timing.km` / `.years` | Chiffres + unites (km, mois, ans, heures) |
+| Fourchette de cout | `page_contract.risk.costRange` | Montants en EUR avec context |
+| Erreurs a eviter | `page_contract.antiMistakes` | Phrases avec "ne pas", "erreur", "attention", "eviter" |
+| Regles techniques chiffrees | `mechanical_rules.must_be_true` | Assertions avec mesures (mm, bar, Nm, °C) |
+| Questions frequentes | `page_contract.faq` | Sections Q&A, "saviez-vous", "pourquoi" |
+| Pieces associees | `intro.syncParts` | Mentions de pieces liees au remplacement |
+
+#### Etape 3 — Proposer le diff YAML
+
+Presenter les enrichissements sous forme lisible. Ne modifier QUE les champs absents ou insuffisants :
+
+```yaml
+# ENRICHISSEMENTS PROPOSES pour gammes/{slug}.md
+# Sources : {liste des docs avec titre abrege}
+# Champs modifies : {N} / Champs inchanges : {N}
+
+page_contract:
+  symptoms:  # AVANT: {N} items → APRES: {N+X} items
+    # existants conserves
+    - "{symptome existant 1}"
+    # nouveaux (source: {doc})
+    - "{nouveau symptome}" # [source: web/{hash}]
+
+  timing:  # AVANT: generique → APRES: chiffre
+    km: "{valeur chiffree}" # [source: {doc}]
+    years: "{valeur chiffree}" # [source: {doc}]
+
+  antiMistakes:  # +{N} nouvelles
+    - "{erreur a eviter}" # [source: {doc}]
+
+mechanical_rules:
+  must_be_true:  # +{N} nouvelles
+    - "{regle technique}" # [source: {doc}]
+```
+
+**Regles d'enrichissement :**
+1. **Ne jamais ecraser** — ajouter aux listes existantes, ne pas remplacer
+2. **Deduplication** — verifier que le nouveau contenu n'est pas deja present (meme sens)
+3. **Sourcer** — chaque ajout annote avec le doc source
+4. **Max 5 ajouts par champ** — au-dela, prioriser par pertinence
+5. **Validation obligatoire** — presenter le diff et demander : "Ces enrichissements sont corrects ? Je mets a jour gamme.md et je continue la redaction."
+
+#### Etape 4 — Appliquer les modifications
+
+Apres validation de l'admin, mettre a jour le fichier `gammes/{slug}.md` via l'outil Edit. Mettre a jour le champ `updated_at` a la date du jour.
+
+> **Si aucun doc supplementaire n'est trouve** : passer directement a Phase 2. Le skill fonctionne normalement avec les donnees existantes du gamme.md.
+
+> **Si le gamme.md est deja riche** (symptoms > 5, timing chiffre, antiMistakes > 3) : noter "Gamme.md deja enrichi, aucun ajout necessaire" et passer a Phase 2.
+
 ### Phase 2 — Architecture du contenu
 
 Tu définis :

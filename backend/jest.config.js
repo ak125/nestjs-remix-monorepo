@@ -24,6 +24,15 @@ module.exports = {
   ],
   // Setup files - load .env.test for Supabase credentials
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
+  // Coverage thresholds — conservative, raise progressively
+  coverageThreshold: {
+    global: {
+      lines: 60,
+      branches: 50,
+      functions: 60,
+      statements: 60,
+    },
+  },
   // Timeout for slower tests
   testTimeout: 30000,
 };

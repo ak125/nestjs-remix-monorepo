@@ -9,6 +9,7 @@ export const SearchRequestSchema = z.object({
   query: z.string().min(1).max(500),
   limit: z.number().int().min(1).max(50).optional().default(10),
   filters: z.record(z.unknown()).optional(),
+  includeFullContent: z.boolean().optional().default(false),
 });
 
 // Schema pour un résultat de recherche
@@ -23,6 +24,8 @@ export const SearchResultSchema = z.object({
   source_ref: z.string().optional(),
   doc_family: z.string().optional(),
   category: z.string().optional(),
+  docId: z.string().optional(),
+  fullContent: z.string().optional(),
   score: z.number(),
   truth_level: z.string().optional(),
   verification_status: z.string().optional(),
