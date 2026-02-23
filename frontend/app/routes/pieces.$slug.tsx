@@ -596,7 +596,7 @@ export default function PiecesDetailPage() {
               className="w-full h-full object-cover opacity-25"
               loading="eager"
               decoding="async"
-              fetchpriority="high"
+              fetchPriority="high"
               onError={(e) => {
                 e.currentTarget.src = "/images/placeholder-hero.webp";
                 e.currentTarget.onerror = null;
@@ -724,7 +724,7 @@ export default function PiecesDetailPage() {
                           className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
                           loading="eager"
                           decoding="async"
-                          fetchpriority="high"
+                          fetchPriority="high"
                           onError={(e) => {
                             e.currentTarget.src =
                               "/images/categories/default.svg";
