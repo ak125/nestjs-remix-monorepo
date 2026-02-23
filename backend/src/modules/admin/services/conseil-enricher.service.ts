@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import * as yaml from 'js-yaml';
 import { GENERIC_PHRASES as SHARED_GENERIC_PHRASES } from '../../../config/buying-guide-quality.constants';
 import type { EvidenceEntry } from '../../../workers/types/content-refresh.types';
 
@@ -184,8 +185,11 @@ export class ConseilEnricherService extends SupabaseBaseService {
       };
     }
 
-    // 2. Parse frontmatter YAML for page_contract
-    let contract = this.parsePageContract(ragContent);
+    // 2. Parse frontmatter YAML — try v4 first, then legacy
+    let contract = this.parseV4ToPageContract(ragContent);
+    if (!contract) {
+      contract = this.parsePageContract(ragContent);
+    }
     if (!contract) {
       // Fallback: try parsing mechanical_rules + diagnostic_tree from YAML
       contract = this.parseFromMechanicalRules(ragContent);
@@ -397,7 +401,87 @@ export class ConseilEnricherService extends SupabaseBaseService {
     }
   }
 
-  // ── YAML Frontmatter Parser ──
+  // ── v4 Schema Parser (5 blocs → PageContract) ──
+
+  private parseV4ToPageContract(content: string): PageContract | null {
+    try {
+      const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+      if (!fmMatch) return null;
+
+      const fm = yaml.load(fmMatch[1]) as Record<string, any>;
+      if (!fm) return null;
+
+      // Detect v4 via quality.version
+      const version =
+        fm?.rendering?.quality?.version ||
+        fm?.page_contract?.quality?.version ||
+        fm?.quality?.version;
+      if (version !== 'GammeContentContract.v4') return null;
+
+      const domain = fm.domain || {};
+      const selection = fm.selection || {};
+      const diagnostic = fm.diagnostic || {};
+      const maintenance = fm.maintenance || {};
+      const rendering = fm.rendering || {};
+
+      // Parse interval value (can be "60000-80000" or "6-12")
+      const interval = maintenance.interval || {};
+      const intervalValue = String(interval.value || '');
+      const intervalParts = intervalValue
+        .split('-')
+        .map((v: string) => parseInt(v.trim(), 10))
+        .filter((n: number) => !isNaN(n));
+
+      const contract: PageContract = {
+        intro: {
+          role: domain.role || undefined,
+          syncParts:
+            domain.related_parts ||
+            domain.cross_gammes?.map((cg: any) => cg.slug),
+        },
+        symptoms: (diagnostic.symptoms || []).map((s: any) => s?.label || s),
+        timing: {
+          km: interval.unit === 'km' ? intervalParts : undefined,
+          years: interval.unit === 'mois' ? intervalParts : undefined,
+          note: interval.note || undefined,
+        },
+        risk: {
+          explanation: rendering.risk_explanation || undefined,
+          consequences: rendering.risk_consequences || undefined,
+        },
+        antiMistakes: selection.anti_mistakes || undefined,
+        howToChoose: selection.criteria || undefined,
+        faq: (rendering.faq || []).map((f: any) => ({
+          q: f.question || f.q || '',
+          a: f.answer || f.a || '',
+        })),
+        diagnosticTree: (diagnostic.causes || []).map((c: string) => ({
+          if: c,
+          then: '',
+        })),
+        associatedPieces: domain.related_parts || undefined,
+      };
+
+      // Validate: at least 2 useful fields present
+      let fieldCount = 0;
+      if (contract.intro?.role) fieldCount++;
+      if (contract.symptoms && contract.symptoms.length > 0) fieldCount++;
+      if (contract.antiMistakes && contract.antiMistakes.length > 0)
+        fieldCount++;
+      if (contract.howToChoose && contract.howToChoose.length > 0) fieldCount++;
+      if (contract.faq && contract.faq.length > 0) fieldCount++;
+
+      if (fieldCount < 2) return null;
+
+      this.logger.log('Parsed v4 schema → PageContract adapter');
+      return contract;
+    } catch (err) {
+      this.logger.warn(`Failed to parse v4 schema: ${err}`);
+      return null;
+    }
+  }
+
+  // ── YAML Frontmatter Parser (legacy v1/v3) ──
 
   private parsePageContract(content: string): PageContract | null {
     const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);

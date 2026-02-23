@@ -6,8 +6,7 @@ import { PageBriefService } from './page-brief.service';
 import { ConfigService } from '@nestjs/config';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const yaml = require('js-yaml');
+import * as yaml from 'js-yaml';
 import { z } from 'zod';
 import {
   SelectionCriterionSchema,
