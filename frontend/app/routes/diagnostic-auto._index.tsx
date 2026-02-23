@@ -159,8 +159,30 @@ const RISK_CONFIG = {
   },
 } as const;
 
-export const meta: MetaFunction = () => {
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const canonicalUrl = "https://www.automecanik.com/diagnostic-auto";
+
+  // Unified FAQPage: static items + dynamic featured items
+  const staticEntities = FAQ_DATA.map((item) => ({
+    "@type": "Question" as const,
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer" as const, text: item.answer },
+  }));
+
+  const dynamicEntities =
+    data?.featured && data.featured.length > 0
+      ? data.featured.slice(0, 5).map((d: DiagnosticItem) => ({
+          "@type": "Question" as const,
+          name: `Qu'est-ce qu'un ${d.title.split(":")[0].trim()} ?`,
+          acceptedAnswer: {
+            "@type": "Answer" as const,
+            text:
+              d.meta_description ||
+              `Le ${d.title.split(":")[0].trim().toLowerCase()} est un symptôme automobile.`,
+          },
+        }))
+      : [];
+
   return [
     {
       title:
@@ -185,6 +207,42 @@ export const meta: MetaFunction = () => {
     },
     { property: "og:type", content: "website" },
     { property: "og:url", content: canonicalUrl },
+    {
+      "script:ld+json": {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: [...staticEntities, ...dynamicEntities],
+      },
+    },
+    {
+      "script:ld+json": {
+        "@context": "https://schema.org",
+        "@type": "HowTo",
+        name: "Comment identifier une panne auto",
+        description:
+          "3 méthodes pour diagnostiquer une panne voiture : observation sensorielle, lecture des voyants, scanner OBD.",
+        step: [
+          {
+            "@type": "HowToStep",
+            position: 1,
+            name: "Observer les symptômes sensoriels",
+            text: "Identifiez le canal sensoriel : auditif (bruits), visuel (fumée, voyants), tactile (vibrations), olfactif (odeurs brûlées). Chaque canal pointe vers un système spécifique du véhicule.",
+          },
+          {
+            "@type": "HowToStep",
+            position: 2,
+            name: "Lire les voyants du tableau de bord",
+            text: "Voyant rouge = arrêt immédiat. Voyant orange = attention requise. Voyant jaune = information. Un voyant moteur orange nécessite la lecture d'un code OBD dans les 48h.",
+          },
+          {
+            "@type": "HowToStep",
+            position: 3,
+            name: "Scanner le code OBD",
+            text: "Branchez un scanner OBD2 sur le port sous le tableau de bord. Les codes Pxxxx concernent le moteur, Cxxxx le châssis, Bxxxx la carrosserie. Entrez le code dans notre outil pour un diagnostic ciblé.",
+          },
+        ],
+      },
+    },
   ];
 };
 
@@ -326,122 +384,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
       featured = data?.data || [];
     }
 
-    const faqSchema =
-      featured.length > 0
-        ? {
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: featured.slice(0, 5).map((d) => ({
-              "@type": "Question",
-              name: `Qu'est-ce qu'un ${d.title.split(":")[0].trim()} ?`,
-              acceptedAnswer: {
-                "@type": "Answer",
-                text:
-                  d.meta_description ||
-                  `Le ${d.title.split(":")[0].trim().toLowerCase()} est un symptôme automobile.`,
-              },
-            })),
-          }
-        : null;
-
-    const staticFaqSchema = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: FAQ_DATA.map((item) => ({
-        "@type": "Question",
-        name: item.question,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.answer,
-        },
-      })),
-    };
-
-    const howToSchema = {
-      "@context": "https://schema.org",
-      "@type": "HowTo",
-      name: "Comment identifier une panne auto",
-      description:
-        "3 méthodes pour diagnostiquer une panne voiture : observation sensorielle, lecture des voyants, scanner OBD.",
-      step: [
-        {
-          "@type": "HowToStep",
-          position: 1,
-          name: "Observer les symptômes sensoriels",
-          text: "Identifiez le canal sensoriel : auditif (bruits), visuel (fumée, voyants), tactile (vibrations), olfactif (odeurs brûlées). Chaque canal pointe vers un système spécifique du véhicule.",
-        },
-        {
-          "@type": "HowToStep",
-          position: 2,
-          name: "Lire les voyants du tableau de bord",
-          text: "Voyant rouge = arrêt immédiat. Voyant orange = attention requise. Voyant jaune = information. Un voyant moteur orange nécessite la lecture d'un code OBD dans les 48h.",
-        },
-        {
-          "@type": "HowToStep",
-          position: 3,
-          name: "Scanner le code OBD",
-          text: "Branchez un scanner OBD2 sur le port sous le tableau de bord. Les codes Pxxxx concernent le moteur, Cxxxx le châssis, Bxxxx la carrosserie. Entrez le code dans notre outil pour un diagnostic ciblé.",
-        },
-      ],
-    };
-
-    return json({ featured, faqSchema, staticFaqSchema, howToSchema });
+    return json({ featured });
   } catch (error) {
     logger.error("[diagnostic-auto._index] Loader error:", error);
-
-    const fallbackFaqSchema = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      mainEntity: FAQ_DATA.map((item) => ({
-        "@type": "Question",
-        name: item.question,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: item.answer,
-        },
-      })),
-    };
-
-    const fallbackHowToSchema = {
-      "@context": "https://schema.org",
-      "@type": "HowTo",
-      name: "Comment identifier une panne auto",
-      description:
-        "3 méthodes pour diagnostiquer une panne voiture : observation sensorielle, lecture des voyants, scanner OBD.",
-      step: [
-        {
-          "@type": "HowToStep",
-          position: 1,
-          name: "Observer les symptômes sensoriels",
-          text: "Identifiez le canal sensoriel : auditif (bruits), visuel (fumée, voyants), tactile (vibrations), olfactif (odeurs brûlées).",
-        },
-        {
-          "@type": "HowToStep",
-          position: 2,
-          name: "Lire les voyants du tableau de bord",
-          text: "Voyant rouge = arrêt immédiat. Voyant orange = attention requise. Voyant jaune = information.",
-        },
-        {
-          "@type": "HowToStep",
-          position: 3,
-          name: "Scanner le code OBD",
-          text: "Branchez un scanner OBD2 sur le port sous le tableau de bord. Les codes Pxxxx concernent le moteur, Cxxxx le châssis.",
-        },
-      ],
-    };
-
-    return json({
-      featured: [],
-      faqSchema: null,
-      staticFaqSchema: fallbackFaqSchema,
-      howToSchema: fallbackHowToSchema,
-    });
+    return json({ featured: [] as DiagnosticItem[] });
   }
 }
 
 export default function DiagnosticAutoIndex() {
-  const { featured, faqSchema, staticFaqSchema, howToSchema } =
-    useLoaderData<typeof loader>();
+  const { featured } = useLoaderData<typeof loader>();
   const [searchQuery, setSearchQuery] = useState("");
   const [dtcCode, setDtcCode] = useState("");
 
@@ -453,21 +404,6 @@ export default function DiagnosticAutoIndex() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {faqSchema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-        />
-      )}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(staticFaqSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToSchema) }}
-      />
-
       {/* Breadcrumbs */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 py-3">
