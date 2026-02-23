@@ -1216,6 +1216,7 @@ export class RagProxyService implements OnModuleDestroy {
     // Step 1: Run ingest_web.py (writes sections to /tmp/ in container)
     job.logLines.push(`Running ingest_web.py for ${job.url}`);
     const ingestCmd = [
+      'PYTHONPATH=/app',
       'ENV=dev',
       'python3 /app/scripts/ingestors/ingest_web.py',
       `--url '${safeUrl}'`,
