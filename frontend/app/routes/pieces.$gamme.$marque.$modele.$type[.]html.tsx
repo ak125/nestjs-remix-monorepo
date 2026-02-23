@@ -25,7 +25,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import {
-  Await,
   isRouteErrorResponse,
   useLoaderData,
   useLocation,
@@ -56,8 +55,12 @@ import {
   MobileBottomBar,
   MobileBottomBarSpacer,
 } from "../components/layout/MobileBottomBar";
+import { PiecesBuyingGuide } from "../components/pieces/PiecesBuyingGuide";
 import { PiecesCatalogueFamille } from "../components/pieces/PiecesCatalogueFamille";
 import { PiecesComparisonView } from "../components/pieces/PiecesComparisonView";
+import { PiecesCompatibilityInfo } from "../components/pieces/PiecesCompatibilityInfo";
+import { PiecesCrossSelling } from "../components/pieces/PiecesCrossSelling";
+import { PiecesFAQSection } from "../components/pieces/PiecesFAQSection";
 import {
   PiecesFilterSidebar,
   type FiltersData,
@@ -68,9 +71,12 @@ import { PiecesHeader } from "../components/pieces/PiecesHeader";
 import { PiecesListView } from "../components/pieces/PiecesListView";
 import { PiecesOemSection } from "../components/pieces/PiecesOemSection";
 import { PiecesRecommendedSection } from "../components/pieces/PiecesRecommendedSection";
+import { PiecesRelatedArticles } from "../components/pieces/PiecesRelatedArticles";
+import { PiecesSEOSection } from "../components/pieces/PiecesSEOSection";
 import { PiecesToolbar } from "../components/pieces/PiecesToolbar";
 import { PiecesVoirAussi } from "../components/pieces/PiecesVoirAussi";
 import { FrictionReducerGroup } from "../components/trust/FrictionReducer";
+// SEO-CRITICAL: Imports directs pour SSR (visibilité Googlebot)
 // VehicleSelector supprimé - remplacé par badge véhicule avec lien "Changer"
 
 // Hook custom
@@ -127,38 +133,8 @@ export const handle = {
   }),
 };
 
-// 🚀 LCP OPTIMIZATION V6: Lazy-load composants below-fold
-// Ces sections ne sont pas visibles au premier paint - différer leur chargement
-const PiecesBuyingGuide = lazy(() =>
-  import("../components/pieces/PiecesBuyingGuide").then((m) => ({
-    default: m.PiecesBuyingGuide,
-  })),
-);
-const PiecesCompatibilityInfo = lazy(() =>
-  import("../components/pieces/PiecesCompatibilityInfo").then((m) => ({
-    default: m.PiecesCompatibilityInfo,
-  })),
-);
-const PiecesCrossSelling = lazy(() =>
-  import("../components/pieces/PiecesCrossSelling").then((m) => ({
-    default: m.PiecesCrossSelling,
-  })),
-);
-const PiecesFAQSection = lazy(() =>
-  import("../components/pieces/PiecesFAQSection").then((m) => ({
-    default: m.PiecesFAQSection,
-  })),
-);
-const PiecesRelatedArticles = lazy(() =>
-  import("../components/pieces/PiecesRelatedArticles").then((m) => ({
-    default: m.PiecesRelatedArticles,
-  })),
-);
-const PiecesSEOSection = lazy(() =>
-  import("../components/pieces/PiecesSEOSection").then((m) => ({
-    default: m.PiecesSEOSection,
-  })),
-);
+// 🚀 LCP OPTIMIZATION V6: Seul PiecesStatistics reste lazy (pur UX, zéro valeur SEO)
+// Les 6 autres composants sont importés directement pour SSR (visibilité Googlebot)
 const PiecesStatistics = lazy(() =>
   import("../components/pieces/PiecesStatistics").then((m) => ({
     default: m.PiecesStatistics,
@@ -286,8 +262,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const faqItems = generateFAQ(vehicle, gamme);
   const buyingGuide = generateBuyingGuide(vehicle, gamme);
 
-  // 🚀 LCP OPTIMIZATION V6: blogArticle + relatedArticles en UN seul appel API
-  const blogDataPromise = fetchBlogArticleWithRelated(gamme, vehicle).catch(
+  // SSR: blogData awaited pour que les liens articles soient visibles par Googlebot
+  const blogData = await fetchBlogArticleWithRelated(gamme, vehicle).catch(
     () => ({ article: null, relatedArticles: [] }),
   );
 
@@ -357,12 +333,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         rmDuration: rmV2Response.duration_ms,
       },
 
+      // SSR: blogData awaited pour liens internes visibles par Googlebot
+      blogData,
+
       // === DONNÉES STREAMÉES (non-bloquantes, chargées en background) ===
       // 🚀 LCP V9: seoSwitches deferred (below-fold, fallback anchors in getAnchorText)
       seoSwitches: seoSwitchesPromise,
       // 🚀 LCP OPTIMIZATION V7: catalogueMameFamille streamé (below-fold)
       catalogueMameFamille: catalogueMameFamillePromise,
-      blogData: blogDataPromise,
     },
     {
       headers: {
@@ -408,10 +386,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { name: "description", content: data.seo.description },
     { property: "og:title", content: data.seo.title },
     { property: "og:description", content: data.seo.description },
-    // noindex si ≤ 5 produits (thin content)
+    // noindex si ≤ 1 produit (thin content) — seuil abaissé de 5 à 1
+    // Pages 2+ produits ont maintenant ~300 mots SSR (FAQ, guide, compatibilité)
     {
       name: "robots",
-      content: data.count <= 5 ? "noindex, follow" : "index, follow",
+      content: data.count <= 1 ? "noindex, follow" : "index, follow",
     },
 
     // âœ¨ NOUVEAU: Canonical URL
@@ -432,6 +411,28 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       ? [
           {
             "script:ld+json": productSchema,
+          },
+        ]
+      : []),
+
+    // Schema.org FAQPage dans <head> pour rich snippets (SSR garanti)
+    ...(data.faqItems && data.faqItems.length > 0
+      ? [
+          {
+            "script:ld+json": {
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: data.faqItems
+                .filter((item: { schema?: boolean }) => item.schema !== false)
+                .map((item: { question: string; answer: string }) => ({
+                  "@type": "Question",
+                  name: item.question,
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: item.answer,
+                  },
+                })),
+            },
           },
         ]
       : []),
@@ -777,36 +778,17 @@ export default function PiecesVehicleRoute() {
                   gamme={data.gamme}
                 />
 
-                {/* 🚀 LCP OPTIMIZATION V6: Suspense boundaries pour composants lazy below-fold */}
-                <Suspense
-                  fallback={
-                    <div className="h-24 bg-gray-100 animate-pulse rounded-lg" />
-                  }
-                >
-                  <PiecesBuyingGuide guide={data.buyingGuide} />
-                </Suspense>
+                {/* SSR: Composants SEO rendus côté serveur (visibilité Googlebot) */}
+                <PiecesBuyingGuide guide={data.buyingGuide} />
+                <PiecesFAQSection items={data.faqItems} />
+                <PiecesCompatibilityInfo
+                  compatibility={data.compatibilityInfo}
+                  vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
+                  motorCodesFormatted={data.vehicle.motorCodesFormatted}
+                  mineCodesFormatted={data.vehicle.mineCodesFormatted}
+                />
 
-                <Suspense
-                  fallback={
-                    <div className="h-24 bg-gray-100 animate-pulse rounded-lg" />
-                  }
-                >
-                  <PiecesFAQSection items={data.faqItems} />
-                </Suspense>
-
-                <Suspense
-                  fallback={
-                    <div className="h-24 bg-gray-100 animate-pulse rounded-lg" />
-                  }
-                >
-                  <PiecesCompatibilityInfo
-                    compatibility={data.compatibilityInfo}
-                    vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
-                    motorCodesFormatted={data.vehicle.motorCodesFormatted}
-                    mineCodesFormatted={data.vehicle.mineCodesFormatted}
-                  />
-                </Suspense>
-
+                {/* PiecesStatistics reste lazy (pur UX, zéro valeur SEO) */}
                 <Suspense
                   fallback={
                     <div className="h-24 bg-gray-100 animate-pulse rounded-lg" />
@@ -823,45 +805,31 @@ export default function PiecesVehicleRoute() {
           </main>
         </div>
 
-        {/* Cross-selling - Suspense pour lazy component */}
+        {/* Cross-selling - SSR pour maillage interne (5-12 liens) */}
         {data.crossSellingGammes.length > 0 && (
           <div className="mt-12">
-            <Suspense
-              fallback={
-                <div className="h-32 bg-gray-100 animate-pulse rounded-lg mx-4" />
-              }
-            >
-              <PiecesCrossSelling
-                gammes={data.crossSellingGammes}
-                vehicle={data.vehicle}
-              />
-            </Suspense>
+            <PiecesCrossSelling
+              gammes={data.crossSellingGammes}
+              vehicle={data.vehicle}
+            />
           </div>
         )}
 
-        {/* 🚀 LCP OPTIMIZATION V6: Articles liés streamés via defer() + Await */}
-        <Suspense
-          fallback={
-            <div className="h-32 bg-gray-100 animate-pulse rounded-lg mx-4" />
-          }
-        >
-          <Await resolve={data.blogData}>
-            {(resolvedBlogData) => {
-              const validArticles = (
-                resolvedBlogData?.relatedArticles || []
-              ).filter((a): a is NonNullable<typeof a> => a !== null);
-              return validArticles.length > 0 ? (
-                <div className="container mx-auto px-4">
-                  <PiecesRelatedArticles
-                    articles={validArticles}
-                    gammeName={data.gamme.name}
-                    vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
-                  />
-                </div>
-              ) : null;
-            }}
-          </Await>
-        </Suspense>
+        {/* Articles liés - SSR pour maillage interne (3-5 liens blog) */}
+        {(() => {
+          const validArticles = (data.blogData?.relatedArticles || []).filter(
+            (a): a is NonNullable<typeof a> => a !== null,
+          );
+          return validArticles.length > 0 ? (
+            <div className="container mx-auto px-4">
+              <PiecesRelatedArticles
+                articles={validArticles}
+                gammeName={data.gamme.name}
+                vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
+              />
+            </div>
+          ) : null;
+        })()}
 
         {/* Section "Voir aussi" - Maillage interne SEO (composant extrait) */}
         <PiecesVoirAussi

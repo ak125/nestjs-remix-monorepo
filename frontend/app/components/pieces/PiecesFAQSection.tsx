@@ -118,28 +118,7 @@ export const PiecesFAQSection = memo(function PiecesFAQSection({
         })}
       </div>
 
-      {/* Schema.org JSON-LD (si activé) */}
-      {items.some((item) => item.schema) && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              mainEntity: items
-                .filter((item) => item.schema)
-                .map((item) => ({
-                  "@type": "Question",
-                  name: item.question,
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: item.answer,
-                  },
-                })),
-            }),
-          }}
-        />
-      )}
+      {/* Schema.org FAQPage déplacé dans meta() du route pour SSR garanti dans <head> */}
     </div>
   );
 });
