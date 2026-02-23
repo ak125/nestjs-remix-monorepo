@@ -433,21 +433,18 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Paramètres manquants", { status: 400 });
   }
 
-  // 🔄 SEO: URLs legacy sans ID (ex: /constructeurs/mazda/mazda-6/...) → 301 redirect
-  // Raison: 412 est traité comme 4xx par Google → désindexation
-  // 301 préserve le PageRank et guide vers la page marque existante
+  // 🛑 SEO: URLs legacy sans ID (ex: /constructeurs/mazda/mazda-6/...) → 410 Gone
+  // L'ancien 301 redirige vers /constructeurs/mazda.html qui retourne 404 (regex ID échoue)
+  // 410 dit à Google "cette URL n'existe plus" → désindexation propre
   if (!brand.includes("-") || !model.includes("-")) {
-    logger.log("🔄 [301] Format legacy détecté, redirect vers page marque:", {
+    logger.log("🛑 [410] Format legacy sans ID, URL obsolète:", {
       brand,
       model,
       type,
     });
-
-    // Extraire le nom de la marque (sans ID si présent)
-    const brandAlias = brand.replace(/-\d+$/, "").toLowerCase();
-
-    // 301 redirect vers la page marque principale
-    return redirect(`/constructeurs/${brandAlias}.html`, 301);
+    throw new Response("URL obsolète - format sans identifiant", {
+      status: 410,
+    });
   }
 
   // Parsing du type_id

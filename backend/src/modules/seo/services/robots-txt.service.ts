@@ -76,6 +76,8 @@ Disallow: /admin/              # Backoffice administration
 Disallow: /checkout/           # Processus de commande
 Disallow: /cart/               # Panier d'achat
 Disallow: /private/            # Ressources privées
+Disallow: /imgproxy/           # Transformations d'images (pas du contenu indexable)
+Disallow: /img/                # Proxy images brutes
 
 # ❌ Paramètres de tracking (éviter duplicate content)
 Disallow: /*?utm_*
@@ -96,6 +98,8 @@ Disallow: /searchmine/
 Disallow: /account/
 Disallow: /api/
 Disallow: /admin/
+Disallow: /imgproxy/
+Disallow: /img/
 Crawl-delay: 0.5
 
 # 🖼️ Googlebot-Image (autorisé sur /images/)

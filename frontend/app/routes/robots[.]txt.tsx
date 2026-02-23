@@ -1,19 +1,19 @@
 // app/routes/robots[.]txt.tsx
 /**
  * 🤖 ROBOTS.TXT - Aligné avec structure PHP
- * 
+ *
  * Règles PHP originales:
  * - Disallow: /_form.get.car.* (formulaires AJAX)
  * - Disallow: /fiche/ (fiches produits - duplicate content)
  * - Disallow: /find/ (recherche générale)
  * - Disallow: /searchmine/ (recherche par type mine)
  * - Disallow: /account/ (espace client privé)
- * 
+ *
  * Optimisations v2:
  * - Timeout + retry automatique
  * - Cache long (24h browser, 48h CDN)
  * - Fallback complet si backend indisponible
- * 
+ *
  * @see backend/src/modules/seo/services/robots-txt.service.ts
  */
 import { type LoaderFunctionArgs } from "@remix-run/node";
@@ -46,6 +46,8 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /checkout/
 Disallow: /cart/
+Disallow: /imgproxy/
+Disallow: /img/
 
 # ⏱️ Crawl-delay
 Crawl-delay: 1
@@ -65,7 +67,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     // IMPORTANT: On utilise /api/seo/robots.txt au lieu de /robots.txt
     // car /robots.txt serait intercepté par Remix lui-même (boucle infinie)
     const response = await fetchWithRetry(
-      `${SITEMAP_CONFIG.BACKEND_URL}/api/seo/robots.txt`
+      `${SITEMAP_CONFIG.BACKEND_URL}/api/seo/robots.txt`,
     );
 
     const robotsTxt = await response.text();
@@ -74,14 +76,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return new Response(robotsTxt, {
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
-        "Cache-Control": "public, max-age=86400, s-maxage=172800, stale-while-revalidate=3600",
-        "Vary": "Accept-Encoding",
+        "Cache-Control":
+          "public, max-age=86400, s-maxage=172800, stale-while-revalidate=3600",
+        Vary: "Accept-Encoding",
         "X-Response-Time": `${duration}ms`,
       },
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    logSitemapError('Robots.txt', error, duration);
+    logSitemapError("Robots.txt", error, duration);
 
     return new Response(generateFallbackRobots(), {
       headers: {
