@@ -129,14 +129,10 @@ function handleBrowserRequest(
             url.pathname.startsWith("/pieces/") &&
             url.pathname.endsWith(".html")
           ) {
-            // Pages produit: preconnect aux domaines externes
+            // Pages produit: preconnect aux domaines externes (fonts self-hosted, plus besoin de Google)
             responseHeaders.set(
               "Link",
-              [
-                "<https://fonts.googleapis.com>; rel=preconnect",
-                "<https://fonts.gstatic.com>; rel=preconnect; crossorigin",
-                `<${process.env.VITE_SUPABASE_URL || ""}>; rel=preconnect`,
-              ].join(", "),
+              `<${process.env.VITE_SUPABASE_URL || ""}>; rel=preconnect`,
             );
           }
 

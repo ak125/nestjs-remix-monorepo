@@ -59,16 +59,14 @@ import { type CartData } from "./types/cart";
 const ChatWidget = lazy(() => import("./components/rag/ChatWidget"));
 // @ts-ignore
 
-// URL Google Fonts (non-bloquant via preload)
-// 🚀 LCP Optimization: Reduced from 14 to 6 font weights + Latin subset
-const GOOGLE_FONTS_URL =
-  "https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=Montserrat:wght@600;700&family=Roboto+Mono:wght@400&subset=latin&display=swap";
+// 🚀 LCP Phase 2: Fonts self-hosted (élimine 2 DNS lookups cross-origin)
+// @font-face déclarés dans global.css, preloads ici pour les 2 fonts critiques
 
 export const links: LinksFunction = () => [
-  // 🚀 LCP Optimization: Preload CSS critique
+  // 🚀 LCP: Preload CSS critique
   { rel: "preload", href: stylesheet, as: "style" },
 
-  // 🚀 LCP Optimization: Preload logo navbar (présent sur toutes les pages)
+  // 🚀 LCP: Preload logo navbar (présent sur toutes les pages)
   {
     rel: "preload",
     href: "/logo-navbar.webp",
@@ -76,30 +74,29 @@ export const links: LinksFunction = () => [
     type: "image/webp",
   },
 
+  // 🚀 LCP Phase 2: Preload fonts critiques (same-origin, pas de cross-origin)
+  {
+    rel: "preload",
+    href: "/fonts/inter-latin.woff2",
+    as: "font",
+    type: "font/woff2",
+    crossOrigin: "anonymous" as const,
+  },
+  {
+    rel: "preload",
+    href: "/fonts/montserrat-latin.woff2",
+    as: "font",
+    type: "font/woff2",
+    crossOrigin: "anonymous" as const,
+  },
+
   // Stylesheets - CSS critique (bloquant)
   { rel: "stylesheet", href: stylesheet },
 
-  // DNS Prefetch & Preconnect (Performance SEO Phase 1)
-  { rel: "dns-prefetch", href: "https://fonts.googleapis.com" },
-  { rel: "dns-prefetch", href: "https://fonts.gstatic.com" },
+  // DNS Prefetch & Preconnect
   { rel: "dns-prefetch", href: "https://www.google-analytics.com" },
   { rel: "dns-prefetch", href: "https://www.googletagmanager.com" },
   { rel: "preconnect", href: "https://www.automecanik.com" }, // imgproxy
-  {
-    rel: "preconnect",
-    href: "https://fonts.googleapis.com",
-    crossOrigin: "anonymous",
-  },
-  {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
-  },
-
-  // Google Fonts + Animations CSS : chargés en async dans Layout() pour ne pas bloquer le rendu
-
-  // Note: Font preloads + brand image preloads déplacés vers _index.tsx (homepage)
-  // pour améliorer le LCP sur les pages produit (slow 4G)
 
   // Manifest & Icons
   { rel: "manifest", href: "/manifest.json" },
@@ -417,18 +414,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <Meta />
         <Links />
-        {/* 🚀 LCP: Google Fonts — non-render-blocking via media="print" swap */}
-        <link
-          rel="stylesheet"
-          href={GOOGLE_FONTS_URL}
-          media="print"
-          // @ts-expect-error onLoad is valid on link elements
-          onLoad="this.media='all'"
-          crossOrigin="anonymous"
-        />
-        <noscript>
-          <link rel="stylesheet" href={GOOGLE_FONTS_URL} />
-        </noscript>
+        {/* 🚀 LCP Phase 2: Fonts self-hosted — @font-face dans global.css, preloads dans links() */}
         {/* 🚀 LCP: Animations CSS — non-render-blocking (not needed for first paint) */}
         <link
           rel="stylesheet"
