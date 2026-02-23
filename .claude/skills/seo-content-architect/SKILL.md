@@ -16,7 +16,7 @@ Skill de rédaction SEO industriel pour e-commerce automobile à fort volume. Pr
 - `references/page-roles.md` = vocabulaire exclusif R1-R6 + maillage interne
 - `references/quality-scoring.md` = dimensions, pénalités, seuils
 - `references/schema-templates.md` = Schema.org + structure contenu + patterns meta + provenance
-- Knowledge docs : frontmatter YAML (mechanical_rules, page_contract, purchase_guardrails, diagnostic_tree)
+- Knowledge docs : frontmatter YAML — schema v4 (5 blocs: domain, selection, diagnostic, maintenance, installation + rendering + _sources) OU legacy (mechanical_rules, page_contract)
 
 ## Axiome n°0 (Non-négociable)
 
@@ -136,8 +136,10 @@ RISQUES D'EXTRAPOLATION :
 
 RAG :
 • Knowledge doc : {trouvé/absent} — truth_level : {L1-L4} — updated_at : {date}
-• mechanical_rules : {N} must_be_true, {N} must_not_contain
-• page_contract : {exploité/absent/partiel}
+• Schema version : {v4 (5 blocs) / v3 (page_contract) / v1 (minimal)}
+• v4 blocs : A(domain) {✅/⚠️/❌} B(selection) {✅/⚠️/❌} C(diagnostic) {✅/⚠️/❌} D(maintenance) {✅/⚠️/❌} E(installation) {✅/⚠️/N/A}
+• _sources : {N} entries — cross_gammes : {N} relations
+• Legacy (v1/v3) : mechanical_rules : {N} must_be_true, {N} must_not_contain — page_contract : {exploité/absent/partiel}
 
 DÉCISION : {GO / GO AVEC RÉSERVES / STOP — enrichir via /rag-ops}
 ```
@@ -188,29 +190,32 @@ curl -s -X POST http://localhost:3000/api/rag/search \
 | Doc trouvé | L3/L4 | draft/pending | **REJETER** — traiter comme non-confirmé |
 | 0 résultats | — | — | Signaler l'absence, continuer avec données utilisateur/BDD. Ne rien inventer |
 
-#### Étape 2 — Extraire les mechanical_rules du frontmatter YAML
+#### Étape 2 — Extraire les règles du domaine (v4) / mechanical_rules (legacy)
 
-Chaque knowledge doc gamme contient un frontmatter YAML avec des règles mécaniques. Extraire :
+Chaque knowledge doc gamme contient un frontmatter YAML avec des règles. Détecter la version du schema :
 
-| Champ frontmatter | Emplacement | Usage dans la rédaction |
-|-------------------|-------------|------------------------|
-| `mechanical_rules.must_be_true` | Liste de verbes/concepts | Ces termes DOIVENT apparaître dans le contenu produit |
-| `mechanical_rules.must_not_contain_concepts` | Liste de termes interdits | JAMAIS dans le contenu — confusion sémantique |
-| `mechanical_rules.confusion_with` | Map ou array (2 formats) | Générer un bloc "Ne pas confondre avec..." explicite |
-| `mechanical_rules.role_summary` | String (1 ligne) | Seed pour le H1/intro — reformuler, ne pas copier verbatim |
-| `purchase_guardrails.forbidden_terms` | Liste de termes | Ajouter aux MOTS INTERDITS du contenu |
-| `purchase_guardrails.requires_vehicle` | Boolean | Si true, inclure "vérifiez la compatibilité véhicule" |
+- **v4** : `rendering.quality.version === 'GammeContentContract.v4'` → lire `domain.*`
+- **Legacy** (v1/v3) : lire `mechanical_rules.*` + `purchase_guardrails.*`
 
-**2 formats `confusion_with` dans le corpus :**
+| Champ v4 | Champ legacy (fallback) | Usage dans la rédaction |
+|----------|------------------------|------------------------|
+| `domain.must_be_true` | `mechanical_rules.must_be_true` | Ces termes DOIVENT apparaître dans le contenu produit |
+| `domain.must_not_contain` | `mechanical_rules.must_not_contain_concepts` | JAMAIS dans le contenu — confusion sémantique |
+| `domain.confusion_with` | `mechanical_rules.confusion_with` | Générer un bloc "Ne pas confondre avec..." explicite |
+| `domain.role` | `mechanical_rules.role_summary` | Seed pour le H1/intro — reformuler, ne pas copier verbatim |
+| `domain.must_not_contain` | `purchase_guardrails.forbidden_terms` | Ajouter aux MOTS INTERDITS du contenu |
+| *(v4: implicite si crossGammes)* | `purchase_guardrails.requires_vehicle` | Si true, inclure "vérifiez la compatibilité véhicule" |
 
-Format array (ex: disque-de-frein) :
+**2 formats `confusion_with` (v4 = array uniquement, legacy = array ou map) :**
+
+Format array (v4 + legacy) :
 ```yaml
 confusion_with:
   - term: tambour de frein
     difference: Le tambour utilise des mâchoires internes...
 ```
 
-Format map (ex: alternateur) :
+Format map (legacy uniquement) :
 ```yaml
 confusion_with:
   batterie:
@@ -247,33 +252,37 @@ Vérifier le champ `updated_at` dans le frontmatter YAML du knowledge doc :
 | 6-12 mois | Stale | Pénalité -6 (STALE_SOURCE) | Annoter `[source datée de {mois}]`, proposer `/rag-ops ingest` |
 | > 12 mois | Obsolète | NE PAS utiliser les données chiffrées | **STOP** : proposer `/rag-ops ingest` avant rédaction |
 
-### Phase 1c — Page Contract Extraction (si knowledge doc disponible)
+### Phase 1c — Extraction des blocs v4 / page_contract (legacy)
 
-Extraire le `page_contract` du frontmatter YAML du knowledge doc. Ce contrat fournit du contenu pré-validé qui accélère la rédaction.
+Extraire les données pré-validées du frontmatter YAML du knowledge doc. Détecter la version :
 
-| Champ page_contract | Usage | Rôle cible |
-|---------------------|-------|------------|
-| `intro.role` | Seed pour l'introduction — reformuler en GEO-first, ne pas copier verbatim | Tous |
-| `intro.syncParts` | Pièces associées à mentionner (ex: "vérifier les plaquettes au démontage") | R3, R4 |
-| `symptoms` | Liste de symptômes vérifiés — base pour section symptômes (R5) ou signaux d'alerte (R3) | R3, R5 |
-| `timing.km` / `timing.years` | Intervalles de remplacement — citer avec source | R3, R4, R5 |
-| `timing.note` | Condition critique de remplacement immédiat | R3, R5 |
-| `risk.explanation` | Explication du risque — base pour section "conséquences" | R3, R4, R5 |
-| `risk.consequences` | Liste conséquences vérifiées — utiliser directement | R3, R5 |
-| `risk.costRange` | Fourchette coût (EUR) — citer tel quel avec source | R3 |
-| `antiMistakes` | Erreurs à éviter vérifiées — enrichir/compléter, ne pas juste copier | Tous |
-| `faq` | Questions/réponses seed — vérifier/enrichir/reformuler en GEO-first | Tous |
-| `howToChoose` | Guide de sélection — reformuler pour le rôle cible | R3 |
-| `arguments` | Arguments de vente vérifiés — adapter au ton du rôle | R2, R3 |
-| `diagnostic_tree` | Règles if/then pour diagnostic — base pour arbre de décision (R5) | R5 |
+- **v4** (`rendering.quality.version === 'GammeContentContract.v4'`) → lire les 5 blocs (domain, selection, diagnostic, maintenance, rendering)
+- **Legacy** (v1/v3) → lire `page_contract.*`
 
-**Règles d'utilisation du page_contract :**
+| Champ v4 | Champ legacy (fallback) | Usage | Rôle cible |
+|----------|------------------------|-------|------------|
+| `domain.role` | `page_contract.intro.role` | Seed pour l'introduction — reformuler en GEO-first | Tous |
+| `domain.cross_gammes[].slug` | `page_contract.intro.syncParts` | Pièces associées à mentionner | R3, R4 |
+| `diagnostic.symptoms[].label` | `page_contract.symptoms` | Liste de symptômes vérifiés | R3, R5 |
+| `maintenance.interval` (unit=km) | `page_contract.timing.km` | Intervalles de remplacement — citer avec source | R3, R4, R5 |
+| `maintenance.interval` (unit=mois) | `page_contract.timing.years` | Intervalles de remplacement — citer avec source | R3, R4, R5 |
+| `maintenance.interval.note` | `page_contract.timing.note` | Condition critique de remplacement immédiat | R3, R5 |
+| `rendering.risk_explanation` | `page_contract.risk.explanation` | Explication du risque — base pour section "conséquences" | R3, R4, R5 |
+| `rendering.risk_consequences` | `page_contract.risk.consequences` | Liste conséquences vérifiées — utiliser directement | R3, R5 |
+| `selection.cost_range` | `page_contract.risk.costRange` | Fourchette coût (EUR) — citer tel quel avec source | R3 |
+| `selection.anti_mistakes` | `page_contract.antiMistakes` | Erreurs à éviter vérifiées — enrichir/compléter | Tous |
+| `rendering.faq` | `page_contract.faq` | Questions/réponses seed — reformuler en GEO-first | Tous |
+| `selection.criteria` | `page_contract.howToChoose` | Guide de sélection — reformuler pour le rôle cible | R3 |
+| `rendering.arguments` | `page_contract.arguments` | Arguments de vente vérifiés — adapter au ton du rôle | R2, R3 |
+| `diagnostic.causes` | `page_contract.diagnostic_tree` | Règles pour diagnostic — base pour arbre de décision (R5) | R5 |
+
+**Règles d'utilisation (v4 et legacy) :**
 1. **REFORMULER** — ne jamais copier verbatim. Adapter au style GEO-first (BLUF, auto-suffisant)
-2. **COMPLÉTER** — le contract est un seed, pas le contenu final. Enrichir avec le contexte
-3. **VÉRIFIER** — croiser avec les mechanical_rules. Les termes `must_be_true` doivent apparaître
-4. **SOURCER** — toute donnée issue du contract porte la provenance `[source: rag://gammes.{slug}]`
+2. **COMPLÉTER** — les données RAG sont un seed, pas le contenu final. Enrichir avec le contexte
+3. **VÉRIFIER** — croiser avec `domain.must_be_true` (v4) ou `mechanical_rules` (legacy). Les termes obligatoires doivent apparaître
+4. **SOURCER** — toute donnée issue du RAG porte la provenance `[source: rag://gammes.{slug}]`
 
-> **Pour les guides d'achat (R3_BLOG/guide-achat)** : consulter `references/guide-achat-role.md` pour le template H2 obligatoire (7 sections parcours d'achat) et le mapping page_contract → sections.
+> **Pour les guides d'achat (R3_BLOG/guide-achat)** : consulter `references/guide-achat-role.md` pour le template H2 obligatoire (7 sections parcours d'achat) et le mapping v4/legacy → sections.
 
 > **Pour les conseils how-to (R3_BLOG/conseils)** : consulter `references/conseils-role.md` pour le template 8 sections user-first (avant de commencer → signes d'usure → compatibilité → étapes → erreurs → vérification → pack complémentaire → FAQ), les 11 quality gates, les 3 profils gamme (safety-critical / DIY-friendly / pro-only), et le vocabulaire exclusif (démontage/remontage).
 
@@ -281,11 +290,54 @@ Extraire le `page_contract` du frontmatter YAML du knowledge doc. Ce contrat fou
 
 > **Pour les pages routeur gamme (R1_ROUTER)** : consulter `references/r1-router-role.md` pour le template des 4 sections (variantes gamme, justification sélecteur, guide sélecteur, promesse post-sélection), les 6 quality gates, le vocabulaire exclusif R1, et les 3 profils gamme (safety-critical / DIY-friendly / pro-only). Budget : 150 mots max.
 
-### Phase 1d — Enrichissement gamme.md (si docs supplementaires disponibles)
+### Phase 1d — Enrichissement gamme.md v4 (si docs supplementaires disponibles)
 
-**Declencheur** : Phase 1b a trouve des docs supplementaires (web/, pdf/, guides/) via la recherche RAG, ET le gamme.md presente des lacunes (symptoms generiques, timing absent, antiMistakes insuffisants).
+**Declencheur** : Phase 1b a trouve des docs supplementaires (web/, pdf/, guides/) via la recherche RAG, ET le gamme.md presente des lacunes dans ses 5 blocs.
 
-**Objectif** : Enrichir le frontmatter YAML du fichier `gammes/{slug}.md` AVANT de rediger, pour que le contenu soit fonde sur des donnees riches et verifiees.
+**Objectif** : Enrichir le frontmatter YAML du fichier `gammes/{slug}.md` selon le **schema v4 (5 blocs)** AVANT de rediger, pour que le contenu soit fonde sur des donnees riches et verifiees.
+
+> **Schema de reference** : `.spec/00-canon/gamme-md-schema.md` — source de verite pour la structure, les types, et les regles de chaque bloc.
+
+#### Detection de version
+
+| Version detectee | Action |
+|-----------------|--------|
+| `GammeContentContract.v4` | Enrichir selon les 5 blocs ci-dessous |
+| `GammeContentContract.v3` ou absent | Convertir en v4 PUIS enrichir (voir Etape 0) |
+
+#### Etape 0 — Conversion v3 → v4 (si necessaire)
+
+Si le gamme.md est en v3 ou v1 (pas de `quality.version: GammeContentContract.v4`), proposer la conversion :
+
+```
+CONVERSION v3 → v4 proposee pour gammes/{slug}.md
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Mapping :
+  page_contract.symptoms → diagnostic.symptoms (ajouter id + severity)
+  page_contract.timing → maintenance.interval
+  page_contract.risk.costRange → selection.cost_range
+  page_contract.antiMistakes → selection.anti_mistakes
+  page_contract.howToChoose → selection.criteria
+  page_contract.faq → rendering.faq
+  mechanical_rules.must_be_true → domain.must_be_true
+  mechanical_rules.must_not_contain_concepts → domain.must_not_contain
+  mechanical_rules.confusion_with → domain.confusion_with
+  mechanical_rules.role_summary → domain.role
+
+Blocs a creer (absents en v3) :
+  - selection.checklist
+  - selection.brands
+  - diagnostic.causes (avec %)
+  - diagnostic.quick_checks
+  - maintenance.usage_factors
+  - maintenance.good_practices
+  - installation.* (si applicable)
+  - _sources (provenance)
+  - cross_gammes (relations)
+  - lifecycle
+
+Valider la conversion avant enrichissement ?
+```
 
 #### Etape 1 — Decouvrir les docs supplementaires
 
@@ -306,60 +358,137 @@ Pour chaque doc supplementaire trouve, lire le fichier source :
 /opt/automecanik/rag/knowledge/{source_path}
 ```
 
-Extraire les donnees structurees pertinentes pour le frontmatter :
+Extraire les donnees structurees pertinentes pour les **5 blocs v4** :
 
-| Donnee a extraire | Destination frontmatter | Critere d'extraction |
-|-------------------|------------------------|---------------------|
-| Symptomes de defaillance | `page_contract.symptoms` | Phrases decrivant des signes d'usure, bruits, vibrations, traces |
-| Intervalles de remplacement | `page_contract.timing.km` / `.years` | Chiffres + unites (km, mois, ans, heures) |
-| Fourchette de cout | `page_contract.risk.costRange` | Montants en EUR avec context |
-| Erreurs a eviter | `page_contract.antiMistakes` | Phrases avec "ne pas", "erreur", "attention", "eviter" |
-| Regles techniques chiffrees | `mechanical_rules.must_be_true` | Assertions avec mesures (mm, bar, Nm, °C) |
-| Questions frequentes | `page_contract.faq` | Sections Q&A, "saviez-vous", "pourquoi" |
-| Pieces associees | `intro.syncParts` | Mentions de pieces liees au remplacement |
+| Donnee a extraire | Destination v4 | Critere d'extraction |
+|-------------------|----------------|---------------------|
+| Role mecanique detaille | `domain.role` (>80 chars) | Description fonctionnelle precise, sans verbe generique |
+| Termes techniques cles | `domain.must_be_true` | Vocabulaire metier obligatoire dans le contenu |
+| Confusions courantes | `domain.confusion_with` | Pieces proches ou causes confondues |
+| Pieces associees | `domain.related_parts` + `cross_gammes` | Mentions de pieces liees au remplacement |
+| Criteres de selection | `selection.criteria` (min 3) | Dimensions, types, compatibilites |
+| Checklist achat | `selection.checklist` (min 3) | Etapes verification avant commande |
+| Erreurs d'achat | `selection.anti_mistakes` (min 3) | Phrases "ne pas", "erreur", "eviter" |
+| Fourchette de cout | `selection.cost_range` | Montants en EUR avec unite (la paire, l'unite, le kit) |
+| Marques recommandees | `selection.brands` | Premium / equivalent / budget |
+| Symptomes de defaillance | `diagnostic.symptoms` (min 3) | Signes d'usure avec severity (confort/securite/immobilisation) |
+| Causes de panne | `diagnostic.causes` (min 2) | Ordonnees par frequence, % si connu |
+| Tests sans outil | `diagnostic.quick_checks` (min 2) | Verifications visuelles/manuelles |
+| Intervalles remplacement | `maintenance.interval` | Valeur + unite (km/mois/condition) + note |
+| Facteurs d'usure | `maintenance.usage_factors` | Conditions accelerant l'usure |
+| Bonnes pratiques | `maintenance.good_practices` | Gestes d'entretien preventif |
+| Interdits entretien | `maintenance.do_not` | Actions a ne jamais faire |
+| Etapes de montage | `installation.steps` (min 3) | Procedure pas a pas |
+| Outils necessaires | `installation.tools` | Liste outillage |
+| Erreurs de montage | `installation.common_errors` (min 2) | Erreurs de MONTAGE uniquement |
+| Questions frequentes | `rendering.faq` (min 4) | Q&A avec reponses sourcees |
+| Chiffres avec source | `rendering.arguments` | Claims chiffrees avec `source_ref` |
 
-#### Etape 3 — Proposer le diff YAML
+#### Etape 2b — Registrer la provenance
 
-Presenter les enrichissements sous forme lisible. Ne modifier QUE les champs absents ou insuffisants :
+Pour chaque doc supplementaire utilise, ajouter une entree dans `_sources` :
 
 ```yaml
-# ENRICHISSEMENTS PROPOSES pour gammes/{slug}.md
+_sources:
+  {cle-unique}:                    # ex: bosch-2024, mopar-entretien
+    type: "manufacturer"|"norm"|"field-expertise"|"study"|"rag-doc"
+    doc: "{source_path}"           # chemin fichier RAG ou null
+    note: "{contexte en 1 phrase}" # optionnel
+```
+
+Les champs enrichis referencent la source via `source: "{cle}"` inline.
+
+#### Etape 3 — Proposer le diff YAML v4
+
+Presenter les enrichissements organises par bloc. Ne modifier QUE les champs absents ou insuffisants :
+
+```yaml
+# ENRICHISSEMENTS PROPOSES pour gammes/{slug}.md (schema v4)
 # Sources : {liste des docs avec titre abrege}
-# Champs modifies : {N} / Champs inchanges : {N}
+# Blocs enrichis : {liste} / Blocs inchanges : {liste}
 
-page_contract:
-  symptoms:  # AVANT: {N} items → APRES: {N+X} items
-    # existants conserves
-    - "{symptome existant 1}"
-    # nouveaux (source: {doc})
-    - "{nouveau symptome}" # [source: web/{hash}]
+_sources:  # +{N} nouvelles entrees
+  {cle}:
+    type: "{type}"
+    doc: "{path}"
+    note: "{contexte}"
 
-  timing:  # AVANT: generique → APRES: chiffre
-    km: "{valeur chiffree}" # [source: {doc}]
-    years: "{valeur chiffree}" # [source: {doc}]
+domain:  # Bloc A
+  role: "{enrichi si <80 chars}"
+  must_be_true:  # +{N}
+    - "{terme}" # [source: {cle}]
+  confusion_with:  # +{N}
+    - term: "{piece}"
+      difference: "{explication}" # [source: {cle}]
+  cross_gammes:  # NOUVEAU
+    - slug: "{gamme-liee}"
+      relation: "{type}"
+      context: "{explication}"
 
-  antiMistakes:  # +{N} nouvelles
-    - "{erreur a eviter}" # [source: {doc}]
+selection:  # Bloc B
+  criteria:  # +{N}
+    - "{critere}" # [source: {cle}]
+  anti_mistakes:  # +{N}
+    - "{erreur}" # [source: {cle}]
+  cost_range:  # AVANT: absent → APRES: renseigne
+    min: {N}
+    max: {N}
+    currency: EUR
+    unit: "{unite}"
+    source: "{cle}"
 
-mechanical_rules:
-  must_be_true:  # +{N} nouvelles
-    - "{regle technique}" # [source: {doc}]
+diagnostic:  # Bloc C
+  symptoms:  # +{N} (avec id + severity)
+    - id: "S{N}"
+      label: "{symptome}" # [source: {cle}]
+      severity: "{confort|securite|immobilisation}"
+  causes:  # +{N} (avec %)
+    - "{cause} ({X}%)" # [source: {cle}]
+
+maintenance:  # Bloc D
+  interval:  # AVANT: generique → APRES: chiffre
+    value: "{valeur}"
+    unit: "{km|mois|condition}"
+    note: "{condition critique}"
+    source: "{cle}"
+
+rendering:
+  faq:  # +{N}
+    - question: "{question}"
+      answer: "{reponse}" # [source: {cle}]
+  arguments:
+    - title: "{claim chiffree}"
+      icon: "{lucide-icon}"
+      source_ref: "{cle}" # OBLIGATOIRE si chiffre
+
+lifecycle:
+  stage: "v4_converted"  # ou "skill_enriched" si deja v4
+  last_enriched_by: "skill:seo-content"
+  last_enriched_at: {date du jour}
 ```
 
 **Regles d'enrichissement :**
 1. **Ne jamais ecraser** — ajouter aux listes existantes, ne pas remplacer
 2. **Deduplication** — verifier que le nouveau contenu n'est pas deja present (meme sens)
-3. **Sourcer** — chaque ajout annote avec le doc source
+3. **Sourcer** — chaque ajout annote avec le doc source + entree dans `_sources`
 4. **Max 5 ajouts par champ** — au-dela, prioriser par pertinence
 5. **Validation obligatoire** — presenter le diff et demander : "Ces enrichissements sont corrects ? Je mets a jour gamme.md et je continue la redaction."
+6. **Hard gates** — verifier AVANT de proposer :
+   - `domain.role` > 80 chars et pas de pattern generique
+   - `selection.cost_range.max < 10 * cost_range.min`
+   - Tout chiffre dans `rendering.arguments` a un `source_ref`
+7. **Scoring** — estimer le score v4 apres enrichissement (ref: `.spec/00-canon/gamme-md-schema.md` §Scoring v4)
 
 #### Etape 4 — Appliquer les modifications
 
-Apres validation de l'admin, mettre a jour le fichier `gammes/{slug}.md` via l'outil Edit. Mettre a jour le champ `updated_at` a la date du jour.
+Apres validation de l'admin, mettre a jour le fichier `gammes/{slug}.md` via l'outil Edit :
+- Mettre a jour `updated_at` a la date du jour
+- Mettre a jour `lifecycle.stage` et `lifecycle.last_enriched_by`
+- Mettre a jour `quality.version: GammeContentContract.v4` si conversion
 
 > **Si aucun doc supplementaire n'est trouve** : passer directement a Phase 2. Le skill fonctionne normalement avec les donnees existantes du gamme.md.
 
-> **Si le gamme.md est deja riche** (symptoms > 5, timing chiffre, antiMistakes > 3) : noter "Gamme.md deja enrichi, aucun ajout necessaire" et passer a Phase 2.
+> **Si le gamme.md v4 est deja riche** (tous les seuils minimums atteints par bloc) : noter "Gamme.md v4 deja complet, aucun ajout necessaire" et passer a Phase 2.
 
 ### Phase 2 — Architecture du contenu
 
@@ -370,9 +499,9 @@ Tu définis :
 - Ce qui doit rester conditionnel (incertain)
 - Ce qui doit être omis (non confirmé)
 - Les affirmations techniques adossées au RAG (noter doc_family + truth_level)
-- La conformité aux `must_be_true` et `must_not_contain_concepts` du knowledge doc
-- Le bloc "Ne pas confondre" généré depuis `confusion_with` (si présent)
-- Les `purchase_guardrails.forbidden_terms` ajoutés à la liste MOTS INTERDITS
+- La conformité aux `domain.must_be_true` (v4) ou `mechanical_rules.must_be_true` (legacy)
+- Le bloc "Ne pas confondre" généré depuis `domain.confusion_with` (v4) ou `mechanical_rules.confusion_with` (legacy)
+- Les `domain.must_not_contain` (v4) ou `purchase_guardrails.forbidden_terms` (legacy) ajoutés à la liste MOTS INTERDITS
 - La provenance source annotée pour chaque affirmation technique
 
 > **AVANT de rédiger** : lire `references/page-roles.md` pour le vocabulaire complet du rôle cible.
@@ -409,7 +538,7 @@ Le disque de frein transforme l'énergie cinétique en chaleur par friction avec
 [source: rag://gammes.disque-de-frein]
 
 Un disque usé ou voilé réduit l'efficacité de freinage et peut endommager les plaquettes neuves.
-[source: rag://gammes.disque-de-frein, page_contract.risk]
+[source: rag://gammes.disque-de-frein, rendering.risk_explanation]
 ```
 
 > Pour le template du bloc récapitulatif, consulter `references/schema-templates.md`.
@@ -422,9 +551,9 @@ Avant livraison, calculer le score qualité multi-dimensionnel. Seuil : ≥ 80 p
 
 **Validation concrète (7 checks) :**
 1. Compter les annotations de provenance (minimum 3)
-2. Vérifier `must_be_true` : chaque terme doit apparaître au moins une fois dans le contenu
-3. Vérifier `must_not_contain_concepts` : aucun terme interdit ne doit apparaître
-4. Vérifier `purchase_guardrails.forbidden_terms` : aucun terme interdit
+2. Vérifier `domain.must_be_true` (v4) ou `mechanical_rules.must_be_true` (legacy) : chaque terme doit apparaître au moins une fois
+3. Vérifier `domain.must_not_contain` (v4) ou `mechanical_rules.must_not_contain_concepts` (legacy) : aucun terme interdit
+4. Vérifier termes interdits additifs (`domain.must_not_contain` en v4, `purchase_guardrails.forbidden_terms` en legacy)
 5. Scanner les GENERIC_PHRASES (voir `quality-scoring.md`) : 0 occurrence
 6. Vérifier le word count par rapport au V-Level cible
 7. Vérifier la fraîcheur source : si `updated_at` > 6 mois, appliquer STALE_SOURCE (-6)
@@ -694,13 +823,16 @@ Avant de répondre, vérifier :
 
 **RAG & conformité technique :**
 - [ ] Corpus RAG interrogé (affirmations techniques croisées)
-- [ ] mechanical_rules respectées (must_be_true, must_not_contain_concepts)
-- [ ] Termes famille présents (freinage→frein, moteur→combustion, etc.)
-- [ ] page_contract exploité (symptoms, timing, risk, antiMistakes, faq)
+- [ ] **v4** : 5 blocs valides (domain, selection, diagnostic, maintenance, rendering) — ref `.spec/00-canon/gamme-md-schema.md`
+- [ ] **v4** : `domain.must_be_true` respecté — termes présents dans le contenu
+- [ ] **v4** : `domain.must_not_contain` respecté — aucun terme interdit
+- [ ] **v4** : `domain.confusion_with` → bloc "Ne pas confondre" généré
+- [ ] **v4** : `domain.role` utilisé comme seed pour intro (reformulé, pas copié)
+- [ ] **v4** : `_sources` rempli — chaque claim chiffrée a un `source_ref`
+- [ ] **v4** : `cross_gammes` exploité pour maillage interne
+- [ ] **v4** : `lifecycle.stage` mis à jour après enrichissement
+- [ ] **Legacy (v1/v3)** : mechanical_rules et page_contract exploités si pas encore v4
 - [ ] Provenance annotée (minimum 3 annotations `[source: rag://...]`)
-- [ ] purchase_guardrails.forbidden_terms absents du contenu
-- [ ] Bloc "Ne pas confondre" généré si confusion_with existe
-- [ ] role_summary utilisé comme seed pour intro (reformulé, pas copié)
 - [ ] Fraîcheur validée (updated_at < 6 mois, sinon STALE_SOURCE annoté)
 
 **Langue & qualité :**
@@ -737,7 +869,7 @@ curl -s "http://localhost:3000/api/rag/section/guide-achat?q={nom_gamme}&limit=1
 | Knowledge doc existe | Obligatoire | SKIP — "No knowledge doc" |
 | `truth_level` | ≥ L2 | SKIP — "Low truth level (L3/L4)" |
 | `updated_at` | < 6 mois | SKIP — "Stale source, `/rag-ops ingest` recommandé" |
-| `mechanical_rules.must_be_true` | Non vide | WARNING — "No mechanical rules, manual review needed" |
+| `domain.must_be_true` (v4) ou `mechanical_rules.must_be_true` (legacy) | Non vide | WARNING — "No domain rules, manual review needed" |
 
 **Pré-requis supplémentaires si rôle = guide-achat :**
 

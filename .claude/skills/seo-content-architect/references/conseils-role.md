@@ -148,7 +148,7 @@
 | Points qui font echouer | Diametre, epaisseur, ventile/plein, capteur, etrier, essieu AV/AR, PR code VW/Audi | OUI |
 | CTA conversion | **"Voir les pieces compatibles avec votre vehicule"** → `/pieces/{slug}-{pg_id}.html` | OUI |
 
-**Source DB** : `__seo_gamme_conseil` (`sgc_title ILIKE '%choisir%'`) + `page_contract.howToChoose`
+**Source DB** : `__seo_gamme_conseil` (`sgc_title ILIKE '%choisir%'`) + `selection.criteria` (v4) / `page_contract.howToChoose` (legacy)
 
 **Lien interne obligatoire** : → R1/R2 Gamme (CTA)
 
@@ -192,7 +192,7 @@ Decoupe en sous-etapes numerotees :
 - Rodage mal fait → bruit/vitrification
 - Oublier le temoin d'usure
 
-**Source DB** : `__seo_gamme_conseil` (`sgc_title ILIKE '%pieces a controler%'`) + `page_contract.antiMistakes`
+**Source DB** : `__seo_gamme_conseil` (`sgc_title ILIKE '%pieces a controler%'`) + `selection.anti_mistakes` (v4) / `page_contract.antiMistakes` (legacy)
 
 **Lien recommande** : → R3/guide-achat "Eviter les erreurs d'achat"
 
@@ -223,7 +223,7 @@ Proposition naturelle de pack qui augmente le panier moyen SANS spam :
 | Accessoires | Vis/agrafe/ressorts neufs si recommandes | RECO |
 | Capteurs | Temoin d'usure, capteur ABS si present | RECO |
 
-**Source DB** : `page_contract.intro.syncParts`
+**Source DB** : `domain.cross_gammes[].slug` (v4) / `page_contract.intro.syncParts` (legacy)
 
 **Lien interne obligatoire** : → R1 Gammes associees (3+ liens vers pieces)
 
@@ -402,21 +402,22 @@ How-to (conseils) <-> Diagnostic (R5) <-> Guide d'achat (R3) <-> FAQ <-> Page ga
 
 ---
 
-## 12. Mapping page_contract → sections
+## 12. Mapping v4 / legacy → sections
 
 ```
-page_contract.intro.role        → S1 (role pratique, reformule conducteur-first)
-page_contract.intro.syncParts   → S7 (pack complementaire) + liens S1/S4
-page_contract.symptoms          → S2 (3-5 signes BREFS, lien R5 pour le reste)
-page_contract.timing.km/years   → S2 (intervalles remplacement)
-page_contract.timing.note       → S2 (condition remplacement immediat)
-page_contract.risk.consequences → S2 (1-2 phrases motivation a agir)
-page_contract.risk.costRange    → S1 (indication budget intervention, si pertinent)
-page_contract.antiMistakes      → S5 (erreurs a eviter) + S4 (precautions procedure)
-page_contract.faq               → S8 (filtrer questions MAINTENANCE uniquement)
-page_contract.howToChoose       → S3 (compatibilite, reformule contexte intervention)
-page_contract.arguments         → NON utilise dans conseils (appartient a guide-achat)
-page_contract.diagnostic_tree   → NON utilise dans conseils (appartient a R5)
+# v4 paths                          → Section              # Legacy fallback
+domain.role                          → S1 (role pratique)    page_contract.intro.role
+domain.cross_gammes[].slug           → S7 (pack) + liens     page_contract.intro.syncParts
+diagnostic.symptoms[].label          → S2 (3-5 signes)       page_contract.symptoms
+maintenance.interval (km/mois)       → S2 (intervalles)      page_contract.timing.km/years
+maintenance.interval.note            → S2 (condition)        page_contract.timing.note
+rendering.risk_consequences          → S2 (motivation)       page_contract.risk.consequences
+selection.cost_range                 → S1 (budget)           page_contract.risk.costRange
+selection.anti_mistakes              → S5 + S4               page_contract.antiMistakes
+rendering.faq                        → S8 (MAINTENANCE)      page_contract.faq
+selection.criteria                   → S3 (compatibilite)    page_contract.howToChoose
+rendering.arguments                  → NON utilise           page_contract.arguments
+diagnostic.causes                    → NON utilise           page_contract.diagnostic_tree
 ```
 
 ---

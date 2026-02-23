@@ -87,11 +87,11 @@ L'introduction est stockee dans `bg_content` et contient 2 blocs obligatoires :
 
 | Regle | Detail |
 |-------|--------|
-| Seed | `page_contract.intro.role` (reformule GEO-first, JAMAIS copie verbatim) |
+| Seed | `domain.role` (v4) ou `page_contract.intro.role` (legacy) — reformule GEO-first, JAMAIS copie verbatim |
 | Angle | Parcours d'achat — "ce guide vous aide a commander la bonne piece" |
-| Must contain | Termes de `mechanical_rules.must_be_true` (dans le contexte achat) |
-| Liens internes | Vers les gammes de `intro.syncParts` |
-| Must NOT contain | Aucun terme de `mechanical_rules.must_not_contain_concepts` |
+| Must contain | Termes de `domain.must_be_true` (v4) ou `mechanical_rules.must_be_true` (legacy) dans le contexte achat |
+| Liens internes | Vers les gammes de `domain.cross_gammes[].slug` (v4) ou `page_contract.intro.syncParts` (legacy) |
+| Must NOT contain | Aucun terme de `domain.must_not_contain` (v4) ou `mechanical_rules.must_not_contain_concepts` (legacy) |
 
 ### 4c. CTA (dual)
 
@@ -110,13 +110,13 @@ L'introduction est stockee dans `bg_content` et contient 2 blocs obligatoires :
 
 Chaque guide d'achat DOIT contenir ces 7 H2 dans cet ordre. Ils suivent le parcours d'achat naturel.
 
-| # | ID pattern | H2 template | Contenu | Source page_contract |
+| # | ID pattern | H2 template | Contenu | Source v4 / legacy |
 |---|-----------|-------------|---------|---------------------|
-| **S1** | `{bg_id}00` | Identifier {la bonne piece} pour votre vehicule | Methode VIN → immatriculation → selection manuelle. Point cle : meme voiture = plusieurs variantes → verifier position (avant/arriere), cote (gauche/droite), options (capteur, ABS, clim, boite...) | `howToChoose` |
-| **S2** | `{bg_id}01` | Trouver la bonne reference de {piece} | Ref OEM (etiquette, facture, ancienne piece) + ref equipementier. Croiser les references : si ref + dimensions concordent → achat securise | `howToChoose` (detail ref) |
-| **S3** | `{bg_id}02` | Verifier les specifications techniques | Dimensions (diametre, epaisseur, longueur), type (ventile/plein, avec/sans), connectiques (capteur, nombre de broches). **Regle : si 1 critere ne colle pas → ne pas acheter.** Format tableau recommande : Critere / Comment verifier / Piege courant | RAG markdown + `sgpg_selection_criteria` (si disponible) |
-| **S4** | `{bg_id}03` | Quelle qualite de {piece} choisir ? | 3 niveaux : Economique / Equivalent OEM / Premium. Pour chaque : durabilite, homologation, garantie. Adapter au profil d'usage (urbain, route, intensif) si `sgpg_use_cases` disponible | Marques RAG + `risk.costRange` + `sgpg_use_cases` (si disponible) |
-| **S5** | `{bg_id}04` | Commander le bon pack — eviter les oublis | Pieces associees a commander ensemble (SANS expliquer le montage). Format anti-erreur : Oubli frequent → Consequence → Solution. Ex freinage : commander sans plaquettes → usure prematuree → toujours en kit | `intro.syncParts` + `antiMistakes` |
+| **S1** | `{bg_id}00` | Identifier {la bonne piece} pour votre vehicule | Methode VIN → immatriculation → selection manuelle. Point cle : meme voiture = plusieurs variantes → verifier position (avant/arriere), cote (gauche/droite), options (capteur, ABS, clim, boite...) | `selection.criteria` (v4) / `howToChoose` (legacy) |
+| **S2** | `{bg_id}01` | Trouver la bonne reference de {piece} | Ref OEM (etiquette, facture, ancienne piece) + ref equipementier. Croiser les references : si ref + dimensions concordent → achat securise | `selection.criteria` (v4) / `howToChoose` (legacy) — detail ref |
+| **S3** | `{bg_id}02` | Verifier les specifications techniques | Dimensions (diametre, epaisseur, longueur), type (ventile/plein, avec/sans), connectiques (capteur, nombre de broches). **Regle : si 1 critere ne colle pas → ne pas acheter.** Format tableau recommande : Critere / Comment verifier / Piege courant | `selection.criteria` + `selection.checklist` (v4) / RAG markdown + `sgpg_selection_criteria` |
+| **S4** | `{bg_id}03` | Quelle qualite de {piece} choisir ? | 3 niveaux : Economique / Equivalent OEM / Premium. Pour chaque : durabilite, homologation, garantie. Adapter au profil d'usage (urbain, route, intensif) si `sgpg_use_cases` disponible | `selection.cost_range` + `selection.brands` (v4) / Marques RAG + `risk.costRange` (legacy) |
+| **S5** | `{bg_id}04` | Commander le bon pack — eviter les oublis | Pieces associees a commander ensemble (SANS expliquer le montage). Format anti-erreur : Oubli frequent → Consequence → Solution. Ex freinage : commander sans plaquettes → usure prematuree → toujours en kit | `domain.cross_gammes` + `selection.anti_mistakes` (v4) / `intro.syncParts` + `antiMistakes` (legacy) |
 | **S6** | `{bg_id}05` | Checklist avant de payer | 2 blocs : **Verifications obligatoires** (vehicule, position, specs, reference, quantite, retour/garantie) + **Pieges courants** (format "Si... alors..." actionnable). Repetition des anti-erreurs cles de S1-S5 | Synthese S1-S5 |
 | **S7** | `{bg_id}06` | Apres la commande — verifier et agir | Verifier photo/etiquette a reception (ref + dimensions). Garder emballage tant que non valide. Procedure retour/echange si erreur | Generique |
 
@@ -176,30 +176,31 @@ La FAQ est **recommandee** (FAQPage schema) mais pas bloquante. Si le page_contr
 
 ---
 
-## 8. Mapping page_contract → sections
+## 8. Mapping v4 / legacy → sections
 
 ```
-page_contract.howToChoose         → S1 (identification) + S2 (reference) + S3 (specs)
-page_contract.intro.syncParts     → S5 (pack associe) + liens internes bg_content
-page_contract.risk.costRange      → S4 (niveaux qualite, fourchettes prix)
-page_contract.antiMistakes        → S5 (oublis a eviter) + S6 (checklist)
-page_contract.faq                 → S8 (FAQ, reformulee orientation achat)
-page_contract.intro.role          → bg_content intro (reformule GEO-first)
-page_contract.arguments           → bg_content intro (integres, pas de H2 dedie)
-seo_cluster.paa_questions         → headings H2 (reformules, pas copies verbatim)
-mechanical_rules                  → validation post-redaction
-sgpg_selection_criteria (JSONB)   → S3 (tableau Critere/Comment verifier/Piege) [si peuple]
-sgpg_use_cases (JSONB)            → S4 (profils conducteur/usage) [si peuple]
+# v4 paths                          → Section          # Legacy fallback
+selection.criteria                   → S1 + S2 + S3     page_contract.howToChoose
+selection.checklist                  → S3               (pas d'equivalent legacy)
+domain.cross_gammes[].slug           → S5 + liens       page_contract.intro.syncParts
+selection.cost_range                 → S4               page_contract.risk.costRange
+selection.anti_mistakes              → S5 + S6          page_contract.antiMistakes
+rendering.faq                        → S8               page_contract.faq
+domain.role                          → bg_content intro  page_contract.intro.role
+rendering.arguments                  → bg_content intro  page_contract.arguments
+seo_cluster.paa_questions            → headings H2       (identique)
+domain.must_be_true                  → validation post    mechanical_rules
+sgpg_selection_criteria (JSONB)      → S3                (identique)
+sgpg_use_cases (JSONB)               → S4                (identique)
 ```
 
-**Champs page_contract NON utilises dans guide-achat :**
+**Champs NON utilises dans guide-achat :**
 
-| Champ | Raison | Role de page concerne |
-|-------|--------|----------------------|
-| `symptoms` | Diagnostic, pas achat | R5 Diagnostic |
-| `timing.km` / `timing.years` | Intervalle de remplacement, pas achat | R4 Reference |
-| `timing.note` | Condition mecanique, pas achat | R4 Reference / R5 |
-| `risk.consequences` (detail) | Peut apparaitre en intro (1 phrase) mais pas de H2 dedie | R5 Diagnostic |
+| Champ v4 | Champ legacy | Raison | Role de page concerne |
+|----------|-------------|--------|----------------------|
+| `diagnostic.symptoms` | `page_contract.symptoms` | Diagnostic, pas achat | R5 Diagnostic |
+| `maintenance.interval` | `page_contract.timing.*` | Intervalle de remplacement, pas achat | R4 Reference |
+| `rendering.risk_consequences` | `page_contract.risk.consequences` | Peut apparaitre en intro (1 phrase) mais pas de H2 dedie | R5 Diagnostic |
 
 ---
 
@@ -240,14 +241,14 @@ Le backend resout automatiquement 4 guides de la **meme famille** via :
 
 ## 11. Pre-requis gamme pour generer un guide
 
-| Champ RAG | Requis | Si absent |
-|-----------|--------|-----------|
-| `page_contract` | OUI | **STOP** — enrichir via `/rag-ops ingest` |
-| `page_contract.howToChoose` | OUI | STOP — impossible de generer S1/S2/S3 |
-| `page_contract.antiMistakes` | OUI | Flag — S5/S6 seront generiques |
-| `page_contract.faq` (≥3) | RECOMMANDE | S8 omise ou generique |
-| `seo_cluster` | RECOMMANDE | Headings non optimises SEO |
-| `mechanical_rules.must_be_true` | OUI | WARNING — pas de validation anti-hallucination |
+| Champ v4 | Champ legacy (fallback) | Requis | Si absent |
+|----------|------------------------|--------|-----------|
+| Blocs `domain` + `selection` + `rendering` | `page_contract` | OUI | **STOP** — enrichir via `/rag-ops ingest` |
+| `selection.criteria` | `page_contract.howToChoose` | OUI | STOP — impossible de generer S1/S2/S3 |
+| `selection.anti_mistakes` | `page_contract.antiMistakes` | OUI | Flag — S5/S6 seront generiques |
+| `rendering.faq` (≥3) | `page_contract.faq` (≥3) | RECOMMANDE | S8 omise ou generique |
+| `seo_cluster` | `seo_cluster` | RECOMMANDE | Headings non optimises SEO |
+| `domain.must_be_true` | `mechanical_rules.must_be_true` | OUI | WARNING — pas de validation anti-hallucination |
 
 ---
 

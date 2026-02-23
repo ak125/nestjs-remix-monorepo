@@ -173,29 +173,30 @@
 
 ---
 
-## 7. Mapping page_contract → champs R4
+## 7. Mapping v4 / legacy → champs R4
 
-| Champ page_contract | Champ R4 | Usage |
-|---------------------|----------|-------|
-| `intro.role` | `definition` (paragraphe 1) | Seed pour la definition — reformuler GEO-first |
-| `intro.syncParts` | `related_references` + liens internes | Pieces associees du meme systeme |
-| `timing.km` / `timing.years` | `definition` (paragraphe 3) | Intervalles de remplacement |
-| `timing.note` | `regles_metier` | Condition critique de remplacement |
-| `risk.explanation` | `role_mecanique` | Base pour la transformation physique |
-| `risk.consequences` | `role_negatif` | Consequences en cas de defaillance |
-| `risk.costRange` | `definition` (paragraphe 3) | Fourchette cout remplacement |
-| `antiMistakes` | `regles_metier` | Enrichir les regles anti-erreur |
-| `symptoms` | `symptomes_associes` | Slugs diagnostics associes |
-| `mechanical_rules.must_be_true` | Validation post-redaction | Termes obligatoires dans le contenu |
-| `mechanical_rules.confusion_with` | `confusions_courantes` | Generer les paires "A ≠ B" |
+| Champ v4 | Champ legacy (fallback) | Champ R4 | Usage |
+|----------|------------------------|----------|-------|
+| `domain.role` | `page_contract.intro.role` | `definition` (paragraphe 1) | Seed pour la definition — reformuler GEO-first |
+| `domain.cross_gammes[].slug` | `page_contract.intro.syncParts` | `related_references` + liens internes | Pieces associees du meme systeme |
+| `maintenance.interval` | `page_contract.timing.*` | `definition` (paragraphe 3) | Intervalles de remplacement |
+| `maintenance.interval.note` | `page_contract.timing.note` | `regles_metier` | Condition critique de remplacement |
+| `rendering.risk_explanation` | `page_contract.risk.explanation` | `role_mecanique` | Base pour la transformation physique |
+| `rendering.risk_consequences` | `page_contract.risk.consequences` | `role_negatif` | Consequences en cas de defaillance |
+| `selection.cost_range` | `page_contract.risk.costRange` | `definition` (paragraphe 3) | Fourchette cout remplacement |
+| `selection.anti_mistakes` | `page_contract.antiMistakes` | `regles_metier` | Enrichir les regles anti-erreur |
+| `diagnostic.symptoms[].label` | `page_contract.symptoms` | `symptomes_associes` | Slugs diagnostics associes |
+| `domain.must_be_true` | `mechanical_rules.must_be_true` | Validation post-redaction | Termes obligatoires dans le contenu |
+| `domain.confusion_with` | `mechanical_rules.confusion_with` | `confusions_courantes` | Generer les paires "A ≠ B" |
+| `domain.related_parts` | *(pas d'equivalent)* | `composition` | Composants et sous-ensembles |
 
-### Champs page_contract NON utilises en R4
+### Champs NON utilises en R4
 
-| Champ | Raison | Role concerne |
-|-------|--------|---------------|
-| `faq` | Les FAQ sont du ressort R3/R5 | R3 Blog, R5 Diagnostic |
-| `howToChoose` | Guide de selection = achat | R3 Blog/guide-achat |
-| `arguments` | Arguments de vente = commercial | R2 Product, R3 Blog |
+| Champ v4 | Champ legacy | Raison | Role concerne |
+|----------|-------------|--------|---------------|
+| `rendering.faq` | `page_contract.faq` | Les FAQ sont du ressort R3/R5 | R3 Blog, R5 Diagnostic |
+| `selection.criteria` | `page_contract.howToChoose` | Guide de selection = achat | R3 Blog/guide-achat |
+| `rendering.arguments` | `page_contract.arguments` | Arguments de vente = commercial | R2 Product, R3 Blog |
 
 ---
 
@@ -278,8 +279,8 @@ VIN/immat > OEM > OES > IAM (cross verifie) > IAM (catalogue seul) > Distributeu
 | `pg_id` valide dans `pieces_gamme` | OUI | **STOP** — pas de fiche sans gamme |
 | `pg_alias` (slug) | OUI | STOP — necessaire pour l'URL |
 | Knowledge doc RAG | RECOMMANDE | Continuer avec donnees BDD + expertise. Signaler l'absence |
-| `mechanical_rules.must_be_true` | RECOMMANDE | WARNING — validation anti-hallucination limitee |
-| `mechanical_rules.confusion_with` | RECOMMANDE | Flag — confusions_courantes generiques |
+| `domain.must_be_true` (v4) ou `mechanical_rules.must_be_true` (legacy) | RECOMMANDE | WARNING — validation anti-hallucination limitee |
+| `domain.confusion_with` (v4) ou `mechanical_rules.confusion_with` (legacy) | RECOMMANDE | Flag — confusions_courantes generiques |
 | Diagnostic R5 existants (`__seo_observable`) | RECOMMANDE | `symptomes_associes` vide |
 | Articles R3 existants (`__blog_advice`) | OPTIONNEL | `blog_slugs` vide |
 

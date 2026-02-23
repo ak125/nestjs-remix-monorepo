@@ -51,20 +51,47 @@ Pour chaque gamme sélectionnée :
 2. Si fichier absent → **SKIP** avec raison `No knowledge file`
 3. Vérifier le frontmatter YAML :
    - Si `truth_level` n'est pas `L1` ou `L2` → **SKIP** avec raison `Untrusted source`
-4. Extraire du YAML : `page_contract`, `mechanical_rules`, `purchase_guardrails`
+4. **Détecter la version du schema** :
+   - Si `rendering.quality.version === 'GammeContentContract.v4'` → utiliser le mapping **v4** (5 blocs)
+   - Sinon → utiliser le mapping **legacy** (`page_contract`, `mechanical_rules`)
 
 ---
 
 ## Étape 2 — Générer le contenu
 
-### Mapping knowledge → colonnes DB
+### Mapping v4 (schema 5 blocs) → colonnes DB
+
+> **Schema de référence** : `.spec/00-canon/gamme-md-schema.md`
+
+| Source v4 | Colonne DB | Règle |
+|-----------|-----------|-------|
+| `domain.role` | `sgpg_intro_role` | GEO-first, 40-100 mots, ajouter `[source: rag://gammes.{slug}]` |
+| `selection.criteria` | `sgpg_how_to_choose` | 3-5 phrases en **prose** (pas de liste), mentionner le sélecteur véhicule, ajouter `[source: rag://gammes.{slug}]` |
+| `selection.anti_mistakes` | `sgpg_anti_mistakes` | Array min 4 items, verbes d'action, erreurs pratiques spécifiques |
+| `selection.criteria` + `selection.checklist` | `sgpg_selection_criteria` | JSONB `{criteria: [...], checklist: [...], cross_gammes: [...]}` |
+| `selection.cost_range` | `sgpg_risk_cost_range` | Format `"min-max EUR (unité)"` |
+| `diagnostic.symptoms[].label` | `sgpg_symptoms` | Array, min 3 |
+| `diagnostic.causes` + `diagnostic.quick_checks` | Enrichir `sgpg_selection_criteria` | Informations diagnostiques complémentaires |
+| `maintenance.interval` | `sgpg_timing_km` / `sgpg_timing_years` | Selon `interval.unit` (km ou mois) |
+| `maintenance.interval.note` | `sgpg_timing_note` | Valeur directe |
+| `rendering.faq` | `sgpg_faq` | JSONB `[{question, answer}]`, min 3 max 6 |
+| `rendering.arguments` | `sgpg_arg1..4_*` | Max 4 arguments avec icône + `source_ref` |
+| `rendering.risk_title` | `sgpg_risk_title` | Valeur directe |
+| `rendering.risk_explanation` | `sgpg_risk_explanation` | Valeur directe |
+| `rendering.risk_consequences` | `sgpg_risk_consequences` | Array de conséquences |
+| `rendering.risk_conclusion` | `sgpg_risk_conclusion` | Valeur directe |
+| `domain.cross_gammes[].slug` | `sgpg_intro_sync_parts` | Array de slugs gammes liées |
+
+### Mapping legacy (`page_contract.*`) → colonnes DB
+
+> **Utilisé uniquement si le schema N'EST PAS v4**
 
 | Knowledge field | Colonne DB | Règle |
 |----------------|-----------|-------|
-| `page_contract.intro.role` | `sgpg_intro_role` | GEO-first, 40-100 mots, ajouter `[source: rag://gammes.{slug}]` |
-| `page_contract.howToChoose` | `sgpg_how_to_choose` | 3-5 phrases en **prose** (pas de liste), mentionner le sélecteur véhicule, ajouter `[source: rag://gammes.{slug}]` |
-| `page_contract.antiMistakes` | `sgpg_anti_mistakes` | Array min 4 items, verbes d'action, erreurs pratiques spécifiques |
-| `page_contract.faq` | `sgpg_faq` | JSONB `[{question, answer}]`, min 3 max 6 |
+| `page_contract.intro.role` | `sgpg_intro_role` | GEO-first, 40-100 mots |
+| `page_contract.howToChoose` | `sgpg_how_to_choose` | Prose, sélecteur véhicule |
+| `page_contract.antiMistakes` | `sgpg_anti_mistakes` | Array min 4 items |
+| `page_contract.faq` | `sgpg_faq` | JSONB `[{question, answer}]` |
 | `page_contract.arguments` | `sgpg_arg1..4_*` | Max 4 arguments avec icône |
 | `mechanical_rules` + `howToChoose` | `sgpg_selection_criteria` | JSONB array, min 5 critères |
 | `page_contract.symptoms` | `sgpg_symptoms` | Array, min 3 |
@@ -77,7 +104,7 @@ Pour chaque gamme sélectionnée :
 - **sgpg_how_to_choose** : **prose obligatoire** (pas de liste à puces). Doit mentionner le sélecteur véhicule AutoMecanik
 - **Source provenance** : `[source: rag://gammes.{slug}]` obligatoire dans `intro_role` et `how_to_choose`
 - **Éviter** les GENERIC_PHRASES : "rôle essentiel", "bon fonctionnement", "entretien régulier", "pièce importante", "il est recommandé", "il est conseillé", "en bon état", "pièce indispensable"
-- **Respecter** `must_be_true` et `must_not_contain_concepts` de `mechanical_rules`
+- **Respecter** `domain.must_be_true` / `domain.must_not_contain` (v4) ou `mechanical_rules` (legacy)
 - **Accents français** : toujours corrects (vérifier, contrôler, sécurité, etc.)
 
 ---

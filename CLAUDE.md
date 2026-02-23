@@ -29,6 +29,16 @@ This is a production-ready NestJS + Remix monorepo for an automotive parts e-com
 - Production deployment with Docker + Caddy reverse proxy
 - Database: Supabase (PostgreSQL) - pas de Prisma
 
+## Infrastructure Dev / Prod
+
+| Environnement | Serveur | Role |
+|--------------|---------|------|
+| **DEV** | `46.224.118.55` (`/opt/automecanik/app`) | Claude Code, edition, tests locaux |
+| **PROD** | `49.12.233.2` (Ubuntu 22.04.5 LTS) | Serveur de production, deploye par GitHub Actions |
+
+- `git push main` → GitHub Actions CI/CD → Docker build → deploiement automatique sur PROD
+- Claude Code travaille sur DEV, PAS sur PROD
+
 ## Source of Truth (00-canon)
 
 Les fichiers canoniques definissent la verite du projet. Toujours consulter ces fichiers en priorite.
