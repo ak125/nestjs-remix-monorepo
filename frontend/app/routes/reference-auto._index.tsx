@@ -22,6 +22,7 @@ import { useState, useMemo, useCallback } from "react";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
+import { HeroReference } from "~/components/heroes";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -264,75 +265,34 @@ export default function ReferenceIndexPage() {
         </div>
       </div>
 
-      {/* ═══ HERO DARK PREMIUM ═══ */}
-      <section className="relative overflow-hidden bg-[#0d1b3e] text-white">
-        {/* Grid pattern */}
-        <div
-          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:3rem_3rem]"
-          aria-hidden="true"
-        />
-        {/* Accent glow */}
-        <div
-          className="absolute -top-24 -right-24 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute -bottom-32 -left-32 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl"
-          aria-hidden="true"
-        />
+      {/* ═══ HERO ═══ */}
+      <HeroReference
+        title="Encyclopédie Pièces Auto"
+        subtitle="Glossaire complet des pièces automobiles. Définitions techniques, rôles mécaniques et compositions détaillées."
+      />
 
-        <div className="relative max-w-7xl mx-auto px-4 py-12 md:py-16">
-          <div className="max-w-3xl">
-            {/* Icon + badge */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-indigo-500/20 rounded-xl border border-indigo-500/30">
-                <BookOpen className="h-7 w-7 text-indigo-400" />
-              </div>
-              <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/30">
-                {total} définitions
-              </Badge>
+      {/* ═══ RECHERCHE + STATS ═══ */}
+      <section className="bg-white border-b py-4">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <div className="relative flex-1 max-w-xl w-full">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                type="search"
+                placeholder="Rechercher une définition (ex: embrayage, plaquette...)"
+                className="pl-11 h-11 rounded-xl text-base"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight mb-4">
-              Encyclopédie{" "}
-              <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
-                Pièces Auto
-              </span>
-            </h1>
-
-            <p className="text-lg text-white/70 mb-8 max-w-xl leading-relaxed">
-              Glossaire complet des pièces automobiles. Définitions techniques,
-              rôles mécaniques et compositions détaillées pour comprendre votre
-              véhicule.
-            </p>
-
-            {/* Search bar */}
-            <div className="max-w-xl">
-              <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  type="search"
-                  placeholder="Rechercher une définition (ex: embrayage, plaquette...)"
-                  className="pl-11 h-12 bg-white text-gray-900 rounded-xl border-0 text-base"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="flex flex-wrap gap-3 mt-6">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-full text-sm text-white/80">
+            <div className="flex gap-3 text-sm text-gray-500">
+              <span className="inline-flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
                 {total} définitions
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-full text-sm text-white/80">
+              <span className="inline-flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
                 {gammeCategories.length} catégories
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/10 rounded-full text-sm text-white/80">
-                <span className="w-1.5 h-1.5 rounded-full bg-white/60" />
-                {availableLetters.size} lettres
               </span>
             </div>
           </div>

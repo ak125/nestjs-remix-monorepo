@@ -37,13 +37,13 @@ import {
 // UI Components
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
+import { HeroReference } from "~/components/heroes";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
-import { Badge } from "../components/ui/badge";
 import {
   Card,
   CardContent,
@@ -377,47 +377,32 @@ export default function ReferenceDetailPage() {
       {/* Schema.org JSON-LD (DefinedTerm + TechArticle + Breadcrumbs) */}
       <SchemaJsonLd reference={reference} />
 
-      {/* Header */}
-      <header className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-12">
-        <div className="container mx-auto px-4">
-          {/* Breadcrumbs */}
-          <nav className="text-sm mb-4 text-indigo-200">
-            <ol className="flex items-center gap-2">
-              <li>
-                <Link to="/" className="hover:text-white transition-colors">
-                  Accueil
-                </Link>
-              </li>
-              <li>/</li>
-              <li>
-                <Link
-                  to="/reference-auto"
-                  className="hover:text-white transition-colors"
-                >
-                  Référence Auto
-                </Link>
-              </li>
-              <li>/</li>
-              <li className="text-white font-medium">{shortTitle}</li>
-            </ol>
-          </nav>
-
-          {/* Title */}
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-white/20 flex items-center justify-center">
-              <BookOpen className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <Badge className="mb-2 bg-white/20 text-white border-0">
+      {/* Breadcrumb */}
+      <nav className="bg-white border-b" aria-label="Breadcrumb">
+        <div className="container mx-auto px-4 py-3">
+          <ol className="flex items-center gap-2 text-sm text-gray-500">
+            <li>
+              <Link to="/" className="hover:text-gray-700">
+                Accueil
+              </Link>
+            </li>
+            <li className="text-gray-300">/</li>
+            <li>
+              <Link to="/reference-auto" className="hover:text-gray-700">
                 Référence Auto
-              </Badge>
-              <h1 className="text-3xl md:text-4xl font-bold">
-                {reference.title}
-              </h1>
-            </div>
-          </div>
+              </Link>
+            </li>
+            <li className="text-gray-300">/</li>
+            <li className="text-gray-900 font-medium truncate">{shortTitle}</li>
+          </ol>
         </div>
-      </header>
+      </nav>
+
+      {/* Hero Reference — H1 unique (image-matrix-v1 §7) */}
+      <HeroReference
+        title={reference.title}
+        categoryBadge={reference.gamme.name || undefined}
+      />
 
       {/* Back Button */}
       <section className="py-4 border-b bg-white">

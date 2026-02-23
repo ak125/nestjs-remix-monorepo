@@ -44,6 +44,7 @@ import {
 
 // UI Components
 import { Error404 } from "~/components/errors/Error404";
+import { HeroDiagnostic } from "~/components/heroes";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -305,40 +306,39 @@ export default function DiagnosticAutoDetail() {
         </div>
       )}
 
-      {/* Header */}
+      {/* Hero Diagnostic — H1 unique (image-matrix-v1 §7) */}
+      <HeroDiagnostic
+        title={diagnostic.title}
+        description={diagnostic.meta_description}
+        icon={ScanLine}
+        severity={
+          diagnostic.risk_level === "critique" ||
+          diagnostic.safety_gate === "stop_immediate"
+            ? "danger"
+            : diagnostic.safety_gate === "warning" ||
+                diagnostic.safety_gate === "stop_soon"
+              ? "warning"
+              : "info"
+        }
+      />
+
+      {/* Back link + badges */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <Link
             to="/diagnostic-auto"
-            className="inline-flex items-center text-orange-600 hover:text-orange-700 mb-4"
+            className="inline-flex items-center text-orange-600 hover:text-orange-700"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour aux diagnostics
           </Link>
-
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-orange-100 rounded-lg">
-              <ScanLine className="h-8 w-8 text-orange-600" />
-            </div>
-            <div className="flex-1">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
-                {diagnostic.title}
-              </h1>
-              <p className="text-gray-600 mt-2">
-                {diagnostic.meta_description}
-              </p>
-              <div className="flex flex-wrap gap-2 mt-4">
-                <Badge variant="outline" className={riskConfig.color}>
-                  {riskConfig.label}
-                </Badge>
-                <Badge
-                  variant="secondary"
-                  className="bg-orange-50 text-orange-700"
-                >
-                  {diagnostic.cluster_id}
-                </Badge>
-              </div>
-            </div>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline" className={riskConfig.color}>
+              {riskConfig.label}
+            </Badge>
+            <Badge variant="secondary" className="bg-orange-50 text-orange-700">
+              {diagnostic.cluster_id}
+            </Badge>
           </div>
         </div>
       </div>

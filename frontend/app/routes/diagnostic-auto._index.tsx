@@ -40,6 +40,7 @@ import {
 import { useState } from "react";
 
 import { Error404 } from "~/components/errors/Error404";
+import { HeroDiagnostic } from "~/components/heroes";
 import {
   Accordion,
   AccordionContent,
@@ -428,79 +429,50 @@ export default function DiagnosticAutoIndex() {
       </div>
 
       {/* ═══ HERO ═══ */}
-      <section className="relative overflow-hidden bg-[#0d1b3e] text-white">
-        {/* Grid pattern */}
-        <div
-          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:3rem_3rem]"
-          aria-hidden="true"
-        />
-        {/* Accent glow */}
-        <div
-          className="absolute -top-24 -right-24 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl"
-          aria-hidden="true"
-        />
+      <HeroDiagnostic
+        title="Identifiez votre panne auto"
+        description="Décrivez le symptôme, notre outil identifie les causes probables et vous oriente vers la bonne pièce. Gratuit, sans inscription."
+        severity="warning"
+      />
 
-        <div className="relative max-w-7xl mx-auto px-4 py-16 md:py-20">
-          <div className="max-w-3xl">
-            {/* Icon + badge */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-orange-500/20 rounded-xl border border-orange-500/30">
-                <ScanLine className="h-7 w-7 text-orange-400" />
-              </div>
-              <Badge className="bg-orange-500/20 text-orange-300 border-orange-500/30 hover:bg-orange-500/30">
-                193 diagnostics disponibles
-              </Badge>
+      {/* ═══ RECHERCHE + OBD ═══ */}
+      <section className="bg-white border-b py-4">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col sm:flex-row gap-3 max-w-2xl">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                type="search"
+                placeholder="Décrivez votre problème (ex: bruit au freinage...)"
+                className="pl-11 h-11 rounded-xl text-base"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">
-              Identifiez votre{" "}
-              <span className="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
-                panne auto
-              </span>
-            </h1>
-
-            <p className="text-lg text-white/70 mb-8 max-w-xl leading-relaxed">
-              Décrivez le symptôme, notre outil identifie les causes probables
-              et vous oriente vers la bonne pièce. Gratuit, sans inscription.
-            </p>
-
-            {/* Search + OBD inline */}
-            <div className="flex flex-col sm:flex-row gap-3 max-w-2xl">
-              <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <Input
-                  type="search"
-                  placeholder="Décrivez votre problème (ex: bruit au freinage, vibration volant...)"
-                  className="pl-11 h-12 bg-white text-gray-900 rounded-xl border-0 text-base"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const code = dtcCode.trim().toUpperCase();
-                  if (code) {
-                    window.location.href = `/diagnostic-auto?dtc=${encodeURIComponent(code)}`;
-                  }
-                }}
-                className="flex gap-2"
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const code = dtcCode.trim().toUpperCase();
+                if (code) {
+                  window.location.href = `/diagnostic-auto?dtc=${encodeURIComponent(code)}`;
+                }
+              }}
+              className="flex gap-2"
+            >
+              <Input
+                type="text"
+                placeholder="Code OBD (P0300...)"
+                className="h-11 w-40 bg-gray-100 border-gray-200 font-mono rounded-xl text-center"
+                value={dtcCode}
+                onChange={(e) => setDtcCode(e.target.value)}
+              />
+              <button
+                type="submit"
+                className="h-11 px-5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors whitespace-nowrap"
               >
-                <Input
-                  type="text"
-                  placeholder="Code OBD (P0300...)"
-                  className="h-12 w-40 bg-white/10 border-white/20 text-white placeholder:text-white/40 font-mono rounded-xl text-center"
-                  value={dtcCode}
-                  onChange={(e) => setDtcCode(e.target.value)}
-                />
-                <button
-                  type="submit"
-                  className="h-12 px-5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors whitespace-nowrap"
-                >
-                  Scanner
-                </button>
-              </form>
-            </div>
+                Scanner
+              </button>
+            </form>
           </div>
         </div>
       </section>

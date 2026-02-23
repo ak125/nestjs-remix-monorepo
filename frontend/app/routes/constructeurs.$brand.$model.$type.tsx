@@ -40,6 +40,7 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { Error404, Error410 } from "../components/errors";
+import { HeroSelection } from "../components/heroes";
 import {
   ModelContentV1Display,
   type ModelContentV1Data,
@@ -755,7 +756,7 @@ export default function VehicleDetailPage() {
   } = data;
 
   // Récupérer le gradient de marque dynamique
-  const brandColor = brandColorsService.getBrandGradient(vehicle.marque_alias);
+  const _brandColor = brandColorsService.getBrandGradient(vehicle.marque_alias);
   const _brandPrimary = brandColorsService.getBrandPrimaryColor(
     vehicle.marque_alias,
   );
@@ -848,133 +849,57 @@ export default function VehicleDetailPage() {
         </div>
       </nav>
 
-      {/* 🚗 Hero Section - Design UI/UX Expert Premium */}
-      <section
-        className="relative overflow-hidden text-white py-8 md:py-10"
-        style={brandColor}
-      >
-        {/* Effets d'arrière-plan optimisés */}
-        <div
-          className="absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 20% 30%, rgba(255,255,255,0.12) 0%, transparent 45%),
-                           radial-gradient(circle at 80% 70%, rgba(0,0,0,0.18) 0%, transparent 45%)`,
-          }}
-          aria-hidden="true"
-        />
-        <div
-          className="absolute top-0 right-0 w-[700px] h-[700px] bg-white/[0.025] rounded-full blur-3xl animate-[pulse_15s_ease-in-out_infinite]"
-          aria-hidden="true"
-        ></div>
+      {/* Hero Selection — H1 unique (image-matrix-v1 §7, gradient-only) */}
+      <HeroSelection
+        title={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch de ${vehicle.type_year_from} à ${vehicle.type_year_to || "aujourd'hui"}`}
+        subtitle={`${vehicle.type_fuel} · ${vehicle.type_body} · ${vehicle.type_year_from}–${vehicle.type_year_to || "Auj."}`}
+      />
 
-        <div className="relative z-10 container mx-auto px-4 max-w-7xl">
-          {/* Hero Grid - Layout optimal */}
-          <div className="grid lg:grid-cols-[minmax(0,1fr)_400px] gap-8 items-start">
-            {/* Zone de contenu principale */}
-            <div className="space-y-6">
-              {/* Header typographique */}
-              <header className="animate-in fade-in slide-in-from-bottom-6 duration-700 ease-out">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black leading-tight mb-2 tracking-tight">
-                  <span className="bg-gradient-to-br from-white via-white to-white/85 bg-clip-text text-transparent drop-shadow-[0_8px_24px_rgba(0,0,0,0.4)]">
-                    {vehicle.marque_name} {vehicle.modele_name}{" "}
-                    {vehicle.type_name} {vehicle.type_power_ps} ch de{" "}
-                    {vehicle.type_year_from} à{" "}
-                    {vehicle.type_year_to || "aujourd'hui"}
-                  </span>
-                </h1>
-              </header>
-
-              {/* Specs Grid - Badges horizontaux compacts */}
-              <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100 ease-out">
-                {/* Carburant */}
-                <div className="group bg-white/[0.12] backdrop-blur-2xl rounded-xl px-3 py-2 border border-white/25 shadow hover:bg-white/[0.16] hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">⛽</span>
-                    <span className="text-sm font-bold text-white">
-                      {vehicle.type_fuel}
-                    </span>
+      {/* Vehicle image + specs (hors hero — SELECTION = gradient-only) */}
+      <section className="bg-white border-b">
+        <div className="container mx-auto px-4 max-w-7xl py-6">
+          <div className="flex flex-col md:flex-row gap-6 items-start">
+            {/* Vehicle image */}
+            <div className="flex-shrink-0">
+              <div className="w-48 h-32 md:w-56 md:h-36 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+                {!imageError && isValidImagePath(vehicle.modele_pic) ? (
+                  <img
+                    src={`/img/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`}
+                    alt={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`}
+                    width={224}
+                    height={144}
+                    className="w-full h-full object-cover"
+                    loading="eager"
+                    decoding="async"
+                    fetchPriority="high"
+                    onError={() => setImageError(true)}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Car
+                      className="w-12 h-12 text-gray-300"
+                      strokeWidth={1.5}
+                    />
                   </div>
-                </div>
-
-                {/* Puissance */}
-                <div className="group bg-gradient-to-br from-white/[0.22] via-white/[0.16] to-white/[0.08] backdrop-blur-2xl rounded-xl px-3 py-2 border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">⚡</span>
-                    <div>
-                      <div className="text-2xl font-black text-white leading-none">
-                        {vehicle.type_power_ps}
-                      </div>
-                      <div className="text-white/70 text-[11px] sm:text-xs uppercase tracking-wider font-bold">
-                        chevaux
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Période */}
-                <div className="group bg-white/[0.12] backdrop-blur-2xl rounded-xl px-3 py-2 border border-white/25 shadow hover:bg-white/[0.16] hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">📅</span>
-                    <span className="text-xs font-bold text-white whitespace-nowrap">
-                      {vehicle.type_year_from}–{vehicle.type_year_to || "Auj."}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Carrosserie */}
-                <div className="group bg-white/[0.12] backdrop-blur-2xl rounded-xl px-3 py-2 border border-white/25 shadow hover:bg-white/[0.16] hover:shadow-lg transition-all duration-300">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base">🚗</span>
-                    <span className="text-xs font-semibold text-white/95">
-                      {vehicle.type_body}
-                    </span>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 
-            {/* Image Premium - Sidebar optimisée */}
-            <div className="lg:sticky lg:top-8 animate-in fade-in slide-in-from-right-8 duration-700 delay-150 ease-out">
-              <div className="relative group">
-                {/* Effet halo lumineux */}
-                <div className="absolute -inset-3 bg-gradient-to-br from-white/[0.22] via-white/[0.12] to-transparent rounded-2xl blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-700"></div>
-
-                {/* Container carte */}
-                <div className="relative">
-                  <div className="bg-gradient-to-br from-white/[0.18] via-white/[0.12] to-white/[0.06] backdrop-blur-2xl rounded-2xl p-2.5 border border-white/30 shadow-[0_12px_48px_rgba(0,0,0,0.15)]">
-                    <div className="relative overflow-hidden rounded-xl">
-                      {!imageError && isValidImagePath(vehicle.modele_pic) ? (
-                        <>
-                          <img
-                            src={`/img/uploads/constructeurs-automobiles/marques-modeles/${vehicle.marque_alias}/${vehicle.modele_pic}`}
-                            alt={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} - ${vehicle.type_year_from} à ${vehicle.type_year_to || "aujourd'hui"}`}
-                            width={400}
-                            height={208}
-                            className="w-full h-52 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
-                            loading="eager"
-                            decoding="async"
-                            fetchPriority="high"
-                            onError={() => setImageError(true)}
-                          />
-                          {/* Gradient overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
-                        </>
-                      ) : (
-                        <div className="w-full h-52 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center flex-col gap-2">
-                          <Car
-                            className="w-16 h-16 text-gray-400"
-                            strokeWidth={1.5}
-                            aria-label={`Image ${vehicle.marque_name} ${vehicle.modele_name} non disponible`}
-                          />
-                          <p className="text-xs text-gray-500 font-medium">
-                            Image non disponible
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
+            {/* Specs badges */}
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
+                <Fuel className="w-4 h-4" /> {vehicle.type_fuel}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
+                <Gauge className="w-4 h-4" /> {vehicle.type_power_ps} ch
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
+                <Calendar className="w-4 h-4" /> {vehicle.type_year_from}–
+                {vehicle.type_year_to || "Auj."}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
+                <Car className="w-4 h-4" /> {vehicle.type_body}
+              </span>
             </div>
           </div>
         </div>
