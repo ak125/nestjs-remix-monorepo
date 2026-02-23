@@ -35,7 +35,7 @@ export default defineConfig({
   // Configuration partagée pour tous les tests
   use: {
     // URL de base du serveur Remix
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
     
     // Trace : uniquement sur échec
     trace: 'on-first-retry',
@@ -112,11 +112,8 @@ export default defineConfig({
         },
       ],
 
-  // Serveur web pour les tests (optionnel, si besoin de démarrer le serveur auto)
-  webServer: process.env.CI ? {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    timeout: 120 * 1000,
-    reuseExistingServer: !process.env.CI,
-  } : undefined,
+  // Web server disabled:
+  // - CI: PREPROD already deployed on port 3100 (see ci.yml deploy job)
+  // - Local: start server manually with `npm run dev` from project root
+  webServer: undefined,
 });
