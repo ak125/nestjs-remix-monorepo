@@ -6,7 +6,7 @@ import { PageBriefService } from './page-brief.service';
 import { ConfigService } from '@nestjs/config';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const yaml = require('js-yaml');
 import { z } from 'zod';
 import {
@@ -451,7 +451,9 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
 
     // ── Parse v4 frontmatter (priority) or legacy page_contract (fallback) ──
     const v4Data = this.parseV4Frontmatter(gammeContent);
-    const pageContract = v4Data ? null : this.parsePageContractYaml(gammeContent);
+    const pageContract = v4Data
+      ? null
+      : this.parsePageContractYaml(gammeContent);
 
     // ── Extract anti_mistakes ──
     const errorsSection = this.extractSection(allContent, 'Erreurs a eviter');
@@ -473,7 +475,10 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         antiMistakes.push(...this.extractBulletList(errorsAlias));
     }
     // v4 structured data: selection.anti_mistakes
-    if (antiMistakes.length < MIN_ANTI_MISTAKES && v4Data?.antiMistakes?.length) {
+    if (
+      antiMistakes.length < MIN_ANTI_MISTAKES &&
+      v4Data?.antiMistakes?.length
+    ) {
       for (const item of v4Data.antiMistakes) {
         if (!antiMistakes.some((e) => e.toLowerCase() === item.toLowerCase())) {
           antiMistakes.push(item);
@@ -765,7 +770,9 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     // ── Extract FAQ ──
     const guideFaqs = this.extractFaqFromMarkdown(guideContent);
     // v4: use parsed FAQ from yaml.load() (reliable), legacy: regex-based parser
-    const fmFaqs = v4Data?.faq?.length ? v4Data.faq : this.parseFrontmatterFaq(gammeContent);
+    const fmFaqs = v4Data?.faq?.length
+      ? v4Data.faq
+      : this.parseFrontmatterFaq(gammeContent);
     const allFaqs = [...guideFaqs];
     for (const faq of fmFaqs) {
       if (
@@ -1138,19 +1145,32 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       // FAQ: rendering.faq[] → {question, answer}
       const faq: Array<{ question: string; answer: string }> = (
         rendering.faq || []
-      ).map((f: { question?: string; answer?: string; q?: string; a?: string }) => ({
-        question: f.question || f.q || '',
-        answer: f.answer || f.a || '',
-      })).filter((f: { question: string; answer: string }) => f.question && f.answer);
+      )
+        .map(
+          (f: {
+            question?: string;
+            answer?: string;
+            q?: string;
+            a?: string;
+          }) => ({
+            question: f.question || f.q || '',
+            answer: f.answer || f.a || '',
+          }),
+        )
+        .filter(
+          (f: { question: string; answer: string }) => f.question && f.answer,
+        );
 
       // Arguments: rendering.arguments[] → {title, content}
       // v4 arguments have {title, icon, source_ref} — adapt to enricher's {title, content} format
       const args: Array<{ title: string; content: string }> = (
         rendering.arguments || []
-      ).map((a: { title?: string; icon?: string; source_ref?: string }) => ({
-        title: a.title || '',
-        content: a.title || '', // v4 arguments are label-only, no separate content field
-      })).filter((a: { title: string }) => a.title);
+      )
+        .map((a: { title?: string; icon?: string; source_ref?: string }) => ({
+          title: a.title || '',
+          content: a.title || '', // v4 arguments are label-only, no separate content field
+        }))
+        .filter((a: { title: string }) => a.title);
 
       // Anti-mistakes: selection.anti_mistakes[]
       const antiMistakes: string[] = (selection.anti_mistakes || []).filter(
@@ -1187,7 +1207,9 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       if (args.length > 0) fieldCount++;
 
       if (fieldCount < 2) {
-        this.logger.warn('v4 frontmatter detected but < 2 useful fields, skipping');
+        this.logger.warn(
+          'v4 frontmatter detected but < 2 useful fields, skipping',
+        );
         return null;
       }
 
