@@ -32,6 +32,7 @@ import {
   Activity,
   ShieldCheck,
   FilePen,
+  Film,
 } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
@@ -207,6 +208,14 @@ export const AdminSidebar = memo(function AdminSidebar({
       ],
     },
     {
+      name: "Video",
+      href: "/admin/video-hub",
+      icon: Film,
+      description: "Productions video",
+      badge: { count: "P1", color: "bg-rose-600" },
+      notification: false,
+    },
+    {
       name: "Dashboard Commercial",
       href: "/dashboard",
       icon: Store,
@@ -305,6 +314,12 @@ export const AdminSidebar = memo(function AdminSidebar({
           href: "/admin/content-refresh",
           icon: RefreshCw,
           description: "Pipeline rafraîchissement contenu",
+        },
+        {
+          name: "Keyword Clusters",
+          href: "/admin/seo-hub/keyword-clusters",
+          icon: Tag,
+          description: "Clusters SEO & overlaps",
         },
       ],
     },

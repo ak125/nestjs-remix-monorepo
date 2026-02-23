@@ -54,6 +54,7 @@ import { AiContentModule } from './modules/ai-content/ai-content.module';
 import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module';
 import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Dockerfile: shared-types copié (2026-02-02)
 import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 NOUVEAU - Module marketing avec backlinks, content roadmap et KPIs !
+import { MediaFactoryModule } from './modules/media-factory/media-factory.module'; // 🎬 NOUVEAU - Module video governance (P1) !
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -179,6 +180,7 @@ import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 
     // CatalogModuleSimple, // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
     GammeRestModule, // 🎯 ACTIVÉ - API REST simple pour gammes avec vraies tables !
     MarketingModule, // 📊 ACTIVÉ - Module marketing avec backlinks, content roadmap et KPIs !
+    MediaFactoryModule, // 🎬 ACTIVÉ - Video governance (gates, productions, assets) !
 
     // 🔄 WORKERS & BACKGROUND JOBS
     WorkerModule, // 🔄 ACTIVÉ - Module Workers BullMQ (sitemaps, cache, SEO monitor) !
