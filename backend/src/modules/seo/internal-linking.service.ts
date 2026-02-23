@@ -166,29 +166,43 @@ export class InternalLinkingService implements OnModuleInit {
   private async preloadGammeCarSwitches(): Promise<void> {
     if (!this.supabase) return;
 
-    const { data, error } = await this.supabase
-      .from(TABLES.seo_gamme_car_switch)
-      .select('sgcs_id, sgcs_pg_id, sgcs_alias, sgcs_content')
-      .in('sgcs_alias', ['1', '2'])
-      .limit(5000);
+    // Pagination car PGRST_DB_MAX_ROWS=1000 (4371 rows totales)
+    const batchSize = 1000;
+    let offset = 0;
+    let allData: any[] = [];
+    let hasMore = true;
 
-    if (error) {
-      this.logger.error('Erreur chargement switches:', error);
-      return;
+    while (hasMore) {
+      const { data, error } = await this.supabase
+        .from(TABLES.seo_gamme_car_switch)
+        .select('sgcs_id, sgcs_pg_id, sgcs_alias, sgcs_content')
+        .in('sgcs_alias', ['1', '2'])
+        .range(offset, offset + batchSize - 1);
+
+      if (error) {
+        this.logger.error('Erreur chargement switches:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        allData = allData.concat(data);
+        offset += batchSize;
+        hasMore = data.length === batchSize;
+      } else {
+        hasMore = false;
+      }
     }
 
     // Organiser par gamme et alias
-    for (const sw of data || []) {
+    for (const sw of allData) {
       const pgId = Number(sw.sgcs_pg_id);
 
       if (sw.sgcs_alias === '1') {
-        // Verbes
         if (!this.cache.verbs.has(pgId)) {
           this.cache.verbs.set(pgId, []);
         }
         this.cache.verbs.get(pgId)!.push(sw);
       } else if (sw.sgcs_alias === '2') {
-        // Noms
         if (!this.cache.nouns.has(pgId)) {
           this.cache.nouns.set(pgId, []);
         }
@@ -196,7 +210,7 @@ export class InternalLinkingService implements OnModuleInit {
       }
     }
 
-    this.logger.log(`📥 Chargé ${data?.length || 0} switches (verbes+noms)`);
+    this.logger.log(`📥 Chargé ${allData.length} switches (verbes+noms)`);
   }
 
   /**
