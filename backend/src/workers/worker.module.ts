@@ -12,6 +12,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 // import { EmailProcessor } from './processors/email.processor'; // DESACTIVE temporairement
 import { SeoMonitorProcessor } from './processors/seo-monitor.processor';
 import { ContentRefreshProcessor } from './processors/content-refresh.processor';
+import { VideoExecutionProcessor } from './processors/video-execution.processor';
 
 // Services (depuis modules existants)
 // import { SitemapStreamingService } from '../modules/seo/services/sitemap-streaming.service'; // DESACTIVE
@@ -31,6 +32,10 @@ import { BriefGatesService } from '../modules/admin/services/brief-gates.service
 import { HardGatesService } from '../modules/admin/services/hard-gates.service';
 import { SectionCompilerService } from '../modules/admin/services/section-compiler.service';
 import { PageBriefService } from '../modules/admin/services/page-brief.service';
+
+// Dependencies for VideoExecutionProcessor
+import { VideoDataService } from '../modules/media-factory/services/video-data.service';
+import { VideoGatesService } from '../modules/media-factory/services/video-gates.service';
 
 @Module({
   imports: [
@@ -68,6 +73,7 @@ import { PageBriefService } from '../modules/admin/services/page-brief.service';
       // { name: 'email' }, // DESACTIVE temporairement
       { name: 'seo-monitor' },
       { name: 'content-refresh' },
+      { name: 'video-render' },
     ),
 
     // Modules for ContentRefreshProcessor dependencies
@@ -82,6 +88,7 @@ import { PageBriefService } from '../modules/admin/services/page-brief.service';
     // EmailProcessor, // DESACTIVE
     SeoMonitorProcessor,
     ContentRefreshProcessor,
+    VideoExecutionProcessor,
 
     // Enricher services (used by ContentRefreshProcessor)
     // NOTE: These 4 services are also declared in AdminModule/SeoContentModule.
@@ -95,6 +102,11 @@ import { PageBriefService } from '../modules/admin/services/page-brief.service';
     BriefGatesService, // Pre-publish gates anti-cannibalisation
     HardGatesService, // Hard gates (attribution, no_guess, scope, contradiction, seo)
     SectionCompilerService, // Section policy enforcement (raw → compiled)
+
+    // Video execution dependencies
+    // NOTE: Stateless services, safe duplicate (same pattern as enricher services above)
+    VideoDataService,
+    VideoGatesService,
 
     // Services
     // SitemapStreamingService, // DESACTIVE
