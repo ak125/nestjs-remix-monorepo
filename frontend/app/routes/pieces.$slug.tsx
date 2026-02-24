@@ -35,6 +35,7 @@ import { useEffect, useState, lazy, Suspense } from "react";
 // Note: generateGammeMeta supprimé - on utilise maintenant data.meta du backend
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { Error404 } from "~/components/errors/Error404";
+import { HeroTransaction } from "~/components/heroes";
 import DarkSection from "~/components/layout/DarkSection";
 import PageSection from "~/components/layout/PageSection";
 import Reveal from "~/components/layout/Reveal";
@@ -587,248 +588,236 @@ export default function PiecesDetailPage() {
       </div>
 
       {/* 🎯 HERO SECTION - Avec couleur de la famille */}
-      <section
-        className={`relative overflow-hidden bg-gradient-to-br ${familleColor} text-white py-12 md:py-16 lg:py-20`}
-        aria-label="Sélection véhicule"
-      >
-        {/* Image wallpaper en arrière-plan (si disponible) */}
-        {data.content?.pg_wall && (
-          <div className="absolute inset-0 z-0">
-            <img
-              src={data.content.pg_wall}
-              srcSet={wallSrcSet}
-              sizes="100vw"
-              alt={data.content.pg_name || ""}
-              width={1920}
-              height={400}
-              className="w-full h-full object-cover opacity-25"
-              loading="eager"
-              decoding="async"
-              onError={(e) => {
-                e.currentTarget.src = "/images/placeholder-hero.webp";
-                e.currentTarget.onerror = null;
+      <HeroTransaction
+        gradient={familleColor}
+        className="py-12 md:py-16 lg:py-20"
+        backgroundSlot={
+          <>
+            {/* Image wallpaper en arrière-plan (si disponible) */}
+            {data.content?.pg_wall && (
+              <div className="absolute inset-0 z-0">
+                <img
+                  src={data.content.pg_wall}
+                  srcSet={wallSrcSet}
+                  sizes="100vw"
+                  alt={data.content.pg_name || ""}
+                  width={1920}
+                  height={400}
+                  className="w-full h-full object-cover opacity-25"
+                  loading="eager"
+                  decoding="async"
+                  onError={(e) => {
+                    e.currentTarget.src = "/images/placeholder-hero.webp";
+                    e.currentTarget.onerror = null;
+                  }}
+                />
+                {/* Overlay gradient pour assurer la lisibilité du texte */}
+                <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-transparent"></div>
+              </div>
+            )}
+
+            {/* Effet mesh gradient adaptatif */}
+            <div
+              className="absolute inset-0 z-[1] opacity-20"
+              style={{
+                backgroundImage: `radial-gradient(circle at 25% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
+                                 radial-gradient(circle at 75% 75%, rgba(0,0,0,0.15) 0%, transparent 50%)`,
               }}
+              aria-hidden="true"
             />
-            {/* Overlay gradient pour assurer la lisibilité du texte */}
-            <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-transparent"></div>
-          </div>
-        )}
 
-        {/* Effet mesh gradient adaptatif */}
-        <div
-          className="absolute inset-0 z-[1] opacity-20"
-          style={{
-            backgroundImage: `radial-gradient(circle at 25% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
-                             radial-gradient(circle at 75% 75%, rgba(0,0,0,0.15) 0%, transparent 50%)`,
-          }}
-          aria-hidden="true"
-        />
-        <div
-          className="absolute inset-0 z-[1] opacity-[0.07]"
-          style={{
-            backgroundImage: `linear-gradient(to right, rgba(255,255,255,0.15) 1px, transparent 1px),
-                             linear-gradient(to bottom, rgba(255,255,255,0.15) 1px, transparent 1px)`,
-            backgroundSize: "3rem 3rem",
-          }}
-          aria-hidden="true"
-        />
+            {/* Forme décorative bottom-left */}
+            <div
+              className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-black/[0.08] rounded-full blur-3xl z-[1]"
+              aria-hidden="true"
+            ></div>
+          </>
+        }
+      >
+        {/* Badges contextuels en haut */}
+        <div className="flex flex-wrap justify-center items-center gap-3 mb-6 md:mb-8 animate-in fade-in duration-700">
+          {data.famille && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 shadow-lg">
+              <div
+                className={`w-2.5 h-2.5 rounded-full bg-gradient-to-br ${familleColor} animate-pulse shadow-lg`}
+              ></div>
+              <span className="text-white/95 font-semibold text-sm tracking-wide">
+                {data.famille.mf_name}
+              </span>
+            </div>
+          )}
+          {data.famille?.mf_name.toLowerCase().includes("frein") && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 shadow-lg">
+              <Shield className="w-4 h-4 text-red-300" />
+              <span className="text-white/95 text-sm font-semibold">
+                Votre sécurité est notre priorité
+              </span>
+            </div>
+          )}
+        </div>
 
-        {/* Formes décoratives organiques - animations retirées pour LCP */}
-        <div
-          className="absolute -top-32 -right-32 w-96 h-96 bg-white/[0.07] rounded-full blur-3xl z-[1]"
-          aria-hidden="true"
-        ></div>
-        <div
-          className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-black/[0.08] rounded-full blur-3xl z-[1]"
-          aria-hidden="true"
-        ></div>
+        {/* Titre H1 dynamique optimisé SEO - utilise h1Override si disponible */}
+        <div className="text-center mb-6 md:mb-8 animate-in fade-in duration-700 delay-100">
+          <h1 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
+            <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-2xl">
+              {(() => {
+                // Priorité: h1Override > h1 existant > fallback
+                const rawH1 =
+                  data.purchaseGuideData?.h1Override ||
+                  data.content?.h1 ||
+                  `${data.content?.pg_name || "Pièces auto"} : trouvez la référence compatible`;
+                // Nettoyer les balises HTML (<b>, </b>, etc.)
+                return rawH1.replace(/<[^>]*>/g, "");
+              })()}
+            </span>
+          </h1>
+        </div>
 
-        <div className="relative z-10 container mx-auto px-4 max-w-7xl">
-          {/* Badges contextuels en haut */}
-          <div className="flex flex-wrap justify-center items-center gap-3 mb-6 md:mb-8 animate-in fade-in duration-700">
-            {data.famille && (
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 shadow-lg">
-                <div
-                  className={`w-2.5 h-2.5 rounded-full bg-gradient-to-br ${familleColor} animate-pulse shadow-lg`}
-                ></div>
-                <span className="text-white/95 font-semibold text-sm tracking-wide">
-                  {data.famille.mf_name}
-                </span>
-              </div>
-            )}
-            {data.famille?.mf_name.toLowerCase().includes("frein") && (
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 shadow-lg">
-                <Shield className="w-4 h-4 text-red-300" />
-                <span className="text-white/95 text-sm font-semibold">
-                  Votre sécurité est notre priorité
-                </span>
-              </div>
-            )}
-          </div>
+        {/* 🎯 Encart anti-doute / réassurance - lève le verrou mental avant sélection */}
+        <Suspense fallback={null}>
+          <UXMessageBox
+            gammeName={data.content?.pg_name}
+            className="mt-6 mb-4"
+          />
+        </Suspense>
 
-          {/* Titre H1 dynamique optimisé SEO - utilise h1Override si disponible */}
-          <div className="text-center mb-6 md:mb-8 animate-in fade-in duration-700 delay-100">
-            <h1 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-              <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-2xl">
+        {/* Cadre glassmorphism contenant Image + VehicleSelector */}
+        <div className="max-w-5xl mx-auto mb-8 md:mb-10 animate-in fade-in duration-1000 delay-200">
+          <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] backdrop-blur-xl rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
+            {/* Sous-titre dynamique en haut du cadre */}
+            <div className="text-center mb-6">
+              <p className="text-white/95 text-base md:text-lg font-semibold drop-shadow-lg">
                 {(() => {
-                  // Priorité: h1Override > h1 existant > fallback
-                  const rawH1 =
-                    data.purchaseGuideData?.h1Override ||
-                    data.content?.h1 ||
-                    `${data.content?.pg_name || "Pièces auto"} : trouvez la référence compatible`;
-                  // Nettoyer les balises HTML (<b>, </b>, etc.)
-                  return rawH1.replace(/<[^>]*>/g, "");
+                  const name = data.content?.pg_name?.toLowerCase() || "";
+                  const pluralName = pluralizePieceName(name);
+                  return name
+                    ? `Trouvez vos ${pluralName} compatibles avec votre véhicule`
+                    : "Trouvez la référence compatible avec votre véhicule";
                 })()}
-              </span>
-            </h1>
-          </div>
+              </p>
+            </div>
 
-          {/* 🎯 Encart anti-doute / réassurance - lève le verrou mental avant sélection */}
-          <Suspense fallback={null}>
-            <UXMessageBox
-              gammeName={data.content?.pg_name}
-              className="mt-6 mb-4"
-            />
-          </Suspense>
-
-          {/* Cadre glassmorphism contenant Image + VehicleSelector */}
-          <div className="max-w-5xl mx-auto mb-8 md:mb-10 animate-in fade-in duration-1000 delay-200">
-            <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] backdrop-blur-xl rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
-              {/* Sous-titre dynamique en haut du cadre */}
-              <div className="text-center mb-6">
-                <p className="text-white/95 text-base md:text-lg font-semibold drop-shadow-lg">
-                  {(() => {
-                    const name = data.content?.pg_name?.toLowerCase() || "";
-                    const pluralName = pluralizePieceName(name);
-                    return name
-                      ? `Trouvez vos ${pluralName} compatibles avec votre véhicule`
-                      : "Trouvez la référence compatible avec votre véhicule";
-                  })()}
-                </p>
-              </div>
-
-              {/* Layout horizontal : Image + VehicleSelector côte à côte */}
-              <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
-                {/* Image produit à gauche */}
-                <div className="flex-shrink-0 w-full lg:w-80">
-                  <div className="relative group">
-                    {/* Cercle décoratif arrière-plan */}
-                    <div className="absolute inset-0 -z-10">
-                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-white/10 rounded-full blur-3xl group-hover:bg-white/15 transition-all duration-700"></div>
-                    </div>
-
-                    {/* Container image */}
-                    <div className="relative bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg group-hover:border-white/40 transition-all duration-500">
-                      <div className="w-full aspect-square flex items-center justify-center">
-                        <img
-                          src={
-                            data.content?.pg_pic ||
-                            "/images/categories/default.svg"
-                          }
-                          alt={data.content?.pg_name || "Pièce auto"}
-                          width={400}
-                          height={400}
-                          className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
-                          loading="eager"
-                          decoding="async"
-                          fetchPriority="high"
-                          onError={(e) => {
-                            e.currentTarget.src =
-                              "/images/categories/default.svg";
-                            e.currentTarget.onerror = null;
-                          }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Particule décorative - animation retirée pour LCP */}
-                    <div
-                      className="absolute -bottom-4 -right-4 w-10 h-10 bg-white/15 rounded-full blur-xl"
-                      aria-hidden="true"
-                    ></div>
+            {/* Layout horizontal : Image + VehicleSelector côte à côte */}
+            <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+              {/* Image produit à gauche */}
+              <div className="flex-shrink-0 w-full lg:w-80">
+                <div className="relative group">
+                  {/* Cercle décoratif arrière-plan */}
+                  <div className="absolute inset-0 -z-10">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-white/10 rounded-full blur-3xl group-hover:bg-white/15 transition-all duration-700"></div>
                   </div>
-                </div>
 
-                {/* VehicleSelector à droite */}
-                <div
-                  id="vehicle-selector"
-                  className="flex-1 w-full scroll-mt-20 animate-in fade-in slide-in-from-right duration-1000 delay-400"
-                >
-                  <VehicleSelector
-                    enableTypeMineSearch={true}
-                    context="pieces"
-                    redirectOnSelect={false}
-                    onVehicleSelect={(vehicle) => {
-                      // Construire les slugs avec format alias-id
-                      const brandSlug = `${vehicle.brand.marque_alias || normalizeAlias(vehicle.brand.marque_name)}-${vehicle.brand.marque_id}`;
-                      const modelSlug = `${vehicle.model.modele_alias || normalizeAlias(vehicle.model.modele_name)}-${vehicle.model.modele_id}`;
-                      const typeSlug = `${vehicle.type.type_alias || normalizeAlias(vehicle.type.type_name)}-${vehicle.type.type_id}`;
+                  {/* Container image */}
+                  <div className="relative bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20 shadow-lg group-hover:border-white/40 transition-all duration-500">
+                    <div className="w-full aspect-square flex items-center justify-center">
+                      <img
+                        src={
+                          data.content?.pg_pic ||
+                          "/images/categories/default.svg"
+                        }
+                        alt={data.content?.pg_name || "Pièce auto"}
+                        width={400}
+                        height={400}
+                        className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
+                        loading="eager"
+                        decoding="async"
+                        fetchPriority="high"
+                        onError={(e) => {
+                          e.currentTarget.src =
+                            "/images/categories/default.svg";
+                          e.currentTarget.onerror = null;
+                        }}
+                      />
+                    </div>
+                  </div>
 
-                      // Gamme depuis l'URL actuelle
-                      const gammeSlug =
-                        location.pathname
-                          .split("/")
-                          .pop()
-                          ?.replace(".html", "") || "";
-
-                      // Sauvegarder le véhicule en cookie pour persistance
-                      storeVehicleClient({
-                        marque_id: vehicle.brand.marque_id,
-                        marque_name: vehicle.brand.marque_name,
-                        marque_alias:
-                          vehicle.brand.marque_alias ||
-                          normalizeAlias(vehicle.brand.marque_name),
-                        modele_id: vehicle.model.modele_id,
-                        modele_name: vehicle.model.modele_name,
-                        modele_alias:
-                          vehicle.model.modele_alias ||
-                          normalizeAlias(vehicle.model.modele_name),
-                        type_id: vehicle.type.type_id,
-                        type_name: vehicle.type.type_name,
-                        type_alias:
-                          vehicle.type.type_alias ||
-                          normalizeAlias(vehicle.type.type_name),
-                      });
-
-                      // Navigation fluide avec Remix
-                      const url = `/pieces/${gammeSlug}/${brandSlug}/${modelSlug}/${typeSlug}.html`;
-                      navigate(url);
-                    }}
-                  />
+                  {/* Particule décorative - animation retirée pour LCP */}
+                  <div
+                    className="absolute -bottom-4 -right-4 w-10 h-10 bg-white/15 rounded-full blur-xl"
+                    aria-hidden="true"
+                  ></div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Trust badges premium - Grid responsive pour mobile - Design Tokens */}
-          <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-space-3 md:gap-space-4 max-w-3xl mx-auto animate-in fade-in duration-700 delay-400">
-            <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <CheckCircle2 className="w-4 h-4 text-green-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
-                400 000+ pièces
-              </span>
-            </div>
-            <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Truck className="w-4 h-4 text-blue-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
-                Livraison 24-48h
-              </span>
-            </div>
-            <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Shield className="w-4 h-4 text-purple-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
-                Paiement sécurisé
-              </span>
-            </div>
-            <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-              <Users className="w-4 h-4 text-orange-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-              <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
-                Experts gratuits
-              </span>
+              {/* VehicleSelector à droite */}
+              <div
+                id="vehicle-selector"
+                className="flex-1 w-full scroll-mt-20 animate-in fade-in slide-in-from-right duration-1000 delay-400"
+              >
+                <VehicleSelector
+                  enableTypeMineSearch={true}
+                  context="pieces"
+                  redirectOnSelect={false}
+                  onVehicleSelect={(vehicle) => {
+                    // Construire les slugs avec format alias-id
+                    const brandSlug = `${vehicle.brand.marque_alias || normalizeAlias(vehicle.brand.marque_name)}-${vehicle.brand.marque_id}`;
+                    const modelSlug = `${vehicle.model.modele_alias || normalizeAlias(vehicle.model.modele_name)}-${vehicle.model.modele_id}`;
+                    const typeSlug = `${vehicle.type.type_alias || normalizeAlias(vehicle.type.type_name)}-${vehicle.type.type_id}`;
+
+                    // Gamme depuis l'URL actuelle
+                    const gammeSlug =
+                      location.pathname
+                        .split("/")
+                        .pop()
+                        ?.replace(".html", "") || "";
+
+                    // Sauvegarder le véhicule en cookie pour persistance
+                    storeVehicleClient({
+                      marque_id: vehicle.brand.marque_id,
+                      marque_name: vehicle.brand.marque_name,
+                      marque_alias:
+                        vehicle.brand.marque_alias ||
+                        normalizeAlias(vehicle.brand.marque_name),
+                      modele_id: vehicle.model.modele_id,
+                      modele_name: vehicle.model.modele_name,
+                      modele_alias:
+                        vehicle.model.modele_alias ||
+                        normalizeAlias(vehicle.model.modele_name),
+                      type_id: vehicle.type.type_id,
+                      type_name: vehicle.type.type_name,
+                      type_alias:
+                        vehicle.type.type_alias ||
+                        normalizeAlias(vehicle.type.type_name),
+                    });
+
+                    // Navigation fluide avec Remix
+                    const url = `/pieces/${gammeSlug}/${brandSlug}/${modelSlug}/${typeSlug}.html`;
+                    navigate(url);
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
-      </section>
+
+        {/* Trust badges premium - Grid responsive pour mobile - Design Tokens */}
+        <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-space-3 md:gap-space-4 max-w-3xl mx-auto animate-in fade-in duration-700 delay-400">
+          <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+            <CheckCircle2 className="w-4 h-4 text-green-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+            <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
+              400 000+ pièces
+            </span>
+          </div>
+          <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+            <Truck className="w-4 h-4 text-blue-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+            <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
+              Livraison 24-48h
+            </span>
+          </div>
+          <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+            <Shield className="w-4 h-4 text-purple-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+            <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
+              Paiement sécurisé
+            </span>
+          </div>
+          <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+            <Users className="w-4 h-4 text-orange-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
+            <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
+              Experts gratuits
+            </span>
+          </div>
+        </div>
+      </HeroTransaction>
 
       {/* V2: Dark "Conseils & Diagnostic" section retirée — liens couverts par R1ReusableContent */}
 
