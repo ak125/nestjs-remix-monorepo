@@ -37,13 +37,13 @@ services:
       - RAG_API_KEY=856528eb83bd8b36867bc0bbf8ead7796f69de30fa6888a6876b54f4d98be08a
       # Internal API key for RAG webhook → NestJS auth
       - INTERNAL_API_KEY=${INTERNAL_API_KEY}
-      # Video Render Service (P6)
-      # Step 1: VIDEO_RENDER_ENABLED=true (after RG1-RG4 pass on smoke tests)
-      # Step 2: VIDEO_RENDER_ENGINE=remotion (activate canary engine)
-      # Step 3: VIDEO_CANARY_ELIGIBLE_VIDEO_TYPES=short (start with shorts only)
-      # Step 4: VIDEO_CANARY_QUOTA_PER_DAY=5 (gradual ramp-up)
-      - VIDEO_RENDER_ENABLED=false
-      - VIDEO_CANARY_ENABLED=false
+      # Video Render Service (P6.1 — Canary controlee)
+      # Rollback: VIDEO_CANARY_ENABLED=false → restart → canary off, stub continue
+      - VIDEO_RENDER_ENABLED=true
+      - VIDEO_CANARY_ENABLED=true
+      - VIDEO_RENDER_ENGINE=remotion
+      - VIDEO_CANARY_ELIGIBLE_VIDEO_TYPES=short
+      - VIDEO_CANARY_QUOTA_PER_DAY=5
       - VIDEO_RENDER_BASE_URL=http://remotion_renderer:3100
 
     deploy:

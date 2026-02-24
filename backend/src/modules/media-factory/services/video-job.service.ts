@@ -76,9 +76,14 @@ export interface ExecutionStats {
     topErrorCodes: Record<string, number>;
   };
   renderPerformance: {
+    p50RenderDurationMs: number | null;
     p95RenderDurationMs: number | null;
-    byEngine: Record<string, { avg: number; p95: number; count: number }>;
+    byEngine: Record<
+      string,
+      { avg: number; p50: number; p95: number; count: number }
+    >;
   };
+  timeWindow: '24h' | '7d' | 'all';
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -292,14 +297,31 @@ export class VideoJobService extends SupabaseBaseService {
   }
 
   /**
-   * Dashboard stats for executions (P5.4: enriched with canary observability).
+   * Dashboard stats for executions (P6.2: time-windowed + p50 + canary observability).
    */
-  async getExecutionStats(): Promise<ExecutionStats> {
-    const { data, error } = await this.client
+  async getExecutionStats(
+    timeWindow: '24h' | '7d' | 'all' = 'all',
+  ): Promise<ExecutionStats> {
+    let query = this.client
       .from('__video_execution_log')
       .select(
         'status, duration_ms, engine_name, render_duration_ms, is_canary, canary_fallback, canary_error_code',
       );
+
+    // P6.2: Time window filter
+    if (timeWindow === '24h') {
+      query = query.gte(
+        'created_at',
+        new Date(Date.now() - 86_400_000).toISOString(),
+      );
+    } else if (timeWindow === '7d') {
+      query = query.gte(
+        'created_at',
+        new Date(Date.now() - 604_800_000).toISOString(),
+      );
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       this.logger.error(`getExecutionStats error: ${error.message}`);
@@ -315,7 +337,12 @@ export class VideoJobService extends SupabaseBaseService {
           fallbackRate: null,
           topErrorCodes: {},
         },
-        renderPerformance: { p95RenderDurationMs: null, byEngine: {} },
+        renderPerformance: {
+          p50RenderDurationMs: null,
+          p95RenderDurationMs: null,
+          byEngine: {},
+        },
+        timeWindow,
       };
     }
 
@@ -324,7 +351,6 @@ export class VideoJobService extends SupabaseBaseService {
     let totalDuration = 0;
     let durationCount = 0;
 
-    // P5.4: engine distribution + canary metrics
     const engineDistribution: Record<string, number> = {};
     let totalCanary = 0;
     let totalFallback = 0;
@@ -332,18 +358,15 @@ export class VideoJobService extends SupabaseBaseService {
     const byEngine: Record<string, number[]> = {};
 
     for (const row of rows) {
-      // Basic stats
       byStatus[row.status] = (byStatus[row.status] ?? 0) + 1;
       if (row.duration_ms != null) {
         totalDuration += row.duration_ms;
         durationCount++;
       }
 
-      // Engine distribution
       const engine = (row.engine_name as string) || 'unknown';
       engineDistribution[engine] = (engineDistribution[engine] ?? 0) + 1;
 
-      // Canary metrics
       if (row.is_canary) {
         totalCanary++;
         if (row.canary_fallback) {
@@ -353,32 +376,36 @@ export class VideoJobService extends SupabaseBaseService {
         }
       }
 
-      // Render performance by engine
       if (row.render_duration_ms != null) {
         if (!byEngine[engine]) byEngine[engine] = [];
         byEngine[engine].push(row.render_duration_ms as number);
       }
     }
 
-    // P95 render duration (all engines)
+    // P50 + P95 render duration (all engines)
     const allRenderDurations = Object.values(byEngine)
       .flat()
       .sort((a, b) => a - b);
+    const p50Index = Math.floor(allRenderDurations.length * 0.5);
     const p95Index = Math.floor(allRenderDurations.length * 0.95);
+    const p50RenderDurationMs =
+      allRenderDurations.length > 0 ? allRenderDurations[p50Index] : null;
     const p95RenderDurationMs =
       allRenderDurations.length > 0 ? allRenderDurations[p95Index] : null;
 
-    // Per-engine performance
+    // Per-engine performance (with p50)
     const enginePerf: Record<
       string,
-      { avg: number; p95: number; count: number }
+      { avg: number; p50: number; p95: number; count: number }
     > = {};
     for (const [eng, durations] of Object.entries(byEngine)) {
       const sorted = [...durations].sort((a, b) => a - b);
       const sum = sorted.reduce((a, b) => a + b, 0);
+      const ep50 = Math.floor(sorted.length * 0.5);
       const ep95 = Math.floor(sorted.length * 0.95);
       enginePerf[eng] = {
         avg: Math.round(sum / sorted.length),
+        p50: sorted[ep50] ?? sorted[sorted.length - 1],
         p95: sorted[ep95] ?? sorted[sorted.length - 1],
         count: sorted.length,
       };
@@ -404,9 +431,11 @@ export class VideoJobService extends SupabaseBaseService {
         topErrorCodes: canaryErrorCodes,
       },
       renderPerformance: {
+        p50RenderDurationMs,
         p95RenderDurationMs,
         byEngine: enginePerf,
       },
+      timeWindow,
     };
   }
 

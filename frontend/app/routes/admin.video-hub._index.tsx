@@ -1,5 +1,5 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useSearchParams } from "@remix-run/react";
 import {
   Film,
   CheckCircle,
@@ -9,8 +9,10 @@ import {
   Activity,
   Cpu,
   Zap,
+  Server,
 } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
@@ -34,9 +36,14 @@ interface ExecutionStats {
     topErrorCodes: Record<string, number>;
   };
   renderPerformance: {
+    p50RenderDurationMs: number | null;
     p95RenderDurationMs: number | null;
-    byEngine: Record<string, { avg: number; p95: number; count: number }>;
+    byEngine: Record<
+      string,
+      { avg: number; p50: number; p95: number; count: number }
+    >;
   };
+  timeWindow?: string;
 }
 
 interface CanaryPolicy {
@@ -49,31 +56,54 @@ interface CanaryPolicy {
   eligibleVideoTypes: string[];
 }
 
+interface RenderHealth {
+  status: "ok" | "degraded" | "error" | "unreachable" | "not_configured";
+  ffmpegAvailable?: boolean;
+  chromiumAvailable?: boolean;
+  s3Connected?: boolean;
+  timestamp?: string;
+}
+
 // ── Loader ──
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
   const headers = { Cookie: cookieHeader };
+  const url = new URL(request.url);
+  const timeWindow = url.searchParams.get("window") || "24h";
 
-  const safeFetch = async <T,>(url: string): Promise<T | null> => {
+  const safeFetch = async <T,>(fetchUrl: string): Promise<T | null> => {
     try {
-      const res = await fetch(url, { headers });
+      const res = await fetch(fetchUrl, { headers });
       if (!res.ok) return null;
-      const json = await res.json();
-      return (json.data as T) ?? null;
+      const data = await res.json();
+      return (data.data as T) ?? null;
     } catch {
       return null;
     }
   };
 
-  const [stats, executionStats, canaryPolicy] = await Promise.all([
-    safeFetch<DashboardStats>(`${backendUrl}/api/admin/video/dashboard`),
-    safeFetch<ExecutionStats>(`${backendUrl}/api/admin/video/executions/stats`),
-    safeFetch<CanaryPolicy>(`${backendUrl}/api/admin/video/canary/policy`),
-  ]);
+  const [stats, executionStats, canaryPolicy, renderHealth] = await Promise.all(
+    [
+      safeFetch<DashboardStats>(`${backendUrl}/api/admin/video/dashboard`),
+      safeFetch<ExecutionStats>(
+        `${backendUrl}/api/admin/video/executions/stats?window=${timeWindow}`,
+      ),
+      safeFetch<CanaryPolicy>(`${backendUrl}/api/admin/video/canary/policy`),
+      safeFetch<RenderHealth>(
+        `${backendUrl}/api/admin/video/render-service/health`,
+      ),
+    ],
+  );
 
-  return json({ stats, executionStats, canaryPolicy });
+  return json({
+    stats,
+    executionStats,
+    canaryPolicy,
+    renderHealth,
+    timeWindow,
+  });
 }
 
 // ── Status config ──
@@ -137,6 +167,23 @@ const EXEC_STATUS_COLORS: Record<string, string> = {
   processing: "bg-blue-100 text-blue-700",
 };
 
+const HEALTH_STATUS_CONFIG: Record<string, { label: string; color: string }> = {
+  ok: { label: "Operationnel", color: "bg-green-100 text-green-700" },
+  degraded: { label: "Degrade", color: "bg-yellow-100 text-yellow-700" },
+  error: { label: "Erreur", color: "bg-red-100 text-red-700" },
+  unreachable: { label: "Injoignable", color: "bg-red-100 text-red-700" },
+  not_configured: {
+    label: "Non configure",
+    color: "bg-gray-100 text-gray-500",
+  },
+};
+
+const TIME_WINDOWS = [
+  { value: "24h", label: "24h" },
+  { value: "7d", label: "7 jours" },
+  { value: "all", label: "Tout" },
+] as const;
+
 // ── Helpers ──
 
 function formatDuration(ms: number | null): string {
@@ -145,11 +192,46 @@ function formatDuration(ms: number | null): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
+function getSloColor(
+  metric: "success" | "fallback" | "p95",
+  value: number | null,
+): string {
+  if (value == null) return "text-gray-400";
+  if (metric === "success")
+    return value >= 95
+      ? "text-green-600"
+      : value >= 90
+        ? "text-amber-600"
+        : "text-red-600";
+  if (metric === "fallback")
+    return value <= 10
+      ? "text-green-600"
+      : value <= 20
+        ? "text-amber-600"
+        : "text-red-600";
+  if (metric === "p95")
+    return value <= 120000
+      ? "text-green-600"
+      : value <= 180000
+        ? "text-amber-600"
+        : "text-red-600";
+  return "text-gray-600";
+}
+
+function DepDot({ ok }: { ok?: boolean }) {
+  return (
+    <span
+      className={`inline-block h-2 w-2 rounded-full ${ok ? "bg-green-500" : "bg-red-500"}`}
+    />
+  );
+}
+
 // ── Component ──
 
 export default function VideoHubDashboard() {
-  const { stats, executionStats, canaryPolicy } =
+  const { stats, executionStats, canaryPolicy, renderHealth, timeWindow } =
     useLoaderData<typeof loader>();
+  const [, setSearchParams] = useSearchParams();
 
   if (!stats) {
     return (
@@ -164,14 +246,87 @@ export default function VideoHubDashboard() {
     );
   }
 
+  const hasCanaryData =
+    canaryPolicy?.renderEnabled &&
+    executionStats &&
+    executionStats.canary.totalCanary > 0;
+
   return (
     <div className="space-y-6">
+      {/* Header + Time Window Selector */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Video Dashboard</h2>
-        <Badge variant="outline" className="text-sm">
-          {stats.total} production{stats.total !== 1 ? "s" : ""}
-        </Badge>
+        <div className="flex items-center gap-2">
+          {TIME_WINDOWS.map((tw) => (
+            <Button
+              key={tw.value}
+              variant={timeWindow === tw.value ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSearchParams({ window: tw.value })}
+            >
+              {tw.label}
+            </Button>
+          ))}
+          <Badge variant="outline" className="text-sm ml-2">
+            {stats.total} production{stats.total !== 1 ? "s" : ""}
+          </Badge>
+        </div>
       </div>
+
+      {/* KPI Summary Bar (visible only when canary is active + has data) */}
+      {hasCanaryData && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-xs text-gray-500 mb-1">Success Rate</div>
+              <div
+                className={`text-2xl font-bold ${getSloColor("success", executionStats.canary.successRate)}`}
+              >
+                {executionStats.canary.successRate ?? "--"}%
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-xs text-gray-500 mb-1">Fallback Rate</div>
+              <div
+                className={`text-2xl font-bold ${getSloColor("fallback", executionStats.canary.fallbackRate)}`}
+              >
+                {executionStats.canary.fallbackRate ?? "--"}%
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-xs text-gray-500 mb-1">P50 / P95</div>
+              <div className="text-2xl font-bold text-gray-800">
+                {formatDuration(
+                  executionStats.renderPerformance.p50RenderDurationMs,
+                )}
+                <span className="text-sm text-gray-400 mx-1">/</span>
+                <span
+                  className={getSloColor(
+                    "p95",
+                    executionStats.renderPerformance.p95RenderDurationMs,
+                  )}
+                >
+                  {formatDuration(
+                    executionStats.renderPerformance.p95RenderDurationMs,
+                  )}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <div className="text-xs text-gray-500 mb-1">Quota jour</div>
+              <div className="text-2xl font-bold text-gray-800">
+                {canaryPolicy.dailyUsageCount}/{canaryPolicy.quotaPerDay}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Status Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -290,13 +445,17 @@ export default function VideoHubDashboard() {
               <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t">
                 <div>
                   <div className="text-gray-500">Succes canary</div>
-                  <div className="font-medium text-green-600">
+                  <div
+                    className={`font-medium ${getSloColor("success", executionStats.canary.successRate)}`}
+                  >
                     {executionStats.canary.successRate ?? "--"}%
                   </div>
                 </div>
                 <div>
                   <div className="text-gray-500">Fallback rate</div>
-                  <div className="font-medium text-amber-600">
+                  <div
+                    className={`font-medium ${getSloColor("fallback", executionStats.canary.fallbackRate)}`}
+                  >
                     {executionStats.canary.fallbackRate ?? "--"}%
                   </div>
                 </div>
@@ -342,6 +501,50 @@ export default function VideoHubDashboard() {
         </Card>
       )}
 
+      {/* Render Service Health Card */}
+      {renderHealth && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Server className="h-4 w-4 text-blue-500" />
+              Render Service
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4 text-sm">
+              <Badge
+                className={
+                  HEALTH_STATUS_CONFIG[renderHealth.status]?.color ??
+                  "bg-gray-100 text-gray-500"
+                }
+              >
+                {HEALTH_STATUS_CONFIG[renderHealth.status]?.label ??
+                  renderHealth.status}
+              </Badge>
+              {renderHealth.status !== "not_configured" &&
+                renderHealth.status !== "unreachable" && (
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1">
+                      <DepDot ok={renderHealth.ffmpegAvailable} /> FFmpeg
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <DepDot ok={renderHealth.chromiumAvailable} /> Chromium
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <DepDot ok={renderHealth.s3Connected} /> S3
+                    </span>
+                  </div>
+                )}
+              {renderHealth.timestamp && (
+                <span className="text-xs text-gray-400 ml-auto">
+                  {new Date(renderHealth.timestamp).toLocaleTimeString("fr-FR")}
+                </span>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Render Performance Card */}
       {executionStats && executionStats.total > 0 && (
         <Card>
@@ -352,10 +555,20 @@ export default function VideoHubDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <div className="text-gray-500">P50 global</div>
+                <div className="font-medium">
+                  {formatDuration(
+                    executionStats.renderPerformance.p50RenderDurationMs,
+                  )}
+                </div>
+              </div>
               <div>
                 <div className="text-gray-500">P95 global</div>
-                <div className="font-medium">
+                <div
+                  className={`font-medium ${getSloColor("p95", executionStats.renderPerformance.p95RenderDurationMs)}`}
+                >
                   {formatDuration(
                     executionStats.renderPerformance.p95RenderDurationMs,
                   )}
@@ -390,6 +603,9 @@ export default function VideoHubDashboard() {
                       <span className="font-medium w-24">{engine}</span>
                       <span className="text-gray-500">
                         avg: {formatDuration(perf.avg)}
+                      </span>
+                      <span className="text-gray-500">
+                        p50: {formatDuration(perf.p50)}
                       </span>
                       <span className="text-gray-500">
                         p95: {formatDuration(perf.p95)}

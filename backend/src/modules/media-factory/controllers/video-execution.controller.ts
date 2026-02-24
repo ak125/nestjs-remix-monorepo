@@ -10,6 +10,7 @@ import {
   Post,
   Get,
   Param,
+  Query,
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -48,13 +49,51 @@ export class VideoExecutionController {
   }
 
   /**
-   * GET /api/admin/video/executions/stats
-   * Execution statistics dashboard.
+   * GET /api/admin/video/render-service/health
+   * P6.2: Proxy health check to the Remotion render service.
+   */
+  @Get('render-service/health')
+  async getRenderServiceHealth() {
+    const baseUrl = process.env.VIDEO_RENDER_BASE_URL;
+    if (!baseUrl) {
+      return {
+        success: true,
+        data: { status: 'not_configured' },
+        timestamp: new Date().toISOString(),
+      };
+    }
+    try {
+      const res = await fetch(`${baseUrl}/health`, {
+        signal: AbortSignal.timeout(5000),
+      });
+      const health = await res.json();
+      return {
+        success: true,
+        data: health,
+        timestamp: new Date().toISOString(),
+      };
+    } catch {
+      return {
+        success: true,
+        data: { status: 'unreachable' },
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
+
+  /**
+   * GET /api/admin/video/executions/stats?window=24h|7d|all
+   * P6.2: Time-windowed execution statistics dashboard.
    * NOTE: Must be declared BEFORE :executionLogId to avoid ParseIntPipe on "stats".
    */
   @Get('executions/stats')
-  async getExecutionStats() {
-    const data = await this.jobService.getExecutionStats();
+  async getExecutionStats(@Query('window') window?: string) {
+    const validWindows = ['24h', '7d', 'all'];
+    const tw = (validWindows.includes(window) ? window : 'all') as
+      | '24h'
+      | '7d'
+      | 'all';
+    const data = await this.jobService.getExecutionStats(tw);
     return { success: true, data, timestamp: new Date().toISOString() };
   }
 
