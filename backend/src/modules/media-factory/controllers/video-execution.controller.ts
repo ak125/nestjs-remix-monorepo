@@ -139,4 +139,70 @@ export class VideoExecutionController {
       timestamp: new Date().toISOString(),
     };
   }
+
+  /**
+   * GET /api/admin/video/executions/:executionLogId/presigned-url
+   * P9: Generate presigned HTTPS URL for the rendered video output.
+   * Proxies to the render service /presigned-url endpoint.
+   */
+  @Get('executions/:executionLogId/presigned-url')
+  async getPresignedUrl(
+    @Param('executionLogId', ParseIntPipe) executionLogId: number,
+  ) {
+    const exec = await this.jobService.getExecutionStatus(executionLogId);
+
+    if (!exec.renderOutputPath) {
+      return {
+        success: false,
+        error: 'No render output path for this execution',
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    // Parse s3://automecanik-renders/renders/<briefId>/<execId>/<ts>.mp4
+    const bucketName = process.env.S3_BUCKET_NAME ?? 'automecanik-renders';
+    const s3Prefix = `s3://${bucketName}/`;
+    const key = exec.renderOutputPath.startsWith(s3Prefix)
+      ? exec.renderOutputPath.slice(s3Prefix.length)
+      : exec.renderOutputPath.replace(/^s3:\/\/[^/]+\//, '');
+
+    const baseUrl = process.env.VIDEO_RENDER_BASE_URL;
+    if (!baseUrl) {
+      return {
+        success: false,
+        error: 'Render service not configured (VIDEO_RENDER_BASE_URL missing)',
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    try {
+      const res = await fetch(
+        `${baseUrl}/presigned-url?key=${encodeURIComponent(key)}`,
+        { signal: AbortSignal.timeout(10000) },
+      );
+
+      if (!res.ok) {
+        const body = await res.text();
+        return {
+          success: false,
+          error: `Render service error: ${res.status} ${body}`,
+          timestamp: new Date().toISOString(),
+        };
+      }
+
+      const data = (await res.json()) as { url: string; expiresIn: number };
+      return {
+        success: true,
+        data: { url: data.url, expiresIn: data.expiresIn },
+        timestamp: new Date().toISOString(),
+      };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      return {
+        success: false,
+        error: msg,
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
 }

@@ -57,7 +57,8 @@ export class RemotionRenderEngine implements IRenderEngine {
           videoType: request.videoType,
           vertical: request.vertical,
           templateId: request.templateId ?? null,
-          composition: 'TestCard',
+          composition: request.resolvedCompositionId ?? 'TestCard',
+          compositionProps: request.compositionProps ?? null,
         }),
       });
 
@@ -89,6 +90,7 @@ export class RemotionRenderEngine implements IRenderEngine {
           RENDER_TIMEOUT: RenderErrorCode.RENDER_ENGINE_TIMEOUT,
           S3_UPLOAD_FAILED: RenderErrorCode.RENDER_PROCESS_FAILED,
           OUTPUT_EMPTY: RenderErrorCode.RENDER_OUTPUT_INVALID,
+          OUTPUT_INVALID: RenderErrorCode.RENDER_OUTPUT_INVALID,
         };
         backendErrorCode =
           errorMap[serviceErrorCode] ?? RenderErrorCode.RENDER_UNKNOWN_ERROR;

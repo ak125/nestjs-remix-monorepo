@@ -20,7 +20,14 @@ import { RenderAdapterService } from '../../modules/media-factory/render/render-
 import { RenderErrorCode } from '../../modules/media-factory/render/types/render.types';
 import type { RenderRequest } from '../../modules/media-factory/render/types/render.types';
 import { VIDEO_FLAG_PENALTIES } from '../../config/video-quality.constants';
-import type { VideoQualityFlag } from '../../config/video-quality.constants';
+import type {
+  VideoQualityFlag,
+  VideoType,
+} from '../../config/video-quality.constants';
+import {
+  resolveTemplate,
+  defaultTemplateForVideoType,
+} from '../../modules/media-factory/render/templates/template-registry';
 import type {
   VideoExecutionJobData,
   VideoExecutionResult,
@@ -152,13 +159,42 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       // ── Step 5: Run all gates ──
       const gateOutput = this.gatesService.runAllGates(gateInput);
 
-      // ── Step 5b: Render via adapter ──
+      // ── Step 5b: P8 — Resolve template + build composition props ──
+      const effectiveTemplateId =
+        production.templateId ??
+        defaultTemplateForVideoType(production.videoType as VideoType);
+      const templateEntry = resolveTemplate(effectiveTemplateId);
+
+      const compositionProps: Record<string, unknown> = {
+        briefId,
+        executionLogId,
+        videoType: production.videoType,
+        vertical: production.vertical,
+        gammeAlias: production.gammeAlias ?? null,
+        templateId: effectiveTemplateId,
+        compositionId: templateEntry.compositionId,
+        claims: (production.claimTable ?? [])
+          .filter((c) => c.status === 'verified')
+          .slice(0, production.videoType === 'short' ? 3 : 6)
+          .map((c) => ({
+            kind: c.kind,
+            value: c.value,
+            unit: c.unit,
+            rawText: c.rawText,
+          })),
+        disclaimerText:
+          production.disclaimerPlan?.disclaimers?.[0]?.text ?? null,
+        brandName: 'AutoMecanik',
+        tagline: 'Pièces auto de qualité',
+      };
+
+      // ── Step 5c: Render via adapter ──
       const renderRequest: RenderRequest = {
         briefId,
         executionLogId,
         videoType: production.videoType,
         vertical: production.vertical,
-        templateId: production.templateId ?? undefined,
+        templateId: effectiveTemplateId,
         gateResults: gateOutput.gates,
         qualityScore: 0, // pre-score, computed next
         canPublish: gateOutput.canPublish,
@@ -167,6 +203,8 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
           gatesBlocking: process.env.VIDEO_GATES_BLOCKING === 'true',
           renderEngine: process.env.VIDEO_RENDER_ENGINE || 'stub',
         },
+        resolvedCompositionId: templateEntry.compositionId,
+        compositionProps,
       };
       const renderResult = await this.renderAdapter.render(renderRequest);
 

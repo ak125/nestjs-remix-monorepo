@@ -11,6 +11,7 @@ import type {
   VideoType,
   VideoStatus,
 } from '../../../config/video-quality.constants';
+import { listRegisteredTemplates } from '../render/templates/template-registry';
 
 // ─────────────────────────────────────────────────────────────
 // DTOs
@@ -202,10 +203,36 @@ export class VideoDataService extends SupabaseBaseService {
 
     if (error) {
       this.logger.error(`listTemplates error: ${error.message}`);
-      return [];
     }
 
-    return (data ?? []).map(this.mapTemplate);
+    const dbTemplates = (data ?? []).map(this.mapTemplate);
+
+    // P9: If DB table is empty, fall back to code registry
+    if (dbTemplates.length === 0) {
+      return listRegisteredTemplates().map((entry, index) => ({
+        id: index + 1,
+        templateId: entry.templateId,
+        version: 1,
+        videoType: entry.supportedVideoTypes[0] ?? ('short' as VideoType),
+        platform: 'youtube_short' as const,
+        allowedUseCases: ['product_highlight'],
+        forbiddenUseCases: [],
+        durationRange: {
+          min: Math.round(entry.defaultDurationFrames / 30),
+          max: Math.round(entry.defaultDurationFrames / 30),
+        },
+        structure: {
+          compositionId: entry.compositionId,
+          resolution: entry.defaultResolution,
+          status: entry.status,
+          displayName: entry.displayName,
+          source: 'code_registry',
+        },
+        createdAt: new Date().toISOString(),
+      }));
+    }
+
+    return dbTemplates;
   }
 
   // ── Assets ──

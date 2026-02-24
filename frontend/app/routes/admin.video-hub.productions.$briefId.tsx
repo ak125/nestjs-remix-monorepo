@@ -1,5 +1,9 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+} from "@remix-run/node";
+import { useLoaderData, Link, useFetcher } from "@remix-run/react";
 import {
   ArrowLeft,
   CheckCircle,
@@ -9,8 +13,11 @@ import {
   Shield,
   Activity,
   Clock,
+  Play,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
@@ -100,6 +107,89 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 }
 
+export async function action({ request, params }: ActionFunctionArgs) {
+  const backendUrl = getInternalApiUrl("");
+  const cookieHeader = request.headers.get("Cookie") || "";
+  const briefId = params.briefId!;
+  const formData = await request.formData();
+  const intent = formData.get("_intent") as string;
+
+  if (intent === "dry-run") {
+    try {
+      // Fetch the production to assemble VideoGateInput
+      const prodRes = await fetch(
+        `${backendUrl}/api/admin/video/productions/${briefId}`,
+        { headers: { Cookie: cookieHeader } },
+      );
+      if (!prodRes.ok) {
+        return json({
+          _intent: "dry-run" as const,
+          ok: false,
+          error: "Production introuvable",
+        });
+      }
+      const prodData = await prodRes.json();
+      const prod = prodData.data;
+
+      const gateInput = {
+        brief: {
+          briefId: prod.briefId,
+          videoType: prod.videoType,
+          vertical: prod.vertical,
+        },
+        claims: prod.claimTable ?? [],
+        evidencePack: prod.evidencePack ?? [],
+        disclaimerPlan: prod.disclaimerPlan ?? { disclaimers: [] },
+        approvalRecord: prod.approvalRecord ?? { briefId, stages: [] },
+      };
+
+      const res = await fetch(`${backendUrl}/api/admin/video/validate-gates`, {
+        method: "POST",
+        headers: {
+          Cookie: cookieHeader,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(gateInput),
+      });
+      const data = await res.json();
+      return json({ _intent: "dry-run" as const, ok: true, result: data });
+    } catch {
+      return json({
+        _intent: "dry-run" as const,
+        ok: false,
+        error: "Erreur reseau",
+      });
+    }
+  }
+
+  // Default: execute
+  try {
+    const res = await fetch(
+      `${backendUrl}/api/admin/video/productions/${briefId}/execute`,
+      { method: "POST", headers: { Cookie: cookieHeader } },
+    );
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      return json({
+        _intent: "execute" as const,
+        ok: false,
+        error: data.error ?? "Erreur execution",
+      });
+    }
+    return json({
+      _intent: "execute" as const,
+      ok: true,
+      executionId: data.data?.id ?? null,
+    });
+  } catch {
+    return json({
+      _intent: "execute" as const,
+      ok: false,
+      error: "Erreur reseau",
+    });
+  }
+}
+
 const VERDICT_CONFIG = {
   PASS: {
     icon: CheckCircle,
@@ -147,6 +237,26 @@ function formatDuration(ms: number | null): string {
 
 export default function VideoProductionDetail() {
   const { production, executions, error } = useLoaderData<typeof loader>();
+  const fetcher = useFetcher<{
+    _intent: "execute";
+    ok: boolean;
+    error?: string;
+    executionId?: number | null;
+  }>();
+  const isSubmitting = fetcher.state !== "idle";
+  const dryRunFetcher = useFetcher<{
+    _intent: "dry-run";
+    ok: boolean;
+    error?: string;
+    result?: {
+      canPublish: boolean;
+      gates: GateResult[] | null;
+      flags: string[];
+      message: string;
+      artefacts: { canProceed: boolean; missingArtefacts: string[] };
+    };
+  }>();
+  const isDryRunning = dryRunFetcher.state !== "idle";
 
   if (!production) {
     return (
@@ -181,10 +291,47 @@ export default function VideoProductionDetail() {
             {production.briefId}
           </h2>
         </div>
-        <Badge variant="outline" className="capitalize">
-          {production.status}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <fetcher.Form method="post">
+            <input type="hidden" name="_intent" value="execute" />
+            <Button
+              type="submit"
+              size="sm"
+              disabled={isSubmitting || production.status === "archived"}
+              className="gap-1"
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Play className="h-4 w-4" />
+              )}
+              {isSubmitting ? "Lancement..." : "Lancer rendu"}
+            </Button>
+          </fetcher.Form>
+          <Badge variant="outline" className="capitalize">
+            {production.status}
+          </Badge>
+        </div>
       </div>
+      {/* Trigger feedback */}
+      {fetcher.data?.ok === true && (
+        <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-700 flex items-center justify-between">
+          <span>Execution soumise avec succes.</span>
+          {fetcher.data.executionId != null && (
+            <Link
+              to={`/admin/video-hub/executions/${fetcher.data.executionId}`}
+              className="text-green-800 font-medium underline"
+            >
+              Voir execution #{fetcher.data.executionId}
+            </Link>
+          )}
+        </div>
+      )}
+      {fetcher.data?.ok === false && (
+        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+          {fetcher.data.error ?? "Erreur inconnue"}
+        </div>
+      )}
 
       {/* Info Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -254,12 +401,99 @@ export default function VideoProductionDetail() {
       {/* Gates */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Gates (7 — dernier run)
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Gates (7 — dernier run)
+            </CardTitle>
+            <dryRunFetcher.Form method="post">
+              <input type="hidden" name="_intent" value="dry-run" />
+              <Button
+                type="submit"
+                size="sm"
+                variant="outline"
+                disabled={isDryRunning}
+                className="gap-1"
+              >
+                {isDryRunning ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Shield className="h-3 w-3" />
+                )}
+                {isDryRunning ? "Validation..." : "Dry-run gates"}
+              </Button>
+            </dryRunFetcher.Form>
+          </div>
         </CardHeader>
         <CardContent>
+          {/* Dry-run results */}
+          {dryRunFetcher.data?.ok === true && dryRunFetcher.data.result && (
+            <div className="mb-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Badge
+                  className={
+                    dryRunFetcher.data.result.canPublish
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }
+                >
+                  {dryRunFetcher.data.result.canPublish
+                    ? "Peut publier"
+                    : "Ne peut pas publier"}
+                </Badge>
+                <span className="text-xs text-gray-500">
+                  {dryRunFetcher.data.result.message}
+                </span>
+              </div>
+              {dryRunFetcher.data.result.artefacts &&
+                !dryRunFetcher.data.result.artefacts.canProceed && (
+                  <div className="text-xs text-red-600">
+                    Artefacts manquants :{" "}
+                    {dryRunFetcher.data.result.artefacts.missingArtefacts.join(
+                      ", ",
+                    )}
+                  </div>
+                )}
+              {dryRunFetcher.data.result.gates && (
+                <div className="space-y-2">
+                  {dryRunFetcher.data.result.gates.map((gate) => {
+                    const config = VERDICT_CONFIG[gate.verdict];
+                    const Icon = config.icon;
+                    return (
+                      <div
+                        key={gate.gate}
+                        className={`flex items-center justify-between p-3 rounded-lg border ${config.bg}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className={`h-5 w-5 ${config.color}`} />
+                          <div>
+                            <div className="font-medium text-sm">
+                              {GATE_LABELS[gate.gate] ?? gate.gate}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {gate.details.join(" | ")}
+                            </div>
+                          </div>
+                        </div>
+                        <Badge className={config.badge}>{gate.verdict}</Badge>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="border-b border-gray-200 pt-2" />
+              <div className="text-xs text-gray-400">
+                Resultats ci-dessus : dry-run (non enregistres)
+              </div>
+            </div>
+          )}
+          {dryRunFetcher.data?.ok === false && (
+            <div className="mb-4 rounded bg-red-50 border border-red-200 p-2 text-sm text-red-700">
+              {dryRunFetcher.data.error ?? "Erreur dry-run"}
+            </div>
+          )}
+
+          {/* Stored gate results */}
           {production.gateResults ? (
             <div className="space-y-3">
               {production.gateResults.map((gate) => {

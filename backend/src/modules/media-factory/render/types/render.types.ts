@@ -46,6 +46,9 @@ export interface RenderRequest {
     gatesBlocking: boolean;
     renderEngine: string;
   };
+  // P8: Template routing
+  resolvedCompositionId?: string;
+  compositionProps?: Record<string, unknown> | null;
 }
 
 // ─────────────────────────────────────────────────────────────

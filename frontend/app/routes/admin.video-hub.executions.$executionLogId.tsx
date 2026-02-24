@@ -1,5 +1,9 @@
-import { json, type LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type ActionFunctionArgs,
+} from "@remix-run/node";
+import { useLoaderData, Link, useFetcher } from "@remix-run/react";
 import {
   ArrowLeft,
   CheckCircle,
@@ -16,6 +20,8 @@ import {
   ChevronUp,
   RotateCcw,
   Download,
+  Play,
+  Loader2,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Badge } from "~/components/ui/badge";
@@ -84,6 +90,29 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     return json({ execution: data.data as ExecutionLog, error: null });
   } catch {
     return json({ execution: null, error: "Erreur chargement" });
+  }
+}
+
+export async function action({ request, params }: ActionFunctionArgs) {
+  const backendUrl = getInternalApiUrl("");
+  const cookieHeader = request.headers.get("Cookie") || "";
+  const executionLogId = params.executionLogId;
+
+  try {
+    const res = await fetch(
+      `${backendUrl}/api/admin/video/executions/${executionLogId}/retry`,
+      { method: "POST", headers: { Cookie: cookieHeader } },
+    );
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      return json({
+        ok: false,
+        error: data.error ?? data.message ?? "Erreur retry",
+      });
+    }
+    return json({ ok: true, newExecutionId: data.data?.id ?? null });
+  } catch {
+    return json({ ok: false, error: "Erreur reseau" });
   }
 }
 
@@ -221,8 +250,82 @@ function RenderMetadataSection({
   );
 }
 
+function VideoPreviewSection({
+  executionLogId,
+  renderOutputPath,
+}: {
+  executionLogId: number;
+  renderOutputPath: string;
+}) {
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadVideo = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `/api/admin/video/executions/${executionLogId}/presigned-url`,
+        { credentials: "include" },
+      );
+      const data = await res.json();
+      if (data.success && data.data?.url) {
+        setVideoUrl(data.data.url);
+      } else {
+        setError(data.error ?? "Impossible de charger la video");
+      }
+    } catch {
+      setError("Erreur reseau");
+    } finally {
+      setLoading(false);
+    }
+  }, [executionLogId]);
+
+  return (
+    <div className="mt-3 border-t pt-3">
+      <div className="text-xs text-gray-500 mb-2">Output Video</div>
+      <div className="font-mono text-xs text-gray-400 mb-2">
+        {renderOutputPath}
+      </div>
+      {videoUrl ? (
+        <video
+          controls
+          src={videoUrl}
+          className="max-w-sm rounded border border-gray-200"
+        >
+          Votre navigateur ne supporte pas la lecture video.
+        </video>
+      ) : (
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadVideo}
+            disabled={loading}
+            className="text-xs gap-1"
+          >
+            {loading ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Play className="h-3 w-3" />
+            )}
+            {loading ? "Chargement..." : "Charger la video"}
+          </Button>
+          {error && <span className="text-xs text-red-600">{error}</span>}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ExecutionDetail() {
   const { execution, error } = useLoaderData<typeof loader>();
+  const retryFetcher = useFetcher<{
+    ok: boolean;
+    error?: string;
+    newExecutionId?: number | null;
+  }>();
 
   if (!execution) {
     return (
@@ -522,12 +625,10 @@ export default function ExecutionDetail() {
             )}
           </div>
           {execution.renderOutputPath && (
-            <div className="mt-3 text-sm">
-              <div className="text-xs text-gray-500">Output Path</div>
-              <div className="font-mono text-xs">
-                {execution.renderOutputPath}
-              </div>
-            </div>
+            <VideoPreviewSection
+              executionLogId={execution.id}
+              renderOutputPath={execution.renderOutputPath}
+            />
           )}
           {execution.renderMetadata &&
             Object.keys(execution.renderMetadata).length > 0 && (
@@ -559,9 +660,48 @@ export default function ExecutionDetail() {
               {execution.errorMessage}
             </p>
             {execution.retryable && execution.status === "failed" && (
-              <div className="mt-3 flex items-center gap-2 text-sm text-blue-600">
-                <RotateCcw className="h-4 w-4" />
-                <span>Cette execution peut etre relancee (retryable)</span>
+              <div className="mt-3 pt-3 border-t">
+                <retryFetcher.Form method="post">
+                  <div className="flex items-center gap-3">
+                    <Button
+                      type="submit"
+                      size="sm"
+                      variant="outline"
+                      disabled={retryFetcher.state !== "idle"}
+                      className="gap-1 border-blue-300 text-blue-700 hover:bg-blue-50"
+                    >
+                      {retryFetcher.state !== "idle" ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <RotateCcw className="h-3 w-3" />
+                      )}
+                      {retryFetcher.state !== "idle"
+                        ? "Relance..."
+                        : "Relancer cette execution"}
+                    </Button>
+                    <span className="text-xs text-blue-600">
+                      Cette execution peut etre relancee (retryable)
+                    </span>
+                  </div>
+                </retryFetcher.Form>
+                {retryFetcher.data?.ok === true && (
+                  <div className="mt-2 rounded bg-green-50 border border-green-200 p-2 text-sm text-green-700 flex items-center justify-between">
+                    <span>Nouvelle execution soumise.</span>
+                    {retryFetcher.data.newExecutionId != null && (
+                      <Link
+                        to={`/admin/video-hub/executions/${retryFetcher.data.newExecutionId}`}
+                        className="text-green-800 font-medium underline"
+                      >
+                        Voir execution #{retryFetcher.data.newExecutionId}
+                      </Link>
+                    )}
+                  </div>
+                )}
+                {retryFetcher.data?.ok === false && (
+                  <div className="mt-2 rounded bg-red-50 border border-red-200 p-2 text-sm text-red-700">
+                    {retryFetcher.data.error ?? "Erreur inconnue"}
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

@@ -10,6 +10,7 @@ export const renderRequestSchema = z.object({
   vertical: z.string().min(1, 'vertical is required'),
   templateId: z.string().nullish().default(null),
   composition: z.string().default('TestCard'),
+  compositionProps: z.record(z.unknown()).nullish().default(null), // P8
   outputFormat: z.enum(['mp4', 'webm']).default('mp4'),
   resolution: z
     .object({

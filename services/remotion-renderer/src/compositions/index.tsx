@@ -1,5 +1,6 @@
 import { registerRoot, Composition } from 'remotion';
 import { TestCard } from './TestCard';
+import { ShortProductHighlight } from './ShortProductHighlight';
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -16,6 +17,28 @@ export const RemotionRoot: React.FC = () => {
           executionLogId: 0,
           videoType: 'short',
           vertical: 'test',
+        }}
+      />
+      <Composition
+        id="ShortProductHighlight"
+        component={ShortProductHighlight}
+        durationInFrames={450}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{
+          vertical: 'freinage',
+          gammeAlias: 'disque-de-frein',
+          claims: [
+            {
+              kind: 'dimension',
+              value: '280',
+              unit: 'mm',
+              rawText: 'Diamètre 280mm',
+            },
+          ],
+          brandName: 'AutoMecanik',
+          tagline: 'Pièces auto de qualité',
         }}
       />
     </>

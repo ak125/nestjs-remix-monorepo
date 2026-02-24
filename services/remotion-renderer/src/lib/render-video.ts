@@ -59,14 +59,18 @@ export async function renderVideo(
 ): Promise<RenderVideoResult> {
   const serveUrl = await getBundledEntry();
 
+  // P8: Merge base props with enriched compositionProps
+  const inputProps = {
+    briefId: request.briefId,
+    executionLogId: request.executionLogId,
+    videoType: request.videoType,
+    vertical: request.vertical,
+    ...(request.compositionProps ?? {}),
+  };
+
   // Find the composition
   const compositions = await getCompositions(serveUrl, {
-    inputProps: {
-      briefId: request.briefId,
-      executionLogId: request.executionLogId,
-      videoType: request.videoType,
-      vertical: request.vertical,
-    },
+    inputProps,
   });
 
   const composition = compositions.find((c) => c.id === request.composition);
@@ -124,12 +128,7 @@ export async function renderVideo(
       codec: 'h264',
       outputLocation,
       browserExecutable: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium',
-      inputProps: {
-        briefId: request.briefId,
-        executionLogId: request.executionLogId,
-        videoType: request.videoType,
-        vertical: request.vertical,
-      },
+      inputProps,
       onProgress: ({ progress }) => {
         if (Math.round(progress * 100) % 25 === 0) {
           logger.info({ progress: Math.round(progress * 100) }, 'Render progress');
