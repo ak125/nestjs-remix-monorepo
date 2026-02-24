@@ -5,6 +5,8 @@
  * 10 tests: chat (4) + search (3) + health (3).
  *
  * Strategy: mock global.fetch since the service uses native fetch (not HttpService).
+ * After P1 split, RagProxyService is a thin facade — sub-services are provided
+ * as real instances with mocked infrastructure deps (ConfigService, CacheService, etc.).
  *
  * @see backend/src/modules/rag-proxy/rag-proxy.service.ts
  */
@@ -16,9 +18,18 @@ import { RagProxyService } from '../../src/modules/rag-proxy/rag-proxy.service';
 import { FrontmatterValidatorService } from '../../src/modules/rag-proxy/services/frontmatter-validator.service';
 import { RagCleanupService } from '../../src/modules/rag-proxy/services/rag-cleanup.service';
 import { WebhookAuditService } from '../../src/modules/rag-proxy/services/webhook-audit.service';
+import { RagCircuitBreakerService } from '../../src/modules/rag-proxy/services/rag-circuit-breaker.service';
+import { RagRedisJobService } from '../../src/modules/rag-proxy/services/rag-redis-job.service';
+import { RagKnowledgeService } from '../../src/modules/rag-proxy/services/rag-knowledge.service';
+import { RagChatService } from '../../src/modules/rag-proxy/services/rag-chat.service';
+import { RagGammeDetectionService } from '../../src/modules/rag-proxy/services/rag-gamme-detection.service';
+import { RagIngestionService } from '../../src/modules/rag-proxy/services/rag-ingestion.service';
+import { RagWebhookCompletionService } from '../../src/modules/rag-proxy/services/rag-webhook-completion.service';
+import { CacheService } from '../../src/cache/cache.service';
 
 describe('RagProxyService', () => {
   let service: RagProxyService;
+  let chatService: RagChatService;
   let mockFetch: jest.Mock;
 
   const MOCK_RAG_URL = 'http://mock-rag:8000';
@@ -34,6 +45,22 @@ describe('RagProxyService', () => {
       if (!value) throw new Error(`Missing config: ${key}`);
       return value;
     }),
+    get: jest.fn((key: string) => {
+      const config: Record<string, string> = {
+        RAG_SERVICE_URL: MOCK_RAG_URL,
+        RAG_API_KEY: MOCK_API_KEY,
+        RAG_KNOWLEDGE_PATH: '/opt/automecanik/rag/knowledge',
+        ANTHROPIC_API_KEY: 'test-anthropic-key',
+      };
+      return config[key] ?? undefined;
+    }),
+  };
+
+  const mockCacheService = {
+    get: jest.fn().mockResolvedValue(null),
+    set: jest.fn().mockResolvedValue(undefined),
+    del: jest.fn().mockResolvedValue(undefined),
+    clearByPattern: jest.fn().mockResolvedValue(0),
   };
 
   beforeEach(async () => {
@@ -45,9 +72,10 @@ describe('RagProxyService', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        RagProxyService,
+        // Infrastructure mocks
         { provide: ConfigService, useValue: mockConfigService },
         { provide: EventEmitter2, useValue: { emit: jest.fn() } },
+        { provide: CacheService, useValue: mockCacheService },
         {
           provide: FrontmatterValidatorService,
           useValue: {
@@ -57,11 +85,22 @@ describe('RagProxyService', () => {
           },
         },
         { provide: RagCleanupService, useValue: { client: { from: jest.fn() } } },
-        { provide: WebhookAuditService, useValue: { recordEvent: jest.fn(), getAuditTrail: jest.fn().mockResolvedValue([]) } },
+        { provide: WebhookAuditService, useValue: { recordEvent: jest.fn(), recordWebhook: jest.fn().mockResolvedValue(undefined), getAuditTrail: jest.fn().mockResolvedValue([]) } },
+        // Real sub-services (use mocked infra deps)
+        RagCircuitBreakerService,
+        RagRedisJobService,
+        RagKnowledgeService,
+        RagChatService,
+        RagGammeDetectionService,
+        RagIngestionService,
+        RagWebhookCompletionService,
+        // Facade
+        RagProxyService,
       ],
     }).compile();
 
     service = module.get<RagProxyService>(RagProxyService);
+    chatService = module.get<RagChatService>(RagChatService);
   });
 
   afterEach(() => {
@@ -268,7 +307,8 @@ describe('RagProxyService', () => {
 
   describe('chatStream()', () => {
     it('should emit verified RAG metadata in SSE stream', async () => {
-      jest.spyOn(service as never, 'chat').mockResolvedValue({
+      // Spy on the chatService (where the real logic lives)
+      jest.spyOn(chatService, 'chat').mockResolvedValue({
         answer: 'Reponse',
         sources: ['knowledge/normes/ece-r90.md'],
         sessionId: 'session-sse-123',
@@ -282,10 +322,10 @@ describe('RagProxyService', () => {
         clarifyQuestions: ['Q1', 'Q2'],
         sourcesCitation: '## Sources\n1. ...',
         truthMetadata: { composite_confidence: 0.71 },
-      } as never);
+      });
 
       jest
-        .spyOn(service as never, 'delay')
+        .spyOn(chatService as never, 'delay')
         .mockResolvedValue(undefined as never);
 
       const writes: string[] = [];
