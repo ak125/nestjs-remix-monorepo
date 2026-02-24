@@ -91,7 +91,7 @@ export default function AdminVideoHubLayout() {
             </div>
             <div>
               <h1 className="font-bold text-gray-900">Video Hub</h1>
-              <p className="text-xs text-gray-500">Gouvernance P1</p>
+              <p className="text-xs text-gray-500">Gouvernance P6</p>
             </div>
           </Link>
 
