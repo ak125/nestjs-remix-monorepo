@@ -113,10 +113,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? await jobsRes.value.json()
       : [];
 
-  const pipeline: { counts: Record<string, number> } =
+  const rawPipeline =
     pipelineRes.status === "fulfilled" && pipelineRes.value.ok
       ? await pipelineRes.value.json()
       : { counts: {} };
+  // Handle AdminApiResponse wrapper: { success, data, meta }
+  const pipeline: { counts: Record<string, number> } =
+    rawPipeline?.data ?? rawPipeline;
 
   return json({ corpus, intents, jobs, pipeline });
 }

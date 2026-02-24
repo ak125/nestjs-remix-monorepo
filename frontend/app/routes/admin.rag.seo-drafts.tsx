@@ -108,7 +108,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ),
     { headers: { Cookie: cookie } },
   );
-  const result = res.ok ? await res.json() : { drafts: [] };
+  const raw = res.ok ? await res.json() : { drafts: [] };
+  // Handle AdminApiResponse wrapper: { success, data, meta }
+  const result = raw?.data ?? raw;
   return json({ drafts: (result.drafts || []) as SeoDraft[] });
 }
 
@@ -420,7 +422,8 @@ export default function AdminRagSeoDrafts() {
           `/api/admin/content-refresh/seo-draft/${pgId}/publish`,
           { method: "PATCH" },
         );
-        const data = await res.json();
+        const raw = await res.json();
+        const data = raw?.data ?? raw;
         if (res.ok && data.published) {
           published++;
           toast.success(`Publie ${published}/${total}`, {
@@ -452,7 +455,8 @@ export default function AdminRagSeoDrafts() {
           `/api/admin/content-refresh/seo-draft/${pgId}`,
           { method: "DELETE" },
         );
-        const data = await res.json();
+        const raw = await res.json();
+        const data = raw?.data ?? raw;
         if (res.ok && data.rejected) {
           rejected++;
           toast.success(`Rejete ${rejected}/${total}`, { id: "bulk-progress" });
@@ -482,7 +486,8 @@ export default function AdminRagSeoDrafts() {
     try {
       const res = await fetch(`/api/admin/content-refresh/seo-draft/${pgId}`);
       if (res.ok) {
-        setDiffData(await res.json());
+        const raw = await res.json();
+        setDiffData(raw?.data ?? raw);
       }
     } catch {
       // silently handle
@@ -524,7 +529,8 @@ export default function AdminRagSeoDrafts() {
         `/api/admin/content-refresh/seo-draft/${pgId}/publish`,
         { method: "PATCH" },
       );
-      const data = await res.json();
+      const raw = await res.json();
+      const data = raw?.data ?? raw;
       if (!res.ok || !data.published) {
         toast.error(
           `Erreur: ${data.error || data.message || "Publication echouee"}`,
@@ -549,7 +555,8 @@ export default function AdminRagSeoDrafts() {
       const res = await fetch(`/api/admin/content-refresh/seo-draft/${pgId}`, {
         method: "DELETE",
       });
-      const data = await res.json();
+      const raw = await res.json();
+      const data = raw?.data ?? raw;
       if (!res.ok || !data.rejected) {
         toast.error(`Erreur: ${data.error || data.message || "Rejet echoue"}`);
       } else {

@@ -118,10 +118,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? await auditRes.value.json()
       : { data: [], total: 0 };
 
-  const dashboard: DashboardData =
+  const dashboardRaw =
     dashboardRes.status === "fulfilled" && dashboardRes.value.ok
       ? await dashboardRes.value.json()
-      : { counts: {}, recent: [] };
+      : null;
+  const dashboard: DashboardData = dashboardRaw?.data ??
+    dashboardRaw ?? { counts: {}, recent: [] };
 
   return json({ stats, audit: auditData, dashboard });
 }

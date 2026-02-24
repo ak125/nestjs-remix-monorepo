@@ -54,17 +54,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     { headers: { Cookie: cookie } },
   );
 
-  const qaGate: QaGateResult = res.ok
-    ? await res.json()
-    : {
-        seo_mutations: 0,
-        ref_mutations: 0,
-        h1_override_mutations: 0,
-        gate: "GO" as const,
-        checked_at: new Date().toISOString(),
-        baseline_count: 0,
-        details: [],
-      };
+  const rawQaGate = res.ok ? await res.json() : null;
+  // Handle AdminApiResponse wrapper: { success, data, meta }
+  const qaGate: QaGateResult = rawQaGate?.data ??
+    rawQaGate ?? {
+      seo_mutations: 0,
+      ref_mutations: 0,
+      h1_override_mutations: 0,
+      gate: "GO" as const,
+      checked_at: new Date().toISOString(),
+      baseline_count: 0,
+      details: [],
+    };
 
   return json({ qaGate });
 }
