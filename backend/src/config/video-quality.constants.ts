@@ -254,3 +254,13 @@ export const RENDER_TIMEOUT_MS = parseInt(
   process.env.VIDEO_RENDER_TIMEOUT_MS || '60000',
   10,
 );
+
+// ─────────────────────────────────────────────────────────────
+// Canary render engine defaults (P5)
+// ─────────────────────────────────────────────────────────────
+
+/** Default max canary executions per UTC day */
+export const CANARY_QUOTA_PER_DAY_DEFAULT = 10;
+
+/** Default timeout for canary engine (ms) */
+export const CANARY_ENGINE_TIMEOUT_MS_DEFAULT = 120_000;
