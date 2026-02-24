@@ -7,6 +7,7 @@ import { VideoJobService } from './services/video-job.service';
 import { VideoProductionController } from './controllers/video-production.controller';
 import { VideoGateCheckController } from './controllers/video-gate-check.controller';
 import { VideoExecutionController } from './controllers/video-execution.controller';
+import { RenderAdapterService } from './render/render-adapter.service';
 
 @Module({
   imports: [DatabaseModule, BullModule.registerQueue({ name: 'video-render' })],
@@ -15,7 +16,17 @@ import { VideoExecutionController } from './controllers/video-execution.controll
     VideoGateCheckController,
     VideoExecutionController,
   ],
-  providers: [VideoDataService, VideoGatesService, VideoJobService],
-  exports: [VideoDataService, VideoGatesService, VideoJobService],
+  providers: [
+    VideoDataService,
+    VideoGatesService,
+    VideoJobService,
+    RenderAdapterService,
+  ],
+  exports: [
+    VideoDataService,
+    VideoGatesService,
+    VideoJobService,
+    RenderAdapterService,
+  ],
 })
 export class MediaFactoryModule {}

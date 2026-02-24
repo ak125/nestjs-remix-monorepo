@@ -16,6 +16,8 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
 import { VideoGatesService } from '../../modules/media-factory/services/video-gates.service';
 import type { VideoGateInput } from '../../modules/media-factory/services/video-gates.service';
 import { VideoDataService } from '../../modules/media-factory/services/video-data.service';
+import { RenderAdapterService } from '../../modules/media-factory/render/render-adapter.service';
+import type { RenderRequest } from '../../modules/media-factory/render/types/render.types';
 import { VIDEO_FLAG_PENALTIES } from '../../config/video-quality.constants';
 import type { VideoQualityFlag } from '../../config/video-quality.constants';
 import type {
@@ -31,6 +33,7 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
     configService: ConfigService,
     private readonly gatesService: VideoGatesService,
     private readonly dataService: VideoDataService,
+    private readonly renderAdapter: RenderAdapterService,
   ) {
     super(configService);
   }
@@ -128,6 +131,24 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       // ── Step 5: Run all gates ──
       const gateOutput = this.gatesService.runAllGates(gateInput);
 
+      // ── Step 5b: Render via adapter ──
+      const renderRequest: RenderRequest = {
+        briefId,
+        executionLogId,
+        videoType: production.videoType,
+        vertical: production.vertical,
+        templateId: production.templateId ?? undefined,
+        gateResults: gateOutput.gates,
+        qualityScore: 0, // pre-score, computed next
+        canPublish: gateOutput.canPublish,
+        governanceSnapshot: {
+          pipelineEnabled: process.env.VIDEO_PIPELINE_ENABLED === 'true',
+          gatesBlocking: process.env.VIDEO_GATES_BLOCKING === 'true',
+          renderEngine: process.env.VIDEO_RENDER_ENGINE || 'stub',
+        },
+      };
+      const renderResult = await this.renderAdapter.render(renderRequest);
+
       // ── Step 6: Compute quality score ──
       const qualityFlags = gateOutput.flags;
       let qualityScore = 100;
@@ -159,6 +180,12 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         completed_at: new Date().toISOString(),
         duration_ms: durationMs,
         feature_flags: this.captureFeatureFlags(),
+        engine_name: renderResult.engineName,
+        engine_version: renderResult.engineVersion,
+        render_status: renderResult.status,
+        render_output_path: renderResult.outputPath,
+        render_metadata: renderResult.metadata,
+        render_duration_ms: renderResult.durationMs,
       });
 
       // ── Step 9: Write-back to production ──
