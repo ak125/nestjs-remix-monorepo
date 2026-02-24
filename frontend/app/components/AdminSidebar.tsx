@@ -274,6 +274,12 @@ export const AdminSidebar = memo(function AdminSidebar({
       notification: false,
       subItems: [
         {
+          name: "SEO Hub",
+          href: "/admin/seo-hub",
+          icon: Monitor,
+          description: "Dashboard SEO unifié",
+        },
+        {
           name: "Analytics SEO",
           href: "/admin/seo",
           icon: TrendingUp,
@@ -320,6 +326,12 @@ export const AdminSidebar = memo(function AdminSidebar({
           href: "/admin/seo-hub/keyword-clusters",
           icon: Tag,
           description: "Clusters SEO & overlaps",
+        },
+        {
+          name: "Page Role",
+          href: "/admin/page-role",
+          icon: ShieldCheck,
+          description: "Validateur rôles SEO",
         },
       ],
     },
@@ -384,6 +396,38 @@ export const AdminSidebar = memo(function AdminSidebar({
       description: "Monitoring serveur",
       badge: { count: "OK", color: "bg-success" },
       notification: false,
+      subItems: [
+        {
+          name: "Monitoring",
+          href: "/admin/system",
+          icon: Activity,
+          description: "Monitoring serveur",
+        },
+        {
+          name: "Debug Admin",
+          href: "/admin/debug",
+          icon: Settings,
+          description: "Debug auth & session",
+        },
+        {
+          name: "Couleurs Marques",
+          href: "/admin/couleurs-constructeurs",
+          icon: Eye,
+          description: "Gradients constructeurs",
+        },
+        {
+          name: "Couleurs Familles",
+          href: "/admin/couleurs-familles",
+          icon: Eye,
+          description: "Couleurs catégories",
+        },
+        {
+          name: "Optimization",
+          href: "/admin/optimization-summary",
+          icon: BarChart3,
+          description: "Résumé optimisations",
+        },
+      ],
     },
   ];
 
@@ -395,13 +439,19 @@ export const AdminSidebar = memo(function AdminSidebar({
     "SEO Enterprise":
       location.pathname.startsWith("/admin/seo") ||
       location.pathname.startsWith("/admin/gammes-seo") ||
-      location.pathname.startsWith("/admin/content-refresh"),
+      location.pathname.startsWith("/admin/content-refresh") ||
+      location.pathname.startsWith("/admin/page-role"),
     Blog:
       location.pathname.startsWith("/admin/blog") ||
       location.pathname.startsWith("/admin/articles") ||
       location.pathname.startsWith("/admin/performances"),
     Marketing: location.pathname.startsWith("/admin/marketing"),
     "RAG / Chat IA": location.pathname.startsWith("/admin/rag"),
+    Système:
+      location.pathname.startsWith("/admin/system") ||
+      location.pathname.startsWith("/admin/debug") ||
+      location.pathname.startsWith("/admin/couleurs") ||
+      location.pathname.startsWith("/admin/optimization"),
   });
 
   // Fermer le menu mobile lors du changement de route
