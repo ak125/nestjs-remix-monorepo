@@ -1,4 +1,4 @@
-import { Processor, Process } from '@nestjs/bull';
+import { Processor, Process, OnQueueFailed, OnQueueError } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bull';
 import { createHash } from 'node:crypto';
@@ -53,6 +53,20 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly ragProxyService: RagProxyService,
   ) {
     super(configService);
+  }
+
+  @OnQueueFailed()
+  handleFailedJob(job: Job<AnyContentRefreshJobData>, error: Error): void {
+    const pgAlias = 'pgAlias' in job.data ? job.data.pgAlias : '';
+    const pageType = job.data?.pageType || 'unknown';
+    this.logger.error(
+      `[BullMQ] Job #${job.id} FAILED after ${job.attemptsMade} attempts — ${pgAlias}/${pageType}: ${error.message}`,
+    );
+  }
+
+  @OnQueueError()
+  handleQueueError(error: Error): void {
+    this.logger.error(`[BullMQ] Queue error: ${error.message}`);
   }
 
   @Process({
@@ -264,8 +278,10 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             .eq('pg_id', pgId)
             .single();
           pgImg = gammeImg?.pg_img as string | null | undefined;
-        } catch {
-          // Non-blocking
+        } catch (err) {
+          this.logger.warn(
+            `Failed to fetch pg_img for pgId=${pgId}: ${err instanceof Error ? err.message : err}`,
+          );
         }
       }
 
@@ -488,45 +504,53 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
               }
             }
 
-            await this.client.from('__seo_role_content').upsert(
-              {
-                pg_id: pgId,
-                page_role: role,
-                brief_id: briefId,
-                brief_version: briefVersion,
-                raw_sections: rawSections,
-                sections: compiled.compiledSections,
-                sections_meta: compiled.sectionsMeta,
-                section_policy_version: POLICY_VERSION,
-                compilation_log: compiled.compilationLog,
-                claims: enricherClaims,
-                evidence_pack: evidencePack || [],
-                quality_score: qualityScore,
-                quality_flags: qualityFlags,
-                word_count: Object.values(compiled.sectionsMeta).reduce(
-                  (sum, m) => sum + m.wordCount,
-                  0,
-                ),
-                content_fingerprint: contentFingerprint,
-                section_fingerprints: sectionFingerprints,
-                source_versions: {
-                  policy_version: POLICY_VERSION,
-                  pipeline_run: new Date().toISOString(),
+            const { error: upsertError } = await this.client
+              .from('__seo_role_content')
+              .upsert(
+                {
+                  pg_id: pgId,
+                  page_role: role,
+                  brief_id: briefId,
+                  brief_version: briefVersion,
+                  raw_sections: rawSections,
+                  sections: compiled.compiledSections,
+                  sections_meta: compiled.sectionsMeta,
+                  section_policy_version: POLICY_VERSION,
+                  compilation_log: compiled.compilationLog,
+                  claims: enricherClaims,
+                  evidence_pack: evidencePack || [],
+                  quality_score: qualityScore,
+                  quality_flags: qualityFlags,
+                  word_count: Object.values(compiled.sectionsMeta).reduce(
+                    (sum, m) => sum + m.wordCount,
+                    0,
+                  ),
+                  content_fingerprint: contentFingerprint,
+                  section_fingerprints: sectionFingerprints,
+                  source_versions: {
+                    policy_version: POLICY_VERSION,
+                    pipeline_run: new Date().toISOString(),
+                  },
+                  status: finalStatus,
+                  is_draft: finalStatus !== 'auto_published',
+                  source_type: 'pipeline',
+                  generated_at: new Date().toISOString(),
+                  ...(finalStatus === 'auto_published'
+                    ? { published_at: new Date().toISOString() }
+                    : {}),
                 },
-                status: finalStatus,
-                is_draft: finalStatus !== 'auto_published',
-                source_type: 'pipeline',
-                generated_at: new Date().toISOString(),
-                ...(finalStatus === 'auto_published'
-                  ? { published_at: new Date().toISOString() }
-                  : {}),
-              },
-              { onConflict: 'pg_id,page_role' },
-            );
+                { onConflict: 'pg_id,page_role' },
+              );
 
-            this.logger.log(
-              `Shadow-write to __seo_role_content: ${pgAlias}/${role} (${Object.keys(compiled.compiledSections).length} sections)`,
-            );
+            if (upsertError) {
+              this.logger.warn(
+                `Shadow-write upsert error for ${pgAlias}/${role}: ${upsertError.message}`,
+              );
+            } else {
+              this.logger.log(
+                `Shadow-write to __seo_role_content: ${pgAlias}/${role} (${Object.keys(compiled.compiledSections).length} sections)`,
+              );
+            }
           }
         } catch (err) {
           this.logger.warn(
@@ -1829,17 +1853,115 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     pgAlias: string,
     pageType: string,
   ): Promise<boolean> {
-    // Re-run QA guard check — if it passes, nothing to restore
     const qaOk = await this.checkQaGuardForGamme(pgId, pgAlias, pageType);
     if (qaOk) return false;
 
-    // If QA guard fails, the fields have been mutated.
-    // We cannot restore them here without a separate backup table.
-    // Log for manual intervention.
-    this.logger.warn(
-      `Protected fields mutated for ${pgAlias}/${pageType} — needs manual review`,
-    );
-    return false;
+    const { data: baseline } = await this.client
+      .from('__qa_protected_meta_hash')
+      .select(
+        'seo_hash, ref_hash, h1_override_hash, seo_title_backup, seo_h1_backup, seo_descrip_backup, ref_title_backup, ref_meta_backup, ref_canonical_backup, h1_override_backup',
+      )
+      .eq('pg_alias', pgAlias)
+      .single();
+
+    if (!baseline) return false;
+
+    let restored = false;
+
+    // Restore SEO fields (R1, R3_guide, R3_conseils)
+    if (
+      pageType === 'R1_pieces' ||
+      pageType === 'R3_guide_achat' ||
+      pageType === 'R3_conseils'
+    ) {
+      const { data: seo } = await this.client
+        .from('__seo_gamme')
+        .select('sg_title, sg_h1, sg_descrip')
+        .eq('sg_pg_id', String(pgId))
+        .single();
+
+      if (seo) {
+        const currentHash = this.md5Gate(
+          (seo.sg_title as string) || '',
+          (seo.sg_h1 as string) || '',
+          (seo.sg_descrip as string) || '',
+        );
+        if (currentHash !== baseline.seo_hash && baseline.seo_title_backup) {
+          await this.client
+            .from('__seo_gamme')
+            .update({
+              sg_title: baseline.seo_title_backup ?? seo.sg_title,
+              sg_h1: baseline.seo_h1_backup ?? seo.sg_h1,
+              sg_descrip: baseline.seo_descrip_backup ?? seo.sg_descrip,
+            })
+            .eq('sg_pg_id', String(pgId));
+          restored = true;
+          this.logger.log(
+            `Restored SEO fields from backup for ${pgAlias}/${pageType}`,
+          );
+        }
+      }
+    }
+
+    // Restore H1 override (R1, R3_guide)
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+      const { data: pg } = await this.client
+        .from('__seo_gamme_purchase_guide')
+        .select('sgpg_h1_override')
+        .eq('sgpg_pg_id', String(pgId))
+        .single();
+
+      if (pg && baseline.h1_override_backup !== undefined) {
+        const currentHash = createHash('md5')
+          .update((pg.sgpg_h1_override as string) || '')
+          .digest('hex');
+        if (currentHash !== baseline.h1_override_hash) {
+          await this.client
+            .from('__seo_gamme_purchase_guide')
+            .update({
+              sgpg_h1_override:
+                baseline.h1_override_backup ?? pg.sgpg_h1_override,
+            })
+            .eq('sgpg_pg_id', String(pgId));
+          restored = true;
+          this.logger.log(`Restored H1 override from backup for ${pgAlias}`);
+        }
+      }
+    }
+
+    // Restore reference fields (R4)
+    if (pageType === 'R4_reference') {
+      const { data: ref } = await this.client
+        .from('__seo_reference')
+        .select('title, meta_description, canonical_url')
+        .eq('slug', pgAlias)
+        .single();
+
+      if (ref) {
+        const currentHash = this.md5Gate(
+          (ref.title as string) || '',
+          (ref.meta_description as string) || '',
+          (ref.canonical_url as string) || '',
+        );
+        if (currentHash !== baseline.ref_hash && baseline.ref_title_backup) {
+          await this.client
+            .from('__seo_reference')
+            .update({
+              title: baseline.ref_title_backup ?? ref.title,
+              meta_description:
+                baseline.ref_meta_backup ?? ref.meta_description,
+              canonical_url: baseline.ref_canonical_backup ?? ref.canonical_url,
+            })
+            .eq('slug', pgAlias);
+          restored = true;
+          this.logger.log(
+            `Restored reference fields from backup for ${pgAlias}`,
+          );
+        }
+      }
+    }
+
+    return restored;
   }
 
   private async checkProtectedFieldMutations(

@@ -33,6 +33,7 @@ import { HardGatesService } from '../modules/admin/services/hard-gates.service';
 import { ImageGatesService } from '../modules/admin/services/image-gates.service';
 import { SectionCompilerService } from '../modules/admin/services/section-compiler.service';
 import { PageBriefService } from '../modules/admin/services/page-brief.service';
+import { KeywordDensityGateService } from '../modules/admin/services/keyword-density-gate.service';
 
 // Dependencies for VideoExecutionProcessor
 import { VideoDataService } from '../modules/media-factory/services/video-data.service';
@@ -101,6 +102,7 @@ import { RenderAdapterService } from '../modules/media-factory/render/render-ada
     ReferenceService,
     DiagnosticService,
     PageBriefService, // Used by BriefGatesService + enrichers (brief-aware templates)
+    KeywordDensityGateService, // Gate F: keyword density (injected into BriefGatesService)
     BriefGatesService, // Pre-publish gates anti-cannibalisation
     HardGatesService, // Hard gates (attribution, no_guess, scope, contradiction, seo)
     ImageGatesService, // P3: image gates (OG, hero policy, alt text)
