@@ -1,3 +1,5 @@
+import tokenStyles from "@fafa/design-tokens/css?url";
+import utilitiesStyles from "@fafa/design-tokens/utilities?url";
 import {
   type LinksFunction,
   type LoaderFunctionArgs,
@@ -26,8 +28,6 @@ import {
   type ErrorInfo,
   type ReactNode,
 } from "react";
-import { Toaster } from "sonner";
-
 import { logger } from "~/utils/logger";
 import { getOptionalUser } from "./auth/unified.server";
 import {
@@ -37,7 +37,6 @@ import {
   Error503,
   ErrorGeneric,
 } from "./components/errors";
-import { Footer } from "./components/Footer";
 import { Navbar } from "./components/Navbar";
 import {
   NotificationContainer,
@@ -48,10 +47,7 @@ import { Button } from "./components/ui/button";
 import stylesheet from "./global.css?url";
 // Design System CSS (chargés via links() — les @import CSS ne sont pas résolus par Vite)
 // @ts-ignore
-import tokenStyles from "@fafa/design-tokens/css?url";
 // @ts-ignore
-import utilitiesStyles from "@fafa/design-tokens/utilities?url";
-import brandColorsStyles from "./styles/brand-colors.css?url";
 import { useHydrated } from "./hooks/useHydrated";
 import { usePageRoleDataAttrs } from "./hooks/usePageRole";
 import { useScrollBehavior } from "./hooks/useScrollBehavior";
@@ -63,7 +59,12 @@ import animationsStylesheet from "./styles/animations.css?url";
 import { type CartData } from "./types/cart";
 
 const ChatWidget = lazy(() => import("./components/rag/ChatWidget"));
-// @ts-ignore
+const Footer = lazy(() =>
+  import("./components/Footer").then((m) => ({ default: m.Footer })),
+);
+const LazyToaster = lazy(() =>
+  import("sonner").then((m) => ({ default: m.Toaster })),
+);
 
 // 🚀 LCP Phase 2: Fonts self-hosted (élimine 2 DNS lookups cross-origin)
 // @font-face déclarés dans global.css, preloads ici pour les 2 fonts critiques
@@ -99,8 +100,8 @@ export const links: LinksFunction = () => [
   // Stylesheets - Design tokens AVANT global.css (définissent les CSS variables)
   { rel: "stylesheet", href: tokenStyles },
   { rel: "stylesheet", href: utilitiesStyles },
-  { rel: "stylesheet", href: brandColorsStyles },
   // CSS principal (utilise les variables définies ci-dessus)
+  // Note: brand-colors.css déplacé vers les routes constructeurs.* (seules utilisatrices)
   { rel: "stylesheet", href: stylesheet },
 
   // DNS Prefetch & Preconnect
@@ -387,7 +388,9 @@ function AppShell({ children }: { children: React.ReactNode }) {
       <main className="flex-grow flex flex-col">
         <div className="flex-grow">{children}</div>
       </main>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
       <NotificationContainer />
       {showScrollTop && (
         <Button
@@ -521,8 +524,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </NotificationProvider>
           </VehicleProvider>
         </QueryClientProvider>
-        {/* 🎉 Sonner Toaster - Notifications modernes */}
-        <Toaster position="top-right" expand={true} richColors closeButton />
+        {/* 🎉 Sonner Toaster - Lazy-loaded (non-critique pour first paint) */}
+        <Suspense fallback={null}>
+          <LazyToaster
+            position="top-right"
+            expand={true}
+            richColors
+            closeButton
+          />
+        </Suspense>
         <ScrollRestoration nonce={nonce} />
         <Scripts nonce={nonce} />
       </body>

@@ -6,6 +6,7 @@
 import {
   defer,
   redirect,
+  type LinksFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -36,6 +37,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -60,6 +62,10 @@ export const handle = {
     clusterId: "constructeurs",
   }),
 };
+
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: brandColorsStyles },
+];
 
 // 🔄 Cache mémoire simple pour éviter les rechargements inutiles
 const loaderCache = new Map<string, { data: LoaderData; timestamp: number }>();

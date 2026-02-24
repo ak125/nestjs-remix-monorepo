@@ -27,6 +27,7 @@ import {
 import { Suspense, memo, useCallback, useState } from "react";
 
 import DarkSection from "~/components/layout/DarkSection";
+import LazySection from "~/components/layout/LazySection";
 import PageSection from "~/components/layout/PageSection";
 import Reveal from "~/components/layout/Reveal";
 import SectionHeader from "~/components/layout/SectionHeader";
@@ -1131,344 +1132,358 @@ export default function RedesignPreview() {
       {/* ════════════════════════════════════════
           CATALOGUE — 19 familles de pièces (Tabs)
          ════════════════════════════════════════ */}
-      <PageSection id="catalogue">
-        <SectionHeader
-          title="Catalogue pièces auto"
-          sub={`Pièces neuves pour toutes marques — ${catalogFamilies.length} familles techniques`}
-        />
+      <LazySection minHeight={400}>
+        <PageSection id="catalogue">
+          <SectionHeader
+            title="Catalogue pièces auto"
+            sub={`Pièces neuves pour toutes marques — ${catalogFamilies.length} familles techniques`}
+          />
 
-        <Tabs defaultValue="Tout" className="w-full">
-          <TabsList className="w-full justify-start overflow-x-auto hide-scroll bg-[#0d1b3e] rounded-2xl p-1.5 mb-5 sm:mb-6 flex-nowrap h-auto shadow-lg">
-            {CATALOG_DOMAINS.map((domain) => {
-              const count = domain.families
-                ? catalogFamilies.filter((c) =>
-                    domain.families!.some((d) => d === c.n),
-                  ).length
-                : catalogFamilies.length;
-              const DomainIcon = domain.icon;
-              return (
-                <TabsTrigger
-                  key={domain.label}
-                  value={domain.label}
-                  className="group tab-pill text-xs sm:text-sm px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl whitespace-nowrap font-semibold flex items-center gap-1.5 sm:gap-2 text-white/50 hover:text-white/80 hover:bg-white/[0.06] data-[state=active]:bg-[#e8590c] data-[state=active]:text-white data-[state=active]:shadow-[0_0_20px_rgba(232,89,12,0.3)]"
-                >
-                  <DomainIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                  <span className="hidden sm:inline">{domain.label}</span>
-                  <span className="sm:hidden">
-                    {domain.label.split(" ")[0]}
-                  </span>
-                  <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-white/10 font-medium leading-none group-data-[state=active]:bg-white/20">
-                    {count}
-                  </span>
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
+          <Tabs defaultValue="Tout" className="w-full">
+            <TabsList className="w-full justify-start overflow-x-auto hide-scroll bg-[#0d1b3e] rounded-2xl p-1.5 mb-5 sm:mb-6 flex-nowrap h-auto shadow-lg">
+              {CATALOG_DOMAINS.map((domain) => {
+                const count = domain.families
+                  ? catalogFamilies.filter((c) =>
+                      domain.families!.some((d) => d === c.n),
+                    ).length
+                  : catalogFamilies.length;
+                const DomainIcon = domain.icon;
+                return (
+                  <TabsTrigger
+                    key={domain.label}
+                    value={domain.label}
+                    className="group tab-pill text-xs sm:text-sm px-3 sm:px-5 py-2.5 sm:py-3 rounded-xl whitespace-nowrap font-semibold flex items-center gap-1.5 sm:gap-2 text-white/50 hover:text-white/80 hover:bg-white/[0.06] data-[state=active]:bg-[#e8590c] data-[state=active]:text-white data-[state=active]:shadow-[0_0_20px_rgba(232,89,12,0.3)]"
+                  >
+                    <DomainIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                    <span className="hidden sm:inline">{domain.label}</span>
+                    <span className="sm:hidden">
+                      {domain.label.split(" ")[0]}
+                    </span>
+                    <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-white/10 font-medium leading-none group-data-[state=active]:bg-white/20">
+                      {count}
+                    </span>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
 
-          {CATALOG_DOMAINS.map((domain) => (
-            <TabsContent
-              key={domain.label}
-              value={domain.label}
-              className="mt-0"
-            >
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
-                {(domain.families === null
-                  ? catalogFamilies
-                  : catalogFamilies.filter((cat) =>
-                      domain.families!.some((d) => d === cat.n),
-                    )
-                ).map((cat, i) => (
-                  <CatalogFamilyCard
-                    key={cat.n}
-                    cat={cat}
-                    index={i}
-                    isOpen={expandedCats.has(cat.n)}
-                    onToggle={toggleCat}
-                  />
-                ))}
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
-      </PageSection>
+            {CATALOG_DOMAINS.map((domain) => (
+              <TabsContent
+                key={domain.label}
+                value={domain.label}
+                className="mt-0"
+              >
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
+                  {(domain.families === null
+                    ? catalogFamilies
+                    : catalogFamilies.filter((cat) =>
+                        domain.families!.some((d) => d === cat.n),
+                      )
+                  ).map((cat, i) => (
+                    <CatalogFamilyCard
+                      key={cat.n}
+                      cat={cat}
+                      index={i}
+                      isOpen={expandedCats.has(cat.n)}
+                      onToggle={toggleCat}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+            ))}
+          </Tabs>
+        </PageSection>
+      </LazySection>
 
       {/* ════════════════════════════════════════
           WHY AUTOMECANIK — 4 avantages
          ════════════════════════════════════════ */}
-      <PageSection bg="navy-gradient">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-          {[
-            {
-              icon: Truck,
-              title: "Livraison 24-48h",
-              desc: "France métropolitaine",
-            },
-            {
-              icon: Shield,
-              title: "Garantie 2 ans",
-              desc: "Pièces origine et adaptables",
-            },
-            {
-              icon: Award,
-              title: "Qualité certifiée",
-              desc: "Marques ISO 9001 / TÜV",
-            },
-            {
-              icon: Phone,
-              title: "Support expert",
-              desc: "Conseillers techniques",
-            },
-          ].map(({ icon: Icon, title, desc }, i) => (
-            <Reveal key={title} delay={i * 80}>
-              <Card className="bg-white/[0.06] border-white/10 hover:bg-white/[0.09] hover:border-white/20 transition-all duration-200 rounded-2xl">
-                <CardContent className="p-4 sm:p-5 text-center">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#e8590c]/15 flex items-center justify-center mx-auto mb-2.5 sm:mb-3">
-                    <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-[#e8590c]" />
-                  </div>
-                  <div className="text-sm sm:text-[15px] font-semibold text-white mb-0.5">
-                    {title}
-                  </div>
-                  <div className="text-[11px] sm:text-xs text-white/60 leading-relaxed">
-                    {desc}
-                  </div>
-                </CardContent>
-              </Card>
-            </Reveal>
-          ))}
-        </div>
-      </PageSection>
+      <LazySection minHeight={120}>
+        <PageSection bg="navy-gradient">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+            {[
+              {
+                icon: Truck,
+                title: "Livraison 24-48h",
+                desc: "France métropolitaine",
+              },
+              {
+                icon: Shield,
+                title: "Garantie 2 ans",
+                desc: "Pièces origine et adaptables",
+              },
+              {
+                icon: Award,
+                title: "Qualité certifiée",
+                desc: "Marques ISO 9001 / TÜV",
+              },
+              {
+                icon: Phone,
+                title: "Support expert",
+                desc: "Conseillers techniques",
+              },
+            ].map(({ icon: Icon, title, desc }, i) => (
+              <Reveal key={title} delay={i * 80}>
+                <Card className="bg-white/[0.06] border-white/10 hover:bg-white/[0.09] hover:border-white/20 transition-all duration-200 rounded-2xl">
+                  <CardContent className="p-4 sm:p-5 text-center">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#e8590c]/15 flex items-center justify-center mx-auto mb-2.5 sm:mb-3">
+                      <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-[#e8590c]" />
+                    </div>
+                    <div className="text-sm sm:text-[15px] font-semibold text-white mb-0.5">
+                      {title}
+                    </div>
+                    <div className="text-[11px] sm:text-xs text-white/60 leading-relaxed">
+                      {desc}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Reveal>
+            ))}
+          </div>
+        </PageSection>
+      </LazySection>
 
       {/* ════════════════════════════════════════
           CONSTRUCTEURS — 36 marques grille
          ════════════════════════════════════════ */}
-      <PageSection id="marques" bg="slate">
-        <SectionHeader
-          title="Par constructeur"
-          sub={`${brandsList.length} marques auto`}
-        />
-        <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-9 gap-2.5 sm:gap-3">
-          {brandsList.map((b) => (
-            <Link key={b.name} to={`/constructeurs/${b.slug}-${b.id}.html`}>
-              <Card className="group hover:border-[#e8590c] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 rounded-2xl border-[1.5px]">
-                <CardContent className="flex flex-col items-center justify-center py-3 px-2 gap-1.5">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden group-hover:bg-orange-50 transition-colors">
-                    {b.logo ? (
-                      <img
-                        src={b.logo}
-                        alt={b.name}
-                        className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <span className="text-base sm:text-lg font-bold text-[#0d1b3e]">
-                        {b.name.slice(0, 2).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-xs font-semibold text-slate-500 text-center truncate w-full group-hover:text-[#e8590c] transition-colors">
-                    {b.name}
-                  </span>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </PageSection>
+      <LazySection minHeight={400}>
+        <PageSection id="marques" bg="slate">
+          <SectionHeader
+            title="Par constructeur"
+            sub={`${brandsList.length} marques auto`}
+          />
+          <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-9 gap-2.5 sm:gap-3">
+            {brandsList.map((b) => (
+              <Link key={b.name} to={`/constructeurs/${b.slug}-${b.id}.html`}>
+                <Card className="group hover:border-[#e8590c] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 rounded-2xl border-[1.5px]">
+                  <CardContent className="flex flex-col items-center justify-center py-3 px-2 gap-1.5">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden group-hover:bg-orange-50 transition-colors">
+                      {b.logo ? (
+                        <img
+                          src={b.logo}
+                          alt={b.name}
+                          className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <span className="text-base sm:text-lg font-bold text-[#0d1b3e]">
+                          {b.name.slice(0, 2).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs font-semibold text-slate-500 text-center truncate w-full group-hover:text-[#e8590c] transition-colors">
+                      {b.name}
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </PageSection>
+      </LazySection>
 
       {/* ════════════════════════════════════════
           STATS — Social proof
          ════════════════════════════════════════ */}
-      <PageSection id="stats">
-        <Reveal>
-          <Card className="rounded-2xl bg-[#0d1b3e] border-0 overflow-hidden">
-            <CardContent className="grid grid-cols-2 md:grid-cols-4 p-0">
-              {STATS.map(({ value, label, icon: Icon }, i) => (
-                <div
-                  key={label}
-                  className={`flex items-center gap-3 p-4 sm:p-5 ${i < STATS.length - 1 ? "md:border-r md:border-white/10" : ""}`}
-                >
-                  <Icon className="w-5 h-5 text-[#e8590c] flex-shrink-0" />
-                  <div>
-                    <div className="text-lg sm:text-2xl font-extrabold text-white tracking-tight">
-                      {value}
-                    </div>
-                    <div className="text-[10px] sm:text-xs text-white/50 font-medium">
-                      {label}
+      <LazySection minHeight={100}>
+        <PageSection id="stats">
+          <Reveal>
+            <Card className="rounded-2xl bg-[#0d1b3e] border-0 overflow-hidden">
+              <CardContent className="grid grid-cols-2 md:grid-cols-4 p-0">
+                {STATS.map(({ value, label, icon: Icon }, i) => (
+                  <div
+                    key={label}
+                    className={`flex items-center gap-3 p-4 sm:p-5 ${i < STATS.length - 1 ? "md:border-r md:border-white/10" : ""}`}
+                  >
+                    <Icon className="w-5 h-5 text-[#e8590c] flex-shrink-0" />
+                    <div>
+                      <div className="text-lg sm:text-2xl font-extrabold text-white tracking-tight">
+                        {value}
+                      </div>
+                      <div className="text-[10px] sm:text-xs text-white/50 font-medium">
+                        {label}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </Reveal>
-      </PageSection>
+                ))}
+              </CardContent>
+            </Card>
+          </Reveal>
+        </PageSection>
+      </LazySection>
 
       {/* ════════════════════════════════════════
           BLOG & GUIDES — 3 articles
          ════════════════════════════════════════ */}
-      <PageSection bg="slate">
-        <SectionHeader
-          title="Blog & Guides"
-          sub="Conseils pratiques pour l'entretien de votre véhicule"
-          linkText="Tous les articles"
-          linkHref="/blog-pieces-auto"
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {blogList.slice(0, 3).map((article, i) => {
-            const BlogIcon =
-              article.tag === "Guide d'achat"
-                ? ShoppingCart
-                : article.tag === "Entretien"
-                  ? Wrench
-                  : BookOpen;
-            return (
-              <Reveal key={article.t} delay={i * 80}>
-                <Link to={article.link || "#"}>
-                  <Card className="group h-full rounded-2xl border-[1.5px] overflow-hidden hover:border-[#e8590c]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
-                    <CardContent className="p-5 sm:p-6 flex flex-col h-full">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Badge
-                          variant="secondary"
-                          className="px-2.5 py-0.5 text-[10px] font-semibold bg-orange-50 text-[#e8590c] rounded-full border-0"
-                        >
-                          {article.tag}
-                        </Badge>
-                      </div>
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-[#0d1b3e] flex items-center justify-center flex-shrink-0">
-                          <BlogIcon className="w-5 h-5 text-white" />
+      <LazySection minHeight={300}>
+        <PageSection bg="slate">
+          <SectionHeader
+            title="Blog & Guides"
+            sub="Conseils pratiques pour l'entretien de votre véhicule"
+            linkText="Tous les articles"
+            linkHref="/blog-pieces-auto"
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {blogList.slice(0, 3).map((article, i) => {
+              const BlogIcon =
+                article.tag === "Guide d'achat"
+                  ? ShoppingCart
+                  : article.tag === "Entretien"
+                    ? Wrench
+                    : BookOpen;
+              return (
+                <Reveal key={article.t} delay={i * 80}>
+                  <Link to={article.link || "#"}>
+                    <Card className="group h-full rounded-2xl border-[1.5px] overflow-hidden hover:border-[#e8590c]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
+                      <CardContent className="p-5 sm:p-6 flex flex-col h-full">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Badge
+                            variant="secondary"
+                            className="px-2.5 py-0.5 text-[10px] font-semibold bg-orange-50 text-[#e8590c] rounded-full border-0"
+                          >
+                            {article.tag}
+                          </Badge>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug mb-1.5 group-hover:text-[#e8590c] transition-colors">
-                            {article.t}
-                          </h3>
-                          <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
-                            {article.d}
-                          </p>
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className="w-10 h-10 rounded-lg bg-[#0d1b3e] flex items-center justify-center flex-shrink-0">
+                            <BlogIcon className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm sm:text-[15px] font-bold text-slate-900 leading-snug mb-1.5 group-hover:text-[#e8590c] transition-colors">
+                              {article.t}
+                            </h3>
+                            <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
+                              {article.d}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-1 mt-3 pt-3 border-t border-slate-100 text-xs font-semibold text-[#e8590c]">
-                        Lire l&apos;article{" "}
-                        <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              </Reveal>
-            );
-          })}
-        </div>
-      </PageSection>
+                        <div className="flex items-center gap-1 mt-3 pt-3 border-t border-slate-100 text-xs font-semibold text-[#e8590c]">
+                          Lire l&apos;article{" "}
+                          <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </Reveal>
+              );
+            })}
+          </div>
+        </PageSection>
+      </LazySection>
 
       {/* ════════════════════════════════════════
           FAQ — Accordion shadcn (deferred)
          ════════════════════════════════════════ */}
-      <PageSection maxWidth="3xl">
-        <div className="text-center mb-6">
-          <h2 className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-tight text-slate-900">
-            Questions fr&eacute;quentes
-          </h2>
-          <p className="text-sm text-slate-500 mt-1">
-            Tout ce qu&apos;il faut savoir avant de commander
-          </p>
-        </div>
-        <Suspense
-          fallback={
-            <Accordion type="single" collapsible className="space-y-3">
-              {FAQ_DATA.map((faq, i) => (
-                <AccordionItem
-                  key={i}
-                  value={`faq-${i}`}
-                  className="border border-slate-200 rounded-xl bg-white overflow-hidden"
-                >
-                  <AccordionTrigger className="px-4 sm:px-5 py-4 text-sm sm:text-[15px] font-bold text-slate-900 hover:no-underline">
-                    {faq.q}
-                  </AccordionTrigger>
-                  <AccordionContent className="px-4 sm:px-5 text-sm text-slate-600 leading-relaxed">
-                    {faq.a}
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          }
-        >
-          <Await resolve={faqsPromise} errorElement={null}>
-            {(resolvedFaqs) => {
-              const faqList =
-                resolvedFaqs.length > 0
-                  ? resolvedFaqs.map((f) => ({
-                      q: f.question,
-                      a: f.answer,
-                    }))
-                  : FAQ_DATA;
-              return (
-                <Accordion type="single" collapsible className="space-y-3">
-                  {faqList.map((faq, i) => (
-                    <AccordionItem
-                      key={i}
-                      value={`faq-${i}`}
-                      className="border border-slate-200 rounded-xl bg-white overflow-hidden hover:border-[#e8590c]/20 transition-colors data-[state=open]:border-[#e8590c]/20 data-[state=open]:shadow-md"
-                    >
-                      <AccordionTrigger className="px-4 sm:px-5 py-4 text-sm sm:text-[15px] font-bold text-slate-900 hover:no-underline data-[state=open]:text-[#e8590c]">
-                        {faq.q}
-                      </AccordionTrigger>
-                      <AccordionContent className="px-4 sm:px-5 text-sm text-slate-600 leading-relaxed">
-                        {faq.a}
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              );
-            }}
-          </Await>
-        </Suspense>
-      </PageSection>
+      <LazySection minHeight={200}>
+        <PageSection maxWidth="3xl">
+          <div className="text-center mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-tight text-slate-900">
+              Questions fr&eacute;quentes
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Tout ce qu&apos;il faut savoir avant de commander
+            </p>
+          </div>
+          <Suspense
+            fallback={
+              <Accordion type="single" collapsible className="space-y-3">
+                {FAQ_DATA.map((faq, i) => (
+                  <AccordionItem
+                    key={i}
+                    value={`faq-${i}`}
+                    className="border border-slate-200 rounded-xl bg-white overflow-hidden"
+                  >
+                    <AccordionTrigger className="px-4 sm:px-5 py-4 text-sm sm:text-[15px] font-bold text-slate-900 hover:no-underline">
+                      {faq.q}
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 sm:px-5 text-sm text-slate-600 leading-relaxed">
+                      {faq.a}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            }
+          >
+            <Await resolve={faqsPromise} errorElement={null}>
+              {(resolvedFaqs) => {
+                const faqList =
+                  resolvedFaqs.length > 0
+                    ? resolvedFaqs.map((f) => ({
+                        q: f.question,
+                        a: f.answer,
+                      }))
+                    : FAQ_DATA;
+                return (
+                  <Accordion type="single" collapsible className="space-y-3">
+                    {faqList.map((faq, i) => (
+                      <AccordionItem
+                        key={i}
+                        value={`faq-${i}`}
+                        className="border border-slate-200 rounded-xl bg-white overflow-hidden hover:border-[#e8590c]/20 transition-colors data-[state=open]:border-[#e8590c]/20 data-[state=open]:shadow-md"
+                      >
+                        <AccordionTrigger className="px-4 sm:px-5 py-4 text-sm sm:text-[15px] font-bold text-slate-900 hover:no-underline data-[state=open]:text-[#e8590c]">
+                          {faq.q}
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 sm:px-5 text-sm text-slate-600 leading-relaxed">
+                          {faq.a}
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                );
+              }}
+            </Await>
+          </Suspense>
+        </PageSection>
+      </LazySection>
 
       {/* ════════════════════════════════════════
           EQUIPEMENTIERS — titre + marquee + tags
          ════════════════════════════════════════ */}
-      <section className="py-8 sm:py-10 overflow-hidden">
-        <div className="text-center mb-5 sm:mb-6">
-          <h2 className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-tight text-slate-900">
-            Nos &eacute;quipementiers partenaires
-          </h2>
-          <p className="text-sm text-slate-500 mt-1">
-            Les plus grandes marques de pi&egrave;ces auto
-          </p>
-        </div>
-        <div
-          className="w-full overflow-hidden"
-          style={{
-            maskImage:
-              "linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent)",
-            WebkitMaskImage:
-              "linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent)",
-          }}
-        >
-          <div
-            className="marquee-anim flex items-center gap-6 sm:gap-10 w-max"
-            style={{ animation: "marquee 30s linear infinite" }}
-          >
-            {[...equipMarquee, ...equipMarquee].map((e, i) => (
-              <div
-                key={`${e.name}-${i}`}
-                className="flex-shrink-0 h-8 sm:h-10 w-auto"
-              >
-                <img
-                  src={e.logoUrl}
-                  alt={e.name}
-                  title={e.name}
-                  className="h-full w-auto object-contain"
-                  loading="lazy"
-                  onError={(ev) => {
-                    ev.currentTarget.style.display = "none";
-                  }}
-                />
-              </div>
-            ))}
+      <LazySection minHeight={100}>
+        <section className="py-8 sm:py-10 overflow-hidden">
+          <div className="text-center mb-5 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-tight text-slate-900">
+              Nos &eacute;quipementiers partenaires
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Les plus grandes marques de pi&egrave;ces auto
+            </p>
           </div>
-        </div>
-      </section>
+          <div
+            className="w-full overflow-hidden"
+            style={{
+              maskImage:
+                "linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent)",
+              WebkitMaskImage:
+                "linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent)",
+            }}
+          >
+            <div
+              className="marquee-anim flex items-center gap-6 sm:gap-10 w-max"
+              style={{ animation: "marquee 30s linear infinite" }}
+            >
+              {[...equipMarquee, ...equipMarquee].map((e, i) => (
+                <div
+                  key={`${e.name}-${i}`}
+                  className="flex-shrink-0 h-8 sm:h-10 w-auto"
+                >
+                  <img
+                    src={e.logoUrl}
+                    alt={e.name}
+                    title={e.name}
+                    className="h-full w-auto object-contain"
+                    loading="lazy"
+                    onError={(ev) => {
+                      ev.currentTarget.style.display = "none";
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </LazySection>
     </div>
   );
 }

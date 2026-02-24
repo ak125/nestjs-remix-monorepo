@@ -8,6 +8,7 @@
 import {
   defer,
   type HeadersFunction,
+  type LinksFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -29,6 +30,7 @@ import {
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { Error404 } from "~/components/errors/Error404";
+import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { PopularGammesSection } from "../components/constructeurs/PopularGammesSection";
@@ -53,6 +55,11 @@ export const handle = {
     clusterId: "constructeurs",
   }),
 };
+
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: brandColorsStyles },
+];
+
 // 🔗 Composants de maillage interne SEO
 
 // ==========================================

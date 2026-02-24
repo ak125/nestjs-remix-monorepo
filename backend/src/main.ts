@@ -132,7 +132,13 @@ async function bootstrap() {
       const compression = (await import('compression')).default;
 
       // Compression AVANT Helmet — pour que toutes les réponses soient compressées
-      app.use(compression());
+      // Note: Brotli géré côté Caddy en production (meilleur ratio, 15-20% vs gzip)
+      app.use(
+        compression({
+          level: 6, // Bon équilibre vitesse/taille (défaut=6, max=9)
+          threshold: 1024, // Ne pas compresser les réponses < 1KB
+        }),
+      );
 
       // Helmet avec nonce dynamique par requête (voir config/csp.config.ts)
       const isDev = process.env.NODE_ENV !== 'production';
