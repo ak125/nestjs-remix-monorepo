@@ -3,7 +3,7 @@
  *
  * Selects engine based on VIDEO_RENDER_ENGINE env var with canary policy:
  * - Targeted eligibility (videoType + templateId)
- * - Daily quota (in-memory, safe with BullMQ concurrency=1)
+ * - Daily quota (Redis-persisted, survives process restarts)
  * - Automatic fallback to stub on any canary failure
  * - Instant rollback: evaluateCanary() re-reads process.env every call
  *
@@ -22,6 +22,7 @@ import { RenderErrorCode } from './types/render.types';
 import type { RenderRequest, RenderResult } from './types/render.types';
 import type { CanaryPolicy, CanaryDecision } from './types/canary.types';
 import { RENDER_TIMEOUT_MS } from '../../../config/video-quality.constants';
+import { CacheService } from '../../../cache/cache.service';
 
 @Injectable()
 export class RenderAdapterService {
@@ -30,11 +31,7 @@ export class RenderAdapterService {
   private readonly canaryEngine: IRenderEngine | null;
   private readonly canaryPolicy: CanaryPolicy;
 
-  // In-memory daily counter (resets on UTC day boundary)
-  private canaryDailyCount = 0;
-  private canaryCountDate = '';
-
-  constructor() {
+  constructor(private readonly cacheService: CacheService) {
     const engineName = process.env.VIDEO_RENDER_ENGINE || 'stub';
 
     // Rule 1: Stub always instantiated
@@ -77,7 +74,7 @@ export class RenderAdapterService {
   // ── Main render entry point ──
 
   async render(request: RenderRequest): Promise<RenderResult> {
-    const decision = this.evaluateCanary(request);
+    const decision = await this.evaluateCanary(request);
 
     this.logger.log(
       `[RAS] brief=${request.briefId} exec=${request.executionLogId} canary=${decision.useCanary} ` +
@@ -98,7 +95,7 @@ export class RenderAdapterService {
     decision: CanaryDecision,
   ): Promise<RenderResult> {
     try {
-      this.incrementDailyCount();
+      await this.incrementDailyCount();
 
       const result = await this.withTimeout(
         this.canaryEngine!.render(request),
@@ -224,7 +221,7 @@ export class RenderAdapterService {
 
   // ── Canary policy evaluation ──
 
-  evaluateCanary(request: RenderRequest): CanaryDecision {
+  async evaluateCanary(request: RenderRequest): Promise<CanaryDecision> {
     // Rule 5: Re-read env every call for instant rollback
     const engineName = process.env.VIDEO_RENDER_ENGINE || 'stub';
 
@@ -233,8 +230,8 @@ export class RenderAdapterService {
       return {
         useCanary: false,
         reason: 'VIDEO_RENDER_ENABLED!=true',
-        dailyUsageCount: this.getDailyCount(),
-        remainingQuota: this.getRemainingQuota(),
+        dailyUsageCount: 0,
+        remainingQuota: 0,
       };
     }
 
@@ -243,8 +240,8 @@ export class RenderAdapterService {
       return {
         useCanary: false,
         reason: 'VIDEO_CANARY_ENABLED!=true',
-        dailyUsageCount: this.getDailyCount(),
-        remainingQuota: this.getRemainingQuota(),
+        dailyUsageCount: 0,
+        remainingQuota: 0,
       };
     }
 
@@ -257,13 +254,17 @@ export class RenderAdapterService {
       };
     }
 
+    // P12a: Single Redis read for all quota checks
+    const dailyCount = await this.getDailyCount();
+    const remaining = Math.max(0, this.canaryPolicy.quotaPerDay - dailyCount);
+
     // Check videoType eligibility (empty list = none eligible)
     if (this.canaryPolicy.eligibleVideoTypes.length === 0) {
       return {
         useCanary: false,
         reason: 'no eligible videoTypes configured',
-        dailyUsageCount: this.getDailyCount(),
-        remainingQuota: this.getRemainingQuota(),
+        dailyUsageCount: dailyCount,
+        remainingQuota: remaining,
       };
     }
 
@@ -271,8 +272,8 @@ export class RenderAdapterService {
       return {
         useCanary: false,
         reason: `videoType=${request.videoType} not eligible`,
-        dailyUsageCount: this.getDailyCount(),
-        remainingQuota: this.getRemainingQuota(),
+        dailyUsageCount: dailyCount,
+        remainingQuota: remaining,
       };
     }
 
@@ -285,18 +286,17 @@ export class RenderAdapterService {
       return {
         useCanary: false,
         reason: `templateId=${request.templateId} not eligible`,
-        dailyUsageCount: this.getDailyCount(),
-        remainingQuota: this.getRemainingQuota(),
+        dailyUsageCount: dailyCount,
+        remainingQuota: remaining,
       };
     }
 
     // Check daily quota
-    const remaining = this.getRemainingQuota();
     if (remaining <= 0) {
       return {
         useCanary: false,
         reason: `daily quota exhausted (${this.canaryPolicy.quotaPerDay}/${this.canaryPolicy.quotaPerDay})`,
-        dailyUsageCount: this.getDailyCount(),
+        dailyUsageCount: dailyCount,
         remainingQuota: 0,
       };
     }
@@ -304,7 +304,7 @@ export class RenderAdapterService {
     return {
       useCanary: true,
       reason: 'eligible + quota available',
-      dailyUsageCount: this.getDailyCount(),
+      dailyUsageCount: dailyCount,
       remainingQuota: remaining,
     };
   }
@@ -316,7 +316,7 @@ export class RenderAdapterService {
     return { name: engine.name, version: engine.version };
   }
 
-  getCanaryStats(): {
+  async getCanaryStats(): Promise<{
     engineName: string;
     canaryAvailable: boolean;
     renderEnabled: boolean;
@@ -324,47 +324,47 @@ export class RenderAdapterService {
     remainingQuota: number;
     quotaPerDay: number;
     eligibleVideoTypes: string[];
-  } {
+  }> {
+    const dailyCount = await this.getDailyCount();
     return {
       engineName: process.env.VIDEO_RENDER_ENGINE || 'stub',
       canaryAvailable: !!this.canaryEngine,
       renderEnabled: process.env.VIDEO_RENDER_ENABLED === 'true',
-      dailyUsageCount: this.getDailyCount(),
-      remainingQuota: this.getRemainingQuota(),
+      dailyUsageCount: dailyCount,
+      remainingQuota: Math.max(0, this.canaryPolicy.quotaPerDay - dailyCount),
       quotaPerDay: this.canaryPolicy.quotaPerDay,
       eligibleVideoTypes: this.canaryPolicy.eligibleVideoTypes,
     };
   }
 
-  // ── Daily counter helpers ──
+  // ── P12a: Redis-backed daily counter helpers ──
 
-  private getDailyCount(): number {
-    this.resetIfNewDay();
-    return this.canaryDailyCount;
+  private getCanaryKey(): string {
+    return `video:canary:count:${new Date().toISOString().slice(0, 10)}`;
   }
 
-  private getRemainingQuota(): number {
-    return Math.max(0, this.canaryPolicy.quotaPerDay - this.getDailyCount());
+  private async getDailyCount(): Promise<number> {
+    return (await this.cacheService.get<number>(this.getCanaryKey())) ?? 0;
   }
 
-  private incrementDailyCount(): void {
-    this.resetIfNewDay();
-    this.canaryDailyCount++;
+  private async incrementDailyCount(): Promise<void> {
+    const key = this.getCanaryKey();
+    const current = (await this.cacheService.get<number>(key)) ?? 0;
+    await this.cacheService.set(key, current + 1, 90000); // TTL 25h
   }
 
-  private resetIfNewDay(): void {
-    const today = new Date().toISOString().slice(0, 10);
-    if (this.canaryCountDate !== today) {
-      this.canaryDailyCount = 0;
-      this.canaryCountDate = today;
-    }
-  }
-
-  // ── Cleanup ──
+  // ── P12c: Cleanup orphan tmp files on renderer ──
 
   private async cleanupPartialOutput(_request: RenderRequest): Promise<void> {
-    // P5.1: no-op (HTTP-based engine doesn't leave local files)
-    // P5+: will delete partial video files from render output directory
+    const baseUrl = process.env.VIDEO_RENDER_BASE_URL;
+    if (!baseUrl) return;
+    try {
+      await fetch(`${baseUrl}/render/cleanup`, { method: 'DELETE' });
+    } catch (err) {
+      this.logger.warn(
+        `cleanupPartialOutput HTTP call failed: ${(err as Error).message}`,
+      );
+    }
   }
 
   // ── Timeout helper ──

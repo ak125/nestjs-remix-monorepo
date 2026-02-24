@@ -88,7 +88,7 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         error_message: 'Pipeline disabled (VIDEO_PIPELINE_ENABLED=false)',
         completed_at: new Date().toISOString(),
         duration_ms: Date.now() - startTime,
-        feature_flags: this.captureFeatureFlags(),
+        feature_flags: await this.captureFeatureFlags(),
       });
       return {
         status: 'completed',
@@ -135,7 +135,7 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
           error_message: `Missing artefacts: ${artefactCheck.missingArtefacts.join(', ')}`,
           completed_at: new Date().toISOString(),
           duration_ms: Date.now() - startTime,
-          feature_flags: this.captureFeatureFlags(),
+          feature_flags: await this.captureFeatureFlags(),
         });
         return {
           status: 'failed',
@@ -184,8 +184,8 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
           })),
         disclaimerText:
           production.disclaimerPlan?.disclaimers?.[0]?.text ?? null,
-        brandName: 'AutoMecanik',
-        tagline: 'Pièces auto de qualité',
+        brandName: process.env.VIDEO_BRAND_NAME || 'AutoMecanik',
+        tagline: process.env.VIDEO_BRAND_TAGLINE || 'Pièces auto de qualité',
       };
 
       // ── Step 5c: Render via adapter ──
@@ -235,7 +235,7 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
               `Non-retryable: ${renderResult.errorCode}`,
             completed_at: new Date().toISOString(),
             duration_ms: Date.now() - startTime,
-            feature_flags: this.captureFeatureFlags(),
+            feature_flags: await this.captureFeatureFlags(),
           });
           this.logger.warn(
             `[VEP] exec=${executionLogId} non-retryable render failure: ${renderResult.errorCode}`,
@@ -305,7 +305,7 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
           (renderResult.metadata?.canaryError as string) ?? null,
         canary_error_code:
           (renderResult.metadata?.canaryErrorCode as string) ?? null,
-        feature_flags: this.captureFeatureFlags(),
+        feature_flags: await this.captureFeatureFlags(),
       });
 
       // Phase 2: Mark completed (only if Phase 1 succeeded)
@@ -352,7 +352,7 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
           retryable: false,
           completed_at: new Date().toISOString(),
           duration_ms: Date.now() - startTime,
-          feature_flags: this.captureFeatureFlags(),
+          feature_flags: await this.captureFeatureFlags(),
         });
       } catch (dbErr) {
         this.logger.error(
@@ -392,8 +392,8 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
     }
   }
 
-  private captureFeatureFlags(): Record<string, unknown> {
-    const canaryStats = this.renderAdapter.getCanaryStats();
+  private async captureFeatureFlags(): Promise<Record<string, unknown>> {
+    const canaryStats = await this.renderAdapter.getCanaryStats();
     return {
       pipeline_enabled: process.env.VIDEO_PIPELINE_ENABLED === 'true',
       gates_blocking: process.env.VIDEO_GATES_BLOCKING === 'true',

@@ -59,6 +59,9 @@ export class RemotionRenderEngine implements IRenderEngine {
           templateId: request.templateId ?? null,
           composition: request.resolvedCompositionId ?? 'TestCard',
           compositionProps: request.compositionProps ?? null,
+          // P12b: Forward resolution and fps to renderer
+          resolution: request.compositionProps?.resolution ?? undefined,
+          fps: request.compositionProps?.fps ?? undefined,
         }),
       });
 

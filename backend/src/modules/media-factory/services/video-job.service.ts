@@ -55,6 +55,9 @@ export interface ExecutionLogRow {
   renderErrorCode: string | null;
   engineResolution: string | null;
   retryable: boolean;
+  // P11a: carry gamme context on retry
+  gammeAlias: string | null;
+  pgId: number | null;
   // P5: canary tracking
   isCanary: boolean;
   canaryFallback: boolean;
@@ -262,6 +265,8 @@ export class VideoJobService extends SupabaseBaseService {
         brief_id: original.briefId,
         video_type: original.videoType,
         vertical: original.vertical,
+        gamme_alias: original.gammeAlias ?? null,
+        pg_id: original.pgId ?? null,
         status: 'pending',
         trigger_source: 'retry',
         trigger_job_id: original.bullmqJobId,
@@ -451,7 +456,7 @@ export class VideoJobService extends SupabaseBaseService {
   /**
    * P5.4: Delegate canary stats to render adapter.
    */
-  getCanaryStats() {
+  async getCanaryStats() {
     return this.renderAdapter.getCanaryStats();
   }
 
@@ -492,5 +497,8 @@ export class VideoJobService extends SupabaseBaseService {
     canaryFallback: (row.canary_fallback as boolean) ?? false,
     canaryErrorMessage: (row.canary_error_message as string) ?? null,
     canaryErrorCode: (row.canary_error_code as string) ?? null,
+    // P11a: gamme context
+    gammeAlias: (row.gamme_alias as string) ?? null,
+    pgId: (row.pg_id as number) ?? null,
   });
 }

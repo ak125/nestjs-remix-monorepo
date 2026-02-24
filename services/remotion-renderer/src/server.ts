@@ -3,6 +3,7 @@ import pino from 'pino';
 import { healthRoute } from './routes/health';
 import { renderRoute } from './routes/render';
 import { presignedUrlRoute } from './routes/presigned-url';
+import { cleanupRoute } from './routes/cleanup';
 
 const PORT = parseInt(process.env.RENDER_SERVICE_PORT ?? '3100', 10);
 const HOST = '0.0.0.0';
@@ -20,6 +21,7 @@ async function main(): Promise<void> {
   await app.register(healthRoute);
   await app.register(renderRoute);
   await app.register(presignedUrlRoute);
+  await app.register(cleanupRoute);
 
   // ── Start ──
   try {

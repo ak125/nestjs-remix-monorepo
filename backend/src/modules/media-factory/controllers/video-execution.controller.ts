@@ -44,7 +44,7 @@ export class VideoExecutionController {
    */
   @Get('canary/policy')
   async getCanaryPolicy() {
-    const data = this.jobService.getCanaryStats();
+    const data = await this.jobService.getCanaryStats();
     return { success: true, data, timestamp: new Date().toISOString() };
   }
 
