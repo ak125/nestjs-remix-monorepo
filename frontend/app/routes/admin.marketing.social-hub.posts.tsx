@@ -23,11 +23,13 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { AdminDataTable } from "~/components/admin/patterns/AdminDataTable";
 import {
   DashboardShell,
   KpiGrid,
 } from "~/components/admin/patterns/DashboardShell";
 import { KpiCard } from "~/components/admin/patterns/KpiCard";
+import { type DataColumn } from "~/components/admin/patterns/ResponsiveDataTable";
 import {
   StatusBadge,
   type StatusType,
@@ -44,7 +46,7 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -61,14 +63,6 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select, SelectItem } from "~/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
@@ -234,6 +228,57 @@ export async function loader({ request }: LoaderFunctionArgs) {
     filters: { week, status },
     pipeline: pipelineData as PipelineStatus | null,
   });
+}
+
+// ── Post Actions ──
+
+function PostActions({
+  post,
+  onPreview,
+  onApprove,
+  onReject,
+  onRunGate,
+  disabled,
+}: {
+  post: SocialPost;
+  onPreview: () => void;
+  onApprove: () => void;
+  onReject: () => void;
+  onRunGate: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={onPreview}>
+          <Eye className="mr-2 h-4 w-4" />
+          Preview
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={onApprove}
+          disabled={post.status !== "gate_passed" || disabled}
+        >
+          <ThumbsUp className="mr-2 h-4 w-4" />
+          Approve
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onReject} disabled={disabled}>
+          <ThumbsDown className="mr-2 h-4 w-4" />
+          Reject
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onRunGate} disabled={disabled}>
+          <ShieldAlert className="mr-2 h-4 w-4" />
+          Run Gate
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 }
 
 // ── Component ──
@@ -432,6 +477,97 @@ export default function SocialHubPostsPage() {
     }
   }
 
+  // ── Column definitions ──
+  const postColumns: DataColumn<SocialPost>[] = [
+    {
+      key: "id",
+      header: "ID",
+      width: "56px",
+      render: (val) => <span className="font-mono text-xs">{String(val)}</span>,
+    },
+    {
+      key: "day_of_week",
+      header: "Jour",
+      render: (val) => DAY_NAMES[val as number] || `J${val}`,
+    },
+    {
+      key: "slot_label",
+      header: "Pilier",
+      render: (val) => (
+        <Badge
+          variant="outline"
+          className={
+            PILLAR_COLORS[val as string] || "bg-gray-100 text-gray-800"
+          }
+        >
+          {String(val)}
+        </Badge>
+      ),
+    },
+    {
+      key: "primary_channel",
+      header: "Canal",
+      render: (val) => <span className="text-xs uppercase">{String(val)}</span>,
+    },
+    {
+      key: "status",
+      header: "Statut",
+    },
+    {
+      key: "brand_gate_level",
+      header: "Brand",
+      render: (val) =>
+        val ? (
+          <StatusBadge
+            status={GATE_LEVEL_MAP[val as string] || "NEUTRAL"}
+            label={String(val)}
+            size="sm"
+          />
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        ),
+    },
+    {
+      key: "compliance_gate_level",
+      header: "Compliance",
+      render: (val) =>
+        val ? (
+          <StatusBadge
+            status={GATE_LEVEL_MAP[val as string] || "NEUTRAL"}
+            label={String(val)}
+            size="sm"
+          />
+        ) : (
+          <span className="text-xs text-muted-foreground">—</span>
+        ),
+    },
+    {
+      key: "quality_score",
+      header: "Score",
+      align: "right" as const,
+      render: (val) => (
+        <span className="font-mono text-sm">
+          {val != null ? String(val) : "—"}
+        </span>
+      ),
+    },
+    {
+      key: "updated_at",
+      header: "",
+      width: "40px",
+      render: (_val, row) => (
+        <PostActions
+          post={row as SocialPost}
+          onPreview={() => setPreviewPost(row as SocialPost)}
+          onApprove={() => setApprovePost(row as SocialPost)}
+          onReject={() => handleReject((row as SocialPost).id)}
+          onRunGate={() => handleRunGate((row as SocialPost).id)}
+          disabled={loading}
+        />
+      ),
+    },
+  ];
+
   return (
     <DashboardShell
       title="Social Hub"
@@ -593,148 +729,14 @@ export default function SocialHubPostsPage() {
       )}
 
       {/* Posts Table */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Posts ({total})</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-14">ID</TableHead>
-                <TableHead>Jour</TableHead>
-                <TableHead>Pilier</TableHead>
-                <TableHead>Canal</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Brand</TableHead>
-                <TableHead>Compliance</TableHead>
-                <TableHead className="text-right">Score</TableHead>
-                <TableHead className="w-10" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {posts.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={9}
-                    className="text-center py-8 text-muted-foreground"
-                  >
-                    Aucun post pour cette semaine
-                  </TableCell>
-                </TableRow>
-              ) : (
-                posts.map((post) => (
-                  <TableRow key={post.id}>
-                    <TableCell className="font-mono text-xs">
-                      {post.id}
-                    </TableCell>
-                    <TableCell>
-                      {DAY_NAMES[post.day_of_week] || `J${post.day_of_week}`}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={
-                          PILLAR_COLORS[post.slot_label] ||
-                          "bg-gray-100 text-gray-800"
-                        }
-                      >
-                        {post.slot_label}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-xs uppercase">
-                      {post.primary_channel}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge
-                        status={POST_STATUS_MAP[post.status] || "NEUTRAL"}
-                        label={post.status}
-                        size="sm"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {post.brand_gate_level ? (
-                        <StatusBadge
-                          status={
-                            GATE_LEVEL_MAP[post.brand_gate_level] || "NEUTRAL"
-                          }
-                          label={post.brand_gate_level}
-                          size="sm"
-                        />
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {post.compliance_gate_level ? (
-                        <StatusBadge
-                          status={
-                            GATE_LEVEL_MAP[post.compliance_gate_level] ||
-                            "NEUTRAL"
-                          }
-                          label={post.compliance_gate_level}
-                          size="sm"
-                        />
-                      ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-sm">
-                      {post.quality_score != null
-                        ? `${post.quality_score}`
-                        : "—"}
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => setPreviewPost(post)}
-                          >
-                            <Eye className="mr-2 h-4 w-4" />
-                            Preview
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => setApprovePost(post)}
-                            disabled={post.status !== "gate_passed" || loading}
-                          >
-                            <ThumbsUp className="mr-2 h-4 w-4" />
-                            Approve
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleReject(post.id)}
-                            disabled={loading}
-                          >
-                            <ThumbsDown className="mr-2 h-4 w-4" />
-                            Reject
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleRunGate(post.id)}
-                            disabled={loading}
-                          >
-                            <ShieldAlert className="mr-2 h-4 w-4" />
-                            Run Gate
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+      <AdminDataTable<SocialPost>
+        data={posts as SocialPost[]}
+        columns={postColumns}
+        getRowKey={(r) => String(r.id)}
+        emptyMessage="Aucun post pour cette semaine"
+        statusColumn={{ key: "status", mapping: POST_STATUS_MAP }}
+        toolbar={<span className="text-sm font-medium">Posts ({total})</span>}
+      />
 
       {/* Preview Dialog */}
       <Dialog

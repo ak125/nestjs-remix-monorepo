@@ -17,9 +17,11 @@ import {
   Trash2,
   XCircle,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { AdminDataTable } from "~/components/admin/patterns/AdminDataTable";
 import { DashboardShell } from "~/components/admin/patterns/DashboardShell";
+import { type DataColumn } from "~/components/admin/patterns/ResponsiveDataTable";
 import { StatusBadge } from "~/components/admin/patterns/StatusBadge";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import {
@@ -34,8 +36,7 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Checkbox } from "~/components/ui/checkbox";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -67,14 +68,6 @@ import {
   SheetTitle,
 } from "~/components/ui/sheet";
 import { Skeleton } from "~/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
@@ -306,6 +299,46 @@ function QualityScoreBadge({ score }: { score: number | null }) {
   );
 }
 
+// ─── Draft Actions ──────────────────────────────────────────────
+
+function DraftActions({
+  onCompare,
+  onPublish,
+  onReject,
+}: {
+  onCompare: () => void;
+  onPublish: () => void;
+  onReject: () => void;
+}) {
+  return (
+    <div onClick={(e) => e.stopPropagation()}>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+            <MoreHorizontal className="h-4 w-4" />
+            <span className="sr-only">Actions</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={onCompare}>
+            <Eye className="mr-2 h-4 w-4" />
+            Comparer
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className="text-green-700" onClick={onPublish}>
+            <Check className="mr-2 h-4 w-4" />
+            Publier
+          </DropdownMenuItem>
+          <DropdownMenuItem className="text-red-700" onClick={onReject}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Rejeter
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
 // ─── Main Component ─────────────────────────────────────────────
 
 export default function AdminRagSeoDrafts() {
@@ -328,18 +361,15 @@ export default function AdminRagSeoDrafts() {
   const [rejectItemId, setRejectItemId] = useState("");
   const [rejectItemAlias, setRejectItemAlias] = useState("");
 
-  // Bulk selection
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  // Bulk selection (synced with AdminDataTable)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkProcessing, setBulkProcessing] = useState(false);
 
   // Filters & sort
   const [searchQuery, setSearchQuery] = useState("");
   const [filterSource, setFilterSource] = useState("all");
-  const [sortBy, setSortBy] = useState<"name" | "date" | "score">("date");
+  const [sortBy, setSortBy] = useState<keyof SeoDraft>("sg_draft_updated_at");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-
-  // Expandable rows
-  const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
   const displayDrafts = refreshFetcher.data?.drafts ?? drafts;
 
@@ -359,10 +389,10 @@ export default function AdminRagSeoDrafts() {
     })
     .sort((a, b) => {
       const dir = sortDir === "asc" ? 1 : -1;
-      if (sortBy === "name") {
+      if (sortBy === "pg_alias") {
         return dir * a.pg_alias.localeCompare(b.pg_alias);
       }
-      if (sortBy === "score") {
+      if (sortBy === "quality_score") {
         return dir * ((a.quality_score ?? 0) - (b.quality_score ?? 0));
       }
       // date
@@ -376,39 +406,13 @@ export default function AdminRagSeoDrafts() {
     ...new Set(displayDrafts.map((d) => d.sg_draft_source).filter(Boolean)),
   ] as string[];
 
-  // ─── Bulk Selection ──────────────────────────────
-
-  const handleSelectAll = useCallback(
-    (checked: boolean) => {
-      if (checked) {
-        setSelectedIds(filteredDrafts.map((d) => d.pg_id));
-      } else {
-        setSelectedIds([]);
-      }
-    },
-    [filteredDrafts],
-  );
-
-  const handleSelectOne = useCallback((pgId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedIds((prev) => [...prev, pgId]);
-    } else {
-      setSelectedIds((prev) => prev.filter((id) => id !== pgId));
-    }
-  }, []);
-
-  const allSelected =
-    filteredDrafts.length > 0 && selectedIds.length === filteredDrafts.length;
-  const someSelected =
-    selectedIds.length > 0 && selectedIds.length < filteredDrafts.length;
-
   // ─── Bulk Actions ────────────────────────────────
 
   async function bulkPublish() {
-    if (selectedIds.length === 0) return;
+    if (selectedIds.size === 0) return;
     setBulkProcessing(true);
     let published = 0;
-    const total = selectedIds.length;
+    const total = selectedIds.size;
 
     for (const pgId of selectedIds) {
       try {
@@ -431,16 +435,16 @@ export default function AdminRagSeoDrafts() {
     toast.success(`${published}/${total} brouillon(s) publie(s)`, {
       id: "bulk-progress",
     });
-    setSelectedIds([]);
+    setSelectedIds(new Set());
     setBulkProcessing(false);
     refreshFetcher.load("/admin/rag/seo-drafts");
   }
 
   async function bulkReject() {
-    if (selectedIds.length === 0) return;
+    if (selectedIds.size === 0) return;
     setBulkProcessing(true);
     let rejected = 0;
-    const total = selectedIds.length;
+    const total = selectedIds.size;
 
     for (const pgId of selectedIds) {
       try {
@@ -461,7 +465,7 @@ export default function AdminRagSeoDrafts() {
     toast.success(`${rejected}/${total} brouillon(s) rejete(s)`, {
       id: "bulk-progress",
     });
-    setSelectedIds([]);
+    setSelectedIds(new Set());
     setBulkProcessing(false);
     refreshFetcher.load("/admin/rag/seo-drafts");
   }
@@ -561,19 +565,117 @@ export default function AdminRagSeoDrafts() {
     }
   }
 
-  // ─── Toggle sort ─────────────────────────────────
+  // ─── Sort handler ───────────────────────────────
 
-  function toggleSort(col: "name" | "date" | "score") {
-    if (sortBy === col) {
+  function handleSort(key: keyof SeoDraft) {
+    if (sortBy === key) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));
     } else {
-      setSortBy(col);
-      setSortDir(col === "name" ? "asc" : "desc");
+      setSortBy(key);
+      setSortDir(key === "pg_alias" ? "asc" : "desc");
     }
   }
 
-  const sortIndicator = (col: string) =>
-    sortBy === col ? (sortDir === "asc" ? " \u2191" : " \u2193") : "";
+  // ─── Column definitions ─────────────────────────
+
+  const draftColumns: DataColumn<SeoDraft>[] = [
+    {
+      key: "pg_alias",
+      header: "Gamme",
+      sortable: true,
+      render: (val) => <span className="text-sm font-medium">{val}</span>,
+    },
+    {
+      key: "sg_draft_source",
+      header: "Origine",
+      render: (val) =>
+        val ? (
+          <Badge variant="secondary" className="text-xs">
+            {String(val)}
+          </Badge>
+        ) : (
+          <span className="text-xs text-muted-foreground">{"\u2014"}</span>
+        ),
+    },
+    {
+      key: "quality_score",
+      header: "Qualite",
+      sortable: true,
+      render: (val) => <QualityScoreBadge score={val as number | null} />,
+    },
+    {
+      key: "sg_draft_updated_at",
+      header: "Date",
+      sortable: true,
+      render: (val) => (
+        <span className="whitespace-nowrap text-xs text-muted-foreground">
+          {formatDate(val as string | null)}
+        </span>
+      ),
+    },
+    {
+      key: "sg_descrip_draft",
+      header: "Meta description",
+      render: (val) => {
+        const text = val as string | null;
+        if (!text)
+          return (
+            <span className="text-xs text-muted-foreground">{"\u2014"}</span>
+          );
+        return (
+          <div className="space-y-1 max-w-[250px]">
+            {text.length > 60 ? (
+              <HoverCard>
+                <HoverCardTrigger asChild>
+                  <span className="cursor-help text-xs text-muted-foreground underline decoration-dotted">
+                    {truncate(text, 60)}
+                  </span>
+                </HoverCardTrigger>
+                <HoverCardContent className="w-80">
+                  <p className="text-xs">{text}</p>
+                </HoverCardContent>
+              </HoverCard>
+            ) : (
+              <span className="text-xs text-muted-foreground">{text}</span>
+            )}
+            <MetaCharCounter text={text} />
+          </div>
+        );
+      },
+    },
+    {
+      key: "sg_content_draft",
+      header: "Contenu",
+      render: (val) => {
+        const text = val as string | null;
+        if (!text)
+          return <StatusBadge status="NEUTRAL" label="aucun" size="sm" />;
+        return (
+          <Badge variant="outline" className="text-xs font-mono">
+            {text.length} car.
+          </Badge>
+        );
+      },
+    },
+    {
+      key: "pg_id",
+      header: "Actions",
+      align: "right" as const,
+      render: (_val, row) => (
+        <DraftActions
+          onCompare={() =>
+            openDiff(
+              row.pg_id,
+              row.pg_alias,
+              filteredDrafts.indexOf(row as SeoDraft),
+            )
+          }
+          onPublish={() => openPublishDialog(row.pg_id, row.pg_alias)}
+          onReject={() => openRejectDialog(row.pg_id, row.pg_alias)}
+        />
+      ),
+    },
+  ];
 
   // ─── Render ──────────────────────────────────────
 
@@ -665,12 +767,12 @@ export default function AdminRagSeoDrafts() {
       </Card>
 
       {/* Bulk action bar */}
-      {selectedIds.length > 0 && (
+      {selectedIds.size > 0 && (
         <Card className="border-blue-200 bg-blue-50">
           <CardContent className="py-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <span className="font-medium text-blue-700">
-                {selectedIds.length} brouillon(s) selectionne(s)
+                {selectedIds.size} brouillon(s) selectionne(s)
               </span>
               <div className="flex gap-2">
                 <Button
@@ -704,7 +806,7 @@ export default function AdminRagSeoDrafts() {
                   size="sm"
                   variant="ghost"
                   className="gap-1.5"
-                  onClick={() => setSelectedIds([])}
+                  onClick={() => setSelectedIds(new Set())}
                 >
                   <XCircle className="h-3.5 w-3.5" />
                   Deselectionner
@@ -716,222 +818,51 @@ export default function AdminRagSeoDrafts() {
       )}
 
       {/* Main table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm font-medium">
-            Gammes avec brouillons a valider
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {filteredDrafts.length === 0 ? (
-            <div className="rounded-lg border bg-muted/30 p-8 text-center">
-              <FilePen className="mx-auto h-10 w-10 text-muted-foreground/30" />
-              <p className="mt-3 text-sm text-muted-foreground">
-                {displayDrafts.length === 0
-                  ? "Aucun brouillon en attente de validation"
-                  : "Aucun resultat pour les filtres actifs"}
-              </p>
-            </div>
+      <AdminDataTable<SeoDraft>
+        data={filteredDrafts as SeoDraft[]}
+        columns={draftColumns}
+        getRowKey={(r) => r.pg_id}
+        selectable
+        onSelectionChange={setSelectedIds}
+        expandable
+        renderExpandedRow={(draft) =>
+          draft.sg_content_draft ? (
+            <ScrollArea className="h-[200px]">
+              <pre className="rounded-lg border bg-muted/30 p-3 text-xs font-mono whitespace-pre-wrap">
+                {draft.sg_content_draft}
+              </pre>
+            </ScrollArea>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10">
-                      <Checkbox
-                        checked={allSelected}
-                        indeterminate={someSelected}
-                        onCheckedChange={handleSelectAll}
-                      />
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer select-none"
-                      onClick={() => toggleSort("name")}
-                    >
-                      Gamme{sortIndicator("name")}
-                    </TableHead>
-                    <TableHead>Origine</TableHead>
-                    <TableHead
-                      className="cursor-pointer select-none"
-                      onClick={() => toggleSort("score")}
-                    >
-                      Qualite{sortIndicator("score")}
-                    </TableHead>
-                    <TableHead
-                      className="cursor-pointer select-none"
-                      onClick={() => toggleSort("date")}
-                    >
-                      Date{sortIndicator("date")}
-                    </TableHead>
-                    <TableHead>Meta description</TableHead>
-                    <TableHead>Apercu</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredDrafts.map((draft, idx) => (
-                    <>
-                      <TableRow
-                        key={draft.pg_id}
-                        className={`hover:bg-muted/50 ${selectedIds.includes(draft.pg_id) ? "bg-blue-50/50" : ""}`}
-                      >
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedIds.includes(draft.pg_id)}
-                            onCheckedChange={(checked) =>
-                              handleSelectOne(draft.pg_id, checked)
-                            }
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <span className="text-sm font-medium">
-                            {draft.pg_alias}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {draft.sg_draft_source ? (
-                            <Badge variant="secondary" className="text-xs">
-                              {draft.sg_draft_source}
-                            </Badge>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">
-                              {"\u2014"}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <QualityScoreBadge score={draft.quality_score} />
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                          {formatDate(draft.sg_draft_updated_at)}
-                        </TableCell>
-                        <TableCell className="max-w-[250px]">
-                          <div className="space-y-1">
-                            {draft.sg_descrip_draft ? (
-                              <>
-                                {draft.sg_descrip_draft.length > 60 ? (
-                                  <HoverCard>
-                                    <HoverCardTrigger asChild>
-                                      <span className="cursor-help text-xs text-muted-foreground underline decoration-dotted">
-                                        {truncate(draft.sg_descrip_draft, 60)}
-                                      </span>
-                                    </HoverCardTrigger>
-                                    <HoverCardContent className="w-80">
-                                      <p className="text-xs">
-                                        {draft.sg_descrip_draft}
-                                      </p>
-                                    </HoverCardContent>
-                                  </HoverCard>
-                                ) : (
-                                  <span className="text-xs text-muted-foreground">
-                                    {draft.sg_descrip_draft}
-                                  </span>
-                                )}
-                                <MetaCharCounter
-                                  text={draft.sg_descrip_draft}
-                                />
-                              </>
-                            ) : (
-                              <span className="text-xs text-muted-foreground">
-                                {"\u2014"}
-                              </span>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {draft.sg_content_draft ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-7 gap-1 text-xs"
-                              onClick={() =>
-                                setExpandedRow(
-                                  expandedRow === draft.pg_id
-                                    ? null
-                                    : draft.pg_id,
-                                )
-                              }
-                            >
-                              {expandedRow === draft.pg_id ? (
-                                <XCircle className="h-3 w-3" />
-                              ) : (
-                                <Eye className="h-3 w-3" />
-                              )}
-                              {draft.sg_content_draft.length} car.
-                            </Button>
-                          ) : (
-                            <StatusBadge
-                              status="NEUTRAL"
-                              label="aucun"
-                              size="sm"
-                            />
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Actions</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  openDiff(draft.pg_id, draft.pg_alias, idx)
-                                }
-                              >
-                                <Eye className="mr-2 h-4 w-4" />
-                                Comparer
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem
-                                className="text-green-700"
-                                onClick={() =>
-                                  openPublishDialog(draft.pg_id, draft.pg_alias)
-                                }
-                              >
-                                <Check className="mr-2 h-4 w-4" />
-                                Publier
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-red-700"
-                                onClick={() =>
-                                  openRejectDialog(draft.pg_id, draft.pg_alias)
-                                }
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Rejeter
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      {/* Expanded content preview */}
-                      {expandedRow === draft.pg_id &&
-                        draft.sg_content_draft && (
-                          <TableRow key={`${draft.pg_id}-expanded`}>
-                            <TableCell colSpan={8}>
-                              <ScrollArea className="h-[200px]">
-                                <pre className="rounded-lg border bg-muted/30 p-3 text-xs font-mono whitespace-pre-wrap">
-                                  {draft.sg_content_draft}
-                                </pre>
-                              </ScrollArea>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                    </>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            <p className="text-xs text-muted-foreground italic">
+              Aucun contenu brouillon
+            </p>
+          )
+        }
+        sortBy={sortBy}
+        sortDirection={sortDir}
+        onSort={handleSort}
+        emptyMessage={
+          displayDrafts.length === 0
+            ? "Aucun brouillon en attente de validation"
+            : "Aucun resultat pour les filtres actifs"
+        }
+        emptyState={
+          <div className="rounded-lg border bg-muted/30 p-8 text-center">
+            <FilePen className="mx-auto h-10 w-10 text-muted-foreground/30" />
+            <p className="mt-3 text-sm text-muted-foreground">
+              {displayDrafts.length === 0
+                ? "Aucun brouillon en attente de validation"
+                : "Aucun resultat pour les filtres actifs"}
+            </p>
+          </div>
+        }
+        isLoading={refreshFetcher.state !== "idle"}
+        toolbar={
+          <span className="text-sm font-medium">
+            Gammes avec brouillons a valider
+          </span>
+        }
+      />
 
       {/* Publish confirmation dialog */}
       <AlertDialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen}>
