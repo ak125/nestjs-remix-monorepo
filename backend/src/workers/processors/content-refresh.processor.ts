@@ -268,16 +268,20 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       }
 
       // ── Fetch pg_img for image gates (P3) ──
-      // Previously did inline penalty; now delegated to ImageGatesService
+      // pg_pic is the frontend hero source; pg_img is the legacy OG source.
+      // Use pg_pic with pg_img as fallback to match what the frontend displays.
       let pgImg: string | null | undefined;
       if (pgId > 0) {
         try {
           const { data: gammeImg } = await this.client
             .from('pieces_gamme')
-            .select('pg_img')
+            .select('pg_img, pg_pic')
             .eq('pg_id', pgId)
             .single();
-          pgImg = gammeImg?.pg_img as string | null | undefined;
+          pgImg =
+            (gammeImg?.pg_pic as string | null) ||
+            (gammeImg?.pg_img as string | null) ||
+            undefined;
         } catch (err) {
           this.logger.warn(
             `Failed to fetch pg_img for pgId=${pgId}: ${err instanceof Error ? err.message : err}`,

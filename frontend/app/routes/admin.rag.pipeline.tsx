@@ -222,6 +222,9 @@ const GATE_LABELS: Record<string, string> = {
   scope_leakage: "Hors sujet",
   contradiction: "Contradiction",
   seo_integrity: "Integrite SEO",
+  missing_og_image: "Image OG manquante",
+  missing_hero_policy_match: "Hero policy non respectee",
+  missing_alt_text: "Alt text manquant",
 };
 
 const GATE_VERDICT_STATUS: Record<string, StatusType> = {

@@ -77,10 +77,13 @@ export class ImageGatesService extends SupabaseBaseService {
       try {
         const { data } = await this.client
           .from('pieces_gamme')
-          .select('pg_img')
+          .select('pg_img, pg_pic')
           .eq('pg_id', pgId)
           .single();
-        resolvedImg = data?.pg_img as string | null | undefined;
+        resolvedImg =
+          (data?.pg_pic as string | null) ||
+          (data?.pg_img as string | null) ||
+          undefined;
       } catch {
         // Non-blocking: DB failure should not crash gate
       }
