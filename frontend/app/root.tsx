@@ -46,6 +46,12 @@ import {
 import { Button } from "./components/ui/button";
 // @ts-ignore
 import stylesheet from "./global.css?url";
+// Design System CSS (chargés via links() — les @import CSS ne sont pas résolus par Vite)
+// @ts-ignore
+import tokenStyles from "@fafa/design-tokens/css?url";
+// @ts-ignore
+import utilitiesStyles from "@fafa/design-tokens/utilities?url";
+import brandColorsStyles from "./styles/brand-colors.css?url";
 import { useHydrated } from "./hooks/useHydrated";
 import { usePageRoleDataAttrs } from "./hooks/usePageRole";
 import { useScrollBehavior } from "./hooks/useScrollBehavior";
@@ -90,7 +96,11 @@ export const links: LinksFunction = () => [
     crossOrigin: "anonymous" as const,
   },
 
-  // Stylesheets - CSS critique (bloquant)
+  // Stylesheets - Design tokens AVANT global.css (définissent les CSS variables)
+  { rel: "stylesheet", href: tokenStyles },
+  { rel: "stylesheet", href: utilitiesStyles },
+  { rel: "stylesheet", href: brandColorsStyles },
+  // CSS principal (utilise les variables définies ci-dessus)
   { rel: "stylesheet", href: stylesheet },
 
   // DNS Prefetch & Preconnect

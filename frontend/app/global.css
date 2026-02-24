@@ -58,14 +58,15 @@
 }
 
 /* === DESIGN SYSTEM === */
-@import '@fafa/design-tokens/css';         /* CSS Variables */
-@import '@fafa/design-tokens/utilities';   /* Classes sémantiques */
+/* tokens.css + utilities.css chargés via links() dans root.tsx */
+/* (les @import CSS ne sont pas résolus par Vite en dev mode) */
 
 /* === MAILLAGE INTERNE === */
-@import './styles/links.css';              /* Styles liens internes */
+/* (intégré directement pour éviter erreur @layer sans @tailwind directives) */
 
 /* === COULEURS DE MARQUES === */
-@import './styles/brand-colors.css';       /* Couleurs dynamiques par constructeur */
+/* brand-colors.css: variables CSS chargées via links() dans root.tsx */
+/* brand utilities intégrées ci-dessous dans @layer utilities */
 
 @tailwind base;
 @tailwind components;
@@ -157,6 +158,148 @@
 
   .prose-narrow {
     max-width: var(--max-width-proseNarrow); /* 60ch */
+  }
+}
+
+/* === MAILLAGE INTERNE — Styles des liens === */
+@layer components {
+  /* Liens internes génériques */
+  a {
+    @apply transition-colors duration-200;
+  }
+
+  /* Liens dans le contenu (articles, descriptions, SEO) */
+  .prose a,
+  article a,
+  .content a,
+  .seo-content a {
+    @apply text-primary underline decoration-primary/30 underline-offset-2;
+    @apply hover:text-primary-600 hover:decoration-primary;
+    @apply font-medium;
+  }
+
+  /* Liens de navigation (header, footer, menus) */
+  nav a:not(.button):not(.btn):not(.no-style),
+  .nav-link,
+  header a:not(.button):not(.btn):not(.no-style) {
+    @apply text-secondary-600 no-underline;
+    @apply hover:text-primary hover:underline;
+    @apply font-medium;
+  }
+
+  /* Liens dans breadcrumb (fil d'Ariane) */
+  .breadcrumb a,
+  nav[aria-label="breadcrumb"] a,
+  [itemtype="https://schema.org/BreadcrumbList"] a {
+    @apply text-secondary-500 no-underline;
+    @apply hover:text-primary hover:underline;
+  }
+
+  /* Liens SEO (footer, sitemap, pages légales) */
+  footer a:not(.button):not(.btn):not(.no-style),
+  .footer-link,
+  .sitemap-link,
+  .legal-link {
+    @apply text-gray-400 no-underline;
+    @apply hover:text-white hover:underline;
+  }
+
+  /* Liens catalogue (catégories, gammes, produits) */
+  .catalog-link,
+  .product-link,
+  .category-link,
+  .gamme-link {
+    @apply text-gray-900 font-medium no-underline;
+    @apply hover:text-primary hover:underline;
+    @apply transition-all duration-200;
+  }
+
+  /* Liens constructeurs/marques/véhicules */
+  .brand-link,
+  .model-link,
+  .vehicle-link,
+  .manufacturer-link {
+    @apply text-secondary-600 font-semibold no-underline;
+    @apply hover:text-primary hover:underline hover:scale-105;
+    @apply transition-all duration-200;
+  }
+
+  /* Liens blog (articles, conseils, guides) */
+  .blog-link,
+  .article-link,
+  .guide-link {
+    @apply text-gray-700 no-underline;
+    @apply hover:text-primary hover:underline;
+    @apply font-medium;
+  }
+
+  /* Liens CTA (Call-to-Action) */
+  .cta-link {
+    @apply text-primary font-bold no-underline;
+    @apply hover:text-primary-600 hover:underline;
+  }
+
+  /* Liens internes SEO (maillage interne) - WCAG AA contrast ratio 4.5:1 */
+  .seo-internal-link {
+    @apply text-blue-700 underline decoration-blue-400/50 underline-offset-2;
+    @apply hover:text-blue-800 hover:decoration-blue-600;
+    @apply font-medium;
+  }
+
+  /* Liens externes (icône ↗) */
+  a[target="_blank"]:not(.no-icon)::after {
+    content: " ↗";
+    @apply text-xs text-gray-400 ml-1;
+  }
+
+  /* Liens actifs (page courante) */
+  a.active,
+  a[aria-current="page"] {
+    @apply text-primary font-semibold;
+    @apply border-b-2 border-primary;
+  }
+
+  /* Liens disabled */
+  a.disabled,
+  a[aria-disabled="true"] {
+    @apply text-gray-400 pointer-events-none cursor-not-allowed opacity-50;
+  }
+
+  /* Liens avec badge (ex: "Nouveau", "Promo") */
+  .badge-link {
+    @apply relative;
+  }
+
+  .badge-link::before {
+    content: attr(data-badge);
+    @apply absolute -top-2 -right-2;
+    @apply bg-primary text-white text-xs font-bold;
+    @apply px-1.5 py-0.5 rounded-full;
+    @apply shadow-sm;
+  }
+
+  /* Liens images (cards) */
+  a:has(img) {
+    @apply block overflow-hidden;
+  }
+
+  a:has(img):hover img {
+    @apply scale-105;
+    @apply transition-transform duration-300;
+  }
+
+  /* Thème sombre (dark mode) */
+  .dark a:not(.button):not(.btn) {
+    @apply text-primary-400;
+  }
+
+  .dark a:not(.button):not(.btn):hover {
+    @apply text-primary-300;
+  }
+
+  /* Thème haute lisibilité */
+  .high-contrast a {
+    @apply underline decoration-2;
   }
 }
 
@@ -321,5 +464,59 @@
   .my-section {
     margin-top: clamp(2rem, 5vw, 4rem);
     margin-bottom: clamp(2rem, 5vw, 4rem);
+  }
+
+  /* === LIENS — États spéciaux === */
+  /* Animation focus pour accessibilité */
+  a:focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+    @apply ring-2 ring-primary ring-offset-2;
+  }
+
+  /* Liens visités (SEO) */
+  a:visited:not(.no-visited) {
+    @apply text-purple-600;
+  }
+
+  .dark a:visited:not(.no-visited) {
+    @apply text-purple-400;
+  }
+
+  /* === BRAND COLORS — Utilities === */
+  .text-brand {
+    color: var(--brand-primary);
+  }
+  .text-brand-light {
+    color: var(--brand-primary-light);
+  }
+  .text-brand-dark {
+    color: var(--brand-primary-dark);
+  }
+  .bg-brand {
+    background-color: var(--brand-primary);
+  }
+  .bg-brand-light {
+    background-color: var(--brand-primary-light);
+  }
+  .bg-brand-dark {
+    background-color: var(--brand-primary-dark);
+  }
+  .border-brand {
+    border-color: var(--brand-primary);
+  }
+  .border-brand-light {
+    border-color: var(--brand-primary-light);
+  }
+  .ring-brand {
+    --tw-ring-color: var(--brand-primary);
+  }
+  .hover\:bg-brand:hover {
+    background-color: var(--brand-primary);
+  }
+  .hover\:bg-brand-dark:hover {
+    background-color: var(--brand-primary-dark);
+  }
+  .hover\:text-brand:hover {
+    color: var(--brand-primary);
   }
 }
