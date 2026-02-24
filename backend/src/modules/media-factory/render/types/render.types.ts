@@ -56,7 +56,7 @@ export interface RenderRequest {
 // ─────────────────────────────────────────────────────────────
 
 export interface RenderResult {
-  status: 'success' | 'failed' | 'skipped' | 'not_implemented';
+  status: 'success' | 'failed' | 'skipped';
   engineName: string;
   engineVersion: string;
   durationMs: number;
