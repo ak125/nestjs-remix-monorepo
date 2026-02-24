@@ -1,0 +1,231 @@
+[
+  {
+    "pgAlias": "filtre-a-huile",
+    "pgId": 7,
+    "status": "built",
+    "keywordsProcessed": 1808,
+    "rolesCovered": [
+      "R1",
+      "R3_guide",
+      "R3_conseils",
+      "R4",
+      "R5"
+    ],
+    "primaryKeyword": {
+      "text": "filtre a huile",
+      "volume": 5000,
+      "intent": "informationnelle"
+    },
+    "roleKeywords": {
+      "R1": {
+        "primary": "prix filtre a huile citroen c3",
+        "primary_volume": 50,
+        "secondary": [
+          "prix filtre a huile clio 3",
+          "filtre a huile clio 2 prix",
+          "prix filtre a huile clio 2",
+          "filtre a huile clio 3 prix"
+        ]
+      },
+      "R3_guide": {
+        "primary": "filtre a huile",
+        "primary_volume": 5000,
+        "secondary": [
+          "filtre huile",
+          "filtre a huile citroen c3",
+          "filtre a huile scenic 3",
+          "filtre a huile ds3",
+          "filtre a huile golf 7"
+        ]
+      },
+      "R3_conseils": {
+        "primary": "quand changer filtre a huile",
+        "primary_volume": 0,
+        "secondary": [
+          "quand remplacer filtre a huile",
+          "duree de vie filtre a huile",
+          "comment remplacer filtre a huile",
+          "entretien filtre a huile"
+        ]
+      },
+      "R4": {
+        "primary": "filtre a huile definition",
+        "primary_volume": 0,
+        "secondary": [
+          "qu'est-ce qu'un filtre a huile",
+          "role filtre a huile",
+          "fonction filtre a huile",
+          "a quoi sert filtre a huile"
+        ]
+      },
+      "R5": {
+        "primary": "symptome filtre a huile use",
+        "primary_volume": 0,
+        "secondary": [
+          "bruit filtre a huile",
+          "probleme filtre a huile",
+          "panne filtre a huile",
+          "filtre a huile hs"
+        ]
+      }
+    },
+    "intentDistribution": {
+      "informationnelle": 21
+    },
+    "error": null
+  },
+  {
+    "pgAlias": "disque-de-frein",
+    "pgId": 82,
+    "status": "built",
+    "keywordsProcessed": 1446,
+    "rolesCovered": [
+      "R1",
+      "R3_guide",
+      "R3_conseils",
+      "R4",
+      "R5"
+    ],
+    "primaryKeyword": {
+      "text": "disque de frein",
+      "volume": 50000,
+      "intent": "informationnelle"
+    },
+    "roleKeywords": {
+      "R1": {
+        "primary": "prix disque et plaquette de frein peugeot 208",
+        "primary_volume": 500,
+        "secondary": [
+          "prix plaquette et disque de frein clio 4",
+          "prix disque et plaquette de frein peugeot 3008",
+          "prix disque et plaquette de frein peugeot 308",
+          "prix disque frein bugatti chiron",
+          "disque de frein toyota yaris prix"
+        ]
+      },
+      "R3_guide": {
+        "primary": "disque de frein",
+        "primary_volume": 50000,
+        "secondary": [
+          "disque de frein arriere",
+          "disque frein",
+          "disque de frein brembo",
+          "disque de frein ate",
+          "disque de frein clio 2"
+        ]
+      },
+      "R3_conseils": {
+        "primary": "quand changer disque de frein",
+        "primary_volume": 0,
+        "secondary": [
+          "quand remplacer disque de frein",
+          "duree de vie disque de frein",
+          "comment remplacer disque de frein",
+          "entretien disque de frein"
+        ]
+      },
+      "R4": {
+        "primary": "disque de frein definition",
+        "primary_volume": 0,
+        "secondary": [
+          "qu'est-ce qu'un disque de frein",
+          "role disque de frein",
+          "fonction disque de frein",
+          "a quoi sert disque de frein"
+        ]
+      },
+      "R5": {
+        "primary": "symptome disque de frein use",
+        "primary_volume": 0,
+        "secondary": [
+          "bruit disque de frein",
+          "probleme disque de frein",
+          "panne disque de frein",
+          "disque de frein hs"
+        ]
+      }
+    },
+    "intentDistribution": {
+      "informationnelle": 17,
+      "transactionnelle": 4
+    },
+    "error": null
+  },
+  {
+    "pgAlias": "plaquette-de-frein",
+    "pgId": 402,
+    "status": "built",
+    "keywordsProcessed": 1384,
+    "rolesCovered": [
+      "R1",
+      "R3_guide",
+      "R3_conseils",
+      "R4",
+      "R5"
+    ],
+    "primaryKeyword": {
+      "text": "plaquettes de freins bosch",
+      "volume": 500,
+      "intent": "informationnelle"
+    },
+    "roleKeywords": {
+      "R1": {
+        "primary": "prix disque et plaquette de frein peugeot 308",
+        "primary_volume": 500,
+        "secondary": [
+          "prix plaquette et disque de frein clio 4",
+          "prix disque et plaquette de frein peugeot 3008",
+          "prix disque et plaquette de frein peugeot 208",
+          "disque et plaquette de frein 207 prix",
+          "disque et plaquette de frein c4 picasso prix"
+        ]
+      },
+      "R3_guide": {
+        "primary": "plaquettes de freins bosch",
+        "primary_volume": 500,
+        "secondary": [
+          "disque et plaquette de frein clio 4",
+          "plaquettes de frein bmw serie 1",
+          "disque et plaquette de frein citroën c3",
+          "plaquette de frein citroen c4 picasso",
+          "disque et plaquette de frein peugeot 3008"
+        ]
+      },
+      "R3_conseils": {
+        "primary": "quand changer plaquette de frein",
+        "primary_volume": 0,
+        "secondary": [
+          "quand remplacer plaquette de frein",
+          "duree de vie plaquette de frein",
+          "comment remplacer plaquette de frein",
+          "entretien plaquette de frein"
+        ]
+      },
+      "R4": {
+        "primary": "plaquette de frein definition",
+        "primary_volume": 0,
+        "secondary": [
+          "qu'est-ce qu'un plaquette de frein",
+          "role plaquette de frein",
+          "fonction plaquette de frein",
+          "a quoi sert plaquette de frein"
+        ]
+      },
+      "R5": {
+        "primary": "symptome plaquette de frein use",
+        "primary_volume": 0,
+        "secondary": [
+          "bruit plaquette de frein",
+          "probleme plaquette de frein",
+          "panne plaquette de frein",
+          "plaquette de frein hs"
+        ]
+      }
+    },
+    "intentDistribution": {
+      "informationnelle": 9,
+      "transactionnelle": 12
+    },
+    "error": null
+  }
+]

@@ -38,6 +38,7 @@ import { AdminBuyingGuideController } from './controllers/admin-buying-guide.con
 import { AdminContentRefreshController } from './controllers/admin-content-refresh.controller'; // 🔄 Content Refresh pipeline
 import { InternalEnrichController } from './controllers/internal-enrich.controller'; // 🔑 Internal enrichment (API key auth)
 import { AdminPageBriefController } from './controllers/admin-page-brief.controller'; // 📋 Page Briefs SEO
+import { AdminKeywordClustersController } from './controllers/admin-keyword-clusters.controller'; // 🔑 Keyword Clusters & Overlaps (read-only)
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
 import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // 🎯 Audit Gammes SEO
@@ -54,6 +55,7 @@ import { PageBriefService } from './services/page-brief.service'; // 📋 Page B
 import { BriefGatesService } from './services/brief-gates.service'; // 🚦 Pre-publish gates anti-cannibalisation
 import { HardGatesService } from './services/hard-gates.service'; // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
 import { KeywordDensityGateService } from './services/keyword-density-gate.service'; // 🚦 Gate F: keyword density check
+import { ImageGatesService } from './services/image-gates.service'; // 🚦 P3: image gates (OG, hero policy, alt text)
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -111,6 +113,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     InternalEnrichController, // 🔑 Internal enrichment (API key) - /api/internal/buying-guides/*
     AdminContentRefreshController, // 🔄 Content Refresh pipeline - /api/admin/content-refresh/*
     AdminPageBriefController, // 📋 Page Briefs SEO - /api/admin/page-briefs/*
+    AdminKeywordClustersController, // 🔑 Keyword Clusters & Overlaps - /api/admin/keyword-clusters/*
   ],
   providers: [
     ConfigurationService,
@@ -137,6 +140,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     BriefGatesService, // 🚦 Pre-publish gates anti-cannibalisation
     HardGatesService, // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
     KeywordDensityGateService, // 🚦 Gate F: keyword density (feature flag KEYWORD_DENSITY_GATE_ENABLED)
+    ImageGatesService, // 🚦 P3: image gates (OG, hero policy, alt text)
   ],
   exports: [
     ConfigurationService,
@@ -151,6 +155,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     PageBriefService, // 📋 Export for WorkerModule (enricher consumption)
     BriefGatesService, // 🚦 Export for WorkerModule (processor gates)
     HardGatesService, // 🚦 Export for WorkerModule (hard gates)
+    ImageGatesService, // 🚦 Export for WorkerModule (image gates)
   ],
 })
 export class AdminModule {}

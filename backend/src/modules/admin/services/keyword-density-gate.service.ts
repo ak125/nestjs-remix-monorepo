@@ -4,9 +4,18 @@ import type { PageBrief } from './page-brief.service';
 
 // ── Types ──
 
+export type DensityReasonCode =
+  | 'KEYWORD_ABSENT'
+  | 'KEYWORD_DENSITY_LOW'
+  | 'KEYWORD_DENSITY_HIGH'
+  | 'KEYWORD_DENSITY_OK'
+  | 'NO_KEYWORD'
+  | 'EMPTY_CONTENT';
+
 export interface KeywordDensityResult {
   gate: 'keyword_density';
   verdict: 'PASS' | 'WARN' | 'FAIL';
+  reason_code: DensityReasonCode;
   details: string[];
   measured: number;
   warnThresholdLow: number;
@@ -44,6 +53,19 @@ export class KeywordDensityGateService {
   constructor(private readonly configService: ConfigService) {}
 
   /**
+   * Expose current density rules/thresholds for API and reporting.
+   */
+  static getRulesMetadata() {
+    return {
+      density_rules_version: '1.0',
+      density_target_min: 0.5,
+      density_target_max: 2.5,
+      window_size: 10,
+      min_token_ratio: 0.66,
+    };
+  }
+
+  /**
    * Check keyword density of the primary keyword in enriched content.
    *
    * Algorithm:
@@ -62,6 +84,7 @@ export class KeywordDensityGateService {
       return {
         gate: 'keyword_density',
         verdict: 'PASS',
+        reason_code: 'NO_KEYWORD',
         details: ['No keywords_primary in brief — skipping density check'],
         measured: 0,
         warnThresholdLow: this.DENSITY_LOW,
@@ -77,6 +100,7 @@ export class KeywordDensityGateService {
       return {
         gate: 'keyword_density',
         verdict: 'FAIL',
+        reason_code: 'EMPTY_CONTENT',
         details: ['Empty content — cannot measure density'],
         measured: 0,
         warnThresholdLow: this.DENSITY_LOW,
@@ -93,6 +117,7 @@ export class KeywordDensityGateService {
       return {
         gate: 'keyword_density',
         verdict: 'PASS',
+        reason_code: 'NO_KEYWORD',
         details: ['Keyword tokens all too short after filtering — skipping'],
         measured: 0,
         warnThresholdLow: this.DENSITY_LOW,
@@ -121,21 +146,25 @@ export class KeywordDensityGateService {
     const density = (matchCount / totalWords) * 100;
     const details: string[] = [];
     let verdict: KeywordDensityResult['verdict'] = 'PASS';
+    let reason_code: DensityReasonCode = 'KEYWORD_DENSITY_OK';
 
     if (matchCount === 0) {
       verdict = 'FAIL';
+      reason_code = 'KEYWORD_ABSENT';
       details.push(
         `Keyword "${keyword}" absent du contenu (0 fenetres sur ${totalWords} mots). ` +
           `Tokens cherches: [${keywordTokens.join(', ')}]`,
       );
     } else if (density < this.DENSITY_LOW) {
       verdict = 'WARN';
+      reason_code = 'KEYWORD_DENSITY_LOW';
       details.push(
         `Densite faible: ${density.toFixed(2)}% < ${this.DENSITY_LOW}% ` +
           `(${matchCount} fenetres / ${totalWords} mots)`,
       );
     } else if (density > this.DENSITY_HIGH) {
       verdict = 'WARN';
+      reason_code = 'KEYWORD_DENSITY_HIGH';
       details.push(
         `Keyword stuffing: ${density.toFixed(2)}% > ${this.DENSITY_HIGH}% ` +
           `(${matchCount} fenetres / ${totalWords} mots)`,
@@ -155,12 +184,14 @@ export class KeywordDensityGateService {
         matchCount,
         density: density.toFixed(2),
         verdict,
+        reason_code,
       }),
     );
 
     return {
       gate: 'keyword_density',
       verdict,
+      reason_code,
       details,
       measured: parseFloat(density.toFixed(2)),
       warnThresholdLow: this.DENSITY_LOW,

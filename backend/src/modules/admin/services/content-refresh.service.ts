@@ -932,4 +932,65 @@ export class ContentRefreshService extends SupabaseBaseService {
       latest_refresh: row.latest_refresh as string | null,
     }));
   }
+
+  /**
+   * Get observe-only impact stats: how often gates WOULD have blocked
+   * in the current observe-only phase.
+   */
+  async getObserveOnlyStats(days: number = 7): Promise<{
+    window_days: number;
+    cutoff: string;
+    generated_at: string;
+    totals: {
+      total_evaluations: number;
+      would_block_brief: number;
+      would_block_hard: number;
+      published_despite_warning: number;
+    };
+    by_page_type: Array<{
+      page_type: string;
+      total_evaluations: number;
+      would_block_brief: number;
+      would_block_hard: number;
+      published_despite_warning: number;
+    }>;
+    gate_distribution: Array<{
+      gate: string;
+      verdict: string;
+      count: number;
+    }>;
+    ar_flag_distribution: Array<{
+      flag: string;
+      count: number;
+    }>;
+  }> {
+    const emptyResult = {
+      window_days: days,
+      cutoff: new Date().toISOString(),
+      generated_at: new Date().toISOString(),
+      totals: {
+        total_evaluations: 0,
+        would_block_brief: 0,
+        would_block_hard: 0,
+        published_despite_warning: 0,
+      },
+      by_page_type: [],
+      gate_distribution: [],
+      ar_flag_distribution: [],
+    };
+
+    const { data, error } = await this.callRpc<Record<string, unknown>>(
+      'get_observe_only_impact_stats',
+      { p_days: days },
+    );
+
+    if (error) {
+      this.logger.error(`Failed to get observe-only stats: ${error.message}`);
+      return emptyResult;
+    }
+
+    if (!data) return emptyResult;
+
+    return data as unknown as typeof emptyResult;
+  }
 }

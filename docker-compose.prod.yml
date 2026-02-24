@@ -29,6 +29,10 @@ services:
       - AUTO_REPAIR_ENABLED=true
       - SAFE_FALLBACK_ENABLED=true
       - CANARY_GAMMES=disque-de-frein,filtre-a-huile,bougie-d-allumage,courroie-de-distribution,pompe-a-eau,agregat-de-freinage,alternateur,arbre-a-came,attelage,bague-d-etancheite-cardan,bagues-d-etancheite-moteur,balais-d-essuie-glace,barre-de-direction,barre-stabilisatrice,biellette-de-barre-stabilisatrice,bobine-d-allumage,boitier-de-prechauffage,bouchon-de-vidange,bougie-de-prechauffage,bouteille-deshydratante,bras-de-suspension,bride-de-liquide-de-refroidissement,butee-d-embrayage,butee-elastique-d-amortisseur,cable-d-embrayage
+      # Brief Gates Phase 1: observe-only (toutes les 6 gates s'executent, aucune ne bloque)
+      - BRIEF_GATES_ENABLED=true
+      - BRIEF_GATES_OBSERVE_ONLY=true
+      - KEYWORD_DENSITY_GATE_ENABLED=true
       - RAG_SERVICE_URL=http://rag-api:8000
       - RAG_API_KEY=856528eb83bd8b36867bc0bbf8ead7796f69de30fa6888a6876b54f4d98be08a
 

@@ -103,7 +103,10 @@ export type HardGateName =
   | 'no_guess'
   | 'scope_leakage'
   | 'contradiction'
-  | 'seo_integrity';
+  | 'seo_integrity'
+  | 'missing_og_image'
+  | 'missing_hero_policy_match'
+  | 'missing_alt_text';
 
 export interface ExtendedGateResult {
   gate: HardGateName;

@@ -12,16 +12,14 @@ import { ReferenceService } from '../../modules/seo/services/reference.service';
 import { DiagnosticService } from '../../modules/seo/services/diagnostic.service';
 import { BriefGatesService } from '../../modules/admin/services/brief-gates.service';
 import { HardGatesService } from '../../modules/admin/services/hard-gates.service';
+import { ImageGatesService } from '../../modules/admin/services/image-gates.service';
 import { RagProxyService } from '../../modules/rag-proxy/rag-proxy.service';
 import { SectionCompilerService } from '../../modules/admin/services/section-compiler.service';
 import {
   pageTypeToRole,
   POLICY_VERSION,
 } from '../../config/content-section-policy';
-import {
-  getImagePenalty,
-  QUALITY_SCORE_ADVISORY,
-} from '../../config/buying-guide-quality.constants';
+import { QUALITY_SCORE_ADVISORY } from '../../config/buying-guide-quality.constants';
 import type {
   AnyContentRefreshJobData,
   ContentRefreshResult,
@@ -50,6 +48,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly diagnosticService: DiagnosticService,
     private readonly briefGatesService: BriefGatesService,
     private readonly hardGatesService: HardGatesService,
+    private readonly imageGatesService: ImageGatesService,
     private readonly sectionCompiler: SectionCompilerService,
     private readonly ragProxyService: RagProxyService,
   ) {
@@ -254,26 +253,19 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           qualityFlags = ['UNKNOWN_PAGE_TYPE'];
       }
 
-      // ── Image quality check (P0.4 — ref: .spec/00-canon/image-matrix-v1.md §5)
-      // Check pg_img for gamme-based page types; penalty varies by page type
-      if (pgId > 0 && !ragSkipped) {
+      // ── Fetch pg_img for image gates (P3) ──
+      // Previously did inline penalty; now delegated to ImageGatesService
+      let pgImg: string | null | undefined;
+      if (pgId > 0) {
         try {
           const { data: gammeImg } = await this.client
             .from('pieces_gamme')
             .select('pg_img')
             .eq('pg_id', pgId)
             .single();
-
-          const pgImg = gammeImg?.pg_img as string | null | undefined;
-          if (!pgImg || pgImg === 'no.webp') {
-            const penalty = getImagePenalty('MISSING_IMAGE', pageType);
-            if (penalty > 0) {
-              qualityFlags.push('MISSING_IMAGE');
-              qualityScore = Math.max(0, (qualityScore ?? 0) - penalty);
-            }
-          }
+          pgImg = gammeImg?.pg_img as string | null | undefined;
         } catch {
-          // Non-blocking: image check failure should not break enrichment
+          // Non-blocking
         }
       }
 
@@ -348,7 +340,16 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           qualityFlags.push(...gateOutput.flags);
           softCanPublish = gateOutput.canPublish;
 
-          if (!softCanPublish) {
+          // Observe-only: log but don't block
+          const briefGatesObserveOnly =
+            process.env.BRIEF_GATES_OBSERVE_ONLY === 'true';
+          if (!softCanPublish && briefGatesObserveOnly) {
+            softCanPublish = true;
+            qualityFlags.push('BRIEF_GATES_OBSERVE_ONLY');
+            this.logger.log(
+              `Brief gates WOULD block ${pgAlias}/${pageType} but observe-only mode active`,
+            );
+          } else if (!softCanPublish) {
             this.logger.log(
               `Brief gates blocked auto-publish for ${pgAlias}/${pageType} — staying draft`,
             );
@@ -373,6 +374,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           qualityScore ?? 0,
           qualityFlags,
           softCanPublish,
+          pgImg,
         );
         finalStatus = result.finalStatus;
         hardGateResults = result.hardGates;
@@ -844,6 +846,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     qualityScore: number,
     qualityFlags: string[],
     softCanPublish: boolean,
+    pgImg?: string | null,
   ): Promise<{
     finalStatus: ContentRefreshResult['status'];
     reason: string;
@@ -890,6 +893,19 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         pageType,
         pgId,
       );
+
+      // ── P3 Image gates (OG, hero policy, alt text) ──
+      try {
+        const imageGates = await this.imageGatesService.runImageGates(
+          pgId,
+          pageType,
+          content,
+          pgImg,
+        );
+        hardGates.push(...imageGates);
+      } catch (imgErr) {
+        this.logger.warn(`Image gates failed (non-blocking): ${imgErr}`);
+      }
 
       // Check protected field mutations (seo_integrity extension)
       const fieldMutation = await this.checkProtectedFieldMutations(

@@ -62,6 +62,18 @@ export class AdminContentRefreshController {
   }
 
   /**
+   * GET /api/admin/content-refresh/observe-stats?days=7
+   * Observe-only impact stats: would_block counts grouped by role/gate.
+   */
+  @Get('observe-stats')
+  async getObserveOnlyStats(@Query('days') daysParam?: string) {
+    const days = daysParam
+      ? Math.min(Math.max(parseInt(daysParam, 10) || 7, 1), 90)
+      : 7;
+    return this.contentRefreshService.getObserveOnlyStats(days);
+  }
+
+  /**
    * GET /api/admin/content-refresh/composite-scores?aliases=alias1,alias2
    * Get composite quality scores per gamme (aggregated across all page types).
    */

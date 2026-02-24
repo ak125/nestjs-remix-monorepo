@@ -1,0 +1,128 @@
+{
+  "generated_at": "2026-02-23T23:42:39.025Z",
+  "total_clusters": 3,
+  "total_pairs_checked": 3,
+  "overlaps_found": 1,
+  "summary": {
+    "low": 0,
+    "medium": 0,
+    "high": 1,
+    "flat_entries": 4
+  },
+  "pairs": [
+    {
+      "gamme_a": "disque-de-frein",
+      "gamme_b": "plaquette-de-frein",
+      "shared_tokens": [],
+      "shared_keywords": [
+        "prix disque et plaquette de frein peugeot 208",
+        "prix plaquette et disque de frein clio 4",
+        "prix disque et plaquette de frein peugeot 3008",
+        "prix disque et plaquette de frein peugeot 308"
+      ],
+      "shared_role_keywords": [
+        {
+          "role": "R1",
+          "keyword": "prix disque et plaquette de frein peugeot 208",
+          "in_a": "primary",
+          "in_b": "secondary"
+        },
+        {
+          "role": "R1",
+          "keyword": "prix plaquette et disque de frein clio 4",
+          "in_a": "secondary",
+          "in_b": "secondary"
+        },
+        {
+          "role": "R1",
+          "keyword": "prix disque et plaquette de frein peugeot 3008",
+          "in_a": "secondary",
+          "in_b": "secondary"
+        },
+        {
+          "role": "R1",
+          "keyword": "prix disque et plaquette de frein peugeot 308",
+          "in_a": "secondary",
+          "in_b": "primary"
+        }
+      ],
+      "severity": "high",
+      "recommendation": "Risque de cannibalisation eleve entre disque-de-frein et plaquette-de-frein. 4 collision(s) sur les memes roles. Revoir les keywords primaires et differencier les angles par role."
+    }
+  ],
+  "overlaps": [
+    {
+      "gamme_a": "disque-de-frein",
+      "gamme_b": "plaquette-de-frein",
+      "keyword": "prix disque et plaquette de frein peugeot 208",
+      "source": "variant",
+      "role": null,
+      "severity": "MEDIUM",
+      "volume_a": 500,
+      "volume_b": 500,
+      "resolution_hint": "deduplicate"
+    },
+    {
+      "gamme_a": "disque-de-frein",
+      "gamme_b": "plaquette-de-frein",
+      "keyword": "prix plaquette et disque de frein clio 4",
+      "source": "variant",
+      "role": null,
+      "severity": "MEDIUM",
+      "volume_a": 500,
+      "volume_b": 500,
+      "resolution_hint": "deduplicate"
+    },
+    {
+      "gamme_a": "disque-de-frein",
+      "gamme_b": "plaquette-de-frein",
+      "keyword": "prix disque et plaquette de frein peugeot 3008",
+      "source": "variant",
+      "role": null,
+      "severity": "MEDIUM",
+      "volume_a": 500,
+      "volume_b": 500,
+      "resolution_hint": "deduplicate"
+    },
+    {
+      "gamme_a": "disque-de-frein",
+      "gamme_b": "plaquette-de-frein",
+      "keyword": "prix disque et plaquette de frein peugeot 308",
+      "source": "variant",
+      "role": null,
+      "severity": "MEDIUM",
+      "volume_a": 500,
+      "volume_b": 500,
+      "resolution_hint": "deduplicate"
+    }
+  ],
+  "flags_by_gamme": {
+    "disque-de-frein": [
+      {
+        "overlapping_gamme": "plaquette-de-frein",
+        "shared_tokens": [],
+        "shared_keywords": [
+          "prix disque et plaquette de frein peugeot 208",
+          "prix plaquette et disque de frein clio 4",
+          "prix disque et plaquette de frein peugeot 3008",
+          "prix disque et plaquette de frein peugeot 308"
+        ],
+        "severity": "high"
+      }
+    ],
+    "filtre-a-huile": [],
+    "plaquette-de-frein": [
+      {
+        "overlapping_gamme": "disque-de-frein",
+        "shared_tokens": [],
+        "shared_keywords": [
+          "prix disque et plaquette de frein peugeot 208",
+          "prix plaquette et disque de frein clio 4",
+          "prix disque et plaquette de frein peugeot 3008",
+          "prix disque et plaquette de frein peugeot 308"
+        ],
+        "severity": "high"
+      }
+    ]
+  }
+}
