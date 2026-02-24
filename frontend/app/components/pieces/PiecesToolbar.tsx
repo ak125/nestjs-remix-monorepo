@@ -62,7 +62,7 @@ export const PiecesToolbar = memo(function PiecesToolbar({
   selectedPiecesCount,
 }: PiecesToolbarProps) {
   return (
-    <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-lg border border-gray-200/50 p-3 sm:p-5 sticky top-24 z-10">
+    <div className="bg-white/95 rounded-2xl shadow-lg border border-gray-200/50 p-3 sm:p-5 sticky top-24 z-10">
       {/* Layout Mobile: Compact vertical */}
       <div className="flex flex-col gap-3 sm:hidden">
         {/* Ligne 1: Compteur + Tri dropdown */}

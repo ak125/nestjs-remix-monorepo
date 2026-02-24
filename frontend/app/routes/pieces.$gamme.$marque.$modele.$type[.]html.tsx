@@ -21,10 +21,12 @@
 import {
   defer,
   redirect,
+  type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
 import {
+  Await,
   isRouteErrorResponse,
   useLoaderData,
   useLocation,
@@ -262,8 +264,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const faqItems = generateFAQ(vehicle, gamme);
   const buyingGuide = generateBuyingGuide(vehicle, gamme);
 
-  // SSR: blogData awaited pour que les liens articles soient visibles par Googlebot
-  const blogData = await fetchBlogArticleWithRelated(gamme, vehicle).catch(
+  // LCP: blogData deferred (below-fold, non-bloquant pour TTFB)
+  // Googlebot exécute JS et verra les liens une fois le defer résolu
+  const blogDataPromise = fetchBlogArticleWithRelated(gamme, vehicle).catch(
     () => ({ article: null, relatedArticles: [] }),
   );
 
@@ -333,10 +336,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         rmDuration: rmV2Response.duration_ms,
       },
 
-      // SSR: blogData awaited pour liens internes visibles par Googlebot
-      blogData,
-
       // === DONNÉES STREAMÉES (non-bloquantes, chargées en background) ===
+      // LCP: blogData deferred (below-fold, Googlebot exécute JS)
+      blogData: blogDataPromise,
       // 🚀 LCP V9: seoSwitches deferred (below-fold, fallback anchors in getAnchorText)
       seoSwitches: seoSwitchesPromise,
       // 🚀 LCP OPTIMIZATION V7: catalogueMameFamille streamé (below-fold)
@@ -350,6 +352,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     },
   );
 }
+
+// ========================================
+// 📦 CACHE — 1min browser + 24h CDN stale
+// ========================================
+
+export const headers: HeadersFunction = () => ({
+  "Cache-Control":
+    "public, max-age=60, s-maxage=86400, stale-while-revalidate=3600",
+});
 
 // ========================================
 // 📔 META - SEO (Schema.org généré par composant Breadcrumbs)
@@ -815,21 +826,25 @@ export default function PiecesVehicleRoute() {
           </div>
         )}
 
-        {/* Articles liés - SSR pour maillage interne (3-5 liens blog) */}
-        {(() => {
-          const validArticles = (data.blogData?.relatedArticles || []).filter(
-            (a): a is NonNullable<typeof a> => a !== null,
-          );
-          return validArticles.length > 0 ? (
-            <div className="container mx-auto px-4">
-              <PiecesRelatedArticles
-                articles={validArticles}
-                gammeName={data.gamme.name}
-                vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
-              />
-            </div>
-          ) : null;
-        })()}
+        {/* Articles liés - deferred pour ne pas bloquer LCP */}
+        <Suspense fallback={null}>
+          <Await resolve={data.blogData} errorElement={null}>
+            {(blogData) => {
+              const validArticles = (blogData?.relatedArticles || []).filter(
+                (a): a is NonNullable<typeof a> => a !== null,
+              );
+              return validArticles.length > 0 ? (
+                <div className="container mx-auto px-4">
+                  <PiecesRelatedArticles
+                    articles={validArticles}
+                    gammeName={data.gamme.name}
+                    vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
+                  />
+                </div>
+              ) : null;
+            }}
+          </Await>
+        </Suspense>
 
         {/* Section "Voir aussi" - Maillage interne SEO (composant extrait) */}
         <PiecesVoirAussi

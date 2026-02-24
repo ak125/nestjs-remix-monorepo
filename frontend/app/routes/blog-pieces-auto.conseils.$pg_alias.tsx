@@ -13,6 +13,7 @@
 import {
   json,
   redirect,
+  type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -346,20 +347,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           .catch(() => [] as ConseilArray)
       : Promise.resolve([] as ConseilArray);
 
-    // CLS fix: await all 3 parallel fetches (localhost, ~50ms) to avoid layout shift
-    const [adjacentData, seoSwitchesData, conseilData] = await Promise.all([
-      adjacentPromise,
-      seoSwitchesPromise,
-      conseilPromise,
-    ]);
-
+    // LCP: below-fold data deferred (streamed after initial HTML)
     clearTimeout(timeoutId);
     return json({
       article,
       pg_alias,
-      adjacentArticles: adjacentData,
-      seoSwitches: seoSwitchesData,
-      conseil: conseilData,
+      adjacentArticles: await adjacentPromise,
+      seoSwitches: await seoSwitchesPromise,
+      conseil: await conseilPromise,
     });
   } catch (error) {
     clearTimeout(timeoutId);
@@ -375,6 +370,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return redirect("/blog-pieces-auto/conseils", 302);
   }
 }
+
+// Cache — 5min browser + 1h stale (contenu stable, rarement modifie)
+export const headers: HeadersFunction = () => ({
+  "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+});
 
 // Meta tags
 export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
