@@ -21,6 +21,7 @@ import {
   Filter,
 } from "lucide-react";
 import { useState } from "react";
+import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import {
   DashboardShell,
   KpiGrid,
@@ -43,14 +44,6 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Select, SelectItem } from "~/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import { Textarea } from "~/components/ui/textarea";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -213,6 +206,52 @@ function QualityScoreBadge({ score }: { score: number | null }) {
   );
 }
 
+// ── Actions component ──
+
+function RefreshActions({
+  item,
+  onPublish,
+  onReject,
+  isLoading,
+}: {
+  item: RefreshItem;
+  onPublish: () => void;
+  onReject: () => void;
+  isLoading: boolean;
+}) {
+  if (item.status !== "draft") return null;
+  return (
+    <div
+      className="flex items-center justify-end gap-1"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 gap-1 text-green-700 border-green-200 hover:bg-green-50 hover:text-green-800"
+        onClick={onPublish}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <RefreshCw className="h-3 w-3 animate-spin" />
+        ) : (
+          <Check className="h-3 w-3" />
+        )}
+        Publier
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-7 gap-1 text-red-700 border-red-200 hover:bg-red-50 hover:text-red-800"
+        onClick={onReject}
+      >
+        <X className="h-3 w-3" />
+        Rejeter
+      </Button>
+    </div>
+  );
+}
+
 // ── Main component ──
 
 export default function AdminContentRefresh() {
@@ -348,7 +387,101 @@ export default function AdminContentRefresh() {
 
   // Pagination
   const currentPage = Math.floor(filters.offset / filters.limit) + 1;
-  const totalPages = Math.ceil(displayTotal / filters.limit);
+
+  // Column definitions
+  const refreshColumns: DataColumn<RefreshItem>[] = [
+    {
+      key: "id",
+      header: "ID",
+      width: "w-16",
+      render: (_val, row) => (
+        <span className="font-mono text-xs">{String(row.id)}</span>
+      ),
+    },
+    {
+      key: "pg_alias",
+      header: "Gamme",
+      render: (_val, row) => (
+        <span className="font-medium text-sm">{row.pg_alias}</span>
+      ),
+    },
+    {
+      key: "page_type",
+      header: "Page Type",
+      render: (_val, row) => (
+        <Badge variant="outline" className="text-xs font-mono">
+          {PAGE_TYPE_LABELS[row.page_type] || row.page_type}
+        </Badge>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (_val, row) => (
+        <StatusBadge
+          status={REFRESH_STATUS[row.status] || "NEUTRAL"}
+          label={row.status}
+          size="sm"
+        />
+      ),
+    },
+    {
+      key: "quality_score",
+      header: "Score",
+      render: (_val, row) => <QualityScoreBadge score={row.quality_score} />,
+    },
+    {
+      key: "quality_flags",
+      header: "Flags",
+      render: (_val, row) =>
+        row.quality_flags && row.quality_flags.length > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            {row.quality_flags.slice(0, 3).map((flag) => (
+              <Badge key={flag} variant="secondary" className="text-xs">
+                {flag}
+              </Badge>
+            ))}
+            {row.quality_flags.length > 3 && (
+              <Badge variant="secondary" className="text-xs">
+                +{row.quality_flags.length - 3}
+              </Badge>
+            )}
+          </div>
+        ) : row.error_message ? (
+          <span
+            className="text-xs text-red-600 max-w-[150px] truncate block"
+            title={row.error_message}
+          >
+            {row.error_message.slice(0, 40)}
+            {row.error_message.length > 40 ? "..." : ""}
+          </span>
+        ) : (
+          <span className="text-muted-foreground text-xs">{"\u2014"}</span>
+        ),
+    },
+    {
+      key: "created_at",
+      header: "Date",
+      render: (_val, row) => (
+        <span className="text-xs text-muted-foreground whitespace-nowrap">
+          {formatDate(row.created_at)}
+        </span>
+      ),
+    },
+    {
+      key: "updated_at",
+      header: "Actions",
+      align: "right" as const,
+      render: (_val, row) => (
+        <RefreshActions
+          item={row}
+          onPublish={() => handlePublish(row.id)}
+          onReject={() => openRejectDialog(row.id)}
+          isLoading={actionLoading === row.id}
+        />
+      ),
+    },
+  ];
 
   return (
     <DashboardShell
@@ -551,184 +684,25 @@ export default function AdminContentRefresh() {
       </Card>
 
       {/* Main Table */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-sm font-medium">Refresh Log</CardTitle>
-          <div className="text-xs text-muted-foreground">
-            Page {currentPage} / {totalPages || 1}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {displayItems.length === 0 ? (
-            <div className="rounded-lg border bg-muted/30 p-8 text-center">
-              <RefreshCw className="mx-auto h-10 w-10 text-muted-foreground/30" />
-              <p className="mt-3 text-sm text-muted-foreground">
-                Aucun element de refresh trouve
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">ID</TableHead>
-                      <TableHead>Gamme</TableHead>
-                      <TableHead>Page Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Score</TableHead>
-                      <TableHead>Flags</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {displayItems.map((item) => (
-                      <TableRow key={item.id} className="hover:bg-muted/50">
-                        <TableCell className="font-mono text-xs">
-                          {item.id}
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-medium text-sm">
-                            {item.pg_alias}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="outline"
-                            className="text-xs font-mono"
-                          >
-                            {PAGE_TYPE_LABELS[item.page_type] || item.page_type}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <StatusBadge
-                            status={REFRESH_STATUS[item.status] || "NEUTRAL"}
-                            label={item.status}
-                            size="sm"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <QualityScoreBadge score={item.quality_score} />
-                        </TableCell>
-                        <TableCell>
-                          {item.quality_flags &&
-                          item.quality_flags.length > 0 ? (
-                            <div className="flex flex-wrap gap-1">
-                              {item.quality_flags.slice(0, 3).map((flag) => (
-                                <Badge
-                                  key={flag}
-                                  variant="secondary"
-                                  className="text-xs"
-                                >
-                                  {flag}
-                                </Badge>
-                              ))}
-                              {item.quality_flags.length > 3 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  +{item.quality_flags.length - 3}
-                                </Badge>
-                              )}
-                            </div>
-                          ) : item.error_message ? (
-                            <span
-                              className="text-xs text-red-600 max-w-[150px] truncate block"
-                              title={item.error_message}
-                            >
-                              {item.error_message.slice(0, 40)}
-                              {item.error_message.length > 40 ? "..." : ""}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">
-                              {"\u2014"}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                          {formatDate(item.created_at)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {item.status === "draft" && (
-                            <div className="flex items-center justify-end gap-1">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 gap-1 text-green-700 border-green-200 hover:bg-green-50 hover:text-green-800"
-                                onClick={() => handlePublish(item.id)}
-                                disabled={actionLoading === item.id}
-                              >
-                                {actionLoading === item.id ? (
-                                  <RefreshCw className="h-3 w-3 animate-spin" />
-                                ) : (
-                                  <Check className="h-3 w-3" />
-                                )}
-                                Publier
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 gap-1 text-red-700 border-red-200 hover:bg-red-50 hover:text-red-800"
-                                onClick={() => openRejectDialog(item.id)}
-                              >
-                                <X className="h-3 w-3" />
-                                Rejeter
-                              </Button>
-                            </div>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-4 flex items-center justify-between">
-                  <div className="text-xs text-muted-foreground">
-                    Affichage {filters.offset + 1} -{" "}
-                    {Math.min(filters.offset + filters.limit, displayTotal)} sur{" "}
-                    {displayTotal}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7"
-                      disabled={filters.offset === 0}
-                      onClick={() =>
-                        updateFilter(
-                          "offset",
-                          String(Math.max(0, filters.offset - filters.limit)),
-                        )
-                      }
-                    >
-                      Precedent
-                    </Button>
-                    <span className="px-2 text-xs text-muted-foreground">
-                      {currentPage} / {totalPages}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-7"
-                      disabled={filters.offset + filters.limit >= displayTotal}
-                      onClick={() =>
-                        updateFilter(
-                          "offset",
-                          String(filters.offset + filters.limit),
-                        )
-                      }
-                    >
-                      Suivant
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
+      <AdminDataTable<RefreshItem>
+        data={displayItems as RefreshItem[]}
+        columns={refreshColumns}
+        getRowKey={(row) => String(row.id)}
+        emptyMessage="Aucun element de refresh trouve"
+        statusColumn={{ key: "status", mapping: REFRESH_STATUS }}
+        isLoading={refreshFetcher.state !== "idle"}
+        serverPagination={{
+          total: displayTotal,
+          page: currentPage,
+          pageSize: filters.limit,
+          onPageChange: (page) =>
+            updateFilter(
+              "offset",
+              page > 1 ? String((page - 1) * filters.limit) : "",
+            ),
+        }}
+        toolbar={<span className="text-sm font-medium">Refresh Log</span>}
+      />
 
       {/* Reject Dialog */}
       <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>

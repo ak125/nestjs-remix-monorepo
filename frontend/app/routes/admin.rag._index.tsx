@@ -18,6 +18,7 @@ import {
   SkipForward,
   FilePen,
 } from "lucide-react";
+import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import {
   DashboardShell,
   KpiGrid,
@@ -30,14 +31,6 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
@@ -154,6 +147,55 @@ function formatTimestamp(ts: number | null): string {
     minute: "2-digit",
   });
 }
+
+const jobColumns: DataColumn<IngestionJob>[] = [
+  {
+    key: "jobId",
+    header: "Identifiant",
+    render: (_val, row) => (
+      <Badge variant="outline" className="font-mono text-xs">
+        {row.jobId.slice(0, 12)}
+      </Badge>
+    ),
+  },
+  {
+    key: "status",
+    header: "Statut",
+    render: (_val, row) => (
+      <StatusBadge
+        status={JOB_STATUS[row.status] || "NEUTRAL"}
+        label={row.status}
+        size="sm"
+      />
+    ),
+  },
+  {
+    key: "startedAt",
+    header: "Demarre",
+    render: (_val, row) => (
+      <span className="text-sm text-muted-foreground">
+        {formatTimestamp(row.startedAt)}
+      </span>
+    ),
+  },
+  {
+    key: "finishedAt",
+    header: "Termine",
+    render: (_val, row) => (
+      <span className="text-sm text-muted-foreground">
+        {formatTimestamp(row.finishedAt)}
+      </span>
+    ),
+  },
+  {
+    key: "returnCode",
+    header: "Code retour",
+    align: "right" as const,
+    render: (_val, row) => (
+      <span className="font-mono text-sm">{row.returnCode ?? "\u2014"}</span>
+    ),
+  },
+];
 
 export default function AdminRagDashboard() {
   const { corpus, intents, jobs, pipeline } = useLoaderData<typeof loader>();
@@ -464,68 +506,16 @@ export default function AdminRagDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {j.length === 0 ? (
-                <div className="rounded-lg border bg-muted/30 p-8 text-center">
-                  <Upload className="mx-auto h-10 w-10 text-muted-foreground/30" />
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    Aucun job d&apos;ingestion recent
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Identifiant</TableHead>
-                        <TableHead>Statut</TableHead>
-                        <TableHead>Demarre</TableHead>
-                        <TableHead>Termine</TableHead>
-                        <TableHead className="text-right">
-                          Code retour
-                        </TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {j.slice(0, 10).map((job) => (
-                        <TableRow
-                          key={job.jobId}
-                          className="cursor-pointer hover:bg-muted/50"
-                          onClick={() =>
-                            navigate(
-                              `/admin/rag/ingest/${encodeURIComponent(job.jobId)}`,
-                            )
-                          }
-                        >
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className="font-mono text-xs"
-                            >
-                              {job.jobId.slice(0, 12)}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <StatusBadge
-                              status={JOB_STATUS[job.status] || "NEUTRAL"}
-                              label={job.status}
-                              size="sm"
-                            />
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {formatTimestamp(job.startedAt)}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {formatTimestamp(job.finishedAt)}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-sm">
-                            {job.returnCode ?? "\u2014"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+              <AdminDataTable<IngestionJob>
+                data={j.slice(0, 10) as IngestionJob[]}
+                columns={jobColumns}
+                getRowKey={(row) => row.jobId}
+                onRowClick={(job) =>
+                  navigate(`/admin/rag/ingest/${encodeURIComponent(job.jobId)}`)
+                }
+                emptyMessage="Aucun job d'ingestion recent"
+                isLoading={isLoading}
+              />
             </CardContent>
           </Card>
         </div>

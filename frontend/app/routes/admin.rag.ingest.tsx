@@ -6,6 +6,7 @@ import {
 import { Link, useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { Upload, RefreshCw, Info, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import { DashboardShell } from "~/components/admin/patterns/DashboardShell";
 import {
   StatusBadge,
@@ -16,14 +17,6 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Select, SelectItem } from "~/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
@@ -129,6 +122,69 @@ function ResultBanner({
 
   return null;
 }
+
+const ingestColumns: DataColumn<IngestionJob>[] = [
+  {
+    key: "jobId",
+    header: "Job ID",
+    render: (_val, row) => (
+      <span className="font-mono text-xs">{row.jobId.slice(0, 12)}</span>
+    ),
+  },
+  {
+    key: "type",
+    header: "Type",
+    render: (_val, row) => (
+      <Badge
+        variant={row.type === "web" ? "default" : "secondary"}
+        className={
+          row.type === "web"
+            ? "bg-blue-100 text-blue-700 hover:bg-blue-100"
+            : "bg-gray-100 text-gray-700 hover:bg-gray-100"
+        }
+      >
+        {row.type === "web" ? "URL" : "PDF"}
+      </Badge>
+    ),
+  },
+  {
+    key: "status",
+    header: "Status",
+    render: (_val, row) => (
+      <StatusBadge
+        status={JOB_STATUS[row.status] || "NEUTRAL"}
+        label={row.status}
+        size="sm"
+      />
+    ),
+  },
+  {
+    key: "startedAt",
+    header: "Demarre",
+    render: (_val, row) => (
+      <span className="text-sm text-muted-foreground">
+        {formatTimestamp(row.startedAt)}
+      </span>
+    ),
+  },
+  {
+    key: "finishedAt",
+    header: "Termine",
+    render: (_val, row) => (
+      <span className="text-sm text-muted-foreground">
+        {formatTimestamp(row.finishedAt)}
+      </span>
+    ),
+  },
+  {
+    key: "returnCode",
+    header: "Return code",
+    align: "right" as const,
+    render: (_val, row) => (
+      <span className="font-mono text-sm">{row.returnCode ?? "\u2014"}</span>
+    ),
+  },
+];
 
 export default function AdminRagIngest() {
   const { jobs } = useLoaderData<typeof loader>();
@@ -462,74 +518,16 @@ export default function AdminRagIngest() {
           </Button>
         </CardHeader>
         <CardContent>
-          {displayJobs.length === 0 ? (
-            <div className="rounded-lg border bg-muted/30 p-8 text-center">
-              <Upload className="mx-auto h-10 w-10 text-muted-foreground/30" />
-              <p className="mt-3 text-sm text-muted-foreground">
-                Aucun job d&apos;ingestion
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Job ID</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Démarré</TableHead>
-                    <TableHead>Terminé</TableHead>
-                    <TableHead className="text-right">Return code</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {displayJobs.map((job) => (
-                    <TableRow
-                      key={job.jobId}
-                      className="cursor-pointer hover:bg-muted/50"
-                      onClick={() =>
-                        navigate(
-                          `/admin/rag/ingest/${encodeURIComponent(job.jobId)}`,
-                        )
-                      }
-                    >
-                      <TableCell className="font-mono text-xs">
-                        {job.jobId.slice(0, 12)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={job.type === "web" ? "default" : "secondary"}
-                          className={
-                            job.type === "web"
-                              ? "bg-blue-100 text-blue-700 hover:bg-blue-100"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-100"
-                          }
-                        >
-                          {job.type === "web" ? "URL" : "PDF"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge
-                          status={JOB_STATUS[job.status] || "NEUTRAL"}
-                          label={job.status}
-                          size="sm"
-                        />
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatTimestamp(job.startedAt)}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatTimestamp(job.finishedAt)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono text-sm">
-                        {job.returnCode ?? "\u2014"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+          <AdminDataTable<IngestionJob>
+            data={displayJobs as IngestionJob[]}
+            columns={ingestColumns}
+            getRowKey={(row) => row.jobId}
+            onRowClick={(job) =>
+              navigate(`/admin/rag/ingest/${encodeURIComponent(job.jobId)}`)
+            }
+            emptyMessage="Aucun job d'ingestion"
+            isLoading={refreshFetcher.state !== "idle"}
+          />
         </CardContent>
       </Card>
     </DashboardShell>
