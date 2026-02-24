@@ -114,60 +114,8 @@ const IMG_PROXY_LOGOS = "/img/uploads/constructeurs-automobiles/marques-logos";
 const IMG_PROXY_FAMILIES = "/img/uploads/articles/familles-produits";
 const IMG_PROXY_EQUIP = "/img/uploads/equipementiers-automobiles";
 
-export function links() {
-  return [
-    {
-      rel: "preload",
-      as: "image",
-      href: `${IMG_PROXY_LOGOS}/alfa-romeo.webp`,
-      type: "image/webp",
-    },
-    {
-      rel: "preload",
-      as: "image",
-      href: `${IMG_PROXY_LOGOS}/audi.webp`,
-      type: "image/webp",
-    },
-    {
-      rel: "preload",
-      as: "image",
-      href: `${IMG_PROXY_LOGOS}/bmw.webp`,
-      type: "image/webp",
-    },
-    {
-      rel: "preload",
-      as: "image",
-      href: `${IMG_PROXY_LOGOS}/chevrolet.webp`,
-      type: "image/webp",
-    },
-    {
-      rel: "preload",
-      as: "image",
-      href: `${IMG_PROXY_LOGOS}/citroen.webp`,
-      type: "image/webp",
-    },
-    {
-      rel: "preload",
-      as: "image",
-      href: `${IMG_PROXY_LOGOS}/dacia.webp`,
-      type: "image/webp",
-    },
-    {
-      rel: "preload",
-      as: "font",
-      type: "font/woff2",
-      href: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2",
-      crossOrigin: "anonymous" as const,
-    },
-    {
-      rel: "preload",
-      as: "font",
-      type: "font/woff2",
-      href: "https://fonts.gstatic.com/s/montserrat/v26/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXp-p7K4KLg.woff2",
-      crossOrigin: "anonymous" as const,
-    },
-  ];
-}
+// Preloads supprimés : les fonts sont self-hosted (preload dans root.tsx),
+// et les logos du carousel sont below-the-fold sur mobile — inutile de preload.
 
 export async function loader({ request }: LoaderFunctionArgs) {
   // FAQ fetch — deferred (below-the-fold, does not block HTML)
@@ -909,7 +857,7 @@ export default function RedesignPreview() {
           </h1>
 
           {/* Search box with tabs */}
-          <div className="bg-white/[0.07] border border-white/[0.12] rounded-2xl overflow-hidden backdrop-blur-xl">
+          <div className="bg-white/[0.07] border border-white/[0.12] rounded-2xl overflow-hidden">
             <Tabs defaultValue="vehicule">
               <TabsList className="w-full h-auto rounded-none bg-black/15 p-0 gap-0">
                 <TabsTrigger

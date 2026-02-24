@@ -222,24 +222,30 @@ export async function loader({ params }: LoaderFunctionArgs) {
   }
 
   let article: BlogArticle | null = null;
-  let relatedArticles: RelatedArticle[] = [];
 
   // Timeout de 15s pour éviter les erreurs 5xx sur timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000);
 
   try {
-    // Récupérer l'article
-    const articleResponse = await fetch(
-      `http://127.0.0.1:3000/api/blog/article/${encodeURIComponent(slug)}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
+    // Lancer les 2 fetches en parallele (popular ne depend pas de l'article)
+    const [articleResponse, similarResponse] = await Promise.all([
+      fetch(
+        `http://127.0.0.1:3000/api/blog/article/${encodeURIComponent(slug)}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
         },
+      ),
+      fetch(`http://127.0.0.1:3000/api/blog/popular?limit=4`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
         signal: controller.signal,
-      },
-    );
+      }).catch(() => null),
+    ]);
+
+    clearTimeout(timeoutId);
 
     if (articleResponse.ok) {
       const articleData = await articleResponse.json();
@@ -248,38 +254,33 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
     // 301 : les articles advice et guide ont leur propre route canonique
     if (article?.type === "advice" && article?.pg_alias) {
-      clearTimeout(timeoutId);
       return redirect(`/blog-pieces-auto/conseils/${article.pg_alias}`, 301);
     }
     if (article?.legacy_table === "__blog_guide") {
-      clearTimeout(timeoutId);
       return redirect(`/blog-pieces-auto/guide-achat/${article.slug}`, 301);
     }
 
-    // Récupérer articles similaires (optionnel, ne bloque pas)
-    if (article) {
+    let relatedArticles: RelatedArticle[] = [];
+    if (article && similarResponse?.ok) {
       try {
-        const similarResponse = await fetch(
-          `http://127.0.0.1:3000/api/blog/popular?limit=4`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            signal: controller.signal,
-          },
-        );
-
-        if (similarResponse.ok) {
-          const similarData = await similarResponse.json();
-          relatedArticles = similarData.data || similarData || [];
-        }
-      } catch (e) {
+        const similarData = await similarResponse.json();
+        relatedArticles = similarData.data || similarData || [];
+      } catch {
         logger.warn("Articles similaires non disponibles");
       }
     }
 
-    clearTimeout(timeoutId);
+    if (!article) {
+      // 🔄 SEO: Article non trouvé → 301 redirect vers index du blog
+      // Raison: 412 est traité comme 4xx par Google → désindexation
+      // 301 préserve le PageRank et guide vers une page indexable
+      return redirect("/blog-pieces-auto", 301);
+    }
+
+    return defer({
+      article,
+      relatedArticles,
+    });
   } catch (error) {
     clearTimeout(timeoutId);
 
@@ -294,18 +295,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
     logger.error("Erreur chargement article:", error);
     return redirect("/blog-pieces-auto", 302);
   }
-
-  if (!article) {
-    // 🔄 SEO: Article non trouvé → 301 redirect vers index du blog
-    // Raison: 412 est traité comme 4xx par Google → désindexation
-    // 301 préserve le PageRank et guide vers une page indexable
-    return redirect("/blog-pieces-auto", 301);
-  }
-
-  return defer({
-    article,
-    relatedArticles,
-  });
 }
 
 // Composant principal

@@ -199,7 +199,7 @@ automecanik.com, www.automecanik.com {
     
     handle @public_cached {
         @homepage path /
-        header @homepage Cache-Control "public, max-age=60, stale-while-revalidate=120"
+        header @homepage Cache-Control "public, max-age=300, stale-while-revalidate=3600"
         
         # 🚀 TTFB Optimization: CDN cache 24h pour pages produit
         @products path_regexp ^/(products|pieces|catalog|vehicule)/
@@ -212,7 +212,7 @@ automecanik.com, www.automecanik.com {
         header @search Cache-Control "public, max-age=30, stale-while-revalidate=60"
         
         header Cache-Control "public, max-age=120, stale-while-revalidate=240"
-        header Vary "Accept-Encoding, Cookie"
+        header Vary "Accept-Encoding"
         
         reverse_proxy monorepo_prod:3000 {
             header_up Host {host}

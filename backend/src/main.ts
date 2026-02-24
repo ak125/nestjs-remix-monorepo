@@ -84,7 +84,7 @@ async function bootstrap() {
       session({
         store: redisStore,
         resave: false,
-        saveUninitialized: true, // ✅ Créer session même si vide (résout pb panier)
+        saveUninitialized: false, // Session créée uniquement quand des données y sont écrites (login, panier)
         secret: sessionSecret || 'INSECURE_DEV_SECRET_CHANGE_ME',
         name: 'connect.sid', // ✅ Nom explicite du cookie
         cookie: {
@@ -131,6 +131,9 @@ async function bootstrap() {
       const helmet = (await import('helmet')).default;
       const compression = (await import('compression')).default;
 
+      // Compression AVANT Helmet — pour que toutes les réponses soient compressées
+      app.use(compression());
+
       // Helmet avec nonce dynamique par requête (voir config/csp.config.ts)
       const isDev = process.env.NODE_ENV !== 'production';
       app.use((req: any, res: any, next: any) => {
@@ -140,8 +143,6 @@ async function bootstrap() {
           },
         })(req, res, next);
       });
-
-      app.use(compression());
     } catch (e) {
       logger.warn({ err: e }, 'Helmet/compression non chargés');
     }

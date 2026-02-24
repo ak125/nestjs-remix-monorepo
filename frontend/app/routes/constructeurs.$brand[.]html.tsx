@@ -7,6 +7,7 @@
 
 import {
   defer,
+  type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -75,6 +76,14 @@ interface BrandDescription {
   strengths: string[];
   models: string[];
 }
+
+// ==========================================
+// 📦 CACHE — 5min browser + 1h stale
+// ==========================================
+
+export const headers: HeadersFunction = () => ({
+  "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+});
 
 // ==========================================
 // 🔄 META
@@ -401,7 +410,7 @@ export default function BrandCatalogPage() {
 
           {/* Cadre glassmorphism contenant Logo + VehicleSelector */}
           <div className="max-w-5xl mx-auto mb-8 md:mb-10">
-            <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] backdrop-blur-none md:backdrop-blur-xl rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
+            <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
               {/* Sous-titre dynamique en haut du cadre */}
               <div className="text-center mb-6">
                 <p className="text-white/95 text-base md:text-lg font-semibold drop-shadow-lg">
@@ -421,7 +430,7 @@ export default function BrandCatalogPage() {
                     </div>
 
                     {/* Container logo */}
-                    <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl p-8 border border-white/30 shadow-lg group-hover:border-white/50 transition-all duration-500">
+                    <div className="relative bg-white/90 rounded-2xl p-8 border border-white/30 shadow-lg group-hover:border-white/50 transition-all duration-500">
                       <div className="w-full aspect-square flex items-center justify-center">
                         <img
                           src={
@@ -471,25 +480,25 @@ export default function BrandCatalogPage() {
 
           {/* Trust badges premium - Grid responsive pour mobile */}
           <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-3 md:gap-4 max-w-3xl mx-auto animate-in fade-in duration-700 delay-400">
-            <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+            <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
               <Car className="w-4 h-4 text-green-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 400 000+ pièces
               </span>
             </div>
-            <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+            <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
               <Settings className="w-4 h-4 text-blue-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 Livraison 24-48h
               </span>
             </div>
-            <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+            <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
               <Wrench className="w-4 h-4 text-purple-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 Paiement sécurisé
               </span>
             </div>
-            <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 backdrop-blur-lg rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
+            <div className="group flex items-center gap-2 px-3 md:px-4 py-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
               <Zap className="w-4 h-4 text-orange-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
               <span className="text-white text-sm md:text-base font-semibold whitespace-nowrap">
                 Experts gratuits
