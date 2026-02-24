@@ -353,6 +353,31 @@ export class CacheService implements OnModuleInit {
   }
 
   /**
+   * Redis health check — returns status and optional ping latency.
+   */
+  async getRedisHealth(): Promise<{
+    status: 'healthy' | 'unhealthy';
+    pingMs: number | null;
+    lastCheck: string;
+  }> {
+    const now = new Date().toISOString();
+    if (!this.redisClient || !this.redisReady) {
+      return { status: 'unhealthy', pingMs: null, lastCheck: now };
+    }
+    try {
+      const start = Date.now();
+      await this.redisClient.ping();
+      return {
+        status: 'healthy',
+        pingMs: Date.now() - start,
+        lastCheck: now,
+      };
+    } catch {
+      return { status: 'unhealthy', pingMs: null, lastCheck: now };
+    }
+  }
+
+  /**
    * Smart TTL based on key prefix — delegates to CACHE_STRATEGIES
    */
   private static ttlEntries: [string, number][] | null = null;

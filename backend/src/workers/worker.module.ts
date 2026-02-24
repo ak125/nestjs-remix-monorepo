@@ -35,6 +35,9 @@ import { SectionCompilerService } from '../modules/admin/services/section-compil
 import { PageBriefService } from '../modules/admin/services/page-brief.service';
 import { KeywordDensityGateService } from '../modules/admin/services/keyword-density-gate.service';
 
+// Job health tracking (used by all processors)
+import { AdminJobHealthService } from '../modules/admin/services/admin-job-health.service';
+
 // Dependencies for VideoExecutionProcessor
 import { VideoDataService } from '../modules/media-factory/services/video-data.service';
 import { VideoGatesService } from '../modules/media-factory/services/video-gates.service';
@@ -113,6 +116,9 @@ import { RenderAdapterService } from '../modules/media-factory/render/render-ada
     VideoDataService,
     VideoGatesService,
     RenderAdapterService,
+
+    // Job health tracking (shared by all processors)
+    AdminJobHealthService,
 
     // Services
     // SitemapStreamingService, // DESACTIVE

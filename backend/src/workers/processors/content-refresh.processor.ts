@@ -21,6 +21,7 @@ import {
 } from '../../config/content-section-policy';
 import { QUALITY_SCORE_ADVISORY } from '../../config/buying-guide-quality.constants';
 import { FeatureFlagsService } from '../../config/feature-flags.service';
+import { AdminJobHealthService } from '../../modules/admin/services/admin-job-health.service';
 import type {
   AnyContentRefreshJobData,
   ContentRefreshResult,
@@ -53,6 +54,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly sectionCompiler: SectionCompilerService,
     private readonly ragProxyService: RagProxyService,
     private readonly flags: FeatureFlagsService,
+    private readonly jobHealth: AdminJobHealthService,
   ) {
     super(configService);
   }
@@ -64,6 +66,9 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     this.logger.error(
       `[BullMQ] Job #${job.id} FAILED after ${job.attemptsMade} attempts — ${pgAlias}/${pageType}: ${error.message}`,
     );
+    this.jobHealth
+      .recordFailure('content-refresh', error.message)
+      .catch(() => {});
   }
 
   @OnQueueError()
@@ -78,6 +83,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
   async handleContentRefresh(
     job: Job<AnyContentRefreshJobData>,
   ): Promise<ContentRefreshResult> {
+    const jobStartTime = Date.now();
     const { refreshLogId, pageType } = job.data;
     // R5 uses diagnosticSlug, gamme-based types use pgId/pgAlias
     const pgId = 'pgId' in job.data ? job.data.pgId : 0;
@@ -615,12 +621,18 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         })
         .eq('id', refreshLogId);
 
+      const jobDurationMs = Date.now() - jobStartTime;
       this.logger.log(
         `${ctx} Content-refresh complete: ${diagnosticSlug || pgAlias}/${pageType} → ${finalStatus}` +
           (ragSkipped
             ? ` (ragSkipped: ${ragSkipReason})`
-            : ` (score=${qualityScore})`),
+            : ` (score=${qualityScore})`) +
+          ` [${jobDurationMs}ms]`,
       );
+
+      this.jobHealth
+        .recordSuccess('content-refresh', jobDurationMs)
+        .catch(() => {});
 
       return {
         status: finalStatus,

@@ -251,6 +251,20 @@ export class VideoJobService extends SupabaseBaseService {
       );
     }
 
+    // P14a: Guard against concurrent active jobs for same briefId
+    const { data: activeJobs } = await this.client
+      .from('__video_execution_log')
+      .select('id')
+      .eq('brief_id', original.briefId)
+      .in('status', ['pending', 'processing'])
+      .limit(1);
+
+    if (activeJobs && activeJobs.length > 0) {
+      throw new ConflictException(
+        `Active execution already exists for brief ${original.briefId} (id=${activeJobs[0].id})`,
+      );
+    }
+
     // Feature flag guard
     if (process.env.VIDEO_PIPELINE_ENABLED !== 'true') {
       throw new BadRequestException(

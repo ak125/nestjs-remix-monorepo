@@ -39,6 +39,7 @@ import { AdminContentRefreshController } from './controllers/admin-content-refre
 import { InternalEnrichController } from './controllers/internal-enrich.controller'; // 🔑 Internal enrichment (API key auth)
 import { AdminPageBriefController } from './controllers/admin-page-brief.controller'; // 📋 Page Briefs SEO
 import { AdminKeywordClustersController } from './controllers/admin-keyword-clusters.controller'; // 🔑 Keyword Clusters & Overlaps (read-only)
+import { AdminHealthController } from './controllers/admin-health.controller'; // 🏥 Health Overview
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
 import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // 🎯 Audit Gammes SEO
@@ -56,6 +57,8 @@ import { BriefGatesService } from './services/brief-gates.service'; // 🚦 Pre-
 import { HardGatesService } from './services/hard-gates.service'; // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
 import { KeywordDensityGateService } from './services/keyword-density-gate.service'; // 🚦 Gate F: keyword density check
 import { ImageGatesService } from './services/image-gates.service'; // 🚦 P3: image gates (OG, hero policy, alt text)
+import { AdminJobHealthService } from './services/admin-job-health.service'; // 🏥 Job health tracking
+import { AdminHealthService } from './services/admin-health.service'; // 🏥 Health overview aggregator
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -114,6 +117,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     AdminContentRefreshController, // 🔄 Content Refresh pipeline - /api/admin/content-refresh/*
     AdminPageBriefController, // 📋 Page Briefs SEO - /api/admin/page-briefs/*
     AdminKeywordClustersController, // 🔑 Keyword Clusters & Overlaps - /api/admin/keyword-clusters/*
+    AdminHealthController, // 🏥 Health Overview - /api/admin/health/*
   ],
   providers: [
     ConfigurationService,
@@ -141,6 +145,8 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     HardGatesService, // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
     KeywordDensityGateService, // 🚦 Gate F: keyword density (feature flag KEYWORD_DENSITY_GATE_ENABLED)
     ImageGatesService, // 🚦 P3: image gates (OG, hero policy, alt text)
+    AdminJobHealthService, // 🏥 Job health tracking (used by processors via WorkerModule)
+    AdminHealthService, // 🏥 Health overview aggregator
   ],
   exports: [
     ConfigurationService,
@@ -156,6 +162,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     BriefGatesService, // 🚦 Export for WorkerModule (processor gates)
     HardGatesService, // 🚦 Export for WorkerModule (hard gates)
     ImageGatesService, // 🚦 Export for WorkerModule (image gates)
+    AdminJobHealthService, // 🏥 Export for WorkerModule (job health tracking)
   ],
 })
 export class AdminModule {}

@@ -8,7 +8,7 @@
  * @see backend/src/workers/processors/content-refresh.processor.ts
  */
 
-import { Processor, Process } from '@nestjs/bull';
+import { Processor, Process, OnQueueFailed, OnQueueError } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import type { Job } from 'bull';
 import { ConfigService } from '@nestjs/config';
@@ -28,6 +28,7 @@ import {
   resolveTemplate,
   defaultTemplateForVideoType,
 } from '../../modules/media-factory/render/templates/template-registry';
+import { AdminJobHealthService } from '../../modules/admin/services/admin-job-health.service';
 import type {
   VideoExecutionJobData,
   VideoExecutionResult,
@@ -42,8 +43,52 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
     private readonly gatesService: VideoGatesService,
     private readonly dataService: VideoDataService,
     private readonly renderAdapter: RenderAdapterService,
+    private readonly jobHealth: AdminJobHealthService,
   ) {
     super(configService);
+  }
+
+  @OnQueueFailed()
+  async handleFailedJob(
+    job: Job<VideoExecutionJobData>,
+    error: Error,
+  ): Promise<void> {
+    const { executionLogId } = job.data;
+    this.logger.error(
+      `[VEP] Job #${job.id} FAILED after ${job.attemptsMade} attempts: ${error.message}`,
+    );
+    this.jobHealth.recordFailure('video-render', error.message).catch(() => {});
+
+    // P14b: Sync DB — mark as failed only if still pending/processing
+    try {
+      const { data: current } = await this.client
+        .from('__video_execution_log')
+        .select('status')
+        .eq('id', executionLogId)
+        .single();
+
+      if (current && !['failed', 'completed'].includes(current.status)) {
+        await this.updateExecutionLog(executionLogId, {
+          status: 'failed',
+          error_message: `BullMQ exhausted ${job.attemptsMade} attempts: ${error.message}`,
+          render_error_code: 'RENDER_UNKNOWN_ERROR',
+          retryable: true,
+          completed_at: new Date().toISOString(),
+        });
+        this.logger.warn(
+          `[VEP] exec=${executionLogId} marked failed in DB (was ${current.status})`,
+        );
+      }
+    } catch (dbErr) {
+      this.logger.error(
+        `[VEP] @OnQueueFailed DB sync failed for exec #${executionLogId}: ${dbErr}`,
+      );
+    }
+  }
+
+  @OnQueueError()
+  handleQueueError(error: Error): void {
+    this.logger.error(`[VEP] Queue error: ${error.message}`);
   }
 
   @Process({
@@ -328,6 +373,8 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       this.logger.log(
         `[VEP] Execution #${executionLogId} completed: canPublish=${canPublish}, score=${qualityScore}, duration=${durationMs}ms`,
       );
+
+      this.jobHealth.recordSuccess('video-render', durationMs).catch(() => {});
 
       return {
         status: 'completed',

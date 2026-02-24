@@ -15,6 +15,7 @@ import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
 import { getErrorMessage } from '../../common/utils/error.utils';
+import { AdminJobHealthService } from '../../modules/admin/services/admin-job-health.service';
 
 interface SeoMonitorJobData {
   taskType: 'check-critical-urls' | 'check-random-sample';
@@ -44,7 +45,11 @@ interface MonitoringResult {
 export class SeoMonitorProcessor extends SupabaseBaseService {
   protected override readonly logger = new Logger(SeoMonitorProcessor.name);
 
-  constructor(configService: ConfigService, rpcGate: RpcGateService) {
+  constructor(
+    configService: ConfigService,
+    rpcGate: RpcGateService,
+    private readonly jobHealth: AdminJobHealthService,
+  ) {
     super(configService);
     this.rpcGate = rpcGate;
   }
@@ -179,6 +184,8 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
         `✅ [Job #${job.id}] Monitoring terminé en ${duration}ms - ` +
           `${analysis.okCount} OK, ${analysis.warningCount} warnings, ${analysis.errorCount} erreurs`,
       );
+
+      this.jobHealth.recordSuccess('seo-monitor', duration).catch(() => {});
 
       return analysis;
     } catch (error) {
@@ -396,5 +403,6 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
       `💥 Job #${job.id} échoué après ${job.attemptsMade} tentatives:`,
       error.message,
     );
+    this.jobHealth.recordFailure('seo-monitor', error.message).catch(() => {});
   }
 }
