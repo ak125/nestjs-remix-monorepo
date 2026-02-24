@@ -13,6 +13,8 @@ jest.mock('@nestjs/bull', () => ({
   Processor: () => () => undefined,
   Process: () => () => undefined,
   InjectQueue: () => () => undefined,
+  OnQueueFailed: () => () => undefined,
+  OnQueueError: () => () => undefined,
 }));
 
 jest.mock('@nestjs/common', () => ({
