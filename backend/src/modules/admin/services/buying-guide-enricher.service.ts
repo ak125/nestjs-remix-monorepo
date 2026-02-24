@@ -468,15 +468,8 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       const errorsAlt = this.extractSection(allContent, 'Erreurs à éviter');
       if (errorsAlt) antiMistakes.push(...this.extractBulletList(errorsAlt));
     }
-    // Heading alias: "Attention aux Fausses Promesses"
-    if (antiMistakes.length === 0) {
-      const errorsAlias = this.extractSection(
-        allContent,
-        'Attention aux Fausses Promesses',
-      );
-      if (errorsAlias)
-        antiMistakes.push(...this.extractBulletList(errorsAlias));
-    }
+    // NOTE: "Attention aux Fausses Promesses" heading alias removed (2026-02-24)
+    // That section contains purchase_guardrails (❌ "homologué CT" etc.), NOT anti-mistakes.
     // v4 structured data: selection.anti_mistakes
     if (
       antiMistakes.length < MIN_ANTI_MISTAKES &&
@@ -506,15 +499,20 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         }
       }
     }
+    // Sanitize at extraction time so dryRun output is also clean
+    const cleanAntiMistakes =
+      BuyingGuideEnricherService.sanitizeStringArray(antiMistakes);
     const antiMistakesValidation = this.validateSection(
       'anti_mistakes',
-      antiMistakes,
+      cleanAntiMistakes,
       family,
     );
     results['anti_mistakes'] = {
-      ok: antiMistakesValidation.ok && antiMistakes.length >= MIN_ANTI_MISTAKES,
+      ok:
+        antiMistakesValidation.ok &&
+        cleanAntiMistakes.length >= MIN_ANTI_MISTAKES,
       flags: antiMistakesValidation.flags,
-      content: antiMistakes,
+      content: cleanAntiMistakes,
       sources,
       confidence,
       sourcesCitation: citation,

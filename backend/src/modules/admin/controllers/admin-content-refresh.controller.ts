@@ -9,10 +9,13 @@ import {
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AdminResponseInterceptor } from '../../../common/interceptors/admin-response.interceptor';
 import { ContentRefreshService } from '../services/content-refresh.service';
 import { WebhookAuditService } from '../../rag-proxy/services/webhook-audit.service';
 import {
@@ -22,7 +25,8 @@ import {
 } from '../dto/content-refresh.dto';
 
 @Controller('api/admin/content-refresh')
-@UseGuards(IsAdminGuard)
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
+@UseInterceptors(AdminResponseInterceptor)
 export class AdminContentRefreshController {
   constructor(
     private readonly contentRefreshService: ContentRefreshService,

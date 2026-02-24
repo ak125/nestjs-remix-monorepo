@@ -121,15 +121,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ),
   ]);
 
-  const dashboard: DashboardData =
+  // Responses are now wrapped by AdminResponseInterceptor: { success, data, meta }
+  const dashboardRaw =
     dashboardRes.status === "fulfilled" && dashboardRes.value.ok
       ? await dashboardRes.value.json()
-      : { counts: {}, recent: [] };
+      : null;
+  const dashboard: DashboardData = dashboardRaw?.data ?? dashboardRaw ?? { counts: {}, recent: [] };
 
-  const statusData: StatusResponse =
+  const statusRaw =
     statusRes.status === "fulfilled" && statusRes.value.ok
       ? await statusRes.value.json()
-      : { data: [], total: 0 };
+      : null;
+  const statusData: StatusResponse = statusRaw?.data ?? statusRaw ?? { data: [], total: 0 };
 
   return json({
     dashboard,

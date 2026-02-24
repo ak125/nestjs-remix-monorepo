@@ -19,18 +19,7 @@ import {
   RefreshResult,
 } from '../services/risk-flags-engine.service';
 import { GooglebotDetectorService } from '../services/googlebot-detector.service';
-
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  meta?: {
-    total?: number;
-    limit?: number;
-    offset?: number;
-    timestamp?: string;
-  };
-}
+import type { AdminApiResponse } from '@repo/database-types';
 
 @Controller('api/seo/dashboard')
 export class SeoDashboardController {
@@ -46,7 +35,7 @@ export class SeoDashboardController {
    * KPIs globaux du dashboard
    */
   @Get('stats')
-  async getStats(): Promise<ApiResponse<DashboardStats>> {
+  async getStats(): Promise<AdminApiResponse<DashboardStats>> {
     try {
       const stats = await this.riskFlagsEngine.getDashboardStats();
 
@@ -76,7 +65,7 @@ export class SeoDashboardController {
   async getUrlsAtRisk(
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-  ): Promise<ApiResponse<RiskAlert[]>> {
+  ): Promise<AdminApiResponse<RiskAlert[]>> {
     try {
       const parsedLimit = Math.min(parseInt(limit || '100', 10), 500);
       const parsedOffset = parseInt(offset || '0', 10);
@@ -116,7 +105,7 @@ export class SeoDashboardController {
     @Param('flag') flag: string,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-  ): Promise<ApiResponse<RiskAlert[]>> {
+  ): Promise<AdminApiResponse<RiskAlert[]>> {
     // Validate risk flag
     const validFlags: RiskFlag[] = [
       'CONFUSION',
@@ -171,7 +160,7 @@ export class SeoDashboardController {
    */
   @Get('crawl-activity')
   async getCrawlActivity(): Promise<
-    ApiResponse<
+    AdminApiResponse<
       {
         date: string;
         totalCrawls: number;
@@ -210,7 +199,7 @@ export class SeoDashboardController {
    */
   @Get('index-changes')
   async getIndexChanges(@Query('limit') limit?: string): Promise<
-    ApiResponse<
+    AdminApiResponse<
       {
         url: string;
         isIndexed: boolean;
@@ -249,7 +238,7 @@ export class SeoDashboardController {
    */
   @Get('crawl-stats')
   async getCrawlStats(): Promise<
-    ApiResponse<{
+    AdminApiResponse<{
       last24h: number;
       last7d: number;
       uniqueUrls24h: number;
@@ -283,7 +272,7 @@ export class SeoDashboardController {
    */
   @Get('recent-crawls')
   async getRecentCrawls(@Query('limit') limit?: string): Promise<
-    ApiResponse<
+    AdminApiResponse<
       {
         url: string;
         userAgent: string;
@@ -326,7 +315,7 @@ export class SeoDashboardController {
     @Query('days') days?: string,
     @Query('limit') limit?: string,
   ): Promise<
-    ApiResponse<
+    AdminApiResponse<
       { url: string; lastCrawlAt: Date | null; daysSinceLastCrawl: number }[]
     >
   > {
@@ -364,7 +353,7 @@ export class SeoDashboardController {
    * Recalculer tous les risk flags (manuel, pas automatique)
    */
   @Post('refresh-risks')
-  async refreshRiskFlags(): Promise<ApiResponse<RefreshResult>> {
+  async refreshRiskFlags(): Promise<AdminApiResponse<RefreshResult>> {
     try {
       this.logger.log('Manual risk flags refresh requested');
       const result = await this.riskFlagsEngine.refreshAllRiskFlags();
@@ -393,7 +382,7 @@ export class SeoDashboardController {
    */
   @Get('summary')
   async getSummary(): Promise<
-    ApiResponse<{
+    AdminApiResponse<{
       status: 'HEALTHY' | 'WARNING' | 'CRITICAL';
       headline: string;
       topIssues: { flag: string; count: number; severity: string }[];

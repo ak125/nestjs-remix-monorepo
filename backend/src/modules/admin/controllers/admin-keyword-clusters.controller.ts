@@ -1,6 +1,7 @@
 import { Controller, Get, Logger, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { KeywordDensityGateService } from '../services/keyword-density-gate.service';
 
@@ -10,7 +11,7 @@ const EXPECTED_OVERLAPS = [
 ];
 
 @Controller('api/admin/keyword-clusters')
-@UseGuards(IsAdminGuard)
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class AdminKeywordClustersController {
   private readonly logger = new Logger(AdminKeywordClustersController.name);
   private readonly supabase: SupabaseClient;

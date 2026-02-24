@@ -307,6 +307,39 @@ export const QueryOptionsSchema = z.object({
 export type QueryOptions = z.infer<typeof QueryOptionsSchema>;
 
 // ====================================
+// ADMIN RESPONSE TYPES
+// ====================================
+
+export type DataFreshness = 'live' | 'cached' | 'stale' | 'unavailable';
+export type DataSource = 'supabase' | 'cache' | 'bullmq' | 'computed';
+export type HealthStatus = 'healthy' | 'degraded' | 'down' | 'unknown';
+
+export interface AdminMeta {
+  timestamp: string;
+  freshness?: DataFreshness;
+  dataAge?: number;
+  source?: DataSource;
+  sources?: string[];
+  total?: number;
+  limit?: number;
+  offset?: number;
+}
+
+export type AdminApiResponse<T> = {
+  success: boolean;
+  data?: T;
+  error?: ApiError | string;
+  message?: string;
+  meta?: AdminMeta;
+  pagination?: PaginationInfo;
+  warnings?: Array<{
+    code: string;
+    message: string;
+    field?: string;
+  }>;
+};
+
+// ====================================
 // UTILITY FUNCTIONS
 // ====================================
 
@@ -347,6 +380,41 @@ export function createErrorResponse(
     success: false,
     error: apiError,
     metadata: metadata as RequestMetadata,
+  };
+}
+
+/**
+ * Create a standardized admin success response with meta
+ */
+export function createAdminSuccessResponse<T>(
+  data: T,
+  meta?: Partial<AdminMeta>,
+): AdminApiResponse<T> {
+  return {
+    success: true,
+    data,
+    meta: {
+      timestamp: new Date().toISOString(),
+      freshness: 'live' as DataFreshness,
+      ...meta,
+    },
+  };
+}
+
+/**
+ * Create a standardized admin error response
+ */
+export function createAdminErrorResponse(
+  error: string,
+  meta?: Partial<AdminMeta>,
+): AdminApiResponse<never> {
+  return {
+    success: false,
+    error,
+    meta: {
+      timestamp: new Date().toISOString(),
+      ...meta,
+    },
   };
 }
 

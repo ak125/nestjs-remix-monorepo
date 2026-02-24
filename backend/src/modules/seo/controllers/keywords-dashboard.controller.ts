@@ -24,18 +24,7 @@ import {
   GammeDetailStats,
   TopKeyword,
 } from '../services/keywords-dashboard.service';
-
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  meta?: {
-    total?: number;
-    limit?: number;
-    offset?: number;
-    timestamp?: string;
-  };
-}
+import type { AdminApiResponse } from '@repo/database-types';
 
 @Controller('api/seo/keywords')
 export class KeywordsDashboardController {
@@ -50,7 +39,7 @@ export class KeywordsDashboardController {
    * Liste toutes les gammes avec leurs statistiques
    */
   @Get('gammes')
-  async listGammes(): Promise<ApiResponse<GammeStats[]>> {
+  async listGammes(): Promise<AdminApiResponse<GammeStats[]>> {
     try {
       this.logger.log('GET /api/seo/keywords/gammes');
       const gammes = await this.keywordsDashboardService.listGammes();
@@ -87,7 +76,7 @@ export class KeywordsDashboardController {
     @Query('model') model?: string,
     @Query('order_by') orderBy?: 'volume' | 'keyword',
     @Query('order_dir') orderDir?: 'asc' | 'desc',
-  ): Promise<ApiResponse<KeywordItem[]>> {
+  ): Promise<AdminApiResponse<KeywordItem[]>> {
     try {
       this.logger.log(`GET /api/seo/keywords/gamme/${gamme}`);
 
@@ -131,7 +120,7 @@ export class KeywordsDashboardController {
   @Get('gamme/:gamme/stats')
   async getGammeStats(
     @Param('gamme') gamme: string,
-  ): Promise<ApiResponse<GammeDetailStats>> {
+  ): Promise<AdminApiResponse<GammeDetailStats>> {
     try {
       this.logger.log(`GET /api/seo/keywords/gamme/${gamme}/stats`);
 
@@ -171,7 +160,7 @@ export class KeywordsDashboardController {
   @Get('top')
   async getTopKeywords(
     @Query('limit', new DefaultValuePipe(100), ParseIntPipe) limit: number,
-  ): Promise<ApiResponse<TopKeyword[]>> {
+  ): Promise<AdminApiResponse<TopKeyword[]>> {
     try {
       this.logger.log(`GET /api/seo/keywords/top?limit=${limit}`);
 

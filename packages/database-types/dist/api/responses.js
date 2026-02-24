@@ -182,6 +182,27 @@ export function createErrorResponse(error, code, metadata) {
         metadata: metadata,
     };
 }
+export function createAdminSuccessResponse(data, meta) {
+    return {
+        success: true,
+        data,
+        meta: {
+            timestamp: new Date().toISOString(),
+            freshness: 'live',
+            ...meta,
+        },
+    };
+}
+export function createAdminErrorResponse(error, meta) {
+    return {
+        success: false,
+        error,
+        meta: {
+            timestamp: new Date().toISOString(),
+            ...meta,
+        },
+    };
+}
 export function normalizePaginationOptions(options) {
     const validated = PaginationOptionsSchema.parse(options || {});
     if (validated.offset === undefined) {

@@ -53,7 +53,7 @@ export default function AdminLayout() {
               (stats as any).seoStats && (
                 <Alert intent="success">
                   🔍 SEO:{" "}
-                  {((stats as any).seoStats.completionRate || 95.2).toFixed(1)}%
+                  {((stats as any).seoStats?.completionRate ?? 0).toFixed(1)}%
                   optimisé
                 </Alert>
               )}

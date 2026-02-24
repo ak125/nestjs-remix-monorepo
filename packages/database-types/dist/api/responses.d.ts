@@ -1782,8 +1782,36 @@ export declare const QueryOptionsSchema: z.ZodObject<{
     search?: string | undefined;
 }>;
 export type QueryOptions = z.infer<typeof QueryOptionsSchema>;
+export type DataFreshness = 'live' | 'cached' | 'stale' | 'unavailable';
+export type DataSource = 'supabase' | 'cache' | 'bullmq' | 'computed';
+export type HealthStatus = 'healthy' | 'degraded' | 'down' | 'unknown';
+export interface AdminMeta {
+    timestamp: string;
+    freshness?: DataFreshness;
+    dataAge?: number;
+    source?: DataSource;
+    sources?: string[];
+    total?: number;
+    limit?: number;
+    offset?: number;
+}
+export type AdminApiResponse<T> = {
+    success: boolean;
+    data?: T;
+    error?: ApiError | string;
+    message?: string;
+    meta?: AdminMeta;
+    pagination?: PaginationInfo;
+    warnings?: Array<{
+        code: string;
+        message: string;
+        field?: string;
+    }>;
+};
 export declare function createSuccessResponse<T>(data: T, message?: string, metadata?: Partial<RequestMetadata>): ApiResponse<T>;
 export declare function createErrorResponse(error: string | ApiError, code?: string, metadata?: Partial<RequestMetadata>): ApiResponse<never>;
+export declare function createAdminSuccessResponse<T>(data: T, meta?: Partial<AdminMeta>): AdminApiResponse<T>;
+export declare function createAdminErrorResponse(error: string, meta?: Partial<AdminMeta>): AdminApiResponse<never>;
 export declare function normalizePaginationOptions(options: unknown): PaginationOptions;
 export declare function generateRequestId(): string;
 //# sourceMappingURL=responses.d.ts.map

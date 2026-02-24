@@ -7,10 +7,13 @@ import {
   Body,
   Query,
   UseGuards,
+  UseInterceptors,
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AdminResponseInterceptor } from '../../../common/interceptors/admin-response.interceptor';
 import { PageBriefService } from '../services/page-brief.service';
 import {
   CreatePageBriefDto,
@@ -20,7 +23,8 @@ import {
 } from '../dto/page-brief.dto';
 
 @Controller('api/admin/page-briefs')
-@UseGuards(IsAdminGuard)
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
+@UseInterceptors(AdminResponseInterceptor)
 export class AdminPageBriefController {
   constructor(private readonly pageBriefService: PageBriefService) {}
 

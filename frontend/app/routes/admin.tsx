@@ -51,7 +51,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     pendingOrders: 0,
     completedOrders: 0,
     totalSuppliers: 0,
-    totalStock: 409687, // Valeur par défaut du stock
+    totalStock: 0,
     totalProducts: 0,
     totalCategories: 0,
     totalBrands: 0,
@@ -60,13 +60,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   try {
     const cookieHeader = request.headers.get("Cookie") || "";
 
-    // Récupérer les données depuis la nouvelle API Dashboard
     const dashboardResponse = await fetch(
       `${getInternalApiUrl("")}/api/dashboard/stats`,
       { headers: { Cookie: cookieHeader } },
     );
 
-    // Récupérer les statistiques produits admin
     const productsStatsResponse = await fetch(
       `${getInternalApiUrl("")}/api/admin/products/stats/detailed`,
       { headers: { Cookie: cookieHeader, "Content-Type": "application/json" } },
@@ -75,31 +73,30 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     if (dashboardResponse.ok) {
       const dashboardData = await dashboardResponse.json();
       stats = {
-        totalUsers: dashboardData.totalUsers || 0,
-        totalOrders: dashboardData.totalOrders || 0,
-        totalRevenue: dashboardData.totalRevenue || 0,
-        activeUsers: dashboardData.activeUsers || 0,
-        pendingOrders: dashboardData.pendingOrders || 0,
-        completedOrders: dashboardData.completedOrders || 0,
-        totalSuppliers: dashboardData.totalSuppliers || 0,
-        totalStock: 409687, // Valeur par défaut du stock
+        totalUsers: dashboardData.totalUsers ?? 0,
+        totalOrders: dashboardData.totalOrders ?? 0,
+        totalRevenue: dashboardData.totalRevenue ?? 0,
+        activeUsers: dashboardData.activeUsers ?? 0,
+        pendingOrders: dashboardData.pendingOrders ?? 0,
+        completedOrders: dashboardData.completedOrders ?? 0,
+        totalSuppliers: dashboardData.totalSuppliers ?? 0,
+        totalStock: dashboardData.totalStock ?? 0,
         totalProducts: 0,
         totalCategories: 0,
         totalBrands: 0,
       };
     }
 
-    // Intégrer les stats produits si disponibles
     if (productsStatsResponse.ok) {
       const productsData = await productsStatsResponse.json();
       if (productsData.success) {
-        stats.totalProducts = productsData.stats.totalProducts || 0;
-        stats.totalCategories = productsData.stats.totalCategories || 0;
-        stats.totalBrands = productsData.stats.totalBrands || 0;
+        stats.totalProducts = productsData.stats.totalProducts ?? 0;
+        stats.totalCategories = productsData.stats.totalCategories ?? 0;
+        stats.totalBrands = productsData.stats.totalBrands ?? 0;
       }
     }
   } catch (error) {
-    logger.error("❌ Erreur lors du chargement des stats sidebar:", error);
+    logger.error("Erreur lors du chargement des stats sidebar:", error);
   }
 
   return { user, stats };

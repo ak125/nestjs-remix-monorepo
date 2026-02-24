@@ -77,49 +77,38 @@ export const loader: LoaderFunction = async ({ request }) => {
       totalCategories: 0,
       conversionRate: 0,
       avgOrderValue: 0,
-      // Statistiques SEO
-      seoStats: {
-        totalPages: 714000,
-        pagesWithSeo: 680000,
-        sitemapEntries: 714336,
-        completionRate: 95.2,
-        organicTraffic: 125000,
-        keywordRankings: 8500,
+      // SEO, system health, performance, security : null par defaut
+      // Seules les donnees API reelles seront affichees
+      seoStats: null as null | {
+        totalPages: number | null;
+        pagesWithSeo: number | null;
+        sitemapEntries: number | null;
+        completionRate: number | null;
+        organicTraffic: number | null;
+        keywordRankings: number | null;
       },
-      // Health système
-      systemHealth: {
-        status: "healthy",
-        uptime: 99.9,
-        responseTime: 250,
-        memoryUsage: 65,
-        cpuUsage: 45,
-        diskUsage: 78,
-        activeConnections: 1250,
+      systemHealth: null as null | {
+        status: string;
+        uptime: number | null;
+        responseTime: number | null;
+        memoryUsage: number | null;
+        cpuUsage: number | null;
+        diskUsage: number | null;
+        activeConnections: number | null;
       },
-      // Performance
-      performance: {
-        apiResponseTimes: {
-          products: 120,
-          users: 95,
-          orders: 150,
-          search: 200,
-        },
-        errorRates: {
-          frontend: 0.2,
-          backend: 0.1,
-          database: 0.05,
-        },
-        throughput: 1500,
-        cacheHitRate: 85,
+      performance: null as null | {
+        apiResponseTimes: Record<string, number>;
+        errorRates: Record<string, number>;
+        throughput: number;
+        cacheHitRate: number;
       },
-      // Sécurité
-      security: {
-        threatLevel: "low",
-        blockedAttacks: 47,
-        authenticatedSessions: 890,
-        failedLogins: 12,
-        sslStatus: "active",
-        backupStatus: "completed",
+      security: null as null | {
+        threatLevel: string;
+        blockedAttacks: number;
+        authenticatedSessions: number;
+        failedLogins: number;
+        sslStatus: string;
+        backupStatus: string;
       },
     };
 
@@ -138,15 +127,15 @@ export const loader: LoaderFunction = async ({ request }) => {
         if (unifiedData.success || unifiedData.totalUsers !== undefined) {
           stats = {
             ...stats,
-            totalUsers: unifiedData.totalUsers || stats.totalUsers,
-            totalOrders: unifiedData.totalOrders || stats.totalOrders,
-            totalRevenue: unifiedData.totalRevenue || stats.totalRevenue,
-            activeUsers: unifiedData.activeUsers || stats.activeUsers,
-            pendingOrders: unifiedData.pendingOrders || stats.pendingOrders,
+            totalUsers: unifiedData.totalUsers ?? stats.totalUsers,
+            totalOrders: unifiedData.totalOrders ?? stats.totalOrders,
+            totalRevenue: unifiedData.totalRevenue ?? stats.totalRevenue,
+            activeUsers: unifiedData.activeUsers ?? stats.activeUsers,
+            pendingOrders: unifiedData.pendingOrders ?? stats.pendingOrders,
             completedOrders:
-              unifiedData.completedOrders || stats.completedOrders,
-            totalSuppliers: unifiedData.totalSuppliers || stats.totalSuppliers,
-            seoStats: unifiedData.seoStats || stats.seoStats,
+              unifiedData.completedOrders ?? stats.completedOrders,
+            totalSuppliers: unifiedData.totalSuppliers ?? stats.totalSuppliers,
+            seoStats: unifiedData.seoStats ?? stats.seoStats,
           };
         }
       } else {
@@ -168,14 +157,14 @@ export const loader: LoaderFunction = async ({ request }) => {
       if (reportsResponse.ok) {
         const reportsData = await reportsResponse.json();
         if (reportsData.success) {
-          stats.totalUsers = reportsData.users?.total || 0;
-          stats.activeUsers = reportsData.users?.active || 0;
-          stats.totalOrders = reportsData.orders?.total || 0;
-          stats.completedOrders = reportsData.orders?.completed || 0;
-          stats.pendingOrders = reportsData.orders?.pending || 0;
-          stats.totalRevenue = reportsData.orders?.revenue || 0;
-          stats.conversionRate = reportsData.performance?.conversionRate || 0;
-          stats.avgOrderValue = reportsData.orders?.avgOrderValue || 0;
+          stats.totalUsers = reportsData.users?.total ?? 0;
+          stats.activeUsers = reportsData.users?.active ?? 0;
+          stats.totalOrders = reportsData.orders?.total ?? 0;
+          stats.completedOrders = reportsData.orders?.completed ?? 0;
+          stats.pendingOrders = reportsData.orders?.pending ?? 0;
+          stats.totalRevenue = reportsData.orders?.revenue ?? 0;
+          stats.conversionRate = reportsData.performance?.conversionRate ?? 0;
+          stats.avgOrderValue = reportsData.orders?.avgOrderValue ?? 0;
         }
       }
     } catch (error) {
@@ -192,9 +181,9 @@ export const loader: LoaderFunction = async ({ request }) => {
       if (productsResponse.ok) {
         const productsData = await productsResponse.json();
         if (productsData.success) {
-          stats.totalProducts = productsData.stats.totalProducts || 0;
-          stats.activeProducts = productsData.stats.activeProducts || 0;
-          stats.totalCategories = productsData.stats.totalCategories || 0;
+          stats.totalProducts = productsData.stats.totalProducts ?? 0;
+          stats.activeProducts = productsData.stats.activeProducts ?? 0;
+          stats.totalCategories = productsData.stats.totalCategories ?? 0;
         }
       } else {
         apiErrors.push("API Produits");
@@ -204,54 +193,17 @@ export const loader: LoaderFunction = async ({ request }) => {
       apiErrors.push("API Produits");
     }
 
-    // Récupérer les statistiques SEO enrichies
-    try {
-      const seoResponse = await fetch(
-        `${getInternalApiUrl("")}/api/seo/analytics`,
-        { headers: { Cookie: cookieHeader } },
-      );
-      if (seoResponse.ok) {
-        const seoData = await seoResponse.json();
-        stats.seoStats = {
-          totalPages: seoData.totalPages || 714000,
-          pagesWithSeo: seoData.pagesWithSeo || 680000,
-          sitemapEntries: 714336, // Valeur connue de l'infrastructure
-          completionRate: seoData.completionRate || 95.2,
-          organicTraffic: seoData.organicTraffic || 125000,
-          keywordRankings: seoData.keywordRankings || 8500,
-        };
-      } else {
-        apiErrors.push("API SEO");
-      }
-    } catch (seoError) {
-      logger.log("📈 Statistiques SEO par défaut utilisées");
-      apiErrors.push("API SEO");
-    }
+    // NOTE: /api/seo/analytics n'existe pas cote backend.
+    // Les stats SEO reelles sont disponibles via /api/admin/seo-cockpit/dashboard.
+    // Ce call sera remplace en Phase 2 par le contrat standard.
 
-    // Health check système
-    try {
-      const healthResponse = await fetch(
-        `${getInternalApiUrl("")}/api/admin/system/health`,
-        { headers: { Cookie: cookieHeader } },
-      );
-      if (healthResponse.ok) {
-        const healthData = await healthResponse.json();
-        stats.systemHealth.status = healthData.status || "unknown";
-        if (healthData.metrics) {
-          stats.systemHealth = { ...stats.systemHealth, ...healthData.metrics };
-        }
-      } else {
-        apiErrors.push("API Health");
-      }
-    } catch (error) {
-      stats.systemHealth.status = "unknown";
-      apiErrors.push("API Health");
-    }
+    // NOTE: /api/admin/system/health n'existe pas cote backend.
+    // Sera cree en Phase 3 (GET /api/admin/health/overview).
 
     logger.log("✅ Stats du dashboard chargées:", {
       users: stats.totalUsers,
       products: stats.totalProducts,
-      systemStatus: stats.systemHealth.status,
+      systemStatus: stats.systemHealth?.status ?? "unknown",
       apiErrors: apiErrors.length > 0 ? apiErrors : "Aucune",
     });
 
@@ -261,7 +213,7 @@ export const loader: LoaderFunction = async ({ request }) => {
       hasErrors: apiErrors.length > 0,
     });
   } catch (error) {
-    logger.error("❌ Erreur critique dashboard:", error);
+    logger.error("Erreur critique dashboard:", error);
     return json({
       stats: {
         totalUsers: 0,
@@ -276,41 +228,14 @@ export const loader: LoaderFunction = async ({ request }) => {
         totalCategories: 0,
         conversionRate: 0,
         avgOrderValue: 0,
-        seoStats: {
-          totalPages: 714000,
-          pagesWithSeo: 680000,
-          sitemapEntries: 714336,
-          completionRate: 95.2,
-          organicTraffic: 125000,
-          keywordRankings: 8500,
-        },
-        systemHealth: {
-          status: "critical",
-          uptime: 0,
-          responseTime: 0,
-          memoryUsage: 0,
-          cpuUsage: 0,
-          diskUsage: 0,
-          activeConnections: 0,
-        },
-        performance: {
-          apiResponseTimes: { products: 0, users: 0, orders: 0, search: 0 },
-          errorRates: { frontend: 0, backend: 0, database: 0 },
-          throughput: 0,
-          cacheHitRate: 0,
-        },
-        security: {
-          threatLevel: "unknown",
-          blockedAttacks: 0,
-          authenticatedSessions: 0,
-          failedLogins: 0,
-          sslStatus: "unknown",
-          backupStatus: "unknown",
-        },
+        seoStats: null,
+        systemHealth: null,
+        performance: null,
+        security: null,
       },
-      apiErrors: ["Erreur critique du système"],
+      apiErrors: ["Erreur critique du systeme"],
       hasErrors: true,
-      criticalError: "Impossible de charger les données du dashboard",
+      criticalError: "Impossible de charger les donnees du dashboard",
     });
   }
 };
@@ -318,7 +243,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 export default function AdminDashboard() {
   const { stats, apiErrors, hasErrors, criticalError } =
     useLoaderData<typeof loader>();
-  const [realTimeStats, setRealTimeStats] = useState(stats);
+  const [realTimeStats, _setRealTimeStats] = useState(stats);
   // SSR-safe: Initialize with null, set in useEffect to avoid hydration mismatch
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
@@ -328,38 +253,20 @@ export default function AdminDashboard() {
     setLastUpdate(new Date());
   }, []);
 
-  // Fonction helper pour formater les nombres en sécurité
+  // Fonction helper pour formater les nombres en securite
   const formatNumber = (
-    value: number | undefined,
+    value: number | undefined | null,
     locale = "fr-FR",
     options?: Intl.NumberFormatOptions,
   ) => {
     if (value === undefined || value === null || isNaN(value)) {
-      return "0";
+      return "\u2014";
     }
     return value.toLocaleString(locale, options);
   };
 
-  // Mise à jour temps réel intelligente
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch("/api/admin/system/health");
-        if (response.ok) {
-          const healthData = await response.json();
-          setRealTimeStats((prev) => ({
-            ...prev,
-            systemHealth: { ...prev.systemHealth, ...healthData },
-          }));
-          setLastUpdate(new Date());
-        }
-      } catch (error) {
-        logger.log("Erreur mise à jour temps réel:", error);
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
+  // NOTE: Le polling /api/admin/system/health a ete retire car l'endpoint n'existe pas.
+  // Sera reactive en Phase 3 avec GET /api/admin/health/overview.
 
   return (
     <div className="space-y-8">
@@ -375,17 +282,16 @@ export default function AdminDashboard() {
               variant={
                 realTimeStats.systemHealth?.status === "healthy"
                   ? "success"
-                  : realTimeStats.systemHealth?.status === "warning"
+                  : realTimeStats.systemHealth?.status === "degraded"
                     ? "warning"
-                    : realTimeStats.systemHealth?.status === "critical"
+                    : realTimeStats.systemHealth?.status === "down"
                       ? "error"
                       : "default"
               }
               size="sm"
               icon={<Activity className="h-4 w-4" />}
             >
-              SYSTÈME{" "}
-              {realTimeStats.systemHealth?.status?.toUpperCase() || "UNKNOWN"}
+              {realTimeStats.systemHealth?.status?.toUpperCase() ?? "UNKNOWN"}
             </Badge>
           </h1>
           <p className="text-gray-600 mt-2">
@@ -408,24 +314,29 @@ export default function AdminDashboard() {
           intent="error"
           variant="solid"
           icon={<AlertTriangle className="h-4 w-4" />}
-          title="Erreur critique du système"
+          title="Erreur critique"
         >
-          {criticalError}
+          {criticalError}. Les donnees affichees ne sont pas fiables.
         </Alert>
       )}
 
-      {/* Alertes API non critiques */}
+      {/* Kill-switch : banniere erreurs API (Phase 0.5) */}
       {hasErrors && apiErrors && !criticalError && (
         <Alert
           intent="warning"
           variant="solid"
           icon={<AlertTriangle className="h-4 w-4" />}
-          title="Certaines APIs ne sont pas disponibles"
+          title={`${apiErrors.length} source${apiErrors.length > 1 ? "s" : ""} de donnees indisponible${apiErrors.length > 1 ? "s" : ""}`}
         >
-          <p className="text-xs">
-            APIs affectées: {apiErrors.join(", ")} • Les données par défaut sont
-            affichées
-          </p>
+          <div className="space-y-1">
+            <p className="text-xs font-medium">
+              APIs en erreur : {apiErrors.join(" | ")}
+            </p>
+            <p className="text-xs text-yellow-800">
+              Les sections concernees affichent « — » au lieu de donnees reelles.
+              Les metriques visibles peuvent etre incompletes.
+            </p>
+          </div>
         </Alert>
       )}
 
@@ -576,7 +487,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Nouveaux utilisateurs */}
+        {/* Nouveaux utilisateurs — donnee non disponible (pas d'API) */}
         <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-xl shadow-lg p-6 border border-cyan-200 hover:shadow-xl transition-all">
           <div className="flex items-center justify-between">
             <div>
@@ -584,9 +495,7 @@ export default function AdminDashboard() {
                 Nouveaux
               </p>
               <p className="text-3xl font-bold text-cyan-900 mt-1">
-                {formatNumber(
-                  Math.floor((realTimeStats.totalUsers || 0) * 0.05),
-                )}
+                {"\u2014"}
               </p>
               <p className="text-sm text-cyan-600 mt-2">Cette semaine</p>
             </div>
@@ -630,9 +539,9 @@ export default function AdminDashboard() {
           {/* Vue d'ensemble */}
           {activeTab === "overview" && (
             <div className="space-y-6">
-              {/* Insights IA */}
+              {/* Insights IA — sera connecte a un vrai moteur d'insights en Phase 4 */}
               <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
-                <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-3">
                   <div className="bg-muted p-2 rounded-lg">
                     <Brain className="h-6 w-6 text-purple-600" />
                   </div>
@@ -641,70 +550,30 @@ export default function AdminDashboard() {
                       Insights IA
                     </h3>
                     <p className="text-sm text-purple-600">
-                      Recommandations intelligentes
+                      Sera connecte aux donnees reelles en Phase 4 (Control Plane)
                     </p>
-                  </div>
-                  <Badge variant="subtle" size="sm" className="ml-auto">
-                    SMART ANALYTICS
-                  </Badge>
-                </div>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="bg-white p-4 rounded-lg border border-purple-100">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-medium text-purple-900">
-                          Opportunité de conversion
-                        </h4>
-                        <p className="text-sm text-purple-700 mt-1">
-                          Optimiser les pages produits pourrait augmenter la
-                          conversion de 5%
-                        </p>
-                      </div>
-                      <Badge variant="error" size="sm">
-                        HIGH
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="bg-white p-4 rounded-lg border border-purple-100">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-medium text-purple-900">
-                          Tendance de trafic
-                        </h4>
-                        <p className="text-sm text-purple-700 mt-1">
-                          Augmentation du trafic mobile de 12% cette semaine
-                        </p>
-                      </div>
-                      <Badge variant="warning" size="sm">
-                        MEDIUM
-                      </Badge>
-                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Alertes système */}
+              {/* Alertes systeme — sera connecte a GET /api/admin/health/overview en Phase 3 */}
               <div className="bg-warning/5 border border-yellow-200 rounded-xl p-6">
                 <div className="flex items-start gap-3">
                   <Bell className="h-5 w-5 text-yellow-600 mt-0.5" />
                   <div className="flex-1">
                     <h3 className="font-medium text-yellow-800">
-                      Alertes Système
+                      Alertes Systeme
                     </h3>
                     <div className="mt-3 space-y-2">
-                      <p className="text-sm text-yellow-700">
-                        • Sauvegarde automatique terminée avec succès (il y a
-                        1h)
-                      </p>
-                      <p className="text-sm text-yellow-700">
-                        • Utilisation mémoire élevée (85%) - surveillance active
-                      </p>
                       {realTimeStats.pendingOrders > 100 && (
                         <p className="text-sm text-yellow-700">
-                          • {formatNumber(realTimeStats.pendingOrders)}{" "}
+                          {formatNumber(realTimeStats.pendingOrders)}{" "}
                           commandes en attente de traitement
                         </p>
                       )}
+                      <p className="text-sm text-gray-500 italic">
+                        Alertes en temps reel non disponibles — sera connecte en Phase 3
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -742,9 +611,7 @@ export default function AdminDashboard() {
                     <div className="flex justify-between">
                       <span className="text-blue-700">Nouveaux produits</span>
                       <span className="font-bold text-blue-900">
-                        {formatNumber(
-                          Math.floor((realTimeStats.totalProducts || 0) * 0.02),
-                        )}
+                        {"\u2014"}
                       </span>
                     </div>
                   </div>
@@ -818,9 +685,9 @@ export default function AdminDashboard() {
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-indigo-700">Délai moyen</span>
+                      <span className="text-indigo-700">Delai moyen</span>
                       <span className="font-bold text-indigo-900">
-                        2-3 jours
+                        {"\u2014"}
                       </span>
                     </div>
                   </div>
@@ -887,44 +754,16 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Top Performances */}
+              {/* Top Performances — sera alimente par les APIs reelles en Phase 2 */}
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
                     <BarChart3 className="h-5 w-5 text-green-600" />
-                    Top Catégories
+                    Top Categories
                   </h3>
-                  <div className="space-y-3">
-                    {[
-                      { name: "Électronique", sales: 15420, percentage: 85 },
-                      { name: "Mode & Beauté", sales: 12380, percentage: 72 },
-                      { name: "Maison & Jardin", sales: 9850, percentage: 58 },
-                      { name: "Sport & Loisirs", sales: 7650, percentage: 45 },
-                      { name: "Automobile", sales: 5420, percentage: 32 },
-                    ].map((category, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between"
-                      >
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm font-medium text-gray-900">
-                              {category.name}
-                            </span>
-                            <span className="text-sm text-gray-600">
-                              {formatNumber(category.sales)} ventes
-                            </span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className="bg-success h-2 rounded-full"
-                              style={{ width: `${category.percentage}%` }}
-                            ></div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-sm text-gray-500 italic">
+                    Donnees non disponibles — sera connecte aux APIs en Phase 2
+                  </p>
                 </div>
 
                 <div className="bg-white rounded-lg shadow-md p-6">
@@ -932,34 +771,9 @@ export default function AdminDashboard() {
                     <Truck className="h-5 w-5 text-indigo-600" />
                     Top Fournisseurs
                   </h3>
-                  <div className="space-y-3">
-                    {[
-                      { name: "TechSupply Pro", orders: 1250, reliability: 98 },
-                      { name: "Fashion Direct", orders: 980, reliability: 95 },
-                      { name: "HomeStyle Plus", orders: 750, reliability: 92 },
-                      { name: "SportMax Group", orders: 620, reliability: 88 },
-                      { name: "Auto Parts Ltd", orders: 450, reliability: 85 },
-                    ].map((supplier, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex-1">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm font-medium text-gray-900">
-                              {supplier.name}
-                            </span>
-                            <Badge variant="success" size="sm">
-                              {supplier.reliability}% fiable
-                            </Badge>
-                          </div>
-                          <div className="text-xs text-gray-600 mt-1">
-                            {formatNumber(supplier.orders)} commandes ce mois
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-sm text-gray-500 italic">
+                    Donnees non disponibles — sera connecte aux APIs en Phase 2
+                  </p>
                 </div>
               </div>
             </div>
@@ -1728,26 +1542,9 @@ export default function AdminDashboard() {
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h3 className="text-lg font-medium mb-4">Maintenance</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">
-                        Prochaine maintenance
-                      </span>
-                      <span className="font-medium">11/09/2025</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">
-                        Mises à jour disponibles
-                      </span>
-                      <span className="font-bold text-blue-600">3</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Optimisation BDD</span>
-                      <Badge variant="success" size="sm">
-                        NON NÉCESSAIRE
-                      </Badge>
-                    </div>
-                  </div>
+                  <p className="text-sm text-gray-500 italic">
+                    Donnees de maintenance non disponibles — sera connecte en Phase 3
+                  </p>
                 </div>
 
                 <div className="bg-white rounded-lg shadow-md p-6">

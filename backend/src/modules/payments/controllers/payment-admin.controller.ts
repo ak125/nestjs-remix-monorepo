@@ -9,8 +9,11 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { PaymentService } from '../services/payment.service';
 import { PaymentValidationService } from '../services/payment-validation.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
@@ -22,6 +25,7 @@ import { logPaymentError } from './payment-controller.utils';
  */
 @ApiTags('payments')
 @Controller('api/payments')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class PaymentAdminController {
   private readonly logger = new Logger(PaymentAdminController.name);
 
@@ -36,7 +40,6 @@ export class PaymentAdminController {
    * Statistiques des paiements
    */
   @Get('stats')
-  // @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({ summary: 'Statistiques des paiements (admin)' })
   @ApiResponse({ status: 200, description: 'Statistiques' })
   async getPaymentStats(
@@ -81,7 +84,6 @@ export class PaymentAdminController {
    * Liste tous les paiements (admin)
    */
   @Get()
-  // @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({ summary: 'Liste tous les paiements (admin)' })
   @ApiResponse({ status: 200, description: 'Liste des paiements' })
   @ApiResponse({ status: 403, description: 'Acces refuse' })
@@ -107,7 +109,6 @@ export class PaymentAdminController {
    */
   @Patch(':id/status')
   @HttpCode(HttpStatus.OK)
-  // @UseGuards(AuthenticatedGuard, AdminGuard)
   @ApiOperation({ summary: 'Mettre a jour le statut du paiement' })
   @ApiParam({ name: 'id', description: 'ID du paiement' })
   @ApiResponse({ status: 200, description: 'Statut mis a jour' })
@@ -142,7 +143,6 @@ export class PaymentAdminController {
    */
   @Post(':id/refund')
   @HttpCode(HttpStatus.OK)
-  // @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({ summary: 'Rembourser un paiement (admin)' })
   @ApiParam({ name: 'id', description: 'ID du paiement' })
   @ApiResponse({ status: 200, description: 'Remboursement effectue' })

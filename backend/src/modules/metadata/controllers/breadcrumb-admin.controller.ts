@@ -17,7 +17,10 @@ import {
   Body,
   Query,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import {
   OperationFailedException,
   DomainNotFoundException,
@@ -49,6 +52,7 @@ interface BreadcrumbListItem {
 }
 
 @Controller('admin/breadcrumbs')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class BreadcrumbAdminController {
   private readonly logger = new Logger(BreadcrumbAdminController.name);
 

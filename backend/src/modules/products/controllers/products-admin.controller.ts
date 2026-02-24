@@ -7,8 +7,12 @@ import {
   Query,
   Logger,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { OperationFailedException } from '../../../common/exceptions';
+import { AdminResponseInterceptor } from '../../../common/interceptors/admin-response.interceptor';
 import { ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from '../products.service';
@@ -18,7 +22,8 @@ import { getErrorMessage } from '../../../common/utils/error.utils';
 
 @ApiTags('Products Admin')
 @Controller('api/products')
-@UseInterceptors(CacheInterceptor)
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
+@UseInterceptors(CacheInterceptor, AdminResponseInterceptor)
 export class ProductsAdminController {
   private readonly logger = new Logger(ProductsAdminController.name);
 
