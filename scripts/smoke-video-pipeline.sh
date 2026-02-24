@@ -8,6 +8,7 @@
 #   C. Nominal (stats + list → 200)
 #   D. Retry Guards (non-existent → 404)
 #   E. Response Shape (JSON structure validation)
+#   F. Canary Observability (P5.3 — policy + stats shape)
 #
 # Usage:
 #   ADMIN_EMAIL=admin@test.com ADMIN_PASSWORD=xxx ./scripts/smoke-video-pipeline.sh
@@ -189,6 +190,35 @@ if [ "$total" -gt "0" ] 2>/dev/null; then
   echo "  ($total executions found — would check field-level on a real exec)"
 else
   echo "  (No executions yet — field-level checks skipped)"
+fi
+
+# ─── F. CANARY OBSERVABILITY (P5.3) ───────────
+echo "[F] Canary observability"
+
+code=$(authed_http_code "GET" "/api/admin/video/canary/policy")
+assert_http "GET /canary/policy" "200" "$code"
+if [ "$code" = "200" ]; then
+  assert_json "Policy has quotaPerDay" ".data.quotaPerDay | type" "number"
+  assert_json "Policy has eligibleVideoTypes" ".data.eligibleVideoTypes | type" "array"
+  assert_json "Policy has canaryAvailable" ".data | has(\"canaryAvailable\")" "true"
+fi
+
+# Stats should now include canary + engineDistribution
+code=$(authed_http_code "GET" "/api/admin/video/executions/stats")
+if [ "$code" = "200" ]; then
+  canary_total=$(jq -r '.data.canary.totalCanary // "MISSING"' < "$OUT" 2>/dev/null)
+  if [ "$canary_total" != "MISSING" ]; then
+    log_pass "Stats includes canary metrics (totalCanary=$canary_total)"
+  else
+    log_fail "Stats missing canary metrics"
+  fi
+
+  engine_dist=$(jq -r '.data.engineDistribution | type' < "$OUT" 2>/dev/null || echo "MISSING")
+  if [ "$engine_dist" = "object" ]; then
+    log_pass "Stats includes engineDistribution"
+  else
+    log_fail "Stats missing engineDistribution"
+  fi
 fi
 
 echo ""
