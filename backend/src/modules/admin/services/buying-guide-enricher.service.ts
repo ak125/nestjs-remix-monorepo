@@ -4,6 +4,7 @@ import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
 import { AiContentService } from '../../ai-content/ai-content.service';
 import { PageBriefService } from './page-brief.service';
 import { ConfigService } from '@nestjs/config';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
@@ -79,6 +80,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly ragService: RagProxyService,
+    private readonly flags: FeatureFlagsService,
     @Optional() private readonly aiContentService?: AiContentService,
     @Optional() private readonly pageBriefService?: PageBriefService,
   ) {
@@ -559,39 +561,8 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         }
       }
     }
-    // v4 fallback: diagnostic.symptoms as criteria (same logic as legacy)
-    if (
-      selectionCriteria.length < MIN_SELECTION_CRITERIA &&
-      v4Data?.symptoms?.length
-    ) {
-      for (const symptom of v4Data.symptoms) {
-        if (symptom.length > 5) {
-          selectionCriteria.push({
-            key: `v4-symptom-${selectionCriteria.length}`,
-            label: symptom,
-            guidance: `Vérifier : ${symptom}`,
-            priority: 'recommended',
-          });
-        }
-      }
-    }
-    // Legacy YAML fallback: build criteria from page_contract.symptoms + howToChoose
-    if (
-      selectionCriteria.length < MIN_SELECTION_CRITERIA &&
-      pageContract?.symptoms?.length
-    ) {
-      for (const symptom of pageContract.symptoms) {
-        const clean = symptom.replace(/^\*\*/, '').replace(/\*\*$/, '').trim();
-        if (clean.length > 5) {
-          selectionCriteria.push({
-            key: `yaml-${selectionCriteria.length}`,
-            label: clean,
-            guidance: `Vérifier : ${clean}`,
-            priority: 'recommended',
-          });
-        }
-      }
-    }
+    // NOTE: v4/YAML symptom→criteria fallback removed (2026-02-24)
+    // Symptoms are NOT selection criteria — they were creating semantic pollution (yaml-* keys)
     const criteriaValidation = this.validateSection(
       'selection_criteria',
       selectionCriteria,
@@ -1846,7 +1817,43 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       }
     }
 
+    // Sanitize ARRAY columns before write (prevent QA flags, fragments, keywords leaking into data)
+    if (Array.isArray(payload.sgpg_symptoms)) {
+      payload.sgpg_symptoms = BuyingGuideEnricherService.sanitizeStringArray(
+        payload.sgpg_symptoms,
+      );
+    }
+    if (Array.isArray(payload.sgpg_anti_mistakes)) {
+      payload.sgpg_anti_mistakes =
+        BuyingGuideEnricherService.sanitizeStringArray(
+          payload.sgpg_anti_mistakes,
+        );
+    }
+
     return payload;
+  }
+
+  /**
+   * Filters parasitic entries from string arrays (symptoms, anti_mistakes).
+   * Rejects: QA flags, YAML fragment prefixes, raw keywords, markdown artifacts.
+   */
+  private static readonly PARASITIC_PATTERNS = [
+    /^(FAQ_TOO_SMALL|TOO_SHORT|GATES_CLEAN|SYMPTOMS_TOO_SMALL|DUPLICATE_ITEMS|SKIPPED_\w+|S\d_TOO_SHORT|GENERIC_\w+|NO_NUMBERS_\w+)$/,
+    /^content:\s/i,
+    /^answer:\s/i,
+    /^'\*\*/,
+    /^###\s/,
+  ];
+
+  private static sanitizeStringArray(arr: string[]): string[] {
+    return arr.filter((item) => {
+      if (typeof item !== 'string') return false;
+      const trimmed = item.trim();
+      if (trimmed.length < 10) return false;
+      return !BuyingGuideEnricherService.PARASITIC_PATTERNS.some((p) =>
+        p.test(trimmed),
+      );
+    });
   }
 
   private async upsertBuyingGuide(
@@ -2091,10 +2098,9 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     if (this.aiContentService && !conservativeMode) {
       try {
         // Brief-aware template selection (Phase 2)
-        const brief =
-          process.env.BRIEF_AWARE_ENABLED === 'true'
-            ? await this.pageBriefService?.getActiveBrief(parseInt(pgId), 'R1')
-            : null;
+        const brief = this.flags.briefAwareEnabled
+          ? await this.pageBriefService?.getActiveBrief(parseInt(pgId), 'R1')
+          : null;
 
         const result = await this.aiContentService.generateContent({
           type: brief ? 'seo_content_R1' : 'seo_content_polish',
@@ -2196,10 +2202,9 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     if (this.aiContentService && !conservativeMode) {
       try {
         // Brief-aware template selection (Phase 2)
-        const brief =
-          process.env.BRIEF_AWARE_ENABLED === 'true'
-            ? await this.pageBriefService?.getActiveBrief(parseInt(pgId), 'R1')
-            : null;
+        const brief = this.flags.briefAwareEnabled
+          ? await this.pageBriefService?.getActiveBrief(parseInt(pgId), 'R1')
+          : null;
 
         const result = await this.aiContentService.generateContent({
           type: brief ? 'seo_descrip_R1' : 'seo_descrip_polish',

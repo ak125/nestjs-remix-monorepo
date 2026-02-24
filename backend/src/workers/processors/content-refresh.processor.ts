@@ -20,6 +20,7 @@ import {
   POLICY_VERSION,
 } from '../../config/content-section-policy';
 import { QUALITY_SCORE_ADVISORY } from '../../config/buying-guide-quality.constants';
+import { FeatureFlagsService } from '../../config/feature-flags.service';
 import type {
   AnyContentRefreshJobData,
   ContentRefreshResult,
@@ -51,6 +52,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly imageGatesService: ImageGatesService,
     private readonly sectionCompiler: SectionCompilerService,
     private readonly ragProxyService: RagProxyService,
+    private readonly flags: FeatureFlagsService,
   ) {
     super(configService);
   }
@@ -90,13 +92,17 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     const force =
       'force' in job.data ? !!(job.data as { force?: boolean }).force : false;
 
+    const correlationId =
+      job.data.correlationId || `cr-${refreshLogId || 'unknown'}-${Date.now()}`;
+    const ctx = `[${correlationId}]`;
+
     this.logger.log(
-      `Processing content-refresh: ${diagnosticSlug || pgAlias}, pageType=${pageType}, logId=${refreshLogId}`,
+      `${ctx} Processing content-refresh: ${diagnosticSlug || pgAlias}, pageType=${pageType}, logId=${refreshLogId}`,
     );
 
     // Per-gamme lock: wait if same pgId is already processing (concurrency > 1 safety)
     if (pgId > 0 && this.gammeLocksInProgress.has(pgId)) {
-      this.logger.log(`Waiting for lock on pgId=${pgId} (${pgAlias})`);
+      this.logger.log(`${ctx} Waiting for lock on pgId=${pgId} (${pgAlias})`);
       const maxWait = 120_000; // 2 min max
       const start = Date.now();
       while (
@@ -114,6 +120,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       .update({
         status: 'processing',
         started_at: new Date().toISOString(),
+        correlation_id: correlationId,
       })
       .eq('id', refreshLogId);
 
@@ -129,8 +136,10 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
       // Auto-discover supplementary docs from Weaviate when none provided
       if (supplementaryFiles.length === 0 && pgAlias) {
-        const discovered =
-          await this.discoverSupplementaryFromWeaviate(pgAlias);
+        const discovered = await this.discoverSupplementaryFromWeaviate(
+          pgAlias,
+          ctx,
+        );
         if (discovered.length > 0) {
           supplementaryFiles.push(...discovered);
         }
@@ -284,7 +293,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             undefined;
         } catch (err) {
           this.logger.warn(
-            `Failed to fetch pg_img for pgId=${pgId}: ${err instanceof Error ? err.message : err}`,
+            `${ctx} Failed to fetch pg_img for pgId=${pgId}: ${err instanceof Error ? err.message : err}`,
           );
         }
       }
@@ -305,12 +314,12 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           if (markersCount > 0) {
             qualityFlags.push(`LINKS_INJECTED_${markersCount}`);
             this.logger.log(
-              `Injected ${markersCount} link markers for ${pgAlias}/${pageType}`,
+              `${ctx} Injected ${markersCount} link markers for ${pgAlias}/${pageType}`,
             );
           }
         } catch (err) {
           this.logger.warn(
-            `Link marker injection failed for ${pgAlias}: ${err instanceof Error ? err.message : err}`,
+            `${ctx} Link marker injection failed for ${pgAlias}: ${err instanceof Error ? err.message : err}`,
           );
         }
       }
@@ -342,7 +351,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       ) {
         // Soft gates (Phase 3 — brief-based)
         let softCanPublish = true;
-        if (process.env.BRIEF_GATES_ENABLED === 'true') {
+        if (this.flags.briefGatesEnabled) {
           const draftContent = await this.loadCurrentContent(
             pgId,
             pgAlias,
@@ -361,17 +370,16 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           softCanPublish = gateOutput.canPublish;
 
           // Observe-only: log but don't block
-          const briefGatesObserveOnly =
-            process.env.BRIEF_GATES_OBSERVE_ONLY === 'true';
+          const briefGatesObserveOnly = this.flags.briefGatesObserveOnly;
           if (!softCanPublish && briefGatesObserveOnly) {
             softCanPublish = true;
             qualityFlags.push('BRIEF_GATES_OBSERVE_ONLY');
             this.logger.log(
-              `Brief gates WOULD block ${pgAlias}/${pageType} but observe-only mode active`,
+              `${ctx} Brief gates WOULD block ${pgAlias}/${pageType} but observe-only mode active`,
             );
           } else if (!softCanPublish) {
             this.logger.log(
-              `Brief gates blocked auto-publish for ${pgAlias}/${pageType} — staying draft`,
+              `${ctx} Brief gates blocked auto-publish for ${pgAlias}/${pageType} — staying draft`,
             );
           }
         }
@@ -395,6 +403,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           qualityFlags,
           softCanPublish,
           pgImg,
+          ctx,
         );
         finalStatus = result.finalStatus;
         hardGateResults = result.hardGates;
@@ -411,20 +420,15 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         this.logger.log(
           JSON.stringify({
             event: 'publish_decision',
+            correlationId,
             pgAlias,
             pageType,
             finalStatus,
             reason: result.reason,
             qualityScore,
-            isCanary:
-              (process.env.CANARY_GAMMES || '')
-                .split(',')
-                .map((s) => s.trim())
-                .filter(Boolean)
-                .includes(pgAlias) ||
-              (process.env.CANARY_GAMMES || '').trim() === '*',
-            hardGatesEnabled: process.env.HARD_GATES_ENABLED === 'true',
-            autoRepairEnabled: process.env.AUTO_REPAIR_ENABLED === 'true',
+            isCanary: this.flags.isCanary(pgAlias),
+            hardGatesEnabled: this.flags.hardGatesEnabled,
+            autoRepairEnabled: this.flags.autoRepairEnabled,
             repairPasses: result.repairResult?.totalPasses ?? 0,
             repairDurationMs: result.repairResult?.durationMs ?? 0,
             softCanPublish,
@@ -460,7 +464,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           }
         } catch (err) {
           this.logger.warn(
-            `Fingerprint computation failed for ${pgAlias}: ${err instanceof Error ? err.message : err}`,
+            `${ctx} Fingerprint computation failed for ${pgAlias}: ${err instanceof Error ? err.message : err}`,
           );
         }
       }
@@ -548,17 +552,17 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
             if (upsertError) {
               this.logger.warn(
-                `Shadow-write upsert error for ${pgAlias}/${role}: ${upsertError.message}`,
+                `${ctx} Shadow-write upsert error for ${pgAlias}/${role}: ${upsertError.message}`,
               );
             } else {
               this.logger.log(
-                `Shadow-write to __seo_role_content: ${pgAlias}/${role} (${Object.keys(compiled.compiledSections).length} sections)`,
+                `${ctx} Shadow-write to __seo_role_content: ${pgAlias}/${role} (${Object.keys(compiled.compiledSections).length} sections)`,
               );
             }
           }
         } catch (err) {
           this.logger.warn(
-            `Shadow-write failed for ${pgAlias}: ${err instanceof Error ? err.message : err}`,
+            `${ctx} Shadow-write failed for ${pgAlias}: ${err instanceof Error ? err.message : err}`,
           );
         }
       }
@@ -612,7 +616,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         .eq('id', refreshLogId);
 
       this.logger.log(
-        `Content-refresh complete: ${diagnosticSlug || pgAlias}/${pageType} → ${finalStatus}` +
+        `${ctx} Content-refresh complete: ${diagnosticSlug || pgAlias}/${pageType} → ${finalStatus}` +
           (ragSkipped
             ? ` (ragSkipped: ${ragSkipReason})`
             : ` (score=${qualityScore})`),
@@ -627,7 +631,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Content-refresh failed: ${pgAlias}/${pageType} — ${msg}`,
+        `${ctx} Content-refresh failed: ${pgAlias}/${pageType} — ${msg}`,
       );
 
       await this.client
@@ -875,27 +879,20 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     qualityFlags: string[],
     softCanPublish: boolean,
     pgImg?: string | null,
+    ctx: string = '',
   ): Promise<{
     finalStatus: ContentRefreshResult['status'];
     reason: string;
     hardGates: ExtendedGateResult[] | null;
     repairResult: RepairResult | null;
   }> {
-    const maxPasses = Math.min(
-      parseInt(process.env.AUTO_REPAIR_MAX_PASSES || '2', 10),
-      3,
-    );
-    const autoRepair = process.env.AUTO_REPAIR_ENABLED === 'true';
-    const safeFallback = process.env.SAFE_FALLBACK_ENABLED === 'true';
-    const epEnabled = process.env.EVIDENCE_PACK_ENABLED === 'true';
-    const hardGatesEnabled = process.env.HARD_GATES_ENABLED === 'true';
-    const canaryList = (process.env.CANARY_GAMMES || '')
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean);
-    const isCanary = canaryList.includes(pgAlias) || canaryList.includes('*');
-    const hardGatesBlocking =
-      hardGatesEnabled && (isCanary || canaryList.includes('*'));
+    const maxPasses = this.flags.autoRepairMaxPasses;
+    const autoRepair = this.flags.autoRepairEnabled;
+    const safeFallback = this.flags.safeFallbackEnabled;
+    const epEnabled = this.flags.evidencePackEnabled;
+    const hardGatesEnabled = this.flags.hardGatesEnabled;
+    const isCanary = this.flags.isCanary(pgAlias);
+    const hardGatesBlocking = hardGatesEnabled && isCanary;
 
     // (1) Soft gates already failed -> stop
     if (!softCanPublish) {
@@ -932,7 +929,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         );
         hardGates.push(...imageGates);
       } catch (imgErr) {
-        this.logger.warn(`Image gates failed (non-blocking): ${imgErr}`);
+        this.logger.warn(`${ctx} Image gates failed (non-blocking): ${imgErr}`);
       }
 
       // Check protected field mutations (seo_integrity extension)
@@ -972,6 +969,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     this.logger.log(
       JSON.stringify({
         event: 'hard_gates_result',
+        correlationId: ctx.replace(/^\[|\]$/g, ''),
         pgAlias,
         pageType,
         mode: hardGatesBlocking ? 'blocking' : 'observe_only',
@@ -1033,7 +1031,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       const hashBefore = contentHash;
       const failingBefore = failedGates.map((g) => g.gate);
 
-      const plan = this.buildRepairPlan(failedGates, pass as 1 | 2);
+      const plan = this.buildRepairPlan(failedGates, pass as 1 | 2, ctx);
       const actionResults: RepairActionResult[] = [];
       for (const action of plan) {
         const result = await this.executeRepairAction(
@@ -1042,6 +1040,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           pgAlias,
           pageType,
           preRepairContent,
+          ctx,
         );
         actionResults.push(result);
       }
@@ -1081,6 +1080,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       this.logger.log(
         JSON.stringify({
           event: 'auto_repair_pass',
+          correlationId: ctx.replace(/^\[|\]$/g, ''),
           pgAlias,
           pageType,
           pass,
@@ -1094,7 +1094,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
       if (!changed) {
         this.logger.warn(
-          `Auto-repair pass ${pass}: no content change for ${pgAlias}, stopping`,
+          `${ctx} Auto-repair pass ${pass}: no content change for ${pgAlias}, stopping`,
         );
         break;
       }
@@ -1103,7 +1103,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       const plainText = content.replace(/<[^>]+>/g, '').trim();
       if (plainText.length < 200) {
         this.logger.warn(
-          `Auto-repair pass ${pass}: content too short (${plainText.length} chars) for ${pgAlias}, aborting repair`,
+          `${ctx} Auto-repair pass ${pass}: content too short (${plainText.length} chars) for ${pgAlias}, aborting repair`,
         );
         qualityFlags.push('REPAIR_CONTENT_TOO_SHORT');
         // Revert to pre-repair content
@@ -1156,7 +1156,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
     if (safeFallback) {
       const fb = this.buildSafeFallbackDraft(pgAlias, pageType, pgId);
-      await this.writeSafeFallbackToDb(pgId, pgAlias, pageType, fb);
+      await this.writeSafeFallbackToDb(pgId, pgAlias, pageType, fb, ctx);
       repairResult.fallbackApplied = true;
       repairResult.reasonCode = 'FALLBACK_APPLIED';
       return {
@@ -1180,6 +1180,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
   private buildRepairPlan(
     failedGates: ExtendedGateResult[],
     passLevel: 1 | 2,
+    ctx: string = '',
   ): RepairAction[] {
     const actions: RepairAction[] = [];
 
@@ -1234,7 +1235,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           // Contradiction = BLOCK only, zero auto-repair.
           // Manual review required. Do NOT add to repair plan.
           this.logger.warn(
-            `Contradiction detected — blocking (no auto-repair). Items: ${gate.triggerItems?.length ?? 0}`,
+            `${ctx} Contradiction detected — blocking (no auto-repair). Items: ${gate.triggerItems?.length ?? 0}`,
           );
           break;
         case 'seo_integrity':
@@ -1270,6 +1271,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     pgAlias: string,
     pageType: string,
     preRepairContent: string,
+    ctx: string = '',
   ): Promise<RepairActionResult> {
     try {
       switch (action.strategy) {
@@ -1384,7 +1386,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           // These strategies are legacy — buildRepairPlan no longer emits them.
           // Kept as fallback for safety; always returns applied: false.
           this.logger.warn(
-            `Contradiction repair skipped (block-only policy) for ${pgAlias}`,
+            `${ctx} Contradiction repair skipped (block-only policy) for ${pgAlias}`,
           );
           return {
             action,
@@ -1400,6 +1402,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             pgId,
             pgAlias,
             pageType,
+            ctx,
           );
           return {
             action,
@@ -1437,7 +1440,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(
-        `Repair action failed: ${action.strategy} for ${pgAlias} — ${msg}`,
+        `${ctx} Repair action failed: ${action.strategy} for ${pgAlias} — ${msg}`,
       );
       return {
         action,
@@ -1520,6 +1523,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
    */
   private async discoverSupplementaryFromWeaviate(
     pgAlias: string,
+    ctx: string = '',
   ): Promise<string[]> {
     const knowledgePath =
       process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
@@ -1580,14 +1584,14 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
       if (filePaths.length > 0) {
         this.logger.log(
-          `Weaviate discovery for ${pgAlias}: ${filePaths.length} supplementary docs found`,
+          `${ctx} Weaviate discovery for ${pgAlias}: ${filePaths.length} supplementary docs found`,
         );
       }
 
       return filePaths;
     } catch (err) {
       this.logger.warn(
-        `Weaviate discovery failed for ${pgAlias}: ${(err as Error).message}`,
+        `${ctx} Weaviate discovery failed for ${pgAlias}: ${(err as Error).message}`,
       );
       return [];
     }
@@ -1856,6 +1860,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     pgId: number,
     pgAlias: string,
     pageType: string,
+    ctx: string = '',
   ): Promise<boolean> {
     const qaOk = await this.checkQaGuardForGamme(pgId, pgAlias, pageType);
     if (qaOk) return false;
@@ -1901,7 +1906,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             .eq('sg_pg_id', String(pgId));
           restored = true;
           this.logger.log(
-            `Restored SEO fields from backup for ${pgAlias}/${pageType}`,
+            `${ctx} Restored SEO fields from backup for ${pgAlias}/${pageType}`,
           );
         }
       }
@@ -1928,7 +1933,9 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             })
             .eq('sgpg_pg_id', String(pgId));
           restored = true;
-          this.logger.log(`Restored H1 override from backup for ${pgAlias}`);
+          this.logger.log(
+            `${ctx} Restored H1 override from backup for ${pgAlias}`,
+          );
         }
       }
     }
@@ -1959,7 +1966,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             .eq('slug', pgAlias);
           restored = true;
           this.logger.log(
-            `Restored reference fields from backup for ${pgAlias}`,
+            `${ctx} Restored reference fields from backup for ${pgAlias}`,
           );
         }
       }
@@ -2027,10 +2034,11 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     pgAlias: string,
     pageType: string,
     fallback: SafeFallbackDraft,
+    ctx: string = '',
   ): Promise<void> {
     await this.writeContentToDb(pgId, pgAlias, pageType, fallback.content);
     this.logger.log(
-      `Safe fallback written for ${pgAlias}/${pageType} (template=${fallback.templateId})`,
+      `${ctx} Safe fallback written for ${pgAlias}/${pageType} (template=${fallback.templateId})`,
     );
   }
 

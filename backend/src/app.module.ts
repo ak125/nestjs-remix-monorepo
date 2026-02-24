@@ -8,6 +8,7 @@ import { loggerConfig } from './config/logger.config';
 // import { ScheduleModule } from '@nestjs/schedule'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 // import { BullModule } from '@nestjs/bullmq'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 import { CryptoModule } from './shared/crypto/crypto.module'; // 🔐 NOUVEAU - Module crypto centralisé !
+import { FeatureFlagsModule } from './config/feature-flags.module'; // 🎛️ NOUVEAU - Feature flags centralisés (content pipeline + brief gates)
 import { RpcGateModule } from './security/rpc-gate/rpc-gate.module'; // 🛡️ NOUVEAU - RPC Safety Gate pour gouvernance Supabase !
 import { BotGuardModule } from './modules/bot-guard/bot-guard.module'; // 🛡️ Bot protection (geo-block, IP block, behavioral scoring)
 import { DatabaseModule } from './database/database.module';
@@ -133,6 +134,9 @@ import { MediaFactoryModule } from './modules/media-factory/media-factory.module
 
     // 🛡️ Bot protection - geo-block, IP block, behavioral scoring (must be before other modules)
     BotGuardModule,
+
+    // 🎛️ Feature flags centralisés (Global)
+    FeatureFlagsModule,
 
     // 🔐 Module crypto centralisé (Global)
     CryptoModule,

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import type { PageBrief } from './page-brief.service';
 
 // ── Types ──
@@ -50,7 +51,10 @@ export class KeywordDensityGateService {
   /** Minimum token match ratio (tokens found / total keyword tokens) */
   private readonly MIN_TOKEN_RATIO = 0.66;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly flags: FeatureFlagsService,
+  ) {}
 
   /**
    * Expose current density rules/thresholds for API and reporting.
@@ -203,6 +207,6 @@ export class KeywordDensityGateService {
    * Whether Gate F is enabled (feature flag).
    */
   isEnabled(): boolean {
-    return this.configService.get('KEYWORD_DENSITY_GATE_ENABLED') === 'true';
+    return this.flags.keywordDensityGateEnabled;
   }
 }

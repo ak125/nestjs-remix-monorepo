@@ -797,11 +797,13 @@ export class ContentRefreshService extends SupabaseBaseService {
     }
 
     // Queue BullMQ job
+    const refreshLogIdNum = row.id as number;
     const jobData: ContentRefreshJobData = {
-      refreshLogId: row.id as number,
+      refreshLogId: refreshLogIdNum,
       pgId,
       pgAlias,
       pageType,
+      correlationId: `cr-${refreshLogIdNum}-${Date.now()}`,
       ...(supplementaryFiles.length > 0 ? { supplementaryFiles } : {}),
       ...(force ? { force } : {}),
     };
@@ -870,10 +872,12 @@ export class ContentRefreshService extends SupabaseBaseService {
       return false;
     }
 
+    const refreshLogIdNum = row.id as number;
     const jobData: ContentRefreshJobDataR5 = {
-      refreshLogId: row.id as number,
+      refreshLogId: refreshLogIdNum,
       diagnosticSlug,
       pageType: 'R5_diagnostic',
+      correlationId: `cr-${refreshLogIdNum}-${Date.now()}`,
     };
 
     const job = await this.contentRefreshQueue.add('content-refresh', jobData, {

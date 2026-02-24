@@ -4,6 +4,7 @@ import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
 import { AiContentService } from '../../ai-content/ai-content.service';
 import { PageBriefService } from './page-brief.service';
 import { ConfigService } from '@nestjs/config';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -113,6 +114,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly ragService: RagProxyService,
+    private readonly flags: FeatureFlagsService,
     @Optional() private readonly aiContentService?: AiContentService,
     @Optional() private readonly pageBriefService?: PageBriefService,
   ) {
@@ -1321,7 +1323,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
     const { error } = await this.client
       .from('__seo_gamme_conseil')
-      .upsert(upsertRows, { onConflict: 'sgc_id,sgc_pg_id' });
+      .upsert(upsertRows, { onConflict: 'sgc_pg_id,sgc_section_type' });
 
     if (error) {
       this.logger.error(
@@ -1378,6 +1380,23 @@ export class ConseilEnricherService extends SupabaseBaseService {
     'Monroe',
     'KYB',
   ];
+
+  /**
+   * Detects marketing/promotional content from supplementary sources (PDFs, web).
+   * Rejects: superlatives, competitive claims, product promotions, brand-specific features.
+   */
+  private static readonly MARKETING_PATTERNS = [
+    /\b(meilleur|best|superior|unmatched|inégalé|exceptionnel|premium)\b/i,
+    /\b(nos\s+filtres|our\s+filters|notre\s+gamme|our\s+range)\b/i,
+    /\b(FILTRON|MANN.?FILTER|K&N|BMC|Pipercross|JR\s+Filters)\b/i,
+    /\b(\d+\s*%\s*(plus|more|better|meilleur|supérieur))\b/i,
+    /\b(garantie?\s+à\s+vie|lifetime\s+warranty)\b/i,
+    /\b(découvrez|discover|essayez|try\s+our)\b/i,
+  ];
+
+  private static isMarketingContent(text: string): boolean {
+    return ConseilEnricherService.MARKETING_PATTERNS.some((p) => p.test(text));
+  }
 
   /**
    * Load supplementary files, clean, anonymize, and classify their content
@@ -1705,14 +1724,15 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     }
 
-    // S5 (errors) → deduplicate + append max 5
+    // S5 (errors) → deduplicate + filter marketing + append max 5
     if (supplementary.errors.length > 0) {
       const existing = new Set(
         (contract.antiMistakes || []).map((e) => e.toLowerCase().slice(0, 40)),
       );
-      const newItems = supplementary.errors.filter(
-        (e) => !existing.has(e.toLowerCase().slice(0, 40)),
-      );
+      const newItems = supplementary.errors.filter((e) => {
+        if (existing.has(e.toLowerCase().slice(0, 40))) return false;
+        return !ConseilEnricherService.isMarketingContent(e);
+      });
       if (newItems.length > 0) {
         contract.antiMistakes = [
           ...(contract.antiMistakes || []),
@@ -1839,13 +1859,12 @@ export class ConseilEnricherService extends SupabaseBaseService {
     if (this.aiContentService && !conservativeMode) {
       try {
         // Brief-aware template selection (Phase 2)
-        const brief =
-          process.env.BRIEF_AWARE_ENABLED === 'true'
-            ? await this.pageBriefService?.getActiveBrief(
-                parseInt(pgId),
-                'R3_conseils',
-              )
-            : null;
+        const brief = this.flags.briefAwareEnabled
+          ? await this.pageBriefService?.getActiveBrief(
+              parseInt(pgId),
+              'R3_conseils',
+            )
+          : null;
 
         const gammeLabelName = pgAlias.replace(/-/g, ' ');
         const result = await this.aiContentService.generateContent({

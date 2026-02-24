@@ -11,6 +11,7 @@ import type { Response } from 'express';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ExternalServiceException } from '../../common/exceptions';
 import { ConfigService } from '@nestjs/config';
+import { CacheService } from '../../cache/cache.service';
 import { promises as fs, readdirSync, statSync, readFileSync } from 'node:fs';
 import Anthropic from '@anthropic-ai/sdk';
 import path from 'node:path';
@@ -40,6 +41,21 @@ interface CircuitBreakerState {
 const CB_THRESHOLD = 5; // failures before opening
 const CB_RESET_MS = 30_000; // 30s before half-open probe
 
+/** Shape of a web ingestion job stored in Redis. */
+export interface WebJob {
+  jobId: string;
+  url: string;
+  status: string;
+  truthLevel: string;
+  startedAt: number;
+  finishedAt: number | null;
+  returnCode: number | null;
+  logLines: string[];
+}
+
+const WEB_JOB_KEY_PREFIX = 'rag:web-jobs:';
+const WEB_JOB_TTL_SECONDS = 3_600; // 1 hour — matches former JOB_RETENTION_MS
+
 @Injectable()
 export class RagProxyService implements OnModuleDestroy {
   private readonly logger = new Logger(RagProxyService.name);
@@ -68,24 +84,9 @@ export class RagProxyService implements OnModuleDestroy {
     { count: number; confidenceSum: number; lastSeenAt: string }
   >();
 
-  /** In-memory store for web ingestion jobs (survives until server restart). */
-  private readonly webJobs = new Map<
-    string,
-    {
-      jobId: string;
-      url: string;
-      status: string;
-      truthLevel: string;
-      startedAt: number;
-      finishedAt: number | null;
-      returnCode: number | null;
-      logLines: string[];
-    }
-  >();
-  private static readonly MAX_WEB_JOBS = 100;
-  private static readonly JOB_RETENTION_MS = 3_600_000; // 1h
+  private static readonly RUNNING_JOB_TIMEOUT_MS = 1_800_000; // 30min
 
-  /** Periodic cleanup interval for completed web jobs */
+  /** Periodic cleanup interval for orphaned running jobs */
   private jobCleanupInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(
@@ -94,6 +95,7 @@ export class RagProxyService implements OnModuleDestroy {
     private readonly frontmatterValidator: FrontmatterValidatorService,
     private readonly ragCleanupService: RagCleanupService,
     private readonly webhookAuditService: WebhookAuditService,
+    private readonly cacheService: CacheService,
   ) {
     // URL externe obligatoire - le RAG est sur un serveur SÉPARÉ (pas Docker local)
     this.ragUrl = this.configService.getOrThrow<string>('RAG_SERVICE_URL');
@@ -103,9 +105,9 @@ export class RagProxyService implements OnModuleDestroy {
     this.ragPdfDropContainerRoot =
       process.env.RAG_PDF_DROP_CONTAINER_ROOT || '/app/pdfs';
 
-    // Cleanup completed web jobs every 10 minutes
+    // Timeout orphaned running web jobs every 10 minutes (TTL handles expiry)
     this.jobCleanupInterval = setInterval(
-      () => this.cleanupCompletedJobs(),
+      () => void this.cleanupOrphanedJobs(),
       600_000,
     );
 
@@ -118,39 +120,125 @@ export class RagProxyService implements OnModuleDestroy {
       clearInterval(this.jobCleanupInterval);
       this.jobCleanupInterval = null;
     }
-    this.webJobs.clear();
+    // Web jobs persist in Redis — no need to clear on shutdown
     this.intentStats.clear();
-    this.logger.log('RagProxyService destroyed, jobs and stats cleared');
+    this.logger.log(
+      'RagProxyService destroyed, stats cleared (jobs persist in Redis)',
+    );
   }
 
-  /** Remove completed/failed web jobs older than retention period */
-  private cleanupCompletedJobs(): void {
-    const cutoff = Date.now() - RagProxyService.JOB_RETENTION_MS;
-    let removed = 0;
-    for (const [jobId, job] of this.webJobs) {
-      if (job.status !== 'running' && job.startedAt * 1000 < cutoff) {
-        this.webJobs.delete(jobId);
-        removed++;
+  // ── Redis-backed web job helpers ──
+
+  /** Persist a web job to Redis with TTL auto-expiry. */
+  private async redisSetJob(job: WebJob): Promise<void> {
+    try {
+      await this.cacheService.set(
+        `${WEB_JOB_KEY_PREFIX}${job.jobId}`,
+        job,
+        WEB_JOB_TTL_SECONDS,
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to persist web job ${job.jobId} to Redis: ${getErrorMessage(err)}`,
+      );
+    }
+  }
+
+  /** Read a single web job from Redis. Returns null if missing or on error. */
+  private async redisGetJob(jobId: string): Promise<WebJob | null> {
+    try {
+      return await this.cacheService.get<WebJob>(
+        `${WEB_JOB_KEY_PREFIX}${jobId}`,
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to read web job ${jobId} from Redis: ${getErrorMessage(err)}`,
+      );
+      return null;
+    }
+  }
+
+  /** Read all web jobs from Redis using key pattern scan. */
+  private async redisGetAllJobs(): Promise<WebJob[]> {
+    try {
+      // CacheService.clearByPattern returns count — we need the keys.
+      // Access the underlying Redis client via getOrSet trick is not ideal.
+      // Instead, we use a known-keys approach: store an index set of active job IDs.
+      const index = await this.cacheService.get<string[]>(
+        `${WEB_JOB_KEY_PREFIX}_index`,
+      );
+      if (!index || index.length === 0) return [];
+
+      const jobs: WebJob[] = [];
+      const validIds: string[] = [];
+      for (const jobId of index) {
+        const job = await this.redisGetJob(jobId);
+        if (job) {
+          jobs.push(job);
+          validIds.push(jobId);
+        }
+      }
+      // Prune stale IDs from index (keys expired by TTL)
+      if (validIds.length !== index.length) {
+        await this.cacheService.set(
+          `${WEB_JOB_KEY_PREFIX}_index`,
+          validIds,
+          WEB_JOB_TTL_SECONDS * 2, // index lives longer than individual jobs
+        );
+      }
+      return jobs;
+    } catch (err) {
+      this.logger.warn(
+        `Failed to list web jobs from Redis: ${getErrorMessage(err)}`,
+      );
+      return [];
+    }
+  }
+
+  /** Add a job ID to the Redis index set. */
+  private async redisAddToIndex(jobId: string): Promise<void> {
+    try {
+      const index =
+        (await this.cacheService.get<string[]>(
+          `${WEB_JOB_KEY_PREFIX}_index`,
+        )) || [];
+      if (!index.includes(jobId)) {
+        index.push(jobId);
+      }
+      await this.cacheService.set(
+        `${WEB_JOB_KEY_PREFIX}_index`,
+        index,
+        WEB_JOB_TTL_SECONDS * 2,
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to update web jobs index in Redis: ${getErrorMessage(err)}`,
+      );
+    }
+  }
+
+  /** Timeout orphaned running jobs (>30min). TTL handles normal expiry. */
+  private async cleanupOrphanedJobs(): Promise<void> {
+    const runningCutoff = Date.now() - RagProxyService.RUNNING_JOB_TIMEOUT_MS;
+    let timedOut = 0;
+
+    const jobs = await this.redisGetAllJobs();
+    for (const job of jobs) {
+      if (job.status === 'running' && job.startedAt * 1000 < runningCutoff) {
+        job.status = 'failed';
+        job.returnCode = -1;
+        job.logLines.push(
+          `[cleanup] Job timed out after ${RagProxyService.RUNNING_JOB_TIMEOUT_MS / 60_000}min — marked as failed`,
+        );
+        await this.redisSetJob(job);
+        timedOut++;
+        this.logger.warn(
+          `Job ${job.jobId} timed out after ${RagProxyService.RUNNING_JOB_TIMEOUT_MS / 60_000}min, marked as failed`,
+        );
       }
     }
-    // Also enforce hard cap: keep only MAX_WEB_JOBS most recent
-    if (this.webJobs.size > RagProxyService.MAX_WEB_JOBS) {
-      const sorted = [...this.webJobs.entries()].sort(
-        (a, b) => a[1].startedAt - b[1].startedAt,
-      );
-      const toRemove = sorted.slice(
-        0,
-        this.webJobs.size - RagProxyService.MAX_WEB_JOBS,
-      );
-      for (const [id] of toRemove) {
-        this.webJobs.delete(id);
-        removed++;
-      }
-    }
-    if (removed > 0) {
-      this.logger.debug(
-        `Cleaned up ${removed} completed web jobs, ${this.webJobs.size} remaining`,
-      );
+    if (timedOut > 0) {
+      this.logger.debug(`Timed out ${timedOut} orphaned running web jobs`);
     }
   }
 
@@ -1176,33 +1264,34 @@ export class RagProxyService implements OnModuleDestroy {
     const truthLevel = request.truthLevel || 'L3';
 
     // Prevent concurrent web ingestions
-    const runningJob = Array.from(this.webJobs.values()).find(
-      (j) => j.status === 'running',
-    );
+    const allJobs = await this.redisGetAllJobs();
+    const runningJob = allJobs.find((j) => j.status === 'running');
     if (runningJob) {
       throw new ConflictException(
         `Web ingest already running: ${runningJob.jobId} (${runningJob.url})`,
       );
     }
 
-    const job = {
+    const job: WebJob = {
       jobId,
       url,
       status: 'running',
       truthLevel,
       startedAt: Math.floor(Date.now() / 1000),
-      finishedAt: null as number | null,
-      returnCode: null as number | null,
-      logLines: [] as string[],
+      finishedAt: null,
+      returnCode: null,
+      logLines: [],
     };
-    this.webJobs.set(jobId, job);
+    await this.redisSetJob(job);
+    await this.redisAddToIndex(jobId);
 
     // Process asynchronously (don't block the HTTP response)
-    this.processWebIngest(job).catch((err) => {
+    this.processWebIngest(job).catch(async (err) => {
       job.status = 'failed';
       job.finishedAt = Math.floor(Date.now() / 1000);
       job.returnCode = 1;
       job.logLines.push(`Error: ${getErrorMessage(err)}`);
+      await this.redisSetJob(job);
       this.logger.error(
         `Web ingest job ${jobId} failed: ${getErrorMessage(err)}`,
       );
@@ -1215,16 +1304,10 @@ export class RagProxyService implements OnModuleDestroy {
   /**
    * Background pipeline: use RAG container's ingest_web.py + reindex.
    * Writes to /tmp/ (writable) inside container, then docker cp to host.
+   * The local `job` object accumulates log lines during docker exec streaming,
+   * then is persisted to Redis at key milestones to avoid excessive writes.
    */
-  private async processWebIngest(job: {
-    jobId: string;
-    url: string;
-    status: string;
-    truthLevel: string;
-    finishedAt: number | null;
-    returnCode: number | null;
-    logLines: string[];
-  }): Promise<void> {
+  private async processWebIngest(job: WebJob): Promise<void> {
     const containerName = process.env.RAG_CONTAINER_NAME || 'rag-api-prod';
     const knowledgeHostPath =
       process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
@@ -1245,6 +1328,7 @@ export class RagProxyService implements OnModuleDestroy {
     ].join(' ');
 
     await this.execDockerCmd(containerName, ingestCmd, job);
+    await this.redisSetJob(job); // persist after ingest step
 
     // Step 2: Detect output subdirectory (web/ or web-catalog/)
     const { execSync } = await import('node:child_process');
@@ -1277,6 +1361,7 @@ export class RagProxyService implements OnModuleDestroy {
         `✓ ${validation.valid.length} file(s) passed validation`,
       );
     }
+    await this.redisSetJob(job); // persist after copy + validation
 
     // Step 4: Reindex the new files in Weaviate
     job.logLines.push('Reindexing...');
@@ -1304,6 +1389,7 @@ export class RagProxyService implements OnModuleDestroy {
     job.returnCode = 0;
     job.finishedAt = Math.floor(Date.now() / 1000);
     job.logLines.push(`Done — ${subDir}/ sections ingested and indexed`);
+    await this.redisSetJob(job); // persist final state
     this.logger.log(`Web ingest job ${job.jobId} completed for ${job.url}`);
 
     // Emit event to trigger content refresh pipeline
@@ -1441,6 +1527,19 @@ export class RagProxyService implements OnModuleDestroy {
         : this.detectAffectedGammes();
     const affectedGammes = Array.from(affectedGammesMap.keys());
     const affectedDiagnostics = this.detectAffectedDiagnostics();
+
+    // Debug: trace resolution path
+    this.logger.log(
+      `[emitIngestionCompleted] jobId=${jobId}, source=${source}, ` +
+        `validFiles=${validFiles.length}, affectedGammes=[${affectedGammes.join(', ')}]`,
+    );
+    if (affectedGammes.length === 0 && validFiles.length > 0) {
+      this.logger.warn(
+        `[emitIngestionCompleted] No gammes detected from ${validFiles.length} files: ` +
+          validFiles.slice(0, 5).join(', '),
+      );
+    }
+
     const event: RagIngestionCompletedEvent = {
       jobId,
       source,
@@ -1505,6 +1604,11 @@ export class RagProxyService implements OnModuleDestroy {
 
     const knownAliases = this.getKnownGammeAliases(knowledgePath);
     const gammeDir = path.join(knowledgePath, 'gammes');
+
+    this.logger.debug(
+      `[resolveGammesFromFiles] knowledgePath=${knowledgePath}, gammeDir=${gammeDir}, ` +
+        `knownAliases=${knownAliases.length}, filePaths=${filePaths.length}`,
+    );
 
     for (const fullPath of filePaths) {
       if (!fullPath.endsWith('.md')) continue;
@@ -1576,10 +1680,18 @@ export class RagProxyService implements OnModuleDestroy {
               titleSlug.includes(alias) ||
               titleSlugDePlural.includes(alias)
             ) {
+              this.logger.debug(
+                `[resolveGammesFromFiles] Strategy 3 match: "${titleSlug}" (deplural: "${titleSlugDePlural}") → alias "${alias}" for ${path.basename(fullPath)}`,
+              );
               addResult(alias, fullPath);
               matched = true;
               break;
             }
+          }
+          if (!matched && titleMatch) {
+            this.logger.debug(
+              `[resolveGammesFromFiles] Strategy 3 NO match: "${titleSlug}" (deplural: "${titleSlugDePlural}") for ${path.basename(fullPath)}`,
+            );
           }
         }
 
@@ -1912,21 +2024,20 @@ export class RagProxyService implements OnModuleDestroy {
   }
 
   /**
-   * List in-memory web ingestion jobs (most recent first).
+   * List web ingestion jobs persisted in Redis (most recent first).
    */
-  listWebJobs() {
-    return Array.from(this.webJobs.values())
+  async listWebJobs(): Promise<Omit<WebJob, 'logLines'>[]> {
+    const jobs = await this.redisGetAllJobs();
+    return jobs
       .sort((a, b) => b.startedAt - a.startedAt)
       .map(({ logLines: _logs, ...rest }) => rest);
   }
 
   /**
-   * Get a single web ingestion job by ID, including logs.
+   * Get a single web ingestion job by ID from Redis, including logs.
    */
-  getWebJob(jobId: string) {
-    const job = this.webJobs.get(jobId);
-    if (!job) return null;
-    return job;
+  async getWebJob(jobId: string): Promise<WebJob | null> {
+    return this.redisGetJob(jobId);
   }
 
   /**

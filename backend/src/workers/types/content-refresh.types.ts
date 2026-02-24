@@ -15,6 +15,8 @@ export interface ContentRefreshJobData {
   supplementaryFiles?: string[];
   /** Force re-enrichment even when all sections are already substantial */
   force?: boolean;
+  /** Correlation ID for end-to-end tracing across logs and DB */
+  correlationId?: string;
 }
 
 /** Job data for diagnostic refresh (R5) — keyed by diagnosticSlug, NOT pgAlias */
@@ -22,6 +24,8 @@ export interface ContentRefreshJobDataR5 {
   refreshLogId: number;
   diagnosticSlug: string;
   pageType: 'R5_diagnostic';
+  /** Correlation ID for end-to-end tracing across logs and DB */
+  correlationId?: string;
 }
 
 /** Union of all job data types */

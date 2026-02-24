@@ -181,7 +181,7 @@ export class RagProxyController {
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @ApiOperation({ summary: 'List all web URL ingestion jobs' })
   @ApiResponse({ status: 200, description: 'List of web ingestion jobs' })
-  listWebJobs() {
+  async listWebJobs() {
     return this.ragProxyService.listWebJobs();
   }
 
@@ -190,8 +190,8 @@ export class RagProxyController {
   @ApiOperation({ summary: 'Get web URL ingest job status and logs' })
   @ApiResponse({ status: 200, description: 'Job status with logs' })
   @ApiResponse({ status: 404, description: 'Job not found' })
-  getWebJobStatus(@Param('jobId') jobId: string) {
-    const job = this.ragProxyService.getWebJob(jobId);
+  async getWebJobStatus(@Param('jobId') jobId: string) {
+    const job = await this.ragProxyService.getWebJob(jobId);
     if (!job) throw new NotFoundException('Web ingest job not found');
     return job;
   }
