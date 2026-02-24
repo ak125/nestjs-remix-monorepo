@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
   RotateCcw,
+  Download,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Badge } from "~/components/ui/badge";
@@ -254,10 +255,65 @@ export default function ExecutionDetail() {
             Execution #{execution.id}
           </h2>
         </div>
-        <Badge className={statusConf.bg}>
-          <StatusIcon className={`h-3 w-3 mr-1 ${statusConf.color}`} />
-          {execution.status}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs gap-1"
+            onClick={() => {
+              const incident = {
+                exportedAt: new Date().toISOString(),
+                execution: {
+                  id: execution.id,
+                  briefId: execution.briefId,
+                  status: execution.status,
+                  attemptNumber: execution.attemptNumber,
+                  triggerSource: execution.triggerSource,
+                  durationMs: execution.durationMs,
+                  createdAt: execution.createdAt,
+                  startedAt: execution.startedAt,
+                  completedAt: execution.completedAt,
+                },
+                error: {
+                  errorMessage: execution.errorMessage,
+                  renderErrorCode: execution.renderErrorCode,
+                  retryable: execution.retryable,
+                },
+                render: {
+                  engineName: execution.engineName,
+                  engineVersion: execution.engineVersion,
+                  renderStatus: execution.renderStatus,
+                  engineResolution: execution.engineResolution,
+                  renderDurationMs: execution.renderDurationMs,
+                  renderOutputPath: execution.renderOutputPath,
+                  renderMetadata: execution.renderMetadata,
+                },
+                gates: execution.gateResults,
+                quality: {
+                  qualityScore: execution.qualityScore,
+                  qualityFlags: execution.qualityFlags,
+                },
+                featureFlags: execution.featureFlags,
+              };
+              const blob = new Blob([JSON.stringify(incident, null, 2)], {
+                type: "application/json",
+              });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `incident-exec-${execution.id}.json`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <Download className="h-3 w-3" />
+            Export Incident
+          </Button>
+          <Badge className={statusConf.bg}>
+            <StatusIcon className={`h-3 w-3 mr-1 ${statusConf.color}`} />
+            {execution.status}
+          </Badge>
+        </div>
       </div>
 
       {/* Info Grid */}
