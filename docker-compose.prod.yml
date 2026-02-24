@@ -45,6 +45,8 @@ services:
       - VIDEO_CANARY_ELIGIBLE_VIDEO_TYPES=short
       - VIDEO_CANARY_QUOTA_PER_DAY=5
       - VIDEO_RENDER_BASE_URL=http://remotion_renderer:3100
+      # P7e: Video pipeline concurrency (1 = sequential, safe default)
+      - VIDEO_PIPELINE_CONCURRENCY=1
 
     deploy:
       resources:
@@ -86,6 +88,8 @@ services:
       - S3_REGION=${S3_REGION:-eu-central-1}
       - RENDER_SERVICE_PORT=3100
       - CHROMIUM_PATH=/usr/bin/chromium
+      # P7e: Max concurrent renders (1 = sequential, safe default)
+      - VIDEO_MAX_CONCURRENT_RENDERS=1
     deploy:
       resources:
         limits:

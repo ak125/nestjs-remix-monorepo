@@ -4,7 +4,9 @@ import {
   getCompositions,
   makeCancelSignal,
 } from '@remotion/renderer';
-import { statSync, unlinkSync } from 'fs';
+import { statSync, unlinkSync, readFileSync } from 'fs';
+import { execSync } from 'child_process';
+import { createHash } from 'crypto';
 import { join } from 'path';
 import pino from 'pino';
 import type { RenderRequest } from '../types/contract';
@@ -43,6 +45,8 @@ export interface RenderVideoResult {
   fileSizeBytes: number;
   compositionId: string;
   remotionVersion: string;
+  durationSecs: number | null;
+  checksumSha256: string;
 }
 
 /**
@@ -153,6 +157,30 @@ export async function renderVideo(
     });
   }
 
+  // P7b: Validate duration with ffprobe
+  let durationSecs: number | null = null;
+  try {
+    const probeOut = execSync(
+      `ffprobe -v quiet -print_format json -show_format "${outputLocation}"`,
+      { timeout: 10000 },
+    ).toString();
+    const probeData = JSON.parse(probeOut);
+    durationSecs = parseFloat(probeData.format?.duration ?? '0');
+    if (durationSecs < 0.5) {
+      throw Object.assign(new Error(`Render too short: ${durationSecs}s`), {
+        code: 'OUTPUT_INVALID',
+      });
+    }
+  } catch (err) {
+    if ((err as { code?: string }).code === 'OUTPUT_INVALID') throw err;
+    logger.warn({ err }, 'ffprobe failed — duration not validated');
+  }
+
+  // P7b: Compute SHA256 checksum
+  const checksumSha256 = createHash('sha256')
+    .update(readFileSync(outputLocation))
+    .digest('hex');
+
   // Read remotion version from package.json
   let remotionVersion = 'unknown';
   try {
@@ -171,6 +199,8 @@ export async function renderVideo(
     fileSizeBytes: stats.size,
     compositionId: composition.id,
     remotionVersion,
+    durationSecs,
+    checksumSha256,
   };
 }
 

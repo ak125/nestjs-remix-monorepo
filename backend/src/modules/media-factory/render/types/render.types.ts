@@ -19,6 +19,15 @@ export enum RenderErrorCode {
   RENDER_CIRCUIT_BREAKER_OPEN = 'RENDER_CIRCUIT_BREAKER_OPEN',
 }
 
+// P7d: Non-retryable error codes (no automatic or manual retry)
+export const NON_RETRYABLE_CODES: readonly RenderErrorCode[] = [
+  RenderErrorCode.RENDER_ENGINE_NOT_SUPPORTED,
+  RenderErrorCode.RENDER_ARTEFACTS_INCOMPLETE,
+  RenderErrorCode.RENDER_GATES_FAILED,
+  RenderErrorCode.RENDER_OUTPUT_INVALID,
+  RenderErrorCode.RENDER_CIRCUIT_BREAKER_OPEN,
+];
+
 // ─────────────────────────────────────────────────────────────
 // Render request (processor → engine)
 // ─────────────────────────────────────────────────────────────

@@ -41,13 +41,33 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
 
   @Process({
     name: 'video-execute',
-    concurrency: 1,
+    concurrency: parseInt(process.env.VIDEO_PIPELINE_CONCURRENCY || '1', 10),
   })
   async handleVideoExecution(
     job: Job<VideoExecutionJobData>,
   ): Promise<VideoExecutionResult> {
     const { executionLogId, briefId } = job.data;
     const startTime = Date.now();
+
+    // P7a: Idempotency guard — skip if already completed
+    const currentLog = await this.client
+      .from('__video_execution_log')
+      .select('status')
+      .eq('id', executionLogId)
+      .single();
+
+    if (currentLog.data?.status === 'completed') {
+      this.logger.warn(
+        `[VEP] exec=${executionLogId} already completed — skipping`,
+      );
+      return {
+        status: 'completed',
+        canPublish: null,
+        qualityScore: null,
+        qualityFlags: [],
+        durationMs: 0,
+      };
+    }
 
     this.logger.log(
       `[VEP] Starting execution #${executionLogId} for brief=${briefId}`,
@@ -150,6 +170,62 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       };
       const renderResult = await this.renderAdapter.render(renderRequest);
 
+      // ── P7d: Handle render failure ──
+      if (renderResult.status === 'failed') {
+        const isRetryable = renderResult.retryable !== false;
+        if (!isRetryable) {
+          // Non-retryable: persist failure and return (no bull retry)
+          await this.updateExecutionLog(executionLogId, {
+            status: 'failed',
+            render_status: renderResult.status,
+            render_output_path: renderResult.outputPath,
+            render_metadata: renderResult.metadata,
+            render_duration_ms: renderResult.durationMs,
+            render_error_code: renderResult.errorCode ?? null,
+            engine_name: renderResult.engineName,
+            engine_version: renderResult.engineVersion,
+            engine_resolution: renderResult.engineResolution ?? null,
+            retryable: false,
+            is_canary: renderResult.metadata?.canary === true,
+            canary_fallback: renderResult.metadata?.fallback === true,
+            canary_error_message:
+              (renderResult.metadata?.canaryError as string) ?? null,
+            canary_error_code:
+              (renderResult.metadata?.canaryErrorCode as string) ?? null,
+            error_message:
+              renderResult.errorMessage ??
+              `Non-retryable: ${renderResult.errorCode}`,
+            completed_at: new Date().toISOString(),
+            duration_ms: Date.now() - startTime,
+            feature_flags: this.captureFeatureFlags(),
+          });
+          this.logger.warn(
+            `[VEP] exec=${executionLogId} non-retryable render failure: ${renderResult.errorCode}`,
+          );
+          return {
+            status: 'failed',
+            canPublish: null,
+            qualityScore: null,
+            qualityFlags: ['NON_RETRYABLE_RENDER_FAILURE'],
+            errorMessage: `Non-retryable: ${renderResult.errorCode}`,
+            durationMs: Date.now() - startTime,
+          };
+        }
+        // Retryable: persist partial state, then throw for bull retry
+        await this.updateExecutionLog(executionLogId, {
+          render_status: renderResult.status,
+          render_error_code: renderResult.errorCode ?? null,
+          engine_name: renderResult.engineName,
+          engine_version: renderResult.engineVersion,
+          retryable: true,
+          is_canary: renderResult.metadata?.canary === true,
+          canary_fallback: renderResult.metadata?.fallback === true,
+        });
+        throw new Error(
+          `Retryable render failure: ${renderResult.errorCode ?? 'UNKNOWN'}`,
+        );
+      }
+
       // ── Step 6: Compute quality score ──
       const qualityFlags = gateOutput.flags;
       let qualityScore = 100;
@@ -169,18 +245,13 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         );
       }
 
-      // ── Step 8: Update execution log ──
+      // ── Step 8: P7c — 2-phase finalization ──
       const durationMs = Date.now() - startTime;
+
+      // Phase 1: Persist render result + metadata (idempotent on retry)
       await this.updateExecutionLog(executionLogId, {
-        status: 'completed',
         artefact_check: artefactCheck,
         gate_results: gateOutput.gates,
-        can_publish: canPublish,
-        quality_score: qualityScore,
-        quality_flags: qualityFlags,
-        completed_at: new Date().toISOString(),
-        duration_ms: durationMs,
-        feature_flags: this.captureFeatureFlags(),
         engine_name: renderResult.engineName,
         engine_version: renderResult.engineVersion,
         render_status: renderResult.status,
@@ -190,13 +261,23 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         render_error_code: renderResult.errorCode ?? null,
         engine_resolution: renderResult.engineResolution ?? null,
         retryable: renderResult.retryable ?? false,
-        // P5: canary tracking
         is_canary: renderResult.metadata?.canary === true,
         canary_fallback: renderResult.metadata?.fallback === true,
         canary_error_message:
           (renderResult.metadata?.canaryError as string) ?? null,
         canary_error_code:
           (renderResult.metadata?.canaryErrorCode as string) ?? null,
+        feature_flags: this.captureFeatureFlags(),
+      });
+
+      // Phase 2: Mark completed (only if Phase 1 succeeded)
+      await this.updateExecutionLog(executionLogId, {
+        status: 'completed',
+        can_publish: canPublish,
+        quality_score: qualityScore,
+        quality_flags: qualityFlags,
+        completed_at: new Date().toISOString(),
+        duration_ms: durationMs,
       });
 
       // ── Step 9: Write-back to production ──
@@ -223,18 +304,24 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         `[VEP] Execution #${executionLogId} FAILED: ${errorMessage}`,
       );
 
-      await this.updateExecutionLog(executionLogId, {
-        status: 'failed',
-        error_message: errorMessage,
-        render_error_code: RenderErrorCode.RENDER_UNKNOWN_ERROR,
-        engine_resolution: null,
-        retryable: false,
-        completed_at: new Date().toISOString(),
-        duration_ms: Date.now() - startTime,
-        feature_flags: this.captureFeatureFlags(),
-      }).catch((logErr) =>
-        this.logger.error(`[VEP] Failed to update log: ${logErr}`),
-      );
+      // P7c: Try to persist error state; if DB fails too, throw for bull retry
+      try {
+        await this.updateExecutionLog(executionLogId, {
+          status: 'failed',
+          error_message: errorMessage,
+          render_error_code: RenderErrorCode.RENDER_UNKNOWN_ERROR,
+          engine_resolution: null,
+          retryable: false,
+          completed_at: new Date().toISOString(),
+          duration_ms: Date.now() - startTime,
+          feature_flags: this.captureFeatureFlags(),
+        });
+      } catch (dbErr) {
+        this.logger.error(
+          `[VEP] DB update also failed for exec #${executionLogId}: ${dbErr}`,
+        );
+        throw dbErr; // P7c: Let bull retry — DB state is inconsistent
+      }
 
       return {
         status: 'failed',
@@ -262,6 +349,8 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       this.logger.error(
         `[VEP] updateExecutionLog(${id}) error: ${error.message}`,
       );
+      // P7c: Re-throw so callers can handle DB failures
+      throw new Error(`DB update failed for execution ${id}: ${error.message}`);
     }
   }
 

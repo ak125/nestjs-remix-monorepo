@@ -167,6 +167,7 @@ export class VideoJobService extends SupabaseBaseService {
     };
 
     const bullJob = await this.videoQueue.add('video-execute', jobData, {
+      jobId: `video-exec-${executionLogId}`,
       attempts: 2,
       backoff: { type: 'exponential', delay: 30000 },
       removeOnComplete: 200,
@@ -240,6 +241,13 @@ export class VideoJobService extends SupabaseBaseService {
       );
     }
 
+    // P7d: Guard non-retryable errors
+    if (original.retryable === false) {
+      throw new BadRequestException(
+        `Execution #${executionLogId} is not retryable (${original.renderErrorCode})`,
+      );
+    }
+
     // Feature flag guard
     if (process.env.VIDEO_PIPELINE_ENABLED !== 'true') {
       throw new BadRequestException(
@@ -278,6 +286,7 @@ export class VideoJobService extends SupabaseBaseService {
     };
 
     const bullJob = await this.videoQueue.add('video-execute', jobData, {
+      jobId: `video-exec-${newLogId}`,
       attempts: 2,
       backoff: { type: 'exponential', delay: 30000 },
       removeOnComplete: 200,

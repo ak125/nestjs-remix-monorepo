@@ -9,15 +9,33 @@ import pino from 'pino';
 const logger = pino({ name: 'RenderRoute' });
 
 const TIMEOUT_MS = parseInt(process.env.VIDEO_REMOTION_TIMEOUT_MS ?? '120000', 10);
+const MAX_CONCURRENT_RENDERS = parseInt(process.env.VIDEO_MAX_CONCURRENT_RENDERS ?? '1', 10);
+let activeRenders = 0;
 
 export async function renderRoute(app: FastifyInstance): Promise<void> {
   app.post('/render', async (request, reply) => {
+    // P7e: Concurrency semaphore
+    if (activeRenders >= MAX_CONCURRENT_RENDERS) {
+      const busyResponse: RenderResponse = {
+        schemaVersion: '1.0.0',
+        status: 'failed',
+        outputPath: null,
+        durationMs: 0,
+        metadata: null,
+        errorMessage: `Renderer busy (${activeRenders}/${MAX_CONCURRENT_RENDERS} active)`,
+        errorCode: 'RENDER_PROCESS_FAILED',
+      };
+      return reply.status(503).send(busyResponse);
+    }
+    activeRenders++;
+
     const startMs = Date.now();
 
     // ── Validate request ──
     const parsed = renderRequestSchema.safeParse(request.body);
     if (!parsed.success) {
       const errorMessage = `Validation error: ${parsed.error.errors.map((e) => e.message).join(', ')}`;
+      activeRenders--;
       const response: RenderResponse = {
         schemaVersion: '1.0.0',
         status: 'failed',
@@ -72,6 +90,8 @@ export async function renderRoute(app: FastifyInstance): Promise<void> {
           remotionVersion: result.remotionVersion,
           ffmpegVersion: ffmpeg.version ?? 'unknown',
           compositionId: result.compositionId,
+          durationSecs: result.durationSecs,
+          checksumSha256: result.checksumSha256,
         },
         errorMessage: null,
         errorCode: null,
@@ -102,6 +122,8 @@ export async function renderRoute(app: FastifyInstance): Promise<void> {
         errorCode = 'RENDER_TIMEOUT';
       } else if (error.code === 'OUTPUT_EMPTY') {
         errorCode = 'OUTPUT_EMPTY';
+      } else if (error.code === 'OUTPUT_INVALID') {
+        errorCode = 'OUTPUT_INVALID';
       } else if (
         error.message?.includes('S3') ||
         error.message?.includes('upload') ||
@@ -131,6 +153,7 @@ export async function renderRoute(app: FastifyInstance): Promise<void> {
 
       return reply.status(httpStatus).send(response);
     } finally {
+      activeRenders--;
       if (localPath) {
         cleanupRenderFile(localPath);
       }

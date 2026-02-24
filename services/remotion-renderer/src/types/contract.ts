@@ -39,6 +39,8 @@ export const renderResponseSchema = z.object({
       remotionVersion: z.string(),
       ffmpegVersion: z.string(),
       compositionId: z.string(),
+      durationSecs: z.number().nullable(),
+      checksumSha256: z.string(),
     })
     .nullable(),
   errorMessage: z.string().nullable(),
@@ -50,6 +52,7 @@ export const renderResponseSchema = z.object({
       'RENDER_TIMEOUT',
       'S3_UPLOAD_FAILED',
       'OUTPUT_EMPTY',
+      'OUTPUT_INVALID',
     ])
     .nullable(),
 });
