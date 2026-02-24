@@ -420,8 +420,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           rel="stylesheet"
           href={animationsStylesheet}
           media="print"
-          // @ts-expect-error onLoad is valid on link elements
-          onLoad="this.media='all'"
+          onLoad={(e) => {
+            (e.currentTarget as HTMLLinkElement).media = "all";
+          }}
         />
         <noscript>
           <link rel="stylesheet" href={animationsStylesheet} />
