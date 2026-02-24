@@ -342,8 +342,13 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         finalStatus = 'failed';
       }
 
-      // Auto-publish if quality score >= 85 AND gates pass AND QA SEO guard passes
-      const AUTO_PUBLISH_THRESHOLD = 85;
+      // Auto-publish if quality score >= threshold AND gates pass AND QA SEO guard passes
+      const AUTO_PUBLISH_THRESHOLD = parseInt(
+        this.configService.get('CONTENT_AUTO_PUBLISH_THRESHOLD') ?? '85',
+        10,
+      );
+      const DRY_RUN_ENABLED =
+        this.configService.get('CONTENT_AUTO_PUBLISH_DRY_RUN') === 'true';
       let briefId: number | null = null;
       let briefVersion: number | null = null;
       let gateResults: unknown[] = [];
@@ -419,7 +424,15 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         qualityFlags.push(result.reason);
 
         if (finalStatus === 'auto_published') {
-          await this.markAsPublished(pgId, pgAlias, pageType);
+          if (DRY_RUN_ENABLED) {
+            this.logger.log(
+              `${ctx} [DRY-RUN] Would auto-publish ${pgAlias}/${pageType} (score=${qualityScore})`,
+            );
+            qualityFlags.push('DRY_RUN_WOULD_PUBLISH');
+            finalStatus = 'draft';
+          } else {
+            await this.markAsPublished(pgId, pgAlias, pageType);
+          }
         }
 
         // Unified publish_decision log for rollout monitoring
@@ -439,6 +452,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             repairDurationMs: result.repairResult?.durationMs ?? 0,
             softCanPublish,
             hedgeCount: hedgeResult.count,
+            isDryRun: DRY_RUN_ENABLED,
           }),
         );
       }
