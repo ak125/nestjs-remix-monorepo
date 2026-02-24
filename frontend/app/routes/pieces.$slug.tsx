@@ -604,7 +604,7 @@ export default function PiecesDetailPage() {
                   width={1920}
                   height={400}
                   className="w-full h-full object-cover opacity-25"
-                  loading="eager"
+                  loading="lazy"
                   decoding="async"
                   onError={(e) => {
                     e.currentTarget.src = "/images/placeholder-hero.webp";
@@ -626,11 +626,7 @@ export default function PiecesDetailPage() {
               aria-hidden="true"
             />
 
-            {/* Forme décorative bottom-left */}
-            <div
-              className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-black/[0.08] rounded-full blur-3xl z-[1]"
-              aria-hidden="true"
-            ></div>
+            {/* Forme décorative retirée — LCP: blur-3xl force GPU compositing layer */}
           </>
         }
       >
@@ -659,7 +655,7 @@ export default function PiecesDetailPage() {
         {/* Titre H1 dynamique optimisé SEO - utilise h1Override si disponible */}
         <div className="text-center mb-6 md:mb-8 animate-in fade-in duration-700 delay-100">
           <h1 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-            <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent drop-shadow-2xl">
+            <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent">
               {(() => {
                 // Priorité: h1Override > h1 existant > fallback
                 const rawH1 =
@@ -686,7 +682,7 @@ export default function PiecesDetailPage() {
           <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
             {/* Sous-titre dynamique en haut du cadre */}
             <div className="text-center mb-6">
-              <p className="text-white/95 text-base md:text-lg font-semibold drop-shadow-lg">
+              <p className="text-white/95 text-base md:text-lg font-semibold">
                 {(() => {
                   const name = data.content?.pg_name?.toLowerCase() || "";
                   const pluralName = pluralizePieceName(name);
@@ -702,13 +698,10 @@ export default function PiecesDetailPage() {
               {/* Image produit à gauche */}
               <div className="flex-shrink-0 w-full lg:w-80">
                 <div className="relative group">
-                  {/* Cercle décoratif arrière-plan */}
-                  <div className="absolute inset-0 -z-10">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-white/10 rounded-full blur-3xl group-hover:bg-white/15 transition-all duration-700"></div>
-                  </div>
+                  {/* Cercle décoratif retiré — LCP: blur-3xl force GPU compositing layer */}
 
                   {/* Container image */}
-                  <div className="relative bg-white/10 rounded-2xl p-6 border border-white/20 shadow-lg group-hover:border-white/40 transition-all duration-500">
+                  <div className="relative bg-white/10 rounded-2xl p-6 border border-white/20 shadow-lg">
                     <div className="w-full aspect-square flex items-center justify-center">
                       <img
                         src={
@@ -718,7 +711,7 @@ export default function PiecesDetailPage() {
                         alt={data.content?.pg_name || "Pièce auto"}
                         width={400}
                         height={400}
-                        className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
+                        className="w-full h-full object-contain"
                         loading="eager"
                         decoding="async"
                         fetchPriority="high"
@@ -731,11 +724,7 @@ export default function PiecesDetailPage() {
                     </div>
                   </div>
 
-                  {/* Particule décorative - animation retirée pour LCP */}
-                  <div
-                    className="absolute -bottom-4 -right-4 w-10 h-10 bg-white/15 rounded-full blur-xl"
-                    aria-hidden="true"
-                  ></div>
+                  {/* Particule décorative retirée — LCP: blur-xl force GPU layer */}
                 </div>
               </div>
 

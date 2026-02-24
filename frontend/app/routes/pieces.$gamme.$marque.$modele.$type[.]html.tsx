@@ -622,7 +622,7 @@ export default function PiecesVehicleRoute() {
         {/* 🚗 Badge véhicule actuel avec lien pour changer */}
         {/* Vehicle badge - full-width mobile, compact desktop */}
         <div className="mb-6 sticky top-0 md:top-4 z-20 animate-in fade-in slide-in-from-top duration-500 -mx-4 md:mx-0">
-          <div className="bg-slate-900 md:bg-white/95 md:backdrop-blur-sm md:border md:border-gray-200 md:rounded-xl md:shadow-sm px-4 py-3 md:p-4">
+          <div className="bg-slate-900 md:bg-white/95 md:border md:border-gray-200 md:rounded-xl md:shadow-sm px-4 py-3 md:p-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-500/20 md:bg-blue-100 rounded-full flex items-center justify-center">
