@@ -25,6 +25,8 @@ import {
   ChevronRight,
   AlertTriangle,
   Search,
+  Layers,
+  ClipboardList,
 } from "lucide-react";
 import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
@@ -58,6 +60,18 @@ const navItems = [
       { label: "Diagnostics (R5)", href: "/admin/seo-hub/content/diagnostics" },
       { label: "Blog", href: "/admin/seo-hub/content/blog" },
     ],
+  },
+  {
+    label: "Keyword Clusters",
+    href: "/admin/seo-hub/keyword-clusters",
+    icon: Layers,
+    description: "Clusters & overlaps",
+  },
+  {
+    label: "Page Briefs",
+    href: "/admin/seo-hub/page-briefs",
+    icon: ClipboardList,
+    description: "Briefs par gamme & role",
   },
   {
     label: "Monitoring",

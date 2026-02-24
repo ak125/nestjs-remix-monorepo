@@ -1,18 +1,12 @@
 /**
- * 📚 SEO HUB - CONTENT REFERENCES (R4)
+ * SEO HUB - CONTENT REFERENCES (R4) Layout
  *
- * Gestion des pages R4 Reference (définitions techniques)
- * Re-dirige vers le gestionnaire de contenu R4 existant
+ * Pure layout route — renders child routes via <Outlet />.
+ * List/create/edit live in _index, new, $slug child routes.
  */
 
-import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
+import { Outlet } from "@remix-run/react";
 
-export async function loader({ request }: LoaderFunctionArgs) {
-  // Pour l'instant, rediriger vers la page de contenu principale
-  // TODO: Implémenter une vue dédiée R4 quand nécessaire
-  return redirect("/admin/seo-hub/content");
-}
-
-export default function SeoHubContentReferences() {
-  return null;
+export default function SeoHubContentReferencesLayout() {
+  return <Outlet />;
 }
