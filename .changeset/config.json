@@ -4,7 +4,7 @@
   "commit": false,
   "fixed": [],
   "linked": [
-    ["@fafa/design-tokens", "@fafa/theme-automecanik", "@fafa/theme-admin", "@fafa/ui", "@fafa/patterns"]
+    ["@fafa/design-tokens", "@fafa/theme-automecanik", "@fafa/theme-admin", "@fafa/patterns"]
   ],
   "access": "public",
   "baseBranch": "main",

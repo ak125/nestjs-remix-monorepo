@@ -59,7 +59,7 @@
     "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.2",
     "turbo": "^2.8.10",
-    "typescript": "^5.1.6"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@remix-run/express": "^2.17.4",
@@ -67,7 +67,7 @@
     "@remix-run/react": "^2.17.4",
     "@remix-run/serve": "^2.17.4",
     "@remix-run/server-runtime": "^2.17.4",
-    "@supabase/supabase-js": "^2.83.0",
+    "@supabase/supabase-js": "^2.95.0",
     "abort-controller": "^3.0.0",
     "autoprefixer": "^10.4.14",
     "bcrypt": "^6.0.0",
@@ -90,6 +90,7 @@
   "overrides": {
     "path-to-regexp": "3.3.0",
     "zod": "^3.25.76",
+    "typescript": "^5.9.3",
     "@conform-to/react": "^1.13.1",
     "@conform-to/zod": "^1.13.1"
   },

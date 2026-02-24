@@ -294,7 +294,7 @@ jobs:
       - name: 🔒 Build core modules only
         run: |
           echo "🔒 Building CORE modules (no DEV ONLY)"
-          npm run build --filter=@fafa/backend --filter=@fafa/frontend --filter=@fafa/ui --filter=@repo/database-types
+          npm run build --filter=@fafa/backend --filter=@fafa/frontend --filter=@repo/database-types
 
       - name: ✅ Verify no DEV modules imported
         run: |
