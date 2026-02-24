@@ -35,4 +35,6 @@ module.exports = {
   },
   // Timeout for slower tests
   testTimeout: 30000,
+  // Limit workers to avoid RAM saturation (default = CPU count)
+  maxWorkers: 2,
 };

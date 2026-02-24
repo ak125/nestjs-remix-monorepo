@@ -1,8 +1,8 @@
 /**
- * Unit tests for RagProxyService.handleWebhookCompletion
+ * Unit tests for RagWebhookCompletionService.handleWebhookCompletion
  *
  * Tests: failed status, path resolution, gamme detection, event emission.
- * Pattern: Object.create + manual mocks (same as content-refresh.processor.test.ts).
+ * Updated for P1 split: tests target RagWebhookCompletionService (not the facade).
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -11,6 +11,7 @@
 
 jest.mock('@nestjs/common', () => ({
   Injectable: () => () => undefined,
+  Optional: () => () => undefined,
   HttpException: class extends Error {
     status: number;
     constructor(msg: string, status: number) {
@@ -63,18 +64,21 @@ jest.mock('@anthropic-ai/sdk', () => ({
   default: jest.fn(),
 }));
 
-import { RagProxyService } from '../../src/modules/rag-proxy/rag-proxy.service';
+import { RagWebhookCompletionService } from '../../src/modules/rag-proxy/services/rag-webhook-completion.service';
 import { RAG_INGESTION_COMPLETED } from '../../src/modules/rag-proxy/events/rag-ingestion.events';
 
-describe('RagProxyService — handleWebhookCompletion', () => {
+describe('RagWebhookCompletionService — handleWebhookCompletion', () => {
   let service: any;
   const mockEmit = jest.fn();
   const mockRecordWebhook = jest.fn().mockResolvedValue(undefined);
+  const mockResolveGammesFromFiles = jest.fn();
+  const mockDetectAffectedGammes = jest.fn();
+  const mockDetectAffectedDiagnostics = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    service = Object.create(RagProxyService.prototype);
+    service = Object.create(RagWebhookCompletionService.prototype);
     service.logger = {
       log: jest.fn(),
       warn: jest.fn(),
@@ -83,9 +87,21 @@ describe('RagProxyService — handleWebhookCompletion', () => {
     };
     service.eventEmitter = { emit: mockEmit };
     service.webhookAuditService = { recordWebhook: mockRecordWebhook };
+    service.configService = {
+      get: jest.fn((key: string) => {
+        if (key === 'RAG_KNOWLEDGE_PATH')
+          return '/opt/automecanik/rag/knowledge';
+        return undefined;
+      }),
+    };
+    service.ragGammeDetectionService = {
+      resolveGammesFromFiles: mockResolveGammesFromFiles,
+      detectAffectedGammes: mockDetectAffectedGammes,
+      detectAffectedDiagnostics: mockDetectAffectedDiagnostics,
+    };
 
-    // Mock private methods
-    service.resolveGammesFromFiles = jest.fn().mockResolvedValue(
+    // Default mock returns
+    mockResolveGammesFromFiles.mockResolvedValue(
       new Map([
         [
           'disque-de-frein',
@@ -93,10 +109,10 @@ describe('RagProxyService — handleWebhookCompletion', () => {
         ],
       ]),
     );
-    service.detectAffectedGammes = jest.fn().mockReturnValue(
+    mockDetectAffectedGammes.mockReturnValue(
       new Map([['filtre-a-huile', []]]),
     );
-    service.detectAffectedDiagnostics = jest.fn().mockReturnValue([]);
+    mockDetectAffectedDiagnostics.mockReturnValue([]);
   });
 
   it('should return event_emitted=false when status is "failed"', async () => {
@@ -112,7 +128,10 @@ describe('RagProxyService — handleWebhookCompletion', () => {
   });
 
   it('should resolve relative file paths to absolute using RAG_KNOWLEDGE_PATH', async () => {
-    process.env.RAG_KNOWLEDGE_PATH = '/test/knowledge';
+    service.configService.get = jest.fn((key: string) => {
+      if (key === 'RAG_KNOWLEDGE_PATH') return '/test/knowledge';
+      return undefined;
+    });
 
     await service.handleWebhookCompletion({
       job_id: 'test-path',
@@ -121,11 +140,9 @@ describe('RagProxyService — handleWebhookCompletion', () => {
       files_created: ['gammes/disque-de-frein.md'],
     });
 
-    expect(service.resolveGammesFromFiles).toHaveBeenCalledWith([
+    expect(mockResolveGammesFromFiles).toHaveBeenCalledWith([
       '/test/knowledge/gammes/disque-de-frein.md',
     ]);
-
-    delete process.env.RAG_KNOWLEDGE_PATH;
   });
 
   it('should call resolveGammesFromFiles when files_created is provided', async () => {
@@ -136,8 +153,8 @@ describe('RagProxyService — handleWebhookCompletion', () => {
       files_created: ['gammes/disque-de-frein.md'],
     });
 
-    expect(service.resolveGammesFromFiles).toHaveBeenCalledTimes(1);
-    expect(service.detectAffectedGammes).not.toHaveBeenCalled();
+    expect(mockResolveGammesFromFiles).toHaveBeenCalledTimes(1);
+    expect(mockDetectAffectedGammes).not.toHaveBeenCalled();
   });
 
   it('should fall back to detectAffectedGammes when files_created is empty', async () => {
@@ -148,8 +165,8 @@ describe('RagProxyService — handleWebhookCompletion', () => {
       files_created: [],
     });
 
-    expect(service.resolveGammesFromFiles).not.toHaveBeenCalled();
-    expect(service.detectAffectedGammes).toHaveBeenCalledTimes(1);
+    expect(mockResolveGammesFromFiles).not.toHaveBeenCalled();
+    expect(mockDetectAffectedGammes).toHaveBeenCalledTimes(1);
   });
 
   it('should emit RAG_INGESTION_COMPLETED event with correct payload', async () => {
@@ -173,9 +190,10 @@ describe('RagProxyService — handleWebhookCompletion', () => {
   });
 
   it('should include affectedDiagnostics in event when detected', async () => {
-    service.detectAffectedDiagnostics = jest
-      .fn()
-      .mockReturnValue(['vibration-turbo', 'bruit-frein']);
+    mockDetectAffectedDiagnostics.mockReturnValue([
+      'vibration-turbo',
+      'bruit-frein',
+    ]);
 
     await service.handleWebhookCompletion({
       job_id: 'test-diag',
@@ -192,7 +210,7 @@ describe('RagProxyService — handleWebhookCompletion', () => {
   });
 
   it('should return gammes_detected array matching resolved gammes', async () => {
-    service.resolveGammesFromFiles = jest.fn().mockResolvedValue(
+    mockResolveGammesFromFiles.mockResolvedValue(
       new Map([
         ['disque-de-frein', ['/path/a.md']],
         ['filtre-a-huile', ['/path/b.md']],

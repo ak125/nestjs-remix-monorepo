@@ -5,6 +5,8 @@ import { AiContentService } from '../../ai-content/ai-content.service';
 import { PageBriefService } from './page-brief.service';
 import { ConfigService } from '@nestjs/config';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import { EnricherTextUtils } from './enricher-text-utils.service';
+import { EnricherYamlParser } from './enricher-yaml-parser.service';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
@@ -83,6 +85,8 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly ragService: RagProxyService,
     private readonly flags: FeatureFlagsService,
+    private readonly textUtils: EnricherTextUtils,
+    private readonly yamlParser: EnricherYamlParser,
     @Optional() private readonly aiContentService?: AiContentService,
     @Optional() private readonly pageBriefService?: PageBriefService,
   ) {
@@ -429,7 +433,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
           body = body.replace(/^---\n[\s\S]*?\n---\n?/, '');
           if (body.trim().length < 50) continue;
           // Anonymize: remove OEM brand names
-          body = this.anonymizeContent(body);
+          body = this.textUtils.anonymizeContent(body);
           allContent += '\n\n' + body;
           appendedCount++;
         } catch (err) {
@@ -456,17 +460,18 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     const v4Data = this.parseV4Frontmatter(gammeContent);
     const pageContract = v4Data
       ? null
-      : this.parsePageContractYaml(gammeContent);
+      : this.yamlParser.parsePageContractYaml(gammeContent);
 
     // ── Extract anti_mistakes ──
     const errorsSection = this.extractSection(allContent, 'Erreurs a eviter');
     const antiMistakes = errorsSection
-      ? this.extractBulletList(errorsSection)
+      ? this.textUtils.extractBulletList(errorsSection)
       : [];
     // Also look for "Erreurs à éviter" with accent
     if (antiMistakes.length === 0) {
       const errorsAlt = this.extractSection(allContent, 'Erreurs à éviter');
-      if (errorsAlt) antiMistakes.push(...this.extractBulletList(errorsAlt));
+      if (errorsAlt)
+        antiMistakes.push(...this.textUtils.extractBulletList(errorsAlt));
     }
     // NOTE: "Attention aux Fausses Promesses" heading alias removed (2026-02-24)
     // That section contains purchase_guardrails (❌ "homologué CT" etc.), NOT anti-mistakes.
@@ -488,7 +493,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       this.extractSection(allContent, 'Solutions') ||
       this.extractSection(allContent, 'Solutions (par ordre');
     if (solutionsSection) {
-      const solutionItems = this.extractBulletList(solutionsSection);
+      const solutionItems = this.textUtils.extractBulletList(solutionsSection);
       for (const item of solutionItems) {
         if (
           !antiMistakes.some(
@@ -532,7 +537,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     const checklistAlias =
       this.extractSection(allContent, 'Criteres de Compatibilite') ||
       this.extractSection(allContent, 'Critères de Compatibilité');
-    const checklistItems = this.extractBulletList(
+    const checklistItems = this.textUtils.extractBulletList(
       checklistSection || checklistAlt || checklistAlias || '',
     );
     const selectionCriteria = this.buildCriteriaFromCheckList(checklistItems);
@@ -756,7 +761,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     // v4: use parsed FAQ from yaml.load() (reliable), legacy: regex-based parser
     const fmFaqs = v4Data?.faq?.length
       ? v4Data.faq
-      : this.parseFrontmatterFaq(gammeContent);
+      : this.yamlParser.parseFrontmatterFaq(gammeContent);
     const allFaqs = [...guideFaqs];
     for (const faq of fmFaqs) {
       if (
@@ -809,7 +814,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         this.extractSection(allContent, 'Guide de choix') ||
         this.extractSection(allContent, 'Bien choisir');
       if (choixSection) {
-        const items = this.extractBulletList(choixSection);
+        const items = this.textUtils.extractBulletList(choixSection);
         if (items.length >= 2) {
           howToChooseContent = items.slice(0, 5).join('. ') + '.';
         }
@@ -953,69 +958,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     return null;
   }
 
-  // ── YAML frontmatter parsers ──
-
-  /**
-   * Extract a flat list of strings from YAML frontmatter.
-   * Looks for a key like "antiMistakes:" and collects indented "- item" lines.
-   */
-  private parseFrontmatterList(content: string, key: string): string[] {
-    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-    if (!fmMatch) return [];
-    const fmBlock = fmMatch[1];
-    const keyIdx = fmBlock.indexOf(`${key}:`);
-    if (keyIdx < 0) return [];
-    const afterKey = fmBlock.substring(keyIdx);
-    const lines = afterKey.split('\n').slice(1); // skip the key line itself
-    const items: string[] = [];
-    for (const line of lines) {
-      const m = line.match(/^\s+-\s+(.+)/);
-      if (m) {
-        items.push(m[1].trim());
-      } else if (line.trim() && !line.match(/^\s/)) {
-        break; // next top-level key
-      }
-    }
-    return items;
-  }
-
-  /**
-   * Extract FAQ items ({question, answer}) from YAML frontmatter.
-   * Expects structure: faq:\n  - question: ...\n    answer: ...
-   */
-  private parseFrontmatterFaq(
-    content: string,
-  ): Array<{ question: string; answer: string }> {
-    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-    if (!fmMatch) return [];
-    const fmBlock = fmMatch[1];
-    const faqIdx = fmBlock.indexOf('faq:');
-    if (faqIdx < 0) return [];
-    const faqs: Array<{ question: string; answer: string }> = [];
-    const afterFaq = fmBlock.substring(faqIdx);
-    const lines = afterFaq.split('\n').slice(1);
-    let currentQ = '';
-    let currentA = '';
-    for (const line of lines) {
-      const qMatch = line.match(/^\s+-?\s*question:\s+(.+)/);
-      const aMatch = line.match(/^\s+-?\s*answer:\s+(.+)/);
-      if (qMatch) {
-        if (currentQ && currentA) {
-          faqs.push({ question: currentQ, answer: currentA });
-        }
-        currentQ = qMatch[1].trim().replace(/^['"]|['"]$/g, '');
-        currentA = '';
-      } else if (aMatch) {
-        currentA = aMatch[1].trim().replace(/^['"]|['"]$/g, '');
-      } else if (line.trim() && !line.match(/^\s/)) {
-        break; // next top-level key
-      }
-    }
-    if (currentQ && currentA) {
-      faqs.push({ question: currentQ, answer: currentA });
-    }
-    return faqs;
-  }
+  // ── YAML frontmatter parsers — delegated to EnricherYamlParser ──
 
   // ── Disk reader (fallback when RAG API strips frontmatter) ──
 
@@ -1027,117 +970,6 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     } catch {
       return null;
     }
-  }
-
-  // ── Page contract YAML parser ──
-
-  /**
-   * Parse page_contract from YAML frontmatter to extract structured data.
-   * Used as fallback when markdown heading extraction yields insufficient results.
-   */
-  private parsePageContractYaml(content: string): {
-    antiMistakes?: string[];
-    symptoms?: string[];
-    howToChoose?: string;
-    diagnosticTree?: Array<{ if: string; then: string }>;
-    arguments?: Array<{ title: string; content: string }>;
-  } | null {
-    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-    if (!fmMatch) return null;
-    const fm = fmMatch[1];
-
-    if (!fm.includes('page_contract:')) return null;
-
-    const result: {
-      antiMistakes?: string[];
-      symptoms?: string[];
-      howToChoose?: string;
-      diagnosticTree?: Array<{ if: string; then: string }>;
-      arguments?: Array<{ title: string; content: string }>;
-    } = {};
-
-    // antiMistakes list
-    const antiMistakes = this.parseFrontmatterList(content, 'antiMistakes');
-    if (antiMistakes.length > 0) result.antiMistakes = antiMistakes;
-
-    // symptoms list (under page_contract)
-    const pcIdx = fm.indexOf('page_contract:');
-    if (pcIdx >= 0) {
-      const pcBlock = fm.substring(pcIdx);
-      const sympIdx = pcBlock.indexOf('symptoms:');
-      if (sympIdx >= 0) {
-        const afterSymp = pcBlock.substring(sympIdx);
-        const lines = afterSymp.split('\n').slice(1);
-        const symptoms: string[] = [];
-        for (const line of lines) {
-          const m = line.match(/^\s+-\s+['"]?(.+?)['"]?\s*$/);
-          if (m) {
-            symptoms.push(m[1].trim());
-          } else if (line.trim() && !line.match(/^\s/)) {
-            break;
-          }
-        }
-        if (symptoms.length > 0) result.symptoms = symptoms;
-      }
-    }
-
-    // howToChoose (inline string, not a list)
-    const htcMatch = fm.match(/howToChoose:\s+(.+)$/m);
-    if (htcMatch) result.howToChoose = htcMatch[1].trim();
-
-    // diagnostic_tree (top-level, not under page_contract)
-    const dtIdx = fm.indexOf('diagnostic_tree:');
-    if (dtIdx >= 0) {
-      const afterDt = fm.substring(dtIdx);
-      const dtLines = afterDt.split('\n').slice(1);
-      const nodes: Array<{ if: string; then: string }> = [];
-      let curIf = '';
-      let curThen = '';
-      for (const line of dtLines) {
-        const ifM = line.match(/^\s*-?\s*if:\s*(.+)/);
-        const thenM = line.match(/^\s+then:\s*(.+)/);
-        if (ifM) {
-          if (curIf && curThen) nodes.push({ if: curIf, then: curThen });
-          curIf = ifM[1].trim();
-          curThen = '';
-        } else if (thenM) {
-          curThen = thenM[1].trim();
-        } else if (line.trim() && !line.match(/^\s/) && !line.startsWith('-')) {
-          break;
-        }
-      }
-      if (curIf && curThen) nodes.push({ if: curIf, then: curThen });
-      if (nodes.length > 0) result.diagnosticTree = nodes;
-    }
-
-    // arguments (under page_contract)
-    const argIdx = fm.indexOf('arguments:');
-    if (argIdx >= 0) {
-      const afterArg = fm.substring(argIdx);
-      const argLines = afterArg.split('\n').slice(1);
-      const args: Array<{ title: string; content: string }> = [];
-      let curTitle = '';
-      let curContent = '';
-      for (const line of argLines) {
-        const titleM = line.match(/^\s+title:\s+(.+)/);
-        const contentM = line.match(/^\s+content:\s+(.+)/);
-        if (titleM) {
-          curTitle = titleM[1].trim();
-        } else if (contentM) {
-          curContent = contentM[1].trim();
-          if (curTitle && curContent) {
-            args.push({ title: curTitle, content: curContent });
-            curTitle = '';
-            curContent = '';
-          }
-        } else if (line.trim() && !line.match(/^\s/) && !line.startsWith('-')) {
-          break;
-        }
-      }
-      if (args.length > 0) result.arguments = args;
-    }
-
-    return Object.keys(result).length > 0 ? result : null;
   }
 
   // ── v4 schema frontmatter parser (js-yaml) ──
@@ -1161,11 +993,11 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     diagnosticTree: Array<{ if: string; then: string }>;
   } | null {
     try {
-      const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-      if (!fmMatch) return null;
+      const fmBlock = this.yamlParser.extractFrontmatterBlock(content);
+      if (!fmBlock) return null;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const fm = yaml.load(fmMatch[1]) as Record<string, any>;
+      const fm = yaml.load(fmBlock) as Record<string, any>;
       if (!fm) return null;
 
       // v4 detection — same 3-path check as conseil-enricher
@@ -1275,9 +1107,9 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
    * Detect if content is non-French using frontmatter lang tag + English heuristic.
    */
   private isNonFrenchContent(content: string): boolean {
-    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-    if (fmMatch) {
-      const langMatch = fmMatch[1].match(/^lang:\s*(\w+)/m);
+    const fmBlock = this.yamlParser.extractFrontmatterBlock(content);
+    if (fmBlock) {
+      const langMatch = fmBlock.match(/^lang:\s*(\w+)/m);
       if (langMatch && langMatch[1] !== 'fr') return true;
     }
     const sample = content.substring(0, 500).toLowerCase();
@@ -1361,19 +1193,6 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     return content || null;
   }
 
-  private extractBulletList(section: string): string[] {
-    return section
-      .split('\n')
-      .map((line) =>
-        line
-          .replace(/^[-•*\d.)\s]+/, '') // Strip leading list markers
-          .replace(/\*\*(.+?)\*\*/g, '$1') // Strip **bold** markdown
-          .replace(/\*(.+?)\*/g, '$1') // Strip *italic* markdown
-          .trim(),
-      )
-      .filter((line) => line.length >= 10);
-  }
-
   /**
    * Extract numbered list items from a markdown section.
    * Matches: "1. **Title** - Description" or "1. Description"
@@ -1417,7 +1236,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     const nodes: z.infer<typeof DecisionNodeSchema>[] = [];
 
     // Node 1: Visual inspection (from tests simples)
-    const simpleTests = this.extractBulletList(testsSection);
+    const simpleTests = this.textUtils.extractBulletList(testsSection);
     if (simpleTests.length > 0) {
       nodes.push({
         id: 'step-visual',
@@ -1439,7 +1258,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     }
 
     // Node 2: Workshop tests (from tests atelier)
-    const atelierTests = this.extractBulletList(testsAtelierSection);
+    const atelierTests = this.textUtils.extractBulletList(testsAtelierSection);
     if (atelierTests.length > 0) {
       nodes.push({
         id: 'step-atelier',
@@ -1460,7 +1279,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     }
 
     // Node 3: Immediate replacement criteria
-    const replaceCriteria = this.extractBulletList(replaceSection);
+    const replaceCriteria = this.textUtils.extractBulletList(replaceSection);
     if (replaceCriteria.length > 0) {
       nodes.push({
         id: 'step-urgence',
@@ -1968,117 +1787,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     this.logger.log(`Buying guide updated for pgId=${pgId}`);
   }
 
-  // ── Anonymization (shared with ConseilEnricherService) ──
-
-  private static readonly OEM_BRANDS = [
-    'DENSO',
-    'Bosch',
-    'Valeo',
-    'Continental',
-    'Hella',
-    'Sachs',
-    'LuK',
-    'TRW',
-    'Brembo',
-    'ATE',
-    'Delphi',
-    'SKF',
-    'INA',
-    'FAG',
-    'Gates',
-    'Dayco',
-    'NGK',
-    'Magneti Marelli',
-    'ZF',
-    'Aisin',
-    'NTN',
-    'SNR',
-    'Febi',
-    'Bilstein',
-    'Monroe',
-    'KYB',
-    'Sachs',
-    'Lemforder',
-    'Meyle',
-    'Corteco',
-    'Elring',
-    'Victor Reinz',
-    'Mahle',
-    'Mann Filter',
-    'Purflux',
-  ];
-
-  /**
-   * Remove OEM brand names, self-promotional phrases, and third-party URLs.
-   * Content must read as AutoMecanik technical knowledge, not manufacturer copy.
-   */
-  private anonymizeContent(text: string): string {
-    let result = text;
-    for (const brand of BuyingGuideEnricherService.OEM_BRANDS) {
-      const escaped = brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      result = result.replace(new RegExp(`\\b${escaped}\\b\\s*`, 'gi'), '');
-      result = result.replace(new RegExp(`\\s*\\b${escaped}\\b`, 'gi'), '');
-    }
-    // Remove self-promotional phrases
-    result = result.replace(
-      /\b(chez|par|de|from)\s+(nous|notre|our)\b[^.]*\./gi,
-      '',
-    );
-    // Remove third-party URLs
-    result = result.replace(/https?:\/\/[^\s)]+/g, '');
-    // Clean multiple spaces
-    return result.replace(/\s{2,}/g, ' ').trim();
-  }
-
-  /**
-   * Checks if intro_role text describes a different piece than the guide title.
-   * Extracts piece name before ':' and checks for shared significant words.
-   */
   // ── SEO Content Draft Generation ──
-
-  /**
-   * Compose sg_content_draft HTML from enriched buying guide sections.
-   * Combines selection criteria, symptoms (from anti_mistakes), and use cases.
-   */
-  /**
-   * Restore common French accents missing from YAML source files.
-   */
-  private restoreAccents(text: string): string {
-    const ACCENT_MAP: Array<[RegExp, string]> = [
-      [/\bequipements?\b/gi, 'équipement'],
-      [/\belectriques?\b/gi, 'électrique'],
-      [/\bvehicules?\b/gi, 'véhicule'],
-      [/\bverifi/gi, 'vérifi'],
-      [/\bgeneral\b/gi, 'général'],
-      [/\bsecurite\b/gi, 'sécurité'],
-      [/\bprecedent/gi, 'précédent'],
-      [/\bdefaut\b/gi, 'défaut'],
-      [/\bdetect/gi, 'détect'],
-      [/\bdegradation/gi, 'dégradation'],
-      [/\bcontrole\b/gi, 'contrôle'],
-      [/\bmodele\b/gi, 'modèle'],
-      [/\bannee\b/gi, 'année'],
-      [/\bspecifi/gi, 'spécifi'],
-      [/\breferen/gi, 'référen'],
-      [/\bprocedure\b/gi, 'procédure'],
-      [/\bcomplete\b/gi, 'complète'],
-      [/\bpieces\b/gi, 'pièces'],
-      [/\bpiece\b/gi, 'pièce'],
-      [/\belectri/gi, 'électri'],
-      [/\benergie\b/gi, 'énergie'],
-      [/\bnecessaire\b/gi, 'nécessaire'],
-      [/\bpreventif\b/gi, 'préventif'],
-    ];
-    let result = text;
-    for (const [pattern, replacement] of ACCENT_MAP) {
-      result = result.replace(pattern, (match) => {
-        const suffix =
-          match.endsWith('s') && !replacement.endsWith('s') ? 's' : '';
-        return replacement + suffix;
-      });
-    }
-    return result;
-  }
 
   private composeSeoContent(
     gammeName: string,
@@ -2103,10 +1812,10 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         html += `<h2>Comment choisir vos ${displayName} ?</h2><ul>`;
         html += items
           .map((c) => {
-            const cleanLabel = this.restoreAccents(
+            const cleanLabel = this.textUtils.restoreAccents(
               c.label.replace(/\*\*/g, '').trim(),
             );
-            const cleanGuidance = this.restoreAccents(
+            const cleanGuidance = this.textUtils.restoreAccents(
               c.guidance.replace(/\*\*/g, '').trim(),
             );
             // Skip duplication: if guidance starts with label, show only guidance
@@ -2132,7 +1841,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       const items = (mistakes.content as string[])
         .slice(0, 5)
         .map((m) =>
-          this.restoreAccents(
+          this.textUtils.restoreAccents(
             m
               .replace(/^❌\s*/, '') // Strip leading ❌ emoji
               .replace(/^[""\u201C]|[""\u201D]$/g, '') // Strip surrounding quotes
@@ -2163,7 +1872,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       html += items
         .map(
           (uc) =>
-            `<li><b>${this.restoreAccents(uc.label)}</b> — ${this.restoreAccents(uc.recommendation)}</li>`,
+            `<li><b>${this.textUtils.restoreAccents(uc.label)}</b> — ${this.textUtils.restoreAccents(uc.recommendation)}</li>`,
         )
         .join('');
       html += '</ul>';

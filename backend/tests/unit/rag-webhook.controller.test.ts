@@ -45,6 +45,7 @@ jest.mock('@nestjs/common', () => {
     UseGuards: () => () => undefined,
     UsePipes: () => () => undefined,
     Injectable: () => () => undefined,
+    Optional: () => () => undefined,
     OnModuleDestroy: () => () => undefined,
     HttpStatus: { OK: 200 },
     HttpException,

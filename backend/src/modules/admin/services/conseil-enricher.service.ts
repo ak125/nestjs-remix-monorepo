@@ -11,6 +11,8 @@ import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { GENERIC_PHRASES as SHARED_GENERIC_PHRASES } from '../../../config/buying-guide-quality.constants';
 import type { EvidenceEntry } from '../../../workers/types/content-refresh.types';
+import { EnricherTextUtils } from './enricher-text-utils.service';
+import { EnricherYamlParser } from './enricher-yaml-parser.service';
 
 // ── Section type constants matching DB values ──
 
@@ -115,6 +117,8 @@ export class ConseilEnricherService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly ragService: RagProxyService,
     private readonly flags: FeatureFlagsService,
+    private readonly textUtils: EnricherTextUtils,
+    private readonly yamlParser: EnricherYamlParser,
     @Optional() private readonly aiContentService?: AiContentService,
     @Optional() private readonly pageBriefService?: PageBriefService,
   ) {
@@ -499,19 +503,19 @@ export class ConseilEnricherService extends SupabaseBaseService {
     }
 
     // intro.syncParts
-    const syncPartsItems = this.extractYamlList(fm, 'syncParts');
+    const syncPartsItems = this.yamlParser.extractYamlList(fm, 'syncParts');
     if (syncPartsItems.length > 0 && contract.intro) {
       contract.intro.syncParts = syncPartsItems;
     }
 
     // symptoms
-    const symptoms = this.extractYamlList(fm, 'symptoms');
+    const symptoms = this.yamlParser.extractYamlList(fm, 'symptoms');
     if (symptoms.length > 0) contract.symptoms = symptoms;
 
     // timing
     const timingNote = fm.match(/^\s+note:\s*['"]?(.+?)['"]?\s*$/m);
-    let timingKm = this.extractYamlList(fm, 'km');
-    let timingYears = this.extractYamlList(fm, 'years');
+    let timingKm = this.yamlParser.extractYamlList(fm, 'km');
+    let timingYears = this.yamlParser.extractYamlList(fm, 'years');
 
     // Fallback: parse inline km/years strings (e.g. km: "60 000 à 120 000")
     if (timingKm.length === 0) {
@@ -539,7 +543,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
     // risk
     const riskExpl = fm.match(/^\s+explanation:\s*['"]?(.+?)['"]?\s*$/m);
-    const riskConseq = this.extractYamlList(fm, 'consequences');
+    const riskConseq = this.yamlParser.extractYamlList(fm, 'consequences');
     if (riskExpl || riskConseq.length > 0) {
       contract.risk = {
         explanation: riskExpl?.[1]?.trim(),
@@ -548,11 +552,11 @@ export class ConseilEnricherService extends SupabaseBaseService {
     }
 
     // antiMistakes
-    const antiMistakes = this.extractYamlList(fm, 'antiMistakes');
+    const antiMistakes = this.yamlParser.extractYamlList(fm, 'antiMistakes');
     if (antiMistakes.length > 0) contract.antiMistakes = antiMistakes;
 
     // howToChoose (can be a list or an inline string)
-    const howToChoose = this.extractYamlList(fm, 'howToChoose');
+    const howToChoose = this.yamlParser.extractYamlList(fm, 'howToChoose');
     if (howToChoose.length > 0) {
       contract.howToChoose = howToChoose;
     } else {
@@ -561,7 +565,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     }
 
     // faq
-    const faqs = this.extractYamlFaq(fm);
+    const faqs = this.yamlParser.extractYamlFaq(fm);
     if (faqs.length > 0) contract.faq = faqs;
 
     // diagnosticTree
@@ -576,84 +580,6 @@ export class ConseilEnricherService extends SupabaseBaseService {
       (contract.faq && contract.faq.length > 0);
 
     return hasData ? contract : null;
-  }
-
-  private extractYamlList(fm: string, key: string): string[] {
-    const keyIdx = fm.indexOf(`${key}:`);
-    if (keyIdx < 0) return [];
-
-    // Determine indentation of the key itself
-    const lineStart = fm.lastIndexOf('\n', keyIdx) + 1;
-    const keyIndent = keyIdx - lineStart;
-
-    const afterKey = fm.substring(keyIdx);
-    const lines = afterKey.split('\n').slice(1);
-    const items: string[] = [];
-
-    for (const line of lines) {
-      if (!line.trim()) continue; // skip empty lines
-
-      const m = line.match(/^\s+-\s+['"]?(.+?)['"]?\s*$/);
-      if (m) {
-        items.push(m[1].trim());
-      } else {
-        // Non-list line: break if at same or lower indent as the key
-        const indent = line.search(/\S/);
-        if (indent >= 0 && indent <= keyIndent) {
-          break;
-        }
-      }
-    }
-    return items;
-  }
-
-  private extractYamlFaq(fm: string): Array<{ q: string; a: string }> {
-    const faqIdx = fm.indexOf('faq:');
-    if (faqIdx < 0) return [];
-
-    // Determine indentation of the faq key
-    const lineStart = fm.lastIndexOf('\n', faqIdx) + 1;
-    const keyIndent = faqIdx - lineStart;
-
-    const faqs: Array<{ q: string; a: string }> = [];
-    const afterFaq = fm.substring(faqIdx);
-    const lines = afterFaq.split('\n').slice(1);
-    let currentQ = '';
-    let currentA = '';
-    for (const line of lines) {
-      if (!line.trim()) continue;
-
-      // Break if at same or lower indent as the faq key (new sibling key)
-      const indent = line.search(/\S/);
-      if (indent >= 0 && indent <= keyIndent && !line.trim().startsWith('-')) {
-        break;
-      }
-
-      const qMatch = line.match(
-        /^\s+-?\s*(?:question|q):\s*['"]?(.+?)['"]?\s*$/,
-      );
-      const aMatch = line.match(/^\s+-?\s*(?:answer|a):\s*['"]?(.+?)['"]?\s*$/);
-      if (qMatch) {
-        currentQ = qMatch[1].trim();
-        // Push pair as soon as both Q and A are available (handles answer-first YAML)
-        if (currentQ && currentA) {
-          faqs.push({ q: currentQ, a: currentA });
-          currentQ = '';
-          currentA = '';
-        }
-      } else if (aMatch) {
-        currentA = aMatch[1].trim();
-        if (currentQ && currentA) {
-          faqs.push({ q: currentQ, a: currentA });
-          currentQ = '';
-          currentA = '';
-        }
-      }
-    }
-    if (currentQ && currentA) {
-      faqs.push({ q: currentQ, a: currentA });
-    }
-    return faqs;
   }
 
   private extractYamlDiagnosticTree(
@@ -976,7 +902,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const existingS1 = existing.get(SECTION_TYPES.S1);
       // Fair comparison: strip HTML from existing before comparing lengths
       const existingPlainLen = existingS1
-        ? this.stripHtml(existingS1.sgc_content || '').length
+        ? this.textUtils.stripHtml(existingS1.sgc_content || '').length
         : 0;
       const ragRicher =
         !existingS1 ||
@@ -1342,45 +1268,6 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
   // ── Supplementary RAG Content Integration ──
 
-  /** OEM brands to strip from supplementary content (anonymization) */
-  private static readonly OEM_BRANDS = [
-    'DENSO',
-    'Bosch',
-    'Valeo',
-    'Continental',
-    'Hella',
-    'Sachs',
-    'LuK',
-    'TRW',
-    'Brembo',
-    'ATE',
-    'Delphi',
-    'SKF',
-    'INA',
-    'FAG',
-    'Gates',
-    'Dayco',
-    'NGK',
-    'Magneti Marelli',
-    'ZF',
-    'Aisin',
-    'NTN',
-    'SNR',
-    'Febi',
-    'Meyle',
-    'Lemförder',
-    'Corteco',
-    'Elring',
-    'Mahle',
-    'Mann',
-    'Behr',
-    'Pierburg',
-    'Hengst',
-    'Bilstein',
-    'Monroe',
-    'KYB',
-  ];
-
   /**
    * Detects marketing/promotional content from supplementary sources (PDFs, web).
    * Rejects: superlatives, competitive claims, product promotions, brand-specific features.
@@ -1424,7 +1311,9 @@ export class ConseilEnricherService extends SupabaseBaseService {
         if (body.length < 100) continue;
 
         // Clean HTML artifacts + anonymize brand names
-        const cleaned = this.anonymizeContent(this.cleanWebContent(body));
+        const cleaned = this.textUtils.anonymizeContent(
+          this.cleanWebContent(body),
+        );
         if (cleaned.length < 50) continue;
 
         // Classify paragraphs into section buckets
@@ -1464,23 +1353,6 @@ export class ConseilEnricherService extends SupabaseBaseService {
     );
   }
 
-  /** Remove all OEM brand mentions and self-promotional phrases */
-  private anonymizeContent(text: string): string {
-    let result = text;
-    for (const brand of ConseilEnricherService.OEM_BRANDS) {
-      const escaped = brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      result = result.replace(new RegExp(`\\b${escaped}\\b\\s*`, 'gi'), '');
-    }
-    // Remove self-promotional phrases
-    result = result.replace(
-      /\b(chez|par|de|from)\s+(nous|notre|our)\b[^.]*\./gi,
-      '',
-    );
-    // Remove third-party URLs
-    result = result.replace(/https?:\/\/[^\s)]+/g, '');
-    return result.replace(/\s{2,}/g, ' ').trim();
-  }
-
   /**
    * Classify text chunks into section-appropriate buckets using keyword heuristics.
    */
@@ -1514,9 +1386,11 @@ export class ConseilEnricherService extends SupabaseBaseService {
           /d[eé]brancher/,
         ])
       ) {
-        const items = this.extractListItems(chunk);
+        const items = this.textUtils.extractListItems(chunk);
         result.procedures.push(
-          ...(items.length > 0 ? items : [this.truncateText(chunk, 300)]),
+          ...(items.length > 0
+            ? items
+            : [this.textUtils.truncateText(chunk, 300)]),
         );
         continue;
       }
@@ -1536,9 +1410,11 @@ export class ConseilEnricherService extends SupabaseBaseService {
           /diagnostic/,
         ])
       ) {
-        const items = this.extractListItems(chunk);
+        const items = this.textUtils.extractListItems(chunk);
         result.symptoms.push(
-          ...(items.length > 0 ? items : [this.truncateText(chunk, 200)]),
+          ...(items.length > 0
+            ? items
+            : [this.textUtils.truncateText(chunk, 200)]),
         );
         continue;
       }
@@ -1555,9 +1431,11 @@ export class ConseilEnricherService extends SupabaseBaseService {
           /avertissement/,
         ])
       ) {
-        const items = this.extractListItems(chunk);
+        const items = this.textUtils.extractListItems(chunk);
         result.errors.push(
-          ...(items.length > 0 ? items : [this.truncateText(chunk, 200)]),
+          ...(items.length > 0
+            ? items
+            : [this.textUtils.truncateText(chunk, 200)]),
         );
         continue;
       }
@@ -1587,7 +1465,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
           /types?\b/,
         ])
       ) {
-        result.definitions.push(this.truncateText(chunk, 300));
+        result.definitions.push(this.textUtils.truncateText(chunk, 300));
         continue;
       }
 
@@ -1597,12 +1475,12 @@ export class ConseilEnricherService extends SupabaseBaseService {
           []
         ).length >= 2
       ) {
-        result.specs.push(this.truncateText(chunk, 200));
+        result.specs.push(this.textUtils.truncateText(chunk, 200));
         continue;
       }
 
       if (chunk.length >= 200) {
-        result.definitions.push(this.truncateText(chunk, 200));
+        result.definitions.push(this.textUtils.truncateText(chunk, 200));
       }
     }
   }
@@ -1613,24 +1491,6 @@ export class ConseilEnricherService extends SupabaseBaseService {
     patterns: RegExp[],
   ): boolean {
     return patterns.some((p) => p.test(lower) || p.test(heading));
-  }
-
-  private extractListItems(chunk: string): string[] {
-    return chunk
-      .split('\n')
-      .map((line) =>
-        line
-          .replace(/^[-•*\d.)\s]+/, '')
-          .replace(/^#{1,4}\s+/, '')
-          .trim(),
-      )
-      .filter(
-        (line) =>
-          line.length >= 15 &&
-          line.length <= 300 &&
-          !line.includes('|') && // Skip breadcrumb/nav lines
-          !/^(Produits|Products)\b/i.test(line), // Skip product nav headers
-      );
   }
 
   private extractInlineFaq(chunk: string): Array<{ q: string; a: string }> {
@@ -1652,23 +1512,6 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     }
     return faqs;
-  }
-
-  private truncateText(text: string, maxLen: number): string {
-    const cleaned = text.replace(/^#{1,4}\s+.+\n/, '').trim();
-    if (cleaned.length <= maxLen) return cleaned;
-    return cleaned.slice(0, maxLen).replace(/\s+\S*$/, '') + '...';
-  }
-
-  /** Strip HTML tags and entities for fair text-length comparison */
-  private stripHtml(html: string): string {
-    return html
-      .replace(/<[^>]+>/g, '')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .trim();
   }
 
   /**
@@ -1694,7 +1537,8 @@ export class ConseilEnricherService extends SupabaseBaseService {
           contract.intro = { ...contract.intro, role: bestDef };
           modified = true;
         } else if (bestDef.length > contract.intro.role.length * 1.3) {
-          contract.intro.role += '. ' + this.truncateText(bestDef, 150);
+          contract.intro.role +=
+            '. ' + this.textUtils.truncateText(bestDef, 150);
           modified = true;
         }
       }
@@ -1777,48 +1621,6 @@ export class ConseilEnricherService extends SupabaseBaseService {
   // ── SEO Descrip Draft Generation ──
 
   /**
-   * Restore common French accents missing from YAML source files.
-   * Band-aid fix until YAML gamme files are regenerated with proper accents.
-   */
-  private restoreAccents(text: string): string {
-    const ACCENT_MAP: Array<[RegExp, string]> = [
-      [/\bequipements?\b/gi, 'équipement'],
-      [/\belectriques?\b/gi, 'électrique'],
-      [/\bvehicules?\b/gi, 'véhicule'],
-      [/\bverifi/gi, 'vérifi'],
-      [/\bgeneral\b/gi, 'général'],
-      [/\bsecurite\b/gi, 'sécurité'],
-      [/\bprecedent/gi, 'précédent'],
-      [/\bdefaut\b/gi, 'défaut'],
-      [/\bdetect/gi, 'détect'],
-      [/\bdegradation/gi, 'dégradation'],
-      [/\bcontrole\b/gi, 'contrôle'],
-      [/\bmodele\b/gi, 'modèle'],
-      [/\bannee\b/gi, 'année'],
-      [/\bspecifi/gi, 'spécifi'],
-      [/\breferen/gi, 'référen'],
-      [/\bprocedure\b/gi, 'procédure'],
-      [/\bcomplete\b/gi, 'complète'],
-      [/\bpieces\b/gi, 'pièces'],
-      [/\bpiece\b/gi, 'pièce'],
-      [/\belectri/gi, 'électri'],
-      [/\benergie\b/gi, 'énergie'],
-      [/\bnecessaire\b/gi, 'nécessaire'],
-      [/\bpreventif\b/gi, 'préventif'],
-    ];
-    let result = text;
-    for (const [pattern, replacement] of ACCENT_MAP) {
-      result = result.replace(pattern, (match) => {
-        // Preserve plural suffix
-        const suffix =
-          match.endsWith('s') && !replacement.endsWith('s') ? 's' : '';
-        return replacement + suffix;
-      });
-    }
-    return result;
-  }
-
-  /**
    * Compose a personalized meta description (max 160 chars) from the PageContract.
    * Structure: function + timing + CTA
    */
@@ -1830,7 +1632,10 @@ export class ConseilEnricherService extends SupabaseBaseService {
     if (!intro || intro.length < 30) return null;
 
     // Phrase 1: main function with restored accents (truncated to 80 chars)
-    const func = this.restoreAccents(intro).replace(/\.$/, '').slice(0, 80);
+    const func = this.textUtils
+      .restoreAccents(intro)
+      .replace(/\.$/, '')
+      .slice(0, 80);
 
     // Phrase 2: timing if available
     const km = contract.timing?.km?.[0];

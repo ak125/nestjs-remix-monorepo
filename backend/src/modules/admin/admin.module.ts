@@ -59,6 +59,8 @@ import { KeywordDensityGateService } from './services/keyword-density-gate.servi
 import { ImageGatesService } from './services/image-gates.service'; // 🚦 P3: image gates (OG, hero policy, alt text)
 import { AdminJobHealthService } from './services/admin-job-health.service'; // 🏥 Job health tracking
 import { AdminHealthService } from './services/admin-health.service'; // 🏥 Health overview aggregator
+import { EnricherTextUtils } from './services/enricher-text-utils.service'; // 🔧 Shared text utilities
+import { EnricherYamlParser } from './services/enricher-yaml-parser.service'; // 🔧 Shared YAML/frontmatter parsing
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -147,6 +149,8 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     ImageGatesService, // 🚦 P3: image gates (OG, hero policy, alt text)
     AdminJobHealthService, // 🏥 Job health tracking (used by processors via WorkerModule)
     AdminHealthService, // 🏥 Health overview aggregator
+    EnricherTextUtils, // 🔧 Shared text utilities (anonymize, stripHtml, restoreAccents, etc.)
+    EnricherYamlParser, // 🔧 Shared YAML/frontmatter parsing (extractYamlList, extractYamlFaq, etc.)
   ],
   exports: [
     ConfigurationService,

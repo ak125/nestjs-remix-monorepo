@@ -18,9 +18,9 @@
     "start": "node dist/main",
     "lint": "NODE_OPTIONS='--max-old-space-size=4096' eslint --cache --cache-location .eslintcache 'src/**/*.ts'",
     "typecheck": "NODE_OPTIONS='--max-old-space-size=4096' tsc --noEmit",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test": "node --max-old-space-size=512 ./node_modules/.bin/jest --maxWorkers=2",
+    "test:watch": "node --max-old-space-size=512 ./node_modules/.bin/jest --watch --maxWorkers=2",
+    "test:cov": "node --max-old-space-size=512 ./node_modules/.bin/jest --coverage --maxWorkers=2",
     "start:prod": "node dist/main",
     "sitemap:generate": "ts-node scripts/generate-sitemaps.ts"
   },
