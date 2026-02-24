@@ -8,6 +8,7 @@
  * @see backend/src/modules/rag-proxy/rag-proxy.controller.ts
  */
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { RagProxyController } from '../../src/modules/rag-proxy/rag-proxy.controller';
@@ -29,6 +30,7 @@ describe('RagProxyController', () => {
       providers: [
         { provide: RagProxyService, useValue: mockRagProxyService },
         { provide: RagCleanupService, useValue: {} },
+        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('test-internal-api-key') } },
       ],
     }).compile();
 

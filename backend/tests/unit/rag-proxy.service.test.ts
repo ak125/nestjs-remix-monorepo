@@ -15,6 +15,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RagProxyService } from '../../src/modules/rag-proxy/rag-proxy.service';
 import { FrontmatterValidatorService } from '../../src/modules/rag-proxy/services/frontmatter-validator.service';
 import { RagCleanupService } from '../../src/modules/rag-proxy/services/rag-cleanup.service';
+import { WebhookAuditService } from '../../src/modules/rag-proxy/services/webhook-audit.service';
 
 describe('RagProxyService', () => {
   let service: RagProxyService;
@@ -56,6 +57,7 @@ describe('RagProxyService', () => {
           },
         },
         { provide: RagCleanupService, useValue: { client: { from: jest.fn() } } },
+        { provide: WebhookAuditService, useValue: { recordEvent: jest.fn(), getAuditTrail: jest.fn().mockResolvedValue([]) } },
       ],
     }).compile();
 
