@@ -333,8 +333,8 @@ export default function AdminDashboard() {
               APIs en erreur : {apiErrors.join(" | ")}
             </p>
             <p className="text-xs text-yellow-800">
-              Les sections concernees affichent « — » au lieu de donnees reelles.
-              Les metriques visibles peuvent etre incompletes.
+              Les sections concernees affichent « — » au lieu de donnees
+              reelles. Les metriques visibles peuvent etre incompletes.
             </p>
           </div>
         </Alert>
@@ -550,7 +550,8 @@ export default function AdminDashboard() {
                       Insights IA
                     </h3>
                     <p className="text-sm text-purple-600">
-                      Sera connecte aux donnees reelles en Phase 4 (Control Plane)
+                      Sera connecte aux donnees reelles en Phase 4 (Control
+                      Plane)
                     </p>
                   </div>
                 </div>
@@ -567,12 +568,13 @@ export default function AdminDashboard() {
                     <div className="mt-3 space-y-2">
                       {realTimeStats.pendingOrders > 100 && (
                         <p className="text-sm text-yellow-700">
-                          {formatNumber(realTimeStats.pendingOrders)}{" "}
-                          commandes en attente de traitement
+                          {formatNumber(realTimeStats.pendingOrders)} commandes
+                          en attente de traitement
                         </p>
                       )}
                       <p className="text-sm text-gray-500 italic">
-                        Alertes en temps reel non disponibles — sera connecte en Phase 3
+                        Alertes en temps reel non disponibles — sera connecte en
+                        Phase 3
                       </p>
                     </div>
                   </div>
@@ -1543,7 +1545,8 @@ export default function AdminDashboard() {
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h3 className="text-lg font-medium mb-4">Maintenance</h3>
                   <p className="text-sm text-gray-500 italic">
-                    Donnees de maintenance non disponibles — sera connecte en Phase 3
+                    Donnees de maintenance non disponibles — sera connecte en
+                    Phase 3
                   </p>
                 </div>
 

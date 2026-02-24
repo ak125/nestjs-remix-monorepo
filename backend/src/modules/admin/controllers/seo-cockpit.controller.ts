@@ -142,7 +142,9 @@ export class SeoCockpitController {
   }
 
   @Get('monitoring/alerts')
-  async getAlerts(@Query('limit') limit?: string): Promise<AdminApiResponse<any>> {
+  async getAlerts(
+    @Query('limit') limit?: string,
+  ): Promise<AdminApiResponse<any>> {
     try {
       const parsedLimit = Math.min(parseInt(limit || '50', 10), 200);
       const alerts =
