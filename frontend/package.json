@@ -47,7 +47,7 @@
     "@repo/database-types": "*",
     "@tanstack/react-query": "^5.87.1",
     "@tiptap/extension-bold": "^3.11.0",
-    "@tiptap/extension-italic": "^3.11.0",
+    "@tiptap/extension-italic": "^3.20.0",
     "@tiptap/pm": "^3.11.0",
     "@tiptap/react": "^3.11.0",
     "@tiptap/starter-kit": "^3.11.0",
