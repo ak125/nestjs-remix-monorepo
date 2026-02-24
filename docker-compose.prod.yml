@@ -43,6 +43,7 @@ services:
       # Step 3: VIDEO_CANARY_ELIGIBLE_VIDEO_TYPES=short (start with shorts only)
       # Step 4: VIDEO_CANARY_QUOTA_PER_DAY=5 (gradual ramp-up)
       - VIDEO_RENDER_ENABLED=false
+      - VIDEO_CANARY_ENABLED=false
       - VIDEO_RENDER_BASE_URL=http://remotion_renderer:3100
 
     deploy:

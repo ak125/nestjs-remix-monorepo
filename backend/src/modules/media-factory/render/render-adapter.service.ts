@@ -80,7 +80,7 @@ export class RenderAdapterService {
     const decision = this.evaluateCanary(request);
 
     this.logger.log(
-      `[RAS] brief=${request.briefId} canary=${decision.useCanary} ` +
+      `[RAS] brief=${request.briefId} exec=${request.executionLogId} canary=${decision.useCanary} ` +
         `reason="${decision.reason}" remaining=${decision.remainingQuota}`,
     );
 
@@ -108,7 +108,7 @@ export class RenderAdapterService {
       // Rule 3: No output = no success (double-check at adapter level)
       if (result.status === 'success' && !result.outputPath) {
         this.logger.warn(
-          `[RAS] Canary returned success but no outputPath — marking failed`,
+          `[RAS] brief=${request.briefId} exec=${request.executionLogId} Canary returned success but no outputPath — marking failed`,
         );
         return {
           ...result,
@@ -150,7 +150,7 @@ export class RenderAdapterService {
         : RenderErrorCode.RENDER_PROCESS_FAILED;
 
       this.logger.warn(
-        `[RAS] Canary failed for brief=${request.briefId}: ${errorMessage} — falling back to stub`,
+        `[RAS] brief=${request.briefId} exec=${request.executionLogId} Canary failed: ${errorMessage} — falling back to stub`,
       );
 
       // Cleanup partial output (no-op in P5.1)
@@ -202,7 +202,7 @@ export class RenderAdapterService {
         err instanceof Error ? err.message : 'Unknown render error';
 
       this.logger.error(
-        `[RAS] Stub render failed for brief=${request.briefId}: ${errorMessage}`,
+        `[RAS] brief=${request.briefId} exec=${request.executionLogId} Stub render failed: ${errorMessage}`,
       );
 
       return {
@@ -229,10 +229,20 @@ export class RenderAdapterService {
     const engineName = process.env.VIDEO_RENDER_ENGINE || 'stub';
 
     // P6: Circuit breaker — render disabled → immediate stub
-    if (process.env.VIDEO_RENDER_ENABLED === 'false') {
+    if (process.env.VIDEO_RENDER_ENABLED !== 'true') {
       return {
         useCanary: false,
-        reason: 'VIDEO_RENDER_ENABLED=false',
+        reason: 'VIDEO_RENDER_ENABLED!=true',
+        dailyUsageCount: this.getDailyCount(),
+        remainingQuota: this.getRemainingQuota(),
+      };
+    }
+
+    // P6-F: Canary freeze switch — independent of render enabled
+    if (process.env.VIDEO_CANARY_ENABLED !== 'true') {
+      return {
+        useCanary: false,
+        reason: 'VIDEO_CANARY_ENABLED!=true',
         dailyUsageCount: this.getDailyCount(),
         remainingQuota: this.getRemainingQuota(),
       };
@@ -318,7 +328,7 @@ export class RenderAdapterService {
     return {
       engineName: process.env.VIDEO_RENDER_ENGINE || 'stub',
       canaryAvailable: !!this.canaryEngine,
-      renderEnabled: process.env.VIDEO_RENDER_ENABLED !== 'false',
+      renderEnabled: process.env.VIDEO_RENDER_ENABLED === 'true',
       dailyUsageCount: this.getDailyCount(),
       remainingQuota: this.getRemainingQuota(),
       quotaPerDay: this.canaryPolicy.quotaPerDay,

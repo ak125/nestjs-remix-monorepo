@@ -21,7 +21,7 @@ export class RemotionRenderEngine implements IRenderEngine {
     const start = Date.now();
 
     // P6: Circuit breaker — instant kill switch
-    if (process.env.VIDEO_RENDER_ENABLED === 'false') {
+    if (process.env.VIDEO_RENDER_ENABLED !== 'true') {
       throw new RenderEngineUnavailableError(this.name);
     }
 
