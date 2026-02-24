@@ -44,6 +44,7 @@ export interface ExecutionLogRow {
   durationMs: number | null;
   attemptNumber: number;
   featureFlags: unknown | null;
+  renderErrorCode: string | null;
 }
 
 export interface ExecutionStats {
@@ -318,5 +319,6 @@ export class VideoJobService extends SupabaseBaseService {
     durationMs: row.duration_ms as number | null,
     attemptNumber: (row.attempt_number as number) ?? 1,
     featureFlags: row.feature_flags,
+    renderErrorCode: (row.render_error_code as string) ?? null,
   });
 }

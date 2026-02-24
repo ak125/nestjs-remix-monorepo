@@ -30,6 +30,9 @@ export class StubRenderEngine implements IRenderEngine {
         videoType: request.videoType,
         vertical: request.vertical,
       },
+      // P4.0: engine resolution + retryable (overridden by adapter)
+      engineResolution: 'requested' as const,
+      retryable: false,
     };
   }
 }

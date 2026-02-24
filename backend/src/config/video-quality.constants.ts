@@ -244,3 +244,13 @@ export const FORBIDDEN_PATTERNS_SHORT: readonly RegExp[] = [
   /\bne ratez pas\b/i,
   /\bdernier(e|s)?\s+(chance|jour)/i,
 ] as const;
+
+// ─────────────────────────────────────────────────────────────
+// Render engine timeout (P4.0)
+// ─────────────────────────────────────────────────────────────
+
+/** Max time in ms to wait for engine.render() before aborting */
+export const RENDER_TIMEOUT_MS = parseInt(
+  process.env.VIDEO_RENDER_TIMEOUT_MS || '60000',
+  10,
+);

@@ -17,6 +17,7 @@ import { VideoGatesService } from '../../modules/media-factory/services/video-ga
 import type { VideoGateInput } from '../../modules/media-factory/services/video-gates.service';
 import { VideoDataService } from '../../modules/media-factory/services/video-data.service';
 import { RenderAdapterService } from '../../modules/media-factory/render/render-adapter.service';
+import { RenderErrorCode } from '../../modules/media-factory/render/types/render.types';
 import type { RenderRequest } from '../../modules/media-factory/render/types/render.types';
 import { VIDEO_FLAG_PENALTIES } from '../../config/video-quality.constants';
 import type { VideoQualityFlag } from '../../config/video-quality.constants';
@@ -186,6 +187,7 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         render_output_path: renderResult.outputPath,
         render_metadata: renderResult.metadata,
         render_duration_ms: renderResult.durationMs,
+        render_error_code: renderResult.errorCode ?? null,
       });
 
       // ── Step 9: Write-back to production ──
@@ -215,6 +217,7 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
       await this.updateExecutionLog(executionLogId, {
         status: 'failed',
         error_message: errorMessage,
+        render_error_code: RenderErrorCode.RENDER_UNKNOWN_ERROR,
         completed_at: new Date().toISOString(),
         duration_ms: Date.now() - startTime,
         feature_flags: this.captureFeatureFlags(),
