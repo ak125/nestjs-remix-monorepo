@@ -345,6 +345,12 @@ export const AdminSidebar = memo(function AdminSidebar({
       notification: false,
       subItems: [
         {
+          name: "Cockpit Contenu",
+          href: "/admin/rag/cockpit",
+          icon: Activity,
+          description: "Pilotage unifie pipeline",
+        },
+        {
           name: "Dashboard RAG",
           href: "/admin/rag",
           icon: BarChart3,

@@ -1080,4 +1080,131 @@ export class ContentRefreshService extends SupabaseBaseService {
       seoState,
     };
   }
+
+  // ── Coverage Map & Activity Timeline ──
+
+  /**
+   * Coverage Map: per-gamme content gap analysis.
+   * Calls the get_coverage_map() RPC which JOINs across
+   * pieces_gamme, __seo_gamme, __seo_gamme_purchase_guide,
+   * __seo_gamme_conseil, and __rag_knowledge.
+   */
+  async getCoverageMap(): Promise<{
+    gammes: Array<{
+      pg_id: number;
+      pg_alias: string;
+      pg_name: string;
+      has_how_to_choose: boolean;
+      has_anti_mistakes: boolean;
+      has_selection_criteria: boolean;
+      has_decision_tree: boolean;
+      has_faq: boolean;
+      has_symptoms: boolean;
+      conseil_sections: string[];
+      conseil_count: number;
+      has_rag_file: boolean;
+      coverage_score: number;
+      priority: string;
+    }>;
+    summary: {
+      total: number;
+      critical: number;
+      high: number;
+      medium: number;
+      low: number;
+      avgScore: number;
+    };
+  }> {
+    const { data, error } = await this.client.rpc('get_coverage_map');
+
+    if (error) {
+      this.logger.error(`Coverage map query failed: ${error.message}`);
+      return {
+        gammes: [],
+        summary: {
+          total: 0,
+          critical: 0,
+          high: 0,
+          medium: 0,
+          low: 0,
+          avgScore: 0,
+        },
+      };
+    }
+
+    const gammes = (data || []) as Array<{
+      pg_id: number;
+      pg_alias: string;
+      pg_name: string;
+      has_how_to_choose: boolean;
+      has_anti_mistakes: boolean;
+      has_selection_criteria: boolean;
+      has_decision_tree: boolean;
+      has_faq: boolean;
+      has_symptoms: boolean;
+      conseil_sections: string[];
+      conseil_count: number;
+      has_rag_file: boolean;
+      coverage_score: number;
+      priority: string;
+    }>;
+
+    const summary = {
+      total: gammes.length,
+      critical: gammes.filter((g) => g.priority === 'CRITICAL').length,
+      high: gammes.filter((g) => g.priority === 'HIGH').length,
+      medium: gammes.filter((g) => g.priority === 'MEDIUM').length,
+      low: gammes.filter((g) => g.priority === 'LOW').length,
+      avgScore:
+        gammes.length > 0
+          ? Math.round(
+              gammes.reduce((s, g) => s + g.coverage_score, 0) / gammes.length,
+            )
+          : 0,
+    };
+
+    return { gammes, summary };
+  }
+
+  /**
+   * Activity Timeline: chronological feed of pipeline events.
+   */
+  async getActivityTimeline(limit = 30): Promise<
+    Array<{
+      id: number;
+      pg_alias: string;
+      page_type: string;
+      status: string;
+      trigger_source: string;
+      quality_score: number | null;
+      created_at: string;
+      completed_at: string | null;
+      published_at: string | null;
+    }>
+  > {
+    const { data, error } = await this.client
+      .from('__rag_content_refresh_log')
+      .select(
+        'id, pg_alias, page_type, status, trigger_source, quality_score, created_at, completed_at, published_at',
+      )
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      this.logger.error(`Activity timeline query failed: ${error.message}`);
+      return [];
+    }
+
+    return (data || []) as Array<{
+      id: number;
+      pg_alias: string;
+      page_type: string;
+      status: string;
+      trigger_source: string;
+      quality_score: number | null;
+      created_at: string;
+      completed_at: string | null;
+      published_at: string | null;
+    }>;
+  }
 }

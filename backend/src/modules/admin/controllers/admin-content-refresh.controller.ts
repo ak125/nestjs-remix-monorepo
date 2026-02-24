@@ -251,4 +251,25 @@ export class AdminContentRefreshController {
     }
     return this.contentRefreshService.getRefreshSnapshot(numId);
   }
+
+  // ── Coverage Map & Activity Timeline ──
+
+  /**
+   * GET /api/admin/content-refresh/coverage-map
+   * Per-gamme content coverage gap analysis (purchase guide + conseil + RAG).
+   */
+  @Get('coverage-map')
+  async getCoverageMap() {
+    return this.contentRefreshService.getCoverageMap();
+  }
+
+  /**
+   * GET /api/admin/content-refresh/activity-timeline?limit=30
+   * Chronological feed of all pipeline events.
+   */
+  @Get('activity-timeline')
+  async getActivityTimeline(@Query('limit') limitParam?: string) {
+    const limit = Math.min(parseInt(limitParam || '30', 10) || 30, 100);
+    return this.contentRefreshService.getActivityTimeline(limit);
+  }
 }
