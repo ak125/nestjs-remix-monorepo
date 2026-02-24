@@ -190,6 +190,13 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         render_error_code: renderResult.errorCode ?? null,
         engine_resolution: renderResult.engineResolution ?? null,
         retryable: renderResult.retryable ?? false,
+        // P5: canary tracking
+        is_canary: renderResult.metadata?.canary === true,
+        canary_fallback: renderResult.metadata?.fallback === true,
+        canary_error_message:
+          (renderResult.metadata?.canaryError as string) ?? null,
+        canary_error_code:
+          (renderResult.metadata?.canaryErrorCode as string) ?? null,
       });
 
       // ── Step 9: Write-back to production ──
@@ -258,10 +265,16 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
     }
   }
 
-  private captureFeatureFlags(): Record<string, boolean> {
+  private captureFeatureFlags(): Record<string, unknown> {
+    const canaryStats = this.renderAdapter.getCanaryStats();
     return {
       pipeline_enabled: process.env.VIDEO_PIPELINE_ENABLED === 'true',
       gates_blocking: process.env.VIDEO_GATES_BLOCKING === 'true',
+      // P5: canary observability
+      render_engine: process.env.VIDEO_RENDER_ENGINE || 'stub',
+      canary_available: canaryStats.canaryAvailable,
+      canary_daily_usage: canaryStats.dailyUsageCount,
+      canary_remaining_quota: canaryStats.remainingQuota,
     };
   }
 }

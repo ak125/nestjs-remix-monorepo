@@ -17,6 +17,7 @@ import type { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { VideoDataService } from './video-data.service';
+import { RenderAdapterService } from '../render/render-adapter.service';
 import type { VideoExecutionJobData } from '../../../workers/types/video-execution.types';
 
 // ─────────────────────────────────────────────────────────────
@@ -54,12 +55,30 @@ export interface ExecutionLogRow {
   renderErrorCode: string | null;
   engineResolution: string | null;
   retryable: boolean;
+  // P5: canary tracking
+  isCanary: boolean;
+  canaryFallback: boolean;
+  canaryErrorMessage: string | null;
+  canaryErrorCode: string | null;
 }
 
 export interface ExecutionStats {
   total: number;
   byStatus: Record<string, number>;
   avgDurationMs: number | null;
+  // P5.4: canary observability
+  engineDistribution: Record<string, number>;
+  canary: {
+    totalCanary: number;
+    totalFallback: number;
+    successRate: number | null;
+    fallbackRate: number | null;
+    topErrorCodes: Record<string, number>;
+  };
+  renderPerformance: {
+    p95RenderDurationMs: number | null;
+    byEngine: Record<string, { avg: number; p95: number; count: number }>;
+  };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -74,6 +93,7 @@ export class VideoJobService extends SupabaseBaseService {
     configService: ConfigService,
     @InjectQueue('video-render') private readonly videoQueue: Queue,
     private readonly dataService: VideoDataService,
+    private readonly renderAdapter: RenderAdapterService,
   ) {
     super(configService);
   }
@@ -272,16 +292,31 @@ export class VideoJobService extends SupabaseBaseService {
   }
 
   /**
-   * Dashboard stats for executions.
+   * Dashboard stats for executions (P5.4: enriched with canary observability).
    */
   async getExecutionStats(): Promise<ExecutionStats> {
     const { data, error } = await this.client
       .from('__video_execution_log')
-      .select('status, duration_ms');
+      .select(
+        'status, duration_ms, engine_name, render_duration_ms, is_canary, canary_fallback, canary_error_code',
+      );
 
     if (error) {
       this.logger.error(`getExecutionStats error: ${error.message}`);
-      return { total: 0, byStatus: {}, avgDurationMs: null };
+      return {
+        total: 0,
+        byStatus: {},
+        avgDurationMs: null,
+        engineDistribution: {},
+        canary: {
+          totalCanary: 0,
+          totalFallback: 0,
+          successRate: null,
+          fallbackRate: null,
+          topErrorCodes: {},
+        },
+        renderPerformance: { p95RenderDurationMs: null, byEngine: {} },
+      };
     }
 
     const rows = data ?? [];
@@ -289,12 +324,64 @@ export class VideoJobService extends SupabaseBaseService {
     let totalDuration = 0;
     let durationCount = 0;
 
+    // P5.4: engine distribution + canary metrics
+    const engineDistribution: Record<string, number> = {};
+    let totalCanary = 0;
+    let totalFallback = 0;
+    const canaryErrorCodes: Record<string, number> = {};
+    const byEngine: Record<string, number[]> = {};
+
     for (const row of rows) {
+      // Basic stats
       byStatus[row.status] = (byStatus[row.status] ?? 0) + 1;
       if (row.duration_ms != null) {
         totalDuration += row.duration_ms;
         durationCount++;
       }
+
+      // Engine distribution
+      const engine = (row.engine_name as string) || 'unknown';
+      engineDistribution[engine] = (engineDistribution[engine] ?? 0) + 1;
+
+      // Canary metrics
+      if (row.is_canary) {
+        totalCanary++;
+        if (row.canary_fallback) {
+          totalFallback++;
+          const errCode = (row.canary_error_code as string) || 'UNKNOWN';
+          canaryErrorCodes[errCode] = (canaryErrorCodes[errCode] ?? 0) + 1;
+        }
+      }
+
+      // Render performance by engine
+      if (row.render_duration_ms != null) {
+        if (!byEngine[engine]) byEngine[engine] = [];
+        byEngine[engine].push(row.render_duration_ms as number);
+      }
+    }
+
+    // P95 render duration (all engines)
+    const allRenderDurations = Object.values(byEngine)
+      .flat()
+      .sort((a, b) => a - b);
+    const p95Index = Math.floor(allRenderDurations.length * 0.95);
+    const p95RenderDurationMs =
+      allRenderDurations.length > 0 ? allRenderDurations[p95Index] : null;
+
+    // Per-engine performance
+    const enginePerf: Record<
+      string,
+      { avg: number; p95: number; count: number }
+    > = {};
+    for (const [eng, durations] of Object.entries(byEngine)) {
+      const sorted = [...durations].sort((a, b) => a - b);
+      const sum = sorted.reduce((a, b) => a + b, 0);
+      const ep95 = Math.floor(sorted.length * 0.95);
+      enginePerf[eng] = {
+        avg: Math.round(sum / sorted.length),
+        p95: sorted[ep95] ?? sorted[sorted.length - 1],
+        count: sorted.length,
+      };
     }
 
     return {
@@ -302,7 +389,32 @@ export class VideoJobService extends SupabaseBaseService {
       byStatus,
       avgDurationMs:
         durationCount > 0 ? Math.round(totalDuration / durationCount) : null,
+      engineDistribution,
+      canary: {
+        totalCanary,
+        totalFallback,
+        successRate:
+          totalCanary > 0
+            ? Math.round(((totalCanary - totalFallback) / totalCanary) * 100)
+            : null,
+        fallbackRate:
+          totalCanary > 0
+            ? Math.round((totalFallback / totalCanary) * 100)
+            : null,
+        topErrorCodes: canaryErrorCodes,
+      },
+      renderPerformance: {
+        p95RenderDurationMs,
+        byEngine: enginePerf,
+      },
     };
+  }
+
+  /**
+   * P5.4: Delegate canary stats to render adapter.
+   */
+  getCanaryStats() {
+    return this.renderAdapter.getCanaryStats();
   }
 
   // ── Mapper (snake_case → camelCase) ──
@@ -337,5 +449,10 @@ export class VideoJobService extends SupabaseBaseService {
     renderErrorCode: (row.render_error_code as string) ?? null,
     engineResolution: (row.engine_resolution as string) ?? null,
     retryable: (row.retryable as boolean) ?? false,
+    // P5: canary tracking
+    isCanary: (row.is_canary as boolean) ?? false,
+    canaryFallback: (row.canary_fallback as boolean) ?? false,
+    canaryErrorMessage: (row.canary_error_message as string) ?? null,
+    canaryErrorCode: (row.canary_error_code as string) ?? null,
   });
 }
