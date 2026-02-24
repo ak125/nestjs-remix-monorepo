@@ -69,6 +69,7 @@ export class RenderAdapterService {
     this.logger.log(
       `[RAS] Initialized: primary=${engineName}, ` +
         `canary=${this.canaryEngine ? this.canaryEngine.name : 'none'}, ` +
+        `renderEnabled=${process.env.VIDEO_RENDER_ENABLED ?? 'undefined'}, ` +
         `policy=${JSON.stringify(this.canaryPolicy)}`,
     );
   }
@@ -227,6 +228,16 @@ export class RenderAdapterService {
     // Rule 5: Re-read env every call for instant rollback
     const engineName = process.env.VIDEO_RENDER_ENGINE || 'stub';
 
+    // P6: Circuit breaker — render disabled → immediate stub
+    if (process.env.VIDEO_RENDER_ENABLED === 'false') {
+      return {
+        useCanary: false,
+        reason: 'VIDEO_RENDER_ENABLED=false',
+        dailyUsageCount: this.getDailyCount(),
+        remainingQuota: this.getRemainingQuota(),
+      };
+    }
+
     if (engineName === 'stub' || !this.canaryEngine) {
       return {
         useCanary: false,
@@ -298,6 +309,7 @@ export class RenderAdapterService {
   getCanaryStats(): {
     engineName: string;
     canaryAvailable: boolean;
+    renderEnabled: boolean;
     dailyUsageCount: number;
     remainingQuota: number;
     quotaPerDay: number;
@@ -306,6 +318,7 @@ export class RenderAdapterService {
     return {
       engineName: process.env.VIDEO_RENDER_ENGINE || 'stub',
       canaryAvailable: !!this.canaryEngine,
+      renderEnabled: process.env.VIDEO_RENDER_ENABLED !== 'false',
       dailyUsageCount: this.getDailyCount(),
       remainingQuota: this.getRemainingQuota(),
       quotaPerDay: this.canaryPolicy.quotaPerDay,
