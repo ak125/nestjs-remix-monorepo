@@ -188,6 +188,8 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         render_metadata: renderResult.metadata,
         render_duration_ms: renderResult.durationMs,
         render_error_code: renderResult.errorCode ?? null,
+        engine_resolution: renderResult.engineResolution ?? null,
+        retryable: renderResult.retryable ?? false,
       });
 
       // ── Step 9: Write-back to production ──
@@ -218,6 +220,8 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
         status: 'failed',
         error_message: errorMessage,
         render_error_code: RenderErrorCode.RENDER_UNKNOWN_ERROR,
+        engine_resolution: null,
+        retryable: false,
         completed_at: new Date().toISOString(),
         duration_ms: Date.now() - startTime,
         feature_flags: this.captureFeatureFlags(),

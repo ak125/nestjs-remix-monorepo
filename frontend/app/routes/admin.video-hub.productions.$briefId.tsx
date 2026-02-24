@@ -50,6 +50,7 @@ interface ExecutionRow {
   durationMs: number | null;
   attemptNumber: number;
   createdAt: string;
+  retryable: boolean;
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -331,6 +332,7 @@ export default function VideoProductionDetail() {
                     <th className="pb-2 pr-3">Erreur</th>
                     <th className="pb-2 pr-3">Duree</th>
                     <th className="pb-2 pr-3">Attempt</th>
+                    <th className="pb-2 pr-3">Retry?</th>
                     <th className="pb-2">Date</th>
                   </tr>
                 </thead>
@@ -369,6 +371,17 @@ export default function VideoProductionDetail() {
                       </td>
                       <td className="py-2 pr-3 text-center">
                         #{exec.attemptNumber}
+                      </td>
+                      <td className="py-2 pr-3">
+                        {exec.status === "failed" && exec.retryable ? (
+                          <Badge className="bg-blue-100 text-blue-700 text-xs">
+                            Oui
+                          </Badge>
+                        ) : exec.status === "failed" ? (
+                          <Badge className="bg-gray-100 text-gray-500 text-xs">
+                            Non
+                          </Badge>
+                        ) : null}
                       </td>
                       <td className="py-2 text-xs text-gray-500">
                         <Clock className="inline h-3 w-3 mr-1" />

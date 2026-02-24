@@ -10,8 +10,15 @@ import {
   Shield,
   Activity,
   Settings,
+  Copy,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  RotateCcw,
 } from "lucide-react";
+import { useCallback, useState } from "react";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
@@ -50,6 +57,8 @@ interface ExecutionLog {
   renderMetadata: Record<string, unknown> | null;
   renderDurationMs: number | null;
   renderErrorCode: string | null;
+  engineResolution: string | null;
+  retryable: boolean;
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -121,13 +130,13 @@ const GATE_LABELS: Record<string, string> = {
 };
 
 function formatDuration(ms: number | null): string {
-  if (ms == null) return "—";
+  if (ms == null) return "\u2014";
   if (ms < 1000) return `${ms}ms`;
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "\u2014";
   return new Date(iso).toLocaleString("fr-FR", {
     day: "2-digit",
     month: "2-digit",
@@ -136,6 +145,74 @@ function formatDate(iso: string | null): string {
     minute: "2-digit",
     second: "2-digit",
   });
+}
+
+function computeDuration(
+  startIso: string | null,
+  endIso: string | null,
+): string {
+  if (!startIso || !endIso) return "\u2014";
+  const diff = new Date(endIso).getTime() - new Date(startIso).getTime();
+  if (diff < 0 || isNaN(diff)) return "\u2014";
+  if (diff < 1000) return `${diff}ms`;
+  return `${(diff / 1000).toFixed(1)}s`;
+}
+
+function CopyJsonButton({ data, label }: { data: unknown; label: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = useCallback(() => {
+    navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }, [data]);
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleCopy}
+      className="text-xs gap-1"
+    >
+      {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+      {copied ? "Copie !" : label}
+    </Button>
+  );
+}
+
+function RenderMetadataSection({
+  metadata,
+}: {
+  metadata: Record<string, unknown>;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="mt-3 border-t pt-3">
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-gray-500">Render Metadata</div>
+        <div className="flex gap-2">
+          <CopyJsonButton data={metadata} label="Copy JSON" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setExpanded(!expanded)}
+            className="text-xs gap-1"
+          >
+            {expanded ? (
+              <ChevronUp className="h-3 w-3" />
+            ) : (
+              <ChevronDown className="h-3 w-3" />
+            )}
+            {expanded ? "Reduire" : "Voir"}
+          </Button>
+        </div>
+      </div>
+      {expanded && (
+        <pre className="mt-2 text-xs bg-gray-50 p-3 rounded overflow-x-auto max-h-64 overflow-y-auto">
+          {JSON.stringify(metadata, null, 2)}
+        </pre>
+      )}
+    </div>
+  );
 }
 
 export default function ExecutionDetail() {
@@ -220,7 +297,7 @@ export default function ExecutionDetail() {
         </Card>
       </div>
 
-      {/* Timestamps */}
+      {/* Timeline */}
       <Card>
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
@@ -229,7 +306,7 @@ export default function ExecutionDetail() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-sm">
             <div>
               <div className="text-xs text-gray-500">Cree</div>
               <div>{formatDate(execution.createdAt)}</div>
@@ -243,16 +320,28 @@ export default function ExecutionDetail() {
               <div>{formatDate(execution.completedAt)}</div>
             </div>
             <div>
+              <div className="text-xs text-gray-500">Queue Wait</div>
+              <div className="font-mono text-xs">
+                {computeDuration(execution.createdAt, execution.startedAt)}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Processing</div>
+              <div className="font-mono text-xs">
+                {computeDuration(execution.startedAt, execution.completedAt)}
+              </div>
+            </div>
+            <div>
               <div className="text-xs text-gray-500">BullMQ Job</div>
               <div className="font-mono text-xs">
-                {execution.bullmqJobId ?? "—"}
+                {execution.bullmqJobId ?? "\u2014"}
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Render Info */}
+      {/* Render Engine */}
       <Card>
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
@@ -265,7 +354,7 @@ export default function ExecutionDetail() {
             <div>
               <div className="text-xs text-gray-500">Engine</div>
               <div className="font-medium">
-                {execution.engineName ?? "—"}
+                {execution.engineName ?? "\u2014"}
                 {execution.engineVersion ? ` v${execution.engineVersion}` : ""}
               </div>
             </div>
@@ -285,7 +374,7 @@ export default function ExecutionDetail() {
                     {execution.renderStatus}
                   </Badge>
                 ) : (
-                  "—"
+                  "\u2014"
                 )}
               </div>
             </div>
@@ -306,6 +395,41 @@ export default function ExecutionDetail() {
               </div>
             </div>
           </div>
+          {/* Row 2: Resolution + Retryable */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-3">
+            <div>
+              <div className="text-xs text-gray-500">Engine Resolution</div>
+              <div>
+                {execution.engineResolution ? (
+                  <Badge
+                    className={
+                      execution.engineResolution === "requested"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-amber-100 text-amber-700"
+                    }
+                  >
+                    {execution.engineResolution}
+                  </Badge>
+                ) : (
+                  "\u2014"
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Retryable</div>
+              <div>
+                <Badge
+                  className={
+                    execution.retryable
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-gray-100 text-gray-500"
+                  }
+                >
+                  {execution.retryable ? "Oui" : "Non"}
+                </Badge>
+              </div>
+            </div>
+          </div>
           {execution.renderOutputPath && (
             <div className="mt-3 text-sm">
               <div className="text-xs text-gray-500">Output Path</div>
@@ -314,6 +438,10 @@ export default function ExecutionDetail() {
               </div>
             </div>
           )}
+          {execution.renderMetadata &&
+            Object.keys(execution.renderMetadata).length > 0 && (
+              <RenderMetadataSection metadata={execution.renderMetadata} />
+            )}
         </CardContent>
       </Card>
 
@@ -321,15 +449,30 @@ export default function ExecutionDetail() {
       {execution.errorMessage && (
         <Card className="border-red-200">
           <CardHeader>
-            <CardTitle className="text-sm text-red-700 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
-              Erreur
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm text-red-700 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4" />
+                Erreur
+              </CardTitle>
+              <CopyJsonButton
+                data={{
+                  errorMessage: execution.errorMessage,
+                  renderErrorCode: execution.renderErrorCode,
+                }}
+                label="Copy"
+              />
+            </div>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-red-600 font-mono bg-red-50 p-3 rounded">
               {execution.errorMessage}
             </p>
+            {execution.retryable && execution.status === "failed" && (
+              <div className="mt-3 flex items-center gap-2 text-sm text-blue-600">
+                <RotateCcw className="h-4 w-4" />
+                <span>Cette execution peut etre relancee (retryable)</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -338,10 +481,13 @@ export default function ExecutionDetail() {
       {execution.gateResults && execution.gateResults.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Gates (7)
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Gates ({execution.gateResults.length})
+              </CardTitle>
+              <CopyJsonButton data={execution.gateResults} label="Copy JSON" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">

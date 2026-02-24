@@ -52,6 +52,8 @@ export interface ExecutionLogRow {
   renderMetadata: unknown | null;
   renderDurationMs: number | null;
   renderErrorCode: string | null;
+  engineResolution: string | null;
+  retryable: boolean;
 }
 
 export interface ExecutionStats {
@@ -333,5 +335,7 @@ export class VideoJobService extends SupabaseBaseService {
     renderMetadata: row.render_metadata ?? null,
     renderDurationMs: (row.render_duration_ms as number) ?? null,
     renderErrorCode: (row.render_error_code as string) ?? null,
+    engineResolution: (row.engine_resolution as string) ?? null,
+    retryable: (row.retryable as boolean) ?? false,
   });
 }
