@@ -38,6 +38,27 @@ export class VideoExecutionController {
   }
 
   /**
+   * GET /api/admin/video/executions/stats
+   * Execution statistics dashboard.
+   * NOTE: Must be declared BEFORE :executionLogId to avoid ParseIntPipe on "stats".
+   */
+  @Get('executions/stats')
+  async getExecutionStats() {
+    const data = await this.jobService.getExecutionStats();
+    return { success: true, data, timestamp: new Date().toISOString() };
+  }
+
+  /**
+   * GET /api/admin/video/productions/:briefId/executions
+   * List executions for a production.
+   */
+  @Get('productions/:briefId/executions')
+  async listExecutions(@Param('briefId') briefId: string) {
+    const data = await this.jobService.listExecutions(briefId);
+    return { success: true, data, timestamp: new Date().toISOString() };
+  }
+
+  /**
    * GET /api/admin/video/executions/:executionLogId
    * Get execution status.
    */

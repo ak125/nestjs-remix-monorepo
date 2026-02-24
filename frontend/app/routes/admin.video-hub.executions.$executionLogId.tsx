@@ -1,0 +1,443 @@
+import { json, type LoaderFunctionArgs } from "@remix-run/node";
+import { useLoaderData, Link } from "@remix-run/react";
+import {
+  ArrowLeft,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  Clock,
+  Cpu,
+  Shield,
+  Activity,
+  Settings,
+} from "lucide-react";
+import { Badge } from "~/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
+
+interface ExecutionLog {
+  id: number;
+  briefId: string;
+  videoType: string;
+  vertical: string;
+  status: string;
+  bullmqJobId: string | null;
+  triggerSource: string;
+  triggerJobId: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  artefactCheck: { canProceed: boolean; missingArtefacts: string[] } | null;
+  gateResults: Array<{
+    gate: string;
+    verdict: "PASS" | "WARN" | "FAIL";
+    details: string[];
+    measured: number;
+    warnThreshold: number;
+    failThreshold: number;
+  }> | null;
+  canPublish: boolean | null;
+  qualityScore: number | null;
+  qualityFlags: string[] | null;
+  errorMessage: string | null;
+  durationMs: number | null;
+  attemptNumber: number;
+  featureFlags: { pipeline_enabled: boolean; gates_blocking: boolean } | null;
+  engineName: string | null;
+  engineVersion: string | null;
+  renderStatus: string | null;
+  renderOutputPath: string | null;
+  renderMetadata: Record<string, unknown> | null;
+  renderDurationMs: number | null;
+  renderErrorCode: string | null;
+}
+
+export async function loader({ request, params }: LoaderFunctionArgs) {
+  const backendUrl = getInternalApiUrl("");
+  const cookieHeader = request.headers.get("Cookie") || "";
+  const executionLogId = params.executionLogId;
+
+  try {
+    const res = await fetch(
+      `${backendUrl}/api/admin/video/executions/${executionLogId}`,
+      { headers: { Cookie: cookieHeader } },
+    );
+
+    if (!res.ok) return json({ execution: null, error: "Not found" });
+
+    const data = await res.json();
+    return json({ execution: data.data as ExecutionLog, error: null });
+  } catch {
+    return json({ execution: null, error: "Erreur chargement" });
+  }
+}
+
+const STATUS_CONFIG: Record<
+  string,
+  { color: string; bg: string; icon: typeof Clock }
+> = {
+  pending: {
+    color: "text-gray-600",
+    bg: "bg-gray-100 text-gray-700",
+    icon: Clock,
+  },
+  processing: {
+    color: "text-blue-600",
+    bg: "bg-blue-100 text-blue-700",
+    icon: Activity,
+  },
+  completed: {
+    color: "text-green-600",
+    bg: "bg-green-100 text-green-700",
+    icon: CheckCircle,
+  },
+  failed: {
+    color: "text-red-600",
+    bg: "bg-red-100 text-red-700",
+    icon: XCircle,
+  },
+};
+
+const VERDICT_CONFIG = {
+  PASS: {
+    bg: "bg-green-50 border-green-200",
+    badge: "bg-green-100 text-green-700",
+  },
+  WARN: {
+    bg: "bg-amber-50 border-amber-200",
+    badge: "bg-amber-100 text-amber-700",
+  },
+  FAIL: { bg: "bg-red-50 border-red-200", badge: "bg-red-100 text-red-700" },
+};
+
+const GATE_LABELS: Record<string, string> = {
+  truth: "G1 Truth",
+  safety: "G2 Safety (STRICT)",
+  brand: "G3 Brand",
+  platform: "G4 Platform",
+  reuse_risk: "G5 Reuse Risk",
+  visual_role: "G6 Visual Role (STRICT)",
+  final_qa: "G7 Final QA",
+};
+
+function formatDuration(ms: number | null): string {
+  if (ms == null) return "—";
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleString("fr-FR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+
+export default function ExecutionDetail() {
+  const { execution, error } = useLoaderData<typeof loader>();
+
+  if (!execution) {
+    return (
+      <div className="space-y-4">
+        <Link
+          to="/admin/video-hub/productions"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+        >
+          <ArrowLeft className="h-4 w-4" /> Retour
+        </Link>
+        <Card>
+          <CardContent className="p-8 text-center text-gray-500">
+            {error || "Execution introuvable."}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const statusConf = STATUS_CONFIG[execution.status] ?? STATUS_CONFIG.pending;
+  const StatusIcon = statusConf.icon;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link
+            to={`/admin/video-hub/productions/${execution.briefId}`}
+            className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+          >
+            <ArrowLeft className="h-4 w-4" /> Production
+          </Link>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Execution #{execution.id}
+          </h2>
+        </div>
+        <Badge className={statusConf.bg}>
+          <StatusIcon className={`h-3 w-3 mr-1 ${statusConf.color}`} />
+          {execution.status}
+        </Badge>
+      </div>
+
+      {/* Info Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-xs text-gray-500">Brief ID</div>
+            <Link
+              to={`/admin/video-hub/productions/${execution.briefId}`}
+              className="font-medium text-blue-600 hover:underline text-sm"
+            >
+              {execution.briefId}
+            </Link>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-xs text-gray-500">Trigger</div>
+            <div className="font-medium capitalize">
+              {execution.triggerSource}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-xs text-gray-500">Attempt</div>
+            <div className="font-medium">#{execution.attemptNumber}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-xs text-gray-500">Duree totale</div>
+            <div className="font-medium">
+              {formatDuration(execution.durationMs)}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Timestamps */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Timeline
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <div className="text-xs text-gray-500">Cree</div>
+              <div>{formatDate(execution.createdAt)}</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Demarre</div>
+              <div>{formatDate(execution.startedAt)}</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Termine</div>
+              <div>{formatDate(execution.completedAt)}</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">BullMQ Job</div>
+              <div className="font-mono text-xs">
+                {execution.bullmqJobId ?? "—"}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Render Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Cpu className="h-4 w-4" />
+            Render Engine
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+              <div className="text-xs text-gray-500">Engine</div>
+              <div className="font-medium">
+                {execution.engineName ?? "—"}
+                {execution.engineVersion ? ` v${execution.engineVersion}` : ""}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Render Status</div>
+              <div>
+                {execution.renderStatus ? (
+                  <Badge
+                    className={
+                      execution.renderStatus === "success"
+                        ? "bg-green-100 text-green-700"
+                        : execution.renderStatus === "failed"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-gray-100 text-gray-700"
+                    }
+                  >
+                    {execution.renderStatus}
+                  </Badge>
+                ) : (
+                  "—"
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Render Duration</div>
+              <div>{formatDuration(execution.renderDurationMs)}</div>
+            </div>
+            <div>
+              <div className="text-xs text-gray-500">Error Code</div>
+              <div>
+                {execution.renderErrorCode ? (
+                  <Badge className="bg-red-100 text-red-700 text-xs">
+                    {execution.renderErrorCode}
+                  </Badge>
+                ) : (
+                  <span className="text-green-600">None</span>
+                )}
+              </div>
+            </div>
+          </div>
+          {execution.renderOutputPath && (
+            <div className="mt-3 text-sm">
+              <div className="text-xs text-gray-500">Output Path</div>
+              <div className="font-mono text-xs">
+                {execution.renderOutputPath}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Error Message */}
+      {execution.errorMessage && (
+        <Card className="border-red-200">
+          <CardHeader>
+            <CardTitle className="text-sm text-red-700 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
+              Erreur
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-red-600 font-mono bg-red-50 p-3 rounded">
+              {execution.errorMessage}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Gates */}
+      {execution.gateResults && execution.gateResults.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              Gates (7)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {execution.gateResults.map((gate) => {
+                const config = VERDICT_CONFIG[gate.verdict];
+                return (
+                  <div
+                    key={gate.gate}
+                    className={`flex items-center justify-between p-3 rounded-lg border ${config.bg}`}
+                  >
+                    <div>
+                      <div className="font-medium text-sm">
+                        {GATE_LABELS[gate.gate] ?? gate.gate}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {gate.details.join(" | ")}
+                      </div>
+                    </div>
+                    <Badge className={config.badge}>{gate.verdict}</Badge>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Quality */}
+      {(execution.qualityScore != null ||
+        (execution.qualityFlags && execution.qualityFlags.length > 0)) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Activity className="h-4 w-4" />
+              Quality
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-6">
+              {execution.qualityScore != null && (
+                <div>
+                  <div className="text-xs text-gray-500">Score</div>
+                  <div className="text-2xl font-bold">
+                    {execution.qualityScore}/100
+                  </div>
+                </div>
+              )}
+              {execution.qualityFlags && execution.qualityFlags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {execution.qualityFlags.map((flag) => (
+                    <Badge key={flag} variant="outline" className="text-xs">
+                      {flag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Feature Flags */}
+      {execution.featureFlags && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Feature Flags (snapshot)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3 text-sm">
+              <Badge
+                className={
+                  execution.featureFlags.pipeline_enabled
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-100 text-gray-500"
+                }
+              >
+                Pipeline:{" "}
+                {execution.featureFlags.pipeline_enabled ? "ON" : "OFF"}
+              </Badge>
+              <Badge
+                className={
+                  execution.featureFlags.gates_blocking
+                    ? "bg-amber-100 text-amber-700"
+                    : "bg-gray-100 text-gray-500"
+                }
+              >
+                Gates:{" "}
+                {execution.featureFlags.gates_blocking ? "BLOCKING" : "OBSERVE"}
+              </Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

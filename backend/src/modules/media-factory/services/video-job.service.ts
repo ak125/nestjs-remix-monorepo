@@ -44,6 +44,13 @@ export interface ExecutionLogRow {
   durationMs: number | null;
   attemptNumber: number;
   featureFlags: unknown | null;
+  // P3-Lite + P4.0 render columns
+  engineName: string | null;
+  engineVersion: string | null;
+  renderStatus: string | null;
+  renderOutputPath: string | null;
+  renderMetadata: unknown | null;
+  renderDurationMs: number | null;
   renderErrorCode: string | null;
 }
 
@@ -319,6 +326,12 @@ export class VideoJobService extends SupabaseBaseService {
     durationMs: row.duration_ms as number | null,
     attemptNumber: (row.attempt_number as number) ?? 1,
     featureFlags: row.feature_flags,
+    engineName: (row.engine_name as string) ?? null,
+    engineVersion: (row.engine_version as string) ?? null,
+    renderStatus: (row.render_status as string) ?? null,
+    renderOutputPath: (row.render_output_path as string) ?? null,
+    renderMetadata: row.render_metadata ?? null,
+    renderDurationMs: (row.render_duration_ms as number) ?? null,
     renderErrorCode: (row.render_error_code as string) ?? null,
   });
 }

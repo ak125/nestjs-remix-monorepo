@@ -7,6 +7,8 @@ import {
   AlertTriangle,
   FileText,
   Shield,
+  Activity,
+  Clock,
 } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -40,23 +42,60 @@ interface Production {
   updatedAt: string;
 }
 
+interface ExecutionRow {
+  id: number;
+  status: string;
+  engineName: string | null;
+  renderErrorCode: string | null;
+  durationMs: number | null;
+  attemptNumber: number;
+  createdAt: string;
+}
+
+const STATUS_BADGE: Record<string, string> = {
+  pending: "bg-gray-100 text-gray-700",
+  processing: "bg-blue-100 text-blue-700",
+  completed: "bg-green-100 text-green-700",
+  failed: "bg-red-100 text-red-700",
+};
+
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
   const briefId = params.briefId;
 
   try {
-    const res = await fetch(
-      `${backendUrl}/api/admin/video/productions/${briefId}`,
-      { headers: { Cookie: cookieHeader } },
-    );
+    const headers = { Cookie: cookieHeader };
+    const [prodRes, execRes] = await Promise.all([
+      fetch(`${backendUrl}/api/admin/video/productions/${briefId}`, {
+        headers,
+      }),
+      fetch(`${backendUrl}/api/admin/video/productions/${briefId}/executions`, {
+        headers,
+      }),
+    ]);
 
-    if (!res.ok) return json({ production: null, error: "Not found" });
+    if (!prodRes.ok)
+      return json({ production: null, executions: [], error: "Not found" });
 
-    const data = await res.json();
-    return json({ production: data.data as Production, error: null });
+    const prodData = await prodRes.json();
+    let executions: ExecutionRow[] = [];
+    if (execRes.ok) {
+      const execData = await execRes.json();
+      executions = (execData.data ?? []) as ExecutionRow[];
+    }
+
+    return json({
+      production: prodData.data as Production,
+      executions,
+      error: null,
+    });
   } catch {
-    return json({ production: null, error: "Erreur chargement" });
+    return json({
+      production: null,
+      executions: [],
+      error: "Erreur chargement",
+    });
   }
 }
 
@@ -99,8 +138,14 @@ const ARTEFACT_KEYS = [
   { key: "knowledgeContract", label: "Knowledge Contract" },
 ] as const;
 
+function formatDuration(ms: number | null): string {
+  if (ms == null) return "—";
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
 export default function VideoProductionDetail() {
-  const { production, error } = useLoaderData<typeof loader>();
+  const { production, executions, error } = useLoaderData<typeof loader>();
 
   if (!production) {
     return (
@@ -265,6 +310,88 @@ export default function VideoProductionDetail() {
           </CardContent>
         </Card>
       )}
+
+      {/* Executions recentes */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Executions recentes
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {executions.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-xs text-gray-500">
+                    <th className="pb-2 pr-3">#</th>
+                    <th className="pb-2 pr-3">Status</th>
+                    <th className="pb-2 pr-3">Engine</th>
+                    <th className="pb-2 pr-3">Erreur</th>
+                    <th className="pb-2 pr-3">Duree</th>
+                    <th className="pb-2 pr-3">Attempt</th>
+                    <th className="pb-2">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {executions.map((exec) => (
+                    <tr key={exec.id} className="border-b last:border-0">
+                      <td className="py-2 pr-3">
+                        <Link
+                          to={`/admin/video-hub/executions/${exec.id}`}
+                          className="text-blue-600 hover:underline font-medium"
+                        >
+                          {exec.id}
+                        </Link>
+                      </td>
+                      <td className="py-2 pr-3">
+                        <Badge
+                          className={`text-xs ${STATUS_BADGE[exec.status] ?? STATUS_BADGE.pending}`}
+                        >
+                          {exec.status}
+                        </Badge>
+                      </td>
+                      <td className="py-2 pr-3 text-gray-600">
+                        {exec.engineName ?? "—"}
+                      </td>
+                      <td className="py-2 pr-3">
+                        {exec.renderErrorCode ? (
+                          <Badge className="bg-red-100 text-red-700 text-xs">
+                            {exec.renderErrorCode}
+                          </Badge>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="py-2 pr-3 font-mono text-xs">
+                        {formatDuration(exec.durationMs)}
+                      </td>
+                      <td className="py-2 pr-3 text-center">
+                        #{exec.attemptNumber}
+                      </td>
+                      <td className="py-2 text-xs text-gray-500">
+                        <Clock className="inline h-3 w-3 mr-1" />
+                        {new Date(exec.createdAt).toLocaleString("fr-FR", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">
+              Aucune execution. Lancez un dry-run ou une execution depuis
+              l&apos;API.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
