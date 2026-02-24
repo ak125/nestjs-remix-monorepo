@@ -344,7 +344,7 @@ export function ResponsiveDataTable<T extends Record<string, unknown>>({
   );
 }
 
-function PaginationBar({
+export function PaginationBar({
   currentPage,
   totalPages,
   totalItems,

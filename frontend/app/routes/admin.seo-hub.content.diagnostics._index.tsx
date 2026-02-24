@@ -1,7 +1,7 @@
 /**
- * 🔧 SEO HUB - R5 DIAGNOSTICS LIST
+ * SEO HUB - R5 DIAGNOSTICS LIST
  *
- * Liste paginée des pages R5 Diagnostic avec:
+ * Liste paginee des pages R5 Diagnostic avec:
  * - Filtres par status, type, safety gate, cluster
  * - Groupement par cluster (accordion)
  * - Actions: Preview, Edit, Publish, Delete
@@ -13,13 +13,7 @@ import {
   type ActionFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import {
-  useLoaderData,
-  useSearchParams,
-  Link,
-  Form,
-  useNavigation,
-} from "@remix-run/react";
+import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import {
   AlertTriangle,
   Edit,
@@ -36,6 +30,7 @@ import {
   RefreshCw,
   ExternalLink,
 } from "lucide-react";
+import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import {
   Accordion,
   AccordionContent,
@@ -71,17 +66,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "~/components/ui/table";
+import { useTableUrlState } from "~/hooks/useTableUrlState";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+// --- Types ---
 
 interface Diagnostic {
   slug: string;
@@ -105,6 +95,8 @@ interface LoaderData {
   authError?: boolean;
 }
 
+// --- Constants ---
+
 const SAFETY_GATE_COLORS: Record<string, string> = {
   stop_immediate: "bg-red-100 text-red-800 border-red-300",
   stop_soon: "bg-orange-100 text-orange-800 border-orange-300",
@@ -126,8 +118,12 @@ const SAFETY_GATE_LABELS: Record<string, string> = {
   none: "Info",
 };
 
+// --- Meta ---
+
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Diagnostics SEO - Admin");
+
+// --- Loader ---
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
@@ -136,7 +132,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const status = url.searchParams.get("status") || "all";
 
   try {
-    // Fetch both published and drafts
     const [featuredRes, draftsRes] = await Promise.all([
       fetch(`${backendUrl}/api/seo/diagnostic/featured?limit=200`, {
         headers: { Cookie: cookieHeader },
@@ -146,7 +141,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       }),
     ]);
 
-    // Vérifier les erreurs d'autorisation (403)
     if (draftsRes.status === 403) {
       return json<LoaderData>({
         diagnostics: [],
@@ -163,7 +157,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       : { data: [] };
     const draftsData = draftsRes.ok ? await draftsRes.json() : { drafts: [] };
 
-    // Mark published status
     const published = (featuredData.data || []).map((d: Diagnostic) => ({
       ...d,
       isPublished: true,
@@ -173,17 +166,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       isPublished: false,
     }));
 
-    // Combine and filter
     let diagnostics: Diagnostic[] = [];
-    if (status === "published") {
-      diagnostics = published;
-    } else if (status === "draft") {
-      diagnostics = drafts;
-    } else {
-      diagnostics = [...drafts, ...published];
-    }
+    if (status === "published") diagnostics = published;
+    else if (status === "draft") diagnostics = drafts;
+    else diagnostics = [...drafts, ...published];
 
-    // Extract unique clusters
     const clusters = [
       ...new Set(diagnostics.map((d) => d.clusterId).filter(Boolean)),
     ] as string[];
@@ -205,6 +192,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 }
 
+// --- Action ---
+
 export async function action({ request }: ActionFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
@@ -217,10 +206,7 @@ export async function action({ request }: ActionFunctionArgs) {
       case "publish": {
         const res = await fetch(
           `${backendUrl}/api/seo/diagnostic/${slug}/publish`,
-          {
-            method: "PATCH",
-            headers: { Cookie: cookieHeader },
-          },
+          { method: "PATCH", headers: { Cookie: cookieHeader } },
         );
         const data = await res.json();
         return json({ success: data.success, action: "publish", slug });
@@ -242,37 +228,171 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
+// --- Column definitions ---
+
+const diagnosticColumns: DataColumn<Diagnostic>[] = [
+  {
+    key: "title" as keyof Diagnostic,
+    header: "Titre",
+    render: (_val, row) => (
+      <div>
+        <Link
+          to={`/admin/seo-hub/content/diagnostics/${row.slug}`}
+          className="font-medium hover:underline"
+        >
+          {row.title}
+        </Link>
+        <p className="text-sm text-muted-foreground font-mono">{row.slug}</p>
+      </div>
+    ),
+  },
+  {
+    key: "observableType" as keyof Diagnostic,
+    header: "Type",
+    render: (val) => (
+      <Badge variant="secondary" className="capitalize">
+        {String(val)}
+      </Badge>
+    ),
+  },
+  {
+    key: "safetyGate" as keyof Diagnostic,
+    header: "Safety Gate",
+    render: (_val, row) => {
+      const SafetyIcon = SAFETY_GATE_ICONS[row.safetyGate] || Zap;
+      return (
+        <Badge className={SAFETY_GATE_COLORS[row.safetyGate]}>
+          <SafetyIcon className="mr-1 h-3 w-3" />
+          {SAFETY_GATE_LABELS[row.safetyGate]}
+        </Badge>
+      );
+    },
+  },
+  {
+    key: "isPublished" as keyof Diagnostic,
+    header: "Status",
+    render: (val) =>
+      val ? (
+        <Badge className="bg-green-100 text-green-800">
+          <Check className="mr-1 h-3 w-3" />
+          Publié
+        </Badge>
+      ) : (
+        <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+          Brouillon
+        </Badge>
+      ),
+  },
+  {
+    key: "slug" as keyof Diagnostic,
+    header: "Actions",
+    align: "right" as const,
+    width: "80px",
+    render: (_val, row) => <DiagnosticActions diag={row} />,
+  },
+];
+
+// --- Actions dropdown (extracted to reduce column render complexity) ---
+
+function DiagnosticActions({ diag }: { diag: Diagnostic }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm">
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem asChild>
+          <Link to={`/diagnostic-auto/${diag.slug}`} target="_blank">
+            <Eye className="mr-2 h-4 w-4" />
+            Prévisualiser
+            <ExternalLink className="ml-2 h-3 w-3" />
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to={`/admin/seo-hub/content/diagnostics/${diag.slug}`}>
+            <Edit className="mr-2 h-4 w-4" />
+            Éditer
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        {!diag.isPublished && (
+          <Form method="post">
+            <input type="hidden" name="intent" value="publish" />
+            <input type="hidden" name="slug" value={diag.slug} />
+            <DropdownMenuItem asChild>
+              <button type="submit" className="w-full cursor-pointer">
+                <Check className="mr-2 h-4 w-4 text-green-600" />
+                Publier
+              </button>
+            </DropdownMenuItem>
+          </Form>
+        )}
+        {!diag.isPublished && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                className="text-red-600 focus:text-red-600"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Supprimer
+              </DropdownMenuItem>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Supprimer ce diagnostic ?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Cette action est irréversible.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <Form method="post">
+                  <input type="hidden" name="intent" value="delete" />
+                  <input type="hidden" name="slug" value={diag.slug} />
+                  <AlertDialogAction
+                    type="submit"
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Supprimer
+                  </AlertDialogAction>
+                </Form>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+// --- Page component ---
+
 export default function AdminDiagnosticsIndex() {
-  const {
-    diagnostics,
-    total,
-    clusters: _clusters,
-    error,
-    authError,
-  } = useLoaderData<typeof loader>();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const { diagnostics, total, error, authError } =
+    useLoaderData<typeof loader>();
   const navigation = useNavigation();
   const isLoading =
     navigation.state === "loading" || navigation.state === "submitting";
 
-  const status = searchParams.get("status") || "all";
-  const safetyGate = searchParams.get("safety_gate") || "all";
-  const search = searchParams.get("q") || "";
+  const table = useTableUrlState({
+    filterKeys: ["status", "safety_gate"],
+  });
 
-  // Filter diagnostics
+  // Client-side filtering
   const filteredDiagnostics = diagnostics.filter((diag) => {
-    if (search) {
-      const searchLower = search.toLowerCase();
+    if (table.search) {
+      const q = table.search.toLowerCase();
       if (
-        !diag.slug.toLowerCase().includes(searchLower) &&
-        !diag.title.toLowerCase().includes(searchLower)
-      ) {
+        !diag.slug.toLowerCase().includes(q) &&
+        !diag.title.toLowerCase().includes(q)
+      )
         return false;
-      }
     }
-    if (safetyGate !== "all" && diag.safetyGate !== safetyGate) {
-      return false;
-    }
+    const sg = table.filters.safety_gate;
+    if (sg && sg !== "all" && diag.safetyGate !== sg) return false;
     return true;
   });
 
@@ -280,47 +400,12 @@ export default function AdminDiagnosticsIndex() {
   const groupedByCluster = filteredDiagnostics.reduce(
     (acc, diag) => {
       const cluster = diag.clusterId || "non-classé";
-      if (!acc[cluster]) {
-        acc[cluster] = [];
-      }
+      if (!acc[cluster]) acc[cluster] = [];
       acc[cluster].push(diag);
       return acc;
     },
     {} as Record<string, Diagnostic[]>,
   );
-
-  const handleStatusChange = (value: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (value === "all") {
-      params.delete("status");
-    } else {
-      params.set("status", value);
-    }
-    setSearchParams(params);
-  };
-
-  const handleSafetyGateChange = (value: string) => {
-    const params = new URLSearchParams(searchParams);
-    if (value === "all") {
-      params.delete("safety_gate");
-    } else {
-      params.set("safety_gate", value);
-    }
-    setSearchParams(params);
-  };
-
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const q = formData.get("q") as string;
-    const params = new URLSearchParams(searchParams);
-    if (q) {
-      params.set("q", q);
-    } else {
-      params.delete("q");
-    }
-    setSearchParams(params);
-  };
 
   if (error) {
     return (
@@ -342,10 +427,7 @@ export default function AdminDiagnosticsIndex() {
     );
   }
 
-  const _publishedCount = diagnostics.filter((d) => d.isPublished).length;
   const draftCount = diagnostics.filter((d) => !d.isPublished).length;
-
-  // Count by safety gate
   const safetyGateCounts = diagnostics.reduce(
     (acc, d) => {
       acc[d.safetyGate] = (acc[d.safetyGate] || 0) + 1;
@@ -450,18 +532,23 @@ export default function AdminDiagnosticsIndex() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-4 flex-wrap">
-            <form onSubmit={handleSearch} className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[200px]">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  name="q"
                   placeholder="Rechercher..."
-                  defaultValue={search}
+                  value={table.search}
+                  onChange={(e) => table.setSearch(e.target.value)}
                   className="pl-10"
                 />
               </div>
-            </form>
-            <Select value={status} onValueChange={handleStatusChange}>
+            </div>
+            <Select
+              value={table.filters.status || "all"}
+              onValueChange={(v) =>
+                table.setFilter("status", v === "all" ? "" : v)
+              }
+            >
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -471,7 +558,12 @@ export default function AdminDiagnosticsIndex() {
                 <SelectItem value="draft">Brouillons</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={safetyGate} onValueChange={handleSafetyGateChange}>
+            <Select
+              value={table.filters.safety_gate || "all"}
+              onValueChange={(v) =>
+                table.setFilter("safety_gate", v === "all" ? "" : v)
+              }
+            >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Safety Gate" />
               </SelectTrigger>
@@ -526,173 +618,13 @@ export default function AdminDiagnosticsIndex() {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Titre</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Safety Gate</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="w-[80px]">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {items.map((diag) => {
-                          const SafetyIcon =
-                            SAFETY_GATE_ICONS[diag.safetyGate] || Zap;
-                          return (
-                            <TableRow
-                              key={diag.slug}
-                              className={isLoading ? "opacity-50" : ""}
-                            >
-                              <TableCell>
-                                <Link
-                                  to={`/admin/seo-hub/content/diagnostics/${diag.slug}`}
-                                  className="font-medium hover:underline"
-                                >
-                                  {diag.title}
-                                </Link>
-                                <p className="text-sm text-muted-foreground font-mono">
-                                  {diag.slug}
-                                </p>
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  variant="secondary"
-                                  className="capitalize"
-                                >
-                                  {diag.observableType}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <Badge
-                                  className={
-                                    SAFETY_GATE_COLORS[diag.safetyGate]
-                                  }
-                                >
-                                  <SafetyIcon className="mr-1 h-3 w-3" />
-                                  {SAFETY_GATE_LABELS[diag.safetyGate]}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                {diag.isPublished ? (
-                                  <Badge className="bg-green-100 text-green-800">
-                                    <Check className="mr-1 h-3 w-3" />
-                                    Publié
-                                  </Badge>
-                                ) : (
-                                  <Badge
-                                    variant="secondary"
-                                    className="bg-amber-100 text-amber-800"
-                                  >
-                                    Brouillon
-                                  </Badge>
-                                )}
-                              </TableCell>
-                              <TableCell>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem asChild>
-                                      <Link
-                                        to={`/diagnostic-auto/${diag.slug}`}
-                                        target="_blank"
-                                      >
-                                        <Eye className="mr-2 h-4 w-4" />
-                                        Prévisualiser
-                                        <ExternalLink className="ml-2 h-3 w-3" />
-                                      </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem asChild>
-                                      <Link
-                                        to={`/admin/seo-hub/content/diagnostics/${diag.slug}`}
-                                      >
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        Éditer
-                                      </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    {!diag.isPublished && (
-                                      <Form method="post">
-                                        <input
-                                          type="hidden"
-                                          name="intent"
-                                          value="publish"
-                                        />
-                                        <input
-                                          type="hidden"
-                                          name="slug"
-                                          value={diag.slug}
-                                        />
-                                        <DropdownMenuItem asChild>
-                                          <button
-                                            type="submit"
-                                            className="w-full cursor-pointer"
-                                          >
-                                            <Check className="mr-2 h-4 w-4 text-green-600" />
-                                            Publier
-                                          </button>
-                                        </DropdownMenuItem>
-                                      </Form>
-                                    )}
-                                    {!diag.isPublished && (
-                                      <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                          <DropdownMenuItem
-                                            onSelect={(e) => e.preventDefault()}
-                                            className="text-red-600 focus:text-red-600"
-                                          >
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            Supprimer
-                                          </DropdownMenuItem>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                          <AlertDialogHeader>
-                                            <AlertDialogTitle>
-                                              Supprimer ce diagnostic ?
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                              Cette action est irréversible.
-                                            </AlertDialogDescription>
-                                          </AlertDialogHeader>
-                                          <AlertDialogFooter>
-                                            <AlertDialogCancel>
-                                              Annuler
-                                            </AlertDialogCancel>
-                                            <Form method="post">
-                                              <input
-                                                type="hidden"
-                                                name="intent"
-                                                value="delete"
-                                              />
-                                              <input
-                                                type="hidden"
-                                                name="slug"
-                                                value={diag.slug}
-                                              />
-                                              <AlertDialogAction
-                                                type="submit"
-                                                className="bg-red-600 hover:bg-red-700"
-                                              >
-                                                Supprimer
-                                              </AlertDialogAction>
-                                            </Form>
-                                          </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                      </AlertDialog>
-                                    )}
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })}
-                      </TableBody>
-                    </Table>
+                    <AdminDataTable
+                      data={items}
+                      columns={diagnosticColumns}
+                      getRowKey={(row) => row.slug}
+                      isLoading={isLoading}
+                      pageSize={200}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               ))}

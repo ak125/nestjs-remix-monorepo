@@ -47,8 +47,11 @@ export {
 } from "./FilterBar";
 export {
   ResponsiveDataTable,
+  PaginationBar,
   type ResponsiveDataTableProps,
   type DataColumn,
   createDataColumn,
 } from "./ResponsiveDataTable";
+export { AdminDataTable, type AdminDataTableProps } from "./AdminDataTable";
+export { TableSkeleton } from "./TableSkeleton";
 export { DensityToggle, DensityButtons } from "./DensityToggle";
