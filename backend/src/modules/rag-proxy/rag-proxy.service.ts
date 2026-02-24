@@ -28,6 +28,7 @@ import {
 } from './events/rag-ingestion.events';
 import { FrontmatterValidatorService } from './services/frontmatter-validator.service';
 import { RagCleanupService } from './services/rag-cleanup.service';
+import { WebhookAuditService } from './services/webhook-audit.service';
 
 /** Simple circuit breaker state for the RAG external service. */
 interface CircuitBreakerState {
@@ -92,6 +93,7 @@ export class RagProxyService implements OnModuleDestroy {
     private readonly eventEmitter: EventEmitter2,
     private readonly frontmatterValidator: FrontmatterValidatorService,
     private readonly ragCleanupService: RagCleanupService,
+    private readonly webhookAuditService: WebhookAuditService,
   ) {
     // URL externe obligatoire - le RAG est sur un serveur SÉPARÉ (pas Docker local)
     this.ragUrl = this.configService.getOrThrow<string>('RAG_SERVICE_URL');
@@ -1804,6 +1806,109 @@ export class RagProxyService implements OnModuleDestroy {
     }
 
     return results;
+  }
+
+  /**
+   * Handle webhook callback from RAG Python container after ingestion completes.
+   * Resolves affected gammes from files_created and emits rag.ingestion.completed event.
+   */
+  async handleWebhookCompletion(dto: {
+    job_id: string;
+    source: 'pdf' | 'web';
+    status: 'done' | 'failed';
+    files_created?: string[];
+  }): Promise<{
+    gammes_detected: string[];
+    diagnostics_detected: string[];
+    event_emitted: boolean;
+  }> {
+    const startTime = Date.now();
+    this.logger.log(
+      `Webhook received: jobId=${dto.job_id}, source=${dto.source}, status=${dto.status}, files=${dto.files_created?.length ?? 0}`,
+    );
+
+    if (dto.status === 'failed') {
+      this.logger.warn(
+        `Webhook: ingestion job ${dto.job_id} reported failure — skipping event`,
+      );
+      // Record failed webhook in audit trail
+      this.webhookAuditService
+        .recordWebhook({
+          job_id: dto.job_id,
+          source: dto.source,
+          status: dto.status,
+          files_created: dto.files_created || [],
+          gammes_detected: [],
+          diagnostics_detected: [],
+          event_emitted: false,
+          error_message: 'Ingestion reported failure',
+          processing_ms: Date.now() - startTime,
+        })
+        .catch((err) =>
+          this.logger.warn(`Audit trail write failed: ${err.message}`),
+        );
+      return {
+        gammes_detected: [],
+        diagnostics_detected: [],
+        event_emitted: false,
+      };
+    }
+
+    // Resolve relative paths to absolute paths
+    const knowledgePath =
+      process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+    const absolutePaths = (dto.files_created ?? []).map((f) =>
+      path.isAbsolute(f) ? f : path.join(knowledgePath, f),
+    );
+
+    // Reuse existing resolution logic
+    const affectedGammesMap =
+      absolutePaths.length > 0
+        ? await this.resolveGammesFromFiles(absolutePaths)
+        : this.detectAffectedGammes();
+    const affectedGammes = Array.from(affectedGammesMap.keys());
+    const affectedDiagnostics = this.detectAffectedDiagnostics();
+
+    // Emit the event that ContentRefreshService listens to
+    const event: RagIngestionCompletedEvent = {
+      jobId: dto.job_id,
+      source: dto.source,
+      status: 'done',
+      completedAt: Math.floor(Date.now() / 1000),
+      affectedGammes,
+      affectedGammesMap: Object.fromEntries(affectedGammesMap),
+      ...(affectedDiagnostics.length > 0 ? { affectedDiagnostics } : {}),
+    };
+
+    this.eventEmitter.emit(RAG_INGESTION_COMPLETED, event);
+    this.logger.log(
+      `Webhook emitted ${RAG_INGESTION_COMPLETED}: jobId=${dto.job_id}, gammes=[${affectedGammes.join(', ')}]` +
+        (affectedDiagnostics.length > 0
+          ? `, diagnostics=[${affectedDiagnostics.join(', ')}]`
+          : ''),
+    );
+
+    // Record successful webhook in audit trail (fire-and-forget)
+    this.webhookAuditService
+      .recordWebhook({
+        job_id: dto.job_id,
+        source: dto.source,
+        status: dto.status,
+        files_created: dto.files_created || [],
+        gammes_detected: affectedGammes,
+        diagnostics_detected: affectedDiagnostics,
+        event_emitted: true,
+        processing_ms: Date.now() - startTime,
+      })
+      .catch((err) =>
+        this.logger.warn(`Audit trail write failed: ${err.message}`),
+      );
+
+    return {
+      gammes_detected: affectedGammes,
+      diagnostics_detected: affectedDiagnostics,
+      event_emitted: true,
+    };
   }
 
   /**

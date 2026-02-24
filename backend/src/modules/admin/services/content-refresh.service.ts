@@ -993,4 +993,87 @@ export class ContentRefreshService extends SupabaseBaseService {
 
     return data as unknown as typeof emptyResult;
   }
+
+  /**
+   * Get snapshot data for a specific refresh log entry.
+   * Returns content fingerprint, quality score, and SEO gamme state.
+   */
+  async getRefreshSnapshot(refreshLogId: number): Promise<{
+    refreshLogId: number;
+    pgAlias: string;
+    pageType: string;
+    status: string;
+    qualityScore: number | null;
+    contentFingerprint: unknown | null;
+    triggerSource: string | null;
+    createdAt: string | null;
+    completedAt: string | null;
+    seoState: {
+      title: string | null;
+      h1: string | null;
+      contentLength: number | null;
+      draftUpdatedAt: string | null;
+    } | null;
+  }> {
+    const { data: logEntry, error } = await this.client
+      .from('__rag_content_refresh_log')
+      .select(
+        'id, pg_alias, pg_id, page_type, status, quality_score, content_fingerprint, trigger_source, created_at, completed_at',
+      )
+      .eq('id', refreshLogId)
+      .single();
+
+    if (error || !logEntry) {
+      return {
+        refreshLogId,
+        pgAlias: '',
+        pageType: '',
+        status: 'not_found',
+        qualityScore: null,
+        contentFingerprint: null,
+        triggerSource: null,
+        createdAt: null,
+        completedAt: null,
+        seoState: null,
+      };
+    }
+
+    // Fetch current SEO gamme state
+    let seoState: {
+      title: string | null;
+      h1: string | null;
+      contentLength: number | null;
+      draftUpdatedAt: string | null;
+    } | null = null;
+
+    if (logEntry.pg_id) {
+      const { data: seo } = await this.client
+        .from('__seo_gamme')
+        .select('sg_title, sg_h1, sg_content, sg_draft_updated_at')
+        .eq('sg_pg_id', String(logEntry.pg_id))
+        .single();
+
+      if (seo) {
+        seoState = {
+          title: seo.sg_title,
+          h1: seo.sg_h1,
+          contentLength: seo.sg_content ? seo.sg_content.length : null,
+          draftUpdatedAt: seo.sg_draft_updated_at,
+        };
+      }
+    }
+
+    return {
+      refreshLogId,
+      pgAlias: logEntry.pg_alias,
+      pageType: logEntry.page_type,
+      status: logEntry.status,
+      qualityScore: logEntry.quality_score,
+      contentFingerprint: logEntry.content_fingerprint,
+      triggerSource: logEntry.trigger_source,
+      createdAt: logEntry.created_at,
+      completedAt: logEntry.completed_at,
+      seoState,
+    };
+  }
 }

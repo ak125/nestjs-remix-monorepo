@@ -14,6 +14,7 @@ import {
 } from '@nestjs/common';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { ContentRefreshService } from '../services/content-refresh.service';
+import { WebhookAuditService } from '../../rag-proxy/services/webhook-audit.service';
 import {
   TriggerRefreshDto,
   RefreshStatusQueryDto,
@@ -23,7 +24,10 @@ import {
 @Controller('api/admin/content-refresh')
 @UseGuards(IsAdminGuard)
 export class AdminContentRefreshController {
-  constructor(private readonly contentRefreshService: ContentRefreshService) {}
+  constructor(
+    private readonly contentRefreshService: ContentRefreshService,
+    private readonly webhookAuditService: WebhookAuditService,
+  ) {}
 
   /**
    * GET /api/admin/content-refresh/dashboard
@@ -201,5 +205,46 @@ export class AdminContentRefreshController {
       throw new BadRequestException(result.error);
     }
     return result;
+  }
+
+  // ── Webhook Audit Trail Endpoints ──
+
+  /**
+   * GET /api/admin/content-refresh/webhook-audit
+   * Returns recent webhook calls with pagination.
+   */
+  @Get('webhook-audit')
+  async getWebhookAudit(
+    @Query('limit') limitParam?: string,
+    @Query('offset') offsetParam?: string,
+  ) {
+    const limit = Math.min(parseInt(limitParam || '20', 10) || 20, 100);
+    const offset = parseInt(offsetParam || '0', 10) || 0;
+    return this.webhookAuditService.getRecentWebhooks(limit, offset);
+  }
+
+  /**
+   * GET /api/admin/content-refresh/webhook-stats
+   * Returns aggregated webhook KPIs for the last N days.
+   */
+  @Get('webhook-stats')
+  async getWebhookStats(@Query('days') daysParam?: string) {
+    const days = daysParam
+      ? Math.min(Math.max(parseInt(daysParam, 10) || 7, 1), 90)
+      : 7;
+    return this.webhookAuditService.getWebhookStats(days);
+  }
+
+  /**
+   * GET /api/admin/content-refresh/snapshot/:refreshLogId
+   * Returns content fingerprint and quality data for a specific refresh log entry.
+   */
+  @Get('snapshot/:refreshLogId')
+  async getSnapshot(@Param('refreshLogId') id: string) {
+    const numId = parseInt(id, 10);
+    if (isNaN(numId)) {
+      throw new BadRequestException('Invalid refresh log ID');
+    }
+    return this.contentRefreshService.getRefreshSnapshot(numId);
   }
 }

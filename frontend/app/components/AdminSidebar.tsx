@@ -33,6 +33,7 @@ import {
   ShieldCheck,
   FilePen,
   Film,
+  Zap,
 } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
@@ -372,6 +373,12 @@ export const AdminSidebar = memo(function AdminSidebar({
           href: "/admin/rag/qa-gate",
           icon: ShieldCheck,
           description: "Champs SEO protégés",
+        },
+        {
+          name: "Webhook Monitor",
+          href: "/admin/rag/webhook-monitor",
+          icon: Zap,
+          description: "Suivi webhooks & pipeline",
         },
         {
           name: "Drafts SEO",

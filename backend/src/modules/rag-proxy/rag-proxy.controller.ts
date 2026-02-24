@@ -41,6 +41,7 @@ import {
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { AuthenticatedGuard } from '../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../auth/is-admin.guard';
+import { InternalApiKeyGuard } from '../../auth/internal-api-key.guard';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
@@ -249,6 +250,42 @@ export class RagProxyController {
     res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.sendFile(imagePath);
+  }
+
+  // ── Webhook: RAG container → NestJS bridge ─────────────────────
+
+  @Post('webhook/ingestion-complete')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(InternalApiKeyGuard)
+  @ApiOperation({
+    summary: 'Webhook called by RAG container after ingestion completes',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Gammes detected and content-refresh queued',
+  })
+  @ApiResponse({ status: 403, description: 'Invalid X-Internal-Key' })
+  async webhookIngestionComplete(
+    @Body()
+    body: {
+      job_id: string;
+      source: 'pdf' | 'web';
+      status: 'done' | 'failed';
+      files_created?: string[];
+    },
+  ) {
+    if (!body.job_id || !body.source || !body.status) {
+      throw new BadRequestException(
+        'Missing required fields: job_id, source, status',
+      );
+    }
+    if (!['pdf', 'web'].includes(body.source)) {
+      throw new BadRequestException('source must be "pdf" or "web"');
+    }
+    if (!['done', 'failed'].includes(body.status)) {
+      throw new BadRequestException('status must be "done" or "failed"');
+    }
+    return this.ragProxyService.handleWebhookCompletion(body);
   }
 
   // ── Cleanup endpoints (RagCleanupService) ─────────────────────
