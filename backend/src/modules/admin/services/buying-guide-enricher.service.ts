@@ -38,6 +38,8 @@ import {
   MIN_SYMPTOMS,
   MIN_VERIFIED_CONFIDENCE,
   MIN_QUALITY_SCORE,
+  MIN_FAQ_ANSWER_LENGTH,
+  ADVISORY_FAQ_COUNT,
 } from '../../../config/buying-guide-quality.constants';
 
 interface SectionValidationResult {
@@ -486,17 +488,8 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         }
       }
     }
-    // Legacy YAML fallback: page_contract.antiMistakes
-    if (
-      antiMistakes.length < MIN_ANTI_MISTAKES &&
-      pageContract?.antiMistakes?.length
-    ) {
-      for (const item of pageContract.antiMistakes) {
-        if (!antiMistakes.some((e) => e.toLowerCase() === item.toLowerCase())) {
-          antiMistakes.push(item);
-        }
-      }
-    }
+    // NOTE: pageContract.antiMistakes fallback removed (2026-02-24)
+    // pageContract YAML contains keywords & unaccented symptom duplicates — not real anti-mistakes.
     // Merge items from "Solutions" section (complementary maintenance actions)
     const solutionsSection =
       this.extractSection(allContent, 'Solutions') ||
@@ -626,6 +619,29 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         });
       }
     }
+    // Fallback: "Procédure de Diagnostic" heading (v4 auto-generated docs)
+    if (decisionTree.length < MIN_DECISION_NODES) {
+      const diagSection =
+        this.extractSection(allContent, 'Procedure de Diagnostic') ||
+        this.extractSection(allContent, 'Procédure de Diagnostic');
+      if (diagSection) {
+        const diagSteps = this.extractNumberedList(diagSection);
+        if (diagSteps.length >= 2) {
+          decisionTree.push({
+            id: 'diag-procedure',
+            question: 'Procédure de diagnostic recommandée',
+            options: diagSteps.slice(0, 4).map((step, i) => ({
+              label: step.replace(/^\*\*(.+?)\*\*\s*[-–]?\s*/, '$1: ').trim(),
+              outcome:
+                i === Math.min(diagSteps.length, 4) - 1
+                  ? ('replace' as const)
+                  : ('check' as const),
+            })),
+          });
+        }
+      }
+    }
+
     const treeValidation = this.validateSection(
       'decision_tree',
       decisionTree,
@@ -765,6 +781,59 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         .map((f) => `${f.question}\n${f.answer}`)
         .join('\n\n'),
     };
+
+    // Advisory: log if FAQ count is below recommended threshold
+    if (allFaqs.length >= MIN_FAQS && allFaqs.length < ADVISORY_FAQ_COUNT) {
+      this.logger.warn(
+        `FAQ advisory for ${gammeName}: ${allFaqs.length} FAQs (recommended: ${ADVISORY_FAQ_COUNT}+)`,
+      );
+    }
+
+    // ── Extract how_to_choose ──
+    let howToChooseContent: string | null = null;
+
+    // Priority 1: v4 structured howToChoose from YAML
+    if (v4Data?.howToChoose) {
+      howToChooseContent = v4Data.howToChoose;
+    }
+
+    // Priority 2: Legacy page_contract howToChoose from YAML
+    if (!howToChooseContent && pageContract?.howToChoose) {
+      howToChooseContent = pageContract.howToChoose;
+    }
+
+    // Priority 3: Markdown extraction from "Critères de choix" heading
+    if (!howToChooseContent) {
+      const choixSection =
+        this.extractSection(allContent, 'Criteres de choix') ||
+        this.extractSection(allContent, 'Critères de choix') ||
+        this.extractSection(allContent, 'Comment choisir') ||
+        this.extractSection(allContent, 'Guide de choix') ||
+        this.extractSection(allContent, 'Bien choisir');
+      if (choixSection) {
+        const items = this.extractBulletList(choixSection);
+        if (items.length >= 2) {
+          howToChooseContent = items.slice(0, 5).join('. ') + '.';
+        }
+      }
+    }
+
+    if (howToChooseContent) {
+      const htcValidation = this.validateSection(
+        'how_to_choose',
+        howToChooseContent,
+        family,
+      );
+      results['how_to_choose'] = {
+        ok: htcValidation.ok,
+        flags: htcValidation.flags,
+        content: howToChooseContent,
+        sources,
+        confidence,
+        sourcesCitation: citation,
+        rawAnswer: howToChooseContent,
+      };
+    }
 
     // Build evidence pack from section rawAnswers + source metadata
     const evidenceEntries: EvidenceEntry[] = [];
@@ -1307,6 +1376,20 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       .filter((line) => line.length >= 10);
   }
 
+  /**
+   * Extract numbered list items from a markdown section.
+   * Matches: "1. **Title** - Description" or "1. Description"
+   */
+  private extractNumberedList(section: string): string[] {
+    return section
+      .split('\n')
+      .map((line) => {
+        const match = line.match(/^\s*\d+\.\s+(.+)/);
+        return match ? match[1].trim() : '';
+      })
+      .filter((line) => line.length >= 10);
+  }
+
   private buildCriteriaFromCheckList(
     items: string[],
   ): z.infer<typeof SelectionCriterionSchema>[] {
@@ -1569,6 +1652,17 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         this.logger.warn(
           `Section ${sectionKey}: no action markers found in anti-mistakes`,
         );
+      }
+    }
+
+    // 7. FAQ answer quality check (advisory, not blocking gate)
+    if (sectionKey === 'faq' && Array.isArray(content) && content.length > 0) {
+      const answers = (
+        content as Array<{ question: string; answer: string }>
+      ).map((f) => f.answer?.length || 0);
+      const avgLen = answers.reduce((sum, l) => sum + l, 0) / answers.length;
+      if (avgLen < MIN_FAQ_ANSWER_LENGTH) {
+        flags.push('FAQ_ANSWERS_TOO_SHORT');
       }
     }
 
@@ -1843,6 +1937,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     /^answer:\s/i,
     /^'\*\*/,
     /^###\s/,
+    /^❌\s*".*"$/, // "Fausses promesses" markers leaked from YAML (e.g., ❌ "homologué CT")
   ];
 
   private static sanitizeStringArray(arr: string[]): string[] {

@@ -21,6 +21,7 @@ export type GammeContentQualityFlag =
   | 'TOO_SHORT'
   | 'TOO_LONG'
   | 'FAQ_TOO_SMALL'
+  | 'FAQ_ANSWERS_TOO_SHORT'
   | 'SYMPTOMS_TOO_SMALL'
   | 'DUPLICATE_ITEMS'
   | 'MISSING_SOURCE_PROVENANCE'
@@ -67,6 +68,12 @@ export const MIN_FAQS = 3;
 
 /** Minimum symptoms */
 export const MIN_SYMPTOMS = 3;
+
+/** Advisory threshold for FAQ count (signal, not a gate) */
+export const ADVISORY_FAQ_COUNT = 5;
+
+/** Minimum average FAQ answer length (chars) */
+export const MIN_FAQ_ANSWER_LENGTH = 80;
 
 // ─────────────────────────────────────────────────────────────
 // RAG confidence / quality thresholds (enricher only)
@@ -129,6 +136,7 @@ export const FLAG_PENALTIES: Record<GammeContentQualityFlag, number> = {
   TOO_SHORT: 10,
   TOO_LONG: 8,
   FAQ_TOO_SMALL: 14,
+  FAQ_ANSWERS_TOO_SHORT: 10,
   SYMPTOMS_TOO_SMALL: 12,
   DUPLICATE_ITEMS: 8,
   MISSING_SOURCE_PROVENANCE: 20,

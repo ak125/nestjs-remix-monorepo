@@ -1683,28 +1683,32 @@ export class ConseilEnricherService extends SupabaseBaseService {
     const gammeName = pgAlias.replace(/-/g, ' ');
     let modified = false;
 
-    // S1 (definitions) → enrich intro.role
+    // S1 (definitions) → enrich intro.role (filter marketing content)
     if (supplementary.definitions.length > 0) {
-      const bestDef = supplementary.definitions.sort(
-        (a, b) => b.length - a.length,
-      )[0];
-      if (!contract.intro?.role) {
-        contract.intro = { ...contract.intro, role: bestDef };
-        modified = true;
-      } else if (bestDef.length > contract.intro.role.length * 1.3) {
-        contract.intro.role += '. ' + this.truncateText(bestDef, 150);
-        modified = true;
+      const cleanDefs = supplementary.definitions.filter(
+        (d) => !ConseilEnricherService.isMarketingContent(d),
+      );
+      if (cleanDefs.length > 0) {
+        const bestDef = cleanDefs.sort((a, b) => b.length - a.length)[0];
+        if (!contract.intro?.role) {
+          contract.intro = { ...contract.intro, role: bestDef };
+          modified = true;
+        } else if (bestDef.length > contract.intro.role.length * 1.3) {
+          contract.intro.role += '. ' + this.truncateText(bestDef, 150);
+          modified = true;
+        }
       }
     }
 
-    // S2 (symptoms) → deduplicate + append max 5
+    // S2 (symptoms) → deduplicate + filter marketing + append max 5
     if (supplementary.symptoms.length > 0) {
       const existing = new Set(
         (contract.symptoms || []).map((s) => s.toLowerCase().slice(0, 40)),
       );
-      const newItems = supplementary.symptoms.filter(
-        (s) => !existing.has(s.toLowerCase().slice(0, 40)),
-      );
+      const newItems = supplementary.symptoms.filter((s) => {
+        if (existing.has(s.toLowerCase().slice(0, 40))) return false;
+        return !ConseilEnricherService.isMarketingContent(s);
+      });
       if (newItems.length > 0) {
         contract.symptoms = [
           ...(contract.symptoms || []),
@@ -1742,14 +1746,15 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     }
 
-    // S8 (FAQ) → deduplicate + append max 5
+    // S8 (FAQ) → deduplicate + filter marketing answers + append max 5
     if (supplementary.faq.length > 0) {
       const existing = new Set(
         (contract.faq || []).map((f) => f.q.toLowerCase().slice(0, 40)),
       );
-      const newFaqs = supplementary.faq.filter(
-        (f) => !existing.has(f.q.toLowerCase().slice(0, 40)),
-      );
+      const newFaqs = supplementary.faq.filter((f) => {
+        if (existing.has(f.q.toLowerCase().slice(0, 40))) return false;
+        return !ConseilEnricherService.isMarketingContent(f.a || '');
+      });
       if (newFaqs.length > 0) {
         contract.faq = [...(contract.faq || []), ...newFaqs.slice(0, 5)];
         modified = true;
