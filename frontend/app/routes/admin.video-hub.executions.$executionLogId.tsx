@@ -60,6 +60,11 @@ interface ExecutionLog {
   renderErrorCode: string | null;
   engineResolution: string | null;
   retryable: boolean;
+  // P5: canary tracking
+  isCanary: boolean;
+  canaryFallback: boolean;
+  canaryErrorMessage: string | null;
+  canaryErrorCode: string | null;
 }
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -262,6 +267,7 @@ export default function ExecutionDetail() {
             className="text-xs gap-1"
             onClick={() => {
               const incident = {
+                schemaVersion: "1.1.0",
                 exportedAt: new Date().toISOString(),
                 execution: {
                   id: execution.id,
@@ -287,6 +293,12 @@ export default function ExecutionDetail() {
                   renderDurationMs: execution.renderDurationMs,
                   renderOutputPath: execution.renderOutputPath,
                   renderMetadata: execution.renderMetadata,
+                },
+                canary: {
+                  isCanary: execution.isCanary,
+                  canaryFallback: execution.canaryFallback,
+                  canaryErrorCode: execution.canaryErrorCode,
+                  canaryErrorMessage: execution.canaryErrorMessage,
                 },
                 gates: execution.gateResults,
                 quality: {
@@ -451,7 +463,7 @@ export default function ExecutionDetail() {
               </div>
             </div>
           </div>
-          {/* Row 2: Resolution + Retryable */}
+          {/* Row 2: Resolution + Retryable + Canary */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-3">
             <div>
               <div className="text-xs text-gray-500">Engine Resolution</div>
@@ -485,6 +497,29 @@ export default function ExecutionDetail() {
                 </Badge>
               </div>
             </div>
+            {execution.isCanary && (
+              <div>
+                <div className="text-xs text-gray-500">Canary</div>
+                <div className="flex gap-1">
+                  <Badge className="bg-purple-100 text-purple-700">
+                    Canary
+                  </Badge>
+                  {execution.canaryFallback && (
+                    <Badge className="bg-amber-100 text-amber-700">
+                      Fallback
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+            {execution.canaryErrorCode && (
+              <div>
+                <div className="text-xs text-gray-500">Canary Error</div>
+                <Badge className="bg-red-100 text-red-700 text-xs">
+                  {execution.canaryErrorCode}
+                </Badge>
+              </div>
+            )}
           </div>
           {execution.renderOutputPath && (
             <div className="mt-3 text-sm">

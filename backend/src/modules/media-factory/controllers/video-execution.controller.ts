@@ -1,7 +1,7 @@
 /**
  * VideoExecutionController — Admin endpoints for video execution pipeline (P2).
  *
- * 3 endpoints: execute, status, retry.
+ * 6 endpoints: canary/policy, stats, execute, list, status, retry.
  * Protected by AuthenticatedGuard + IsAdminGuard.
  */
 
@@ -35,6 +35,16 @@ export class VideoExecutionController {
       message: `Execution submitted for ${briefId}`,
       timestamp: new Date().toISOString(),
     };
+  }
+
+  /**
+   * GET /api/admin/video/canary/policy
+   * P5.4: Current canary configuration and usage.
+   */
+  @Get('canary/policy')
+  async getCanaryPolicy() {
+    const data = this.jobService.getCanaryStats();
+    return { success: true, data, timestamp: new Date().toISOString() };
   }
 
   /**
