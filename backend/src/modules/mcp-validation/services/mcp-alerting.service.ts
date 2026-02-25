@@ -7,7 +7,7 @@
  * Principle: L'IA NE CREE PAS LA VERITE (AI-COS Axiome Zero)
  */
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import {
@@ -22,7 +22,7 @@ import {
 } from '../../../common/exceptions';
 
 @Injectable()
-export class McpAlertingService implements OnModuleInit {
+export class McpAlertingService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(McpAlertingService.name);
   private supabase: SupabaseClient | null = null;
 

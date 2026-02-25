@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { createHash } from 'crypto';
 import {
   McpValidationContext,
@@ -20,7 +20,7 @@ import {
  * Implements the principle: L'IA NE CREE PAS LA VERITE (AI-COS Axiome Zero)
  */
 @Injectable()
-export class McpValidationService {
+export class McpValidationService implements OnModuleDestroy {
   private readonly logger = new Logger(McpValidationService.name);
 
   // Circuit breaker state per endpoint
@@ -32,10 +32,21 @@ export class McpValidationService {
   private logBuffer: McpValidationLogEntry[] = [];
   private readonly LOG_BUFFER_SIZE = 100;
   private readonly LOG_FLUSH_INTERVAL = 30000; // 30 seconds
+  private readonly flushTimer: ReturnType<typeof setInterval>;
 
   constructor() {
     // Start periodic log flush
-    setInterval(() => this.flushLogBuffer(), this.LOG_FLUSH_INTERVAL);
+    this.flushTimer = setInterval(
+      () => this.flushLogBuffer(),
+      this.LOG_FLUSH_INTERVAL,
+    );
+  }
+
+  onModuleDestroy(): void {
+    clearInterval(this.flushTimer);
+    this.flushLogBuffer();
+    this.circuitBreakers.clear();
+    this.logger.log('McpValidationService destroyed — timer cleared');
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
