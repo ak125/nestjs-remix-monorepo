@@ -227,33 +227,40 @@ export class MarketingDataService extends SupabaseBaseService {
     const allGammes = gammes.data || [];
 
     // Build Sets with parseInt to fix TEXT vs INTEGER mismatch
+    type CoverageRpcRow = {
+      sgc_pg_id?: number;
+      sgpg_pg_id?: number;
+      ba_pg_id?: number;
+      pg_id?: number;
+    };
+
     const conseilSeoPgIds = new Set<number>();
     for (const r of seoConseilRows.data || []) {
-      const id = toInt((r as any).sgc_pg_id);
+      const id = toInt((r as CoverageRpcRow).sgc_pg_id);
       if (id !== null) conseilSeoPgIds.add(id);
     }
 
     const purchaseGuidePgIds = new Set<number>();
     for (const r of seoGuideRows.data || []) {
-      const id = toInt((r as any).sgpg_pg_id);
+      const id = toInt((r as CoverageRpcRow).sgpg_pg_id);
       if (id !== null) purchaseGuidePgIds.add(id);
     }
 
     const blogAdvicePgIds = new Set<number>();
     for (const r of blogAdviceRows.data || []) {
-      const id = toInt((r as any).ba_pg_id);
+      const id = toInt((r as CoverageRpcRow).ba_pg_id);
       if (id !== null) blogAdvicePgIds.add(id);
     }
 
     const refPgIds = new Set<number>();
     for (const r of references.data || []) {
-      const id = toInt((r as any).pg_id);
+      const id = toInt((r as CoverageRpcRow).pg_id);
       if (id !== null) refPgIds.add(id);
     }
 
     const roadmapPgIds = new Set<number>();
     for (const r of roadmapItems.data || []) {
-      const id = toInt((r as any).pg_id);
+      const id = toInt((r as CoverageRpcRow).pg_id);
       if (id !== null) roadmapPgIds.add(id);
     }
 
@@ -363,24 +370,34 @@ export class MarketingDataService extends SupabaseBaseService {
       this.supabase.from('__seo_observable').select('related_gammes'),
     ]);
 
+    type PipelineRpcRow = {
+      sgc_pg_id?: number;
+      sgpg_pg_id?: number;
+      ba_pg_id?: number;
+      pg_id?: number;
+      page_type?: string;
+      status?: string;
+      completed_at?: string | null;
+    };
+
     const conseilPgIds = new Set<number>();
     for (const r of seoConseilRows.data || []) {
-      const id = toInt((r as any).sgc_pg_id);
+      const id = toInt((r as PipelineRpcRow).sgc_pg_id);
       if (id !== null) conseilPgIds.add(id);
     }
     const blogPgIds = new Set<number>();
     for (const r of blogAdviceRows.data || []) {
-      const id = toInt((r as any).ba_pg_id);
+      const id = toInt((r as PipelineRpcRow).ba_pg_id);
       if (id !== null) blogPgIds.add(id);
     }
     const purchasePgIds = new Set<number>();
     for (const r of seoGuideRows.data || []) {
-      const id = toInt((r as any).sgpg_pg_id);
+      const id = toInt((r as PipelineRpcRow).sgpg_pg_id);
       if (id !== null) purchasePgIds.add(id);
     }
     const refPgIds = new Set<number>();
     for (const r of references.data || []) {
-      const id = toInt((r as any).pg_id);
+      const id = toInt((r as PipelineRpcRow).pg_id);
       if (id !== null) refPgIds.add(id);
     }
     const diagPgIds = new Set<number>();
@@ -398,16 +415,16 @@ export class MarketingDataService extends SupabaseBaseService {
     const lastRunMap = new Map<number, string>();
 
     for (const row of pipelineRows.data || []) {
-      const pgId = toInt((row as any).pg_id);
-      const pt = (row as any).page_type as PageType;
+      const pgId = toInt((row as PipelineRpcRow).pg_id);
+      const pt = (row as PipelineRpcRow).page_type as PageType;
       if (!pgId || !pt) continue;
 
       const key = `${pgId}|${pt}`;
       if (!statusMap.has(key)) {
-        statusMap.set(key, (row as any).status as PipelineRunStatus);
+        statusMap.set(key, (row as PipelineRpcRow).status as PipelineRunStatus);
       }
 
-      const completedAt = (row as any).completed_at as string | null;
+      const completedAt = (row as PipelineRpcRow).completed_at as string | null;
       if (completedAt) {
         const current = lastRunMap.get(pgId);
         if (!current || completedAt > current) {
@@ -552,10 +569,10 @@ export class MarketingDataService extends SupabaseBaseService {
 
   // --- Dashboard aggregate ---
   async getDashboardStats(): Promise<{
-    backlinks: any;
-    outreach: any;
-    content: any;
-    campaigns: any;
+    backlinks: Record<string, unknown>;
+    outreach: Record<string, unknown>;
+    content: Record<string, unknown>;
+    campaigns: Record<string, unknown>;
   }> {
     const [blStats, outreachRes, roadmapRes, campaignRes] = await Promise.all([
       this.getBacklinkStats(),
@@ -565,19 +582,21 @@ export class MarketingDataService extends SupabaseBaseService {
     ]);
 
     const outreachData = outreachRes.data || [];
-    const sent = outreachData.filter((o: any) => o.status !== 'draft').length;
+    const sent = outreachData.filter(
+      (o: { status: string }) => o.status !== 'draft',
+    ).length;
     const accepted = outreachData.filter(
-      (o: any) => o.status === 'accepted',
+      (o: { status: string }) => o.status === 'accepted',
     ).length;
 
     const roadmapData = roadmapRes.data || [];
     const published = roadmapData.filter(
-      (r: any) => r.status === 'published',
+      (r: { status: string }) => r.status === 'published',
     ).length;
 
     const campaignData = campaignRes.data || [];
     const activeCampaigns = campaignData.filter(
-      (c: any) => c.status === 'active',
+      (c: { status: string }) => c.status === 'active',
     ).length;
 
     return {

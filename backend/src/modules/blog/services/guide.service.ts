@@ -1,5 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { TABLES } from '@repo/database-types';
+import {
+  TABLES,
+  BlogGuide,
+  BlogGuideH2,
+  BlogGuideH3,
+  PiecesGamme,
+} from '@repo/database-types';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -11,6 +18,31 @@ export interface GuideFilters {
   difficulty?: 'débutant' | 'intermédiaire' | 'expert';
   minViews?: number;
 }
+
+/** Minimal shape of rows from __seo_gamme_purchase_guide */
+interface PurchaseGuideRow {
+  sgpg_pg_id?: number;
+  sgpg_intro_title?: string | null;
+  sgpg_intro_role?: string | null;
+  sgpg_how_to_choose?: string | null;
+  sgpg_risk_title?: string | null;
+  sgpg_risk_explanation?: string | null;
+  sgpg_timing_title?: string | null;
+  sgpg_timing_note?: string | null;
+  sgpg_timing_km?: string | null;
+  sgpg_symptoms?: string[] | null;
+  sgpg_anti_mistakes?: string[] | null;
+  sgpg_faq?: Array<{ question: string; answer: string }> | null;
+  sgpg_created_at?: string | null;
+  sgpg_updated_at?: string | null;
+  sgpg_h1_override?: string | null;
+  [key: string]: unknown;
+}
+
+type GammePartial = Pick<
+  PiecesGamme,
+  'pg_id' | 'pg_alias' | 'pg_name' | 'pg_parent'
+>;
 
 /**
  * 📖 GuideService - Service spécialisé pour les guides automobiles
@@ -80,11 +112,13 @@ export class GuideService {
         .select('sgpg_pg_id')
         .not('sgpg_how_to_choose', 'is', null);
 
-      const pgIds = (purchaseGuides || []).map((p: any) => p.sgpg_pg_id);
+      const pgIds = (purchaseGuides || []).map(
+        (p: { sgpg_pg_id: string }) => p.sgpg_pg_id,
+      );
 
       // Exclure les gammes qui ont déjà un guide manuel dans __blog_guide
       const manualAliases = new Set(
-        (guidesList || []).map((g: any) => g.bg_alias),
+        (guidesList || []).map((g: Pick<BlogGuide, 'bg_alias'>) => g.bg_alias),
       );
 
       let autoGuides: BlogArticle[] = [];
@@ -97,12 +131,14 @@ export class GuideService {
 
         // Resolve family names via __seo_family_gamme_car_switch → catalog_family
         const filteredGammes = (gammes || []).filter(
-          (g: any) => !manualAliases.has(g.pg_alias),
+          (g: GammePartial) => !manualAliases.has(g.pg_alias),
         );
-        const gammeIds = filteredGammes.map((g: any) => g.pg_id.toString());
+        const gammeIds = filteredGammes.map(
+          (g: GammePartial) => g.pg_id?.toString() ?? '',
+        );
         const familyMap = await this.resolveFamilyNames(client, gammeIds);
 
-        autoGuides = filteredGammes.map((g: any) => ({
+        autoGuides = filteredGammes.map((g: GammePartial) => ({
           id: `gamme_guide_${g.pg_id}`,
           type: 'guide' as const,
           title: `Comment choisir son ${(g.pg_name || '').toLowerCase()} ?`,
@@ -508,8 +544,8 @@ export class GuideService {
   // MÉTHODES PRIVÉES
 
   private async transformGuideToArticle(
-    client: any,
-    guide: any,
+    client: SupabaseClient,
+    guide: BlogGuide,
   ): Promise<BlogArticle> {
     // Batch H2 + H3 en 2 queries (pas N+1)
     const { data: h2Sections } = await client
@@ -518,7 +554,7 @@ export class GuideService {
       .eq('bg2_bg_id', guide.bg_id)
       .order('bg2_id');
 
-    const h2Ids = (h2Sections || []).map((h: any) => h.bg2_id);
+    const h2Ids = (h2Sections || []).map((h: BlogGuideH2) => h.bg2_id);
     const { data: allH3Sections } =
       h2Ids.length > 0
         ? await client
@@ -529,10 +565,11 @@ export class GuideService {
         : { data: [] };
 
     // Grouper H3 par bg3_bg2_id pour acces O(1)
-    const h3Map = new Map<number, any[]>();
-    (allH3Sections || []).forEach((h3: any) => {
-      if (!h3Map.has(h3.bg3_bg2_id)) h3Map.set(h3.bg3_bg2_id, []);
-      h3Map.get(h3.bg3_bg2_id)!.push(h3);
+    const h3Map = new Map<string, BlogGuideH3[]>();
+    (allH3Sections || []).forEach((h3: BlogGuideH3) => {
+      const key = h3.bg3_bg2_id ?? '';
+      if (!h3Map.has(key)) h3Map.set(key, []);
+      h3Map.get(key)!.push(h3);
     });
 
     const sections: BlogSection[] = [];
@@ -604,7 +641,10 @@ export class GuideService {
   /**
    * Transforme un purchase guide (__seo_gamme_purchase_guide) en BlogArticle
    */
-  private transformPurchaseGuideToArticle(gamme: any, pg: any): BlogArticle {
+  private transformPurchaseGuideToArticle(
+    gamme: GammePartial,
+    pg: PurchaseGuideRow,
+  ): BlogArticle {
     const sections: BlogSection[] = [];
     const pgName = (gamme.pg_name || '').toLowerCase();
 
@@ -735,9 +775,9 @@ export class GuideService {
    * Fallback : 4 guides récents si pas de famille trouvée
    */
   private async getRelatedGuides(
-    client: any,
+    client: SupabaseClient,
     currentGuideId: string,
-  ): Promise<any[]> {
+  ): Promise<Record<string, unknown>[]> {
     try {
       // 1. Récupérer le bg_alias du guide courant
       const { data: currentGuide } = await client
@@ -785,14 +825,18 @@ export class GuideService {
       }
 
       // 5. Résoudre les alias des gammes sœurs
-      const siblingPgIds = sameFamily.map((s: any) => s.sfgcs_pg_id);
+      const siblingPgIds = sameFamily.map(
+        (s: { sfgcs_pg_id: string }) => s.sfgcs_pg_id,
+      );
       const { data: siblingGammes } = await client
         .from('pieces_gamme')
         .select('pg_alias')
         .in('pg_id', siblingPgIds)
         .eq('pg_display', '1');
 
-      const siblingAliases = (siblingGammes || []).map((g: any) => g.pg_alias);
+      const siblingAliases = (siblingGammes || []).map(
+        (g: Pick<PiecesGamme, 'pg_alias'>) => g.pg_alias,
+      );
       if (siblingAliases.length === 0) {
         return this.fallbackRelatedGuides(client, currentGuideId);
       }
@@ -811,14 +855,27 @@ export class GuideService {
         return this.fallbackRelatedGuides(client, currentGuideId);
       }
 
-      return relatedGuides.map((g: any) => ({
-        id: `guide_${g.bg_id}`,
-        title: g.bg_title,
-        slug: g.bg_alias,
-        excerpt: g.bg_preview || g.bg_descrip || '',
-        viewsCount: parseInt(g.bg_visit) || 0,
-        publishedAt: g.bg_create,
-      }));
+      return relatedGuides.map(
+        (
+          g: Pick<
+            BlogGuide,
+            | 'bg_id'
+            | 'bg_title'
+            | 'bg_alias'
+            | 'bg_preview'
+            | 'bg_descrip'
+            | 'bg_visit'
+            | 'bg_create'
+          >,
+        ) => ({
+          id: `guide_${g.bg_id}`,
+          title: g.bg_title,
+          slug: g.bg_alias,
+          excerpt: g.bg_preview || g.bg_descrip || '',
+          viewsCount: parseInt(g.bg_visit) || 0,
+          publishedAt: g.bg_create,
+        }),
+      );
     } catch (error) {
       this.logger.warn(`Erreur related guides: ${(error as Error).message}`);
       return this.fallbackRelatedGuides(client, currentGuideId);
@@ -829,9 +886,9 @@ export class GuideService {
    * Fallback : 4 guides récents (ancien comportement)
    */
   private async fallbackRelatedGuides(
-    client: any,
+    client: SupabaseClient,
     currentGuideId: string,
-  ): Promise<any[]> {
+  ): Promise<Record<string, unknown>[]> {
     try {
       const { data: otherGuides } = await client
         .from(TABLES.blog_guide)
@@ -841,14 +898,27 @@ export class GuideService {
         .neq('bg_id', currentGuideId)
         .limit(4);
 
-      return (otherGuides || []).map((g: any) => ({
-        id: `guide_${g.bg_id}`,
-        title: g.bg_title,
-        slug: g.bg_alias,
-        excerpt: g.bg_preview || g.bg_descrip || '',
-        viewsCount: parseInt(g.bg_visit) || 0,
-        publishedAt: g.bg_create,
-      }));
+      return (otherGuides || []).map(
+        (
+          g: Pick<
+            BlogGuide,
+            | 'bg_id'
+            | 'bg_title'
+            | 'bg_alias'
+            | 'bg_preview'
+            | 'bg_descrip'
+            | 'bg_visit'
+            | 'bg_create'
+          >,
+        ) => ({
+          id: `guide_${g.bg_id}`,
+          title: g.bg_title,
+          slug: g.bg_alias,
+          excerpt: g.bg_preview || g.bg_descrip || '',
+          viewsCount: parseInt(g.bg_visit) || 0,
+          publishedAt: g.bg_create,
+        }),
+      );
     } catch (error) {
       this.logger.warn(
         `Erreur fallback related guides: ${(error as Error).message}`,
@@ -861,7 +931,7 @@ export class GuideService {
    * Resolve pg_id → family name via __seo_family_gamme_car_switch + catalog_family
    */
   private async resolveFamilyNames(
-    client: any,
+    client: SupabaseClient,
     pgIds: string[],
   ): Promise<Map<string, string>> {
     const map = new Map<string, string>();

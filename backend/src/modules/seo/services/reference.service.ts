@@ -161,7 +161,7 @@ export class ReferenceService extends SupabaseBaseService {
     this.logger.debug(`🔍 Fetching reference: ${slug}`);
 
     // 🛡️ RPC Safety Gate
-    const { data, error } = await this.callRpc<any[]>(
+    const { data, error } = await this.callRpc<Array<Record<string, unknown>>>(
       'get_seo_reference_by_slug',
       { p_slug: slug },
       { source: 'api' },
@@ -216,7 +216,7 @@ export class ReferenceService extends SupabaseBaseService {
     this.logger.debug('📚 Fetching all references');
 
     // 🛡️ RPC Safety Gate
-    const { data, error } = await this.callRpc<any[]>(
+    const { data, error } = await this.callRpc<Array<Record<string, unknown>>>(
       'get_all_seo_references',
       {},
       { source: 'api' },
@@ -394,7 +394,9 @@ export class ReferenceService extends SupabaseBaseService {
         .eq('cluster_id', gamme.pg_alias)
         .limit(5);
 
-      const relatedRefIds = (relatedDiags || []).map((d: any) => d.id);
+      const relatedRefIds = (relatedDiags || []).map(
+        (d: { id: string }) => d.id,
+      );
 
       // 5. Build content HTML from RAG data
       let contentHtml = '';
@@ -1140,72 +1142,86 @@ export class ReferenceService extends SupabaseBaseService {
         const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
         if (!fmMatch) return null;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const fm: any = yaml.load(fmMatch[1]);
+        const fm: Record<string, unknown> = yaml.load(fmMatch[1]) as Record<
+          string,
+          unknown
+        >;
         if (!fm) return null;
 
         // Detect v4 by quality.version or rendering.quality.version
+        const rendering = (fm.rendering || {}) as Record<string, unknown>;
+        const pageContract = (fm.page_contract || {}) as Record<
+          string,
+          unknown
+        >;
+        const fmQuality = (fm.quality || {}) as Record<string, unknown>;
         const qualityVersion =
-          fm.rendering?.quality?.version ||
-          fm.page_contract?.quality?.version ||
-          fm.quality?.version;
+          (rendering.quality as Record<string, unknown>)?.version ||
+          (pageContract.quality as Record<string, unknown>)?.version ||
+          fmQuality.version;
         if (qualityVersion !== 'GammeContentContract.v4') return null;
 
         // Parse domain (Bloc A)
-        const domain = fm.domain || {};
+        const domain = (fm.domain || {}) as Record<string, unknown>;
         const parsedDomain = {
           role: (domain.role as string) || null,
           mustBeTrue: (domain.must_be_true as string[]) || [],
           mustNotContain: (domain.must_not_contain as string[]) || [],
-          confusionWith: ((domain.confusion_with as any[]) || []).map(
-            (c: any) => ({
-              term: c.term || '',
-              difference: c.difference || '',
-            }),
-          ),
+          confusionWith: (
+            (domain.confusion_with as Array<Record<string, unknown>>) || []
+          ).map((c: Record<string, unknown>) => ({
+            term: (c.term as string) || '',
+            difference: (c.difference as string) || '',
+          })),
           relatedParts: (domain.related_parts as string[]) || [],
           norms: (domain.norms as string[]) || [],
-          crossGammes: ((domain.cross_gammes as any[]) || []).map(
-            (cg: any) => ({
-              slug: cg.slug || '',
-              relation: cg.relation || '',
-              context: cg.context || '',
-            }),
-          ),
+          crossGammes: (
+            (domain.cross_gammes as Array<Record<string, unknown>>) || []
+          ).map((cg: Record<string, unknown>) => ({
+            slug: (cg.slug as string) || '',
+            relation: (cg.relation as string) || '',
+            context: (cg.context as string) || '',
+          })),
         };
 
         // Parse selection (Bloc B)
-        const sel = fm.selection || {};
-        const costRange = sel.cost_range
+        const sel = (fm.selection || {}) as Record<string, unknown>;
+        const costRangeRaw = sel.cost_range as
+          | Record<string, unknown>
+          | undefined;
+        const costRange = costRangeRaw
           ? {
-              min: sel.cost_range.min ?? 0,
-              max: sel.cost_range.max ?? 0,
-              currency: sel.cost_range.currency || 'EUR',
-              unit: sel.cost_range.unit || '',
-              source: sel.cost_range.source || null,
+              min: (costRangeRaw.min as number) ?? 0,
+              max: (costRangeRaw.max as number) ?? 0,
+              currency: (costRangeRaw.currency as string) || 'EUR',
+              unit: (costRangeRaw.unit as string) || '',
+              source: (costRangeRaw.source as string) || null,
             }
           : null;
+        const brandsRaw = sel.brands as Record<string, unknown> | undefined;
         const parsedSelection = {
           criteria: (sel.criteria as string[]) || [],
           checklist: (sel.checklist as string[]) || [],
           antiMistakes: (sel.anti_mistakes as string[]) || [],
           costRange,
-          brands: sel.brands
+          brands: brandsRaw
             ? {
-                premium: (sel.brands.premium as string[]) || [],
-                equivalent: (sel.brands.equivalent as string[]) || [],
-                budget: (sel.brands.budget as string[]) || [],
+                premium: (brandsRaw.premium as string[]) || [],
+                equivalent: (brandsRaw.equivalent as string[]) || [],
+                budget: (brandsRaw.budget as string[]) || [],
               }
             : null,
         };
 
         // Parse diagnostic (Bloc C)
-        const diag = fm.diagnostic || {};
+        const diag = (fm.diagnostic || {}) as Record<string, unknown>;
         const parsedDiagnostic = {
-          symptoms: ((diag.symptoms as any[]) || []).map((s: any) => ({
-            id: s.id || '',
-            label: s.label || '',
-            severity: s.severity || 'confort',
+          symptoms: (
+            (diag.symptoms as Array<Record<string, unknown>>) || []
+          ).map((s: Record<string, unknown>) => ({
+            id: (s.id as string) || '',
+            label: (s.label as string) || '',
+            severity: (s.severity as V4Symptom['severity']) || 'confort',
           })),
           causes: (diag.causes as string[]) || [],
           quickChecks: (diag.quick_checks as string[]) || [],
@@ -1215,13 +1231,16 @@ export class ReferenceService extends SupabaseBaseService {
         };
 
         // Parse maintenance (Bloc D)
-        const maint = fm.maintenance || {};
-        const interval = maint.interval
+        const maint = (fm.maintenance || {}) as Record<string, unknown>;
+        const intervalRaw = maint.interval as
+          | Record<string, unknown>
+          | undefined;
+        const interval = intervalRaw
           ? {
-              value: maint.interval.value || '',
-              unit: maint.interval.unit || 'km',
-              note: maint.interval.note || '',
-              source: maint.interval.source || null,
+              value: (intervalRaw.value as string) || '',
+              unit: (intervalRaw.unit as V4Interval['unit']) || 'km',
+              note: (intervalRaw.note as string) || '',
+              source: (intervalRaw.source as string) || null,
             }
           : null;
         const parsedMaintenance = {
@@ -1233,11 +1252,11 @@ export class ReferenceService extends SupabaseBaseService {
         };
 
         // Parse installation (Bloc E) — optional
-        const inst = fm.installation;
+        const inst = fm.installation as Record<string, unknown> | undefined;
         const parsedInstallation = inst
           ? {
-              difficulty: inst.difficulty || 'moyen',
-              time: inst.time || '',
+              difficulty: (inst.difficulty as string) || 'moyen',
+              time: (inst.time as string) || '',
               tools: (inst.tools as string[]) || [],
               steps: (inst.steps as string[]) || [],
               postChecks: (inst.post_checks as string[]) || [],
@@ -1247,31 +1266,39 @@ export class ReferenceService extends SupabaseBaseService {
           : null;
 
         // Parse rendering
-        const rend = fm.rendering || {};
+        const rend = (fm.rendering || {}) as Record<string, unknown>;
+        const rendQuality = (rend.quality || {}) as Record<string, unknown>;
         const parsedRendering = {
-          pgId: rend.pgId || '',
-          introTitle: rend.intro_title || '',
-          riskTitle: rend.risk_title || '',
-          riskExplanation: rend.risk_explanation || '',
+          pgId: (rend.pgId as string) || '',
+          introTitle: (rend.intro_title as string) || '',
+          riskTitle: (rend.risk_title as string) || '',
+          riskExplanation: (rend.risk_explanation as string) || '',
           riskConsequences: (rend.risk_consequences as string[]) || [],
-          riskConclusion: rend.risk_conclusion || '',
-          arguments: ((rend.arguments as any[]) || []).map((a: any) => ({
-            title: a.title || '',
-            icon: a.icon || '',
-            sourceRef: a.source_ref || null,
+          riskConclusion: (rend.risk_conclusion as string) || '',
+          arguments: (
+            (rend.arguments as Array<Record<string, unknown>>) || []
+          ).map((a: Record<string, unknown>) => ({
+            title: (a.title as string) || '',
+            icon: (a.icon as string) || '',
+            sourceRef: (a.source_ref as string) || null,
           })),
-          faq: ((rend.faq as any[]) || []).map((f: any) => ({
-            question: f.question || '',
-            answer: f.answer || '',
-          })),
-          schemaOrg: ((rend.schema_org as any[]) || []).map((s: any) => ({
-            type: s.type || '',
-            sourceBloc: s.source_bloc || '',
+          faq: ((rend.faq as Array<Record<string, unknown>>) || []).map(
+            (f: Record<string, unknown>) => ({
+              question: (f.question as string) || '',
+              answer: (f.answer as string) || '',
+            }),
+          ),
+          schemaOrg: (
+            (rend.schema_org as Array<Record<string, unknown>>) || []
+          ).map((s: Record<string, unknown>) => ({
+            type: (s.type as string) || '',
+            sourceBloc: (s.source_bloc as string) || '',
           })),
           quality: {
-            score: rend.quality?.score ?? 0,
-            source: rend.quality?.source || '',
-            version: rend.quality?.version || 'GammeContentContract.v4',
+            score: (rendQuality.score as number) ?? 0,
+            source: (rendQuality.source as string) || '',
+            version:
+              (rendQuality.version as string) || 'GammeContentContract.v4',
           },
         };
 
@@ -1282,12 +1309,12 @@ export class ReferenceService extends SupabaseBaseService {
         > = {};
         if (fm._sources) {
           for (const [key, val] of Object.entries(
-            fm._sources as Record<string, any>,
+            fm._sources as Record<string, Record<string, unknown>>,
           )) {
             sources[key] = {
-              type: val.type || '',
-              doc: val.doc || null,
-              note: val.note || '',
+              type: (val.type as string) || '',
+              doc: (val.doc as string) || null,
+              note: (val.note as string) || '',
             };
           }
         }
@@ -1577,7 +1604,9 @@ export class ReferenceService extends SupabaseBaseService {
       return [];
     }
 
-    return data.map((row: any) => this.mapRowToReference(row));
+    return data.map((row: Record<string, unknown>) =>
+      this.mapRowToReference(row),
+    );
   }
 }
 

@@ -15,9 +15,26 @@ import {
   DomainNotFoundException,
   ErrorCodes,
 } from '../../../common/exceptions';
-import { GammeSeoBadgesService } from './gamme-seo-badges.service';
+import {
+  GammeSeoBadgesService,
+  GammeAggregatesResult,
+} from './gamme-seo-badges.service';
 import { GammeVLevelService } from './gamme-vlevel.service';
 import type { EnrichedVehicle } from './admin-gammes-seo.service';
+
+interface VLevelItem {
+  id: number;
+  gamme_name: string;
+  model_name: string;
+  brand: string;
+  variant_name: string;
+  energy: string;
+  v_level: string;
+  rank: number;
+  search_volume: number;
+  updated_at: string | null;
+  type_id: number | null;
+}
 
 // Return type for getGammeDetail
 export interface GammeDetailResult {
@@ -43,11 +60,11 @@ export interface GammeDetailResult {
     level5: EnrichedVehicle[];
   };
   vLevel: {
-    v1: Record<string, unknown>[];
-    v2: Record<string, unknown>[];
-    v3: Record<string, unknown>[];
-    v4: Record<string, unknown>[];
-    v5: Record<string, unknown>[];
+    v1: VLevelItem[];
+    v2: VLevelItem[];
+    v3: VLevelItem[];
+    v4: VLevelItem[];
+    v5: VLevelItem[];
   };
   stats: Record<string, unknown>;
 }
@@ -172,19 +189,21 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
       }
 
       // Map __seo_keywords rows to VLevelItem format expected by frontend
-      const vLevelData = (rawVLevelData || []).map((kw: any) => ({
-        id: kw.id,
-        gamme_name: gamme.pg_name || '',
-        model_name: kw.model || '',
-        brand: '',
-        variant_name: kw.keyword || '',
-        energy: kw.energy || 'unknown',
-        v_level: kw.v_level || 'V4',
-        rank: 0,
-        search_volume: kw.volume || 0,
-        updated_at: kw.updated_at,
-        type_id: kw.type_id,
-      }));
+      const vLevelData: VLevelItem[] = (rawVLevelData || []).map(
+        (kw: Record<string, unknown>) => ({
+          id: (kw.id as number) || 0,
+          gamme_name: gamme.pg_name || '',
+          model_name: (kw.model as string) || '',
+          brand: '',
+          variant_name: (kw.keyword as string) || '',
+          energy: (kw.energy as string) || 'unknown',
+          v_level: (kw.v_level as string) || 'V4',
+          rank: 0,
+          search_volume: (kw.volume as number) || 0,
+          updated_at: (kw.updated_at as string | null) ?? null,
+          type_id: (kw.type_id as number | null) ?? null,
+        }),
+      );
 
       // Compute V5 dynamically from auto_modele hierarchy (no DB persist)
       const v5Items = await this.vLevelService.getV5Siblings(pgId);
@@ -199,10 +218,10 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
 
       // Group by V-Level (V5 from dynamic computation)
       const vLevelGrouped = {
-        v1: (vLevelData || []).filter((v: any) => v.v_level === 'V1'),
-        v2: (vLevelData || []).filter((v: any) => v.v_level === 'V2'),
-        v3: (vLevelData || []).filter((v: any) => v.v_level === 'V3'),
-        v4: (vLevelData || []).filter((v: any) => v.v_level === 'V4'),
+        v1: (vLevelData || []).filter((v: VLevelItem) => v.v_level === 'V1'),
+        v2: (vLevelData || []).filter((v: VLevelItem) => v.v_level === 'V2'),
+        v3: (vLevelData || []).filter((v: VLevelItem) => v.v_level === 'V3'),
+        v4: (vLevelData || []).filter((v: VLevelItem) => v.v_level === 'V4'),
         v5: v5Items,
       };
 
@@ -433,18 +452,18 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
    * Build the stats object for gamme detail response
    */
   private buildStats(
-    aggregates: any,
+    aggregates: GammeAggregatesResult | null,
     productsCount: number | null,
     allVehicles: EnrichedVehicle[],
     vLevelGrouped: {
-      v1: any[];
-      v2: any[];
-      v3: any[];
-      v4: any[];
-      v5: any[];
+      v1: VLevelItem[];
+      v2: VLevelItem[];
+      v3: VLevelItem[];
+      v4: VLevelItem[];
+      v5: VLevelItem[];
     },
-    vLevelData: any[] | null,
-    articles: any[] | null,
+    vLevelData: VLevelItem[] | null,
+    articles: Record<string, unknown>[] | null,
     vehiclesLevel1: EnrichedVehicle[],
     vehiclesLevel2: EnrichedVehicle[],
     vehiclesLevel5: EnrichedVehicle[],

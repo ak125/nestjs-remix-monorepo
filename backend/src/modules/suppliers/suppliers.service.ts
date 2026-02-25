@@ -3,6 +3,24 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
+/** Typed row returned by Supabase for xtr_supplier table */
+interface SupplierRow {
+  id?: number;
+  spl_id?: string;
+  spl_name?: string;
+  spl_alias?: string;
+  spl_display?: string;
+  spl_sort?: string;
+  email?: string;
+  phone?: string;
+  address1?: string;
+  city?: string;
+  discount_rate?: number;
+  delivery_delay?: number;
+  is_active?: boolean;
+  [key: string]: unknown;
+}
+
 /**
  * Service de gestion des fournisseurs avec fonctionnalités avancées
  * ✅ Création et gestion CRUD des fournisseurs
@@ -55,7 +73,30 @@ export class SuppliersService extends SupabaseBaseService {
   /**
    * Créer un nouveau fournisseur
    */
-  async createSupplier(supplierData: any) {
+  async createSupplier(supplierData: {
+    code?: string;
+    name?: string;
+    companyName?: string;
+    siret?: string;
+    vatNumber?: string;
+    address1?: string;
+    address2?: string;
+    postalCode?: string;
+    city?: string;
+    country?: string;
+    phone?: string;
+    email?: string;
+    website?: string;
+    contactName?: string;
+    contactPhone?: string;
+    contactEmail?: string;
+    paymentTerms?: string;
+    deliveryDelay?: number;
+    minimumOrder?: number;
+    discountRate?: number;
+    isActive?: boolean;
+    notes?: string;
+  }) {
     this.logger.log(
       `Création fournisseur: ${supplierData.code} - ${supplierData.name}`,
     );
@@ -391,9 +432,16 @@ export class SuppliersService extends SupabaseBaseService {
    * Calculer le score d'un fournisseur pour un produit
    */
   private async calculateSupplierScore(
-    supplier: any,
+    supplier: SupplierRow,
     productId: number,
-    criteria: any,
+    criteria: {
+      brandId?: number;
+      category?: string;
+      maxDeliveryTime?: number;
+      minDiscountRate?: number;
+      isPreferred?: boolean;
+      region?: string;
+    },
   ) {
     let score = 50; // Score de base
     const reasons: string[] = [];
@@ -467,7 +515,14 @@ export class SuppliersService extends SupabaseBaseService {
    */
   private async findAlternativeSuppliers(
     productId: number,
-    criteria: any,
+    criteria: {
+      brandId?: number;
+      category?: string;
+      maxDeliveryTime?: number;
+      minDiscountRate?: number;
+      isPreferred?: boolean;
+      region?: string;
+    },
     excludeSupplierId: number,
   ) {
     try {
@@ -506,7 +561,7 @@ export class SuppliersService extends SupabaseBaseService {
   /**
    * Transformer les données Supabase en objet Supplier formaté
    */
-  private transformSupplierData(data: any) {
+  private transformSupplierData(data: SupplierRow) {
     return {
       id: data.spl_id,
       name: data.spl_name,
@@ -535,7 +590,11 @@ export class SuppliersService extends SupabaseBaseService {
    */
   async generatePurchaseOrder(
     supplierId: number,
-    items: any[],
+    items: Array<{
+      quantity: number;
+      purchasePrice?: number;
+      [key: string]: unknown;
+    }>,
   ): Promise<Record<string, unknown>> {
     this.logger.log(
       `Génération bon de commande pour fournisseur ${supplierId}`,

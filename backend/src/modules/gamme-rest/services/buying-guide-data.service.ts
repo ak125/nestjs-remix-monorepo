@@ -36,6 +36,51 @@ const ENFORCE_SOURCE_PROVENANCE = REQUIRE_BUYING_GUIDE_SOURCE !== 'false';
 const ENFORCE_SOURCE_VERIFIED =
   REQUIRE_BUYING_GUIDE_SOURCE_VERIFIED !== 'false';
 
+/** Minimal shape of rows from __seo_gamme_purchase_guide used in this service */
+interface PurchaseGuideRow {
+  sgpg_id?: number;
+  sgpg_pg_id?: number;
+  sgpg_intro_title?: string | null;
+  sgpg_intro_role?: string | null;
+  sgpg_intro_sync_parts?: string | string[] | null;
+  sgpg_how_to_choose?: string | null;
+  sgpg_risk_title?: string | null;
+  sgpg_risk_explanation?: string | null;
+  sgpg_risk_consequences?: string | string[] | null;
+  sgpg_risk_cost_range?: string | null;
+  sgpg_risk_conclusion?: string | null;
+  sgpg_timing_title?: string | null;
+  sgpg_timing_years?: string | null;
+  sgpg_timing_km?: string | null;
+  sgpg_timing_note?: string | null;
+  sgpg_symptoms?: string | string[] | null;
+  sgpg_anti_mistakes?: string | string[] | null;
+  sgpg_faq?: string | Array<{ question?: string; answer?: string }> | null;
+  sgpg_arg1_title?: string | null;
+  sgpg_arg1_content?: string | null;
+  sgpg_arg1_icon?: string | null;
+  sgpg_arg2_title?: string | null;
+  sgpg_arg2_content?: string | null;
+  sgpg_arg2_icon?: string | null;
+  sgpg_arg3_title?: string | null;
+  sgpg_arg3_content?: string | null;
+  sgpg_arg3_icon?: string | null;
+  sgpg_arg4_title?: string | null;
+  sgpg_arg4_content?: string | null;
+  sgpg_arg4_icon?: string | null;
+  sgpg_created_at?: string | null;
+  sgpg_updated_at?: string | null;
+  sgpg_h1_override?: string | null;
+  sgpg_selection_criteria?: unknown;
+  sgpg_decision_tree?: unknown;
+  sgpg_use_cases?: unknown;
+  sgpg_source_uri?: string | null;
+  sgpg_source_type?: string | null;
+  sgpg_source_ref?: string | null;
+  sgpg_source_verified?: boolean | number | string | null;
+  [key: string]: unknown;
+}
+
 export interface GammeContentQuality {
   score: number;
   flags: GammeContentQualityFlag[];
@@ -248,10 +293,12 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         .eq('sgpg_pg_id', pgId)
         .neq('sgpg_is_draft', true)
         .single();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let data: any = provenanceQuery.data;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let error: any = provenanceQuery.error;
+      let data: Record<string, unknown> | null = provenanceQuery.data as Record<
+        string,
+        unknown
+      > | null;
+      let error: { message: string; code?: string } | null =
+        provenanceQuery.error;
 
       if (
         error &&
@@ -1222,8 +1269,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
   /**
    * Transforme les données brutes de la DB en structure V2
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private transformToV2(raw: any): BuyingGuideContractV1 {
+  private transformToV2(raw: PurchaseGuideRow): BuyingGuideContractV1 {
     // Construire le tableau d'arguments (4 max)
     const args: Array<{ title: string; content: string; icon: string }> = [];
 
@@ -1257,8 +1303,9 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     }
 
     // Parser syncParts et consequences (peuvent être TEXT[] ou JSONB)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parseSyncParts = (val: any): string[] => {
+    const parseSyncParts = (
+      val: string | string[] | null | undefined,
+    ): string[] => {
       if (!val) return [];
       if (Array.isArray(val)) return val;
       if (typeof val === 'string') {
@@ -1271,8 +1318,9 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       return [];
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parseConsequences = (val: any): string[] => {
+    const parseConsequences = (
+      val: string | string[] | null | undefined,
+    ): string[] => {
       if (!val) return [];
       if (Array.isArray(val)) return val;
       if (typeof val === 'string') {
@@ -1285,9 +1333,12 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       return [];
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parseFaq = (
-      val: any,
+      val:
+        | Array<{ question?: string; answer?: string }>
+        | string
+        | null
+        | undefined,
     ): Array<{ question: string; answer: string }> => {
       if (!val) return [];
       if (Array.isArray(val)) {
@@ -1360,7 +1411,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     );
 
     const content: BuyingGuideContractWithoutQuality = {
-      id: raw.sgpg_id,
+      id: (raw.sgpg_id as number) || 0,
       pgId: String(raw.sgpg_pg_id),
       intro: {
         title: raw.sgpg_intro_title || 'À quoi ça sert ?',
@@ -1773,10 +1824,9 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     return result.slice(0, 6);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private applyQualityGate(
     content: BuyingGuideContractWithoutQuality,
-    raw: any,
+    raw: PurchaseGuideRow,
   ): {
     content: BuyingGuideContractWithoutQuality;
     flags: GammeContentQualityFlag[];
@@ -2019,8 +2069,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     return { content: gated, flags };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private resolveQualitySource(raw: any, pgId: string): string {
+  private resolveQualitySource(raw: PurchaseGuideRow, pgId: string): string {
     const sourceUriRaw = this.cleanText(raw?.sgpg_source_uri);
     const sourceType = this.cleanText(raw?.sgpg_source_type).toLowerCase();
     const sourceRef = this.cleanText(raw?.sgpg_source_ref);
@@ -2067,8 +2116,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     return ['1', 'true', 't', 'yes', 'y'].includes(normalized);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private isSourceVerified(raw: any): boolean {
+  private isSourceVerified(raw: PurchaseGuideRow): boolean {
     // Mode strict par défaut: sans colonne explicite de vérification,
     // la source est considérée non vérifiée. Le mode legacy doit être activé
     // explicitement par variable d'environnement.
@@ -2081,18 +2129,16 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     return this.parseBoolean(raw?.sgpg_source_verified);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private isAcceptedProvenance(raw: any, source: string): boolean {
+  private isAcceptedProvenance(raw: PurchaseGuideRow, source: string): boolean {
     if (!this.isTrustedProvenance(source)) return false;
     if (!ENFORCE_SOURCE_VERIFIED) return true;
     return this.isSourceVerified(raw);
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private buildQuality(
     content: BuyingGuideContractWithoutQuality,
     flags: GammeContentQualityFlag[],
-    raw: any,
+    raw: PurchaseGuideRow,
   ): GammeContentQuality {
     let score = 100;
     const uniqueFlags: GammeContentQualityFlag[] = [];

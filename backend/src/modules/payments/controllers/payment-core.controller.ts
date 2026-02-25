@@ -22,6 +22,10 @@ import { CreatePaymentDto } from '../dto/create-payment.dto';
 import { PaymentMethod } from '../entities/payment.entity';
 import { logPaymentError } from './payment-controller.utils';
 
+interface AuthenticatedRequest {
+  user?: { id: string; email?: string; isAdmin?: boolean };
+}
+
 /**
  * Routes client : creation, consultation, annulation, supplement
  */
@@ -71,7 +75,7 @@ export class PaymentCoreController {
   @ApiResponse({ status: 401, description: 'Non authentifie' })
   async createPayment(
     @Body() createPaymentDto: CreatePaymentDto,
-    @Request() req?: any,
+    @Request() req?: AuthenticatedRequest,
   ) {
     try {
       this.logger.log(`Creating payment for order ${createPaymentDto.orderId}`);
@@ -160,7 +164,7 @@ export class PaymentCoreController {
   async getUserPayments(
     @Param('userId') userId: string,
     @Query('limit') limit?: string,
-    @Request() req?: any,
+    @Request() req?: AuthenticatedRequest,
   ) {
     try {
       this.logger.log(`Getting payments for user: ${userId}`);
@@ -257,7 +261,7 @@ export class PaymentCoreController {
   async proceedSupplementPayment(
     @Body('orderId') orderId: string,
     @Body('paymentMethod') paymentMethod: 'PAYBOX' | 'PAYPAL',
-    @Request() req?: any,
+    @Request() req?: AuthenticatedRequest,
   ) {
     try {
       this.logger.log(`Processing supplement payment for order ${orderId}`);
@@ -350,7 +354,10 @@ export class PaymentCoreController {
   @ApiParam({ name: 'id', description: 'ID du paiement' })
   @ApiResponse({ status: 200, description: 'Details du paiement' })
   @ApiResponse({ status: 404, description: 'Paiement non trouve' })
-  async getPayment(@Param('id') id: string, @Request() req?: any) {
+  async getPayment(
+    @Param('id') id: string,
+    @Request() req?: AuthenticatedRequest,
+  ) {
     try {
       this.logger.log(`Getting payment details for ID: ${id}`);
 
@@ -386,7 +393,10 @@ export class PaymentCoreController {
   @ApiParam({ name: 'id', description: 'ID du paiement' })
   @ApiResponse({ status: 200, description: 'Paiement annule' })
   @ApiResponse({ status: 400, description: 'Paiement non annulable' })
-  async cancelPayment(@Param('id') id: string, @Request() req?: any) {
+  async cancelPayment(
+    @Param('id') id: string,
+    @Request() req?: AuthenticatedRequest,
+  ) {
     try {
       this.logger.log(`Cancelling payment: ${id}`);
 

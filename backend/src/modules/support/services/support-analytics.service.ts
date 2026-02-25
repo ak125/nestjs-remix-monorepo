@@ -1,14 +1,46 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, Logger } from '@nestjs/common';
 import { ContactService } from './contact.service';
-import { ReviewService } from './review.service';
+import { ReviewService, ReviewStats } from './review.service';
 import { QuoteService } from './quote.service';
 import { ClaimService } from './claim.service';
-import { FaqService } from './faq.service';
+import { FaqService, FAQStats } from './faq.service';
 import {
   getErrorMessage,
   getErrorStack,
 } from '../../../common/utils/error.utils';
+
+/** Shape of stats returned by ContactService.getStats() */
+interface ContactStats {
+  total: number;
+  open: number;
+  inProgress: number;
+  resolved: number;
+  avgResponseTime: number;
+  satisfactionRating: number;
+  [key: string]: unknown;
+}
+
+/** Shape of stats returned by ClaimService.getClaimStats() */
+interface ClaimStats {
+  total: number;
+  open: number;
+  resolved: number;
+  satisfactionRating: number;
+}
+
+/** Shape of stats returned by QuoteService.getQuoteStats() */
+interface QuoteStats {
+  totalRequests: number;
+  totalQuotes: number;
+  acceptedQuotes: number;
+  rejectedQuotes: number;
+  pendingRequests: number;
+  conversionRate: number;
+  totalQuoteValue: number;
+  averageQuoteValue: number;
+  [key: string]: unknown;
+}
 
 export interface SupportAnalytics {
   overview: {
@@ -30,11 +62,11 @@ export interface SupportAnalytics {
   }[];
 
   departmentStats: {
-    contact: any;
-    reviews: any;
-    quotes: any;
-    claims: any;
-    faq: any;
+    contact: ContactStats;
+    reviews: ReviewStats;
+    quotes: QuoteStats;
+    claims: ClaimStats;
+    faq: FAQStats;
   };
 
   trends: {
@@ -82,25 +114,6 @@ export interface SupportReport {
   insights: string[];
   recommendations: string[];
   generatedAt: Date;
-}
-
-/** Shape of stats returned by ContactService.getStats() */
-interface ContactStats {
-  total: number;
-  open: number;
-  inProgress: number;
-  resolved: number;
-  avgResponseTime: number;
-  satisfactionRating: number;
-  [key: string]: unknown;
-}
-
-/** Shape of stats returned by ClaimService.getClaimStats() */
-interface ClaimStats {
-  total: number;
-  open: number;
-  resolved: number;
-  satisfactionRating: number;
 }
 
 @Injectable()

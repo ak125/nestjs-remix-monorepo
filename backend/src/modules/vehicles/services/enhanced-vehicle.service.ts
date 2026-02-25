@@ -167,7 +167,7 @@ export class EnhancedVehicleService {
   async getModelsByBrand(
     marqueId: number,
     options: PaginationOptions = {},
-  ): Promise<VehicleResponse<VehicleModel>> {
+  ): Promise<VehicleResponse<Record<string, unknown>>> {
     return await this.modelsService.getModelsByBrand(marqueId, options);
   }
 

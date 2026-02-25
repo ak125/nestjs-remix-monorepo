@@ -24,7 +24,10 @@ import {
 } from './gamme-seo-thresholds.service';
 import { GammeSeoAuditService } from './gamme-seo-audit.service';
 import { GammeSeoBadgesService } from './gamme-seo-badges.service';
-import { GammeDetailEnricherService } from './gamme-detail-enricher.service';
+import {
+  GammeDetailEnricherService,
+  GammeDetailResult,
+} from './gamme-detail-enricher.service';
 import { GammeVLevelService } from './gamme-vlevel.service';
 
 // ============== HIÉRARCHIE OFFICIELLE DES FAMILLES ==============
@@ -1107,14 +1110,8 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       level2: EnrichedVehicle[];
       level5: EnrichedVehicle[];
     };
-    vLevel: {
-      v1: Record<string, unknown>[];
-      v2: Record<string, unknown>[];
-      v3: Record<string, unknown>[];
-      v4: Record<string, unknown>[];
-      v5: Record<string, unknown>[];
-    };
-    stats: Record<string, unknown>;
+    vLevel: GammeDetailResult['vLevel'];
+    stats: GammeDetailResult['stats'];
   }> {
     return this.detailEnricherService.getGammeDetail(pgId);
   }

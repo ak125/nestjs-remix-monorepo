@@ -1,4 +1,4 @@
-import { TABLES } from '@repo/database-types';
+import { TABLES, AutoType } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
@@ -7,6 +7,11 @@ import {
   PaginationOptions,
   VehicleResponse,
 } from '../../types/vehicle.types';
+
+type TypePartial = Pick<
+  AutoType,
+  'type_id' | 'type_modele_id' | 'type_year_from' | 'type_year_to' | 'type_fuel'
+>;
 
 /**
  * 🚗 VEHICLE MODELS SERVICE - Service dédié à la gestion des modèles
@@ -179,7 +184,7 @@ export class VehicleModelsService extends SupabaseBaseService {
   async getModelsByBrand(
     marqueId: number,
     options: PaginationOptions = {},
-  ): Promise<VehicleResponse<VehicleModel>> {
+  ): Promise<VehicleResponse<Record<string, unknown>>> {
     const cacheKey = `models_by_brand:${marqueId}:${JSON.stringify(options)}`;
 
     // 🔧 TEMPORAIRE: Désactiver le cache pour tester le filtrage des motorisations
@@ -223,7 +228,7 @@ export class VehicleModelsService extends SupabaseBaseService {
         // ⚠️ Supabase PostgREST max-rows = 1000. Paginer pour les grosses marques (Toyota 3510+).
         const typesSelect =
           'type_id, type_modele_id, type_year_from, type_year_to, type_fuel';
-        const allTypes: any[] = [];
+        const allTypes: TypePartial[] = [];
         let typesOffset = 0;
         const typesBatchSize = 1000;
 
@@ -252,9 +257,9 @@ export class VehicleModelsService extends SupabaseBaseService {
         );
 
         // 🔧 Étape 3: Grouper les types par modèle (type_modele_id est STRING)
-        const modelIdsByType = new Map<string, any[]>();
+        const modelIdsByType = new Map<string, TypePartial[]>();
 
-        allTypes?.forEach((type: any) => {
+        allTypes?.forEach((type: TypePartial) => {
           const modelIdStr = type.type_modele_id?.toString();
           if (!modelIdStr) return;
           if (!modelIdsByType.has(modelIdStr)) {
@@ -272,9 +277,9 @@ export class VehicleModelsService extends SupabaseBaseService {
           // Garder uniquement les modèles ayant au moins une motorisation pour cette année
           modelIdsWithTypes = Array.from(modelIdsByType.entries())
             .filter(([, types]) => {
-              return types.some((type: any) => {
-                const yearFrom = type.type_year_from || 0;
-                const yearTo = type.type_year_to || 9999;
+              return types.some((type: TypePartial) => {
+                const yearFrom = parseInt(String(type.type_year_from), 10) || 0;
+                const yearTo = parseInt(String(type.type_year_to), 10) || 9999;
                 return yearFrom <= year && year <= yearTo;
               });
             })
@@ -334,16 +339,20 @@ export class VehicleModelsService extends SupabaseBaseService {
         }
 
         // Enrichir chaque modèle avec motorisationsCount et fuel_types
-        const enrichedData = (data || []).map((model: any) => {
-          const types = modelIdsByType.get(model.modele_id.toString()) || [];
-          return {
-            ...model,
-            motorisationsCount: types.length,
-            modele_fuel_types: [
-              ...new Set(types.map((t: any) => t.type_fuel).filter(Boolean)),
-            ],
-          };
-        });
+        const enrichedData = (data || []).map(
+          (model: Record<string, unknown>) => {
+            const types = modelIdsByType.get(String(model.modele_id)) || [];
+            return {
+              ...model,
+              motorisationsCount: types.length,
+              modele_fuel_types: [
+                ...new Set(
+                  types.map((t: TypePartial) => t.type_fuel).filter(Boolean),
+                ),
+              ],
+            };
+          },
+        );
 
         return {
           success: true,
@@ -516,7 +525,9 @@ export class VehicleModelsService extends SupabaseBaseService {
       return (data || [])
         .map((model) => ({
           modele_name: model.modele_name,
-          marque_name: (model.auto_marque as any)?.marque_name || 'Unknown',
+          marque_name:
+            (model.auto_marque as { marque_name?: string })?.marque_name ||
+            'Unknown',
           typeCount: model.auto_type?.length || 0,
         }))
         .filter((model) => model.typeCount > 0)
@@ -623,7 +634,7 @@ export class VehicleModelsService extends SupabaseBaseService {
           // Créer Map composite (modele_name + marque_name) pour lookup O(1)
           const modelMap = new Map<string, VehicleModel>();
           (modelsData || []).forEach((model) => {
-            const marque = model.auto_marque as any;
+            const marque = model.auto_marque as { marque_name?: string } | null;
             const key = `${model.modele_name}|${marque?.marque_name || ''}`;
             modelMap.set(key, model);
           });
@@ -716,11 +727,11 @@ export class VehicleModelsService extends SupabaseBaseService {
           // Plage d'années (type_year_from / type_year_to sont TEXT)
           const years =
             types
-              ?.map((t: any) => parseInt(t.type_year_from, 10))
+              ?.map((t) => parseInt(String(t.type_year_from), 10))
               .filter((y: number) => !isNaN(y)) || [];
           const yearsTo =
             types
-              ?.map((t: any) => parseInt(t.type_year_to, 10))
+              ?.map((t) => parseInt(String(t.type_year_to), 10))
               .filter((y: number) => !isNaN(y)) || [];
           const allYears = [...years, ...yearsTo];
           const yearRange =

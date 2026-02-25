@@ -19,7 +19,7 @@ export class SeoV4SwitchEngineService extends SupabaseBaseService {
   protected readonly logger = new Logger(SeoV4SwitchEngineService.name);
 
   // Cache for switch data (separate from main SEO cache)
-  private switchCache = new Map<string, { data: any; expires: number }>();
+  private switchCache = new Map<string, { data: unknown; expires: number }>();
   private readonly CACHE_TTL_MEDIUM = 900000; // 15 min
   private readonly CACHE_TTL_LONG = 3600000; // 1 heure
 
@@ -27,15 +27,15 @@ export class SeoV4SwitchEngineService extends SupabaseBaseService {
   // 🔧 CACHE HELPERS
   // ====================================
 
-  private getCachedData(key: string): any {
+  private getCachedData<T = unknown>(key: string): T | null {
     const cached = this.switchCache.get(key);
     if (cached && cached.expires > Date.now()) {
-      return cached.data;
+      return cached.data as T;
     }
     return null;
   }
 
-  private setCachedData(key: string, data: any, ttl: number): void {
+  private setCachedData(key: string, data: unknown, ttl: number): void {
     this.switchCache.set(key, {
       data,
       expires: Date.now() + ttl,
@@ -51,7 +51,8 @@ export class SeoV4SwitchEngineService extends SupabaseBaseService {
     typeId: number,
   ): Promise<string> {
     const cacheKey = `gammes:external:${typeId}`;
-    let allGammes = this.getCachedData(cacheKey);
+    type GammeRow = { pg_id: number; pg_name: string; pg_alias: string };
+    let allGammes = this.getCachedData<GammeRow[]>(cacheKey);
 
     if (!allGammes) {
       const { data } = await this.supabase
@@ -61,7 +62,7 @@ export class SeoV4SwitchEngineService extends SupabaseBaseService {
         .in('pg_level', [1, 2])
         .order('pg_id');
 
-      allGammes = data || [];
+      allGammes = (data || []) as GammeRow[];
       this.setCachedData(cacheKey, allGammes, this.CACHE_TTL_MEDIUM);
     }
 
@@ -71,7 +72,7 @@ export class SeoV4SwitchEngineService extends SupabaseBaseService {
     const batchSize = 10;
     for (let i = 0; i < allGammes.length; i += batchSize) {
       const batch = allGammes.slice(i, i + batchSize);
-      const batchPromises = batch.map((gamme: any) =>
+      const batchPromises = batch.map((gamme) =>
         this.processSingleGammeSwitch(processed, gamme.pg_id, typeId),
       );
 
@@ -106,7 +107,8 @@ export class SeoV4SwitchEngineService extends SupabaseBaseService {
 
     // Cache par gamme
     const cacheKey = `switches:gamme:${thisPgId}`;
-    let switches = this.getCachedData(cacheKey);
+    type SwitchRow = { sgcs_content: string; sgcs_alias: number };
+    let switches = this.getCachedData<SwitchRow[]>(cacheKey);
 
     if (!switches) {
       const { data } = await this.supabase
@@ -114,7 +116,7 @@ export class SeoV4SwitchEngineService extends SupabaseBaseService {
         .select('sgcs_content, sgcs_alias')
         .eq('sgcs_pg_id', thisPgId);
 
-      switches = data || [];
+      switches = (data || []) as SwitchRow[];
       this.setCachedData(cacheKey, switches, this.CACHE_TTL_MEDIUM);
     }
 
@@ -135,9 +137,7 @@ export class SeoV4SwitchEngineService extends SupabaseBaseService {
     for (let alias = 1; alias <= 3; alias++) {
       const aliasRegex = new RegExp(`#CompSwitch_${alias}_${thisPgId}#`, 'g');
       if (aliasRegex.test(processed)) {
-        const aliasSwitches = switches.filter(
-          (s: any) => s.sgcs_alias === alias,
-        );
+        const aliasSwitches = switches.filter((s) => s.sgcs_alias === alias);
         if (aliasSwitches.length > 0) {
           const index = (typeId + thisPgId + alias) % aliasSwitches.length;
           processed = processed.replace(
@@ -182,7 +182,13 @@ export class SeoV4SwitchEngineService extends SupabaseBaseService {
     }
 
     const cacheKey = 'gammes:popular:links';
-    let popularGammes = this.getCachedData(cacheKey);
+    type LinkGammeRow = {
+      pg_id: number;
+      pg_name: string;
+      pg_alias: string;
+      pg_url_slug?: string;
+    };
+    let popularGammes = this.getCachedData<LinkGammeRow[]>(cacheKey);
 
     if (!popularGammes) {
       const { data } = await this.supabase
@@ -193,7 +199,7 @@ export class SeoV4SwitchEngineService extends SupabaseBaseService {
         .order('pg_id')
         .limit(20);
 
-      popularGammes = data || [];
+      popularGammes = (data || []) as LinkGammeRow[];
       this.setCachedData(cacheKey, popularGammes, this.CACHE_TTL_LONG);
     }
 
@@ -210,7 +216,7 @@ export class SeoV4SwitchEngineService extends SupabaseBaseService {
 
     for (const match of matches) {
       const gammeId = parseInt(match[1], 10);
-      const gamme = popularGammes.find((g: any) => g.pg_id === gammeId);
+      const gamme = popularGammes.find((g) => g.pg_id === gammeId);
 
       if (gamme) {
         const link = `<a href="/gammes/${gamme.pg_url_slug || gamme.pg_id}" class="link-gamme-internal">${gamme.pg_name}</a>`;
