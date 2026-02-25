@@ -5,6 +5,7 @@ import {
   BadRequestException,
   ConflictException,
   NotFoundException,
+  OnModuleDestroy,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -37,9 +38,10 @@ interface CircuitBreakerState {
 
 const CB_THRESHOLD = 5; // failures before opening
 const CB_RESET_MS = 30_000; // 30s before half-open probe
+const MAX_WEB_JOBS = 100; // max in-memory web jobs before purging old completed ones
 
 @Injectable()
-export class RagProxyService {
+export class RagProxyService implements OnModuleDestroy {
   private readonly logger = new Logger(RagProxyService.name);
   private readonly ragUrl: string;
   private readonly ragApiKey: string;
@@ -66,7 +68,7 @@ export class RagProxyService {
     { count: number; confidenceSum: number; lastSeenAt: string }
   >();
 
-  /** In-memory store for web ingestion jobs (survives until server restart). */
+  /** In-memory store for web ingestion jobs. Bounded to MAX_WEB_JOBS. */
   private readonly webJobs = new Map<
     string,
     {
@@ -80,6 +82,9 @@ export class RagProxyService {
       logLines: string[];
     }
   >();
+
+  /** Track active poll timers for cleanup on destroy. */
+  private readonly activePollTimers = new Set<ReturnType<typeof setInterval>>();
 
   constructor(
     private readonly configService: ConfigService,
@@ -97,6 +102,16 @@ export class RagProxyService {
 
     this.logger.log(`RAG Service URL: ${this.ragUrl}`);
     this.logger.log(`RAG PDF staging host root: ${this.ragPdfDropHostRoot}`);
+  }
+
+  onModuleDestroy(): void {
+    for (const timer of this.activePollTimers) {
+      clearInterval(timer);
+    }
+    this.activePollTimers.clear();
+    this.webJobs.clear();
+    this.intentStats.clear();
+    this.logger.log('RagProxyService destroyed — timers and caches cleared');
   }
 
   /** Check circuit breaker before calling RAG service. Throws if open. */
@@ -1114,6 +1129,11 @@ export class RagProxyService {
       );
     }
 
+    // Purge old completed/failed jobs if at capacity
+    if (this.webJobs.size >= MAX_WEB_JOBS) {
+      this.purgeOldWebJobs();
+    }
+
     const job = {
       jobId,
       url,
@@ -1275,12 +1295,13 @@ export class RagProxyService {
     const INTERVAL_MS = 15_000;
     let attempt = 0;
 
-    const timer = setInterval(async () => {
+    const timer: ReturnType<typeof setInterval> = setInterval(async () => {
       attempt++;
       try {
         const status = await this.getSinglePdfJobStatus(jobId, 10);
         if (status.status === 'done' || status.status === 'completed') {
           clearInterval(timer);
+          this.activePollTimers.delete(timer);
 
           // Validate frontmatter on recently modified knowledge files (like web flow)
           const knowledgePath =
@@ -1332,6 +1353,7 @@ export class RagProxyService {
           attempt >= MAX_ATTEMPTS
         ) {
           clearInterval(timer);
+          this.activePollTimers.delete(timer);
           if (attempt >= MAX_ATTEMPTS) {
             this.logger.warn(
               `PDF ingest poll timeout for job ${jobId} after ${MAX_ATTEMPTS} attempts`,
@@ -1344,9 +1366,12 @@ export class RagProxyService {
         );
         if (attempt >= MAX_ATTEMPTS) {
           clearInterval(timer);
+          this.activePollTimers.delete(timer);
         }
       }
     }, INTERVAL_MS);
+
+    this.activePollTimers.add(timer);
   }
 
   /**
@@ -1698,6 +1723,29 @@ export class RagProxyService {
     }
 
     return results;
+  }
+
+  /**
+   * Purge old completed/failed web jobs when at capacity.
+   * Removes oldest finished jobs first, keeping running jobs.
+   */
+  private purgeOldWebJobs(): void {
+    const finished = Array.from(this.webJobs.entries())
+      .filter(([, j]) => j.status === 'done' || j.status === 'failed')
+      .sort(([, a], [, b]) => a.startedAt - b.startedAt);
+
+    const toRemove = Math.max(finished.length, Math.ceil(MAX_WEB_JOBS * 0.3));
+    let removed = 0;
+    for (const [key] of finished.slice(0, toRemove)) {
+      this.webJobs.delete(key);
+      removed++;
+    }
+
+    if (removed > 0) {
+      this.logger.log(
+        `Purged ${removed} old web jobs, ${this.webJobs.size} remaining`,
+      );
+    }
   }
 
   /**

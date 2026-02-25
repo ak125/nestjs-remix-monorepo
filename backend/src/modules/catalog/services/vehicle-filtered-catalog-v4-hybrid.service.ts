@@ -1,5 +1,5 @@
 import { TABLES } from '@repo/database-types';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
@@ -94,16 +94,25 @@ interface CacheEntry {
   ttl: number;
 }
 
+// Memory safety limits to prevent unbounded growth
+const MAX_CACHE_ENTRIES = 500;
+const MAX_VEHICLE_STATS = 1000;
+
 @Injectable()
-export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
+export class VehicleFilteredCatalogV4HybridService
+  extends SupabaseBaseService
+  implements OnModuleDestroy
+{
   protected readonly logger = new Logger(
     VehicleFilteredCatalogV4HybridService.name,
   );
 
   // 💾 Cache en mémoire (remplace Redis pour simplicité)
+  // Borné à MAX_CACHE_ENTRIES avec éviction LRU
   private memoryCache = new Map<string, CacheEntry>();
 
   // 📊 Stats en mémoire pour TTL adaptatif
+  // Borné à MAX_VEHICLE_STATS avec éviction des moins récents
   private vehicleStats = new Map<number, VehiclePopularityStats>();
 
   // 🎯 Métriques globales
@@ -118,6 +127,12 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     super();
     this.rpcGate = rpcGate;
     this.logger.log('🚀 V4 Hybrid Service initialized with memory cache');
+  }
+
+  onModuleDestroy(): void {
+    this.memoryCache.clear();
+    this.vehicleStats.clear();
+    this.logger.log('V4 Hybrid Service destroyed — memory caches cleared');
   }
 
   /**
@@ -651,6 +666,11 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
       const cacheKey = `catalog:v4:${typeId}`;
       const ttl = this.getSmartTTL(typeId);
 
+      // Evict expired entries first, then oldest if still over limit
+      if (this.memoryCache.size >= MAX_CACHE_ENTRIES) {
+        this.evictCacheEntries();
+      }
+
       this.memoryCache.set(cacheKey, {
         data: catalog,
         timestamp: new Date(),
@@ -661,6 +681,45 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
     } catch (error: unknown) {
       this.logger.warn(
         `⚠️ [CACHE WRITE] Erreur type_id ${typeId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /**
+   * Evict expired cache entries, then oldest entries if still over limit.
+   */
+  private evictCacheEntries(): void {
+    const now = Date.now();
+    let evicted = 0;
+
+    // Pass 1: remove expired entries
+    const expiredKeys: string[] = [];
+    this.memoryCache.forEach((entry, key) => {
+      if (now > entry.timestamp.getTime() + entry.ttl * 1000) {
+        expiredKeys.push(key);
+      }
+    });
+    expiredKeys.forEach((key) => {
+      this.memoryCache.delete(key);
+      evicted++;
+    });
+
+    // Pass 2: if still over limit, remove oldest 20%
+    if (this.memoryCache.size >= MAX_CACHE_ENTRIES) {
+      const toRemove = Math.ceil(MAX_CACHE_ENTRIES * 0.2);
+      const oldest = Array.from(this.memoryCache.entries())
+        .sort(([, a], [, b]) => a.timestamp.getTime() - b.timestamp.getTime())
+        .slice(0, toRemove);
+
+      oldest.forEach(([key]) => {
+        this.memoryCache.delete(key);
+        evicted++;
+      });
+    }
+
+    if (evicted > 0) {
+      this.logger.log(
+        `🧹 [CACHE EVICT] ${evicted} entries removed, ${this.memoryCache.size} remaining`,
       );
     }
   }
@@ -684,6 +743,19 @@ export class VehicleFilteredCatalogV4HybridService extends SupabaseBaseService {
    */
   private updateVehicleStats(typeId: number): void {
     const existing = this.vehicleStats.get(typeId);
+
+    // Evict least recently accessed stats if over limit
+    if (!existing && this.vehicleStats.size >= MAX_VEHICLE_STATS) {
+      const oldest = Array.from(this.vehicleStats.entries())
+        .sort(
+          ([, a], [, b]) => a.lastAccessed.getTime() - b.lastAccessed.getTime(),
+        )
+        .slice(0, Math.ceil(MAX_VEHICLE_STATS * 0.2));
+
+      for (const [key] of oldest) {
+        this.vehicleStats.delete(key);
+      }
+    }
 
     this.vehicleStats.set(typeId, {
       typeId,
