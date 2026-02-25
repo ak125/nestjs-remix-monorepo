@@ -79,7 +79,7 @@ jobs:
           docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
           docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
 
-          docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d
+          docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod
 
           echo "⏳ Waiting for containers to start (60s)..."
           sleep 60
