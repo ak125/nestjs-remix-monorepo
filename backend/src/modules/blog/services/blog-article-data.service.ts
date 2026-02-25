@@ -3,7 +3,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogArticleTransformService } from './blog-article-transform.service';
 import { BlogCacheService } from './blog-cache.service';
-import { BlogArticle } from '../interfaces/blog.interfaces';
+import {
+  BlogArticle,
+  BaRow,
+  BaH2Row,
+  BaH3Row,
+} from '../interfaces/blog.interfaces';
 import {
   DomainNotFoundException,
   DomainValidationException,
@@ -714,9 +719,9 @@ export class BlogArticleDataService {
     }
 
     return this.transformService.transformAdviceToArticleWithSections(
-      advice,
-      h2Sections || [],
-      h3Sections,
+      advice as BaRow,
+      (h2Sections || []) as BaH2Row[],
+      h3Sections as BaH3Row[],
     );
   }
 

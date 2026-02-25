@@ -309,6 +309,161 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
     }
   }
 
+  // ============================================
+  // AUTH-SPECIFIC METHODS (login, password upgrade)
+  // ============================================
+
+  /**
+   * Trouver un utilisateur par ID AVEC le hash du mot de passe
+   * Usage : auth uniquement (changePassword verification)
+   */
+  async findByIdForAuth(
+    userId: string,
+  ): Promise<{ user: User; passwordHash: string } | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from(TABLES.xtr_customer)
+        .select('*')
+        .eq('cst_id', userId)
+        .single();
+
+      if (error || !data) return null;
+
+      return {
+        user: mapSupabaseToUser(data),
+        passwordHash: data.cst_pswd || '',
+      };
+    } catch (error) {
+      this.logger.error(`Error finding user by ID for auth ${userId}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Trouver un utilisateur par email AVEC le hash du mot de passe
+   * Usage : auth uniquement (login verification)
+   */
+  async findByEmailForAuth(
+    email: string,
+  ): Promise<{ user: User; passwordHash: string } | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from(TABLES.xtr_customer)
+        .select('*')
+        .eq('cst_mail', email)
+        .single();
+
+      if (error || !data) return null;
+
+      return {
+        user: mapSupabaseToUser(data),
+        passwordHash: data.cst_pswd || '',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error finding user by email for auth ${email}:`,
+        error,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Trouver un admin par email AVEC le hash du mot de passe
+   * Usage : auth uniquement (admin login fallback)
+   */
+  async findAdminByEmailForAuth(email: string): Promise<{
+    id: string;
+    email: string;
+    passwordHash: string;
+    level: number;
+    firstName: string;
+    lastName: string;
+    isActive: boolean;
+  } | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from(TABLES.config_admin)
+        .select('*')
+        .eq('cnfa_mail', email)
+        .single();
+
+      if (error || !data) return null;
+
+      return {
+        id: String(data.cnfa_id),
+        email: data.cnfa_mail,
+        passwordHash: data.cnfa_pswd || '',
+        level: parseInt(String(data.cnfa_level || '7')),
+        firstName: data.cnfa_fname || '',
+        lastName: data.cnfa_name || '',
+        isActive: data.cnfa_activ === '1',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error finding admin by email for auth ${email}:`,
+        error,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Ecrire un hash de mot de passe deja calcule (par userId)
+   * Usage : upgrade MD5→bcrypt dans auth.service
+   */
+  async setPasswordHash(
+    userId: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    try {
+      const { error } = await this.supabase
+        .from(TABLES.xtr_customer)
+        .update({
+          cst_pswd: hashedPassword,
+          cst_updated_at: new Date().toISOString(),
+        })
+        .eq('cst_id', userId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Error setting password hash for user ${userId}:`,
+        error,
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Ecrire un hash de mot de passe deja calcule (par email)
+   * Usage : guest activation dans auth-token.controller
+   */
+  async setPasswordHashByEmail(
+    email: string,
+    hashedPassword: string,
+  ): Promise<boolean> {
+    try {
+      const { error } = await this.supabase
+        .from(TABLES.xtr_customer)
+        .update({
+          cst_pswd: hashedPassword,
+          cst_updated_at: new Date().toISOString(),
+        })
+        .eq('cst_mail', email);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Error setting password hash by email ${email}:`,
+        error,
+      );
+      return false;
+    }
+  }
+
   /**
    * Mapper les colonnes de tri
    */

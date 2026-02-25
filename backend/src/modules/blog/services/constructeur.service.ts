@@ -1,7 +1,12 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
-import { BlogArticle } from '../interfaces/blog.interfaces';
+import {
+  BlogArticle,
+  BcRow,
+  BaH2Row,
+  BaH3Row,
+} from '../interfaces/blog.interfaces';
 import { BlogCacheService } from './blog-cache.service';
 import { ConstructeurSearchService } from './constructeur-search.service';
 import { ConstructeurTransformService } from './constructeur-transform.service';
@@ -273,9 +278,9 @@ export class ConstructeurService {
         try {
           const article =
             this.transformService.transformConstructeurToArticleBatch(
-              constructeur,
-              h2Map.get(constructeur.bsm_id) || [],
-              h3Map.get(constructeur.bsm_id) || [],
+              constructeur as BcRow,
+              (h2Map.get(constructeur.bsm_id) || []) as BaH2Row[],
+              (h3Map.get(constructeur.bsm_id) || []) as BaH3Row[],
               modelCountMap.get(constructeur.bsm_id) || 0,
             );
           if (article) articles.push(article);

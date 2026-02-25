@@ -12,17 +12,17 @@ import {
  * Service de transformation des données pour les pages gamme
  * Extrait la logique de traitement et nettoyage des données
  */
-interface ConseilRow {
+export interface ConseilRow {
   sgc_id: number;
   sgc_title?: string;
   sgc_content?: string;
 }
 
-interface InformationRow {
+export interface InformationRow {
   sgi_content: string;
 }
 
-interface EquipementierRow {
+export interface EquipementierRow {
   seg_pm_id?: string;
   pm_id?: string;
   pm_name?: string;
@@ -31,7 +31,7 @@ interface EquipementierRow {
   content?: string;
 }
 
-interface CatalogueFamilleRow {
+export interface CatalogueFamilleRow {
   pg_id: number;
   pg_alias: string;
   pg_pic?: string;

@@ -127,7 +127,7 @@ export async function renderVideo(
       serveUrl,
       codec: 'h264',
       outputLocation,
-      browserExecutable: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium',
+      browserExecutable: process.env.CHROMIUM_PATH || undefined,
       inputProps,
       onProgress: ({ progress }) => {
         if (Math.round(progress * 100) % 25 === 0) {

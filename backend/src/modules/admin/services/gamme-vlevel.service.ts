@@ -13,6 +13,43 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
+interface VLevelKeywordRow {
+  id: number;
+  keyword: string;
+  volume: number;
+  pg_id: number;
+  energy: string;
+  model: string;
+  type: string;
+  v_level: string;
+  score_seo: number;
+  type_id: number;
+  [key: string]: unknown;
+}
+
+interface VLevelModelTypeRow {
+  type_id: string;
+  type_name: string;
+  type_fuel: string;
+  type_engine: string;
+  type_modele_id: number;
+  [key: string]: unknown;
+}
+
+interface V5SiblingItem {
+  id: number;
+  gamme_name: string;
+  model_name: string;
+  brand: string;
+  variant_name: string;
+  energy: string;
+  v_level: string;
+  rank: number;
+  search_volume: number;
+  updated_at: string;
+  type_id: number;
+}
+
 export interface RecalculateVLevelResult {
   success: boolean;
   message: string;
@@ -45,7 +82,7 @@ export class GammeVLevelService extends SupabaseBaseService {
       this.logger.log(`Recalculating V-Level v5.0 for gamme ${pgId}`);
 
       // 1. Fetch all keywords for this gamme
-      let allKeywords: any[] = [];
+      let allKeywords: VLevelKeywordRow[] = [];
       let offset = 0;
       const batchSize = 1000;
       let hasMore = true;
@@ -145,7 +182,7 @@ export class GammeVLevelService extends SupabaseBaseService {
       const csvVehicleKws = motorKws.filter((kw) => kw.v_level !== 'V5');
 
       // 4. Group CSV vehicle keywords by [model+energy] or [model] if universelle
-      const byModelEnergy = new Map<string, any[]>();
+      const byModelEnergy = new Map<string, VLevelKeywordRow[]>();
       for (const kw of csvVehicleKws) {
         const key = gammeUniverselle
           ? `${kw.model || '_no_model'}`
@@ -155,16 +192,16 @@ export class GammeVLevelService extends SupabaseBaseService {
       }
 
       // 5. Elect V3 (champion) and V4 (rest) per group
-      const v3Champions: any[] = [];
+      const v3Champions: VLevelKeywordRow[] = [];
       const updates: Array<{
         id: number;
-        v_level: string;
+        v_level: string | null;
         score_seo: number | null;
       }> = [];
 
       for (const [, group] of byModelEnergy) {
         // Sort: volume DESC, keyword length ASC (shorter = better match)
-        group.sort((a: any, b: any) => {
+        group.sort((a: VLevelKeywordRow, b: VLevelKeywordRow) => {
           if ((b.volume || 0) !== (a.volume || 0))
             return (b.volume || 0) - (a.volume || 0);
           return (a.keyword || '').length - (b.keyword || '').length;
@@ -192,7 +229,7 @@ export class GammeVLevelService extends SupabaseBaseService {
       // 6. Promote top 10 V3 -> V2 (dedup by [model + energy])
       v3Champions.sort((a, b) => (b.score_seo || 0) - (a.score_seo || 0));
       const seenModelEnergy = new Set<string>();
-      const top10: any[] = [];
+      const top10: VLevelKeywordRow[] = [];
       for (const kw of v3Champions) {
         const modelEnergy = `${(kw.model || '').toLowerCase()}|${(kw.energy || '').toLowerCase()}`;
         if (seenModelEnergy.has(modelEnergy)) continue;
@@ -210,10 +247,10 @@ export class GammeVLevelService extends SupabaseBaseService {
 
       // 7. Non-vehicle + generic vehicle keywords: clear v_level
       for (const kw of nonVehicleKws) {
-        updates.push({ id: kw.id, v_level: null as any, score_seo: null });
+        updates.push({ id: kw.id, v_level: null, score_seo: null });
       }
       for (const kw of genericVehicleKws) {
-        updates.push({ id: kw.id, v_level: null as any, score_seo: null });
+        updates.push({ id: kw.id, v_level: null, score_seo: null });
       }
 
       // 8. Write V2/V3/V4 updates to DB
@@ -256,7 +293,7 @@ export class GammeVLevelService extends SupabaseBaseService {
    * Example: 207 has V3/V4 → V5 = other 207 types + all 207 CC/SW/PASSION types.
    * Returns V5 items in the same format as VLevelItem for frontend display.
    */
-  async getV5Siblings(pgId: number): Promise<any[]> {
+  async getV5Siblings(pgId: number): Promise<V5SiblingItem[]> {
     try {
       // Get all type_ids from V2/V3/V4 keywords for this gamme
       let allTypeIds: number[] = [];
@@ -338,7 +375,7 @@ export class GammeVLevelService extends SupabaseBaseService {
       }
 
       // Get ALL displayable types for V2/V3/V4 models + their children
-      let allModelTypes: any[] = [];
+      let allModelTypes: VLevelModelTypeRow[] = [];
       for (let i = 0; i < modeleIdArray.length; i += 100) {
         const batch = modeleIdArray.slice(i, i + 100);
         const { data: types } = await this.supabase

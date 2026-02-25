@@ -23,7 +23,7 @@ import { PayboxService } from './services/paybox.service';
 import { PaymentValidationService } from './services/payment-validation.service';
 import { PayboxCallbackGateService } from './services/paybox-callback-gate.service';
 import { PaymentDataService } from './repositories/payment-data.service';
-import { EmailService } from '../../services/email.service';
+import { MailService } from '../../services/mail.service';
 
 /**
  * 💳 MODULE PAYMENTS CONSOLIDÉ
@@ -77,7 +77,7 @@ import { EmailService } from '../../services/email.service';
     PaymentDataService,
 
     // Email
-    EmailService,
+    MailService,
   ],
   exports: [PaymentService, CyberplusService, PaymentDataService],
 })

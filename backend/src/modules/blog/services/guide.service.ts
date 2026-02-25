@@ -154,7 +154,7 @@ export class GuideService {
           publishedAt: new Date().toISOString(),
           viewsCount: 0,
           sections: [],
-          legacy_id: parseInt(g.pg_id) || 0,
+          legacy_id: Number(g.pg_id) || 0,
           legacy_table: '__seo_gamme_purchase_guide',
           source: 'auto' as const,
         }));
@@ -758,7 +758,7 @@ export class GuideService {
       h2Count: sections.filter((s) => s.level === 2).length,
       h3Count: sections.filter((s) => s.level === 3).length,
       readingTime: Math.max(1, Math.ceil(totalChars / 1000)),
-      legacy_id: parseInt(gamme.pg_id) || 0,
+      legacy_id: Number(gamme.pg_id) || 0,
       legacy_table: '__seo_gamme_purchase_guide',
       source: 'auto',
       seo_data: {

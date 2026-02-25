@@ -1,7 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogCacheService } from './blog-cache.service';
-import { BlogArticle, BlogSection } from '../interfaces/blog.interfaces';
+import {
+  BlogArticle,
+  BlogSection,
+  BaRow,
+  BaH2Row,
+  BaH3Row,
+} from '../interfaces/blog.interfaces';
 import { TABLES } from '@repo/database-types';
 
 /**
@@ -20,7 +26,7 @@ export class AdviceTransformService {
    * Batch transformation optimisee pour plusieurs conseils.
    * Reduit N*2 requetes DB en 2 requetes totales.
    */
-  async transformAdvicesToArticles(advices: any[]): Promise<BlogArticle[]> {
+  async transformAdvicesToArticles(advices: BaRow[]): Promise<BlogArticle[]> {
     if (!advices || advices.length === 0) return [];
 
     try {
@@ -75,9 +81,9 @@ export class AdviceTransformService {
    * Transformation advice -> BlogArticle avec sections pre-chargees.
    */
   transformAdviceToArticleWithSections(
-    advice: any,
-    h2Sections: any[],
-    h3Sections: any[],
+    advice: BaRow,
+    h2Sections: BaH2Row[],
+    h3Sections: BaH3Row[],
   ): BlogArticle {
     try {
       const sections: BlogSection[] = [];
@@ -131,7 +137,7 @@ export class AdviceTransformService {
           advice.ba_content || advice.ba_descrip,
         ),
         sections,
-        legacy_id: parseInt(advice.ba_id),
+        legacy_id: parseInt(String(advice.ba_id), 10),
         legacy_table: '__blog_advice',
         seo_data: {
           meta_title: BlogCacheService.decodeHtmlEntities(
@@ -140,7 +146,10 @@ export class AdviceTransformService {
           meta_description: BlogCacheService.decodeHtmlEntities(
             advice.ba_descrip || advice.ba_preview || '',
           ),
-          keywords: advice.ba_keywords || '',
+          keywords: (advice.ba_keywords || '')
+            .split(',')
+            .map((k: string) => k.trim())
+            .filter(Boolean),
         },
       };
     } catch (error) {
@@ -155,7 +164,7 @@ export class AdviceTransformService {
    * Transformation unitaire advice -> BlogArticle avec chargement des sections depuis DB.
    * Utilisee pour les details individuels.
    */
-  async transformAdviceToArticle(advice: any): Promise<BlogArticle> {
+  async transformAdviceToArticle(advice: BaRow): Promise<BlogArticle> {
     try {
       // Recuperer les sections H2/H3 en parallele
       const [{ data: h2Sections }, { data: h3Sections }] = await Promise.all([
@@ -225,7 +234,7 @@ export class AdviceTransformService {
           advice.ba_content || advice.ba_descrip,
         ),
         sections,
-        legacy_id: parseInt(advice.ba_id),
+        legacy_id: parseInt(String(advice.ba_id), 10),
         legacy_table: '__blog_advice',
         seo_data: {
           meta_title: BlogCacheService.decodeHtmlEntities(

@@ -1,4 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from '../../database/database.module';
 import { ShippingModule } from '../shipping/shipping.module';
 import { ApiModule } from '../api.module';
@@ -21,8 +22,8 @@ import { OrderArchiveService } from './services/order-archive.service';
 import { TicketsService } from './services/tickets.service';
 import { OrderActionsService } from './services/order-actions.service';
 
-// 🆕 Service Email pour notifications
-import { EmailService } from '../../services/email.service';
+// Service Mail unifie pour notifications
+import { MailService } from '../../services/mail.service';
 
 /**
  * 📦 MODULE ORDERS - Version Consolidée Phase 3
@@ -56,6 +57,7 @@ import { EmailService } from '../../services/email.service';
     ShippingModule,
     ApiModule, // Pour accéder au LegacyOrderService si besoin
     AuthModule, // Pour guest checkout (AuthService)
+    ConfigModule, // Requis par MailService (ConfigService)
   ],
   controllers: [
     // 🆕 Phase 3: Contrôleur unifié principal
@@ -75,7 +77,7 @@ import { EmailService } from '../../services/email.service';
     OrderArchiveService, // Archivage
     TicketsService, // SAV
     OrderActionsService, // Actions backoffice
-    EmailService, // 🆕 Notifications email
+    MailService, // Notifications email
   ],
   exports: [
     // Export des services consolidés

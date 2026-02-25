@@ -160,6 +160,21 @@ export interface VideoProduction {
   qualityScore: number | null;
   qualityFlags: string[];
   gateResults: VideoGateResult[] | null;
+  // Step 1: Script generation
+  scriptText: string | null;
+  scriptGeneratedAt: string | null;
+  scriptModel: string | null;
+  narrativeStylePack: Record<string, unknown> | null;
+  derivativePolicy: Record<string, unknown> | null;
+  // Step 3: TTS
+  masterAudioUrl: string | null;
+  ttsVoice: string | null;
+  ttsSpeed: number | null;
+  // Step 5: Derivatives
+  parentBriefId: string | null;
+  derivativeIndex: number | null;
+  contentRole: string;
+  // Meta
   createdBy: string;
   createdAt: string;
   updatedAt: string;

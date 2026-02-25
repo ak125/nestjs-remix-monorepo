@@ -1,7 +1,13 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { BlogArticle, BlogSection } from '../interfaces/blog.interfaces';
+import {
+  BlogArticle,
+  BlogSection,
+  BcRow,
+  BaH2Row,
+  BaH3Row,
+} from '../interfaces/blog.interfaces';
 import { BlogCacheService } from './blog-cache.service';
 
 /**
@@ -22,9 +28,9 @@ export class ConstructeurTransformService {
    * Utilise les donnees pre-fetchees en batch
    */
   transformConstructeurToArticleBatch(
-    constructeur: any,
-    h2Sections: any[],
-    h3Sections: any[],
+    constructeur: BcRow,
+    h2Sections: BaH2Row[],
+    h3Sections: BaH3Row[],
     modelsCount: number,
   ): BlogArticle {
     // Construction des sections avec decodage HTML optimise
@@ -93,7 +99,7 @@ export class ConstructeurTransformService {
         new Date().toISOString(),
       viewsCount: parseInt(constructeur.bc_visit) || 0,
       sections,
-      legacy_id: parseInt(constructeur.bsm_id),
+      legacy_id: parseInt(String(constructeur.bsm_id), 10),
       legacy_table: '__blog_constructeur',
       seo_data: {
         meta_title: BlogCacheService.decodeHtmlEntities(
@@ -114,7 +120,7 @@ export class ConstructeurTransformService {
    */
   async transformConstructeurToArticle(
     client: SupabaseClient,
-    constructeur: any,
+    constructeur: BcRow,
   ): Promise<BlogArticle> {
     try {
       // Recuperer les sections H2/H3 et modeles en parallele pour performance maximale
@@ -208,7 +214,7 @@ export class ConstructeurTransformService {
           new Date().toISOString(),
         viewsCount: parseInt(constructeur.bc_visit) || 0,
         sections,
-        legacy_id: parseInt(constructeur.bsm_id),
+        legacy_id: parseInt(String(constructeur.bsm_id), 10),
         legacy_table: '__blog_constructeur',
 
         // Metadonnees SEO enrichies
@@ -293,7 +299,7 @@ export class ConstructeurTransformService {
    * Evaluation de la qualite du contenu
    */
   assessContentQuality(
-    constructeur: any,
+    constructeur: BcRow,
     sections: BlogSection[],
   ): 'high' | 'medium' | 'low' {
     let score = 0;

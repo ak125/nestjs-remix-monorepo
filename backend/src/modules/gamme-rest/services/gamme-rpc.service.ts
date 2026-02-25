@@ -7,6 +7,30 @@ import {
   DomainNotFoundException,
   ErrorCodes,
 } from '../../../common/exceptions';
+import { GammeRpcAggregatedDataSchema } from './gamme-rpc.schema';
+
+interface SeoFragmentRow {
+  sis_id: number;
+  sis_content: string;
+  [key: string]: unknown;
+}
+
+interface GammeRpcCacheData {
+  aggregatedData: Record<string, unknown>;
+  pageData: Record<string, unknown>;
+  timings: {
+    rpcTime?: number;
+    totalTime: number;
+    cacheHit: boolean;
+    [key: string]: unknown;
+  };
+  [key: string]: unknown;
+}
+
+interface GammeRpcResult {
+  data: Record<string, unknown> | null;
+  error: { message: string } | null;
+}
 
 /**
  * 🚀 Service pour les appels RPC optimisés avec cache Redis
@@ -55,7 +79,9 @@ export class GammeRpcService extends SupabaseBaseService {
    * ⚡ Récupère les données avec cache intelligent
    * Pattern: Cache-first avec stale-while-revalidate
    */
-  async getPageDataRpcV2(pgId: string) {
+  async getPageDataRpcV2(
+    pgId: string,
+  ): Promise<GammeRpcCacheData | { redirect: string }> {
     const pgIdNum = parseInt(pgId, 10);
     const startTime = performance.now();
     const cacheKey = this.getCacheKey(pgId);
@@ -66,7 +92,7 @@ export class GammeRpcService extends SupabaseBaseService {
     }
 
     // 1. Vérifier le cache Redis d'abord
-    const cached = await this.cacheService.get<any>(cacheKey);
+    const cached = await this.cacheService.get<GammeRpcCacheData>(cacheKey);
     if (cached) {
       const cacheTime = performance.now() - startTime;
       this.logger.debug(
@@ -113,7 +139,7 @@ export class GammeRpcService extends SupabaseBaseService {
     });
 
     // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
-    const rpcPromise = this.callRpc<any>(
+    const rpcPromise = this.callRpc<Record<string, unknown>>(
       'get_gamme_page_data_optimized',
       { p_pg_id: pgIdNum },
       { source: 'api' },
@@ -123,7 +149,7 @@ export class GammeRpcService extends SupabaseBaseService {
     const { data: aggregatedData, error: rpcError } = (await Promise.race([
       rpcPromise,
       timeoutPromise,
-    ])) as any;
+    ])) as GammeRpcResult;
 
     if (rpcError) {
       throw rpcError;
@@ -133,6 +159,20 @@ export class GammeRpcService extends SupabaseBaseService {
     this.logger.log(
       `✅ RPC gamme ${pgIdNum} en ${(rpcTime - startTime).toFixed(1)}ms`,
     );
+
+    // Zod validation (logging-only — ne bloque jamais le flux)
+    const zodResult = GammeRpcAggregatedDataSchema.safeParse(aggregatedData);
+    if (!zodResult.success) {
+      this.logger.warn(
+        `Zod drift gamme ${pgIdNum}: ${zodResult.error.issues.length} issues`,
+        {
+          issues: zodResult.error.issues.slice(0, 5).map((i) => ({
+            path: i.path.join('.'),
+            message: i.message,
+          })),
+        },
+      );
+    }
 
     // Extraction page_info depuis le RPC
     const pageInfo = aggregatedData?.page_info;
@@ -145,7 +185,7 @@ export class GammeRpcService extends SupabaseBaseService {
 
     return {
       aggregatedData,
-      pageData: pageInfo,
+      pageData: pageInfo as Record<string, unknown>,
       timings: {
         rpcTime: rpcTime - startTime,
         totalTime: performance.now() - startTime,
@@ -157,7 +197,10 @@ export class GammeRpcService extends SupabaseBaseService {
   /**
    * 💾 Stocke le résultat en cache (double cache: frais + stale)
    */
-  private async cacheResult(pgId: string, result: any): Promise<void> {
+  private async cacheResult(
+    pgId: string,
+    result: Record<string, unknown>,
+  ): Promise<void> {
     const cacheKey = this.getCacheKey(pgId);
     const staleCacheKey = this.getStaleCacheKey(pgId);
 
@@ -175,14 +218,19 @@ export class GammeRpcService extends SupabaseBaseService {
   /**
    * ⚠️ Gestion erreur RPC avec fallback sur cache stale
    */
-  private async handleRpcError(pgId: string, error: any, startTime: number) {
+  private async handleRpcError(
+    pgId: string,
+    error: Error | { message?: string },
+    startTime: number,
+  ) {
     const pgIdNum = parseInt(pgId, 10);
     const staleCacheKey = this.getStaleCacheKey(pgId);
 
     this.logger.warn(`⚠️ RPC gamme ${pgIdNum} failed: ${error.message}`);
 
     // Tenter le cache stale
-    const staleData = await this.cacheService.get<any>(staleCacheKey);
+    const staleData =
+      await this.cacheService.get<GammeRpcCacheData>(staleCacheKey);
 
     if (staleData) {
       this.logger.log(`📦 STALE CACHE utilisé pour gamme ${pgIdNum}`);
@@ -261,8 +309,8 @@ export class GammeRpcService extends SupabaseBaseService {
    */
   getSeoFragmentsByTypeId(
     typeId: number,
-    seoFragments1: any[],
-    seoFragments2: any[],
+    seoFragments1: SeoFragmentRow[],
+    seoFragments2: SeoFragmentRow[],
   ): { fragment1: string; fragment2: string } {
     // Hash pour meilleure distribution des fragments (évite répétitions avec typeId consécutifs)
     const hashTypeId = (id: number): number => {

@@ -1,6 +1,41 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
+/** Raw DB row shape from __seo_gamme_purchase_guide */
+interface PurchaseGuideDbRow {
+  sgpg_id: number;
+  sgpg_pg_id: number;
+  sgpg_intro_title?: string | null;
+  sgpg_intro_role?: string | null;
+  sgpg_intro_sync_parts?: unknown;
+  sgpg_risk_title?: string | null;
+  sgpg_risk_explanation?: string | null;
+  sgpg_risk_consequences?: unknown;
+  sgpg_risk_cost_range?: string | null;
+  sgpg_risk_conclusion?: string | null;
+  sgpg_timing_title?: string | null;
+  sgpg_timing_years?: string | null;
+  sgpg_timing_km?: string | null;
+  sgpg_timing_note?: string | null;
+  sgpg_arg1_title?: string | null;
+  sgpg_arg1_content?: string | null;
+  sgpg_arg1_icon?: string | null;
+  sgpg_arg2_title?: string | null;
+  sgpg_arg2_content?: string | null;
+  sgpg_arg2_icon?: string | null;
+  sgpg_arg3_title?: string | null;
+  sgpg_arg3_content?: string | null;
+  sgpg_arg3_icon?: string | null;
+  sgpg_arg4_title?: string | null;
+  sgpg_arg4_content?: string | null;
+  sgpg_arg4_icon?: string | null;
+  sgpg_h1_override?: string | null;
+  sgpg_how_to_choose?: string | null;
+  sgpg_symptoms?: unknown;
+  sgpg_faq?: unknown;
+  [key: string]: unknown;
+}
+
 /**
  * Interface pour les données du guide d'achat V2
  * Structure orientée client avec sections intro/risk/timing/arguments
@@ -123,7 +158,7 @@ export class PurchaseGuideDataService extends SupabaseBaseService {
   /**
    * Transforme les données brutes de la DB en structure V2
    */
-  private transformToV2(raw: any): PurchaseGuideDataV2 {
+  private transformToV2(raw: PurchaseGuideDbRow): PurchaseGuideDataV2 {
     // Construire le tableau d'arguments (4 max)
     const args: Array<{ title: string; content: string; icon: string }> = [];
 
@@ -157,7 +192,7 @@ export class PurchaseGuideDataService extends SupabaseBaseService {
     }
 
     // Parser syncParts et consequences (peuvent être TEXT[] ou JSONB)
-    const parseSyncParts = (val: any): string[] => {
+    const parseSyncParts = (val: unknown): string[] => {
       if (!val) return [];
       if (Array.isArray(val)) return val;
       if (typeof val === 'string') {
@@ -170,7 +205,7 @@ export class PurchaseGuideDataService extends SupabaseBaseService {
       return [];
     };
 
-    const parseConsequences = (val: any): string[] => {
+    const parseConsequences = (val: unknown): string[] => {
       if (!val) return [];
       if (Array.isArray(val)) return val;
       if (typeof val === 'string') {
@@ -184,7 +219,7 @@ export class PurchaseGuideDataService extends SupabaseBaseService {
     };
 
     const parseFaq = (
-      val: any,
+      val: unknown,
     ): Array<{ question: string; answer: string }> => {
       if (!val) return [];
       if (Array.isArray(val)) return val;

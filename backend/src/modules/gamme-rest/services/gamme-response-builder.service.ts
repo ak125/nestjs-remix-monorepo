@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { GammeDataTransformerService } from './gamme-data-transformer.service';
+import {
+  GammeDataTransformerService,
+  ConseilRow,
+  InformationRow,
+  EquipementierRow,
+  CatalogueFamilleRow,
+} from './gamme-data-transformer.service';
 import { GammeRpcService } from './gamme-rpc.service';
 import { BuyingGuideDataService } from './buying-guide-data.service';
 import { ReferenceService } from '../../seo/services/reference.service';
@@ -12,6 +18,44 @@ import {
   buildProxyImageUrl,
   IMAGE_CONFIG,
 } from '../../catalog/utils/image-urls.utils';
+
+interface MotorizationRow {
+  type_id: number;
+  marque_name?: string;
+  marque_id?: number;
+  marque_alias?: string;
+  modele_name?: string;
+  modele_id?: number;
+  modele_alias?: string;
+  modele_pic?: string;
+  type_name?: string;
+  type_fuel?: string;
+  type_year_from?: string;
+  type_year_to?: string;
+  type_engine_code?: string;
+  type_alias?: string;
+  type_power_ps?: number;
+  cgc_level?: string;
+  [key: string]: unknown;
+}
+
+interface SeoFragmentRow {
+  sis_id: number;
+  sis_content: string;
+  [key: string]: unknown;
+}
+
+/** RPC result shape for page data (aggregated + page + timings) */
+interface GammeRpcPageData {
+  aggregatedData: { [k: string]: unknown };
+  pageData: { [k: string]: string | number | null | undefined };
+  timings: {
+    rpcTime?: number;
+    totalTime: number;
+    cacheHit: boolean;
+    [k: string]: unknown;
+  };
+}
 
 /**
  * Service de construction de la réponse finale
@@ -30,37 +74,56 @@ export class GammeResponseBuilderService {
    */
   async buildRpcV2Response(pgId: string) {
     const startTime = performance.now();
-    const { aggregatedData, pageData, timings } =
-      await this.rpcService.getPageDataRpcV2(pgId);
+    const rpcResult = await this.rpcService.getPageDataRpcV2(pgId);
+    const { aggregatedData, pageData, timings } = rpcResult as GammeRpcPageData;
 
     const pgIdNum = parseInt(pgId, 10);
-    const pgNameSite = pageData.pg_name;
-    const pgNameMeta = pageData.pg_name_meta;
-    const pgAlias = pageData.pg_alias;
+    const pgNameSite = String(pageData.pg_name || '');
+    const pgNameMeta = String(pageData.pg_name_meta || '');
+    const pgAlias = String(pageData.pg_alias || '');
     const pgRelfollow = pageData.pg_relfollow;
     const pgLevel = pageData.pg_level;
-    const pgPic = pageData.pg_img;
-    const pgWall = pageData.pg_wall;
+    const pgPic = pageData.pg_img ? String(pageData.pg_img) : undefined;
+    const pgWall = pageData.pg_wall ? String(pageData.pg_wall) : undefined;
 
-    // Extraction données agrégées
-    const seoData = aggregatedData?.seo;
-    const conseilsRaw = aggregatedData?.conseils || [];
-    const informationsRaw = aggregatedData?.informations || [];
-    const equipementiersRaw = aggregatedData?.equipementiers || [];
-    const blogData = aggregatedData?.blog;
-    const catalogueFamilleRaw = aggregatedData?.catalogue_famille || [];
-    const familleInfo = aggregatedData?.famille_info;
-    const motorisationsEnriched = aggregatedData?.motorisations_enriched || [];
-    const seoFragments1 = aggregatedData?.seo_fragments_1 || [];
-    const seoFragments2 = aggregatedData?.seo_fragments_2 || [];
-    const cgcLevelStats = aggregatedData?.cgc_level_stats || {
+    // Extraction données agrégées (cast depuis Record<string, unknown>)
+    const seoData = aggregatedData?.seo as
+      | { [k: string]: string | null | undefined }
+      | undefined;
+    const conseilsRaw = (aggregatedData?.conseils || []) as ConseilRow[];
+    const informationsRaw = (aggregatedData?.informations ||
+      []) as InformationRow[];
+    const equipementiersRaw = (aggregatedData?.equipementiers ||
+      []) as EquipementierRow[];
+    const blogData = aggregatedData?.blog as
+      | { [k: string]: string | null | undefined }
+      | undefined;
+    const catalogueFamilleRaw = (aggregatedData?.catalogue_famille ||
+      []) as CatalogueFamilleRow[];
+    const familleInfo = aggregatedData?.famille_info as
+      | { mf_name?: string; [k: string]: unknown }
+      | undefined;
+    const motorisationsEnriched = (aggregatedData?.motorisations_enriched ||
+      []) as MotorizationRow[];
+    const seoFragments1 = (aggregatedData?.seo_fragments_1 ||
+      []) as SeoFragmentRow[];
+    const seoFragments2 = (aggregatedData?.seo_fragments_2 ||
+      []) as SeoFragmentRow[];
+    const cgcLevelStats = (aggregatedData?.cgc_level_stats || {
       level_1: 0,
       level_2: 0,
       level_3: 0,
       level_5: 0,
       total: 0,
+    }) as {
+      level_1: number;
+      level_2: number;
+      level_3: number;
+      level_5: number;
+      total: number;
     };
-    const motorisationsBlogRaw = aggregatedData?.motorisations_blog || [];
+    const motorisationsBlogRaw = (aggregatedData?.motorisations_blog ||
+      []) as MotorizationRow[];
 
     // Traitement SEO
     // 🧹 PRÉVENTION SEO: stripHtmlForMeta sur description pour éviter HTML dans meta
@@ -87,10 +150,10 @@ export class GammeResponseBuilderService {
     // 🎯 RÈGLE SEO: G1/G2 (pg_level='1') = INDEX, G3 = NOINDEX
     // pg_level='1' = gammes prioritaires (G1) ou importantes (G2)
     // pg_level≠'1' = gammes secondaires (G3)
-    const seoValidation = aggregatedData?.seo_validation || {
+    const seoValidation = (aggregatedData?.seo_validation || {
       family_count: 0,
       gamme_count: 0,
-    };
+    }) as { family_count: number; gamme_count: number };
     // pg_level est TEXT en BDD ('1' ou '2'), '1' = INDEX
     const isG1orG2 = String(pgLevel) === '1';
     const pageRobots = isG1orG2 ? 'index, follow' : 'noindex, nofollow';
@@ -107,9 +170,8 @@ export class GammeResponseBuilderService {
     // ✅ Utilise fonctions centralisées depuis image-urls.utils.ts
 
     // Traitement motorisations
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const motorisations = motorisationsEnriched.map(
-      (item: any, index: number) => {
+      (item: MotorizationRow, index: number) => {
         const { fragment1, fragment2 } =
           this.rpcService.getSeoFragmentsByTypeId(
             item.type_id,
@@ -361,40 +423,41 @@ export class GammeResponseBuilderService {
     );
 
     // Traitement motorisations blog (niveau 5)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const motorisationsBlog = motorisationsBlogRaw.map((item: any) => {
-      // ✅ Utilise fonction centralisée
-      const marqueAlias =
-        item.marque_alias ||
-        item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      const carImage = buildModelImageUrl(marqueAlias, item.modele_pic);
+    const motorisationsBlog = motorisationsBlogRaw.map(
+      (item: MotorizationRow) => {
+        // ✅ Utilise fonction centralisée
+        const marqueAlias =
+          item.marque_alias ||
+          item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const carImage = buildModelImageUrl(marqueAlias, item.modele_pic);
 
-      const yearFrom = item.type_year_from || '';
-      const yearTo = item.type_year_to || "aujourd'hui";
-      const periode = `${yearFrom} - ${yearTo}`;
+        const yearFrom = item.type_year_from || '';
+        const yearTo = item.type_year_to || "aujourd'hui";
+        const periode = `${yearFrom} - ${yearTo}`;
 
-      const link = buildPieceVehicleUrlRaw(
-        { alias: pgAlias, id: pgIdNum },
-        { alias: item.marque_alias || item.marque_name, id: item.marque_id },
-        { alias: item.modele_alias || item.modele_name, id: item.modele_id },
-        { alias: item.type_alias || item.type_name, id: item.type_id },
-      );
+        const link = buildPieceVehicleUrlRaw(
+          { alias: pgAlias, id: pgIdNum },
+          { alias: item.marque_alias || item.marque_name, id: item.marque_id },
+          { alias: item.modele_alias || item.modele_name, id: item.modele_id },
+          { alias: item.type_alias || item.type_name, id: item.type_id },
+        );
 
-      return {
-        cgc_level: item.cgc_level,
-        type_id: item.type_id,
-        type_name: item.type_name,
-        puissance: `${item.type_power_ps} ch`,
-        periode,
-        modele_id: item.modele_id,
-        modele_name: item.modele_name,
-        marque_id: item.marque_id,
-        marque_name: item.marque_name,
-        image: carImage,
-        link,
-        title: `${item.marque_name} ${item.modele_name} ${item.type_name}`,
-      };
-    });
+        return {
+          cgc_level: item.cgc_level,
+          type_id: item.type_id,
+          type_name: item.type_name,
+          puissance: `${item.type_power_ps} ch`,
+          periode,
+          modele_id: item.modele_id,
+          modele_name: item.modele_name,
+          marque_id: item.marque_id,
+          marque_name: item.marque_name,
+          image: carImage,
+          link,
+          title: `${item.marque_name} ${item.modele_name} ${item.type_name}`,
+        };
+      },
+    );
 
     // Guide d'achat
     const guideAchat = blogData
@@ -616,14 +679,14 @@ export class GammeResponseBuilderService {
       },
       // 🔗 SEO Switches pour maillage interne (ancres variées)
       seoSwitches: {
-        verbs: seoFragments1
-          .slice(0, 20)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
-        nouns: seoFragments2
-          .slice(0, 20)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .map((s: any) => ({ id: s.sis_id, content: s.sis_content })),
+        verbs: seoFragments1.slice(0, 20).map((s: SeoFragmentRow) => ({
+          id: s.sis_id,
+          content: s.sis_content,
+        })),
+        nouns: seoFragments2.slice(0, 20).map((s: SeoFragmentRow) => ({
+          id: s.sis_id,
+          content: s.sis_content,
+        })),
         verbCount: seoFragments1.length,
         nounCount: seoFragments2.length,
       },

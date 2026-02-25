@@ -15,7 +15,7 @@ import { Request } from 'express';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { OrderActionsService } from '../services/order-actions.service';
-import { EmailService } from '../../../services/email.service';
+import { MailService } from '../../../services/mail.service';
 
 /**
  * 🎮 Controller Actions Commandes
@@ -29,7 +29,7 @@ export class OrderActionsController {
 
   constructor(
     private readonly orderActionsService: OrderActionsService,
-    private readonly emailService: EmailService,
+    private readonly mailService: MailService,
   ) {}
 
   /**
@@ -151,7 +151,7 @@ export class OrderActionsController {
       );
 
       // 3. Envoyer email confirmation
-      await this.emailService.sendOrderConfirmation(order, customer);
+      await this.mailService.sendOrderConfirmation(order, customer);
 
       this.logger.log(`✅ Commande ${orderId} validée avec succès`);
 
@@ -195,7 +195,7 @@ export class OrderActionsController {
       );
 
       // 3. Envoyer email avec suivi
-      await this.emailService.sendShippingNotification(
+      await this.mailService.sendShippingNotification(
         order,
         customer,
         body.trackingNumber,
@@ -267,7 +267,7 @@ export class OrderActionsController {
       );
 
       // 3. Envoyer email annulation
-      await this.emailService.sendCancellationEmail(
+      await this.mailService.sendCancellationEmail(
         order,
         customer,
         body.reason,
@@ -309,7 +309,7 @@ export class OrderActionsController {
       );
 
       // 4. Envoyer email rappel
-      await this.emailService.sendPaymentReminder(order, customer);
+      await this.mailService.sendPaymentReminder(order, customer);
 
       this.logger.log(`✅ Email rappel envoyé à ${customer.cst_mail}`);
 

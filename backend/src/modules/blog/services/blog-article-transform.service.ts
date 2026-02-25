@@ -1,5 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BlogArticle, BlogSection } from '../interfaces/blog.interfaces';
+import {
+  BlogArticle,
+  BlogSection,
+  BaRow,
+  BaH2Row,
+  BaH3Row,
+  BgRow,
+} from '../interfaces/blog.interfaces';
 import { BlogCacheService } from './blog-cache.service';
 import {
   buildProxyImageUrl,
@@ -27,7 +34,7 @@ export class BlogArticleTransformService {
    * 🔄 Transformation advice → BlogArticle (version simple sans sections)
    * Utilisé pour les listes d'articles où les sections ne sont pas nécessaires
    */
-  transformAdviceToArticle(advice: any): BlogArticle {
+  transformAdviceToArticle(advice: BaRow): BlogArticle {
     const article: BlogArticle = {
       id: `advice_${advice.ba_id}`,
       type: 'advice',
@@ -66,9 +73,9 @@ export class BlogArticleTransformService {
    * Les sections sont passées en paramètre (déjà chargées par BlogArticleDataService)
    */
   transformAdviceToArticleWithSections(
-    advice: any,
-    h2Sections: any[],
-    h3Sections: any[],
+    advice: BaRow,
+    h2Sections: BaH2Row[],
+    h3Sections: BaH3Row[],
   ): BlogArticle {
     // Construire les sections avec structure hiérarchique
     const sections: BlogSection[] = [];
@@ -141,7 +148,7 @@ export class BlogArticleTransformService {
   /**
    * 🔄 Transformation guide → BlogArticle
    */
-  transformGuideToArticle(guide: any): BlogArticle {
+  transformGuideToArticle(guide: BgRow): BlogArticle {
     return {
       id: `guide_${guide.bg_id}`,
       type: 'guide',
@@ -177,26 +184,28 @@ export class BlogArticleTransformService {
   /**
    * 📝 Extraction des sections depuis le contenu brut
    */
-  extractSectionsFromContent(data: any): BlogSection[] {
+  extractSectionsFromContent(data: BaH2Row | BaH3Row): BlogSection[] {
     const sections: BlogSection[] = [];
 
     // Section H2
-    if (data.ba2_h2 && data.ba2_content) {
+    const h2 = data as BaH2Row;
+    if (h2.ba2_h2 && h2.ba2_content) {
       sections.push({
         level: 2,
-        title: BlogCacheService.decodeHtmlEntities(data.ba2_h2),
-        content: BlogCacheService.decodeHtmlEntities(data.ba2_content),
-        anchor: this.generateAnchor(data.ba2_h2),
+        title: BlogCacheService.decodeHtmlEntities(h2.ba2_h2),
+        content: BlogCacheService.decodeHtmlEntities(h2.ba2_content),
+        anchor: this.generateAnchor(h2.ba2_h2),
       });
     }
 
     // Section H3
-    if (data.ba3_h3 && data.ba3_content) {
+    const h3 = data as BaH3Row;
+    if (h3.ba3_h3 && h3.ba3_content) {
       sections.push({
         level: 3,
-        title: BlogCacheService.decodeHtmlEntities(data.ba3_h3),
-        content: BlogCacheService.decodeHtmlEntities(data.ba3_content),
-        anchor: this.generateAnchor(data.ba3_h3),
+        title: BlogCacheService.decodeHtmlEntities(h3.ba3_h3),
+        content: BlogCacheService.decodeHtmlEntities(h3.ba3_content),
+        anchor: this.generateAnchor(h3.ba3_h3),
       });
     }
 

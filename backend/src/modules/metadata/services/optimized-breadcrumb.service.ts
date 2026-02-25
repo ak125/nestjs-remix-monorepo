@@ -26,10 +26,22 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 
 export interface BreadcrumbItem {
   label: string;
-  path: string;
+  href: string;
+  position: number;
+  active?: boolean;
+}
+
+interface RawBreadcrumbEntry {
+  label?: string;
+  name?: string;
+  title?: string;
+  path?: string;
+  url?: string;
+  href?: string;
   icon?: string;
   isClickable?: boolean;
   active?: boolean;
+  [key: string]: unknown;
 }
 
 export interface BreadcrumbConfig {
@@ -91,12 +103,11 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
       }
 
       // 4. Toujours s'assurer qu'on a "Accueil" en premier
-      if (config.showHome && !breadcrumbs.some((b) => b.path === '/')) {
+      if (config.showHome && !breadcrumbs.some((b) => b.href === '/')) {
         breadcrumbs.unshift({
           label: config.homeLabel,
-          path: '/',
-          icon: 'home',
-          isClickable: true,
+          href: '/',
+          position: 1,
           active: false,
         });
       }
@@ -106,18 +117,17 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
         (item) =>
           item.label &&
           item.label.trim().length > 0 &&
-          item.path !== undefined &&
-          item.path !== '',
+          item.href !== undefined &&
+          item.href !== '',
       );
 
-      // 6. Marquer le dernier élément comme actif
+      // 6. Marquer le dernier élément comme actif + recalculer positions
       if (breadcrumbs.length > 0) {
-        breadcrumbs.forEach((b) => {
+        breadcrumbs.forEach((b, i) => {
           b.active = false;
-          b.isClickable = true;
+          b.position = i + 1;
         });
         breadcrumbs[breadcrumbs.length - 1].active = true;
-        breadcrumbs[breadcrumbs.length - 1].isClickable = false;
       }
 
       // 7. Appliquer la limite d'éléments
@@ -140,16 +150,14 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
    * Mettre à jour le breadcrumb pour un chemin
    * 💾 Stockage dans ___meta_tags_ariane.mta_ariane
    */
-  async updateBreadcrumb(path: string, breadcrumbData: any): Promise<void> {
+  async updateBreadcrumb(path: string, breadcrumbData: unknown): Promise<void> {
     try {
       const cleanPath = this.cleanPath(path);
 
       // Supporter différents formats d'entrée
       let arianeData;
-      if (
-        breadcrumbData.breadcrumbs &&
-        Array.isArray(breadcrumbData.breadcrumbs)
-      ) {
+      const dataAsRecord = breadcrumbData as Record<string, unknown>;
+      if (dataAsRecord.breadcrumbs && Array.isArray(dataAsRecord.breadcrumbs)) {
         arianeData = JSON.stringify(breadcrumbData);
       } else if (Array.isArray(breadcrumbData)) {
         arianeData = JSON.stringify({ breadcrumbs: breadcrumbData });
@@ -205,15 +213,15 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
    * Générer Schema.org pour le breadcrumb
    * 📈 SEO optimisé selon les standards
    */
-  generateBreadcrumbSchema(items: BreadcrumbItem[]): any {
+  generateBreadcrumbSchema(items: BreadcrumbItem[]): Record<string, unknown> {
     return {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
-      itemListElement: items.map((item, index) => ({
+      itemListElement: items.map((item) => ({
         '@type': 'ListItem',
-        position: index + 1,
+        position: item.position,
         name: item.label,
-        item: `https://www.automecanik.com${item.path}`,
+        item: `https://www.automecanik.com${item.href}`,
       })),
     };
   }
@@ -331,25 +339,22 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
         // Si c'est un objet avec une propriété breadcrumbs
         if (parsed.breadcrumbs && Array.isArray(parsed.breadcrumbs)) {
-          return parsed.breadcrumbs.map((item: any, index: number) => ({
-            label: item.label || item.name || item.title || 'Page',
-            path: item.path || item.url || item.href || currentPath,
-            icon: item.icon,
-            isClickable:
-              item.isClickable !== false &&
-              index < parsed.breadcrumbs.length - 1,
-            active: item.active || index === parsed.breadcrumbs.length - 1,
-          }));
+          return parsed.breadcrumbs.map(
+            (item: RawBreadcrumbEntry, index: number) => ({
+              label: item.label || item.name || item.title || 'Page',
+              href: item.href || item.path || item.url || currentPath,
+              position: index + 1,
+              active: item.active || index === parsed.breadcrumbs.length - 1,
+            }),
+          );
         }
 
         // Si c'est directement un array de breadcrumbs
         if (Array.isArray(parsed)) {
-          return parsed.map((item: any, index: number) => ({
+          return parsed.map((item: RawBreadcrumbEntry, index: number) => ({
             label: item.label || item.name || item.title || 'Page',
-            path: item.path || item.url || item.href || currentPath,
-            icon: item.icon,
-            isClickable:
-              item.isClickable !== false && index < parsed.length - 1,
+            href: item.href || item.path || item.url || currentPath,
+            position: index + 1,
             active: item.active || index === parsed.length - 1,
           }));
         }
@@ -370,8 +375,8 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
         items.push({
           label: segment,
-          path: segmentPath,
-          isClickable: index < segments.length - 1,
+          href: segmentPath,
+          position: index + 1,
           active: index === segments.length - 1,
         });
       });
@@ -438,8 +443,8 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
       breadcrumbs.push({
         label,
-        path: currentPathBuilder,
-        isClickable: i < pathSegments.length - 1,
+        href: currentPathBuilder,
+        position: i + 1,
         active: i === pathSegments.length - 1,
       });
     }
@@ -468,9 +473,8 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
       return [
         {
           label: config.homeLabel,
-          path: '/',
-          icon: 'home',
-          isClickable: false,
+          href: '/',
+          position: 1,
           active: true,
         },
       ];
@@ -488,8 +492,8 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
 
       breadcrumbs.push({
         label,
-        path: currentFullPath,
-        isClickable: !isLast,
+        href: currentFullPath,
+        position: index + 1,
         active: isLast,
       });
     });
@@ -569,8 +573,8 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
     if (config.ellipsis) {
       result.push({
         label: config.ellipsis,
-        path: '',
-        isClickable: false,
+        href: '',
+        position: 2,
         active: false,
       });
     }
@@ -593,9 +597,8 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
     return [
       {
         label: config.homeLabel,
-        path: '/',
-        icon: 'home',
-        isClickable: currentPath !== '/',
+        href: '/',
+        position: 1,
         active: currentPath === '/',
       },
     ];

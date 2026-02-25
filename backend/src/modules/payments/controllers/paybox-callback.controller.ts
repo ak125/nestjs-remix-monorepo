@@ -13,9 +13,10 @@ import { Request, Response } from 'express';
 import { PayboxService } from '../services/paybox.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { PayboxCallbackGateService } from '../services/paybox-callback-gate.service';
-import { EmailService } from '../../../services/email.service';
+import { MailService } from '../../../services/mail.service';
 import { PaymentStatus, PaymentMethod } from '../entities/payment.entity';
 import { normalizeOrderId } from '../utils/normalize-order-id';
+import { PayboxCallbackSchema } from '../dto/paybox-callback.dto';
 
 /**
  * Contrôleur pour les callbacks Paybox (IPN - Instant Payment Notification)
@@ -29,7 +30,7 @@ export class PayboxCallbackController {
     private readonly payboxService: PayboxService,
     private readonly paymentDataService: PaymentDataService,
     private readonly callbackGate: PayboxCallbackGateService,
-    private readonly emailService: EmailService,
+    private readonly mailService: MailService,
   ) {}
 
   /**
@@ -46,6 +47,20 @@ export class PayboxCallbackController {
     try {
       this.logger.log('Callback IPN Paybox recu');
       this.logger.log(`Query params:`, query);
+
+      // Validation Zod — rejeter les callbacks sans les champs critiques
+      const parsed = PayboxCallbackSchema.safeParse(query);
+      if (!parsed.success) {
+        this.logger.error('REJECT: Paybox callback Zod validation failed', {
+          errors: parsed.error.issues.map((i) => i.message),
+          receivedKeys: Object.keys(query),
+        });
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .send(
+            `Invalid callback: ${parsed.error.issues.map((i) => i.message).join(', ')}`,
+          );
+      }
 
       // Récupérer la querystring brute pour calcul signature ordre réception
       const rawQueryString = req.originalUrl.includes('?')
@@ -175,7 +190,7 @@ export class PayboxCallbackController {
               ...order,
               ord_date: order.ord_date || new Date().toISOString(),
             };
-            await this.emailService.sendOrderConfirmation(orderData, customer);
+            await this.mailService.sendOrderConfirmation(orderData, customer);
             this.logger.log(
               `Email confirmation envoye pour commande #${orderId}`,
             );

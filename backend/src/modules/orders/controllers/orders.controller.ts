@@ -50,7 +50,7 @@ import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 import { AuthService } from '../../../auth/auth.service';
-import { EmailService } from '../../../services/email.service';
+import { MailService } from '../../../services/mail.service';
 import { CacheService } from '../../../cache/cache.service';
 import {
   OrdersService,
@@ -102,7 +102,7 @@ export class OrdersController {
   constructor(
     private readonly ordersService: OrdersService,
     private readonly authService: AuthService,
-    private readonly emailService: EmailService,
+    private readonly mailService: MailService,
     private readonly cacheService: CacheService,
   ) {}
 
@@ -350,7 +350,7 @@ export class OrdersController {
         const orderId = (orderData?.ord_id || orderRecord?.ord_id) as
           | string
           | undefined;
-        await this.emailService.sendGuestAccountActivation(
+        await this.mailService.sendGuestAccountActivation(
           guestEmail,
           activationToken,
           orderId,

@@ -12,11 +12,9 @@ import {
   Logger,
   BadRequestException,
   NotFoundException,
-  Inject,
 } from '@nestjs/common';
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { UserDataService } from '../../../database/services/user-data.service';
 import { MailService } from '../../../services/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { TABLES } from '@repo/database-types';
@@ -39,8 +37,6 @@ export class PasswordService extends SupabaseBaseService {
 
   constructor(
     configService: ConfigService,
-    private readonly userDataService: UserDataService,
-    @Inject('MailService')
     private readonly mailService: MailService,
   ) {
     super(configService);

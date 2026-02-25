@@ -432,7 +432,7 @@ export class BreadcrumbAdminController {
           message: `Label requis pour l'élément ${index + 1} du breadcrumb`,
         });
       }
-      if (!item.path) {
+      if (!item.href) {
         throw new DomainValidationException({
           message: `Chemin requis pour l'élément ${index + 1} du breadcrumb`,
         });
@@ -474,9 +474,9 @@ export class BreadcrumbAdminController {
               (item) => `
             <li class="breadcrumb-item ${item.active ? 'active' : ''}">
               ${
-                item.isClickable
-                  ? `<a href="${item.path}">${item.icon ? `<i class="${item.icon}"></i> ` : ''}${item.label}</a>`
-                  : `<span>${item.icon ? `<i class="${item.icon}"></i> ` : ''}${item.label}</span>`
+                !item.active
+                  ? `<a href="${item.href}">${item.label}</a>`
+                  : `<span>${item.label}</span>`
               }
             </li>
           `,

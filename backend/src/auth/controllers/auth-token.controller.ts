@@ -2,7 +2,7 @@ import { Controller, Post, Body, Logger } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import * as crypto from 'crypto';
 import { AuthService } from '../auth.service';
-import { UserService } from '../../database/services/user.service';
+import { UserDataConsolidatedService } from '../../modules/users/services/user-data-consolidated.service';
 import { CacheService } from '../../cache/cache.service';
 import { PasswordCryptoService } from '../../shared/crypto/password-crypto.service';
 import { TokenValidationDto } from '../dto/module-access.dto';
@@ -14,7 +14,7 @@ export class AuthTokenController {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly userService: UserService,
+    private readonly userDataService: UserDataConsolidatedService,
     private readonly cacheService: CacheService,
     private readonly passwordCrypto: PasswordCryptoService,
   ) {}
@@ -110,7 +110,7 @@ export class AuthTokenController {
 
       const hashedPassword = await this.passwordCrypto.hashPassword(password);
 
-      await this.userService.updateUserPassword(email, hashedPassword);
+      await this.userDataService.setPasswordHashByEmail(email, hashedPassword);
 
       await this.cacheService.delete(`guest_activation:${hashedToken}`);
 

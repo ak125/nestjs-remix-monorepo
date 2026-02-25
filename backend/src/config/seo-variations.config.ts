@@ -1,7 +1,7 @@
 /**
  * 🔄 Configuration centralisée des variations SEO
  *
- * Utilisée par SeoTemplateService et SeoEnhancedService
+ * Utilisée par DynamicSeoV4UltimateService
  * pour garantir la cohérence des variations marketing.
  *
  * Formule de rotation : (typeId + pgId + offset) % variations.length

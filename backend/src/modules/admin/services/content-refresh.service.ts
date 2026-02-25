@@ -811,8 +811,8 @@ export class ContentRefreshService extends SupabaseBaseService {
     const job = await this.contentRefreshQueue.add('content-refresh', jobData, {
       attempts: 2,
       backoff: { type: 'exponential', delay: 30000 },
-      removeOnComplete: 200,
-      removeOnFail: 500,
+      removeOnComplete: 50,
+      removeOnFail: 50,
     });
 
     // Update tracking row with BullMQ job ID
@@ -883,8 +883,8 @@ export class ContentRefreshService extends SupabaseBaseService {
     const job = await this.contentRefreshQueue.add('content-refresh', jobData, {
       attempts: 2,
       backoff: { type: 'exponential', delay: 30000 },
-      removeOnComplete: 200,
-      removeOnFail: 500,
+      removeOnComplete: 50,
+      removeOnFail: 50,
     });
 
     await this.client
@@ -1103,8 +1103,30 @@ export class ContentRefreshService extends SupabaseBaseService {
       conseil_sections: string[];
       conseil_count: number;
       has_rag_file: boolean;
+      depth_score: number;
+      seo_score: number;
+      trust_score: number;
       coverage_score: number;
       priority: string;
+      seo_title_ok: boolean;
+      seo_desc_ok: boolean;
+      seo_h1_ok: boolean;
+      seo_title_length: number;
+      seo_desc_length: number;
+      seo_content_length: number;
+      seo_content_ok: boolean;
+      source_verified: boolean;
+      pipeline_quality: number | null;
+      last_updated_at: string | null;
+      hard_gates_clean: boolean;
+      faq_count: number;
+      symptoms_count: number;
+      how_to_choose_length: number;
+      conseil_rich_count: number;
+      thin_conseil_count: number;
+      thin_conseil_sections: string[];
+      rag_content_length: number;
+      rag_content_ok: boolean;
     }>;
     summary: {
       total: number;
@@ -1145,8 +1167,30 @@ export class ContentRefreshService extends SupabaseBaseService {
       conseil_sections: string[];
       conseil_count: number;
       has_rag_file: boolean;
+      depth_score: number;
+      seo_score: number;
+      trust_score: number;
       coverage_score: number;
       priority: string;
+      seo_title_ok: boolean;
+      seo_desc_ok: boolean;
+      seo_h1_ok: boolean;
+      seo_title_length: number;
+      seo_desc_length: number;
+      seo_content_length: number;
+      seo_content_ok: boolean;
+      source_verified: boolean;
+      pipeline_quality: number | null;
+      last_updated_at: string | null;
+      hard_gates_clean: boolean;
+      faq_count: number;
+      symptoms_count: number;
+      how_to_choose_length: number;
+      conseil_rich_count: number;
+      thin_conseil_count: number;
+      thin_conseil_sections: string[];
+      rag_content_length: number;
+      rag_content_ok: boolean;
     }>;
 
     const summary = {
@@ -1206,5 +1250,212 @@ export class ContentRefreshService extends SupabaseBaseService {
       completed_at: string | null;
       published_at: string | null;
     }>;
+  }
+
+  // ── Quality Dashboard V2 ──
+
+  /**
+   * Quality Dashboard: reads pre-computed scores from
+   * __quality_gamme_scores + __quality_page_scores.
+   */
+  async getQualityDashboard(): Promise<{
+    gammes: Array<{
+      pg_id: number;
+      pg_alias: string;
+      gamme_score: number;
+      confidence_score: number;
+      business_value: number;
+      composite_score: number;
+      family_name: string | null;
+      product_count: number;
+      priority: string;
+      status: string;
+      pages_expected: number;
+      pages_scored: number;
+      missing_page_types: string[];
+      page_scores_summary: Record<string, { score: number; status: string }>;
+      top_reasons: string[];
+      top_actions: string[];
+      page_scores: Array<{
+        page_type: string;
+        quality_score: number;
+        confidence_score: number;
+        subscores: Record<string, number>;
+        penalties: Array<{ rule: string; points: number }>;
+        status: string;
+        priority: string;
+        reasons: string[];
+        next_actions: string[];
+      }>;
+    }>;
+    summary: {
+      total: number;
+      critical: number;
+      high: number;
+      medium: number;
+      low: number;
+      avgScore: number;
+      avgComposite: number;
+      avgConfidence: number;
+      blockedPages: number;
+      totalActions: number;
+      families: Array<{ name: string; count: number; avgComposite: number }>;
+    };
+  }> {
+    // 1. Fetch gamme scores — sort by composite_score (v2)
+    const { data: gammeData, error: gErr } = await this.client
+      .from('__quality_gamme_scores')
+      .select('*')
+      .order('composite_score', { ascending: true });
+
+    if (gErr) {
+      this.logger.error(
+        `Quality dashboard gamme query failed: ${gErr.message}`,
+      );
+      return {
+        gammes: [],
+        summary: {
+          total: 0,
+          critical: 0,
+          high: 0,
+          medium: 0,
+          low: 0,
+          avgScore: 0,
+          avgComposite: 0,
+          avgConfidence: 0,
+          blockedPages: 0,
+          totalActions: 0,
+          families: [],
+        },
+      };
+    }
+
+    const gammeRows = (gammeData || []) as Array<{
+      pg_id: number;
+      pg_alias: string;
+      gamme_score: number;
+      confidence_score: number;
+      business_value: number;
+      composite_score: number;
+      family_name: string | null;
+      product_count: number;
+      priority: string;
+      status: string;
+      pages_expected: number;
+      pages_scored: number;
+      missing_page_types: string[];
+      page_scores_summary: Record<string, { score: number; status: string }>;
+      top_reasons: string[];
+      top_actions: string[];
+    }>;
+
+    // 2. Fetch page scores
+    const { data: pageData, error: pErr } = await this.client
+      .from('__quality_page_scores')
+      .select(
+        'pg_id, page_type, quality_score, confidence_score, subscores, penalties, status, priority, reasons, next_actions, features',
+      );
+
+    if (pErr) {
+      this.logger.error(`Quality dashboard page query failed: ${pErr.message}`);
+    }
+
+    const pageRows = (pageData || []) as Array<{
+      pg_id: number;
+      page_type: string;
+      quality_score: number;
+      confidence_score: number;
+      subscores: Record<string, number>;
+      penalties: Array<{ rule: string; points: number }>;
+      status: string;
+      priority: string;
+      reasons: string[];
+      next_actions: string[];
+      features: Record<string, unknown>;
+    }>;
+
+    // Group page scores by pg_id
+    const pagesByGamme = new Map<number, typeof pageRows>();
+    for (const p of pageRows) {
+      const arr = pagesByGamme.get(p.pg_id) || [];
+      arr.push(p);
+      pagesByGamme.set(p.pg_id, arr);
+    }
+
+    // 3. Assemble response
+    const gammes = gammeRows.map((g) => ({
+      ...g,
+      page_scores: (pagesByGamme.get(g.pg_id) || []).map((p) => ({
+        page_type: p.page_type,
+        quality_score: p.quality_score,
+        confidence_score: p.confidence_score,
+        subscores: p.subscores,
+        penalties: p.penalties,
+        status: p.status,
+        priority: p.priority,
+        reasons: p.reasons,
+        next_actions: p.next_actions,
+        features: p.features || {},
+      })),
+    }));
+
+    // 4. Family summary (v2)
+    const familyMap = new Map<
+      string,
+      { count: number; totalComposite: number }
+    >();
+    for (const g of gammeRows) {
+      const name = g.family_name || 'Autres';
+      const entry = familyMap.get(name) || { count: 0, totalComposite: 0 };
+      entry.count++;
+      entry.totalComposite += g.composite_score;
+      familyMap.set(name, entry);
+    }
+    const families = [...familyMap.entries()]
+      .map(([name, { count, totalComposite }]) => ({
+        name,
+        count,
+        avgComposite: parseFloat((totalComposite / count).toFixed(1)),
+      }))
+      .sort((a, b) => a.avgComposite - b.avgComposite);
+
+    const summary = {
+      total: gammes.length,
+      critical: gammes.filter((g) => g.priority === 'CRITICAL').length,
+      high: gammes.filter((g) => g.priority === 'HIGH').length,
+      medium: gammes.filter((g) => g.priority === 'MEDIUM').length,
+      low: gammes.filter((g) => g.priority === 'LOW').length,
+      avgScore:
+        gammes.length > 0
+          ? parseFloat(
+              (
+                gammes.reduce((s, g) => s + g.gamme_score, 0) / gammes.length
+              ).toFixed(1),
+            )
+          : 0,
+      avgComposite:
+        gammes.length > 0
+          ? parseFloat(
+              (
+                gammes.reduce((s, g) => s + g.composite_score, 0) /
+                gammes.length
+              ).toFixed(1),
+            )
+          : 0,
+      avgConfidence:
+        gammes.length > 0
+          ? parseFloat(
+              (
+                gammes.reduce((s, g) => s + g.confidence_score, 0) /
+                gammes.length
+              ).toFixed(1),
+            )
+          : 0,
+      blockedPages: pageRows.filter((p) => p.status === 'BLOCKED').length,
+      totalActions: gammes.reduce((s, g) => s + g.top_actions.length, 0),
+      families,
+    };
+
+    return { gammes, summary };
   }
 }

@@ -14,6 +14,12 @@ import { CyberplusService } from '../services/cyberplus.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { PaymentStatus } from '../entities/payment.entity';
 import { logPaymentError } from './payment-controller.utils';
+import {
+  CyberplusCallbackSchema,
+  type CyberplusCallbackDto,
+  PaymentSuccessReturnSchema,
+  PaymentErrorReturnSchema,
+} from '../dto/cyberplus-callback.dto';
 
 /**
  * Callbacks bancaires Cyberplus/BNP + pages de retour success/error
@@ -44,13 +50,36 @@ export class PaymentCallbackController {
     status: 400,
     description: 'Signature invalide ou donnees manquantes',
   })
-  async handleCyberplusCallback(@Body() body: any) {
-    const orderId = body.vads_order_id || body.order_id || body.orderid || '';
+  async handleCyberplusCallback(
+    @Body() body: Record<string, string | undefined>,
+  ) {
+    // Validation Zod — rejeter les callbacks malformes avant tout traitement
+    const parsed = CyberplusCallbackSchema.safeParse(body);
+    if (!parsed.success) {
+      this.logger.error('REJECT: Cyberplus callback Zod validation failed', {
+        errors: parsed.error.issues.map((i) => i.message),
+        receivedKeys: Object.keys(body),
+      });
+      throw new BadRequestException(
+        `Invalid callback payload: ${parsed.error.issues.map((i) => i.message).join(', ')}`,
+      );
+    }
+
+    const validBody: CyberplusCallbackDto = parsed.data;
+    const orderId =
+      validBody.vads_order_id || validBody.order_id || validBody.orderid || '';
     const transactionId =
-      body.vads_trans_id || body.transaction_id || body.transactionid || '';
+      validBody.vads_trans_id ||
+      validBody.transaction_id ||
+      validBody.transactionid ||
+      '';
     const status =
-      body.vads_trans_status || body.status || body.statuscode || '';
-    const amount = parseFloat(body.vads_amount || body.amount) || 0;
+      validBody.vads_trans_status ||
+      validBody.status ||
+      validBody.statuscode ||
+      '';
+    const amount =
+      parseFloat(validBody.vads_amount || validBody.amount || '0') || 0;
 
     try {
       this.logger.log('Received Cyberplus/SystemPay callback', {
@@ -59,9 +88,9 @@ export class PaymentCallbackController {
         status,
       });
 
-      await this.saveCallbackToDatabase(body);
+      await this.saveCallbackToDatabase(validBody);
 
-      const isValid = this.cyberplusService.validateCallback(body);
+      const isValid = this.cyberplusService.validateCallback(validBody);
       if (!isValid) {
         this.logger.error(
           `REJECT: Invalid SystemPay callback signature for order ${orderId}`,
@@ -74,7 +103,7 @@ export class PaymentCallbackController {
         paymentReference: orderId,
         status,
         amount,
-        signature: body.signature || '',
+        signature: validBody.signature || '',
       };
 
       const payment =
@@ -109,13 +138,22 @@ export class PaymentCallbackController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Page de retour apres paiement reussi' })
   @ApiResponse({ status: 200, description: 'Paiement valide' })
-  async handleSuccessReturn(@Body() body: any) {
+  async handleSuccessReturn(@Body() body: Record<string, string | undefined>) {
+    const parsed = PaymentSuccessReturnSchema.safeParse(body);
+    if (!parsed.success) {
+      this.logger.warn('Payment success return - Zod validation failed', {
+        errors: parsed.error.issues.map((i) => i.message),
+      });
+      throw new BadRequestException('Order ID missing');
+    }
+
+    const validBody = parsed.data;
     try {
       this.logger.log('Payment success return', {
-        orderId: body.order_id || body.orderid,
+        orderId: validBody.order_id || validBody.orderid,
       });
 
-      const orderId = body.order_id || body.orderid;
+      const orderId = validBody.order_id || validBody.orderid;
       if (!orderId) {
         throw new BadRequestException('Order ID missing');
       }
@@ -155,14 +193,20 @@ export class PaymentCallbackController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Page de retour apres erreur de paiement' })
   @ApiResponse({ status: 200, description: 'Erreur enregistree' })
-  async handleErrorReturn(@Body() body: any) {
+  async handleErrorReturn(@Body() body: Record<string, string | undefined>) {
+    const parsed = PaymentErrorReturnSchema.safeParse(body);
+    // Error return is best-effort — log but don't reject on validation failure
+    const validBody = parsed.success
+      ? parsed.data
+      : (body as Record<string, string | undefined>);
+
     try {
       this.logger.warn('Payment error return', {
-        orderId: body.order_id || body.orderid,
-        error: body.error || body.error_message,
+        orderId: validBody.order_id || validBody.orderid,
+        error: validBody.error || validBody.error_message,
       });
 
-      const orderId = body.order_id || body.orderid;
+      const orderId = validBody.order_id || validBody.orderid;
       if (orderId) {
         const payment = await this.paymentService.getPaymentByOrderId(orderId);
 
@@ -177,7 +221,7 @@ export class PaymentCallbackController {
       return {
         success: false,
         message: 'Payment failed',
-        error: body.error || body.error_message || 'Unknown error',
+        error: validBody.error || validBody.error_message || 'Unknown error',
       };
     } catch (error) {
       logPaymentError(this.logger, 'handle error return', error);
@@ -188,7 +232,9 @@ export class PaymentCallbackController {
   /**
    * Enregistre le callback dans la table ic_postback pour audit
    */
-  private async saveCallbackToDatabase(callbackData: any): Promise<void> {
+  private async saveCallbackToDatabase(
+    callbackData: CyberplusCallbackDto,
+  ): Promise<void> {
     try {
       const { error } = await this.paymentDataService['supabase']
         .from('ic_postback')

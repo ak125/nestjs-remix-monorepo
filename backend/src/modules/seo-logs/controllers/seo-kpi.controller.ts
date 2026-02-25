@@ -6,6 +6,19 @@ import { getErrorMessage } from '../../../common/utils/error.utils';
 
 const execAsync = promisify(exec);
 
+interface LokiResultRow {
+  metric: Record<string, string>;
+  value: [string, string];
+  [key: string]: unknown;
+}
+
+interface CrawlerEntry {
+  name: string;
+  hits: number;
+  percentage: number;
+  [key: string]: unknown;
+}
+
 /**
  * 📊 Contrôleur pour les KPIs SEO avancés
  *
@@ -145,8 +158,9 @@ export class SeoKpiController {
       );
 
       const lokiData = JSON.parse(lokiResponse);
-      const crawlers = (lokiData.data?.result || []).map(
-        (r: any, index: number) => ({
+      const crawlers: CrawlerEntry[] = (lokiData.data?.result || []).map(
+        (r: LokiResultRow, index: number) => ({
+          name: r.metric.bot,
           rank: index + 1,
           bot: r.metric.bot,
           hits: parseInt(r.value[1]),
@@ -156,10 +170,10 @@ export class SeoKpiController {
 
       // Calculer les pourcentages
       const totalHits = crawlers.reduce(
-        (sum: number, c: any) => sum + c.hits,
+        (sum: number, c: CrawlerEntry) => sum + c.hits,
         0,
       );
-      crawlers.forEach((c: any) => {
+      crawlers.forEach((c: CrawlerEntry) => {
         c.percentage = Number(((c.hits / totalHits) * 100).toFixed(2));
       });
 
@@ -208,7 +222,7 @@ export class SeoKpiController {
 
       const lokiData = JSON.parse(lokiResponse);
       const urls = (lokiData.data?.result || []).map(
-        (r: any, index: number) => ({
+        (r: LokiResultRow, index: number) => ({
           rank: index + 1,
           path: r.metric.path,
           crawls: parseInt(r.value[1]),

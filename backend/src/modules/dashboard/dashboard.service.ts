@@ -376,7 +376,7 @@ export class DashboardService extends SupabaseBaseService {
       const { count: activeProducts, error: activeError } = await this.supabase
         .from(TABLES.pieces)
         .select('*', { count: 'exact', head: true })
-        .eq('prd_online', '1');
+        .eq('piece_display', true);
 
       if (activeError) {
         this.logger.error('Error counting active products:', activeError);

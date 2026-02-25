@@ -15,8 +15,7 @@ import {
   BusinessRuleException,
 } from '../../common/exceptions';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
-import { UserDataService } from '../../database/services/user-data.service';
-import { UserService } from '../../database/services/user.service';
+import { UserDataConsolidatedService } from './services/user-data-consolidated.service';
 import { CacheService } from '../../cache/cache.service';
 import { ConfigService } from '@nestjs/config';
 // Import depuis les versions officielles (pas de doublons)
@@ -43,8 +42,7 @@ export class UsersService extends SupabaseBaseService {
 
   constructor(
     configService: ConfigService,
-    private readonly userDataService: UserDataService,
-    private readonly userService: UserService,
+    private readonly userDataConsolidatedService: UserDataConsolidatedService,
     private readonly cacheService: CacheService,
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
@@ -181,27 +179,32 @@ export class UsersService extends SupabaseBaseService {
     this.logger.log(`UsersService.getAllUsers: page=${page} limit=${limit}`);
 
     try {
-      const result = await this.userService.getAllUsers(page, limit);
+      const result = await this.userDataConsolidatedService.findAll({
+        page,
+        limit,
+        sortBy: 'email',
+        sortOrder: 'asc',
+      });
 
       return {
         users: result.users.map((user) => ({
-          id: String(user.cst_id),
-          email: user.cst_mail,
-          firstName: user.cst_fname || '',
-          lastName: user.cst_name || '',
-          tel: user.cst_tel || user.cst_gsm,
-          isPro: user.cst_is_pro === '1',
-          isActive: user.cst_activ === '1',
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          tel: user.phone,
+          isPro: user.isPro,
+          isActive: user.isActive,
+          createdAt: user.createdAt || new Date(),
+          updatedAt: user.updatedAt || new Date(),
         })),
-        total: result.total,
+        total: result.pagination.total,
         page,
         limit,
         currentPage: page,
-        totalPages: Math.ceil(result.total / limit),
-        hasNextPage: page < Math.ceil(result.total / limit),
-        hasPreviousPage: page > 1,
+        totalPages: result.pagination.totalPages,
+        hasNextPage: result.pagination.hasNextPage,
+        hasPreviousPage: result.pagination.hasPreviousPage,
       };
     } catch (error: unknown) {
       const errMsg = error instanceof Error ? error.message : String(error);

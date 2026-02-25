@@ -11,9 +11,12 @@ import {
   Get,
   Param,
   Query,
+  Res,
   UseGuards,
   ParseIntPipe,
+  Logger,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { VideoJobService } from '../services/video-job.service';
@@ -21,6 +24,8 @@ import { VideoJobService } from '../services/video-job.service';
 @Controller('api/admin/video')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class VideoExecutionController {
+  private readonly logger = new Logger(VideoExecutionController.name);
+
   constructor(private readonly jobService: VideoJobService) {}
 
   /**
@@ -203,6 +208,98 @@ export class VideoExecutionController {
         error: msg,
         timestamp: new Date().toISOString(),
       };
+    }
+  }
+
+  /**
+   * GET /api/admin/video/executions/:executionLogId/stream
+   * P9b: Stream rendered video from MinIO through the backend.
+   * Avoids exposing MinIO directly — the browser fetches from backend.
+   */
+  @Get('executions/:executionLogId/stream')
+  async streamVideo(
+    @Param('executionLogId', ParseIntPipe) executionLogId: number,
+    @Res() res: Response,
+  ) {
+    const exec = await this.jobService.getExecutionStatus(executionLogId);
+
+    if (!exec.renderOutputPath) {
+      res.status(404).json({ error: 'No render output for this execution' });
+      return;
+    }
+
+    // Parse S3 key from s3://bucket/key path
+    const bucketName = process.env.S3_BUCKET_NAME ?? 'automecanik-renders';
+    const s3Prefix = `s3://${bucketName}/`;
+    const key = exec.renderOutputPath.startsWith(s3Prefix)
+      ? exec.renderOutputPath.slice(s3Prefix.length)
+      : exec.renderOutputPath.replace(/^s3:\/\/[^/]+\//, '');
+
+    const baseUrl = process.env.VIDEO_RENDER_BASE_URL;
+    if (!baseUrl) {
+      res.status(503).json({ error: 'Render service not configured' });
+      return;
+    }
+
+    try {
+      // Get presigned URL from renderer (internal, localhost is OK here)
+      const presignedRes = await fetch(
+        `${baseUrl}/presigned-url?key=${encodeURIComponent(key)}`,
+        { signal: AbortSignal.timeout(10000) },
+      );
+
+      if (!presignedRes.ok) {
+        res
+          .status(502)
+          .json({ error: 'Failed to get video URL from renderer' });
+        return;
+      }
+
+      const { url } = (await presignedRes.json()) as { url: string };
+
+      // Fetch the video from MinIO using the presigned URL (server-side, localhost works)
+      const videoRes = await fetch(url, {
+        signal: AbortSignal.timeout(60000),
+      });
+
+      if (!videoRes.ok || !videoRes.body) {
+        res.status(502).json({ error: 'Failed to fetch video from storage' });
+        return;
+      }
+
+      // Pipe to response
+      res.setHeader('Content-Type', 'video/mp4');
+      if (videoRes.headers.get('content-length')) {
+        res.setHeader(
+          'Content-Length',
+          videoRes.headers.get('content-length')!,
+        );
+      }
+      res.setHeader(
+        'Content-Disposition',
+        `inline; filename="render-${executionLogId}.mp4"`,
+      );
+      res.setHeader('Cache-Control', 'private, max-age=3600');
+
+      // Stream the body using Node.js readable stream
+      const reader = videoRes.body.getReader();
+      const pump = async (): Promise<void> => {
+        const { done, value } = await reader.read();
+        if (done) {
+          res.end();
+          return;
+        }
+        res.write(value);
+        return pump();
+      };
+      await pump();
+    } catch (err) {
+      this.logger.error(
+        `Stream failed for execution #${executionLogId}: ${err}`,
+      );
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Stream failed' });
+      }
     }
   }
 }

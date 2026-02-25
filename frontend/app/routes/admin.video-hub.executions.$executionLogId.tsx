@@ -257,30 +257,8 @@ function VideoPreviewSection({
   executionLogId: number;
   renderOutputPath: string;
 }) {
-  const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadVideo = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `/api/admin/video/executions/${executionLogId}/presigned-url`,
-        { credentials: "include" },
-      );
-      const data = await res.json();
-      if (data.success && data.data?.url) {
-        setVideoUrl(data.data.url);
-      } else {
-        setError(data.error ?? "Impossible de charger la video");
-      }
-    } catch {
-      setError("Erreur reseau");
-    } finally {
-      setLoading(false);
-    }
-  }, [executionLogId]);
+  const [showVideo, setShowVideo] = useState(false);
+  const streamUrl = `/api/admin/video/executions/${executionLogId}/stream`;
 
   return (
     <div className="mt-3 border-t pt-3">
@@ -288,11 +266,12 @@ function VideoPreviewSection({
       <div className="font-mono text-xs text-gray-400 mb-2">
         {renderOutputPath}
       </div>
-      {videoUrl ? (
+      {showVideo ? (
         <video
           controls
-          src={videoUrl}
-          className="max-w-sm rounded border border-gray-200"
+          autoPlay
+          src={streamUrl}
+          className="max-w-lg rounded border border-gray-200"
         >
           Votre navigateur ne supporte pas la lecture video.
         </video>
@@ -301,18 +280,20 @@ function VideoPreviewSection({
           <Button
             variant="outline"
             size="sm"
-            onClick={loadVideo}
-            disabled={loading}
+            onClick={() => setShowVideo(true)}
             className="text-xs gap-1"
           >
-            {loading ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
-            ) : (
-              <Play className="h-3 w-3" />
-            )}
-            {loading ? "Chargement..." : "Charger la video"}
+            <Play className="h-3 w-3" />
+            Charger la video
           </Button>
-          {error && <span className="text-xs text-red-600">{error}</span>}
+          <a
+            href={streamUrl}
+            download={`render-${executionLogId}.mp4`}
+            className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700"
+          >
+            <Download className="h-3 w-3" />
+            Telecharger
+          </a>
         </div>
       )}
     </div>

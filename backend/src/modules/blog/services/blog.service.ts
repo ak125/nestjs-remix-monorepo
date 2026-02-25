@@ -5,7 +5,12 @@ import { BlogArticleDataService } from './blog-article-data.service';
 import { BlogStatisticsService } from './blog-statistics.service';
 import { BlogSeoService } from './blog-seo.service';
 import { BlogArticleRelationService } from './blog-article-relation.service';
-import { BlogArticle, BlogDashboard } from '../interfaces/blog.interfaces';
+import {
+  BlogArticle,
+  BlogDashboard,
+  BaRow,
+  BgRow,
+} from '../interfaces/blog.interfaces';
 import {
   VehicleContext,
   LinkInjectionResult,
@@ -264,11 +269,11 @@ export class BlogService {
    * Expose la méthode de transformation pour les contrôleurs qui en ont besoin
    */
   transformAdviceToArticle(advice: Record<string, unknown>): BlogArticle {
-    return this.transformService.transformAdviceToArticle(advice);
+    return this.transformService.transformAdviceToArticle(advice as BaRow);
   }
 
   transformGuideToArticle(guide: Record<string, unknown>): BlogArticle {
-    return this.transformService.transformGuideToArticle(guide);
+    return this.transformService.transformGuideToArticle(guide as BgRow);
   }
 
   buildImageUrl(

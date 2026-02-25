@@ -6,15 +6,41 @@ import {
   AuthenticationException,
 } from '../common/exceptions';
 import { Request } from 'express';
-import { LegacyUserService } from '../database/services/legacy-user.service';
+import { UserDataConsolidatedService } from '../modules/users/services/user-data-consolidated.service';
 import { OrdersService } from '../database/services/orders.service';
+
+interface UserMessageRow {
+  MSG_OPEN: number;
+  [key: string]: unknown;
+}
+
+interface _UserOrderRow {
+  ord_is_pay: number;
+  ord_is_ship: number;
+  ord_total_ttc: string;
+  ord_status: number;
+  [key: string]: unknown;
+}
+
+interface UserProfileRow {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  isPro?: boolean;
+  isActive?: boolean;
+  level?: number;
+  id?: string;
+  [key: string]: unknown;
+}
 
 @Controller('api/legacy-users')
 export class UsersController {
   private readonly logger = new Logger(UsersController.name);
 
   constructor(
-    private readonly legacyUserService: LegacyUserService,
+    private readonly userDataService: UserDataConsolidatedService,
     private readonly ordersService: OrdersService,
   ) {}
 
@@ -31,26 +57,28 @@ export class UsersController {
       this.logger.log(`getAllUsers with: page=${page}, limit=${limit}`);
       this.logger.log('Récupération des utilisateurs...');
 
-      const users = await this.legacyUserService.getAllUsers({
-        limit: parseInt(limit),
-        offset: (parseInt(page) - 1) * parseInt(limit),
+      const pageNum = parseInt(page);
+      const limitNum = parseInt(limit);
+
+      const result = await this.userDataService.findAll({
+        page: pageNum,
+        limit: limitNum,
+        status: 'active',
+        sortBy: 'email',
+        sortOrder: 'desc',
       });
 
-      // Récupérer le total d'utilisateurs actifs
-      const totalCount =
-        await this.legacyUserService.getTotalActiveUsersCount();
-
       this.logger.log(
-        `Service returned: ${users.length} users out of ${totalCount} total`,
+        `Service returned: ${result.users.length} users out of ${result.pagination.total} total`,
       );
 
       return {
         success: true,
-        data: users,
+        data: result.users,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total: totalCount,
+          page: pageNum,
+          limit: limitNum,
+          total: result.pagination.total,
         },
       };
     } catch (error) {
@@ -76,7 +104,7 @@ export class UsersController {
         });
       }
 
-      const users = await this.legacyUserService.searchUsers(searchTerm);
+      const users = await this.userDataService.search(searchTerm);
 
       return {
         success: true,
@@ -118,7 +146,7 @@ export class UsersController {
       );
 
       // Récupérer les détails complets de l'utilisateur
-      const userDetails = await this.legacyUserService.getUserById(user.id);
+      const userDetails = await this.userDataService.findById(user.id);
 
       if (!userDetails) {
         throw new DomainNotFoundException({
@@ -127,14 +155,12 @@ export class UsersController {
       }
 
       // Stats globales (pour admin)
-      const totalUsers =
-        await this.legacyUserService.getTotalActiveUsersCount();
+      const totalUsers = await this.userDataService.countActive();
       const totalOrders = await this.ordersService.getTotalOrdersCount();
-      const activeUsers =
-        await this.legacyUserService.getTotalActiveUsersCount();
+      const activeUsers = totalUsers;
 
       // Récupérer les commandes de l'utilisateur
-      const userOrders = await this.legacyUserService.getUserOrders(user.id);
+      const userOrders = await this.ordersService.getUserOrders(user.id);
 
       // Récupérer les messages de l'utilisateur (5 derniers)
       const baseUrl = process.env.SUPABASE_URL || '';
@@ -158,7 +184,7 @@ export class UsersController {
         if (messagesResponse.ok) {
           recentMessages = await messagesResponse.json();
           unreadCount = recentMessages.filter(
-            (msg: any) => msg.MSG_OPEN === 0,
+            (msg: UserMessageRow) => msg.MSG_OPEN === 0,
           ).length;
         }
       } catch (error) {
@@ -166,15 +192,10 @@ export class UsersController {
       }
 
       // Calculer les stats des commandes
-      const pendingOrders = userOrders.filter(
-        (order: any) =>
-          order.ord_is_pay === 0 || [1, 2, 3, 4, 5].includes(order.ord_status),
-      ).length;
-      const completedOrders = userOrders.filter(
-        (order: any) => order.ord_is_pay === 1 && order.ord_status === 6,
-      ).length;
+      const pendingOrders = userOrders.filter((order) => !order.isPaid).length;
+      const completedOrders = userOrders.filter((order) => order.isPaid).length;
       const totalRevenue = userOrders.reduce(
-        (sum: number, order: any) => sum + parseFloat(order.ord_total_ttc || 0),
+        (sum, order) => sum + (order.totalTtc || 0),
         0,
       );
 
@@ -192,7 +213,9 @@ export class UsersController {
           recent: userOrders.slice(0, 5),
         },
         profile: {
-          completeness: this.calculateProfileCompleteness(userDetails),
+          completeness: this.calculateProfileCompleteness(
+            userDetails as unknown as UserProfileRow,
+          ),
           hasActiveSubscription: false,
           isPro: userDetails.isPro || false,
           securityScore: 75,
@@ -244,7 +267,7 @@ export class UsersController {
   /**
    * Calcule le taux de complétion du profil utilisateur
    */
-  private calculateProfileCompleteness(user: any): number {
+  private calculateProfileCompleteness(user: UserProfileRow): number {
     let score = 0;
     const fields = [
       user.firstName,
@@ -272,9 +295,7 @@ export class UsersController {
     try {
       this.logger.log(`Récupération utilisateur ID: ${id}`);
 
-      const user = await this.legacyUserService.getUserById(id, {
-        throwOnNotFound: true,
-      });
+      const user = await this.userDataService.findById(id);
 
       if (!user) {
         throw new DomainNotFoundException({
@@ -305,7 +326,7 @@ export class UsersController {
     try {
       this.logger.log(`Récupération commandes utilisateur: ${userId}`);
 
-      const orders = await this.legacyUserService.getUserOrders(userId);
+      const orders = await this.ordersService.getUserOrders(userId);
 
       return {
         success: true,
@@ -330,7 +351,7 @@ export class UsersController {
     try {
       this.logger.log(`Récupération statistiques utilisateur: ${userId}`);
 
-      const stats = await this.legacyUserService.getUserStats(userId);
+      const stats = await this.ordersService.getOrdersStats(userId);
 
       return {
         success: true,

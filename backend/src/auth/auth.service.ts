@@ -18,7 +18,8 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
-import { UserService } from '../database/services/user.service';
+import { UserDataConsolidatedService } from '../modules/users/services/user-data-consolidated.service';
+import type { User } from '../modules/users/dto/user.dto';
 import { CacheService } from '../cache/cache.service';
 import { PasswordCryptoService } from '../shared/crypto/password-crypto.service';
 
@@ -46,7 +47,7 @@ export class AuthService {
 
   constructor(
     private readonly jwtService: JwtService,
-    private readonly userService: UserService,
+    private readonly userDataService: UserDataConsolidatedService,
     private readonly cacheService: CacheService,
     private readonly passwordCrypto: PasswordCryptoService,
   ) {
@@ -65,42 +66,50 @@ export class AuthService {
     try {
       this.logger.debug(`Authenticating user: ${email}`);
 
-      // 1. Essayer d'abord dans la table des customers
-      let user = await this.userService.findUserByEmail(email);
+      let passwordHash: string;
+      let authUser: AuthUser;
+      let userId: string;
       let isAdmin = false;
 
-      // 2. Si non trouvé, essayer dans la table des admins
-      if (!user) {
-        const admin = await this.userService.findAdminByEmail(email);
-        if (admin) {
-          // Convertir les données admin vers le format User
-          user = {
-            cst_id: admin.cnfa_id,
-            cst_mail: admin.cnfa_mail,
-            cst_pswd: admin.cnfa_pswd,
-            cst_fname: admin.cnfa_fname,
-            cst_name: admin.cnfa_name,
-            cst_tel: admin.cnfa_tel,
-            cst_activ: admin.cnfa_activ,
-            cst_level: parseInt(admin.cnfa_level) || 9,
-            cst_is_pro: '1', // Les admins sont considérés comme des pros
-          };
-          isAdmin = true;
-          this.logger.debug(
-            `Admin user found: ${email} with level ${admin.cnfa_level}`,
-          );
-        }
-      }
+      // 1. Essayer d'abord dans la table des customers
+      const customerResult =
+        await this.userDataService.findByEmailForAuth(email);
 
-      if (!user) {
-        this.logger.warn(`User not found in both tables: ${email}`);
-        return null;
+      if (customerResult) {
+        passwordHash = customerResult.passwordHash;
+        userId = customerResult.user.id;
+        authUser = this.mapUserToAuthUser(customerResult.user);
+      } else {
+        // 2. Si non trouvé, essayer dans la table des admins
+        const adminResult =
+          await this.userDataService.findAdminByEmailForAuth(email);
+        if (!adminResult) {
+          this.logger.warn(`User not found in both tables: ${email}`);
+          return null;
+        }
+
+        passwordHash = adminResult.passwordHash;
+        userId = adminResult.id;
+        isAdmin = true;
+        authUser = {
+          id: adminResult.id,
+          email: adminResult.email,
+          firstName: adminResult.firstName,
+          lastName: adminResult.lastName,
+          isPro: true, // Les admins sont considérés comme des pros
+          isActive: adminResult.isActive,
+          level: adminResult.level,
+          isAdmin: adminResult.level >= 7,
+        };
+        this.logger.debug(
+          `Admin user found: ${email} with level ${adminResult.level}`,
+        );
       }
 
       // Vérifier le mot de passe
       const isPasswordValid = await this.validatePassword(
         password,
-        user.cst_pswd,
+        passwordHash,
       );
       if (!isPasswordValid) {
         this.logger.warn(`Invalid password for user: ${email}`);
@@ -108,18 +117,18 @@ export class AuthService {
       }
 
       // ✅ UPGRADE AUTOMATIQUE: Migrer les mots de passe legacy vers bcrypt
-      if (this.passwordCrypto.needsRehash(user.cst_pswd)) {
+      if (this.passwordCrypto.needsRehash(passwordHash)) {
         this.logger.log(`🔄 Upgrading password for user: ${email}`);
         try {
           await this.passwordCrypto.upgradeHashIfNeeded(
-            user.cst_id,
+            userId,
             password,
-            user.cst_pswd,
-            async (userId, newHash) => {
+            passwordHash,
+            async (uid, newHash) => {
               // Callback pour mettre à jour le hash dans la base
               if (isAdmin) {
                 // Update admin dans ___config_admin (utiliser column cnfa_pswd)
-                const url = `${process.env.SUPABASE_URL}/rest/v1/___config_admin?cnfa_id=eq.${userId}`;
+                const url = `${process.env.SUPABASE_URL}/rest/v1/___config_admin?cnfa_id=eq.${uid}`;
                 await fetch(url, {
                   method: 'PATCH',
                   headers: {
@@ -131,8 +140,8 @@ export class AuthService {
                   body: JSON.stringify({ cnfa_pswd: newHash }),
                 });
               } else {
-                // Update customer via userService
-                await this.userService.updateUserPassword(userId, newHash);
+                // Update customer via canonical service
+                await this.userDataService.setPasswordHash(uid, newHash);
               }
             },
           );
@@ -147,7 +156,7 @@ export class AuthService {
       }
 
       // Vérifier que l'utilisateur est actif
-      if (user.cst_activ !== '1') {
+      if (!authUser.isActive) {
         this.logger.warn(`Inactive user tried to login: ${email}`);
         throw new UnauthorizedException('Compte désactivé');
       }
@@ -155,7 +164,7 @@ export class AuthService {
       this.logger.log(
         `Authentication successful for ${email} (admin: ${isAdmin})`,
       );
-      return this.formatUserResponse(user);
+      return authUser;
     } catch (error) {
       this.logger.error(`Authentication failed for ${email}:`, error);
       throw error;
@@ -198,30 +207,16 @@ export class AuthService {
         );
       }
 
-      // 2. Hasher le mot de passe avec bcrypt (via PasswordCryptoService)
-      const hashedPassword = await this.passwordCrypto.hashPassword(
-        registerDto.password,
-      );
-
-      // 3. Créer l'utilisateur via UserService
-      const createdUser = await this.userService.createUser({
+      // 2. Créer l'utilisateur via le service canonique (hashing interne)
+      const createdUser = await this.userDataService.create({
         email: registerDto.email,
-        password: hashedPassword,
+        password: registerDto.password,
         firstName: registerDto.firstName,
         lastName: registerDto.lastName,
       });
 
-      if (!createdUser) {
-        this.logger.error(
-          `Failed to create user in database: ${registerDto.email}`,
-        );
-        throw new BadRequestException(
-          "Erreur lors de la création de l'utilisateur",
-        );
-      }
-
-      // 4. Formater et retourner l'utilisateur créé
-      const authUser = this.formatUserResponse(createdUser);
+      // 3. Formater et retourner l'utilisateur créé
+      const authUser = this.mapUserToAuthUser(createdUser);
 
       this.logger.log(
         `User registered successfully: ${registerDto.email} (ID: ${authUser.id})`,
@@ -310,8 +305,8 @@ export class AuthService {
       }
 
       if (params.email) {
-        const user = await this.userService.findUserByEmail(params.email);
-        return user ? this.formatUserResponse(user) : null;
+        const user = await this.userDataService.findByEmail(params.email);
+        return user ? this.mapUserToAuthUser(user) : null;
       }
 
       return null;
@@ -326,8 +321,8 @@ export class AuthService {
    */
   async getUserById(userId: string): Promise<AuthUser | null> {
     try {
-      const user = await this.userService.getUserById(userId);
-      return user ? this.formatUserResponse(user) : null;
+      const user = await this.userDataService.findById(userId);
+      return user ? this.mapUserToAuthUser(user) : null;
     } catch (error) {
       this.logger.error(`Error getting user by ID ${userId}:`, error);
       return null;
@@ -361,18 +356,18 @@ export class AuthService {
   }
 
   /**
-   * Formatter la réponse utilisateur
+   * Mapper un User DTO vers AuthUser
    */
-  private formatUserResponse(user: any): AuthUser {
+  private mapUserToAuthUser(user: User): AuthUser {
     return {
-      id: user.cst_id,
-      email: user.cst_mail,
-      firstName: user.cst_fname || '',
-      lastName: user.cst_name || '',
-      isPro: user.cst_is_pro === '1',
-      isActive: user.cst_activ === '1',
-      level: parseInt(String(user.cst_level || '1')),
-      isAdmin: parseInt(String(user.cst_level || '1')) >= 7,
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      isPro: user.isPro,
+      isActive: user.isActive,
+      level: user.level,
+      isAdmin: user.level >= 7,
     };
   }
 
@@ -542,12 +537,12 @@ export class AuthService {
     try {
       this.logger.debug(`Updating profile for user ${userId}`);
 
-      // Mise à jour en base de données
-      const updatedUser = await this.userService.updateUser(userId, {
-        cst_fname: profileData.firstName,
-        cst_name: profileData.lastName,
-        cst_mail: profileData.email,
-        cst_tel: profileData.phone,
+      // Mise à jour en base de données via le service canonique
+      const updatedUser = await this.userDataService.update(userId, {
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+        email: profileData.email,
+        phone: profileData.phone,
       });
 
       if (!updatedUser) {
@@ -558,7 +553,7 @@ export class AuthService {
       // Invalider le cache utilisateur
       await this.cacheService.delete(`user:${userId}`);
 
-      return this.formatUserResponse(updatedUser);
+      return this.mapUserToAuthUser(updatedUser);
     } catch (error) {
       this.logger.error('Error updating user profile:', error);
       return null;
@@ -576,16 +571,16 @@ export class AuthService {
     try {
       this.logger.debug(`Changing password for user ${userId}`);
 
-      // Récupérer l'utilisateur actuel
-      const user = await this.userService.getUserById(userId);
-      if (!user) {
+      // Récupérer l'utilisateur actuel avec le hash du mot de passe
+      const result = await this.userDataService.findByIdForAuth(userId);
+      if (!result) {
         return { success: false, message: 'Utilisateur non trouvé' };
       }
 
       // Vérifier le mot de passe actuel
       const isCurrentPasswordValid = await this.validatePassword(
         currentPassword,
-        user.cst_pswd,
+        result.passwordHash,
       );
 
       if (!isCurrentPasswordValid) {
@@ -597,9 +592,10 @@ export class AuthService {
         await this.passwordCrypto.hashPassword(newPassword);
 
       // Mettre à jour le mot de passe
-      const updated = await this.userService.updateUser(userId, {
-        cst_pswd: hashedNewPassword,
-      });
+      const updated = await this.userDataService.setPasswordHash(
+        userId,
+        hashedNewPassword,
+      );
 
       if (!updated) {
         return { success: false, message: 'Erreur lors de la mise à jour' };
@@ -656,15 +652,15 @@ export class AuthService {
     requiredRole?: string;
   }> {
     try {
-      // Récupérer l'utilisateur via le service existant
-      const user = await this.userService.getUserById(userId);
+      // Récupérer l'utilisateur via le service canonique
+      const user = await this.userDataService.findById(userId);
 
-      if (!user || user.cst_activ !== '1') {
+      if (!user || !user.isActive) {
         return { hasAccess: false, reason: 'User inactive or not found' };
       }
 
       // Logique de permissions basée sur le niveau utilisateur existant
-      const userLevel = parseInt(String(user.cst_level)) || 0;
+      const userLevel = user.level;
 
       const modulePermissions: Record<string, Record<string, number>> = {
         commercial: { read: 1, write: 3 },
@@ -773,14 +769,14 @@ export class AuthService {
       // Utiliser le JWT service existant
       const decoded = this.jwtService.verify(token);
 
-      // Récupérer l'utilisateur via le service existant
-      const user = await this.userService.getUserById(decoded.sub);
-      if (!user || user.cst_activ !== '1') {
+      // Récupérer l'utilisateur via le service canonique
+      const user = await this.userDataService.findById(decoded.sub);
+      if (!user || !user.isActive) {
         return null;
       }
 
       return {
-        user: this.formatUserResponse(user),
+        user: this.mapUserToAuthUser(user),
         token,
         sessionId:
           request.sessionID || (request.headers['x-session-id'] as string),

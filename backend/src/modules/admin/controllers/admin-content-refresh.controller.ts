@@ -17,6 +17,8 @@ import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { AdminResponseInterceptor } from '../../../common/interceptors/admin-response.interceptor';
 import { ContentRefreshService } from '../services/content-refresh.service';
+import { QualityScoringEngineService } from '../services/quality-scoring-engine.service';
+import { GammeAggregatorService } from '../services/gamme-aggregator.service';
 import { WebhookAuditService } from '../../rag-proxy/services/webhook-audit.service';
 import {
   TriggerRefreshDto,
@@ -30,6 +32,8 @@ import {
 export class AdminContentRefreshController {
   constructor(
     private readonly contentRefreshService: ContentRefreshService,
+    private readonly qualityScoringEngine: QualityScoringEngineService,
+    private readonly gammeAggregator: GammeAggregatorService,
     private readonly webhookAuditService: WebhookAuditService,
   ) {}
 
@@ -257,6 +261,7 @@ export class AdminContentRefreshController {
   /**
    * GET /api/admin/content-refresh/coverage-map
    * Per-gamme content coverage gap analysis (purchase guide + conseil + RAG).
+   * Legacy endpoint — kept for backward compatibility.
    */
   @Get('coverage-map')
   async getCoverageMap() {
@@ -271,5 +276,33 @@ export class AdminContentRefreshController {
   async getActivityTimeline(@Query('limit') limitParam?: string) {
     const limit = Math.min(parseInt(limitParam || '30', 10) || 30, 100);
     return this.contentRefreshService.getActivityTimeline(limit);
+  }
+
+  // ── Quality Scoring V2 ──
+
+  /**
+   * POST /api/admin/content-refresh/compute-quality-scores
+   * Trigger batch computation of quality scores for all gammes.
+   * Computes page-level scores then aggregates to gamme-level.
+   */
+  @Post('compute-quality-scores')
+  async computeQualityScores() {
+    const pageResult = await this.qualityScoringEngine.computeAllScores();
+    const gammesAggregated = await this.gammeAggregator.aggregateAll();
+    return {
+      pagesScored: pageResult.pagesScored,
+      gammesScored: pageResult.gammesScored,
+      gammesAggregated,
+    };
+  }
+
+  /**
+   * GET /api/admin/content-refresh/quality-dashboard
+   * Returns pre-computed quality scores for cockpit V2.
+   * Reads from __quality_gamme_scores + __quality_page_scores.
+   */
+  @Get('quality-dashboard')
+  async getQualityDashboard() {
+    return this.contentRefreshService.getQualityDashboard();
   }
 }

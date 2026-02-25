@@ -16,7 +16,7 @@ import { NextFunction, Request, Response } from 'express';
 import { LocalAuthGuard } from '../local-auth.guard';
 import { UsersService } from '../../modules/users/users.service';
 import { AuthService } from '../auth.service';
-import { UserService } from '../../database/services/user.service';
+import { UserDataConsolidatedService } from '../../modules/users/services/user-data-consolidated.service';
 import { CartDataService } from '../../database/services/cart-data.service';
 import { LoginResponseDto } from '../dto/login-response.dto';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
@@ -40,7 +40,7 @@ export class AuthLoginController {
   constructor(
     private readonly usersService: UsersService,
     private readonly authService: AuthService,
-    private readonly userService: UserService,
+    private readonly userDataService: UserDataConsolidatedService,
     private readonly cartDataService: CartDataService,
   ) {}
 
@@ -80,7 +80,7 @@ export class AuthLoginController {
     @Req() request: Express.Request,
   ): Promise<Record<string, unknown>> {
     try {
-      await this.userService.createUser({
+      await this.userDataService.create({
         email: userData.email,
         password: userData.password,
         firstName: userData.firstName,

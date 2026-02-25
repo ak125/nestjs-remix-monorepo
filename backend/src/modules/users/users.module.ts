@@ -80,11 +80,8 @@ import { UserShipmentService } from './services/user-shipment.service';
     AddressesService, // ✅ Service moderne de gestion des adresses
     UserShipmentService, // ✅ Service de suivi des expéditions utilisateur
 
-    // Service mail avec token d'injection
-    {
-      provide: 'MailService',
-      useClass: MailService,
-    },
+    // Service mail unifie
+    MailService,
   ],
   exports: [
     // ✅ SERVICES PRINCIPAUX CONSOLIDÉS

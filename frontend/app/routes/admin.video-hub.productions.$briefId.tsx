@@ -15,7 +15,12 @@ import {
   Clock,
   Play,
   Loader2,
+  Sparkles,
+  Volume2,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -30,6 +35,24 @@ interface GateResult {
   failThreshold: number;
 }
 
+interface ClaimEntry {
+  id: string;
+  kind: string;
+  rawText: string;
+  value: string;
+  unit: string;
+  sectionKey: string;
+  sourceRef: string | null;
+  status: "verified" | "unverified" | "blocked";
+  requiresHumanValidation: boolean;
+}
+
+interface DisclaimerEntry {
+  type: string;
+  text: string;
+  position: string;
+}
+
 interface Production {
   id: number;
   briefId: string;
@@ -39,11 +62,17 @@ interface Production {
   qualityScore: number | null;
   qualityFlags: string[];
   gateResults: GateResult[] | null;
-  claimTable: unknown[] | null;
+  claimTable: ClaimEntry[] | null;
   evidencePack: unknown[] | null;
-  disclaimerPlan: { disclaimers: unknown[] } | null;
+  disclaimerPlan: { disclaimers: DisclaimerEntry[] } | null;
   approvalRecord: { briefId: string; stages: unknown[] } | null;
   knowledgeContract: Record<string, unknown> | null;
+  scriptText: string | null;
+  scriptGeneratedAt: string | null;
+  scriptModel: string | null;
+  masterAudioUrl: string | null;
+  ttsVoice: string | null;
+  parentBriefId: string | null;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
@@ -162,6 +191,72 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
   }
 
+  if (intent === "generate-script") {
+    const regenerate = formData.get("regenerate") === "true";
+    try {
+      const res = await fetch(
+        `${backendUrl}/api/admin/video/productions/${briefId}/generate-script`,
+        {
+          method: "POST",
+          headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
+          body: JSON.stringify({ regenerate }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return json({
+          _intent: "generate-script" as const,
+          ok: false,
+          error: data.error ?? data.message ?? "Erreur generation",
+        });
+      }
+      return json({
+        _intent: "generate-script" as const,
+        ok: true,
+        data: data.data,
+      });
+    } catch {
+      return json({
+        _intent: "generate-script" as const,
+        ok: false,
+        error: "Erreur reseau",
+      });
+    }
+  }
+
+  if (intent === "generate-audio") {
+    try {
+      const voice = formData.get("voice") as string | null;
+      const res = await fetch(
+        `${backendUrl}/api/admin/video/productions/${briefId}/generate-audio`,
+        {
+          method: "POST",
+          headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
+          body: JSON.stringify({ voice: voice || "onyx" }),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return json({
+          _intent: "generate-audio" as const,
+          ok: false,
+          error: data.error ?? data.message ?? "Erreur TTS",
+        });
+      }
+      return json({
+        _intent: "generate-audio" as const,
+        ok: true,
+        data: data.data,
+      });
+    } catch {
+      return json({
+        _intent: "generate-audio" as const,
+        ok: false,
+        error: "Erreur reseau",
+      });
+    }
+  }
+
   // Default: execute
   try {
     const res = await fetch(
@@ -237,6 +332,8 @@ function formatDuration(ms: number | null): string {
 
 export default function VideoProductionDetail() {
   const { production, executions, error } = useLoaderData<typeof loader>();
+  const [scriptExpanded, setScriptExpanded] = useState(false);
+  const [claimsExpanded, setClaimsExpanded] = useState(false);
   const fetcher = useFetcher<{
     _intent: "execute";
     ok: boolean;
@@ -244,6 +341,26 @@ export default function VideoProductionDetail() {
     executionId?: number | null;
   }>();
   const isSubmitting = fetcher.state !== "idle";
+  const scriptFetcher = useFetcher<{
+    _intent: "generate-script";
+    ok: boolean;
+    error?: string;
+    data?: {
+      scriptText: string;
+      claimCount: number;
+      evidenceCount: number;
+      estimatedDurationSecs: number;
+      model: string;
+    };
+  }>();
+  const isGeneratingScript = scriptFetcher.state !== "idle";
+  const audioFetcher = useFetcher<{
+    _intent: "generate-audio";
+    ok: boolean;
+    error?: string;
+    data?: { audioUrl: string; durationSecs: number; cached: boolean };
+  }>();
+  const isGeneratingAudio = audioFetcher.state !== "idle";
   const dryRunFetcher = useFetcher<{
     _intent: "dry-run";
     ok: boolean;
@@ -397,6 +514,295 @@ export default function VideoProductionDetail() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Script & Artefacts (Step 1) */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              Script & Scenario
+            </CardTitle>
+            {!production.scriptText ? (
+              <scriptFetcher.Form method="post">
+                <input type="hidden" name="_intent" value="generate-script" />
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isGeneratingScript}
+                  className="gap-1"
+                >
+                  {isGeneratingScript ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3 w-3" />
+                  )}
+                  {isGeneratingScript
+                    ? "Generation en cours..."
+                    : "Generer le scenario (IA)"}
+                </Button>
+              </scriptFetcher.Form>
+            ) : (
+              <scriptFetcher.Form method="post">
+                <input type="hidden" name="_intent" value="generate-script" />
+                <input type="hidden" name="regenerate" value="true" />
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant="outline"
+                  disabled={isGeneratingScript}
+                  className="gap-1"
+                >
+                  {isGeneratingScript ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3 w-3" />
+                  )}
+                  Regenerer
+                </Button>
+              </scriptFetcher.Form>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Script generation feedback */}
+          {scriptFetcher.data?.ok === true && scriptFetcher.data.data && (
+            <div className="mb-4 rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-700">
+              Script genere : {scriptFetcher.data.data.claimCount} claims,{" "}
+              {scriptFetcher.data.data.evidenceCount} evidences, ~
+              {Math.round(
+                (scriptFetcher.data.data.estimatedDurationSecs ?? 0) / 60,
+              )}
+              min ({scriptFetcher.data.data.model})
+            </div>
+          )}
+          {scriptFetcher.data?.ok === false && (
+            <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+              {scriptFetcher.data.error ?? "Erreur generation"}
+            </div>
+          )}
+
+          {production.scriptText ? (
+            <div className="space-y-4">
+              {/* Script metadata */}
+              <div className="flex items-center gap-3 text-xs text-gray-500">
+                {production.scriptModel && (
+                  <Badge variant="outline">{production.scriptModel}</Badge>
+                )}
+                {production.scriptGeneratedAt && (
+                  <span>
+                    Genere le{" "}
+                    {new Date(production.scriptGeneratedAt).toLocaleString(
+                      "fr-FR",
+                    )}
+                  </span>
+                )}
+              </div>
+
+              {/* Script text (collapsible) */}
+              <div>
+                <button
+                  onClick={() => setScriptExpanded(!scriptExpanded)}
+                  className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                >
+                  {scriptExpanded ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                  Texte du scenario ({production.scriptText.split(/\s+/).length}{" "}
+                  mots)
+                </button>
+                {scriptExpanded && (
+                  <pre className="mt-2 whitespace-pre-wrap text-sm text-gray-700 bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto border">
+                    {production.scriptText}
+                  </pre>
+                )}
+              </div>
+
+              {/* Claims table (collapsible) */}
+              {production.claimTable && production.claimTable.length > 0 && (
+                <div>
+                  <button
+                    onClick={() => setClaimsExpanded(!claimsExpanded)}
+                    className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                  >
+                    {claimsExpanded ? (
+                      <ChevronUp className="h-4 w-4" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4" />
+                    )}
+                    Claims ({production.claimTable.length})
+                  </button>
+                  {claimsExpanded && (
+                    <div className="mt-2 overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b text-left text-gray-500">
+                            <th className="pb-2 pr-2">ID</th>
+                            <th className="pb-2 pr-2">Kind</th>
+                            <th className="pb-2 pr-2">Text</th>
+                            <th className="pb-2 pr-2">Value</th>
+                            <th className="pb-2 pr-2">Source</th>
+                            <th className="pb-2">Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {production.claimTable.map((claim: ClaimEntry) => (
+                            <tr
+                              key={claim.id}
+                              className="border-b last:border-0"
+                            >
+                              <td className="py-1.5 pr-2 font-mono">
+                                {claim.id}
+                              </td>
+                              <td className="py-1.5 pr-2">
+                                <Badge
+                                  variant="outline"
+                                  className="text-xs capitalize"
+                                >
+                                  {claim.kind}
+                                </Badge>
+                              </td>
+                              <td className="py-1.5 pr-2 max-w-xs truncate">
+                                {claim.rawText}
+                              </td>
+                              <td className="py-1.5 pr-2 font-mono">
+                                {claim.value}
+                                {claim.unit}
+                              </td>
+                              <td className="py-1.5 pr-2 text-gray-500 max-w-[120px] truncate">
+                                {claim.sourceRef ?? "—"}
+                              </td>
+                              <td className="py-1.5">
+                                <Badge
+                                  className={`text-xs ${
+                                    claim.status === "verified"
+                                      ? "bg-green-100 text-green-700"
+                                      : claim.status === "blocked"
+                                        ? "bg-red-100 text-red-700"
+                                        : "bg-amber-100 text-amber-700"
+                                  }`}
+                                >
+                                  {claim.status}
+                                </Badge>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Disclaimers */}
+              {production.disclaimerPlan &&
+                production.disclaimerPlan.disclaimers.length > 0 && (
+                  <div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">
+                      Disclaimers (
+                      {production.disclaimerPlan.disclaimers.length})
+                    </div>
+                    <div className="space-y-1">
+                      {production.disclaimerPlan.disclaimers.map(
+                        (d: DisclaimerEntry, i: number) => (
+                          <div
+                            key={i}
+                            className="flex items-center gap-2 text-xs bg-gray-50 rounded p-2"
+                          >
+                            <Badge variant="outline" className="capitalize">
+                              {d.type}
+                            </Badge>
+                            <span className="text-gray-500">
+                              [{d.position}]
+                            </span>
+                            <span className="text-gray-700 truncate">
+                              {d.text}
+                            </span>
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+                )}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">
+              Aucun script. Cliquez sur &quot;Generer le scenario&quot; pour
+              creer le contenu via IA.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Audio / Voix Off (Step 3) */}
+      {production.scriptText && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2">
+                <Volume2 className="h-4 w-4" />
+                Audio / Voix Off
+              </CardTitle>
+              <audioFetcher.Form method="post">
+                <input type="hidden" name="_intent" value="generate-audio" />
+                <input type="hidden" name="voice" value="onyx" />
+                <Button
+                  type="submit"
+                  size="sm"
+                  variant={production.masterAudioUrl ? "outline" : "default"}
+                  disabled={isGeneratingAudio}
+                  className="gap-1"
+                >
+                  {isGeneratingAudio ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Volume2 className="h-3 w-3" />
+                  )}
+                  {isGeneratingAudio
+                    ? "Generation..."
+                    : production.masterAudioUrl
+                      ? "Regenerer audio"
+                      : "Generer la voix off (TTS)"}
+                </Button>
+              </audioFetcher.Form>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {audioFetcher.data?.ok === true && audioFetcher.data.data && (
+              <div className="mb-3 rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-700">
+                Audio genere : {audioFetcher.data.data.durationSecs?.toFixed(1)}
+                s{audioFetcher.data.data.cached ? " (cache)" : " (nouveau)"}
+              </div>
+            )}
+            {audioFetcher.data?.ok === false && (
+              <div className="mb-3 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                {audioFetcher.data.error ?? "Erreur TTS"}
+              </div>
+            )}
+
+            {production.masterAudioUrl ? (
+              <div className="space-y-2">
+                <audio
+                  controls
+                  src={production.masterAudioUrl}
+                  className="w-full"
+                />
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  {production.ttsVoice && (
+                    <Badge variant="outline">Voix: {production.ttsVoice}</Badge>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">
+                Aucun audio. Generez la voix off une fois le script valide.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Gates */}
       <Card>
