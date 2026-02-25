@@ -18,15 +18,12 @@ import { ConfigModule as NestConfigModule } from '@nestjs/config';
 
 // Controllers - Mix optimisé Enhanced + Simple
 import { EnhancedConfigController } from './controllers/enhanced-config.controller';
-import { EnhancedMetadataController } from './controllers/enhanced-metadata.controller';
 import { SimpleConfigController } from './controllers/simple-config.controller';
 import { SimpleDatabaseConfigController } from './controllers/simple-database-config.controller';
 // import { ConfigController } from './config.controller'; // SUPPRIMÉ - Guards manquants
 
 // Services - Services Enhanced optimisés + fallback Simple
 import { EnhancedConfigService } from './services/enhanced-config.service';
-import { EnhancedMetadataService } from './services/enhanced-metadata.service';
-import { BreadcrumbService } from './services/breadcrumb.service';
 // import { ConfigAnalyticsService } from './services/config-analytics.service'; // SUPPRIMÉ - executeQuery n'existe pas
 import { DatabaseConfigService } from './services/database-config.service';
 import { SimpleConfigService } from './services/simple-config.service';
@@ -58,7 +55,6 @@ interface ConfigModuleOptions {
   controllers: [
     // Controllers Enhanced pour fonctionnalités avancées
     EnhancedConfigController,
-    EnhancedMetadataController,
     // Controllers Simple pour compatibilité
     SimpleConfigController,
     SimpleDatabaseConfigController,
@@ -67,8 +63,6 @@ interface ConfigModuleOptions {
   providers: [
     // Services Enhanced principaux
     EnhancedConfigService,
-    EnhancedMetadataService,
-    BreadcrumbService,
     // ConfigAnalyticsService, // SUPPRIMÉ - executeQuery n'existe pas
     DatabaseConfigService,
     // Services Simple pour fallback
@@ -91,8 +85,6 @@ interface ConfigModuleOptions {
   exports: [
     // Services Enhanced exportés en priorité
     EnhancedConfigService,
-    EnhancedMetadataService,
-    BreadcrumbService,
     // ConfigAnalyticsService, // SUPPRIMÉ
     DatabaseConfigService,
     // Services Simple pour compatibilité

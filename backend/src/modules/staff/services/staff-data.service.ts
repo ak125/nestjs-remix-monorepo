@@ -222,6 +222,56 @@ export class StaffDataService extends SupabaseBaseService {
   }
 
   /**
+   * Alias pour compatibilité avec StaffService
+   */
+  async existsByEmail(email: string): Promise<boolean> {
+    return this.emailExists(email);
+  }
+
+  /**
+   * Statistiques du staff
+   */
+  async getStats(): Promise<{
+    total: number;
+    active: number;
+    inactive: number;
+    departments: string[];
+  }> {
+    try {
+      const { count: total } = await this.supabase
+        .from(TABLES.config_admin)
+        .select('*', { count: 'exact', head: true });
+
+      const { count: active } = await this.supabase
+        .from(TABLES.config_admin)
+        .select('*', { count: 'exact', head: true })
+        .eq('cnfa_activ', '1');
+
+      const { data: deptData } = await this.supabase
+        .from(TABLES.config_admin)
+        .select('cnfa_job');
+
+      const departments = [
+        ...new Set(
+          (deptData || [])
+            .map((d: { cnfa_job: string }) => d.cnfa_job)
+            .filter(Boolean),
+        ),
+      ];
+
+      return {
+        total: total || 0,
+        active: active || 0,
+        inactive: (total || 0) - (active || 0),
+        departments,
+      };
+    } catch (error) {
+      this.logger.error('Failed to get staff stats:', error);
+      return { total: 0, active: 0, inactive: 0, departments: [] };
+    }
+  }
+
+  /**
    * Mappe les données DB vers le DTO Staff
    */
   private mapToStaff(data: any): Staff {

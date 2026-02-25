@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CartDataService } from './cart-data.service';
-import { UserDataService } from './user-data.service';
 import { OrdersService, CreateLegacyOrderData } from './orders.service';
 import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 
@@ -20,7 +19,6 @@ export class DatabaseCompositionService {
 
   constructor(
     private readonly cartDataService: CartDataService,
-    private readonly userDataService: UserDataService,
     private readonly ordersService: OrdersService,
   ) {
     this.logger.log(
@@ -82,26 +80,6 @@ export class DatabaseCompositionService {
 
   async calculateCartTotals(userId: string) {
     return this.cartDataService.calculateCartTotals(userId);
-  }
-
-  // ============================================
-  // USER OPERATIONS - Délégation vers UserDataService
-  // ============================================
-
-  async getUserByEmail(email: string) {
-    return this.userDataService.getUserByEmail(email);
-  }
-
-  async getUserById(id: string) {
-    return this.userDataService.getUserById(id);
-  }
-
-  async createUser(userData: Record<string, unknown>) {
-    return this.userDataService.createUser(userData);
-  }
-
-  async updateUser(id: string, updates: Record<string, unknown>) {
-    return this.userDataService.updateUser(id, updates);
   }
 
   // ============================================

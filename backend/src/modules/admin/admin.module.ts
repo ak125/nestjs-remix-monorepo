@@ -61,6 +61,8 @@ import { AdminJobHealthService } from './services/admin-job-health.service'; // 
 import { AdminHealthService } from './services/admin-health.service'; // 🏥 Health overview aggregator
 import { EnricherTextUtils } from './services/enricher-text-utils.service'; // 🔧 Shared text utilities
 import { EnricherYamlParser } from './services/enricher-yaml-parser.service'; // 🔧 Shared YAML/frontmatter parsing
+import { QualityScoringEngineService } from './services/quality-scoring-engine.service'; // 📊 Quality scoring engine (multi-page)
+import { GammeAggregatorService } from './services/gamme-aggregator.service'; // 📊 Gamme-level score aggregation
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -69,7 +71,6 @@ import { WorkingStockService } from './services/working-stock.service'; // ✅ A
 import { ReportingService } from './services/reporting.service';
 import { UserManagementService } from './services/user-management.service';
 // import { AdminProductsService } from './services/admin-products.service';
-import { StaffService } from '../staff/staff.service';
 
 // Import du module Orders pour les services
 import { OrdersModule } from '../orders/orders.module';
@@ -129,7 +130,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     ReportingService,
     UserManagementService,
     // AdminProductsService,
-    StaffService,
+    // StaffService fourni par StaffModule (imports)
     AdminGammesSeoService, // 🎯 Service Gammes SEO
     GammeSeoThresholdsService, // 🎯 Seuils Gammes SEO
     GammeSeoAuditService, // 🎯 Audit Gammes SEO
@@ -151,6 +152,8 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     AdminHealthService, // 🏥 Health overview aggregator
     EnricherTextUtils, // 🔧 Shared text utilities (anonymize, stripHtml, restoreAccents, etc.)
     EnricherYamlParser, // 🔧 Shared YAML/frontmatter parsing (extractYamlList, extractYamlFaq, etc.)
+    QualityScoringEngineService, // 📊 Quality scoring engine (multi-page, 4 dimensions)
+    GammeAggregatorService, // 📊 Gamme-level weighted score aggregation
   ],
   exports: [
     ConfigurationService,

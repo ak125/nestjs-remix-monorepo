@@ -4,6 +4,8 @@
  * Définit tous les types nécessaires pour le module de configuration
  */
 
+export type ConfigValue = string | number | boolean | Record<string, unknown>;
+
 export type ConfigEnvironment =
   | 'development'
   | 'production'
@@ -36,7 +38,7 @@ export interface ConfigModuleOptions {
   cachePrefix?: string;
 
   /** Configurations par défaut */
-  defaults?: Record<string, any>;
+  defaults?: Record<string, ConfigValue>;
 }
 
 export interface DatabaseConfig {
@@ -172,12 +174,12 @@ export interface FullConfigSchema {
   monitoring: MonitoringConfig;
   metadata: MetadataConfig;
   breadcrumb: BreadcrumbConfig;
-  [key: string]: any; // Pour les configurations custom
+  [key: string]: unknown;
 }
 
 export interface ConfigValidationError {
   field: string;
-  value: any;
+  value: unknown;
   message: string;
   code: string;
 }
@@ -190,8 +192,8 @@ export interface ConfigValidationResult {
 
 export interface ConfigChangeEvent {
   key: string;
-  oldValue: any;
-  newValue: any;
+  oldValue: unknown;
+  newValue: unknown;
   timestamp: Date;
   source: string;
   userId?: string;
@@ -201,10 +203,10 @@ export interface ConfigAuditLog {
   id: string;
   action: 'create' | 'update' | 'delete' | 'read';
   key: string;
-  value?: any;
+  value?: unknown;
   userId?: string;
   timestamp: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ConfigTemplate {

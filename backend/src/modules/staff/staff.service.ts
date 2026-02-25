@@ -12,19 +12,11 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { StaffDataService } from '../../database/services/staff-data.service';
+import { StaffDataService } from './services/staff-data.service';
+import type { Staff } from './dto/staff.dto';
 
-export interface Staff {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  department?: string;
-  role: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+// Interfaces controller-facing (contrat API REST)
+export type { Staff };
 
 export interface CreateStaffDto {
   email: string;
@@ -32,6 +24,7 @@ export interface CreateStaffDto {
   lastName: string;
   department: string;
   role: string;
+  password?: string;
   isActive?: boolean;
 }
 
@@ -48,7 +41,7 @@ export class StaffService {
   private readonly logger = new Logger(StaffService.name);
 
   constructor(private readonly staffDataService: StaffDataService) {
-    this.logger.log('✅ StaffService initialisé avec architecture recommandée');
+    this.logger.log('StaffService initialized');
   }
 
   /**
@@ -64,25 +57,31 @@ export class StaffService {
     },
   ) {
     try {
-      this.logger.log(`📄 Récupération staff: page=${page}, limit=${limit}`);
+      this.logger.log(`Récupération staff: page=${page}, limit=${limit}`);
 
-      const result = await this.staffDataService.findAll(page, limit, filters);
+      const result = await this.staffDataService.findAll({
+        page,
+        limit,
+        search: filters?.search,
+        job: filters?.department,
+        isActive: filters?.isActive,
+      });
 
       this.logger.log(
-        `✅ ${result.staff.length}/${result.total} membres du staff récupérés`,
+        `${result.data.length}/${result.total} membres du staff récupérés`,
       );
 
       return {
         success: true,
         data: {
-          staff: result.staff,
+          staff: result.data,
           total: result.total,
           page,
           limit,
         },
       };
     } catch (error) {
-      this.logger.error('❌ Erreur findAll staff:', error);
+      this.logger.error('Erreur findAll staff:', error);
       throw new BadRequestException('Erreur lors de la récupération du staff');
     }
   }
@@ -92,21 +91,17 @@ export class StaffService {
    */
   async findById(id: string): Promise<Staff> {
     try {
-      this.logger.log(`🔍 Récupération staff ID: ${id}`);
+      this.logger.log(`Récupération staff ID: ${id}`);
 
       const staff = await this.staffDataService.findById(id);
 
-      if (!staff) {
-        throw new NotFoundException('Membre du staff non trouvé');
-      }
-
-      this.logger.log(`✅ Staff trouvé: ${staff.email}`);
+      this.logger.log(`Staff trouvé: ${staff.email}`);
       return staff;
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      this.logger.error('❌ Erreur findById staff:', error);
+      this.logger.error('Erreur findById staff:', error);
       throw new BadRequestException(
         'Erreur lors de la récupération du membre du staff',
       );
@@ -118,7 +113,7 @@ export class StaffService {
    */
   async create(staffData: CreateStaffDto): Promise<Staff> {
     try {
-      this.logger.log(`➕ Création staff: ${staffData.email}`);
+      this.logger.log(`Création staff: ${staffData.email}`);
 
       // Validation métier
       this.validateStaffData(staffData);
@@ -131,21 +126,22 @@ export class StaffService {
         );
       }
 
-      const newStaff = await this.staffDataService.create(staffData);
+      const newStaff = await this.staffDataService.create({
+        email: staffData.email,
+        password: staffData.password || 'Temp1234!',
+        firstName: staffData.firstName,
+        lastName: staffData.lastName,
+        level: 7,
+        job: staffData.department || staffData.role,
+      });
 
-      if (!newStaff) {
-        throw new BadRequestException(
-          'Erreur lors de la création du membre du staff',
-        );
-      }
-
-      this.logger.log(`✅ Staff créé: ${newStaff.id}`);
+      this.logger.log(`Staff créé: ${newStaff.id}`);
       return newStaff;
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      this.logger.error('❌ Erreur create staff:', error);
+      this.logger.error('Erreur create staff:', error);
       throw new BadRequestException(
         'Erreur lors de la création du membre du staff',
       );
@@ -157,20 +153,19 @@ export class StaffService {
    */
   async update(id: string, updates: UpdateStaffDto): Promise<Staff> {
     try {
-      this.logger.log(`📝 Mise à jour staff: ${id}`);
+      this.logger.log(`Mise à jour staff: ${id}`);
 
       // Vérifier que le staff existe
-      await this.findById(id); // Lève une exception si non trouvé
+      await this.findById(id);
 
-      const updatedStaff = await this.staffDataService.update(id, updates);
+      const updatedStaff = await this.staffDataService.update(id, {
+        firstName: updates.firstName,
+        lastName: updates.lastName,
+        job: updates.department || updates.role,
+        isActive: updates.isActive,
+      });
 
-      if (!updatedStaff) {
-        throw new BadRequestException(
-          'Erreur lors de la mise à jour du membre du staff',
-        );
-      }
-
-      this.logger.log(`✅ Staff mis à jour: ${id}`);
+      this.logger.log(`Staff mis à jour: ${id}`);
       return updatedStaff;
     } catch (error) {
       if (
@@ -179,7 +174,7 @@ export class StaffService {
       ) {
         throw error;
       }
-      this.logger.error('❌ Erreur update staff:', error);
+      this.logger.error('Erreur update staff:', error);
       throw new BadRequestException(
         'Erreur lors de la mise à jour du membre du staff',
       );
@@ -191,20 +186,14 @@ export class StaffService {
    */
   async delete(id: string): Promise<void> {
     try {
-      this.logger.log(`🗑️ Suppression staff: ${id}`);
+      this.logger.log(`Suppression staff: ${id}`);
 
       // Vérifier que le staff existe
-      await this.findById(id); // Lève une exception si non trouvé
+      await this.findById(id);
 
-      const deleted = await this.staffDataService.delete(id);
+      await this.staffDataService.delete(id);
 
-      if (!deleted) {
-        throw new BadRequestException(
-          'Erreur lors de la suppression du membre du staff',
-        );
-      }
-
-      this.logger.log(`✅ Staff supprimé: ${id}`);
+      this.logger.log(`Staff supprimé: ${id}`);
     } catch (error) {
       if (
         error instanceof NotFoundException ||
@@ -212,7 +201,7 @@ export class StaffService {
       ) {
         throw error;
       }
-      this.logger.error('❌ Erreur delete staff:', error);
+      this.logger.error('Erreur delete staff:', error);
       throw new BadRequestException(
         'Erreur lors de la suppression du membre du staff',
       );
@@ -224,7 +213,7 @@ export class StaffService {
    */
   async getStats() {
     try {
-      this.logger.log('📊 Récupération statistiques staff');
+      this.logger.log('Récupération statistiques staff');
 
       const stats = await this.staffDataService.getStats();
 
@@ -233,7 +222,7 @@ export class StaffService {
         data: stats,
       };
     } catch (error) {
-      this.logger.error('❌ Erreur getStats staff:', error);
+      this.logger.error('Erreur getStats staff:', error);
       throw new BadRequestException(
         'Erreur lors de la récupération des statistiques',
       );

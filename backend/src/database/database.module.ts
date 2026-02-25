@@ -7,7 +7,6 @@ import { UserDataService } from './services/user-data.service';
 import { OrdersService } from './services/orders.service';
 import { ShippingDataService } from './services/shipping-data.service';
 import { PromoDataService } from './services/promo-data.service';
-import { StaffDataService } from './services/staff-data.service';
 import { DatabaseCompositionService } from './services/database-composition.service';
 
 // Services métier pour rétrocompatibilité (à migrer progressivement)
@@ -30,7 +29,6 @@ import { UserService } from './services/user.service';
     OrdersService, // Service unifié de commandes
     ShippingDataService,
     PromoDataService,
-    StaffDataService,
     DatabaseCompositionService,
 
     // Services métier legacy (à migrer progressivement)
@@ -46,7 +44,6 @@ import { UserService } from './services/user.service';
     OrdersService, // Service unifié de commandes
     ShippingDataService,
     PromoDataService,
-    StaffDataService,
 
     // Services legacy (rétrocompatibilité)
     UserService,

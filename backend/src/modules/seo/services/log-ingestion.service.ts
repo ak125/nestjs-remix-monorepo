@@ -6,6 +6,15 @@ import {
   ErrorCodes,
 } from '../../../common/exceptions';
 
+interface MeiliAccessLogHit {
+  brand?: string;
+  gamme?: string;
+  latency_ms?: number;
+  timestamp?: string;
+  route?: string;
+  [key: string]: unknown;
+}
+
 export interface CaddyLogEntry {
   timestamp: string;
   request_id: string;
@@ -620,7 +629,7 @@ export class LogIngestionService {
 
       // Calculer les combos
       const combos = new Map<string, number>();
-      combosResult.hits.forEach((hit: any) => {
+      combosResult.hits.forEach((hit: MeiliAccessLogHit) => {
         const key = `${hit.brand}|${hit.gamme}`;
         combos.set(key, (combos.get(key) || 0) + 1);
       });
@@ -636,7 +645,7 @@ export class LogIngestionService {
       // Calculer bots vs humains
       const botHits = Object.values(
         botsResult.facetDistribution?.bot || {},
-      ).reduce((sum: number, val: any) => sum + val, 0);
+      ).reduce((sum: number, val: number) => sum + val, 0);
       const totalHits = botsResult.estimatedTotalHits || 0;
       const humanHits = totalHits - botHits;
 
@@ -716,8 +725,8 @@ export class LogIngestionService {
 
       // Statistiques globales
       const latencies = results.hits
-        .map((hit: any) => hit.latency_ms)
-        .filter((l: number) => l);
+        .map((hit: MeiliAccessLogHit) => hit.latency_ms)
+        .filter((l): l is number => typeof l === 'number' && l > 0);
       const sortedLatencies = [...latencies].sort((a, b) => a - b);
 
       const stats = {
@@ -736,8 +745,8 @@ export class LogIngestionService {
 
       // Grouper par route pour calculer stats par route
       const routeGroups = new Map<string, number[]>();
-      results.hits.forEach((hit: any) => {
-        const route = hit.route || 'unknown';
+      results.hits.forEach((hit: MeiliAccessLogHit) => {
+        const route = (hit.route as string | undefined) || 'unknown';
         if (!routeGroups.has(route)) {
           routeGroups.set(route, []);
         }

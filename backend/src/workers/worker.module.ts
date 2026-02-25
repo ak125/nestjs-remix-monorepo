@@ -99,7 +99,7 @@ import { RenderAdapterService } from '../modules/media-factory/render/render-ada
     VideoExecutionProcessor,
 
     // Enricher services (used by ContentRefreshProcessor)
-    // NOTE: These 4 services are also declared in AdminModule/SeoContentModule.
+    // NOTE: These 4 services are also declared in AdminModule/SeoModule.
     // WorkerModule does NOT import those modules, so NestJS creates separate instances.
     // Verified stateless (no in-memory cache/state) — safe duplicate. See audit 2026-02-19.
     BuyingGuideEnricherService,
