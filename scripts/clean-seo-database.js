@@ -20,8 +20,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configuration Supabase
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ygstpegocuhrjvvnzfvq.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlnc3RwZWdvY3Vocmp2dm56ZnZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ4MjA0NTQsImV4cCI6MjA1MDM5NjQ1NH0.z7BcxL9qBp2bEGYRMRj3iBfp9vMOh5eTyYqOaO0xWXQ';
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.error('❌ SUPABASE_URL et SUPABASE_SERVICE_KEY requis');
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
