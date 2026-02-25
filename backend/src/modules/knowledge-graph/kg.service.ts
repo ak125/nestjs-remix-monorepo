@@ -26,6 +26,11 @@ import {
   DiagnosticPart,
   DiagnosticAction,
   KgReasoningCache,
+  KgFaultEdgeRow,
+  KgPartRpcRow,
+  KgPartEdgeRow,
+  KgActionRpcRow,
+  KgActionEdgeRow,
 } from './kg.types';
 
 @Injectable()
@@ -235,7 +240,7 @@ export class KgService extends SupabaseBaseService {
       return [];
     }
 
-    return (data || []).map((row: any) => ({
+    return ((data || []) as unknown as KgFaultEdgeRow[]).map((row) => ({
       fault_id: row.target?.node_id,
       fault_label: row.target?.node_label,
       fault_category: row.target?.node_category,
@@ -355,7 +360,7 @@ export class KgService extends SupabaseBaseService {
   private async findPartsForFault(faultId: string): Promise<DiagnosticPart[]> {
     const result = await this.executeWithRetry(async () => {
       // 🛡️ RPC Safety Gate
-      const { data, error } = await this.callRpc<any[]>(
+      const { data, error } = await this.callRpc<KgPartRpcRow[]>(
         'kg_find_parts_for_fault',
         { p_fault_id: faultId },
         { source: 'api' },
@@ -366,7 +371,7 @@ export class KgService extends SupabaseBaseService {
         return this.findPartsForFaultFallback(faultId);
       }
 
-      return (data || []).map((row: any) => ({
+      return (data || []).map((row: KgPartRpcRow) => ({
         partNodeId: row.part_node_id,
         partLabel: row.part_label,
         pieceId: row.piece_id,
@@ -397,7 +402,7 @@ export class KgService extends SupabaseBaseService {
       .eq('edge_type', 'FIXED_BY')
       .eq('is_active', true);
 
-    return (data || []).map((row: any) => ({
+    return ((data || []) as unknown as KgPartEdgeRow[]).map((row) => ({
       partNodeId: row.target?.node_id,
       partLabel: row.target?.node_label,
       pieceId: row.target?.node_data?.piece_id,
@@ -411,7 +416,7 @@ export class KgService extends SupabaseBaseService {
   ): Promise<DiagnosticAction[]> {
     const result = await this.executeWithRetry(async () => {
       // 🛡️ RPC Safety Gate
-      const { data, error } = await this.callRpc<any[]>(
+      const { data, error } = await this.callRpc<KgActionRpcRow[]>(
         'kg_find_actions_for_fault',
         { p_fault_id: faultId },
         { source: 'api' },
@@ -421,7 +426,7 @@ export class KgService extends SupabaseBaseService {
         return this.findActionsForFaultFallback(faultId);
       }
 
-      return (data || []).map((row: any) => ({
+      return (data || []).map((row: KgActionRpcRow) => ({
         actionNodeId: row.action_node_id,
         actionLabel: row.action_label,
         actionCategory: row.action_category,
@@ -451,7 +456,7 @@ export class KgService extends SupabaseBaseService {
       .eq('edge_type', 'DIAGNOSED_BY')
       .eq('is_active', true);
 
-    return (data || []).map((row: any) => ({
+    return ((data || []) as unknown as KgActionEdgeRow[]).map((row) => ({
       actionNodeId: row.target?.node_id,
       actionLabel: row.target?.node_label,
       actionCategory: row.target?.node_category,

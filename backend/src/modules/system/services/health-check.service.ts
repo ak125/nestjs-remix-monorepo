@@ -10,7 +10,7 @@ export interface HealthCheckResult {
   service: string;
   status: 'healthy' | 'unhealthy' | 'degraded';
   responseTime: number;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp: string;
 }
 

@@ -216,6 +216,69 @@ export interface KgStats {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// DB ROW SHAPES (for typed .map() callbacks — replaces :any)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/** Row returned by the kg_edges + target join when traversing CAUSES edges */
+export interface KgFaultEdgeRow {
+  source_node_id?: string;
+  weight?: number;
+  confidence?: number;
+  sources?: string[];
+  target?: {
+    node_id: string;
+    node_label: string;
+    node_category?: string;
+  };
+  [key: string]: unknown;
+}
+
+/** Row returned by the kg_find_parts_for_fault RPC */
+export interface KgPartRpcRow {
+  part_node_id?: string;
+  part_label?: string;
+  piece_id?: string;
+  gamme_id?: string;
+  edge_confidence?: number;
+  [key: string]: unknown;
+}
+
+/** Row returned by the kg_edges + target join when traversing FIXED_BY edges */
+export interface KgPartEdgeRow {
+  confidence?: number;
+  target?: {
+    node_id: string;
+    node_label: string;
+    node_data?: {
+      piece_id?: string;
+      gamme_id?: string;
+      [key: string]: unknown;
+    };
+  };
+  [key: string]: unknown;
+}
+
+/** Row returned by the kg_find_actions_for_fault RPC */
+export interface KgActionRpcRow {
+  action_node_id?: string;
+  action_label?: string;
+  action_category?: string;
+  edge_confidence?: number;
+  [key: string]: unknown;
+}
+
+/** Row returned by the kg_edges + target join when traversing DIAGNOSED_BY edges */
+export interface KgActionEdgeRow {
+  confidence?: number;
+  target?: {
+    node_id: string;
+    node_label: string;
+    node_category?: string;
+  };
+  [key: string]: unknown;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // TRAVERSAL TYPES
 // ═══════════════════════════════════════════════════════════════════════════
 

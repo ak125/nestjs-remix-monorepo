@@ -33,7 +33,7 @@ export class AdviceHierarchyController {
   async getAdviceByFamily() {
     try {
       // 🔍 Check cache first
-      const cached = await this.cacheService.get<any>(
+      const cached = await this.cacheService.get<unknown>(
         this.CACHE_KEY,
         this.CACHE_TTL,
       );
@@ -64,7 +64,7 @@ export class AdviceHierarchyController {
       const pgIds = [
         ...new Set(
           articles
-            .map((a: any) => a.ba_pg_id || a.pg_id?.toString())
+            .map((a) => a.ba_pg_id || a.pg_id?.toString())
             .filter((id) => id),
         ),
       ];
@@ -131,7 +131,7 @@ export class AdviceHierarchyController {
         }
       >();
 
-      articles.forEach((article: any) => {
+      articles.forEach((article) => {
         const pgId = article.ba_pg_id || article.pg_id?.toString() || '';
         const family = pgToFamily.get(pgId);
 

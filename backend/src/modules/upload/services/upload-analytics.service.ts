@@ -82,7 +82,7 @@ export class UploadAnalyticsService
   implements OnModuleDestroy
 {
   protected readonly logger = new Logger(UploadAnalyticsService.name);
-  private readonly metricsCache = new Map<string, any>();
+  private readonly metricsCache = new Map<string, unknown>();
   private metricsInterval: ReturnType<typeof setInterval> | null = null;
 
   // Métriques en temps réel

@@ -55,7 +55,7 @@ export class VehicleEnrichmentService extends SupabaseBaseService {
       const cacheKey = this.generateEnrichmentCacheKey(vehicleData);
 
       // Vérifier le cache d'abord
-      const cached = await this.cacheService.get<any>(
+      const cached = await this.cacheService.get<Record<string, unknown>>(
         CacheType.ENRICHMENT,
         cacheKey,
       );

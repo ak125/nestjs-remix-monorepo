@@ -86,7 +86,7 @@ export class PaymentCallbackDto {
   errorMessage?: string;
 
   @ApiPropertyOptional({ description: 'Métadonnées additionnelles' })
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export class CallbackValidationResult {
@@ -100,7 +100,7 @@ export class CallbackValidationResult {
   errorMessage?: string;
 
   @ApiPropertyOptional({ description: 'Détails de validation' })
-  validationDetails?: Record<string, any>;
+  validationDetails?: Record<string, unknown>;
 }
 
 // ================================================================

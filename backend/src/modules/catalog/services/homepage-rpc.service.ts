@@ -29,7 +29,7 @@ export class HomepageRpcService extends SupabaseBaseService {
   // Timeout RPC
   private readonly RPC_TIMEOUT_MS = 2000;
   // Singleflight: partage la promise RPC entre requêtes concurrentes
-  private inflightPromise: Promise<any> | null = null;
+  private inflightPromise: Promise<unknown> | null = null;
 
   constructor(
     private readonly cacheService: CacheService,
@@ -54,7 +54,8 @@ export class HomepageRpcService extends SupabaseBaseService {
     const cacheKey = this.getCacheKey();
 
     // 1. Vérifier le cache Redis d'abord
-    const cached = await this.cacheService.get<any>(cacheKey);
+    const cached =
+      await this.cacheService.get<Record<string, unknown>>(cacheKey);
     if (cached) {
       const cacheTime = performance.now() - startTime;
       this.logger.debug(`🎯 CACHE HIT homepage en ${cacheTime.toFixed(1)}ms`);
@@ -147,7 +148,7 @@ export class HomepageRpcService extends SupabaseBaseService {
   /**
    * 💾 Stocke le résultat en cache
    */
-  private async cacheResult(result: any): Promise<void> {
+  private async cacheResult(result: unknown): Promise<void> {
     const cacheKey = this.getCacheKey();
     await this.cacheService.set(cacheKey, result, this.CACHE_TTL_SECONDS);
     this.logger.debug(

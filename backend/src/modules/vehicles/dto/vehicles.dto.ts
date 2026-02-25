@@ -67,12 +67,12 @@ export interface VehicleStatsResponseDto {
 /**
  * DTO de réponse générique pour les véhicules
  */
-export interface VehicleResponseDto<T = any> {
+export interface VehicleResponseDto<T = unknown> {
   data: T[];
   total: number;
   page: number;
   limit: number;
-  meta?: any;
+  meta?: Record<string, unknown>;
 }
 
 /**

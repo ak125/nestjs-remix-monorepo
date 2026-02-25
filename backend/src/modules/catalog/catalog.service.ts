@@ -28,7 +28,7 @@ export interface CatalogItem {
 export interface HomeCatalogData {
   mainCategories: CatalogItem[];
   featuredCategories: CatalogItem[];
-  quickAccess: any[];
+  quickAccess: CatalogItem[];
   stats: {
     total_categories: number;
     total_pieces: number;
@@ -44,7 +44,7 @@ export class CatalogService
   protected readonly logger = new Logger(CatalogService.name);
 
   // 🗄️ Cache intelligent pour performance
-  private catalogCache: Map<string, any> = new Map();
+  private catalogCache: Map<string, unknown> = new Map();
   private readonly CACHE_TTL = 3600000; // 1 heure
 
   constructor(
@@ -158,7 +158,7 @@ export class CatalogService
     // Vérifier le cache d'abord
     if (this.catalogCache.has(cacheKey)) {
       this.logger.log('🎯 Cache hit - Données homepage catalogue');
-      return this.catalogCache.get(cacheKey);
+      return this.catalogCache.get(cacheKey) as HomeCatalogData;
     }
 
     try {
@@ -326,7 +326,7 @@ export class CatalogService
       brandId?: number;
       limit?: number;
     },
-  ): Promise<any[]> {
+  ): Promise<unknown[]> {
     try {
       this.logger.log(`🔍 Recherche catalogue: "${query}" avec filtres`);
 
@@ -661,7 +661,14 @@ export class CatalogService
 
       // Récupérer les liens des critères (jointure manuelle)
       // 🎯 Filtre PHP: pcl_level='1' pour critères prioritaires, avec fallback si aucun résultat
-      let criteresTechniques: any[] = [];
+      let criteresTechniques: {
+        id: unknown;
+        name: unknown;
+        value: unknown;
+        unit: string;
+        level: string;
+        priority: boolean;
+      }[] = [];
       if (criteresData && criteresData.length > 0) {
         const criIds = [...new Set(criteresData.map((c) => c.pc_cri_id))];
 
@@ -860,7 +867,7 @@ export class CatalogService
       ]);
 
       // Extraction sécurisée des résultats
-      const brands: { success: boolean; data: any[]; count: number } =
+      const brands: { success: boolean; data: unknown[]; count: number } =
         brandsResult.status === 'fulfilled'
           ? brandsResult.value
           : {
@@ -893,7 +900,10 @@ export class CatalogService
             data: brands.data || [],
             count: brands.count || 0,
             featured: (brands.data || [])
-              .filter((brand: any) => brand.marque_top === 1)
+              .filter(
+                (brand: unknown) =>
+                  (brand as Record<string, unknown>).marque_top === 1,
+              )
               .slice(0, 8), // Top 8 marques featured
           },
 

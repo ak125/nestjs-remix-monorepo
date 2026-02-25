@@ -60,7 +60,8 @@ export class VehicleRpcService extends SupabaseBaseService {
     const cacheKey = this.getCacheKey(typeId);
 
     // 1. Vérifier le cache Redis d'abord
-    const cached = await this.cacheService.get<any>(cacheKey);
+    const cached =
+      await this.cacheService.get<Record<string, unknown>>(cacheKey);
     if (cached) {
       const cacheTime = performance.now() - startTime;
       this.logger.debug(
@@ -98,7 +99,7 @@ export class VehicleRpcService extends SupabaseBaseService {
    */
   private async fetchRpcWithTimeout(typeId: number, startTime: number) {
     // Créer une Promise avec timeout
-    const timeoutPromise = new Promise((_, reject) => {
+    const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('RPC_TIMEOUT')), this.RPC_TIMEOUT_MS);
     });
 
@@ -110,10 +111,10 @@ export class VehicleRpcService extends SupabaseBaseService {
     );
 
     // Race entre RPC et timeout
-    const { data, error: rpcError } = (await Promise.race([
+    const { data, error: rpcError } = await Promise.race([
       rpcPromise,
       timeoutPromise,
-    ])) as any;
+    ]);
 
     if (rpcError) {
       throw rpcError;
@@ -143,7 +144,7 @@ export class VehicleRpcService extends SupabaseBaseService {
   /**
    * 💾 Stocke le résultat en cache (double cache: frais + stale)
    */
-  private async cacheResult(typeId: number, result: any): Promise<void> {
+  private async cacheResult(typeId: number, result: unknown): Promise<void> {
     const cacheKey = this.getCacheKey(typeId);
     const staleCacheKey = this.getStaleCacheKey(typeId);
 
@@ -161,20 +162,26 @@ export class VehicleRpcService extends SupabaseBaseService {
   /**
    * ⚠️ Gestion erreur RPC avec fallback sur cache stale
    */
-  private async handleRpcError(typeId: number, error: any, startTime: number) {
+  private async handleRpcError(
+    typeId: number,
+    error: unknown,
+    startTime: number,
+  ) {
     const staleCacheKey = this.getStaleCacheKey(typeId);
 
-    this.logger.warn(`⚠️ RPC vehicle ${typeId} failed: ${error.message}`);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    this.logger.warn(`⚠️ RPC vehicle ${typeId} failed: ${errorMsg}`);
 
     // Tenter le cache stale
-    const staleData = await this.cacheService.get<any>(staleCacheKey);
+    const staleData =
+      await this.cacheService.get<Record<string, unknown>>(staleCacheKey);
 
     if (staleData) {
       this.logger.log(`📦 STALE CACHE utilisé pour vehicle ${typeId}`);
       return {
         ...staleData,
         _stale: true,
-        _staleReason: error.message,
+        _staleReason: errorMsg,
         _performance: {
           totalTime: performance.now() - startTime,
           staleCache: true,

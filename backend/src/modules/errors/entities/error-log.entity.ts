@@ -20,8 +20,8 @@ export interface ErrorLog {
     ip_address?: string;
     request_url?: string;
     request_method?: string;
-    request_body?: Record<string, any>;
-    request_headers?: Record<string, any>;
+    request_body?: Record<string, unknown>;
+    request_headers?: Record<string, unknown>;
     response_status?: number;
     severity: 'low' | 'medium' | 'high' | 'critical';
     environment: string;
@@ -31,7 +31,7 @@ export interface ErrorLog {
     tags?: string[];
     correlation_id?: string;
     session_id?: string;
-    additional_context?: Record<string, any>;
+    additional_context?: Record<string, unknown>;
   };
 }
 

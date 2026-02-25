@@ -25,7 +25,7 @@ export interface SystemAlert {
   message: string;
   timestamp: Date;
   resolved: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 @Injectable()
@@ -248,7 +248,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
     level: SystemAlert['level'],
     title: string,
     message: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
   ): Promise<void> {
     const alert: SystemAlert = {
       id: `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,

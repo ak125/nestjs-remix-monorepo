@@ -14,7 +14,7 @@ export class PaymentResponseDto {
   updatedAt!: Date;
   processedAt?: Date;
   refundedAmount?: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export class PaymentUrlResponseDto {

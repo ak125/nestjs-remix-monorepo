@@ -60,7 +60,7 @@ export interface SupportEvent {
     | 'document_updated';
   entityId: string;
   userId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   timestamp: Date;
 }
 
@@ -222,7 +222,7 @@ export interface WorkflowStep {
   name: string;
   description: string;
   action: string;
-  conditions?: Record<string, any>;
+  conditions?: Record<string, unknown>;
   nextSteps: string[];
 }
 
@@ -240,7 +240,7 @@ export interface ExternalIntegration {
   id: string;
   name: string;
   type: 'webhook' | 'api' | 'email' | 'sms';
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   enabled: boolean;
   lastSync?: Date;
 }
@@ -249,7 +249,7 @@ export interface WebhookPayload {
   event: string;
   entityType: string;
   entityId: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
   timestamp: Date;
   signature: string;
 }
@@ -278,8 +278,8 @@ export interface AuditLog {
   entityType: string;
   entityId: string;
   action: string;
-  oldValues?: Record<string, any>;
-  newValues?: Record<string, any>;
+  oldValues?: Record<string, unknown>;
+  newValues?: Record<string, unknown>;
   userId: string;
   userIp: string;
   userAgent: string;
@@ -305,7 +305,7 @@ export interface CacheStats {
 export interface SupportError {
   code: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   timestamp: Date;
   stack?: string;
 }
@@ -341,7 +341,7 @@ export interface PaginatedResponse<T> {
 export interface SearchOptions {
   query: string;
   entityTypes?: string[];
-  filters?: Record<string, any>;
+  filters?: Record<string, unknown>;
   fuzzy?: boolean;
   highlighting?: boolean;
 }
@@ -365,7 +365,7 @@ export interface ScheduledTask {
   name: string;
   schedule: string; // cron expression
   action: string;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
   enabled: boolean;
   lastRun?: Date;
   nextRun?: Date;

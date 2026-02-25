@@ -147,7 +147,7 @@ export class CreateLegacyPaymentDto {
   @ApiPropertyOptional({
     description: 'Métadonnées additionnelles (stockées dans ord_info)',
   })
-  payment_metadata?: Record<string, any>;
+  payment_metadata?: Record<string, unknown>;
 }
 
 export class InitiateLegacyPaymentDto {
@@ -184,7 +184,7 @@ export class InitiateLegacyPaymentDto {
   };
 
   @ApiPropertyOptional({ description: 'Métadonnées additionnelles' })
-  payment_metadata?: Record<string, any>;
+  payment_metadata?: Record<string, unknown>;
 }
 
 export class LegacyPaymentResponseDto {
@@ -233,7 +233,7 @@ export class LegacyPaymentResponseDto {
   urlCallback?: string;
 
   @ApiPropertyOptional({ description: 'Métadonnées' })
-  donneesMeta?: Record<string, any>;
+  donneesMeta?: Record<string, unknown>;
 
   @ApiProperty({ description: 'Date de création' })
   dateCreation!: string;
@@ -321,7 +321,7 @@ export class LegacyCallbackDto {
   transactionExterneId?: string;
 
   @ApiPropertyOptional({ description: 'Données brutes du callback' })
-  donneesCallback?: Record<string, any>;
+  donneesCallback?: Record<string, unknown>;
 
   @ApiPropertyOptional({ description: 'Adresse IP du callback' })
   adresseIp?: string;

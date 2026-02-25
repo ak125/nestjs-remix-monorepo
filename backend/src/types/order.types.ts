@@ -147,6 +147,48 @@ export interface UpdateOrderLineDto {
   trackingNumber?: string;
 }
 
+export interface AddressData {
+  street?: string;
+  street2?: string;
+  city?: string;
+  zip?: string;
+  country?: string;
+  state?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  [key: string]: unknown;
+}
+
+export interface OrderLineDbRow {
+  id: number;
+  order_id: number;
+  product_id: number;
+  product_reference: string;
+  product_name: string;
+  product_sku?: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  status: string;
+  supplier_order_ref?: string;
+  tracking_number?: string;
+  created_at: string;
+  updated_at: string;
+  [key: string]: unknown;
+}
+
+export interface StatusHistoryDbRow {
+  id: number;
+  order_id: number;
+  previous_status: number;
+  new_status: number;
+  comment?: string;
+  user_id?: number;
+  created_at: string;
+  [key: string]: unknown;
+}
+
 // Types pour les réponses API
 export interface OrderWithDetails extends Order {
   orderLines: OrderLine[];
@@ -156,8 +198,8 @@ export interface OrderWithDetails extends Order {
     firstName: string;
     lastName: string;
   };
-  shippingAddress?: any;
-  billingAddress?: any;
+  shippingAddress?: AddressData;
+  billingAddress?: AddressData;
   statusHistory?: OrderStatusHistory[];
 }
 
@@ -274,7 +316,7 @@ export class OrderMapper {
     };
   }
 
-  static orderLineFromDb(dbLine: any): OrderLine {
+  static orderLineFromDb(dbLine: OrderLineDbRow): OrderLine {
     return {
       id: dbLine.id,
       orderId: dbLine.order_id,
@@ -285,7 +327,7 @@ export class OrderMapper {
       quantity: dbLine.quantity,
       unitPrice: dbLine.unit_price,
       totalPrice: dbLine.total_price,
-      status: dbLine.status as OrderLineStatus,
+      status: dbLine.status as unknown as OrderLineStatus,
       supplierOrderRef: dbLine.supplier_order_ref,
       trackingNumber: dbLine.tracking_number,
       createdAt: new Date(dbLine.created_at),
@@ -293,7 +335,9 @@ export class OrderMapper {
     };
   }
 
-  static statusHistoryFromDb(dbHistory: any): OrderStatusHistory {
+  static statusHistoryFromDb(
+    dbHistory: StatusHistoryDbRow,
+  ): OrderStatusHistory {
     return {
       id: dbHistory.id,
       orderId: dbHistory.order_id,

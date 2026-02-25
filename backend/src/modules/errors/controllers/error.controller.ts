@@ -17,6 +17,20 @@ import { RedirectService } from '../services/redirect.service';
 import { ErrorLogService } from '../services/error-log.service';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 
+interface ErrorRecord {
+  created_at: string;
+  error_code?: string | number;
+  url?: string;
+  [key: string]: unknown;
+}
+
+interface CreateRedirectInput {
+  source: string;
+  target: string;
+  statusCode?: number;
+  [key: string]: unknown;
+}
+
 @Controller('api/errors')
 export class ErrorController {
   constructor(
@@ -66,8 +80,8 @@ export class ErrorController {
 
     // Filtrer par période
     const cutoffTime = Date.now() - hoursNum * 3600000;
-    const filteredErrors = recentErrors.filter(
-      (err: any) => new Date(err.created_at).getTime() > cutoffTime,
+    const filteredErrors = (recentErrors as ErrorRecord[]).filter(
+      (err: ErrorRecord) => new Date(err.created_at).getTime() > cutoffTime,
     );
 
     // Agréger par code et URL
@@ -86,18 +100,18 @@ export class ErrorController {
           error_code: code,
           url,
           count: 0,
-          last_seen: err.created_at,
+          last_seen: String(err.created_at),
         };
       }
       stats[key].count++;
-      if (new Date(err.created_at) > new Date(stats[key].last_seen)) {
-        stats[key].last_seen = err.created_at;
+      if (new Date(String(err.created_at)) > new Date(stats[key].last_seen)) {
+        stats[key].last_seen = String(err.created_at);
       }
     }
 
     // Compter par code
     const byCode = filteredErrors.reduce(
-      (acc: Record<string, number>, err: any) => {
+      (acc: Record<string, number>, err: ErrorRecord) => {
         const code = err.error_code?.toString() || 'unknown';
         acc[code] = (acc[code] || 0) + 1;
         return acc;
@@ -148,16 +162,24 @@ export class ErrorController {
    * Crée une nouvelle règle de redirection
    */
   @Post('redirects')
-  async createRedirect(@Body() redirectData: any) {
-    return this.redirectService.createRedirectRule(redirectData);
+  async createRedirect(@Body() redirectData: CreateRedirectInput) {
+    return this.redirectService.createRedirectRule(
+      redirectData as Record<string, unknown>,
+    );
   }
 
   /**
    * Met à jour une règle de redirection
    */
   @Put('redirects/:id')
-  async updateRedirect(@Param('id') id: string, @Body() updates: any) {
-    const success = await this.redirectService.updateRedirectRule(id, updates);
+  async updateRedirect(
+    @Param('id') id: string,
+    @Body() updates: Partial<CreateRedirectInput>,
+  ) {
+    const success = await this.redirectService.updateRedirectRule(
+      id,
+      updates as Record<string, unknown>,
+    );
     return { success };
   }
 

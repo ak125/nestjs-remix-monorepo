@@ -7,7 +7,7 @@ export class CreatePaymentDto {
   userId!: string;
   orderId?: string;
   description?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   returnUrl?: string;
   cancelUrl?: string;
   notifyUrl?: string;

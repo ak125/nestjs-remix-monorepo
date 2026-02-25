@@ -9,7 +9,7 @@ import { getErrorMessage } from '../../../common/utils/error.utils';
 export interface MetricsJobData {
   type: 'performance' | 'business' | 'seo' | 'database_health' | 'maintenance';
   priority: 'low' | 'normal' | 'high';
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 @Processor('metrics-processing')

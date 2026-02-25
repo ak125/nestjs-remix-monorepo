@@ -40,7 +40,7 @@ export class SeoCockpitController {
   // ============================================================
 
   @Get('dashboard')
-  async getDashboard(): Promise<AdminApiResponse<any>> {
+  async getDashboard(): Promise<AdminApiResponse<unknown>> {
     try {
       const dashboard = await this.seoCockpitService.getUnifiedDashboard();
 
@@ -65,7 +65,7 @@ export class SeoCockpitController {
   }
 
   @Get('summary')
-  async getSummary(): Promise<AdminApiResponse<any>> {
+  async getSummary(): Promise<AdminApiResponse<unknown>> {
     try {
       const summary = await this.seoCockpitService.getExecutiveSummary();
       return {
@@ -92,7 +92,7 @@ export class SeoCockpitController {
   @Get('monitoring/crawl')
   async getCrawlActivity(
     @Query('days') days?: string,
-  ): Promise<AdminApiResponse<any>> {
+  ): Promise<AdminApiResponse<unknown>> {
     try {
       const parsedDays = Math.min(parseInt(days || '30', 10), 90);
       const activity =
@@ -117,7 +117,7 @@ export class SeoCockpitController {
   @Get('monitoring/index')
   async getIndexChanges(
     @Query('limit') limit?: string,
-  ): Promise<AdminApiResponse<any>> {
+  ): Promise<AdminApiResponse<unknown>> {
     try {
       const parsedLimit = Math.min(parseInt(limit || '50', 10), 200);
       const changes = await this.seoCockpitService.getIndexChanges(parsedLimit);
@@ -144,7 +144,7 @@ export class SeoCockpitController {
   @Get('monitoring/alerts')
   async getAlerts(
     @Query('limit') limit?: string,
-  ): Promise<AdminApiResponse<any>> {
+  ): Promise<AdminApiResponse<unknown>> {
     try {
       const parsedLimit = Math.min(parseInt(limit || '50', 10), 200);
       const alerts =
@@ -173,7 +173,7 @@ export class SeoCockpitController {
   async getUrlsAtRisk(
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
-  ): Promise<AdminApiResponse<any>> {
+  ): Promise<AdminApiResponse<unknown>> {
     try {
       const parsedLimit = Math.min(parseInt(limit || '100', 10), 500);
       const parsedOffset = parseInt(offset || '0', 10);
@@ -206,7 +206,7 @@ export class SeoCockpitController {
   // ============================================================
 
   @Get('content/stats')
-  async getContentStats(): Promise<AdminApiResponse<any>> {
+  async getContentStats(): Promise<AdminApiResponse<unknown>> {
     try {
       const stats = await this.seoCockpitService.getContentStats();
       return {
@@ -234,7 +234,7 @@ export class SeoCockpitController {
   async getAuditHistory(
     @Query('limit') limit?: string,
     @Query('type') type?: string,
-  ): Promise<AdminApiResponse<any>> {
+  ): Promise<AdminApiResponse<unknown>> {
     try {
       const parsedLimit = Math.min(parseInt(limit || '50', 10), 200);
       const history = await this.seoCockpitService.getAuditHistory(
@@ -262,7 +262,7 @@ export class SeoCockpitController {
   }
 
   @Get('audit/stats')
-  async getAuditStats(): Promise<AdminApiResponse<any>> {
+  async getAuditStats(): Promise<AdminApiResponse<unknown>> {
     try {
       const stats = await this.seoCockpitService.getAuditStats();
       return {
@@ -287,7 +287,7 @@ export class SeoCockpitController {
   // ============================================================
 
   @Post('actions/refresh-risks')
-  async refreshRisks(): Promise<AdminApiResponse<any>> {
+  async refreshRisks(): Promise<AdminApiResponse<unknown>> {
     try {
       this.logger.log('Manual risk flags refresh requested via cockpit');
       const result = await this.seoCockpitService.refreshAllRisks();
@@ -309,7 +309,7 @@ export class SeoCockpitController {
   }
 
   @Post('actions/trigger-monitor')
-  async triggerMonitor(): Promise<AdminApiResponse<any>> {
+  async triggerMonitor(): Promise<AdminApiResponse<unknown>> {
     try {
       this.logger.log('Manual SEO monitor triggered via cockpit');
       const result = await this.seoCockpitService.triggerMonitor();

@@ -24,10 +24,10 @@ export interface AnalyticsConfig {
   trackingId: string;
   domain?: string;
   scriptUrl?: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   anonymizeIp: boolean;
   trackLoggedInUsers: boolean;
-  customDimensions?: Record<string, any>;
+  customDimensions?: Record<string, unknown>;
   excludedPaths?: string[];
   isActive: boolean;
 }
@@ -37,7 +37,7 @@ export interface AnalyticsEvent {
   action: string;
   label?: string;
   value?: number;
-  customData?: Record<string, any>;
+  customData?: Record<string, unknown>;
   timestamp: Date;
 }
 
@@ -232,7 +232,7 @@ export class SimpleAnalyticsService {
     action: string,
     label?: string,
     value?: number,
-    customData?: Record<string, any>,
+    customData?: Record<string, unknown>,
   ): Promise<void> {
     const config = await this.getConfig();
     if (!config || !config.isActive) return;
@@ -459,7 +459,7 @@ export class SimpleAnalyticsService {
   /**
    * Parse une configuration JSON depuis une string
    */
-  private parseJsonConfig(configStr: string): Record<string, any> {
+  private parseJsonConfig(configStr: string): Record<string, unknown> {
     try {
       return JSON.parse(configStr);
     } catch {

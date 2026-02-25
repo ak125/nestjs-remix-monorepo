@@ -20,7 +20,7 @@ export interface TrackEventDto {
   action: string;
   label?: string;
   value?: number;
-  customData?: Record<string, any>;
+  customData?: Record<string, unknown>;
 }
 
 @Controller('api/analytics')

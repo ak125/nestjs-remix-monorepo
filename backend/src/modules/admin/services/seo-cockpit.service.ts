@@ -192,7 +192,7 @@ export class SeoCockpitService extends SupabaseBaseService {
    */
   async getCrawlActivity(days: number = 30): Promise<CrawlActivityDay[]> {
     // 🛡️ RPC Safety Gate
-    const { data } = await this.callRpc<any[]>(
+    const { data } = await this.callRpc<Record<string, unknown>[]>(
       'get_crawl_activity_by_day',
       {
         p_days: days,
@@ -202,14 +202,14 @@ export class SeoCockpitService extends SupabaseBaseService {
 
     if (!data) return [];
 
-    return data.map((row: any) => ({
-      date: row.crawl_date,
-      count: row.request_count || 0,
-      avgResponseMs: Math.round(row.avg_response_ms || 0),
-      status2xx: row.status_2xx || 0,
-      status3xx: row.status_3xx || 0,
-      status4xx: row.status_4xx || 0,
-      status5xx: row.status_5xx || 0,
+    return data.map((row) => ({
+      date: String(row.crawl_date),
+      count: Number(row.request_count) || 0,
+      avgResponseMs: Math.round(Number(row.avg_response_ms) || 0),
+      status2xx: Number(row.status_2xx) || 0,
+      status3xx: Number(row.status_3xx) || 0,
+      status4xx: Number(row.status_4xx) || 0,
+      status5xx: Number(row.status_5xx) || 0,
     }));
   }
 
@@ -225,7 +225,7 @@ export class SeoCockpitService extends SupabaseBaseService {
 
     if (!data) return [];
 
-    return data.map((row: any) => ({
+    return data.map((row) => ({
       url: row.url,
       oldStatus: row.old_status || 'UNKNOWN',
       newStatus: row.new_status || 'UNKNOWN',
@@ -309,7 +309,7 @@ export class SeoCockpitService extends SupabaseBaseService {
 
     if (!data) return [];
 
-    return data.map((row: any) => ({
+    return data.map((row) => ({
       url: `/pieces/${row.gamme_a_name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}`,
       riskType: `CONFUSION_${row.pair_type?.toUpperCase() || 'UNKNOWN'}`,
       urgencyScore: row.confusion_score || 50,
@@ -408,7 +408,7 @@ export class SeoCockpitService extends SupabaseBaseService {
 
     if (!data) return [];
 
-    return data.map((entry: any) => ({
+    return data.map((entry) => ({
       id: entry.id,
       adminEmail: entry.admin_email,
       actionType: entry.action_type,
@@ -456,12 +456,16 @@ export class SeoCockpitService extends SupabaseBaseService {
           .from('gamme_seo_audit')
           .select('id', { count: 'exact', head: true })
           .gte('created_at', startOfMonth),
-        this.callRpc<any[]>(
+        this.callRpc<Record<string, unknown>[]>(
           'get_audit_stats_by_admin',
           {},
           { source: 'admin' },
         ),
-        this.callRpc<any[]>('get_audit_stats_by_type', {}, { source: 'admin' }),
+        this.callRpc<Record<string, unknown>[]>(
+          'get_audit_stats_by_type',
+          {},
+          { source: 'admin' },
+        ),
       ]);
 
     return {
@@ -469,12 +473,12 @@ export class SeoCockpitService extends SupabaseBaseService {
       thisWeek: weekRes.count || 0,
       thisMonth: monthRes.count || 0,
       byAdmin: (byAdminRes.data || []).map((r) => ({
-        email: r.admin_email,
-        count: r.count,
+        email: String(r.admin_email),
+        count: Number(r.count),
       })),
       byType: (byTypeRes.data || []).map((r) => ({
-        type: r.action_type,
-        count: r.count,
+        type: String(r.action_type),
+        count: Number(r.count),
       })),
     };
   }

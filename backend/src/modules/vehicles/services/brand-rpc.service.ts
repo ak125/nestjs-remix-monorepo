@@ -54,7 +54,8 @@ export class BrandRpcService extends SupabaseBaseService {
     const cacheKey = this.getCacheKey(marqueId);
 
     // 1. Vérifier le cache Redis d'abord
-    const cached = await this.cacheService.get<any>(cacheKey);
+    const cached =
+      await this.cacheService.get<Record<string, unknown>>(cacheKey);
     if (cached) {
       const cacheTime = performance.now() - startTime;
       this.logger.debug(
@@ -87,7 +88,7 @@ export class BrandRpcService extends SupabaseBaseService {
    */
   private async fetchRpcWithTimeout(marqueId: number, startTime: number) {
     // Créer une Promise avec timeout
-    const timeoutPromise = new Promise((_, reject) => {
+    const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('RPC_TIMEOUT')), this.RPC_TIMEOUT_MS);
     });
 
@@ -99,10 +100,10 @@ export class BrandRpcService extends SupabaseBaseService {
     );
 
     // Race entre RPC et timeout
-    const { data, error: rpcError } = (await Promise.race([
+    const { data, error: rpcError } = await Promise.race([
       rpcPromise,
       timeoutPromise,
-    ])) as any;
+    ]);
 
     if (rpcError) {
       this.logger.error(`RPC brand ${marqueId} error:`, rpcError);
@@ -133,7 +134,7 @@ export class BrandRpcService extends SupabaseBaseService {
   /**
    * 💾 Stocke le résultat en cache
    */
-  private async cacheResult(marqueId: number, result: any): Promise<void> {
+  private async cacheResult(marqueId: number, result: unknown): Promise<void> {
     const cacheKey = this.getCacheKey(marqueId);
     await this.cacheService.set(cacheKey, result, this.CACHE_TTL_SECONDS);
     this.logger.debug(

@@ -4,6 +4,13 @@ import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ErrorLog, ErrorMetrics } from '../entities/error-log.entity';
 
+interface ErrorEntry {
+  error_code?: string | number;
+  error_message?: string;
+  timestamp?: string | Date;
+  [key: string]: unknown;
+}
+
 // Interface du code utilisateur (conservée pour compatibilité)
 export interface ErrorLogEntry {
   code: number;
@@ -13,7 +20,7 @@ export interface ErrorLogEntry {
   referrer?: string;
   userId?: string;
   sessionId?: string;
-  metadata?: any;
+  metadata?: Record<string, unknown>;
 }
 
 @Injectable()
@@ -498,23 +505,26 @@ export class ErrorLogService extends SupabaseBaseService {
     }
   }
 
-  private groupBy(array: any[], key: string): Record<string, number> {
-    return array.reduce((acc, item) => {
-      const value = item[key] || 'unknown';
+  private groupBy(
+    array: Record<string, unknown>[],
+    key: string,
+  ): Record<string, number> {
+    return array.reduce<Record<string, number>>((acc, item) => {
+      const value = String(item[key] || 'unknown');
       acc[value] = (acc[value] || 0) + 1;
       return acc;
     }, {});
   }
 
-  private countErrors(errors: any[]): Record<string, number> {
-    return errors.reduce((acc, error) => {
+  private countErrors(errors: ErrorEntry[]): Record<string, number> {
+    return errors.reduce<Record<string, number>>((acc, error) => {
       const key = `${error.error_code}|${error.error_message}`;
       acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {});
   }
 
-  private calculateErrorRate(errors: any[], period: string): number {
+  private calculateErrorRate(errors: ErrorEntry[], period: string): number {
     const periodMs = this.getPeriodInMs(period);
     const now = Date.now();
     const recentErrors = errors.filter(

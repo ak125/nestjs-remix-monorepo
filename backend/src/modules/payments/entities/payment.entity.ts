@@ -27,7 +27,7 @@ export interface Payment {
   providerTransactionId?: string;
   providerReference?: string;
   description?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   failureReason?: string;
   processedAt?: Date;
   refundedAmount: number;
@@ -44,7 +44,7 @@ export interface Transaction {
   amount: number;
   status: string;
   providerTransactionId?: string;
-  providerResponse?: Record<string, any>;
+  providerResponse?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -53,7 +53,7 @@ export interface PaymentPostback {
   id: string;
   paymentId: string;
   providerName: string;
-  rawData: Record<string, any>;
+  rawData: Record<string, unknown>;
   signature?: string;
   verified: boolean;
   processedAt?: Date;

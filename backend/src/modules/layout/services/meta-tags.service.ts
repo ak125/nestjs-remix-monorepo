@@ -34,7 +34,7 @@ export interface MetaTagsData {
     description: string;
     image: string;
   };
-  structured?: Record<string, any>;
+  structured?: Record<string, unknown>;
 }
 
 @Injectable()

@@ -131,8 +131,8 @@ export function mapSupabaseToUser(data: any): User {
  */
 export function mapUserToSupabase(
   user: Partial<CreateUserDto | UpdateUserDto>,
-): any {
-  const mapped: any = {};
+): Record<string, string> {
+  const mapped: Record<string, string> = {};
 
   if (user.email !== undefined) mapped.cst_mail = user.email;
   if (user.firstName !== undefined) mapped.cst_fname = user.firstName;

@@ -61,6 +61,26 @@ export interface ContactTicket {
   };
 }
 
+interface XtrMsgRow {
+  msg_id: string;
+  msg_cst_id: string;
+  msg_cnfa_id?: string;
+  msg_ord_id?: string;
+  msg_date: string;
+  msg_subject: string;
+  msg_content: string;
+  msg_parent_id?: string;
+  msg_open: '0' | '1';
+  msg_close: '0' | '1';
+  ___xtr_customer?: {
+    cst_name: string;
+    cst_fname: string;
+    cst_mail: string;
+    cst_phone?: string;
+  };
+  [key: string]: unknown;
+}
+
 @Injectable()
 export class ContactService extends SupabaseBaseService {
   protected readonly logger = new Logger(ContactService.name);
@@ -288,7 +308,7 @@ export class ContactService extends SupabaseBaseService {
     assignedTo?: string,
     internalNote?: string,
   ): Promise<ContactTicket> {
-    const updateData: any = {};
+    const updateData: Record<string, string | null> = {};
 
     if (status === 'open') {
       updateData.msg_open = '1';
@@ -379,7 +399,9 @@ export class ContactService extends SupabaseBaseService {
   /**
    * Récupère les réponses d'un ticket (conversation complète)
    */
-  async getTicketResponses(ticketId: string): Promise<any[]> {
+  async getTicketResponses(
+    ticketId: string,
+  ): Promise<Record<string, unknown>[]> {
     const { data, error } = await this.supabase
       .from(TABLES.xtr_msg)
       .select(
@@ -544,7 +566,7 @@ export class ContactService extends SupabaseBaseService {
     return `${contactData.message}\n\n--- MÉTADONNÉES ---\n${JSON.stringify(metadata, null, 2)}`;
   }
 
-  private transformToContactTicket(data: any): ContactTicket {
+  private transformToContactTicket(data: XtrMsgRow): ContactTicket {
     // Extraire les métadonnées du contenu si elles existent
     let priority = 'normal';
     let category = 'general';
@@ -589,7 +611,7 @@ export class ContactService extends SupabaseBaseService {
   private async sendNotifications(
     ticket: ContactTicket,
     event: string,
-    additionalData?: any,
+    additionalData?: Record<string, unknown>,
   ): Promise<void> {
     try {
       const customerName = ticket.customer
@@ -783,7 +805,12 @@ export class ContactService extends SupabaseBaseService {
 
   async addTicketResponse(
     ticketId: string,
-    responseData: any,
+    responseData: {
+      message: string;
+      author: string;
+      authorType: 'staff' | 'customer';
+      [key: string]: unknown;
+    },
   ): Promise<ContactTicket> {
     const response = {
       message_id: ticketId,
