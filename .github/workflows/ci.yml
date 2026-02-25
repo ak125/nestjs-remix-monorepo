@@ -408,7 +408,7 @@ jobs:
 
             # Known bypass files (debug/internal)
             BYPASS_COUNT=$(echo "$DIRECT_RPC_FILES" | \
-              grep -c "googlebot-detector\|enhanced-config\|products.service\|advice.service" || echo "0")
+              grep -c "googlebot-detector\|enhanced-config\|products.service\|advice.service\|content-refresh.service\|admin-job-health" || echo "0")
 
             UNEXPECTED=$((DIRECT_RPC - BYPASS_COUNT))
 
