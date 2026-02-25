@@ -77,6 +77,18 @@ jest.mock('../../../modules/admin/services/section-compiler.service', () => ({
   SectionCompilerService: jest.fn(),
 }));
 
+jest.mock('../../../modules/admin/services/image-gates.service', () => ({
+  ImageGatesService: jest.fn(),
+}));
+
+jest.mock('../../../config/feature-flags.service', () => ({
+  FeatureFlagsService: jest.fn(),
+}));
+
+jest.mock('../../../modules/admin/services/admin-job-health.service', () => ({
+  AdminJobHealthService: jest.fn(),
+}));
+
 jest.mock('../../../config/content-section-policy', () => ({
   pageTypeToRole: jest.fn().mockReturnValue('R4'),
   POLICY_VERSION: 'v1-test',
@@ -125,6 +137,20 @@ const mockConfigService = {
     return defaultVal ?? '';
   }),
 };
+const mockJobHealth = {
+  recordSuccess: jest.fn().mockResolvedValue(undefined),
+  recordFailure: jest.fn().mockResolvedValue(undefined),
+};
+const mockFlags = {
+  briefGatesEnabled: false,
+  hardGatesEnabled: false,
+  autoRepairEnabled: false,
+  safeFallbackEnabled: false,
+  evidencePackEnabled: false,
+  briefGatesObserveOnly: false,
+  autoRepairMaxPasses: 0,
+  isCanary: jest.fn().mockReturnValue(false),
+};
 
 let processor: any;
 
@@ -137,6 +163,8 @@ beforeAll(() => {
   processor.conseilEnricher = mockConseilEnricher;
   processor.referenceService = mockReferenceService;
   processor.diagnosticService = mockDiagnosticService;
+  processor.jobHealth = mockJobHealth;
+  processor.flags = mockFlags;
   processor.gammeLocksInProgress = new Set<number>();
 });
 
