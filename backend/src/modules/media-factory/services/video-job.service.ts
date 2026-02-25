@@ -173,8 +173,8 @@ export class VideoJobService extends SupabaseBaseService {
       jobId: `video-exec-${executionLogId}`,
       attempts: 2,
       backoff: { type: 'exponential', delay: 30000 },
-      removeOnComplete: 200,
-      removeOnFail: 500,
+      removeOnComplete: 50,
+      removeOnFail: 50,
     });
 
     // Update log with BullMQ job ID
@@ -308,8 +308,8 @@ export class VideoJobService extends SupabaseBaseService {
       jobId: `video-exec-${newLogId}`,
       attempts: 2,
       backoff: { type: 'exponential', delay: 30000 },
-      removeOnComplete: 200,
-      removeOnFail: 500,
+      removeOnComplete: 50,
+      removeOnFail: 50,
     });
 
     await this.client

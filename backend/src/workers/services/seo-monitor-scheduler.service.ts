@@ -72,8 +72,8 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
           cron: '*/30 * * * *', // Toutes les 30 minutes
         },
         jobId: 'critical-urls-monitoring', // ID unique pour éviter duplicatas
-        removeOnComplete: 100,
-        removeOnFail: 500,
+        removeOnComplete: 25,
+        removeOnFail: 50,
         attempts: 3,
         backoff: {
           type: 'exponential',
@@ -100,8 +100,8 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
           cron: '0 */6 * * *', // Toutes les 6 heures (00:00, 06:00, 12:00, 18:00)
         },
         jobId: 'random-sample-monitoring', // ID unique
-        removeOnComplete: 50,
-        removeOnFail: 200,
+        removeOnComplete: 25,
+        removeOnFail: 50,
         attempts: 2,
         backoff: {
           type: 'exponential',
@@ -149,8 +149,8 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
       },
       {
         priority: 1, // Haute priorité pour jobs manuels
-        removeOnComplete: 50,
-        removeOnFail: 100,
+        removeOnComplete: 25,
+        removeOnFail: 50,
         attempts: 1, // Pas de retry pour jobs manuels
       },
     );

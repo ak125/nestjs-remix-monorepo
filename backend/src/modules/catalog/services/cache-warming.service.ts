@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HomepageRpcService } from './homepage-rpc.service';
+import { CatalogFamilyService } from './catalog-family.service';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 /**
@@ -20,7 +21,10 @@ export class CacheWarmingService
 {
   protected override readonly logger = new Logger(CacheWarmingService.name);
 
-  constructor(private readonly homepageRpcService: HomepageRpcService) {
+  constructor(
+    private readonly homepageRpcService: HomepageRpcService,
+    private readonly catalogFamilyService: CatalogFamilyService,
+  ) {
     super();
   }
 
@@ -50,7 +54,14 @@ export class CacheWarmingService
         `✅ Homepage cache warmed: ${homepageResult.success ? 'OK' : 'FAILED'} (${homepageResult.time.toFixed(0)}ms)`,
       );
 
-      // 2. 🚀 LCP V9: Gamme pages — warm catalog-linked gammes (~221)
+      // 2. Catalog families (RPC optimisée, TTL 1h)
+      const familiesStart = performance.now();
+      await this.catalogFamilyService.getCatalogFamiliesPhpLogic();
+      this.logger.log(
+        `✅ Families cache warmed (${(performance.now() - familiesStart).toFixed(0)}ms)`,
+      );
+
+      // 3. 🚀 LCP V9: Gamme pages — warm catalog-linked gammes (~221)
       await this.warmGammePages();
 
       const totalTime = performance.now() - startTime;

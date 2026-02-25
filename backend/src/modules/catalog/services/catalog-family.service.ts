@@ -29,51 +29,65 @@ export class CatalogFamilyService extends SupabaseBaseService {
   }
 
   /**
-   * Récupère les données depuis Supabase (logique simplifiée sans FK)
+   * Récupère les données via RPC optimisée (1 requête SQL au lieu de 39)
+   * Fallback sur l'ancienne méthode N+1 en cas d'échec RPC
    */
   private async fetchCatalogFamiliesPhpLogic(): Promise<CatalogFamiliesResponse> {
     try {
-      this.logger.log('Récupération des familles de catalogue...');
+      this.logger.log(
+        'Récupération des familles de catalogue (RPC optimisée)...',
+      );
 
-      // Récupérer directement les familles actives
-      const { data: familiesData, error: familiesError } = await this.supabase
-        .from('catalog_family')
-        .select(
-          'mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_display, mf_sort',
-        )
-        .eq('mf_display', '1')
-        .order('mf_sort', { ascending: true });
+      const { data: rows, error: rpcError } = await this.callRpc<any[]>(
+        'get_catalog_hierarchy_optimized',
+        {},
+        { source: 'api' },
+      );
 
-      if (familiesError) {
-        this.logger.error('Erreur récupération familles:', familiesError);
-        throw new BadRequestException(
-          'Erreur lors de la récupération des familles',
-        );
+      if (rpcError || !rows) {
+        this.logger.warn('RPC échouée, fallback N+1:', rpcError?.message);
+        return this.fetchCatalogFamiliesN1Fallback();
       }
 
-      const families: CatalogFamily[] = (familiesData || []).map((f) => ({
-        mf_id: parseInt(f.mf_id, 10),
-        mf_name: f.mf_name_system || f.mf_name,
-        mf_name_system: f.mf_name_system,
-        mf_description: f.mf_description,
-        mf_pic: f.mf_pic,
-        mf_display: f.mf_display,
-        mf_sort: parseInt(f.mf_sort, 10),
-      }));
+      // Transformer le résultat plat en structure families[] + gammes[]
+      const familyMap = new Map<number, CatalogFamilyWithGammes>();
 
-      this.logger.log(`${families.length} familles trouvées`);
+      for (const row of rows) {
+        const mfId = parseInt(row.mf_id, 10);
 
-      // Pour chaque famille, récupérer ses gammes
-      const familiesWithGammes: CatalogFamilyWithGammes[] = [];
+        if (!familyMap.has(mfId)) {
+          familyMap.set(mfId, {
+            mf_id: mfId,
+            mf_name: row.mf_name,
+            mf_name_system: row.mf_name,
+            mf_description: undefined,
+            mf_pic: row.mf_image,
+            mf_display: row.mf_display,
+            mf_sort: row.mf_sort,
+            gammes: [],
+            gammes_count: 0,
+          });
+        }
 
-      for (const family of families) {
-        const gammes = await this.getGammesForFamily(family.mf_id);
-        familiesWithGammes.push({
-          ...family,
-          gammes,
-          gammes_count: gammes.length,
-        });
+        if (row.pg_id) {
+          familyMap.get(mfId)!.gammes.push({
+            pg_id: row.pg_id,
+            pg_alias: row.pg_alias,
+            pg_name: row.pg_name,
+            pg_name_url: undefined,
+            pg_name_meta: undefined,
+            pg_pic: undefined,
+            pg_img: row.pg_img,
+            mc_sort: row.mc_sort ? parseInt(row.mc_sort, 10) : 0,
+          });
+        }
       }
+
+      const familiesWithGammes = Array.from(familyMap.values())
+        .sort((a, b) => a.mf_sort - b.mf_sort)
+        .map((f) => ({ ...f, gammes_count: f.gammes.length }));
+
+      this.logger.log(`${familiesWithGammes.length} familles récupérées (RPC)`);
 
       return {
         families: familiesWithGammes,
@@ -90,6 +104,60 @@ export class CatalogFamilyService extends SupabaseBaseService {
         message: 'Erreur lors de la récupération des familles',
       };
     }
+  }
+
+  /**
+   * Fallback N+1 : ancienne méthode avec boucle (utilisée si RPC échoue)
+   */
+  private async fetchCatalogFamiliesN1Fallback(): Promise<CatalogFamiliesResponse> {
+    const { data: familiesData, error: familiesError } = await this.supabase
+      .from('catalog_family')
+      .select(
+        'mf_id, mf_name, mf_name_system, mf_description, mf_pic, mf_display, mf_sort',
+      )
+      .eq('mf_display', '1')
+      .order('mf_sort', { ascending: true });
+
+    if (familiesError) {
+      this.logger.error(
+        'Erreur récupération familles (fallback):',
+        familiesError,
+      );
+      throw new BadRequestException(
+        'Erreur lors de la récupération des familles',
+      );
+    }
+
+    const families: CatalogFamily[] = (familiesData || []).map((f) => ({
+      mf_id: parseInt(f.mf_id, 10),
+      mf_name: f.mf_name_system || f.mf_name,
+      mf_name_system: f.mf_name_system,
+      mf_description: f.mf_description,
+      mf_pic: f.mf_pic,
+      mf_display: f.mf_display,
+      mf_sort: parseInt(f.mf_sort, 10),
+    }));
+
+    const familiesWithGammes: CatalogFamilyWithGammes[] = [];
+    for (const family of families) {
+      const gammes = await this.getGammesForFamily(family.mf_id);
+      familiesWithGammes.push({
+        ...family,
+        gammes,
+        gammes_count: gammes.length,
+      });
+    }
+
+    this.logger.log(
+      `${familiesWithGammes.length} familles récupérées (fallback N+1)`,
+    );
+
+    return {
+      families: familiesWithGammes,
+      success: true,
+      totalFamilies: familiesWithGammes.length,
+      message: `${familiesWithGammes.length} familles récupérées avec succès`,
+    };
   }
 
   private async getGammesForFamily(mf_id: number): Promise<CatalogGamme[]> {
