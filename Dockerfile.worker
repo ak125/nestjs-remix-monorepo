@@ -52,7 +52,7 @@ COPY --from=installer /app/backend/package.json ./backend/package.json
 COPY --from=installer /app/packages/database-types ./packages/database-types
 
 # Copier fichiers de configuration
-COPY crontab ./crontab
+COPY config/cron/crontab ./crontab
 COPY scripts/start-worker.sh ./scripts/
 
 # Rendre le script exécutable

@@ -63,6 +63,7 @@ docs/
 backend/*.js
 backend/*.csv
 scripts/
+!scripts/start-worker.sh
 
 # Packages AI non utilisés en prod
 packages/ai-orchestrator/
