@@ -7,7 +7,7 @@
 import { Link } from "@remix-run/react";
 import { User, Settings, LogOut, Package, Heart } from "lucide-react";
 import { memo, useState } from "react";
-import { useOptionalUser } from "../../root";
+import { useOptionalUser } from "~/hooks/useRootData";
 
 interface UserMenuProps {
   className?: string;

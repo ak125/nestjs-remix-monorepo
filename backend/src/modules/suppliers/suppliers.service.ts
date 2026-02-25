@@ -130,7 +130,10 @@ export class SuppliersService extends SupabaseBaseService {
     try {
       let query = this.supabase
         .from(TABLES.xtr_supplier)
-        .select('*', { count: 'exact' });
+        .select(
+          'spl_id, spl_name, spl_alias, spl_display, spl_sort, email, phone, address1, city, discount_rate, delivery_delay, is_active',
+          { count: 'exact' },
+        );
 
       // Appliquer le filtre de recherche sur les colonnes réelles
       if (search) {

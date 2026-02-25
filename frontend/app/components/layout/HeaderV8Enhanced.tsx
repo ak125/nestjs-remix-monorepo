@@ -25,7 +25,7 @@ import { memo, useState, useEffect } from "react";
 
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { useOptionalUser } from "../../root";
+import { useOptionalUser } from "~/hooks/useRootData";
 import { CartIcon } from "../cart/CartIcon";
 import { SearchBar } from "../search/SearchBar";
 

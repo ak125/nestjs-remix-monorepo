@@ -67,7 +67,10 @@ export class ProductsAdminService extends SupabaseBaseService {
       // Construire la requête pour les produits
       let query = this.client
         .from(TABLES.pieces)
-        .select('*', { count: 'exact' })
+        .select(
+          'piece_id, piece_name, piece_ref, piece_ref_clean, piece_des, piece_display, piece_has_img, piece_has_oem, piece_year, piece_weight_kgm, piece_qty_sale, piece_qty_pack, piece_sort, piece_fil_name, piece_pm_id, piece_ga_id, piece_fil_id',
+          { count: 'exact' },
+        )
         .eq('piece_ga_id', gammeId)
         .eq('piece_display', true);
 
@@ -225,7 +228,10 @@ export class ProductsAdminService extends SupabaseBaseService {
       // Étape 1 : Récupérer les pièces
       let query = this.client
         .from(TABLES.pieces)
-        .select('*', { count: 'exact' });
+        .select(
+          'piece_id, piece_name, piece_ref, piece_des, piece_pm_id, piece_pg_id, piece_display, piece_has_img, piece_year, piece_qty_sale',
+          { count: 'exact' },
+        );
 
       // Filtres
       if (search) {

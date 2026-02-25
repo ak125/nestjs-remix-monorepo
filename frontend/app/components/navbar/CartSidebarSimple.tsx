@@ -17,8 +17,8 @@ import { ShoppingBag, X } from "lucide-react";
 import { memo } from "react";
 
 import { Badge } from "~/components/ui";
+import { useRootCart } from "~/hooks/useRootData";
 import { cn } from "../../lib/utils";
-import { useRootCart } from "../../root";
 import { Sheet, SheetContent, SheetClose } from "../ui/sheet";
 
 const FREE_SHIPPING_THRESHOLD = 150;

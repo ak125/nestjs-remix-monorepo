@@ -53,7 +53,10 @@ export class MessageDataService extends SupabaseBaseService {
     try {
       let query = this.supabase
         .from(this.tableName)
-        .select('*', { count: 'exact' });
+        .select(
+          'msg_id, msg_cst_id, msg_cnfa_id, msg_ord_id, msg_subject, msg_content, msg_close, msg_date, msg_open',
+          { count: 'exact' },
+        );
 
       // Filtres
       if (status !== 'all') {

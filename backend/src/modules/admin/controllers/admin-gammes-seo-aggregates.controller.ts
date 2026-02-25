@@ -6,14 +6,7 @@
  * - POST /api/admin/gammes-seo/:pgId/refresh-aggregates → Rafraîchir agrégats d'une gamme
  */
 
-import {
-  Controller,
-  Post,
-  Param,
-  UseGuards,
-  Logger,
-  ParseIntPipe,
-} from '@nestjs/common';
+import { Controller, Post, Param, UseGuards, Logger } from '@nestjs/common';
 import {
   OperationFailedException,
   DomainNotFoundException,
@@ -73,8 +66,9 @@ export class AdminGammesSeoAggregatesController {
    * Rafraîchit les agrégats pour une gamme spécifique
    */
   @Post(':pgId/refresh-aggregates')
-  async refreshGammeAggregates(@Param('pgId', ParseIntPipe) pgId: number) {
+  async refreshGammeAggregates(@Param('pgId') pgIdOrSlug: string) {
     try {
+      const pgId = await this.gammesSeoService.resolveIdOrSlug(pgIdOrSlug);
       this.logger.log(
         `🔄 POST /api/admin/gammes-seo/${pgId}/refresh-aggregates`,
       );
@@ -107,11 +101,11 @@ export class AdminGammesSeoAggregatesController {
         throw error;
       }
       this.logger.error(
-        `❌ Error refreshing aggregates for gamme ${pgId}:`,
+        `❌ Error refreshing aggregates for gamme ${pgIdOrSlug}:`,
         error,
       );
       throw new OperationFailedException({
-        message: `Erreur lors du rafraîchissement des agrégats pour la gamme ${pgId}`,
+        message: `Erreur lors du rafraîchissement des agrégats pour la gamme ${pgIdOrSlug}`,
       });
     }
   }

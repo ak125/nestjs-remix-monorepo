@@ -491,7 +491,10 @@ export class UsersService extends SupabaseBaseService {
         count,
       } = await this.supabase
         .from(TABLES.xtr_customer)
-        .select('*', { count: 'exact' })
+        .select(
+          'cst_id, cst_email, cst_firstname, cst_lastname, cst_tel, cst_level, cst_active, cst_created_at, cst_updated_at',
+          { count: 'exact' },
+        )
         .eq('cst_active', 1)
         .range(offset, offset + limit - 1)
         .order('cst_id', { ascending: false });
@@ -556,7 +559,10 @@ export class UsersService extends SupabaseBaseService {
       // Construire la requête Supabase avec filtres
       let query = this.supabase
         .from(TABLES.xtr_customer)
-        .select('*', { count: 'exact' });
+        .select(
+          'cst_id, cst_email, cst_firstname, cst_lastname, cst_tel, cst_level, cst_active, cst_created_at, cst_updated_at',
+          { count: 'exact' },
+        );
 
       // Filtre de recherche global (email, prénom, nom)
       if (searchParams.search) {

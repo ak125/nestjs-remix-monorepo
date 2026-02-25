@@ -13,6 +13,7 @@ import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { CacheService } from '../../../cache/cache.service';
 import {
   BusinessRuleException,
+  DomainNotFoundException,
   DomainValidationException,
   ErrorCodes,
 } from '../../../common/exceptions';
@@ -190,6 +191,31 @@ export class AdminGammesSeoService extends SupabaseBaseService {
   ) {
     super();
     this.rpcGate = rpcGate;
+  }
+
+  /**
+   * Résout un ID numérique ou un slug pg_alias → pg_id.
+   * Pattern réutilisé de gamme-unified.service.ts et marketing-hub-data.service.ts
+   */
+  async resolveIdOrSlug(idOrSlug: string): Promise<number> {
+    if (/^\d+$/.test(idOrSlug)) {
+      return parseInt(idOrSlug, 10);
+    }
+
+    const { data, error } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id')
+      .eq('pg_alias', idOrSlug)
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      throw new DomainNotFoundException({
+        message: `Gamme introuvable pour le slug "${idOrSlug}"`,
+      });
+    }
+
+    return data.pg_id as number;
   }
 
   /**

@@ -28,8 +28,8 @@ import {
 } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
+import { useOptionalUser, useRootCart } from "~/hooks/useRootData";
 import { SITE_CONFIG } from "../config/site";
-import { useOptionalUser, useRootCart } from "../root";
 import { CartSidebarSimple } from "./navbar/CartSidebarSimple";
 import { NavbarMobile } from "./navbar/NavbarMobile";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";

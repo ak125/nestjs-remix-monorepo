@@ -16,7 +16,6 @@ import {
   Req,
   UseGuards,
   Logger,
-  ParseIntPipe,
 } from '@nestjs/common';
 import {
   OperationFailedException,
@@ -43,10 +42,11 @@ export class AdminGammesSeoUpdateController {
    */
   @Patch(':id')
   async updateGamme(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') idOrSlug: string,
     @Body() updateData: GammeSeoUpdateData,
   ) {
     try {
+      const id = await this.gammesSeoService.resolveIdOrSlug(idOrSlug);
       this.logger.log(`🔧 PATCH /api/admin/gammes-seo/${id}`);
 
       const result = await this.gammesSeoService.updateGamme(id, updateData);
@@ -57,9 +57,9 @@ export class AdminGammesSeoUpdateController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Error updating gamme ${id}:`, error);
+      this.logger.error(`❌ Error updating gamme ${idOrSlug}:`, error);
       throw new OperationFailedException({
-        message: `Erreur lors de la mise à jour de la gamme ${id}`,
+        message: `Erreur lors de la mise à jour de la gamme ${idOrSlug}`,
       });
     }
   }

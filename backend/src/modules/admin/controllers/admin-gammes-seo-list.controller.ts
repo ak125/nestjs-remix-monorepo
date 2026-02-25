@@ -20,7 +20,6 @@ import {
   Res,
   UseGuards,
   Logger,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { OperationFailedException } from '../../../common/exceptions';
 import { Response } from 'express';
@@ -203,8 +202,9 @@ export class AdminGammesSeoListController {
    * Détail complet d'une gamme avec SEO, switches, articles, véhicules
    */
   @Get(':id/detail')
-  async getGammeDetail(@Param('id', ParseIntPipe) id: number) {
+  async getGammeDetail(@Param('id') idOrSlug: string) {
     try {
+      const id = await this.gammesSeoService.resolveIdOrSlug(idOrSlug);
       this.logger.log(`📋 GET /api/admin/gammes-seo/${id}/detail`);
 
       const detail = await this.gammesSeoService.getGammeDetail(id);
@@ -215,7 +215,7 @@ export class AdminGammesSeoListController {
         timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      this.logger.error(`❌ Error getting gamme detail ${id}:`, error);
+      this.logger.error(`❌ Error getting gamme detail ${idOrSlug}:`, error);
       throw new OperationFailedException({
         message: 'Erreur lors de la récupération du détail gamme',
       });

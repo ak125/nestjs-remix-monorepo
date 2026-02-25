@@ -13,7 +13,6 @@ import {
   Param,
   UseGuards,
   Logger,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { OperationFailedException } from '../../../common/exceptions';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
@@ -32,8 +31,9 @@ export class AdminGammesSeoVlevelController {
    * Recalculate V-Level v5.0 for a specific gamme
    */
   @Post(':pgId/recalculate-vlevel')
-  async recalculateVLevel(@Param('pgId', ParseIntPipe) pgId: number) {
+  async recalculateVLevel(@Param('pgId') pgIdOrSlug: string) {
     try {
+      const pgId = await this.gammesSeoService.resolveIdOrSlug(pgIdOrSlug);
       this.logger.log(`POST /api/admin/gammes-seo/${pgId}/recalculate-vlevel`);
 
       const result = await this.gammesSeoService.recalculateVLevel(pgId);
@@ -46,7 +46,7 @@ export class AdminGammesSeoVlevelController {
       };
     } catch (error) {
       this.logger.error(
-        `Error recalculating V-Level for gamme ${pgId}:`,
+        `Error recalculating V-Level for gamme ${pgIdOrSlug}:`,
         error,
       );
       throw new OperationFailedException({
