@@ -34,6 +34,8 @@ import { ImageGatesService } from '../modules/admin/services/image-gates.service
 import { SectionCompilerService } from '../modules/admin/services/section-compiler.service';
 import { PageBriefService } from '../modules/admin/services/page-brief.service';
 import { KeywordDensityGateService } from '../modules/admin/services/keyword-density-gate.service';
+import { EnricherTextUtils } from '../modules/admin/services/enricher-text-utils.service';
+import { EnricherYamlParser } from '../modules/admin/services/enricher-yaml-parser.service';
 
 // Job health tracking (used by all processors)
 import { AdminJobHealthService } from '../modules/admin/services/admin-job-health.service';
@@ -110,6 +112,8 @@ import { RenderAdapterService } from '../modules/media-factory/render/render-ada
     HardGatesService, // Hard gates (attribution, no_guess, scope, contradiction, seo)
     ImageGatesService, // P3: image gates (OG, hero policy, alt text)
     SectionCompilerService, // Section policy enforcement (raw → compiled)
+    EnricherTextUtils, // Used by BuyingGuideEnricherService + ConseilEnricherService
+    EnricherYamlParser, // Used by BuyingGuideEnricherService + ConseilEnricherService
 
     // Video execution dependencies
     // NOTE: Stateless services, safe duplicate (same pattern as enricher services above)
