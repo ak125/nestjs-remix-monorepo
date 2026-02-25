@@ -10,15 +10,11 @@
         "dependsOn": ["^build"]
       },
       "typecheck": {
-        "dependsOn": ["^build"],
-        "cache": false
+        "dependsOn": ["^build"]
       },
-      "lint": {
-        "cache": false
-      },
+      "lint": {},
       "test": {
-        "dependsOn": ["^build"],
-        "cache": false
+        "dependsOn": ["^build"]
       },
       "spec:validate": {
         "cache": false,
