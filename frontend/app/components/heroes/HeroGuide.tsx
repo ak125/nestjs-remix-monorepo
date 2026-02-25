@@ -13,6 +13,8 @@ interface HeroGuideProps {
   title: string;
   /** Description courte */
   description?: string;
+  /** Slogan genere par resolveSlogan() */
+  slogan?: string;
   /** Image hero (photo produit/comparatif) */
   image?: { src: string; alt: string };
   /** Criteres cles (max 3-5, pas de keyword stuffing) */
@@ -26,6 +28,7 @@ interface HeroGuideProps {
 export function HeroGuide({
   title,
   description,
+  slogan,
   image,
   criteria,
   familyName,
@@ -69,6 +72,11 @@ export function HeroGuide({
             <p className="mt-2 text-sm md:text-base text-white/80 max-w-2xl">
               {description}
             </p>
+          )}
+
+          {/* Slogan */}
+          {slogan && (
+            <p className="text-sm text-white/60 max-w-xl mt-1">{slogan}</p>
           )}
 
           {/* Criteria pills */}

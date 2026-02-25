@@ -14,6 +14,8 @@ interface HeroSelectionProps {
   title: string;
   /** Sous-titre optionnel */
   subtitle?: string;
+  /** Slogan genere par resolveSlogan() */
+  slogan?: string;
   /** Slot libre pour breadcrumb (ReactNode) */
   breadcrumbSlot?: ReactNode;
   /** ID ou nom de famille pour le gradient */
@@ -25,6 +27,7 @@ interface HeroSelectionProps {
 export function HeroSelection({
   title,
   subtitle,
+  slogan,
   breadcrumbSlot,
   familyId,
   className = "",
@@ -49,6 +52,9 @@ export function HeroSelection({
             <p className="mt-1.5 text-sm md:text-base text-white/80 max-w-2xl">
               {subtitle}
             </p>
+          )}
+          {slogan && (
+            <p className="text-sm text-white/60 max-w-xl mt-1">{slogan}</p>
           )}
         </div>
       </div>

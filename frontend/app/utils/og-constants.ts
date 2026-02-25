@@ -14,6 +14,7 @@ export type IntentClass =
   | "blog-conseil"
   | "diagnostic"
   | "panne-symptome"
+  | "role-piece"
   | "glossaire-reference"
   | "outil";
 

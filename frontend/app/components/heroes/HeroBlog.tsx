@@ -20,6 +20,8 @@ interface HeroBlogProps {
   title: string;
   /** Description courte */
   description?: string;
+  /** Slogan genere par resolveSlogan() */
+  slogan?: string;
   /** Image hero (photo technique) */
   image?: { src: string; alt: string };
   /** Fil d'Ariane */
@@ -33,6 +35,7 @@ interface HeroBlogProps {
 export function HeroBlog({
   title,
   description,
+  slogan,
   image,
   breadcrumb,
   metaLine,
@@ -106,6 +109,11 @@ export function HeroBlog({
             <p className="mt-2 text-sm md:text-base text-white/80 max-w-2xl">
               {description}
             </p>
+          )}
+
+          {/* Slogan */}
+          {slogan && (
+            <p className="text-sm text-white/60 max-w-xl mt-1">{slogan}</p>
           )}
         </div>
       </div>

@@ -14,6 +14,10 @@
 7. **Mobile** : `py` diminue en `sm:`, le hero ne doit pas depasser 50vh.
 8. **Couleurs** : utiliser `getFamilyTheme()` pour les gradients et accents famille.
 
+9. **Slogans** : prop `slogan?: string` optionnel, rendu dans un `<p>` (jamais dans `<h1>` ni dans les images). Max 60 caracteres. Genere par `resolveSlogan()` depuis `visual-intent.ts`.
+10. **Animation level** : respecter `getAnimationClasses()` de `visual-intent.ts`. Jamais depasser `transition-[opacity,transform] duration-200`. Trois niveaux : `none`, `subtle` (opacity), `moderate` (opacity+transform).
+11. **HeroRole** : intent class `role-piece`, hero_policy `illustration`, tier `pedagogical`. Utilise gradient famille + illustration technique optionnelle. Distinct de HeroReference (minimal, encyclopedique).
+
 ## Composants
 
 | Composant | hero_policy | Intent classes |
@@ -24,3 +28,4 @@
 | HeroBlog | photo | BLOG_CONSEIL |
 | HeroGuide | photo | GUIDE_ACHAT |
 | HeroTransaction | photo | TRANSACTION |
+| HeroRole | illustration | ROLE_PIECE |

@@ -36,9 +36,18 @@ import {
 
 // UI Components
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
+import {
+  SectionImage,
+  SectionWithImage,
+} from "~/components/content/SectionImage";
 import { Error404 } from "~/components/errors/Error404";
-import { HeroReference } from "~/components/heroes";
+import { HeroReference, HeroRole } from "~/components/heroes";
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import {
+  resolveSlogan,
+  getSectionImageConfig,
+  resolveAltText,
+} from "~/config/visual-intent";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
@@ -81,6 +90,7 @@ interface Reference {
     pgId: number | null;
     name: string | null;
     url: string | null;
+    pgImg?: string;
     productCount?: number;
   };
   relatedReferences: number[] | null;
@@ -97,6 +107,20 @@ interface RelatedRef {
 interface LoaderData {
   reference: Reference;
   relatedRefs: RelatedRef[];
+}
+
+/**
+ * S16 — HeroRole vs HeroReference
+ * HeroRole (pedagogique) si le texte roleMecanique est riche ET la piece a des interactions cross-gamme.
+ * Proxy cross_gammes: relatedRefs (liens R4↔R4 vers autres references mecaniquement liees).
+ */
+function shouldUseHeroRole(
+  roleMecanique: string | null,
+  relatedRefsCount: number,
+): boolean {
+  if (!roleMecanique) return false;
+  const wordCount = roleMecanique.split(/\s+/).filter(Boolean).length;
+  return wordCount >= 100 && relatedRefsCount >= 2;
 }
 
 /* ===========================
@@ -398,11 +422,29 @@ export default function ReferenceDetailPage() {
         </div>
       </nav>
 
-      {/* Hero Reference — H1 unique (image-matrix-v1 §7) */}
-      <HeroReference
-        title={reference.title}
-        categoryBadge={reference.gamme.name || undefined}
-      />
+      {/* Hero — S16: HeroRole (pedagogique) si role riche, sinon HeroReference (neutre) */}
+      {shouldUseHeroRole(reference.roleMecanique, relatedRefs.length) ? (
+        <HeroRole
+          title={reference.title}
+          description={reference.definition}
+          slogan={resolveSlogan("role-piece", reference.gamme.name)}
+          familyName={reference.gamme.name || undefined}
+          illustration={
+            reference.gamme.pgImg
+              ? {
+                  src: reference.gamme.pgImg,
+                  alt: resolveAltText("role-piece", reference.gamme.name),
+                }
+              : undefined
+          }
+        />
+      ) : (
+        <HeroReference
+          title={reference.title}
+          categoryBadge={reference.gamme.name || undefined}
+          slogan={resolveSlogan("glossaire-reference", reference.gamme.name)}
+        />
+      )}
 
       {/* Back Button */}
       <section className="py-4 border-b bg-white">
@@ -442,21 +484,48 @@ export default function ReferenceDetailPage() {
             </Card>
 
             {/* Role Mecanique */}
-            {reference.roleMecanique && (
-              <Card className="shadow-lg border-2 border-green-100">
-                <CardHeader className="bg-green-50/50">
-                  <CardTitle className="flex items-center gap-2 text-green-900">
-                    <Wrench className="w-5 h-5" />
-                    Rôle mécanique
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
+            {reference.roleMecanique &&
+              (() => {
+                const imgConfig = reference.gamme.pgImg
+                  ? getSectionImageConfig(
+                      "glossaire-reference",
+                      "roleMecanique",
+                    )
+                  : undefined;
+                const textContent = (
                   <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                     {reference.roleMecanique}
                   </p>
-                </CardContent>
-              </Card>
-            )}
+                );
+                return (
+                  <Card className="shadow-lg border-2 border-green-100">
+                    <CardHeader className="bg-green-50/50">
+                      <CardTitle className="flex items-center gap-2 text-green-900">
+                        <Wrench className="w-5 h-5" />
+                        Rôle mécanique
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-6">
+                      {imgConfig && reference.gamme.pgImg ? (
+                        <SectionWithImage>
+                          <SectionImage
+                            src={reference.gamme.pgImg}
+                            alt={resolveAltText(
+                              "glossaire-reference",
+                              reference.gamme.name,
+                            )}
+                            placement={imgConfig.placement}
+                            size={imgConfig.size}
+                          />
+                          {textContent}
+                        </SectionWithImage>
+                      ) : (
+                        textContent
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })()}
 
             {/* Composition */}
             {reference.composition && reference.composition.length > 0 && (

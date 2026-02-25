@@ -37,6 +37,7 @@ import {
   FileText,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { resolveSlogan } from "~/config/visual-intent";
 import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -859,6 +860,7 @@ export default function VehicleDetailPage() {
       <HeroSelection
         title={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch de ${vehicle.type_year_from} à ${vehicle.type_year_to || "aujourd'hui"}`}
         subtitle={`${vehicle.type_fuel} · ${vehicle.type_body} · ${vehicle.type_year_from}–${vehicle.type_year_to || "Auj."}`}
+        slogan={resolveSlogan("selection")}
       />
 
       {/* Vehicle image + specs (hors hero — SELECTION = gradient-only) */}

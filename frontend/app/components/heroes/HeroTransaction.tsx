@@ -19,6 +19,8 @@ interface HeroTransactionProps {
   gradient?: string;
   /** Badges de confiance (ex: "Livraison 24h", "Garantie 2 ans") */
   badges?: string[];
+  /** Slogan genere par resolveSlogan() */
+  slogan?: string;
   /** Slot pour overlays absolute-positioned (wallpaper, mesh gradient, extra glows) */
   backgroundSlot?: ReactNode;
   /** Contenu libre : H1, UXMessageBox, image, VehicleSelector — tout reste dans la route */
@@ -52,6 +54,7 @@ export function HeroTransaction({
   family,
   gradient,
   badges = [],
+  slogan,
   backgroundSlot,
   children,
   className = "",
@@ -86,6 +89,13 @@ export function HeroTransaction({
 
       <div className="relative z-10 container mx-auto px-4 max-w-7xl">
         {children}
+
+        {/* Slogan */}
+        {slogan && (
+          <p className="text-sm text-white/60 max-w-xl mx-auto text-center mt-2">
+            {slogan}
+          </p>
+        )}
 
         {/* Trust badges */}
         <TrustBadges badges={badges} />

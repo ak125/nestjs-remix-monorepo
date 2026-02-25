@@ -59,10 +59,19 @@ import CTAButton from "~/components/blog/CTAButton";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { TableOfContents } from "~/components/blog/TableOfContents";
 import VehicleCarousel from "~/components/blog/VehicleCarousel";
+import {
+  SectionImage,
+  SectionWithImage,
+} from "~/components/content/SectionImage";
 import { Error404 } from "~/components/errors/Error404";
 import { HeroBlog } from "~/components/heroes";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import {
+  getSectionImageConfig,
+  resolveAltText,
+  resolveSlogan,
+} from "~/config/visual-intent";
 
 // SEO Components - HtmlContent remplace dangerouslySetInnerHTML
 import {
@@ -486,6 +495,9 @@ export default function LegacyBlogArticle() {
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   const s1Sections = conseil?.filter((c) => c.sectionType === "S1") ?? [];
+  // Budget images section : max 2 pour blog-conseil
+  let sectionImageCount = 0;
+  const MAX_SECTION_IMAGES = 2;
   // Quand des sections conseil S1-S8 existent, elles remplacent les H2/H3 article (évite la duplication)
   const hasConseilSections =
     conseil &&
@@ -573,6 +585,7 @@ export default function LegacyBlogArticle() {
       <HeroBlog
         title={article.h1}
         description={article.excerpt}
+        slogan={resolveSlogan("blog-conseil", pg_alias)}
         metaLine={`${new Date(article.publishedAt).toLocaleDateString("fr-FR")} · ${Math.ceil(article.content.split(" ").length / 200)} min · ${article.viewsCount.toLocaleString()} vues`}
       />
 
@@ -687,40 +700,46 @@ export default function LegacyBlogArticle() {
                         </h3>
                       )}
 
-                      {/* Image de la section (style moderne avec Card) */}
-                      {section.wall && section.wall !== "no.jpg" && (
-                        <Card
-                          className="float-left mr-6 mb-4 overflow-hidden shadow-lg hover:shadow-xl transition-shadow border-2 border-gray-100"
-                          style={{ width: "240px" }}
-                        >
-                          <CardContent className="p-0">
-                            <img
+                      {/* Image de la section via SectionImage (responsive, lazy, budget=2) */}
+                      {(() => {
+                        const hasWall =
+                          section.wall &&
+                          section.wall !== "no.jpg" &&
+                          sectionImageCount < MAX_SECTION_IMAGES;
+                        const imageConfig = getSectionImageConfig(
+                          "blog-conseil",
+                          "signsOfWear",
+                        );
+                        if (hasWall) sectionImageCount++;
+
+                        const htmlBlock = (
+                          <HtmlContent
+                            html={section.content}
+                            className={`prose prose-lg max-w-none ${section.level === 3 ? "ml-4" : ""}
+                            prose-p:text-gray-700 prose-p:leading-relaxed
+                            prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                            prose-strong:font-semibold
+                            prose-ul:list-disc prose-ul:pl-6
+                            prose-li:text-gray-700`}
+                            trackLinks={true}
+                          />
+                        );
+
+                        return hasWall && imageConfig ? (
+                          <SectionWithImage>
+                            <SectionImage
                               src={`/upload/blog/guide/mini/${section.wall}`}
-                              alt={section.title}
-                              width={240}
-                              height={176}
-                              className="w-full object-cover aspect-[240/176]"
-                              loading="lazy"
+                              alt={resolveAltText("blog-conseil", pg_alias)}
+                              placement={imageConfig.placement}
+                              size={imageConfig.size}
+                              caption={section.title}
                             />
-                          </CardContent>
-                        </Card>
-                      )}
-
-                      <HtmlContent
-                        html={section.content}
-                        className={`prose prose-lg max-w-none ${section.level === 3 ? "ml-4" : ""}
-                        prose-p:text-gray-700 prose-p:leading-relaxed
-                        prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-                        prose-strong:font-semibold
-                        prose-ul:list-disc prose-ul:pl-6
-                        prose-li:text-gray-700`}
-                        trackLinks={true}
-                      />
-
-                      {/* Clear float après l'image */}
-                      {section.wall && section.wall !== "no.jpg" && (
-                        <div className="clear-both" />
-                      )}
+                            {htmlBlock}
+                          </SectionWithImage>
+                        ) : (
+                          htmlBlock
+                        );
+                      })()}
 
                       {/* CTA de section (si présent) */}
                       {section.cta_link && section.cta_anchor && (

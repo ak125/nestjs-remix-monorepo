@@ -11,3 +11,4 @@ export { HeroDiagnostic } from "./HeroDiagnostic";
 export { HeroBlog } from "./HeroBlog";
 export { HeroGuide } from "./HeroGuide";
 export { HeroTransaction } from "./HeroTransaction";
+export { HeroRole } from "./HeroRole";

@@ -34,6 +34,10 @@ import { useEffect, useState, lazy, Suspense } from "react";
 // V2: SEOHelmet retiré — meta() est la source unique pour tous les tags <head>
 // Note: generateGammeMeta supprimé - on utilise maintenant data.meta du backend
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
+import {
+  SectionImage,
+  SectionWithImage,
+} from "~/components/content/SectionImage";
 import { Error404 } from "~/components/errors/Error404";
 import { HeroTransaction } from "~/components/heroes";
 import DarkSection from "~/components/layout/DarkSection";
@@ -43,6 +47,11 @@ import SectionHeader from "~/components/layout/SectionHeader";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import { R1ReusableContent } from "~/components/pieces/R1ReusableContent";
 import TableOfContents from "~/components/pieces/TableOfContents";
+import {
+  getSectionImageConfig,
+  resolveAltText,
+  resolveSlogan,
+} from "~/config/visual-intent";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import {
@@ -590,6 +599,7 @@ export default function PiecesDetailPage() {
       {/* 🎯 HERO SECTION - Avec couleur de la famille */}
       <HeroTransaction
         gradient={familleColor}
+        slogan={resolveSlogan("transaction", data.content?.pg_name)}
         className="py-12 md:py-16 lg:py-20"
         backgroundSlot={
           <>
@@ -810,14 +820,35 @@ export default function PiecesDetailPage() {
 
       {/* V2: Dark "Conseils & Diagnostic" section retirée — liens couverts par R1ReusableContent */}
 
-      {/* R1 micro-bloc: 120-180 mots + 3 cartes navigation */}
+      {/* R1 micro-bloc: 120-180 mots + 3 cartes navigation + image section (max 1) */}
       <PageSection maxWidth="5xl" className="py-6 sm:py-8">
-        <R1ReusableContent
-          gammeName={data.content?.pg_name || "pièces auto"}
-          familleName={data.famille?.mf_name || ""}
-          alias={data.content?.pg_alias || ""}
-          reference={data.reference}
-        />
+        {(() => {
+          const imageConfig = data.content?.pg_pic
+            ? getSectionImageConfig("transaction", "buyingGuide")
+            : undefined;
+          const r1Block = (
+            <R1ReusableContent
+              gammeName={data.content?.pg_name || "pièces auto"}
+              familleName={data.famille?.mf_name || ""}
+              alias={data.content?.pg_alias || ""}
+              reference={data.reference}
+            />
+          );
+
+          return imageConfig && data.content?.pg_pic ? (
+            <SectionWithImage>
+              <SectionImage
+                src={data.content.pg_pic}
+                alt={resolveAltText("transaction", data.content?.pg_name)}
+                placement={imageConfig.placement}
+                size={imageConfig.size}
+              />
+              {r1Block}
+            </SectionWithImage>
+          ) : (
+            r1Block
+          );
+        })()}
       </PageSection>
 
       {/* 🚗 Motorisations compatibles — Position 3 : raccourcis clic direct */}

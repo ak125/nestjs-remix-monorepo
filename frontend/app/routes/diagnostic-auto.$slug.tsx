@@ -43,6 +43,10 @@ import {
 } from "lucide-react";
 
 // UI Components
+import {
+  SectionImage,
+  SectionWithImage,
+} from "~/components/content/SectionImage";
 import { Error404 } from "~/components/errors/Error404";
 import { HeroDiagnostic } from "~/components/heroes";
 import { HtmlContent } from "~/components/seo/HtmlContent";
@@ -50,6 +54,11 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import {
+  resolveSlogan,
+  getSectionImageConfig,
+  resolveAltText,
+} from "~/config/visual-intent";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { logger } from "~/utils/logger";
@@ -310,6 +319,7 @@ export default function DiagnosticAutoDetail() {
       <HeroDiagnostic
         title={diagnostic.title}
         description={diagnostic.meta_description}
+        slogan={resolveSlogan("diagnostic")}
         icon={ScanLine}
         severity={
           diagnostic.risk_level === "critique" ||
@@ -348,50 +358,93 @@ export default function DiagnosticAutoDetail() {
           {/* Colonne principale */}
           <div className="lg:col-span-2 space-y-6">
             {/* Section 1: Symptom (60%) - Ce que vous ressentez */}
-            <Card className="border-l-4 border-l-yellow-500">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <HeartPulse className="h-6 w-6 text-yellow-600" />
-                  <div>
-                    <CardTitle className="text-lg">
-                      🎧 Ce que vous ressentez
-                    </CardTitle>
-                    <p className="text-sm text-gray-500">
-                      Symptôme - Fiabilité 60%
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <HtmlContent
-                  html={diagnostic.symptom_description || ""}
-                  className="prose prose-sm max-w-none"
-                />
-              </CardContent>
-            </Card>
+            {(() => {
+              const symptomImg = getSectionImageConfig("diagnostic", "symptom");
+              return (
+                <Card className="border-l-4 border-l-yellow-500">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <HeartPulse className="h-6 w-6 text-yellow-600" />
+                      <div>
+                        <CardTitle className="text-lg">
+                          🎧 Ce que vous ressentez
+                        </CardTitle>
+                        <p className="text-sm text-gray-500">
+                          Symptôme - Fiabilité 60%
+                        </p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {symptomImg?.staticFallback ? (
+                      <SectionWithImage>
+                        <SectionImage
+                          src={symptomImg.staticFallback}
+                          alt={resolveAltText("diagnostic")}
+                          placement={symptomImg.placement}
+                          size={symptomImg.size}
+                        />
+                        <HtmlContent
+                          html={diagnostic.symptom_description || ""}
+                          className="prose prose-sm max-w-none"
+                        />
+                      </SectionWithImage>
+                    ) : (
+                      <HtmlContent
+                        html={diagnostic.symptom_description || ""}
+                        className="prose prose-sm max-w-none"
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
             {/* Section 2: Sign (85%) - Ce que le technicien vérifie */}
-            <Card className="border-l-4 border-l-green-500">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Eye className="h-6 w-6 text-green-600" />
-                  <div>
-                    <CardTitle className="text-lg">
-                      🔍 Ce que le technicien vérifie
-                    </CardTitle>
-                    <p className="text-sm text-gray-500">
-                      Signe technique - Fiabilité 85%
-                    </p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <HtmlContent
-                  html={diagnostic.sign_description || ""}
-                  className="prose prose-sm max-w-none"
-                />
-              </CardContent>
-            </Card>
+            {(() => {
+              const signImg = getSectionImageConfig(
+                "diagnostic",
+                "technicianCheck",
+              );
+              return (
+                <Card className="border-l-4 border-l-green-500">
+                  <CardHeader>
+                    <div className="flex items-center gap-3">
+                      <Eye className="h-6 w-6 text-green-600" />
+                      <div>
+                        <CardTitle className="text-lg">
+                          🔍 Ce que le technicien vérifie
+                        </CardTitle>
+                        <p className="text-sm text-gray-500">
+                          Signe technique - Fiabilité 85%
+                        </p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {signImg?.staticFallback ? (
+                      <SectionWithImage>
+                        <SectionImage
+                          src={signImg.staticFallback}
+                          alt={resolveAltText("diagnostic")}
+                          placement={signImg.placement}
+                          size={signImg.size}
+                        />
+                        <HtmlContent
+                          html={diagnostic.sign_description || ""}
+                          className="prose prose-sm max-w-none"
+                        />
+                      </SectionWithImage>
+                    ) : (
+                      <HtmlContent
+                        html={diagnostic.sign_description || ""}
+                        className="prose prose-sm max-w-none"
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
             {/* Section 3: DTC (95%) - Codes OBD associés */}
             {diagnostic.dtc_codes && diagnostic.dtc_codes.length > 0 && (

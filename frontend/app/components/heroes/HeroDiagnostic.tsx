@@ -15,6 +15,8 @@ interface HeroDiagnosticProps {
   title: string;
   /** Description courte */
   description?: string;
+  /** Slogan genere par resolveSlogan() */
+  slogan?: string;
   /** Icone lucide-react (defaut: Wrench) */
   icon?: LucideIcon;
   /** Severity: modifie l'accent couleur */
@@ -44,6 +46,7 @@ const SEVERITY_STYLES = {
 export function HeroDiagnostic({
   title,
   description,
+  slogan,
   icon: Icon = Wrench,
   severity = "info",
   className = "",
@@ -69,6 +72,9 @@ export function HeroDiagnostic({
               <p className="mt-2 text-sm md:text-base text-gray-300 max-w-2xl">
                 {description}
               </p>
+            )}
+            {slogan && (
+              <p className="text-sm text-gray-400 max-w-xl mt-1">{slogan}</p>
             )}
           </div>
         </div>

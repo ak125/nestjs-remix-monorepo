@@ -116,6 +116,7 @@ export interface SeoReference {
   pgId: number | null;
   gammeName: string | null;
   gammeSlug: string | null;
+  pgImg: string | null;
   relatedReferences: number[] | null;
   blogSlugs: string[] | null;
   canonicalUrl: string | null;
@@ -1043,6 +1044,7 @@ export class ReferenceService extends SupabaseBaseService {
       pgId: row.pg_id as number | null,
       gammeName: row.gamme_name as string | null,
       gammeSlug: row.gamme_slug as string | null,
+      pgImg: row.pg_img as string | null,
       relatedReferences: row.related_references as number[] | null,
       blogSlugs: row.blog_slugs as string[] | null,
       canonicalUrl: row.canonical_url as string | null,

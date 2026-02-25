@@ -18,6 +18,7 @@ import {
   SeoReferenceListItem,
   ReferenceAuditResult,
 } from '../services/reference.service';
+import { buildGammeImageUrl } from '../../catalog/utils/image-urls.utils';
 
 /**
  * Interface de réponse API pour une référence
@@ -40,6 +41,7 @@ interface ReferenceResponse {
     pgId: number | null;
     name: string | null;
     url: string | null;
+    pgImg?: string;
     productCount?: number;
   };
   relatedReferences: number[] | null;
@@ -333,6 +335,7 @@ export class ReferenceController {
           ref.gammeSlug && ref.pgId
             ? `/pieces/${ref.gammeSlug}-${ref.pgId}.html`
             : null,
+        pgImg: ref.pgImg ? buildGammeImageUrl(ref.pgImg) : undefined,
       },
       relatedReferences: ref.relatedReferences,
       blogSlugs: ref.blogSlugs,

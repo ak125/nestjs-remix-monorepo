@@ -13,6 +13,8 @@ interface HeroReferenceProps {
   title: string;
   /** Sous-titre optionnel */
   subtitle?: string;
+  /** Slogan genere par resolveSlogan() */
+  slogan?: string;
   /** Badge categorie (ex: "Freinage", "Distribution") — active le theme couleur */
   categoryBadge?: string;
   /** Classes CSS additionnelles */
@@ -22,6 +24,7 @@ interface HeroReferenceProps {
 export function HeroReference({
   title,
   subtitle,
+  slogan,
   categoryBadge,
   className = "",
 }: HeroReferenceProps) {
@@ -51,6 +54,9 @@ export function HeroReference({
             <p className="mt-1 text-sm md:text-base text-gray-600">
               {subtitle}
             </p>
+          )}
+          {slogan && (
+            <p className="text-sm text-gray-500 max-w-xl mt-1">{slogan}</p>
           )}
         </div>
       </div>

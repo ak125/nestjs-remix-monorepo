@@ -36,10 +36,19 @@ import {
 
 // UI Components
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
+import {
+  SectionImage,
+  SectionWithImage,
+} from "~/components/content/SectionImage";
 import { Error404 } from "~/components/errors/Error404";
 import { HeroGuide } from "~/components/heroes";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui";
+import {
+  getSectionImageConfig,
+  resolveAltText,
+  resolveSlogan,
+} from "~/config/visual-intent";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -341,6 +350,7 @@ export default function GuideDetailPage() {
       <HeroGuide
         title={cleanTitle}
         description={stripHtmlForMeta(guide.excerpt)}
+        slogan={resolveSlogan("guide-achat")}
       />
 
       {/* Back Button */}
@@ -471,6 +481,12 @@ export default function GuideDetailPage() {
 
                         if (isH2) {
                           h2Index++;
+                          const isFirstH2 = h2Index === 0;
+                          const introImageConfig =
+                            isFirstH2 && guide.featuredImage
+                              ? getSectionImageConfig("guide-achat", "intro")
+                              : undefined;
+
                           return (
                             <Card
                               key={`section-${index}`}
@@ -484,11 +500,30 @@ export default function GuideDetailPage() {
                                   </span>
                                   {section.title}
                                 </h3>
-                                <HtmlContent
-                                  html={section.content}
-                                  className="prose max-w-none text-gray-700"
-                                  trackLinks={true}
-                                />
+                                {introImageConfig && guide.featuredImage ? (
+                                  <SectionWithImage>
+                                    <SectionImage
+                                      src={guide.featuredImage}
+                                      alt={resolveAltText(
+                                        "guide-achat",
+                                        guide.title,
+                                      )}
+                                      placement={introImageConfig.placement}
+                                      size={introImageConfig.size}
+                                    />
+                                    <HtmlContent
+                                      html={section.content}
+                                      className="prose max-w-none text-gray-700"
+                                      trackLinks={true}
+                                    />
+                                  </SectionWithImage>
+                                ) : (
+                                  <HtmlContent
+                                    html={section.content}
+                                    className="prose max-w-none text-gray-700"
+                                    trackLinks={true}
+                                  />
+                                )}
                               </CardContent>
                             </Card>
                           );
