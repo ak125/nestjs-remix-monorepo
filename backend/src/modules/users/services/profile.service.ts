@@ -9,7 +9,7 @@ import { TABLES } from '@repo/database-types';
  * ✅ Cache profils fréquemment accédés
  *
  * Architecture:
- * - Utilise UserService pour accès données ___xtr_customer
+ * - Utilise UserDataConsolidatedService pour accès données ___xtr_customer
  * - Remplace mock data par vraies queries DB
  * - Centralise mapping DB → DTO
  * - Évite circular dependency avec UsersService
@@ -22,7 +22,8 @@ import {
 } from '../../../common/exceptions';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { UserService } from '../../../database/services/user.service';
+import { UserDataConsolidatedService } from './user-data-consolidated.service';
+import { User } from '../dto/user.dto';
 import { CacheService } from '../../../cache/cache.service';
 import { UserResponseDto, UpdateProfileDto } from '../dto/users.dto';
 
@@ -32,7 +33,7 @@ export class ProfileService extends SupabaseBaseService {
 
   constructor(
     configService: ConfigService,
-    private readonly userService: UserService,
+    private readonly userDataService: UserDataConsolidatedService,
     private readonly cacheService: CacheService,
   ) {
     super(configService);
@@ -41,7 +42,7 @@ export class ProfileService extends SupabaseBaseService {
 
   /**
    * Récupérer le profil d'un utilisateur
-   * ✅ Utilise vraies données DB (UserService)
+   * ✅ Utilise vraies données DB (UserDataConsolidatedService)
    * ✅ Cache pour performance
    */
   async getProfile(userId: string): Promise<UserResponseDto> {
@@ -55,8 +56,8 @@ export class ProfileService extends SupabaseBaseService {
         return cached;
       }
 
-      // Query DB via UserService
-      const user = await this.userService.getUserById(userId);
+      // Query DB via UserDataConsolidatedService
+      const user = await this.userDataService.findById(userId);
 
       if (!user) {
         throw new NotFoundException(`Utilisateur ${userId} non trouvé`);
@@ -162,7 +163,7 @@ export class ProfileService extends SupabaseBaseService {
     this.logger.log(`Recherche utilisateur par ID: ${id}`);
 
     try {
-      const user = await this.userService.getUserById(id);
+      const user = await this.userDataService.findById(id);
 
       if (!user) {
         this.logger.log(`❌ Utilisateur ${id} non trouvé`);
@@ -211,21 +212,19 @@ export class ProfileService extends SupabaseBaseService {
   // ========== MÉTHODES PRIVÉES ==========
 
   /**
-   * Mapper données DB ___xtr_customer vers UserResponseDto
-   * ✅ Centralise conversion dans 1 seul endroit
-   * ✅ Gère conversions booléens '0'/'1' → boolean
+   * Mapper User DTO vers UserResponseDto
    */
-  private mapToUserResponse(user: any): UserResponseDto {
+  private mapToUserResponse(user: User): UserResponseDto {
     return {
-      id: user.cst_id,
-      email: user.cst_mail,
-      firstName: user.cst_fname || '',
-      lastName: user.cst_name || '',
-      isActive: user.cst_activ === '1',
-      isPro: user.cst_is_pro === '1',
-      tel: user.cst_tel || '',
-      createdAt: new Date(), // TODO: Ajouter champ cst_created_at dans schema DB
-      updatedAt: new Date(), // TODO: Ajouter champ cst_updated_at dans schema DB
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      isActive: user.isActive,
+      isPro: user.isPro,
+      tel: user.phone || '',
+      createdAt: user.createdAt ? new Date(user.createdAt) : undefined,
+      updatedAt: user.updatedAt ? new Date(user.updatedAt) : undefined,
     };
   }
 

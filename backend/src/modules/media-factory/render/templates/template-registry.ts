@@ -36,6 +36,14 @@ const REGISTRY: Record<string, TemplateRegistryEntry> = {
     defaultResolution: { width: 1080, height: 1920 }, // vertical 9:16
     status: 'experimental',
   },
+  'short-braking-fact': {
+    compositionId: 'ShortBrakingFact',
+    displayName: 'Short Braking Fact',
+    supportedVideoTypes: ['short'],
+    defaultDurationFrames: 630, // 21s
+    defaultResolution: { width: 1080, height: 1920 }, // vertical 9:16
+    status: 'experimental',
+  },
 };
 
 /** Resolve templateId to a registry entry. Falls back to TestCard for unknown. */

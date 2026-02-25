@@ -1,6 +1,7 @@
 import { registerRoot, Composition } from 'remotion';
 import { TestCard } from './TestCard';
 import { ShortProductHighlight } from './ShortProductHighlight';
+import { ShortBrakingFact } from './ShortBrakingFact';
 
 export const RemotionRoot: React.FC = () => {
   return (
@@ -37,6 +38,23 @@ export const RemotionRoot: React.FC = () => {
               rawText: 'Diamètre 280mm',
             },
           ],
+          brandName: 'AutoMecanik',
+          tagline: 'Pièces auto de qualité',
+        }}
+      />
+      <Composition
+        id="ShortBrakingFact"
+        component={ShortBrakingFact}
+        durationInFrames={630}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{
+          factText: 'Un disque ventilé dissipe la chaleur 40% plus vite',
+          factValue: '40',
+          factUnit: '%',
+          sourceRef: 'Norme ECE R90',
+          schemaSvgId: 'full' as const,
           brandName: 'AutoMecanik',
           tagline: 'Pièces auto de qualité',
         }}
