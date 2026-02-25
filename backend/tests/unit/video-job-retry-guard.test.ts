@@ -1,5 +1,5 @@
 /**
- * VideoJobService — Retry guard + active-job dedup tests (P14c).
+ * VideoJobService — Retry guard + active-job dedup + error paths tests (P14c + P20).
  *
  * Tests:
  *  - retryExecution: active-job guard (ConflictException)
@@ -7,6 +7,10 @@
  *  - retryExecution: retryable guard (BadRequestException)
  *  - retryExecution: happy path (inserts + queues)
  *  - submitExecution: active-job guard (existing behavior)
+ *  - P20: getCanaryStats delegation
+ *  - P20: feature flag disabled (submitExecution + retryExecution)
+ *  - P20: DB insert failure (submitExecution + retryExecution)
+ *  - P20: queue.add failure (submitExecution + retryExecution)
  *
  * Strategy: mock SupabaseBaseService.client (Supabase chain), BullMQ Queue, VideoDataService.
  */
@@ -352,6 +356,184 @@ describe('VideoJobService — retry guard (P14)', () => {
     expect(insertCalled).toBe(true);
     expect(result.executionLogId).toBe(30);
     expect(mocks.mockQueue.add).toHaveBeenCalled();
+  });
+
+  // ── P20: getCanaryStats delegation ──
+
+  it('getCanaryStats should delegate to renderAdapter', async () => {
+    mocks.mockRenderAdapter.getCanaryStats.mockResolvedValue({
+      dailyUsageCount: 42,
+      remainingQuota: 8,
+    });
+
+    const result = await service.getCanaryStats();
+
+    expect(mocks.mockRenderAdapter.getCanaryStats).toHaveBeenCalled();
+    expect(result).toEqual({ dailyUsageCount: 42, remainingQuota: 8 });
+  });
+
+  // ── P20: feature flag disabled ──
+
+  it('submitExecution should throw BadRequestException when pipeline disabled', async () => {
+    process.env.VIDEO_PIPELINE_ENABLED = 'false';
+
+    await expect(
+      service.submitExecution('brief-001', 'manual'),
+    ).rejects.toThrow(BadRequestException);
+    await expect(
+      service.submitExecution('brief-001', 'manual'),
+    ).rejects.toThrow(/VIDEO_PIPELINE_ENABLED/);
+  });
+
+  it('retryExecution should throw BadRequestException when pipeline disabled', async () => {
+    const failedRow = fakeDbRow({ status: 'failed', retryable: true });
+
+    const chain: Record<string, jest.Mock> = {};
+    chain.from = jest.fn().mockReturnValue(chain);
+    chain.select = jest.fn().mockReturnValue(chain);
+    chain.insert = jest.fn().mockReturnValue(chain);
+    chain.update = jest.fn().mockReturnValue(chain);
+    chain.eq = jest.fn().mockReturnValue(chain);
+    chain.in = jest.fn().mockReturnValue(chain);
+    chain.order = jest.fn().mockReturnValue(chain);
+    chain.single = jest.fn().mockResolvedValue({ data: failedRow, error: null });
+    chain.limit = jest.fn().mockResolvedValue({ data: [], error: null });
+
+    Object.defineProperty(service, 'client', { get: () => chain });
+    // Feature flag NOT set → undefined !== 'true'
+
+    await expect(service.retryExecution(10)).rejects.toThrow(
+      BadRequestException,
+    );
+    await expect(service.retryExecution(10)).rejects.toThrow(
+      /VIDEO_PIPELINE_ENABLED/,
+    );
+  });
+
+  // ── P20: DB insert failure ──
+
+  it('submitExecution should throw when DB insert fails', async () => {
+    const chain: Record<string, jest.Mock> = {};
+    chain.from = jest.fn().mockReturnValue(chain);
+    chain.select = jest.fn().mockReturnValue(chain);
+    chain.update = jest.fn().mockReturnValue(chain);
+    chain.eq = jest.fn().mockReturnValue(chain);
+    chain.in = jest.fn().mockReturnValue(chain);
+    chain.order = jest.fn().mockReturnValue(chain);
+    chain.single = jest.fn().mockResolvedValue({ data: null, error: null });
+    chain.limit = jest.fn().mockResolvedValue({ data: [], error: null });
+
+    // insert chain returns error
+    chain.insert = jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        single: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'unique constraint violation' },
+        }),
+      }),
+    });
+
+    Object.defineProperty(service, 'client', { get: () => chain });
+    process.env.VIDEO_PIPELINE_ENABLED = 'true';
+
+    await expect(
+      service.submitExecution('brief-001', 'api'),
+    ).rejects.toEqual({ message: 'unique constraint violation' });
+  });
+
+  it('retryExecution should throw when DB insert fails', async () => {
+    const failedRow = fakeDbRow({ status: 'failed', retryable: true });
+
+    const chain: Record<string, jest.Mock> = {};
+    chain.from = jest.fn().mockReturnValue(chain);
+    chain.select = jest.fn().mockReturnValue(chain);
+    chain.update = jest.fn().mockReturnValue(chain);
+    chain.eq = jest.fn().mockReturnValue(chain);
+    chain.in = jest.fn().mockReturnValue(chain);
+    chain.order = jest.fn().mockReturnValue(chain);
+    chain.single = jest.fn().mockResolvedValue({ data: failedRow, error: null });
+    chain.limit = jest.fn().mockResolvedValue({ data: [], error: null });
+
+    // insert chain returns error
+    chain.insert = jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        single: jest.fn().mockResolvedValue({
+          data: null,
+          error: { message: 'DB write error' },
+        }),
+      }),
+    });
+
+    Object.defineProperty(service, 'client', { get: () => chain });
+    process.env.VIDEO_PIPELINE_ENABLED = 'true';
+
+    await expect(service.retryExecution(10)).rejects.toEqual({
+      message: 'DB write error',
+    });
+  });
+
+  // ── P20: queue.add failure ──
+
+  it('submitExecution should throw when queue.add fails', async () => {
+    const chain: Record<string, jest.Mock> = {};
+    chain.from = jest.fn().mockReturnValue(chain);
+    chain.select = jest.fn().mockReturnValue(chain);
+    chain.update = jest.fn().mockReturnValue(chain);
+    chain.eq = jest.fn().mockReturnValue(chain);
+    chain.in = jest.fn().mockReturnValue(chain);
+    chain.order = jest.fn().mockReturnValue(chain);
+    chain.single = jest.fn().mockResolvedValue({ data: null, error: null });
+    chain.limit = jest.fn().mockResolvedValue({ data: [], error: null });
+
+    // insert succeeds
+    chain.insert = jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        single: jest.fn().mockResolvedValue({
+          data: { id: 50 },
+          error: null,
+        }),
+      }),
+    });
+
+    Object.defineProperty(service, 'client', { get: () => chain });
+    process.env.VIDEO_PIPELINE_ENABLED = 'true';
+    mocks.mockQueue.add.mockRejectedValueOnce(new Error('Queue connection lost'));
+
+    await expect(
+      service.submitExecution('brief-001', 'api'),
+    ).rejects.toThrow('Queue connection lost');
+  });
+
+  it('retryExecution should throw when queue.add fails', async () => {
+    const failedRow = fakeDbRow({ status: 'failed', retryable: true });
+
+    const chain: Record<string, jest.Mock> = {};
+    chain.from = jest.fn().mockReturnValue(chain);
+    chain.select = jest.fn().mockReturnValue(chain);
+    chain.update = jest.fn().mockReturnValue(chain);
+    chain.eq = jest.fn().mockReturnValue(chain);
+    chain.in = jest.fn().mockReturnValue(chain);
+    chain.order = jest.fn().mockReturnValue(chain);
+    chain.single = jest.fn().mockResolvedValue({ data: failedRow, error: null });
+    chain.limit = jest.fn().mockResolvedValue({ data: [], error: null });
+
+    // insert succeeds
+    chain.insert = jest.fn().mockReturnValue({
+      select: jest.fn().mockReturnValue({
+        single: jest.fn().mockResolvedValue({
+          data: { id: 60 },
+          error: null,
+        }),
+      }),
+    });
+
+    Object.defineProperty(service, 'client', { get: () => chain });
+    process.env.VIDEO_PIPELINE_ENABLED = 'true';
+    mocks.mockQueue.add.mockRejectedValueOnce(new Error('Redis unavailable'));
+
+    await expect(service.retryExecution(10)).rejects.toThrow(
+      'Redis unavailable',
+    );
   });
 
   afterEach(() => {
