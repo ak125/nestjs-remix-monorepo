@@ -31,10 +31,7 @@ import { UserShipmentController } from './controllers/user-shipment.controller';
 import { UsersFinalService } from './users-final.service';
 import { UserDataConsolidatedService } from './services/user-data-consolidated.service';
 
-// ⚠️ ANCIEN SERVICE (pour compatibilité temporaire avec AuthModule)
-import { UsersService } from './users.service';
-
-// Services spécialisés (à conserver)
+// Services spécialisés
 import { ProfileService } from './services/profile.service';
 import { UsersAdminService } from './services/admin.service';
 import { PasswordService } from './services/password.service';
@@ -70,9 +67,6 @@ import { UserShipmentService } from './services/user-shipment.service';
     UsersFinalService, // Service métier avec cache Redis
     UserDataConsolidatedService, // Accès données Supabase
 
-    // ⚠️ ANCIEN SERVICE (pour compatibilité temporaire avec AuthModule)
-    UsersService, // TODO: Migrer AuthModule vers UsersFinalService
-
     // Services spécialisés
     ProfileService, // ✅ Service moderne de gestion des profils
     UsersAdminService, // ✅ Service opérations admin
@@ -87,9 +81,6 @@ import { UserShipmentService } from './services/user-shipment.service';
     // ✅ SERVICES PRINCIPAUX CONSOLIDÉS
     UsersFinalService, // Service métier principal
     UserDataConsolidatedService, // Accès données
-
-    // ⚠️ ANCIEN SERVICE (pour compatibilité temporaire avec AuthModule)
-    UsersService, // TODO: Migrer AuthModule vers UsersFinalService
 
     // Services spécialisés
     ProfileService, // ✅ Service de profils exporté

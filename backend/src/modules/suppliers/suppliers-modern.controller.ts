@@ -9,10 +9,11 @@ import {
   ParseIntPipe,
   Logger,
 } from '@nestjs/common';
-import { SuppliersModernService } from './suppliers-modern.service';
 import { SuppliersService } from './suppliers.service';
+import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import {
   CreateSupplierDto,
+  CreateSupplierSchema,
   SupplierFilters,
   validateSupplierFilters,
 } from './dto';
@@ -28,10 +29,7 @@ import {
 export class SuppliersModernController {
   private readonly logger = new Logger(SuppliersModernController.name);
 
-  constructor(
-    private readonly suppliersModernService: SuppliersModernService,
-    private readonly suppliersService: SuppliersService,
-  ) {}
+  constructor(private readonly suppliersService: SuppliersService) {}
 
   /**
    * Obtenir tous les fournisseurs avec filtres et validation
@@ -53,8 +51,7 @@ export class SuppliersModernController {
       // Validation des filtres
       const validatedFilters = validateSupplierFilters(filters);
 
-      const result =
-        await this.suppliersModernService.getSuppliers(validatedFilters);
+      const result = await this.suppliersService.getSuppliers(validatedFilters);
 
       return {
         success: true,
@@ -81,7 +78,7 @@ export class SuppliersModernController {
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     try {
-      const supplier = await this.suppliersModernService.getSupplierById(id);
+      const supplier = await this.suppliersService.getSupplierById(id);
 
       if (!supplier) {
         throw new NotFoundException('Fournisseur non trouvé');
@@ -115,11 +112,14 @@ export class SuppliersModernController {
    * Créer un nouveau fournisseur avec validation Zod
    */
   @Post()
-  async create(@Body() createSupplierDto: CreateSupplierDto) {
+  async create(
+    @Body(new ZodValidationPipe(CreateSupplierSchema))
+    createSupplierDto: CreateSupplierDto,
+  ) {
     try {
       // La validation est faite dans le service moderne
       const supplier =
-        await this.suppliersModernService.createSupplier(createSupplierDto);
+        await this.suppliersService.createSupplier(createSupplierDto);
 
       return {
         success: true,
@@ -143,8 +143,7 @@ export class SuppliersModernController {
   @Get('test/service')
   async testService() {
     try {
-      const testResult =
-        await this.suppliersModernService.testSuppliersService();
+      const testResult = await this.suppliersService.testSuppliersService();
 
       return {
         success: true,

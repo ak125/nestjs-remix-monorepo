@@ -1,32 +1,18 @@
 /**
- * 🔧 CONFIG MODULE - Module de Configuration Avancé
+ * CONFIG MODULE - Configuration globale
  *
- * Architecture alignée sur les meilleures pratiques du projet :
- * ✅ Module global avec configuration dynamique
- * ✅ Services spécialisés par domaine (config, enhanced-config)
- * ✅ Cache intégré pour les performances
- * ✅ Support multi-environnements
- * ✅ Encryption/Decryption pour les données sensibles
- * ✅ Integration avec DatabaseModule et CacheModule
- * ✅ Configuration centralisée cohérente avec app.config.ts
- * ✅ Analytics intégrés pour monitoring des configurations
- * ✅ Services Enhanced et Simple pour flexibilité maximale
+ * DatabaseConfigService : CRUD sur table ___config (KV, types, pagination, cache)
+ * SimpleDatabaseConfigService : configs connexion DB (env vars)
  */
 
 import { Module, Global, DynamicModule } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 
-// Controllers - Mix optimisé Enhanced + Simple
-import { EnhancedConfigController } from './controllers/enhanced-config.controller';
-import { SimpleConfigController } from './controllers/simple-config.controller';
+// Controllers
 import { SimpleDatabaseConfigController } from './controllers/simple-database-config.controller';
-// import { ConfigController } from './config.controller'; // SUPPRIMÉ - Guards manquants
 
-// Services - Services Enhanced optimisés + fallback Simple
-import { EnhancedConfigService } from './services/enhanced-config.service';
-// import { ConfigAnalyticsService } from './services/config-analytics.service'; // SUPPRIMÉ - executeQuery n'existe pas
+// Services
 import { DatabaseConfigService } from './services/database-config.service';
-import { SimpleConfigService } from './services/simple-config.service';
 import { SimpleDatabaseConfigService } from './services/simple-database-config.service';
 
 // Modules externes
@@ -52,21 +38,9 @@ interface ConfigModuleOptions {
     DatabaseModule,
     AnalyticsModule,
   ],
-  controllers: [
-    // Controllers Enhanced pour fonctionnalités avancées
-    EnhancedConfigController,
-    // Controllers Simple pour compatibilité
-    SimpleConfigController,
-    SimpleDatabaseConfigController,
-    // ConfigController - SUPPRIMÉ (Guards manquants)
-  ],
+  controllers: [SimpleDatabaseConfigController],
   providers: [
-    // Services Enhanced principaux
-    EnhancedConfigService,
-    // ConfigAnalyticsService, // SUPPRIMÉ - executeQuery n'existe pas
     DatabaseConfigService,
-    // Services Simple pour fallback
-    SimpleConfigService,
     SimpleDatabaseConfigService,
     // Providers par défaut
     {
@@ -82,15 +56,7 @@ interface ConfigModuleOptions {
       },
     },
   ],
-  exports: [
-    // Services Enhanced exportés en priorité
-    EnhancedConfigService,
-    // ConfigAnalyticsService, // SUPPRIMÉ
-    DatabaseConfigService,
-    // Services Simple pour compatibilité
-    SimpleConfigService,
-    SimpleDatabaseConfigService,
-  ],
+  exports: [DatabaseConfigService, SimpleDatabaseConfigService],
 })
 export class ConfigModule {
   /**

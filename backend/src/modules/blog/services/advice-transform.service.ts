@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { decodeHtmlEntities } from '../../../utils/html-entities';
+import { calculateReadingTime, generateAnchor } from '../utils/blog-text.utils';
 import {
   BlogArticle,
   BlogSection,
@@ -95,7 +96,7 @@ export class AdviceTransformService {
           level: 2,
           title: decodeHtmlEntities(title),
           content: decodeHtmlEntities(s.ba2_content || ''),
-          anchor: this.createAnchor(title),
+          anchor: generateAnchor(title),
         });
       }
 
@@ -106,7 +107,7 @@ export class AdviceTransformService {
           level: 3,
           title: decodeHtmlEntities(title),
           content: decodeHtmlEntities(s.ba3_content || ''),
-          anchor: this.createAnchor(title),
+          anchor: generateAnchor(title),
         });
       }
 
@@ -133,7 +134,7 @@ export class AdviceTransformService {
         publishedAt: advice.ba_create,
         updatedAt: advice.ba_update,
         viewsCount: parseInt(advice.ba_visit) || 0,
-        readingTime: this.calculateReadingTime(
+        readingTime: calculateReadingTime(
           advice.ba_content || advice.ba_descrip,
         ),
         sections,
@@ -188,7 +189,7 @@ export class AdviceTransformService {
             level: 2,
             title: decodeHtmlEntities(title),
             content: decodeHtmlEntities(s.ba2_content || ''),
-            anchor: this.createAnchor(title),
+            anchor: generateAnchor(title),
           });
         }
       }
@@ -200,7 +201,7 @@ export class AdviceTransformService {
             level: 3,
             title: decodeHtmlEntities(title),
             content: decodeHtmlEntities(s.ba3_content || ''),
-            anchor: this.createAnchor(title),
+            anchor: generateAnchor(title),
           });
         }
       }
@@ -228,7 +229,7 @@ export class AdviceTransformService {
         publishedAt: advice.ba_create,
         updatedAt: advice.ba_update,
         viewsCount: parseInt(advice.ba_visit) || 0,
-        readingTime: this.calculateReadingTime(
+        readingTime: calculateReadingTime(
           advice.ba_content || advice.ba_descrip,
         ),
         sections,
@@ -248,33 +249,5 @@ export class AdviceTransformService {
       );
       throw error;
     }
-  }
-
-  /**
-   * Calculer temps de lecture.
-   */
-  calculateReadingTime(content: string): number {
-    if (!content) return 1;
-
-    const cleanText = decodeHtmlEntities(content).replace(/<[^>]*>/g, '');
-    const wordsPerMinute = 200;
-    const words = cleanText
-      .split(/\s+/)
-      .filter((word: string) => word.length > 0).length;
-    return Math.max(1, Math.ceil(words / wordsPerMinute));
-  }
-
-  /**
-   * Creer une ancre pour les sections.
-   */
-  createAnchor(text: string): string {
-    if (!text) return '';
-
-    return decodeHtmlEntities(text)
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-+|-+$/g, '');
   }
 }

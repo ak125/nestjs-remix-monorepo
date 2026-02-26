@@ -14,7 +14,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { NextFunction, Request, Response } from 'express';
 import { LocalAuthGuard } from '../local-auth.guard';
-import { UsersService } from '../../modules/users/users.service';
+import { UsersFinalService } from '../../modules/users/users-final.service';
 import { AuthService } from '../auth.service';
 import { UserDataConsolidatedService } from '../../modules/users/services/user-data-consolidated.service';
 import { CartDataService } from '../../database/services/cart-data.service';
@@ -38,7 +38,7 @@ export class AuthLoginController {
   private readonly logger = new Logger(AuthLoginController.name);
 
   constructor(
-    private readonly usersService: UsersService,
+    private readonly usersFinalService: UsersFinalService,
     private readonly authService: AuthService,
     private readonly userDataService: UserDataConsolidatedService,
     private readonly cartDataService: CartDataService,
@@ -131,7 +131,7 @@ export class AuthLoginController {
       return { exists: false };
     }
     try {
-      const user = await this.usersService.findByEmail(email);
+      const user = await this.usersFinalService.getUserByEmail(email);
       return { exists: !!user };
     } catch {
       return { exists: false };

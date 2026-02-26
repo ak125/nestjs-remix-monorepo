@@ -9,6 +9,10 @@ import {
 } from '../interfaces/blog.interfaces';
 import { decodeHtmlEntities } from '../../../utils/html-entities';
 import {
+  calculateReadingTime as _calculateReadingTime,
+  generateAnchor,
+} from '../utils/blog-text.utils';
+import {
   buildProxyImageUrl,
   IMAGE_CONFIG,
 } from '../../catalog/utils/image-urls.utils';
@@ -82,7 +86,7 @@ export class BlogArticleTransformService {
         level: 2,
         title: decodeHtmlEntities(h2.ba2_h2 || ''),
         content: decodeHtmlEntities(h2.ba2_content || ''),
-        anchor: this.generateAnchor(h2.ba2_h2),
+        anchor: generateAnchor(h2.ba2_h2),
         cta_anchor: h2.ba2_cta_anchor || null,
         cta_link: h2.ba2_cta_link || null,
         wall: h2.ba2_wall || null,
@@ -95,7 +99,7 @@ export class BlogArticleTransformService {
             level: 3,
             title: decodeHtmlEntities(h3.ba3_h3 || ''),
             content: decodeHtmlEntities(h3.ba3_content || ''),
-            anchor: this.generateAnchor(h3.ba3_h3),
+            anchor: generateAnchor(h3.ba3_h3),
             cta_anchor: h3.ba3_cta_anchor || null,
             cta_link: h3.ba3_cta_link || null,
             wall: h3.ba3_wall || null,
@@ -180,7 +184,7 @@ export class BlogArticleTransformService {
         level: 2,
         title: decodeHtmlEntities(h2.ba2_h2),
         content: decodeHtmlEntities(h2.ba2_content),
-        anchor: this.generateAnchor(h2.ba2_h2),
+        anchor: generateAnchor(h2.ba2_h2),
       });
     }
 
@@ -191,7 +195,7 @@ export class BlogArticleTransformService {
         level: 3,
         title: decodeHtmlEntities(h3.ba3_h3),
         content: decodeHtmlEntities(h3.ba3_content),
-        anchor: this.generateAnchor(h3.ba3_h3),
+        anchor: generateAnchor(h3.ba3_h3),
       });
     }
 
@@ -225,21 +229,11 @@ export class BlogArticleTransformService {
   }
 
   /**
-   * ⏱️ Calculer le temps de lecture d'un contenu
-   * @param content - Contenu HTML ou texte
-   * @returns Temps de lecture en minutes (minimum 1)
+   * Calculer le temps de lecture (delegue a blog-text.utils).
+   * Garde comme methode d'instance pour compatibilite injection (BlogService, BlogArticleDataService).
    */
   calculateReadingTime(content: unknown): number {
-    if (!content) return 1;
-
-    const text =
-      typeof content === 'string' ? content : JSON.stringify(content);
-    const cleanText = decodeHtmlEntities(text).replace(/<[^>]*>/g, '');
-    const wordsPerMinute = 200;
-    const words = cleanText
-      .split(/\s+/)
-      .filter((word: string) => word.length > 0).length;
-    return Math.max(1, Math.ceil(words / wordsPerMinute));
+    return _calculateReadingTime(content);
   }
 
   /**
@@ -251,23 +245,6 @@ export class BlogArticleTransformService {
     const text =
       typeof content === 'string' ? content : JSON.stringify(content);
     return decodeHtmlEntities(text);
-  }
-
-  /**
-   * 🔗 Génération d'ancre pour navigation
-   * Transforme un titre en identifiant URL-safe
-   */
-  generateAnchor(title: string): string {
-    if (!title) return '';
-
-    return title
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .trim();
   }
 
   /**

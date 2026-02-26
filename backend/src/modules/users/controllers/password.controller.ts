@@ -20,7 +20,7 @@ import {
   OperationFailedException,
 } from '../../../common/exceptions';
 import { PasswordService } from '../services/password.service';
-import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
+import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe';
 import { ChangePasswordSchema } from '../dto/change-password.dto';
 import {
   RequestPasswordResetSchema,
