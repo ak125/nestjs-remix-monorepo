@@ -51,6 +51,7 @@ import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { ScrollToTop } from "../components/blog/ScrollToTop";
+import { Error404 } from "../components/errors/Error404";
 import { Error410 } from "../components/errors/Error410";
 import { Error503 } from "../components/errors/Error503";
 import {
@@ -976,60 +977,18 @@ export function ErrorBoundary() {
   }
 
   // 🚫 Gestion 404 — Produit non disponible pour ce véhicule
-  // Affiche une page utile avec lien vers la gamme (au lieu de redirect 301)
+  // Utilise le composant Error404 existant (recherche, catégories, suggestions, auto-report)
   if (isRouteErrorResponse(error) && error.status === 404) {
     let gammeUrl = "/pieces/";
-    let gammeAlias = "";
     try {
       const parsed =
         typeof error.data === "string" ? JSON.parse(error.data) : error.data;
       if (parsed?.gammeUrl) gammeUrl = parsed.gammeUrl;
-      if (parsed?.gammeAlias) gammeAlias = parsed.gammeAlias;
     } catch {
       // Pas de JSON → utiliser les valeurs par défaut
     }
 
-    const gammeDisplayName = gammeAlias
-      ? gammeAlias
-          .split("-")
-          .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-          .join(" ")
-      : "cette gamme";
-
-    return (
-      <>
-        <head>
-          <meta name="robots" content="noindex, follow" />
-        </head>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full text-center">
-            <div className="text-6xl mb-4">🔧</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-3">
-              Produit non disponible pour ce véhicule
-            </h1>
-            <p className="text-gray-600 mb-6">
-              Nous n'avons pas de <strong>{gammeDisplayName}</strong> compatible
-              avec ce véhicule actuellement. Consultez notre catalogue pour
-              d'autres véhicules.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <a
-                href={gammeUrl}
-                className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                Voir tous les {gammeDisplayName} →
-              </a>
-              <a
-                href="/"
-                className="inline-flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
-              >
-                Retour à l'accueil
-              </a>
-            </div>
-          </div>
-        </div>
-      </>
-    );
+    return <Error404 url={location.pathname} suggestions={[gammeUrl]} />;
   }
 
   // Message d'erreur détaillé pour le développement
