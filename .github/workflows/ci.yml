@@ -633,6 +633,8 @@ jobs:
       - name: 🧪 Deploy to PREPROD
         env:
           NODE_ENV: preprod
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:preprod
 
@@ -651,6 +653,13 @@ jobs:
           fi
 
           cd $PREPROD_DIR
+
+          # Inject Supabase keys from GitHub Secrets (overrides .env values)
+          if [ -n "$SUPABASE_SECRET_KEY" ] && [ -f ".env" ]; then
+            sed -i "s|^SUPABASE_SERVICE_ROLE_KEY=.*|SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SECRET_KEY}|" .env
+            sed -i "s|^SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=${SUPABASE_PUBLISHABLE_KEY}|" .env
+            echo "✅ Supabase keys injected from GitHub Secrets"
+          fi
 
           # Arreter anciens conteneurs
           docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true

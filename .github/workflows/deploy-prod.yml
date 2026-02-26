@@ -40,6 +40,8 @@ jobs:
       - name: 🚀 Deploy to PROD
         env:
           NODE_ENV: production
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:production
 
@@ -69,6 +71,16 @@ jobs:
             fi
           done
           echo "✅ All required environment variables present"
+
+          # Inject Supabase keys from GitHub Secrets (overrides .env values)
+          if [ -n "$SUPABASE_SECRET_KEY" ]; then
+            sed -i "s|^SUPABASE_SERVICE_ROLE_KEY=.*|SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SECRET_KEY}|" .env
+            echo "✅ SUPABASE_SERVICE_ROLE_KEY updated from GitHub Secrets"
+          fi
+          if [ -n "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            sed -i "s|^SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=${SUPABASE_PUBLISHABLE_KEY}|" .env
+            echo "✅ SUPABASE_ANON_KEY updated from GitHub Secrets"
+          fi
 
           docker network create automecanik-prod 2>/dev/null || true
 
@@ -136,6 +148,17 @@ jobs:
             echo "✅ /api/catalog/families -> OK"
           else
             echo "⚠️ /api/catalog/families -> unexpected response (non-blocking)"
+          fi
+
+          # Test Supabase connectivity (catches disabled/invalid keys)
+          echo "🔌 Testing Supabase RPC connectivity..."
+          SUPABASE_TEST=$($EXEC wget -qO- 'http://localhost:3000/api/rm/page-v2?gamme_id=402&vehicle_id=100413&limit=1' 2>/dev/null || echo "FAIL")
+          if echo "$SUPABASE_TEST" | grep -q '"success":true'; then
+            echo "✅ Supabase RPC -> OK"
+          else
+            echo "❌ Supabase RPC -> FAILED (check SUPABASE_SERVICE_ROLE_KEY)"
+            echo "$SUPABASE_TEST" | head -c 200
+            FAILED=1
           fi
 
           # Admin guard verification (warning only, non-blocking)
