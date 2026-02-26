@@ -15,8 +15,8 @@
   },
   "canon": [
     { "path": "constitution.md", "reason": "Regles fondamentales projet" },
-    { "path": "ARCHITECTURE.md", "reason": "Vue architecture globale" },
-    { "path": "API-INDEX.md", "reason": "Index endpoints API" },
+    { "path": "00-canon/architecture.md", "reason": "Vue architecture globale (CANON v2.0)" },
+    { "path": "API-ENDPOINTS-INDEX.md", "reason": "Index endpoints API" },
     { "path": "QUICK-START.md", "reason": "Guide demarrage" },
     { "path": "database/supabase-schema.md", "reason": "Schema DB actuel" },
     { "path": "features/ai-cos-governance-rules.md", "reason": "Gouvernance IA critique" },
@@ -140,8 +140,7 @@
       "workflows/CHANGELOG-ai-cos.md"
     ],
     "architecture": [
-      "architecture/overview.md",
-      "architecture/c4-diagrams.md",
+      "00-canon/architecture.md",
       "architecture/003-cache-redis-multi-levels.md",
       "architecture/004-seo-switches-migration-php-ts.md",
       "architecture/ai-cos-vision.md",

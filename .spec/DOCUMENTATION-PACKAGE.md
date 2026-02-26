@@ -35,8 +35,8 @@ version: 1.0.0
 ```
 .spec/
 ├── README.md                       # 📚 Navigation principale (745 lignes)
-├── API-INDEX.md                    # 🔌 Index endpoints complet (1,100+ lignes)
-├── ARCHITECTURE.md                 # 🏗️ Diagrammes architecture (1,300+ lignes)
+├── API-ENDPOINTS-INDEX.md                    # 🔌 Index endpoints complet (1,100+ lignes)
+├── 00-canon/architecture.md                 # 🏗️ Diagrammes architecture (1,300+ lignes)
 ├── QUICK-START.md                  # 🚀 Guide démarrage rapide (500+ lignes)
 │
 └── features/                       # 📁 Spécifications modules (25,179 lignes)
@@ -94,7 +94,7 @@ version: 1.0.0
 
 ---
 
-### 2. API-INDEX.md (1,100+ lignes)
+### 2. API-ENDPOINTS-INDEX.md (1,100+ lignes)
 
 **Contenu:**
 - 🔌 Index complet 187+ endpoints
@@ -139,7 +139,7 @@ version: 1.0.0
 
 ---
 
-### 3. ARCHITECTURE.md (1,300+ lignes)
+### 3. 00-canon/architecture.md (1,300+ lignes)
 
 **Contenu:**
 - 🏗️ Architecture globale (diagramme Mermaid complet)
@@ -437,7 +437,7 @@ dashboard:overview                  # TTL 300s
 
 **Fichiers créés:**
 1. ✅ README.md refonte complète (745 lignes)
-2. ✅ API-INDEX.md nouveau (1,100+ lignes)
+2. ✅ API-ENDPOINTS-INDEX.md nouveau (1,100+ lignes)
 
 **README.md (745 lignes):**
 - Navigation principale avec quick start
@@ -451,7 +451,7 @@ dashboard:overview                  # TTL 300s
 - Spec-Driven Development workflow
 - Metadata standards & versioning
 
-**API-INDEX.md (1,100+ lignes):**
+**API-ENDPOINTS-INDEX.md (1,100+ lignes):**
 - Complete index 187+ endpoints
 - Organized by module (13 main modules)
 - Search by HTTP method (GET, POST, PUT, DELETE)
@@ -474,10 +474,10 @@ dashboard:overview                  # TTL 300s
 **Objectif:** Ajouter guides architecture et démarrage rapide
 
 **Fichiers créés:**
-1. ✅ ARCHITECTURE.md (1,300+ lignes)
+1. ✅ 00-canon/architecture.md (1,300+ lignes)
 2. ✅ QUICK-START.md (500+ lignes)
 
-**ARCHITECTURE.md (1,300+ lignes):**
+**00-canon/architecture.md (1,300+ lignes):**
 - Complete architecture diagrams (Mermaid)
 - Module organization by layers (4 layers)
 - Data flow diagrams (3 sequence diagrams)
@@ -521,7 +521,7 @@ dashboard:overview                  # TTL 300s
 - Cas d'usage e-commerce complets
 
 **Productivité:**
-- Référence API rapide (API-INDEX.md)
+- Référence API rapide (API-ENDPOINTS-INDEX.md)
 - Recherche par fonctionnalité, méthode, module
 - Exemples cURL copy-paste
 - Tests ready-to-run (Jest + e2e)
@@ -578,8 +578,8 @@ dashboard:overview                  # TTL 300s
 ### Fichiers Principaux
 
 1. **[README.md](.spec/README.md)** - Navigation principale (745 lignes)
-2. **[API-INDEX.md](.spec/API-INDEX.md)** - Index endpoints (1,100+ lignes)
-3. **[ARCHITECTURE.md](.spec/ARCHITECTURE.md)** - Diagrammes architecture (1,300+ lignes)
+2. **[API-ENDPOINTS-INDEX.md](.spec/API-ENDPOINTS-INDEX.md)** - Index endpoints (1,100+ lignes)
+3. **[00-canon/architecture.md](.spec/00-canon/architecture.md)** - Diagrammes architecture (1,300+ lignes)
 4. **[QUICK-START.md](.spec/QUICK-START.md)** - Guide démarrage (500+ lignes)
 
 ### Spécifications Modules
@@ -618,8 +618,8 @@ dashboard:overview                  # TTL 300s
 
 - [x] 37/37 modules documentés (100%)
 - [x] README.md navigation principale (745 lignes)
-- [x] API-INDEX.md index complet (1,100+ lignes)
-- [x] ARCHITECTURE.md diagrammes (1,300+ lignes)
+- [x] API-ENDPOINTS-INDEX.md index complet (1,100+ lignes)
+- [x] 00-canon/architecture.md diagrammes (1,300+ lignes)
 - [x] QUICK-START.md guide démarrage (500+ lignes)
 - [x] CRITICAL-MODULES-REPORT.md rapport final
 - [x] 187+ endpoints documentés

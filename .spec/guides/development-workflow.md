@@ -577,7 +577,7 @@ const descriptions = {
 
 ## Ressources
 
-- [Architecture Overview](../architecture/overview.md)
+- [Architecture Overview](../00-canon/architecture.md)
 - [API Reference](../api-reference.md)
 - [Database Schema](../database/supabase-schema.md)
 - [Component Library](../../features/)

@@ -822,8 +822,8 @@ echo "✅ Réindexation lancée"
 ### Modules
 
 - [README.md](./README.md) - Navigation principale
-- [API-INDEX.md](./API-INDEX.md) - Index complet endpoints
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Architecture détaillée
+- [API-ENDPOINTS-INDEX.md](./API-ENDPOINTS-INDEX.md) - Index complet endpoints
+- [architecture.md](./00-canon/architecture.md) - Architecture détaillée
 
 ### Spécifications
 
@@ -840,8 +840,8 @@ echo "✅ Réindexation lancée"
 ## Support
 
 **Questions:**
-- Consulter [API-INDEX.md](./API-INDEX.md) pour trouver un endpoint
-- Voir [ARCHITECTURE.md](./ARCHITECTURE.md) pour comprendre les flux
+- Consulter [API-ENDPOINTS-INDEX.md](./API-ENDPOINTS-INDEX.md) pour trouver un endpoint
+- Voir [architecture.md](./00-canon/architecture.md) pour comprendre les flux
 - Lire la spec du module concerné pour les détails
 
 **Bugs:**

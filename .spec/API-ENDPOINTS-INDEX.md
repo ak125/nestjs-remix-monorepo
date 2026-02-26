@@ -678,6 +678,27 @@ curl -X DELETE https://api.example.com/api/blog/metadata/cache/home \
 | SEO metadata | `GET /api/blog/metadata/:alias` | Blog Metadata |
 | Generate content | `POST /api/ai/generate/product` | AI Content |
 
+### 📦 Order Management
+
+| Fonctionnalité | Endpoint | Module |
+|----------------|----------|--------|
+| Order history | `GET /api/customers/orders` | Customers |
+| Order detail | `GET /api/orders/:id` | Orders |
+| Track shipment | `GET /api/orders/:id/tracking` | Orders |
+| Download invoice | `GET /api/orders/:id/invoice` | Orders |
+| Cancel order | `PUT /api/orders/:id/cancel` | Orders |
+| Return order | `POST /api/orders/:id/return` | Orders |
+
+### 👤 Customer Account
+
+| Fonctionnalité | Endpoint | Module |
+|----------------|----------|--------|
+| Profile | `GET /api/customers/profile` | Customers |
+| Addresses | `GET /api/customers/addresses` | Customers |
+| Order history | `GET /api/customers/orders` | Customers |
+| RGPD export | `GET /api/customers/gdpr/export` | Customers |
+| Delete account | `POST /api/customers/gdpr/delete-request` | Customers |
+
 ### 📈 Analytics & Monitoring
 
 | Fonctionnalité | Endpoint | Module |
@@ -687,6 +708,183 @@ curl -X DELETE https://api.example.com/api/blog/metadata/cache/home \
 | Dashboard KPIs | `GET /api/dashboard/kpis` | Dashboard |
 | Orders stats | `GET /api/dashboard/orders/stats` | Dashboard |
 | Revenue report | `GET /api/dashboard/revenue` | Dashboard |
+
+---
+
+## 📋 Index par Méthode HTTP
+
+### GET Endpoints (130+)
+
+**Authentication & Profile:**
+- `/profile` - User profile
+- `/api/customers/profile` - Customer profile
+- `/api/customers/addresses` - Addresses list
+- `/api/customers/orders` - Order history
+
+**Catalog & Products:**
+- `/api/catalog/hierarchy` - Full hierarchy
+- `/api/catalog/famille` - Families list
+- `/api/catalog/gamme/:pg_id` - Gamme detail
+- `/api/products` - Products list
+- `/api/products/:pg_id` - Product detail
+- `/api/products/:pg_id/compatibility` - Vehicle compatibility
+- `/api/products/:pg_id/alternatives` - Alternatives
+
+**Cart & Orders:**
+- `/api/cart` - Get cart
+- `/api/orders` - User orders
+- `/api/orders/:id` - Order detail
+- `/api/orders/:id/invoice` - Invoice PDF
+- `/api/orders/:id/tracking` - Tracking info
+
+**Blog & Content:**
+- `/api/blog/homepage` - Homepage content
+- `/api/blog/article/:slug` - Article detail
+- `/api/blog/popular` - Popular articles
+- `/api/blog/metadata/:alias` - SEO metadata
+
+**Admin & Dashboard:**
+- `/api/admin/stock/dashboard` - Stock dashboard
+- `/api/admin/users` - Users list
+- `/api/dashboard/overview` - KPIs overview
+- `/api/dashboard/orders/stats` - Orders stats
+
+**Analytics:**
+- `/track.js` - Tracking script
+- `/api/analytics/metrics` - Analytics metrics
+- `/api/analytics/config` - Analytics config
+
+### POST Endpoints (40+)
+
+**Authentication:**
+- `/authenticate` - Login
+- `/register-and-login` - Register & login
+
+**Products & Search:**
+- `/api/products/search/advanced` - Advanced search
+- `/api/products/filter` - Filter products
+- `/api/products/prices` - Batch pricing
+- `/api/products/check-compatibility` - Check compatibility
+
+**Cart:**
+- `/api/cart/items` - Add item
+- `/api/cart/promo/apply` - Apply promo
+- `/api/cart/merge` - Merge carts
+- `/api/cart/validate` - Validate cart
+
+**Payments & Orders:**
+- `/api/payments/init` - Initialize payment
+- `/api/payments/paybox/callback` - Paybox callback
+- `/api/orders` - Create order
+
+**Admin Operations:**
+- `/api/admin/stock/reserve` - Reserve stock
+- `/api/admin/reporting/schedule` - Schedule report
+
+**AI & Analytics:**
+- `/api/ai/generate` - Generate content
+- `/api/ai/generate/product` - Product description
+- `/api/analytics/events` - Track event
+- `/api/analytics/events/batch` - Batch track
+
+### PUT Endpoints (20+)
+
+**Profile & Account:**
+- `/profile` - Update profile
+- `/profile/password` - Change password
+- `/api/customers/profile` - Update customer profile
+- `/api/customers/addresses/:id` - Update address
+
+**Cart:**
+- `/api/cart/items/:id` - Update quantity
+- `/api/cart/shipping/select` - Select shipping
+
+**Admin:**
+- `/api/admin/stock/:pg_id` - Update stock
+- `/api/admin/users/:id` - Update user
+- `/api/admin/users/:id/level` - Update RBAC level
+- `/api/admin/products/:pg_id` - Update product
+- `/api/orders/:id/status` - Update order status
+
+### DELETE Endpoints (15+)
+
+**Cart:**
+- `/api/cart/items/:id` - Remove item
+- `/api/cart/promo/remove` - Remove promo
+
+**Admin:**
+- `/api/admin/stock/reservations/:id` - Delete reservation
+- `/api/admin/users/:id` - Delete user
+
+**Cache Management:**
+- `/api/blog/metadata/cache/:alias` - Clear metadata cache
+- `/api/blog/metadata/cache` - Clear all metadata cache
+
+**RGPD:**
+- `/api/customers/profile` - Delete account
+- `/api/customers/addresses/:id` - Delete address
+
+---
+
+## 🔍 Recherche Rapide par Cas d'Usage
+
+**Je veux afficher les produits d'une famille:**
+```
+GET /api/catalog/famille/:id_famille/gammes
+→ GET /api/catalog/gamme/:pg_id/products
+```
+
+**Je veux chercher un produit par texte:**
+```
+GET /api/products/search?q=filtre+à+huile&limit=20
+```
+
+**Je veux filtrer par véhicule:**
+```
+POST /api/products/filter
+Body: { "vehicle_id": 12345 }
+```
+
+**Je veux ajouter au panier:**
+```
+POST /api/cart/items
+Body: { "pg_id": "PG123", "quantity": 2 }
+```
+
+**Je veux appliquer un code promo:**
+```
+POST /api/cart/promo/apply
+Body: { "code": "PROMO10" }
+```
+
+**Je veux payer:**
+```
+POST /api/payments/init
+Body: { "cart_id": "xxx", "amount": 15900, "currency": "EUR" }
+```
+
+**Je veux créer la commande:**
+```
+POST /api/orders
+Body: { "payment_id": "pay123" }
+```
+
+**Je veux voir mes commandes:**
+```
+GET /api/customers/orders?page=1&limit=10
+```
+
+**Je veux télécharger la facture:**
+```
+GET /api/orders/:id/invoice
+→ Retourne PDF
+```
+
+**Je veux exporter mes données RGPD:**
+```
+GET /api/customers/gdpr/export
+→ Retourne JSON (ZIP)
+```
 
 ---
 
