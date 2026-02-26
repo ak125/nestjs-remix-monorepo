@@ -9,6 +9,7 @@ import {
   Controller,
   Post,
   Get,
+  Body,
   Param,
   Query,
   Res,
@@ -20,13 +21,43 @@ import type { Response } from 'express';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { VideoJobService } from '../services/video-job.service';
+import { PostprocessService } from '../services/postprocess.service';
 
 @Controller('api/admin/video')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class VideoExecutionController {
   private readonly logger = new Logger(VideoExecutionController.name);
 
-  constructor(private readonly jobService: VideoJobService) {}
+  constructor(
+    private readonly jobService: VideoJobService,
+    private readonly postprocessService: PostprocessService,
+  ) {}
+
+  /**
+   * POST /api/admin/video/batch-execute
+   * P15: Submit batch execution for multiple derivative productions.
+   */
+  @Post('batch-execute')
+  async batchExecute(@Body() body: { briefIds: string[] }) {
+    if (!body.briefIds || body.briefIds.length === 0) {
+      return {
+        success: false,
+        error: 'briefIds array is required and must not be empty',
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    const result = await this.jobService.submitBatchExecution(
+      body.briefIds,
+      'api',
+    );
+    return {
+      success: true,
+      data: result,
+      message: `Batch ${result.batchId}: ${result.submitted.length} submitted, ${result.skipped.length} skipped`,
+      timestamp: new Date().toISOString(),
+    };
+  }
 
   /**
    * POST /api/admin/video/productions/:briefId/execute
@@ -103,6 +134,39 @@ export class VideoExecutionController {
   }
 
   /**
+   * GET /api/admin/video/executions
+   * List all executions across all productions (paginated + filters).
+   * NOTE: Must be declared BEFORE :executionLogId to avoid ParseIntPipe.
+   */
+  @Get('executions')
+  async listAllExecutions(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('briefId') briefId?: string,
+    @Query('batchId') batchId?: string,
+    @Query('sortOrder') sortOrder?: string,
+  ) {
+    const filters: { status?: string; briefId?: string; batchId?: string } = {};
+    if (status) filters.status = status;
+    if (briefId) filters.briefId = briefId;
+    if (batchId) filters.batchId = batchId;
+
+    const result = await this.jobService.listAllExecutions(filters, {
+      page: parseInt(page || '1', 10),
+      limit: Math.min(parseInt(limit || '20', 10), 100),
+      sortOrder: (sortOrder as 'asc' | 'desc') || 'desc',
+    });
+
+    return {
+      success: true,
+      data: result.data,
+      total: result.total,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
    * GET /api/admin/video/productions/:briefId/executions
    * List executions for a production.
    */
@@ -143,6 +207,18 @@ export class VideoExecutionController {
       message: `Retry submitted for execution #${executionLogId}`,
       timestamp: new Date().toISOString(),
     };
+  }
+
+  /**
+   * GET /api/admin/video/executions/:executionLogId/variants
+   * List format variants (postprocess outputs) for an execution.
+   */
+  @Get('executions/:executionLogId/variants')
+  async listVariants(
+    @Param('executionLogId', ParseIntPipe) executionLogId: number,
+  ) {
+    const data = await this.postprocessService.listVariants(executionLogId);
+    return { success: true, data, timestamp: new Date().toISOString() };
   }
 
   /**

@@ -10,6 +10,11 @@ import {
   Cpu,
   Zap,
   Server,
+  Sparkles,
+  Volume2,
+  Copy,
+  ChevronRight,
+  Shield,
 } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -622,19 +627,161 @@ export default function VideoHubDashboard() {
         </Card>
       )}
 
-      {/* Info Card */}
+      {/* Pipeline 5 etapes */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm">Gouvernance Video P6</CardTitle>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Film className="h-4 w-4 text-rose-500" />
+            Pipeline Video — 5 etapes
+          </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-gray-600 space-y-2">
-          <p>7 gates de gouvernance (G1-G7) — 2 STRICT (Safety, Visual Role)</p>
-          <p>5 artefacts obligatoires par production (NO-GO sans les 5)</p>
-          <p>3 modes : socle (7-9min), gamme (3-6min), short (15-60s)</p>
-          <p>
-            Canary engine : fallback automatique, quota journalier, rollback
-            &lt;1min
-          </p>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+            {[
+              {
+                step: 1,
+                icon: Sparkles,
+                color: "text-rose-500 bg-rose-50 border-rose-200",
+                title: "Script IA",
+                provider: "Groq",
+                desc: "Llama 3.3 70B — scenario, claims, disclaimers",
+              },
+              {
+                step: 2,
+                icon: Film,
+                color: "text-blue-500 bg-blue-50 border-blue-200",
+                title: "Composition",
+                provider: "Remotion",
+                desc: "Templates React — ShortBrakingFact, etc.",
+              },
+              {
+                step: 3,
+                icon: Volume2,
+                color: "text-purple-500 bg-purple-50 border-purple-200",
+                title: "Voix off",
+                provider: "edge-tts",
+                desc: "Microsoft Neural FR — cache SHA256",
+              },
+              {
+                step: 4,
+                icon: Zap,
+                color: "text-amber-500 bg-amber-50 border-amber-200",
+                title: "Post-traitement",
+                provider: "FFmpeg",
+                desc: "Resize, loudnorm, merge audio, SRT",
+              },
+              {
+                step: 5,
+                icon: Copy,
+                color: "text-green-500 bg-green-50 border-green-200",
+                title: "Derivees",
+                provider: "BullMQ",
+                desc: "1 claim = 1 short — batch stagger 5s",
+              },
+            ].map((s, i) => {
+              const Icon = s.icon;
+              return (
+                <div key={s.step} className="flex items-start gap-2">
+                  <div className={`rounded-lg border p-3 flex-1 ${s.color}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Icon className="h-4 w-4" />
+                      <span className="font-medium text-sm text-gray-900">
+                        {s.step}. {s.title}
+                      </span>
+                    </div>
+                    <Badge variant="outline" className="text-xs mb-1">
+                      {s.provider}
+                    </Badge>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      {s.desc}
+                    </p>
+                  </div>
+                  {i < 4 && (
+                    <ChevronRight className="h-4 w-4 text-gray-300 mt-4 hidden md:block flex-shrink-0" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Architecture & Couts */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Server className="h-4 w-4 text-blue-500" />
+            Architecture & Couts
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              {
+                service: "Script IA",
+                provider: "Groq (Llama 3.3 70B)",
+                cost: "Gratuit",
+                costColor: "bg-green-100 text-green-700",
+              },
+              {
+                service: "Voix off",
+                provider: "edge-tts (Microsoft Neural)",
+                cost: "Gratuit",
+                costColor: "bg-green-100 text-green-700",
+              },
+              {
+                service: "Rendu video",
+                provider: "Remotion (self-hosted)",
+                cost: "Self-hosted",
+                costColor: "bg-blue-100 text-blue-700",
+              },
+              {
+                service: "Post-process",
+                provider: "FFmpeg (self-hosted)",
+                cost: "Self-hosted",
+                costColor: "bg-blue-100 text-blue-700",
+              },
+            ].map((item) => (
+              <div
+                key={item.service}
+                className="p-3 bg-gray-50 rounded-lg border border-gray-100"
+              >
+                <div className="text-xs text-gray-500">{item.service}</div>
+                <div className="text-sm font-medium text-gray-800 mt-0.5">
+                  {item.provider}
+                </div>
+                <Badge className={`mt-1 text-xs ${item.costColor}`}>
+                  {item.cost}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Gouvernance */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Shield className="h-4 w-4 text-amber-500" />
+            Gouvernance Video P6
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline" className="text-xs">
+              7 gates (G1-G7) — 2 STRICT
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              5 artefacts obligatoires
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              3 modes : socle / gamme / short
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              Canary fallback auto + quota/jour
+            </Badge>
+          </div>
         </CardContent>
       </Card>
     </div>

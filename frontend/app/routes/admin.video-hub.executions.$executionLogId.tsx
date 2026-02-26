@@ -22,6 +22,9 @@ import {
   Download,
   Play,
   Loader2,
+  Film,
+  FileText,
+  HardDrive,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Badge } from "~/components/ui/badge";
@@ -73,6 +76,15 @@ interface ExecutionLog {
   canaryErrorCode: string | null;
 }
 
+interface VariantRecord {
+  name: string;
+  s3Path: string;
+  codec: string;
+  resolution: string;
+  fileSizeBytes: number;
+  durationSecs: number | null;
+}
+
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const backendUrl = getInternalApiUrl("");
   const cookieHeader = request.headers.get("Cookie") || "";
@@ -87,9 +99,28 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     if (!res.ok) return json({ execution: null, error: "Not found" });
 
     const data = await res.json();
-    return json({ execution: data.data as ExecutionLog, error: null });
+    const execution = data.data as ExecutionLog;
+
+    // Fetch variants if execution completed
+    let variants: VariantRecord[] = [];
+    if (execution.status === "completed") {
+      try {
+        const varRes = await fetch(
+          `${backendUrl}/api/admin/video/executions/${executionLogId}/variants`,
+          { headers: { Cookie: cookieHeader } },
+        );
+        if (varRes.ok) {
+          const varData = await varRes.json();
+          variants = varData.data ?? [];
+        }
+      } catch {
+        // Non-fatal
+      }
+    }
+
+    return json({ execution, variants, error: null });
   } catch {
-    return json({ execution: null, error: "Erreur chargement" });
+    return json({ execution: null, variants: [], error: "Erreur chargement" });
   }
 }
 
@@ -301,7 +332,7 @@ function VideoPreviewSection({
 }
 
 export default function ExecutionDetail() {
-  const { execution, error } = useLoaderData<typeof loader>();
+  const { execution, variants, error } = useLoaderData<typeof loader>();
   const retryFetcher = useFetcher<{
     ok: boolean;
     error?: string;
@@ -617,6 +648,52 @@ export default function ExecutionDetail() {
             )}
         </CardContent>
       </Card>
+
+      {/* Variants (postprocess outputs) */}
+      {variants && variants.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Film className="h-4 w-4" />
+              Variantes ({variants.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {variants.map((v: VariantRecord) => (
+                <div
+                  key={v.name}
+                  className="border rounded-lg p-4 bg-gray-50 space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-sm">{v.name}</span>
+                    <Badge className="bg-blue-100 text-blue-700 text-xs">
+                      {v.codec}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <HardDrive className="h-3 w-3" />
+                      {v.resolution}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <FileText className="h-3 w-3" />
+                      {v.fileSizeBytes
+                        ? `${(v.fileSizeBytes / 1024 / 1024).toFixed(1)} MB`
+                        : "\u2014"}
+                    </div>
+                  </div>
+                  {v.durationSecs != null && (
+                    <div className="text-xs text-gray-400">
+                      {v.durationSecs.toFixed(1)}s
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Error Message */}
       {execution.errorMessage && (

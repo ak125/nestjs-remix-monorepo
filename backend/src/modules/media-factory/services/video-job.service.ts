@@ -63,6 +63,10 @@ export interface ExecutionLogRow {
   canaryFallback: boolean;
   canaryErrorMessage: string | null;
   canaryErrorCode: string | null;
+  // P15: derivative/batch tracking
+  parentBriefId: string | null;
+  derivativeIndex: number | null;
+  batchId: string | null;
 }
 
 export interface ExecutionStats {
@@ -227,6 +231,41 @@ export class VideoJobService extends SupabaseBaseService {
     }
 
     return (data ?? []).map(this.mapLogRow);
+  }
+
+  /**
+   * List all executions across all productions (paginated + filters).
+   */
+  async listAllExecutions(
+    filters: { status?: string; briefId?: string; batchId?: string },
+    pagination: { page: number; limit: number; sortOrder: 'asc' | 'desc' },
+  ): Promise<{ data: ExecutionLogRow[]; total: number }> {
+    const { page, limit, sortOrder } = pagination;
+    const offset = (page - 1) * limit;
+
+    let query = this.client
+      .from('__video_execution_log')
+      .select('*', { count: 'exact' });
+
+    if (filters.status) query = query.eq('status', filters.status);
+    if (filters.briefId) query = query.eq('brief_id', filters.briefId);
+    if (filters.batchId) query = query.eq('batch_id', filters.batchId);
+
+    query = query
+      .order('created_at', { ascending: sortOrder === 'asc' })
+      .range(offset, offset + limit - 1);
+
+    const { data, count, error } = await query;
+
+    if (error) {
+      this.logger.error(`listAllExecutions error: ${error.message}`);
+      return { data: [], total: 0 };
+    }
+
+    return {
+      data: (data ?? []).map(this.mapLogRow),
+      total: count ?? 0,
+    };
   }
 
   /**
@@ -468,6 +507,119 @@ export class VideoJobService extends SupabaseBaseService {
   }
 
   /**
+   * P15: Submit batch execution for multiple derivative productions.
+   * Queues N jobs with stagger delay, sharing a common batchId.
+   */
+  async submitBatchExecution(
+    briefIds: string[],
+    triggerSource: 'manual' | 'api' = 'api',
+  ): Promise<{
+    batchId: string;
+    submitted: Array<{ briefId: string; executionLogId: number }>;
+    skipped: Array<{ briefId: string; reason: string }>;
+  }> {
+    if (process.env.VIDEO_PIPELINE_ENABLED !== 'true') {
+      throw new BadRequestException(
+        'Video pipeline is disabled (VIDEO_PIPELINE_ENABLED=false)',
+      );
+    }
+
+    const batchId = `batch-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const staggerMs = parseInt(
+      process.env.VIDEO_BATCH_STAGGER_MS || '5000',
+      10,
+    );
+
+    const submitted: Array<{ briefId: string; executionLogId: number }> = [];
+    const skipped: Array<{ briefId: string; reason: string }> = [];
+
+    for (let i = 0; i < briefIds.length; i++) {
+      const briefId = briefIds[i];
+
+      try {
+        // Verify production exists
+        const production = await this.dataService.getProduction(briefId);
+
+        // Guard: no active job for this briefId
+        const { data: activeJobs } = await this.client
+          .from('__video_execution_log')
+          .select('id')
+          .eq('brief_id', briefId)
+          .in('status', ['pending', 'processing'])
+          .limit(1);
+
+        if (activeJobs && activeJobs.length > 0) {
+          skipped.push({
+            briefId,
+            reason: `Active execution exists (id=${activeJobs[0].id})`,
+          });
+          continue;
+        }
+
+        // Insert execution log entry with batch context
+        const { data: logEntry, error: insertError } = await this.client
+          .from('__video_execution_log')
+          .insert({
+            brief_id: briefId,
+            video_type: production.videoType,
+            vertical: production.vertical,
+            gamme_alias: production.gammeAlias ?? null,
+            pg_id: production.pgId ?? null,
+            status: 'pending',
+            trigger_source: triggerSource,
+            batch_id: batchId,
+            parent_brief_id: production.parentBriefId ?? null,
+            derivative_index: production.derivativeIndex ?? null,
+          })
+          .select('id')
+          .single();
+
+        if (insertError || !logEntry) {
+          skipped.push({
+            briefId,
+            reason: insertError?.message ?? 'Insert failed',
+          });
+          continue;
+        }
+
+        const executionLogId = logEntry.id as number;
+
+        // Queue BullMQ job with stagger delay
+        const jobData: VideoExecutionJobData = {
+          executionLogId,
+          briefId,
+          triggerSource,
+        };
+
+        const bullJob = await this.videoQueue.add('video-execute', jobData, {
+          jobId: `video-exec-${executionLogId}`,
+          delay: i * staggerMs,
+          attempts: 2,
+          backoff: { type: 'exponential', delay: 30000 },
+          removeOnComplete: 50,
+          removeOnFail: 50,
+        });
+
+        await this.client
+          .from('__video_execution_log')
+          .update({ bullmq_job_id: String(bullJob.id) })
+          .eq('id', executionLogId);
+
+        submitted.push({ briefId, executionLogId });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        skipped.push({ briefId, reason: msg });
+      }
+    }
+
+    this.logger.log(
+      `[VJS] Batch ${batchId}: submitted=${submitted.length}, skipped=${skipped.length}, stagger=${staggerMs}ms`,
+    );
+
+    return { batchId, submitted, skipped };
+  }
+
+  /**
    * P5.4: Delegate canary stats to render adapter.
    */
   async getCanaryStats() {
@@ -514,5 +666,9 @@ export class VideoJobService extends SupabaseBaseService {
     // P11a: gamme context
     gammeAlias: (row.gamme_alias as string) ?? null,
     pgId: (row.pg_id as number) ?? null,
+    // P15: derivative/batch tracking
+    parentBriefId: (row.parent_brief_id as string) ?? null,
+    derivativeIndex: (row.derivative_index as number) ?? null,
+    batchId: (row.batch_id as string) ?? null,
   });
 }

@@ -2,6 +2,7 @@ import {
   S3Client,
   PutObjectCommand,
   HeadBucketCommand,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { createReadStream, statSync } from 'fs';
 import pino from 'pino';
@@ -74,4 +75,34 @@ export async function uploadToS3(
   logger.info({ briefId, executionLogId, s3Path, fileSizeBytes: fileStats.size }, 'Upload complete');
 
   return { s3Path, fileSizeBytes: fileStats.size };
+}
+
+/**
+ * Upload a local file to S3 with a custom key and content type.
+ * Returns the full s3:// path.
+ */
+export async function uploadToS3Generic(
+  localPath: string,
+  key: string,
+  contentType: string,
+): Promise<string> {
+  const bucket = process.env.S3_BUCKET_NAME ?? 'automecanik-renders';
+
+  const fileStats = statSync(localPath);
+  const stream = createReadStream(localPath);
+
+  await getS3Client().send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: stream,
+      ContentType: contentType,
+      ContentLength: fileStats.size,
+    }),
+  );
+
+  const s3Path = `s3://${bucket}/${key}`;
+  logger.info({ key, s3Path, fileSizeBytes: fileStats.size }, 'Generic upload complete');
+
+  return s3Path;
 }

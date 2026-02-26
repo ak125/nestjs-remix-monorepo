@@ -7,6 +7,7 @@ import { Outlet, Link, useLocation, useLoaderData } from "@remix-run/react";
 import {
   LayoutDashboard,
   Film,
+  Activity,
   FileVideo,
   Image,
   ChevronRight,
@@ -28,6 +29,12 @@ const navItems = [
     href: "/admin/video-hub/productions",
     icon: Film,
     description: "Toutes les productions",
+  },
+  {
+    label: "Executions",
+    href: "/admin/video-hub/executions",
+    icon: Activity,
+    description: "Historique des rendus",
   },
   {
     label: "Templates",

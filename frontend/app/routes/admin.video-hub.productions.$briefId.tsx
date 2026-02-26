@@ -19,6 +19,8 @@ import {
   Volume2,
   ChevronDown,
   ChevronUp,
+  Copy,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
@@ -73,9 +75,20 @@ interface Production {
   masterAudioUrl: string | null;
   ttsVoice: string | null;
   parentBriefId: string | null;
+  contentRole: string;
+  derivativePolicy: Record<string, unknown> | null;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+}
+
+interface DerivativeRow {
+  brief_id: string;
+  video_type: string;
+  status: string;
+  derivative_index: number;
+  script_text: string | null;
+  created_at: string;
 }
 
 interface ExecutionRow {
@@ -103,17 +116,28 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   try {
     const headers = { Cookie: cookieHeader };
-    const [prodRes, execRes] = await Promise.all([
+    const [prodRes, execRes, derivRes] = await Promise.all([
       fetch(`${backendUrl}/api/admin/video/productions/${briefId}`, {
         headers,
       }),
       fetch(`${backendUrl}/api/admin/video/productions/${briefId}/executions`, {
         headers,
       }),
+      fetch(
+        `${backendUrl}/api/admin/video/productions/${briefId}/derivatives`,
+        {
+          headers,
+        },
+      ),
     ]);
 
     if (!prodRes.ok)
-      return json({ production: null, executions: [], error: "Not found" });
+      return json({
+        production: null,
+        executions: [],
+        derivatives: [],
+        error: "Not found",
+      });
 
     const prodData = await prodRes.json();
     let executions: ExecutionRow[] = [];
@@ -121,16 +145,23 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       const execData = await execRes.json();
       executions = (execData.data ?? []) as ExecutionRow[];
     }
+    let derivatives: DerivativeRow[] = [];
+    if (derivRes.ok) {
+      const derivData = await derivRes.json();
+      derivatives = (derivData.data ?? []) as DerivativeRow[];
+    }
 
     return json({
       production: prodData.data as Production,
       executions,
+      derivatives,
       error: null,
     });
   } catch {
     return json({
       production: null,
       executions: [],
+      derivatives: [],
       error: "Erreur chargement",
     });
   }
@@ -257,6 +288,69 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
   }
 
+  if (intent === "derive") {
+    try {
+      const res = await fetch(
+        `${backendUrl}/api/admin/video/productions/${briefId}/derive`,
+        {
+          method: "POST",
+          headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return json({
+          _intent: "derive" as const,
+          ok: false,
+          error: data.error ?? data.message ?? "Erreur derivation",
+        });
+      }
+      return json({
+        _intent: "derive" as const,
+        ok: true,
+        data: data.data,
+      });
+    } catch {
+      return json({
+        _intent: "derive" as const,
+        ok: false,
+        error: "Erreur reseau",
+      });
+    }
+  }
+
+  if (intent === "batch-execute") {
+    const briefIdsRaw = formData.get("briefIds") as string;
+    const briefIdsArr = briefIdsRaw ? briefIdsRaw.split(",") : [];
+    try {
+      const res = await fetch(`${backendUrl}/api/admin/video/batch-execute`, {
+        method: "POST",
+        headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
+        body: JSON.stringify({ briefIds: briefIdsArr }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return json({
+          _intent: "batch-execute" as const,
+          ok: false,
+          error: data.error ?? data.message ?? "Erreur batch",
+        });
+      }
+      return json({
+        _intent: "batch-execute" as const,
+        ok: true,
+        data: data.data,
+      });
+    } catch {
+      return json({
+        _intent: "batch-execute" as const,
+        ok: false,
+        error: "Erreur reseau",
+      });
+    }
+  }
+
   // Default: execute
   try {
     const res = await fetch(
@@ -331,7 +425,8 @@ function formatDuration(ms: number | null): string {
 }
 
 export default function VideoProductionDetail() {
-  const { production, executions, error } = useLoaderData<typeof loader>();
+  const { production, executions, derivatives, error } =
+    useLoaderData<typeof loader>();
   const [scriptExpanded, setScriptExpanded] = useState(false);
   const [claimsExpanded, setClaimsExpanded] = useState(false);
   const fetcher = useFetcher<{
@@ -374,6 +469,27 @@ export default function VideoProductionDetail() {
     };
   }>();
   const isDryRunning = dryRunFetcher.state !== "idle";
+  const deriveFetcher = useFetcher<{
+    _intent: "derive";
+    ok: boolean;
+    error?: string;
+    data?: {
+      derivativesCreated: number;
+      derivatives: Array<{ briefId: string; claimText: string }>;
+    };
+  }>();
+  const isDeriving = deriveFetcher.state !== "idle";
+  const batchFetcher = useFetcher<{
+    _intent: "batch-execute";
+    ok: boolean;
+    error?: string;
+    data?: {
+      batchId: string;
+      submitted: Array<{ briefId: string }>;
+      skipped: Array<{ briefId: string; reason: string }>;
+    };
+  }>();
+  const isBatchExecuting = batchFetcher.state !== "idle";
 
   if (!production) {
     return (
@@ -951,6 +1067,160 @@ export default function VideoProductionDetail() {
           </CardContent>
         </Card>
       )}
+
+      {/* Derivees (Step 5) */}
+      {production.contentRole === "master_truth" &&
+        production.claimTable &&
+        production.claimTable.length > 0 && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Copy className="h-4 w-4" />
+                  Derivees ({derivatives.length})
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  {derivatives.length > 0 && (
+                    <batchFetcher.Form method="post">
+                      <input
+                        type="hidden"
+                        name="_intent"
+                        value="batch-execute"
+                      />
+                      <input
+                        type="hidden"
+                        name="briefIds"
+                        value={derivatives.map((d) => d.brief_id).join(",")}
+                      />
+                      <Button
+                        type="submit"
+                        size="sm"
+                        variant="outline"
+                        disabled={isBatchExecuting}
+                        className="gap-1"
+                      >
+                        {isBatchExecuting ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Zap className="h-3 w-3" />
+                        )}
+                        {isBatchExecuting
+                          ? "Lancement batch..."
+                          : `Lancer batch (${derivatives.length})`}
+                      </Button>
+                    </batchFetcher.Form>
+                  )}
+                  <deriveFetcher.Form method="post">
+                    <input type="hidden" name="_intent" value="derive" />
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={isDeriving}
+                      className="gap-1"
+                    >
+                      {isDeriving ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Copy className="h-3 w-3" />
+                      )}
+                      {isDeriving
+                        ? "Derivation..."
+                        : derivatives.length > 0
+                          ? "Re-deriver"
+                          : "Generer les derivees"}
+                    </Button>
+                  </deriveFetcher.Form>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Derive feedback */}
+              {deriveFetcher.data?.ok === true && deriveFetcher.data.data && (
+                <div className="mb-3 rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-700">
+                  {deriveFetcher.data.data.derivativesCreated} derivees creees
+                </div>
+              )}
+              {deriveFetcher.data?.ok === false && (
+                <div className="mb-3 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                  {deriveFetcher.data.error ?? "Erreur derivation"}
+                </div>
+              )}
+              {/* Batch feedback */}
+              {batchFetcher.data?.ok === true && batchFetcher.data.data && (
+                <div className="mb-3 rounded-lg bg-blue-50 border border-blue-200 p-3 text-sm text-blue-700">
+                  Batch {batchFetcher.data.data.batchId} :{" "}
+                  {batchFetcher.data.data.submitted.length} soumises,{" "}
+                  {batchFetcher.data.data.skipped.length} ignorees
+                </div>
+              )}
+              {batchFetcher.data?.ok === false && (
+                <div className="mb-3 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                  {batchFetcher.data.error ?? "Erreur batch"}
+                </div>
+              )}
+
+              {derivatives.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs text-gray-500">
+                        <th className="pb-2 pr-3">#</th>
+                        <th className="pb-2 pr-3">Brief ID</th>
+                        <th className="pb-2 pr-3">Type</th>
+                        <th className="pb-2 pr-3">Status</th>
+                        <th className="pb-2 pr-3">Script</th>
+                        <th className="pb-2">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {derivatives.map((d) => (
+                        <tr key={d.brief_id} className="border-b last:border-0">
+                          <td className="py-2 pr-3 text-gray-500">
+                            {d.derivative_index}
+                          </td>
+                          <td className="py-2 pr-3">
+                            <Link
+                              to={`/admin/video-hub/productions/${d.brief_id}`}
+                              className="text-blue-600 hover:underline font-medium"
+                            >
+                              {d.brief_id}
+                            </Link>
+                          </td>
+                          <td className="py-2 pr-3 capitalize">
+                            {d.video_type}
+                          </td>
+                          <td className="py-2 pr-3">
+                            <Badge
+                              className={`text-xs ${STATUS_BADGE[d.status] ?? STATUS_BADGE.pending}`}
+                            >
+                              {d.status}
+                            </Badge>
+                          </td>
+                          <td className="py-2 pr-3 max-w-[200px] truncate text-gray-600">
+                            {d.script_text ?? "—"}
+                          </td>
+                          <td className="py-2 text-xs text-gray-500">
+                            {new Date(d.created_at).toLocaleString("fr-FR", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">
+                  Aucune derivee. Cliquez sur &quot;Generer les derivees&quot;
+                  pour extraire des shorts depuis les claims.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
       {/* Executions recentes */}
       <Card>
