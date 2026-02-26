@@ -84,7 +84,7 @@ export interface IndexChange {
 
 export interface Alert {
   id: string;
-  type: 'RISK' | 'INTERPOLATION' | 'QUEUE';
+  type: 'RISK' | 'INTERPOLATION' | 'QUEUE' | 'CONTENT_GAP';
   severity: 'HIGH' | 'MEDIUM' | 'LOW';
   message: string;
   url?: string;
@@ -239,25 +239,42 @@ export class SeoCockpitService extends SupabaseBaseService {
   async getConsolidatedAlerts(limit: number = 50): Promise<Alert[]> {
     const alerts: Alert[] = [];
 
-    // Alertes d'interpolation
-    const { data: interpAlerts } = await this.supabase
-      .from('__seo_interpolation_alerts')
-      .select('*')
-      .eq('resolved', false)
-      .order('created_at', { ascending: false })
-      .limit(20);
+    // Content gap alerts — pages missing title or meta_description
+    const [missingTitleRes, missingDescRes] = await Promise.all([
+      this.supabase
+        .from('__seo_page')
+        .select('id', { count: 'exact', head: true })
+        .is('title', null),
+      this.supabase
+        .from('__seo_page')
+        .select('id', { count: 'exact', head: true })
+        .is('meta_description', null),
+    ]);
 
-    if (interpAlerts) {
-      for (const alert of interpAlerts) {
-        alerts.push({
-          id: `interp-${alert.id}`,
-          type: 'INTERPOLATION',
-          severity: alert.severity || 'MEDIUM',
-          message: alert.message || 'Variable interpolation issue',
-          url: alert.url,
-          timestamp: alert.created_at,
-        });
-      }
+    const missingTitle = missingTitleRes.count || 0;
+    const missingDesc = missingDescRes.count || 0;
+    const now = new Date().toISOString();
+
+    if (missingTitle > 0) {
+      alerts.push({
+        id: 'content-gap-title',
+        type: 'CONTENT_GAP',
+        severity: missingTitle > 100000 ? 'HIGH' : 'MEDIUM',
+        message: `${missingTitle.toLocaleString()} pages sans title`,
+        url: undefined,
+        timestamp: now,
+      });
+    }
+
+    if (missingDesc > 0) {
+      alerts.push({
+        id: 'content-gap-description',
+        type: 'CONTENT_GAP',
+        severity: missingDesc > 100000 ? 'HIGH' : 'MEDIUM',
+        message: `${missingDesc.toLocaleString()} pages sans meta_description`,
+        url: undefined,
+        timestamp: now,
+      });
     }
 
     // Alertes de risk flags - from confusion pairs (actual data)
@@ -567,26 +584,7 @@ export class SeoCockpitService extends SupabaseBaseService {
       }
     }
 
-    // Orphan pages: only count if we have real link data
-    // Check if internal_links_count column has ANY non-null values
-    const { count: hasLinkData } = await this.supabase
-      .from('__seo_page')
-      .select('id', { count: 'exact', head: true })
-      .not('internal_links_count', 'is', null);
-
-    if (hasLinkData && hasLinkData > 0) {
-      // We have real link data, count orphans (pages with 0 links)
-      const { count: orphanCount } = await this.supabase
-        .from('__seo_page')
-        .select('id', { count: 'exact', head: true })
-        .eq('internal_links_count', 0);
-
-      if (orphanCount) {
-        breakdown.ORPHAN = orphanCount;
-        urlsAtRisk += orphanCount;
-      }
-    }
-    // If no link data exists, ORPHAN stays at 0 (honest: "not measured" rather than fake estimate)
+    // ORPHAN stays at 0: __seo_page has no internal_links_count column yet
 
     return {
       totalUrls: totalUrls || 0,
@@ -601,14 +599,14 @@ export class SeoCockpitService extends SupabaseBaseService {
     const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-    // Try __seo_crawl_hub first (has data), fallback to crawl_log
+    // __seo_crawl_hub schema: id, path, bucket, hub_type, urls_count, depth, generated_at
     const [hubRes, last24hRes, last7dRes] = await Promise.all([
       this.supabase
         .from('__seo_crawl_hub')
-        .select('last_crawl_at, total_pages_crawled, avg_response_ms')
-        .order('last_crawl_at', { ascending: false })
+        .select('generated_at, urls_count, hub_type')
+        .order('generated_at', { ascending: false })
         .limit(1),
-      // Estimate recent crawl activity from __seo_page updates
+      // Estimate recent activity from __seo_page updates
       this.supabase
         .from('__seo_page')
         .select('id', { count: 'exact', head: true })
@@ -620,15 +618,15 @@ export class SeoCockpitService extends SupabaseBaseService {
     ]);
 
     const hub = hubRes.data?.[0];
-    const lastCrawl = hub?.last_crawl_at;
-    const googlebotAbsent14d = lastCrawl
-      ? new Date(lastCrawl) < twoWeeksAgo
+    const lastGenerated = hub?.generated_at;
+    const googlebotAbsent14d = lastGenerated
+      ? new Date(lastGenerated) < twoWeeksAgo
       : true;
 
     return {
       last24h: last24hRes.count || 0,
       last7d: last7dRes.count || 0,
-      avgResponseMs: hub?.avg_response_ms || 0,
+      avgResponseMs: 0, // Not measured yet — no response time data in crawl_hub
       googlebotAbsent14d,
     };
   }

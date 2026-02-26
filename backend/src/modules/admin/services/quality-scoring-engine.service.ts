@@ -15,7 +15,7 @@ import {
   type ScoreStatus,
   type Priority,
   type ScoringProfile,
-  type _GateSeverity,
+  // GateSeverity reserved for future gate enforcement
 } from '../../../config/scoring-profiles.config';
 
 // ── v2: Continuous scoring helpers ──
