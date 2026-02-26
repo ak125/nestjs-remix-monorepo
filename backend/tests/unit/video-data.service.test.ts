@@ -373,7 +373,7 @@ describe('VideoDataService', () => {
 
       const result = await service.listTemplates();
 
-      expect(result).toHaveLength(2);
+      expect(result).toHaveLength(3);
       expect(result[0].templateId).toBeDefined();
       expect(result[0].structure).toHaveProperty('compositionId');
       expect(result[0].structure).toHaveProperty('source', 'code_registry');

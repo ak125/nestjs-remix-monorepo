@@ -60,10 +60,11 @@ describe('Template Registry', () => {
   });
 
   describe('listRegisteredTemplates', () => {
-    it('should return 2 registered templates', () => {
+    it('should return 3 registered templates', () => {
       const templates = listRegisteredTemplates();
-      expect(templates).toHaveLength(2);
+      expect(templates).toHaveLength(3);
       expect(templates.map((t) => t.templateId).sort()).toEqual([
+        'short-braking-fact',
         'short-product-highlight',
         'test-card',
       ]);
