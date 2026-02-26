@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { getErrorMessage } from '../../../common/utils/error.utils';
@@ -29,9 +29,21 @@ export interface SystemAlert {
 }
 
 @Injectable()
-export class DatabaseMonitorService extends SupabaseBaseService {
+export class DatabaseMonitorService
+  extends SupabaseBaseService
+  implements OnModuleDestroy
+{
   protected readonly logger = new Logger(DatabaseMonitorService.name);
   private alerts: SystemAlert[] = [];
+  private monitorInterval: ReturnType<typeof setInterval> | null = null;
+
+  onModuleDestroy() {
+    if (this.monitorInterval) {
+      clearInterval(this.monitorInterval);
+      this.monitorInterval = null;
+    }
+    this.logger.log('DatabaseMonitorService destroyed, monitoring stopped');
+  }
 
   // Tables critiques à surveiller
   private readonly CRITICAL_TABLES = [
@@ -322,7 +334,7 @@ export class DatabaseMonitorService extends SupabaseBaseService {
     await monitor();
 
     // Puis périodique
-    setInterval(monitor, intervalMs);
+    this.monitorInterval = setInterval(monitor, intervalMs);
   }
 
   /**

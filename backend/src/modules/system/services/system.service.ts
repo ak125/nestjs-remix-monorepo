@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MetricsService, PerformanceMetrics } from './metrics.service';
 import {
@@ -29,9 +29,18 @@ export interface SystemInsights {
 }
 
 @Injectable()
-export class SystemService {
+export class SystemService implements OnModuleDestroy {
   private readonly logger = new Logger(SystemService.name);
   private systemStartTime = Date.now();
+  private maintenanceInterval: ReturnType<typeof setInterval> | null = null;
+
+  onModuleDestroy() {
+    if (this.maintenanceInterval) {
+      clearInterval(this.maintenanceInterval);
+      this.maintenanceInterval = null;
+    }
+    this.logger.log('SystemService destroyed, maintenance stopped');
+  }
 
   constructor(
     private readonly configService: ConfigService,
@@ -310,7 +319,7 @@ export class SystemService {
       await this.metricsService.getAllMetrics();
 
       // Maintenance automatique périodique (1 heure)
-      setInterval(async () => {
+      this.maintenanceInterval = setInterval(async () => {
         try {
           await this.performMaintenanceTasks();
         } catch (error) {

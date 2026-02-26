@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { NotificationsGateway } from './notifications.gateway';
 
 export interface NotificationData {
@@ -13,10 +13,19 @@ export interface NotificationData {
 }
 
 @Injectable()
-export class NotificationsService {
+export class NotificationsService implements OnModuleDestroy {
   private logger = new Logger('NotificationsService');
+  private demoInterval: ReturnType<typeof setInterval> | null = null;
 
   constructor(private readonly notificationsGateway: NotificationsGateway) {}
+
+  onModuleDestroy() {
+    if (this.demoInterval) {
+      clearInterval(this.demoInterval);
+      this.demoInterval = null;
+    }
+    this.logger.log('NotificationsService destroyed, demo mode stopped');
+  }
 
   // Send order status updates
   sendOrderUpdate(orderId: string, status: string, userId?: string) {
@@ -185,10 +194,14 @@ export class NotificationsService {
 
   // Start demo mode for testing
   startDemoMode() {
+    if (this.demoInterval) {
+      this.logger.warn('Demo mode already running, ignoring duplicate start');
+      return;
+    }
     this.logger.log('Starting demo mode...');
 
     // Send periodic demo notifications
-    setInterval(() => {
+    this.demoInterval = setInterval(() => {
       const demoNotifications = [
         {
           type: 'info' as const,
