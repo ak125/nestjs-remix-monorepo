@@ -96,7 +96,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       { headers: { Cookie: cookieHeader } },
     );
 
-    if (!res.ok) return json({ execution: null, error: "Not found" });
+    if (!res.ok)
+      return json({ execution: null, variants: [], error: "Not found" });
 
     const data = await res.json();
     const execution = data.data as ExecutionLog;
