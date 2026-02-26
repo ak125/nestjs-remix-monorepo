@@ -1,6 +1,26 @@
 {
   "workbench.externalBrowser": "chrome",
   "livePreview.customExternalBrowser": "Chrome",
+
+  "typescript.tsserver.maxTsServerMemory": 2048,
+  "typescript.tsserver.watchOptions": {
+    "watchFile": "useFsEventsOnParentDirectory",
+    "watchDirectory": "useFsEvents"
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.git/**": true,
+    "**/dist/**": true,
+    "**/coverage/**": true,
+    "**/.turbo/**": true,
+    "**/backend/supabase/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.turbo": true,
+    "**/coverage": true
+  },
   "copilot.enable": {
     "*": true,
     "yaml": true,

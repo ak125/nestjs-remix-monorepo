@@ -66,6 +66,7 @@
     "compression": "^1.8.1",
     "connect-redis": "^5.2.0",
     "cors": "^2.8.5",
+    "edge-tts-universal": "^1.4.0",
     "eventemitter2": "^6.4.9",
     "express-session": "^1.17.3",
     "googleapis": "^164.1.0",
