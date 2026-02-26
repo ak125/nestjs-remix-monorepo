@@ -163,7 +163,7 @@ jobs:
         run: npm run build
 
       - name: 🧪 Run backend tests
-        run: cd backend && npx jest --ci --verbose --coverage --coverageReporters=text-summary --coverageReporters=json-summary
+        run: cd backend && npx jest --ci --verbose --maxWorkers=1 --coverage --coverageReporters=text-summary --coverageReporters=json-summary
         env:
           SUPABASE_URL: "https://mock.supabase.co"
           SUPABASE_SERVICE_ROLE_KEY: "mock-key-for-ci"
