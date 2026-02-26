@@ -1,5 +1,5 @@
-import { Link } from '@remix-run/react';
-import { Home, ChevronRight } from 'lucide-react';
+import { Link } from "@remix-run/react";
+import { Home, ChevronRight } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -7,7 +7,7 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
   BreadcrumbPage,
-} from './breadcrumb';
+} from "./breadcrumb";
 
 interface BreadcrumbItemType {
   label: string;
@@ -17,61 +17,111 @@ interface BreadcrumbItemType {
 interface PublicBreadcrumbProps {
   items: BreadcrumbItemType[];
   className?: string;
+  /** Injecte un script JSON-LD Schema.org BreadcrumbList pour le SEO */
+  withJsonLd?: boolean;
+  /** Prefixe automatiquement "Accueil" (defaut: true) */
+  showHome?: boolean;
 }
 
+const BASE_URL = "https://www.automecanik.com";
+
 /**
- * Composant Breadcrumb générique pour les pages publiques
- * 
- * @example
+ * Composant Breadcrumb unifié (public + admin)
+ *
+ * @example Public
  * ```tsx
- * <PublicBreadcrumb 
+ * <PublicBreadcrumb
  *   items={[
  *     { label: "Mon Compte", href: "/account" },
  *     { label: "Mes Commandes" }
  *   ]}
  * />
  * ```
+ *
+ * @example Avec JSON-LD SEO
+ * ```tsx
+ * <PublicBreadcrumb
+ *   items={[
+ *     { label: "Freinage", href: "/pieces/freinage" },
+ *     { label: "Disque de frein" }
+ *   ]}
+ *   withJsonLd
+ * />
+ * ```
  */
-export function PublicBreadcrumb({ items, className = '' }: PublicBreadcrumbProps) {
+export function PublicBreadcrumb({
+  items,
+  className = "",
+  withJsonLd = false,
+  showHome = true,
+}: PublicBreadcrumbProps) {
+  // Build full items list (optionally prepend Accueil)
+  const allItems: BreadcrumbItemType[] =
+    showHome && (items.length === 0 || items[0].label !== "Accueil")
+      ? [{ label: "Accueil", href: "/" }, ...items]
+      : items;
+
   return (
-    <Breadcrumb className={`mb-6 ${className}`}>
-      <BreadcrumbList>
-        {/* Home */}
-        <BreadcrumbItem>
-          <BreadcrumbLink asChild>
-            <Link to="/" className="flex items-center gap-1 hover:text-primary transition-colors">
-              <Home className="h-4 w-4" />
-              <span>Accueil</span>
-            </Link>
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        
-        {items.map((item, index) => {
-          const isLast = index === items.length - 1;
-          
-          return (
-            <div key={index} className="flex items-center gap-2">
-              <BreadcrumbSeparator>
-                <ChevronRight className="h-4 w-4" />
-              </BreadcrumbSeparator>
-              
-              <BreadcrumbItem>
-                {isLast || !item.href ? (
-                  <BreadcrumbPage className="font-medium text-gray-900">
-                    {item.label}
-                  </BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink asChild>
-                    <Link to={item.href} className="hover:text-primary transition-colors">
-                      {item.label}
-                    </Link>
-                  </BreadcrumbLink>
+    <>
+      <Breadcrumb className={`mb-6 ${className}`}>
+        <BreadcrumbList>
+          {allItems.map((item, index) => {
+            const isLast = index === allItems.length - 1;
+            const isFirst = index === 0;
+            const isHome = item.label === "Accueil" && item.href === "/";
+
+            return (
+              <span key={index} className="contents">
+                {!isFirst && (
+                  <BreadcrumbSeparator>
+                    <ChevronRight className="h-4 w-4" />
+                  </BreadcrumbSeparator>
                 )}
-              </BreadcrumbItem>
-            </div>
-          );
-        })}
-      </BreadcrumbList>
-    </Breadcrumb>
+                <BreadcrumbItem>
+                  {isLast || !item.href ? (
+                    <BreadcrumbPage className="font-medium text-gray-900">
+                      {item.label}
+                    </BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink asChild>
+                      <Link
+                        to={item.href}
+                        className="flex items-center gap-1 hover:text-primary transition-colors"
+                      >
+                        {isHome && <Home className="h-4 w-4" />}
+                        {item.label}
+                      </Link>
+                    </BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+              </span>
+            );
+          })}
+        </BreadcrumbList>
+      </Breadcrumb>
+
+      {withJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: allItems.map((item, index) => {
+                const entry: Record<string, unknown> = {
+                  "@type": "ListItem",
+                  position: index + 1,
+                  name: item.label,
+                };
+                if (item.href) {
+                  entry.item = `${BASE_URL}${item.href}`;
+                }
+                return entry;
+              }),
+            }),
+          }}
+        />
+      )}
+    </>
   );
 }
