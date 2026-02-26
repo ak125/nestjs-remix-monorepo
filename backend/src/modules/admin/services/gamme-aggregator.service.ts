@@ -336,26 +336,22 @@ export class GammeAggregatorService extends SupabaseBaseService {
     }
 
     // 2. Fetch product counts per gamme (single aggregation query via RPC)
-    const { data: countData } = await this.client.rpc(
-      'get_gamme_product_counts',
-    );
+    const { data: countData } = await this.callRpc<
+      Array<{ pg_id: number; product_count: number }>
+    >('get_gamme_product_counts', {});
     if (countData) {
-      for (const row of countData as Array<{
-        pg_id: number;
-        product_count: number;
-      }>) {
+      for (const row of countData) {
         const entry = map.get(row.pg_id);
         if (entry) entry.product_count = row.product_count;
       }
     }
 
     // 3. Fetch family names via RPC (FK not declared in PostgREST)
-    const { data: familyData } = await this.client.rpc('get_gamme_families');
+    const { data: familyData } = await this.callRpc<
+      Array<{ pg_id: number; family_name: string }>
+    >('get_gamme_families', {});
     if (familyData) {
-      for (const row of familyData as Array<{
-        pg_id: number;
-        family_name: string;
-      }>) {
+      for (const row of familyData) {
         const entry = map.get(row.pg_id);
         if (entry) entry.family_name = row.family_name;
       }

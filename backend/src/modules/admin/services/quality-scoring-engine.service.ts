@@ -179,12 +179,15 @@ export class QualityScoringEngineService extends SupabaseBaseService {
    * Compute quality scores for a single gamme (after refresh).
    */
   async computeScoreForGamme(pgId: number): Promise<void> {
-    const { data, error } = await this.client.rpc('get_page_quality_features');
+    const { data, error } = await this.callRpc<FeatureRow[]>(
+      'get_page_quality_features',
+      {},
+    );
     if (error) {
       this.logger.error(`Feature extraction failed: ${error.message}`);
       return;
     }
-    const row = (data as FeatureRow[]).find((r) => r.pg_id === pgId);
+    const row = (data ?? []).find((r) => r.pg_id === pgId);
     if (!row) {
       this.logger.warn(`No features found for pg_id=${pgId}`);
       return;
@@ -201,12 +204,15 @@ export class QualityScoringEngineService extends SupabaseBaseService {
   // ── Feature Extraction ──
 
   private async fetchFeatures(): Promise<FeatureRow[]> {
-    const { data, error } = await this.client.rpc('get_page_quality_features');
+    const { data, error } = await this.callRpc<FeatureRow[]>(
+      'get_page_quality_features',
+      {},
+    );
     if (error) {
       this.logger.error(`Feature extraction failed: ${error.message}`);
       return [];
     }
-    return (data || []) as FeatureRow[];
+    return data ?? [];
   }
 
   // ── Page Type Detection ──

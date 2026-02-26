@@ -8,7 +8,6 @@ import { VideoProductionController } from './controllers/video-production.contro
 import { VideoGateCheckController } from './controllers/video-gate-check.controller';
 import { VideoExecutionController } from './controllers/video-execution.controller';
 import { RenderAdapterService } from './render/render-adapter.service';
-import { ScriptGeneratorService } from './services/script-generator.service';
 
 @Module({
   imports: [DatabaseModule, BullModule.registerQueue({ name: 'video-render' })],
@@ -22,14 +21,12 @@ import { ScriptGeneratorService } from './services/script-generator.service';
     VideoGatesService,
     VideoJobService,
     RenderAdapterService,
-    ScriptGeneratorService,
   ],
   exports: [
     VideoDataService,
     VideoGatesService,
     VideoJobService,
     RenderAdapterService,
-    ScriptGeneratorService,
   ],
 })
 export class MediaFactoryModule {}
