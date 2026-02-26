@@ -11,20 +11,25 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../../src/auth/auth.service';
-import { UserService } from '../../src/database/services/user.service';
+import { UserDataConsolidatedService } from '../../src/modules/users/services/user-data-consolidated.service';
 import { CacheService } from '../../src/cache/cache.service';
 import { PasswordCryptoService } from '../../src/shared/crypto/password-crypto.service';
 
-// ─── Shared mock user fixture ─────────────────────────────────────────────────
-const mockUser = {
-  cst_id: 'user-123',
-  cst_mail: 'test@example.com',
-  cst_pswd: '$2b$10$hashedPasswordHere',
-  cst_fname: 'John',
-  cst_name: 'Doe',
-  cst_activ: '1',
-  cst_level: 1,
-  cst_is_pro: '0',
+// ─── Shared mock fixtures (User shape, not raw DB columns) ──────────────────
+const mockUserData = {
+  id: 'user-123',
+  email: 'test@example.com',
+  firstName: 'John',
+  lastName: 'Doe',
+  isActive: true,
+  isPro: false,
+  level: 1,
+};
+
+// findByEmailForAuth returns { user, passwordHash }
+const mockAuthResult = {
+  user: mockUserData,
+  passwordHash: '$2b$10$hashedPasswordHere',
 };
 
 describe('AuthService', () => {
@@ -37,12 +42,14 @@ describe('AuthService', () => {
   };
 
   const mockUserService = {
-    findUserByEmail: jest.fn(),
-    findAdminByEmail: jest.fn(),
-    getUserById: jest.fn(),
-    updateUserPassword: jest.fn(),
-    updateUser: jest.fn(),
-    createUser: jest.fn(),
+    findByEmailForAuth: jest.fn(),
+    findAdminByEmailForAuth: jest.fn(),
+    findById: jest.fn(),
+    findByIdForAuth: jest.fn(),
+    setPasswordHash: jest.fn(),
+    update: jest.fn(),
+    create: jest.fn(),
+    findByEmail: jest.fn(),
   };
 
   const mockCacheService = {
@@ -63,7 +70,7 @@ describe('AuthService', () => {
     jest.clearAllMocks();
 
     // Default: no admin found (most tests are for regular customers)
-    mockUserService.findAdminByEmail.mockResolvedValue(null);
+    mockUserService.findAdminByEmailForAuth.mockResolvedValue(null);
 
     // Default: needsRehash returns false (no upgrade needed)
     mockPasswordCrypto.needsRehash.mockReturnValue(false);
@@ -83,7 +90,7 @@ describe('AuthService', () => {
       providers: [
         AuthService,
         { provide: JwtService, useValue: mockJwtService },
-        { provide: UserService, useValue: mockUserService },
+        { provide: UserDataConsolidatedService, useValue: mockUserService },
         { provide: CacheService, useValue: mockCacheService },
         { provide: PasswordCryptoService, useValue: mockPasswordCrypto },
       ],
@@ -96,7 +103,7 @@ describe('AuthService', () => {
   // TEST 1: authenticateUser — valid email + valid password → returns AuthUser
   // ═══════════════════════════════════════════════════════════════
   it('authenticateUser() should return AuthUser when email and password are valid', async () => {
-    mockUserService.findUserByEmail.mockResolvedValue(mockUser);
+    mockUserService.findByEmailForAuth.mockResolvedValue(mockAuthResult);
     mockPasswordCrypto.validatePassword.mockResolvedValue({
       isValid: true,
       format: 'bcrypt',
@@ -120,7 +127,7 @@ describe('AuthService', () => {
   // TEST 2: authenticateUser — valid email + wrong password → returns null
   // ═══════════════════════════════════════════════════════════════
   it('authenticateUser() should return null when password is invalid', async () => {
-    mockUserService.findUserByEmail.mockResolvedValue(mockUser);
+    mockUserService.findByEmailForAuth.mockResolvedValue(mockAuthResult);
     mockPasswordCrypto.validatePassword.mockResolvedValue({
       isValid: false,
       format: 'bcrypt',
@@ -138,8 +145,8 @@ describe('AuthService', () => {
   // TEST 3: authenticateUser — user not found in either table → returns null
   // ═══════════════════════════════════════════════════════════════
   it('authenticateUser() should return null when user is not found in any table', async () => {
-    mockUserService.findUserByEmail.mockResolvedValue(null);
-    mockUserService.findAdminByEmail.mockResolvedValue(null);
+    mockUserService.findByEmailForAuth.mockResolvedValue(null);
+    mockUserService.findAdminByEmailForAuth.mockResolvedValue(null);
 
     const result = await service.authenticateUser(
       'unknown@example.com',
@@ -152,11 +159,14 @@ describe('AuthService', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // TEST 4: authenticateUser — inactive user (cst_activ !== '1') → throws UnauthorizedException
+  // TEST 4: authenticateUser — inactive user → throws UnauthorizedException
   // ═══════════════════════════════════════════════════════════════
   it('authenticateUser() should throw UnauthorizedException when user account is inactive', async () => {
-    const inactiveUser = { ...mockUser, cst_activ: '0' };
-    mockUserService.findUserByEmail.mockResolvedValue(inactiveUser);
+    const inactiveAuthResult = {
+      user: { ...mockUserData, isActive: false },
+      passwordHash: '$2b$10$hashedPasswordHere',
+    };
+    mockUserService.findByEmailForAuth.mockResolvedValue(inactiveAuthResult);
     mockPasswordCrypto.validatePassword.mockResolvedValue({
       isValid: true,
       format: 'bcrypt',
@@ -171,11 +181,11 @@ describe('AuthService', () => {
   // TEST 5: authenticateUser — legacy hash triggers password upgrade
   // ═══════════════════════════════════════════════════════════════
   it('authenticateUser() should trigger password upgrade when legacy hash is detected', async () => {
-    const legacyUser = {
-      ...mockUser,
-      cst_pswd: 'im10tech7legacy', // legacy non-bcrypt hash
+    const legacyAuthResult = {
+      user: mockUserData,
+      passwordHash: 'im10tech7legacy', // legacy non-bcrypt hash
     };
-    mockUserService.findUserByEmail.mockResolvedValue(legacyUser);
+    mockUserService.findByEmailForAuth.mockResolvedValue(legacyAuthResult);
     mockPasswordCrypto.validatePassword.mockResolvedValue({
       isValid: true,
       format: 'md5-crypt',
@@ -206,7 +216,7 @@ describe('AuthService', () => {
   // TEST 6: login — successful login → returns { user, access_token, expires_in }
   // ═══════════════════════════════════════════════════════════════
   it('login() should return access_token and user on successful login', async () => {
-    mockUserService.findUserByEmail.mockResolvedValue(mockUser);
+    mockUserService.findByEmailForAuth.mockResolvedValue(mockAuthResult);
     mockPasswordCrypto.validatePassword.mockResolvedValue({
       isValid: true,
       format: 'bcrypt',
@@ -255,7 +265,7 @@ describe('AuthService', () => {
     ).rejects.toThrow(BadRequestException);
 
     // Authentication should never be attempted when rate-limited
-    expect(mockUserService.findUserByEmail).not.toHaveBeenCalled();
+    expect(mockUserService.findByEmailForAuth).not.toHaveBeenCalled();
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -263,14 +273,15 @@ describe('AuthService', () => {
   // ═══════════════════════════════════════════════════════════════
   it('validateToken() should return AuthUser when JWT is valid', async () => {
     mockJwtService.verify.mockReturnValue({ sub: 'user-123', email: 'test@example.com' });
-    mockUserService.getUserById.mockResolvedValue(mockUser);
+    // findById returns User directly (not wrapped)
+    mockUserService.findById.mockResolvedValue(mockUserData);
 
     const result = await service.validateToken('valid.jwt.token');
 
     expect(result).not.toBeNull();
     expect(result?.id).toBe('user-123');
     expect(mockJwtService.verify).toHaveBeenCalledWith('valid.jwt.token');
-    expect(mockUserService.getUserById).toHaveBeenCalledWith('user-123');
+    expect(mockUserService.findById).toHaveBeenCalledWith('user-123');
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -284,24 +295,24 @@ describe('AuthService', () => {
     const result = await service.validateToken('expired.or.invalid.token');
 
     expect(result).toBeNull();
-    // getUserById should never be called when token verification fails
-    expect(mockUserService.getUserById).not.toHaveBeenCalled();
+    // findById should never be called when token verification fails
+    expect(mockUserService.findById).not.toHaveBeenCalled();
   });
 
   // ═══════════════════════════════════════════════════════════════
   // TEST 10: isAdmin — level >= 7 → true, level < 7 → false
   // ═══════════════════════════════════════════════════════════════
   it('isAdmin() should return true for level >= 7 and false for level < 7', async () => {
-    const adminUser = { ...mockUser, cst_level: 7 };
-    const regularUser = { ...mockUser, cst_level: 1 };
+    const adminUser = { ...mockUserData, level: 7 };
+    const regularUser = { ...mockUserData, level: 1 };
 
-    // Admin check
-    mockUserService.getUserById.mockResolvedValueOnce(adminUser);
+    // Admin check — findById returns User, getUserById calls mapUserToAuthUser
+    mockUserService.findById.mockResolvedValueOnce(adminUser);
     const isAdminResult = await service.isAdmin('admin-user-id');
     expect(isAdminResult).toBe(true);
 
     // Regular user check
-    mockUserService.getUserById.mockResolvedValueOnce(regularUser);
+    mockUserService.findById.mockResolvedValueOnce(regularUser);
     const isNotAdminResult = await service.isAdmin('regular-user-id');
     expect(isNotAdminResult).toBe(false);
   });
