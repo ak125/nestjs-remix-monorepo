@@ -1,66 +1,20 @@
 /**
- * useVehiclePersistence - Hook + Context pour persistance véhicule
+ * useVehiclePersistence - Hook standalone pour persistance véhicule
  *
- * Gère la sauvegarde et récupération automatique du véhicule sélectionné
- * dans localStorage/cookie pour une expérience utilisateur personnalisée.
+ * Gère la sauvegarde et récupération du véhicule sélectionné
+ * dans localStorage pour une expérience utilisateur personnalisée.
  *
- * Features:
- * - Sauvegarde auto dans localStorage
- * - Récupération au chargement
- * - Provider React Context pour partage global
- * - SSR-safe (vérif window)
- * - Type-safe avec Vehicle interface
+ * SSR-safe (vérif window), type-safe avec Vehicle interface.
  *
- * Usage:
+ * @example
  * ```tsx
- * // Au niveau root
- * <VehicleProvider>
- *   <App />
- * </VehicleProvider>
- *
- * // Dans n'importe quel composant
- * const { vehicle, setVehicle, clearVehicle } = useVehicle();
+ * const [vehicle, setVehicle, clearVehicle] = useVehiclePersistence();
  * ```
  */
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import { useState, useEffect, useCallback } from "react";
 import { logger } from "~/utils/logger";
 import { type Vehicle } from "../components/ecommerce/SmartHeader";
-
-// ============================================================================
-// Types
-// ============================================================================
-
-interface VehicleContextValue {
-  /** Véhicule actuellement sélectionné (null si aucun) */
-  vehicle: Vehicle | null;
-
-  /** Définir un nouveau véhicule (sauvegarde auto) */
-  setVehicle: (vehicle: Vehicle | null) => void;
-
-  /** Effacer le véhicule sauvegardé */
-  clearVehicle: () => void;
-
-  /** Vérifier si un véhicule est sauvegardé */
-  hasVehicle: boolean;
-
-  /** Charger depuis localStorage (manuel si besoin) */
-  loadVehicle: () => Vehicle | null;
-}
-
-// ============================================================================
-// Context
-// ============================================================================
-
-const VehicleContext = createContext<VehicleContextValue | undefined>(
-  undefined,
-);
 
 // ============================================================================
 // Storage utilities
@@ -117,109 +71,11 @@ const loadVehicleFromStorage = (): Vehicle | null => {
 };
 
 // ============================================================================
-// Provider Component
-// ============================================================================
-
-interface VehicleProviderProps {
-  children: React.ReactNode;
-  /** Véhicule initial (optionnel, sinon charge depuis localStorage) */
-  initialVehicle?: Vehicle | null;
-}
-
-export const VehicleProvider: React.FC<VehicleProviderProps> = ({
-  children,
-  initialVehicle,
-}) => {
-  const [vehicle, setVehicleState] = useState<Vehicle | null>(
-    initialVehicle || null,
-  );
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  // Charger depuis localStorage au montage (uniquement côté client)
-  useEffect(() => {
-    if (!initialVehicle) {
-      const loaded = loadVehicleFromStorage();
-      if (loaded) {
-        setVehicleState(loaded);
-      }
-    }
-    setIsHydrated(true);
-  }, [initialVehicle]);
-
-  // Setter avec sauvegarde auto
-  const setVehicle = useCallback((newVehicle: Vehicle | null) => {
-    setVehicleState(newVehicle);
-    saveVehicleToStorage(newVehicle);
-  }, []);
-
-  // Clear
-  const clearVehicle = useCallback(() => {
-    setVehicleState(null);
-    saveVehicleToStorage(null);
-  }, []);
-
-  // Load manuel
-  const loadVehicle = useCallback(() => {
-    return loadVehicleFromStorage();
-  }, []);
-
-  // SSR-safe: vehicle est null côté serveur, chargé depuis localStorage côté client
-  // isHydrated permet aux composants enfants de savoir si le chargement client est terminé
-  const value: VehicleContextValue = {
-    vehicle: isHydrated ? vehicle : null, // null sur SSR, valeur réelle après hydratation
-    setVehicle,
-    clearVehicle,
-    hasVehicle: isHydrated && !!vehicle,
-    loadVehicle,
-  };
-
-  // Toujours rendre les enfants - ne PAS bloquer le SSR
-  // Les composants enfants peuvent vérifier hasVehicle ou vehicle === null
-  return (
-    <VehicleContext.Provider value={value}>{children}</VehicleContext.Provider>
-  );
-};
-
-// ============================================================================
-// Hook
+// Hook standalone
 // ============================================================================
 
 /**
- * Hook pour accéder au véhicule sauvegardé partout dans l'app
- *
- * @throws Error si utilisé hors VehicleProvider
- *
- * @example
- * ```tsx
- * const { vehicle, setVehicle, clearVehicle, hasVehicle } = useVehicle();
- *
- * // Afficher véhicule
- * {vehicle && <p>{vehicle.brand} {vehicle.model}</p>}
- *
- * // Sauvegarder véhicule
- * setVehicle({ id: '1', brand: 'Peugeot', model: '208', year: 2016 });
- *
- * // Effacer
- * clearVehicle();
- * ```
- */
-export const useVehicle = (): VehicleContextValue => {
-  const context = useContext(VehicleContext);
-
-  if (!context) {
-    throw new Error("useVehicle must be used within VehicleProvider");
-  }
-
-  return context;
-};
-
-// ============================================================================
-// Hook standalone (sans Provider) - Pour usage simple
-// ============================================================================
-
-/**
- * Hook standalone pour persistance véhicule sans Provider
- * Utile pour composants isolés qui n'ont pas besoin du Context global
+ * Hook standalone pour persistance véhicule via localStorage
  *
  * @example
  * ```tsx

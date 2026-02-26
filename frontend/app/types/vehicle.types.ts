@@ -62,6 +62,7 @@ export interface VehicleType {
   type_engine?: string; // Compatibilité avec VehicleSelector existant
   type_engine_description?: string;
   type_slug?: string; // Compatibilité avec VehicleSelector existant
+  type_body?: string;
   modele_id: number; // Clé étrangère vers auto_modele
   year_from?: number; // Compatibilité
   year_to?: number; // Compatibilité
@@ -356,4 +357,3 @@ export interface VehicleInfo extends VehicleData {
 // ====================================
 // �🔄 TYPES DE COMPATIBILITÉ
 // ====================================
-

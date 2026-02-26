@@ -1,20 +1,7 @@
 import { useFetcher } from "@remix-run/react";
 import { useEffect, useState, memo } from "react";
+import { type VehicleType } from "~/types/vehicle.types";
 import { Select } from "../ui/select";
-
-interface VehicleType {
-  type_id: number;
-  type_alias?: string;
-  type_name: string;
-  type_engine_code?: string;
-  type_fuel?: string;
-  type_power_ps?: number;
-  type_power_kw?: number;
-  type_liter?: string;
-  type_year_from?: string;
-  type_year_to?: string | null;
-  modele_id: number;
-}
 
 interface TypeSelectorProps {
   modelId?: number;

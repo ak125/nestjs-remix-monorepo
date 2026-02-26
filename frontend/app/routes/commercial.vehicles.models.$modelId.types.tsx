@@ -14,6 +14,7 @@ import {
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";
 import { Badge, Alert } from "~/components/ui";
+import { type VehicleType } from "~/types/vehicle.types";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -28,19 +29,6 @@ import {
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Types par Modele - Commercial");
-
-interface VehicleType {
-  type_id: string;
-  type_name: string;
-  type_fuel: string;
-  type_power_ps: string;
-  type_power_kw: string;
-  type_year_from: string;
-  type_year_to: string | null;
-  type_body: string;
-  type_engine: string;
-  type_liter: string;
-}
 
 interface LoaderData {
   types: VehicleType[];
@@ -148,7 +136,8 @@ export default function CommercialVehiclesModelTypes() {
 
   const fuelTypes = types.reduce(
     (acc, type) => {
-      acc[type.type_fuel] = (acc[type.type_fuel] || 0) + 1;
+      const fuel = type.type_fuel ?? "Non spécifié";
+      acc[fuel] = (acc[fuel] || 0) + 1;
       return acc;
     },
     {} as Record<string, number>,
@@ -259,7 +248,7 @@ export default function CommercialVehiclesModelTypes() {
                   </p>
                   <p className="text-lg font-bold text-gray-900">
                     {types.length > 0
-                      ? `${Math.max(...types.map((t) => parseInt(t.type_power_ps) || 0))} CV`
+                      ? `${Math.max(...types.map((t) => t.type_power_ps ?? 0))} CV`
                       : "N/A"}
                   </p>
                 </div>

@@ -12,7 +12,7 @@ export * from "./textarea";
 export * from "./checkbox";
 export * from "./select";
 export * from "./combobox";
-export * from "./RadioGroup";
+export * from "./radio-group";
 
 // Layout components
 export * from "./dialog";
@@ -44,7 +44,6 @@ export * from "./LoadingSpinner";
 export * from "./DynamicMenu";
 export * from "./ErrorBoundary";
 export * from "./PerformanceMetrics";
-export * from "./OptimizedPagination";
 export * from "./OptimizedSearchBar";
 
 // Components with name conflicts - explicit exports to avoid duplicates

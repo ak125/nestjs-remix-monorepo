@@ -449,17 +449,7 @@ function normalizeCartData(data: any): CartData {
   return { items, summary };
 }
 
-/**
- * 💰 Formater un prix en EUR
- */
-export function formatPrice(price: number): string {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(price);
-}
+export { formatPrice } from "~/utils/format";
 
 /**
  * 🖼️ Obtenir l'URL de l'image produit avec fallback

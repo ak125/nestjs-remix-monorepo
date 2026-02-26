@@ -51,7 +51,6 @@ import stylesheet from "./global.css?url";
 import { useHydrated } from "./hooks/useHydrated";
 import { usePageRoleDataAttrs } from "./hooks/usePageRole";
 import { useScrollBehavior } from "./hooks/useScrollBehavior";
-import { VehicleProvider } from "./hooks/useVehiclePersistence";
 // @ts-ignore
 import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
 import { getCart } from "./services/cart.server";
@@ -501,11 +500,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body className="h-full bg-gray-100" suppressHydrationWarning>
         <QueryClientProvider client={queryClient}>
-          <VehicleProvider>
-            <NotificationProvider>
-              <AppShell>{children}</AppShell>
-            </NotificationProvider>
-          </VehicleProvider>
+          <NotificationProvider>
+            <AppShell>{children}</AppShell>
+          </NotificationProvider>
         </QueryClientProvider>
         {/* 🎉 Sonner Toaster - Lazy-loaded (non-critique pour first paint) */}
         <Suspense fallback={null}>

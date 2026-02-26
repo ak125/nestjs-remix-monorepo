@@ -355,26 +355,5 @@ export async function updateOrderStatus(params: {
   }
 }
 
-// Utilitaires pour les admins
-export function getOrderStatusLabel(status: number): string {
-  const labels: Record<number, string> = {
-    1: "En attente",
-    2: "Confirmée",
-    3: "En préparation",
-    4: "Prête à expédier",
-    5: "Expédiée",
-    6: "Livrée",
-    91: "Annulée",
-    92: "En rupture",
-    93: "Retournée",
-    94: "Remboursée",
-  };
-  return labels[status] || "Statut inconnu";
-}
-
-export function formatPrice(price: number): string {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-  }).format(price);
-}
+export { getOrderStatusLabel } from "~/utils/orders";
+export { formatPrice } from "~/utils/format";

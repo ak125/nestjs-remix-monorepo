@@ -10,7 +10,7 @@
 /**
  * Interface pour les gammes de produits
  * Basée sur la requête SQL PHP :
- * SELECT DISTINCT pg_id, pg_alias, pg_name, pg_name_url, pg_name_meta, pg_pic, pg_img 
+ * SELECT DISTINCT pg_id, pg_alias, pg_name, pg_name_url, pg_name_meta, pg_pic, pg_img
  * FROM pieces_gamme JOIN catalog_gamme ON mc_pg_id = pg_id
  * WHERE pg_display = 1 AND pg_level = 1 AND mc_mf_id = $mf_id
  * ORDER BY mc_sort
@@ -54,8 +54,8 @@ export interface Equipementier {
 /**
  * Interface pour les familles de produits
  * Basée sur la requête SQL PHP :
- * SELECT DISTINCT mf_id, IF(mf_name_system IS NULL, mf_name, mf_name_system) AS mf_name, 
- * mf_description, mf_pic FROM pieces_gamme 
+ * SELECT DISTINCT mf_id, IF(mf_name_system IS NULL, mf_name, mf_name_system) AS mf_name,
+ * mf_description, mf_pic FROM pieces_gamme
  * JOIN catalog_gamme ON mc_pg_id = pg_id
  * JOIN catalog_family ON mf_id = mc_mf_id
  * WHERE pg_display = 1 AND pg_level = 1 AND mf_display = 1
@@ -79,9 +79,9 @@ export interface CatalogFamily {
 /**
  * Interface pour les marques automobiles
  * Basée sur la requête SQL PHP :
- * SELECT marque_id, marque_alias, marque_name_meta, marque_logo    
+ * SELECT marque_id, marque_alias, marque_name_meta, marque_logo
  * FROM auto_marque
- * WHERE marque_display = 1 AND marque_id NOT IN (339,441) 
+ * WHERE marque_display = 1 AND marque_id NOT IN (339,441)
  * ORDER BY marque_sort
  */
 export interface AutoMarque {
@@ -102,11 +102,11 @@ export interface AutoMarque {
 /**
  * Interface pour les gammes "top" (les plus vendues)
  * Basée sur la requête SQL PHP :
- * SELECT DISTINCT pg_id, pg_alias, pg_name, pg_name_url, pg_name_meta, pg_img, 
- * sg_title, sg_descrip, ba_preview 
- * FROM pieces_gamme 
- * JOIN catalog_gamme ON mc_pg_id = pg_id 
- * JOIN __seo_gamme ON sg_pg_id = pg_id 
+ * SELECT DISTINCT pg_id, pg_alias, pg_name, pg_name_url, pg_name_meta, pg_img,
+ * sg_title, sg_descrip, ba_preview
+ * FROM pieces_gamme
+ * JOIN catalog_gamme ON mc_pg_id = pg_id
+ * JOIN __seo_gamme ON sg_pg_id = pg_id
  * JOIN __blog_advice ON ba_pg_id = pg_id
  * WHERE pg_display = 1 AND pg_level = 1 AND pg_top = 1
  * ORDER BY mc_mf_id, mc_sort
@@ -213,15 +213,4 @@ export interface VehicleModel {
   model_id: number;
   model_name: string;
   model_alias?: string;
-}
-
-/**
- * Interface pour les types/motorisations de véhicules
- * Utilisée dans le sélecteur PHP : _form.get.car.type.php
- */
-export interface VehicleType {
-  type_id: number;
-  type_name: string;
-  type_alias?: string;
-  url?: string;
 }

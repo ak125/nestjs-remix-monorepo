@@ -18,6 +18,8 @@ interface FAQSectionProps {
   faq?: FAQItem[] | null;
   gammeName?: string;
   className?: string;
+  /** Injecte un script JSON-LD Schema.org FAQPage (defaut: true) */
+  withJsonLd?: boolean;
 }
 
 /**
@@ -28,6 +30,7 @@ export const FAQSection = memo(function FAQSection({
   faq,
   gammeName,
   className,
+  withJsonLd = true,
 }: FAQSectionProps) {
   if (!faq || faq.length === 0) return null;
 
@@ -51,10 +54,12 @@ export const FAQSection = memo(function FAQSection({
   return (
     <section className={cn("py-8", className)} aria-labelledby="faq-title">
       {/* Schema.org JSON-LD */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      {withJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
 
       <div className="container mx-auto px-4">
         <Card className="border-purple-200 bg-purple-50/50">

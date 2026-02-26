@@ -4,7 +4,7 @@
  */
 
 import { logger } from "~/utils/logger";
-import { type Order } from "../utils/orders";
+import { type Order, getOrderStatusLabel } from "../utils/orders";
 
 export interface GetUserOrdersParams {
   userId: string;
@@ -384,21 +384,4 @@ export async function getOrderDetails(params: {
     logger.error("Error fetching order detail:", error);
     throw error;
   }
-}
-
-// Fonction utilitaire pour les labels de statut (importée depuis utils/orders ou définie ici)
-function getOrderStatusLabel(status: number): string {
-  const labels: Record<number, string> = {
-    1: "En attente",
-    2: "Confirmée",
-    3: "En préparation",
-    4: "Prête à expédier",
-    5: "Expédiée",
-    6: "Livrée",
-    91: "Annulée",
-    92: "En rupture",
-    93: "Retournée",
-    94: "Remboursée",
-  };
-  return labels[status] || "Statut inconnu";
 }

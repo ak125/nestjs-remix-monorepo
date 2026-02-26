@@ -47,6 +47,7 @@ import {
 // ========================================
 
 // Composants UI CRITIQUES (above-fold - chargés immédiatement)
+import { FAQSection } from "~/components/seo/FAQSection";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -62,7 +63,6 @@ import { PiecesCatalogueFamille } from "../components/pieces/PiecesCatalogueFami
 import { PiecesComparisonView } from "../components/pieces/PiecesComparisonView";
 import { PiecesCompatibilityInfo } from "../components/pieces/PiecesCompatibilityInfo";
 import { PiecesCrossSelling } from "../components/pieces/PiecesCrossSelling";
-import { PiecesFAQSection } from "../components/pieces/PiecesFAQSection";
 import {
   PiecesFilterSidebar,
   type FiltersData,
@@ -790,7 +790,7 @@ export default function PiecesVehicleRoute() {
 
                 {/* SSR: Composants SEO rendus côté serveur (visibilité Googlebot) */}
                 <PiecesBuyingGuide guide={data.buyingGuide} />
-                <PiecesFAQSection items={data.faqItems} />
+                <FAQSection faq={data.faqItems} withJsonLd={false} />
                 <PiecesCompatibilityInfo
                   compatibility={data.compatibilityInfo}
                   vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
