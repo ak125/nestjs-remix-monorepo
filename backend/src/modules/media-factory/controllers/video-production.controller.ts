@@ -17,17 +17,13 @@ import {
   type UpdateProductionDto,
   type ProductionFilters,
 } from '../services/video-data.service';
-import { ScriptGeneratorService } from '../services/script-generator.service';
 
 @Controller('api/admin/video')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class VideoProductionController {
   private readonly logger = new Logger(VideoProductionController.name);
 
-  constructor(
-    private readonly dataService: VideoDataService,
-    private readonly scriptGenerator: ScriptGeneratorService,
-  ) {}
+  constructor(private readonly dataService: VideoDataService) {}
 
   // ── Dashboard ──
 
@@ -109,65 +105,6 @@ export class VideoProductionController {
       success: true,
       data: production,
       message: `Production ${briefId} updated`,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  // ── Script Generation (Step 1) ──
-
-  @Post('productions/:briefId/generate-script')
-  async generateScript(
-    @Param('briefId') briefId: string,
-    @Body() body: { regenerate?: boolean },
-  ) {
-    this.logger.log(
-      `Generating script for ${briefId} (regenerate=${body.regenerate ?? false})`,
-    );
-
-    const production = await this.dataService.getProduction(briefId);
-
-    const result = await this.scriptGenerator.generateScript({
-      briefId,
-      videoType: production.videoType,
-      vertical: production.vertical,
-      gammeAlias: production.gammeAlias,
-      regenerate: body.regenerate,
-    });
-
-    return {
-      success: true,
-      data: result,
-      message: `Script generated: ${result.claimCount} claims, ~${result.estimatedDurationSecs}s`,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  @Patch('productions/:briefId/script')
-  async updateScript(
-    @Param('briefId') briefId: string,
-    @Body()
-    body: {
-      scriptText?: string;
-      claimTable?: unknown[];
-      disclaimerPlan?: { disclaimers: unknown[] };
-    },
-  ) {
-    this.logger.log(`Updating script for ${briefId}`);
-
-    const result = await this.scriptGenerator.updateScript(briefId, {
-      scriptText: body.scriptText,
-      claimTable: body.claimTable as Parameters<
-        typeof this.scriptGenerator.updateScript
-      >[1]['claimTable'],
-      disclaimerPlan: body.disclaimerPlan as Parameters<
-        typeof this.scriptGenerator.updateScript
-      >[1]['disclaimerPlan'],
-    });
-
-    return {
-      success: true,
-      data: result,
-      message: `Script updated: ${result.updatedFields.join(', ')}`,
       timestamp: new Date().toISOString(),
     };
   }
