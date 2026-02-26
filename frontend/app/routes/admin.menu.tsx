@@ -8,8 +8,8 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Button } from "~/components/ui/button";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireAdmin } from "../auth/unified.server";
 
@@ -72,7 +72,9 @@ export default function AdminMenu() {
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-6xl mx-auto py-8 px-4">
         {/* Navigation Breadcrumb */}
-        <AdminBreadcrumb currentPage="Menu" />
+        <PublicBreadcrumb
+          items={[{ label: "Admin", href: "/admin" }, { label: "Menu" }]}
+        />
 
         {/* Header */}
         <div className="mb-8">

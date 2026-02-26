@@ -27,9 +27,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { Alert } from "~/components/ui";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
-import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { OrderDetailsModal } from "../components/orders/OrderDetailsModal";
 import { OrderEditForm } from "../components/orders/OrderEditForm";
 import { OrderExportButtons } from "../components/orders/OrderExportButtons";
@@ -970,7 +970,12 @@ export default function OrdersRoute() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb Navigation */}
-        <AdminBreadcrumb currentPage="Gestion des commandes" />
+        <PublicBreadcrumb
+          items={[
+            { label: "Admin", href: "/admin" },
+            { label: "Gestion des commandes" },
+          ]}
+        />
 
         {/* Header */}
         <OrdersHeader

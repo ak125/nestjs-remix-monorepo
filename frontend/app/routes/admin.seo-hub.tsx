@@ -28,8 +28,8 @@ import {
   Layers,
   ClipboardList,
 } from "lucide-react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { cn } from "~/lib/utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -261,7 +261,12 @@ export default function AdminSeoHubLayout() {
         <div className="p-6">
           {/* Breadcrumb */}
           <div className="mb-4">
-            <AdminBreadcrumb currentPage="SEO Cockpit" />
+            <PublicBreadcrumb
+              items={[
+                { label: "Admin", href: "/admin" },
+                { label: "SEO Cockpit" },
+              ]}
+            />
           </div>
 
           {/* Outlet for child routes */}

@@ -14,7 +14,6 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -24,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {
@@ -97,8 +97,12 @@ export const loader: LoaderFunction = async () => {
       const usersData = await usersResponse.json();
       const users = usersData.data || usersData.users || [];
       reportData.users.total = users.length;
-      reportData.users.active = users.filter((u: ReportUser) => u.isActive).length;
-      reportData.users.professional = users.filter((u: ReportUser) => u.isPro).length;
+      reportData.users.active = users.filter(
+        (u: ReportUser) => u.isActive,
+      ).length;
+      reportData.users.professional = users.filter(
+        (u: ReportUser) => u.isPro,
+      ).length;
       reportData.users.verified = users.filter(
         (u: ReportUser) => u.emailVerified,
       ).length;
@@ -191,7 +195,12 @@ export default function AdminReports() {
   return (
     <div className="space-y-6">
       {/* Navigation Breadcrumb */}
-      <AdminBreadcrumb currentPage="Rapports & Analyses" />
+      <PublicBreadcrumb
+        items={[
+          { label: "Admin", href: "/admin" },
+          { label: "Rapports & Analyses" },
+        ]}
+      />
 
       {/* Header */}
       <div className="flex items-center justify-between">

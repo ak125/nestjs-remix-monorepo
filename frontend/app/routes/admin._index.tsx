@@ -35,9 +35,9 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Alert, Badge } from "~/components/ui";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
-import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import { SeoWidget } from "../components/SeoWidget";
 import {
   Card,
@@ -271,7 +271,9 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* Navigation Breadcrumb */}
-      <AdminBreadcrumb currentPage="Dashboard" />
+      <PublicBreadcrumb
+        items={[{ label: "Admin", href: "/admin" }, { label: "Dashboard" }]}
+      />
 
       {/* Header principal avec indicateur de santé */}
       <div className="flex justify-between items-center">

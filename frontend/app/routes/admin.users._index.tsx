@@ -38,10 +38,10 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   Select,
   SelectContent,
@@ -433,7 +433,12 @@ export default function AdminUsersIndex() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/20 to-slate-50">
       <div className="max-w-[1600px] mx-auto space-y-6 p-4 sm:p-6 lg:p-8">
         {/* Navigation Breadcrumb */}
-        <AdminBreadcrumb currentPage="Gestion des utilisateurs" />
+        <PublicBreadcrumb
+          items={[
+            { label: "Admin", href: "/admin" },
+            { label: "Gestion des utilisateurs" },
+          ]}
+        />
 
         {/* Notification Toast */}
         {notification && (

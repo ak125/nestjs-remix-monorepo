@@ -11,10 +11,10 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -268,7 +268,12 @@ export default function AdminStock() {
   return (
     <div className="p-6 space-y-6">
       {/* Navigation Breadcrumb */}
-      <AdminBreadcrumb currentPage="Gestion des Stocks" />
+      <PublicBreadcrumb
+        items={[
+          { label: "Admin", href: "/admin" },
+          { label: "Gestion des Stocks" },
+        ]}
+      />
 
       {/* En-tête */}
       <div className="flex justify-between items-center">

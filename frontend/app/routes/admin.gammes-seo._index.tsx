@@ -41,7 +41,6 @@ import {
 import React, { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -55,6 +54,7 @@ import {
 import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   Select,
   SelectContent,
@@ -716,7 +716,12 @@ export default function AdminGammesSeo() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <AdminBreadcrumb currentPage="Gammes SEO" />
+          <PublicBreadcrumb
+            items={[
+              { label: "Admin", href: "/admin" },
+              { label: "Gammes SEO" },
+            ]}
+          />
           <h1 className="text-3xl font-bold mt-2">
             Classification G-Level des Gammes
           </h1>

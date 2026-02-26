@@ -14,8 +14,8 @@ import {
 } from "@remix-run/react";
 import { CheckCircle, Eye, Trash2, FolderOpen } from "lucide-react";
 import { useMemo, useState } from "react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert, Badge } from "~/components/ui";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -316,7 +316,12 @@ export default function AdminSeoContent() {
 
   return (
     <div className="container mx-auto py-6 space-y-6">
-      <AdminBreadcrumb currentPage="SEO Content Validation" />
+      <PublicBreadcrumb
+        items={[
+          { label: "Admin", href: "/admin" },
+          { label: "SEO Content Validation" },
+        ]}
+      />
 
       <div className="flex items-center justify-between">
         <div>

@@ -11,8 +11,8 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Button } from "~/components/ui/button";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireAdmin } from "../auth/unified.server";
@@ -212,7 +212,12 @@ export default function InvoicesIndex() {
   return (
     <div className="p-6">
       {/* Navigation Breadcrumb */}
-      <AdminBreadcrumb currentPage="Gestion des factures" />
+      <PublicBreadcrumb
+        items={[
+          { label: "Admin", href: "/admin" },
+          { label: "Gestion des factures" },
+        ]}
+      />
 
       {/* En-tête */}
       <div className="mb-8">

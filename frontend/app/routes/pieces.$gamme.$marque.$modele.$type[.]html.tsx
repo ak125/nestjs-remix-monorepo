@@ -47,12 +47,12 @@ import {
 // ========================================
 
 // Composants UI CRITIQUES (above-fold - chargés immédiatement)
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error410 } from "../components/errors/Error410";
 import { Error503 } from "../components/errors/Error503";
-import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import {
   MobileBottomBar,
   MobileBottomBarSpacer,
@@ -604,15 +604,14 @@ export default function PiecesVehicleRoute() {
           className="max-w-7xl mx-auto px-4 py-3"
           style={{ pointerEvents: "auto" }}
         >
-          <Breadcrumbs
+          <PublicBreadcrumb
             items={buildPiecesBreadcrumbs(
               data.gamme,
               data.vehicle,
               location.pathname,
             )}
             showHome={false}
-            separator="left-arrow"
-            enableSchema={true}
+            withJsonLd
           />
         </div>
       </div>

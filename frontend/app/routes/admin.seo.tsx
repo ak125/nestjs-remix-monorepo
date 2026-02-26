@@ -14,8 +14,8 @@ import {
 } from "@remix-run/react";
 import { CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert, Badge } from "~/components/ui";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -214,7 +214,12 @@ export default function SeoAdmin() {
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       {/* Navigation Breadcrumb */}
-      <AdminBreadcrumb currentPage="SEO & Référencement" />
+      <PublicBreadcrumb
+        items={[
+          { label: "Admin", href: "/admin" },
+          { label: "SEO & Référencement" },
+        ]}
+      />
 
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Administration SEO</h1>

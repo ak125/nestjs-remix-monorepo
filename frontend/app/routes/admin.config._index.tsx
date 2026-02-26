@@ -26,9 +26,9 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { requireAdmin } from "~/auth/unified.server";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert, Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
@@ -266,9 +266,15 @@ export default function AdminConfigIndexPage() {
     () => ("configs" in data ? data.configs : []),
     [data],
   );
-  const stats: { totalConfigs: number; configsByCategory: Record<string, number> } =
+  const stats: {
+    totalConfigs: number;
+    configsByCategory: Record<string, number>;
+  } =
     "stats" in data
-      ? (data.stats as { totalConfigs: number; configsByCategory: Record<string, number> })
+      ? (data.stats as {
+          totalConfigs: number;
+          configsByCategory: Record<string, number>;
+        })
       : { totalConfigs: 0, configsByCategory: {} };
   const error = "error" in data ? data.error : undefined;
 
@@ -338,7 +344,12 @@ export default function AdminConfigIndexPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Navigation Breadcrumb */}
-        <AdminBreadcrumb currentPage="Configuration" />
+        <PublicBreadcrumb
+          items={[
+            { label: "Admin", href: "/admin" },
+            { label: "Configuration" },
+          ]}
+        />
 
         {/* Header avec statistiques */}
         <div className="bg-white rounded-lg shadow-sm border mb-6">
@@ -746,9 +757,7 @@ export default function AdminConfigIndexPage() {
             </p>
             <div className="text-sm text-blue-600 mt-2">
               {stats?.configsByCategory?.database || 0} configuration
-              {(stats?.configsByCategory?.database || 0) !== 1
-                ? "s"
-                : ""}
+              {(stats?.configsByCategory?.database || 0) !== 1 ? "s" : ""}
             </div>
           </Link>
 
@@ -782,9 +791,7 @@ export default function AdminConfigIndexPage() {
             </p>
             <div className="text-sm text-purple-600 mt-2">
               {stats?.configsByCategory?.analytics || 0} configuration
-              {(stats?.configsByCategory?.analytics || 0) !== 1
-                ? "s"
-                : ""}
+              {(stats?.configsByCategory?.analytics || 0) !== 1 ? "s" : ""}
             </div>
           </Link>
         </div>

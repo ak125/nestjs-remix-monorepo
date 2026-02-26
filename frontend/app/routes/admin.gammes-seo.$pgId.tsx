@@ -46,7 +46,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import {
   type GammeDetail,
   type LoaderFreshness,
@@ -76,6 +75,7 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
 
@@ -369,7 +369,12 @@ export default function AdminGammeSeoDetail() {
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       {/* Breadcrumb */}
-      <AdminBreadcrumb currentPage={`Gammes SEO > ${detail.gamme.pg_name}`} />
+      <PublicBreadcrumb
+        items={[
+          { label: "Admin", href: "/admin" },
+          { label: `Gammes SEO > ${detail.gamme.pg_name}` },
+        ]}
+      />
 
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">

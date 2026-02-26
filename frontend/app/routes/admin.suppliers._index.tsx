@@ -19,9 +19,9 @@ import {
   useNavigate,
 } from "@remix-run/react";
 import { useState } from "react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { requireAdmin } from "../auth/unified.server";
 
@@ -252,7 +252,12 @@ export default function SuppliersIndex() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Navigation Breadcrumb */}
-      <AdminBreadcrumb currentPage="Gestion des fournisseurs" />
+      <PublicBreadcrumb
+        items={[
+          { label: "Admin", href: "/admin" },
+          { label: "Gestion des fournisseurs" },
+        ]}
+      />
 
       {/* En-tête */}
       <div className="flex justify-between items-center">

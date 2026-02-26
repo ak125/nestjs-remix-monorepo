@@ -6,8 +6,8 @@ import {
 import { useLoaderData } from "@remix-run/react";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { useState, useEffect } from "react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert, Badge } from "~/components/ui";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 
@@ -148,7 +148,12 @@ export default function AdminSystem() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Navigation Breadcrumb */}
-      <AdminBreadcrumb currentPage="Monitoring Système" />
+      <PublicBreadcrumb
+        items={[
+          { label: "Admin", href: "/admin" },
+          { label: "Monitoring Système" },
+        ]}
+      />
 
       <div className="flex items-center justify-between">
         <div>

@@ -47,6 +47,7 @@ import SectionHeader from "~/components/layout/SectionHeader";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import { R1ReusableContent } from "~/components/pieces/R1ReusableContent";
 import TableOfContents from "~/components/pieces/TableOfContents";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   getSectionImageConfig,
   resolveAltText,
@@ -64,7 +65,6 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOgImageUrl } from "~/utils/og-image.utils";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
-import { Breadcrumbs } from "../components/layout/Breadcrumbs";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
 import VehicleSelector from "../components/vehicle/VehicleSelector";
 import { hierarchyApi } from "../services/api/hierarchy.api";
@@ -593,7 +593,7 @@ export default function PiecesDetailPage() {
 
       {/* Breadcrumbs visuels */}
       <div className="container mx-auto px-4 pt-4">
-        <Breadcrumbs items={breadcrumbs} enableSchema={false} />
+        <PublicBreadcrumb items={breadcrumbs} />
       </div>
 
       {/* 🎯 HERO SECTION - Avec couleur de la famille */}

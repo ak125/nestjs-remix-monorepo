@@ -12,10 +12,10 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
 import { useState } from "react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireAdmin } from "../auth/unified.server";
@@ -112,18 +112,20 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     }
 
     // Transformer les données utilisateurs en format staff legacy
-    const staff: LegacyAdminStaff[] = usersResult.users.map((user: RemixUser) => ({
-      cnfa_id: user.id || user.cst_id,
-      cnfa_login: user.email,
-      cnfa_mail: user.email,
-      cnfa_level: user.level || 1,
-      cnfa_job: user.job || "Staff",
-      cnfa_name: user.name || user.cst_lastname || "",
-      cnfa_fname: user.firstName || user.cst_firstname || "",
-      cnfa_tel: user.phone || user.cst_phone || "",
-      cnfa_activ: user.isActive ? "1" : "0",
-      s_id: user.department || "general",
-    }));
+    const staff: LegacyAdminStaff[] = usersResult.users.map(
+      (user: RemixUser) => ({
+        cnfa_id: user.id || user.cst_id,
+        cnfa_login: user.email,
+        cnfa_mail: user.email,
+        cnfa_level: user.level || 1,
+        cnfa_job: user.job || "Staff",
+        cnfa_name: user.name || user.cst_lastname || "",
+        cnfa_fname: user.firstName || user.cst_firstname || "",
+        cnfa_tel: user.phone || user.cst_phone || "",
+        cnfa_activ: user.isActive ? "1" : "0",
+        s_id: user.department || "general",
+      }),
+    );
 
     // Calculer les statistiques
     const stats: StaffStats = {
@@ -235,7 +237,12 @@ export default function AdminStaff() {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Navigation Breadcrumb */}
-      <AdminBreadcrumb currentPage="Gestion du Staff" />
+      <PublicBreadcrumb
+        items={[
+          { label: "Admin", href: "/admin" },
+          { label: "Gestion du Staff" },
+        ]}
+      />
 
       {/* En-tête avec navigation */}
       <div className="mb-8">
@@ -604,9 +611,7 @@ export default function AdminStaff() {
       {/* Informations de mise à jour */}
       <div className="mt-6 text-sm text-gray-500 text-center">
         Dernière mise à jour:{" "}
-        {data?.timestamp
-          ? formatDate(data.timestamp)
-          : "-"}
+        {data?.timestamp ? formatDate(data.timestamp) : "-"}
       </div>
     </div>
   );

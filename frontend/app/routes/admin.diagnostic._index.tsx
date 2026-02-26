@@ -22,7 +22,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useState } from "react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -38,6 +37,7 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   Select,
   SelectContent,
@@ -710,7 +710,7 @@ export default function AdminDiagnosticIndex() {
 
   return (
     <div className="space-y-6 p-6">
-      <AdminBreadcrumb
+      <PublicBreadcrumb
         items={[
           { label: "Admin", href: "/admin" },
           { label: "Diagnostic KG", href: "/admin/diagnostic" },

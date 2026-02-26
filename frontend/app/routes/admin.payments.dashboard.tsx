@@ -16,10 +16,10 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useState } from "react";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireAdmin } from "../auth/unified.server";
-import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 import {
   getAdminPayments,
   getPaymentStats,
@@ -277,7 +277,9 @@ export default function AdminPaymentsDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <AdminBreadcrumb currentPage="Paiements" />
+        <PublicBreadcrumb
+          items={[{ label: "Admin", href: "/admin" }, { label: "Paiements" }]}
+        />
       </div>
 
       {/* Header */}

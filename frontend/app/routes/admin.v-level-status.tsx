@@ -24,7 +24,6 @@ import {
   Layers,
 } from "lucide-react";
 
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -35,6 +34,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Progress } from "~/components/ui/progress";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 
@@ -119,7 +119,12 @@ export default function VLevelStatusPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <AdminBreadcrumb currentPage="V-Level Status" />
+      <PublicBreadcrumb
+        items={[
+          { label: "Admin", href: "/admin" },
+          { label: "V-Level Status" },
+        ]}
+      />
 
       <div className="flex items-center justify-between">
         <div>

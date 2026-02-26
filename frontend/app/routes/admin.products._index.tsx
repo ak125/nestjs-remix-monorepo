@@ -43,10 +43,10 @@ import {
   Form,
 } from "@remix-run/react";
 import { useState } from "react";
-import { AdminBreadcrumb } from "~/components/admin/AdminBreadcrumb";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 
@@ -156,7 +156,12 @@ export default function AdminProducts() {
   return (
     <div className="space-y-6">
       {/* Navigation Breadcrumb */}
-      <AdminBreadcrumb currentPage="Gestion des produits" />
+      <PublicBreadcrumb
+        items={[
+          { label: "Admin", href: "/admin" },
+          { label: "Gestion des produits" },
+        ]}
+      />
 
       {/* Header */}
       <div className="border-b border-gray-200 pb-5">

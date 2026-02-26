@@ -20,14 +20,14 @@ import { useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
 import { Badge } from "~/components/ui";
 import { Button } from "~/components/ui/button";
-import { logger } from "~/utils/logger";
-import { createNoIndexMeta } from "~/utils/meta-helpers";
-import { ModelSelector, type Model } from "../components/forms/ModelSelector";
+import { ModelSelector, type Model } from "~/components/vehicles/ModelSelector";
 import {
   TypeSelector,
   type VehicleType,
-} from "../components/forms/TypeSelector";
-import { YearSelector } from "../components/forms/YearSelector";
+} from "~/components/vehicles/TypeSelector";
+import { YearSelector } from "~/components/vehicles/YearSelector";
+import { logger } from "~/utils/logger";
+import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Recherche Vehicules Avancee - Commercial");

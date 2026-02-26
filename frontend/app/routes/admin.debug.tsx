@@ -4,9 +4,9 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { getOptionalUser } from "../auth/unified.server";
-import { AdminBreadcrumb } from "../components/admin/AdminBreadcrumb";
 
 export const meta: MetaFunction = () => createNoIndexMeta("Debug - Admin");
 
@@ -28,7 +28,9 @@ export default function AdminDebug() {
 
   return (
     <div className="container mx-auto py-6">
-      <AdminBreadcrumb currentPage="Debug" />
+      <PublicBreadcrumb
+        items={[{ label: "Admin", href: "/admin" }, { label: "Debug" }]}
+      />
       <h1 className="text-2xl font-bold mb-6">🔍 Debug Admin Access</h1>
 
       <div className="space-y-4">
