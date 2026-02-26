@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { DatabaseModule } from '../database/database.module';
@@ -26,7 +26,7 @@ import { LocalStrategy } from './local.strategy';
       signOptions: { expiresIn: '24h' },
     }),
     DatabaseModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
   ],
   controllers: [
     AuthLoginController,

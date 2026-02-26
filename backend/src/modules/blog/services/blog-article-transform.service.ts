@@ -7,7 +7,7 @@ import {
   BaH3Row,
   BgRow,
 } from '../interfaces/blog.interfaces';
-import { BlogCacheService } from './blog-cache.service';
+import { decodeHtmlEntities } from '../../../utils/html-entities';
 import {
   buildProxyImageUrl,
   IMAGE_CONFIG,
@@ -38,15 +38,13 @@ export class BlogArticleTransformService {
     const article: BlogArticle = {
       id: `advice_${advice.ba_id}`,
       type: 'advice',
-      title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
+      title: decodeHtmlEntities(advice.ba_title || ''),
       slug: advice.ba_alias,
       pg_alias: null, // Sera enrichi par enrichWithPgAlias()
-      excerpt: BlogCacheService.decodeHtmlEntities(
-        advice.ba_preview || advice.ba_descrip || '',
-      ),
-      content: BlogCacheService.decodeHtmlEntities(advice.ba_content || ''),
-      h1: BlogCacheService.decodeHtmlEntities(advice.ba_h1 || ''),
-      h2: BlogCacheService.decodeHtmlEntities(advice.ba_h2 || ''),
+      excerpt: decodeHtmlEntities(advice.ba_preview || advice.ba_descrip || ''),
+      content: decodeHtmlEntities(advice.ba_content || ''),
+      h1: decodeHtmlEntities(advice.ba_h1 || ''),
+      h2: decodeHtmlEntities(advice.ba_h2 || ''),
       keywords: advice.ba_keywords ? advice.ba_keywords.split(', ') : [],
       tags: advice.ba_keywords ? advice.ba_keywords.split(', ') : [],
       publishedAt: advice.ba_create,
@@ -57,10 +55,8 @@ export class BlogArticleTransformService {
       legacy_id: advice.ba_id,
       legacy_table: '__blog_advice',
       seo_data: {
-        meta_title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
-        meta_description: BlogCacheService.decodeHtmlEntities(
-          advice.ba_descrip || '',
-        ),
+        meta_title: decodeHtmlEntities(advice.ba_title || ''),
+        meta_description: decodeHtmlEntities(advice.ba_descrip || ''),
       },
       ba_pg_id: advice.ba_pg_id, // Garder temporairement pour enrichWithPgAlias()
     };
@@ -84,8 +80,8 @@ export class BlogArticleTransformService {
     h2Sections?.forEach((h2) => {
       sections.push({
         level: 2,
-        title: BlogCacheService.decodeHtmlEntities(h2.ba2_h2 || ''),
-        content: BlogCacheService.decodeHtmlEntities(h2.ba2_content || ''),
+        title: decodeHtmlEntities(h2.ba2_h2 || ''),
+        content: decodeHtmlEntities(h2.ba2_content || ''),
         anchor: this.generateAnchor(h2.ba2_h2),
         cta_anchor: h2.ba2_cta_anchor || null,
         cta_link: h2.ba2_cta_link || null,
@@ -97,8 +93,8 @@ export class BlogArticleTransformService {
         if (h3.ba3_ba2_id === h2.ba2_id) {
           sections.push({
             level: 3,
-            title: BlogCacheService.decodeHtmlEntities(h3.ba3_h3 || ''),
-            content: BlogCacheService.decodeHtmlEntities(h3.ba3_content || ''),
+            title: decodeHtmlEntities(h3.ba3_h3 || ''),
+            content: decodeHtmlEntities(h3.ba3_content || ''),
             anchor: this.generateAnchor(h3.ba3_h3),
             cta_anchor: h3.ba3_cta_anchor || null,
             cta_link: h3.ba3_cta_link || null,
@@ -111,15 +107,13 @@ export class BlogArticleTransformService {
     return {
       id: `advice_${advice.ba_id}`,
       type: 'advice',
-      title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
+      title: decodeHtmlEntities(advice.ba_title || ''),
       slug: advice.ba_alias,
       pg_alias: null, // Sera enrichi par enrichWithPgAlias() si besoin
-      excerpt: BlogCacheService.decodeHtmlEntities(
-        advice.ba_preview || advice.ba_descrip || '',
-      ),
-      content: BlogCacheService.decodeHtmlEntities(advice.ba_content || ''),
-      h1: BlogCacheService.decodeHtmlEntities(advice.ba_h1 || ''),
-      h2: BlogCacheService.decodeHtmlEntities(advice.ba_h2 || ''),
+      excerpt: decodeHtmlEntities(advice.ba_preview || advice.ba_descrip || ''),
+      content: decodeHtmlEntities(advice.ba_content || ''),
+      h1: decodeHtmlEntities(advice.ba_h1 || ''),
+      h2: decodeHtmlEntities(advice.ba_h2 || ''),
       keywords: advice.ba_keywords ? advice.ba_keywords.split(', ') : [],
       tags: advice.ba_keywords ? advice.ba_keywords.split(', ') : [],
       publishedAt: advice.ba_create,
@@ -137,10 +131,8 @@ export class BlogArticleTransformService {
       cta_anchor: advice.ba_cta_anchor || null,
       cta_link: advice.ba_cta_link || null,
       seo_data: {
-        meta_title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
-        meta_description: BlogCacheService.decodeHtmlEntities(
-          advice.ba_descrip || '',
-        ),
+        meta_title: decodeHtmlEntities(advice.ba_title || ''),
+        meta_description: decodeHtmlEntities(advice.ba_descrip || ''),
       },
     };
   }
@@ -152,14 +144,12 @@ export class BlogArticleTransformService {
     return {
       id: `guide_${guide.bg_id}`,
       type: 'guide',
-      title: BlogCacheService.decodeHtmlEntities(guide.bg_title || ''),
+      title: decodeHtmlEntities(guide.bg_title || ''),
       slug: guide.bg_alias,
-      excerpt: BlogCacheService.decodeHtmlEntities(
-        guide.bg_preview || guide.bg_descrip || '',
-      ),
-      content: BlogCacheService.decodeHtmlEntities(guide.bg_content || ''),
-      h1: BlogCacheService.decodeHtmlEntities(guide.bg_h1 || ''),
-      h2: BlogCacheService.decodeHtmlEntities(guide.bg_h2 || ''),
+      excerpt: decodeHtmlEntities(guide.bg_preview || guide.bg_descrip || ''),
+      content: decodeHtmlEntities(guide.bg_content || ''),
+      h1: decodeHtmlEntities(guide.bg_h1 || ''),
+      h2: decodeHtmlEntities(guide.bg_h2 || ''),
       keywords: guide.bg_keywords ? guide.bg_keywords.split(', ') : [],
       tags: guide.bg_keywords ? guide.bg_keywords.split(', ') : [],
       publishedAt: guide.bg_create,
@@ -170,12 +160,8 @@ export class BlogArticleTransformService {
       legacy_id: guide.bg_id,
       legacy_table: '__blog_guide',
       seo_data: {
-        meta_title: BlogCacheService.decodeHtmlEntities(
-          guide.bg_meta_title || '',
-        ),
-        meta_description: BlogCacheService.decodeHtmlEntities(
-          guide.bg_meta_description || '',
-        ),
+        meta_title: decodeHtmlEntities(guide.bg_meta_title || ''),
+        meta_description: decodeHtmlEntities(guide.bg_meta_description || ''),
         keywords: guide.bg_keywords ? guide.bg_keywords.split(', ') : [],
       },
     };
@@ -192,8 +178,8 @@ export class BlogArticleTransformService {
     if (h2.ba2_h2 && h2.ba2_content) {
       sections.push({
         level: 2,
-        title: BlogCacheService.decodeHtmlEntities(h2.ba2_h2),
-        content: BlogCacheService.decodeHtmlEntities(h2.ba2_content),
+        title: decodeHtmlEntities(h2.ba2_h2),
+        content: decodeHtmlEntities(h2.ba2_content),
         anchor: this.generateAnchor(h2.ba2_h2),
       });
     }
@@ -203,8 +189,8 @@ export class BlogArticleTransformService {
     if (h3.ba3_h3 && h3.ba3_content) {
       sections.push({
         level: 3,
-        title: BlogCacheService.decodeHtmlEntities(h3.ba3_h3),
-        content: BlogCacheService.decodeHtmlEntities(h3.ba3_content),
+        title: decodeHtmlEntities(h3.ba3_h3),
+        content: decodeHtmlEntities(h3.ba3_content),
         anchor: this.generateAnchor(h3.ba3_h3),
       });
     }
@@ -248,10 +234,7 @@ export class BlogArticleTransformService {
 
     const text =
       typeof content === 'string' ? content : JSON.stringify(content);
-    const cleanText = BlogCacheService.decodeHtmlEntities(text).replace(
-      /<[^>]*>/g,
-      '',
-    );
+    const cleanText = decodeHtmlEntities(text).replace(/<[^>]*>/g, '');
     const wordsPerMinute = 200;
     const words = cleanText
       .split(/\s+/)
@@ -267,7 +250,7 @@ export class BlogArticleTransformService {
 
     const text =
       typeof content === 'string' ? content : JSON.stringify(content);
-    return BlogCacheService.decodeHtmlEntities(text);
+    return decodeHtmlEntities(text);
   }
 
   /**
@@ -327,7 +310,7 @@ export class BlogArticleTransformService {
    * Utilisé pour la création de nouveaux articles
    */
   generateSlugFromTitle(title: string): string {
-    return BlogCacheService.decodeHtmlEntities(title)
+    return decodeHtmlEntities(title)
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')

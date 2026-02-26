@@ -8,7 +8,7 @@ import {
   BaH2Row,
   BaH3Row,
 } from '../interfaces/blog.interfaces';
-import { BlogCacheService } from './blog-cache.service';
+import { decodeHtmlEntities } from '../../../utils/html-entities';
 
 /**
  * ConstructeurTransformService - Transformation and utility methods for constructeurs
@@ -37,14 +37,14 @@ export class ConstructeurTransformService {
     const sections: BlogSection[] = [
       ...(h2Sections?.map((s) => ({
         level: 2,
-        title: BlogCacheService.decodeHtmlEntities(s.ba2_h2),
-        content: BlogCacheService.decodeHtmlEntities(s.ba2_content),
+        title: decodeHtmlEntities(s.ba2_h2),
+        content: decodeHtmlEntities(s.ba2_content),
         anchor: this.generateAnchor(s.ba2_h2),
       })) || []),
       ...(h3Sections?.map((s) => ({
         level: 3,
-        title: BlogCacheService.decodeHtmlEntities(s.ba3_h3),
-        content: BlogCacheService.decodeHtmlEntities(s.ba3_content),
+        title: decodeHtmlEntities(s.ba3_h3),
+        content: decodeHtmlEntities(s.ba3_content),
         anchor: this.generateAnchor(s.ba3_h3),
       })) || []),
     ];
@@ -77,19 +77,15 @@ export class ConstructeurTransformService {
     const article: BlogArticle = {
       id: `constructeur_${constructeur.bc_id}`,
       type: 'constructeur',
-      title: BlogCacheService.decodeHtmlEntities(constructeur.bsm_marque_id),
+      title: decodeHtmlEntities(constructeur.bsm_marque_id),
       slug:
         constructeur.bc_alias || this.generateSlug(constructeur.bsm_marque_id),
-      excerpt: BlogCacheService.decodeHtmlEntities(
+      excerpt: decodeHtmlEntities(
         constructeur.bc_preview || constructeur.bc_descrip || '',
       ),
-      content: BlogCacheService.decodeHtmlEntities(
-        constructeur.bc_content || '',
-      ),
-      h1: BlogCacheService.decodeHtmlEntities(
-        constructeur.bc_h1 || constructeur.bsm_marque_id,
-      ),
-      h2: BlogCacheService.decodeHtmlEntities(constructeur.bc_h2 || ''),
+      content: decodeHtmlEntities(constructeur.bc_content || ''),
+      h1: decodeHtmlEntities(constructeur.bc_h1 || constructeur.bsm_marque_id),
+      h2: decodeHtmlEntities(constructeur.bc_h2 || ''),
       keywords: keywordTags,
       tags: allTags,
       publishedAt: constructeur.bc_create || new Date().toISOString(),
@@ -102,10 +98,10 @@ export class ConstructeurTransformService {
       legacy_id: parseInt(String(constructeur.bsm_id), 10),
       legacy_table: '__blog_constructeur',
       seo_data: {
-        meta_title: BlogCacheService.decodeHtmlEntities(
+        meta_title: decodeHtmlEntities(
           constructeur.bc_h1 || constructeur.bsm_marque_id,
         ),
-        meta_description: BlogCacheService.decodeHtmlEntities(
+        meta_description: decodeHtmlEntities(
           constructeur.bc_descrip || constructeur.bc_preview || '',
         ),
         keywords: keywordTags,
@@ -151,14 +147,14 @@ export class ConstructeurTransformService {
       const sections: BlogSection[] = [
         ...(h2Sections?.map((s) => ({
           level: 2,
-          title: BlogCacheService.decodeHtmlEntities(s.ba2_h2),
-          content: BlogCacheService.decodeHtmlEntities(s.ba2_content),
+          title: decodeHtmlEntities(s.ba2_h2),
+          content: decodeHtmlEntities(s.ba2_content),
           anchor: this.generateAnchor(s.ba2_h2),
         })) || []),
         ...(h3Sections?.map((s) => ({
           level: 3,
-          title: BlogCacheService.decodeHtmlEntities(s.ba3_h3),
-          content: BlogCacheService.decodeHtmlEntities(s.ba3_content),
+          title: decodeHtmlEntities(s.ba3_h3),
+          content: decodeHtmlEntities(s.ba3_content),
           anchor: this.generateAnchor(s.ba3_h3),
         })) || []),
       ];
@@ -191,20 +187,18 @@ export class ConstructeurTransformService {
       const article: BlogArticle = {
         id: `constructeur_${constructeur.bc_id}`,
         type: 'constructeur',
-        title: BlogCacheService.decodeHtmlEntities(constructeur.bsm_marque_id),
+        title: decodeHtmlEntities(constructeur.bsm_marque_id),
         slug:
           constructeur.bc_alias ||
           this.generateSlug(constructeur.bsm_marque_id),
-        excerpt: BlogCacheService.decodeHtmlEntities(
+        excerpt: decodeHtmlEntities(
           constructeur.bc_preview || constructeur.bc_descrip || '',
         ),
-        content: BlogCacheService.decodeHtmlEntities(
-          constructeur.bc_content || '',
-        ),
-        h1: BlogCacheService.decodeHtmlEntities(
+        content: decodeHtmlEntities(constructeur.bc_content || ''),
+        h1: decodeHtmlEntities(
           constructeur.bc_h1 || constructeur.bsm_marque_id,
         ),
-        h2: BlogCacheService.decodeHtmlEntities(constructeur.bc_h2 || ''),
+        h2: decodeHtmlEntities(constructeur.bc_h2 || ''),
         keywords: keywordTags,
         tags: allTags,
         publishedAt: constructeur.bc_create || new Date().toISOString(),
@@ -219,10 +213,10 @@ export class ConstructeurTransformService {
 
         // Metadonnees SEO enrichies
         seo_data: {
-          meta_title: BlogCacheService.decodeHtmlEntities(
+          meta_title: decodeHtmlEntities(
             constructeur.bc_h1 || constructeur.bsm_marque_id,
           ),
-          meta_description: BlogCacheService.decodeHtmlEntities(
+          meta_description: decodeHtmlEntities(
             constructeur.bc_descrip || constructeur.bc_preview || '',
           ),
           keywords: keywordTags,

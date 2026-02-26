@@ -48,7 +48,7 @@ import { UserShipmentService } from './services/user-shipment.service';
   imports: [
     // Modules externes - Configuration et infrastructure
     ConfigModule, // ✅ Configuration pour SupabaseBaseService
-    DatabaseModule, // ✅ UserDataService et autres services de données
+    DatabaseModule, // ✅ Services de données partagés (OrdersService, etc.)
     forwardRef(() => AuthModule), // ✅ AuthModule avec forwardRef (évite circular dependency)
     MessagesModule, // ✅ MessagesModule pour délégation messaging
     JwtModule.register({

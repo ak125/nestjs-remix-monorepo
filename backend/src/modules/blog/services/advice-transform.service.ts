@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
-import { BlogCacheService } from './blog-cache.service';
+import { decodeHtmlEntities } from '../../../utils/html-entities';
 import {
   BlogArticle,
   BlogSection,
@@ -93,8 +93,8 @@ export class AdviceTransformService {
         const title = s.ba2_h2 || '';
         sections.push({
           level: 2,
-          title: BlogCacheService.decodeHtmlEntities(title),
-          content: BlogCacheService.decodeHtmlEntities(s.ba2_content || ''),
+          title: decodeHtmlEntities(title),
+          content: decodeHtmlEntities(s.ba2_content || ''),
           anchor: this.createAnchor(title),
         });
       }
@@ -104,8 +104,8 @@ export class AdviceTransformService {
         const title = s.ba3_h3 || '';
         sections.push({
           level: 3,
-          title: BlogCacheService.decodeHtmlEntities(title),
-          content: BlogCacheService.decodeHtmlEntities(s.ba3_content || ''),
+          title: decodeHtmlEntities(title),
+          content: decodeHtmlEntities(s.ba3_content || ''),
           anchor: this.createAnchor(title),
         });
       }
@@ -113,17 +113,17 @@ export class AdviceTransformService {
       return {
         id: `advice_${advice.ba_id}`,
         type: 'advice' as const,
-        title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
+        title: decodeHtmlEntities(advice.ba_title || ''),
         slug: advice.ba_alias,
         pg_alias: null,
         pg_id: null,
         ba_pg_id: advice.ba_pg_id || null,
-        excerpt: BlogCacheService.decodeHtmlEntities(
+        excerpt: decodeHtmlEntities(
           advice.ba_preview || advice.ba_descrip || '',
         ),
-        content: BlogCacheService.decodeHtmlEntities(advice.ba_content || ''),
-        h1: BlogCacheService.decodeHtmlEntities(advice.ba_h1 || ''),
-        h2: BlogCacheService.decodeHtmlEntities(advice.ba_h2 || ''),
+        content: decodeHtmlEntities(advice.ba_content || ''),
+        h1: decodeHtmlEntities(advice.ba_h1 || ''),
+        h2: decodeHtmlEntities(advice.ba_h2 || ''),
         keywords: advice.ba_keywords
           ? advice.ba_keywords.split(',').map((k: string) => k.trim())
           : [],
@@ -140,10 +140,8 @@ export class AdviceTransformService {
         legacy_id: parseInt(String(advice.ba_id), 10),
         legacy_table: '__blog_advice',
         seo_data: {
-          meta_title: BlogCacheService.decodeHtmlEntities(
-            advice.ba_title || advice.ba_h1 || '',
-          ),
-          meta_description: BlogCacheService.decodeHtmlEntities(
+          meta_title: decodeHtmlEntities(advice.ba_title || advice.ba_h1 || ''),
+          meta_description: decodeHtmlEntities(
             advice.ba_descrip || advice.ba_preview || '',
           ),
           keywords: (advice.ba_keywords || '')
@@ -188,8 +186,8 @@ export class AdviceTransformService {
           const title = s.ba2_h2 || '';
           sections.push({
             level: 2,
-            title: BlogCacheService.decodeHtmlEntities(title),
-            content: BlogCacheService.decodeHtmlEntities(s.ba2_content || ''),
+            title: decodeHtmlEntities(title),
+            content: decodeHtmlEntities(s.ba2_content || ''),
             anchor: this.createAnchor(title),
           });
         }
@@ -200,8 +198,8 @@ export class AdviceTransformService {
           const title = s.ba3_h3 || '';
           sections.push({
             level: 3,
-            title: BlogCacheService.decodeHtmlEntities(title),
-            content: BlogCacheService.decodeHtmlEntities(s.ba3_content || ''),
+            title: decodeHtmlEntities(title),
+            content: decodeHtmlEntities(s.ba3_content || ''),
             anchor: this.createAnchor(title),
           });
         }
@@ -210,17 +208,17 @@ export class AdviceTransformService {
       return {
         id: `advice_${advice.ba_id}`,
         type: 'advice' as const,
-        title: BlogCacheService.decodeHtmlEntities(advice.ba_title || ''),
+        title: decodeHtmlEntities(advice.ba_title || ''),
         slug: advice.ba_alias,
         pg_alias: null,
         pg_id: null,
         ba_pg_id: advice.ba_pg_id || null,
-        excerpt: BlogCacheService.decodeHtmlEntities(
+        excerpt: decodeHtmlEntities(
           advice.ba_preview || advice.ba_descrip || '',
         ),
-        content: BlogCacheService.decodeHtmlEntities(advice.ba_content || ''),
-        h1: BlogCacheService.decodeHtmlEntities(advice.ba_h1 || ''),
-        h2: BlogCacheService.decodeHtmlEntities(advice.ba_h2 || ''),
+        content: decodeHtmlEntities(advice.ba_content || ''),
+        h1: decodeHtmlEntities(advice.ba_h1 || ''),
+        h2: decodeHtmlEntities(advice.ba_h2 || ''),
         keywords: advice.ba_keywords
           ? advice.ba_keywords.split(',').map((k: string) => k.trim())
           : [],
@@ -237,12 +235,8 @@ export class AdviceTransformService {
         legacy_id: parseInt(String(advice.ba_id), 10),
         legacy_table: '__blog_advice',
         seo_data: {
-          meta_title: BlogCacheService.decodeHtmlEntities(
-            advice.ba_title || '',
-          ),
-          meta_description: BlogCacheService.decodeHtmlEntities(
-            advice.ba_descrip || '',
-          ),
+          meta_title: decodeHtmlEntities(advice.ba_title || ''),
+          meta_description: decodeHtmlEntities(advice.ba_descrip || ''),
           keywords: advice.ba_keywords
             ? advice.ba_keywords.split(',').map((k: string) => k.trim())
             : [],
@@ -262,10 +256,7 @@ export class AdviceTransformService {
   calculateReadingTime(content: string): number {
     if (!content) return 1;
 
-    const cleanText = BlogCacheService.decodeHtmlEntities(content).replace(
-      /<[^>]*>/g,
-      '',
-    );
+    const cleanText = decodeHtmlEntities(content).replace(/<[^>]*>/g, '');
     const wordsPerMinute = 200;
     const words = cleanText
       .split(/\s+/)
@@ -279,7 +270,7 @@ export class AdviceTransformService {
   createAnchor(text: string): string {
     if (!text) return '';
 
-    return BlogCacheService.decodeHtmlEntities(text)
+    return decodeHtmlEntities(text)
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')

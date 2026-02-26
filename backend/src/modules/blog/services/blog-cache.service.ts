@@ -1,7 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { decodeHtmlEntities } from '../../../utils/html-entities';
 
 /**
  * Service de cache stratégique pour le contenu blog
@@ -87,15 +86,5 @@ export class BlogCacheService {
     } catch (error) {
       this.logger.warn(`⚠️ Cache reset error: ${(error as Error).message}`);
     }
-  }
-
-  /**
-   * Fonction de décodage des entités HTML
-   * ✅ Délègue à decodeHtmlEntities centralisé (80+ entités supportées)
-   * Utilisée pour nettoyer le contenu des tables legacy __blog_*
-   */
-  static decodeHtmlEntities(text: string | null | undefined): string {
-    if (!text) return '';
-    return decodeHtmlEntities(text);
   }
 }
