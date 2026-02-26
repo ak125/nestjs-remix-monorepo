@@ -1,6 +1,5 @@
-import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { MetaTagsArianeDataService } from '../../../database/services/meta-tags-ariane-data.service';
 
 /**
  * VehicleMetaService
@@ -11,8 +10,10 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
  * @see VehiclesService.getMetaTagsByTypeId() (méthode originale)
  */
 @Injectable()
-export class VehicleMetaService extends SupabaseBaseService {
-  protected readonly logger = new Logger(VehicleMetaService.name);
+export class VehicleMetaService {
+  private readonly logger = new Logger(VehicleMetaService.name);
+
+  constructor(private readonly metaTagsData: MetaTagsArianeDataService) {}
 
   /**
    * 🏷️ Récupérer les meta tags ariane pour un type de véhicule
@@ -27,24 +28,15 @@ export class VehicleMetaService extends SupabaseBaseService {
     try {
       this.logger.log(`🏷️ Recherche meta tags ariane pour type_id: ${typeId}`);
 
-      const { data, error } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .select('*')
-        .ilike('mta_alias', `%-${typeId}`)
-        .limit(1);
+      const result = await this.metaTagsData.getByTypeIdPattern(typeId);
 
-      if (error) {
-        this.logger.error('❌ Erreur récupération meta tags:', error);
-        return { data: null, error: error.message };
-      }
-
-      if (!data || data.length === 0) {
+      if (!result) {
         this.logger.log(`ℹ️ Aucun meta tag trouvé pour type_id: ${typeId}`);
         return { data: null, error: null };
       }
 
       this.logger.log(`✅ Meta tags trouvés pour type_id ${typeId}`);
-      return { data: data[0], error: null };
+      return { data: result, error: null };
     } catch (error) {
       this.logger.error('❌ Exception meta tags:', error);
       return { data: null, error: String(error) };
@@ -64,24 +56,15 @@ export class VehicleMetaService extends SupabaseBaseService {
     try {
       this.logger.log(`🏷️ Recherche meta tags ariane pour alias: ${alias}`);
 
-      const { data, error } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .select('*')
-        .eq('mta_alias', alias)
-        .limit(1);
+      const result = await this.metaTagsData.getByAlias(alias);
 
-      if (error) {
-        this.logger.error('❌ Erreur récupération meta tags:', error);
-        return { data: null, error: error.message };
-      }
-
-      if (!data || data.length === 0) {
+      if (!result) {
         this.logger.log(`ℹ️ Aucun meta tag trouvé pour alias: ${alias}`);
         return { data: null, error: null };
       }
 
       this.logger.log(`✅ Meta tags trouvés pour alias ${alias}`);
-      return { data: data[0], error: null };
+      return { data: result, error: null };
     } catch (error) {
       this.logger.error('❌ Exception meta tags:', error);
       return { data: null, error: String(error) };

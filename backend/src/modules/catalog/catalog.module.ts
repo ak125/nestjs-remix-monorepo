@@ -30,7 +30,6 @@ import { EquipementiersService } from './services/equipementiers.service';
 import { VehicleFilteredCatalogV4HybridService } from './services/vehicle-filtered-catalog-v4-hybrid.service';
 import { VehiclePiecesCompatibilityService } from './services/vehicle-pieces-compatibility.service';
 import { CatalogDataIntegrityService } from './services/catalog-data-integrity.service';
-import { PiecesRealService } from '../../pieces/pieces-real.service';
 import { PricingService } from '../products/services/pricing.service';
 import { OemPlatformMappingService } from './services/oem-platform-mapping.service';
 import { UnifiedPageDataService } from './services/unified-page-data.service';
@@ -94,7 +93,6 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     VehicleFilteredCatalogV4HybridService,
     VehiclePiecesCompatibilityService,
     CatalogDataIntegrityService, // 🛡️ Service de validation de l'intégrité
-    PiecesRealService, // ✅ Service SQL brut - remplace PiecesDbService
     // 🎯 PRICING SERVICE - Service de prix
     PricingService,
     // 🔧 OEM PLATFORM MAPPING - Filtrage OEM par plateforme véhicule (SEO)

@@ -19,10 +19,9 @@
  */
 
 import { Injectable, Logger, Inject } from '@nestjs/common';
-import { TABLES } from '@repo/database-types';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { MetaTagsArianeDataService } from '../../../database/services/meta-tags-ariane-data.service';
 
 export interface BreadcrumbItem {
   label: string;
@@ -53,13 +52,15 @@ export interface BreadcrumbConfig {
 }
 
 @Injectable()
-export class OptimizedBreadcrumbService extends SupabaseBaseService {
-  protected readonly logger = new Logger(OptimizedBreadcrumbService.name);
+export class OptimizedBreadcrumbService {
+  private readonly logger = new Logger(OptimizedBreadcrumbService.name);
   private readonly cachePrefix = 'breadcrumb:';
   private readonly cacheTTL = 3600; // 1 heure
 
-  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {
-    super();
+  constructor(
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly metaTagsData: MetaTagsArianeDataService,
+  ) {
     this.logger.log('🧭 OptimizedBreadcrumbService initialisé');
   }
 
@@ -166,34 +167,22 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
       }
 
       // Vérifier si un enregistrement existe déjà
-      const { data: existing } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .select('mta_id')
-        .eq('mta_url', cleanPath)
-        .single();
+      const existing = await this.metaTagsData.getFieldsByUrl(
+        cleanPath,
+        'mta_id',
+      );
 
-      let result;
       if (existing?.mta_id) {
-        // Mettre à jour l'enregistrement existant
-        result = await this.supabase
-          .from(TABLES.meta_tags_ariane)
-          .update({
-            mta_ariane: arianeData,
-          })
-          .eq('mta_id', existing.mta_id);
+        await this.metaTagsData.updateById(existing.mta_id, {
+          mta_ariane: arianeData,
+        });
       } else {
-        // Créer un nouvel enregistrement
-        const newId = Date.now(); // Générer un ID temporaire
-        result = await this.supabase.from(TABLES.meta_tags_ariane).insert({
-          mta_id: newId,
+        await this.metaTagsData.insert({
+          mta_id: Date.now(),
           mta_url: cleanPath,
           mta_alias: cleanPath,
           mta_ariane: arianeData,
         });
-      }
-
-      if (result.error) {
-        throw result.error;
       }
 
       // Invalider le cache
@@ -291,13 +280,12 @@ export class OptimizedBreadcrumbService extends SupabaseBaseService {
     path: string,
   ): Promise<BreadcrumbItem[] | null> {
     try {
-      const { data, error } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .select('mta_ariane, mta_title')
-        .eq('mta_url', path)
-        .single();
+      const data = await this.metaTagsData.getFieldsByUrl(
+        path,
+        'mta_ariane, mta_title',
+      );
 
-      if (error || !data || !data.mta_ariane) {
+      if (!data || !data.mta_ariane) {
         return null;
       }
 

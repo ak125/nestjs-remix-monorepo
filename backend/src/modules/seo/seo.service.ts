@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { MetaTagsArianeDataService } from '../../database/services/meta-tags-ariane-data.service';
 
 // 🎯 INTERFACES SEO (utilisées par dynamic-seo-v4-ultimate.service.ts)
 // Interfaces commentées - utilisées uniquement pour référence de types
@@ -13,7 +14,10 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
 export class SeoService extends SupabaseBaseService {
   protected readonly logger = new Logger(SeoService.name);
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    private readonly metaTagsData: MetaTagsArianeDataService,
+  ) {
     super(configService);
     this.logger.log(
       '🎯 SeoService enrichi initialisé avec templates dynamiques',
@@ -25,15 +29,7 @@ export class SeoService extends SupabaseBaseService {
    */
   async getMetadata(urlPath: string) {
     try {
-      const { data, error } = await this.client
-        .from(TABLES.meta_tags_ariane)
-        .select('*')
-        .eq('mta_alias', urlPath)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        throw error;
-      }
+      const data = await this.metaTagsData.getByAlias(urlPath);
 
       if (!data) {
         return this.getDefaultMetadata(urlPath);
@@ -64,23 +60,17 @@ export class SeoService extends SupabaseBaseService {
       // Génération d'un ID unique basé sur l'URL
       const mtaId = urlPath.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
 
-      const { data, error } = await this.client
-        .from(TABLES.meta_tags_ariane)
-        .upsert({
-          mta_id: `seo_${mtaId}_${Date.now()}`,
-          mta_alias: urlPath,
-          mta_title: metadata.meta_title,
-          mta_descrip: metadata.meta_description,
-          mta_keywords: metadata.meta_keywords,
-          mta_h1: metadata.h1 || metadata.meta_title,
-          mta_content: metadata.content || metadata.meta_description,
-          mta_ariane: metadata.breadcrumb || '',
-          mta_relfollow: metadata.rel_follow || 'follow',
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
+      const data = await this.metaTagsData.upsert({
+        mta_id: `seo_${mtaId}_${Date.now()}`,
+        mta_alias: urlPath,
+        mta_title: metadata.meta_title,
+        mta_descrip: metadata.meta_description,
+        mta_keywords: metadata.meta_keywords,
+        mta_h1: metadata.h1 || metadata.meta_title,
+        mta_content: metadata.content || metadata.meta_description,
+        mta_ariane: metadata.breadcrumb || '',
+        mta_relfollow: metadata.rel_follow || 'follow',
+      });
 
       this.logger.log(`Métadonnées mises à jour pour ${urlPath}`);
       return data;
@@ -138,16 +128,7 @@ export class SeoService extends SupabaseBaseService {
    */
   async getPagesWithoutSeo(limit: number = 50) {
     try {
-      const { data, error } = await this.client
-        .from(TABLES.meta_tags_ariane)
-        .select('mta_alias, mta_title, mta_descrip')
-        .or(
-          'mta_title.is.null,mta_descrip.is.null,mta_title.eq.,mta_descrip.eq.',
-        )
-        .order('mta_id', { ascending: false })
-        .limit(limit);
-
-      if (error) throw error;
+      const data = await this.metaTagsData.getPagesWithoutSeo(limit);
 
       return {
         pages:

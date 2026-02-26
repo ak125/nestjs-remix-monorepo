@@ -55,10 +55,12 @@ import { BrandRpcService } from './services/brand-rpc.service';
 
 // Module Catalog pour le maillage interne
 import { CatalogModule } from '../catalog/catalog.module';
+import { DatabaseModule } from '../../database/database.module';
 
 @Module({
   imports: [
     ConfigModule,
+    DatabaseModule,
     forwardRef(() => CatalogModule), // 🔗 Pour le maillage interne (gammes populaires)
     CacheModule.registerAsync({
       inject: [ConfigService],

@@ -1,13 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
+import { MetaTagsArianeDataService } from '../../../database/services/meta-tags-ariane-data.service';
 
 @Injectable()
 export class SeoMenuService extends SupabaseBaseService {
   protected readonly logger = new Logger(SeoMenuService.name);
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    private readonly metaTagsData: MetaTagsArianeDataService,
+  ) {
     super(configService);
   }
 
@@ -270,10 +273,7 @@ export class SeoMenuService extends SupabaseBaseService {
 
   private async getPagesWithoutSEO() {
     try {
-      const { count } = await this.client
-        .from(TABLES.meta_tags_ariane)
-        .select('*', { count: 'exact', head: true })
-        .or('meta_title.is.null,meta_description.is.null');
+      const count = await this.metaTagsData.countWithoutSeo();
 
       return count ? count.toString() : '0';
     } catch (error) {

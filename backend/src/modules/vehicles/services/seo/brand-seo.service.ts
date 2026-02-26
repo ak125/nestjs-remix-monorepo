@@ -12,6 +12,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@supabase/supabase-js';
 import { TABLES } from '@repo/database-types';
+import {
+  SEO_PRICE_VARIATIONS,
+  selectVariation,
+} from '../../../../config/seo-variations.config';
 
 export interface BrandSeoData {
   sm_id: string;
@@ -92,18 +96,11 @@ export class BrandSeoService {
       '#VMarque#': marqueNom,
     };
 
-    // Variation marketing #PrixPasCher# (rotation sur 7 variations)
-    const priceVariations = [
-      'à prix pas cher',
-      'pas cher',
-      'à petit prix',
-      'bon marché',
-      'à prix discount',
-      'à prix réduit',
-      'économique',
-    ];
-    const priceIndex = typeId % priceVariations.length;
-    replacements['#PrixPasCher#'] = priceVariations[priceIndex];
+    // Variation marketing #PrixPasCher# (rotation sur 7 variations canoniques)
+    replacements['#PrixPasCher#'] = selectVariation(
+      SEO_PRICE_VARIATIONS,
+      typeId,
+    );
 
     // Appliquer tous les remplacements
     let title = seoData.sm_title || '';

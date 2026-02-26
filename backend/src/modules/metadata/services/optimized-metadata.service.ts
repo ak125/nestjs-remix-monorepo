@@ -17,10 +17,9 @@
  */
 
 import { Injectable, Logger, Inject } from '@nestjs/common';
-import { TABLES } from '@repo/database-types';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { MetaTagsArianeDataService } from '../../../database/services/meta-tags-ariane-data.service';
 
 export interface PageMetadata {
   title: string;
@@ -43,13 +42,15 @@ export interface MetadataUpdateData {
 }
 
 @Injectable()
-export class OptimizedMetadataService extends SupabaseBaseService {
-  protected readonly logger = new Logger(OptimizedMetadataService.name);
+export class OptimizedMetadataService {
+  private readonly logger = new Logger(OptimizedMetadataService.name);
   private readonly cachePrefix = 'metadata:';
   private readonly cacheTTL = 3600; // 1 heure
 
-  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {
-    super();
+  constructor(
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly metaTagsData: MetaTagsArianeDataService,
+  ) {
     this.logger.log('📄 OptimizedMetadataService initialisé');
   }
 
@@ -72,15 +73,11 @@ export class OptimizedMetadataService extends SupabaseBaseService {
       }
 
       // Récupérer depuis la table ___meta_tags_ariane
-      const { data, error } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .select('*')
-        .eq('mta_alias', cleanPath)
-        .single();
+      const data = await this.metaTagsData.getByAlias(cleanPath);
 
       let metadata: PageMetadata;
 
-      if (error || !data) {
+      if (!data) {
         // Métadonnées par défaut si pas trouvé
         metadata = this.getDefaultMetadata(cleanPath);
         this.logger.debug(`🔄 Métadonnées par défaut pour: ${cleanPath}`);
@@ -154,13 +151,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
         dbData.mta_content = updateData.content;
 
       // Upsert dans la table
-      const { error } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .upsert(dbData);
-
-      if (error) {
-        throw error;
-      }
+      await this.metaTagsData.upsertWithoutReturn(dbData);
 
       // Invalider le cache
       await this.clearCache(cleanPath);
@@ -185,14 +176,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
     try {
       const cleanPath = this.cleanPath(path);
 
-      const { error } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .delete()
-        .eq('mta_alias', cleanPath);
-
-      if (error) {
-        throw error;
-      }
+      await this.metaTagsData.deleteByAlias(cleanPath);
 
       // Invalider le cache
       await this.clearCache(cleanPath);
@@ -212,16 +196,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
    */
   async generateSitemap(): Promise<string[]> {
     try {
-      const { data, error } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .select('mta_alias')
-        .not('mta_alias', 'is', null);
-
-      if (error) {
-        throw error;
-      }
-
-      return data?.map((item) => item.mta_alias).filter((alias) => alias) || [];
+      return await this.metaTagsData.getAliases();
     } catch (error) {
       this.logger.error('❌ Erreur génération sitemap:', error);
       return [];
@@ -339,14 +314,10 @@ export class OptimizedMetadataService extends SupabaseBaseService {
     Array<PageMetadata & { id: string; url: string }>
   > {
     try {
-      const { data, error } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .select('*')
-        .order('mta_id', { ascending: false });
-
-      if (error) {
-        throw error;
-      }
+      const data = await this.metaTagsData.getAll({
+        orderBy: 'mta_id',
+        ascending: false,
+      });
 
       return (data || []).map((item: any) => ({
         id: item.mta_id?.toString() || item.mta_url,
@@ -373,14 +344,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
     try {
       const cleanPath = this.cleanPath(path);
 
-      const { error } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .delete()
-        .eq('mta_url', cleanPath);
-
-      if (error) {
-        throw error;
-      }
+      await this.metaTagsData.deleteByUrl(cleanPath);
 
       // Invalider le cache
       await this.clearCache(cleanPath);
@@ -403,13 +367,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
     try {
       const cleanPath = this.cleanPath(path);
 
-      const { data, error } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .select('mta_id')
-        .eq('mta_url', cleanPath)
-        .single();
-
-      return !error && !!data;
+      return await this.metaTagsData.existsByUrl(cleanPath);
     } catch {
       return false;
     }
@@ -421,15 +379,7 @@ export class OptimizedMetadataService extends SupabaseBaseService {
    */
   async countMetadata(): Promise<number> {
     try {
-      const { count, error } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .select('*', { count: 'exact', head: true });
-
-      if (error) {
-        throw error;
-      }
-
-      return count || 0;
+      return await this.metaTagsData.countTotal();
     } catch (error) {
       this.logger.error('❌ Erreur comptage métadonnées:', error);
       return 0;

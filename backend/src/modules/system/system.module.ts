@@ -8,6 +8,7 @@ import { SystemService } from './services/system.service';
 import { MetricsService } from './services/metrics.service';
 import { DatabaseMonitorService } from './services/database-monitor.service';
 import { ConfigModule } from '@nestjs/config';
+import { DatabaseModule } from '../../database/database.module';
 
 /**
  * 🎯 SystemModule - Monitoring & Métriques Enterprise
@@ -18,7 +19,7 @@ import { ConfigModule } from '@nestjs/config';
  * ✅ MetricsService et DatabaseMonitor (enterprise)
  */
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, DatabaseModule],
   controllers: [SystemHealthController],
   providers: [
     SystemHealthService, // Simple, fonctionne

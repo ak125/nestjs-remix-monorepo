@@ -2,6 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { MetaTagsArianeDataService } from '../../../database/services/meta-tags-ariane-data.service';
 
 export interface SystemMetric {
   id: string;
@@ -29,7 +30,10 @@ export class MetricsService extends SupabaseBaseService {
   private metricsCache = new Map<string, SystemMetric>();
   private readonly CACHE_TTL = 60000; // 1 minute
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    private readonly metaTagsData: MetaTagsArianeDataService,
+  ) {
     super(configService);
   }
 
@@ -177,27 +181,20 @@ export class MetricsService extends SupabaseBaseService {
     try {
       this.logger.log('🔍 Collecting SEO metrics from production tables');
 
-      const [sitemapCount, , optimizedCount] = await Promise.all([
+      const [sitemapCount, optimizedPages] = await Promise.all([
         this.supabase
           .from(TABLES.sitemap_p_link)
           .select('*', { count: 'exact', head: true }),
-        this.supabase
-          .from(TABLES.meta_tags_ariane)
-          .select('*', { count: 'exact', head: true }),
-        this.supabase
-          .from(TABLES.meta_tags_ariane)
-          .select('*', { count: 'exact', head: true })
-          .not('meta_title', 'is', null)
-          .not('meta_description', 'is', null),
+        this.metaTagsData.countOptimized(),
       ]);
 
       const metrics = {
         totalPages: sitemapCount.count || 0,
         indexedPages: sitemapCount.count || 0,
-        optimizedPages: optimizedCount.count || 0,
+        optimizedPages: optimizedPages,
         averageLoadTime: Math.random() * 200 + 100, // Simulé pour le moment
         sitemapHealth: sitemapCount.count
-          ? Math.round(((optimizedCount.count || 0) / sitemapCount.count) * 100)
+          ? Math.round((optimizedPages / sitemapCount.count) * 100)
           : 0,
       };
 

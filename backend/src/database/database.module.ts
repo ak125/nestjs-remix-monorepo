@@ -7,6 +7,7 @@ import { OrdersService } from './services/orders.service';
 import { ShippingDataService } from './services/shipping-data.service';
 import { PromoDataService } from './services/promo-data.service';
 import { DatabaseCompositionService } from './services/database-composition.service';
+import { MetaTagsArianeDataService } from './services/meta-tags-ariane-data.service';
 
 /**
  * DatabaseModule - Architecture Modulaire Pure
@@ -26,6 +27,7 @@ import { DatabaseCompositionService } from './services/database-composition.serv
     ShippingDataService,
     PromoDataService,
     DatabaseCompositionService,
+    MetaTagsArianeDataService,
   ],
   exports: [
     // Export principal - service de composition modulaire
@@ -36,6 +38,7 @@ import { DatabaseCompositionService } from './services/database-composition.serv
     OrdersService, // Service unifié de commandes
     ShippingDataService,
     PromoDataService,
+    MetaTagsArianeDataService,
   ],
 })
 export class DatabaseModule {}

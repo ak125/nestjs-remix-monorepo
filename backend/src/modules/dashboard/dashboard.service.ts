@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { CacheService } from '../../cache/cache.service';
 import { DatabaseException, ErrorCodes } from '../../common/exceptions';
+import { MetaTagsArianeDataService } from '../../database/services/meta-tags-ariane-data.service';
 
 @Injectable()
 export class DashboardService extends SupabaseBaseService {
@@ -12,6 +13,7 @@ export class DashboardService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly cacheService: CacheService,
+    private readonly metaTagsData: MetaTagsArianeDataService,
   ) {
     super(configService);
   }
@@ -537,15 +539,8 @@ export class DashboardService extends SupabaseBaseService {
       this.logger.log(`Fetching SEO dashboard for user: ${userId}`);
 
       // Utiliser les tables META existantes
-      const { count: totalPages } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .select('*', { count: 'exact', head: true });
-
-      const { count: optimizedPages } = await this.supabase
-        .from(TABLES.meta_tags_ariane)
-        .select('*', { count: 'exact', head: true })
-        .not('meta_title', 'is', null)
-        .not('meta_description', 'is', null);
+      const totalPages = await this.metaTagsData.countTotal();
+      const optimizedPages = await this.metaTagsData.countOptimized();
 
       return {
         module: 'seo',
