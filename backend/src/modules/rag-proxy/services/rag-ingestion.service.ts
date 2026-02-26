@@ -4,6 +4,7 @@ import {
   BadRequestException,
   ConflictException,
   HttpException,
+  OnModuleDestroy,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { promises as fs, readdirSync } from 'node:fs';
@@ -20,12 +21,26 @@ import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagGammeDetectionService } from './rag-gamme-detection.service';
 
 @Injectable()
-export class RagIngestionService {
+export class RagIngestionService implements OnModuleDestroy {
   private readonly logger = new Logger(RagIngestionService.name);
   private readonly ragUrl: string;
   private readonly ragApiKey: string;
   private readonly ragPdfDropHostRoot: string;
   private readonly ragPdfDropContainerRoot: string;
+
+  /** Track active poll timers for cleanup on destroy */
+  private readonly activePollTimers = new Set<ReturnType<typeof setInterval>>();
+
+  onModuleDestroy() {
+    const count = this.activePollTimers.size;
+    for (const timer of this.activePollTimers) {
+      clearInterval(timer);
+    }
+    this.activePollTimers.clear();
+    this.logger.log(
+      `RagIngestionService destroyed, cleared ${count} poll timers`,
+    );
+  }
 
   constructor(
     private readonly configService: ConfigService,
@@ -406,6 +421,7 @@ export class RagIngestionService {
         const status = await this.getSinglePdfJobStatus(jobId, 10);
         if (status.status === 'done' || status.status === 'completed') {
           clearInterval(timer);
+          this.activePollTimers.delete(timer);
 
           // Validate frontmatter on recently modified knowledge files (like web flow)
           const knowledgePath =
@@ -461,6 +477,7 @@ export class RagIngestionService {
           attempt >= MAX_ATTEMPTS
         ) {
           clearInterval(timer);
+          this.activePollTimers.delete(timer);
           if (attempt >= MAX_ATTEMPTS) {
             this.logger.warn(
               `PDF ingest poll timeout for job ${jobId} after ${MAX_ATTEMPTS} attempts`,
@@ -473,9 +490,12 @@ export class RagIngestionService {
         );
         if (attempt >= MAX_ATTEMPTS) {
           clearInterval(timer);
+          this.activePollTimers.delete(timer);
         }
       }
     }, INTERVAL_MS);
+
+    this.activePollTimers.add(timer);
   }
 
   // ── Private helpers ──

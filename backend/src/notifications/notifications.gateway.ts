@@ -8,7 +8,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Logger } from '@nestjs/common';
+import { Logger, OnModuleDestroy } from '@nestjs/common';
 
 interface NotificationData {
   id: string;
@@ -29,7 +29,7 @@ interface NotificationData {
   namespace: '/notifications',
 })
 export class NotificationsGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
+  implements OnGatewayConnection, OnGatewayDisconnect, OnModuleDestroy
 {
   @WebSocketServer()
   server: Server;
@@ -37,6 +37,16 @@ export class NotificationsGateway
   private logger = new Logger('NotificationsGateway');
   private connectedClients = new Map<string, Socket>();
   private static readonly MAX_CONNECTIONS = 10_000;
+  private demoInterval: ReturnType<typeof setInterval> | null = null;
+
+  onModuleDestroy() {
+    if (this.demoInterval) {
+      clearInterval(this.demoInterval);
+      this.demoInterval = null;
+    }
+    this.connectedClients.clear();
+    this.logger.log('NotificationsGateway destroyed, clients cleared');
+  }
 
   handleConnection(client: Socket) {
     if (this.connectedClients.size >= NotificationsGateway.MAX_CONNECTIONS) {
@@ -242,7 +252,7 @@ export class NotificationsGateway
       },
     ];
 
-    setInterval(() => {
+    this.demoInterval = setInterval(() => {
       const randomMessage =
         demoMessages[Math.floor(Math.random() * demoMessages.length)];
       const notification: NotificationData = {

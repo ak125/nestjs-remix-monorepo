@@ -11,14 +11,14 @@
       },
       "typecheck": {
         "dependsOn": ["^build"],
-        "cache": false
+        "outputs": []
       },
       "lint": {
-        "cache": false
+        "outputs": []
       },
       "test": {
         "dependsOn": ["^build"],
-        "cache": false
+        "outputs": ["coverage/**"]
       },
       "spec:validate": {
         "cache": false,
