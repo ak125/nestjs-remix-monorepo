@@ -20,7 +20,6 @@
 
 import {
   defer,
-  redirect,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -198,14 +197,28 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     vehicleValidationFailed = true;
   }
 
-  // 🔄 SEO: Si validation véhicule échouée → 301 redirect vers page gamme
-  // Raison: 412 est traité comme 4xx par Google → désindexation
-  // 301 préserve le PageRank et guide vers une page indexable
+  // 🔄 SEO: Si validation véhicule échouée → 404 avec page utile
+  // Raison: 301 vers page gamme crée des "pages avec redirection" dans GSC (43.9k URLs)
+  // 404 dit à Google "cette page n'existe pas" → désindexation propre
   if (vehicleValidationFailed) {
     logger.log(
-      `🔄 [301] Validation véhicule échouée, redirect vers page gamme: /pieces/${gammeData.alias}-${gammeId}.html`,
+      `🚫 [404] Validation véhicule échouée: /pieces/${gammeData.alias}-${gammeId}.html`,
     );
-    return redirect(`/pieces/${gammeData.alias}-${gammeId}.html`, 301);
+    throw new Response(
+      JSON.stringify({
+        reason: "invalid_vehicle",
+        gammeAlias: gammeData.alias,
+        gammeId,
+        gammeUrl: `/pieces/${gammeData.alias}-${gammeId}.html`,
+      }),
+      {
+        status: 404,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Robots-Tag": "noindex, follow",
+        },
+      },
+    );
   }
 
   // 🚀 RM API V2 - Complete Read Model (single source of truth)
@@ -237,12 +250,29 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // 🚀 LCP V9: seoSwitches deferred (below-fold only, has fallback anchors)
   const rmV2Response = await rmV2Promise;
 
-  // 🔄 SEO: Validation RM V2 - Si échec → 301 redirect vers page gamme
+  // 🔄 SEO: Validation RM V2 - Si échec → 404 avec page utile
+  // Raison: 301 vers page gamme crée des "pages avec redirection" dans GSC (43.9k URLs)
+  // 404 dit à Google "cette page n'existe pas" → désindexation propre
+  // L'ErrorBoundary affiche un lien vers la page gamme pour guider l'utilisateur
   if (!rmV2Response || !isRmV2DataUsable(rmV2Response, 1)) {
     logger.log(
-      `🔄 [301] RM V2 invalide ou 0 produits, redirect vers page gamme: /pieces/${gammeData.alias}-${gammeId}.html`,
+      `🚫 [404] RM V2 invalide ou 0 produits pour: /pieces/${gammeData.alias}-${gammeId}.html`,
     );
-    return redirect(`/pieces/${gammeData.alias}-${gammeId}.html`, 301);
+    throw new Response(
+      JSON.stringify({
+        reason: "no_products",
+        gammeAlias: gammeData.alias,
+        gammeId,
+        gammeUrl: `/pieces/${gammeData.alias}-${gammeId}.html`,
+      }),
+      {
+        status: 404,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Robots-Tag": "noindex, follow",
+        },
+      },
+    );
   }
 
   logger.log(
@@ -945,8 +975,62 @@ export function ErrorBoundary() {
     );
   }
 
-  // Note: 412 supprimé - toutes les erreurs récupérables font maintenant 301 redirect
-  // vers la page gamme pour préserver le PageRank (SEO optimal)
+  // 🚫 Gestion 404 — Produit non disponible pour ce véhicule
+  // Affiche une page utile avec lien vers la gamme (au lieu de redirect 301)
+  if (isRouteErrorResponse(error) && error.status === 404) {
+    let gammeUrl = "/pieces/";
+    let gammeAlias = "";
+    try {
+      const parsed =
+        typeof error.data === "string" ? JSON.parse(error.data) : error.data;
+      if (parsed?.gammeUrl) gammeUrl = parsed.gammeUrl;
+      if (parsed?.gammeAlias) gammeAlias = parsed.gammeAlias;
+    } catch {
+      // Pas de JSON → utiliser les valeurs par défaut
+    }
+
+    const gammeDisplayName = gammeAlias
+      ? gammeAlias
+          .split("-")
+          .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+          .join(" ")
+      : "cette gamme";
+
+    return (
+      <>
+        <head>
+          <meta name="robots" content="noindex, follow" />
+        </head>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full text-center">
+            <div className="text-6xl mb-4">🔧</div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-3">
+              Produit non disponible pour ce véhicule
+            </h1>
+            <p className="text-gray-600 mb-6">
+              Nous n'avons pas de <strong>{gammeDisplayName}</strong> compatible
+              avec ce véhicule actuellement. Consultez notre catalogue pour
+              d'autres véhicules.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <a
+                href={gammeUrl}
+                className="inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              >
+                Voir tous les {gammeDisplayName} →
+              </a>
+              <a
+                href="/"
+                className="inline-flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors"
+              >
+                Retour à l'accueil
+              </a>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   // Message d'erreur détaillé pour le développement
   const errorMessage =
@@ -961,7 +1045,7 @@ export function ErrorBoundary() {
       ? error.stack
       : JSON.stringify(error, null, 2);
 
-  // Autres erreurs (404, 500, etc.)
+  // Autres erreurs (500, etc.)
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
