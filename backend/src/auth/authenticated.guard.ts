@@ -16,8 +16,8 @@ export class AuthenticatedGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const isAuthenticated = request.isAuthenticated();
 
-    this.logger.log(
-      `AuthenticatedGuard - Path: ${request.path}, Authenticated: ${isAuthenticated}, User: ${request.user?.email || 'none'}`,
+    this.logger.debug(
+      `Path: ${request.path}, Authenticated: ${isAuthenticated}`,
     );
 
     return isAuthenticated;

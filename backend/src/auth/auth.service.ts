@@ -321,8 +321,26 @@ export class AuthService {
    */
   async getUserById(userId: string): Promise<AuthUser | null> {
     try {
+      // 1. Chercher dans les customers
       const user = await this.userDataService.findById(userId);
-      return user ? this.mapUserToAuthUser(user) : null;
+      if (user) return this.mapUserToAuthUser(user);
+
+      // 2. Fallback: chercher dans les admins
+      const admin = await this.userDataService.findAdminById(userId);
+      if (admin) {
+        return {
+          id: admin.id,
+          email: admin.email,
+          firstName: admin.firstName,
+          lastName: admin.lastName,
+          isPro: true,
+          isActive: admin.isActive,
+          level: admin.level,
+          isAdmin: admin.level >= 7,
+        };
+      }
+
+      return null;
     } catch (error) {
       this.logger.error(`Error getting user by ID ${userId}:`, error);
       return null;
@@ -754,6 +772,7 @@ export class AuthService {
    * Obtenir les informations de session depuis la requête
    * Compatible avec le système JWT existant
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Express request
   async getSessionFromRequest(request: any): Promise<{
     user: AuthUser;
     token: string;
@@ -833,6 +852,7 @@ export class AuthService {
   /**
    * Extraire le token du header (méthode privée réutilisable)
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Express request
   private extractTokenFromHeader(request: any): string | null {
     const authHeader = request.headers?.authorization;
     if (!authHeader) return null;

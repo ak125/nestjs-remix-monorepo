@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { logger } from "~/utils/logger";
 
 // 🏭 Hook pour éviter les erreurs SSR avec les effets
@@ -10,14 +10,19 @@ export function useIsBrowser() {
   return typeof window !== "undefined";
 }
 
-// 📱 Hook pour détecter si on est sur mobile
+// 📱 Hook pour détecter si on est sur mobile (hydration-safe)
 export function useIsMobile() {
-  const isBrowser = useIsBrowser();
-  if (!isBrowser) return false;
+  const [isMobile, setIsMobile] = useState(false);
 
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    navigator.userAgent,
-  );
+  useEffect(() => {
+    setIsMobile(
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent,
+      ),
+    );
+  }, []);
+
+  return isMobile;
 }
 
 // 🔧 Hook pour les APIs du navigateur avec fallback SSR

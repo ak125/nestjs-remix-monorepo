@@ -409,6 +409,40 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
   }
 
   /**
+   * Trouver un admin par ID (pour la désérialisation session)
+   */
+  async findAdminById(adminId: string): Promise<{
+    id: string;
+    email: string;
+    level: number;
+    firstName: string;
+    lastName: string;
+    isActive: boolean;
+  } | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from(TABLES.config_admin)
+        .select('*')
+        .eq('cnfa_id', adminId)
+        .single();
+
+      if (error || !data) return null;
+
+      return {
+        id: String(data.cnfa_id),
+        email: data.cnfa_mail,
+        level: parseInt(String(data.cnfa_level || '7')),
+        firstName: data.cnfa_fname || '',
+        lastName: data.cnfa_name || '',
+        isActive: data.cnfa_activ === '1',
+      };
+    } catch (error) {
+      this.logger.error(`Error finding admin by ID ${adminId}:`, error);
+      return null;
+    }
+  }
+
+  /**
    * Ecrire un hash de mot de passe deja calcule (par userId)
    * Usage : upgrade MD5→bcrypt dans auth.service
    */

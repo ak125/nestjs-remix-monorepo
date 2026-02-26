@@ -58,7 +58,8 @@ import {
   OrderFilters,
 } from '../services/orders.service';
 import {
-  promisifyLogin,
+  promisifyLoginNoRegenerate,
+  promisifySessionRegenerate,
   promisifySessionSave,
 } from '../../../utils/promise-helpers';
 
@@ -309,13 +310,12 @@ export class OrdersController {
 
       this.logger.log(`Guest account created: ${newUser.id} for ${guestEmail}`);
 
-      // Connecter l'utilisateur dans la session courante
-      await promisifyLogin(req as unknown as ExpressRequest, {
+      // Passport 0.7 + connect-redis 5.x compat
+      await promisifySessionRegenerate(req.session);
+      await promisifyLoginNoRegenerate(req as unknown as ExpressRequest, {
         id: newUser.id,
         email: newUser.email,
       });
-
-      // Flush la session vers Redis
       await promisifySessionSave(req.session);
 
       this.logger.log(`Guest session established for user ${newUser.id}`);

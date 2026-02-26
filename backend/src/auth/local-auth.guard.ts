@@ -4,22 +4,12 @@ import { AuthGuard } from '@nestjs/passport';
 @Injectable()
 export class LocalAuthGuard extends AuthGuard('local') {
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<any>();
-
-    try {
-      const canBeActivated = (await super.canActivate(context)) as boolean;
-
-      // Ne faire logIn que si l'authentification a réussi
-      if (canBeActivated && request.user) {
-        await super.logIn(request);
-      }
-
-      return canBeActivated;
-    } catch (error: unknown) {
-      throw error;
-    }
+    // Guard valide seulement — le controller gère la session via
+    // promisifyLoginNoRegenerate (Passport 0.7 + connect-redis 5.x compat)
+    return (await super.canActivate(context)) as boolean;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Passport handleRequest signature
   handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
     if (err || !user) {
       const request = context.switchToHttp().getRequest();

@@ -15,7 +15,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { NextFunction, Request, Response } from 'express';
 import { LocalAuthGuard } from '../local-auth.guard';
 import { UsersFinalService } from '../../modules/users/users-final.service';
-import { AuthService } from '../auth.service';
+import { AuthService, LoginResult } from '../auth.service';
 import { UserDataConsolidatedService } from '../../modules/users/services/user-data-consolidated.service';
 import { CartDataService } from '../../database/services/cart-data.service';
 import { LoginResponseDto } from '../dto/login-response.dto';
@@ -26,9 +26,10 @@ import RegisterSchema, {
 } from '../dto/register.dto';
 import { extractGuestSessionId } from './auth-controller.utils';
 import {
-  promisifyLogin,
+  promisifyLoginNoRegenerate,
   promisifyLogout,
   promisifySessionRegenerate,
+  promisifySessionSave,
   promisifySessionDestroy,
 } from '../../utils/promise-helpers';
 
@@ -93,7 +94,10 @@ export class AuthLoginController {
         (request as Request).ip,
       );
 
-      await promisifyLogin(request, loginResult.user);
+      // Passport 0.7 + connect-redis 5.x compat
+      await promisifySessionRegenerate(request.session);
+      await promisifyLoginNoRegenerate(request, loginResult.user);
+      await promisifySessionSave(request.session);
       return {
         success: true,
         message: 'Compte créé avec succès',
@@ -195,7 +199,7 @@ export class AuthLoginController {
     const cookieHeader = (request as Request).headers?.cookie || '';
     const guestSessionId = extractGuestSessionId(cookieHeader);
 
-    let loginResult: { user: any; access_token: string };
+    let loginResult: LoginResult;
     try {
       loginResult = await this.authService.login(
         credentials.email,
@@ -211,7 +215,7 @@ export class AuthLoginController {
       );
     }
 
-    // Régénérer la session (sécurité : prévient les attaques session fixation)
+    // Passport 0.7 + connect-redis 5.x: regenerate explicite, login patché, save explicite
     try {
       await promisifySessionRegenerate(request.session);
     } catch (regenerateErr) {
@@ -229,8 +233,8 @@ export class AuthLoginController {
       );
     }
 
-    // Rattacher l'utilisateur à la session régénérée via Passport
-    await promisifyLogin(request, loginResult.user);
+    await promisifyLoginNoRegenerate(request, loginResult.user);
+    await promisifySessionSave(request.session);
 
     // Fusionner le panier guest vers l'utilisateur authentifié
     const userId = loginResult.user?.id;
@@ -316,19 +320,23 @@ export class AuthLoginController {
     const user = request.user;
     const userLevel = parseInt(String(user?.level)) || 0;
 
-    // Régénérer la session de manière sécurisée
+    // Passport 0.7 + connect-redis 5.x: regenerate explicite, login patché, save explicite
     try {
       await promisifySessionRegenerate(request.session);
     } catch (regenerateErr) {
-      this.logger.error({ err: regenerateErr }, 'Erreur régénération session');
+      this.logger.error(
+        'Session regenerate failed during login:',
+        regenerateErr,
+      );
       return response.redirect('/');
     }
 
     try {
-      await promisifyLogin(request, user);
+      await promisifyLoginNoRegenerate(request, user);
+      await promisifySessionSave(request.session);
     } catch (loginErr: unknown) {
       this.logger.error(
-        `Erreur réattachement utilisateur: ${loginErr instanceof Error ? loginErr.message : String(loginErr)}`,
+        `Login session error: ${loginErr instanceof Error ? loginErr.message : String(loginErr)}`,
       );
       return response.redirect('/');
     }
@@ -424,25 +432,20 @@ export class AuthLoginController {
     @Res() response: Response,
     @Next() next: NextFunction,
   ) {
-    this.logger.log('--- POST /auth/logout DEBUT ---');
-    this.logger.log(`User avant logout: ${JSON.stringify(request.user)}`);
+    const email = (request.user as Record<string, string>)?.email || 'none';
 
     try {
       await promisifyLogout(request);
     } catch (err: unknown) {
       this.logger.error(
-        `Erreur logout: ${err instanceof Error ? err.message : String(err)}`,
+        `Logout error for ${email}: ${err instanceof Error ? err.message : String(err)}`,
       );
       return next(err);
     }
 
-    this.logger.log(
-      `LogOut réussi, user après: ${JSON.stringify(request.user)}`,
-    );
     await promisifySessionDestroy(request.session);
     response.clearCookie('connect.sid');
-    this.logger.log('Session détruite et cookie effacé');
-    this.logger.log('--- POST /auth/logout REDIRECTION vers / ---');
+    this.logger.log(`Logout: ${email}`);
     response.redirect('/');
   }
 }

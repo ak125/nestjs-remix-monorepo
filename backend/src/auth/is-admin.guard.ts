@@ -16,17 +16,10 @@ export class IsAdminGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    this.logger.log(
-      `IsAdminGuard - User: ${user?.email}, isAdmin: ${user?.isAdmin}, level: ${user?.level}`,
-    );
-
-    // Vérifier si l'utilisateur est admin (niveau 7+ pour admin, 9 pour superadmin)
     const isAdmin = user?.isAdmin === true || parseInt(user?.level) >= 7;
 
     if (!isAdmin) {
-      this.logger.warn(`Access denied for user: ${user?.email || 'unknown'}`);
-    } else {
-      this.logger.log(`Admin access granted for: ${user?.email}`);
+      this.logger.warn(`Admin access denied: ${user?.email || 'anonymous'}`);
     }
 
     return isAdmin;

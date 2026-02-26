@@ -9,7 +9,7 @@
  */
 
 import { useLocation, useParams } from "@remix-run/react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export interface VehicleContext {
   brand?: string;
@@ -37,6 +37,24 @@ export function useVehicleContext(): VehicleContext {
   const location = useLocation();
   const params = useParams();
 
+  // Session storage véhicule — lu après hydratation uniquement
+  const [storedVehicle, setStoredVehicle] = useState<{
+    brand?: string;
+    model?: string;
+    type?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("selectedVehicle");
+      if (stored) {
+        setStoredVehicle(JSON.parse(stored));
+      }
+    } catch {
+      // Ignore parsing errors
+    }
+  }, []);
+
   return useMemo(() => {
     let brand: string | undefined;
     let model: string | undefined;
@@ -62,19 +80,11 @@ export function useVehicleContext(): VehicleContext {
       }
     }
 
-    // 3. Fallback: session storage (côté client uniquement)
-    if (!brand && typeof window !== "undefined") {
-      try {
-        const stored = sessionStorage.getItem("selectedVehicle");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          brand = parsed.brand;
-          model = parsed.model;
-          type = parsed.type;
-        }
-      } catch {
-        // Ignore parsing errors
-      }
+    // 3. Fallback: session storage (côté client, après hydratation)
+    if (!brand && storedVehicle) {
+      brand = storedVehicle.brand;
+      model = storedVehicle.model;
+      type = storedVehicle.type;
     }
 
     // Formater le contexte véhicule
@@ -90,7 +100,7 @@ export function useVehicleContext(): VehicleContext {
       type,
       formatted,
     };
-  }, [location.pathname, params]);
+  }, [location.pathname, params, storedVehicle]);
 }
 
 /**

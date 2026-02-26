@@ -10,15 +10,27 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Promisify passport req.login() */
-export function promisifyLogin(
+/** Passport 0.7 + connect-redis 5.x compatibility wrapper.
+ *  Patches session.regenerate/save to no-ops during req.login()
+ *  to prevent Passport's internal regenerate from breaking the session store.
+ *  Caller must handle regenerate and save explicitly. */
+export function promisifyLoginNoRegenerate(
   req: Express.Request,
   user: object,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    req.login(user as Express.User, (err: Error | null) =>
-      err ? reject(err) : resolve(),
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- express-session internals
+    const session = req.session as any;
+    const origRegenerate = session.regenerate;
+    const origSave = session.save;
+    session.regenerate = (cb: (err?: Error) => void) => cb();
+    session.save = (cb: (err?: Error) => void) => cb();
+    req.login(user as Express.User, (err: Error | null) => {
+      session.regenerate = origRegenerate;
+      session.save = origSave;
+      if (err) reject(err);
+      else resolve();
+    });
   });
 }
 
