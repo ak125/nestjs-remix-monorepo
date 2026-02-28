@@ -25,7 +25,9 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import {
+  AlertCircle,
   AlertTriangle,
+  Check,
   CheckCircle2,
   ChevronDown,
   Copy,
@@ -33,7 +35,6 @@ import {
   Shield,
   Truck,
   Users,
-  XCircle,
 } from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
@@ -601,6 +602,7 @@ export default function PiecesDetailPage() {
     null,
   );
   const [cnitOpen, setCnitOpen] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     setSelectedVehicle(getVehicleClient());
@@ -1011,6 +1013,7 @@ export default function PiecesDetailPage() {
                 id: v.id,
                 content: v.content,
               }))}
+              gammeName={data.content?.pg_name}
             />
           </Suspense>
         </Reveal>
@@ -1123,11 +1126,17 @@ export default function PiecesDetailPage() {
                                   navigator.clipboard.writeText(
                                     item.cnits.join(", "),
                                   );
+                                  setCopiedId(`cnit-${item.typeId}`);
+                                  setTimeout(() => setCopiedId(null), 1500);
                                 }}
                                 className="p-0.5 text-gray-400 hover:text-gray-600"
                                 title="Copier"
                               >
-                                <Copy className="h-3 w-3" />
+                                {copiedId === `cnit-${item.typeId}` ? (
+                                  <Check className="h-3 w-3 text-green-500" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
                               </button>
                             </span>
                           ) : (
@@ -1152,11 +1161,17 @@ export default function PiecesDetailPage() {
                                   navigator.clipboard.writeText(
                                     item.mines.join(", "),
                                   );
+                                  setCopiedId(`mine-${item.typeId}`);
+                                  setTimeout(() => setCopiedId(null), 1500);
                                 }}
                                 className="p-0.5 text-gray-400 hover:text-gray-600"
                                 title="Copier"
                               >
-                                <Copy className="h-3 w-3" />
+                                {copiedId === `mine-${item.typeId}` ? (
+                                  <Check className="h-3 w-3 text-green-500" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
                               </button>
                             </span>
                           ) : (
@@ -1192,7 +1207,7 @@ export default function PiecesDetailPage() {
                   key={i}
                   className="flex items-start gap-2 text-sm text-amber-800"
                 >
-                  <XCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
+                  <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
                   <span>{err}</span>
                 </li>
               ))}

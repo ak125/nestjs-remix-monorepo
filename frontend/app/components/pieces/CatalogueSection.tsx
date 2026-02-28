@@ -24,6 +24,8 @@ interface CatalogueSectionProps {
   };
   /** 🔗 Switches SEO pour ancres variées (verbes d'action) */
   verbSwitches?: SeoSwitch[];
+  /** Nom gamme parent pour enrichir les alt text images */
+  gammeName?: string;
 }
 
 // ── Badge urgence par keyword gamme ──
@@ -81,6 +83,7 @@ function getMicroDescription(name: string): string | null {
 const CatalogueSection = memo(function CatalogueSection({
   catalogueMameFamille,
   verbSwitches = [],
+  gammeName,
 }: CatalogueSectionProps) {
   // Use array instead of Set to avoid React hydration issues
   const [expandedDescriptions, setExpandedDescriptions] = useState<number[]>(
@@ -175,7 +178,7 @@ const CatalogueSection = memo(function CatalogueSection({
                     <div className="relative flex-shrink-0">
                       <img
                         src={item.image}
-                        alt={item.name}
+                        alt={`${item.name} — ${gammeName || "pièces auto"}`}
                         width={80}
                         height={80}
                         className="w-16 h-16 md:w-20 md:h-20 object-contain rounded group-hover:scale-105 transition-transform duration-200"
