@@ -26,6 +26,58 @@ interface CatalogueSectionProps {
   verbSwitches?: SeoSwitch[];
 }
 
+// ── Badge urgence par keyword gamme ──
+const URGENCY_MAP: Record<string, { label: string; color: string }> = {
+  frein: { label: "Sécurité", color: "bg-red-100 text-red-700" },
+  plaquette: { label: "Sécurité", color: "bg-red-100 text-red-700" },
+  amortisseur: { label: "Sécurité", color: "bg-red-100 text-red-700" },
+  rotule: { label: "Sécurité", color: "bg-red-100 text-red-700" },
+  étrier: { label: "Sécurité", color: "bg-red-100 text-red-700" },
+  bras: { label: "Sécurité", color: "bg-red-100 text-red-700" },
+  filtre: { label: "Entretien", color: "bg-green-100 text-green-700" },
+  huile: { label: "Entretien", color: "bg-green-100 text-green-700" },
+  bougie: { label: "Entretien", color: "bg-green-100 text-green-700" },
+  courroie: { label: "Entretien", color: "bg-green-100 text-green-700" },
+  turbo: { label: "Panne fréquente", color: "bg-amber-100 text-amber-700" },
+  démarreur: { label: "Panne fréquente", color: "bg-amber-100 text-amber-700" },
+  alternateur: {
+    label: "Panne fréquente",
+    color: "bg-amber-100 text-amber-700",
+  },
+  pompe: { label: "Panne fréquente", color: "bg-amber-100 text-amber-700" },
+};
+
+function getUrgencyBadge(
+  name: string,
+): { label: string; color: string } | null {
+  const lower = name.toLowerCase();
+  for (const [keyword, badge] of Object.entries(URGENCY_MAP)) {
+    if (lower.includes(keyword)) return badge;
+  }
+  return null;
+}
+
+// ── Micro-description fallback si pas de description DB ──
+const MICRO_DESC_MAP: Record<string, string> = {
+  frein: "disques, plaquettes, étriers",
+  filtre: "huile, air, carburant, habitacle",
+  distribution: "courroie, kit complet, galet tendeur",
+  embrayage: "kit complet, butée, volant moteur",
+  amortisseur: "avant, arrière, kit complet",
+  suspension: "bras, rotule, silent-bloc",
+  direction: "rotule, barre, crémaillère",
+  turbo: "turbo complet, joints, conduits",
+  refroidissement: "radiateur, pompe à eau, thermostat",
+};
+
+function getMicroDescription(name: string): string | null {
+  const lower = name.toLowerCase();
+  for (const [keyword, desc] of Object.entries(MICRO_DESC_MAP)) {
+    if (lower.includes(keyword)) return desc;
+  }
+  return null;
+}
+
 const CatalogueSection = memo(function CatalogueSection({
   catalogueMameFamille,
   verbSwitches = [],
@@ -136,11 +188,33 @@ const CatalogueSection = memo(function CatalogueSection({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm md:text-base text-neutral-900 group-hover:text-semantic-action transition-colors mb-1 line-clamp-2 leading-tight">
-                        {item.name}
-                      </h3>
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <h3 className="font-semibold text-sm md:text-base text-neutral-900 group-hover:text-semantic-action transition-colors line-clamp-2 leading-tight">
+                          {item.name}
+                        </h3>
+                        {(() => {
+                          const badge = getUrgencyBadge(item.name);
+                          return badge ? (
+                            <span
+                              className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full whitespace-nowrap flex-shrink-0 ${badge.color}`}
+                            >
+                              {badge.label}
+                            </span>
+                          ) : null;
+                        })()}
+                      </div>
+                      {/* Micro-description fallback si pas de description DB */}
+                      {!item.description &&
+                        (() => {
+                          const micro = getMicroDescription(item.name);
+                          return micro ? (
+                            <p className="text-[11px] text-neutral-500 mb-1">
+                              {micro}
+                            </p>
+                          ) : null;
+                        })()}
 
-                      {/* 🔗 Ancre SEO variée au lieu de "Voir le produit" statique */}
+                      {/* Ancre SEO variée */}
                       <div className="flex items-center text-xs text-semantic-action font-medium group-hover:text-semantic-action/80">
                         {anchorText}
                         <svg

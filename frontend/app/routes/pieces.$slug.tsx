@@ -16,6 +16,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import {
+  Link,
   useLoaderData,
   useNavigation,
   useLocation,
@@ -23,7 +24,14 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { CheckCircle2, Shield, Truck, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Shield,
+  Truck,
+  Users,
+  XCircle,
+} from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { useEffect, useState, lazy, Suspense } from "react";
@@ -151,6 +159,26 @@ const R1_SELECTOR_FAQ = [
     answer:
       "En sélectionnant votre véhicule exact dans notre sélecteur, seules les références 100% compatibles s'affichent. Nous vérifions la compatibilité via les bases techniques constructeur.",
   },
+  {
+    question: "Où trouver le CNIT ou le Type Mine sur ma carte grise ?",
+    answer:
+      "Le CNIT se trouve dans le champ D.2 de votre carte grise (ex : M10RENCVP04E001). Le Type Mine est dans le champ D.2.1. Ces codes permettent d'identifier précisément votre motorisation et de vérifier la compatibilité des pièces.",
+  },
+  {
+    question:
+      "Mon véhicule a plusieurs motorisations proches, comment choisir ?",
+    answer:
+      "Deux motorisations proches (par ex. 1.6 HDi 90 ch vs 110 ch) utilisent souvent des montages différents. Repérez le code moteur dans le champ D.2 de votre carte grise ou sur la plaque constructeur du compartiment moteur. En cas de doute, notre équipe peut vérifier avec votre numéro VIN.",
+  },
+];
+
+// Navigation rapide mobile — familles populaires (ancres vers catalogue homepage)
+const QUICK_NAV_LINKS = [
+  { label: "Freinage", href: "/#catalogue" },
+  { label: "Filtration", href: "/#catalogue" },
+  { label: "Distribution", href: "/#catalogue" },
+  { label: "Amortisseurs", href: "/#catalogue" },
+  { label: "Toutes les marques", href: "/#toutes-les-marques" },
 ];
 
 // Contrat de donnees : voir frontend/app/types/gamme-page-contract.types.ts
@@ -964,7 +992,23 @@ export default function PiecesDetailPage() {
         </Suspense>
       </PageSection>
 
-      {/* 🚗 Motorisations compatibles — Position 3 : raccourcis clic direct */}
+      {/* Accès rapide gammes populaires — mobile uniquement */}
+      <div className="sm:hidden overflow-x-auto px-4 py-3">
+        <div className="flex gap-2 min-w-max">
+          {QUICK_NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              to={link.href}
+              prefetch="intent"
+              className="px-3 py-2 rounded-full bg-white border border-gray-200 text-sm font-medium text-gray-700 whitespace-nowrap hover:bg-gray-50"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Motorisations compatibles — Position 3 : raccourcis clic direct */}
       <PageSection
         data-section="S_MOTORISATIONS"
         data-page-role="R1"
@@ -1070,7 +1114,35 @@ export default function PiecesDetailPage() {
         </Reveal>
       </PageSection>
 
-      {/* 📖 FAQ R1 — questions universelles sur le sélecteur véhicule */}
+      {/* Mini-bloc erreurs fréquentes — conditionnel sur données dispo */}
+      {data.purchaseGuideData?.antiMistakes &&
+      data.purchaseGuideData.antiMistakes.length > 0 ? (
+        <PageSection
+          data-section="S_ERREURS"
+          data-page-role="R1"
+          className="py-4 sm:py-6"
+        >
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-900">
+              <AlertTriangle className="h-4 w-4" />
+              Erreurs fréquentes à éviter
+            </h3>
+            <ul className="space-y-2">
+              {data.purchaseGuideData.antiMistakes.slice(0, 3).map((err, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-2 text-sm text-amber-800"
+                >
+                  <XCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
+                  <span>{err}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </PageSection>
+      ) : null}
+
+      {/* FAQ R1 — questions universelles sur le sélecteur véhicule */}
       <PageSection
         data-section="S_FAQ"
         data-page-role="R1"

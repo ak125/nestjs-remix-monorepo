@@ -87,7 +87,7 @@ export function buildR1MicroBlock(input: R1MicroBlockInput): R1MicroBlock {
     );
   } else {
     bullets.push(
-      "Chaque version d'un même modèle peut nécessiter un montage différent — vérifiez bien votre motorisation exacte.",
+      `Attention : deux motorisations proches (ex : 1.6 HDi 90 ch vs 110 ch) utilisent souvent des ${lower} différent(e)s. Vérifiez votre motorisation exacte.`,
     );
   }
 
@@ -107,8 +107,8 @@ export function buildR1MicroBlock(input: R1MicroBlockInput): R1MicroBlock {
     intro,
     bullets,
     carteGriseTip:
-      "Le champ D.2 de votre carte grise indique le type-variante-version (TVV). Le numéro VIN (case E) permet une identification précise auprès de nos experts.",
-    safetyAlert: `Ne montez jamais des ${lower} non compatibles. Un mauvais choix peut compromettre votre sécurité et celle des autres usagers de la route.`,
+      "Repérez le code D.2 sur votre carte grise : il identifie votre motorisation exacte. En cas de doute, notre équipe vérifie la compatibilité avant expédition.",
+    safetyAlert: `Un doute sur vos ${lower} ? Contactez-nous avec votre VIN ou CNIT — nous vérifions la compatibilité gratuitement avant expédition.`,
     cards: [
       {
         id: "guide",
