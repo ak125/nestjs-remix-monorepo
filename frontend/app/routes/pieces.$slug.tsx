@@ -112,6 +112,13 @@ const EquipementiersSection = lazy(() =>
 
 // V2: DecisionGridSection + ReferenceEncartSection retirés — contenu redirigé vers cartes R1ReusableContent
 
+// ✅ Bloc compatibilité véhicule (réassurance avant catalogue)
+const CompatibilityConfirmationBlock = lazy(() =>
+  import("../components/pieces/CompatibilityConfirmationBlock").then((m) => ({
+    default: m.CompatibilityConfirmationBlock,
+  })),
+);
+
 // 🎯 Encart anti-doute / réassurance conversion
 const UXMessageBox = lazy(() =>
   import("../components/seo/UXMessageBox").then((m) => ({
@@ -622,6 +629,17 @@ export default function PiecesDetailPage() {
 
   // V2: itemListData + SEOHelmet retirés — meta() gère tout le <head>
 
+  // Variables partagées par S_BUY_ARGS et S_COMPAT (0 appel API supplémentaire)
+  const motorItems = data.motorisations?.items || [];
+  const allYears = motorItems
+    .flatMap((m) => (m.periode || "").match(/\d{4}/g) || [])
+    .map(Number)
+    .filter((y) => y > 1990 && y < 2100);
+  const periodeRange =
+    allYears.length >= 2
+      ? `${Math.min(...allYears)} – ${Math.max(...allYears)}`
+      : "";
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
       {/* ⏳ Indicateur de chargement global */}
@@ -874,39 +892,30 @@ export default function PiecesDetailPage() {
             ? getSectionImageConfig("transaction", "buyingGuide")
             : undefined;
 
-          // Micro-preuves extraites des données loader (0 appel API supplémentaire)
-          const items = data.motorisations?.items || [];
+          // Micro-preuves : réutilise motorItems/periodeRange/allYears extraits avant le return
           const toTitleCase = (s: string) =>
             s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
           const uniqueMarques = [
-            ...new Set(items.map((m) => m.marque_name).filter(Boolean)),
+            ...new Set(motorItems.map((m) => m.marque_name).filter(Boolean)),
           ].map(toTitleCase);
           const uniqueCodes = [
             ...new Set(
-              items
+              motorItems
                 .map((m) => (m as { engine_code?: string }).engine_code)
                 .filter(Boolean),
             ),
           ] as string[];
-          // Parse les années depuis le champ `periode` ("2009 – 2015", "Depuis 2009")
-          const years = items
-            .flatMap((m) => (m.periode || "").match(/\d{4}/g) || [])
-            .map(Number)
-            .filter((y) => y > 1990 && y < 2100);
           const equipNames = (data.equipementiers?.items || [])
             .map((e) => (e as { pm_name?: string }).pm_name)
             .filter(Boolean) as string[];
 
           const proofs =
-            items.length > 0
+            motorItems.length > 0
               ? {
                   topMarques: uniqueMarques.slice(0, 3),
                   topEquipementiers: equipNames.slice(0, 4),
-                  periodeRange:
-                    years.length >= 2
-                      ? `${Math.min(...years)} – ${Math.max(...years)}`
-                      : "",
-                  vehicleCount: items.length,
+                  periodeRange,
+                  vehicleCount: motorItems.length,
                   topMotorCodes: uniqueCodes.slice(0, 3),
                 }
               : undefined;
@@ -935,6 +944,24 @@ export default function PiecesDetailPage() {
             r1Block
           );
         })()}
+      </PageSection>
+
+      {/* ✅ Bloc compatibilité — réassurance avant catalogue */}
+      <PageSection
+        data-section="S_COMPAT"
+        data-page-role="R1"
+        className="py-4 sm:py-6"
+        id="compatibility-check"
+      >
+        <Suspense fallback={null}>
+          <CompatibilityConfirmationBlock
+            selectedVehicle={selectedVehicle}
+            motorisationItems={motorItems}
+            gammeName={data.content?.pg_name?.toLowerCase() || "pièces auto"}
+            periodeRange={periodeRange}
+            gammeId={0}
+          />
+        </Suspense>
       </PageSection>
 
       {/* 🚗 Motorisations compatibles — Position 3 : raccourcis clic direct */}
