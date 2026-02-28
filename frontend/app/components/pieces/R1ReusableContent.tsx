@@ -9,13 +9,18 @@ import {
 } from "lucide-react";
 import { memo } from "react";
 import { Card, CardContent } from "~/components/ui/card";
-import { buildR1MicroBlock, type R1Card } from "~/utils/r1-reusable-content";
+import {
+  buildR1MicroBlock,
+  type R1Card,
+  type R1Proofs,
+} from "~/utils/r1-reusable-content";
 
 interface R1ReusableContentProps {
   gammeName: string;
   familleName: string;
   alias: string;
   reference?: { slug: string; title: string; definition: string } | null;
+  proofs?: R1Proofs;
 }
 
 const CARD_STYLES: Record<
@@ -44,8 +49,9 @@ export const R1ReusableContent = memo(function R1ReusableContent({
   familleName,
   alias,
   reference,
+  proofs,
 }: R1ReusableContentProps) {
-  const block = buildR1MicroBlock({ gammeName, familleName, alias });
+  const block = buildR1MicroBlock({ gammeName, familleName, alias, proofs });
 
   // Si reference R4 dispo, override le href de la carte reference
   const cards = block.cards.map((card) =>

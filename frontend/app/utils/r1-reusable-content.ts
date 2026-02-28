@@ -2,12 +2,29 @@
  * Générateur de micro-bloc R1 universel.
  * 120-180 mots visibles. Seul gammeName/familleName varient sur 220 gammes.
  * Zéro keyword stuffing — texte utile centré sur la sélection véhicule.
+ *
+ * v2: micro-preuves injectées depuis les données loader (marques, périodes,
+ *     équipementiers, codes moteur) pour remplacer ~30% du template générique.
  */
+
+export interface R1Proofs {
+  /** Top 3 marques auto couvertes (ex: ["Peugeot", "Renault", "Volkswagen"]) */
+  topMarques: string[];
+  /** Noms équipementiers (ex: ["Bosch", "Valeo", "TRW"]) */
+  topEquipementiers: string[];
+  /** Plage d'années couverte (ex: "2003 – 2024") */
+  periodeRange: string;
+  /** Nombre total de véhicules compatibles */
+  vehicleCount: number;
+  /** Codes moteur les plus fréquents (ex: ["DV6ATED4", "K9K"]) */
+  topMotorCodes: string[];
+}
 
 export interface R1MicroBlockInput {
   gammeName: string; // ex: "Disque de frein"
   familleName: string; // ex: "Freinage"
   alias: string; // ex: "disque-frein"
+  proofs?: R1Proofs;
 }
 
 export interface R1Card {
@@ -26,18 +43,69 @@ export interface R1MicroBlock {
   cards: R1Card[];
 }
 
+/** Formate une liste en "A, B et C" */
+function formatList(items: string[], max = 3): string {
+  const slice = items.slice(0, max);
+  if (slice.length <= 1) return slice[0] || "";
+  return `${slice.slice(0, -1).join(", ")} et ${slice[slice.length - 1]}`;
+}
+
 export function buildR1MicroBlock(input: R1MicroBlockInput): R1MicroBlock {
-  const { gammeName, alias } = input;
+  const { gammeName, alias, proofs } = input;
   const lower = gammeName.toLowerCase();
+
+  // ── Intro ──
+  // Template si pas de preuves, data-driven sinon
+  let intro: string;
+  if (proofs && proofs.vehicleCount > 0) {
+    const marquesText =
+      proofs.topMarques.length > 0
+        ? ` (${formatList(proofs.topMarques)}…)`
+        : "";
+    const periodeText = proofs.periodeRange
+      ? `, de ${proofs.periodeRange}`
+      : "";
+    intro =
+      `${proofs.vehicleCount} véhicules couverts${marquesText}${periodeText}. ` +
+      `Sélectionnez votre motorisation exacte pour n'afficher que les ${lower} compatibles.`;
+  } else {
+    intro = `Pour rouler en toute sécurité, sélectionnez des ${lower} compatibles avec votre véhicule. Voici les points clés pour ne pas vous tromper.`;
+  }
+
+  // ── Bullets ──
+  const bullets: string[] = [];
+
+  // Bullet 1 : sélecteur (toujours présent)
+  bullets.push(
+    `Utilisez le sélecteur ci-dessus : entrez votre marque, modèle et motorisation pour n'afficher que les ${lower} compatibles.`,
+  );
+
+  // Bullet 2 : montage différent + code moteur si dispo
+  if (proofs?.topMotorCodes && proofs.topMotorCodes.length > 0) {
+    bullets.push(
+      `Chaque version peut nécessiter un montage différent — les codes moteur les plus courants sont ${formatList(proofs.topMotorCodes, 3)}.`,
+    );
+  } else {
+    bullets.push(
+      "Chaque version d'un même modèle peut nécessiter un montage différent — vérifiez bien votre motorisation exacte.",
+    );
+  }
+
+  // Bullet 3 : équipementiers si dispo, sinon carte grise fallback
+  if (proofs?.topEquipementiers && proofs.topEquipementiers.length >= 2) {
+    bullets.push(
+      `Nos ${lower} proviennent d'équipementiers de référence : ${formatList(proofs.topEquipementiers, 4)}.`,
+    );
+  } else {
+    bullets.push(
+      "En cas de doute, reportez-vous à votre carte grise (case D.2) pour identifier le code moteur.",
+    );
+  }
 
   return {
     title: `Bien choisir vos ${lower}`,
-    intro: `Pour rouler en toute sécurité, sélectionnez des ${lower} compatibles avec votre véhicule. Voici les points clés pour ne pas vous tromper.`,
-    bullets: [
-      `Utilisez le sélecteur ci-dessus : entrez votre marque, modèle et motorisation pour n'afficher que les ${lower} compatibles.`,
-      "Chaque version d'un même modèle peut nécessiter un montage différent — vérifiez bien votre motorisation exacte.",
-      "En cas de doute, reportez-vous à votre carte grise (case D.2) pour identifier le code moteur.",
-    ],
+    intro,
+    bullets,
     carteGriseTip:
       "Le champ D.2 de votre carte grise indique le type-variante-version (TVV). Le numéro VIN (case E) permet une identification précise auprès de nos experts.",
     safetyAlert: `Ne montez jamais des ${lower} non compatibles. Un mauvais choix peut compromettre votre sécurité et celle des autres usagers de la route.`,

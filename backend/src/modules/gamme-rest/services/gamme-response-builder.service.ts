@@ -419,6 +419,7 @@ export class GammeResponseBuilderService {
           modele_name: item.modele_name,
           marque_id: item.marque_id,
           marque_name: item.marque_name,
+          engine_code: item.type_engine_code || null,
           image: carImage,
           link: link,
           title: buildTitle(),

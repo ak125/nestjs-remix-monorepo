@@ -873,12 +873,51 @@ export default function PiecesDetailPage() {
           const imageConfig = data.content?.pg_pic
             ? getSectionImageConfig("transaction", "buyingGuide")
             : undefined;
+
+          // Micro-preuves extraites des données loader (0 appel API supplémentaire)
+          const items = data.motorisations?.items || [];
+          const toTitleCase = (s: string) =>
+            s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+          const uniqueMarques = [
+            ...new Set(items.map((m) => m.marque_name).filter(Boolean)),
+          ].map(toTitleCase);
+          const uniqueCodes = [
+            ...new Set(
+              items
+                .map((m) => (m as { engine_code?: string }).engine_code)
+                .filter(Boolean),
+            ),
+          ] as string[];
+          // Parse les années depuis le champ `periode` ("2009 – 2015", "Depuis 2009")
+          const years = items
+            .flatMap((m) => (m.periode || "").match(/\d{4}/g) || [])
+            .map(Number)
+            .filter((y) => y > 1990 && y < 2100);
+          const equipNames = (data.equipementiers?.items || [])
+            .map((e) => (e as { pm_name?: string }).pm_name)
+            .filter(Boolean) as string[];
+
+          const proofs =
+            items.length > 0
+              ? {
+                  topMarques: uniqueMarques.slice(0, 3),
+                  topEquipementiers: equipNames.slice(0, 4),
+                  periodeRange:
+                    years.length >= 2
+                      ? `${Math.min(...years)} – ${Math.max(...years)}`
+                      : "",
+                  vehicleCount: items.length,
+                  topMotorCodes: uniqueCodes.slice(0, 3),
+                }
+              : undefined;
+
           const r1Block = (
             <R1ReusableContent
               gammeName={data.content?.pg_name || "pièces auto"}
               familleName={data.famille?.mf_name || ""}
               alias={data.content?.pg_alias || ""}
               reference={data.reference}
+              proofs={proofs}
             />
           );
 
