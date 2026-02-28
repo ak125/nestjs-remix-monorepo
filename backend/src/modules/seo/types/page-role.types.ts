@@ -346,3 +346,38 @@ export function getR3SubRoleFromUrl(url: string): R3SubRole | null {
   if (url.includes('/blog-pieces-auto/guide-achat/')) return 'guide-achat';
   return null;
 }
+
+// =====================================================
+// RoleId — canonical source of truth (Phase 0)
+// =====================================================
+
+export { RoleId } from '../../../config/role-ids';
+import { RoleId } from '../../../config/role-ids';
+
+/**
+ * Map PageRole enum to canonical RoleId.
+ * R3 needs URL context (r3SubRole) to distinguish guide vs conseils.
+ * Default R3 (no sub-role) → R3_GUIDE.
+ */
+export function pageRoleToRoleId(
+  role: PageRole,
+  r3SubRole?: R3SubRole,
+): RoleId | null {
+  switch (role) {
+    case PageRole.R1_ROUTER:
+      return RoleId.R1_ROUTER;
+    case PageRole.R2_PRODUCT:
+      return RoleId.R2_PRODUCT;
+    case PageRole.R3_BLOG:
+      if (r3SubRole === 'conseils') return RoleId.R3_CONSEILS;
+      return RoleId.R3_GUIDE;
+    case PageRole.R4_REFERENCE:
+      return RoleId.R4_REFERENCE;
+    case PageRole.R5_DIAGNOSTIC:
+      return RoleId.R5_DIAGNOSTIC;
+    case PageRole.R6_SUPPORT:
+      return RoleId.R6_SUPPORT;
+    default:
+      return null;
+  }
+}

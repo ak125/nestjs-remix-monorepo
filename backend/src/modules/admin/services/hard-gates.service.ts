@@ -21,6 +21,14 @@ function normalizeAccents(text: string): string {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 }
 
+/** Normalize numeric claims for fuzzy matching: strip spaces, normalize decimals. */
+function normalizeNumericClaim(claim: string): string {
+  return claim
+    .replace(/\s/g, '') // "120 000 km" → "120000km"
+    .replace(',', '.') // "15,5 mm" → "15.5mm"
+    .toLowerCase();
+}
+
 const STOP_WORDS_FR = new Set([
   'le',
   'la',
@@ -108,10 +116,19 @@ const STOP_WORDS_FR = new Set([
   'peu',
 ]);
 
+/** Extract significant words (>2 chars, no stop words) for phrase-level matching. */
+function extractSignificantWords(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^a-zà-ÿ0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !STOP_WORDS_FR.has(w));
+}
+
 // ── Regex for numeric claims ──
 
 const NUMERIC_CLAIM_REGEX =
-  /\d+(?:[.,]\d+)?\s*(?:mm|cm|km|m|Nm|bar|°C|°F|ans?|%|€|EUR|litres?|kg|g|watts?|W|dB|cv|ch)\b/gi;
+  /\d+(?:\s\d{3})*(?:[.,]\d+)?\s*(?:mm|cm|km|m|Nm|bar|°C|°F|ans?|%|€|EUR|litres?|kg|g|watts?|W|dB|cv|ch)\b/gi;
 
 // ── Marketing number patterns (excluded from attribution gate) ──
 
@@ -314,35 +331,55 @@ export class HardGatesService extends SupabaseBaseService {
       );
     }
 
-    // Build set of sourced excerpts
+    // Phase 3: penalty when evidence pack is empty but claims exist
+    if (!evidencePack || evidencePack.length === 0) {
+      return this.makeResult(
+        'attribution',
+        'WARN',
+        1.0,
+        [
+          `${claims.length} numeric claims found but no evidence pack available`,
+        ],
+        THRESHOLDS.attribution,
+      );
+    }
+
+    // Build set of sourced excerpts (Phase 3: normalized matching)
     const sourcedExcerpts = new Set<string>();
-    if (evidencePack) {
-      for (const entry of evidencePack) {
-        if (entry.rawExcerpt) {
-          // Extract numbers from the evidence
-          const nums = Array.from(
-            entry.rawExcerpt.matchAll(NUMERIC_CLAIM_REGEX),
-          );
-          for (const n of nums) sourcedExcerpts.add(n[0].trim().toLowerCase());
-        }
+    for (const entry of evidencePack) {
+      if (entry.rawExcerpt) {
+        // Extract numbers from the evidence
+        const nums = Array.from(entry.rawExcerpt.matchAll(NUMERIC_CLAIM_REGEX));
+        for (const n of nums) sourcedExcerpts.add(normalizeNumericClaim(n[0]));
       }
     }
 
     const unsourced: Array<{ location: string; issue: string }> = [];
     for (const claim of claims) {
-      const claimText = claim[0].trim().toLowerCase();
-      if (!sourcedExcerpts.has(claimText)) {
-        // Find the sentence containing this claim for location
+      const normalizedClaim = normalizeNumericClaim(claim[0]);
+      if (!sourcedExcerpts.has(normalizedClaim)) {
+        // Phase 3: phrase-level fallback — check word overlap with evidence
         const idx = claim.index ?? 0;
         const sentStart = Math.max(0, text.lastIndexOf('.', idx) + 1);
         const sentEnd = text.indexOf('.', idx + claim[0].length);
         const sentence = text
           .substring(sentStart, sentEnd > 0 ? sentEnd : undefined)
           .trim();
-        unsourced.push({
-          location: `char:${idx}`,
-          issue: `Unsourced claim: "${claimText}" in "${sentence.substring(0, 80)}..."`,
+
+        const sentWords = extractSignificantWords(sentence);
+        const isPhraseSourced = evidencePack.some((e) => {
+          if (!e.rawExcerpt) return false;
+          const evidWords = extractSignificantWords(e.rawExcerpt);
+          const overlap = sentWords.filter((w) => evidWords.includes(w));
+          return overlap.length >= 3;
         });
+
+        if (!isPhraseSourced) {
+          unsourced.push({
+            location: `char:${idx}`,
+            issue: `Unsourced claim: "${normalizedClaim}" in "${sentence.substring(0, 80)}..."`,
+          });
+        }
       }
     }
 

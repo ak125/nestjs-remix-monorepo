@@ -1,3 +1,5 @@
+import type { RoleId } from '../../config/role-ids';
+
 export type PageType =
   | 'R1_pieces'
   | 'R3_conseils'
@@ -11,6 +13,8 @@ export interface ContentRefreshJobData {
   pgId: number;
   pgAlias: string;
   pageType: Exclude<PageType, 'R5_diagnostic'>;
+  /** Canonical role identifier (Phase 0 normalization) */
+  roleId?: RoleId;
   /** Absolute paths of supplementary RAG files that triggered this refresh */
   supplementaryFiles?: string[];
   /** Force re-enrichment even when all sections are already substantial */
@@ -24,6 +28,8 @@ export interface ContentRefreshJobDataR5 {
   refreshLogId: number;
   diagnosticSlug: string;
   pageType: 'R5_diagnostic';
+  /** Canonical role identifier (Phase 0 normalization) */
+  roleId?: RoleId;
   /** Correlation ID for end-to-end tracing across logs and DB */
   correlationId?: string;
 }
