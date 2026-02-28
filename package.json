@@ -34,6 +34,9 @@
   "author": "",
   "license": "ISC",
   "packageManager": "npm@10.8.2",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "description": "",
   "workspaces": [
     "backend",

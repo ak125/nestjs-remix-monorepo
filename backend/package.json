@@ -5,6 +5,9 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "main": "dist/main.js",
   "scripts": {
     "dev": "run-p dev:compile dev:watch",
