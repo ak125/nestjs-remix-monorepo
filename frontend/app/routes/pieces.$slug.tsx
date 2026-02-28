@@ -392,6 +392,11 @@ export const meta: MetaFunction<typeof loader> = ({
             description: description,
             url: canonicalUrl,
             mainEntity: { "@id": `${canonicalUrl}#list` },
+            about: {
+              "@type": "ProductGroup",
+              name: data.content.pg_name,
+              productGroupID: `gamme-${data.canonicalPath?.match(/-(\d+)\.html$/)?.[1] || ""}`,
+            },
             ...(data.content.pg_pic && { image: data.content.pg_pic }),
             // Breadcrumb pour navigation
             breadcrumb: {
