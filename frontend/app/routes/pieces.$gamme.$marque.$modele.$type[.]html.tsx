@@ -20,6 +20,7 @@
 
 import {
   defer,
+  redirect,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -121,7 +122,9 @@ import {
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
 import {
   buildPiecesBreadcrumbs,
+  buildTypeSlug,
   buildVoirAussiLinks,
+  normalizeAlias,
 } from "../utils/url-builder.utils";
 
 /**
@@ -288,6 +291,24 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Extract mapped data
   const { vehicle, gamme, pieces: piecesData } = loaderData;
 
+  // 🔄 SEO: Canonical URL calculée depuis les données RM V2 (pas location.pathname)
+  // Corrige les ~1.4k pages "Page en double" dans Google Search Console
+  const correctGammeSlug = `${gamme.alias}-${gamme.id}`;
+  const correctBrandSlug = `${vehicle.marqueAlias || normalizeAlias(vehicle.marque)}-${vehicle.marqueId}`;
+  const correctModelSlug = `${vehicle.modeleAlias || normalizeAlias(vehicle.modele)}-${vehicle.modeleId}`;
+  const correctTypeSlug = buildTypeSlug({
+    type_alias: vehicle.typeAlias,
+    type_name: vehicle.type,
+    type_id: vehicle.typeId,
+  });
+  const canonicalPath = `/pieces/${correctGammeSlug}/${correctBrandSlug}/${correctModelSlug}/${correctTypeSlug}.html`;
+
+  // 301 redirect si l'URL courante ne correspond pas a l'URL canonique
+  if (url.pathname !== canonicalPath) {
+    logger.log(`🔄 [301] URL mismatch: ${url.pathname} → ${canonicalPath}`);
+    return redirect(canonicalPath, 301);
+  }
+
   // 🔗 SEO: URLs pré-calculées pour section "Voir aussi" (pas de construction côté client)
   const voirAussiLinks = buildVoirAussiLinks(gamme, vehicle);
 
@@ -330,6 +351,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   return defer(
     {
       // === DONNÉES CRITIQUES (bloquantes, nécessaires pour LCP) ===
+      canonicalPath,
       vehicle,
       gamme,
       pieces: piecesData,
@@ -405,8 +427,11 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     ];
   }
 
-  // Construire URL canonique complète
-  const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
+  // Construire URL canonique depuis les données RM V2 (pas location.pathname)
+  // Evite les doublons canonical quand le slug URL != alias réel
+  const canonicalUrl = data.canonicalPath
+    ? `https://www.automecanik.com${data.canonicalPath}`
+    : `https://www.automecanik.com${location.pathname}`;
 
   // 📊 Schema.org @graph - Extrait dans pieces-schema.utils.ts
   const productSchema = buildPiecesProductSchema({

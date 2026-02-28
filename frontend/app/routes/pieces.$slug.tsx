@@ -40,6 +40,7 @@ import {
 } from "~/components/content/SectionImage";
 import { Error404 } from "~/components/errors/Error404";
 import { HeroTransaction } from "~/components/heroes";
+import { Container } from "~/components/layout";
 import DarkSection from "~/components/layout/DarkSection";
 import PageSection from "~/components/layout/PageSection";
 import Reveal from "~/components/layout/Reveal";
@@ -186,6 +187,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const gammeId = match[1];
 
+  // 🛑 404 — gamme_id=0 n'existe pas en base (parseUrlParam fallback)
+  if (gammeId === "0") {
+    throw new Response(null, {
+      status: 404,
+      headers: { "X-Robots-Tag": "noindex, follow" },
+    });
+  }
+
   try {
     // 🚀 Configuration API depuis variables d'environnement
     // 🚀 Récupération des données avec fallback automatique RPC V2 → Classic
@@ -230,6 +239,24 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           pg_wall: toProxyImageUrl(heroData.wall) ?? "",
         }
       : undefined;
+
+    // 🔄 SEO: 301 redirect si le slug dans l'URL ne correspond pas au vrai pg_alias
+    // Ex: /pieces/demarreur-402.html → 301 → /pieces/plaquette-de-frein-402.html
+    // Ex: /pieces/gamme-2462.html → 301 → /pieces/rotule-de-suspension-2462.html
+    const correctAlias =
+      content?.pg_alias || normalizeAlias(content?.pg_name || "");
+    if (correctAlias) {
+      const correctSlug = `${correctAlias}-${gammeId}.html`;
+      if (correctSlug !== slug) {
+        logger.log(
+          `🔄 [301] Slug mismatch: /pieces/${slug} → /pieces/${correctSlug}`,
+        );
+        return redirect(`/pieces/${correctSlug}`, 301);
+      }
+    }
+
+    // Canonical URL calculée depuis les données API (pas location.pathname)
+    const canonicalPath = `/pieces/${correctAlias || slug.replace(/\.html$/, "")}-${gammeId}.html`;
 
     // Breadcrumbs (sans vehicule sur page gamme seule — evite hydration mismatch)
     const breadcrumbItems = buildBreadcrumbWithVehicle(
@@ -296,11 +323,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     // 🚀 LCP V9: defer() enables progressive HTML streaming
     // Critical above-fold data is sent immediately, below-fold sections stream after
-    return defer(pageData as unknown as Record<string, unknown>, {
-      headers: {
-        "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+    return defer(
+      { ...(pageData as unknown as Record<string, unknown>), canonicalPath },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+        },
       },
-    });
+    );
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
@@ -316,7 +346,9 @@ export const meta: MetaFunction<typeof loader> = ({
   location,
 }) => {
   // 🚀 LCP V9: defer() changes SerializeFrom type — cast back to known shape
-  const data = rawData as GammePageDataV1 | undefined;
+  const data = rawData as
+    | (GammePageDataV1 & { canonicalPath?: string })
+    | undefined;
   if (!data || data.status !== 200) {
     return [
       { title: "Page non trouvée" },
@@ -324,8 +356,11 @@ export const meta: MetaFunction<typeof loader> = ({
     ];
   }
 
-  // Construire l'URL canonique
-  const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
+  // Construire l'URL canonique depuis les données API (pas location.pathname)
+  // Evite les doublons canonical quand le slug URL != pg_alias réel
+  const canonicalUrl = data.canonicalPath
+    ? `https://www.automecanik.com${data.canonicalPath}`
+    : `https://www.automecanik.com${location.pathname}`;
 
   // ✅ Utiliser les données SEO du backend (priorité absolue)
   // Les titres/descriptions viennent de __seo_gamme_car via l'API RPC
@@ -592,9 +627,9 @@ export default function PiecesDetailPage() {
       )}
 
       {/* Breadcrumbs visuels */}
-      <div className="container mx-auto px-4 pt-4">
+      <Container className="pt-4">
         <PublicBreadcrumb items={breadcrumbs} />
-      </div>
+      </Container>
 
       {/* 🎯 HERO SECTION - Avec couleur de la famille */}
       <HeroTransaction
@@ -870,7 +905,7 @@ export default function PiecesDetailPage() {
       </PageSection>
 
       {/* 📑 Sommaire ancré — Position 4 : navigation vers le contenu SEO */}
-      <div className="container mx-auto px-4 max-w-7xl py-4">
+      <Container className="py-4">
         <TableOfContents
           gammeName={data.content?.pg_name}
           hasMotorizations={!!data.motorisations?.items?.length}
@@ -887,7 +922,7 @@ export default function PiecesDetailPage() {
           }
           hasCatalogue={!!data.catalogueMameFamille?.items?.length}
         />
-      </div>
+      </Container>
 
       {/* 🚗 Badge véhicule actif (si présent) */}
       {selectedVehicle && (
