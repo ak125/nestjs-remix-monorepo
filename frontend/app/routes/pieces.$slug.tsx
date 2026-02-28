@@ -10,7 +10,7 @@
  */
 
 import {
-  defer,
+  json,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -307,8 +307,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       motorisations: apiData.motorisations,
       catalogueMameFamille: apiData.catalogueMameFamille,
       equipementiers: apiData.equipementiers,
-      conseils: apiData.conseils,
-      informations: apiData.informations,
       seoSwitches: apiData.seoSwitches,
       guide: apiData.guideAchat
         ? {
@@ -317,7 +315,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           }
         : undefined,
       purchaseGuideData: apiData.purchaseGuideData,
-      gammeBuyingGuide: apiData.gammeBuyingGuide,
       substitution: substitutionResponse,
       reference: apiData.reference,
     });
@@ -326,10 +323,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       logger.warn(`[pieces/$slug] Sections degradees: ${degraded.join(", ")}`);
     }
 
-    // 🚀 LCP V9: defer() enables progressive HTML streaming
-    // Critical above-fold data is sent immediately, below-fold sections stream after
-    return defer(
-      { ...(pageData as unknown as Record<string, unknown>), canonicalPath },
+    return json(
+      { ...pageData, canonicalPath },
       {
         headers: {
           "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
@@ -350,7 +345,6 @@ export const meta: MetaFunction<typeof loader> = ({
   data: rawData,
   location,
 }) => {
-  // 🚀 LCP V9: defer() changes SerializeFrom type — cast back to known shape
   const data = rawData as
     | (GammePageDataV1 & { canonicalPath?: string })
     | undefined;
