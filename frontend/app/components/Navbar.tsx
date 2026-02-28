@@ -26,7 +26,7 @@ import {
   Phone,
   Truck,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useOptionalUser, useRootCart } from "~/hooks/useRootData";
 import { SITE_CONFIG } from "../config/site";
@@ -35,10 +35,23 @@ import { NavbarMobile } from "./navbar/NavbarMobile";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";
 import { Badge } from "./ui/badge";
 
+const SEARCH_SUGGESTIONS = [
+  { icon: "🔧", text: "Filtre à huile" },
+  { icon: "⚡", text: "Alternateur" },
+  { icon: "🔩", text: "Plaquettes de frein" },
+  { icon: "💨", text: "Filtre à air" },
+] as const;
+
 /**
  * 🏷️ Quick Category Chip - Pour navigation rapide mobile
  */
-function QuickCategoryChip({ href, label }: { href: string; label: string }) {
+const QuickCategoryChip = memo(function QuickCategoryChip({
+  href,
+  label,
+}: {
+  href: string;
+  label: string;
+}) {
   return (
     <Link
       to={href}
@@ -47,7 +60,7 @@ function QuickCategoryChip({ href, label }: { href: string; label: string }) {
       {label}
     </Link>
   );
-}
+});
 
 export const Navbar = memo(function Navbar({ logo: _logo }: { logo: string }) {
   const user = useOptionalUser();
@@ -57,9 +70,13 @@ export const Navbar = memo(function Navbar({ logo: _logo }: { logo: string }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const toggleCart = useCallback(() => setIsCartOpen((prev) => !prev), []);
   const closeCart = useCallback(() => setIsCartOpen(false), []);
+  const openSearch = useCallback(() => setShowSearch(true), []);
 
   // Résumé du panier depuis les données du root loader
-  const summary = cartData?.summary || { total_items: 0, subtotal: 0 };
+  const summary = useMemo(
+    () => cartData?.summary ?? { total_items: 0, subtotal: 0 },
+    [cartData?.summary],
+  );
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
@@ -77,10 +94,16 @@ export const Navbar = memo(function Navbar({ logo: _logo }: { logo: string }) {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
 
-      setIsScrolled(currentScrollY > 10);
+      setIsScrolled((prev) => {
+        const next = currentScrollY > 10;
+        return prev === next ? prev : next;
+      });
 
       // Navbar compacte après 100px
-      setIsCompact(currentScrollY > 100);
+      setIsCompact((prev) => {
+        const next = currentScrollY > 100;
+        return prev === next ? prev : next;
+      });
 
       // Optimisation progress bar avec requestAnimationFrame
       if (progressBarRef.current && currentScrollY > 10) {
@@ -175,7 +198,7 @@ export const Navbar = memo(function Navbar({ logo: _logo }: { logo: string }) {
     <>
       <nav
         ref={navRef}
-        className={`sticky top-0 z-50 px-4 lg:px-8 bg-[#0d1b3e] text-white flex justify-between items-center transition-all duration-500 ease-out border-b ${
+        className={`sticky top-0 z-50 px-4 lg:px-8 bg-navy text-white flex justify-between items-center transition-all duration-500 ease-out border-b ${
           isCompact ? "py-2.5" : "py-4"
         } ${
           isScrolled
@@ -188,10 +211,7 @@ export const Navbar = memo(function Navbar({ logo: _logo }: { logo: string }) {
         <div className="flex items-center gap-2 lg:gap-8">
           {/* Burger Menu Mobile avec animation */}
           <div className="lg:hidden">
-            <NavbarMobile
-              user={user}
-              onSearchClick={() => setShowSearch(true)}
-            />
+            <NavbarMobile user={user} onSearchClick={openSearch} />
           </div>
 
           {/* Logo avec effet hover premium - compact au scroll */}
@@ -403,7 +423,7 @@ export const Navbar = memo(function Navbar({ logo: _logo }: { logo: string }) {
             {summary.total_items > 0 && (
               <Badge
                 variant="destructive"
-                className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1.5 flex items-center justify-center text-xs font-bold bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/40 animate-in zoom-in-50 duration-300 ring-2 ring-[#0d1b3e]"
+                className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1.5 flex items-center justify-center text-xs font-bold bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/40 animate-in zoom-in-50 duration-300 ring-2 ring-navy"
               >
                 {summary.total_items}
               </Badge>
@@ -458,7 +478,7 @@ export const Navbar = memo(function Navbar({ logo: _logo }: { logo: string }) {
 
       {/* 🔍 Barre de recherche mobile STICKY + Quick Categories */}
       <div
-        className="header__mobile-search-sticky md:hidden sticky z-40 bg-[#0f2347] border-b border-white/10 shadow-sm"
+        className="header__mobile-search-sticky md:hidden sticky z-40 bg-navy-mid border-b border-white/10 shadow-sm"
         style={{ top: "var(--navbar-height, 57px)" }}
       >
         {/* Search Bar - toujours visible */}
@@ -507,7 +527,7 @@ export const Navbar = memo(function Navbar({ logo: _logo }: { logo: string }) {
             </div>
           </div>
           <div
-            className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-[#0f2347] to-transparent pointer-events-none"
+            className="absolute top-0 right-0 bottom-0 w-8 bg-gradient-to-l from-navy-mid to-transparent pointer-events-none"
             aria-hidden="true"
           />
         </div>
@@ -588,12 +608,7 @@ export const Navbar = memo(function Navbar({ logo: _logo }: { logo: string }) {
                 Exemples populaires
               </p>
               <div className="grid grid-cols-2 gap-2">
-                {[
-                  { icon: "🔧", text: "Filtre à huile" },
-                  { icon: "⚡", text: "Alternateur" },
-                  { icon: "🔩", text: "Plaquettes de frein" },
-                  { icon: "💨", text: "Filtre à air" },
-                ].map((item, i) => (
+                {SEARCH_SUGGESTIONS.map((item, i) => (
                   <button
                     key={i}
                     onClick={() => {

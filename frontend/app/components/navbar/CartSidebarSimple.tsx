@@ -28,12 +28,13 @@ interface CartSidebarSimpleProps {
   onClose: () => void;
 }
 
-// Helper: formater le prix
+// Helper: formater le prix (instance cachée au niveau module)
+const priceFormatter = new Intl.NumberFormat("fr-FR", {
+  style: "currency",
+  currency: "EUR",
+});
 function formatPrice(price: number): string {
-  return new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: "EUR",
-  }).format(price);
+  return priceFormatter.format(price);
 }
 
 export const CartSidebarSimple = memo(function CartSidebarSimple({
