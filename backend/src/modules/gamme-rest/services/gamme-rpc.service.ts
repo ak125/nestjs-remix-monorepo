@@ -305,6 +305,36 @@ export class GammeRpcService extends SupabaseBaseService {
   }
 
   /**
+   * Récupère les codes CNIT / Type Mine pour une liste de type_ids
+   * Utilisé par le response builder pour la section "Fiche technique"
+   */
+  async getTechnicalCodesByTypeIds(typeIds: number[]): Promise<
+    Array<{
+      tnc_type_id: string;
+      tnc_code: string | null;
+      tnc_cnit: string | null;
+    }>
+  > {
+    if (typeIds.length === 0) return [];
+
+    const { data, error } = await this.supabase
+      .from('auto_type_number_code')
+      .select('tnc_type_id, tnc_code, tnc_cnit')
+      .in(
+        'tnc_type_id',
+        typeIds.map((id) => String(id)),
+      )
+      .or('tnc_code.neq.,tnc_cnit.neq.');
+
+    if (error) {
+      this.logger.warn(`⚠️ CNIT lookup failed: ${error.message}`);
+      return [];
+    }
+
+    return data || [];
+  }
+
+  /**
    * Obtient des fragments SEO par type_id avec meilleure distribution
    */
   getSeoFragmentsByTypeId(

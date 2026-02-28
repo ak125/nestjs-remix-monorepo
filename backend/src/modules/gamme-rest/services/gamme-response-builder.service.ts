@@ -497,6 +497,14 @@ export class GammeResponseBuilderService {
       .getByPgId(pgIdNum)
       .catch(() => null);
 
+    // 🔧 Fetch CNIT/Type Mine codes for all motorisations (parallel with buying guide)
+    const uniqueTypeIds = [
+      ...new Set(motorisationsEnriched.map((m: MotorizationRow) => m.type_id)),
+    ];
+    const technicalCodesPromise = this.rpcService
+      .getTechnicalCodesByTypeIds(uniqueTypeIds)
+      .catch(() => []);
+
     // Récupérer le contrat éditorial puis construire le guide orienté achat.
     const buyingGuideContract =
       await this.buyingGuideService.getBuyingGuideContractV1(pgId);
@@ -580,6 +588,67 @@ export class GammeResponseBuilderService {
         roleMecanique: ref.roleMecanique,
         canonicalUrl: ref.canonicalUrl,
       };
+    }
+
+    // 🔧 Await CNIT/Type Mine codes and build technicalCodes
+    const technicalCodesRaw = await technicalCodesPromise;
+    let technicalCodes: {
+      items: Array<{
+        vehicleLabel: string;
+        typeId: number;
+        mines: string[];
+        cnits: string[];
+      }>;
+      totalMines: number;
+      totalCnits: number;
+    } | null = null;
+
+    if (technicalCodesRaw.length > 0) {
+      // Group codes by type_id
+      const codesByType = new Map<
+        string,
+        { mines: Set<string>; cnits: Set<string> }
+      >();
+      for (const row of technicalCodesRaw) {
+        const tid = row.tnc_type_id;
+        if (!codesByType.has(tid)) {
+          codesByType.set(tid, { mines: new Set(), cnits: new Set() });
+        }
+        const entry = codesByType.get(tid)!;
+        if (row.tnc_code?.trim()) entry.mines.add(row.tnc_code.trim());
+        if (row.tnc_cnit?.trim()) entry.cnits.add(row.tnc_cnit.trim());
+      }
+
+      // Map to motorisation items for vehicle labels
+      const items: Array<{
+        vehicleLabel: string;
+        typeId: number;
+        mines: string[];
+        cnits: string[];
+      }> = [];
+      let totalMines = 0;
+      let totalCnits = 0;
+
+      for (const motor of motorisationsEnriched) {
+        const codes = codesByType.get(String(motor.type_id));
+        if (!codes) continue;
+        const mines = [...codes.mines];
+        const cnits = [...codes.cnits];
+        if (mines.length === 0 && cnits.length === 0) continue;
+
+        totalMines += mines.length;
+        totalCnits += cnits.length;
+        items.push({
+          vehicleLabel: `${motor.marque_name} ${motor.modele_name} ${motor.type_name}`,
+          typeId: motor.type_id,
+          mines,
+          cnits,
+        });
+      }
+
+      if (items.length > 0) {
+        technicalCodes = { items, totalMines, totalCnits };
+      }
     }
 
     const totalTime = performance.now() - startTime;
@@ -667,6 +736,8 @@ export class GammeResponseBuilderService {
       purchaseGuideData,
       // ✅ Référence technique R4 (encart "En savoir plus")
       reference: referenceData,
+      // 🔧 Codes CNIT / Type Mine pour fiche technique collapsible
+      technicalCodes,
       motorisationsBlog:
         motorisationsBlog.length > 0
           ? {

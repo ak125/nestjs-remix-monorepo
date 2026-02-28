@@ -279,6 +279,18 @@ export interface GammePageDataV1 {
     roleMecanique: string | null;
     canonicalUrl: string | null;
   } | null;
+
+  // --- Tier 3 : Codes CNIT / Type Mine ---
+  technicalCodes?: {
+    items: Array<{
+      vehicleLabel: string;
+      typeId: number;
+      mines: string[];
+      cnits: string[];
+    }>;
+    totalMines: number;
+    totalCnits: number;
+  } | null;
 }
 
 // ============================================================

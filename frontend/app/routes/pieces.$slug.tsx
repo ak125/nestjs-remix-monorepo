@@ -27,6 +27,9 @@ import {
 import {
   AlertTriangle,
   CheckCircle2,
+  ChevronDown,
+  Copy,
+  FileText,
   Shield,
   Truck,
   Users,
@@ -54,7 +57,6 @@ import Reveal from "~/components/layout/Reveal";
 import SectionHeader from "~/components/layout/SectionHeader";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import { R1ReusableContent } from "~/components/pieces/R1ReusableContent";
-import TableOfContents from "~/components/pieces/TableOfContents";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   getSectionImageConfig,
@@ -598,6 +600,7 @@ export default function PiecesDetailPage() {
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleCookie | null>(
     null,
   );
+  const [cnitOpen, setCnitOpen] = useState(false);
 
   useEffect(() => {
     setSelectedVehicle(getVehicleClient());
@@ -876,39 +879,43 @@ export default function PiecesDetailPage() {
             </div>
           </div>
         </div>
-
-        {/* Trust badges premium - Grid responsive pour mobile - Design Tokens */}
-        <div className="grid grid-cols-2 md:flex md:flex-wrap justify-center gap-space-3 md:gap-space-4 max-w-3xl mx-auto animate-in fade-in duration-700 delay-400">
-          <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-            <CheckCircle2 className="w-4 h-4 text-green-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-            <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
-              400 000+ pièces
-            </span>
-          </div>
-          <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-            <Truck className="w-4 h-4 text-blue-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-            <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
-              Livraison 24-48h
-            </span>
-          </div>
-          <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-            <Shield className="w-4 h-4 text-purple-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-            <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
-              Paiement sécurisé
-            </span>
-          </div>
-          <div className="group flex items-center gap-space-2 px-space-3 md:px-space-4 py-space-2.5 bg-gradient-to-br from-white/15 to-white/10 rounded-xl border border-white/30 hover:border-white/50 hover:from-white/20 hover:to-white/15 transition-all shadow-lg hover:shadow-xl hover:scale-105 cursor-default justify-center">
-            <Users className="w-4 h-4 text-orange-300 flex-shrink-0 group-hover:scale-110 transition-transform" />
-            <span className="text-white font-sans text-sm md:text-base font-semibold whitespace-nowrap">
-              Experts gratuits
-            </span>
-          </div>
-        </div>
       </HeroTransaction>
 
-      {/* V2: Dark "Conseils & Diagnostic" section retirée — liens couverts par R1ReusableContent */}
+      {/* ✅ Bloc compatibilité — réassurance avant catalogue */}
+      <PageSection
+        data-section="S_COMPAT"
+        data-page-role="R1"
+        className="py-4 sm:py-6"
+        id="compatibility-check"
+      >
+        <Suspense fallback={null}>
+          <CompatibilityConfirmationBlock
+            selectedVehicle={selectedVehicle}
+            motorisationItems={motorItems}
+            gammeName={data.content?.pg_name?.toLowerCase() || "pièces auto"}
+            periodeRange={periodeRange}
+            gammeId={0}
+          />
+        </Suspense>
+      </PageSection>
 
-      {/* R1 micro-bloc: 120-180 mots + 3 cartes navigation + image section (max 1) */}
+      {/* Accès rapide familles populaires — mobile uniquement */}
+      <div className="sm:hidden overflow-x-auto px-4 py-3">
+        <div className="flex gap-2 min-w-max">
+          {QUICK_NAV_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              to={link.href}
+              prefetch="intent"
+              className="px-3 py-2 rounded-full bg-white border border-gray-200 text-sm font-medium text-gray-700 whitespace-nowrap hover:bg-gray-50"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* R1 micro-bloc: texte SEO utile (court) */}
       <PageSection
         data-section="S_BUY_ARGS"
         data-page-role="R1"
@@ -974,84 +981,6 @@ export default function PiecesDetailPage() {
         })()}
       </PageSection>
 
-      {/* ✅ Bloc compatibilité — réassurance avant catalogue */}
-      <PageSection
-        data-section="S_COMPAT"
-        data-page-role="R1"
-        className="py-4 sm:py-6"
-        id="compatibility-check"
-      >
-        <Suspense fallback={null}>
-          <CompatibilityConfirmationBlock
-            selectedVehicle={selectedVehicle}
-            motorisationItems={motorItems}
-            gammeName={data.content?.pg_name?.toLowerCase() || "pièces auto"}
-            periodeRange={periodeRange}
-            gammeId={0}
-          />
-        </Suspense>
-      </PageSection>
-
-      {/* Accès rapide gammes populaires — mobile uniquement */}
-      <div className="sm:hidden overflow-x-auto px-4 py-3">
-        <div className="flex gap-2 min-w-max">
-          {QUICK_NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              prefetch="intent"
-              className="px-3 py-2 rounded-full bg-white border border-gray-200 text-sm font-medium text-gray-700 whitespace-nowrap hover:bg-gray-50"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Motorisations compatibles — Position 3 : raccourcis clic direct */}
-      <PageSection
-        data-section="S_MOTORISATIONS"
-        data-page-role="R1"
-        bg="slate"
-        id="compatibilities"
-        className="scroll-mt-20"
-      >
-        <Reveal>
-          <Suspense
-            fallback={
-              <div className="h-96 bg-gray-50 animate-pulse rounded-lg" />
-            }
-          >
-            <MotorisationsSection
-              motorisations={data.motorisations}
-              familleColor={familleColor}
-              familleName={data.content?.pg_name || "pièces"}
-              totalCount={data.performance?.motorisations_count}
-            />
-          </Suspense>
-        </Reveal>
-      </PageSection>
-
-      {/* 📑 Sommaire ancré — Position 4 : navigation vers le contenu SEO */}
-      <div className="container mx-auto px-4 max-w-7xl py-4">
-        <TableOfContents
-          gammeName={data.content?.pg_name}
-          hasMotorizations={!!data.motorisations?.items?.length}
-          hasSymptoms={false}
-          hasGuide={false}
-          hasDecisionGrid={false}
-          hasPurchaseGuide={false}
-          hasAntiMistakes={false}
-          hasInformations={false}
-          hasConseils={false}
-          hasEquipementiers={!!data.equipementiers?.items?.length}
-          hasFaq={
-            !!(data.purchaseGuideData?.faq?.length || R1_SELECTOR_FAQ.length)
-          }
-          hasCatalogue={!!data.catalogueMameFamille?.items?.length}
-        />
-      </div>
-
       {/* 🚗 Badge véhicule actif (si présent) */}
       {selectedVehicle && (
         <PageSection className="py-4 sm:py-4">
@@ -1062,33 +991,6 @@ export default function PiecesDetailPage() {
           />
         </PageSection>
       )}
-
-      {/* R1 ROUTER: PurchaseNarrativeSection (R3/guide-achat) et InformationsSection supprimés — hors-rôle */}
-
-      {/* 🔧 Équipementiers — DarkSection navy (ConseilsSection R3/conseils supprimé — hors-rôle R1) */}
-      <DarkSection data-section="S_EQUIPEMENTIERS" data-page-role="R1">
-        <div className="space-y-12">
-          <div id="brands" className="scroll-mt-20">
-            <SectionHeader
-              title="Marques équipementières de confiance"
-              sub="Fabricants OE et qualité premium"
-              dark
-            />
-            <Reveal delay={100}>
-              <Suspense
-                fallback={
-                  <div className="h-48 bg-white/5 animate-pulse rounded-lg" />
-                }
-              >
-                <EquipementiersSection
-                  equipementiers={data.equipementiers}
-                  isDarkMode
-                />
-              </Suspense>
-            </Reveal>
-          </div>
-        </div>
-      </DarkSection>
 
       {/* 📦 Catalogue Même Famille */}
       <PageSection
@@ -1113,6 +1015,163 @@ export default function PiecesDetailPage() {
           </Suspense>
         </Reveal>
       </PageSection>
+
+      {/* Motorisations compatibles */}
+      <PageSection
+        data-section="S_MOTORISATIONS"
+        data-page-role="R1"
+        bg="slate"
+        id="compatibilities"
+        className="scroll-mt-20"
+      >
+        <Reveal>
+          <Suspense
+            fallback={
+              <div className="h-96 bg-gray-50 animate-pulse rounded-lg" />
+            }
+          >
+            <MotorisationsSection
+              motorisations={data.motorisations}
+              familleColor={familleColor}
+              familleName={data.content?.pg_name || "pièces"}
+              totalCount={data.performance?.motorisations_count}
+            />
+          </Suspense>
+        </Reveal>
+      </PageSection>
+
+      {/* 🔧 Équipementiers — DarkSection navy */}
+      <DarkSection data-section="S_EQUIPEMENTIERS" data-page-role="R1">
+        <div className="space-y-12">
+          <div id="brands" className="scroll-mt-20">
+            <SectionHeader
+              title="Marques équipementières de confiance"
+              sub="Fabricants OE et qualité premium"
+              dark
+            />
+            <Reveal delay={100}>
+              <Suspense
+                fallback={
+                  <div className="h-48 bg-white/5 animate-pulse rounded-lg" />
+                }
+              >
+                <EquipementiersSection
+                  equipementiers={data.equipementiers}
+                  isDarkMode
+                />
+              </Suspense>
+            </Reveal>
+          </div>
+        </div>
+      </DarkSection>
+
+      {/* 🔧 Fiche technique — codes CNIT / Type Mine collapsible */}
+      {data.technicalCodes?.items && data.technicalCodes.items.length > 0 && (
+        <PageSection
+          data-section="S_FICHE_TECHNIQUE"
+          data-page-role="R1"
+          className="py-4 sm:py-6"
+        >
+          <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setCnitOpen((p) => !p)}
+              className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors"
+            >
+              <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
+                <FileText className="h-5 w-5 text-gray-500" />
+                Codes CNIT / Type Mine
+                <span className="text-sm text-gray-500 font-normal">
+                  ({data.technicalCodes.totalCnits} codes)
+                </span>
+              </h3>
+              <ChevronDown
+                className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${cnitOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+            {cnitOpen && (
+              <div className="border-t border-gray-200 px-5 pb-5 overflow-x-auto">
+                <table className="w-full text-sm mt-3">
+                  <thead>
+                    <tr className="text-left text-gray-500 border-b border-gray-100">
+                      <th className="py-2 pr-4 font-medium">Véhicule</th>
+                      <th className="py-2 pr-4 font-medium">CNIT</th>
+                      <th className="py-2 font-medium">Type Mine</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {data.technicalCodes.items.map((item) => (
+                      <tr key={item.typeId} className="hover:bg-gray-50">
+                        <td className="py-2.5 pr-4 text-gray-900">
+                          {item.vehicleLabel}
+                        </td>
+                        <td className="py-2.5 pr-4">
+                          {item.cnits.length > 0 ? (
+                            <span className="inline-flex items-center gap-1.5">
+                              <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono">
+                                {item.cnits[0]}
+                              </code>
+                              {item.cnits.length > 1 && (
+                                <span className="text-xs text-gray-400">
+                                  +{item.cnits.length - 1}
+                                </span>
+                              )}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(
+                                    item.cnits.join(", "),
+                                  );
+                                }}
+                                className="p-0.5 text-gray-400 hover:text-gray-600"
+                                title="Copier"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </button>
+                            </span>
+                          ) : (
+                            <span className="text-gray-300">—</span>
+                          )}
+                        </td>
+                        <td className="py-2.5">
+                          {item.mines.length > 0 ? (
+                            <span className="inline-flex items-center gap-1.5">
+                              <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono">
+                                {item.mines[0]}
+                              </code>
+                              {item.mines.length > 1 && (
+                                <span className="text-xs text-gray-400">
+                                  +{item.mines.length - 1}
+                                </span>
+                              )}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigator.clipboard.writeText(
+                                    item.mines.join(", "),
+                                  );
+                                }}
+                                className="p-0.5 text-gray-400 hover:text-gray-600"
+                                title="Copier"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </button>
+                            </span>
+                          ) : (
+                            <span className="text-gray-300">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </PageSection>
+      )}
 
       {/* Mini-bloc erreurs fréquentes — conditionnel sur données dispo */}
       {data.purchaseGuideData?.antiMistakes &&
@@ -1166,6 +1225,41 @@ export default function PiecesDetailPage() {
             />
           </Suspense>
         </Reveal>
+      </PageSection>
+
+      {/* ✅ Trust badges — section dédiée avant footer */}
+      <PageSection
+        data-section="S_TRUST"
+        data-page-role="R1"
+        bg="slate"
+        className="py-6 sm:py-8"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+          <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl border border-gray-200 shadow-sm justify-center">
+            <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+            <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">
+              400 000+ pièces
+            </span>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl border border-gray-200 shadow-sm justify-center">
+            <Truck className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">
+              Livraison 24-48h
+            </span>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl border border-gray-200 shadow-sm justify-center">
+            <Shield className="w-4 h-4 text-purple-600 flex-shrink-0" />
+            <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">
+              Paiement sécurisé
+            </span>
+          </div>
+          <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl border border-gray-200 shadow-sm justify-center">
+            <Users className="w-4 h-4 text-orange-600 flex-shrink-0" />
+            <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">
+              Experts gratuits
+            </span>
+          </div>
+        </div>
       </PageSection>
 
       {/* Bouton Scroll To Top */}
