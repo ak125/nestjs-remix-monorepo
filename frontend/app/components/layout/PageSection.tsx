@@ -1,35 +1,46 @@
+import { cn } from "~/lib/utils";
+
 const BG_CLASSES = {
   white: "bg-white",
   slate: "bg-slate-50",
-  navy: "bg-[#0d1b3e]",
-  "navy-gradient": "bg-gradient-to-br from-[#0d1b3e] to-[#162d5a]",
+  navy: "bg-navy",
+  "navy-gradient": "bg-gradient-to-br from-navy via-navy-mid to-navy-light",
 } as const;
 
 const MAX_WIDTH_CLASSES = {
   "7xl": "max-w-7xl",
   "5xl": "max-w-5xl",
   "3xl": "max-w-3xl",
+  full: "max-w-full",
 } as const;
 
 export default function PageSection({
   id,
   bg = "white",
   maxWidth = "7xl",
-  className = "",
+  className,
   children,
+  ...rest
 }: {
   id?: string;
   bg?: keyof typeof BG_CLASSES;
   maxWidth?: keyof typeof MAX_WIDTH_CLASSES;
   className?: string;
   children: React.ReactNode;
-}) {
+} & Omit<React.HTMLAttributes<HTMLElement>, "id" | "className" | "children">) {
   return (
     <section
+      {...rest}
       id={id}
-      className={`py-10 sm:py-12 ${BG_CLASSES[bg]} ${className}`}
+      className={cn(
+        "py-section-sm sm:py-section-md",
+        BG_CLASSES[bg],
+        className,
+      )}
     >
-      <div className={`container mx-auto px-4 ${MAX_WIDTH_CLASSES[maxWidth]}`}>
+      <div
+        className={cn("container mx-auto px-page", MAX_WIDTH_CLASSES[maxWidth])}
+      >
         {children}
       </div>
     </section>

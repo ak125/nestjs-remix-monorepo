@@ -58,7 +58,9 @@ export function HeroTransaction({
   backgroundSlot,
   children,
   className = "",
-}: HeroTransactionProps) {
+  ...rest
+}: HeroTransactionProps &
+  Omit<React.HTMLAttributes<HTMLElement>, "className" | "children">) {
   const familyKey = family?.id || family?.name;
   const theme = familyKey ? getFamilyTheme(familyKey) : getFamilyTheme("gray");
 
@@ -66,6 +68,7 @@ export function HeroTransaction({
 
   return (
     <section
+      {...rest}
       className={`relative overflow-hidden bg-gradient-to-br ${gradientClass} text-white ${className}`}
     >
       {/* Grid pattern subtil */}

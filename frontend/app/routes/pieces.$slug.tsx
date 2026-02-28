@@ -638,6 +638,8 @@ export default function PiecesDetailPage() {
 
       {/* 🎯 HERO SECTION - Avec couleur de la famille */}
       <HeroTransaction
+        data-section="S_HERO"
+        data-page-role="R1"
         gradient={familleColor}
         slogan={resolveSlogan("transaction", data.content?.pg_name)}
         className="py-12 md:py-16 lg:py-20"
@@ -861,7 +863,12 @@ export default function PiecesDetailPage() {
       {/* V2: Dark "Conseils & Diagnostic" section retirée — liens couverts par R1ReusableContent */}
 
       {/* R1 micro-bloc: 120-180 mots + 3 cartes navigation + image section (max 1) */}
-      <PageSection maxWidth="5xl" className="py-6 sm:py-8">
+      <PageSection
+        data-section="S_BUY_ARGS"
+        data-page-role="R1"
+        maxWidth="5xl"
+        className="py-6 sm:py-8"
+      >
         {(() => {
           const imageConfig = data.content?.pg_pic
             ? getSectionImageConfig("transaction", "buyingGuide")
@@ -892,7 +899,13 @@ export default function PiecesDetailPage() {
       </PageSection>
 
       {/* 🚗 Motorisations compatibles — Position 3 : raccourcis clic direct */}
-      <PageSection bg="slate" id="compatibilities" className="scroll-mt-20">
+      <PageSection
+        data-section="S_MOTORISATIONS"
+        data-page-role="R1"
+        bg="slate"
+        id="compatibilities"
+        className="scroll-mt-20"
+      >
         <Reveal>
           <Suspense
             fallback={
@@ -943,7 +956,7 @@ export default function PiecesDetailPage() {
       {/* R1 ROUTER: PurchaseNarrativeSection (R3/guide-achat) et InformationsSection supprimés — hors-rôle */}
 
       {/* 🔧 Équipementiers — DarkSection navy (ConseilsSection R3/conseils supprimé — hors-rôle R1) */}
-      <DarkSection>
+      <DarkSection data-section="S_EQUIPEMENTIERS" data-page-role="R1">
         <div className="space-y-12">
           <div id="brands" className="scroll-mt-20">
             <SectionHeader
@@ -968,7 +981,12 @@ export default function PiecesDetailPage() {
       </DarkSection>
 
       {/* 📦 Catalogue Même Famille */}
-      <PageSection id="family" className="scroll-mt-20">
+      <PageSection
+        data-section="S_CATALOGUE"
+        data-page-role="R1"
+        id="family"
+        className="scroll-mt-20"
+      >
         <Reveal>
           <Suspense
             fallback={
@@ -987,7 +1005,13 @@ export default function PiecesDetailPage() {
       </PageSection>
 
       {/* 📖 FAQ R1 — questions universelles sur le sélecteur véhicule */}
-      <PageSection bg="slate" id="faq" className="scroll-mt-20">
+      <PageSection
+        data-section="S_FAQ"
+        data-page-role="R1"
+        bg="slate"
+        id="faq"
+        className="scroll-mt-20"
+      >
         <Reveal>
           <Suspense
             fallback={
