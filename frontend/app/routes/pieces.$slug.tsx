@@ -65,6 +65,7 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOgImageUrl } from "~/utils/og-image.utils";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { buildCanonicalUrl } from "~/utils/seo/canonical";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
 import VehicleSelector from "../components/vehicle/VehicleSelector";
 import { hierarchyApi } from "../services/api/hierarchy.api";
@@ -255,12 +256,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
 
     // Canonical URL calculée depuis les données API (pas location.pathname)
-    const canonicalPath = `/pieces/${correctAlias || slug.replace(/\.html$/, "")}-${gammeId}.html`;
+    // Utilise buildCanonicalUrl pour normalisation cohérente (tracking params, tri)
+    const canonicalPath = buildCanonicalUrl({
+      baseUrl: `/pieces/${correctAlias || slug.replace(/\.html$/, "")}-${gammeId}.html`,
+    });
 
     // Breadcrumbs (sans vehicule sur page gamme seule — evite hydration mismatch)
+    // Aligné avec le JSON-LD BreadcrumbList (3 niveaux: Accueil → Pièces Auto → gamme)
     const breadcrumbItems = buildBreadcrumbWithVehicle(
       [
         { label: "Accueil", href: "/" },
+        { label: "Pièces Auto", href: "/#catalogue" },
         { label: content?.pg_name || "Piece", current: true },
       ],
       null,
@@ -356,10 +362,11 @@ export const meta: MetaFunction<typeof loader> = ({
   }
 
   // Construire l'URL canonique depuis les données API (pas location.pathname)
-  // Evite les doublons canonical quand le slug URL != pg_alias réel
-  const canonicalUrl = data.canonicalPath
-    ? `https://www.automecanik.com${data.canonicalPath}`
-    : `https://www.automecanik.com${location.pathname}`;
+  // Utilise buildCanonicalUrl pour garantir: même source meta/og:url/JSON-LD
+  const canonicalUrl = buildCanonicalUrl({
+    baseUrl: data.canonicalPath || location.pathname,
+    includeHost: true,
+  });
 
   // ✅ Utiliser les données SEO du backend (priorité absolue)
   // Les titres/descriptions viennent de __seo_gamme_car via l'API RPC

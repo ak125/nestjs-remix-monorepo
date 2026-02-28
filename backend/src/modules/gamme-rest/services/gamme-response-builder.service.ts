@@ -220,9 +220,16 @@ export class GammeResponseBuilderService {
         // ✅ Utilise buildPieceVehicleUrlRaw centralisé
 
         // Construire la période
-        const yearFrom = item.type_year_from || '';
-        const yearTo = item.type_year_to || "aujourd'hui";
-        const periode = `${yearFrom} - ${yearTo}`;
+        const yearFrom = (item.type_year_from || '').trim();
+        const yearTo = (item.type_year_to || '').trim();
+        const periode =
+          yearFrom && yearTo
+            ? `${yearFrom} – ${yearTo}`
+            : yearFrom
+              ? `Depuis ${yearFrom}`
+              : yearTo
+                ? `Jusqu'à ${yearTo}`
+                : '';
 
         // Construire le lien vers la page gamme avec véhicule
         // Format: /pieces/gamme-alias-ID/marque-alias-ID/modele-alias-ID/type-alias-ID.html
@@ -431,9 +438,16 @@ export class GammeResponseBuilderService {
           item.marque_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         const carImage = buildModelImageUrl(marqueAlias, item.modele_pic);
 
-        const yearFrom = item.type_year_from || '';
-        const yearTo = item.type_year_to || "aujourd'hui";
-        const periode = `${yearFrom} - ${yearTo}`;
+        const yearFrom = (item.type_year_from || '').trim();
+        const yearTo = (item.type_year_to || '').trim();
+        const periode =
+          yearFrom && yearTo
+            ? `${yearFrom} – ${yearTo}`
+            : yearFrom
+              ? `Depuis ${yearFrom}`
+              : yearTo
+                ? `Jusqu'à ${yearTo}`
+                : '';
 
         const link = buildPieceVehicleUrlRaw(
           { alias: pgAlias, id: pgIdNum },

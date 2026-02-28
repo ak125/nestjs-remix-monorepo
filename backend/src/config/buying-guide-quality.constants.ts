@@ -28,7 +28,9 @@ export type GammeContentQualityFlag =
   | 'INTRO_ROLE_MISMATCH'
   | 'MISSING_IMAGE'
   | 'MISSING_ALT_TEXT'
-  | 'INVALID_IMAGE_RATIO';
+  | 'INVALID_IMAGE_RATIO'
+  | 'CONTENT_OVERLAP'
+  | 'H1_MUTATION_BLOCKED';
 
 // ─────────────────────────────────────────────────────────────
 // Contract versions
@@ -43,6 +45,12 @@ export const BUYING_GUIDE_VERSION = 'GammeBuyingGuide.v1' as const;
 
 export const MIN_NARRATIVE_LENGTH = 40;
 export const MAX_NARRATIVE_LENGTH = 420;
+
+/** Minimum word count for R1 sg_content (avoid too-thin router pages) */
+export const MIN_R1_WORDS = 100;
+
+/** Maximum word count for R1 sg_content (already enforced by PageRoleValidator) */
+export const MAX_R1_WORDS = 150;
 
 // ─────────────────────────────────────────────────────────────
 // Section minimum thresholds
@@ -99,6 +107,23 @@ export const GENERIC_PHRASES: readonly string[] = [
 ] as const;
 
 // ─────────────────────────────────────────────────────────────
+// Absolute claims to ban (hyperbolic/unverifiable statements)
+// ─────────────────────────────────────────────────────────────
+
+export const BAN_ABSOLUTE_CLAIMS: readonly string[] = [
+  'toujours',
+  'jamais',
+  'meilleur',
+  'le plus fiable',
+  'garanti à vie',
+  'le moins cher',
+  'le plus performant',
+  'imbattable',
+  'numéro 1',
+  'sans aucun doute',
+] as const;
+
+// ─────────────────────────────────────────────────────────────
 // Family domain terms (required for family-specific validation)
 // ─────────────────────────────────────────────────────────────
 
@@ -144,6 +169,8 @@ export const FLAG_PENALTIES: Record<GammeContentQualityFlag, number> = {
   MISSING_IMAGE: 8, // default; overridden per page type via IMAGE_PENALTIES
   MISSING_ALT_TEXT: 5, // default; overridden per page type via IMAGE_PENALTIES
   INVALID_IMAGE_RATIO: 3, // inactive V1 (detection not yet implemented)
+  CONTENT_OVERLAP: 15, // cross-gamme content cannibalization detected
+  H1_MUTATION_BLOCKED: 100, // hard reject: attempted to modify a QA-protected H1
 };
 
 // ─────────────────────────────────────────────────────────────

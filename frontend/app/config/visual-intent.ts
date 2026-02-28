@@ -39,6 +39,23 @@ export interface AmbianceTokens {
 export type ImagePlacement = "left" | "right" | "full" | "center";
 export type ImageSize = "sm" | "md" | "lg";
 
+export type ImageFormat = "1:1" | "4:3" | "1200x630" | "svg";
+export type ImageCrop = "center" | "contain";
+export type ImageBackground = "transparent" | "neutral";
+
+export interface ImageConstraints {
+  /** Formats acceptes (aspect ratio ou taille fixe) */
+  formats: ImageFormat[];
+  /** Mode de recadrage */
+  crop: ImageCrop;
+  /** Type de fond */
+  background: ImageBackground;
+  /** Interdire les photos de vehicules (packshots pieces uniquement) */
+  noVehicle?: boolean;
+  /** Interdire les overlays texte sur l'image */
+  noTextOverlay?: boolean;
+}
+
 export interface SectionImageRule {
   /** Position dans la section */
   placement: ImagePlacement;
@@ -48,6 +65,8 @@ export interface SectionImageRule {
   defaultSource: "pg_img" | "supabase" | "static" | "none";
   /** Chemin illustration statique (fallback si pas d'image specifique) */
   staticFallback?: string;
+  /** Contraintes techniques sur l'image (format, crop, fond) */
+  constraints?: ImageConstraints;
 }
 
 // ─── Visual Intent Config ───
@@ -95,6 +114,13 @@ const VISUAL_INTENT_MAP: Record<IntentClass, VisualIntentConfig> = {
         placement: "right",
         size: "md",
         defaultSource: "pg_img",
+        constraints: {
+          formats: ["1:1", "4:3"],
+          crop: "center",
+          background: "neutral",
+          noVehicle: true,
+          noTextOverlay: true,
+        },
       },
     },
   },
