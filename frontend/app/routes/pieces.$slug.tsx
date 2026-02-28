@@ -1013,7 +1013,6 @@ export default function PiecesDetailPage() {
                 id: v.id,
                 content: v.content,
               }))}
-              gammeName={data.content?.pg_name}
             />
           </Suspense>
         </Reveal>
