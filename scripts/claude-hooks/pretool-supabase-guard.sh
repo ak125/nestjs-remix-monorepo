@@ -4,8 +4,8 @@
 # Exit 0 = allow, Exit 2 = block (stderr shown to user)
 
 if ! command -v jq &>/dev/null; then
-  echo "WARN: jq not installed — hook bypassed. Install: apt install jq" >&2
-  exit 0
+  echo "BLOCKED: jq requis pour les hooks de securite. Installer: apt install jq" >&2
+  exit 2
 fi
 
 set -euo pipefail

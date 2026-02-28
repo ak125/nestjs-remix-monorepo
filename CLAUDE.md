@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> Derniere revision : 2026-02-28
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 > Detailed rules in `.claude/rules/`: backend, frontend, payments, deployment, agent-teams, context7
@@ -12,6 +14,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. **Si ambiguite** : poser la question, ne PAS deviner l'intention
 3. **Format** : "Je propose X car Y. Tu valides ?" — puis ATTENDRE la reponse
 4. **Pas d'action sans feu vert** : ni refactoring, ni ajout de code, ni modification de logique
+
+## Regle #1 — Nettoyer au fur et a mesure
+
+**Supprimer les fichiers obsoletes, doublons et chevauchements** au fil des progressions.
+
+1. **Avant de creer un fichier** : verifier qu'il n'existe pas deja un equivalent (meme role, meme contenu)
+2. **Apres refactoring/migration** : supprimer les anciens fichiers devenus inutiles (ancien service, ancien composant, ancien script)
+3. **Si doublon detecte** : signaler et proposer la suppression du moins pertinent
+4. **Si chevauchement** (2 fichiers couvrant le meme perimetre) : proposer de fusionner ou supprimer
+5. **Cible** : `.spec/`, `scripts/`, composants frontend, services backend, fichiers de config temporaires
 
 ## Presentation des reponses
 
@@ -49,7 +61,7 @@ Les fichiers canoniques definissent la verite du projet. Toujours consulter ces 
 | `.spec/00-canon/architecture.md` | Architecture technique NestJS/Remix/Supabase/Redis |
 | `.spec/00-canon/rules.md` | 7 regles non-negociables du projet |
 
-**RAG Knowledge:** Le corpus RAG est dans `/opt/automecanik/rag/knowledge/` (14 docs valides avec truth_level L1/L2).
+**RAG Knowledge:** Le corpus RAG est dans `/opt/automecanik/rag/knowledge/` (~318 fichiers .md, dont L1=24, L2=288). Voir MEMORY.md pour details architecture.
 
 ## Common Commands
 
@@ -151,6 +163,32 @@ git reset HEAD backend/src/modules/<module-non-teste>/
 5. **TypeScript Compilation:** Wait for `tsc --build` before testing changes
 6. **Turbo Cache:** If builds seem stale: `npm run clean-turbo-cache`
 7. **Memory Limits:** Backend build uses `--max-old-space-size=4096`
+
+## Governance & Security (Airlock + RPC Gate)
+
+**Airlock Zero-Trust** : systeme de validation des contributions agents.
+- Mode actuel : `observe` (depuis 2026-02-03, ADR-005)
+- Bundles : `/opt/automecanik/airlock/inbox/` → validation → `processed/` ou `rejected/`
+- Kill-switch : `echo "reason" > /opt/automecanik/airlock/AIRLOCK_DISABLED`
+- CLI : `gov airlock status|validate|accept|reject`
+
+**RPC Gate** : protection des fonctions Supabase sensibles.
+- Config : `RPC_GATE_MODE=enforce`, `RPC_GATE_ENFORCE_LEVEL=P2`
+- P0 (7 fonctions) : BLOCK_ALL — jamais autorisees
+- P1 (17) : SERVICE_ROLE_ONLY — backend uniquement
+- P2 (40) : SERVICE_ROLE_ALLOWLIST — whitelist stricte
+- Service : `backend/src/security/rpc-gate/rpc-gate.service.ts`
+
+**Governance Vault** : `/opt/automecanik/governance-vault/`
+- 10 ADRs acceptes (architecture securite)
+- Evidence packs mensuels (compliance)
+- Sync canon : `governance-vault/scripts/sync-canon.sh`
+
+**Hooks Claude Code** (dans `.claude/settings.json`) :
+- `pretool-bash-guard.sh` — bloque `git push main`, `docker-compose down`, `--force`
+- `pretool-file-guard.sh` — protege `.env`, `.github/`, `scripts/`, `docker-compose*`
+- `pretool-supabase-guard.sh` — valide migrations/SQL
+- `posttool-lint-check.sh` — lint auto apres Edit/Write .ts/.tsx
 
 ## Incidents et Post-Mortems
 
