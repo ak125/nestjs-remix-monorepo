@@ -40,7 +40,6 @@ import {
 } from "~/components/content/SectionImage";
 import { Error404 } from "~/components/errors/Error404";
 import { HeroTransaction } from "~/components/heroes";
-import { Container } from "~/components/layout";
 import DarkSection from "~/components/layout/DarkSection";
 import PageSection from "~/components/layout/PageSection";
 import Reveal from "~/components/layout/Reveal";
@@ -627,9 +626,9 @@ export default function PiecesDetailPage() {
       )}
 
       {/* Breadcrumbs visuels */}
-      <Container className="pt-4">
+      <div className="container mx-auto px-4 pt-4">
         <PublicBreadcrumb items={breadcrumbs} />
-      </Container>
+      </div>
 
       {/* 🎯 HERO SECTION - Avec couleur de la famille */}
       <HeroTransaction
@@ -905,7 +904,7 @@ export default function PiecesDetailPage() {
       </PageSection>
 
       {/* 📑 Sommaire ancré — Position 4 : navigation vers le contenu SEO */}
-      <Container className="py-4">
+      <div className="container mx-auto px-4 max-w-7xl py-4">
         <TableOfContents
           gammeName={data.content?.pg_name}
           hasMotorizations={!!data.motorisations?.items?.length}
@@ -922,7 +921,7 @@ export default function PiecesDetailPage() {
           }
           hasCatalogue={!!data.catalogueMameFamille?.items?.length}
         />
-      </Container>
+      </div>
 
       {/* 🚗 Badge véhicule actif (si présent) */}
       {selectedVehicle && (
