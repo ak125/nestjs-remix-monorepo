@@ -116,7 +116,11 @@ export type HardGateName =
   | 'seo_integrity'
   | 'missing_og_image'
   | 'missing_hero_policy_match'
-  | 'missing_alt_text';
+  | 'missing_alt_text'
+  // RAG-specific gates (Chantier 3)
+  | 'rag_citation_integrity'
+  | 'rag_role_compliance'
+  | 'rag_number_sourced';
 
 export interface ExtendedGateResult {
   gate: HardGateName;
@@ -206,6 +210,72 @@ export interface EvidenceEntry {
   rawExcerpt: string;
   confidence: number;
   sourceHash?: string;
+}
+
+// ── RAG Safe Distill Pack (Chantier 2) ──
+
+export interface RagSafeItem {
+  /** Distilled neutral sentence/bullet */
+  text: string;
+  /** Weaviate chunk_id for provenance tracking */
+  source_id: string;
+}
+
+export interface RagSafePack {
+  roleId?: string; // role cible du pack
+  definitions: RagSafeItem[];
+  selection_checks: RagSafeItem[];
+  trust_proofs: RagSafeItem[];
+  support_notes: RagSafeItem[];
+  faq_pairs: RagSafeItem[]; // chunk_kind=faq
+  procedures: RagSafeItem[]; // chunk_kind=procedure
+  spec_refs: RagSafeItem[]; // chunk_kind=table_rows
+  confusions: RagSafeItem[]; // futur classifier
+  anti_claims: RagSafeItem[]; // futur classifier
+  /** All retained items for provenance audit */
+  citations_used: RagSafeItem[];
+}
+
+// ── R1 Content Pipeline (4-prompt sequence) ──
+
+export interface R1IntentLockOutput {
+  primary_intent: string;
+  forbidden_overlap: string[];
+  termes_techniques: string[];
+  preuves: string[];
+  writing_constraints: string[];
+  interest_nuggets: Record<string, unknown>;
+}
+
+export interface R1SerpPackOutput {
+  title_main: string;
+  meta_main: string;
+  h1: string;
+  h2s: string[];
+}
+
+export interface R1SectionCopyOutput {
+  hero_subtitle: string;
+  proof_badges: string[];
+  selector_microcopy: string[];
+  micro_seo_block: string;
+  compatibilities_intro: string;
+  equipementiers_line: string;
+  faq_selector: Array<{ question: string; answer: string }>;
+  family_cross_sell_intro: string;
+}
+
+export interface R1GatekeeperOutput {
+  score: number;
+  flags: string[];
+  corrections: Record<string, string>;
+}
+
+export interface R1PipelineResult {
+  intentLock: R1IntentLockOutput;
+  serpPack: R1SerpPackOutput;
+  sectionCopy: R1SectionCopyOutput;
+  gatekeeper: R1GatekeeperOutput;
 }
 
 export interface PublishDecision {

@@ -10,6 +10,14 @@ export const SearchRequestSchema = z.object({
   limit: z.number().int().min(1).max(50).optional().default(10),
   filters: z.record(z.unknown()).optional(),
   includeFullContent: z.boolean().optional().default(false),
+  routing: z
+    .object({
+      target_role: z
+        .enum(['R1_ROUTER', 'R3_GUIDE', 'R4_REFERENCE', 'R5_DIAGNOSTIC'])
+        .optional(),
+      userIntent: z.string().optional(),
+    })
+    .optional(),
 });
 
 // Schema pour un résultat de recherche
@@ -36,6 +44,16 @@ export const SearchResultSchema = z.object({
   canonical_weight: z.number().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
+  // Role classification fields (from Weaviate chunk metadata)
+  section_key: z.string().optional(),
+  primary_role: z.string().optional(),
+  allowed_roles: z.array(z.string()).optional(),
+  purity_score: z.number().optional(),
+  contamination_flags: z.array(z.string()).optional(),
+  chunk_kind: z.string().optional(),
+  // Phase 3: page contract + media hints
+  page_contract_id: z.string().optional(),
+  media_slots_hint: z.string().optional(),
 });
 
 // Schema pour les réponses de recherche
