@@ -87,6 +87,39 @@ Pour chaque gamme sélectionnée :
    ```
 6. **Ne JAMAIS écraser** une section existante avec `sgc_quality_score >= 70` sauf si `force = true` est demandé
 
+### Étape 1a-bis — Lire le keyword plan (Pipeline V4, si disponible)
+
+```sql
+SELECT skp_section_terms, skp_boundaries, skp_primary_intent
+FROM __seo_r3_keyword_plan
+WHERE skp_pg_id = '{pg_id}'
+  AND skp_status IN ('validated','active')
+ORDER BY skp_version DESC LIMIT 1;
+```
+
+Si un keyword plan existe :
+- Utiliser `skp_section_terms[section].include_terms` pour le prompt de generation de chaque section
+- Utiliser `skp_section_terms[section].micro_phrases` comme exemples a integrer dans le contenu
+- Utiliser `skp_section_terms[section].forbidden_overlap` pour anti-cannibalisation intra-section
+- Utiliser `skp_boundaries.forbidden_terms` pour renforcer les regles de contenu
+
+Si aucun keyword plan : comportement actuel inchange (backward compatible).
+
+**V4 audit-aware** : si le keyword plan a un `skp_audit_result` (V4), utiliser les listes de sections :
+
+```sql
+SELECT skp_audit_result->'sections_to_create' AS to_create,
+       skp_audit_result->'sections_to_improve' AS to_improve
+FROM __seo_r3_keyword_plan
+WHERE skp_pg_id = '{pg_id}' AND skp_status IN ('validated','active')
+ORDER BY skp_version DESC LIMIT 1;
+```
+
+Si `skp_audit_result IS NOT NULL` :
+- Generer from scratch uniquement les sections listees dans `sections_to_create`
+- Enrichir/ameliorer uniquement les sections listees dans `sections_to_improve`
+- SKIP les sections absentes des deux listes (deja saines, pas besoin de regenerer)
+
 ### Étape 1b — Vérification RAG complémentaire (OPTIONNELLE)
 
 Uniquement si le RAG est disponible (`GET http://localhost:3000/api/rag/health` = ok) ET si le gamme.md présente des lacunes dans les blocs C(diagnostic) ou D(maintenance) :
@@ -132,6 +165,10 @@ curl -s -X POST http://localhost:3000/api/rag/search \
 - **Respecter** `domain.must_be_true` / `domain.must_not_contain`
 - **Accents français** corrects
 - **Pas d'invention** : si une donnée n'existe pas dans le RAG, ne PAS la deviner. SKIP la section
+- **sgc_sources OBLIGATOIRE** : pour chaque section, ecrire d'ou vient le contenu au format JSON :
+  `[{"type": "rag", "ref": "gammes/{slug}.md", "field": "diagnostic.symptoms"}]`
+  Types valides : `rag`, `oem`, `glossaire`, `reference`
+  Si aucune source identifiable : `[{"type": "rag", "ref": "gammes/{slug}.md", "field": "general"}]`
 - **sgc_pack_level** = pack cible ('standard', 'pro', 'eeat')
 
 ---
@@ -177,17 +214,18 @@ Utiliser `mcp__supabase__execute_sql` avec le projet `cxpojprgwgubzjyqzmoq` :
 ```sql
 INSERT INTO __seo_gamme_conseil
   (sgc_id, sgc_pg_id, sgc_section_type, sgc_title, sgc_content, sgc_order,
-   sgc_quality_score, sgc_pack_level, sgc_enriched_by, sgc_enriched_at)
+   sgc_quality_score, sgc_sources, sgc_pack_level, sgc_enriched_by, sgc_enriched_at)
 VALUES
   ('conseil-{pg_id}-{type}-{timestamp}', '{pg_id}', '{type}',
    '{title}', '{content}', {order},
-   {score}, '{pack_level}', 'conseil-batch-agent', NOW())
+   {score}, '{sources_json}', '{pack_level}', 'conseil-batch-agent', NOW())
 ON CONFLICT (sgc_pg_id, sgc_section_type)
 DO UPDATE SET
   sgc_title = EXCLUDED.sgc_title,
   sgc_content = EXCLUDED.sgc_content,
   sgc_order = EXCLUDED.sgc_order,
   sgc_quality_score = EXCLUDED.sgc_quality_score,
+  sgc_sources = EXCLUDED.sgc_sources,
   sgc_pack_level = EXCLUDED.sgc_pack_level,
   sgc_enriched_by = EXCLUDED.sgc_enriched_by,
   sgc_enriched_at = EXCLUDED.sgc_enriched_at;

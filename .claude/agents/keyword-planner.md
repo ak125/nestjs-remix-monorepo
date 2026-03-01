@@ -117,7 +117,87 @@ DO UPDATE SET
 
 **Decision** :
 - Si `shouldSkipGamme = true` (all >=85, coverage >=90%) : UPDATE status = 'validated', phase = 'complete', log "SKIP: healthy"
-- Sinon : continuer a P1
+- Sinon : continuer a P0.5
+
+---
+
+## Phase P0.5 -- RAG CHECKS + KEYWORD RESEARCH BRIEF
+
+**Input** : P0 audit_result + fichier RAG de la gamme
+
+### Etape 1 : Verification RAG sufficiency
+
+Lire le fichier RAG : `Read /opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`
+
+Pour chaque section dans `sections_to_create UNION sections_to_improve`, verifier que le RAG contient les blocs requis :
+
+| Section   | Bloc RAG requis                    | Min items |
+|-----------|------------------------------------|-----------|
+| S1        | `domain.role`                      | 1 (non-vide) |
+| S2        | `maintenance.interval` + `wear_signs` | 1 champ |
+| S2_DIAG   | `diagnostic.symptoms` + `quick_checks` | 2 symptoms |
+| S3        | `selection.criteria`               | 3 criteres |
+| S4_DEPOSE | `diagnostic.causes` ou etapes      | 3 items |
+| S5        | `selection.anti_mistakes`          | 3 items |
+| S6        | `maintenance.good_practices`       | 2 items |
+| S8        | `rendering.faq`                    | 3 Q/A |
+
+**Si bloc absent ou insuffisant** : ajouter fix `{section, issue: "rag_insufficient", fix_type: "blocked"}`.
+Les sections `blocked` ne sont PAS envoyees a P2-P9.
+Elles necessitent un enrichissement RAG manuel d'abord.
+
+### Etape 2 : Detection RAG stale
+
+Comparer la date du fichier RAG (frontmatter `lifecycle.last_enriched_by` ou mtime fichier) avec `sgc_built_at` (date du contenu genere).
+
+Si RAG plus recent que le contenu genere : ajouter fix `{section: "ALL", issue: "rag_stale", fix_type: "improve"}`.
+Poids dans priority_score : +25 pts.
+
+### Etape 3 : Keyword Research Brief
+
+Construire un rapport de requetes a investiguer manuellement (Google, GSC, Semrush).
+
+**Template par categorie** (interpoler `{gamme}` = nom de la gamme) :
+
+```
+═══ REQUETES PRINCIPALES ═══
+
+1. Transactionnelles (R1) :
+   → "{gamme} pas cher"
+   → "prix {gamme}"
+   → "acheter {gamme} en ligne"
+
+2. Informationnelles (R3 conseil) :
+   → "quand changer {gamme}"
+   → "comment changer {gamme}"
+   → "symptôme {gamme} usé"
+   → "{gamme} durée de vie"
+
+3. Guide-achat (R3 guide) :
+   → "comment choisir {gamme}"
+   → "meilleur {gamme}"
+   → "{gamme} comparatif"
+
+4. Diagnostic (R5) :
+   → "bruit {gamme}"
+   → "voyant {gamme}"
+   → "panne {gamme} symptôme"
+
+5. PAA (People Also Ask) :
+   → Chercher "{gamme}" sur Google, noter les 4-8 PAA
+   → Chercher "quand changer {gamme}", noter les PAA
+```
+
+**Enrichir avec le RAG existant** :
+- Si `seo_cluster.primary_keyword` existe dans le RAG : l'ajouter
+- Si `seo_cluster.keyword_variants` existe : les ajouter
+- Si `diagnostic.symptoms` existe : generer requetes specifiques par symptome
+- Si `domain.confusion_with` existe : ajouter requetes de differentiation
+
+**Ecriture P0.5** : UPDATE skp_audit_result avec les nouveaux champs :
+- `keyword_research_queries` : `{transactional: [...], informational: [...], ...}`
+- `sections_blocked` : `["S3", "S6"]` (si RAG insuffisant)
+- `rag_stale` : `true/false`
 
 ---
 
@@ -319,6 +399,95 @@ Usage : quand l'audit a deja ete fait et on veut cibler S3 et S6.
 P0 sur N gammes, puis sections a la demande.
 Utile pour traiter 50+ gammes en batch audit, puis cibler les pires.
 
+### report (0 LLM, output texte lisible)
+P0 + P0.5 sur N gammes, trie par ROI, output rapport structure directement dans le chat.
+**Pas d'ecriture DB** (sauf cache audit dans skp_audit_result).
+C'est le point d'entree principal du workflow SEO.
+
+**Usage** :
+- `report 10` : audit top 10 gammes par ROI + fiches detaillees top 5
+- `report {pg_alias}` : fiche detaillee pour 1 gamme
+- `report all` : audit 221 gammes + rapport triage global
+
+**Etapes du mode report** :
+
+1. **Query SQL** : lister toutes les gammes avec conseil existant + business priority
+
+```sql
+SELECT pg.pg_id, pg.pg_alias, pg.pg_name,
+  COUNT(sgc.sgc_section_type) AS section_count,
+  ROUND(AVG(sgc.sgc_quality_score)) AS avg_score,
+  SUM(CASE WHEN sgc.sgc_sources IS NULL THEN 1 ELSE 0 END) AS missing_sources
+FROM pieces_gamme pg
+JOIN __seo_gamme_purchase_guide spg ON spg.pg_id = pg.pg_id::text
+LEFT JOIN __seo_gamme_conseil sgc ON sgc.sgc_pg_id = pg.pg_id::text
+WHERE pg.pg_display = '1' AND pg.pg_level IN ('1','2')
+GROUP BY pg.pg_id, pg.pg_alias, pg.pg_name
+ORDER BY avg_score ASC NULLS FIRST
+LIMIT {N};
+```
+
+2. **Pour chaque gamme** : lire le fichier RAG `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`
+   - Extraire `business_priority`, `monthly_searches`, `avg_basket`, `margin_tier`
+   - Verifier RAG sufficiency (voir P0.5 mapping section -> blocs requis)
+   - Extraire `seo_cluster.primary_keyword`, `keyword_variants`, `diagnostic.symptoms`
+
+3. **Calculer ROI** = searches_monthly x priority_score (plus haut = plus urgent)
+
+4. **Output Niveau 1** — Tableau triage global :
+
+```
+RAPPORT SEO PIPELINE -- {date} -- {N} gammes auditees
+
+TOP {N} GAMMES PAR ROI :
+
+| # | Gamme              | Searches | RAG  | Contenu | Bloque | Action prioritaire          |
+|---|--------------------|----------|------|---------|--------|-----------------------------|
+| 1 | plaquette-de-frein | 8000     | 85%  | 82%     | S4     | Enrichir RAG diagnostic     |
+
+RESUME :
+  Auditees: {N} | Saines (skip): {N} | A ameliorer: {N} | Bloquees RAG: {N}
+  Sources manquantes: {N}/{total} sections
+```
+
+5. **Output Niveau 2** — Fiche gamme detaillee (pour top 5 ou gamme demandee) :
+
+```
+FICHE : {Gamme Name} (pg_id={id})
+{monthly_searches} recherches/mois | panier {avg_basket}E | marge {margin_tier}
+
+ETAT DES SECTIONS :
+  OK : S1=100  S2=100  S3=100  S5=100  S7=100  S8=100
+  FAIBLE : S6=50 (thin: 30 chars, min 100)
+  BLOQUE : S4_DEPOSE=50 (RAG insuffisant: 2 causes, besoin 3)
+
+SOURCES E-E-A-T :
+  {N}/{total} sections SANS source
+
+KEYWORDS A RECHERCHER :
+  Informationnelles :
+    - "quand changer {gamme}"
+    - "comment changer {gamme}"
+    - "symptome {gamme} use"
+    - "{gamme} duree de vie"
+  Depuis le RAG :
+    - "{primary_keyword}" (vol: {volume})
+    - "{variant_1}"
+  PAA a capturer :
+    - Chercher "{gamme}" sur Google, noter 4-8 PAA
+    - Chercher "quand changer {gamme}", noter PAA
+
+RAG A ENRICHIR :
+  Fichier : /opt/automecanik/rag/knowledge/gammes/{slug}.md
+  Blocs manquants :
+    - diagnostic.causes : ajouter >=1 cause (actuellement 2, besoin 3)
+
+PROCHAINE ETAPE :
+  1. Enrichir le RAG (blocs ci-dessus)
+  2. Lancer : keyword-planner targeted {pg_alias}
+  3. Lancer : conseil-batch {pg_alias}
+```
+
 ---
 
 ## Rapport de session
@@ -360,6 +529,176 @@ Prochains suggeres: {5 aliases avec plus haut priority_score}
 | Fichier | Usage |
 |---------|-------|
 | `backend/src/config/keyword-plan.constants.ts` | Phases V3+V4, gates, thresholds, AuditResult |
+| `backend/src/config/r1-keyword-plan.constants.ts` | Phases R1, gates KA1-KA6, R1 sections, R3 forbidden terms |
 | `backend/src/config/conseil-pack.constants.ts` | PACK_DEFINITIONS, SECTION_QUALITY_CRITERIA, GENERIC_PHRASES |
-| `backend/src/modules/admin/services/keyword-plan-gates.service.ts` | Gate algorithm + V4 auditFromSections |
+| `backend/src/modules/admin/services/keyword-plan-gates.service.ts` | R3 gate algorithm + V4 auditFromSections |
+| `backend/src/modules/admin/services/r1-keyword-plan-gates.service.ts` | R1 audit, gates G1-G7, R3 risk score, upsert |
 | `/opt/automecanik/rag/knowledge/gammes/{slug}.md` | Knowledge RAG |
+| `PROCEDURE-SEO.md` | Workflow SEO V4 en 5 etapes |
+
+---
+
+## Mode R1 (transactionnel)
+
+Quand le mode R1 est demande (ex: "keyword plan R1 pour cremaillere-direction"), utiliser le pipeline R1 ci-dessous au lieu du pipeline R3 standard.
+
+**Axiome R1** : intent = transactionnel. Jamais informational/howto/diagnostic.
+
+**Table cible** : `__seo_r1_keyword_plan` (prefixe `rkp_`)
+
+**Position dans le pipeline R1** :
+
+    R1 Pipeline : r1-content-pipeline.service.ts -> sgpg_* colonnes
+    KP R1       : keyword-planner (mode R1)      -> __seo_r1_keyword_plan
+
+---
+
+### R1 KP0 -- AUDIT (SQL only, 0 LLM calls)
+
+**Input** : colonnes sgpg_* existantes dans `__seo_gamme_purchase_guide`
+
+**Query SQL** :
+
+```sql
+SELECT
+  sgpg_pg_id, sgpg_pg_alias,
+  sgpg_hero_subtitle, sgpg_h1_override,
+  sgpg_arg1_title, sgpg_arg2_title, sgpg_arg3_title, sgpg_arg4_title,
+  sgpg_selector_microcopy, sgpg_safe_table_rows,
+  sgpg_intro_title, sgpg_intro_role, sgpg_risk_title, sgpg_risk_explanation, sgpg_timing_title,
+  sgpg_arg1_content, sgpg_arg2_content, sgpg_arg3_content, sgpg_arg4_content,
+  sgpg_micro_seo_block,
+  sgpg_compatibilities_intro,
+  sgpg_faq,
+  sgpg_equipementiers_line, sgpg_family_cross_sell_intro,
+  sgpg_visual_plan
+FROM __seo_gamme_purchase_guide
+WHERE sgpg_pg_id = {pg_id};
+```
+
+**Traitement** (6 audit gates KA1-KA6) :
+
+Pour chaque section R1 (R1_S0..R1_S9, R1_META) :
+1. Concatener les valeurs des sgpg_columns correspondantes
+2. Calculer word_count, char_count
+3. **KA1** : section required + vide -> missing (30 pts)
+4. **KA2** : score section < 70 -> low_score (20 pts)
+5. **KA3** : word count hors content_contract bounds (15 pts)
+6. **KA4** : ratio phrases generiques > 10% (10 pts)
+7. **KA5** : pas de contenu traceable RAG (5 pts)
+8. **KA6** : contenu < 50% min_chars -> thin_content (15 pts)
+
+**Decision** :
+- Si all required present + all scores >=85 + coverage >=90% : SKIP (gamme saine)
+- Sinon : continuer a KP1
+
+**Ecriture KP0** :
+
+```sql
+INSERT INTO __seo_r1_keyword_plan
+  (rkp_pg_id, rkp_pg_alias, rkp_gamme_name, rkp_audit_result,
+   rkp_pipeline_phase, rkp_status, rkp_version, rkp_built_by, rkp_built_at)
+VALUES
+  ({pg_id}, '{pg_alias}', '{gamme_name}', '{audit_json}'::jsonb,
+   'KP0_AUDIT', 'draft', 1, 'r1-keyword-planner/v1', NOW())
+ON CONFLICT (rkp_pg_id, rkp_version)
+DO UPDATE SET
+  rkp_audit_result = EXCLUDED.rkp_audit_result,
+  rkp_pipeline_phase = EXCLUDED.rkp_pipeline_phase,
+  rkp_built_at = NOW();
+```
+
+---
+
+### R1 KP1 -- CLUSTERS (requetes transactionnelles)
+
+**Input** : KP0 audit_result + RAG knowledge
+
+Generer des query clusters TRANSACTIONNELS :
+- **Head** : "acheter {gamme}", "{gamme} en ligne", "commander {gamme}"
+- **Mid** : "{gamme} pas cher", "prix {gamme}", "{gamme} livraison rapide"
+- **Long** : "{gamme} {marque} {modele}", "{gamme} compatible {vehicule}"
+
+Chaque cluster doit pointer vers une section R1 cible (R1_S0..R1_S9).
+
+**Ecriture** : UPDATE rkp_query_clusters, phase = 'KP1_CLUSTERS'
+
+---
+
+### R1 KP2 -- SECTION TERMS
+
+Pour chaque section dans sections_to_create UNION sections_to_improve :
+- `include_terms[]` : keywords transactionnels specifiques
+- `micro_phrases[]` : phrases concretes a integrer
+- `forbidden_overlap[]` : termes R3 interdits (voir R3_FORBIDDEN_IN_R1)
+
+**Anti-cannibalisation** : aucun terme de R3_FORBIDDEN_IN_R1 dans les include_terms :
+`etape, pas-a-pas, tuto, tutoriel, montage, demonter, visser, devisser, couple de serrage, symptome, diagnostic, panne, voyant, comparatif, versus, vs`
+
+**Ecriture** : UPDATE rkp_section_terms, phase = 'KP2_SECTION_TERMS'
+
+---
+
+### R1 KP3 -- HEADING PLAN
+
+Generer H1/H2 alignes aux clusters transactionnels :
+- H1 : contient le keyword principal + gamme (ex: "Achetez vos {gamme} au meilleur prix")
+- H2 : un par section ciblee, integrant les include_terms
+
+**Regles** :
+- Aucun H2 ne doit contenir de termes R3 interdits
+- H2 aligne au cluster de la section
+
+**Ecriture** : UPDATE rkp_heading_plan, phase = 'KP3_HEADING_PLAN'
+
+---
+
+### R1 KP4 -- VALIDATE (gates G1-G7)
+
+Valider le keyword plan complet :
+
+1. **G1 INTENT_ALIGNMENT** (30) : intent = transactional (jamais informational/howto)
+2. **G2 BOUNDARY_RESPECT** (25) : pas de termes R3 dans heading_plan ou section_terms
+3. **G3 CLUSTER_COVERAGE** (20) : tous les head queries mappes a >= 1 section
+4. **G4 SECTION_OVERLAP** (15) : pas de overlap > 15% entre include_terms des sections
+5. **G5 FAQ_DEDUP** (10) : FAQ R1 pas dupliquee des FAQ R3
+6. **G6 ANCHOR_VALIDITY** (10) : liens internes vers /pieces/ valides
+7. **G7 BUDGET_COMPLIANCE** (5) : word count par section dans les bounds
+
+Calculer 4 scores :
+- `rkp_quality_score` = 100 - sum(penalties)
+- `rkp_duplication_score` = overlap sections (0-1)
+- `rkp_r3_risk_score` = Jaccard(R1 terms, R3 terms) → anti-cannibalisation miroir
+- `rkp_coverage_score` = sections ciblees / sections required
+
+**Decision** :
+- quality >= 60 : status = 'validated', phase = 'complete'
+- quality < 60 : status = 'draft', log issues
+
+**Ecriture** : UPDATE rkp_gate_report, rkp_quality_score, rkp_duplication_score, rkp_r3_risk_score, rkp_coverage_score, rkp_pipeline_phase, rkp_status
+
+---
+
+### R1 Rapport de session
+
+```
+R1 KEYWORD PLAN REPORT -- {date} -- {N} gammes
+
+| Gamme             | pg_id | Priority | Improve       | Create  | Score | Status |
+|-------------------|-------|----------|---------------|---------|-------|--------|
+| cremaillere       |   286 |       45 | R1_S3, R1_S5  | R1_S9   |    72 | DONE   |
+| rotule-direction  |   290 |        0 | --            | --      |    -- | SKIP   |
+
+Summary:
+  Audited: {N} | Skipped: {N} | Targeted: {N} | Failed: {N}
+```
+
+---
+
+### R1 Regles absolues
+
+- **ECRITURE SEULE** dans __seo_r1_keyword_plan
+- **Intent = transactional** — ne jamais generer de clusters informationnels ou diagnostiques
+- **R3_FORBIDDEN_IN_R1** — aucun terme de cette liste dans les heading_plan ou section_terms
+- **Anti-cannibalisation** — calculer rkp_r3_risk_score via Jaccard R1 vs R3
+- **Escape SQL** — echapper apostrophes dans toutes les valeurs

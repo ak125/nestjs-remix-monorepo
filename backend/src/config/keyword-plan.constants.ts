@@ -215,6 +215,10 @@ export const AUDIT_PRIORITY_WEIGHTS = {
   noSources: 5,
   /** Per section with content < thinContentRatio × minContentLength */
   thinContent: 15,
+  /** RAG file modified after content was generated */
+  ragStale: 25,
+  /** RAG file missing required blocks for a section */
+  ragInsufficient: 20,
 } as const;
 
 // ── Audit gate definitions (GA1-GA6, separate from plan gates G1-G6) ──
@@ -226,9 +230,11 @@ export interface PriorityFix {
     | 'low_score'
     | 'thin_content'
     | 'weak_phrases'
-    | 'no_sources';
+    | 'no_sources'
+    | 'rag_stale'
+    | 'rag_insufficient';
   current_score: number | null;
-  fix_type: 'create' | 'improve';
+  fix_type: 'create' | 'improve' | 'blocked';
 }
 
 export const AUDIT_GATE_DEFINITIONS: Record<string, GateDefinition> = {
@@ -258,6 +264,51 @@ export const AUDIT_GATE_DEFINITIONS: Record<string, GateDefinition> = {
   },
 };
 
+// ── RAG sufficiency mapping (section → required RAG blocks) ─
+
+export const RAG_SECTION_REQUIREMENTS: Record<
+  string,
+  { block: string; minItems: number }[]
+> = {
+  S1: [{ block: 'domain.role', minItems: 1 }],
+  S2: [
+    { block: 'maintenance.interval', minItems: 1 },
+    { block: 'maintenance.wear_signs', minItems: 1 },
+  ],
+  S2_DIAG: [
+    { block: 'diagnostic.symptoms', minItems: 2 },
+    { block: 'diagnostic.quick_checks', minItems: 2 },
+  ],
+  S3: [{ block: 'selection.criteria', minItems: 3 }],
+  S4_DEPOSE: [{ block: 'diagnostic.causes', minItems: 3 }],
+  S5: [{ block: 'selection.anti_mistakes', minItems: 3 }],
+  S6: [{ block: 'maintenance.good_practices', minItems: 2 }],
+  S8: [{ block: 'rendering.faq', minItems: 3 }],
+};
+
+// ── Keyword research query templates ────────────────────
+
+export const KW_RESEARCH_TEMPLATES = {
+  transactional: [
+    '{gamme} pas cher',
+    'prix {gamme}',
+    'acheter {gamme} en ligne',
+  ],
+  informational: [
+    'quand changer {gamme}',
+    'comment changer {gamme}',
+    'symptôme {gamme} usé',
+    '{gamme} durée de vie',
+  ],
+  guide_achat: [
+    'comment choisir {gamme}',
+    'meilleur {gamme}',
+    '{gamme} comparatif',
+  ],
+  diagnostic: ['bruit {gamme}', 'voyant {gamme}', 'panne {gamme} symptôme'],
+  paa: ['{gamme}', 'quand changer {gamme}'],
+} as const;
+
 // ── Audit result shape (JSONB stored in skp_audit_result) ──
 
 export interface AuditResult {
@@ -279,4 +330,10 @@ export interface AuditResult {
   content_lengths: Record<string, number>;
   /** One-liner summary for logs */
   audit_summary: string;
+  /** Keyword research queries to investigate (populated in P0.5) */
+  keyword_research_queries?: Record<string, string[]>;
+  /** Sections blocked due to insufficient RAG (cannot generate without enrichment) */
+  sections_blocked?: string[];
+  /** true if RAG file was modified after last content generation */
+  rag_stale?: boolean;
 }
