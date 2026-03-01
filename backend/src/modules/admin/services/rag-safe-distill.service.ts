@@ -79,7 +79,13 @@ const KIND_TO_BUCKET: Record<string, string> = {
 
 // ── RoleId → search DTO target_role mapping (DTO enum: R1_ROUTER | R3_GUIDE | R4_REFERENCE | R5_DIAGNOSTIC) ──
 
-const ROLE_TO_SEARCH_TARGET: Record<string, string> = {
+type SearchTargetRole =
+  | 'R1_ROUTER'
+  | 'R3_GUIDE'
+  | 'R4_REFERENCE'
+  | 'R5_DIAGNOSTIC';
+
+const ROLE_TO_SEARCH_TARGET: Record<string, SearchTargetRole> = {
   R1_ROUTER: 'R1_ROUTER',
   R3_GUIDE: 'R3_GUIDE',
   R3_CONSEILS: 'R3_GUIDE',

@@ -65,6 +65,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
     ({
       getPageDataRpcV2: jest.fn(async () => makeBaseRpcPayload()),
       getSeoFragmentsByTypeId: jest.fn(() => ({ fragment1: '', fragment2: '' })),
+      getTechnicalCodesByTypeIds: jest.fn(async () => []),
     }) as any;
 
   const makeAutoGuide = () => ({
