@@ -51,7 +51,7 @@ test.describe('1. Menu → Catégorie', () => {
     test(`[${name}] Navigation menu vers catégorie`, async ({ page }) => {
       await page.setViewportSize(size);
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       // Mobile: ouvrir burger menu puis accordion Catalogue
       if (isMobile(size.width)) {
@@ -80,7 +80,7 @@ test.describe('1. Menu → Catégorie', () => {
 
       if (await categoryLink.isVisible({ timeout: 3000 }).catch(() => false)) {
         await categoryLink.click({ force: true }); // force pour éviter l'interception
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('load');
 
         // Vérifier navigation OK
         await expect(page.locator('h1, h2').first()).toBeVisible();
@@ -103,7 +103,7 @@ test.describe('2. Recherche → Fiche produit', () => {
     test(`[${name}] Recherche et ouverture fiche`, async ({ page }) => {
       await page.setViewportSize(size);
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       // Chercher input de recherche
       const searchInput = page.locator('input[placeholder*="recherch" i], input[type="search"], input[name="q"]').first();
@@ -113,7 +113,7 @@ test.describe('2. Recherche → Fiche produit', () => {
         await searchInput.press('Enter');
 
         // Attendre résultats
-        await page.waitForLoadState('networkidle');
+        await page.waitForLoadState('load');
         await page.waitForTimeout(500);
 
         // Vérifier qu'on a des résultats ou une page de recherche
@@ -148,7 +148,7 @@ test.describe('3. Ajout panier', () => {
     test(`[${name}] Ajouter au panier et vérifier`, async ({ page }) => {
       await page.setViewportSize(size);
       await page.goto('/pieces/plaquettes-de-frein-1.html');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       if (await skipIf404(page)) return;
 
@@ -171,7 +171,7 @@ test.describe('3. Ajout panier', () => {
           if (cartUpdated) {
             // Aller au panier
             await page.goto('/cart');
-            await page.waitForLoadState('networkidle');
+            await page.waitForLoadState('load');
 
             // Vérifier qu'il y a au moins un article ou panier vide message
             const cartContent = await page.locator('[data-testid="cart-item"], .cart-item, text=/panier.*vide/i').first().isVisible({ timeout: 3000 }).catch(() => false);
@@ -195,7 +195,7 @@ test.describe('4. Filtres', () => {
     test(`[${name}] Appliquer filtre`, async ({ page }) => {
       await page.setViewportSize(size);
       await page.goto('/pieces/plaquettes-de-frein-1.html');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       if (await skipIf404(page)) return;
 
@@ -238,7 +238,7 @@ test.describe('5. Navigation retour', () => {
   test('Navigation retour préserve contexte', async ({ page }) => {
     await page.setViewportSize(viewports.iphone);
     await page.goto('/pieces/plaquettes-de-frein-1.html');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     if (await skipIf404(page)) return;
 
@@ -274,7 +274,7 @@ test.describe('6. Orientation', () => {
     // Portrait
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/pieces/plaquettes-de-frein-1.html');
-    await page.waitForLoadState('networkidle');
+    await page.waitForLoadState('load');
 
     if (await skipIf404(page)) return;
 
@@ -325,7 +325,7 @@ test.describe('7. Checklist qualité', () => {
 
       await page.setViewportSize(size);
       await page.goto('/pieces/plaquettes-de-frein-1.html');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       if (await skipIf404(page)) return;
 
@@ -359,7 +359,7 @@ test.describe('7. Checklist qualité', () => {
     test(`[${name}] Texte lisible (font >= 14px)`, async ({ page }) => {
       await page.setViewportSize(size);
       await page.goto('/pieces/plaquettes-de-frein-1.html');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       if (await skipIf404(page)) return;
 
@@ -373,7 +373,7 @@ test.describe('7. Checklist qualité', () => {
     test(`[${name}] Images chargées correctement`, async ({ page }) => {
       await page.setViewportSize(size);
       await page.goto('/pieces/plaquettes-de-frein-1.html');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       if (await skipIf404(page)) return;
 
@@ -406,7 +406,7 @@ test.describe('8. Homepage', () => {
     test(`[${name}] Homepage charge correctement`, async ({ page }) => {
       await page.setViewportSize(size);
       await page.goto('/');
-      await page.waitForLoadState('networkidle');
+      await page.waitForLoadState('load');
 
       // Vérifier éléments critiques
       await expect(page.locator('body')).toBeVisible();
