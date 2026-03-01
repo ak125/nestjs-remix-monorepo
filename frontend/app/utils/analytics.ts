@@ -5,15 +5,7 @@
 
 import { logger } from "~/utils/logger";
 
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-    dataLayer?: any[];
-    __gtmLoaded?: boolean;
-    __loadGTM?: () => void;
-    __grantAnalyticsConsent?: () => void;
-  }
-}
+// GA4 Window augmentation: see frontend/env.d.ts (single source of truth)
 
 /**
  * 👀 Tracker la vue d'un article
@@ -148,6 +140,52 @@ export function trackScrollDepth(articleId: string, percentage: number) {
     });
   }
   logger.log("📊 Analytics: Scroll depth", { articleId, percentage });
+}
+
+// ============================================================================
+// FUNNEL SÉLECTEUR VÉHICULE R1
+// ============================================================================
+
+/**
+ * 🚗 Sélecteur véhicule : sélection complète (marque→modèle→type terminé)
+ */
+export function trackSelectorComplete(gamme: string, vehicle: string) {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", "selector_complete", {
+      gamme,
+      vehicle,
+      page_location: window.location.href,
+    });
+  }
+  logger.log("📊 Analytics: selector_complete", { gamme, vehicle });
+}
+
+/**
+ * 🎯 Sélecteur véhicule : clic CTA "Voir mes pièces compatibles"
+ */
+export function trackSelectorCTA(gamme: string, vehicle: string) {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", "selector_cta_click", {
+      gamme,
+      vehicle,
+      page_location: window.location.href,
+    });
+  }
+  logger.log("📊 Analytics: selector_cta_click", { gamme, vehicle });
+}
+
+/**
+ * 🔄 Sélecteur véhicule : reprise via cookie (véhicule déjà enregistré)
+ */
+export function trackSelectorResume(gamme: string, vehicle: string) {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", "selector_resume", {
+      gamme,
+      vehicle,
+      page_location: window.location.href,
+    });
+  }
+  logger.log("📊 Analytics: selector_resume", { gamme, vehicle });
 }
 
 // ============================================================================
