@@ -136,6 +136,10 @@ RISQUES D'EXTRAPOLATION :
 
 RAG :
 • Knowledge doc : {trouvé/absent} — truth_level : {L1-L4} — updated_at : {date}
+• Role filtering : actif — target_role : {ROLE} — chunks avec primary_role matching : {N}/{total}
+• Chunk kinds : {distribution, ex: definition=2, selection_checks=1, faq=1}
+• Page contracts : {liste page_contract_id uniques, ex: PageContractR3@1.0 x3, PageContractR4@1.0 x1}
+• Media hints : {liste media_slots_hint non-null, ex: table/specs_table x1, faq/faq_block x2}
 • Schema version : {v4 (5 blocs) / v3 (page_contract) / v1 (minimal)}
 • v4 blocs : A(domain) {✅/⚠️/❌} B(selection) {✅/⚠️/❌} C(diagnostic) {✅/⚠️/❌} D(maintenance) {✅/⚠️/❌} E(installation) {✅/⚠️/N/A}
 • _sources : {N} entries — cross_gammes : {N} relations
@@ -146,6 +150,10 @@ DÉCISION : {GO / GO AVEC RÉSERVES / STOP — enrichir via /rag-ops}
 
 Si STOP → ne PAS passer à la Phase 2. Proposer `/rag-ops ingest` ou demander des données complémentaires.
 Si GO AVEC RÉSERVES → les zones à vérifier utilisent des formulations conditionnelles (voir section Gestion de l'Incertitude).
+
+**Interprétation des métadonnées RAG v2.5 :**
+- Si un chunk a un `page_contract_id` qui ne correspond pas au rôle cible (ex: `PageContractR4@1.0` pour une recherche R3_GUIDE), le traiter comme supplémentaire : extraire uniquement les `definition` kinds, jamais `selection_checks` ou `faq_pairs`. Signaler en ZONES À VÉRIFIER.
+- Si `media_slots_hint` contient `table/specs_table`, privilégier un `<table>` HTML plutôt qu'un paragraphe prose. Si `faq/faq_block`, utiliser `<details><summary>`.
 
 **Fraîcheur du contenu source :**
 
@@ -168,15 +176,12 @@ Avant toute rédaction portant sur une pièce automobile, exécuter ce workflow 
 Construire le slug depuis le nom de la gamme : "Disque de frein" → `disque-de-frein`
 
 ```bash
-# Recherche par section (endpoint public, pas d'auth)
-curl -s "http://localhost:3000/api/rag/section/guide-achat?q={nom_piece}&limit=5" \
-  | jq '.results[] | {title, truth_level, updated_at, confidence_score, doc_family}'
-
-# Recherche sémantique libre
+# Recherche RAG avec role targeting (v2.5)
+# {ROLE} selon page cible : R1_ROUTER, R3_GUIDE, R4_REFERENCE, R5_DIAGNOSTIC
 curl -s -X POST http://localhost:3000/api/rag/search \
   -H "Content-Type: application/json" \
-  -d '{"query": "{nom_piece}", "limit": 5}' \
-  | jq '.results[] | {title, truth_level, confidence_score, source_path}'
+  -d '{"query": "{nom_piece}", "limit": 5, "routing": {"target_role": "{ROLE}"}}' \
+  | jq '.results[] | {title, truth_level, updated_at, confidence_score, primary_role, purity_score, chunk_kind, source_path, page_contract_id, media_slots_hint}'
 ```
 
 **Décision selon les résultats :**
@@ -229,14 +234,16 @@ Traiter les deux formats : pour chaque entrée, générer un bloc "Ne pas confon
 Interroger la section correspondant au rôle de page cible :
 
 ```bash
-# Adapter la section au rôle cible
-# R3 Blog/guide → guide-achat
-# R3 Blog/conseils → entretien (+ injecter template de conseils-role.md §7)
-# R4 Référence  → reference (+ injecter concepts partagés de r4-reference-role.md §8)
-# R5 Diagnostic → diagnostic
-# Entretien     → entretien
-curl -s "http://localhost:3000/api/rag/section/{section}?q={nom_piece}&limit=5" \
-  | jq '.results[:3] | .[] | {title, truth_level, content}'
+# Recherche complementaire avec role targeting (v2.5)
+# Enrichir la query avec des mots-cles de section selon le role cible :
+# R3 Blog/guide → "guide achat choix selection" (+ injecter template de conseils-role.md §7)
+# R3 Blog/conseils → "entretien remplacement etapes" (+ injecter template de conseils-role.md §7)
+# R4 Reference  → "definition technique composants" (+ injecter concepts partages de r4-reference-role.md §8)
+# R5 Diagnostic → "symptomes diagnostic panne"
+curl -s -X POST http://localhost:3000/api/rag/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{nom_piece} {section_keywords}", "limit": 5, "routing": {"target_role": "{ROLE}"}}' \
+  | jq '.results[:3] | .[] | {title, truth_level, content, primary_role, chunk_kind}'
 ```
 
 Consolider les résultats des étapes 1 et 3 pour constituer la base de rédaction.
@@ -857,9 +864,12 @@ Pour traiter plusieurs gammes en série :
 Pour chaque gamme cible, vérifier AVANT de lancer la rédaction :
 
 ```bash
-# Pour chaque gamme, récupérer le knowledge doc
-curl -s "http://localhost:3000/api/rag/section/guide-achat?q={nom_gamme}&limit=1" \
-  | jq '.results[0] | {title, truth_level, updated_at}'
+# Pour chaque gamme, récupérer le knowledge doc via POST /api/rag/search (RAG v2.5)
+# target_role = R3_GUIDE pour batch guide-achat (les conseils partagent le rôle R3)
+curl -s -X POST http://localhost:3000/api/rag/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "{nom_gamme}", "limit": 1, "routing": {"target_role": "R3_GUIDE"}}' \
+  | jq '.results[0] | {title, truth_level, updated_at, primary_role, purity_score}'
 ```
 
 **Critères de pré-qualification :**
@@ -999,3 +1009,13 @@ Un contenu :
 - ✅ Scalable (templates réutilisables, 4M+ produits)
 - ✅ Sans dette sémantique
 - ✅ Sans hallucination
+
+---
+
+## RAG v2.5 — Éléments différés
+
+| Élément | Statut | Raison | Réévaluer si |
+|---------|--------|--------|--------------|
+| `safe_excerpt_by_role` | DEFER | RAG_SAFE_DISTILL pas encore stable en prod | contamination_flags < 15% sur R1_ROUTER |
+| `block_kind` | DEFER indéfini | `chunk_kind` + `media_slots_hint` couvrent 80% | Besoin de distinguer rendering intent indépendamment du content type |
+| `PageContractR1Router` media | HORS SCOPE | R1 a un budget 150 mots strict + template frontend fixe | Décision archi définitive |
