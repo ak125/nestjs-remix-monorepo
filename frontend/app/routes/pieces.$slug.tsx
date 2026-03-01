@@ -10,13 +10,13 @@
  */
 
 import {
-  json,
+  defer,
   redirect,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
 import {
-  Link,
+  Await,
   useLoaderData,
   useNavigation,
   useLocation,
@@ -24,18 +24,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import {
-  AlertCircle,
-  AlertTriangle,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  Copy,
-  FileText,
-  Shield,
-  Truck,
-  Users,
-} from "lucide-react";
+import { Shield } from "lucide-react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { useEffect, useState, lazy, Suspense } from "react";
@@ -70,6 +59,11 @@ import {
   type GammePageDataV1,
   GAMME_PAGE_CONTRACT_VERSION,
 } from "~/types/gamme-page-contract.types";
+import {
+  trackSelectorComplete,
+  trackSelectorCTA,
+  trackSelectorResume,
+} from "~/utils/analytics";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { ImageOptimizer } from "~/utils/image-optimizer";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -83,6 +77,7 @@ import { hierarchyApi } from "../services/api/hierarchy.api";
 import { normalizeAlias } from "../utils/url-builder.utils";
 import {
   getVehicleClient,
+  clearVehicleClient,
   buildBreadcrumbWithVehicle,
   storeVehicleClient,
   type VehicleCookie,
@@ -130,13 +125,6 @@ const CompatibilityConfirmationBlock = lazy(() =>
   })),
 );
 
-// 🎯 Encart anti-doute / réassurance conversion
-const UXMessageBox = lazy(() =>
-  import("../components/seo/UXMessageBox").then((m) => ({
-    default: m.UXMessageBox,
-  })),
-);
-
 // 📖 FAQ Section avec Schema.org
 const FAQSection = lazy(() =>
   import("../components/seo/FAQSection").then((m) => ({
@@ -173,15 +161,6 @@ const R1_SELECTOR_FAQ = [
     answer:
       "Deux motorisations proches (par ex. 1.6 HDi 90 ch vs 110 ch) utilisent souvent des montages différents. Repérez le code moteur dans le champ D.2 de votre carte grise ou sur la plaque constructeur du compartiment moteur. En cas de doute, notre équipe peut vérifier avec votre numéro VIN.",
   },
-];
-
-// Navigation rapide mobile — familles populaires (ancres vers catalogue homepage)
-const QUICK_NAV_LINKS = [
-  { label: "Freinage", href: "/#catalogue" },
-  { label: "Filtration", href: "/#catalogue" },
-  { label: "Distribution", href: "/#catalogue" },
-  { label: "Amortisseurs", href: "/#catalogue" },
-  { label: "Toutes les marques", href: "/#toutes-les-marques" },
 ];
 
 // Contrat de donnees : voir frontend/app/types/gamme-page-contract.types.ts
@@ -361,13 +340,85 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       logger.warn(`[pieces/$slug] Sections degradees: ${degraded.join(", ")}`);
     }
 
-    return json(
-      { ...pageData, canonicalPath },
+    // ── LCP STREAMING: extractions légères pour above-fold ──
+    // Evite de garder motorisations/equipementiers en sync (150-300KB → ~5KB)
+    const motorItems = pageData.motorisations?.items || [];
+
+    // JSON-LD ItemList: 30 items max (même limite que meta())
+    const motorisationsSchema = motorItems.slice(0, 30).map((item) => ({
+      marque_name: item.marque_name,
+      modele_name: item.modele_name,
+      type_name: item.type_name,
+      link: item.link,
+    }));
+
+    // Période range pour S_COMPAT + proofs
+    const allYears = motorItems
+      .flatMap((m) => (m.periode || "").match(/\d{4}/g) || [])
+      .map(Number)
+      .filter((y) => y > 1990 && y < 2100);
+    const periodeRange =
+      allYears.length >= 2
+        ? `${Math.min(...allYears)} – ${Math.max(...allYears)}`
+        : "";
+
+    // Micro-preuves pour R1ReusableContent (S_BUY_ARGS)
+    const equipNames = (pageData.equipementiers?.items || [])
+      .map((e) => e.pm_name)
+      .filter(Boolean);
+    const proofData = {
+      topMarques: [
+        ...new Set(motorItems.map((m) => m.marque_name).filter(Boolean)),
+      ].slice(0, 3),
+      topEquipementiers: equipNames.slice(0, 4),
+      vehicleCount: motorItems.length,
+      periodeRange,
+      topMotorCodes: [
+        ...new Set(
+          motorItems
+            .map((m) => (m as { engine_code?: string }).engine_code)
+            .filter(Boolean),
+        ),
+      ].slice(0, 3) as string[],
+    };
+
+    // ── LCP STREAMING: defer() — above-fold sync, below-fold streamed ──
+    const responseHeaders: Record<string, string> = {
+      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+    };
+    // Preload hero image via HTTP Link header (browser fetches before HTML parse)
+    const heroImageUrl = content?.pg_pic || "";
+    if (heroImageUrl) {
+      responseHeaders["Link"] =
+        `<${heroImageUrl}>; rel=preload; as=image; fetchpriority=high`;
+    }
+
+    return defer(
       {
-        headers: {
-          "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
-        },
+        // === SYNC (above-fold + meta/JSON-LD) — ~5-10KB ===
+        _v: pageData._v,
+        pageRole: pageData.pageRole,
+        status: pageData.status,
+        meta: pageData.meta,
+        content: pageData.content,
+        breadcrumbs: pageData.breadcrumbs,
+        famille: pageData.famille,
+        performance: pageData.performance,
+        purchaseGuideData: pageData.purchaseGuideData,
+        substitution: pageData.substitution,
+        reference: pageData.reference,
+        canonicalPath,
+        motorisationsSchema,
+        proofData,
+
+        // === DEFERRED (streamed après le premier paint) — ~100-250KB ===
+        motorisations: Promise.resolve(pageData.motorisations),
+        equipementiers: Promise.resolve(pageData.equipementiers),
+        catalogueMameFamille: Promise.resolve(pageData.catalogueMameFamille),
+        seoSwitches: Promise.resolve(pageData.seoSwitches),
+        guide: Promise.resolve(pageData.guide),
       },
+      { headers: responseHeaders },
     );
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
@@ -384,7 +435,22 @@ export const meta: MetaFunction<typeof loader> = ({
   location,
 }) => {
   const data = rawData as
-    | (GammePageDataV1 & { canonicalPath?: string })
+    | (GammePageDataV1 & {
+        canonicalPath?: string;
+        motorisationsSchema?: Array<{
+          marque_name: string;
+          modele_name: string;
+          type_name: string;
+          link: string;
+        }>;
+        proofData?: {
+          topMarques: string[];
+          topEquipementiers: string[];
+          vehicleCount: number;
+          periodeRange: string;
+          topMotorCodes: string[];
+        };
+      })
     | undefined;
   if (!data || data.status !== 200) {
     return [
@@ -402,12 +468,12 @@ export const meta: MetaFunction<typeof loader> = ({
 
   // ✅ Utiliser les données SEO du backend (priorité absolue)
   // Les titres/descriptions viennent de __seo_gamme_car via l'API RPC
-  const title = data.meta?.title || data.content?.pg_name || "Pièces Auto";
+  const title =
+    data.meta?.title ||
+    `${data.content?.pg_name || "Pièces auto"} compatible véhicule | Prix & Livraison rapide`;
   const description =
     data.meta?.description ||
     `${data.content?.pg_name || "Pièces"} pour votre véhicule. Trouvez la référence compatible parmi nos équipementiers de confiance. Livraison rapide.`;
-  const keywords =
-    data.meta?.keywords || data.content?.pg_name?.toLowerCase() || "";
 
   // 📊 Schema @graph pour page catégorie/recherche - CollectionPage + ItemList
   // Note: Pas de schéma Product car c'est une page de recherche sans prix affichés
@@ -460,35 +526,40 @@ export const meta: MetaFunction<typeof loader> = ({
             "@type": "ItemList",
             "@id": `${canonicalUrl}#list`,
             name: `${data.content.pg_name} - Véhicules compatibles`,
-            numberOfItems: data.motorisations?.items?.length || 0,
-            itemListElement: (data.motorisations?.items || [])
-              .slice(0, 30)
-              .map((item, index) => ({
+            numberOfItems: data.motorisationsSchema?.length || 0,
+            itemListElement: (data.motorisationsSchema || []).map(
+              (item, index) => ({
                 "@type": "ListItem",
                 position: index + 1,
                 name: `${data.content?.pg_name} ${item.marque_name} ${item.modele_name} ${item.type_name}`,
                 url: item.link
                   ? `https://www.automecanik.com${item.link}`
                   : canonicalUrl,
-              })),
+              }),
+            ),
           },
-          // 3️⃣ HowTo - Etapes de selection (si howToChoose present)
-          ...(data.purchaseGuideData?.howToChoose
-            ? [
-                {
-                  "@type": "HowTo",
-                  name: `Comment bien choisir vos ${data.content.pg_name.toLowerCase()}`,
-                  step: data.purchaseGuideData.howToChoose
-                    .split(/\d+\)\s*/)
-                    .filter((s: string) => s.trim().length > 0)
-                    .map((s: string, i: number) => ({
-                      "@type": "HowToStep",
-                      position: i + 1,
-                      text: s.trim().replace(/\.$/, ""),
+          // 3️⃣ FAQPage — questions frequentes (cap 6)
+          ...(() => {
+            const items = data.purchaseGuideData?.faq?.length
+              ? data.purchaseGuideData.faq
+              : R1_SELECTOR_FAQ;
+            const capped = items.slice(0, 6);
+            return capped.length > 0
+              ? [
+                  {
+                    "@type": "FAQPage",
+                    mainEntity: capped.map((item) => ({
+                      "@type": "Question",
+                      name: item.question,
+                      acceptedAnswer: {
+                        "@type": "Answer",
+                        text: item.answer,
+                      },
                     })),
-                },
-              ]
-            : []),
+                  },
+                ]
+              : [];
+          })(),
           // 4️⃣ Organization — site publisher
           {
             "@type": "Organization",
@@ -498,7 +569,7 @@ export const meta: MetaFunction<typeof loader> = ({
             logo: "https://www.automecanik.com/logo.png",
             contactPoint: {
               "@type": "ContactPoint",
-              telephone: "+33-1-XX-XX-XX-XX",
+              telephone: "+33-1-48-47-96-27",
               email: "contact@automecanik.com",
               contactType: "Service Client",
               areaServed: "FR",
@@ -533,11 +604,6 @@ export const meta: MetaFunction<typeof loader> = ({
   // Description
   result.push({ name: "description", content: description });
 
-  // Keywords
-  if (keywords) {
-    result.push({ name: "keywords", content: keywords });
-  }
-
   // OG image — derive from pg_pic if available, fallback to transaction asset
   const ogImage = getOgImageUrl(data.content?.pg_pic, "transaction");
 
@@ -549,12 +615,16 @@ export const meta: MetaFunction<typeof loader> = ({
   result.push({ property: "og:image", content: ogImage });
   result.push({ property: "og:image:width", content: "1200" });
   result.push({ property: "og:image:height", content: "630" });
+  result.push({ property: "og:image:alt", content: title });
+  result.push({ property: "og:site_name", content: "Automecanik" });
+  result.push({ property: "og:locale", content: "fr_FR" });
 
   // Twitter Cards
   result.push({ name: "twitter:card", content: "summary_large_image" });
   result.push({ name: "twitter:title", content: title });
   result.push({ name: "twitter:description", content: description });
   result.push({ name: "twitter:image", content: ogImage });
+  result.push({ name: "twitter:site", content: "@automecanik" });
 
   // Canonical
   result.push({ tagName: "link", rel: "canonical", href: canonicalUrl });
@@ -578,18 +648,36 @@ export const meta: MetaFunction<typeof loader> = ({
   return result;
 };
 
-export function headers({
-  loaderHeaders: _loaderHeaders,
-}: {
-  loaderHeaders: Headers;
-}) {
-  return {
+export function headers({ loaderHeaders }: { loaderHeaders: Headers }) {
+  const h: Record<string, string> = {
     "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
   };
+  // Forward Link header (hero image preload) from loader
+  const link = loaderHeaders.get("Link");
+  if (link) h["Link"] = link;
+  return h;
 }
 
+// Type étendu pour les champs sync extraits dans le loader (LCP streaming)
+type PiecesPageData = GammePageDataV1 & {
+  canonicalPath?: string;
+  motorisationsSchema?: Array<{
+    marque_name: string;
+    modele_name: string;
+    type_name: string;
+    link: string;
+  }>;
+  proofData?: {
+    topMarques: string[];
+    topEquipementiers: string[];
+    vehicleCount: number;
+    periodeRange: string;
+    topMotorCodes: string[];
+  };
+};
+
 export default function PiecesDetailPage() {
-  const data = useLoaderData<typeof loader>() as unknown as GammePageDataV1;
+  const data = useLoaderData<typeof loader>() as unknown as PiecesPageData;
   const navigation = useNavigation();
   const location = useLocation();
   const navigate = useNavigate();
@@ -601,8 +689,6 @@ export default function PiecesDetailPage() {
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleCookie | null>(
     null,
   );
-  const [cnitOpen, setCnitOpen] = useState(false);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     setSelectedVehicle(getVehicleClient());
@@ -662,38 +748,49 @@ export default function PiecesDetailPage() {
 
   // V2: itemListData + SEOHelmet retirés — meta() gère tout le <head>
 
-  // Variables partagées par S_BUY_ARGS et S_COMPAT (0 appel API supplémentaire)
-  const motorItems = data.motorisations?.items || [];
-  const allYears = motorItems
-    .flatMap((m) => (m.periode || "").match(/\d{4}/g) || [])
-    .map(Number)
-    .filter((y) => y > 1990 && y < 2100);
-  const periodeRange =
-    allYears.length >= 2
-      ? `${Math.min(...allYears)} – ${Math.max(...allYears)}`
-      : "";
+  // LCP STREAMING: proofData extrait dans le loader (sync, ~1KB)
+  // Remplace le calcul motorItems/allYears/periodeRange qui nécessitait motorisations (deferred)
+  const periodeRange = data.proofData?.periodeRange || "";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
+      <a
+        href="#hero-transaction"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-navy focus:rounded-lg focus:shadow-lg focus:text-sm focus:font-semibold"
+      >
+        Aller au contenu principal
+      </a>
+
       {/* ⏳ Indicateur de chargement global */}
       {isLoading && (
-        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-semantic-info animate-pulse">
-          <div className="h-full bg-gradient-to-r from-semantic-info via-secondary-500 to-semantic-info bg-[length:200%_100%] animate-[shimmer_2s_linear_infinite]"></div>
+        <div
+          role="status"
+          aria-label="Chargement en cours"
+          className="fixed top-0 left-0 right-0 z-50 h-1 bg-semantic-info animate-pulse"
+        >
+          <div className="h-full bg-gradient-to-r from-semantic-info via-secondary-500 to-semantic-info bg-[length:200%_100%] animate-pulse"></div>
         </div>
       )}
 
       {/* Breadcrumbs visuels */}
-      <div className="container mx-auto px-4 pt-4">
+      <div className="container mx-auto px-page pt-4">
         <PublicBreadcrumb items={breadcrumbs} />
       </div>
 
       {/* 🎯 HERO SECTION - Avec couleur de la famille */}
       <HeroTransaction
+        id="hero-transaction"
         data-section="S_HERO"
         data-page-role="R1"
         gradient={familleColor}
         slogan={resolveSlogan("transaction", data.content?.pg_name)}
-        className="py-12 md:py-16 lg:py-20"
+        badges={[
+          "400 000+ pièces",
+          "Livraison 24-48h",
+          "Paiement sécurisé",
+          "Experts gratuits",
+        ]}
+        className="py-8 md:py-16 lg:py-20"
         backgroundSlot={
           <>
             {/* Image wallpaper en arrière-plan (si disponible) */}
@@ -703,7 +800,7 @@ export default function PiecesDetailPage() {
                   src={data.content.pg_wall}
                   srcSet={wallSrcSet}
                   sizes="100vw"
-                  alt={data.content.pg_name || ""}
+                  alt=""
                   width={1920}
                   height={400}
                   className="w-full h-full object-cover opacity-25"
@@ -764,7 +861,7 @@ export default function PiecesDetailPage() {
                 const rawH1 =
                   data.purchaseGuideData?.h1Override ||
                   data.content?.h1 ||
-                  `${data.content?.pg_name || "Pièces auto"} : trouvez la référence compatible`;
+                  `${data.content?.pg_name || "Pièces auto"} — trouvez la référence compatible avec votre véhicule`;
                 // Nettoyer les balises HTML (<b>, </b>, etc.)
                 return rawH1.replace(/<[^>]*>/g, "");
               })()}
@@ -772,30 +869,19 @@ export default function PiecesDetailPage() {
           </h1>
         </div>
 
-        {/* 🎯 Encart anti-doute / réassurance - lève le verrou mental avant sélection */}
-        <Suspense fallback={null}>
-          <UXMessageBox
-            gammeName={data.content?.pg_name}
-            className="mt-6 mb-4"
-          />
-        </Suspense>
+        <p className="text-white/80 text-base md:text-lg font-medium text-center mt-3 max-w-2xl mx-auto">
+          {(() => {
+            const name = data.content?.pg_name?.toLowerCase() || "";
+            const pluralName = pluralizePieceName(name);
+            return name
+              ? `Trouvez vos ${pluralName} compatibles avec votre véhicule en quelques secondes`
+              : "Trouvez la référence compatible avec votre véhicule en quelques secondes";
+          })()}
+        </p>
 
         {/* Cadre glassmorphism contenant Image + VehicleSelector */}
         <div className="max-w-5xl mx-auto mb-8 md:mb-10 animate-in fade-in duration-1000 delay-200">
           <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
-            {/* Sous-titre dynamique en haut du cadre */}
-            <div className="text-center mb-6">
-              <p className="text-white/95 text-base md:text-lg font-semibold">
-                {(() => {
-                  const name = data.content?.pg_name?.toLowerCase() || "";
-                  const pluralName = pluralizePieceName(name);
-                  return name
-                    ? `Trouvez vos ${pluralName} compatibles avec votre véhicule`
-                    : "Trouvez la référence compatible avec votre véhicule";
-                })()}
-              </p>
-            </div>
-
             {/* Layout horizontal : Image + VehicleSelector côte à côte */}
             <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
               {/* Image produit à gauche */}
@@ -806,24 +892,62 @@ export default function PiecesDetailPage() {
                   {/* Container image */}
                   <div className="relative bg-white/10 rounded-2xl p-6 border border-white/20 shadow-lg">
                     <div className="w-full aspect-square flex items-center justify-center">
-                      <img
-                        src={
-                          data.content?.pg_pic ||
-                          "/images/categories/default.svg"
+                      {(() => {
+                        const imgPath = (data.content?.pg_pic || "").replace(
+                          /^\/img\//,
+                          "",
+                        );
+                        if (!imgPath) {
+                          return (
+                            <img
+                              src="/images/categories/default.svg"
+                              alt={data.content?.pg_name || "Pièce auto"}
+                              width={400}
+                              height={400}
+                              className="w-full h-full object-contain"
+                            />
+                          );
                         }
-                        alt={data.content?.pg_name || "Pièce auto"}
-                        width={400}
-                        height={400}
-                        className="w-full h-full object-contain"
-                        loading="eager"
-                        decoding="async"
-                        fetchPriority="high"
-                        onError={(e) => {
-                          e.currentTarget.src =
-                            "/images/categories/default.svg";
-                          e.currentTarget.onerror = null;
-                        }}
-                      />
+                        const pictureSet = ImageOptimizer.getPictureImageSet(
+                          imgPath,
+                          {
+                            widths: [200, 400, 600],
+                            quality: 85,
+                            sizes: "(max-width: 640px) 200px, 400px",
+                            width: 400,
+                            height: 400,
+                          },
+                        );
+                        return (
+                          <picture>
+                            <source
+                              srcSet={pictureSet.avifSrcSet}
+                              type="image/avif"
+                              sizes={pictureSet.sizes}
+                            />
+                            <source
+                              srcSet={pictureSet.webpSrcSet}
+                              type="image/webp"
+                              sizes={pictureSet.sizes}
+                            />
+                            <img
+                              src={pictureSet.fallbackSrc}
+                              alt={data.content?.pg_name || "Pièce auto"}
+                              width={400}
+                              height={400}
+                              className="w-full h-full object-contain"
+                              loading="eager"
+                              decoding="async"
+                              fetchPriority="high"
+                              onError={(e) => {
+                                e.currentTarget.src =
+                                  "/images/categories/default.svg";
+                                e.currentTarget.onerror = null;
+                              }}
+                            />
+                          </picture>
+                        );
+                      })()}
                     </div>
                   </div>
 
@@ -831,52 +955,123 @@ export default function PiecesDetailPage() {
                 </div>
               </div>
 
-              {/* VehicleSelector à droite */}
+              {/* VehicleSelector ou Resume vehicule */}
               <div
                 id="vehicle-selector"
                 className="flex-1 w-full scroll-mt-20 animate-in fade-in slide-in-from-right duration-1000 delay-400"
               >
-                <VehicleSelector
-                  enableTypeMineSearch={true}
-                  context="pieces"
-                  redirectOnSelect={false}
-                  onVehicleSelect={(vehicle) => {
-                    // Construire les slugs avec format alias-id
-                    const brandSlug = `${vehicle.brand.marque_alias || normalizeAlias(vehicle.brand.marque_name)}-${vehicle.brand.marque_id}`;
-                    const modelSlug = `${vehicle.model.modele_alias || normalizeAlias(vehicle.model.modele_name)}-${vehicle.model.modele_id}`;
-                    const typeSlug = `${vehicle.type.type_alias || normalizeAlias(vehicle.type.type_name)}-${vehicle.type.type_id}`;
-
-                    // Gamme depuis l'URL actuelle
-                    const gammeSlug =
-                      location.pathname
-                        .split("/")
-                        .pop()
-                        ?.replace(".html", "") || "";
-
-                    // Sauvegarder le véhicule en cookie pour persistance
-                    storeVehicleClient({
-                      marque_id: vehicle.brand.marque_id,
-                      marque_name: vehicle.brand.marque_name,
-                      marque_alias:
-                        vehicle.brand.marque_alias ||
-                        normalizeAlias(vehicle.brand.marque_name),
-                      modele_id: vehicle.model.modele_id,
-                      modele_name: vehicle.model.modele_name,
-                      modele_alias:
-                        vehicle.model.modele_alias ||
-                        normalizeAlias(vehicle.model.modele_name),
-                      type_id: vehicle.type.type_id,
-                      type_name: vehicle.type.type_name,
-                      type_alias:
-                        vehicle.type.type_alias ||
-                        normalizeAlias(vehicle.type.type_name),
-                    });
-
-                    // Navigation fluide avec Remix
-                    const url = `/pieces/${gammeSlug}/${brandSlug}/${modelSlug}/${typeSlug}.html`;
-                    navigate(url);
-                  }}
-                />
+                {selectedVehicle ? (
+                  <div className="space-y-4">
+                    <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-5 border border-white/25">
+                      <p className="text-white/70 text-sm mb-1">
+                        Votre véhicule
+                      </p>
+                      <p className="text-white text-lg font-bold">
+                        {selectedVehicle.marque_name}{" "}
+                        {selectedVehicle.modele_name}
+                      </p>
+                      <p className="text-white/80 text-sm">
+                        {selectedVehicle.type_name}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const gammeSlug =
+                          location.pathname
+                            .split("/")
+                            .pop()
+                            ?.replace(".html", "") || "";
+                        const brandSlug = `${selectedVehicle.marque_alias}-${selectedVehicle.marque_id}`;
+                        const modelSlug = `${selectedVehicle.modele_alias}-${selectedVehicle.modele_id}`;
+                        const typeSlug = `${selectedVehicle.type_alias}-${selectedVehicle.type_id}`;
+                        const vehicleLabel = `${selectedVehicle.marque_name} ${selectedVehicle.modele_name} ${selectedVehicle.type_name}`;
+                        trackSelectorResume(
+                          data.content?.pg_name || "unknown",
+                          vehicleLabel,
+                        );
+                        navigate(
+                          `/pieces/${gammeSlug}/${brandSlug}/${modelSlug}/${typeSlug}.html`,
+                        );
+                      }}
+                      className="w-full py-3.5 px-6 bg-white text-gray-900 font-bold rounded-xl hover:bg-white/90 transition-all shadow-lg text-base"
+                    >
+                      Voir mes{" "}
+                      {pluralizePieceName(
+                        data.content?.pg_name?.toLowerCase() || "pièces",
+                      )}{" "}
+                      compatibles
+                    </button>
+                    <button
+                      onClick={() => {
+                        clearVehicleClient();
+                        setSelectedVehicle(null);
+                      }}
+                      className="w-full py-2.5 text-white/70 text-sm hover:text-white transition-colors underline underline-offset-4"
+                    >
+                      Changer de véhicule
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <VehicleSelector
+                      enableTypeMineSearch={true}
+                      context="pieces"
+                      redirectOnSelect={false}
+                      onVehicleSelect={(vehicle) => {
+                        const brandSlug = `${vehicle.brand.marque_alias || normalizeAlias(vehicle.brand.marque_name)}-${vehicle.brand.marque_id}`;
+                        const modelSlug = `${vehicle.model.modele_alias || normalizeAlias(vehicle.model.modele_name)}-${vehicle.model.modele_id}`;
+                        const typeSlug = `${vehicle.type.type_alias || normalizeAlias(vehicle.type.type_name)}-${vehicle.type.type_id}`;
+                        const gammeSlug =
+                          location.pathname
+                            .split("/")
+                            .pop()
+                            ?.replace(".html", "") || "";
+                        storeVehicleClient({
+                          marque_id: vehicle.brand.marque_id,
+                          marque_name: vehicle.brand.marque_name,
+                          marque_alias:
+                            vehicle.brand.marque_alias ||
+                            normalizeAlias(vehicle.brand.marque_name),
+                          modele_id: vehicle.model.modele_id,
+                          modele_name: vehicle.model.modele_name,
+                          modele_alias:
+                            vehicle.model.modele_alias ||
+                            normalizeAlias(vehicle.model.modele_name),
+                          type_id: vehicle.type.type_id,
+                          type_name: vehicle.type.type_name,
+                          type_alias:
+                            vehicle.type.type_alias ||
+                            normalizeAlias(vehicle.type.type_name),
+                        });
+                        const vehicleLabel = `${vehicle.brand.marque_name} ${vehicle.model.modele_name} ${vehicle.type.type_name}`;
+                        trackSelectorComplete(
+                          data.content?.pg_name || "unknown",
+                          vehicleLabel,
+                        );
+                        trackSelectorCTA(
+                          data.content?.pg_name || "unknown",
+                          vehicleLabel,
+                        );
+                        navigate(
+                          `/pieces/${gammeSlug}/${brandSlug}/${modelSlug}/${typeSlug}.html`,
+                        );
+                      }}
+                    />
+                    <p className="text-center mt-3 text-white/60 text-sm">
+                      Vous avez votre carte grise ?{" "}
+                      <button
+                        onClick={() =>
+                          document
+                            .getElementById("compatibility-check")
+                            ?.scrollIntoView({ behavior: "smooth" })
+                        }
+                        className="text-white/90 underline underline-offset-4 hover:text-white"
+                      >
+                        Identifier par CNIT / Type Mine
+                      </button>
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -891,31 +1086,21 @@ export default function PiecesDetailPage() {
         id="compatibility-check"
       >
         <Suspense fallback={null}>
-          <CompatibilityConfirmationBlock
-            selectedVehicle={selectedVehicle}
-            motorisationItems={motorItems}
-            gammeName={data.content?.pg_name?.toLowerCase() || "pièces auto"}
-            periodeRange={periodeRange}
-            gammeId={0}
-          />
+          <Await resolve={data.motorisations}>
+            {(motorisations) => (
+              <CompatibilityConfirmationBlock
+                selectedVehicle={selectedVehicle}
+                motorisationItems={motorisations?.items || []}
+                gammeName={
+                  data.content?.pg_name?.toLowerCase() || "pièces auto"
+                }
+                periodeRange={periodeRange}
+                gammeId={0}
+              />
+            )}
+          </Await>
         </Suspense>
       </PageSection>
-
-      {/* Accès rapide familles populaires — mobile uniquement */}
-      <div className="sm:hidden overflow-x-auto px-4 py-3">
-        <div className="flex gap-2 min-w-max">
-          {QUICK_NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              to={link.href}
-              prefetch="intent"
-              className="px-3 py-2 rounded-full bg-white border border-gray-200 text-sm font-medium text-gray-700 whitespace-nowrap hover:bg-gray-50"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-      </div>
 
       {/* R1 micro-bloc: texte SEO utile (court) */}
       <PageSection
@@ -929,31 +1114,15 @@ export default function PiecesDetailPage() {
             ? getSectionImageConfig("transaction", "buyingGuide")
             : undefined;
 
-          // Micro-preuves : réutilise motorItems/periodeRange/allYears extraits avant le return
-          const toTitleCase = (s: string) =>
-            s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
-          const uniqueMarques = [
-            ...new Set(motorItems.map((m) => m.marque_name).filter(Boolean)),
-          ].map(toTitleCase);
-          const uniqueCodes = [
-            ...new Set(
-              motorItems
-                .map((m) => (m as { engine_code?: string }).engine_code)
-                .filter(Boolean),
-            ),
-          ] as string[];
-          const equipNames = (data.equipementiers?.items || [])
-            .map((e) => (e as { pm_name?: string }).pm_name)
-            .filter(Boolean) as string[];
-
+          // LCP STREAMING: proofs depuis proofData (sync, extrait dans le loader)
           const proofs =
-            motorItems.length > 0
+            data.proofData && data.proofData.vehicleCount > 0
               ? {
-                  topMarques: uniqueMarques.slice(0, 3),
-                  topEquipementiers: equipNames.slice(0, 4),
-                  periodeRange,
-                  vehicleCount: motorItems.length,
-                  topMotorCodes: uniqueCodes.slice(0, 3),
+                  topMarques: data.proofData.topMarques,
+                  topEquipementiers: data.proofData.topEquipementiers,
+                  periodeRange: data.proofData.periodeRange,
+                  vehicleCount: data.proofData.vehicleCount,
+                  topMotorCodes: data.proofData.topMotorCodes,
                 }
               : undefined;
 
@@ -994,30 +1163,6 @@ export default function PiecesDetailPage() {
         </PageSection>
       )}
 
-      {/* 📦 Catalogue Même Famille */}
-      <PageSection
-        data-section="S_CATALOGUE"
-        data-page-role="R1"
-        id="family"
-        className="scroll-mt-20"
-      >
-        <Reveal>
-          <Suspense
-            fallback={
-              <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
-            }
-          >
-            <CatalogueSection
-              catalogueMameFamille={data.catalogueMameFamille}
-              verbSwitches={data.seoSwitches?.verbs?.map((v) => ({
-                id: v.id,
-                content: v.content,
-              }))}
-            />
-          </Suspense>
-        </Reveal>
-      </PageSection>
-
       {/* Motorisations compatibles */}
       <PageSection
         data-section="S_MOTORISATIONS"
@@ -1032,12 +1177,16 @@ export default function PiecesDetailPage() {
               <div className="h-96 bg-gray-50 animate-pulse rounded-lg" />
             }
           >
-            <MotorisationsSection
-              motorisations={data.motorisations}
-              familleColor={familleColor}
-              familleName={data.content?.pg_name || "pièces"}
-              totalCount={data.performance?.motorisations_count}
-            />
+            <Await resolve={data.motorisations}>
+              {(motorisations) => (
+                <MotorisationsSection
+                  motorisations={motorisations}
+                  familleColor={familleColor}
+                  familleName={data.content?.pg_name || "pièces"}
+                  totalCount={data.performance?.motorisations_count}
+                />
+              )}
+            </Await>
           </Suspense>
         </Reveal>
       </PageSection>
@@ -1057,163 +1206,54 @@ export default function PiecesDetailPage() {
                   <div className="h-48 bg-white/5 animate-pulse rounded-lg" />
                 }
               >
-                <EquipementiersSection
-                  equipementiers={data.equipementiers}
-                  isDarkMode
-                />
+                <Await resolve={data.equipementiers}>
+                  {(equipementiers) => (
+                    <EquipementiersSection
+                      equipementiers={equipementiers}
+                      isDarkMode
+                      maxItems={5}
+                    />
+                  )}
+                </Await>
               </Suspense>
             </Reveal>
           </div>
         </div>
       </DarkSection>
 
-      {/* 🔧 Fiche technique — codes CNIT / Type Mine collapsible */}
-      {data.technicalCodes?.items && data.technicalCodes.items.length > 0 && (
-        <PageSection
-          data-section="S_FICHE_TECHNIQUE"
-          data-page-role="R1"
-          className="py-4 sm:py-6"
-        >
-          <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setCnitOpen((p) => !p)}
-              className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors"
-            >
-              <h3 className="flex items-center gap-2 text-base font-semibold text-gray-900">
-                <FileText className="h-5 w-5 text-gray-500" />
-                Codes CNIT / Type Mine
-                <span className="text-sm text-gray-500 font-normal">
-                  ({data.technicalCodes.totalCnits} codes)
-                </span>
-              </h3>
-              <ChevronDown
-                className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${cnitOpen ? "rotate-180" : ""}`}
-              />
-            </button>
-            {cnitOpen && (
-              <div className="border-t border-gray-200 px-5 pb-5 overflow-x-auto">
-                <table className="w-full text-sm mt-3">
-                  <thead>
-                    <tr className="text-left text-gray-500 border-b border-gray-100">
-                      <th className="py-2 pr-4 font-medium">Véhicule</th>
-                      <th className="py-2 pr-4 font-medium">CNIT</th>
-                      <th className="py-2 font-medium">Type Mine</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {data.technicalCodes.items.map((item) => (
-                      <tr key={item.typeId} className="hover:bg-gray-50">
-                        <td className="py-2.5 pr-4 text-gray-900">
-                          {item.vehicleLabel}
-                        </td>
-                        <td className="py-2.5 pr-4">
-                          {item.cnits.length > 0 ? (
-                            <span className="inline-flex items-center gap-1.5">
-                              <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono">
-                                {item.cnits[0]}
-                              </code>
-                              {item.cnits.length > 1 && (
-                                <span className="text-xs text-gray-400">
-                                  +{item.cnits.length - 1}
-                                </span>
-                              )}
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigator.clipboard.writeText(
-                                    item.cnits.join(", "),
-                                  );
-                                  setCopiedId(`cnit-${item.typeId}`);
-                                  setTimeout(() => setCopiedId(null), 1500);
-                                }}
-                                className="p-0.5 text-gray-400 hover:text-gray-600"
-                                title="Copier"
-                              >
-                                {copiedId === `cnit-${item.typeId}` ? (
-                                  <Check className="h-3 w-3 text-green-500" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </button>
-                            </span>
-                          ) : (
-                            <span className="text-gray-300">—</span>
-                          )}
-                        </td>
-                        <td className="py-2.5">
-                          {item.mines.length > 0 ? (
-                            <span className="inline-flex items-center gap-1.5">
-                              <code className="text-xs bg-gray-100 px-1.5 py-0.5 rounded font-mono">
-                                {item.mines[0]}
-                              </code>
-                              {item.mines.length > 1 && (
-                                <span className="text-xs text-gray-400">
-                                  +{item.mines.length - 1}
-                                </span>
-                              )}
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigator.clipboard.writeText(
-                                    item.mines.join(", "),
-                                  );
-                                  setCopiedId(`mine-${item.typeId}`);
-                                  setTimeout(() => setCopiedId(null), 1500);
-                                }}
-                                className="p-0.5 text-gray-400 hover:text-gray-600"
-                                title="Copier"
-                              >
-                                {copiedId === `mine-${item.typeId}` ? (
-                                  <Check className="h-3 w-3 text-green-500" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </button>
-                            </span>
-                          ) : (
-                            <span className="text-gray-300">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </PageSection>
-      )}
-
-      {/* Mini-bloc erreurs fréquentes — conditionnel sur données dispo */}
-      {data.purchaseGuideData?.antiMistakes &&
-      data.purchaseGuideData.antiMistakes.length > 0 ? (
-        <PageSection
-          data-section="S_ERREURS"
-          data-page-role="R1"
-          className="py-4 sm:py-6"
-        >
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-900">
-              <AlertTriangle className="h-4 w-4" />
-              Erreurs fréquentes à éviter
-            </h3>
-            <ul className="space-y-2">
-              {data.purchaseGuideData.antiMistakes.slice(0, 3).map((err, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-2 text-sm text-amber-800"
-                >
-                  <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-500" />
-                  <span>{err}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </PageSection>
-      ) : null}
+      {/* 📦 Catalogue Même Famille */}
+      <PageSection
+        data-section="S_CATALOGUE"
+        data-page-role="R1"
+        id="family"
+        className="scroll-mt-20"
+      >
+        <Reveal>
+          <Suspense
+            fallback={
+              <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+            }
+          >
+            <Await resolve={data.catalogueMameFamille}>
+              {(catalogueMameFamille) => (
+                <Await resolve={data.seoSwitches}>
+                  {(seoSwitches) => (
+                    <CatalogueSection
+                      catalogueMameFamille={catalogueMameFamille}
+                      verbSwitches={seoSwitches?.verbs?.map(
+                        (v: { id: string; content: string }) => ({
+                          id: v.id,
+                          content: v.content,
+                        }),
+                      )}
+                    />
+                  )}
+                </Await>
+              )}
+            </Await>
+          </Suspense>
+        </Reveal>
+      </PageSection>
 
       {/* FAQ R1 — questions universelles sur le sélecteur véhicule */}
       <PageSection
@@ -1230,50 +1270,15 @@ export default function PiecesDetailPage() {
             }
           >
             <FAQSection
-              faq={
-                data.purchaseGuideData?.faq?.length
-                  ? data.purchaseGuideData.faq
-                  : R1_SELECTOR_FAQ
-              }
+              faq={(data.purchaseGuideData?.faq?.length
+                ? data.purchaseGuideData.faq
+                : R1_SELECTOR_FAQ
+              ).slice(0, 6)}
               gammeName={data.content?.pg_name || "cette pièce"}
+              withJsonLd={false}
             />
           </Suspense>
         </Reveal>
-      </PageSection>
-
-      {/* ✅ Trust badges — section dédiée avant footer */}
-      <PageSection
-        data-section="S_TRUST"
-        data-page-role="R1"
-        bg="slate"
-        className="py-6 sm:py-8"
-      >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-          <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl border border-gray-200 shadow-sm justify-center">
-            <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
-            <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">
-              400 000+ pièces
-            </span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl border border-gray-200 shadow-sm justify-center">
-            <Truck className="w-4 h-4 text-blue-600 flex-shrink-0" />
-            <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">
-              Livraison 24-48h
-            </span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl border border-gray-200 shadow-sm justify-center">
-            <Shield className="w-4 h-4 text-purple-600 flex-shrink-0" />
-            <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">
-              Paiement sécurisé
-            </span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl border border-gray-200 shadow-sm justify-center">
-            <Users className="w-4 h-4 text-orange-600 flex-shrink-0" />
-            <span className="text-sm font-semibold text-gray-800 whitespace-nowrap">
-              Experts gratuits
-            </span>
-          </div>
-        </div>
       </PageSection>
 
       {/* Bouton Scroll To Top */}
@@ -1282,7 +1287,10 @@ export default function PiecesDetailPage() {
       {/* 📱 Barre sticky mobile - CTA sélection véhicule + compatibilités */}
       <MobileStickyBar
         gammeName={data.content?.pg_name}
-        hasCompatibilities={!!data.motorisations?.items?.length}
+        hasCompatibilities={(data.proofData?.vehicleCount || 0) > 0}
+        hasFaq={
+          !!(data.purchaseGuideData?.faq?.length || R1_SELECTOR_FAQ?.length)
+        }
       />
 
       {/* Spacer pour éviter que le contenu soit masqué par la sticky bar */}
