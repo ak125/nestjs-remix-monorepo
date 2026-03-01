@@ -37,15 +37,6 @@ import {
 } from "react";
 import { logger } from "~/utils/logger";
 
-// Window globals for analytics providers
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-    mixpanel?: { track: (event: string, data?: Record<string, unknown>) => void };
-    plausible?: (event: string, options?: { props?: Record<string, unknown> }) => void;
-  }
-}
-
 // ============================================================================
 // TYPES
 // ============================================================================

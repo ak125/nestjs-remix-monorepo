@@ -165,10 +165,3 @@ export const VehicleAnalytics = memo(function VehicleAnalytics({
   // pour que les composants parent puissent tracker des événements
   return null;
 });
-
-// Types pour TypeScript
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-  }
-}

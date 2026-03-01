@@ -185,9 +185,3 @@ export const useErrorHandler = () => {
     }
   };
 };
-
-declare global {
-  interface Window {
-    gtag?: (...args: any[]) => void;
-  }
-}
