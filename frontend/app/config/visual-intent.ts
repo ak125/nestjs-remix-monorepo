@@ -194,18 +194,18 @@ const VISUAL_INTENT_MAP: Record<IntentClass, VisualIntentConfig> = {
     maxSectionImages: 2,
     altTextTemplate: "{gamme} — conseil d'entretien",
     sectionImages: {
-      signsOfWear: {
+      S2: {
         placement: "right",
         size: "md",
         defaultSource: "pg_img",
       },
-      removal: {
+      S4_DEPOSE: {
         placement: "full",
         size: "lg",
         defaultSource: "static",
         staticFallback: "/images/sections/step-by-step.svg",
       },
-      reassembly: {
+      S4_REPOSE: {
         placement: "full",
         size: "lg",
         defaultSource: "static",
