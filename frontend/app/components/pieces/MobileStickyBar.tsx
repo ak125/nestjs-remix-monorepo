@@ -1,14 +1,17 @@
-import { Car, List } from "lucide-react";
+import { Car, HelpCircle, List } from "lucide-react";
 import { memo } from "react";
 
 interface MobileStickyBarProps {
   gammeName?: string;
   hasCompatibilities?: boolean;
+  /** Affiche un 3e bouton FAQ si la section FAQ est présente */
+  hasFaq?: boolean;
 }
 
 const MobileStickyBar = memo(function MobileStickyBar({
   gammeName: _gammeName = "pièces",
   hasCompatibilities = true,
+  hasFaq = false,
 }: MobileStickyBarProps) {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
@@ -41,10 +44,20 @@ const MobileStickyBar = memo(function MobileStickyBar({
         <a
           href="#compatibilities"
           onClick={(e) => handleClick(e, "compatibilities")}
-          className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:border-blue-300 hover:text-blue-700 transition-all active:scale-95"
+          className={`${hasFaq ? "flex-[2]" : "flex-1"} inline-flex items-center justify-center gap-2 px-3 py-3 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:border-blue-300 hover:text-blue-700 transition-all active:scale-95`}
         >
           <List className="w-5 h-5" />
           <span>Compatibilités</span>
+        </a>
+      )}
+      {hasFaq && (
+        <a
+          href="#faq"
+          onClick={(e) => handleClick(e, "faq-title")}
+          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-3 bg-white border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:border-purple-300 hover:text-purple-700 transition-all active:scale-95"
+        >
+          <HelpCircle className="w-5 h-5" />
+          <span>FAQ</span>
         </a>
       )}
     </div>

@@ -16,6 +16,8 @@ interface EquipementiersSectionProps {
     items: EquipementierItem[];
   };
   isDarkMode?: boolean;
+  /** Nombre max d'équipementiers affichés (SEO: éviter dilution) */
+  maxItems?: number;
 }
 
 /**
@@ -35,10 +37,15 @@ function getEquipementierUrl(pmName: string): string {
 
 const EquipementiersSection = memo(function EquipementiersSection({
   equipementiers,
+  maxItems,
 }: EquipementiersSectionProps) {
   if (!equipementiers?.items || equipementiers.items.length === 0) {
     return null;
   }
+
+  const displayItems = maxItems
+    ? equipementiers.items.slice(0, maxItems)
+    : equipementiers.items;
 
   return (
     <section className="bg-white rounded-xl shadow-lg mb-8 overflow-hidden">
@@ -60,7 +67,7 @@ const EquipementiersSection = memo(function EquipementiersSection({
           d'origine.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {equipementiers.items.map((equipementier) => (
+          {displayItems.map((equipementier) => (
             <Link
               key={equipementier.pm_id}
               to={getEquipementierUrl(equipementier.pm_name)}
