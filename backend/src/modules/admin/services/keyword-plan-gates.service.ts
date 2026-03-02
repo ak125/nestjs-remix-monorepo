@@ -427,7 +427,17 @@ export class KeywordPlanGatesService {
 
   // ── Run all gates ──
 
-  runAllGates(plan: SkpRow): KeywordPlanGateReport {
+  /**
+   * Run all gates G1-G7 on a R3 keyword plan.
+   *
+   * Currently used as canonical reference implementation for gate logic.
+   * Agents invoke SQL directly via MCP Supabase, not this method.
+   * Future: wire into admin dashboard or conseil-enricher for automated validation.
+   */
+  runAllGates(
+    plan: SkpRow,
+    r1SectionTerms?: Record<string, { include_terms?: string[] }> | null,
+  ): KeywordPlanGateReport {
     const results: GateResult[] = [
       this.checkIntentAlignment(plan),
       this.checkBoundaryRespect(plan),
@@ -459,7 +469,7 @@ export class KeywordPlanGatesService {
 
     // Compute sub-scores
     const duplicationScore = this.computeDuplicationScore(plan);
-    const r1RiskScore = this.computeR1RiskScore(plan);
+    const r1RiskScore = this.computeR1RiskScore(plan, r1SectionTerms);
     const coverageScore = this.computeCoverageScore(plan);
 
     this.logger.log(
@@ -526,19 +536,38 @@ export class KeywordPlanGatesService {
     return duplicated / totalTerms;
   }
 
-  /** Compute R1 risk score (ratio of pricing terms found) */
-  private computeR1RiskScore(plan: SkpRow): number {
-    const sectionTerms = plan.skp_section_terms;
-    if (!sectionTerms) return 0;
+  /** Compute R1 risk score — Jaccard overlap of R3 vs R1 include_terms (C.8) */
+  private computeR1RiskScore(
+    plan: SkpRow,
+    r1SectionTerms?: Record<string, { include_terms?: string[] }> | null,
+  ): number {
+    if (!plan.skp_section_terms || !r1SectionTerms) return 0;
 
-    const allText = JSON.stringify(sectionTerms).toLowerCase();
-    let pricingHits = 0;
-    for (const term of PRIX_PAS_CHER) {
-      if (allText.includes(term.toLowerCase())) {
-        pricingHits++;
+    // Collect R3 include_terms
+    const r3Terms = new Set<string>();
+    for (const section of Object.values(plan.skp_section_terms)) {
+      for (const term of section.include_terms || []) {
+        r3Terms.add(term.toLowerCase());
       }
     }
-    return pricingHits / PRIX_PAS_CHER.length;
+    if (r3Terms.size === 0) return 0;
+
+    // Collect R1 include_terms
+    const r1Terms = new Set<string>();
+    for (const section of Object.values(r1SectionTerms)) {
+      for (const term of section.include_terms || []) {
+        r1Terms.add(term.toLowerCase());
+      }
+    }
+    if (r1Terms.size === 0) return 0;
+
+    // Jaccard overlap
+    let intersection = 0;
+    for (const term of r3Terms) {
+      if (r1Terms.has(term)) intersection++;
+    }
+    const union = new Set([...r3Terms, ...r1Terms]).size;
+    return union > 0 ? intersection / union : 0;
   }
 
   /** Compute coverage score (sections with include_terms / total sections) */
@@ -676,6 +705,7 @@ export class KeywordPlanGatesService {
       weak_phrases_ratio: weakPhrasesRatio,
       content_lengths: contentLengths,
       audit_summary: auditSummary,
+      gate_report: report.gateReport,
     };
   }
 
@@ -843,9 +873,15 @@ export class KeywordPlanGatesService {
     result: GateResult;
     fixes: PriorityFix[];
   } {
-    const noSource = sections.filter(
-      (s) => !s.sources || s.sources.trim().length === 0,
-    );
+    const noSource = sections.filter((s) => {
+      if (!s.sources || s.sources.trim().length === 0) return true;
+      try {
+        const parsed = JSON.parse(s.sources);
+        return !Array.isArray(parsed) || parsed.length === 0;
+      } catch {
+        return true;
+      }
+    });
     const fixes: PriorityFix[] = noSource.map((s) => ({
       section: s.section_type,
       issue: 'no_sources' as const,

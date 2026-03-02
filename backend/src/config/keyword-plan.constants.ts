@@ -483,4 +483,6 @@ export interface AuditResult {
   sections_blocked?: string[];
   /** true if RAG file was modified after last content generation */
   rag_stale?: boolean;
+  /** Gate results from audit (GA1-GA7) */
+  gate_report?: Record<string, GateResult>;
 }

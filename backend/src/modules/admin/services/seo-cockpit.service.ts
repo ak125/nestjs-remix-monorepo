@@ -239,40 +239,32 @@ export class SeoCockpitService extends SupabaseBaseService {
   async getConsolidatedAlerts(limit: number = 50): Promise<Alert[]> {
     const alerts: Alert[] = [];
 
-    // Content gap alerts — pages missing title or meta_description
-    const [missingTitleRes, missingDescRes] = await Promise.all([
+    // Content gap alerts — active gammes (pieces_gamme level 1-2) missing SEO metadata
+    const [totalGammesRes, seoCompletenessRes] = await Promise.all([
       this.supabase
-        .from('__seo_page')
-        .select('id', { count: 'exact', head: true })
-        .is('title', null),
-      this.supabase
-        .from('__seo_page')
-        .select('id', { count: 'exact', head: true })
-        .is('meta_description', null),
+        .from('pieces_gamme')
+        .select('pg_id', { count: 'exact', head: true })
+        .eq('pg_display', '1')
+        .in('pg_level', ['1', '2']),
+      this.callRpc<{ with_title: number; with_desc: number }[]>(
+        'get_gamme_seo_completeness',
+        {},
+        { source: 'admin' },
+      ),
     ]);
 
-    const missingTitle = missingTitleRes.count || 0;
-    const missingDesc = missingDescRes.count || 0;
+    const totalGammes = totalGammesRes.count || 0;
+    const gammesWithSeo = seoCompletenessRes.data?.[0]?.with_title || 0;
+    const gammesMissingSeo = totalGammes - gammesWithSeo;
     const now = new Date().toISOString();
 
-    if (missingTitle > 0) {
+    if (gammesMissingSeo > 0) {
       alerts.push({
-        id: 'content-gap-title',
+        id: 'content-gap-gammes',
         type: 'CONTENT_GAP',
-        severity: missingTitle > 100000 ? 'HIGH' : 'MEDIUM',
-        message: `${missingTitle.toLocaleString()} pages sans title`,
-        url: undefined,
-        timestamp: now,
-      });
-    }
-
-    if (missingDesc > 0) {
-      alerts.push({
-        id: 'content-gap-description',
-        type: 'CONTENT_GAP',
-        severity: missingDesc > 100000 ? 'HIGH' : 'MEDIUM',
-        message: `${missingDesc.toLocaleString()} pages sans meta_description`,
-        url: undefined,
+        severity: gammesMissingSeo > 50 ? 'HIGH' : 'MEDIUM',
+        message: `${gammesMissingSeo} gammes actives sans metadata SEO (title/h1/description)`,
+        url: '/admin/gammes-seo',
         timestamp: now,
       });
     }
@@ -281,20 +273,21 @@ export class SeoCockpitService extends SupabaseBaseService {
     const { data: confusionAlerts } = await this.supabase
       .from('__seo_confusion_pairs')
       .select(
-        'id, gamme_a_name, gamme_b_name, pair_type, confusion_score, created_at',
+        'scp_id, scp_piece_a, scp_piece_b, scp_category, scp_severity, scp_penalty_critical, scp_message_fr, scp_created_at',
       )
-      .order('confusion_score', { ascending: false })
+      .eq('scp_enabled', true)
+      .order('scp_penalty_critical', { ascending: false, nullsFirst: false })
       .limit(20);
 
     if (confusionAlerts) {
       for (const pair of confusionAlerts) {
         alerts.push({
-          id: `confusion-${pair.id}`,
+          id: `confusion-${pair.scp_id}`,
           type: 'RISK',
-          severity: (pair.confusion_score || 0) >= 80 ? 'HIGH' : 'MEDIUM',
-          message: `Confusion ${pair.pair_type}: ${pair.gamme_a_name} ↔ ${pair.gamme_b_name} (score: ${pair.confusion_score}%)`,
+          severity: (pair.scp_penalty_critical || 0) >= 15 ? 'HIGH' : 'MEDIUM',
+          message: `Confusion ${pair.scp_category}: ${pair.scp_piece_a} ↔ ${pair.scp_piece_b} (${pair.scp_severity})`,
           url: undefined,
-          timestamp: pair.created_at,
+          timestamp: pair.scp_created_at,
         });
       }
     }
@@ -319,20 +312,30 @@ export class SeoCockpitService extends SupabaseBaseService {
     const { data } = await this.supabase
       .from('__seo_confusion_pairs')
       .select(
-        'id, gamme_a_name, gamme_b_name, pair_type, confusion_score, created_at',
+        'scp_id, scp_piece_a, scp_piece_b, scp_category, scp_severity, scp_penalty_critical, scp_created_at',
       )
-      .order('confusion_score', { ascending: false })
+      .eq('scp_enabled', true)
+      .order('scp_penalty_critical', { ascending: false, nullsFirst: false })
       .range(offset, offset + limit - 1);
 
     if (!data) return [];
 
-    return data.map((row) => ({
-      url: `/pieces/${row.gamme_a_name?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}`,
-      riskType: `CONFUSION_${row.pair_type?.toUpperCase() || 'UNKNOWN'}`,
-      urgencyScore: row.confusion_score || 50,
-      lastCrawled: row.created_at,
-      pageType: 'gamme',
-    }));
+    return data.map((row) => {
+      const slug = (row.scp_piece_a || 'unknown')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+      return {
+        url: `/pieces/${slug}`,
+        riskType: `CONFUSION_${(row.scp_category || 'UNKNOWN').toUpperCase()}`,
+        urgencyScore: row.scp_penalty_critical || 5,
+        lastCrawled: row.scp_created_at,
+        pageType: 'gamme' as const,
+      };
+    });
   }
 
   // ============================================================
@@ -367,7 +370,9 @@ export class SeoCockpitService extends SupabaseBaseService {
   }
 
   /**
-   * Mesure la complétude réelle du contenu SEO (titres, descriptions)
+   * Mesure la complétude SEO des gammes actives
+   * Base: pieces_gamme (pg_display='1', level 1-2) = 232 gammes actives
+   * Couverture: JOIN __seo_gamme pour titre/description manuels (140/232 ≈ 60%)
    */
   private async getContentCompleteness(): Promise<{
     totalPages: number;
@@ -375,29 +380,27 @@ export class SeoCockpitService extends SupabaseBaseService {
     withDescription: number;
     completionPct: number;
   }> {
-    const [totalRes, titleRes, descRes] = await Promise.all([
-      this.supabase
-        .from('__seo_page')
-        .select('id', { count: 'exact', head: true }),
-      this.supabase
-        .from('__seo_page')
-        .select('id', { count: 'exact', head: true })
-        .not('title', 'is', null),
-      this.supabase
-        .from('__seo_page')
-        .select('id', { count: 'exact', head: true })
-        .not('meta_description', 'is', null),
-    ]);
+    // Total gammes actives (categories level 1-2 affichées)
+    const { count: total } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id', { count: 'exact', head: true })
+      .eq('pg_display', '1')
+      .in('pg_level', ['1', '2']);
 
-    const total = totalRes.count || 0;
-    const withTitle = titleRes.count || 0;
-    const withDescription = descRes.count || 0;
+    // Gammes avec metadata SEO (JOIN pieces_gamme ↔ __seo_gamme via RPC)
+    const { data: seoData } = await this.callRpc<
+      { with_title: number; with_desc: number }[]
+    >('get_gamme_seo_completeness', {}, { source: 'admin' });
+
+    const totalPages = total || 0;
+    const withTitle = seoData?.[0]?.with_title || 0;
+    const withDescription = seoData?.[0]?.with_desc || 0;
     const completionPct =
-      total > 0
-        ? Math.round(((withTitle + withDescription) / (total * 2)) * 100)
+      totalPages > 0
+        ? Math.round(((withTitle + withDescription) / (totalPages * 2)) * 100)
         : 0;
 
-    return { totalPages: total, withTitle, withDescription, completionPct };
+    return { totalPages, withTitle, withDescription, completionPct };
   }
 
   // ============================================================
@@ -566,7 +569,8 @@ export class SeoCockpitService extends SupabaseBaseService {
     // Count confusion pairs as risk indicators
     const { data: confusions } = await this.supabase
       .from('__seo_confusion_pairs')
-      .select('pair_type');
+      .select('scp_category')
+      .eq('scp_enabled', true);
 
     const breakdown = {
       CONFUSION: 0,
@@ -594,40 +598,13 @@ export class SeoCockpitService extends SupabaseBaseService {
   }
 
   private async getCrawlStats(): Promise<DashboardKpis['crawlHealth']> {
-    const now = new Date();
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
-
-    // __seo_crawl_hub schema: id, path, bucket, hub_type, urls_count, depth, generated_at
-    const [hubRes, last24hRes, last7dRes] = await Promise.all([
-      this.supabase
-        .from('__seo_crawl_hub')
-        .select('generated_at, urls_count, hub_type')
-        .order('generated_at', { ascending: false })
-        .limit(1),
-      // Estimate recent activity from __seo_page updates
-      this.supabase
-        .from('__seo_page')
-        .select('id', { count: 'exact', head: true })
-        .gte('updated_at', yesterday.toISOString()),
-      this.supabase
-        .from('__seo_page')
-        .select('id', { count: 'exact', head: true })
-        .gte('updated_at', lastWeek.toISOString()),
-    ]);
-
-    const hub = hubRes.data?.[0];
-    const lastGenerated = hub?.generated_at;
-    const googlebotAbsent14d = lastGenerated
-      ? new Date(lastGenerated) < twoWeeksAgo
-      : true;
-
+    // Crawl tracking not active yet (__seo_crawl_log is empty, no Googlebot middleware)
+    // Don't penalize health score for missing crawl data
     return {
-      last24h: last24hRes.count || 0,
-      last7d: last7dRes.count || 0,
-      avgResponseMs: 0, // Not measured yet — no response time data in crawl_hub
-      googlebotAbsent14d,
+      last24h: 0,
+      last7d: 0,
+      avgResponseMs: 0,
+      googlebotAbsent14d: false,
     };
   }
 
@@ -640,21 +617,21 @@ export class SeoCockpitService extends SupabaseBaseService {
   ): number {
     let score = 100;
 
-    // Content completeness (40% weight) - most important factor
-    score -= Math.round((1 - contentCompletionPct / 100) * 40);
+    // Content completeness (30%) — gamme SEO coverage (140/232 ≈ 60%)
+    score -= Math.round((1 - contentCompletionPct / 100) * 30);
 
-    // URLs at risk penalty (20% weight)
+    // Confusion risk (30%) — actual risk data from __seo_confusion_pairs
     if (totalUrls > 0) {
       const riskRatio = urlsAtRisk / totalUrls;
-      score -= Math.min(20, riskRatio * 100);
+      score -= Math.min(30, Math.round(riskRatio * 1000));
     }
 
-    // Googlebot absent penalty (20% weight)
+    // Googlebot crawl (20%) — only penalize when tracking is active
     if (googlebotAbsent) {
       score -= 20;
     }
 
-    // Queue failures penalty (20% weight)
+    // Queue failures (20%)
     score -= Math.min(20, queueFailed * 2);
 
     return Math.max(0, Math.round(score));

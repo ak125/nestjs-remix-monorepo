@@ -549,6 +549,391 @@ Tu sais structurer un email pour maximiser les taux d'ouverture et de clic.`,
       return prompt;
     },
   },
+
+  // ============================================================================
+  // R1 CONTENT PIPELINE — 4-prompt sequence
+  // ============================================================================
+
+  // ══════════════════════════════════════════════════════════════════
+  // R1 Content Pipeline — 4 prompts RAG-first
+  // Principe : RAG = source de verite. Le LLM reformule, il n'invente RIEN.
+  // ══════════════════════════════════════════════════════════════════
+
+  r1_intent_lock: {
+    system: `Tu es un architecte SEO specialise en pages transactionnelles e-commerce automobile.
+Ta mission : verrouiller l'intention de recherche d'une page categorie (gamme de pieces auto).
+
+REGLE FONDAMENTALE — RAG = SOURCE DE VERITE :
+- TOUTE information technique doit provenir EXCLUSIVEMENT du corpus RAG fourni ci-dessous.
+- Si une donnee n'est pas dans le corpus RAG, ecris "NON_DISPONIBLE" pour ce champ.
+- Tu ne dois JAMAIS inventer de chiffres, normes, certifications ou statistiques.
+- Les termes techniques doivent apparaitre textuellement dans le corpus RAG.
+- Les preuves doivent etre extraites du corpus RAG (pas inventees).
+
+REGLES SUPPLEMENTAIRES :
+- L'intention est TOUJOURS transactionnelle (achat de pieces).
+- Interdit : conseils de montage, tutoriels, diagnostics, comparatifs detailles.
+- Reponds UNIQUEMENT en JSON valide, sans markdown ni commentaire.`,
+    user: (ctx) => {
+      let prompt = `Gamme : ${ctx.gammeName}\n\n`;
+      if (ctx.ragContent) {
+        prompt += `=== CORPUS RAG (source de verite) ===\n${ctx.ragContent}\n\n`;
+      }
+      if (ctx.frontmatter) {
+        const fm = ctx.frontmatter;
+        if (fm.domain_role) prompt += `Role du domaine : ${fm.domain_role}\n`;
+        if (fm.must_be_true?.length)
+          prompt += `Verites obligatoires : ${fm.must_be_true.join(' | ')}\n`;
+        if (fm.confusion_with?.length)
+          prompt += `Paires confuses (a distinguer) : ${fm.confusion_with.join(' | ')}\n`;
+        prompt += '\n';
+      }
+      if (
+        ctx.boundaries &&
+        typeof ctx.boundaries === 'object' &&
+        Object.keys(ctx.boundaries as Record<string, unknown>).length > 0
+      ) {
+        prompt += `=== BOUNDARIES (keyword plan) ===\n`;
+        const b = ctx.boundaries as Record<string, unknown>;
+        if (b.forbidden_terms && Array.isArray(b.forbidden_terms)) {
+          prompt += `Termes INTERDITS (limites R1) : ${(b.forbidden_terms as string[]).join(', ')}\n`;
+        }
+        if (b.max_scope) {
+          prompt += `Perimetre max : ${b.max_scope}\n`;
+        }
+        if (b.role_boundary) {
+          prompt += `Limite de role : ${b.role_boundary}\n`;
+        }
+        prompt += '\n';
+      }
+      if (
+        ctx.r3RiskTerms &&
+        Array.isArray(ctx.r3RiskTerms) &&
+        ctx.r3RiskTerms.length > 0
+      ) {
+        prompt += `=== TERMES R3 A EVITER (anti-cannibalisation) ===\n`;
+        prompt += `${(ctx.r3RiskTerms as string[]).join(', ')}\n\n`;
+      }
+      prompt += `Extrais du corpus RAG ci-dessus un JSON avec ces champs exactement :\n`;
+      prompt += `{
+  "gamme": "string — nom de la gamme",
+  "primary_intent": "string — intention principale en 1 phrase (transactionnelle)",
+  "role_id": "R1_ROUTER",
+  "interest_nuggets": [
+    { "angle": "string — ex: compatibilite_vehicule, pieces_associees, reference_oe", "hook": "string — 1-2 phrases accrocheuses EXTRAITES du RAG", "rag_source": "string — reference RAG tracable" }
+  ],
+  "forbidden_lexicon": ["string[] — mots/expressions interdits : diagnostic, symptome, tuto, montage, universel, homologue CT, garanti a vie..."],
+  "allowed_lexicon": ["string[] — mots autorises : nom gamme, pieces associees, equipementiers, termes techniques du RAG"],
+  "confusion_pairs": [{ "term": "string", "confused_with": "string", "distinction": "string" }],
+  "writing_constraints": {
+    "max_words": 520,
+    "min_words": 350,
+    "tone": "expert-accessible",
+    "person": "vous",
+    "zero_diagnostic": true,
+    "zero_howto": true
+  },
+  "content_contract": {
+    "total_words_target": [350, 520],
+    "micro_seo_words_target": [140, 170],
+    "faq_answer_words_target": [30, 45],
+    "max_gamme_mentions": "number — max repetitions du nom de gamme (5-8)",
+    "max_compatible_mentions": "number — max mentions 'compatible' (3-5)"
+  },
+  "hard_rules": {
+    "ban_howto_markers": ["string[] — ex: etape, visser, demonter, tutoriel, pas-a-pas"],
+    "ban_absolute_claims": ["string[] — ex: garanti a vie, le meilleur, imbattable"],
+    "ban_price_push": ["string[] — ex: pas cher, promo, solde, remise, discount"]
+  }
+}\n`;
+      return prompt;
+    },
+  },
+
+  r1_serp_pack: {
+    system: `Tu es un redacteur SEO expert en titres et meta-descriptions pour e-commerce automobile.
+Ta mission : generer le pack SERP (title, meta, H1, H2s) pour une page categorie transactionnelle.
+
+REGLE FONDAMENTALE — RAG = SOURCE DE VERITE :
+- Les mots-cles du title et de la meta-description DOIVENT apparaitre dans le corpus RAG.
+- Le H1 doit utiliser le vocabulaire technique du corpus RAG, pas des synonymes inventes.
+- Les H2s doivent correspondre aux sections effectivement couvertes par le corpus RAG.
+
+REGLES SEO :
+- Title : max 60 caracteres, inclure nom gamme + "compatible vehicule" + valeur (prix/livraison).
+- Meta-description : max 155 caracteres, commence par nom gamme, inclut CTA.
+- H1 : entre 40 et 70 caracteres, contient le nom de la gamme, pas de duplication du title.
+- H2s : 3-5 sous-titres pour les sections de la page (pas de "Comment monter").
+- Reponds UNIQUEMENT en JSON valide, sans markdown ni commentaire.`,
+    user: (ctx) => {
+      let prompt = `Gamme : ${ctx.gammeName}\n`;
+      if (ctx.familyLabel) {
+        prompt += `Famille : ${ctx.familyLabel}\n`;
+      }
+      prompt += '\n';
+      if (ctx.intentLock) {
+        prompt += `=== INTENT LOCK (P1) ===\n`;
+        prompt += `Intention : ${ctx.intentLock.primary_intent}\n`;
+        prompt += `Lexique autorise : ${(ctx.intentLock.allowed_lexicon || ctx.intentLock.termes_techniques || []).join(', ')}\n`;
+        prompt += `Interdit : ${(ctx.intentLock.forbidden_lexicon || ctx.intentLock.forbidden_overlap || []).join(', ')}\n\n`;
+      }
+      if (ctx.ragContent) {
+        prompt += `=== CORPUS RAG (mots-cles a utiliser) ===\n${ctx.ragContent}\n\n`;
+      }
+      if (ctx.selectionCriteria?.length) {
+        prompt += `=== CRITERES DE SELECTION (RAG) ===\n${ctx.selectionCriteria.join('\n')}\n\n`;
+      }
+      if (
+        ctx.headingPlan &&
+        typeof ctx.headingPlan === 'object' &&
+        Object.keys(ctx.headingPlan as Record<string, unknown>).length > 0
+      ) {
+        prompt += `=== HEADING PLAN (keyword plan) ===\n`;
+        const hp = ctx.headingPlan as Record<string, unknown>;
+        if (hp.h1_pattern) prompt += `Pattern H1 : ${hp.h1_pattern}\n`;
+        if (hp.h2_list && Array.isArray(hp.h2_list)) {
+          prompt += `H2 planifies : ${(hp.h2_list as string[]).join(' | ')}\n`;
+        }
+        if (hp.h2_order && Array.isArray(hp.h2_order)) {
+          prompt += `Ordre H2 : ${(hp.h2_order as string[]).join(' > ')}\n`;
+        }
+        prompt += '\n';
+      }
+      if (
+        ctx.queryClusters &&
+        typeof ctx.queryClusters === 'object' &&
+        Object.keys(ctx.queryClusters as Record<string, unknown>).length > 0
+      ) {
+        prompt += `=== CLUSTERS DE REQUETES (keyword plan) ===\n`;
+        for (const [cluster, queries] of Object.entries(
+          ctx.queryClusters as Record<string, unknown>,
+        )) {
+          if (Array.isArray(queries)) {
+            prompt += `${cluster} : ${(queries as string[]).join(', ')}\n`;
+          } else if (queries && typeof queries === 'object') {
+            const q = queries as Record<string, unknown>;
+            if (q.head_query) prompt += `${cluster} — head : ${q.head_query}\n`;
+            if (q.long_tails && Array.isArray(q.long_tails)) {
+              prompt += `${cluster} — long tails : ${(q.long_tails as string[]).join(', ')}\n`;
+            }
+          }
+        }
+        prompt += '\n';
+      }
+      prompt += `Genere un JSON avec ces champs exactement :\n`;
+      prompt += `{
+  "gamme": "string — nom de la gamme",
+  "title_main": "string — title tag principal max 60 chars (mots-cles du RAG)",
+  "title_variants": ["string[] — 2 variantes du title tag pour A/B test"],
+  "meta_main": "string — meta description max 155 chars",
+  "meta_variants": ["string[] — 1-2 variantes meta description"],
+  "h1": "string — H1 entre 40-70 chars, contient nom gamme",
+  "h2": ["string[] — 4-6 H2 correspondant aux sections R1 de la page"],
+  "slug_canonical": "string — URL canonique /pieces/{alias}-{pgId}.html"
+}\n`;
+      return prompt;
+    },
+  },
+
+  r1_section_copy: {
+    system: `Tu es un copywriter e-commerce automobile expert en conversion.
+Ta mission : rediger le contenu court de chaque section d'une page categorie transactionnelle R1.
+
+REGLE FONDAMENTALE — RAG = SOURCE DE VERITE :
+- Tu REFORMULES le contenu du corpus RAG fourni. Tu n'inventes RIEN.
+- Chaque affirmation technique doit etre tracable au corpus RAG.
+- Si le RAG ne couvre pas un sujet, ecris une phrase neutre sans inventer de details.
+
+BUDGET MOTS : 350-520 mots total
+- micro_seo_block : 140-170 mots
+- faq_selector : 4 paires × 30-45 mots = 120-180 mots
+- microcopy (hero, badges, selector, intros) : 50-90 mots
+
+REGLES PAR CHAMP :
+- hero_subtitle : 1 phrase max 80 chars, renforce la promesse du H1.
+- proof_badges : exactement 4 badges courts (max 25 chars chacun).
+- selector_microcopy : 2 phrases d'aide max 60 chars chacune.
+- micro_seo_block : 2-3 phrases (max 200 chars total) sur la gamme, REFORMULANT le RAG.
+- compatibilities_intro : 1 phrase presentant la section compatibilites.
+- equipementiers_line : 1 phrase presentant les equipementiers.
+- faq_selector : 4 questions/reponses liees au selecteur vehicule et a l'achat.
+- family_cross_sell_intro : 1 phrase de transition vers le catalogue famille.
+- visual_plan.hero_primary_cta : objet { label, action } — label du CTA principal (max 30 chars), action = scroll_to_selector ou lien.
+- visual_plan.cross_sell_rules : objet { max_items (max 6), same_family_only (boolean) } — regles du catalogue associe.
+- visual_plan.compatibilities_label_rule : string — label contextuel pour la section compatibilites (ex: "Compatibilite verifiee par motorisation").
+- safe_table_rows : array de 4-6 lignes de verification compatibilite. Chaque ligne = { element, how, icon }.
+  SUGGESTIONS (choisir 4-6 parmi + 1-2 custom si pertinent) :
+  * Montage / version vehicule → Selectionner marque, modele et motorisation
+  * Reference OE constructeur → Comparer avec la fiche produit
+  * Type / technologie → Verifier la compatibilite (hydraulique/electrique/mecanique)
+  * Pieces associees recommandees → Commander groupe si usure simultanee
+  * Consigne / echange standard → Verifier les conditions de retour
+  * Connectique / fixation → Verifier le nombre de broches et le type de connecteur
+  * Dimensions exactes → Mesurer l'ancienne piece ou verifier la fiche technique
+  * Conditions de retour → Consulter la politique retour avant montage
+- Interdit : conseils montage, diagnostics, tutoriels.
+- Reponds UNIQUEMENT en JSON valide, sans markdown ni commentaire.`,
+    user: (ctx) => {
+      let prompt = `Gamme : ${ctx.gammeName}\n`;
+      if (ctx.productCount) {
+        prompt += `Nombre de produits dans la gamme : ${ctx.productCount}\n`;
+      }
+      prompt += '\n';
+      if (ctx.ragContent) {
+        prompt += `=== CORPUS RAG (source de verite — reformule, n'invente pas) ===\n${ctx.ragContent}\n\n`;
+      }
+      if (ctx.htmlDraft) {
+        prompt += `=== SQUELETTE HTML (compile depuis le RAG — a reformuler et enrichir) ===\n${ctx.htmlDraft}\n\n`;
+      }
+      if (ctx.intentLock) {
+        prompt += `=== INTENT LOCK ===\nIntention : ${ctx.intentLock.primary_intent}\n`;
+        const wc = ctx.intentLock.writing_constraints;
+        if (wc && typeof wc === 'object' && !Array.isArray(wc)) {
+          prompt += `Ton : ${wc.tone || 'expert-accessible'}, Personne : ${wc.person || 'vous'}, Budget : ${wc.min_words || 350}-${wc.max_words || 520} mots\n`;
+        } else {
+          prompt += `Contraintes : ${(Array.isArray(wc) ? wc : []).join(', ')}\n`;
+        }
+        prompt += `Interdit : ${(ctx.intentLock.forbidden_lexicon || ctx.intentLock.forbidden_overlap || []).join(', ')}\n`;
+        if (ctx.intentLock.content_contract) {
+          const cc = ctx.intentLock.content_contract;
+          prompt += `Budget mots detaille : total=${JSON.stringify(cc.total_words_target)}, micro_seo=${JSON.stringify(cc.micro_seo_words_target)}, faq=${JSON.stringify(cc.faq_answer_words_target)}\n`;
+          prompt += `Limites mentions : gamme max ${cc.max_gamme_mentions}, compatible max ${cc.max_compatible_mentions}\n`;
+        }
+        if (ctx.intentLock.hard_rules) {
+          const hr = ctx.intentLock.hard_rules;
+          prompt += `INTERDIT howto : ${hr.ban_howto_markers.join(', ')}\n`;
+          prompt += `INTERDIT absolus : ${hr.ban_absolute_claims.join(', ')}\n`;
+          prompt += `INTERDIT prix : ${hr.ban_price_push.join(', ')}\n`;
+        }
+        prompt += '\n';
+      }
+      if (ctx.serpPack) {
+        prompt += `=== SERP PACK ===\nH1 : ${ctx.serpPack.h1}\nH2s : ${(ctx.serpPack.h2 || ctx.serpPack.h2s || []).join(' | ')}\n\n`;
+      }
+      if (ctx.brief) {
+        prompt += `=== BRIEF SEO (contraintes de la page) ===\n`;
+        prompt += `Intention : ${ctx.brief.primary_intent || 'non definie'}\n`;
+        prompt += `Interdit : ${(ctx.brief.forbidden_overlap || []).join(', ') || 'aucun'}\n`;
+        const bwc = ctx.brief.writing_constraints;
+        if (bwc && typeof bwc === 'object' && !Array.isArray(bwc)) {
+          prompt += `Budget : ${bwc.min_words || 350}-${bwc.max_words || 520} mots\n`;
+        } else {
+          prompt += `Contraintes : ${(Array.isArray(bwc) ? bwc : []).join(', ') || 'aucune'}\n`;
+        }
+        prompt += '\n';
+      }
+      if (ctx.sectionTerms && typeof ctx.sectionTerms === 'object') {
+        prompt += `=== MOTS-CLES SEO (keyword plan) ===\n`;
+        for (const [section, terms] of Object.entries(ctx.sectionTerms)) {
+          if (terms && typeof terms === 'object') {
+            const t = terms as Record<string, unknown>;
+            if (t.include_terms && Array.isArray(t.include_terms)) {
+              prompt += `${section} — Termes a inclure : ${(t.include_terms as string[]).join(', ')}\n`;
+            }
+            if (t.micro_phrases && Array.isArray(t.micro_phrases)) {
+              prompt += `${section} — Exemples de phrases : ${(t.micro_phrases as string[]).join(' | ')}\n`;
+            }
+            if (t.forbidden_overlap && Array.isArray(t.forbidden_overlap)) {
+              prompt += `${section} — Termes INTERDITS : ${(t.forbidden_overlap as string[]).join(', ')}\n`;
+            }
+          }
+        }
+        prompt += '\n';
+      }
+      prompt += `Ta mission : REFORMULER et ENRICHIR le squelette HTML en respectant le brief et le corpus RAG.\n\n`;
+      prompt += `Genere un JSON avec ces champs exactement :\n`;
+      prompt += `{
+  "hero_subtitle": "string — max 80 chars",
+  "proof_badges": ["string[4] — exactement 4 badges max 25 chars"],
+  "selector_microcopy": ["string[2] — 2 phrases d'aide max 60 chars"],
+  "micro_seo_block": "string — 140-170 mots REFORMULANT le corpus RAG",
+  "compatibilities_intro": "string — 1 phrase",
+  "equipementiers_line": "string — 1 phrase",
+  "faq_selector": [{ "question": "string", "answer": "string — 30-45 mots, TRACABLE au RAG" }],
+  "family_cross_sell_intro": "string — 1 phrase",
+  "visual_plan": { "hero_primary_cta": { "label": "string max 30 chars", "action": "string — ex: scroll_to_selector" }, "cross_sell_rules": { "max_items": 6, "same_family_only": true }, "compatibilities_label_rule": "string — ex: Compatibilite verifiee par motorisation" },
+  "safe_table_rows": [{ "element": "string", "how": "string", "icon": "string|null" }]
+}\n`;
+      return prompt;
+    },
+  },
+
+  r1_gatekeeper: {
+    system: `Tu es un auditeur qualite SEO pour pages transactionnelles e-commerce automobile.
+Ta mission : valider le contenu genere pour une page categorie R1.
+
+REGLE FONDAMENTALE — TRACABILITE RAG :
+- Verifie que chaque affirmation technique du contenu P3 est TRACABLE au corpus RAG.
+- Compare les citations RAG fournies avec le contenu genere.
+- Si une affirmation n'a pas de source RAG correspondante → flag "unverified_claim".
+- Score < 80 automatiquement si des claims ne sont pas verifiables dans le RAG.
+
+CRITERES DE SCORING (0-100) :
+- Tracabilite RAG : chaque fait technique doit avoir une source (0-30)
+- Coherence avec l'intention transactionnelle (0-20)
+- Respect des contraintes de longueur et budget mots (0-20)
+- Absence de contenu hors-role (montage, diagnostic, tutoriel) (0-15)
+- Qualite redactionnelle et persuasion (0-15)
+
+FLAGS possibles :
+- "unverified_claim" — affirmation technique sans source RAG
+- "too_long" — un champ depasse sa limite de caracteres
+- "off_role" — contenu hors intention transactionnelle detecte
+- "duplicate" — contenu trop similaire a une autre gamme
+- "low_quality" — redaction generique ou sans valeur ajoutee
+- "missing_field" — champ requis manquant ou vide
+- "budget_exceeded" — budget mots total depasse 520
+
+CHECKS SUPPLEMENTAIRES (si content_contract et hard_rules fournis) :
+- Verifier que les termes de hard_rules.ban_howto_markers sont ABSENTS du contenu P3.
+- Verifier que les termes de hard_rules.ban_absolute_claims sont ABSENTS du contenu P3.
+- Verifier que les termes de hard_rules.ban_price_push sont ABSENTS du contenu P3.
+- Verifier le budget mots total vs content_contract.total_words_target.
+
+Si score >= 80 ET aucun "unverified_claim" : le contenu est valide.
+Si score < 80 : renvoyer les corrections necessaires.
+Reponds UNIQUEMENT en JSON valide, sans markdown ni commentaire.`,
+    user: (ctx) => {
+      let prompt = `Gamme : ${ctx.gammeName}\n\n`;
+      prompt += `=== CONTENU A VALIDER (P3) ===\n${JSON.stringify(ctx.sectionCopy, null, 2)}\n\n`;
+      if (ctx.intentLock) {
+        prompt += `=== INTENT LOCK ===\nIntention : ${ctx.intentLock.primary_intent}\n`;
+        prompt += `Interdit : ${(ctx.intentLock.forbidden_lexicon || ctx.intentLock.forbidden_overlap || []).join(', ')}\n`;
+        if (ctx.intentLock.content_contract) {
+          prompt += `Content contract : ${JSON.stringify(ctx.intentLock.content_contract)}\n`;
+        }
+        if (ctx.intentLock.hard_rules) {
+          prompt += `Hard rules : ${JSON.stringify(ctx.intentLock.hard_rules)}\n`;
+        }
+        prompt += '\n';
+      }
+      if (ctx.ragCitationsUsed?.length) {
+        prompt += `=== CITATIONS RAG DISPONIBLES (source de verite) ===\n`;
+        ctx.ragCitationsUsed.forEach((citation: string, i: number) => {
+          prompt += `[${i + 1}] ${citation}\n`;
+        });
+        prompt += `\nVerifie que chaque affirmation technique du contenu ci-dessus est tracable a l'une de ces citations.\n\n`;
+      }
+      prompt += `Genere un JSON avec ces champs exactement :\n`;
+      prompt += `{
+  "gamme": "string — nom de la gamme",
+  "gate_score": "number 0-100",
+  "gate_status": "PASS | WARN | FAIL",
+  "checks": {
+    "word_count": { "status": "PASS|WARN|FAIL", "total": "number", "range": "350-520" },
+    "forbidden_words": { "status": "PASS|WARN|FAIL", "found": ["string[]"] },
+    "anti_cannibalization": { "status": "PASS|WARN|FAIL", "diagnostic_words_found": [], "howto_markers_found": [] },
+    "rag_traceability": { "status": "PASS|WARN|FAIL", "claims_checked": "number", "claims_sourced": "number", "unsourced_details": [] },
+    "tone_check": { "status": "PASS|WARN|FAIL", "person": "vous", "superlatives_found": [] },
+    "hard_rules_check": { "status": "PASS|WARN|FAIL", "howto_found": [], "absolutes_found": [], "price_push_found": [] },
+    "content_contract_check": { "status": "PASS|WARN|FAIL", "total_words": "number", "target": [350, 520] }
+  },
+  "fixes_applied": [{ "field": "string", "before": "string", "after": "string" }],
+  "version_clean": "string — ex: v1.0 — no fixes needed"
+}\n`;
+      return prompt;
+    },
+  },
 };
 
 export const TONE_MODIFIERS: Record<Tone, string> = {

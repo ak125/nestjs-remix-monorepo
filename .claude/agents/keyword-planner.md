@@ -51,7 +51,39 @@ WHERE skp_status = 'draft' AND skp_audit_result IS NULL
 ORDER BY skp_pg_alias LIMIT 10;
 ```
 
-Presente la liste et attends validation avant de continuer.
+### Etape 0b — RAG pre-flight (BLOQUANT)
+
+Pour chaque gamme candidate de l'Etape 0, verifier la presence et suffisance du fichier RAG :
+
+1. `Read /opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`
+2. Si fichier absent → marquer `BLOCKED: No RAG file` et **retirer de la liste**
+3. Si fichier present, verifier les blocs critiques minimaux :
+
+| Bloc requis | Champ YAML | Condition minimum |
+|-------------|-----------|-------------------|
+| Role de la piece | `domain.role` | Non-vide |
+| Criteres selection | `selection.criteria` | >= 2 items |
+| Niveau de confiance | `truth_level` | `L1` ou `L2` |
+
+4. Si un des 3 blocs manque → marquer `BLOCKED: RAG insufficient ({champ manquant})` et **retirer de la liste**
+5. Presenter la liste filtree + les gammes bloquees :
+
+```
+GAMMES CANDIDATES : {N}
+BLOQUEES RAG     : {N}
+
+Candidates :
+| pg_alias | pg_id | RAG | Phase existante |
+|----------|-------|-----|-----------------|
+
+Bloquees :
+| pg_alias | pg_id | Raison                              |
+|----------|-------|-------------------------------------|
+| ...      | ...   | No RAG file                         |
+| ...      | ...   | RAG insufficient (domain.role vide) |
+```
+
+Attends validation avant de continuer vers P0.
 
 ---
 
@@ -123,6 +155,30 @@ ORDER BY sgc_order;
   "thin_content": "pass|fail"
 }
 ```
+
+### P0 media_recommendations
+
+Pour chaque section dans `sections_to_create UNION sections_to_improve` :
+1. Lookup slots obligatoires depuis `MEDIA_LAYOUT_CONTRACT` (`backend/src/config/media-slots.constants.ts`)
+2. Inclure slots optionnels image si RAG fournit du visuel
+3. Appliquer G7 : max 2 images (budget_cost=1) au total
+
+Output conforme a `R3MediaRecommendationSchema` (`backend/src/config/page-contract-r3.schema.ts`) :
+```json
+"media_recommendations": [
+  {
+    "section_id": "S2",
+    "recommended_slots": [
+      { "slot_id": "S2_DIAG_TABLE", "type": "table", "placement": "inline",
+        "purpose": "diagnostic rapide", "budget_cost": 0,
+        "table_spec": { "columns": ["Symptome","Cause probable","Action recommandee"], "row_count_target": "6-10" } }
+    ],
+    "rationale": "S2 faible — table manquante"
+  }
+]
+```
+
+Inclure `media_recommendations` dans `audit_result` JSON.
 
 **Ecriture P0** :
 
@@ -405,6 +461,47 @@ Reference : `backend/src/config/media-slots.constants.ts` → `MEDIA_LAYOUT_CONT
 - Descriptif + contexte, pas de bourrage keywords
 - Template : `{action/description} {gamme_name}` (ex: "Schema demontage plaquette de frein")
 - Hero : loading=eager, preload dans `<head>` | In-article : loading=lazy
+
+### P-SECTION Structured Output (R3SectionPlanSchema)
+
+Chaque section produite en P2-P9 doit etre conforme a `R3SectionPlanSchema` (`backend/src/config/page-contract-r3.schema.ts`).
+
+**Template JSON complet** :
+```json
+{
+  "include_terms": ["terme1", "terme2", "..."],
+  "micro_phrases": ["phrase concrete 1", "phrase concrete 2"],
+  "faq_questions": ["Question PAA 1 ?", "Question PAA 2 ?"],
+  "forbidden_overlap": ["terme section voisine"],
+  "snippet_block": {
+    "type": "table",
+    "trigger_query": "symptome {gamme}",
+    "target_position": "featured"
+  },
+  "internal_links": [
+    { "anchor_text": "plaquette de frein", "href": "/pieces/plaquette-de-frein", "target_role": "R1_CATEGORY" },
+    { "anchor_text": "guide disque de frein", "href": "/blog-pieces-auto/conseils/disque-de-frein", "target_role": "R3_GUIDE" }
+  ],
+  "media_slots": [
+    { "slot_id": "S2_DIAG_TABLE", "type": "table", "placement": "inline",
+      "purpose": "diagnostic rapide", "budget_cost": 0,
+      "table_spec": { "columns": ["Symptome","Cause probable","Action"], "row_count_target": "6-10" } }
+  ]
+}
+```
+
+**Regles de validation** :
+- `include_terms` : minimum per-section (voir `SECTION_TERM_MINIMUMS` dans le schema)
+- `internal_links.href` : doit commencer par `/` ; `target_role` coherent avec le prefixe (`/pieces/` → R1_CATEGORY, `/blog-pieces-auto/` → R3_GUIDE)
+- `media_slots` : budget_cost total images <= 2 (G7), types conformes a `MEDIA_LAYOUT_CONTRACT`
+
+**Media gates par section** (slots obligatoires) :
+- S2/S2_DIAG : doit contenir `table`
+- S3 : doit contenir `table` (compat)
+- S4_DEPOSE/S4_REPOSE : doit contenir `steps`
+- S5 : doit contenir `table` (erreurs)
+- S6 : doit contenir `checklist`
+- S8 : doit contenir `faq`
 
 **Ecriture progressive** : UPDATE skp_section_terms (merge JSONB) + skp_sections_done += section
 
