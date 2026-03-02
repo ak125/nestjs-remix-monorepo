@@ -83,7 +83,8 @@ export const KP_QUALITY_THRESHOLDS = {
   minQualityScore: 60,
   minCoverageScore: 0.7,
   maxDuplicationScore: 0.15,
-  maxR1RiskScore: 0.1,
+  /** C.8: overlap > 15% = FAIL */
+  maxR1RiskScore: 0.15,
 } as const;
 
 // ── R3 allowed intents ───────────────────────────────────
@@ -187,7 +188,7 @@ export type V4PipelinePhase = (typeof V4_PIPELINE_PHASES)[number];
 
 export const AUDIT_THRESHOLDS = {
   /** Sections scoring below this are flagged for improvement */
-  improvementScoreThreshold: 70,
+  improvementScoreThreshold: 75,
   /** If >50% of a section type scores exactly 50 → systemic problem */
   systemic50Threshold: 0.5,
   /** If coverage ≥90% and all scores ≥85 → skip gamme entirely */
@@ -266,24 +267,120 @@ export const AUDIT_GATE_DEFINITIONS: Record<string, GateDefinition> = {
 
 // ── RAG sufficiency mapping (section → required RAG blocks) ─
 
-export const RAG_SECTION_REQUIREMENTS: Record<
-  string,
-  { block: string; minItems: number }[]
-> = {
-  S1: [{ block: 'domain.role', minItems: 1 }],
+export interface RagBlockRequirement {
+  /** V4 block path (dotted) */
+  block: string;
+  /** Minimum items (1 for non_empty, 2+ for lists) */
+  minItems: number;
+  /** V1 fallback paths, tried in order. null = no V1 equivalent. */
+  v1Fallbacks: string[] | null;
+  /** Type of check */
+  checkType: 'non_empty' | 'list';
+  /** Transform hint for V1 → V4 data shape adaptation */
+  v1Transform?:
+    | 'wrap_string_as_list'
+    | 'extract_then_from_tree'
+    | 'extract_labels';
+}
+
+export const RAG_SECTION_REQUIREMENTS: Record<string, RagBlockRequirement[]> = {
+  S1: [
+    {
+      block: 'domain.role',
+      minItems: 1,
+      v1Fallbacks: [
+        'mechanical_rules.role_summary',
+        'page_contract.intro.role',
+      ],
+      checkType: 'non_empty',
+    },
+  ],
   S2: [
-    { block: 'maintenance.interval', minItems: 1 },
-    { block: 'maintenance.wear_signs', minItems: 1 },
+    {
+      block: 'maintenance.interval',
+      minItems: 1,
+      v1Fallbacks: ['page_contract.timing'],
+      checkType: 'non_empty',
+    },
+    {
+      block: 'maintenance.wear_signs',
+      minItems: 1,
+      v1Fallbacks: null,
+      checkType: 'list',
+    },
   ],
   S2_DIAG: [
-    { block: 'diagnostic.symptoms', minItems: 2 },
-    { block: 'diagnostic.quick_checks', minItems: 2 },
+    {
+      block: 'diagnostic.symptoms',
+      minItems: 2,
+      v1Fallbacks: ['symptoms', 'page_contract.symptoms'],
+      checkType: 'list',
+      v1Transform: 'extract_labels',
+    },
+    {
+      block: 'diagnostic.quick_checks',
+      minItems: 1,
+      v1Fallbacks: null,
+      checkType: 'list',
+    },
   ],
-  S3: [{ block: 'selection.criteria', minItems: 3 }],
-  S4_DEPOSE: [{ block: 'diagnostic.causes', minItems: 3 }],
-  S5: [{ block: 'selection.anti_mistakes', minItems: 3 }],
-  S6: [{ block: 'maintenance.good_practices', minItems: 2 }],
-  S8: [{ block: 'rendering.faq', minItems: 3 }],
+  S3: [
+    {
+      block: 'selection.criteria',
+      minItems: 3,
+      v1Fallbacks: ['page_contract.howToChoose'],
+      checkType: 'list',
+      v1Transform: 'wrap_string_as_list',
+    },
+  ],
+  S4_DEPOSE: [
+    {
+      block: 'diagnostic.causes',
+      minItems: 3,
+      v1Fallbacks: ['diagnostic_tree'],
+      checkType: 'list',
+      v1Transform: 'extract_then_from_tree',
+    },
+  ],
+  S5: [
+    {
+      block: 'selection.anti_mistakes',
+      minItems: 3,
+      v1Fallbacks: ['page_contract.antiMistakes'],
+      checkType: 'list',
+    },
+  ],
+  S6: [
+    {
+      block: 'maintenance.good_practices',
+      minItems: 2,
+      v1Fallbacks: null,
+      checkType: 'list',
+    },
+  ],
+  S8: [
+    {
+      block: 'rendering.faq',
+      minItems: 3,
+      v1Fallbacks: ['page_contract.faq'],
+      checkType: 'list',
+    },
+  ],
+};
+
+/** Default RAG field for sgc_sources attribution, keyed by section type */
+export const SECTION_RAG_FIELD_MAP: Record<string, string> = {
+  S1: 'domain.role',
+  S2: 'maintenance.interval',
+  S2_DIAG: 'diagnostic.symptoms',
+  S3: 'selection.criteria',
+  S4_DEPOSE: 'diagnostic.causes',
+  S4_REPOSE: 'installation.steps',
+  S5: 'selection.anti_mistakes',
+  S6: 'maintenance.good_practices',
+  S_GARAGE: 'installation.difficulty',
+  S7: 'domain.related_parts',
+  S8: 'rendering.faq',
 };
 
 // ── Keyword research query templates ────────────────────

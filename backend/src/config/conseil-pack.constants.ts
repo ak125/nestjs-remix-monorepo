@@ -69,6 +69,13 @@ export const PACK_DEFINITIONS: Record<PackLevel, PackDefinition> = {
 
 // ── Section quality criteria ─────────────────────────────
 
+export type RequiredFormat =
+  | 'table'
+  | 'steps'
+  | 'checklist'
+  | 'faq'
+  | 'callout';
+
 export interface SectionQualityCriteria {
   minContentLength: number;
   minWordCount: number;
@@ -77,119 +84,154 @@ export interface SectionQualityCriteria {
   minListItems: number;
   genericPhrasesPenalty: number;
   maxGenericRatio: number;
+  /** Format HTML gagnant attendu pour cette section (table, steps, checklist, faq, callout) */
+  requiredFormat?: RequiredFormat;
+  /** Penalite si le format requis est absent du HTML (defaut 15) */
+  formatPenalty: number;
 }
 
 export const SECTION_QUALITY_CRITERIA: Record<string, SectionQualityCriteria> =
   {
     S1: {
-      minContentLength: 100,
-      minWordCount: 20,
+      minContentLength: 200,
+      minWordCount: 40,
       requiresNumbers: false,
       requiresListItems: false,
       minListItems: 0,
       genericPhrasesPenalty: 15,
       maxGenericRatio: 0.1,
+      formatPenalty: 0, // prose libre
     },
     S2: {
-      minContentLength: 120,
-      minWordCount: 25,
+      minContentLength: 250,
+      minWordCount: 50,
       requiresNumbers: true,
       requiresListItems: false,
       minListItems: 0,
       genericPhrasesPenalty: 10,
       maxGenericRatio: 0.1,
+      requiredFormat: 'table', // symptome → cause → action
+      formatPenalty: 15,
     },
     S2_DIAG: {
-      minContentLength: 200,
-      minWordCount: 40,
+      minContentLength: 350,
+      minWordCount: 60,
       requiresNumbers: false,
       requiresListItems: false,
       minListItems: 0,
       genericPhrasesPenalty: 10,
       maxGenericRatio: 0.05,
+      requiredFormat: 'table',
+      formatPenalty: 15,
     },
     S3: {
-      minContentLength: 150,
-      minWordCount: 30,
+      minContentLength: 300,
+      minWordCount: 50,
       requiresNumbers: false,
       requiresListItems: true,
       minListItems: 3,
       genericPhrasesPenalty: 12,
       maxGenericRatio: 0.1,
+      requiredFormat: 'checklist', // criteres compatibilite
+      formatPenalty: 15,
     },
     S4_DEPOSE: {
-      minContentLength: 200,
-      minWordCount: 40,
+      minContentLength: 400,
+      minWordCount: 70,
       requiresNumbers: false,
       requiresListItems: true,
       minListItems: 3,
       genericPhrasesPenalty: 8,
       maxGenericRatio: 0.05,
+      requiredFormat: 'steps', // etapes numerotees
+      formatPenalty: 15,
     },
     S4_REPOSE: {
-      minContentLength: 200,
-      minWordCount: 40,
+      minContentLength: 400,
+      minWordCount: 70,
       requiresNumbers: false,
       requiresListItems: true,
       minListItems: 3,
       genericPhrasesPenalty: 8,
       maxGenericRatio: 0.05,
+      requiredFormat: 'steps',
+      formatPenalty: 15,
     },
     S5: {
-      minContentLength: 120,
-      minWordCount: 25,
+      minContentLength: 300,
+      minWordCount: 50,
       requiresNumbers: false,
       requiresListItems: true,
       minListItems: 3,
       genericPhrasesPenalty: 12,
       maxGenericRatio: 0.1,
+      requiredFormat: 'callout', // erreur → risque → correctif
+      formatPenalty: 15,
     },
     S6: {
-      minContentLength: 100,
-      minWordCount: 20,
+      minContentLength: 250,
+      minWordCount: 40,
       requiresNumbers: false,
       requiresListItems: true,
       minListItems: 2,
       genericPhrasesPenalty: 8,
       maxGenericRatio: 0.1,
+      requiredFormat: 'checklist', // verification finale
+      formatPenalty: 15,
     },
     S_GARAGE: {
-      minContentLength: 150,
-      minWordCount: 30,
-      requiresNumbers: false,
-      requiresListItems: false,
-      minListItems: 0,
-      genericPhrasesPenalty: 10,
-      maxGenericRatio: 0.05,
-    },
-    S7: {
-      minContentLength: 80,
-      minWordCount: 15,
-      requiresNumbers: false,
-      requiresListItems: true,
-      minListItems: 2,
-      genericPhrasesPenalty: 5,
-      maxGenericRatio: 0.2,
-    },
-    S8: {
-      minContentLength: 200,
+      minContentLength: 300,
       minWordCount: 50,
       requiresNumbers: false,
       requiresListItems: false,
       minListItems: 0,
       genericPhrasesPenalty: 10,
+      maxGenericRatio: 0.05,
+      requiredFormat: 'callout',
+      formatPenalty: 15,
+    },
+    S7: {
+      minContentLength: 120,
+      minWordCount: 20,
+      requiresNumbers: false,
+      requiresListItems: true,
+      minListItems: 2,
+      genericPhrasesPenalty: 5,
+      maxGenericRatio: 0.2,
+      formatPenalty: 0, // liens internes, pas de format impose
+    },
+    S8: {
+      minContentLength: 350,
+      minWordCount: 80,
+      requiresNumbers: false,
+      requiresListItems: false,
+      minListItems: 0,
+      genericPhrasesPenalty: 10,
       maxGenericRatio: 0.1,
+      requiredFormat: 'faq', // <details><summary>
+      formatPenalty: 15,
     },
     META: {
-      minContentLength: 50,
-      minWordCount: 10,
+      minContentLength: 120,
+      minWordCount: 20,
       requiresNumbers: false,
       requiresListItems: false,
       minListItems: 0,
       genericPhrasesPenalty: 5,
       maxGenericRatio: 0.3,
+      formatPenalty: 0,
     },
   };
+
+// ── Format detection helpers (HTML patterns) ─────────────
+export const FORMAT_DETECTION: Record<RequiredFormat, RegExp> = {
+  table: /<table[\s>]/i,
+  steps: /<ol[\s>]/i,
+  checklist: /<ul[\s>]/i,
+  faq: /<details[\s>]/i,
+  callout:
+    /<(?:div|aside|blockquote)[^>]*class="[^"]*(?:callout|alert|warning|info|amber)[^"]*"/i,
+};
 
 // ── Generic phrases (shared with blog-seo.service.ts cleanWeakPhrases) ──
 

@@ -17,6 +17,35 @@ Tu es un agent spécialisé dans la génération de sections conseil pour les pa
 
 ---
 
+## Regles fondamentales (Best Practices)
+
+Ces regles s'appliquent a TOUTE generation de contenu, sans exception :
+
+1. **R3 only** : pas de prix/promo/acheter/livraison (termes R1). Max 1 CTA soft ("Verifier compatibilite") au-dessus de la ligne de flottaison.
+2. **No hallucination** : pas de chiffres, couples de serrage, normes, intervalles km/mois si non fournis par le RAG → utiliser "a verifier selon les recommandations constructeur".
+3. **No duplication** : chaque section couvre un angle unique. `forbidden_overlap` explicite entre sections. Ne pas repeter les memes phrases dans S2 et S5 par exemple.
+4. **Content > Keywords** : les mots-cles servent le contenu, pas l'inverse. Pas de keyword stuffing.
+5. **Format gagnant obligatoire** : chaque section doit contenir le format HTML specifie (voir tableau ci-dessous).
+6. **Output strict** : chaque section doit produire un `gate_report` (pass/fail) en log.
+
+### Formats requis par section
+
+| Section | Format obligatoire | HTML attendu | Contenu type |
+|---------|-------------------|-------------|-------------|
+| S1 | prose | paragraphes | Fonction piece + pieces liees en `<b>` |
+| S2 | **table** | `<table>` | Symptome → Cause → Action (3 colonnes) |
+| S2_DIAG | **table** | `<table>` | Symptome → Cause → Action + Quick checks |
+| S3 | **checklist** | `<ul><li>` | Criteres compatibilite (diametre, epaisseur, ABS) |
+| S4_DEPOSE | **steps** | `<ol><li>` | Etapes numerotees de demontage |
+| S4_REPOSE | **steps** | `<ol><li>` | Etapes numerotees de remontage |
+| S5 | **callout** | `<div class="callout-warning">` ou `<blockquote>` | Erreur → Risque → Correctif |
+| S6 | **checklist** | `<ul><li>` | Verifications finales + essai progressif |
+| S_GARAGE | **callout** | idem S5 | Quand consulter un pro |
+| S7 | liens | `<ul><li><a>` | Pieces associees `/pieces/{slug}` |
+| S8 | **faq** | `<details><summary>` | 4-6 Q/A courtes et uniques |
+
+---
+
 ## Packs cibles
 
 | Pack | Sections requises | Seuil section | Seuil pack |
@@ -77,7 +106,7 @@ Pour chaque gamme sélectionnée :
    - Si `truth_level` n'est pas `L1` ou `L2` → **SKIP** avec raison `Untrusted source`
 4. **Détecter la version du schema** :
    - Si `rendering.quality.version === 'GammeContentContract.v4'` → utiliser le mapping **v4**
-   - Sinon → utiliser le mapping **legacy** (moins de données disponibles)
+   - Sinon → utiliser le mapping **legacy V1** (voir tableau ci-dessous). S6 et S_GARAGE seront SKIP (pas de source V1)
 5. **Charger les sections existantes** :
    ```sql
    SELECT sgc_section_type, sgc_quality_score, LENGTH(sgc_content) AS content_len
@@ -157,6 +186,30 @@ curl -s -X POST http://localhost:3000/api/rag/search \
 | `installation.difficulty` + `diagnostic.causes` + `installation.common_errors` | **S_GARAGE** (Quand aller au garage) | Callout amber. Trigger : difficulty=difficile OU ≥3 causes OU >10 étapes. **Ne PAS générer pour gammes simples** |
 | `domain.related_parts` / `domain.cross_gammes` | **S7** (Pièces associées) | Liens internes `/pieces/{slug}` |
 | `rendering.faq` | **S8** (FAQ) | `<details><summary>` HTML, min 3 Q/A |
+
+### Mapping legacy (V1) → sections R3
+
+Utilisé quand le fichier RAG n'a PAS `rendering.quality.version === 'GammeContentContract.v4'`.
+
+| Source V1 | Section | Règle de génération |
+|-----------|---------|---------------------|
+| `mechanical_rules.role_summary` ou `page_contract.intro.role` + `page_contract.intro.syncParts` | **S1** (Fonction) | HTML prose, mentionner syncParts en `<b>` |
+| `page_contract.symptoms` (flat string[]) + `page_contract.timing` | **S2** (Quand changer) | Chiffres km/ans depuis timing, liste symptoms |
+| `symptoms[]` (root, structured `{id, label, risk_level}`) + `page_contract.symptoms` | **S2_DIAG** (Diagnostic rapide) | Table HTML. `symptoms[].label` = symptôme, `symptoms[].risk_level` = sévérité. Trigger : ≥2 symptoms |
+| `page_contract.howToChoose` (string ou string[]) | **S3** (Comment choisir) | Si string unique, la découper en points. Min 3 critères |
+| `diagnostic_tree[]` (array `{if, then}`) | **S4_DEPOSE** (Diagnostic) | `if` = condition, `then` = action. Liste `Si X → Y` |
+| `page_contract.antiMistakes` (string[]) | **S5** (Erreurs) | Direct copy, min 3 items |
+| — (pas d'équivalent V1) | **S6** (Vérification) | **SKIP** — pas de source V1 disponible |
+| — (pas d'équivalent V1) | **S_GARAGE** | **SKIP** — pas d'info difficulty/installation en V1 |
+| `page_contract.intro.syncParts` | **S7** (Pièces associées) | Liens internes `/pieces/{slug}` |
+| `page_contract.faq` (array `{question, answer}` ou `{q, a}`) | **S8** (FAQ) | `<details><summary>` HTML, min 3 Q/A |
+
+**Champs V1 complémentaires (contexte, pas de section directe) :**
+- `mechanical_rules.must_be_true` → contraintes de vérité (même usage qu'en V4)
+- `mechanical_rules.must_not_contain_concepts` → termes interdits
+- `mechanical_rules.confusion_with` → dict `{piece: {key_difference}}`, utile pour S1
+- `page_contract.risk.explanation` + `page_contract.risk.consequences` → contexte pour S2
+- `page_contract.arguments` → points de vente, contexte pour S1/S3
 
 ### Règles critiques de contenu
 

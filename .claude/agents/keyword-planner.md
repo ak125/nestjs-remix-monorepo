@@ -87,17 +87,42 @@ WHERE sgc_pg_id = {pg_id}
 ORDER BY sgc_order;
 ```
 
-**Traitement** (6 audit gates GA1-GA6) :
+**Traitement** (7 audit gates GA1-GA7) :
 
-1. **GA1 REQUIRED_SECTIONS** : sections presentes vs pack standard required `[S1, S2, S3, S4_DEPOSE, S5, S6, S8]` (30 pts/manquante)
-2. **GA2 SCORE_THRESHOLD** : chaque section score >= 70 (20 pts/faible)
-3. **GA3 CROSS_SECTION_DEDUP** : pas de paragraphes dupliques entre sections (15 pts)
-4. **GA4 GENERIC_PHRASES** : ratio phrases generiques < seuil par section (10 pts/section)
-5. **GA5 EEAT_SOURCES** : chaque section a une source E-E-A-T (5 pts/manquante)
-6. **GA6 THIN_CONTENT** : aucune section < 50% de la longueur minimale (15 pts/section)
-7. Calculer priority_score (unclamped, 0-300+) : somme ponderee des penalites GA1-GA6
-8. Construire priority_fixes : tableau structuree `{section, issue, current_score, fix_type}`
-   Issues possibles : `missing`, `low_score`, `thin_content`, `weak_phrases`, `no_sources`
+1. **GA1 REQUIRED_SECTIONS** (30 pts/manquante) : sections presentes vs pack standard required `[S1, S2, S3, S4_DEPOSE, S5, S6, S8]`
+2. **GA2 SCORE_THRESHOLD** (20 pts/faible) : chaque section score >= **75** (seuil V4 recalibre)
+3. **GA3 CROSS_SECTION_DEDUP** (15 pts) : pas de paragraphes dupliques entre sections
+4. **GA4 GENERIC_PHRASES** (10 pts/section) : ratio phrases generiques < seuil par section
+5. **GA5 EEAT_SOURCES** (5 pts/manquante) : chaque section a une source E-E-A-T
+6. **GA6 THIN_CONTENT** (15 pts/section) : aucune section < 50% de la longueur minimale (seuils recalibres V4)
+7. **GA7 FORMAT_COMPLIANCE** (15 pts/section) : chaque section doit contenir son format gagnant :
+
+| Section | Format requis | Detection HTML | Penalty si absent |
+|---------|--------------|---------------|-------------------|
+| S2 | `table` | `<table` | -15 |
+| S2_DIAG | `table` | `<table` | -15 |
+| S3 | `checklist` | `<ul` | -15 |
+| S4_DEPOSE | `steps` | `<ol` | -15 |
+| S4_REPOSE | `steps` | `<ol` | -15 |
+| S5 | `callout` | `<div class="callout` ou `<aside` ou `<blockquote` | -15 |
+| S6 | `checklist` | `<ul` | -15 |
+| S_GARAGE | `callout` | idem S5 | -15 |
+| S8 | `faq` | `<details` | -15 |
+
+8. Calculer priority_score (unclamped, 0-300+) : somme ponderee des penalites GA1-GA7
+9. Construire priority_fixes : tableau structuree `{section, issue, current_score, fix_type}`
+   Issues possibles : `missing`, `low_score`, `thin_content`, `weak_phrases`, `no_sources`, `missing_format`, `rag_stale`, `rag_insufficient`
+
+**gate_report JSON** (inclure dans audit_result) :
+```json
+{
+  "no_r1_terms": "pass|fail",
+  "duplication": "pass|fail",
+  "coverage": "pass|fail",
+  "format_compliance": "pass|fail",
+  "thin_content": "pass|fail"
+}
+```
 
 **Ecriture P0** :
 
@@ -231,21 +256,50 @@ Si audit montre S1=92, S2=88, S3=50, S6=MISSING :
 
 Pour chaque section ciblee :
 
-### Si section a AMELIORER (existe mais score < 70)
+### Regles best-practice (toutes sections)
+
+**R3 only** : pas de prix/promo/acheter/livraison (R1), max 1 CTA soft au-dessus de la ligne de flottaison.
+
+**No hallucination** : pas de chiffres, couples, normes, intervalles si non fournis par le RAG → utiliser "a verifier constructeur".
+
+**No duplication** : chaque section couvre un angle unique. `forbidden_overlap` explicite entre sections.
+
+**Content > Keywords** : mots-cles = support du contenu, pas l'inverse.
+
+**Format gagnant obligatoire** par section (le format est la premiere chose a verifier/generer) :
+
+| Section | Format gagnant | Contenu cible |
+|---------|---------------|---------------|
+| S1 | prose | Fonction piece + mention pieces liees en `<b>` |
+| S2 | **table** `<table>` | Symptome → Cause → Action (3 colonnes) |
+| S2_DIAG | **table** `<table>` | Symptome → Cause → Action |
+| S3 | **checklist** `<ul>` | Criteres compatibilite (diametre, epaisseur, ABS, trous) + methode fiable |
+| S4_DEPOSE | **steps** `<ol>` | Etapes numerotees de demontage |
+| S4_REPOSE | **steps** `<ol>` | Etapes numerotees de remontage |
+| S5 | **callout** | Erreur → Risque → Correctif (3 items min) |
+| S6 | **checklist** `<ul>` | Verifications finales + essai progressif |
+| S_GARAGE | **callout** | Quand consulter un pro (criteres de complexite) |
+| S7 | liens internes | Pieces associees `/pieces/{slug}` |
+| S8 | **faq** `<details><summary>` | 4-6 questions max, courtes et uniques |
+
+### Si section a AMELIORER (existe mais score < 75)
 
 1. Lire le contenu existant (deja dans audit_result)
-2. Identifier les faiblesses : score, weak_phrases_ratio, content_length
-3. Generer les termes de remplacement/renforcement :
+2. Identifier les faiblesses : score, weak_phrases_ratio, content_length, **format manquant**
+3. Si format gagnant absent → generer le snippet_block correspondant (table/steps/checklist)
+4. Generer les termes de remplacement/renforcement :
    - `include_terms[]` : keywords specifiques pour enrichir le contenu
-   - `micro_phrases[]` : phrases concretes a integrer
-   - `forbidden_overlap[]` : termes des autres sections a eviter
-4. Focus sur la cause du score bas (S3 souvent = contenu generique, manque de criteres specifiques)
+   - `micro_phrases[]` : phrases concretes a integrer (expert, concret, actionnable)
+   - `forbidden_overlap[]` : termes des autres sections a eviter (anti-duplication)
+5. Focus sur la cause du score bas (S3 souvent = contenu generique, S5 = trop court, S2 = pas de table)
 
 ### Si section a CREER (manquante)
 
-1. Generer depuis zero (meme logique que V3 P2-P9)
+1. Generer depuis zero avec le **format gagnant obligatoire**
 2. `include_terms[]`, `micro_phrases[]`, `faq_questions[]`
-3. `snippet_block{}`, `internal_links[]`, `forbidden_overlap[]`
+3. `snippet_block{}` : type correspond au format gagnant de la section
+4. `internal_links[]`, `forbidden_overlap[]`
+5. Pas de chiffres inventes — uniquement ce que le RAG fournit
 
 ### Minimums par section (V3 inchanges)
 
@@ -458,11 +512,16 @@ FICHE : {Gamme Name} (pg_id={id})
 
 ETAT DES SECTIONS :
   OK : S1=100  S2=100  S3=100  S5=100  S7=100  S8=100
-  FAIBLE : S6=50 (thin: 30 chars, min 100)
-  BLOQUE : S4_DEPOSE=50 (RAG insuffisant: 2 causes, besoin 3)
+  FAIBLE : S6=50 (thin: 30 chars, min 100)  → REGENERER (RAG suffisant)
+  BLOQUE : S4_DEPOSE=50 (RAG insuffisant)   → DOC REQUISE (causes 2/3)
+  MANQUANTE : S2_DIAG                        → REGENERER (RAG suffisant)
 
-SOURCES E-E-A-T :
-  {N}/{total} sections SANS source
+  Legende actions :
+    REGENERER   = RAG suffisant, lancer conseil-batch automatiquement
+    DOC REQUISE = RAG insuffisant, fournir doc (voir DOCUMENTATION A FOURNIR)
+
+SOURCES TRACEES (metadata interne, jamais affichees au public) :
+  {N}/{total} sections sans sgc_sources
 
 KEYWORDS A RECHERCHER :
   Informationnelles :
@@ -482,10 +541,75 @@ RAG A ENRICHIR :
   Blocs manquants :
     - diagnostic.causes : ajouter >=1 cause (actuellement 2, besoin 3)
 
+DOCUMENTATION A FOURNIR :
+  [Afficher UNIQUEMENT les lignes des sections FAIBLE ou BLOQUE]
+
+  S1 — Role de la piece
+    Doc : fiche produit constructeur/equipementier
+    Infos : role exact, fonction mecanique, position vehicule
+    Ou : Bosch, Valeo, SKF, TRW — pages produit
+    RAG : domain.role (texte)
+
+  S2 — Quand remplacer
+    Doc : guide maintenance constructeur
+    Infos : intervalle km/mois, 2+ signes d'usure, facteurs acceleration
+    Ou : manuel constructeur, Bosch Service, Mopar
+    RAG : maintenance.interval + maintenance.wear_signs (liste)
+
+  S2_DIAG — Diagnostic symptomes
+    Doc : guide diagnostic atelier
+    Infos : 2+ symptomes, checks rapides visuels/auditifs
+    Ou : Bosch Diagnostics, forums mecanique pro
+    RAG : diagnostic.symptoms + diagnostic.quick_checks (listes)
+
+  S3 — Guide de selection
+    Doc : catalogue equipementier, fiche technique
+    Infos : 3+ criteres selection, variantes, dimensions cles
+    Ou : catalogue Bosch/Valeo, sites equipementiers
+    RAG : selection.criteria (liste, min 3)
+
+  S4_DEPOSE — Etapes de remplacement
+    Doc : tuto montage / RTA / guide atelier
+    Infos : 3+ etapes, outils requis, precautions
+    Ou : RTA, YouTube pro, guides atelier
+    RAG : diagnostic.causes (liste, min 3)
+
+  S5 — Erreurs a eviter
+    Doc : retours SAV, forums auto
+    Infos : 3+ erreurs frequentes commande/montage
+    Ou : forums auto, retours clients, FAQ concurrents
+    RAG : selection.anti_mistakes (liste, min 3)
+
+  S6 — Bonnes pratiques entretien
+    Doc : guide entretien constructeur/equipementier
+    Infos : 2+ bonnes pratiques, choses a ne pas faire
+    Ou : guide Bosch, guide Mopar, notice constructeur
+    RAG : maintenance.good_practices (liste, min 2)
+
+  S8 — FAQ
+    Doc : Google PAA + FAQ concurrents
+    Infos : 3+ questions reelles avec reponses factuelles
+    Ou : Google PAA, forums, FAQ concurrents
+    RAG : rendering.faq (liste Q/A, min 3)
+    Script : python3 scripts/seo/paa-inject.py {slug}
+
+SOURCES E-E-A-T A TRACER (metadata interne) :
+  [Lister sections dont sgc_sources est NULL]
+  Note : ces sources ne sont JAMAIS affichees au public.
+  Format JSON interne :
+    [{"ref":"Bosch - Guide maintenance 2024","field":"maintenance.interval"}]
+  SQL pour injecter :
+    UPDATE __seo_gamme_conseil
+    SET sgc_sources = '[{"ref":"...","field":"..."}]'::jsonb
+    WHERE sgc_pg_id = '{pg_id}' AND sgc_section_type = '{section}';
+
 PROCHAINE ETAPE :
-  1. Enrichir le RAG (blocs ci-dessus)
-  2. Lancer : keyword-planner targeted {pg_alias}
-  3. Lancer : conseil-batch {pg_alias}
+  1. Fournir la documentation (voir DOCUMENTATION A FOURNIR)
+  2. Enrichir le RAG : /opt/automecanik/rag/knowledge/gammes/{slug}.md
+  3. Verifier : python3 scripts/seo/rag-check.py {slug}
+  4. Lancer : keyword-planner targeted {pg_alias}
+  5. Lancer : conseil-batch {pg_alias}
+  6. Tracer sources : voir SOURCES E-E-A-T A TRACER
 ```
 
 ---
@@ -518,7 +642,7 @@ Prochains suggeres: {5 aliases avec plus haut priority_score}
 - **Pas de generation de contenu** -- uniquement requetes, termes, et audit
 - **Pas d'invention** -- si absent du RAG/cluster/brief, ne pas deviner
 - **Escape SQL** -- echapper apostrophes dans toutes les valeurs
-- **Anti-cannibalisation R1** -- include_terms sans termes transactionnels (PRIX_PAS_CHER)
+- **Anti-cannibalisation R1↔R3** -- Jaccard cross-check bidirectionnel (seuil 15%). R3 `runAllGates(plan, r1SectionTerms)` accepte les R1 terms en param optionnel
 - **S_GARAGE** -- ne PAS generer pour gammes simples (difficulty != difficile)
 - **SKIP gammes saines** -- si shouldSkipGamme = true, ne PAS generer de plan
 
@@ -538,7 +662,7 @@ Prochains suggeres: {5 aliases avec plus haut priority_score}
 
 ---
 
-## Mode R1 (transactionnel)
+## Mode R1 (transactionnel) -- Taxonomie C.2
 
 Quand le mode R1 est demande (ex: "keyword plan R1 pour cremaillere-direction"), utiliser le pipeline R1 ci-dessous au lieu du pipeline R3 standard.
 
@@ -551,35 +675,60 @@ Quand le mode R1 est demande (ex: "keyword plan R1 pour cremaillere-direction"),
     R1 Pipeline : r1-content-pipeline.service.ts -> sgpg_* colonnes
     KP R1       : keyword-planner (mode R1)      -> __seo_r1_keyword_plan
 
+### Taxonomie C.2 -- 10 sections R1
+
+| ID | Label | DB Column(s) | Priorite SEO | keyword_targeted | required |
+|----|-------|-------------|-------------|-----------------|----------|
+| R1_S0_SERP | SERP Pack | `sgpg_h1_override` + `sg_title_draft, sg_descrip_draft` (__seo_gamme) | critique | oui | oui |
+| R1_S1_HERO | Hero Subtitle | `sgpg_hero_subtitle` | haute | oui | oui |
+| R1_S2_SELECTOR | Selector Microcopy | `sgpg_selector_microcopy` | basse | non | non |
+| R1_S3_BADGES | Proof Badges | `sgpg_arg1_title..4_title` | basse | non | non |
+| R1_S4_MICRO_SEO | Micro-SEO Block | `sgpg_micro_seo_block` | critique | oui | oui |
+| R1_S5_COMPAT | Compatibilities Intro | `sgpg_compatibilities_intro` | moyenne | oui | non |
+| R1_S6_SAFE_TABLE | Safe Table | `sgpg_safe_table_rows` | moyenne | non | non |
+| R1_S7_EQUIP | Equipementiers Line | `sgpg_equipementiers_line` | moyenne | oui | non |
+| R1_S8_CROSS_SELL | Family Cross-Sell | `sgpg_family_cross_sell_intro` | basse | non | non |
+| R1_S9_FAQ | FAQ Selector | `sgpg_faq` | haute | oui | oui |
+
+**6 keyword-targeted** : R1_S0_SERP, R1_S1_HERO, R1_S4_MICRO_SEO, R1_S5_COMPAT, R1_S7_EQUIP, R1_S9_FAQ
+**4 UI-only** (pas de keyword plan) : R1_S2_SELECTOR, R1_S3_BADGES, R1_S6_SAFE_TABLE, R1_S8_CROSS_SELL
+**4 required** : R1_S0_SERP, R1_S1_HERO, R1_S4_MICRO_SEO, R1_S9_FAQ
+
 ---
 
 ### R1 KP0 -- AUDIT (SQL only, 0 LLM calls)
 
-**Input** : colonnes sgpg_* existantes dans `__seo_gamme_purchase_guide`
+**Input** : 2 tables -- `__seo_gamme_purchase_guide` (sgpg_*) + `__seo_gamme` (sg_* pour R1_S0_SERP)
 
-**Query SQL** :
+**Query SQL** (2 requetes) :
 
 ```sql
+-- 1. Purchase guide columns (sgpg_*)
 SELECT
   sgpg_pg_id, sgpg_pg_alias,
-  sgpg_hero_subtitle, sgpg_h1_override,
+  sgpg_h1_override,
+  sgpg_hero_subtitle,
+  sgpg_selector_microcopy,
   sgpg_arg1_title, sgpg_arg2_title, sgpg_arg3_title, sgpg_arg4_title,
-  sgpg_selector_microcopy, sgpg_safe_table_rows,
-  sgpg_intro_title, sgpg_intro_role, sgpg_risk_title, sgpg_risk_explanation, sgpg_timing_title,
-  sgpg_arg1_content, sgpg_arg2_content, sgpg_arg3_content, sgpg_arg4_content,
   sgpg_micro_seo_block,
   sgpg_compatibilities_intro,
-  sgpg_faq,
-  sgpg_equipementiers_line, sgpg_family_cross_sell_intro,
-  sgpg_visual_plan
+  sgpg_safe_table_rows,
+  sgpg_equipementiers_line,
+  sgpg_family_cross_sell_intro,
+  sgpg_faq
 FROM __seo_gamme_purchase_guide
 WHERE sgpg_pg_id = {pg_id};
+
+-- 2. SEO gamme columns (sg_* pour R1_S0_SERP)
+SELECT sg_title_draft, sg_descrip_draft
+FROM __seo_gamme
+WHERE sg_pg_id = {pg_id};
 ```
 
 **Traitement** (6 audit gates KA1-KA6) :
 
-Pour chaque section R1 (R1_S0..R1_S9, R1_META) :
-1. Concatener les valeurs des sgpg_columns correspondantes
+Pour chaque section R1 (R1_S0_SERP..R1_S9_FAQ) :
+1. Concatener les valeurs des sgpg_columns + sg_columns (si applicable, ex: R1_S0_SERP)
 2. Calculer word_count, char_count
 3. **KA1** : section required + vide -> missing (30 pts)
 4. **KA2** : score section < 70 -> low_score (20 pts)
@@ -610,65 +759,84 @@ DO UPDATE SET
 
 ---
 
-### R1 KP1 -- CLUSTERS (requetes transactionnelles)
+### R1 KP1 -- ARCHITECTURE (1 LLM call, temp=0.3)
 
-**Input** : KP0 audit_result + RAG knowledge
+Fusionne clusters + heading plan + intent + boundaries en un seul appel LLM.
 
-Generer des query clusters TRANSACTIONNELS :
-- **Head** : "acheter {gamme}", "{gamme} en ligne", "commander {gamme}"
-- **Mid** : "{gamme} pas cher", "prix {gamme}", "{gamme} livraison rapide"
-- **Long** : "{gamme} {marque} {modele}", "{gamme} compatible {vehicule}"
+**Inputs** :
+- KP0 audit_result (sections_to_improve, sections_empty, section_scores)
+- RAG knowledge : `Read /opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`
+- Research brief : `SELECT * FROM __seo_research_brief WHERE pg_id = {pg_id}`
+- R3 forbidden lexicon : `SELECT skp_section_terms FROM __seo_r3_keyword_plan WHERE skp_pg_id = {pg_id} AND skp_status = 'active'`
 
-Chaque cluster doit pointer vers une section R1 cible (R1_S0..R1_S9).
+**Outputs** :
+- `rkp_primary_intent` : "transactional" (toujours pour R1)
+- `rkp_secondary_intents[]` : ex. ["navigational", "commercial_investigation"]
+- `rkp_boundaries` : `{forbidden_terms[], scope_limit: "selection-only, zero-diagnostic, zero-howto"}`
+- `rkp_heading_plan` : H1 + H2 structure alignee aux clusters
+  - H1 : keyword principal + gamme
+  - H2 : un par section keyword-targeted ciblee
+  - Aucun H2 pour sections UI-only
+  - Aucun H2 ne contient de termes R3 interdits
+- `rkp_query_clusters` :
+  ```json
+  {
+    "head": [{"query": "acheter {gamme}", "volume_hint": "high", "section_target": "R1_S0_SERP"}],
+    "mid_tail": [{"query": "{gamme} pas cher", "volume_hint": "mid", "section_target": "R1_S4_MICRO_SEO"}],
+    "long_tail": [{"query": "{gamme} {marque} {modele}", "volume_hint": "low", "section_target": "R1_S5_COMPAT"}],
+    "paa": [{"query": "quelle {gamme} choisir", "section_target": "R1_S9_FAQ"}]
+  }
+  ```
 
-**Ecriture** : UPDATE rkp_query_clusters, phase = 'KP1_CLUSTERS'
+**Contrainte anti-cannibalisation** : cross-check avec `__seo_r3_keyword_plan.skp_section_terms` pour la meme gamme. Aucun include_term R1 ne doit etre present dans les section_terms R3.
+
+Chaque cluster pointe vers une section **keyword-targeted** uniquement :
+R1_S0_SERP, R1_S1_HERO, R1_S4_MICRO_SEO, R1_S5_COMPAT, R1_S7_EQUIP, R1_S9_FAQ.
+
+**Ecriture** : UPDATE rkp_primary_intent, rkp_secondary_intents, rkp_boundaries, rkp_heading_plan, rkp_query_clusters, phase = 'KP1_ARCHITECTURE'
 
 ---
 
-### R1 KP2 -- SECTION TERMS
+### R1 KP2 -- SECTION TERMS (1 LLM call, boucle sur sections faibles)
 
-Pour chaque section dans sections_to_create UNION sections_to_improve :
-- `include_terms[]` : keywords transactionnels specifiques
-- `micro_phrases[]` : phrases concretes a integrer
-- `forbidden_overlap[]` : termes R3 interdits (voir R3_FORBIDDEN_IN_R1)
+Pour chaque section **keyword-targeted** flaggee par KP0 (improve + create) :
+
+```json
+{
+  "include_terms": ["cremaillere direction", "rack direction assistee", "..."],
+  "micro_phrases": ["assure le guidage precis des roues", "..."],
+  "forbidden_overlap": ["changer", "remplacer", "symptomes", "..."],
+  "snippet_target": {"type": "paragraph", "trigger_query": "cremaillere direction prix"}
+}
+```
+
+**R1_S9_FAQ** : generer `faq_questions[]` (max 6, vehicle-selector orientees)
+
+**Minimums** : 3-6 include_terms, 1-3 micro_phrases par section ciblee
 
 **Anti-cannibalisation** : aucun terme de R3_FORBIDDEN_IN_R1 dans les include_terms :
 `etape, pas-a-pas, tuto, tutoriel, montage, demonter, visser, devisser, couple de serrage, symptome, diagnostic, panne, voyant, comparatif, versus, vs`
 
-**Ecriture** : UPDATE rkp_section_terms, phase = 'KP2_SECTION_TERMS'
+**Ecriture** : UPDATE rkp_section_terms (merge JSONB) + rkp_sections_done += section, phase = 'KP2_SECTION_TERMS'
 
 ---
 
-### R1 KP3 -- HEADING PLAN
+### R1 KP3 -- VALIDATE (deterministe, 0 LLM) -- Gates C.4
 
-Generer H1/H2 alignes aux clusters transactionnels :
-- H1 : contient le keyword principal + gamme (ex: "Achetez vos {gamme} au meilleur prix")
-- H2 : un par section ciblee, integrant les include_terms
+Valider le keyword plan complet via gates RG1-RG7 :
 
-**Regles** :
-- Aucun H2 ne doit contenir de termes R3 interdits
-- H2 aligne au cluster de la section
-
-**Ecriture** : UPDATE rkp_heading_plan, phase = 'KP3_HEADING_PLAN'
-
----
-
-### R1 KP4 -- VALIDATE (gates G1-G7)
-
-Valider le keyword plan complet :
-
-1. **G1 INTENT_ALIGNMENT** (30) : intent = transactional (jamais informational/howto)
-2. **G2 BOUNDARY_RESPECT** (25) : pas de termes R3 dans heading_plan ou section_terms
-3. **G3 CLUSTER_COVERAGE** (20) : tous les head queries mappes a >= 1 section
-4. **G4 SECTION_OVERLAP** (15) : pas de overlap > 15% entre include_terms des sections
-5. **G5 FAQ_DEDUP** (10) : FAQ R1 pas dupliquee des FAQ R3
-6. **G6 ANCHOR_VALIDITY** (10) : liens internes vers /pieces/ valides
-7. **G7 BUDGET_COMPLIANCE** (5) : word count par section dans les bounds
+1. **RG1 INTENT_ALIGNMENT** (30) : intent in [transactional, navigational, commercial_investigation]
+2. **RG2 BOUNDARY_RESPECT** (25) : pas de termes R3 (tutoriel, montage, symptomes, diagnostic) dans heading_plan ou section_terms
+3. **RG3 CLUSTER_COVERAGE** (20) : tous les head queries mappes a >= 1 section keyword-targeted (R1_S0/S1/S4/S5/S7/S9)
+4. **RG4 SECTION_OVERLAP** (15) : pas de overlap > 15% entre include_terms des sections
+5. **RG5 FAQ_DEDUP** (10) : FAQ R1 pas dupliquee des PAA, et pas de FAQ R3 how-to
+6. **RG6 ANCHOR_VALIDITY** (10) : liens internes vers /pieces/ valides
+7. **RG7 R3_RISK** (5) : cross-check include_terms R1 vs R3 pour la meme gamme (Jaccard overlap <= 10%)
 
 Calculer 4 scores :
 - `rkp_quality_score` = 100 - sum(penalties)
 - `rkp_duplication_score` = overlap sections (0-1)
-- `rkp_r3_risk_score` = Jaccard(R1 terms, R3 terms) → anti-cannibalisation miroir
+- `rkp_r3_risk_score` = Jaccard(R1 terms, R3 terms) -- anti-cannibalisation miroir
 - `rkp_coverage_score` = sections ciblees / sections required
 
 **Decision** :
@@ -684,10 +852,14 @@ Calculer 4 scores :
 ```
 R1 KEYWORD PLAN REPORT -- {date} -- {N} gammes
 
-| Gamme             | pg_id | Priority | Improve       | Create  | Score | Status |
-|-------------------|-------|----------|---------------|---------|-------|--------|
-| cremaillere       |   286 |       45 | R1_S3, R1_S5  | R1_S9   |    72 | DONE   |
-| rotule-direction  |   290 |        0 | --            | --      |    -- | SKIP   |
+| Gamme             | pg_id | Priority | Improve             | Create       | Score | Status |
+|-------------------|-------|----------|---------------------|--------------|-------|--------|
+| cremaillere       |   286 |       45 | R1_S5_COMPAT        | R1_S9_FAQ    |    72 | DONE   |
+| rotule-direction  |   290 |        0 | --                  | --           |    -- | SKIP   |
+
+Legende :
+  keyword-targeted : R1_S0_SERP, R1_S1_HERO, R1_S4_MICRO_SEO, R1_S5_COMPAT, R1_S7_EQUIP, R1_S9_FAQ
+  UI-only          : R1_S2_SELECTOR, R1_S3_BADGES, R1_S6_SAFE_TABLE, R1_S8_CROSS_SELL
 
 Summary:
   Audited: {N} | Skipped: {N} | Targeted: {N} | Failed: {N}
@@ -698,7 +870,9 @@ Summary:
 ### R1 Regles absolues
 
 - **ECRITURE SEULE** dans __seo_r1_keyword_plan
-- **Intent = transactional** — ne jamais generer de clusters informationnels ou diagnostiques
-- **R3_FORBIDDEN_IN_R1** — aucun terme de cette liste dans les heading_plan ou section_terms
-- **Anti-cannibalisation** — calculer rkp_r3_risk_score via Jaccard R1 vs R3
-- **Escape SQL** — echapper apostrophes dans toutes les valeurs
+- **Intent = transactional** -- ne jamais generer de clusters informationnels ou diagnostiques
+- **R3_FORBIDDEN_IN_R1** -- aucun terme de cette liste dans les heading_plan ou section_terms
+- **Anti-cannibalisation** -- calculer rkp_r3_risk_score via Jaccard R1 vs R3
+- **Escape SQL** -- echapper apostrophes dans toutes les valeurs
+- **Keyword-targeted only** -- KP1-KP3 ne ciblent QUE les 6 sections keyword-targeted
+- **2 tables pour S0_SERP** -- lire __seo_gamme (sg_*) en plus de __seo_gamme_purchase_guide (sgpg_*)
