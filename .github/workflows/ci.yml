@@ -93,41 +93,106 @@ jobs:
       - name: 🧪 URL Pattern Tests
         run: cd frontend && npm run test -- --run tests/unit/url-patterns.test.ts
 
-      - name: 📦 Bundle size check
+      - name: 📦 Bundle size check (gzip)
         if: always()
         run: |
-          if [ -d "frontend/build/client/assets" ]; then
-            JS_SIZE=$(find frontend/build/client/assets -name '*.js' -exec cat {} + 2>/dev/null | wc -c)
-            CSS_SIZE=$(find frontend/build/client/assets -name '*.css' -exec cat {} + 2>/dev/null | wc -c)
-            TOTAL_SIZE=$((JS_SIZE + CSS_SIZE))
-
-            JS_KB=$((JS_SIZE / 1024))
-            CSS_KB=$((CSS_SIZE / 1024))
-            TOTAL_KB=$((TOTAL_SIZE / 1024))
-
-            echo "## 📦 Bundle Size Report" >> $GITHUB_STEP_SUMMARY
-            echo "" >> $GITHUB_STEP_SUMMARY
-            echo "| Asset Type | Size |" >> $GITHUB_STEP_SUMMARY
-            echo "|------------|------|" >> $GITHUB_STEP_SUMMARY
-            echo "| JavaScript | ${JS_KB} KB |" >> $GITHUB_STEP_SUMMARY
-            echo "| CSS | ${CSS_KB} KB |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Total** | **${TOTAL_KB} KB** |" >> $GITHUB_STEP_SUMMARY
-
-            # Budget: script 400KB, total 1800KB (from lighthouse-budget.json)
-            JS_BUDGET=409600
-            TOTAL_BUDGET=1843200
-
-            if [ "$JS_SIZE" -gt "$JS_BUDGET" ]; then
-              echo "| **JS Budget** | ⚠️ EXCEEDED (limit: 400KB) |" >> $GITHUB_STEP_SUMMARY
-              echo "::warning::JS bundle size (${JS_KB}KB) exceeds budget (400KB)"
-            fi
-
-            if [ "$TOTAL_SIZE" -gt "$TOTAL_BUDGET" ]; then
-              echo "| **Total Budget** | ⚠️ EXCEEDED (limit: 1800KB) |" >> $GITHUB_STEP_SUMMARY
-              echo "::warning::Total bundle size (${TOTAL_KB}KB) exceeds budget (1800KB)"
-            fi
-          else
+          ASSETS="frontend/build/client/assets"
+          if [ ! -d "$ASSETS" ]; then
             echo "ℹ️ No frontend build output found (build may have been skipped)"
+            exit 0
+          fi
+
+          # --- Measure gzip sizes ---
+          JS_GZ=0
+          JS_RAW=0
+          for f in $(find "$ASSETS" -name '*.js'); do
+            raw=$(wc -c < "$f")
+            gz=$(gzip -c "$f" | wc -c)
+            JS_RAW=$((JS_RAW + raw))
+            JS_GZ=$((JS_GZ + gz))
+          done
+
+          CSS_GZ=0
+          CSS_RAW=0
+          for f in $(find "$ASSETS" -name '*.css'); do
+            raw=$(wc -c < "$f")
+            gz=$(gzip -c "$f" | wc -c)
+            CSS_RAW=$((CSS_RAW + raw))
+            CSS_GZ=$((CSS_GZ + gz))
+          done
+
+          JS_GZ_KB=$((JS_GZ / 1024))
+          CSS_GZ_KB=$((CSS_GZ / 1024))
+          JS_RAW_KB=$((JS_RAW / 1024))
+          CSS_RAW_KB=$((CSS_RAW / 1024))
+
+          # --- Initial load: framework chunks loaded on every page ---
+          INIT_GZ=0
+          for pattern in "react-vendor-*.js" "radix-vendor-*.js" "root-*.js" "entry.client-*.js"; do
+            for f in $ASSETS/$pattern; do
+              [ -f "$f" ] && INIT_GZ=$((INIT_GZ + $(gzip -c "$f" | wc -c)))
+            done
+          done
+          INIT_GZ_KB=$((INIT_GZ / 1024))
+
+          # --- Largest individual chunk ---
+          LARGEST_GZ=0
+          LARGEST_NAME=""
+          for f in $(find "$ASSETS" -name '*.js'); do
+            gz=$(gzip -c "$f" | wc -c)
+            if [ "$gz" -gt "$LARGEST_GZ" ]; then
+              LARGEST_GZ=$gz
+              LARGEST_NAME=$(basename "$f")
+            fi
+          done
+          LARGEST_GZ_KB=$((LARGEST_GZ / 1024))
+
+          # --- Budgets (gzip bytes) ---
+          JS_GZ_BUDGET=$((800 * 1024))       # 800 KB gzip
+          INIT_GZ_BUDGET=$((200 * 1024))      # 200 KB gzip
+          CHUNK_GZ_BUDGET=$((100 * 1024))     # 100 KB gzip per chunk
+
+          JS_STATUS="✅"
+          [ "$JS_GZ" -gt "$JS_GZ_BUDGET" ] && JS_STATUS="⚠️"
+          INIT_STATUS="✅"
+          [ "$INIT_GZ" -gt "$INIT_GZ_BUDGET" ] && INIT_STATUS="⚠️"
+          CHUNK_STATUS="✅"
+          [ "$LARGEST_GZ" -gt "$CHUNK_GZ_BUDGET" ] && CHUNK_STATUS="⚠️"
+
+          # --- Report ---
+          echo "## 📦 Bundle Size Report (gzip)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Size | Budget | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| JS total (gzip) | ${JS_GZ_KB} KB | 800 KB | ${JS_STATUS} |" >> $GITHUB_STEP_SUMMARY
+          echo "| CSS total (gzip) | ${CSS_GZ_KB} KB | — | — |" >> $GITHUB_STEP_SUMMARY
+          echo "| Initial load (gzip) | ${INIT_GZ_KB} KB | 200 KB | ${INIT_STATUS} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Largest chunk | ${LARGEST_GZ_KB} KB | 100 KB | ${CHUNK_STATUS} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_Raw sizes: JS ${JS_RAW_KB} KB, CSS ${CSS_RAW_KB} KB_" >> $GITHUB_STEP_SUMMARY
+
+          # --- Top 5 chunks by gzip size ---
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Top 5 chunks (gzip)" >> $GITHUB_STEP_SUMMARY
+          echo "| Chunk | Raw | Gzip |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-----|------|" >> $GITHUB_STEP_SUMMARY
+          for f in $(find "$ASSETS" -name '*.js'); do
+            raw=$(wc -c < "$f")
+            gz=$(gzip -c "$f" | wc -c)
+            echo "$gz $raw $(basename "$f")"
+          done | sort -rn | head -5 | while read gz raw name; do
+            echo "| ${name%.js} | $((raw / 1024)) KB | $((gz / 1024)) KB |" >> $GITHUB_STEP_SUMMARY
+          done
+
+          # --- CI warnings ---
+          if [ "$JS_GZ" -gt "$JS_GZ_BUDGET" ]; then
+            echo "::warning::JS bundle (${JS_GZ_KB} KB gzip) exceeds budget (800 KB)"
+          fi
+          if [ "$INIT_GZ" -gt "$INIT_GZ_BUDGET" ]; then
+            echo "::warning::Initial load (${INIT_GZ_KB} KB gzip) exceeds budget (200 KB)"
+          fi
+          if [ "$LARGEST_GZ" -gt "$CHUNK_GZ_BUDGET" ]; then
+            echo "::warning::Chunk '${LARGEST_NAME}' (${LARGEST_GZ_KB} KB gzip) exceeds 100 KB limit"
           fi
 
   test:
