@@ -5,7 +5,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
-import { Alert } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
-import { Badge } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
 import { type VehicleData } from "~/types/vehicle.types";
 import { logger } from "~/utils/logger";
 

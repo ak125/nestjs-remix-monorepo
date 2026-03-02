@@ -15,7 +15,7 @@ import {
 } from "@remix-run/react";
 import { User, Save, ArrowLeft } from "lucide-react";
 import { Error404 } from "~/components/errors/Error404";
-import { Alert } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
 import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";

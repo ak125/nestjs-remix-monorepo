@@ -26,7 +26,7 @@ import { useActionData, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Alert } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";

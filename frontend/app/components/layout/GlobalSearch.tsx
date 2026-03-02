@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef, useCallback, memo } from "react";
 
-import { Badge } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
 import { logger } from "~/utils/logger";
 
 interface GlobalSearchProps {

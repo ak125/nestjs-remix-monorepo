@@ -20,7 +20,7 @@ import { Link } from "@remix-run/react";
 import { AlertCircle, ShoppingBag, X } from "lucide-react";
 import { memo } from "react";
 
-import { Badge } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
 import { useCart, formatPrice, getProductImageUrl } from "../../hooks/useCart";
 import { cn } from "../../lib/utils";
 import { type CartItem } from "../../types/cart";

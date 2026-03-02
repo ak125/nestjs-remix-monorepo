@@ -20,7 +20,7 @@ import {
   MonitorSpeaker,
   Award,
 } from "lucide-react";
-import { Alert } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

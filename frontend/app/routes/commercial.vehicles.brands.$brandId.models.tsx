@@ -13,7 +13,7 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Car, Settings, Search } from "lucide-react";
-import { Alert } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

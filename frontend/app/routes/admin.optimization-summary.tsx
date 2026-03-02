@@ -5,7 +5,7 @@ import {
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { Badge } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { useAdvancedAnalyticsComplete as useAdvancedAnalytics } from "../hooks/useAdvancedAnalyticsComplete";

@@ -25,7 +25,7 @@ import React, { useState, useMemo } from "react";
 
 import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { Error404 } from "~/components/errors/Error404";
-import { Badge } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";

@@ -11,7 +11,7 @@ import {
 } from "@remix-run/react";
 import { useState } from "react";
 import { Error404 } from "~/components/errors/Error404";
-import { Badge } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

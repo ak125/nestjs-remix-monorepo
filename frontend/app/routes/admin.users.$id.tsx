@@ -22,7 +22,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { HtmlContent } from "~/components/seo/HtmlContent";
-import { Alert, Badge } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

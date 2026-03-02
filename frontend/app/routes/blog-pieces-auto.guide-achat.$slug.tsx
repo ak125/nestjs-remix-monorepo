@@ -43,7 +43,7 @@ import {
 import { Error404 } from "~/components/errors/Error404";
 import { HeroGuide } from "~/components/heroes";
 import { HtmlContent } from "~/components/seo/HtmlContent";
-import { Alert } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
 import {
   getSectionImageConfig,
   resolveAltText,

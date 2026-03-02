@@ -5,7 +5,7 @@
 import { useNavigate } from "@remix-run/react";
 import { Search, Package, TrendingUp, X } from "lucide-react";
 import { useState, useEffect, useRef, memo } from "react";
-import { Badge } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
 import { PartImage } from "~/components/ui/ResponsiveImage";
 import {
   useProductSearch,

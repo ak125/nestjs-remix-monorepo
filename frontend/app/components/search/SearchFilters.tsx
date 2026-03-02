@@ -14,7 +14,9 @@ import {
   Layers,
 } from "lucide-react";
 import { useState, useEffect, memo } from "react";
-import { Badge, FilterSection, ScrollArea } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
+import { FilterSection } from "~/components/ui/filter-section";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import { logger } from "~/utils/logger";
 
 export interface FilterFacet {

@@ -5,6 +5,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { lazy, Suspense } from "react";
 
 import {
   HomepageJsonLd,
@@ -12,11 +13,8 @@ import {
   ConseilsDiagnosticSection,
   CatalogueSection,
   WhyAutomecanikSection,
-  BrandsGridSection,
-  StatsSection,
   BlogGuidesSection,
   FaqSection,
-  EquipementiersMarquee,
 } from "~/components/home";
 import {
   BLOG,
@@ -31,6 +29,14 @@ import {
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+const BrandsGridSection = lazy(
+  () => import("~/components/home/BrandsGridSection"),
+);
+const StatsSection = lazy(() => import("~/components/home/StatsSection"));
+const EquipementiersMarquee = lazy(
+  () => import("~/components/home/EquipementiersMarquee"),
+);
 
 // ─── SEO page role ───────────────────────────────────────
 export const handle = {
@@ -240,11 +246,17 @@ export default function Homepage() {
       <ConseilsDiagnosticSection />
       <CatalogueSection families={catalogFamilies} />
       <WhyAutomecanikSection />
-      <BrandsGridSection brands={brandsList} />
-      <StatsSection />
+      <Suspense fallback={null}>
+        <BrandsGridSection brands={brandsList} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <StatsSection />
+      </Suspense>
       <BlogGuidesSection articles={blogList} />
       <FaqSection faqsPromise={faqsPromise} />
-      <EquipementiersMarquee equipementiers={equipMarquee} />
+      <Suspense fallback={null}>
+        <EquipementiersMarquee equipementiers={equipMarquee} />
+      </Suspense>
     </div>
   );
 }

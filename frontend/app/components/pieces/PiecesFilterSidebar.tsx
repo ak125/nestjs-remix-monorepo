@@ -9,7 +9,9 @@
 import { DollarSign, Package, RotateCcw, Star } from "lucide-react";
 import { memo } from "react";
 
-import { Badge, FilterSection, ScrollArea } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
+import { FilterSection } from "~/components/ui/filter-section";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import { type PiecesFilters } from "../../types/pieces-route.types";
 import { BrandLogo } from "../ui/BrandLogo";
 

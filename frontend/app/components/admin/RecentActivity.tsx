@@ -5,7 +5,8 @@
 
 import { Link } from "@remix-run/react";
 
-import { Badge, Button } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 
 interface ActivityItem {
   id: string;

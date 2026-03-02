@@ -18,7 +18,8 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { Error404 } from "~/components/errors/Error404";
-import { Badge, Alert } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import {

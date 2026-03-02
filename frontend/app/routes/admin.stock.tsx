@@ -11,8 +11,8 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import { useState, useEffect } from "react";
-import { Badge } from "~/components/ui";
 import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";

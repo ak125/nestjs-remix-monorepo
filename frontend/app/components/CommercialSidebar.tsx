@@ -15,7 +15,7 @@ import {
 import * as React from "react";
 import { memo } from "react";
 
-import { Badge } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "./ui/button";
 
 // Fonction utilitaire pour combiner les classes CSS

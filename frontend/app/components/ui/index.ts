@@ -33,11 +33,9 @@ export * from "./breadcrumb";
 
 // Navigation
 export * from "./pagination";
-export * from "./command";
 
 // Custom components
 export * from "./filter-section";
-export * from "./carousel";
 export * from "./MultiCarousel";
 export * from "./spinner";
 export * from "./LoadingSpinner";

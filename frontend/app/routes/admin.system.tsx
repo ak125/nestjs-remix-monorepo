@@ -6,7 +6,8 @@ import {
 import { useLoaderData } from "@remix-run/react";
 import { AlertCircle, CheckCircle } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Alert, Badge } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

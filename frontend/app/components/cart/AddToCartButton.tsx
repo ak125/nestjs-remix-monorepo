@@ -5,7 +5,7 @@
 import { ShoppingCart, Check, AlertCircle, Loader2 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 
-import { Alert } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
 import { logger } from "~/utils/logger";
 import { useNotifications } from "../notifications/NotificationContainer";
 
@@ -323,9 +323,7 @@ export const AddToCartButton = memo(function AddToCartButton({
         {piece.stock === "En stock" ? (
           <span className="text-green-600">✓ Disponible immédiatement</span>
         ) : piece.stock === "Sur commande" ? (
-          <span className="text-yellow-600">
-            ⚠ Délai de livraison prolongé
-          </span>
+          <span className="text-yellow-600">⚠ Délai de livraison prolongé</span>
         ) : (
           <span className="text-red-600">✗ Rupture de stock</span>
         )}

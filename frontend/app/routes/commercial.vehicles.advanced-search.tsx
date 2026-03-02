@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 import { toast } from "sonner";
-import { Badge } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { ModelSelector, type Model } from "~/components/vehicles/ModelSelector";
 import {

@@ -11,8 +11,8 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { useState } from "react";
-import { Badge } from "~/components/ui";
 import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 

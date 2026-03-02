@@ -1,7 +1,7 @@
 // 🚗 Composant Header Véhicule - Architecture Modulaire
 import React, { memo } from "react";
 
-import { Badge } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 
 interface VehicleData {

@@ -26,7 +26,8 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { requireAdmin } from "~/auth/unified.server";
-import { Alert, Badge } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";

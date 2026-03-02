@@ -5,8 +5,8 @@ import { Link } from "@remix-run/react";
 import { Car, Home, ChevronRight } from "lucide-react";
 import { memo } from "react";
 
-import { Badge } from "~/components/ui";
 import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
 import { logger } from "~/utils/logger";
 import VehicleSelector from "../vehicle/VehicleSelector";

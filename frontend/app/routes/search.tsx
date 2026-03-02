@@ -44,7 +44,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 
 // 🎯 Layout components
 import { Error404 } from "~/components/errors/Error404";
-import { Badge } from "~/components/ui";
+import { Badge } from "~/components/ui/badge";
 import { logger } from "~/utils/logger";
 import {
   MobileBottomBar,
@@ -650,7 +650,8 @@ export default function SearchPage() {
         {results &&
           !hasError &&
           results.fallbackType === "gamme-name" &&
-          results.matchedGammes && results.matchedGammes.length > 0 && (
+          results.matchedGammes &&
+          results.matchedGammes.length > 0 && (
             <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
               <p className="text-sm text-blue-800">
                 Aucune référence exacte trouvée pour &quot;

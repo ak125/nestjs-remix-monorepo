@@ -14,7 +14,8 @@ import {
 } from "@remix-run/react";
 import { CheckCircle, Eye, Trash2, FolderOpen } from "lucide-react";
 import { useMemo, useState } from "react";
-import { Alert, Badge } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

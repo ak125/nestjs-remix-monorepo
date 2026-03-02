@@ -13,7 +13,8 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
 import { ArrowLeft, Zap, Fuel, Settings, Calendar } from "lucide-react";
-import { Badge, Alert } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { type VehicleType } from "~/types/vehicle.types";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
