@@ -29,8 +29,6 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
-    "@conform-to/react": "^1.13.1",
-    "@conform-to/zod": "^1.13.1",
     "@google-analytics/data": "^5.2.1",
     "@nestjs-modules/ioredis": "^2.0.2",
     "@nestjs/bull": "^10.2.3",
