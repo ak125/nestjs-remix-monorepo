@@ -238,20 +238,67 @@ export interface RagSafePack {
 
 // ── R1 Content Pipeline (4-prompt sequence) ──
 
+export interface R1ContentContract {
+  total_words_target: [number, number];
+  micro_seo_words_target: [number, number];
+  faq_answer_words_target: [number, number];
+  max_gamme_mentions: number;
+  max_compatible_mentions: number;
+}
+
+export interface R1HardRules {
+  ban_howto_markers: string[];
+  ban_absolute_claims: string[];
+  ban_price_push: string[];
+}
+
+export interface R1VisualPlan {
+  hero_primary_cta?: { label: string; action?: string };
+  cross_sell_rules?: { max_items: number; same_family_only?: boolean };
+  compatibilities_label_rule?: string;
+}
+
 export interface R1IntentLockOutput {
   primary_intent: string;
-  forbidden_overlap: string[];
-  termes_techniques: string[];
-  preuves: string[];
-  writing_constraints: string[];
-  interest_nuggets: Record<string, unknown>;
+  forbidden_lexicon: string[];
+  allowed_lexicon: string[];
+  confusion_pairs: Array<{
+    term: string;
+    confused_with: string;
+    distinction: string;
+  }>;
+  writing_constraints: {
+    max_words: number;
+    min_words: number;
+    tone: string;
+    person: string;
+    zero_diagnostic: boolean;
+    zero_howto: boolean;
+  };
+  interest_nuggets: Array<{
+    angle: string;
+    hook: string;
+    rag_source: string;
+  }>;
+  content_contract?: R1ContentContract;
+  hard_rules?: R1HardRules;
+  /** @deprecated Use forbidden_lexicon */
+  forbidden_overlap?: string[];
+  /** @deprecated Subsumed by allowed_lexicon */
+  termes_techniques?: string[];
+  /** @deprecated Subsumed by interest_nuggets.rag_source */
+  preuves?: string[];
 }
 
 export interface R1SerpPackOutput {
   title_main: string;
+  title_variants: string[];
   meta_main: string;
+  meta_variants: string[];
   h1: string;
-  h2s: string[];
+  h2: string[];
+  /** @deprecated Use h2 */
+  h2s?: string[];
 }
 
 export interface R1SectionCopyOutput {
@@ -263,12 +310,25 @@ export interface R1SectionCopyOutput {
   equipementiers_line: string;
   faq_selector: Array<{ question: string; answer: string }>;
   family_cross_sell_intro: string;
+  visual_plan?: R1VisualPlan;
+  /** Runtime only — not persisted */
+  safe_table_rows?: Array<Record<string, unknown>>;
+  /** Runtime only — not persisted */
+  word_count?: Record<string, number>;
 }
 
 export interface R1GatekeeperOutput {
-  score: number;
-  flags: string[];
-  corrections: Record<string, string>;
+  gate_score: number;
+  gate_status: 'PASS' | 'WARN' | 'FAIL';
+  checks: Record<string, unknown>;
+  fixes_applied: Array<{ field: string; before: string; after: string }>;
+  version_clean: string;
+  /** @deprecated Use gate_score */
+  score?: number;
+  /** @deprecated Use checks */
+  flags?: string[];
+  /** @deprecated */
+  corrections?: Record<string, string>;
 }
 
 export interface R1PipelineResult {
