@@ -24,6 +24,10 @@ interface CatalogueSectionProps {
   };
   /** 🔗 Switches SEO pour ancres variées (verbes d'action) */
   verbSwitches?: SeoSwitch[];
+  /** Nombre max de produits affichés (SEO: éviter dilution, défaut 15) */
+  maxItems?: number;
+  /** Intro cross-sell générée par R1 pipeline */
+  intro?: string | null;
 }
 
 // ── Badge urgence par keyword gamme ──
@@ -81,6 +85,8 @@ function getMicroDescription(name: string): string | null {
 const CatalogueSection = memo(function CatalogueSection({
   catalogueMameFamille,
   verbSwitches = [],
+  maxItems = 15,
+  intro,
 }: CatalogueSectionProps) {
   // Use array instead of Set to avoid React hydration issues
   const [expandedDescriptions, setExpandedDescriptions] = useState<number[]>(
@@ -92,10 +98,12 @@ const CatalogueSection = memo(function CatalogueSection({
   }
 
   // 🔧 Dédupliquer les items par nom (éviter doublons de la BDD)
-  const uniqueItems = catalogueMameFamille.items.filter(
-    (item, index, self) =>
-      index === self.findIndex((t) => t.name === item.name),
-  );
+  const uniqueItems = catalogueMameFamille.items
+    .filter(
+      (item, index, self) =>
+        index === self.findIndex((t) => t.name === item.name),
+    )
+    .slice(0, maxItems);
 
   /**
    * 🔗 Génère une ancre SEO variée basée sur les switches
@@ -145,6 +153,7 @@ const CatalogueSection = memo(function CatalogueSection({
             {uniqueItems.length} produits
           </span>
         </h2>
+        {intro && <p className="text-white/80 text-sm mt-2">{intro}</p>}
       </div>
 
       <div className="p-3 md:p-4">

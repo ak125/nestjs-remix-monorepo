@@ -32,16 +32,18 @@ interface MotorisationsSectionProps {
   familleColor?: string;
   familleName?: string;
   totalCount?: number;
+  compatibilitiesIntro?: string;
 }
 
 // Limite d'affichage par défaut (SEO: éviter dilution)
-const VISIBLE_LIMIT = 6;
+const VISIBLE_LIMIT = 12;
 
 const MotorisationsSection = memo(function MotorisationsSection({
   motorisations,
   familleColor = "from-blue-950 via-indigo-900 to-purple-900",
   familleName = "pièces",
   totalCount,
+  compatibilitiesIntro,
 }: MotorisationsSectionProps) {
   const [showAllVehicles, setShowAllVehicles] = useState(false);
 
@@ -81,8 +83,8 @@ const MotorisationsSection = memo(function MotorisationsSection({
                 {motorisations.title}
               </h2>
               <p className="text-white/80 text-sm mt-1">
-                Trouvez les {pluralizePieceName(familleName.toLowerCase())}{" "}
-                adaptées à votre véhicule
+                {compatibilitiesIntro ||
+                  `Trouvez les ${pluralizePieceName(familleName.toLowerCase())} adaptées à votre véhicule`}
               </p>
             </div>
           </div>

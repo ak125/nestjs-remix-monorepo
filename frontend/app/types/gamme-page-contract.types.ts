@@ -116,10 +116,10 @@ export interface GammePageGuide {
   title: string;
   alias: string;
   preview: string;
-  wall: string;
+  wall?: string;
   date: string;
   image: string;
-  link: string;
+  link?: string;
   h2_content?: string;
 }
 
@@ -145,6 +145,35 @@ export interface GammePagePurchaseGuideData {
   symptoms?: string[] | null;
   antiMistakes?: string[] | null;
   faq?: Array<{ question: string; answer: string }> | null;
+  // R1 pipeline fields
+  heroSubtitle?: string | null;
+  selectorMicrocopy?: string[] | null;
+  microSeoBlock?: string | null;
+  compatibilitiesIntro?: string | null;
+  equipementiersLine?: string | null;
+  familyCrossSellIntro?: string | null;
+  interestNuggets?:
+    | Record<string, unknown>
+    | Array<Record<string, unknown>>
+    | null;
+  safeTableRows?: Array<{ element: string; howToCheck: string }> | null;
+  visualPlan?: {
+    heroPrimaryCta?: { label: string; action?: string };
+    crossSellRules?: { maxItems: number; sameFamilyOnly?: boolean };
+    compatibilitiesLabelRule?: string;
+  } | null;
+  contentContract?: {
+    totalWordsTarget?: [number, number];
+    microSeoWordsTarget?: [number, number];
+    faqAnswerWordsTarget?: [number, number];
+    maxGammeMentions?: number;
+    maxCompatibleMentions?: number;
+  } | null;
+  hardRules?: {
+    banHowtoMarkers?: string[];
+    banAbsoluteClaims?: string[];
+    banPricePush?: string[];
+  } | null;
 }
 
 export interface GammePageBuyingGuide {
@@ -440,10 +469,10 @@ export const GuideSchema = z
     title: z.string(),
     alias: z.string(),
     preview: z.string(),
-    wall: z.string(),
+    wall: z.string().optional(),
     date: z.string(),
     image: z.string(),
-    link: z.string(),
+    link: z.string().optional(),
     h2_content: z.string().optional(),
   })
   .optional();
@@ -485,6 +514,54 @@ export const PurchaseGuideDataSchema = z
     symptoms: z.array(z.string()).nullable().optional(),
     antiMistakes: z.array(z.string()).nullable().optional(),
     faq: z.array(FaqItemSchema).nullable().optional(),
+    // R1 pipeline fields
+    heroSubtitle: z.string().nullable().optional(),
+    selectorMicrocopy: z.array(z.string()).nullable().optional(),
+    microSeoBlock: z.string().nullable().optional(),
+    compatibilitiesIntro: z.string().nullable().optional(),
+    equipementiersLine: z.string().nullable().optional(),
+    familyCrossSellIntro: z.string().nullable().optional(),
+    interestNuggets: z
+      .union([z.record(z.unknown()), z.array(z.record(z.unknown()))])
+      .nullable()
+      .optional(),
+    safeTableRows: z
+      .array(z.object({ element: z.string(), howToCheck: z.string() }))
+      .nullable()
+      .optional(),
+    visualPlan: z
+      .object({
+        heroPrimaryCta: z
+          .object({ label: z.string(), action: z.string().optional() })
+          .optional(),
+        crossSellRules: z
+          .object({
+            maxItems: z.number(),
+            sameFamilyOnly: z.boolean().optional(),
+          })
+          .optional(),
+        compatibilitiesLabelRule: z.string().optional(),
+      })
+      .nullable()
+      .optional(),
+    contentContract: z
+      .object({
+        totalWordsTarget: z.tuple([z.number(), z.number()]).optional(),
+        microSeoWordsTarget: z.tuple([z.number(), z.number()]).optional(),
+        faqAnswerWordsTarget: z.tuple([z.number(), z.number()]).optional(),
+        maxGammeMentions: z.number().optional(),
+        maxCompatibleMentions: z.number().optional(),
+      })
+      .nullable()
+      .optional(),
+    hardRules: z
+      .object({
+        banHowtoMarkers: z.array(z.string()).optional(),
+        banAbsoluteClaims: z.array(z.string()).optional(),
+        banPricePush: z.array(z.string()).optional(),
+      })
+      .nullable()
+      .optional(),
   })
   .nullable()
   .optional();
