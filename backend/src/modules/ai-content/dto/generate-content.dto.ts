@@ -19,6 +19,11 @@ export const ContentTypeSchema = z.enum([
   'social_instagram',
   'social_facebook',
   'social_youtube',
+  // R1 Content Pipeline (4-prompt sequence)
+  'r1_intent_lock',
+  'r1_serp_pack',
+  'r1_section_copy',
+  'r1_gatekeeper',
 ]);
 
 export type ContentType = z.infer<typeof ContentTypeSchema>;
