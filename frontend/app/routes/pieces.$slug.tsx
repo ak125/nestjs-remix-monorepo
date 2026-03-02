@@ -46,6 +46,9 @@ import PageSection from "~/components/layout/PageSection";
 import Reveal from "~/components/layout/Reveal";
 import SectionHeader from "~/components/layout/SectionHeader";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
+import { R1CompatErrors } from "~/components/pieces/R1CompatErrors";
+import { R1ProofStats } from "~/components/pieces/R1ProofStats";
+import { R1QuickSteps } from "~/components/pieces/R1QuickSteps";
 import { R1ReusableContent } from "~/components/pieces/R1ReusableContent";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
@@ -53,6 +56,7 @@ import {
   resolveAltText,
   resolveSlogan,
 } from "~/config/visual-intent";
+import { R1Section, sectionAttr } from "~/constants/r1-sections";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import {
@@ -70,6 +74,14 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOgImageUrl } from "~/utils/og-image.utils";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import {
+  buildR1Breadcrumbs,
+  buildProofData,
+  buildGammeJsonLd,
+  buildHeroProps,
+  sanitizePurchaseGuideForR1,
+  type R1PurchaseGuideData,
+} from "~/utils/r1-builders";
 import { buildCanonicalUrl } from "~/utils/seo/canonical";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
 import VehicleSelector from "../components/vehicle/VehicleSelector";
@@ -108,6 +120,11 @@ const CatalogueSection = lazy(() =>
 );
 const EquipementiersSection = lazy(() =>
   import("../components/pieces/EquipementiersSection").then((m) => ({
+    default: m.default,
+  })),
+);
+const SafeCompatTable = lazy(() =>
+  import("../components/pieces/SafeCompatTable").then((m) => ({
     default: m.default,
   })),
 );
@@ -199,7 +216,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // Ces pages n'existent plus - gammes sans véhicule supprimées
   if (!match) {
     logger.log(`🛑 [410] /pieces/${slug}`);
-    throw new Response(null, { status: 410 });
+    throw new Response(null, {
+      status: 410,
+      headers: {
+        "X-Robots-Tag": "noindex, follow",
+        "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200",
+      },
+    });
   }
 
   const gammeId = match[1];
@@ -208,14 +231,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (gammeId === "0") {
     throw new Response(null, {
       status: 404,
-      headers: { "X-Robots-Tag": "noindex, follow" },
+      headers: {
+        "X-Robots-Tag": "noindex, follow",
+        "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+      },
     });
   }
 
   try {
     // 🚀 Configuration API depuis variables d'environnement
     // 🚀 Récupération des données avec fallback automatique RPC V2 → Classic
-    // ⚠️ Timeout réduit de 180s à 30s pour compatibilité Googlebot (~30s patience)
+    // ⚠️ Timeout 15s — laisse ~15s de marge sur le budget Googlebot (~30s patience totale)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
@@ -281,11 +307,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     // Breadcrumbs (sans vehicule sur page gamme seule — evite hydration mismatch)
     // Aligné avec le JSON-LD BreadcrumbList (3 niveaux: Accueil → Pièces Auto → gamme)
     const breadcrumbItems = buildBreadcrumbWithVehicle(
-      [
-        { label: "Accueil", href: "/" },
-        { label: "Pièces Auto", href: "/#catalogue" },
-        { label: content?.pg_name || "Piece", current: true },
-      ],
+      buildR1Breadcrumbs(content?.pg_name || "Piece"),
       null,
     );
 
@@ -298,13 +320,19 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     if (substitutionResponse?.httpStatus === 404) {
       throw new Response("Not Found", {
         status: 404,
-        headers: { "X-Robots-Tag": "noindex, follow" },
+        headers: {
+          "X-Robots-Tag": "noindex, follow",
+          "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+        },
       });
     }
     if (substitutionResponse?.httpStatus === 410) {
       throw new Response("Gone", {
         status: 410,
-        headers: { "X-Robots-Tag": "noindex, follow" },
+        headers: {
+          "X-Robots-Tag": "noindex, follow",
+          "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200",
+        },
       });
     }
 
@@ -313,7 +341,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       _v: GAMME_PAGE_CONTRACT_VERSION,
       pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
         clusterId: "gamme",
-        canonicalEntity: slug,
+        canonicalEntity: `gamme:${gammeId}`,
       }),
       status: 200,
       meta: apiData.meta,
@@ -352,46 +380,23 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       link: item.link,
     }));
 
-    // Période range pour S_COMPAT + proofs
+    // Période range pour proofs (calculé dans buildProofData)
     const allYears = motorItems
       .flatMap((m) => (m.periode || "").match(/\d{4}/g) || [])
       .map(Number)
       .filter((y) => y > 1990 && y < 2100);
-    const periodeRange =
-      allYears.length >= 2
-        ? `${Math.min(...allYears)} – ${Math.max(...allYears)}`
-        : "";
 
     // Micro-preuves pour R1ReusableContent (S_BUY_ARGS)
     const equipNames = (pageData.equipementiers?.items || [])
       .map((e) => e.pm_name)
       .filter(Boolean);
-    const proofData = {
-      topMarques: [
-        ...new Set(motorItems.map((m) => m.marque_name).filter(Boolean)),
-      ].slice(0, 3),
-      topEquipementiers: equipNames.slice(0, 4),
-      vehicleCount: motorItems.length,
-      periodeRange,
-      topMotorCodes: [
-        ...new Set(
-          motorItems
-            .map((m) => (m as { engine_code?: string }).engine_code)
-            .filter(Boolean),
-        ),
-      ].slice(0, 3) as string[],
-    };
+    const proofData = buildProofData({ motorItems, equipNames, allYears });
 
     // ── LCP STREAMING: defer() — above-fold sync, below-fold streamed ──
+    // pageData sort du scope après defer() → GC naturel sans mutation
     const responseHeaders: Record<string, string> = {
-      "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+      "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200",
     };
-    // Preload hero image via HTTP Link header (browser fetches before HTML parse)
-    const heroImageUrl = content?.pg_pic || "";
-    if (heroImageUrl) {
-      responseHeaders["Link"] =
-        `<${heroImageUrl}>; rel=preload; as=image; fetchpriority=high`;
-    }
 
     return defer(
       {
@@ -404,19 +409,25 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         breadcrumbs: pageData.breadcrumbs,
         famille: pageData.famille,
         performance: pageData.performance,
-        purchaseGuideData: pageData.purchaseGuideData,
+        purchaseGuideData: sanitizePurchaseGuideForR1(
+          pageData.purchaseGuideData,
+        ),
         substitution: pageData.substitution,
         reference: pageData.reference,
         canonicalPath,
+        gammeId: parseInt(gammeId, 10),
         motorisationsSchema,
         proofData,
 
         // === DEFERRED (streamed après le premier paint) — ~100-250KB ===
-        motorisations: Promise.resolve(pageData.motorisations),
-        equipementiers: Promise.resolve(pageData.equipementiers),
-        catalogueMameFamille: Promise.resolve(pageData.catalogueMameFamille),
-        seoSwitches: Promise.resolve(pageData.seoSwitches),
-        guide: Promise.resolve(pageData.guide),
+        // ?? null : Remix interdit Promise.resolve(undefined) dans defer()
+        motorisations: Promise.resolve(pageData.motorisations ?? null),
+        equipementiers: Promise.resolve(pageData.equipementiers ?? null),
+        catalogueMameFamille: Promise.resolve(
+          pageData.catalogueMameFamille ?? null,
+        ),
+        seoSwitches: Promise.resolve(pageData.seoSwitches ?? null),
+        guide: Promise.resolve(pageData.guide ?? null),
       },
       { headers: responseHeaders },
     );
@@ -434,24 +445,7 @@ export const meta: MetaFunction<typeof loader> = ({
   data: rawData,
   location,
 }) => {
-  const data = rawData as
-    | (GammePageDataV1 & {
-        canonicalPath?: string;
-        motorisationsSchema?: Array<{
-          marque_name: string;
-          modele_name: string;
-          type_name: string;
-          link: string;
-        }>;
-        proofData?: {
-          topMarques: string[];
-          topEquipementiers: string[];
-          vehicleCount: number;
-          periodeRange: string;
-          topMotorCodes: string[];
-        };
-      })
-    | undefined;
+  const data = rawData as PiecesPageData | undefined;
   if (!data || data.status !== 200) {
     return [
       { title: "Page non trouvée" },
@@ -475,114 +469,17 @@ export const meta: MetaFunction<typeof loader> = ({
     data.meta?.description ||
     `${data.content?.pg_name || "Pièces"} pour votre véhicule. Trouvez la référence compatible parmi nos équipementiers de confiance. Livraison rapide.`;
 
-  // 📊 Schema @graph pour page catégorie/recherche - CollectionPage + ItemList
-  // Note: Pas de schéma Product car c'est une page de recherche sans prix affichés
-  // Les pages avec prix (véhicule+gamme) utilisent pieces.$gamme.$marque.$modele.$type[.]html.tsx
+  // 📊 Schema @graph — CollectionPage + ItemList + FAQPage + Organization
   const gammeSchema = data.content?.pg_name
-    ? {
-        "@context": "https://schema.org",
-        "@graph": [
-          // 1️⃣ CollectionPage - La page catalogue de cette gamme
-          {
-            "@type": "CollectionPage",
-            "@id": canonicalUrl,
-            name: data.content.pg_name,
-            description: description,
-            url: canonicalUrl,
-            mainEntity: { "@id": `${canonicalUrl}#list` },
-            about: {
-              "@type": "ProductGroup",
-              name: data.content.pg_name,
-              productGroupID: `gamme-${data.canonicalPath?.match(/-(\d+)\.html$/)?.[1] || ""}`,
-            },
-            ...(data.content.pg_pic && { image: data.content.pg_pic }),
-            // Breadcrumb pour navigation
-            breadcrumb: {
-              "@type": "BreadcrumbList",
-              itemListElement: [
-                {
-                  "@type": "ListItem",
-                  position: 1,
-                  name: "Accueil",
-                  item: "https://www.automecanik.com",
-                },
-                {
-                  "@type": "ListItem",
-                  position: 2,
-                  name: "Pièces Auto",
-                  item: "https://www.automecanik.com/pieces",
-                },
-                {
-                  "@type": "ListItem",
-                  position: 3,
-                  name: data.content.pg_name,
-                  item: canonicalUrl,
-                },
-              ],
-            },
-          },
-          // 2️⃣ ItemList - Liste des véhicules/motorisations compatibles (liens vers pages produits)
-          {
-            "@type": "ItemList",
-            "@id": `${canonicalUrl}#list`,
-            name: `${data.content.pg_name} - Véhicules compatibles`,
-            numberOfItems: data.motorisationsSchema?.length || 0,
-            itemListElement: (data.motorisationsSchema || []).map(
-              (item, index) => ({
-                "@type": "ListItem",
-                position: index + 1,
-                name: `${data.content?.pg_name} ${item.marque_name} ${item.modele_name} ${item.type_name}`,
-                url: item.link
-                  ? `https://www.automecanik.com${item.link}`
-                  : canonicalUrl,
-              }),
-            ),
-          },
-          // 3️⃣ FAQPage — questions frequentes (cap 6)
-          ...(() => {
-            const items = data.purchaseGuideData?.faq?.length
-              ? data.purchaseGuideData.faq
-              : R1_SELECTOR_FAQ;
-            const capped = items.slice(0, 6);
-            return capped.length > 0
-              ? [
-                  {
-                    "@type": "FAQPage",
-                    mainEntity: capped.map((item) => ({
-                      "@type": "Question",
-                      name: item.question,
-                      acceptedAnswer: {
-                        "@type": "Answer",
-                        text: item.answer,
-                      },
-                    })),
-                  },
-                ]
-              : [];
-          })(),
-          // 4️⃣ Organization — site publisher
-          {
-            "@type": "Organization",
-            "@id": "https://www.automecanik.com/#organization",
-            name: "Automecanik",
-            url: "https://www.automecanik.com",
-            logo: "https://www.automecanik.com/logo.png",
-            contactPoint: {
-              "@type": "ContactPoint",
-              telephone: "+33-1-48-47-96-27",
-              email: "contact@automecanik.com",
-              contactType: "Service Client",
-              areaServed: "FR",
-              availableLanguage: ["French"],
-            },
-            sameAs: [
-              "https://www.facebook.com/Automecanik63",
-              "https://www.instagram.com/automecanik.co",
-              "https://www.youtube.com/@automecanik8508",
-            ],
-          },
-        ],
-      }
+    ? buildGammeJsonLd({
+        pgName: data.content.pg_name,
+        pgPic: data.content.pg_pic,
+        canonicalUrl,
+        gammeId: data.gammeId,
+        motorisationsSchema: data.motorisationsSchema,
+        faq: data.purchaseGuideData?.faq,
+        fallbackFaq: R1_SELECTOR_FAQ,
+      })
     : null;
 
   // Construire le tableau de meta tags Remix
@@ -649,18 +546,19 @@ export const meta: MetaFunction<typeof loader> = ({
 };
 
 export function headers({ loaderHeaders }: { loaderHeaders: Headers }) {
-  const h: Record<string, string> = {
-    "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+  return {
+    "Cache-Control":
+      loaderHeaders.get("Cache-Control") ||
+      "public, max-age=3600, stale-while-revalidate=7200",
   };
-  // Forward Link header (hero image preload) from loader
-  const link = loaderHeaders.get("Link");
-  if (link) h["Link"] = link;
-  return h;
 }
 
 // Type étendu pour les champs sync extraits dans le loader (LCP streaming)
-type PiecesPageData = GammePageDataV1 & {
+// Omit<purchaseGuideData> remplacé par R1PurchaseGuideData strict (compile-time guard)
+type PiecesPageData = Omit<GammePageDataV1, "purchaseGuideData"> & {
+  gammeId: number;
   canonicalPath?: string;
+  purchaseGuideData?: R1PurchaseGuideData;
   motorisationsSchema?: Array<{
     marque_name: string;
     modele_name: string;
@@ -700,15 +598,16 @@ export default function PiecesDetailPage() {
     }
   }, [isLoading]);
 
-  // 🚀 LCP: srcSet responsive pour wallpaper (fond décoratif opacity-25)
-  // Réduit le payload mobile : 640px au lieu de 1920px sur petit écran
-  const wallSrcSet = data?.content?.pg_wall
-    ? ImageOptimizer.getResponsiveSrcSet(
-        data.content.pg_wall.replace(/^\/img\//, ""),
-        [640, 1024, 1920],
-        75,
-      )
-    : undefined;
+  // Dev-guard: détecte les doublons data-section dans le DOM
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
+    const sections = document.querySelectorAll("[data-section]");
+    const vals = [...sections]
+      .map((s) => s.getAttribute("data-section"))
+      .filter(Boolean) as string[];
+    const dupes = [...new Set(vals.filter((v, i) => vals.indexOf(v) !== i))];
+    if (dupes.length) console.error("[R1] Duplicate sections:", dupes);
+  }, []);
 
   if (!data || data.status !== 200) {
     return (
@@ -780,41 +679,20 @@ export default function PiecesDetailPage() {
       {/* 🎯 HERO SECTION - Avec couleur de la famille */}
       <HeroTransaction
         id="hero-transaction"
-        data-section="S_HERO"
-        data-page-role="R1"
+        {...sectionAttr(R1Section.HERO)}
         gradient={familleColor}
         slogan={resolveSlogan("transaction", data.content?.pg_name)}
-        badges={[
-          "400 000+ pièces",
-          "Livraison 24-48h",
-          "Paiement sécurisé",
-          "Experts gratuits",
-        ]}
+        badges={
+          buildHeroProps({
+            purchaseGuideArgs: data.purchaseGuideData?.arguments,
+            motorisationsCount: data.performance?.motorisations_count,
+          }).badges
+        }
         className="py-8 md:py-16 lg:py-20"
         backgroundSlot={
           <>
-            {/* Image wallpaper en arrière-plan (si disponible) */}
-            {data.content?.pg_wall && (
-              <div className="absolute inset-0 z-0">
-                <img
-                  src={data.content.pg_wall}
-                  srcSet={wallSrcSet}
-                  sizes="100vw"
-                  alt=""
-                  width={1920}
-                  height={400}
-                  className="w-full h-full object-cover opacity-25"
-                  loading="lazy"
-                  decoding="async"
-                  onError={(e) => {
-                    e.currentTarget.src = "/images/placeholder-hero.webp";
-                    e.currentTarget.onerror = null;
-                  }}
-                />
-                {/* Overlay gradient pour assurer la lisibilité du texte */}
-                <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-transparent"></div>
-              </div>
-            )}
+            {/* Wallpaper OFF par défaut — perf (LCP/INP) > esthétique sur 221+ pages
+                Réactivable par gamme en Phase 2 via visual_plan.hero_wallpaper */}
 
             {/* Effet mesh gradient adaptatif */}
             <div
@@ -825,8 +703,6 @@ export default function PiecesDetailPage() {
               }}
               aria-hidden="true"
             />
-
-            {/* Forme décorative retirée — LCP: blur-3xl force GPU compositing layer */}
           </>
         }
       >
@@ -870,13 +746,14 @@ export default function PiecesDetailPage() {
         </div>
 
         <p className="text-white/80 text-base md:text-lg font-medium text-center mt-3 max-w-2xl mx-auto">
-          {(() => {
-            const name = data.content?.pg_name?.toLowerCase() || "";
-            const pluralName = pluralizePieceName(name);
-            return name
-              ? `Trouvez vos ${pluralName} compatibles avec votre véhicule en quelques secondes`
-              : "Trouvez la référence compatible avec votre véhicule en quelques secondes";
-          })()}
+          {data.purchaseGuideData?.heroSubtitle ||
+            (() => {
+              const name = data.content?.pg_name?.toLowerCase() || "";
+              const pluralName = pluralizePieceName(name);
+              return name
+                ? `Trouvez vos ${pluralName} compatibles avec votre véhicule en quelques secondes`
+                : "Trouvez la référence compatible avec votre véhicule en quelques secondes";
+            })()}
         </p>
 
         {/* Cadre glassmorphism contenant Image + VehicleSelector */}
@@ -1080,12 +957,15 @@ export default function PiecesDetailPage() {
 
       {/* ✅ Bloc compatibilité — réassurance avant catalogue */}
       <PageSection
-        data-section="S_COMPAT"
-        data-page-role="R1"
+        {...sectionAttr(R1Section.COMPAT)}
         className="py-4 sm:py-6"
         id="compatibility-check"
       >
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <div className="h-24 bg-gray-50 animate-pulse motion-reduce:animate-none rounded-lg" />
+          }
+        >
           <Await resolve={data.motorisations}>
             {(motorisations) => (
               <CompatibilityConfirmationBlock
@@ -1095,17 +975,27 @@ export default function PiecesDetailPage() {
                   data.content?.pg_name?.toLowerCase() || "pièces auto"
                 }
                 periodeRange={periodeRange}
-                gammeId={0}
+                gammeId={data.gammeId}
               />
             )}
           </Await>
         </Suspense>
       </PageSection>
 
+      {/* Comment choisir en 15s — 4 étapes sélection véhicule */}
+      <PageSection
+        {...sectionAttr(R1Section.QUICK_STEPS)}
+        maxWidth="5xl"
+        className="py-4 sm:py-6"
+      >
+        <R1QuickSteps
+          gammeName={data.content?.pg_name?.toLowerCase() || "pièce"}
+        />
+      </PageSection>
+
       {/* R1 micro-bloc: texte SEO utile (court) */}
       <PageSection
-        data-section="S_BUY_ARGS"
-        data-page-role="R1"
+        {...sectionAttr(R1Section.BUY_ARGS)}
         maxWidth="5xl"
         className="py-6 sm:py-8"
       >
@@ -1133,6 +1023,7 @@ export default function PiecesDetailPage() {
               alias={data.content?.pg_alias || ""}
               reference={data.reference}
               proofs={proofs}
+              microSeoBlock={data.purchaseGuideData?.microSeoBlock}
             />
           );
 
@@ -1152,6 +1043,22 @@ export default function PiecesDetailPage() {
         })()}
       </PageSection>
 
+      {/* Preuves en chiffres — stats visuelles compactes */}
+      {data.proofData && data.proofData.vehicleCount > 0 && (
+        <PageSection
+          {...sectionAttr(R1Section.PROOF_STATS)}
+          maxWidth="5xl"
+          className="py-4 sm:py-6"
+        >
+          <R1ProofStats
+            vehicleCount={data.proofData.vehicleCount}
+            topMarques={data.proofData.topMarques}
+            periodeRange={data.proofData.periodeRange}
+            topEquipementiers={data.proofData.topEquipementiers}
+          />
+        </PageSection>
+      )}
+
       {/* 🚗 Badge véhicule actif (si présent) */}
       {selectedVehicle && (
         <PageSection className="py-4 sm:py-4">
@@ -1165,8 +1072,7 @@ export default function PiecesDetailPage() {
 
       {/* Motorisations compatibles */}
       <PageSection
-        data-section="S_MOTORISATIONS"
-        data-page-role="R1"
+        {...sectionAttr(R1Section.MOTORISATIONS)}
         bg="slate"
         id="compatibilities"
         className="scroll-mt-20"
@@ -1174,7 +1080,7 @@ export default function PiecesDetailPage() {
         <Reveal>
           <Suspense
             fallback={
-              <div className="h-96 bg-gray-50 animate-pulse rounded-lg" />
+              <div className="h-96 bg-gray-50 animate-pulse motion-reduce:animate-none rounded-lg" />
             }
           >
             <Await resolve={data.motorisations}>
@@ -1184,6 +1090,9 @@ export default function PiecesDetailPage() {
                   familleColor={familleColor}
                   familleName={data.content?.pg_name || "pièces"}
                   totalCount={data.performance?.motorisations_count}
+                  compatibilitiesIntro={
+                    data.purchaseGuideData?.compatibilitiesIntro ?? undefined
+                  }
                 />
               )}
             </Await>
@@ -1191,19 +1100,48 @@ export default function PiecesDetailPage() {
         </Reveal>
       </PageSection>
 
+      {/* ✅ Tableau safe : vérifications compatibilité avant commande */}
+      <PageSection {...sectionAttr(R1Section.SAFE_TABLE)} className="py-6">
+        <Suspense
+          fallback={
+            <div className="h-32 bg-gray-50 animate-pulse motion-reduce:animate-none rounded-lg" />
+          }
+        >
+          <SafeCompatTable
+            rows={data.purchaseGuideData?.safeTableRows ?? undefined}
+            gammeName={data.content?.pg_name}
+          />
+        </Suspense>
+      </PageSection>
+
+      {/* Erreurs fréquentes de compatibilité — checklist */}
+      <PageSection
+        {...sectionAttr(R1Section.COMPAT_ERRORS)}
+        maxWidth="5xl"
+        className="py-4 sm:py-6"
+      >
+        <R1CompatErrors
+          compatErrors={data.purchaseGuideData?.compatErrors}
+          gammeName={data.content?.pg_name?.toLowerCase() || "pièce"}
+        />
+      </PageSection>
+
       {/* 🔧 Équipementiers — DarkSection navy */}
-      <DarkSection data-section="S_EQUIPEMENTIERS" data-page-role="R1">
+      <DarkSection {...sectionAttr(R1Section.EQUIPEMENTIERS)}>
         <div className="space-y-12">
           <div id="brands" className="scroll-mt-20">
             <SectionHeader
               title="Marques équipementières de confiance"
-              sub="Fabricants OE et qualité premium"
+              sub={
+                data.purchaseGuideData?.equipementiersLine ||
+                "Fabricants OE et qualité premium"
+              }
               dark
             />
             <Reveal delay={100}>
               <Suspense
                 fallback={
-                  <div className="h-48 bg-white/5 animate-pulse rounded-lg" />
+                  <div className="h-48 bg-white/5 animate-pulse motion-reduce:animate-none rounded-lg" />
                 }
               >
                 <Await resolve={data.equipementiers}>
@@ -1223,15 +1161,14 @@ export default function PiecesDetailPage() {
 
       {/* 📦 Catalogue Même Famille */}
       <PageSection
-        data-section="S_CATALOGUE"
-        data-page-role="R1"
+        {...sectionAttr(R1Section.CATALOGUE)}
         id="family"
         className="scroll-mt-20"
       >
         <Reveal>
           <Suspense
             fallback={
-              <div className="h-48 bg-gray-50 animate-pulse rounded-lg" />
+              <div className="h-48 bg-gray-50 animate-pulse motion-reduce:animate-none rounded-lg" />
             }
           >
             <Await resolve={data.catalogueMameFamille}>
@@ -1246,6 +1183,7 @@ export default function PiecesDetailPage() {
                           content: v.content,
                         }),
                       )}
+                      intro={data.purchaseGuideData?.familyCrossSellIntro}
                     />
                   )}
                 </Await>
@@ -1257,8 +1195,7 @@ export default function PiecesDetailPage() {
 
       {/* FAQ R1 — questions universelles sur le sélecteur véhicule */}
       <PageSection
-        data-section="S_FAQ"
-        data-page-role="R1"
+        {...sectionAttr(R1Section.FAQ)}
         bg="slate"
         id="faq"
         className="scroll-mt-20"
@@ -1266,7 +1203,7 @@ export default function PiecesDetailPage() {
         <Reveal>
           <Suspense
             fallback={
-              <div className="h-48 bg-slate-100 animate-pulse rounded-lg" />
+              <div className="h-48 bg-slate-100 animate-pulse motion-reduce:animate-none rounded-lg" />
             }
           >
             <FAQSection
