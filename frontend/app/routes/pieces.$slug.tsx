@@ -220,7 +220,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       status: 410,
       headers: {
         "X-Robots-Tag": "noindex, follow",
-        "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200",
+        "Cache-Control": "public, max-age=600, stale-while-revalidate=3600",
       },
     });
   }
@@ -331,7 +331,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         status: 410,
         headers: {
           "X-Robots-Tag": "noindex, follow",
-          "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200",
+          "Cache-Control": "public, max-age=600, stale-while-revalidate=3600",
         },
       });
     }
@@ -419,15 +419,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         motorisationsSchema,
         proofData,
 
-        // === DEFERRED (streamed après le premier paint) — ~100-250KB ===
-        // ?? null : Remix interdit Promise.resolve(undefined) dans defer()
-        motorisations: Promise.resolve(pageData.motorisations ?? null),
-        equipementiers: Promise.resolve(pageData.equipementiers ?? null),
-        catalogueMameFamille: Promise.resolve(
-          pageData.catalogueMameFamille ?? null,
-        ),
-        seoSwitches: Promise.resolve(pageData.seoSwitches ?? null),
-        guide: Promise.resolve(pageData.guide ?? null),
+        // === DEFERRED (valeurs sync, pas de streaming) — ~100-250KB ===
+        motorisations: pageData.motorisations ?? null,
+        equipementiers: pageData.equipementiers ?? null,
+        catalogueMameFamille: pageData.catalogueMameFamille ?? null,
+        seoSwitches: pageData.seoSwitches ?? null,
+        guide: pageData.guide ?? null,
       },
       { headers: responseHeaders },
     );
@@ -546,11 +543,14 @@ export const meta: MetaFunction<typeof loader> = ({
 };
 
 export function headers({ loaderHeaders }: { loaderHeaders: Headers }) {
-  return {
+  const h: Record<string, string> = {
     "Cache-Control":
       loaderHeaders.get("Cache-Control") ||
       "public, max-age=3600, stale-while-revalidate=7200",
   };
+  const xr = loaderHeaders.get("X-Robots-Tag");
+  if (xr) h["X-Robots-Tag"] = xr;
+  return h;
 }
 
 // Type étendu pour les champs sync extraits dans le loader (LCP streaming)
@@ -606,7 +606,8 @@ export default function PiecesDetailPage() {
       .map((s) => s.getAttribute("data-section"))
       .filter(Boolean) as string[];
     const dupes = [...new Set(vals.filter((v, i) => vals.indexOf(v) !== i))];
-    if (dupes.length) console.error("[R1] Duplicate sections:", dupes);
+    if (dupes.length)
+      throw new Error(`[R1] Duplicate sections: ${dupes.join(", ")}`);
   }, []);
 
   if (!data || data.status !== 200) {
