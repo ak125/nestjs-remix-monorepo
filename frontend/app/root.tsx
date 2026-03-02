@@ -1,6 +1,7 @@
 import tokenStyles from "@fafa/design-tokens/css?url";
 import utilitiesStyles from "@fafa/design-tokens/utilities?url";
 import {
+  type ActionFunctionArgs,
   type LinksFunction,
   type LoaderFunctionArgs,
   json,
@@ -18,7 +19,7 @@ import {
   useRevalidator,
   useLocation,
 } from "@remix-run/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
 import { ChevronUp } from "lucide-react";
 import {
   Component,
@@ -60,6 +61,11 @@ import { type CartData } from "./types/cart";
 const ChatWidget = lazy(() => import("./components/rag/ChatWidget"));
 const Footer = lazy(() =>
   import("./components/Footer").then((m) => ({ default: m.Footer })),
+);
+const FooterMobile = lazy(() =>
+  import("./components/layout/FooterMobile").then((m) => ({
+    default: m.FooterMobile,
+  })),
 );
 const LazyToaster = lazy(() =>
   import("sonner").then((m) => ({ default: m.Toaster })),
@@ -151,6 +157,14 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   });
 };
 
+// Reject POST requests from bots/crawlers — root route has no forms
+export const action = async (_args: ActionFunctionArgs) => {
+  return json(
+    { error: "Method not allowed" },
+    { status: 405, headers: { Allow: "GET" } },
+  );
+};
+
 // Re-exports depuis module neutre pour éviter la dépendance circulaire root ↔ Navbar
 export { useOptionalUser, useRootCart } from "./hooks/useRootData";
 
@@ -161,36 +175,6 @@ declare module "@remix-run/node" {
     parsedBody?: any;
     user: unknown;
   }
-}
-
-// SSR-safe QueryClient singleton (no hooks - fixes Remix 2.15 context timing issue)
-// Server: creates new client per request, Browser: reuses singleton
-let browserQueryClient: QueryClient | undefined = undefined;
-
-function getQueryClient() {
-  const config = {
-    defaultOptions: {
-      queries: {
-        // Disable automatic refetching on window focus in admin
-        refetchOnWindowFocus: false,
-        // Retry once on failure
-        retry: 1,
-        // Keep data fresh for 5 minutes
-        staleTime: 5 * 60 * 1000,
-      },
-    },
-  };
-
-  if (typeof window === "undefined") {
-    // Server: always create new QueryClient per request
-    return new QueryClient(config);
-  }
-
-  // Browser: reuse singleton to preserve cache across navigations
-  if (!browserQueryClient) {
-    browserQueryClient = new QueryClient(config);
-  }
-  return browserQueryClient;
 }
 
 /** Error boundary that silently catches ChatWidget crashes without affecting the app. */
@@ -373,11 +357,14 @@ function AppShell({ children }: { children: React.ReactNode }) {
       <Suspense fallback={null}>
         <Footer />
       </Suspense>
+      <Suspense fallback={null}>
+        <FooterMobile />
+      </Suspense>
       <NotificationContainer />
       {showScrollTop && (
         <Button
           onClick={scrollToTop}
-          className="fixed bottom-20 md:bottom-8 right-20 md:right-24 z-50 w-11 h-11 rounded-full shadow-2xl text-white bg-[#e8590c] hover:bg-[#d9480f] transition-all duration-300 hover:scale-110"
+          className="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-50 w-11 h-11 rounded-full shadow-2xl text-white bg-cta hover:bg-cta-hover transition-all duration-300 hover:scale-110"
           size="icon"
           aria-label="Retour en haut"
         >
@@ -395,7 +382,6 @@ function AppShell({ children }: { children: React.ReactNode }) {
  * All hook logic is delegated to AppShell (rendered inside providers)
  */
 export function Layout({ children }: { children: React.ReactNode }) {
-  const queryClient = getQueryClient();
   const data = useRouteLoaderData<typeof loader>("root");
   const nonce = data?.cspNonce || "";
 
@@ -499,11 +485,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
       </head>
       <body className="h-full bg-gray-100" suppressHydrationWarning>
-        <QueryClientProvider client={queryClient}>
-          <NotificationProvider>
-            <AppShell>{children}</AppShell>
-          </NotificationProvider>
-        </QueryClientProvider>
+        <NotificationProvider>
+          <AppShell>{children}</AppShell>
+        </NotificationProvider>
         {/* 🎉 Sonner Toaster - Lazy-loaded (non-critique pour first paint) */}
         <Suspense fallback={null}>
           <LazyToaster
