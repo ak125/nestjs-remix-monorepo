@@ -157,19 +157,69 @@ export const MEDIA_BUDGET = {
   ] as const,
 } as const;
 
-/** Recommended media type per section */
+/** Recommended media type per section (aligned with MEDIA_LAYOUT_CONTRACT) */
 export const SECTION_DEFAULT_MEDIA: Record<
   string,
-  { type: MediaSlotType; required: boolean }
+  {
+    type: MediaSlotType;
+    required: boolean;
+    schema?: { columns?: string[]; item_count_target?: string };
+  }
 > = {
-  S2: { type: 'table', required: false },
-  S2_DIAG: { type: 'table', required: true },
-  S3: { type: 'checklist', required: false },
-  S4_DEPOSE: { type: 'steps', required: true },
-  S4_REPOSE: { type: 'steps', required: true },
-  S5: { type: 'callout', required: false },
-  S6: { type: 'checklist', required: true },
-  S8: { type: 'faq', required: true },
+  S1: { type: 'checklist', required: true },
+  S2: {
+    type: 'table',
+    required: true,
+    schema: {
+      columns: ['Symptome', 'Cause probable', 'Action recommandee'],
+    },
+  },
+  S2_DIAG: {
+    type: 'table',
+    required: true,
+    schema: {
+      columns: ['Symptome', 'Cause probable', 'Action recommandee'],
+    },
+  },
+  S3: {
+    type: 'checklist',
+    required: true,
+    schema: {
+      columns: [
+        'Caracteristique',
+        'Ou la lire',
+        'Risque si erreur',
+        'Comment verifier',
+      ],
+    },
+  },
+  S4_DEPOSE: {
+    type: 'steps',
+    required: true,
+    schema: { item_count_target: '7-12' },
+  },
+  S4_REPOSE: {
+    type: 'steps',
+    required: true,
+    schema: { item_count_target: '5-10' },
+  },
+  S5: {
+    type: 'callout',
+    required: true,
+    schema: { columns: ['Erreur', 'Risque', 'Correctif'] },
+  },
+  S6: {
+    type: 'checklist',
+    required: true,
+    schema: { item_count_target: '6-10' },
+  },
+  S7: { type: 'cards', required: true },
+  S8: {
+    type: 'faq',
+    required: true,
+    schema: { item_count_target: '4-6' },
+  },
+  META: { type: 'cards', required: true },
 };
 
 // ── V4 Audit-First Pipeline ─────────────────────────────

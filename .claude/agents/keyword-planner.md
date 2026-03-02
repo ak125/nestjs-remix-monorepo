@@ -319,49 +319,92 @@ Pour chaque section ciblee :
 | META      | 3         | 1           | 0       |
 
 
-### Media slots par section (optionnel)
+### Media Layout Contract (MEDIA_LAYOUT_CONTRACT)
 
-Pour chaque section, ajouter un champ `media_slots[]` dans `skp_section_terms` :
+Pour chaque section ciblee, proposer 1-3 `media_slots[]` dans `skp_section_terms`.
+Reference : `backend/src/config/media-slots.constants.ts` → `MEDIA_LAYOUT_CONTRACT`.
 
-| Section   | Type par defaut | Required | budget_cost |
-|-----------|----------------|----------|-------------|
-| S2        | table          | non      | 0           |
-| S2_DIAG   | table          | oui      | 0           |
-| S3        | checklist      | non      | 0           |
-| S4_DEPOSE | steps          | oui      | 0           |
-| S4_REPOSE | steps          | oui      | 0           |
-| S5        | callout        | non      | 0           |
-| S6        | checklist      | oui      | 0           |
-| S8        | faq            | oui      | 0           |
+**Budget global** : max 2 images in-article (budget_cost=1), hors hero (budget_cost=0). Valide par G7_MEDIA_BUDGET.
 
-Optionnel : ajouter 1 image slot (budget_cost=1) pour S2 ou S4_DEPOSE si pertinent.
-**Budget total : max 2 in-article images** (valide par G7_MEDIA_BUDGET).
+#### Slots obligatoires par section (budget_cost=0, zero-cost)
 
-**Shape MediaSlot JSON** :
+| Section | slot_id | Type | Schema/Contenu |
+|---------|---------|------|----------------|
+| S1 | S1_CHECKLIST | checklist | outils + consommables essentiels |
+| S1 | S1_CALLOUT | callout | securite (gants, lunettes, cric) |
+| S2 | S2_DIAG_TABLE | table | Symptome / Cause probable / Action recommandee (6-10 rows) |
+| S3 | S3_COMPAT_TABLE | table | Caracteristique / Ou la lire / Risque si erreur / Comment verifier (4-6 rows) |
+| S4_DEPOSE | S4D_STEPS | steps | etapes numerotees demontage (7-12) |
+| S4_REPOSE | S4R_STEPS | steps | etapes numerotees remontage (5-10) |
+| S4_REPOSE | S4R_CHECKLIST | checklist | avant abaisser vehicule (4-6) |
+| S5 | S5_ERROR_TABLE | table | Erreur / Risque / Correctif (5-8 rows) |
+| S6 | S6_CHECKLIST | checklist | verifications statique + essai progressif (6-10) |
+| S7 | S7_CARDS | cards | pieces + consommables associes sans prix (3-6) |
+| S8 | S8_FAQ | faq | accordeon FAQ 4-6 questions |
+| META | META_LINKS | cards | liens internes R4 glossaire + R3 diagnostics |
+
+#### Slots optionnels images (budget_cost=1, max 2 au total)
+
+| Section | slot_id | Topic image | Alt template | Condition |
+|---------|---------|-------------|-------------|-----------|
+| S2 | S2_SYMPTOM_IMAGE | symptom_visual | Symptomes usure {gamme_name} : {symptom} | si symptome visuel clair |
+| S3 | S3_SCHEMA_IMAGE | comparison_schema | Schema comparatif {gamme_name} | si variantes comparables |
+| S4_DEPOSE | S4D_SCHEMA_IMAGE | fixation_schema | Schema demontage {gamme_name} | si points fixation identifiables |
+
+#### Slots optionnels supplementaires (budget_cost=0)
+
+| Section | slot_id | Type | Schema | Condition |
+|---------|---------|------|--------|-----------|
+| S4_REPOSE | S4R_RODAGE_TABLE | table | Vitesse km/h / Type freinage / A eviter (3-4 rows) | si rodage pertinent |
+| S7 | S7_TABLE | table | Consommable / Pourquoi / Quand necessaire (3-5 rows) | si consommables identifies |
+
+#### Shape MediaSlot JSON
+
 ```json
 {
-  "type": "steps",
+  "slot_id": "S2_DIAG_TABLE",
+  "type": "table",
   "placement": "inline",
-  "purpose": "Etapes de depose du filtre a huile",
-  "budget_cost": 0
+  "purpose": "Symptome → Cause → Action pour diagnostic rapide",
+  "budget_cost": 0,
+  "schema": {
+    "columns": ["Symptome", "Cause probable", "Action recommandee"],
+    "row_count_target": "6-10"
+  }
 }
 ```
 
 **Si type=image, ajouter image_spec** :
 ```json
 {
+  "slot_id": "S2_SYMPTOM_IMAGE",
   "type": "image",
   "placement": "inline",
-  "purpose": "Photo du filtre a huile use vs neuf",
+  "purpose": "Symptome visuel d'usure pour {gamme}",
   "budget_cost": 1,
   "image_spec": {
-    "alt_template": "Comparaison filtre a huile use et neuf pour {gamme}",
-    "loading": "lazy",
-    "size": "md",
-    "placement_visual": "center"
+    "topic": "symptom_visual",
+    "format": "webp",
+    "aspect_ratio": "16:9",
+    "min_width": 800,
+    "alt_template": "Symptomes usure {gamme_name} : {symptom}",
+    "loading": "lazy"
   }
 }
 ```
+
+#### Image library strategy
+
+- **Universal** (par famille : freinage, filtration, transmission) : `/img/uploads/guides/universal/`
+  → hero generique, outillage securite, schemas ventile vs plein
+- **Specific** (top gammes uniquement) : `/img/uploads/guides/gammes/{pg_alias}/`
+  → symptomes visuels, schemas fixation — uniquement si image claire disponible
+
+#### Regles alt text
+
+- Descriptif + contexte, pas de bourrage keywords
+- Template : `{action/description} {gamme_name}` (ex: "Schema demontage plaquette de frein")
+- Hero : loading=eager, preload dans `<head>` | In-article : loading=lazy
 
 **Ecriture progressive** : UPDATE skp_section_terms (merge JSONB) + skp_sections_done += section
 

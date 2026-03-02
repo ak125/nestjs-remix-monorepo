@@ -44,6 +44,36 @@ Ces regles s'appliquent a TOUTE generation de contenu, sans exception :
 | S7 | liens | `<ul><li><a>` | Pieces associees `/pieces/{slug}` |
 | S8 | **faq** | `<details><summary>` | 4-6 Q/A courtes et uniques |
 
+### Media Layout (MEDIA_LAYOUT_CONTRACT)
+
+Chaque section generee doit inclure les **slots media obligatoires** definis dans `backend/src/config/media-slots.constants.ts`.
+
+**Regles globales** :
+- Budget max : **2 images in-article** (budget_cost=1), hors hero (budget_cost=0)
+- Format images : WebP/AVIF, descriptif alt text (pas de keyword stuffing)
+- Hero : `loading="eager"` + preload | In-article : `loading="lazy"`
+- Pas d'images decoratives sans valeur informative
+
+**Slots obligatoires per section** :
+
+| Section | Slot obligatoire | Type | Contenu attendu |
+|---------|-----------------|------|-----------------|
+| S1 | checklist + callout securite | checklist, callout | outils essentiels + securite (gants, lunettes) |
+| S2 | table diagnostic | table 3 colonnes | Symptome / Cause probable / Action (6-10 rows) |
+| S3 | table compatibilite | table 4 colonnes | Caracteristique / Ou lire / Risque / Verifier (4-6 rows) |
+| S4_DEPOSE | steps numerotees | ol | 7-12 etapes demontage |
+| S4_REPOSE | steps + checklist | ol + ul | etapes remontage + verif avant descente |
+| S5 | table erreurs | table 3 colonnes | Erreur / Risque / Correctif (5-8 rows) |
+| S6 | checklist verif | ul | verifications statique + essai progressif (6-10 items) |
+| S7 | cards associees | cards | pieces + consommables (sans prix, 3-6 items) |
+| S8 | accordeon FAQ | details/summary | 4-6 questions courtes et uniques |
+| META | cards liens | cards | liens internes R4 glossaire + diagnostics |
+
+**Images optionnelles** (budget_cost=1, a proposer si pertinent) :
+- S2 : symptome visuel (bleuissement, fissure) — alt: "Symptomes usure {gamme_name}"
+- S3 : schema comparatif (ventile vs plein) — alt: "Schema comparatif {gamme_name}"
+- S4_DEPOSE : schema fixation/vis — alt: "Schema demontage {gamme_name}"
+
 ---
 
 ## Packs cibles
