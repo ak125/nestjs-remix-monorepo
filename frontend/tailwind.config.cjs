@@ -5,7 +5,6 @@ module.exports = {
   darkMode: ['class'],
   content: [
     path.join(__dirname, './app/**/*.{js,jsx,ts,tsx}'),
-    path.join(__dirname, '../packages/ui/src/**/*.{js,jsx,ts,tsx}')
   ],
   theme: {
     extend: {
@@ -20,6 +19,49 @@ module.exports = {
           DEFAULT: tokens.colors.secondary['500'],
           foreground: '#ffffff'
         },
+
+        // ─── Semantic UI Colors ───────────────────────────
+        // Used across all pages — single source of truth
+        // Replaces hardcoded hex values (#e8590c, #0d1b3e, etc.)
+
+        // CTA / Action orange (replaces #e8590c everywhere)
+        cta: {
+          DEFAULT: '#e8590c',
+          hover: '#d9480f',
+          light: '#fb923c',
+          lighter: '#f76707',
+          dark: '#c2410c',
+          50: '#fff7ed',
+          100: '#ffedd5',
+          200: '#fed7aa',
+          300: '#fdba74',
+          400: '#fb923c',
+          500: '#e8590c',
+          600: '#d9480f',
+          700: '#c2410c',
+          800: '#9a3412',
+          900: '#7c2d12',
+        },
+
+        // Navy / Dark backgrounds (replaces #0d1b3e, #0f2347, #162d5a)
+        navy: {
+          DEFAULT: '#0d1b3e',
+          light: '#162d5a',
+          mid: '#0f2347',
+          'mid-light': '#122a50',
+          dark: '#091430',
+          50: '#eef2ff',
+          100: '#e0e7ff',
+          200: '#c7d2fe',
+          300: '#a5b4fc',
+          400: '#818cf8',
+          500: '#162d5a',
+          600: '#0f2347',
+          700: '#0d1b3e',
+          800: '#091430',
+          900: '#050d1f',
+        },
+
         khmerCurry: tokens.colors.accent.khmerCurry,
         persianIndigo: tokens.colors.accent.persianIndigo,
         vert: tokens.colors.accent.vert,

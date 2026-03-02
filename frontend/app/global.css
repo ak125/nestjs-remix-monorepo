@@ -80,6 +80,18 @@
   }
 
   :root {
+    /* ─── Semantic UI Color Variables ─── */
+    /* CTA orange — used for all call-to-action elements */
+    --cta: #e8590c;
+    --cta-hover: #d9480f;
+    --cta-light: #fb923c;
+    --cta-dark: #c2410c;
+
+    /* Navy — used for dark sections and backgrounds */
+    --navy: #0d1b3e;
+    --navy-mid: #0f2347;
+    --navy-light: #162d5a;
+
     /* Optical sizing automatique */
     font-optical-sizing: auto;
     
@@ -306,7 +318,11 @@
 /* Animations: définies dans animations.css, seules les classes utilitaires ici */
 @layer utilities {
   .animate-shimmer {
-    animation: shimmer 2s infinite;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
   }
 
   .animate-fadeIn {
@@ -315,6 +331,20 @@
 
   .animate-slideInRight {
     animation: slideInRight 0.3s ease-out;
+  }
+
+  /* Hide scrollbar */
+  .hide-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  /* Tab pill transition */
+  .tab-pill {
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   /* Scrollbar personnalisée */
@@ -518,5 +548,172 @@
   }
   .hover\:text-brand:hover {
     color: var(--brand-primary);
+  }
+}
+
+/* ── R3 S1 — Checklist + safety callout ─────────── */
+.s1-prose ul {
+  list-style: none;
+  padding-left: 0;
+}
+.s1-prose ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.s1-prose ul li::before {
+  content: "\2713";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  background: #10b981;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+.s1-prose .warning-box {
+  background: #fef2f2;
+  border-left: 3px solid #ef4444;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+}
+.s1-prose .warning-box strong {
+  color: #991b1b;
+}
+
+/* ── R3 S4 — Numbered step list with connector ──── */
+.step-prose ol {
+  list-style: none;
+  padding-left: 2.5rem;
+  counter-reset: step;
+}
+.step-prose ol > li {
+  counter-increment: step;
+  position: relative;
+  padding-bottom: 1.25rem;
+  padding-left: 0.75rem;
+}
+.step-prose ol > li::before {
+  content: counter(step);
+  position: absolute;
+  left: -2.25rem;
+  top: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: #334155;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.step-prose ol > li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: calc(-2.25rem + 0.8125rem);
+  top: 1.75rem;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+.step-prose ol > li:last-child {
+  padding-bottom: 0;
+}
+.step-prose ol > li em {
+  display: block;
+  margin-top: 0.25rem;
+  font-style: normal;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+.step-prose ol > li ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.5rem;
+}
+.step-prose ol > li ul li::before {
+  content: "\2192";
+  color: #94a3b8;
+  margin-right: 0.5rem;
+  background: transparent;
+  min-width: auto;
+  height: auto;
+  border-radius: 0;
+  font-size: 0.875rem;
+}
+
+/* ── R3 S5 — Danger risk bullet list ─────────────── */
+.danger-prose ul {
+  list-style: none;
+  padding-left: 0;
+}
+.danger-prose ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.625rem;
+}
+.danger-prose ul li::before {
+  content: "\26A0";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.375rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+}
+
+/* ── R3 S6 — Rodage checklist ───────────────────── */
+.rodage-prose ul {
+  list-style: none;
+  padding-left: 0;
+}
+.rodage-prose ul li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  margin-bottom: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid #bae6fd;
+}
+.rodage-prose ul li::before {
+  content: "\2713";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  background: #0ea5e9;
+  color: white;
+  border-radius: 0.25rem;
+  font-size: 0.65rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+/* Marquee keyframe (equipmentier logos) */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Reduced motion: disable shimmer & marquee animations */
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-anim,
+  .marquee-anim {
+    animation: none !important;
   }
 }
