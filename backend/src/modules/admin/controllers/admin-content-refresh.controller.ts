@@ -118,11 +118,16 @@ export class AdminContentRefreshController {
       throw new BadRequestException('Provide pgAlias or pgAliases');
     }
 
+    // Filter out R5_diagnostic — it's slug-based, not gamme-based
+    const gammePageTypes = parsed.data.pageTypes?.filter(
+      (pt): pt is Exclude<typeof pt, 'R5_diagnostic'> => pt !== 'R5_diagnostic',
+    );
+
     return this.contentRefreshService.triggerManualRefresh(
       aliases,
       parsed.data.supplementaryFiles,
       parsed.data.force,
-      parsed.data.pageTypes,
+      gammePageTypes,
     );
   }
 

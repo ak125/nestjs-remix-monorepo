@@ -46,27 +46,26 @@ export class PdfTextExtractorService {
     }
 
     // Dynamic import to avoid issues if pdf-parse isn't installed
-    const { PDFParse } = await import('pdf-parse');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const pdfParse = (await import('pdf-parse')).default;
     const buffer = await fs.readFile(absPath);
 
     this.logger.log(
       `Extracting text from PDF: ${absPath} (${buffer.length} bytes)`,
     );
 
-    const parser = new PDFParse({ data: new Uint8Array(buffer) });
-    const textResult = await parser.getText();
-    const infoResult = await parser.getInfo();
-    await parser.destroy();
+    const pdfResult = await pdfParse(buffer);
 
-    const fullText = textResult.text || '';
-    const numPages = infoResult.total || 1;
+    const fullText = pdfResult.text || '';
+    const numPages = pdfResult.numpages || 1;
 
-    // Per-page text from TextResult.pages (PageTextResult[])
-    const pages = textResult.pages
-      .map((p) => p.text.trim())
-      .filter((t) => t.length > 0);
+    // v1 doesn't provide per-page text — split on form-feed (PDF page break)
+    const pages = fullText
+      .split(/\f/)
+      .map((p: string) => p.trim())
+      .filter((t: string) => t.length > 0);
 
-    const info = infoResult.info || {};
+    const info = pdfResult.info || {};
     const result: PdfExtractResult = {
       fullText,
       pages,
