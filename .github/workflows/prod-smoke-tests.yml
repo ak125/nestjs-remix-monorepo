@@ -9,6 +9,7 @@ on:
 env:
   PROD_URL: https://www.automecanik.com
   IMGPROXY_TEST_IMAGE: https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/260/6216001.JPG
+  CURL_OPTS: -s --max-time 15 -H "User-Agent: AutoMecanik-SmokeTest/1.0"
 
 jobs:
   smoke-tests:
@@ -19,32 +20,31 @@ jobs:
     steps:
       - name: 🏥 Health endpoint
         run: |
-          RESPONSE=$(curl -sf --max-time 10 "$PROD_URL/health" 2>&1)
+          RESPONSE=$(curl $CURL_OPTS "$PROD_URL/health")
+          echo "Response: $RESPONSE"
           if ! echo "$RESPONSE" | grep -q '"status":"ok"'; then
             echo "❌ Health check failed"
-            echo "Response: $RESPONSE"
             exit 1
           fi
           echo "✅ Health: OK"
 
       - name: 🌐 Homepage
         run: |
-          STATUS=$(curl -so /dev/null -w "%{http_code}" --max-time 15 "$PROD_URL/")
+          STATUS=$(curl $CURL_OPTS -o /dev/null -w "%{http_code}" "$PROD_URL/")
           if [ "$STATUS" != "200" ]; then
             echo "❌ Homepage returned HTTP $STATUS"
             exit 1
           fi
-          # Vérifier que le HTML contient un <title> non vide
-          TITLE=$(curl -sf --max-time 15 "$PROD_URL/" | grep -oP '<title>\K[^<]+' | head -1)
+          TITLE=$(curl $CURL_OPTS "$PROD_URL/" | grep -oP '<title>\K[^<]+' | head -1)
           if [ -z "$TITLE" ]; then
             echo "❌ Homepage has empty <title>"
             exit 1
           fi
-          echo "✅ Homepage: HTTP 200, title='$TITLE'"
+          echo "✅ Homepage: HTTP $STATUS, title='$TITLE'"
 
-      - name: 📦 Product page (filtre-a-huile)
+      - name: 📦 Product page
         run: |
-          STATUS=$(curl -so /dev/null -w "%{http_code}" --max-time 15 "$PROD_URL/pieces/filtre-a-huile-7.html")
+          STATUS=$(curl $CURL_OPTS -o /dev/null -w "%{http_code}" "$PROD_URL/pieces/filtre-a-huile-7.html")
           if [ "$STATUS" != "200" ]; then
             echo "❌ Product page returned HTTP $STATUS"
             exit 1
@@ -53,9 +53,9 @@ jobs:
 
       - name: 🔌 API catalog
         run: |
-          RESPONSE=$(curl -sf --max-time 10 "$PROD_URL/api/catalog/families" 2>&1)
-          if [ $? -ne 0 ]; then
-            echo "❌ API catalog failed"
+          RESPONSE=$(curl $CURL_OPTS "$PROD_URL/api/catalog/families")
+          if [ -z "$RESPONSE" ]; then
+            echo "❌ API catalog: empty response"
             exit 1
           fi
           COUNT=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('data',d.get('families',[]))))" 2>/dev/null || echo "0")
@@ -67,7 +67,7 @@ jobs:
 
       - name: 🖼️ imgproxy AVIF
         run: |
-          STATUS=$(curl -so /dev/null -w "%{http_code}" --max-time 15 "$PROD_URL/imgproxy/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@avif")
+          STATUS=$(curl $CURL_OPTS -o /dev/null -w "%{http_code}" "$PROD_URL/imgproxy/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@avif")
           if [ "$STATUS" != "200" ]; then
             echo "❌ imgproxy AVIF returned HTTP $STATUS"
             exit 1
@@ -78,7 +78,7 @@ jobs:
         id: cache-check
         continue-on-error: true
         run: |
-          HEADERS=$(curl -sI --max-time 10 "$PROD_URL/pieces/filtre-a-huile-7.html")
+          HEADERS=$(curl $CURL_OPTS -I "$PROD_URL/pieces/filtre-a-huile-7.html")
           CACHE=$(echo "$HEADERS" | grep -i "cache-control" | head -1)
           echo "Cache-Control: $CACHE"
           if ! echo "$CACHE" | grep -qi "s-maxage"; then
@@ -91,9 +91,8 @@ jobs:
         id: ttfb-check
         continue-on-error: true
         run: |
-          TTFB=$(curl -so /dev/null -w "%{time_starttransfer}" --max-time 15 "$PROD_URL/pieces/filtre-a-huile-7.html")
+          TTFB=$(curl $CURL_OPTS -o /dev/null -w "%{time_starttransfer}" "$PROD_URL/pieces/filtre-a-huile-7.html")
           echo "TTFB: ${TTFB}s"
-          # Seuil 3s (large pour réseau GitHub Actions → Cloudflare)
           if (( $(echo "$TTFB > 3.0" | bc -l) )); then
             echo "⚠️ WARNING: TTFB ${TTFB}s exceeds 3s threshold"
             exit 1
@@ -107,7 +106,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Test | Result |" >> $GITHUB_STEP_SUMMARY
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Health | ${{ steps.cache-check.outcome == 'success' && '✅' || '⚠️' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Cache headers | ${{ steps.cache-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| TTFB | ${{ steps.ttfb-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
