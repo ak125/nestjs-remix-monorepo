@@ -284,6 +284,15 @@ export class AdminContentRefreshController {
     return this.contentRefreshService.getActivityTimeline(limit);
   }
 
+  /**
+   * GET /api/admin/content-refresh/rag-coverage-summary
+   * Aggregated RAG coverage metrics (gammes, web content, R3/R6, ingest jobs).
+   */
+  @Get('rag-coverage-summary')
+  async getRagCoverageSummary() {
+    return this.contentRefreshService.getRagCoverageSummary();
+  }
+
   // ── Quality Scoring V2 ──
 
   /**

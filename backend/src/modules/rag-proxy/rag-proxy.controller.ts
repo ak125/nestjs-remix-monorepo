@@ -19,6 +19,7 @@ import type { Response } from 'express';
 import { RagProxyService } from './rag-proxy.service';
 import { RagCleanupService } from './services/rag-cleanup.service';
 import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
+import { RagIngestionService } from './services/rag-ingestion.service';
 import type { RagDocInput, IngestDecision } from './types/rag-ingest.types';
 import {
   ChatRequestSchema,
@@ -54,6 +55,7 @@ export class RagProxyController {
     private readonly ragProxyService: RagProxyService,
     private readonly ragCleanupService: RagCleanupService,
     private readonly ragWebIngestDbService: RagWebIngestDbService,
+    private readonly ragIngestionService: RagIngestionService,
   ) {}
 
   @Post('chat')
@@ -265,6 +267,27 @@ export class RagProxyController {
       url: existing.url,
       truthLevel: existing.truth_level,
     });
+  }
+
+  /** List quarantined files with reason metadata. */
+  @Get('admin/quarantine')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'List quarantined RAG files with reasons' })
+  @ApiResponse({ status: 200, description: 'List of quarantined files' })
+  async listQuarantinedFiles() {
+    return this.ragIngestionService.listQuarantinedFiles();
+  }
+
+  /** Retry a quarantined file: move back, re-validate. */
+  @Post('admin/quarantine/:filename/retry')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({
+    summary: 'Retry a quarantined file (move back + re-validate)',
+  })
+  @ApiResponse({ status: 200, description: 'Retry result' })
+  async retryQuarantinedFile(@Param('filename') filename: string) {
+    return this.ragIngestionService.retryQuarantinedFile(filename);
   }
 
   /** List all RAG knowledge images (admin only). */

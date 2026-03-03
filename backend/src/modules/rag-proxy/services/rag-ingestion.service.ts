@@ -21,6 +21,7 @@ import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagGammeDetectionService } from './rag-gamme-detection.service';
 import { RagCleanupService } from './rag-cleanup.service';
 import { RagWebIngestDbService } from './rag-web-ingest-db.service';
+import { classifyIngestError, ERROR_LABELS } from '../types/web-ingest-errors';
 
 @Injectable()
 export class RagIngestionService implements OnModuleDestroy {
@@ -36,14 +37,29 @@ export class RagIngestionService implements OnModuleDestroy {
   /** Atomic lock: only one web ingest at a time (single-process guard). */
   private activeWebIngestJobId: string | null = null;
 
+  /** In-memory queue for web ingest requests when lock is held. */
+  private readonly pendingWebIngests: Array<{
+    url: string;
+    truthLevel: string;
+    jobId: string;
+  }> = [];
+  private pendingDrainTimer: ReturnType<typeof setTimeout> | null = null;
+  private static readonly MAX_PENDING = 10;
+  private static readonly DRAIN_INTERVAL_MS = 30_000; // retry every 30s
+
   onModuleDestroy() {
     const count = this.activePollTimers.size;
     for (const timer of this.activePollTimers) {
       clearInterval(timer);
     }
     this.activePollTimers.clear();
+    if (this.pendingDrainTimer) {
+      clearTimeout(this.pendingDrainTimer);
+      this.pendingDrainTimer = null;
+    }
     this.logger.log(
-      `RagIngestionService destroyed, cleared ${count} poll timers`,
+      `RagIngestionService destroyed, cleared ${count} poll timers, ` +
+        `${this.pendingWebIngests.length} pending ingests dropped`,
     );
   }
 
@@ -251,17 +267,36 @@ export class RagIngestionService implements OnModuleDestroy {
     const truthLevel = request.truthLevel || 'L3';
 
     // Prevent concurrent web ingestions (atomic in-process lock + Redis fallback)
-    if (this.activeWebIngestJobId) {
-      throw new ConflictException(
-        `Web ingest already running: ${this.activeWebIngestJobId}`,
-      );
-    }
     const allJobs = await this.ragRedisJobService.getAllJobs();
     const runningJob = allJobs.find((j) => j.status === 'running');
-    if (runningJob) {
-      throw new ConflictException(
-        `Web ingest already running: ${runningJob.jobId} (${runningJob.url})`,
+
+    if (this.activeWebIngestJobId || runningJob) {
+      // Queue instead of rejecting — will drain when lock is released
+      if (this.pendingWebIngests.length >= RagIngestionService.MAX_PENDING) {
+        throw new ConflictException(
+          `Web ingest queue full (${RagIngestionService.MAX_PENDING} pending). Try again later.`,
+        );
+      }
+      this.pendingWebIngests.push({ url, truthLevel, jobId });
+      this.scheduleDrain();
+      const job: WebJob = {
+        jobId,
+        url,
+        status: 'queued',
+        truthLevel,
+        startedAt: Math.floor(Date.now() / 1000),
+        finishedAt: null,
+        returnCode: null,
+        logLines: [
+          `Queued behind ${this.activeWebIngestJobId || runningJob?.jobId}`,
+        ],
+      };
+      await this.ragRedisJobService.setJob(job);
+      void this.ragWebIngestDbService.upsertJob(job);
+      this.logger.log(
+        `Web ingest queued: ${jobId} for ${url} (behind ${this.activeWebIngestJobId || runningJob?.jobId})`,
       );
+      return { jobId, status: 'queued' };
     }
     this.activeWebIngestJobId = jobId;
 
@@ -283,9 +318,11 @@ export class RagIngestionService implements OnModuleDestroy {
     this.processWebIngest(job)
       .then(() => {
         this.activeWebIngestJobId = null;
+        this.drainPendingQueue();
       })
       .catch(async (err) => {
         this.activeWebIngestJobId = null;
+        this.drainPendingQueue();
         job.status = 'failed';
         job.finishedAt = Math.floor(Date.now() / 1000);
         job.returnCode = 1;
@@ -333,18 +370,10 @@ export class RagIngestionService implements OnModuleDestroy {
     try {
       await this.execDockerCmd(containerName, ingestCmd, job);
     } catch (err) {
-      const lastLogs = job.logLines.slice(-5).join(' ').toLowerCase();
-      const label = lastLogs.includes('no sections')
-        ? 'Step 1: No sections extracted from URL'
-        : lastLogs.includes('timed out')
-          ? 'Step 1: URL fetch timed out (site unreachable)'
-          : lastLogs.includes('connectionerror') ||
-              lastLogs.includes('httperror') ||
-              lastLogs.includes('urlopen error') ||
-              lastLogs.includes('fetch failed')
-            ? 'Step 1: URL fetch failed (network/HTTP error)'
-            : `Step 1: ingest_web.py script error`;
-      throw new Error(`${label} — ${getErrorMessage(err)}`);
+      const code = classifyIngestError(1, job.logLines);
+      throw new Error(
+        `Step 1: ${ERROR_LABELS[code]} — ${getErrorMessage(err)}`,
+      );
     }
     await this.ragRedisJobService.setJob(job); // persist after ingest step
 
@@ -414,11 +443,10 @@ export class RagIngestionService implements OnModuleDestroy {
     try {
       await this.execDockerCmd(containerName, reindexCmd, job);
     } catch (err) {
-      const lastLogs = job.logLines.slice(-3).join(' ');
-      const label = lastLogs.includes('global lock')
-        ? 'Step 4: Flock contention — another RAG operation already running'
-        : 'Step 4: Reindex failed';
-      throw new Error(`${label} — ${getErrorMessage(err)}`);
+      const code = classifyIngestError(4, job.logLines);
+      throw new Error(
+        `Step 4: ${ERROR_LABELS[code]} — ${getErrorMessage(err)}`,
+      );
     }
 
     // Step 5: Cleanup container temp
@@ -639,5 +667,176 @@ export class RagIngestionService implements OnModuleDestroy {
 
   private sanitizeFileName(fileName: string): string {
     return fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
+  }
+
+  // ── Quarantine management ──
+
+  /**
+   * List all quarantined files with their REASON.log metadata.
+   */
+  async listQuarantinedFiles(): Promise<{
+    files: Array<{
+      filename: string;
+      originalPath: string;
+      reason: string;
+      details: string;
+      quarantinedAt: string;
+    }>;
+    count: number;
+  }> {
+    const knowledgePath =
+      this.configService.get('RAG_KNOWLEDGE_PATH') ||
+      '/opt/automecanik/rag/knowledge';
+    const quarantineDir = path.join(knowledgePath, '_quarantine');
+
+    const {
+      existsSync: exists,
+      readdirSync: readdir,
+      readFileSync,
+    } = await import('node:fs');
+
+    if (!exists(quarantineDir)) {
+      return { files: [], count: 0 };
+    }
+
+    const reasonFiles = readdir(quarantineDir).filter((f: string) =>
+      f.endsWith('.REASON.log'),
+    );
+
+    const files = reasonFiles.map((reasonFile: string) => {
+      const content = readFileSync(
+        path.join(quarantineDir, reasonFile),
+        'utf-8',
+      );
+      const lines = content.split('\n');
+      const get = (prefix: string) =>
+        lines
+          .find((l: string) => l.startsWith(prefix))
+          ?.slice(prefix.length)
+          .trim() ?? '';
+
+      return {
+        filename: reasonFile.replace('.REASON.log', ''),
+        originalPath: get('original_path:'),
+        reason: get('reason:'),
+        details: get('details:'),
+        quarantinedAt: get('quarantined_at:'),
+      };
+    });
+
+    return { files, count: files.length };
+  }
+
+  /**
+   * Retry a quarantined file: move back to original path, re-validate.
+   */
+  async retryQuarantinedFile(
+    filename: string,
+  ): Promise<{ success: boolean; message: string }> {
+    const knowledgePath =
+      this.configService.get('RAG_KNOWLEDGE_PATH') ||
+      '/opt/automecanik/rag/knowledge';
+    const quarantineDir = path.join(knowledgePath, '_quarantine');
+
+    const {
+      existsSync: exists,
+      readFileSync,
+      renameSync,
+      unlinkSync,
+    } = await import('node:fs');
+
+    const qFilePath = path.join(quarantineDir, filename);
+    const reasonPath = `${qFilePath}.REASON.log`;
+
+    if (!exists(qFilePath)) {
+      return { success: false, message: `File not found: ${filename}` };
+    }
+
+    // Read original path from REASON.log
+    let originalPath = '';
+    if (exists(reasonPath)) {
+      const content = readFileSync(reasonPath, 'utf-8');
+      const line = content
+        .split('\n')
+        .find((l: string) => l.startsWith('original_path:'));
+      originalPath = line?.slice('original_path:'.length).trim() ?? '';
+    }
+
+    if (!originalPath) {
+      return {
+        success: false,
+        message: `Cannot determine original path for ${filename}`,
+      };
+    }
+
+    const targetPath = path.join(knowledgePath, originalPath);
+
+    // Move file back to original location
+    renameSync(qFilePath, targetPath);
+    if (exists(reasonPath)) unlinkSync(reasonPath);
+
+    // Re-validate
+    const subDir = path.dirname(originalPath);
+    const validation = this.frontmatterValidator.validateIntakeZone(
+      knowledgePath,
+      subDir,
+    );
+
+    const wasQuarantined = validation.quarantined.some(
+      (q) => q.originalPath === originalPath,
+    );
+
+    if (wasQuarantined) {
+      return {
+        success: false,
+        message: `File re-quarantined after retry: ${validation.quarantined.find((q) => q.originalPath === originalPath)?.reason ?? 'unknown'}`,
+      };
+    }
+
+    this.logger.log(
+      `Quarantine retry successful for ${filename} → ${originalPath}`,
+    );
+    return {
+      success: true,
+      message: `File restored to ${originalPath} and passed validation`,
+    };
+  }
+
+  // ── Pending queue drain ──
+
+  /**
+   * Schedule a drain attempt if not already scheduled.
+   */
+  private scheduleDrain(): void {
+    if (this.pendingDrainTimer) return;
+    this.pendingDrainTimer = setTimeout(() => {
+      this.pendingDrainTimer = null;
+      this.drainPendingQueue();
+    }, RagIngestionService.DRAIN_INTERVAL_MS);
+  }
+
+  /**
+   * Drain the next pending web ingest if the lock is free.
+   */
+  private drainPendingQueue(): void {
+    if (this.activeWebIngestJobId || this.pendingWebIngests.length === 0)
+      return;
+
+    const next = this.pendingWebIngests.shift();
+    if (!next) return;
+
+    this.logger.log(
+      `Draining pending web ingest: ${next.jobId} for ${next.url}`,
+    );
+
+    // Fire-and-forget: call ingestWebUrl which will acquire the lock
+    void this.ingestWebUrl({
+      url: next.url,
+      truthLevel: next.truthLevel,
+    }).catch((err) => {
+      this.logger.error(
+        `Failed to drain pending ingest ${next.jobId}: ${getErrorMessage(err)}`,
+      );
+    });
   }
 }

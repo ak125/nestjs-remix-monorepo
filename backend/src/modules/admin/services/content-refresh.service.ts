@@ -47,6 +47,11 @@ export class ContentRefreshService extends SupabaseBaseService {
       this.logger.warn(
         `Ingestion completed (${event.jobId}) but no affected gammes detected`,
       );
+      // Persist orphan record for admin visibility
+      const validFiles = event.validationSummary?.validFiles ?? 0;
+      if (validFiles > 0) {
+        await this.logOrphanIngestion(event);
+      }
       return;
     }
 
@@ -78,6 +83,33 @@ export class ContentRefreshService extends SupabaseBaseService {
           `rag_${event.source}_ingest`,
         );
       }
+    }
+  }
+
+  /**
+   * Write an orphan record when ingestion succeeds but no gammes are detected.
+   * Makes "lost" ingestions visible in the admin dashboard.
+   */
+  private async logOrphanIngestion(
+    event: RagIngestionCompletedEvent,
+  ): Promise<void> {
+    try {
+      await this.supabase.from('__rag_content_refresh_log').insert({
+        pg_alias: '__orphan__',
+        page_type: 'R3_conseils',
+        status: 'orphan_no_gamme',
+        trigger_source: `rag_${event.source}_ingest`,
+        trigger_job_id: event.jobId,
+        error_message: `Ingestion OK (${event.validationSummary?.validFiles} valid files) but 0 gammes detected. Quarantined: ${event.validationSummary?.quarantinedFiles ?? 0}`,
+        quality_score: 0,
+      });
+      this.logger.warn(
+        `Orphan ingestion logged: jobId=${event.jobId}, validFiles=${event.validationSummary?.validFiles}`,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Failed to log orphan ingestion: ${(err as Error).message}`,
+      );
     }
   }
 
@@ -1132,6 +1164,18 @@ export class ContentRefreshService extends SupabaseBaseService {
    * pieces_gamme, __seo_gamme, __seo_gamme_purchase_guide,
    * __seo_gamme_conseil, and __rag_knowledge.
    */
+  async getRagCoverageSummary(): Promise<{
+    success: boolean;
+    data: Record<string, unknown>;
+  }> {
+    const { data, error } = await this.supabase.rpc('get_rag_coverage_summary');
+    if (error) {
+      this.logger.error(`RAG coverage summary failed: ${error.message}`);
+      return { success: false, data: {} };
+    }
+    return { success: true, data: data as Record<string, unknown> };
+  }
+
   async getCoverageMap(): Promise<{
     gammes: Array<{
       pg_id: number;
