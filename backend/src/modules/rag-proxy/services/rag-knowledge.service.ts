@@ -426,4 +426,71 @@ export class RagKnowledgeService {
       };
     }
   }
+
+  /**
+   * Persist gamme→file mapping in __rag_knowledge.gamme_aliases.
+   * Called after ingestion when affectedGammesMap is computed.
+   */
+  async persistGammeAliases(
+    affectedGammesMap: Record<string, string[]>,
+    knowledgeRoot = '/opt/automecanik/rag/knowledge',
+  ): Promise<number> {
+    let updated = 0;
+    for (const [pgAlias, filePaths] of Object.entries(affectedGammesMap)) {
+      const sourcePrefixes = [
+        ...new Set(
+          filePaths.map((fp) =>
+            fp.replace(knowledgeRoot + '/', '').replace(/-s\d+\.md$/, ''),
+          ),
+        ),
+      ];
+      for (const prefix of sourcePrefixes) {
+        const { error } = await this.ragCleanupService.client.rpc(
+          'append_gamme_alias',
+          { p_source_prefix: prefix, p_alias: pgAlias },
+        );
+        if (error) {
+          this.logger.warn(
+            `Failed to persist gamme alias ${pgAlias} for ${prefix}: ${error.message}`,
+          );
+        } else {
+          updated++;
+        }
+      }
+    }
+    return updated;
+  }
+
+  /**
+   * Get supplementary file paths for a gamme from DB (replaces Weaviate search).
+   */
+  async getSupplementaryFilesForGamme(
+    pgAlias: string,
+    knowledgeRoot = '/opt/automecanik/rag/knowledge',
+  ): Promise<string[]> {
+    const { data, error } = await this.ragCleanupService.client
+      .from('__rag_knowledge')
+      .select('source')
+      .contains('gamme_aliases', [pgAlias])
+      .eq('status', 'active')
+      .not('source', 'like', 'gammes/%');
+
+    if (error || !data || data.length === 0) return [];
+
+    const { existsSync, readdirSync } = await import('node:fs');
+    const { join, dirname, basename } = await import('node:path');
+
+    const files: string[] = [];
+    for (const row of data) {
+      const dir = join(knowledgeRoot, dirname(row.source));
+      const base = basename(row.source);
+      if (existsSync(dir)) {
+        const matches = readdirSync(dir).filter((f: string) =>
+          f.startsWith(base),
+        );
+        files.push(...matches.map((f: string) => join(dir, f)));
+      }
+    }
+    return files;
+  }
 }

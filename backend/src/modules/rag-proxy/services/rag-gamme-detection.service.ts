@@ -409,6 +409,22 @@ export class RagGammeDetectionService {
     const affectedGammes = Array.from(affectedGammesMap.keys());
     const affectedDiagnostics = this.detectAffectedDiagnostics();
 
+    // Persist gamme→file mapping in __rag_knowledge.gamme_aliases (for DB-based discovery)
+    if (affectedGammes.length > 0) {
+      try {
+        const persisted = await this.ragKnowledgeService.persistGammeAliases(
+          Object.fromEntries(affectedGammesMap),
+        );
+        this.logger.log(
+          `[emitIngestionCompleted] Persisted ${persisted} gamme alias(es) in __rag_knowledge`,
+        );
+      } catch (err) {
+        this.logger.warn(
+          `[emitIngestionCompleted] Failed to persist gamme aliases: ${(err as Error).message}`,
+        );
+      }
+    }
+
     // Debug: trace resolution path
     this.logger.log(
       `[emitIngestionCompleted] jobId=${jobId}, source=${source}, ` +

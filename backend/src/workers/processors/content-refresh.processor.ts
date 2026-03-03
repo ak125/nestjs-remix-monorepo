@@ -14,7 +14,7 @@ import { DiagnosticService } from '../../modules/seo/services/diagnostic.service
 import { BriefGatesService } from '../../modules/admin/services/brief-gates.service';
 import { HardGatesService } from '../../modules/admin/services/hard-gates.service';
 import { ImageGatesService } from '../../modules/admin/services/image-gates.service';
-import { RagProxyService } from '../../modules/rag-proxy/rag-proxy.service';
+import { RagKnowledgeService } from '../../modules/rag-proxy/services/rag-knowledge.service';
 import { SectionCompilerService } from '../../modules/admin/services/section-compiler.service';
 import { RagSafeDistillService } from '../../modules/admin/services/rag-safe-distill.service';
 import {
@@ -58,11 +58,11 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly hardGatesService: HardGatesService,
     private readonly imageGatesService: ImageGatesService,
     private readonly sectionCompiler: SectionCompilerService,
-    private readonly ragProxyService: RagProxyService,
     private readonly flags: FeatureFlagsService,
     private readonly jobHealth: AdminJobHealthService,
     private readonly ragSafeDistill: RagSafeDistillService,
     private readonly chainPoller: PipelineChainPollerService,
+    private readonly ragKnowledgeService: RagKnowledgeService,
   ) {
     super(configService);
   }
@@ -169,14 +169,15 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       let evidencePack: EvidenceEntry[] | null = null;
       let enricherClaims: ClaimEntry[] = [];
 
-      // Auto-discover supplementary docs from Weaviate when none provided
+      // Auto-discover supplementary docs from DB (gamme_aliases in __rag_knowledge)
       if (supplementaryFiles.length === 0 && pgAlias) {
-        const discovered = await this.discoverSupplementaryFromWeaviate(
-          pgAlias,
-          ctx,
-        );
+        const discovered =
+          await this.ragKnowledgeService.getSupplementaryFilesForGamme(pgAlias);
         if (discovered.length > 0) {
           supplementaryFiles.push(...discovered);
+          this.logger.log(
+            `${ctx} DB discovery for ${pgAlias}: ${discovered.length} supplementary docs found`,
+          );
         }
       }
 
@@ -1676,87 +1677,6 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
   }
 
   // ── Weaviate auto-discovery ──
-
-  /**
-   * Auto-discover supplementary docs from Weaviate for a specific gamme.
-   * Searches across web/, web-catalog/, vehicle/, guides/, reference/ docs.
-   * Returns resolved file paths on the host filesystem.
-   */
-  private async discoverSupplementaryFromWeaviate(
-    pgAlias: string,
-    ctx: string = '',
-  ): Promise<string[]> {
-    const knowledgePath =
-      process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
-
-    try {
-      const query = pgAlias
-        .replace(/-/g, ' ')
-        .replace(/ d /g, " d'")
-        .replace(/ l /g, " l'");
-
-      const searchResult = await this.ragProxyService.search({
-        query,
-        limit: 8,
-        filters: { truth_levels: ['L1', 'L2'] },
-      });
-
-      if (!searchResult?.results?.length) return [];
-
-      // Exclude gammes/ (already read by enricher) and pdf:// (unresolvable)
-      const candidates = searchResult.results.filter((r) => {
-        const sp = r.sourcePath || '';
-        return sp && !sp.startsWith('gammes/') && !sp.startsWith('pdf://');
-      });
-
-      if (candidates.length === 0) return [];
-
-      const searchDirs = [
-        'web',
-        'web-catalog',
-        'vehicle',
-        'guides',
-        'reference',
-        'catalog',
-      ];
-      const filePaths: string[] = [];
-
-      for (const doc of candidates) {
-        const sp = doc.sourcePath || '';
-
-        // Case 1: source_path with slash → direct relative path
-        if (sp.includes('/')) {
-          const fullPath = join(knowledgePath, sp);
-          if (existsSync(fullPath)) {
-            filePaths.push(fullPath);
-          }
-          continue;
-        }
-
-        // Case 2: filename only → search across subdirectories
-        for (const subDir of searchDirs) {
-          const fullPath = join(knowledgePath, subDir, sp);
-          if (existsSync(fullPath)) {
-            filePaths.push(fullPath);
-            break;
-          }
-        }
-      }
-
-      if (filePaths.length > 0) {
-        this.logger.log(
-          `${ctx} Weaviate discovery for ${pgAlias}: ${filePaths.length} supplementary docs found`,
-        );
-      }
-
-      return filePaths;
-    } catch (err) {
-      this.logger.warn(
-        `${ctx} Weaviate discovery failed for ${pgAlias}: ${(err as Error).message}`,
-      );
-      return [];
-    }
-  }
 
   // ── Content I/O ──
 
