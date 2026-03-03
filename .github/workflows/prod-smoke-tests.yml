@@ -1,0 +1,134 @@
+name: 🩺 PROD Smoke Tests
+
+on:
+  schedule:
+    # Toutes les 6 heures (00:00, 06:00, 12:00, 18:00 UTC)
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+env:
+  PROD_URL: https://www.automecanik.com
+  IMGPROXY_TEST_IMAGE: https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/260/6216001.JPG
+
+jobs:
+  smoke-tests:
+    name: 🩺 Production Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 🏥 Health endpoint
+        run: |
+          RESPONSE=$(curl -sf --max-time 10 "$PROD_URL/health" 2>&1)
+          if ! echo "$RESPONSE" | grep -q '"status":"ok"'; then
+            echo "❌ Health check failed"
+            echo "Response: $RESPONSE"
+            exit 1
+          fi
+          echo "✅ Health: OK"
+
+      - name: 🌐 Homepage
+        run: |
+          STATUS=$(curl -so /dev/null -w "%{http_code}" --max-time 15 "$PROD_URL/")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Homepage returned HTTP $STATUS"
+            exit 1
+          fi
+          # Vérifier que le HTML contient un <title> non vide
+          TITLE=$(curl -sf --max-time 15 "$PROD_URL/" | grep -oP '<title>\K[^<]+' | head -1)
+          if [ -z "$TITLE" ]; then
+            echo "❌ Homepage has empty <title>"
+            exit 1
+          fi
+          echo "✅ Homepage: HTTP 200, title='$TITLE'"
+
+      - name: 📦 Product page (filtre-a-huile)
+        run: |
+          STATUS=$(curl -so /dev/null -w "%{http_code}" --max-time 15 "$PROD_URL/pieces/filtre-a-huile-7.html")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Product page returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ Product page: HTTP 200"
+
+      - name: 🔌 API catalog
+        run: |
+          RESPONSE=$(curl -sf --max-time 10 "$PROD_URL/api/catalog/families" 2>&1)
+          if [ $? -ne 0 ]; then
+            echo "❌ API catalog failed"
+            exit 1
+          fi
+          COUNT=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('data',d.get('families',[]))))" 2>/dev/null || echo "0")
+          if [ "$COUNT" -lt 10 ]; then
+            echo "❌ API catalog returned only $COUNT families (expected 200+)"
+            exit 1
+          fi
+          echo "✅ API catalog: $COUNT families"
+
+      - name: 🖼️ imgproxy AVIF
+        run: |
+          STATUS=$(curl -so /dev/null -w "%{http_code}" --max-time 15 "$PROD_URL/imgproxy/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@avif")
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ imgproxy AVIF returned HTTP $STATUS"
+            exit 1
+          fi
+          echo "✅ imgproxy AVIF: HTTP 200"
+
+      - name: 📊 Cache headers
+        id: cache-check
+        continue-on-error: true
+        run: |
+          HEADERS=$(curl -sI --max-time 10 "$PROD_URL/pieces/filtre-a-huile-7.html")
+          CACHE=$(echo "$HEADERS" | grep -i "cache-control" | head -1)
+          echo "Cache-Control: $CACHE"
+          if ! echo "$CACHE" | grep -qi "s-maxage"; then
+            echo "⚠️ WARNING: s-maxage missing from Cache-Control"
+            exit 1
+          fi
+          echo "✅ Cache headers: s-maxage present"
+
+      - name: ⏱️ TTFB check
+        id: ttfb-check
+        continue-on-error: true
+        run: |
+          TTFB=$(curl -so /dev/null -w "%{time_starttransfer}" --max-time 15 "$PROD_URL/pieces/filtre-a-huile-7.html")
+          echo "TTFB: ${TTFB}s"
+          # Seuil 3s (large pour réseau GitHub Actions → Cloudflare)
+          if (( $(echo "$TTFB > 3.0" | bc -l) )); then
+            echo "⚠️ WARNING: TTFB ${TTFB}s exceeds 3s threshold"
+            exit 1
+          fi
+          echo "✅ TTFB: ${TTFB}s (< 3s)"
+
+      - name: 📋 Summary
+        if: always()
+        run: |
+          echo "## 🩺 PROD Smoke Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Health | ${{ steps.cache-check.outcome == 'success' && '✅' || '⚠️' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cache headers | ${{ steps.cache-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| TTFB | ${{ steps.ttfb-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "_Run: $(date -u '+%Y-%m-%d %H:%M UTC')_" >> $GITHUB_STEP_SUMMARY
+
+      - name: 🔔 Notify Slack on failure
+        if: ${{ failure() && env.SLACK_WEBHOOK_URL != '' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"text\": \"🚨 PROD Smoke Test FAILED\",
+              \"blocks\": [
+                {
+                  \"type\": \"section\",
+                  \"text\": {
+                    \"type\": \"mrkdwn\",
+                    \"text\": \"🚨 *PROD Smoke Test FAILED*\n*Time:* $(date -u '+%Y-%m-%d %H:%M UTC')\n<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Details>\"
+                  }
+                }
+              ]
+            }"
