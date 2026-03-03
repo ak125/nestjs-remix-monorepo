@@ -21,7 +21,7 @@ import {
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
 } from "@remix-run/react";
-import { ArrowLeft, Tag, BookOpen } from "lucide-react";
+import { ArrowLeft, Tag, BookOpen, ExternalLink } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef } from "react";
 
 // Components
@@ -95,6 +95,7 @@ function toConseil(s: R3GuideSection): GammeConseil {
     qualityScore: s.qualityScore,
     sources: s.sources,
     anchor: s.anchor,
+    image: s.image ?? null,
   };
 }
 
@@ -491,6 +492,23 @@ export default function R3GuidePage() {
                   {sourceType === "conseil" && metaSections.length > 0 && (
                     <MetaLinksSection sections={metaSections.map(toConseil)} />
                   )}
+
+                  {/* Cross-link R6 guide d'achat */}
+                  <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 mb-8">
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      <p className="text-sm text-gray-700">
+                        Choisir la bonne piece ?{" "}
+                        <Link
+                          to={`/blog-pieces-auto/guide-achat/${pg_alias}`}
+                          className="font-medium text-emerald-600 hover:text-emerald-800 underline"
+                          rel="noopener"
+                        >
+                          Consultez le guide d&apos;achat {page.title}
+                        </Link>
+                      </p>
+                    </div>
+                  </div>
 
                   {/* Actions (partager + enregistrer) */}
                   <ArticleActionsBar

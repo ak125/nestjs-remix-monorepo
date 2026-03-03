@@ -1,14 +1,16 @@
 /**
- * Route R6 : /blog-pieces-auto/guide-achat/:pg_alias
+ * Route R6 V2 : /blog-pieces-auto/guide-achat/:pg_alias
  * Single-endpoint "page engine" — 1 fetch to GET /api/r6-guide/:pg_alias
  *
- * Role SEO : R6_GUIDE_ACHAT
+ * Role SEO : R6_GUIDE_ACHAT (Buying Guide)
  * Intention : Choisir la bonne piece
+ *
+ * INTERDIT : redirect 301. Toujours 404 noindex si mismatch.
+ * Dual-mode : V1 legacy rendering OU V2 buying-guide sections.
  */
 
 import {
   json,
-  redirect,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -31,11 +33,22 @@ import {
   Heart,
   Star,
   CheckCircle2,
+  ExternalLink,
 } from "lucide-react";
 
-// Components
+// V2 components
+
+// Existing shared components
 import { ArticleActionsBar } from "~/components/blog/ArticleActionsBar";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
+import {
+  R6HeroDecisionSection,
+  R6QualityTiersTable,
+  R6CompatibilityChecklist,
+  R6PriceGuide,
+  R6BrandsGuide,
+  R6WhenPro,
+} from "~/components/blog/guide-achat";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { TableOfContents } from "~/components/blog/TableOfContents";
 import { Error404 } from "~/components/errors/Error404";
@@ -69,13 +82,13 @@ export const handle = {
   }),
 };
 
-// ── Loader ──────────────────────────────────────────────
+// ── Loader (NO 301 — always 404 noindex on failure) ─────
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
 
   if (!pg_alias) {
-    return redirect("/blog-pieces-auto", 301);
+    throw json({ message: "Alias manquant" }, { status: 404 });
   }
 
   const controller = new AbortController();
@@ -90,17 +103,28 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      if (response.status === 404) {
-        return redirect("/blog-pieces-auto", 301);
-      }
-      throw new Error(`R6 guide endpoint returned ${response.status}`);
+      throw json(
+        { message: `Guide "${pg_alias}" non trouve` },
+        { status: 404 },
+      );
     }
 
     const result = await response.json();
     const guide = result?.data as R6GuidePayload | null;
 
     if (!guide) {
-      return redirect("/blog-pieces-auto", 301);
+      throw json(
+        { message: `Guide "${pg_alias}" non disponible` },
+        { status: 404 },
+      );
+    }
+
+    // Intent check: if API says this is not R6, return 404 noindex
+    if (guide.intentType && guide.intentType !== "R6") {
+      throw json(
+        { message: `Contenu non-R6 pour "${pg_alias}"` },
+        { status: 404 },
+      );
     }
 
     return json({ guide, pg_alias });
@@ -108,7 +132,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
     logger.error(`[R6 Guide] Error loading guide for: ${pg_alias}`, error);
-    return redirect("/blog-pieces-auto", 302);
+    throw json(
+      { message: `Erreur chargement guide "${pg_alias}"` },
+      { status: 500 },
+    );
   }
 }
 
@@ -127,13 +154,13 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   return defaultShouldRevalidate;
 };
 
-// ── Meta ────────────────────────────────────────────────
+// ── Meta (noindex if no data) ───────────────────────────
 
 export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   if (!data) {
     return [
       { title: "Guide non trouve" },
-      { name: "robots", content: "noindex" },
+      { name: "robots", content: "noindex, nofollow" },
     ];
   }
 
@@ -194,50 +221,114 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   return result;
 };
 
-// ── Argument icon mapper ────────────────────────────────
+// ── Argument icon mapper (V1) ───────────────────────────
 
 const ARG_ICONS = [Shield, Zap, Heart, Star];
 
-// ── TOC sections builder ────────────────────────────────
+// ── TOC sections builder (dual V1/V2) ───────────────────
 
 function buildTocSections(guide: R6GuidePayload) {
   const sections: Array<{ level: 2 | 3; title: string; anchor: string }> = [];
 
-  if (guide.risk.explanation) {
+  if (guide.roleVersion === "v2") {
+    if (guide.heroDecision) {
+      sections.push({
+        level: 2,
+        title: "Decision d'achat",
+        anchor: "decision-achat",
+      });
+    }
+    if (guide.summaryPickFast && guide.summaryPickFast.length > 0) {
+      sections.push({
+        level: 2,
+        title: "Comment choisir",
+        anchor: "quiz-assistant",
+      });
+    }
+    if (guide.qualityTiers && guide.qualityTiers.length > 0) {
+      sections.push({
+        level: 2,
+        title: "Niveaux de qualite",
+        anchor: "niveaux-qualite",
+      });
+    }
+    if (guide.compatibilityAxes && guide.compatibilityAxes.length > 0) {
+      sections.push({
+        level: 2,
+        title: "Compatibilite",
+        anchor: "compatibilite",
+      });
+    }
+    if (guide.priceGuide) {
+      sections.push({
+        level: 2,
+        title: "Guide des prix",
+        anchor: "guide-prix",
+      });
+    }
+    if (guide.brandsGuide) {
+      sections.push({
+        level: 2,
+        title: "Guide des marques",
+        anchor: "guide-marques",
+      });
+    }
+    if (guide.pitfalls && guide.pitfalls.length > 0) {
+      sections.push({
+        level: 2,
+        title: "Pieges a eviter",
+        anchor: "pieges-eviter",
+      });
+    }
+    if (guide.whenPro && guide.whenPro.length > 0) {
+      sections.push({
+        level: 2,
+        title: "Quand faire appel a un pro",
+        anchor: "quand-pro",
+      });
+    }
+    if (guide.faq.length > 0) {
+      sections.push({ level: 2, title: "FAQ", anchor: "faq" });
+    }
+    return sections;
+  }
+
+  // V1 TOC
+  if (guide.risk?.explanation) {
     sections.push({ level: 2, title: "Risques", anchor: "risques" });
   }
-  if (guide.timing.years || guide.timing.km) {
+  if (guide.timing?.years || guide.timing?.km) {
     sections.push({
       level: 2,
       title: "Quand remplacer",
       anchor: "quand-remplacer",
     });
   }
-  if (guide.arguments.length > 0) {
+  if (guide.arguments && guide.arguments.length > 0) {
     sections.push({
       level: 2,
       title: "Pourquoi remplacer",
       anchor: "pourquoi-remplacer",
     });
   }
-  if (guide.decisionTree.length > 0) {
+  if (guide.decisionTree && guide.decisionTree.length > 0) {
     sections.push({
       level: 2,
       title: "Assistant de choix",
       anchor: "quiz-assistant",
     });
   }
-  if (guide.selectionCriteria.length > 0) {
+  if (guide.selectionCriteria && guide.selectionCriteria.length > 0) {
     sections.push({
       level: 2,
       title: "Criteres de selection",
       anchor: "criteres-selection",
     });
   }
-  if (guide.symptoms.length > 0) {
+  if (guide.symptoms && guide.symptoms.length > 0) {
     sections.push({ level: 2, title: "Symptomes", anchor: "symptomes" });
   }
-  if (guide.antiMistakes.length > 0) {
+  if (guide.antiMistakes && guide.antiMistakes.length > 0) {
     sections.push({
       level: 2,
       title: "Erreurs a eviter",
@@ -259,6 +350,7 @@ export default function R6GuidePage() {
   const page = guide.page;
 
   const tocSections = buildTocSections(guide);
+  const isV2 = guide.roleVersion === "v2";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
@@ -282,7 +374,6 @@ export default function R6GuidePage() {
       />
 
       <div className="container mx-auto px-4 max-w-6xl py-8">
-        {/* Back button */}
         <button
           onClick={() => navigate("/blog-pieces-auto")}
           className="mb-6 px-4 py-2 bg-white hover:bg-gray-50 rounded-lg transition-all flex items-center gap-2 border border-gray-200 shadow-sm"
@@ -300,230 +391,40 @@ export default function R6GuidePage() {
             <article className="lg:col-span-3 order-2 lg:order-1">
               <Card className="shadow-xl border-0 overflow-hidden">
                 <CardContent className="p-8 lg:p-12">
-                  {/* A. Risk Section */}
-                  {guide.risk.explanation && (
-                    <section id="risques" className="mb-8">
-                      <div className="rounded-xl border-2 border-red-200 overflow-hidden shadow-lg">
-                        <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-red-600 to-rose-600 text-white">
-                          <div className="p-1.5 bg-white/20 rounded-lg">
-                            <AlertTriangle className="w-6 h-6" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-semibold uppercase tracking-widest text-red-100 mb-0.5">
-                              Attention
-                            </div>
-                            <h2 className="text-xl font-bold leading-tight">
-                              {guide.risk.title}
-                            </h2>
-                          </div>
-                        </div>
-                        <div className="bg-red-50 px-6 py-5">
-                          <HtmlContent
-                            html={annotateGlossaryTerms(guide.risk.explanation)}
-                            className="text-sm text-red-900 leading-relaxed [&_p]:mb-3 [&_strong]:font-bold [&_strong]:text-red-800 [&_a]:text-red-700 [&_a]:underline"
-                            trackLinks={true}
-                          />
-
-                          {guide.risk.consequences.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-4">
-                              {guide.risk.consequences.map((c, i) => (
-                                <Badge
-                                  key={i}
-                                  variant="outline"
-                                  className="bg-red-100 text-red-800 border-red-300 text-xs"
-                                >
-                                  {c}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-
-                          {guide.risk.costRange && (
-                            <p className="mt-3 text-xs text-red-700 font-medium">
-                              Cout moyen : {guide.risk.costRange}
-                            </p>
-                          )}
-
-                          {guide.risk.conclusion && (
-                            <HtmlContent
-                              html={annotateGlossaryTerms(
-                                guide.risk.conclusion,
-                              )}
-                              className="mt-3 text-sm text-red-800 leading-relaxed font-medium [&_strong]:text-red-900"
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </section>
+                  {isV2 ? (
+                    <V2Sections guide={guide} pgAlias={pg_alias} />
+                  ) : (
+                    <V1Sections guide={guide} pgAlias={pg_alias} />
                   )}
 
-                  {/* B. Timing Section */}
-                  {(guide.timing.years || guide.timing.km) && (
-                    <section id="quand-remplacer" className="mb-8">
-                      <div className="rounded-xl border-2 border-amber-200 overflow-hidden shadow-lg">
-                        <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
-                          <div className="p-1.5 bg-white/20 rounded-lg">
-                            <Clock className="w-6 h-6" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-semibold uppercase tracking-widest text-amber-100 mb-0.5">
-                              Periodicite
-                            </div>
-                            <h2 className="text-xl font-bold leading-tight">
-                              {guide.timing.title}
-                            </h2>
-                          </div>
-                        </div>
-                        <div className="bg-amber-50/50 px-6 py-5">
-                          <div className="flex flex-wrap gap-3 mb-3">
-                            {guide.timing.years && (
-                              <Badge
-                                variant="outline"
-                                className="bg-amber-100 text-amber-800 border-amber-300 text-sm px-3 py-1"
-                              >
-                                <Clock className="w-3.5 h-3.5 mr-1.5 inline" />
-                                Tous les {guide.timing.years}
-                              </Badge>
-                            )}
-                            {guide.timing.km && (
-                              <Badge
-                                variant="outline"
-                                className="bg-amber-100 text-amber-800 border-amber-300 text-sm px-3 py-1"
-                              >
-                                Tous les {guide.timing.km}
-                              </Badge>
-                            )}
-                          </div>
-                          {guide.timing.note && (
-                            <HtmlContent
-                              html={annotateGlossaryTerms(guide.timing.note)}
-                              className="text-sm text-gray-700 leading-relaxed [&_p]:mb-3 [&_strong]:font-semibold [&_strong]:text-gray-900"
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </section>
-                  )}
-
-                  {/* C. Arguments */}
-                  {guide.arguments.length > 0 && (
-                    <section id="pourquoi-remplacer" className="mb-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-500">
-                        Pourquoi remplacer votre {page.title.toLowerCase()}
-                      </h2>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {guide.arguments.map((arg, idx) => {
-                          const Icon = ARG_ICONS[idx % ARG_ICONS.length];
-                          return (
-                            <Card
-                              key={idx}
-                              className="border-blue-100 hover:shadow-md transition-shadow"
-                            >
-                              <CardContent className="p-5">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <div className="p-1.5 bg-blue-50 rounded-lg">
-                                    <Icon className="w-4 h-4 text-blue-600" />
-                                  </div>
-                                  <h3 className="font-semibold text-gray-900 text-sm">
-                                    {arg.title}
-                                  </h3>
-                                </div>
-                                <HtmlContent
-                                  html={annotateGlossaryTerms(arg.content)}
-                                  className="text-sm text-gray-600 leading-relaxed [&_strong]:font-semibold [&_strong]:text-gray-800 [&_a]:text-blue-600 [&_a]:underline"
-                                  trackLinks={true}
-                                />
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                      </div>
-                    </section>
-                  )}
-
-                  {/* D. Quiz Assistant (trio gagnant #1) */}
-                  {guide.decisionTree.length > 0 && (
-                    <R6QuizAssistant
-                      nodes={guide.decisionTree}
-                      gammeName={page.title}
-                      pgAlias={pg_alias}
-                      pgId={page.pg_id}
-                    />
-                  )}
-
-                  {/* E. Criteria Table (trio gagnant #2) */}
-                  {guide.selectionCriteria.length > 0 && (
-                    <R6CriteriaTable
-                      criteria={guide.selectionCriteria}
-                      gammeName={page.title}
-                    />
-                  )}
-
-                  {/* F. Symptoms */}
-                  {guide.symptoms.length > 0 && (
-                    <section id="symptomes" className="mb-8">
-                      <div className="rounded-xl border-2 border-orange-200 overflow-hidden shadow-lg">
-                        <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white">
-                          <div className="p-1.5 bg-white/20 rounded-lg">
-                            <AlertTriangle className="w-6 h-6" />
-                          </div>
-                          <div>
-                            <div className="text-xs font-semibold uppercase tracking-widest text-orange-100 mb-0.5">
-                              Signes d&apos;usure
-                            </div>
-                            <h2 className="text-xl font-bold leading-tight">
-                              Symptomes a surveiller
-                            </h2>
-                          </div>
-                        </div>
-                        <div className="bg-orange-50/50 px-6 py-5">
-                          <ul className="space-y-2">
-                            {guide.symptoms.map((s, i) => (
-                              <li key={i} className="flex items-start gap-2">
-                                <CheckCircle2 className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
-                                <span className="text-sm text-gray-700">
-                                  {s}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </section>
-                  )}
-
-                  {/* G. Anti-Mistakes */}
-                  {guide.antiMistakes.length > 0 && (
-                    <section id="erreurs-eviter" className="mb-8">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-red-400">
-                        Erreurs a eviter
-                      </h2>
-                      <div className="flex flex-wrap gap-2">
-                        {guide.antiMistakes.map((m, i) => (
-                          <Badge
-                            key={i}
-                            variant="outline"
-                            className="bg-red-50 text-red-700 border-red-200 px-3 py-1.5 text-sm"
-                          >
-                            <AlertTriangle className="w-3.5 h-3.5 mr-1.5 inline" />
-                            {m}
-                          </Badge>
-                        ))}
-                      </div>
-                    </section>
-                  )}
-
-                  {/* H. FAQ Accordion (trio gagnant #3 - FAQ) */}
+                  {/* FAQ (shared V1/V2) */}
                   {guide.faq.length > 0 && <R6FaqAccordion items={guide.faq} />}
 
-                  {/* I. Sources Block (trio gagnant #3 - E-E-A-T) */}
+                  {/* Cross-link R3 encadre */}
+                  <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4 mb-8">
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                      <p className="text-sm text-gray-700">
+                        Procedure de remplacement ?{" "}
+                        <Link
+                          to={`/blog-pieces-auto/conseils/${pg_alias}`}
+                          className="font-medium text-blue-600 hover:text-blue-800 underline"
+                          rel="noopener"
+                        >
+                          Consultez le guide conseil {page.title}
+                        </Link>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Sources (E-E-A-T) */}
                   <R6SourcesBlock
                     sourceType={guide.sourceType}
                     sourceVerified={guide.sourceVerified}
                     updatedAt={page.updatedAt}
                   />
 
-                  {/* J. Actions (share + save) */}
+                  {/* Actions (share + save) */}
                   <ArticleActionsBar
                     articleId={String(page.pg_id)}
                     articleTitle={page.title}
@@ -536,12 +437,10 @@ export default function R6GuidePage() {
             {/* Sidebar (1/4) — Sticky */}
             <aside className="lg:col-span-1 order-1 lg:order-2">
               <div className="lg:sticky lg:top-20 space-y-6">
-                {/* Table of Contents with scroll-spy */}
                 {tocSections.length > 0 && (
                   <TableOfContents sections={tocSections} />
                 )}
 
-                {/* CTA pièces */}
                 <Card className="border-blue-200 bg-blue-50/50">
                   <div className="p-4">
                     <p className="text-sm font-medium text-gray-900 mb-2">
@@ -554,7 +453,6 @@ export default function R6GuidePage() {
                   </div>
                 </Card>
 
-                {/* Glossaire link */}
                 <Card className="border-indigo-200 bg-indigo-50/50">
                   <div className="p-4">
                     <Link
@@ -586,7 +484,317 @@ export default function R6GuidePage() {
   );
 }
 
-// ── Error Boundary ──────────────────────────────────────
+// ── V2 Sections ─────────────────────────────────────────
+
+function V2Sections({
+  guide,
+  pgAlias,
+}: {
+  guide: R6GuidePayload;
+  pgAlias: string;
+}) {
+  const page = guide.page;
+
+  return (
+    <>
+      {/* 1. Hero Decision */}
+      {guide.heroDecision && (
+        <R6HeroDecisionSection
+          heroDecision={guide.heroDecision}
+          gammeName={page.title}
+          pgAlias={pgAlias}
+          pgId={page.pg_id}
+        />
+      )}
+
+      {/* 2. Summary Pick Fast (quiz) */}
+      {guide.summaryPickFast && guide.summaryPickFast.length > 0 && (
+        <R6QuizAssistant
+          nodes={guide.summaryPickFast}
+          gammeName={page.title}
+          pgAlias={pgAlias}
+          pgId={page.pg_id}
+        />
+      )}
+
+      {/* 3. Quality Tiers */}
+      {guide.qualityTiers && guide.qualityTiers.length > 0 && (
+        <R6QualityTiersTable
+          tiers={guide.qualityTiers}
+          gammeName={page.title}
+        />
+      )}
+
+      {/* 4. Compatibility */}
+      {guide.compatibilityAxes && guide.compatibilityAxes.length > 0 && (
+        <R6CompatibilityChecklist
+          axes={guide.compatibilityAxes}
+          gammeName={page.title}
+        />
+      )}
+
+      {/* 5. Price Guide */}
+      {guide.priceGuide && (
+        <R6PriceGuide priceGuide={guide.priceGuide} gammeName={page.title} />
+      )}
+
+      {/* 6. Brands Guide */}
+      {guide.brandsGuide && (
+        <R6BrandsGuide brandsGuide={guide.brandsGuide} gammeName={page.title} />
+      )}
+
+      {/* 7. Pitfalls */}
+      {guide.pitfalls && guide.pitfalls.length > 0 && (
+        <section id="pieges-eviter" className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-red-400">
+            Pieges a eviter
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {guide.pitfalls.map((m, i) => (
+              <Badge
+                key={i}
+                variant="outline"
+                className="bg-red-50 text-red-700 border-red-200 px-3 py-1.5 text-sm"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 mr-1.5 inline" />
+                {m}
+              </Badge>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 8. When Pro */}
+      {guide.whenPro && guide.whenPro.length > 0 && (
+        <R6WhenPro cases={guide.whenPro} gammeName={page.title} />
+      )}
+    </>
+  );
+}
+
+// ── V1 Legacy Sections ──────────────────────────────────
+
+function V1Sections({
+  guide,
+  pgAlias,
+}: {
+  guide: R6GuidePayload;
+  pgAlias: string;
+}) {
+  const page = guide.page;
+
+  return (
+    <>
+      {/* A. Risk Section */}
+      {guide.risk?.explanation && (
+        <section id="risques" className="mb-8">
+          <div className="rounded-xl border-2 border-red-200 overflow-hidden shadow-lg">
+            <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-red-600 to-rose-600 text-white">
+              <div className="p-1.5 bg-white/20 rounded-lg">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-red-100 mb-0.5">
+                  Attention
+                </div>
+                <h2 className="text-xl font-bold leading-tight">
+                  {guide.risk.title}
+                </h2>
+              </div>
+            </div>
+            <div className="bg-red-50 px-6 py-5">
+              <HtmlContent
+                html={annotateGlossaryTerms(guide.risk.explanation)}
+                className="text-sm text-red-900 leading-relaxed [&_p]:mb-3 [&_strong]:font-bold [&_strong]:text-red-800 [&_a]:text-red-700 [&_a]:underline"
+                trackLinks={true}
+              />
+              {guide.risk.consequences.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {guide.risk.consequences.map((c, i) => (
+                    <Badge
+                      key={i}
+                      variant="outline"
+                      className="bg-red-100 text-red-800 border-red-300 text-xs"
+                    >
+                      {c}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              {guide.risk.costRange && (
+                <p className="mt-3 text-xs text-red-700 font-medium">
+                  Cout moyen : {guide.risk.costRange}
+                </p>
+              )}
+              {guide.risk.conclusion && (
+                <HtmlContent
+                  html={annotateGlossaryTerms(guide.risk.conclusion)}
+                  className="mt-3 text-sm text-red-800 leading-relaxed font-medium [&_strong]:text-red-900"
+                />
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* B. Timing Section */}
+      {(guide.timing?.years || guide.timing?.km) && (
+        <section id="quand-remplacer" className="mb-8">
+          <div className="rounded-xl border-2 border-amber-200 overflow-hidden shadow-lg">
+            <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+              <div className="p-1.5 bg-white/20 rounded-lg">
+                <Clock className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-amber-100 mb-0.5">
+                  Periodicite
+                </div>
+                <h2 className="text-xl font-bold leading-tight">
+                  {guide.timing!.title}
+                </h2>
+              </div>
+            </div>
+            <div className="bg-amber-50/50 px-6 py-5">
+              <div className="flex flex-wrap gap-3 mb-3">
+                {guide.timing!.years && (
+                  <Badge
+                    variant="outline"
+                    className="bg-amber-100 text-amber-800 border-amber-300 text-sm px-3 py-1"
+                  >
+                    <Clock className="w-3.5 h-3.5 mr-1.5 inline" />
+                    Tous les {guide.timing!.years}
+                  </Badge>
+                )}
+                {guide.timing!.km && (
+                  <Badge
+                    variant="outline"
+                    className="bg-amber-100 text-amber-800 border-amber-300 text-sm px-3 py-1"
+                  >
+                    Tous les {guide.timing!.km}
+                  </Badge>
+                )}
+              </div>
+              {guide.timing!.note && (
+                <HtmlContent
+                  html={annotateGlossaryTerms(guide.timing!.note)}
+                  className="text-sm text-gray-700 leading-relaxed [&_p]:mb-3 [&_strong]:font-semibold [&_strong]:text-gray-900"
+                />
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* C. Arguments */}
+      {guide.arguments && guide.arguments.length > 0 && (
+        <section id="pourquoi-remplacer" className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-500">
+            Pourquoi remplacer votre {page.title.toLowerCase()}
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {guide.arguments.map((arg, idx) => {
+              const Icon = ARG_ICONS[idx % ARG_ICONS.length];
+              return (
+                <Card
+                  key={idx}
+                  className="border-blue-100 hover:shadow-md transition-shadow"
+                >
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="p-1.5 bg-blue-50 rounded-lg">
+                        <Icon className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <h3 className="font-semibold text-gray-900 text-sm">
+                        {arg.title}
+                      </h3>
+                    </div>
+                    <HtmlContent
+                      html={annotateGlossaryTerms(arg.content)}
+                      className="text-sm text-gray-600 leading-relaxed [&_strong]:font-semibold [&_strong]:text-gray-800 [&_a]:text-blue-600 [&_a]:underline"
+                      trackLinks={true}
+                    />
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* D. Quiz Assistant */}
+      {guide.decisionTree && guide.decisionTree.length > 0 && (
+        <R6QuizAssistant
+          nodes={guide.decisionTree}
+          gammeName={page.title}
+          pgAlias={pgAlias}
+          pgId={page.pg_id}
+        />
+      )}
+
+      {/* E. Criteria Table */}
+      {guide.selectionCriteria && guide.selectionCriteria.length > 0 && (
+        <R6CriteriaTable
+          criteria={guide.selectionCriteria}
+          gammeName={page.title}
+        />
+      )}
+
+      {/* F. Symptoms */}
+      {guide.symptoms && guide.symptoms.length > 0 && (
+        <section id="symptomes" className="mb-8">
+          <div className="rounded-xl border-2 border-orange-200 overflow-hidden shadow-lg">
+            <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white">
+              <div className="p-1.5 bg-white/20 rounded-lg">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-orange-100 mb-0.5">
+                  Signes d&apos;usure
+                </div>
+                <h2 className="text-xl font-bold leading-tight">
+                  Symptomes a surveiller
+                </h2>
+              </div>
+            </div>
+            <div className="bg-orange-50/50 px-6 py-5">
+              <ul className="space-y-2">
+                {guide.symptoms.map((s, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm text-gray-700">{s}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* G. Anti-Mistakes */}
+      {guide.antiMistakes && guide.antiMistakes.length > 0 && (
+        <section id="erreurs-eviter" className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-red-400">
+            Erreurs a eviter
+          </h2>
+          <div className="flex flex-wrap gap-2">
+            {guide.antiMistakes.map((m, i) => (
+              <Badge
+                key={i}
+                variant="outline"
+                className="bg-red-50 text-red-700 border-red-200 px-3 py-1.5 text-sm"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 mr-1.5 inline" />
+                {m}
+              </Badge>
+            ))}
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
+// ── Error Boundary (404 noindex — NO 301) ───────────────
 
 export function ErrorBoundary() {
   const error = useRouteError();

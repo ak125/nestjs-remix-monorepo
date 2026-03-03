@@ -1,7 +1,9 @@
 /**
  * R6GuideService — Page engine for R6 Guide d'Achat pages.
- * Reads structured data from __seo_gamme_purchase_guide and returns
- * a typed R6GuidePayload. Single endpoint replaces legacy guide-achat.
+ * Dual-mode: V1 legacy from flat columns, V2 from new JSONB columns.
+ * Reads sgpg_role_version to decide which payload shape to build.
+ *
+ * INTERDIT R6 : tout contenu procedural (HowTo) + diagnostic complet.
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -21,6 +23,12 @@ import type {
   R6DecisionNode,
   R6UseCase,
   R6InterestNugget,
+  R6QualityTier,
+  R6CompatibilityAxis,
+  R6WhenProCase,
+  R6PriceGuideSection,
+  R6BrandsGuideSection,
+  R6HeroDecision,
 } from '../interfaces/r6-guide.interfaces';
 
 @Injectable()
@@ -66,11 +74,117 @@ export class R6GuideService {
       return null;
     }
 
+    const roleVersion =
+      (row.sgpg_role_version as string) === 'v2' ? 'v2' : 'v1';
+
     this.logger.log(
-      `R6 Guide: ${pg_alias} → pg_id=${gamme.pg_id}, title="${row.sgpg_h1_override || gamme.pg_name}"`,
+      `R6 Guide [${roleVersion}]: ${pg_alias} → pg_id=${gamme.pg_id}`,
     );
 
-    // Step 3 — Process HTML fields (link injection + dedup)
+    // Step 3 — Build page metadata (shared V1/V2)
+    const title = row.sgpg_h1_override || gamme.pg_name;
+    const page = await this.buildPage(pg_alias, gamme, row, title);
+
+    // Step 4 — Build payload based on version
+    if (roleVersion === 'v2') {
+      return this.buildV2Payload(page, row, pg_alias);
+    }
+    return this.buildV1Payload(page, row, pg_alias);
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // V2 payload builder
+  // ══════════════════════════════════════════════════════════
+
+  private async buildV2Payload(
+    page: R6GuidePage,
+    row: Record<string, unknown>,
+    pg_alias: string,
+  ): Promise<R6GuidePayload> {
+    // Hero decision from intro_role + hero_subtitle
+    const heroDecision: R6HeroDecision = {
+      promise: (row.sgpg_intro_role as string) || '',
+      bullets:
+        (row.sgpg_interest_nuggets as Array<{ hook: string }>)
+          ?.map((n) => n.hook)
+          ?.slice(0, 5) ?? [],
+    };
+
+    // Summary pick fast = decision tree
+    const summaryPickFast: R6DecisionNode[] =
+      (row.sgpg_decision_tree as R6DecisionNode[]) || [];
+
+    // Quality tiers from selection_criteria → mapped to tier format
+    const rawCriteria =
+      (row.sgpg_selection_criteria as R6SelectionCriterion[]) || [];
+    const qualityTiers: R6QualityTier[] = rawCriteria.map((c, i) => ({
+      tier_id: c.key || `tier_${i}`,
+      label: c.label,
+      description: c.guidance,
+      available: true,
+    }));
+
+    // Compatibility axes from new JSONB column
+    const compatibilityAxes: R6CompatibilityAxis[] =
+      (row.sgpg_compatibility_axes as R6CompatibilityAxis[]) || [];
+
+    // Price guide — build from micro_seo_block or default
+    const priceGuide: R6PriceGuideSection = {
+      mode: 'factors',
+      variation_factors: [
+        'Marque et gamme de qualité',
+        'Véhicule (citadine vs SUV vs utilitaire)',
+        "Canal d'achat (en ligne vs magasin)",
+      ],
+      disclaimer:
+        'Les prix indiqués sont des fourchettes indicatives et peuvent varier selon le véhicule et le fournisseur.',
+    };
+
+    // Brands guide from new JSONB column
+    const brandsGuide: R6BrandsGuideSection | undefined = row.sgpg_brands_guide
+      ? (row.sgpg_brands_guide as R6BrandsGuideSection)
+      : undefined;
+
+    // Pitfalls from anti_mistakes
+    const pitfalls: string[] = (row.sgpg_anti_mistakes as string[]) || [];
+
+    // When pro from new JSONB column
+    const whenPro: R6WhenProCase[] =
+      (row.sgpg_when_pro as R6WhenProCase[]) || [];
+
+    // FAQ
+    const faq: R6FaqItem[] = (row.sgpg_faq as R6FaqItem[]) || [];
+
+    return {
+      intentType: 'R6',
+      pageRole: 'R6_BUYING_GUIDE',
+      canonicalRoleUrl: `/blog-pieces-auto/guide-achat/${pg_alias}`,
+      roleVersion: 'v2',
+      page,
+      heroDecision,
+      summaryPickFast,
+      qualityTiers,
+      compatibilityAxes,
+      priceGuide,
+      brandsGuide,
+      pitfalls,
+      whenPro,
+      faq,
+      sourceType: (row.sgpg_source_type as string) || null,
+      sourceVerified: (row.sgpg_source_verified as boolean) ?? false,
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // V1 legacy payload builder
+  // ══════════════════════════════════════════════════════════
+
+  private async buildV1Payload(
+    page: R6GuidePage,
+    row: Record<string, unknown>,
+    pg_alias: string,
+  ): Promise<R6GuidePayload> {
+    // Process HTML fields (link injection + dedup)
     const [
       riskExplanation,
       riskConclusion,
@@ -78,62 +192,106 @@ export class R6GuideService {
       timingNote,
       ...argContents
     ] = await Promise.all([
-      this.processHtml(row.sgpg_risk_explanation),
-      this.processHtml(row.sgpg_risk_conclusion),
-      this.processHtml(row.sgpg_how_to_choose),
-      this.processHtml(row.sgpg_timing_note),
-      this.processHtml(row.sgpg_arg1_content),
-      this.processHtml(row.sgpg_arg2_content),
-      this.processHtml(row.sgpg_arg3_content),
-      this.processHtml(row.sgpg_arg4_content),
+      this.processHtml(row.sgpg_risk_explanation as string),
+      this.processHtml(row.sgpg_risk_conclusion as string),
+      this.processHtml(row.sgpg_how_to_choose as string),
+      this.processHtml(row.sgpg_timing_note as string),
+      this.processHtml(row.sgpg_arg1_content as string),
+      this.processHtml(row.sgpg_arg2_content as string),
+      this.processHtml(row.sgpg_arg3_content as string),
+      this.processHtml(row.sgpg_arg4_content as string),
     ]);
 
-    // Step 4 — Build typed sections
-    const title = row.sgpg_h1_override || gamme.pg_name;
-
     const risk: R6RiskSection = {
-      title: row.sgpg_risk_title || 'Risques et conséquences',
+      title: (row.sgpg_risk_title as string) || 'Risques et conséquences',
       explanation: riskExplanation,
-      consequences: row.sgpg_risk_consequences || [],
-      costRange: row.sgpg_risk_cost_range || null,
+      consequences: (row.sgpg_risk_consequences as string[]) || [],
+      costRange: (row.sgpg_risk_cost_range as string) || null,
       conclusion: riskConclusion,
     };
 
     const timing: R6TimingSection = {
-      title: row.sgpg_timing_title || 'Quand remplacer',
-      years: row.sgpg_timing_years || null,
-      km: row.sgpg_timing_km || null,
+      title: (row.sgpg_timing_title as string) || 'Quand remplacer',
+      years: (row.sgpg_timing_years as string) || null,
+      km: (row.sgpg_timing_km as string) || null,
       note: timingNote,
     };
 
     const args = this.buildArguments(row, argContents);
-    const faq: R6FaqItem[] = row.sgpg_faq || [];
+    const faq: R6FaqItem[] = (row.sgpg_faq as R6FaqItem[]) || [];
     const selectionCriteria: R6SelectionCriterion[] =
-      row.sgpg_selection_criteria || [];
-    const decisionTree: R6DecisionNode[] = row.sgpg_decision_tree || [];
-    const useCases: R6UseCase[] = row.sgpg_use_cases || [];
-    const interestNuggets: R6InterestNugget[] = row.sgpg_interest_nuggets || [];
+      (row.sgpg_selection_criteria as R6SelectionCriterion[]) || [];
+    const decisionTree: R6DecisionNode[] =
+      (row.sgpg_decision_tree as R6DecisionNode[]) || [];
+    const useCases: R6UseCase[] = (row.sgpg_use_cases as R6UseCase[]) || [];
+    const interestNuggets: R6InterestNugget[] =
+      (row.sgpg_interest_nuggets as R6InterestNugget[]) || [];
 
-    // Step 5 — Page metadata
-    const allHtml = [
-      riskExplanation,
-      riskConclusion,
+    return {
+      intentType: 'R6',
+      pageRole: 'R6_BUYING_GUIDE',
+      canonicalRoleUrl: `/blog-pieces-auto/guide-achat/${pg_alias}`,
+      roleVersion: 'v1',
+      page,
+      // V1 legacy fields
+      risk,
+      timing,
+      arguments: args,
       howToChoose,
-      timingNote,
-      ...argContents,
-      ...faq.map((f) => f.answer),
-    ].filter(Boolean);
+      symptoms: (row.sgpg_symptoms as string[]) || [],
+      selectionCriteria,
+      decisionTree,
+      faq,
+      useCases,
+      antiMistakes: (row.sgpg_anti_mistakes as string[]) || [],
+      interestNuggets,
+      selectorMicrocopy: (row.sgpg_selector_microcopy as string[]) || [],
+      compatibilitiesIntro: (row.sgpg_compatibilities_intro as string) || null,
+      equipementiersLine: (row.sgpg_equipementiers_line as string) || null,
+      familyCrossSellIntro:
+        (row.sgpg_family_cross_sell_intro as string) || null,
+      microSeoBlock: (row.sgpg_micro_seo_block as string) || null,
+      sourceType: (row.sgpg_source_type as string) || null,
+      sourceVerified: (row.sgpg_source_verified as boolean) ?? false,
+    };
+  }
 
-    const readingTime = this.calcReadingTime(allHtml);
+  // ══════════════════════════════════════════════════════════
+  // Private helpers
+  // ══════════════════════════════════════════════════════════
 
-    const page: R6GuidePage = {
+  private async buildPage(
+    pg_alias: string,
+    gamme: { pg_id: number; pg_name: string; pg_pic: string | null },
+    row: Record<string, unknown>,
+    title: string,
+  ): Promise<R6GuidePage> {
+    // Collect HTML parts for reading time
+    const htmlFields = [
+      row.sgpg_risk_explanation,
+      row.sgpg_risk_conclusion,
+      row.sgpg_how_to_choose,
+      row.sgpg_timing_note,
+      row.sgpg_arg1_content,
+      row.sgpg_arg2_content,
+      row.sgpg_arg3_content,
+      row.sgpg_arg4_content,
+    ].filter(Boolean) as string[];
+
+    const faqAnswers = ((row.sgpg_faq as R6FaqItem[]) || []).map(
+      (f) => f.answer,
+    );
+
+    const readingTime = this.calcReadingTime([...htmlFields, ...faqAnswers]);
+
+    return {
       pg_alias,
       pg_id: gamme.pg_id,
       title,
-      heroSubtitle: row.sgpg_hero_subtitle || null,
+      heroSubtitle: (row.sgpg_hero_subtitle as string) || null,
       metaTitle: `${title} — Guide d'achat | AutoMecanik`,
       metaDescription: this.stripPricing(
-        row.sgpg_intro_role ||
+        (row.sgpg_intro_role as string) ||
           `Comment bien choisir ${title.toLowerCase()} pour votre véhicule.`,
       ),
       featuredImage: this.transformService.buildImageUrl(
@@ -141,34 +299,12 @@ export class R6GuideService {
         'articles/gammes-produits/catalogue',
       ),
       updatedAt:
-        row.sgpg_updated_at || row.sgpg_created_at || new Date().toISOString(),
+        (row.sgpg_updated_at as string) ||
+        (row.sgpg_created_at as string) ||
+        new Date().toISOString(),
       readingTime,
     };
-
-    return {
-      page,
-      risk,
-      timing,
-      arguments: args,
-      howToChoose,
-      symptoms: row.sgpg_symptoms || [],
-      selectionCriteria,
-      decisionTree,
-      faq,
-      useCases,
-      antiMistakes: row.sgpg_anti_mistakes || [],
-      interestNuggets,
-      selectorMicrocopy: row.sgpg_selector_microcopy || [],
-      compatibilitiesIntro: row.sgpg_compatibilities_intro || null,
-      equipementiersLine: row.sgpg_equipementiers_line || null,
-      familyCrossSellIntro: row.sgpg_family_cross_sell_intro || null,
-      microSeoBlock: row.sgpg_micro_seo_block || null,
-      sourceType: row.sgpg_source_type || null,
-      sourceVerified: row.sgpg_source_verified ?? false,
-    };
   }
-
-  // ── Private helpers ──────────────────────────────────────────
 
   private async processHtml(raw: string | null | undefined): Promise<string> {
     if (!raw) return '';
