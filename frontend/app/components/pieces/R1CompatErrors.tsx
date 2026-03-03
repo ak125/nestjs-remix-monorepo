@@ -1,25 +1,30 @@
 /**
- * R1 "Erreurs fréquentes de compatibilité" — Checklist visuelle statique.
- * Orienté compat (pas symptômes, pas diagnostic).
+ * R1 "Erreurs fréquentes de compatibilité" — Checklist visuelle.
+ * Family-aware defaults: contenu différencié par famille automobile.
  */
 import { Square } from "lucide-react";
 
-const DEFAULT_ERRORS = [
-  "Confondre deux motorisations proches (ex : 1.6 HDi 90 ch vs 110 ch)",
-  "Ignorer le code moteur indiqué en case D.2 de la carte grise",
-  "Se fier uniquement au modèle sans vérifier le type exact",
-  "Commander sans comparer la référence OE du constructeur",
-];
+import {
+  getDefaultCompatErrors,
+  inferFamilyKey,
+} from "~/utils/r1-family-defaults";
 
 export function R1CompatErrors({
   compatErrors,
   gammeName,
+  familleName,
 }: {
   compatErrors?: string[] | null;
   gammeName: string;
+  familleName?: string;
 }) {
   const errors =
-    compatErrors && compatErrors.length > 0 ? compatErrors : DEFAULT_ERRORS;
+    compatErrors && compatErrors.length > 0
+      ? compatErrors
+      : getDefaultCompatErrors(
+          gammeName,
+          inferFamilyKey(gammeName, familleName),
+        );
 
   return (
     <div className="bg-rose-50 border border-rose-200 rounded-xl p-5 sm:p-6">

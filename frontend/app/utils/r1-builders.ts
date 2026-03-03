@@ -5,6 +5,7 @@
 import { type GammePagePurchaseGuideData } from "~/types/gamme-page-contract.types";
 import { dedupeStrings } from "~/utils/dedupe-strings";
 import { validateFaqItems } from "~/utils/faq-validator";
+import { mergeR1Faq } from "~/utils/r1-faq-merge";
 import { buildCanonicalUrl } from "~/utils/seo/canonical";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -44,6 +45,7 @@ export interface R1PurchaseGuideData {
   equipementiersLine?: string | null;
   familyCrossSellIntro?: string | null;
   safeTableRows?: Array<{ element: string; howToCheck: string }> | null;
+  selectorMicrocopy?: string[] | null;
 }
 
 /** Picks only R1-safe fields, renames antiMistakes → compatErrors. */
@@ -62,6 +64,7 @@ export function sanitizePurchaseGuideForR1(
     equipementiersLine: raw.equipementiersLine,
     familyCrossSellIntro: raw.familyCrossSellIntro,
     safeTableRows: raw.safeTableRows,
+    selectorMicrocopy: raw.selectorMicrocopy ?? null,
   };
 }
 
@@ -138,7 +141,7 @@ export function buildGammeJsonLd(params: {
     fallbackFaq,
   } = params;
 
-  const faqItems = faq?.length ? faq : fallbackFaq;
+  const faqItems = mergeR1Faq(faq, fallbackFaq);
   const cappedFaq = validateFaqItems(faqItems);
 
   return {

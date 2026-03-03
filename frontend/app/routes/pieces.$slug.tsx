@@ -86,6 +86,7 @@ import {
   sanitizePurchaseGuideForR1,
   type R1PurchaseGuideData,
 } from "~/utils/r1-builders";
+import { mergeR1Faq } from "~/utils/r1-faq-merge";
 import {
   buildR1SourceMap,
   sourceAttr,
@@ -168,7 +169,7 @@ const R1_SELECTOR_FAQ = [
   {
     question: "Mon modèle a plusieurs motorisations, laquelle choisir ?",
     answer:
-      "Vérifiez le code moteur sur votre carte grise (case D.2) ou sur la plaque constructeur dans le compartiment moteur. Chaque motorisation peut avoir un montage différent.",
+      "Vérifiez le code moteur sur votre carte grise (case D.2) ou sur la plaque constructeur. Deux motorisations proches (ex : 1.6 HDi 90 ch vs 110 ch) utilisent souvent des montages différents. En cas de doute, recherchez par VIN ou contactez notre équipe.",
   },
   {
     question:
@@ -177,15 +178,14 @@ const R1_SELECTOR_FAQ = [
       "En sélectionnant votre véhicule exact dans notre sélecteur, seules les références 100% compatibles s'affichent. Nous vérifions la compatibilité via les bases techniques constructeur.",
   },
   {
-    question: "Où trouver le CNIT ou le Type Mine sur ma carte grise ?",
+    question: "Où trouver le CNIT ou le Type Mine de mon véhicule ?",
     answer:
-      "Le CNIT se trouve dans le champ D.2 de votre carte grise (ex : M10RENCVP04E001). Le Type Mine est dans le champ D.2.1. Ces codes permettent d'identifier précisément votre motorisation et de vérifier la compatibilité des pièces.",
+      "Le CNIT (ex : M10RENCVP04E001) et le Type Mine figurent sur votre certificat d'immatriculation. Entrez-les dans notre recherche par Type Mine pour une identification précise.",
   },
   {
-    question:
-      "Mon véhicule a plusieurs motorisations proches, comment choisir ?",
+    question: "Quels sont les délais de livraison pour les pièces auto ?",
     answer:
-      "Deux motorisations proches (par ex. 1.6 HDi 90 ch vs 110 ch) utilisent souvent des montages différents. Repérez le code moteur dans le champ D.2 de votre carte grise ou sur la plaque constructeur du compartiment moteur. En cas de doute, notre équipe peut vérifier avec votre numéro VIN.",
+      "Les commandes passées avant 15h sont expédiées le jour même. La livraison standard est de 24 à 48h en France métropolitaine. Vous recevez un numéro de suivi par e-mail dès l'expédition.",
   },
 ];
 
@@ -970,6 +970,21 @@ export default function PiecesDetailPage() {
                         );
                       }}
                     />
+                    {data.purchaseGuideData?.selectorMicrocopy &&
+                      data.purchaseGuideData.selectorMicrocopy.length > 0 && (
+                        <div className="mt-3 space-y-1">
+                          {data.purchaseGuideData.selectorMicrocopy
+                            .slice(0, 2)
+                            .map((tip, i) => (
+                              <p
+                                key={i}
+                                className="text-xs text-white/60 leading-snug"
+                              >
+                                {tip}
+                              </p>
+                            ))}
+                        </div>
+                      )}
                   </>
                 )}
               </div>
@@ -1147,6 +1162,7 @@ export default function PiecesDetailPage() {
           <SafeCompatTable
             rows={data.purchaseGuideData?.safeTableRows ?? undefined}
             gammeName={data.content?.pg_name}
+            familleName={data.famille?.mf_name}
           />
         </Suspense>
       </PageSection>
@@ -1161,6 +1177,7 @@ export default function PiecesDetailPage() {
         <R1CompatErrors
           compatErrors={data.purchaseGuideData?.compatErrors}
           gammeName={data.content?.pg_name?.toLowerCase() || "pièce"}
+          familleName={data.famille?.mf_name}
         />
       </PageSection>
 
@@ -1225,7 +1242,10 @@ export default function PiecesDetailPage() {
                           content: v.content,
                         }),
                       )}
-                      intro={data.purchaseGuideData?.familyCrossSellIntro}
+                      intro={
+                        data.purchaseGuideData?.familyCrossSellIntro ||
+                        `Complétez votre entretien : découvrez les pièces complémentaires à votre ${data.content?.pg_name?.toLowerCase() || "pièce"}.`
+                      }
                       variant="R1"
                     />
                   )}
@@ -1252,9 +1272,7 @@ export default function PiecesDetailPage() {
           >
             <FAQSection
               faq={validateFaqItems(
-                data.purchaseGuideData?.faq?.length
-                  ? data.purchaseGuideData.faq
-                  : R1_SELECTOR_FAQ,
+                mergeR1Faq(data.purchaseGuideData?.faq, R1_SELECTOR_FAQ),
               )}
               gammeName={data.content?.pg_name || "cette pièce"}
               withJsonLd={false}

@@ -89,7 +89,7 @@ export function buildR1MicroBlock(input: R1MicroBlockInput): R1MicroBlock {
     );
   } else {
     bullets.push(
-      "En cas de doute, reportez-vous à votre carte grise (case D.2) pour identifier le code moteur.",
+      "En cas de doute, contactez-nous avec votre numéro VIN — nous vérifions la compatibilité gratuitement.",
     );
   }
 

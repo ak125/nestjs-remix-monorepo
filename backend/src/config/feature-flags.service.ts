@@ -63,6 +63,12 @@ export class FeatureFlagsService {
 
   // ── R1 Content Pipeline flag ──
 
+  /**
+   * Controls whether the R1 4-prompt pipeline can be TRIGGERED (write path).
+   * Does NOT gate the read path: once data is in sgpg_* columns, it's served
+   * regardless of this flag. Default: false (safe for cold starts without .env).
+   * Coverage: 6/221 gammes as of 2026-03-03.
+   */
   get r1ContentPipelineEnabled(): boolean {
     return this.bool('R1_CONTENT_PIPELINE_ENABLED', false);
   }

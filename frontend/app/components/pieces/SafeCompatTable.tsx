@@ -8,6 +8,11 @@ import {
 } from "lucide-react";
 import { memo } from "react";
 
+import {
+  getDefaultSafeTableRows,
+  inferFamilyKey,
+} from "~/utils/r1-family-defaults";
+
 /** Ligne du tableau safe — uniquement "comment vérifier sa compatibilité" */
 interface SafeRow {
   element: string;
@@ -15,31 +20,13 @@ interface SafeRow {
 }
 
 interface SafeCompatTableProps {
-  /** Lignes custom (Phase 2 : depuis sgpg_safe_table_rows) */
+  /** Lignes custom (depuis sgpg_safe_table_rows) */
   rows?: SafeRow[];
   /** Nom gamme pour le contexte */
   gammeName?: string;
+  /** Nom famille pour defaults différenciés */
+  familleName?: string;
 }
-
-// ── Données statiques par défaut (identiques pour 100% des gammes) ──
-const DEFAULT_ROWS: SafeRow[] = [
-  {
-    element: "Montage / version véhicule",
-    howToCheck: "Sélectionner son véhicule — le filtre adapte automatiquement",
-  },
-  {
-    element: "Référence OE constructeur",
-    howToCheck: "Comparer avec la fiche produit avant commande",
-  },
-  {
-    element: "Échange standard (si applicable)",
-    howToCheck: "Vérifier la mention + conditions de garantie",
-  },
-  {
-    element: "Conditions de retour",
-    howToCheck: "Consulter la politique retour avant montage",
-  },
-];
 
 // Icône par index de ligne (max 6 pour couvrir les lignes custom)
 const ROW_ICONS = [
@@ -54,8 +41,12 @@ const ROW_ICONS = [
 const SafeCompatTable = memo(function SafeCompatTable({
   rows,
   gammeName,
+  familleName,
 }: SafeCompatTableProps) {
-  const displayRows = rows && rows.length > 0 ? rows.slice(0, 6) : DEFAULT_ROWS;
+  const displayRows =
+    rows && rows.length > 0
+      ? rows.slice(0, 6)
+      : getDefaultSafeTableRows(inferFamilyKey(gammeName || "", familleName));
 
   return (
     <div className="bg-blue-50/50 border border-blue-200 rounded-xl overflow-hidden">
