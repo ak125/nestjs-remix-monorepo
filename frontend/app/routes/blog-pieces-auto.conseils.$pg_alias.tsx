@@ -1,10 +1,6 @@
 /**
- * Route legacy : /blog-pieces-auto/conseils/:pg_alias
- * Affiche l'article directement avec l'URL originale (pas de redirection)
- *
- * Exemple :
- * /blog-pieces-auto/conseils/alternateur
- * → Affiche l'article "Comment changer votre alternateur"
+ * Route R3 : /blog-pieces-auto/conseils/:pg_alias
+ * Single-endpoint "page engine" — 1 fetch to GET /api/r3-guide/:pg_alias
  *
  * Rôle SEO : R3 - BLOG
  * Intention : Comprendre comment installer/entretenir une pièce
@@ -23,74 +19,60 @@ import {
   useNavigate,
   useRouteError,
   isRouteErrorResponse,
+  type ShouldRevalidateFunction,
 } from "@remix-run/react";
-import {
-  ArrowLeft,
-  Calendar,
-  Eye,
-  Share2,
-  Bookmark,
-  Tag,
-  BookOpen,
-  Info,
-  AlertTriangle,
-  CheckCircle,
-  Wrench,
-  ShieldAlert,
-  ClipboardCheck,
-  Package,
-  HelpCircle,
-  ExternalLink,
-  Settings,
-} from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-import { toast } from "sonner";
+import { ArrowLeft, Tag, BookOpen } from "lucide-react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 
-// SEO Page Role (Phase 5 - Quasi-Incopiable)
-
-// Utils
+// Components
+import { ArticleActionsBar } from "~/components/blog/ArticleActionsBar";
 import { ArticleNavigation } from "~/components/blog/ArticleNavigation";
-
-// Components internes
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
-
-// Blog components
+import { ConseilSections } from "~/components/blog/conseil/ConseilSections";
+import { MetaLinksSection } from "~/components/blog/conseil/MetaLinksSection";
+import {
+  type GammeConseil,
+  type HeroBadge,
+} from "~/components/blog/conseil/section-config";
+import { SourcesDisclaimer } from "~/components/blog/conseil/SourcesDisclaimer";
+import { SummarySnippet } from "~/components/blog/conseil/SummarySnippet";
 import CTAButton from "~/components/blog/CTAButton";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { TableOfContents } from "~/components/blog/TableOfContents";
-import VehicleCarousel from "~/components/blog/VehicleCarousel";
-import {
-  SectionImage,
-  SectionWithImage,
-} from "~/components/content/SectionImage";
+import { type CompatibleVehicle } from "~/components/blog/VehicleCarousel";
 import { Error404 } from "~/components/errors/Error404";
-import { HeroBlog } from "~/components/heroes";
+import {
+  GuideHero,
+  GuideChecklist,
+  buildGuideSchemas,
+} from "~/components/guide";
 import { HtmlContent } from "~/components/seo/HtmlContent";
-import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
-import {
-  getSectionImageConfig,
-  resolveAltText,
-  resolveSlogan,
-} from "~/config/visual-intent";
+import { Badge } from "~/components/ui/badge";
+import { Card, CardContent } from "~/components/ui/card";
+import { resolveSlogan } from "~/config/visual-intent";
 
-// SEO Components - HtmlContent remplace dangerouslySetInnerHTML
+// Conseil components
+
+// Utils
 import {
-  trackArticleView,
-  trackReadingTime,
-  trackShareArticle,
-  trackBookmark,
-} from "~/utils/analytics";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
+  type R3GuidePayload,
+  type R3GuideSection,
+  type R3GuidePage,
+} from "~/types/r3-guide.types";
+import { trackArticleView, trackReadingTime } from "~/utils/analytics";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { buildCanonicalUrl } from "~/utils/seo/canonical";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
-import { Badge } from "../components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
+const RelatedArticlesSidebar = lazy(() =>
+  import("~/components/blog/RelatedArticlesSidebar").then((m) => ({
+    default: m.RelatedArticlesSidebar,
+  })),
+);
+const VehicleCarousel = lazy(() => import("~/components/blog/VehicleCarousel"));
+
+// Types
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -101,176 +83,61 @@ export const handle = {
   }),
 };
 
-// Analytics
+// ── Adapters ─────────────────────────────────────────────
 
-// Types
-interface CompatibleVehicle {
-  type_id: number;
-  type_alias: string;
-  type_name: string;
-  type_power: number;
-  type_fuel: string;
-  type_body: string;
-  period: string;
-  modele_id: number;
-  modele_alias: string;
-  modele_name: string;
-  modele_pic: string | null;
-  marque_id: number;
-  marque_alias: string;
-  marque_name: string;
-  marque_logo: string | null;
-  catalog_url: string;
-}
-
-interface _BlogArticle {
-  id: string;
-  title: string;
-  slug: string;
-  pg_alias?: string | null;
-  /** Gamme product group ID (from DB) */
-  pg_id?: number | null;
-  excerpt: string;
-  content: string;
-  h1: string;
-  h2: string;
-  keywords: string[];
-  tags: string[];
-  publishedAt: string;
-  updatedAt: string;
-  viewsCount: number;
-  readingTime?: number;
-  legacy_table?: string;
-  featuredImage?: string | null;
-  /** Wall/thumbnail image filename */
-  wall?: string | null;
-  sections: BlogSection[];
-  cta_anchor?: string | null;
-  cta_link?: string | null;
-  relatedArticles?: _BlogArticle[];
-  compatibleVehicles?: CompatibleVehicle[];
-  seo_data: {
-    meta_title: string;
-    meta_description: string;
+/** Map R3GuideSection → GammeConseil (html→content) for legacy components */
+function toConseil(s: R3GuideSection): GammeConseil {
+  return {
+    title: s.title,
+    content: s.html,
+    sectionType: s.sectionType,
+    order: s.order,
+    qualityScore: s.qualityScore,
+    sources: s.sources,
+    anchor: s.anchor,
   };
 }
 
-interface BlogSection {
-  level: 2 | 3;
-  title: string;
-  content: string;
-  anchor: string;
-  cta_anchor?: string | null;
-  cta_link?: string | null;
-  wall?: string | null;
+/** Build hero badges from pre-computed page metadata */
+function buildHeroBadges(page: R3GuidePage): HeroBadge[] {
+  const badges: HeroBadge[] = [];
+
+  if (page.difficulty) {
+    const map: Record<string, { v: string; c: HeroBadge["color"] }> = {
+      facile: { v: "Facile", c: "green" },
+      moyen: { v: "Intermédiaire", c: "amber" },
+      difficile: { v: "Avancé", c: "red" },
+    };
+    const m = map[page.difficulty];
+    if (m) badges.push({ label: "Difficulté", value: m.v, color: m.c });
+  }
+
+  if (page.durationMin) {
+    badges.push({
+      label: "Temps estimé",
+      value:
+        page.durationMin < 60
+          ? `~${page.durationMin} min`
+          : `~${Math.round(page.durationMin / 60)}h`,
+      color: "blue",
+    });
+  }
+
+  if (page.safetyLevel) {
+    const smap: Record<string, { v: string; c: HeroBadge["color"] }> = {
+      faible: { v: "Standard", c: "green" },
+      moyen: { v: "Précautions requises", c: "amber" },
+      élevé: { v: "Précautions requises", c: "red" },
+    };
+    const m = smap[page.safetyLevel];
+    if (m) badges.push({ label: "Sécurité", value: m.v, color: m.c });
+  }
+
+  return badges;
 }
 
-interface GammeConseil {
-  title: string;
-  content: string;
-  sectionType: string | null;
-  order: number | null;
-}
+// ── Loader ───────────────────────────────────────────────
 
-type ConseilArray = GammeConseil[];
-
-// --- Section styles par type (Phase 2 - rendu typé S1-S8) ---
-
-const SECTION_ICONS: Record<string, typeof Info> = {
-  S1: Info,
-  S2: AlertTriangle,
-  S3: CheckCircle,
-  S4_DEPOSE: Wrench,
-  S4_REPOSE: Wrench,
-  S5: ShieldAlert,
-  S6: ClipboardCheck,
-  S7: Package,
-  S8: HelpCircle,
-  META: ExternalLink,
-};
-
-const SECTION_STYLES: Record<
-  string,
-  { border: string; headerBg: string; label: string }
-> = {
-  S1: {
-    border: "border-blue-200",
-    headerBg: "bg-gradient-to-r from-blue-600 to-indigo-600",
-    label: "Avant de commencer",
-  },
-  S2: {
-    border: "border-amber-200",
-    headerBg: "bg-gradient-to-r from-amber-500 to-orange-500",
-    label: "Signes d'usure",
-  },
-  S3: {
-    border: "border-emerald-300",
-    headerBg: "bg-gradient-to-r from-emerald-600 to-green-600",
-    label: "Compatibilité",
-  },
-  S4_DEPOSE: {
-    border: "border-slate-200",
-    headerBg: "bg-gradient-to-r from-slate-600 to-gray-700",
-    label: "Démontage",
-  },
-  S4_REPOSE: {
-    border: "border-slate-200",
-    headerBg: "bg-gradient-to-r from-slate-600 to-gray-700",
-    label: "Remontage",
-  },
-  S5: {
-    border: "border-red-200",
-    headerBg: "bg-gradient-to-r from-red-500 to-rose-500",
-    label: "Erreurs à éviter",
-  },
-  S6: {
-    border: "border-sky-200",
-    headerBg: "bg-gradient-to-r from-sky-500 to-blue-500",
-    label: "Vérification finale",
-  },
-  S7: {
-    border: "border-green-200",
-    headerBg: "bg-gradient-to-r from-green-600 to-emerald-600",
-    label: "Pièces complémentaires",
-  },
-  S8: {
-    border: "border-violet-200",
-    headerBg: "bg-gradient-to-r from-violet-500 to-purple-500",
-    label: "FAQ",
-  },
-  META: {
-    border: "border-gray-200",
-    headerBg: "bg-gradient-to-r from-gray-400 to-gray-500",
-    label: "Articles associés",
-  },
-};
-
-const DEFAULT_SECTION_STYLE = {
-  border: "border-green-200",
-  headerBg: "bg-gradient-to-r from-green-600 to-emerald-600",
-  label: "Conseil",
-};
-
-function getSectionStyle(type: string | null) {
-  if (!type) return DEFAULT_SECTION_STYLE;
-  return SECTION_STYLES[type] || DEFAULT_SECTION_STYLE;
-}
-
-function SectionIcon({ type }: { type: string | null }) {
-  const IconComponent = (type && SECTION_ICONS[type]) || Settings;
-  return <IconComponent className="w-6 h-6" />;
-}
-
-function slugifyTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
-
-// Loader
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
 
@@ -278,114 +145,60 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     return redirect("/blog-pieces-auto/conseils", 301);
   }
 
-  // Timeout 15s pour éviter les erreurs 5xx
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000);
+  const timeoutId = setTimeout(() => controller.abort(), 12000);
 
   try {
-    const baseUrl = getInternalApiUrl("");
-    const fetchHeaders = {
-      cookie: request.headers.get("cookie") || "",
-    };
-
-    // 1️⃣ Essayer d'abord par slug (pour les liens depuis la liste)
-    let article: _BlogArticle | null = null;
-    const slugResponse = await fetch(
-      `${baseUrl}/api/blog/article/${pg_alias}`,
-      {
-        headers: fetchHeaders,
-        signal: controller.signal,
-      },
+    const apiUrl = getInternalApiUrlFromRequest(
+      `/api/r3-guide/${pg_alias}`,
+      request,
     );
+    const response = await fetch(apiUrl, {
+      signal: controller.signal,
+    });
 
-    if (slugResponse.ok) {
-      const slugData = await slugResponse.json();
-      // Route conseils = contenu __blog_advice uniquement
-      // Ignorer les résultats __blog_guide (page guide-achat séparée)
-      if (slugData?.data && slugData.data.legacy_table !== "__blog_guide") {
-        article = slugData.data;
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return redirect("/blog-pieces-auto/conseils", 301);
       }
+      throw new Error(`R3 guide endpoint returned ${response.status}`);
     }
 
-    // 2️⃣ Fallback par gamme (legacy URLs) → renvoie __blog_advice
-    if (!article) {
-      const gammeResponse = await fetch(
-        `${baseUrl}/api/blog/article/by-gamme/${pg_alias}`,
-        {
-          headers: fetchHeaders,
-          signal: controller.signal,
-        },
-      );
+    const result = await response.json();
+    const guide = result?.data as R3GuidePayload | null;
 
-      if (gammeResponse.ok) {
-        const gammeData = await gammeResponse.json();
-        article = gammeData?.data || null;
-      }
-    }
-
-    if (!article) {
+    if (!guide) {
       return redirect("/blog-pieces-auto/conseils", 301);
     }
 
-    // Lancer les 3 fetches below-fold en parallele (promises, pas await)
-    const adjacentPromise = fetch(
-      `${baseUrl}/api/blog/article/${article.slug}/adjacent`,
-      { headers: fetchHeaders, signal: controller.signal },
-    )
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => d?.data || { previous: null, next: null })
-      .catch(() => ({ previous: null, next: null }));
-
-    const seoSwitchesPromise = article.pg_id
-      ? fetch(`${baseUrl}/api/blog/seo-switches/${article.pg_id}`, {
-          headers: fetchHeaders,
-          signal: controller.signal,
-        })
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d) => d?.data || [])
-          .catch(() => [])
-      : Promise.resolve([]);
-
-    const conseilPromise = article.pg_id
-      ? fetch(`${baseUrl}/api/blog/conseil/${article.pg_id}`, {
-          headers: fetchHeaders,
-          signal: controller.signal,
-        })
-          .then((r) => (r.ok ? r.json() : null))
-          .then((d) => (d?.data || []) as ConseilArray)
-          .catch(() => [] as ConseilArray)
-      : Promise.resolve([] as ConseilArray);
-
-    // LCP: below-fold data deferred (streamed after initial HTML)
-    clearTimeout(timeoutId);
-    return json({
-      article,
-      pg_alias,
-      adjacentArticles: await adjacentPromise,
-      seoSwitches: await seoSwitchesPromise,
-      conseil: await conseilPromise,
-    });
+    return json({ guide, pg_alias });
   } catch (error) {
     clearTimeout(timeoutId);
-    // Propager les Response HTTP (404, etc.) telles quelles
-    if (error instanceof Response) {
-      throw error;
-    }
-    // Pour les vraies erreurs (réseau, parsing), rediriger plutôt que 500
-    logger.error(
-      `[Legacy URL] Error loading article for gamme: ${pg_alias}`,
-      error,
-    );
+    if (error instanceof Response) throw error;
+    logger.error(`[R3 Guide] Error loading guide for: ${pg_alias}`, error);
     return redirect("/blog-pieces-auto/conseils", 302);
   }
 }
 
-// Cache — 5min browser + 1h stale (contenu stable, rarement modifie)
+// Cache — 5min browser + 1h stale (contenu stable)
 export const headers: HeadersFunction = () => ({
   "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
 });
 
-// Meta tags
+// Skip revalidation when navigating back to same guide
+export const shouldRevalidate: ShouldRevalidateFunction = ({
+  currentParams,
+  nextParams,
+  defaultShouldRevalidate,
+}) => {
+  if (currentParams.pg_alias === nextParams.pg_alias) return false;
+  return defaultShouldRevalidate;
+};
+
+// ── Meta ─────────────────────────────────────────────────
+
 export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   if (!data) {
     return [
@@ -394,61 +207,50 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     ];
   }
 
-  const { article } = data;
-  const canonicalUrl = `https://www.automecanik.com${location.pathname}`;
-  const cleanDescription = stripHtmlForMeta(article.seo_data.meta_description);
-  const cleanExcerpt = stripHtmlForMeta(article.excerpt);
-  const title = article.seo_data.meta_title || article.h1 || article.title;
+  const { guide } = data;
+  const page = guide.page;
+  const canonicalUrl = buildCanonicalUrl({
+    baseUrl: location.pathname,
+    includeHost: true,
+  });
+  const cleanDescription = stripHtmlForMeta(page.metaDescription);
+  const title = page.metaTitle || page.title;
 
-  // JSON-LD Schema Article — rich snippets Google
-  const articleSchema = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "@id": canonicalUrl,
-    headline: title,
-    description: cleanDescription,
-    url: canonicalUrl,
-    datePublished: article.publishedAt,
-    dateModified: article.updatedAt || article.publishedAt,
-    author: {
-      "@type": "Organization",
-      name: "Automecanik",
-      url: "https://www.automecanik.com",
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "Automecanik",
-      url: "https://www.automecanik.com",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://www.automecanik.com/logo-navbar.webp",
+  // Adapter sections → GammeConseil[] for schema builder
+  const allConseil: GammeConseil[] = [
+    ...guide.s1Sections.map(toConseil),
+    ...guide.bodySections.map(toConseil),
+    ...guide.metaSections.map(toConseil),
+  ];
+
+  const { articleSchema, howToSchema, faqSchema, breadcrumbSchema } =
+    buildGuideSchemas(
+      {
+        title: page.title,
+        meta_title: page.metaTitle,
+        meta_description: cleanDescription,
+        publishedAt: page.publishedAt,
+        updatedAt: page.updatedAt,
+        keywords: page.keywords,
+        readingTime: page.readingTime,
+        viewsCount: page.viewsCount,
+        featuredImage: page.featuredImage ?? undefined,
       },
-    },
-    articleSection: "Conseils Auto",
-    keywords: article.keywords.join(", "),
-    ...(article.readingTime && { timeRequired: `PT${article.readingTime}M` }),
-    mainEntityOfPage: {
-      "@type": "WebPage",
-      "@id": canonicalUrl,
-    },
-    ...(article.viewsCount > 0 && {
-      interactionStatistic: {
-        "@type": "InteractionCounter",
-        interactionType: "https://schema.org/ReadAction",
-        userInteractionCount: article.viewsCount,
-      },
-    }),
-  };
+      page.sourceType === "conseil" ? allConseil : null,
+      canonicalUrl,
+    );
 
   const result: Array<Record<string, string | object>> = [
     { title },
     { name: "description", content: cleanDescription },
-    { name: "keywords", content: article.keywords.join(", ") },
+    ...(page.keywords.length > 0
+      ? [{ name: "keywords", content: page.keywords.join(", ") }]
+      : []),
     { tagName: "link", rel: "canonical", href: canonicalUrl },
     { name: "robots", content: "index, follow" },
     { name: "author", content: "Automecanik - Experts Automobile" },
-    { property: "og:title", content: article.title },
-    { property: "og:description", content: cleanExcerpt },
+    { property: "og:title", content: title },
+    { property: "og:description", content: cleanDescription },
     { property: "og:type", content: "article" },
     { property: "og:url", content: canonicalUrl },
     {
@@ -457,12 +259,15 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
-    { property: "article:published_time", content: article.publishedAt },
+    { property: "article:published_time", content: page.publishedAt },
     {
       property: "article:modified_time",
-      content: article.updatedAt || article.publishedAt,
+      content: page.updatedAt || page.publishedAt,
     },
-    { property: "article:tag", content: article.keywords.join(", ") },
+    ...page.keywords.slice(0, 8).map((k) => ({
+      property: "article:tag",
+      content: k,
+    })),
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: cleanDescription },
@@ -470,129 +275,103 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       name: "twitter:image",
       content: "https://www.automecanik.com/images/og/blog-conseil.webp",
     },
-    // JSON-LD Schema Article
     { "script:ld+json": articleSchema },
+    ...(howToSchema ? [{ "script:ld+json": howToSchema }] : []),
+    ...(faqSchema ? [{ "script:ld+json": faqSchema }] : []),
+    { "script:ld+json": breadcrumbSchema },
   ];
 
-  // LCP OPTIMIZATION: Preload featured image
-  if (article.featuredImage) {
+  if (page.featuredImage) {
     result.push({
       tagName: "link",
       rel: "preload",
       as: "image",
-      href: article.featuredImage,
+      href: page.featuredImage,
     });
   }
 
   return result;
 };
 
-// Composant principal - Réutilise le même design que blog.article.$slug.tsx
-export default function LegacyBlogArticle() {
-  const data = useLoaderData<typeof loader>();
-  const { article, pg_alias, adjacentArticles, seoSwitches, conseil } = data;
-  const navigate = useNavigate();
-  const [isBookmarked, setIsBookmarked] = useState(false);
+// ── Component ────────────────────────────────────────────
 
-  const s1Sections = conseil?.filter((c) => c.sectionType === "S1") ?? [];
-  // Budget images section : max 2 pour blog-conseil
-  let sectionImageCount = 0;
-  const MAX_SECTION_IMAGES = 2;
-  // Quand des sections conseil S1-S8 existent, elles remplacent les H2/H3 article (évite la duplication)
-  const hasConseilSections =
-    conseil &&
-    conseil.filter((c) => c.sectionType && c.sectionType !== "META").length > 0;
+export default function R3GuidePage() {
+  const { guide, pg_alias } = useLoaderData<typeof loader>();
+  const navigate = useNavigate();
+  const page = guide.page;
+
+  // Sections already split server-side
+  const { s1Sections, bodySections, metaSections } = guide;
+  const sourceType = page.sourceType;
+
+  // Hero badges from pre-computed metadata
+  const heroBadges = buildHeroBadges(page);
+
+  // Adapter sections → GammeConseil for legacy components
+  const conseilForSnippet: GammeConseil[] | null =
+    sourceType === "conseil"
+      ? [
+          ...s1Sections.map(toConseil),
+          ...bodySections.map(toConseil),
+          ...metaSections.map(toConseil),
+        ]
+      : null;
+
   // SSR-safe: Use ref for startTime to avoid hydration mismatch
   const startTimeRef = useRef<number>(0);
 
-  // Initialize startTime on client only
+  // Analytics : vue après 3s + temps de lecture au cleanup
   useEffect(() => {
     startTimeRef.current = Date.now();
-  }, []);
 
-  // Calculer le temps de lecture (approximatif)
-  const _readingTime = Math.ceil(
-    (article.content.length +
-      article.sections.reduce((acc, s) => acc + s.content.length, 0)) /
-      1000,
-  );
-
-  // 🆕 Analytics tracking
-  useEffect(() => {
-    // Track vue d'article après 3 secondes (évite les bounces)
     const viewTimer = setTimeout(() => {
-      trackArticleView(article.id, article.title);
+      trackArticleView(String(page.pg_id), page.title);
     }, 3000);
 
-    // Track temps de lecture au départ
     return () => {
       clearTimeout(viewTimer);
+      if (!startTimeRef.current) return;
       const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
       if (duration > 5) {
-        trackReadingTime(article.id, duration, article.title);
+        trackReadingTime(String(page.pg_id), duration, page.title);
       }
     };
-  }, [article.id, article.title]);
-
-  // Gérer le bookmark avec tracking
-  const handleBookmark = () => {
-    const newState = !isBookmarked;
-    setIsBookmarked(newState);
-    trackBookmark(article.id, newState ? "add" : "remove", article.title);
-  };
-
-  // Gérer le partage avec tracking
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: article.title,
-          text: article.excerpt,
-          url: window.location.href,
-        })
-        .then(() => {
-          trackShareArticle("native", article.id, article.title);
-        });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      trackShareArticle("copy", article.id, article.title);
-      toast.success("Lien copié !", {
-        description: "Le lien de l'article a été copié",
-        duration: 2000,
-      });
-    }
-  };
+  }, [page.pg_id, page.title]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       {/* Navigation */}
       <BlogPiecesAutoNavigation />
 
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-3">
-          <PublicBreadcrumb
-            items={[
-              { label: "Blog", href: "/blog-pieces-auto" },
-              { label: "Conseils", href: "/blog-pieces-auto/conseils" },
-              { label: article.title },
-            ]}
-          />
-        </div>
-      </div>
-
-      {/* Hero Blog */}
-      <HeroBlog
-        title={article.h1}
-        description={article.excerpt}
+      {/* Hero Blog — Guide design system */}
+      <GuideHero
+        title={page.title}
+        description={
+          s1Sections.length === 0
+            ? stripHtmlForMeta(page.excerpt, 300)
+            : undefined
+        }
         slogan={resolveSlogan("blog-conseil", pg_alias)}
-        metaLine={`${new Date(article.publishedAt).toLocaleDateString("fr-FR")} · ${Math.ceil(article.content.split(" ").length / 200)} min · ${article.viewsCount.toLocaleString()} vues`}
+        metaLine={`${new Date(page.publishedAt).toLocaleDateString("fr-FR")} · ${page.readingTime} min${
+          page.viewsCount > 0
+            ? ` · ${page.viewsCount.toLocaleString()} vues`
+            : ""
+        }`}
+        badges={heroBadges}
+        ctaSoft={
+          sourceType === "conseil" && pg_alias
+            ? {
+                label: "Voir les pièces compatibles",
+                href: `/pieces/${pg_alias}-${page.pg_id}.html`,
+              }
+            : undefined
+        }
       />
 
       <div className="container mx-auto px-4 max-w-6xl py-8">
         {/* Bouton retour */}
         <button
-          onClick={() => navigate("/blog")}
+          onClick={() => navigate("/blog-pieces-auto/conseils")}
           className="mb-6 px-4 py-2 bg-white hover:bg-gray-50 rounded-lg transition-all flex items-center gap-2 border border-gray-200 shadow-sm"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -600,15 +379,16 @@ export default function LegacyBlogArticle() {
         </button>
 
         {/* Featured Image */}
-        {article.featuredImage && (
+        {page.featuredImage && (
           <Card className="mb-8 border shadow-lg overflow-hidden">
             <CardContent className="p-0">
               <div className="bg-gradient-to-br from-gray-50 via-white to-gray-100 p-6 flex items-center justify-center">
                 <img
-                  src={article.featuredImage}
-                  alt={article.title}
+                  src={page.featuredImage}
+                  alt={page.title}
                   width={800}
                   height={256}
+                  sizes="(max-width: 640px) 100vw, 800px"
                   className="w-full h-64 object-contain drop-shadow-lg"
                   loading="eager"
                   decoding="async"
@@ -620,9 +400,9 @@ export default function LegacyBlogArticle() {
         )}
 
         {/* Tags */}
-        {article.tags.length > 0 && (
+        {page.tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-8">
-            {article.tags.slice(0, 6).map((tag) => (
+            {page.tags.slice(0, 6).map((tag) => (
               <Badge
                 key={tag}
                 variant="secondary"
@@ -640,227 +420,130 @@ export default function LegacyBlogArticle() {
       <div className="bg-gray-50 min-h-screen py-12">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Article - 3 colonnes (meilleure lecture) */}
+            {/* Article - 3 colonnes */}
             <article className="lg:col-span-3 order-2 lg:order-1">
               <Card className="shadow-xl border-0 overflow-hidden">
                 <CardContent className="p-8 lg:p-12">
-                  {/* Sections S1 — Informations / Avant de commencer (en haut de l'article) */}
+                  {/* Sections S1 — Avant de commencer */}
                   {s1Sections.map((s1, idx) => (
-                    <div
+                    <GuideChecklist
                       key={idx}
-                      id={slugifyTitle(s1.title)}
-                      className="mb-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border-2 border-blue-200"
-                    >
-                      <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <Info className="w-6 h-6 text-blue-600" />
-                        {s1.title}
-                      </h2>
-                      <HtmlContent
-                        html={s1.content}
-                        className="prose prose-lg max-w-none
-                        prose-p:text-gray-700 prose-p:leading-relaxed
-                        prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
-                        prose-strong:text-gray-900 prose-strong:font-semibold"
-                        trackLinks={true}
-                      />
-                    </div>
+                      section={toConseil(s1)}
+                      variant="before"
+                    />
                   ))}
 
-                  {/* Contenu principal */}
-                  <HtmlContent
-                    html={article.content}
-                    className="prose prose-lg max-w-none mb-8
-                    prose-headings:text-gray-900 prose-headings:font-bold
-                    prose-p:text-gray-700 prose-p:leading-relaxed
-                    prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-                    prose-strong:text-gray-900 prose-strong:font-semibold
-                    prose-ul:list-disc prose-ul:pl-6
-                    prose-li:text-gray-700"
-                    trackLinks={true}
-                  />
+                  {/* Résumé en N points — featured snippet */}
+                  {sourceType === "conseil" && (
+                    <SummarySnippet conseil={conseilForSnippet} />
+                  )}
 
-                  {/* CTA Principal (après le contenu principal) */}
-                  {article.cta_link && article.cta_anchor && (
-                    <CTAButton
-                      anchor={article.cta_anchor}
-                      link={article.cta_link}
+                  {/* CTA Principal — masqué en mode conseil */}
+                  {sourceType !== "conseil" &&
+                    page.cta_link &&
+                    page.cta_anchor && (
+                      <CTAButton
+                        anchor={page.cta_anchor}
+                        link={page.cta_link}
+                      />
+                    )}
+
+                  {/* Sections H2/H3 (article fallback — pas de conseil S2-S8) */}
+                  {sourceType === "article" &&
+                    bodySections.map((section, index) => (
+                      <section key={index} id={section.anchor} className="mb-8">
+                        {section.level === 2 ? (
+                          <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-500">
+                            {section.title}
+                          </h2>
+                        ) : (
+                          <h3 className="text-xl font-semibold text-gray-800 mb-3 ml-4">
+                            {section.title}
+                          </h3>
+                        )}
+
+                        <HtmlContent
+                          html={section.html}
+                          className={`max-w-none ${section.level === 3 ? "ml-4" : ""}
+                            [&_p]:text-gray-700 [&_p]:leading-relaxed
+                            [&_a]:text-primary [&_a]:no-underline hover:[&_a]:underline
+                            [&_strong]:font-semibold
+                            [&_ul]:list-disc [&_ul]:pl-6
+                            [&_li]:text-gray-700`}
+                          trackLinks={true}
+                        />
+                      </section>
+                    ))}
+
+                  {/* Sections conseil S2-S8 */}
+                  {sourceType === "conseil" && (
+                    <ConseilSections
+                      sections={bodySections.map(toConseil)}
+                      pgAlias={pg_alias}
+                      pgId={page.pg_id}
                     />
                   )}
 
-                  {/* Sections H2/H3 de l'article (toujours affichées) */}
-                  {article.sections.map((section, index) => (
-                    <section key={index} id={section.anchor} className="mb-8">
-                      {section.level === 2 ? (
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-500">
-                          {section.title}
-                        </h2>
-                      ) : (
-                        <h3 className="text-xl font-semibold text-gray-800 mb-3 ml-4">
-                          {section.title}
-                        </h3>
-                      )}
+                  {/* Sources / responsabilité */}
+                  {sourceType === "conseil" && <SourcesDisclaimer />}
 
-                      {/* Image de la section via SectionImage (responsive, lazy, budget=2) */}
-                      {(() => {
-                        const hasWall =
-                          section.wall &&
-                          section.wall !== "no.jpg" &&
-                          sectionImageCount < MAX_SECTION_IMAGES;
-                        const imageConfig = getSectionImageConfig(
-                          "blog-conseil",
-                          "signsOfWear",
-                        );
-                        if (hasWall) sectionImageCount++;
+                  {/* Pour aller plus loin (META sections) */}
+                  {sourceType === "conseil" && metaSections.length > 0 && (
+                    <MetaLinksSection sections={metaSections.map(toConseil)} />
+                  )}
 
-                        const htmlBlock = (
-                          <HtmlContent
-                            html={section.content}
-                            className={`prose prose-lg max-w-none ${section.level === 3 ? "ml-4" : ""}
-                            prose-p:text-gray-700 prose-p:leading-relaxed
-                            prose-a:text-primary prose-a:no-underline hover:prose-a:underline
-                            prose-strong:font-semibold
-                            prose-ul:list-disc prose-ul:pl-6
-                            prose-li:text-gray-700`}
-                            trackLinks={true}
-                          />
-                        );
-
-                        return hasWall && imageConfig ? (
-                          <SectionWithImage>
-                            <SectionImage
-                              src={`/upload/blog/guide/mini/${section.wall}`}
-                              alt={resolveAltText("blog-conseil", pg_alias)}
-                              placement={imageConfig.placement}
-                              size={imageConfig.size}
-                              caption={section.title}
-                            />
-                            {htmlBlock}
-                          </SectionWithImage>
-                        ) : (
-                          htmlBlock
-                        );
-                      })()}
-
-                      {/* CTA de section (si présent) */}
-                      {section.cta_link && section.cta_anchor && (
-                        <CTAButton
-                          anchor={section.cta_anchor}
-                          link={section.cta_link}
-                          className={section.level === 3 ? "ml-4" : ""}
-                        />
-                      )}
-                    </section>
-                  ))}
-
-                  {/* Sections conseil S2-S8 (complètent les H2/H3 article) */}
-                  {hasConseilSections &&
-                    conseil
-                      .filter(
-                        (c) =>
-                          c.sectionType &&
-                          c.sectionType !== "S1" &&
-                          c.sectionType !== "META",
-                      )
-                      .map((conseilItem, index) => {
-                        const style = getSectionStyle(conseilItem.sectionType);
-                        return (
-                          <div
-                            key={index}
-                            id={slugifyTitle(conseilItem.title)}
-                            className="mb-8"
-                          >
-                            <Card
-                              className={`shadow-xl border-2 ${style.border} overflow-hidden`}
-                            >
-                              <CardHeader
-                                className={`${style.headerBg} text-white`}
-                              >
-                                <CardTitle className="flex items-center gap-2 text-2xl">
-                                  <SectionIcon type={conseilItem.sectionType} />
-                                  {conseilItem.title}
-                                </CardTitle>
-                              </CardHeader>
-                              <CardContent className="p-6">
-                                <HtmlContent
-                                  html={conseilItem.content}
-                                  className="prose prose-lg max-w-none
-                                    prose-headings:text-gray-900 prose-headings:font-bold
-                                    prose-p:text-gray-700 prose-p:leading-relaxed
-                                    prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline
-                                    prose-strong:text-gray-900 prose-strong:font-semibold
-                                    prose-ul:list-disc prose-ul:pl-6
-                                    prose-ol:list-decimal prose-ol:pl-6
-                                    prose-li:text-gray-700 prose-li:mb-2"
-                                  trackLinks={true}
-                                />
-                              </CardContent>
-                            </Card>
-                          </div>
-                        );
-                      })}
-
-                  {/* Actions */}
-                  <hr className="my-4 border-gray-200" />
-                  <div className="flex items-center justify-between mt-8">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleShare}
-                        className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                      >
-                        <Share2 className="w-4 h-4" />
-                        Partager
-                      </button>
-                      <button
-                        onClick={handleBookmark}
-                        className="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                      >
-                        <Bookmark
-                          className={`w-4 h-4 ${isBookmarked ? "fill-current" : ""}`}
-                        />
-                        {isBookmarked ? "Enregistré" : "Enregistrer"}
-                      </button>
-                    </div>
-                  </div>
+                  {/* Actions (partager + enregistrer) */}
+                  <ArticleActionsBar
+                    articleId={String(page.pg_id)}
+                    articleTitle={page.title}
+                    articleExcerpt={page.excerpt}
+                  />
                 </CardContent>
               </Card>
             </article>
 
-            {/* Véhicules Compatibles (Pleine largeur, après l'article) */}
-            {article.compatibleVehicles &&
-              article.compatibleVehicles.length > 0 && (
-                <div className="lg:col-span-3 order-3">
+            {/* Véhicules Compatibles */}
+            {guide.vehicles.length > 0 && (
+              <div className="lg:col-span-3 order-3">
+                <Suspense
+                  fallback={
+                    <div className="h-48 animate-pulse bg-gray-100 rounded-lg" />
+                  }
+                >
                   <VehicleCarousel
-                    vehicles={article.compatibleVehicles}
+                    vehicles={guide.vehicles as unknown as CompatibleVehicle[]}
                     gamme={pg_alias}
-                    seoSwitches={seoSwitches}
+                    seoSwitches={
+                      guide.seoSwitches as unknown as Array<{
+                        sis_id: string;
+                        sis_pg_id: string;
+                        sis_alias: string;
+                        sis_content: string;
+                      }>
+                    }
                   />
-                </div>
-              )}
+                </Suspense>
+              </div>
+            )}
 
-            {/* Sidebar (1/3) - Sticky pour toujours visible */}
+            {/* Sidebar (1/3) - Sticky */}
             <aside className="lg:col-span-1 order-1 lg:order-2">
               <div className="lg:sticky lg:top-20 space-y-6">
-                {/* Table des matières — ordre DOM : S1 → article H2/H3 → S2-S8 */}
-                {(article.sections.length > 0 ||
-                  (conseil && conseil.length > 0)) && (
+                {/* Table des matières — anchors pré-calculés */}
+                {(s1Sections.length > 0 || bodySections.length > 0) && (
                   <TableOfContents
-                    sections={
-                      hasConseilSections
-                        ? (conseil || [])
-                            .filter(
-                              (c) => c.sectionType && c.sectionType !== "META",
-                            )
-                            .map((c) => ({
-                              level: 2 as const,
-                              title: c.title,
-                              anchor: slugifyTitle(c.title),
-                            }))
-                        : article.sections.map((s) => ({
-                            level: s.level,
-                            title: s.title,
-                            anchor: s.anchor,
-                          }))
-                    }
+                    sections={[
+                      ...s1Sections.map((s) => ({
+                        level: 2 as const,
+                        title: s.title,
+                        anchor: s.anchor,
+                      })),
+                      ...bodySections.map((s) => ({
+                        level: (s.level ?? 2) as 2 | 3,
+                        title: s.title,
+                        anchor: s.anchor,
+                      })),
+                    ]}
                   />
                 )}
 
@@ -886,115 +569,40 @@ export default function LegacyBlogArticle() {
                   </div>
                 </Card>
 
-                {/* Articles Croisés - "On vous propose" */}
-                {article.relatedArticles &&
-                  article.relatedArticles.length > 0 && (
-                    <Card className="shadow-lg hover:shadow-xl transition-shadow">
-                      <div className="p-6">
-                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                          📰 On vous propose
-                        </h3>
-                        <div className="h-1 w-16 bg-primary rounded mb-4" />
-                        <div className="space-y-3">
-                          {article.relatedArticles.map((related) => (
-                            <Link
-                              key={related.id}
-                              to={
-                                related.pg_alias
-                                  ? `/blog-pieces-auto/conseils/${related.pg_alias}`
-                                  : `/blog-pieces-auto/article/${related.slug}`
-                              }
-                            >
-                              <Card className="overflow-hidden hover:shadow-md transition-all group border-gray-200">
-                                <div className="flex gap-3 p-3">
-                                  {/* 🆕 Image mini optimisée - featured image si disponible */}
-                                  {related.featuredImage ? (
-                                    <img
-                                      src={related.featuredImage}
-                                      alt={related.title}
-                                      className="w-20 h-16 object-cover rounded-md flex-shrink-0 border-2 border-gray-200 group-hover:scale-105 transition-transform"
-                                      loading="lazy"
-                                      width="80"
-                                      height="64"
-                                    />
-                                  ) : related.wall &&
-                                    related.wall !== "no.jpg" ? (
-                                    <img
-                                      src={`/upload/blog/guide/mini/${related.wall}`}
-                                      alt={related.title}
-                                      className="w-20 h-16 object-cover rounded-md flex-shrink-0 border-2 border-gray-200 group-hover:scale-105 transition-transform"
-                                      loading="lazy"
-                                      width="80"
-                                      height="64"
-                                    />
-                                  ) : (
-                                    <div className="w-20 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-md flex-shrink-0 flex items-center justify-center border-2 border-gray-200">
-                                      <span className="text-xl">📄</span>
-                                    </div>
-                                  )}
-
-                                  <div className="flex-1 min-w-0">
-                                    <h4 className="font-medium text-sm text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 mb-1">
-                                      {related.title}
-                                    </h4>
-                                    <p className="text-xs text-gray-600 line-clamp-2 mb-2">
-                                      {related.excerpt}
-                                    </p>
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                      <Eye className="w-3 h-3" />
-                                      <span>
-                                        {related.viewsCount.toLocaleString()}{" "}
-                                        vues
-                                      </span>
-                                      {/* 🆕 Date de publication */}
-                                      {related.updatedAt && (
-                                        <>
-                                          <span>•</span>
-                                          <Calendar className="w-3 h-3" />
-                                          <span>
-                                            {new Date(
-                                              related.updatedAt,
-                                            ).toLocaleDateString("fr-FR", {
-                                              day: "2-digit",
-                                              month: "2-digit",
-                                              year: "numeric",
-                                            })}
-                                          </span>
-                                        </>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </Card>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </Card>
-                  )}
+                {/* Articles Croisés */}
+                {guide.related.length > 0 && (
+                  <Suspense
+                    fallback={
+                      <div className="h-32 animate-pulse bg-gray-100 rounded-lg" />
+                    }
+                  >
+                    <RelatedArticlesSidebar
+                      articles={guide.related as never[]}
+                    />
+                  </Suspense>
+                )}
               </div>
             </aside>
           </div>
 
-          {/* ⬅️➡️ Navigation entre articles (précédent/suivant) */}
+          {/* Navigation entre articles (précédent/suivant) */}
           <div className="max-w-6xl mx-auto mt-8">
             <ArticleNavigation
-              previous={adjacentArticles.previous}
-              next={adjacentArticles.next}
+              previous={guide.adjacent.previous as never}
+              next={guide.adjacent.next as never}
             />
           </div>
         </div>
       </div>
 
-      {/* 🆕 Bouton retour en haut */}
+      {/* Bouton retour en haut */}
       <ScrollToTop />
     </div>
   );
 }
 
-// ============================================================
-// ERROR BOUNDARY - Gestion des erreurs HTTP avec composants
-// ============================================================
+// ── Error Boundary ───────────────────────────────────────
+
 export function ErrorBoundary() {
   const error = useRouteError();
 

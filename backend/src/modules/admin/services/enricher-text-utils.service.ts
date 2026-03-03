@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { restoreAccents as restoreAccentsFn } from '../../../config/fr-accent-map';
 
 /**
  * Shared text-processing utilities extracted from conseil-enricher and buying-guide-enricher.
@@ -107,48 +108,10 @@ export class EnricherTextUtils {
 
   /**
    * Restore common French accents missing from YAML source files.
-   * Band-aid fix until YAML gamme files are regenerated with proper accents.
-   *
-   * Copied from conseil-enricher.service.ts L1783 and buying-guide-enricher.service.ts L2046
-   * (identical implementations).
+   * Delegates to shared pure function in config/fr-accent-map.ts.
    */
   restoreAccents(text: string): string {
-    if (!text) return text;
-    const ACCENT_MAP: Array<[RegExp, string]> = [
-      [/\bequipements?\b/gi, 'équipement'],
-      [/\belectriques?\b/gi, 'électrique'],
-      [/\bvehicules?\b/gi, 'véhicule'],
-      [/\bverifi/gi, 'vérifi'],
-      [/\bgeneral\b/gi, 'général'],
-      [/\bsecurite\b/gi, 'sécurité'],
-      [/\bprecedent/gi, 'précédent'],
-      [/\bdefaut\b/gi, 'défaut'],
-      [/\bdetect/gi, 'détect'],
-      [/\bdegradation/gi, 'dégradation'],
-      [/\bcontrole\b/gi, 'contrôle'],
-      [/\bmodele\b/gi, 'modèle'],
-      [/\bannee\b/gi, 'année'],
-      [/\bspecifi/gi, 'spécifi'],
-      [/\breferen/gi, 'référen'],
-      [/\bprocedure\b/gi, 'procédure'],
-      [/\bcomplete\b/gi, 'complète'],
-      [/\bpieces\b/gi, 'pièces'],
-      [/\bpiece\b/gi, 'pièce'],
-      [/\belectri/gi, 'électri'],
-      [/\benergie\b/gi, 'énergie'],
-      [/\bnecessaire\b/gi, 'nécessaire'],
-      [/\bpreventif\b/gi, 'préventif'],
-    ];
-    let result = text;
-    for (const [pattern, replacement] of ACCENT_MAP) {
-      result = result.replace(pattern, (match) => {
-        // Preserve plural suffix
-        const suffix =
-          match.endsWith('s') && !replacement.endsWith('s') ? 's' : '';
-        return replacement + suffix;
-      });
-    }
-    return result;
+    return restoreAccentsFn(text);
   }
 
   /**
@@ -186,6 +149,26 @@ export class EnricherTextUtils {
           .trim(),
       )
       .filter((line) => line.length >= 10);
+  }
+
+  /**
+   * Remove source attribution tags from content before rendering.
+   * RAG .md files contain "(Source: BT-110 Da Silva)" for traceability,
+   * but these MUST NOT appear in user-facing content.
+   *
+   * Patterns stripped:
+   * - (Source: BT-110 Da Silva)
+   * - (Source: SR01000)
+   * - (BT-110 Da Silva)
+   * - trailing dot after tag
+   */
+  stripSourceTags(text: string): string {
+    if (!text) return text;
+    return text
+      .replace(/\s*\(Source:\s*[^)]+\)\.?/gi, '')
+      .replace(/\s*\(BT-\d+[^)]*\)\.?/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
   }
 
   /**

@@ -182,6 +182,9 @@ function cleanHtml(html: string): string {
       "width",
       "height",
       "title",
+      "colspan",
+      "rowspan",
+      "scope",
     ],
   });
 

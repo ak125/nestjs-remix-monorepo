@@ -19,6 +19,7 @@ import { getErrorMessage } from '../../../common/utils/error.utils';
 import { WebhookAuditService } from './webhook-audit.service';
 import { RagGammeDetectionService } from './rag-gamme-detection.service';
 import { RagRedisJobService } from './rag-redis-job.service';
+import { RagCleanupService } from './rag-cleanup.service';
 
 @Injectable()
 export class RagWebhookCompletionService {
@@ -30,6 +31,7 @@ export class RagWebhookCompletionService {
     private readonly webhookAuditService: WebhookAuditService,
     private readonly ragGammeDetectionService: RagGammeDetectionService,
     private readonly ragRedisJobService: RagRedisJobService,
+    private readonly ragCleanupService: RagCleanupService,
   ) {}
 
   /**
@@ -85,6 +87,26 @@ export class RagWebhookCompletionService {
     const absolutePaths = (dto.files_created ?? []).map((f) =>
       path.isAbsolute(f) ? f : path.join(knowledgePath, f),
     );
+
+    // Sync files to __rag_knowledge DB
+    if (absolutePaths.length > 0) {
+      try {
+        const syncResult = await this.ragCleanupService.syncFilesToDb(
+          absolutePaths,
+          knowledgePath,
+        );
+        this.logger.log(
+          `Webhook DB sync: ${syncResult.synced} synced, ${syncResult.skipped} skipped` +
+            (syncResult.errors.length
+              ? `, ${syncResult.errors.length} errors`
+              : ''),
+        );
+      } catch (syncErr) {
+        this.logger.error(
+          `Webhook DB sync failed: ${getErrorMessage(syncErr)}`,
+        );
+      }
+    }
 
     // Reuse existing resolution logic via RagGammeDetectionService
     const affectedGammesMap =

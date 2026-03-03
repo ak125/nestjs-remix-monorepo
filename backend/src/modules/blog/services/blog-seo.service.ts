@@ -7,6 +7,8 @@ import {
   LinkInjectionResult,
 } from '../../seo/internal-linking.service';
 import { SEO_LINK_LIMITS } from '../../../config/seo-link-limits.config';
+import { GENERIC_PHRASES } from '../../../config/conseil-pack.constants';
+import { restoreAccents } from '../../../config/fr-accent-map';
 
 /**
  * 🔍 BlogSeoService - SEO et liens internes du blog
@@ -170,6 +172,8 @@ export class BlogSeoService {
       content: string;
       sectionType: string | null;
       order: number | null;
+      qualityScore: number | null;
+      sources: string[];
     }>
   > {
     try {
@@ -179,7 +183,9 @@ export class BlogSeoService {
 
       const { data, error } = await this.supabaseService.client
         .from('__seo_gamme_conseil')
-        .select('sgc_title, sgc_content, sgc_section_type, sgc_order')
+        .select(
+          'sgc_title, sgc_content, sgc_section_type, sgc_order, sgc_quality_score, sgc_sources',
+        )
         .eq('sgc_pg_id', pg_id.toString())
         .order('sgc_order', { ascending: true, nullsFirst: false })
         .order('sgc_id', { ascending: true });
@@ -198,18 +204,143 @@ export class BlogSeoService {
         `✅ ${data.length} conseils récupérés: ${data.map((c) => c.sgc_title).join(', ')}`,
       );
 
-      return data.map((item) => ({
+      const mapped = data.map((item) => ({
         title: item.sgc_title || '',
         content: item.sgc_content || '',
         sectionType: item.sgc_section_type || null,
         order: item.sgc_order ? Number(item.sgc_order) : null,
+        qualityScore: item.sgc_quality_score ?? null,
+        sources: this.parseSources(item.sgc_sources),
       }));
+
+      return this.sanitizeConseilContent(mapped);
     } catch (error) {
       this.logger.error(
         `❌ Erreur getGammeConseil: ${(error as Error).message}`,
       );
       return [];
     }
+  }
+
+  // ── Quality gate en lecture ─────────────────────────────────
+
+  /** Nettoie et normalise les sections conseil au read-time */
+  private sanitizeConseilContent(
+    sections: Array<{
+      title: string;
+      content: string;
+      sectionType: string | null;
+      order: number | null;
+      qualityScore: number | null;
+      sources: string[];
+    }>,
+  ): typeof sections {
+    const cleaned = sections
+      .filter(
+        (s) =>
+          s.content.length >= 80 &&
+          !this.isTemplateContent(s.content) &&
+          s.qualityScore !== 0,
+      )
+      .map((s) => ({
+        ...s,
+        content: restoreAccents(this.cleanWeakPhrases(s.content)),
+        title: restoreAccents(this.normalizeTitle(s.title)),
+      }));
+    return this.deduplicateSections(cleaned);
+  }
+
+  /** Détecte le contenu boilerplate généré par template */
+  private isTemplateContent(content: string): boolean {
+    const stripped = content.replace(/<[^>]+>/g, '').trim();
+    const templates = [
+      /^renseignez marque,?\s*mod[eè]le/i,
+      /^comment choisir vos?\s/i,
+    ];
+    return templates.some((p) => p.test(stripped));
+  }
+
+  /** Deduplicate sections by fingerprint (sectionType + first 200 chars of cleaned text) */
+  private deduplicateSections<
+    T extends { content: string; sectionType: string | null },
+  >(sections: T[]): T[] {
+    const seen = new Set<string>();
+    return sections.filter((s) => {
+      // Keep sections without a type (null) unconditionally
+      if (!s.sectionType) return true;
+      const stripped = s.content
+        .replace(/<[^>]+>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 200);
+      const fp = `${s.sectionType}::${stripped}`;
+      if (seen.has(fp)) {
+        this.logger.warn(
+          `🔁 Duplicate section filtered: ${s.sectionType} — "${stripped.slice(0, 40)}…"`,
+        );
+        return false;
+      }
+      seen.add(fp);
+      return true;
+    });
+  }
+
+  /** Supprime les phrases faibles / anti-E-E-A-T du HTML */
+  private cleanWeakPhrases(html: string): string {
+    let cleaned = html;
+    for (const pattern of GENERIC_PHRASES) {
+      cleaned = cleaned.replace(pattern, '');
+    }
+    // Nettoyer les <p></p> vides résultants
+    cleaned = cleaned.replace(/<p>\s*<\/p>/gi, '');
+    return cleaned;
+  }
+
+  /** Normalise les titres (trim, collapse whitespace, remove trailing colon) */
+  private normalizeTitle(title: string): string {
+    return title
+      .trim()
+      .replace(/\s+/g, ' ')
+      .replace(/\s*:\s*$/, '');
+  }
+
+  /** Parse sgc_sources text column (JSON array of strings or objects with ref) */
+  private parseSources(raw: string | null): string[] {
+    if (!raw) return [];
+    try {
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map((s) => {
+          if (typeof s === 'string') return this.humanizeSourceRef(s);
+          if (s && typeof s === 'object' && s.ref)
+            return this.humanizeSource(s);
+          return null;
+        })
+        .filter((s): s is string => s !== null)
+        .filter((v, i, arr) => arr.indexOf(v) === i); // deduplicate
+    } catch {
+      return [];
+    }
+  }
+
+  /** Convert internal source metadata into user-facing labels */
+  private humanizeSource(s: { type?: string; ref?: string }): string {
+    if (s.type === 'rag' && s.ref?.startsWith('gammes/'))
+      return 'Équipe technique AutoMecanik';
+    if (s.type === 'rag') return 'Documentation technique';
+    if (s.ref?.includes('OEM') || s.ref === 'OEM_manual')
+      return 'Manuel constructeur';
+    if (s.ref?.endsWith('.pdf')) return 'Documentation technique';
+    return 'Source vérifiée';
+  }
+
+  /** Convert raw string source refs into user-facing labels */
+  private humanizeSourceRef(ref: string): string {
+    if (ref.startsWith('gammes/')) return 'Équipe technique AutoMecanik';
+    if (ref.includes('OEM')) return 'Manuel constructeur';
+    if (ref.endsWith('.pdf')) return 'Documentation technique';
+    return ref;
   }
 
   /**

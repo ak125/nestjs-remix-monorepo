@@ -1,12 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
+import { readFileSync } from 'node:fs';
+import * as path from 'node:path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import type {
   RagDocInput,
   IngestDecision,
   CleanupReport,
 } from '../types/rag-ingest.types';
+import type { TruthLevel } from '../types/rag-ingest.types';
 
 /**
  * Compatibility matrix: source prefix → allowed categories + truth levels.
@@ -64,7 +68,11 @@ const DEFAULT_QUOTA = 20;
 export class RagCleanupService extends SupabaseBaseService {
   protected override readonly logger = new Logger(RagCleanupService.name);
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    @Inject(forwardRef(() => FrontmatterValidatorService))
+    private readonly frontmatterValidator: FrontmatterValidatorService,
+  ) {
     super(configService);
   }
 
@@ -265,6 +273,114 @@ export class RagCleanupService extends SupabaseBaseService {
       .eq('domain', domain)
       .eq('status', 'active');
     return { allowed: (count ?? 0) < max, current: count ?? 0, max };
+  }
+
+  // ── File → DB sync ───────────────────────────────────────────
+
+  /** Default fallback maps when frontmatter fields are missing. */
+  private static readonly PREFIX_DEFAULTS: Record<
+    string,
+    { category: string; domain: string }
+  > = {
+    web: { category: 'guide', domain: 'knowledge' },
+    'web-catalog': { category: 'catalog/gamme', domain: 'catalog' },
+    gammes: { category: 'catalog/gamme', domain: 'catalog' },
+    guides: { category: 'guide', domain: 'knowledge' },
+    diagnostic: { category: 'diagnostic', domain: 'knowledge' },
+    faq: { category: 'knowledge/faq', domain: 'knowledge' },
+    canonical: { category: 'knowledge/canonical', domain: 'knowledge' },
+    reference: { category: 'definition', domain: 'knowledge' },
+    policies: { category: 'knowledge/policy', domain: 'knowledge' },
+    vehicle: { category: 'vehicle', domain: 'catalog' },
+    vehicles: { category: 'vehicle', domain: 'catalog' },
+    canon: { category: 'knowledge/canonical', domain: 'knowledge' },
+  };
+
+  /**
+   * Read validated .md files from disk and upsert them into __rag_knowledge.
+   * Each file goes through decideIngest() → applyIngest().
+   *
+   * @param filePaths  Absolute or relative paths to .md files
+   * @param knowledgeBasePath  Root of the knowledge directory (used to compute relative source key)
+   */
+  async syncFilesToDb(
+    filePaths: string[],
+    knowledgeBasePath: string,
+  ): Promise<{ synced: number; skipped: number; errors: string[] }> {
+    const result = { synced: 0, skipped: 0, errors: [] as string[] };
+
+    for (const fp of filePaths) {
+      try {
+        const absPath = path.isAbsolute(fp)
+          ? fp
+          : path.join(knowledgeBasePath, fp);
+        const content = readFileSync(absPath, 'utf-8');
+
+        // Parse frontmatter
+        const fm = this.frontmatterValidator.parseFrontmatter(content);
+
+        // Strip frontmatter to get body
+        const body = content
+          .replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '')
+          .trim();
+        if (!body) {
+          result.skipped++;
+          this.logger.warn(`syncFilesToDb: empty body, skipping ${fp}`);
+          continue;
+        }
+
+        // Compute relative source key (e.g. "web/2d8006fe60a7-s001")
+        const relPath = path.isAbsolute(fp)
+          ? path.relative(knowledgeBasePath, fp)
+          : fp;
+        const source = relPath.replace(/\.md$/, '');
+
+        // Infer defaults from path prefix
+        const prefix = this.getSourcePrefix(source);
+        const defaults = RagCleanupService.PREFIX_DEFAULTS[prefix] ?? {
+          category: 'guide',
+          domain: 'knowledge',
+        };
+
+        // Use frontmatter category only if it's in the compatibility matrix
+        // (Python ingest scripts may write categories like "knowledge" that
+        //  don't match our internal matrix for the prefix)
+        const matrix = COMPATIBILITY_MATRIX[prefix];
+        const fmCategoryValid =
+          fm.category && matrix?.categories.includes(fm.category);
+
+        const doc: RagDocInput = {
+          title: fm.title || path.basename(source),
+          content: body,
+          source,
+          truth_level: (fm.truth_level as TruthLevel) || 'L2',
+          domain: fm.domain || defaults.domain,
+          category: fmCategoryValid ? fm.category! : defaults.category,
+        };
+
+        const decision = await this.decideIngest(doc);
+
+        if (decision.decision === 'ACCEPT_UPSERT') {
+          await this.applyIngest(doc, decision);
+          result.synced++;
+          this.logger.log(`syncFilesToDb: upserted ${source}`);
+        } else {
+          result.skipped++;
+          this.logger.log(
+            `syncFilesToDb: ${decision.decision} ${source} — ${decision.reasons.join(', ')}`,
+          );
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        result.errors.push(`${fp}: ${msg}`);
+        this.logger.error(`syncFilesToDb error on ${fp}: ${msg}`);
+      }
+    }
+
+    this.logger.log(
+      `syncFilesToDb complete: ${result.synced} synced, ${result.skipped} skipped, ${result.errors.length} errors`,
+    );
+    return result;
   }
 
   // ── Batch cleanup (scan existing corpus) ──────────────────────

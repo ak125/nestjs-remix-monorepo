@@ -45,10 +45,13 @@ import DarkSection from "~/components/layout/DarkSection";
 import PageSection from "~/components/layout/PageSection";
 import Reveal from "~/components/layout/Reveal";
 import SectionHeader from "~/components/layout/SectionHeader";
+import DesktopStickyCTA from "~/components/pieces/DesktopStickyCTA";
+import { GuideLinkCard } from "~/components/pieces/GuideLinkCard";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import { R1CompatErrors } from "~/components/pieces/R1CompatErrors";
 import { R1ProofStats } from "~/components/pieces/R1ProofStats";
 import { R1QuickSteps } from "~/components/pieces/R1QuickSteps";
+import { R1ReassuranceBar } from "~/components/pieces/R1ReassuranceBar";
 import { R1ReusableContent } from "~/components/pieces/R1ReusableContent";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
@@ -82,6 +85,11 @@ import {
   sanitizePurchaseGuideForR1,
   type R1PurchaseGuideData,
 } from "~/utils/r1-builders";
+import {
+  buildR1SourceMap,
+  sourceAttr,
+  type R1SourceMap,
+} from "~/utils/r1-source-tracker";
 import { buildCanonicalUrl } from "~/utils/seo/canonical";
 import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
 import VehicleSelector from "../components/vehicle/VehicleSelector";
@@ -384,19 +392,29 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const allYears = motorItems
       .flatMap((m) => (m.periode || "").match(/\d{4}/g) || [])
       .map(Number)
-      .filter((y) => y > 1990 && y < 2100);
+      .filter((y) => y > 1900 && y < 2100);
 
     // Micro-preuves pour R1ReusableContent (S_BUY_ARGS)
     const equipNames = (pageData.equipementiers?.items || [])
       .map((e) => e.pm_name)
       .filter(Boolean);
-    const proofData = buildProofData({ motorItems, equipNames, allYears });
+    const proofData = buildProofData({
+      motorItems,
+      equipNames,
+      allYears,
+      motorisationsCount: pageData.performance?.motorisations_count,
+    });
 
     // ── LCP STREAMING: defer() — above-fold sync, below-fold streamed ──
     // pageData sort du scope après defer() → GC naturel sans mutation
     const responseHeaders: Record<string, string> = {
       "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200",
     };
+
+    const purchaseGuideData = sanitizePurchaseGuideForR1(
+      pageData.purchaseGuideData,
+    );
+    const r1Sources = buildR1SourceMap(purchaseGuideData);
 
     return defer(
       {
@@ -409,9 +427,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         breadcrumbs: pageData.breadcrumbs,
         famille: pageData.famille,
         performance: pageData.performance,
-        purchaseGuideData: sanitizePurchaseGuideForR1(
-          pageData.purchaseGuideData,
-        ),
+        purchaseGuideData,
+        r1Sources,
         substitution: pageData.substitution,
         reference: pageData.reference,
         canonicalPath,
@@ -568,10 +585,12 @@ type PiecesPageData = Omit<GammePageDataV1, "purchaseGuideData"> & {
   proofData?: {
     topMarques: string[];
     topEquipementiers: string[];
-    vehicleCount: number;
+    motorisationsCount: number;
+    modelsCount: number;
     periodeRange: string;
     topMotorCodes: string[];
   };
+  r1Sources?: R1SourceMap;
 };
 
 export default function PiecesDetailPage() {
@@ -598,7 +617,7 @@ export default function PiecesDetailPage() {
     }
   }, [isLoading]);
 
-  // Dev-guard: détecte les doublons data-section dans le DOM
+  // Dev-guard: détecte les doublons data-section + log source tracking
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return;
     const sections = document.querySelectorAll("[data-section]");
@@ -608,6 +627,18 @@ export default function PiecesDetailPage() {
     const dupes = [...new Set(vals.filter((v, i) => vals.indexOf(v) !== i))];
     if (dupes.length)
       throw new Error(`[R1] Duplicate sections: ${dupes.join(", ")}`);
+
+    // R1 Source Tracking log (mount-only debug, data stable from loader)
+    if (data?.r1Sources) {
+      const entries = Object.values(data.r1Sources);
+      const prompt = entries.filter((s) => s?.source === "prompt").length;
+      const fallback = entries.filter((s) => s?.source === "fallback").length;
+      const api = entries.filter((s) => s?.source === "api").length;
+      console.log(
+        `[R1 Sources] prompt=${prompt}, fallback=${fallback}, api=${api}`,
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!data || data.status !== 200) {
@@ -631,9 +662,10 @@ export default function PiecesDetailPage() {
       current: item.current,
     })) || [
       { label: "Accueil", href: "/" },
+      { label: "Pièces Auto", href: "/pieces" },
       {
         label: data.content?.pg_name || "Pièce",
-        href: data.meta?.canonical || "",
+        current: true as const,
       },
     ];
 
@@ -681,6 +713,7 @@ export default function PiecesDetailPage() {
       <HeroTransaction
         id="hero-transaction"
         {...sectionAttr(R1Section.HERO)}
+        {...sourceAttr(data.r1Sources, R1Section.HERO)}
         gradient={familleColor}
         slogan={resolveSlogan("transaction", data.content?.pg_name)}
         badges={
@@ -956,9 +989,20 @@ export default function PiecesDetailPage() {
         </div>
       </HeroTransaction>
 
-      {/* ✅ Bloc compatibilité — réassurance avant catalogue */}
+      {/* Barre rassurance — 3 cartes compactes */}
+      <PageSection
+        {...sectionAttr(R1Section.REASSURANCE)}
+        {...sourceAttr(data.r1Sources, R1Section.REASSURANCE)}
+        maxWidth="5xl"
+        className="py-3 sm:py-4"
+      >
+        <R1ReassuranceBar />
+      </PageSection>
+
+      {/* Bloc compatibilité — réassurance avant catalogue */}
       <PageSection
         {...sectionAttr(R1Section.COMPAT)}
+        {...sourceAttr(data.r1Sources, R1Section.COMPAT)}
         className="py-4 sm:py-6"
         id="compatibility-check"
       >
@@ -986,6 +1030,7 @@ export default function PiecesDetailPage() {
       {/* Comment choisir en 15s — 4 étapes sélection véhicule */}
       <PageSection
         {...sectionAttr(R1Section.QUICK_STEPS)}
+        {...sourceAttr(data.r1Sources, R1Section.QUICK_STEPS)}
         maxWidth="5xl"
         className="py-4 sm:py-6"
       >
@@ -997,6 +1042,7 @@ export default function PiecesDetailPage() {
       {/* R1 micro-bloc: texte SEO utile (court) */}
       <PageSection
         {...sectionAttr(R1Section.BUY_ARGS)}
+        {...sourceAttr(data.r1Sources, R1Section.BUY_ARGS)}
         maxWidth="5xl"
         className="py-6 sm:py-8"
       >
@@ -1007,12 +1053,13 @@ export default function PiecesDetailPage() {
 
           // LCP STREAMING: proofs depuis proofData (sync, extrait dans le loader)
           const proofs =
-            data.proofData && data.proofData.vehicleCount > 0
+            data.proofData && data.proofData.motorisationsCount > 0
               ? {
                   topMarques: data.proofData.topMarques,
                   topEquipementiers: data.proofData.topEquipementiers,
                   periodeRange: data.proofData.periodeRange,
-                  vehicleCount: data.proofData.vehicleCount,
+                  motorisationsCount: data.proofData.motorisationsCount,
+                  modelsCount: data.proofData.modelsCount,
                   topMotorCodes: data.proofData.topMotorCodes,
                 }
               : undefined;
@@ -1045,14 +1092,16 @@ export default function PiecesDetailPage() {
       </PageSection>
 
       {/* Preuves en chiffres — stats visuelles compactes */}
-      {data.proofData && data.proofData.vehicleCount > 0 && (
+      {data.proofData && data.proofData.motorisationsCount > 0 && (
         <PageSection
           {...sectionAttr(R1Section.PROOF_STATS)}
+          {...sourceAttr(data.r1Sources, R1Section.PROOF_STATS)}
           maxWidth="5xl"
           className="py-4 sm:py-6"
         >
           <R1ProofStats
-            vehicleCount={data.proofData.vehicleCount}
+            motorisationsCount={data.proofData.motorisationsCount}
+            modelsCount={data.proofData.modelsCount}
             topMarques={data.proofData.topMarques}
             periodeRange={data.proofData.periodeRange}
             topEquipementiers={data.proofData.topEquipementiers}
@@ -1074,6 +1123,7 @@ export default function PiecesDetailPage() {
       {/* Motorisations compatibles */}
       <PageSection
         {...sectionAttr(R1Section.MOTORISATIONS)}
+        {...sourceAttr(data.r1Sources, R1Section.MOTORISATIONS)}
         bg="slate"
         id="compatibilities"
         className="scroll-mt-20"
@@ -1094,6 +1144,7 @@ export default function PiecesDetailPage() {
                   compatibilitiesIntro={
                     data.purchaseGuideData?.compatibilitiesIntro ?? undefined
                   }
+                  variant="R1"
                 />
               )}
             </Await>
@@ -1102,7 +1153,11 @@ export default function PiecesDetailPage() {
       </PageSection>
 
       {/* ✅ Tableau safe : vérifications compatibilité avant commande */}
-      <PageSection {...sectionAttr(R1Section.SAFE_TABLE)} className="py-6">
+      <PageSection
+        {...sectionAttr(R1Section.SAFE_TABLE)}
+        {...sourceAttr(data.r1Sources, R1Section.SAFE_TABLE)}
+        className="py-6"
+      >
         <Suspense
           fallback={
             <div className="h-32 bg-gray-50 animate-pulse motion-reduce:animate-none rounded-lg" />
@@ -1118,6 +1173,7 @@ export default function PiecesDetailPage() {
       {/* Erreurs fréquentes de compatibilité — checklist */}
       <PageSection
         {...sectionAttr(R1Section.COMPAT_ERRORS)}
+        {...sourceAttr(data.r1Sources, R1Section.COMPAT_ERRORS)}
         maxWidth="5xl"
         className="py-4 sm:py-6"
       >
@@ -1128,14 +1184,17 @@ export default function PiecesDetailPage() {
       </PageSection>
 
       {/* 🔧 Équipementiers — DarkSection navy */}
-      <DarkSection {...sectionAttr(R1Section.EQUIPEMENTIERS)}>
+      <DarkSection
+        {...sectionAttr(R1Section.EQUIPEMENTIERS)}
+        {...sourceAttr(data.r1Sources, R1Section.EQUIPEMENTIERS)}
+      >
         <div className="space-y-12">
           <div id="brands" className="scroll-mt-20">
             <SectionHeader
-              title="Marques équipementières de confiance"
+              title="Équipementiers OE & qualité premium"
               sub={
                 data.purchaseGuideData?.equipementiersLine ||
-                "Fabricants OE et qualité premium"
+                "Fabricants de première monte et équivalent qualité"
               }
               dark
             />
@@ -1163,6 +1222,7 @@ export default function PiecesDetailPage() {
       {/* 📦 Catalogue Même Famille */}
       <PageSection
         {...sectionAttr(R1Section.CATALOGUE)}
+        {...sourceAttr(data.r1Sources, R1Section.CATALOGUE)}
         id="family"
         className="scroll-mt-20"
       >
@@ -1185,6 +1245,7 @@ export default function PiecesDetailPage() {
                         }),
                       )}
                       intro={data.purchaseGuideData?.familyCrossSellIntro}
+                      variant="R1"
                     />
                   )}
                 </Await>
@@ -1197,6 +1258,7 @@ export default function PiecesDetailPage() {
       {/* FAQ R1 — questions universelles sur le sélecteur véhicule */}
       <PageSection
         {...sectionAttr(R1Section.FAQ)}
+        {...sourceAttr(data.r1Sources, R1Section.FAQ)}
         bg="slate"
         id="faq"
         className="scroll-mt-20"
@@ -1219,13 +1281,28 @@ export default function PiecesDetailPage() {
         </Reveal>
       </PageSection>
 
+      {/* 📖 Cross-link R1 → R3 conseil guide */}
+      {data.content?.pg_alias && (
+        <PageSection id="guide-link" className="scroll-mt-20">
+          <Reveal>
+            <GuideLinkCard
+              pgAlias={data.content.pg_alias}
+              pgName={data.content.pg_name || "cette pièce"}
+            />
+          </Reveal>
+        </PageSection>
+      )}
+
       {/* Bouton Scroll To Top */}
       <ScrollToTop />
+
+      {/* 🖥️ Panel sticky desktop - Accès rapide sélecteur + compatibilités */}
+      <DesktopStickyCTA />
 
       {/* 📱 Barre sticky mobile - CTA sélection véhicule + compatibilités */}
       <MobileStickyBar
         gammeName={data.content?.pg_name}
-        hasCompatibilities={(data.proofData?.vehicleCount || 0) > 0}
+        hasCompatibilities={(data.proofData?.motorisationsCount || 0) > 0}
         hasFaq={
           !!(data.purchaseGuideData?.faq?.length || R1_SELECTOR_FAQ?.length)
         }

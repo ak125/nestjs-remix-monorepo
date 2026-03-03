@@ -17,6 +17,11 @@ import { RagGammeDetectionService } from './services/rag-gamme-detection.service
 import { RagIngestionService } from './services/rag-ingestion.service';
 import { RagWebhookCompletionService } from './services/rag-webhook-completion.service';
 
+// PDF merge pipeline services
+import { PdfTextExtractorService } from './services/pdf-text-extractor.service';
+import { PdfRagClassifierService } from './services/pdf-rag-classifier.service';
+import { RagMdMergerService } from './services/rag-md-merger.service';
+
 // NOTE: CacheModule is @Global() (registered in app.module.ts) — CacheService
 // is available everywhere without explicit import.
 // EventEmitterModule.forRoot() is also imported globally in app.module.ts.
@@ -36,6 +41,10 @@ import { RagWebhookCompletionService } from './services/rag-webhook-completion.s
     RagGammeDetectionService,
     RagIngestionService,
     RagWebhookCompletionService,
+    // PDF merge pipeline
+    PdfTextExtractorService,
+    PdfRagClassifierService,
+    RagMdMergerService,
     // Facade (depends on all above)
     RagProxyService,
   ],
@@ -51,6 +60,9 @@ import { RagWebhookCompletionService } from './services/rag-webhook-completion.s
     RagGammeDetectionService,
     RagIngestionService,
     RagWebhookCompletionService,
+    PdfTextExtractorService,
+    PdfRagClassifierService,
+    RagMdMergerService,
   ],
 })
 export class RagProxyModule {}

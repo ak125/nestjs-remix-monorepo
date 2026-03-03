@@ -19,6 +19,7 @@ import { ExternalServiceException } from '../../../common/exceptions';
 import { RagRedisJobService, type WebJob } from './rag-redis-job.service';
 import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagGammeDetectionService } from './rag-gamme-detection.service';
+import { RagCleanupService } from './rag-cleanup.service';
 
 @Injectable()
 export class RagIngestionService implements OnModuleDestroy {
@@ -47,6 +48,7 @@ export class RagIngestionService implements OnModuleDestroy {
     private readonly ragRedisJobService: RagRedisJobService,
     private readonly frontmatterValidator: FrontmatterValidatorService,
     private readonly ragGammeDetectionService: RagGammeDetectionService,
+    private readonly ragCleanupService: RagCleanupService,
   ) {
     // URL externe obligatoire - le RAG est sur un serveur SEPARE (pas Docker local)
     this.ragUrl = this.configService.getOrThrow<string>('RAG_SERVICE_URL');
@@ -365,6 +367,27 @@ export class RagIngestionService implements OnModuleDestroy {
       timeout: 5_000,
     });
 
+    // Step 5b: Sync validated chunks to __rag_knowledge in Supabase
+    if (validation.valid.length > 0) {
+      try {
+        const syncResult = await this.ragCleanupService.syncFilesToDb(
+          validation.valid,
+          knowledgeHostPath,
+        );
+        job.logLines.push(
+          `DB sync: ${syncResult.synced} synced, ${syncResult.skipped} skipped` +
+            (syncResult.errors.length
+              ? `, ${syncResult.errors.length} errors`
+              : ''),
+        );
+      } catch (syncErr) {
+        const msg =
+          syncErr instanceof Error ? syncErr.message : String(syncErr);
+        job.logLines.push(`DB sync failed (non-blocking): ${msg}`);
+        this.logger.error(`DB sync failed for job ${job.jobId}: ${msg}`);
+      }
+    }
+
     job.status = 'done';
     job.returnCode = 0;
     job.finishedAt = Math.floor(Date.now() / 1000);
@@ -464,6 +487,26 @@ export class RagIngestionService implements OnModuleDestroy {
             this.logger.warn(
               `PDF frontmatter validation skipped: ${getErrorMessage(valErr)}`,
             );
+          }
+
+          // Sync validated files to __rag_knowledge DB
+          if (validationResult && validationResult.valid.length > 0) {
+            try {
+              const syncResult = await this.ragCleanupService.syncFilesToDb(
+                validationResult.valid,
+                knowledgePath,
+              );
+              this.logger.log(
+                `PDF poll DB sync for ${jobId}: ${syncResult.synced} synced, ${syncResult.skipped} skipped` +
+                  (syncResult.errors.length
+                    ? `, ${syncResult.errors.length} errors`
+                    : ''),
+              );
+            } catch (syncErr) {
+              this.logger.error(
+                `PDF poll DB sync failed for ${jobId}: ${getErrorMessage(syncErr)}`,
+              );
+            }
           }
 
           await this.ragGammeDetectionService.emitIngestionCompleted(

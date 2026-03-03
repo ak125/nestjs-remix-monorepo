@@ -352,4 +352,56 @@ export class RagProxyController {
       await this.ragCleanupService.backfillFingerprints(batchSize);
     return { updated, message: `Backfilled ${updated} fingerprints` };
   }
+
+  @Post('admin/cleanup/sync-files')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({
+    summary: 'Sync .md files from disk to __rag_knowledge DB',
+  })
+  @ApiResponse({ status: 200, description: 'Sync report' })
+  async cleanupSyncFiles(
+    @Body()
+    body: {
+      /** Glob pattern relative to knowledge base (e.g. "web/2d8006fe60a7-s*.md") */
+      pattern: string;
+    },
+  ) {
+    if (!body.pattern) {
+      throw new BadRequestException('pattern is required');
+    }
+
+    const knowledgeBasePath =
+      process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+
+    // Resolve glob pattern to file list (supports simple * wildcard)
+    const { readdirSync } = await import('node:fs');
+    const { join } = await import('node:path');
+
+    const parts = body.pattern.split('/');
+    const dir = join(knowledgeBasePath, parts[0]);
+    const filePattern = parts.slice(1).join('/') || '*';
+    const regex = new RegExp(
+      '^' + filePattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$',
+    );
+
+    let files: string[] = [];
+    try {
+      files = readdirSync(dir)
+        .filter((f: string) => regex.test(f) && f.endsWith('.md'))
+        .map((f: string) => join(dir, f));
+    } catch {
+      throw new BadRequestException(`Cannot read directory: ${dir}`);
+    }
+
+    if (files.length === 0) {
+      return { synced: 0, skipped: 0, errors: [], message: 'No files matched' };
+    }
+
+    const result = await this.ragCleanupService.syncFilesToDb(
+      files,
+      knowledgeBasePath,
+    );
+    return { ...result, filesMatched: files.length };
+  }
 }

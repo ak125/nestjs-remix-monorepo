@@ -93,6 +93,7 @@ const MAX_LINKS_BY_ROLE: Record<PageRole, number> = {
   [PageRole.R4_REFERENCE]: 2, // Contenu référence - 2 liens vers blog/diagnostic
   [PageRole.R5_DIAGNOSTIC]: 2, // Contenu diagnostic - 2 liens
   [PageRole.R6_SUPPORT]: 0, // Support - pas de liens SEO sortants
+  [PageRole.R6_GUIDE_ACHAT]: 2, // Guide d'achat - 2 liens vers référence/produit
 };
 
 /**
@@ -169,7 +170,12 @@ export class InternalLinkingService implements OnModuleInit {
     // Pagination car PGRST_DB_MAX_ROWS=1000 (4371 rows totales)
     const batchSize = 1000;
     let offset = 0;
-    let allData: any[] = [];
+    let allData: Array<{
+      sgcs_id: number;
+      sgcs_pg_id: number;
+      sgcs_alias: string;
+      sgcs_content: string;
+    }> = [];
     let hasMore = true;
 
     while (hasMore) {
@@ -633,7 +639,22 @@ export class InternalLinkingService implements OnModuleInit {
 
       if (gamme) {
         const link = `<a href="/pieces/${gamme.pg_alias}-${pgId}.html" class="seo-internal-link" data-link-type="LinkGamme"><b>${gamme.pg_name}</b></a>`;
-        processed = processed.replace(match[0], link);
+        // Deduplicate: if gamme name appears just before token, replace both to avoid
+        // "Barre de direction <a>Barre de direction</a>" duplication
+        const escapedName = gamme.pg_name.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          '\\$&',
+        );
+        const escapedToken = match[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const dedupPattern = new RegExp(
+          `${escapedName}\\s*${escapedToken}`,
+          'gi',
+        );
+        if (dedupPattern.test(processed)) {
+          processed = processed.replace(dedupPattern, link);
+        } else {
+          processed = processed.replace(match[0], link);
+        }
         count++;
       } else {
         processed = processed.replace(match[0], '');
