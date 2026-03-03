@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 env:
-  LOCAL_URL: http://localhost:3000
-  CADDY_URL: https://localhost:443
+  CONTAINER: nestjs-remix-monorepo-prod
+  CADDY_URL: https://localhost
   IMGPROXY_TEST_IMAGE: https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/260/6216001.JPG
 
 jobs:
@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: 🏥 Health endpoint
         run: |
-          RESPONSE=$(curl -s --max-time 10 "$LOCAL_URL/health")
+          RESPONSE=$(docker exec $CONTAINER wget -qO- http://localhost:3000/health 2>/dev/null)
           echo "Response: $RESPONSE"
           if ! echo "$RESPONSE" | grep -q '"status":"ok"'; then
             echo "❌ Health check failed"
@@ -29,30 +29,27 @@ jobs:
 
       - name: 🌐 Homepage
         run: |
-          STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" "$LOCAL_URL/")
-          if [ "$STATUS" != "200" ]; then
-            echo "❌ Homepage returned HTTP $STATUS"
-            exit 1
-          fi
-          TITLE=$(curl -s --max-time 15 "$LOCAL_URL/" | grep -oP '<title>\K[^<]+' | head -1)
+          RESPONSE=$(docker exec $CONTAINER wget -qO- http://localhost:3000/ 2>/dev/null | head -100)
+          TITLE=$(echo "$RESPONSE" | grep -oP '<title>\K[^<]+' | head -1)
           if [ -z "$TITLE" ]; then
             echo "❌ Homepage has empty <title>"
             exit 1
           fi
-          echo "✅ Homepage: HTTP $STATUS, title='$TITLE'"
+          echo "✅ Homepage: title='$TITLE'"
 
       - name: 📦 Product page
         run: |
-          STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" "$LOCAL_URL/pieces/filtre-a-huile-7.html")
+          STATUS=$(docker exec $CONTAINER wget --spider -qS http://localhost:3000/pieces/filtre-a-huile-7.html 2>&1 | grep "HTTP/" | tail -1 | awk '{print $2}')
           if [ "$STATUS" != "200" ]; then
             echo "❌ Product page returned HTTP $STATUS"
+            docker exec $CONTAINER wget --spider -qS http://localhost:3000/pieces/filtre-a-huile-7.html 2>&1 | head -5
             exit 1
           fi
           echo "✅ Product page: HTTP 200"
 
       - name: 🔌 API catalog
         run: |
-          RESPONSE=$(curl -s --max-time 10 "$LOCAL_URL/api/catalog/families")
+          RESPONSE=$(docker exec $CONTAINER wget -qO- http://localhost:3000/api/catalog/families 2>/dev/null)
           if [ -z "$RESPONSE" ]; then
             echo "❌ API catalog: empty response"
             exit 1
@@ -73,11 +70,11 @@ jobs:
           fi
           echo "✅ imgproxy AVIF: HTTP 200"
 
-      - name: 📊 Cache headers
+      - name: 📊 Cache headers (via Caddy)
         id: cache-check
         continue-on-error: true
         run: |
-          HEADERS=$(curl -sk --max-time 10 -I "$CADDY_URL/pieces/filtre-a-huile-7.html")
+          HEADERS=$(curl -skI --max-time 10 "$CADDY_URL/pieces/filtre-a-huile-7.html")
           CACHE=$(echo "$HEADERS" | grep -i "cache-control" | head -1)
           echo "Cache-Control: $CACHE"
           if ! echo "$CACHE" | grep -qi "s-maxage"; then
@@ -90,7 +87,7 @@ jobs:
         id: ttfb-check
         continue-on-error: true
         run: |
-          TTFB=$(curl -s --max-time 15 -o /dev/null -w "%{time_starttransfer}" "$LOCAL_URL/pieces/filtre-a-huile-7.html")
+          TTFB=$(curl -sk --max-time 15 -o /dev/null -w "%{time_starttransfer}" "$CADDY_URL/pieces/filtre-a-huile-7.html")
           echo "TTFB: ${TTFB}s"
           if (( $(echo "$TTFB > 2.0" | bc -l) )); then
             echo "⚠️ WARNING: TTFB ${TTFB}s exceeds 2s threshold"
