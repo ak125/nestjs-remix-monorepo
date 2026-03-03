@@ -18,6 +18,7 @@ import {
   Package,
   Search,
 } from "lucide-react";
+import Container from "~/components/layout/Container";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 export const meta: MetaFunction = () => [
@@ -222,7 +223,7 @@ export default function PlanDuSite() {
 
       {/* Header */}
       <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 py-8">
+        <Container size="default" className="py-8">
           <nav className="text-sm text-gray-500 mb-4">
             <Link to="/" className="hover:text-blue-600 transition-colors">
               Accueil
@@ -250,10 +251,10 @@ export default function PlanDuSite() {
               {brands.length} constructeurs
             </span>
           </div>
-        </div>
+        </Container>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <Container size="default" className="py-8">
         {/* Navigation rapide — sticky */}
         <nav className="mb-10 sticky top-0 z-10 bg-white/95 backdrop-blur-sm border rounded-xl p-4 shadow-sm">
           <div className="flex flex-wrap gap-2">
@@ -445,7 +446,7 @@ export default function PlanDuSite() {
             </div>
           </section>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

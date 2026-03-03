@@ -1,5 +1,5 @@
-import { ChevronRight } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export interface TOCSection {
   level: number;
@@ -16,8 +16,12 @@ interface TableOfContentsProps {
  * 📑 TableOfContents - Sommaire interactif avec scroll spy
  * Suit automatiquement la position de lecture et permet la navigation
  */
-export function TableOfContents({ sections, className = '' }: TableOfContentsProps) {
-  const [activeSection, setActiveSection] = useState<string>('');
+export function TableOfContents({
+  sections,
+  className = "",
+}: TableOfContentsProps) {
+  const [activeSection, setActiveSection] = useState<string>("");
+  const [scrollPercent, setScrollPercent] = useState(0);
 
   useEffect(() => {
     // Scroll spy avec IntersectionObserver
@@ -30,9 +34,9 @@ export function TableOfContents({ sections, className = '' }: TableOfContentsPro
         });
       },
       {
-        rootMargin: '-20% 0px -80% 0px',
-        threshold: 0.5
-      }
+        rootMargin: "-20% 0px -80% 0px",
+        threshold: 0.5,
+      },
     );
 
     // Observer toutes les sections
@@ -44,10 +48,26 @@ export function TableOfContents({ sections, className = '' }: TableOfContentsPro
     return () => observer.disconnect();
   }, [sections]);
 
+  // Scroll-based progress bar (real scroll %)
+  useEffect(() => {
+    const onScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } =
+        document.documentElement;
+      const pct =
+        scrollHeight > clientHeight
+          ? Math.round((scrollTop / (scrollHeight - clientHeight)) * 100)
+          : 0;
+      setScrollPercent(Math.min(pct, 100));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const handleClick = (anchor: string) => {
     const element = document.getElementById(anchor);
     if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
 
@@ -70,15 +90,18 @@ export function TableOfContents({ sections, className = '' }: TableOfContentsPro
                 onClick={() => handleClick(section.anchor)}
                 className={`
                   w-full text-left text-sm transition-all duration-200
-                  ${isH2 ? 'font-medium text-gray-900' : 'ml-4 text-gray-600'}
-                  ${isActive 
-                    ? 'text-primary font-semibold bg-primary/10 -ml-2 pl-2 py-1 rounded-r-lg border-l-2 border-primary' 
-                    : 'hover:text-blue-600 hover:bg-gray-50 -ml-2 pl-2 py-1 rounded-r-lg'
+                  ${isH2 ? "font-medium text-gray-900" : "ml-4 text-gray-600"}
+                  ${
+                    isActive
+                      ? "text-primary font-semibold bg-primary/10 -ml-2 pl-2 py-1 rounded-r-lg border-l-2 border-primary"
+                      : "hover:text-blue-600 hover:bg-gray-50 -ml-2 pl-2 py-1 rounded-r-lg"
                   }
                 `}
               >
                 <span className="flex items-center gap-2">
-                  {isActive && <ChevronRight className="w-4 h-4 flex-shrink-0" />}
+                  {isActive && (
+                    <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                  )}
                   <span className="line-clamp-2">{section.title}</span>
                 </span>
               </button>
@@ -86,20 +109,18 @@ export function TableOfContents({ sections, className = '' }: TableOfContentsPro
           })}
         </div>
 
-        {/* Progress bar */}
+        {/* Progress bar — scroll réel */}
         <div className="mt-6 pt-4 border-t border-gray-200">
           <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
             <span>Progression</span>
-            <span>
-              {sections.findIndex(s => s.anchor === activeSection) + 1} / {sections.length}
+            <span className="tabular-nums font-medium text-gray-700">
+              {scrollPercent} %
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-1.5">
-            <div 
-              className="bg-primary h-1.5 rounded-full transition-all duration-300"
-              style={{ 
-                width: `${((sections.findIndex(s => s.anchor === activeSection) + 1) / sections.length) * 100}%` 
-              }}
+            <div
+              className="bg-primary h-1.5 rounded-full transition-all duration-150 ease-out"
+              style={{ width: `${scrollPercent}%` }}
             />
           </div>
         </div>

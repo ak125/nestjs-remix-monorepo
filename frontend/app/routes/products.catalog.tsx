@@ -42,6 +42,7 @@ import { Error404 } from "~/components/errors/Error404";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
+import { Container, Section, ResponsiveGrid } from "../components/layout";
 import { ProductsQuickActions } from "../components/products/ProductsQuickActions";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -248,7 +249,7 @@ export default function ProductsCatalog() {
 
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <Section variant="white" spacing="md">
         <div className="flex items-center gap-4 mb-8">
           <Button asChild variant="outline" size="sm">
             <Link to="/products/admin">
@@ -268,227 +269,185 @@ export default function ProductsCatalog() {
             Réessayer
           </Button>
         </div>
-      </div>
+      </Section>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="py-section space-y-6">
       {/* Breadcrumb */}
-      <PublicBreadcrumb
-        items={[
-          { label: "Produits", href: "/products" },
-          { label: "Catalogue" },
-        ]}
-      />
+      <Container>
+        <PublicBreadcrumb
+          items={[
+            { label: "Produits", href: "/products" },
+            { label: "Catalogue" },
+          ]}
+        />
+      </Container>
 
       {/* Header */}
-      <div className="flex justify-between items-start">
-        <div className="flex items-center gap-4">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/products/admin">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour
-            </Link>
-          </Button>
+      <Section variant="white" spacing="none">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+          <div className="flex items-center gap-4">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/products/admin">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour
+              </Link>
+            </Button>
 
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <Package className="h-8 w-8 text-blue-600" />
-              Catalogue Produits {user.role === "pro" ? "Pro" : "Commercial"}
-            </h1>
-            <p className="text-gray-600 mt-2">
-              {pagination.total} produits disponibles
-            </p>
-            {enhanced && (
-              <Badge variant="secondary" className="mt-2">
-                Mode Avancé - Données Complètes
-              </Badge>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <Package className="h-7 w-7 md:h-8 md:w-8 text-primary" />
+                Catalogue Produits {user.role === "pro" ? "Pro" : "Commercial"}
+              </h1>
+              <p className="text-gray-600 mt-2">
+                {pagination.total} produits disponibles
+              </p>
+              {enhanced && (
+                <Badge variant="secondary" className="mt-2">
+                  Mode Avancé - Données Complètes
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            {!enhanced && (
+              <Link
+                to={`/products/catalog?enhanced=true${searchParams.toString() ? "&" + searchParams.toString() : ""}`}
+              >
+                <Button variant="outline" className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4" />
+                  Mode Avancé
+                </Button>
+              </Link>
             )}
-          </div>
-        </div>
 
-        <div className="flex gap-2">
-          {!enhanced && (
-            <Link
-              to={`/products/catalog?enhanced=true${searchParams.toString() ? "&" + searchParams.toString() : ""}`}
-            >
-              <Button variant="outline" className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Mode Avancé
+            <div className="flex border border-gray-200 rounded-lg">
+              <Button
+                variant={viewMode === "grid" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="rounded-r-none"
+              >
+                <Grid className="h-4 w-4" />
               </Button>
-            </Link>
-          )}
-
-          <div className="flex border border-gray-200 rounded-lg">
-            <Button
-              variant={viewMode === "grid" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              className="rounded-r-none"
-            >
-              <Grid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-              className="rounded-l-none"
-            >
-              <List className="h-4 w-4" />
-            </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="rounded-l-none"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
+      </Section>
 
       {/* Search and Filters */}
-      <div className="bg-white p-6 border border-gray-200 rounded-lg space-y-4">
-        <Form onSubmit={handleSearch} className="flex gap-4">
-          <div className="flex-1">
-            <Input
-              type="text"
-              name="search"
-              placeholder="Rechercher des produits..."
-              defaultValue={filters.searchTerm}
-              className="w-full"
-            />
-          </div>
-          <Button type="submit" className="flex items-center gap-2">
-            <Search className="h-4 w-4" />
-            Rechercher
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="flex items-center gap-2"
+      <Section variant="white" spacing="none">
+        <div className="bg-white p-4 md:p-6 border border-gray-200 rounded-lg space-y-4">
+          <Form
+            onSubmit={handleSearch}
+            className="flex flex-col sm:flex-row gap-4"
           >
-            <Filter className="h-4 w-4" />
-            Filtres
-          </Button>
-        </Form>
+            <div className="flex-1">
+              <Input
+                type="text"
+                name="search"
+                placeholder="Rechercher des produits..."
+                defaultValue={filters.searchTerm}
+                className="w-full"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" className="flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                Rechercher
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                Filtres
+              </Button>
+            </div>
+          </Form>
 
-        {/* Active Filters */}
-        {(filters.searchTerm || filters.brand || filters.category) && (
-          <div className="flex flex-wrap gap-2">
-            {filters.searchTerm && (
-              <Badge variant="secondary">Recherche: {filters.searchTerm}</Badge>
-            )}
-            {filters.brand && (
-              <Badge variant="secondary">Marque: {filters.brand}</Badge>
-            )}
-            {filters.category && (
-              <Badge variant="secondary">Catégorie: {filters.category}</Badge>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setSearchParams({})}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              Effacer tout
-            </Button>
-          </div>
-        )}
-      </div>
+          {/* Active Filters */}
+          {(filters.searchTerm || filters.brand || filters.category) && (
+            <div className="flex flex-wrap gap-2">
+              {filters.searchTerm && (
+                <Badge variant="secondary">
+                  Recherche: {filters.searchTerm}
+                </Badge>
+              )}
+              {filters.brand && (
+                <Badge variant="secondary">Marque: {filters.brand}</Badge>
+              )}
+              {filters.category && (
+                <Badge variant="secondary">Catégorie: {filters.category}</Badge>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSearchParams({})}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Effacer tout
+              </Button>
+            </div>
+          )}
+        </div>
+      </Section>
 
       {/* Quick Actions */}
-      <ProductsQuickActions
-        enhanced={enhanced}
-        userRole={user.role}
-        onRefresh={handleRefresh}
-      />
+      <Container>
+        <ProductsQuickActions
+          enhanced={enhanced}
+          userRole={user.role}
+          onRefresh={handleRefresh}
+        />
+      </Container>
 
       {/* Products Grid/List */}
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-600">
-            Page {pagination.page} sur {pagination.totalPages}(
-            {pagination.total} produits au total)
+      <Section variant="white" spacing="none">
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              Page {pagination.page} sur {pagination.totalPages} (
+              {pagination.total} produits au total)
+            </div>
+
+            <div className="text-sm text-gray-600">
+              {products.length} produits affichés
+            </div>
           </div>
 
-          <div className="text-sm text-gray-600">
-            {products.length} produits affichés
-          </div>
-        </div>
-
-        {viewMode === "grid" ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
-              <Card
-                key={product.piece_id}
-                className="hover:shadow-lg transition-shadow"
-              >
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm text-gray-900 truncate">
-                        {product.piece_name}
-                      </h3>
-                      {product.piece_alias && (
-                        <p className="text-xs text-gray-600 truncate">
-                          {product.piece_alias}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-1 ml-2">
-                      {product.piece_top && (
-                        <Badge variant="secondary" className="text-xs">
-                          Top
-                        </Badge>
-                      )}
-                      {!product.piece_activ && (
-                        <Badge variant="destructive" className="text-xs">
-                          Inactif
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-xs text-gray-600 mb-4">
-                    <div>SKU: {product.piece_sku}</div>
-                    {enhanced && (
-                      <>
-                        {product.brand && <div>Marque: {product.brand}</div>}
-                        {product.category && (
-                          <div>Catégorie: {product.category}</div>
-                        )}
-                        {product.stock_level !== undefined && (
-                          <div>Stock: {product.stock_level}</div>
-                        )}
-                      </>
-                    )}
-                    {user.role === "pro" && product.price && (
-                      <div className="font-semibold text-green-600">
-                        Prix: {product.price}€
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button asChild size="sm" className="flex-1 text-xs">
-                      <Link to={`/products/${product.piece_id}`}>
-                        Voir Détails
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {products.map((product) => (
-              <Card
-                key={product.piece_id}
-                className="hover:shadow-sm transition-shadow"
-              >
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-center">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-semibold text-gray-900">
+          {viewMode === "grid" ? (
+            <ResponsiveGrid cols={{ base: 1, md: 2, lg: 3, xl: 4 }} gap="md">
+              {products.map((product) => (
+                <Card
+                  key={product.piece_id}
+                  className="hover:shadow-lg transition-shadow"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-sm text-gray-900 truncate">
                           {product.piece_name}
                         </h3>
+                        {product.piece_alias && (
+                          <p className="text-xs text-gray-600 truncate">
+                            {product.piece_alias}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-1 ml-2">
                         {product.piece_top && (
                           <Badge variant="secondary" className="text-xs">
                             Top
@@ -500,90 +459,151 @@ export default function ProductsCatalog() {
                           </Badge>
                         )}
                       </div>
-                      <div className="flex gap-4 text-sm text-gray-600 mt-1">
-                        <span>SKU: {product.piece_sku}</span>
-                        {product.piece_alias && (
-                          <span>Alias: {product.piece_alias}</span>
-                        )}
-                        {enhanced && product.brand && (
-                          <span>Marque: {product.brand}</span>
-                        )}
-                        {enhanced && product.category && (
-                          <span>Catégorie: {product.category}</span>
-                        )}
-                      </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      {enhanced && product.stock_level !== undefined && (
-                        <div className="text-sm text-gray-600">
-                          Stock: {product.stock_level}
-                        </div>
+                    <div className="space-y-2 text-xs text-gray-600 mb-4">
+                      <div>SKU: {product.piece_sku}</div>
+                      {enhanced && (
+                        <>
+                          {product.brand && <div>Marque: {product.brand}</div>}
+                          {product.category && (
+                            <div>Catégorie: {product.category}</div>
+                          )}
+                          {product.stock_level !== undefined && (
+                            <div>Stock: {product.stock_level}</div>
+                          )}
+                        </>
                       )}
                       {user.role === "pro" && product.price && (
-                        <div className="text-sm font-semibold text-green-600">
-                          {product.price}€
+                        <div className="font-semibold text-emerald-600">
+                          Prix: {product.price}€
                         </div>
                       )}
-                      <Button asChild size="sm">
-                        <Link to={`/products/${product.piece_id}`}>Voir</Link>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button asChild size="sm" className="flex-1 text-xs">
+                        <Link to={`/products/${product.piece_id}`}>
+                          Voir Détails
+                        </Link>
                       </Button>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                  </CardContent>
+                </Card>
+              ))}
+            </ResponsiveGrid>
+          ) : (
+            <div className="space-y-2">
+              {products.map((product) => (
+                <Card
+                  key={product.piece_id}
+                  className="hover:shadow-sm transition-shadow"
+                >
+                  <CardContent className="p-4">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3">
+                          <h3 className="font-semibold text-gray-900">
+                            {product.piece_name}
+                          </h3>
+                          {product.piece_top && (
+                            <Badge variant="secondary" className="text-xs">
+                              Top
+                            </Badge>
+                          )}
+                          {!product.piece_activ && (
+                            <Badge variant="destructive" className="text-xs">
+                              Inactif
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-x-4 text-sm text-gray-600 mt-1">
+                          <span>SKU: {product.piece_sku}</span>
+                          {product.piece_alias && (
+                            <span>Alias: {product.piece_alias}</span>
+                          )}
+                          {enhanced && product.brand && (
+                            <span>Marque: {product.brand}</span>
+                          )}
+                          {enhanced && product.category && (
+                            <span>Catégorie: {product.category}</span>
+                          )}
+                        </div>
+                      </div>
 
-        {products.length === 0 && (
-          <div className="text-center py-12">
-            <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Aucun produit trouvé
-            </h3>
-            <p className="text-gray-600">
-              Essayez de modifier vos critères de recherche ou vos filtres.
-            </p>
-          </div>
-        )}
-      </div>
+                      <div className="flex items-center gap-3">
+                        {enhanced && product.stock_level !== undefined && (
+                          <div className="text-sm text-gray-600">
+                            Stock: {product.stock_level}
+                          </div>
+                        )}
+                        {user.role === "pro" && product.price && (
+                          <div className="text-sm font-semibold text-emerald-600">
+                            {product.price}€
+                          </div>
+                        )}
+                        <Button asChild size="sm">
+                          <Link to={`/products/${product.piece_id}`}>Voir</Link>
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {products.length === 0 && (
+            <div className="text-center py-12">
+              <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Aucun produit trouvé
+              </h3>
+              <p className="text-gray-600">
+                Essayez de modifier vos critères de recherche ou vos filtres.
+              </p>
+            </div>
+          )}
+        </div>
+      </Section>
 
       {/* Pagination */}
       {pagination.totalPages > 1 && (
-        <div className="flex justify-center gap-2">
-          {pagination.page > 1 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const newParams = new URLSearchParams(searchParams);
-                newParams.set("page", (pagination.page - 1).toString());
-                setSearchParams(newParams);
-              }}
-            >
-              Précédent
-            </Button>
-          )}
+        <Container>
+          <div className="flex justify-center gap-2">
+            {pagination.page > 1 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const newParams = new URLSearchParams(searchParams);
+                  newParams.set("page", (pagination.page - 1).toString());
+                  setSearchParams(newParams);
+                }}
+              >
+                Précédent
+              </Button>
+            )}
 
-          <span className="flex items-center px-3 text-sm text-gray-600">
-            Page {pagination.page} sur {pagination.totalPages}
-          </span>
+            <span className="flex items-center px-3 text-sm text-gray-600">
+              Page {pagination.page} sur {pagination.totalPages}
+            </span>
 
-          {pagination.page < pagination.totalPages && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                const newParams = new URLSearchParams(searchParams);
-                newParams.set("page", (pagination.page + 1).toString());
-                setSearchParams(newParams);
-              }}
-            >
-              Suivant
-            </Button>
-          )}
-        </div>
+            {pagination.page < pagination.totalPages && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const newParams = new URLSearchParams(searchParams);
+                  newParams.set("page", (pagination.page + 1).toString());
+                  setSearchParams(newParams);
+                }}
+              >
+                Suivant
+              </Button>
+            )}
+          </div>
+        </Container>
       )}
     </div>
   );

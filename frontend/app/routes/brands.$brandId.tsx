@@ -22,6 +22,7 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { BrandLogoClient } from "../components/BrandLogoClient";
+import { Container, Section, ResponsiveGrid } from "../components/layout";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
@@ -144,59 +145,65 @@ export default function BrandPage() {
   const params = useParams();
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="py-section">
       {/* Breadcrumb */}
-      <PublicBreadcrumb
-        items={[
-          { label: "Marques", href: "/brands" },
-          { label: brand?.marque_name || `Marque #${params.brandId}` },
-        ]}
-      />
+      <Container className="mb-4">
+        <PublicBreadcrumb
+          items={[
+            { label: "Marques", href: "/brands" },
+            { label: brand?.marque_name || `Marque #${params.brandId}` },
+          ]}
+        />
+      </Container>
 
       {/* Header avec logo de marque */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center space-x-4">
-          {brand && (
-            <div className="w-16 h-16">
-              <BrandLogoClient
-                logoPath={null} // L'API ne retourne pas logoPath pour l'instant
-                brandName={brand.marque_name}
-              />
+      <Section variant="white" spacing="sm">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {brand && (
+              <div className="w-16 h-16">
+                <BrandLogoClient
+                  logoPath={null}
+                  brandName={brand.marque_name}
+                />
+              </div>
+            )}
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {brand?.marque_name || `Marque #${params.brandId}`}
+              </h1>
+              <p className="text-gray-600 mt-1">
+                {models.length} modèles disponibles
+              </p>
             </div>
-          )}
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              {brand?.marque_name || `Marque #${params.brandId}`}
-            </h1>
-            <p className="text-gray-600 mt-1">
-              {models.length} modèles disponibles
-            </p>
           </div>
-        </div>
 
-        <Link to="/brands">
-          <Button variant="outline" className="flex items-center space-x-2">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Retour aux marques</span>
-          </Button>
-        </Link>
-      </div>
+          <Link to="/brands">
+            <Button variant="outline" className="flex items-center space-x-2">
+              <ArrowLeft className="h-4 w-4" />
+              <span>Retour aux marques</span>
+            </Button>
+          </Link>
+        </div>
+      </Section>
 
       {error && (
-        <Alert intent="error">
-          <strong>Erreur :</strong> {error}
-        </Alert>
+        <Container className="mb-6">
+          <Alert intent="error">
+            <strong>Erreur :</strong> {error}
+          </Alert>
+        </Container>
       )}
 
       {/* Section Modèles */}
-      <div className="mb-12">
+      <Section variant="white" spacing="sm">
         <h2 className="text-2xl font-semibold mb-6 flex items-center">
-          <Car className="h-6 w-6 mr-2 text-blue-600" />
+          <Car className="h-6 w-6 mr-2 text-primary" />
           Modèles {brand?.marque_name}
         </h2>
 
         {models.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <ResponsiveGrid cols={{ base: 1, md: 2, lg: 3 }} gap="md">
             {models.map((model) => (
               <Card
                 key={model.modele_id}
@@ -205,13 +212,13 @@ export default function BrandPage() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-3">
                     <div className="p-2 bg-primary/5 rounded-lg">
-                      <Car className="h-5 w-5 text-blue-600" />
+                      <Car className="h-5 w-5 text-primary" />
                     </div>
                     <span
                       className={`px-2 py-1 text-xs rounded-full ${
                         model.modele_year_to
                           ? "bg-gray-100 text-gray-700"
-                          : "bg-success/15 text-green-700"
+                          : "bg-success/15 text-emerald-700"
                       }`}
                     >
                       {model.modele_year_to ? "Ancien" : "Actuel"}
@@ -256,23 +263,23 @@ export default function BrandPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+          </ResponsiveGrid>
         ) : (
           <div className="text-center py-12">
             <Car className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 text-lg">Aucun modèle disponible</p>
           </div>
         )}
-      </div>
+      </Section>
 
       {/* Section Motorisations (si disponible) */}
       {types && types.length > 0 && (
-        <div>
+        <Section variant="white" spacing="sm">
           <h2 className="text-2xl font-semibold mb-6 flex items-center">
-            <Settings className="h-6 w-6 mr-2 text-green-600" />
+            <Settings className="h-6 w-6 mr-2 text-emerald-600" />
             Motorisations disponibles
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <ResponsiveGrid cols={{ base: 1, md: 2, lg: 3 }} gap="sm">
             {types.map((type) => (
               <Card key={type.id}>
                 <CardContent className="p-4">
@@ -283,8 +290,8 @@ export default function BrandPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
-        </div>
+          </ResponsiveGrid>
+        </Section>
       )}
     </div>
   );

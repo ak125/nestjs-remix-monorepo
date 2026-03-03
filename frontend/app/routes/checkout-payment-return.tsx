@@ -14,7 +14,7 @@ import { CheckCircle, XCircle, Clock, AlertTriangle } from "lucide-react";
 import { useEffect } from "react";
 
 import { Error404 } from "~/components/errors/Error404";
-import { Alert } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
 import { trackPurchase } from "~/utils/analytics";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -107,8 +107,8 @@ export default function PaymentReturnPage() {
   }, [result]);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="min-h-screen bg-gray-50 py-12 px-page">
+      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
         {result.status === "SUCCESS" && (
           <div className="p-8 text-center">
             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-success/15 mb-6">

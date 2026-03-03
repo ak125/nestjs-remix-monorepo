@@ -1,5 +1,6 @@
 import { Link } from "@remix-run/react";
 import React, { useState, memo } from "react";
+import { sanitizeForR1Router } from "~/utils/r1-copy-gate";
 
 interface CatalogueItem {
   name: string;
@@ -22,12 +23,14 @@ interface CatalogueSectionProps {
     title: string;
     items: CatalogueItem[];
   };
-  /** 🔗 Switches SEO pour ancres variées (verbes d'action) */
+  /** Switches SEO pour ancres variées (verbes d'action) */
   verbSwitches?: SeoSwitch[];
   /** Nombre max de produits affichés (SEO: éviter dilution, défaut 15) */
   maxItems?: number;
   /** Intro cross-sell générée par R1 pipeline */
   intro?: string | null;
+  /** R1 = routing only (ancres neutres, descriptions filtrées) */
+  variant?: "default" | "R1";
 }
 
 // ── Badge urgence par keyword gamme ──
@@ -82,12 +85,22 @@ function getMicroDescription(name: string): string | null {
   return null;
 }
 
+// Ancres R1-safe (compatibilité & routing uniquement)
+const R1_ANCHORS = [
+  "Voir les références",
+  "Trouver la pièce compatible",
+  "Sélectionner par véhicule",
+  "Voir les prix",
+];
+
 const CatalogueSection = memo(function CatalogueSection({
   catalogueMameFamille,
   verbSwitches = [],
   maxItems = 15,
   intro,
+  variant = "default",
 }: CatalogueSectionProps) {
+  const isR1 = variant === "R1";
   // Use array instead of Set to avoid React hydration issues
   const [expandedDescriptions, setExpandedDescriptions] = useState<number[]>(
     [],
@@ -110,17 +123,20 @@ const CatalogueSection = memo(function CatalogueSection({
    * Rotation des verbes pour diversifier les ancres de liens internes
    */
   const getAnchorText = (item: CatalogueItem, index: number): string => {
+    // R1 : ancres neutres (pas de verbes diagnostic issus de __seo_item_switch)
+    if (isR1) {
+      return R1_ANCHORS[index % R1_ANCHORS.length];
+    }
+
     if (verbSwitches.length > 0) {
       const switchItem = verbSwitches[index % verbSwitches.length];
       const verb = switchItem?.content || switchItem?.sis_content || "";
       if (verb) {
-        // Capitaliser la première lettre du verbe
         const capitalizedVerb = verb.charAt(0).toUpperCase() + verb.slice(1);
         return `${capitalizedVerb} ${item.name.toLowerCase()}`;
       }
     }
 
-    // Ancres par défaut avec rotation pour variation minimale
     const defaultAnchors = [
       "Voir le produit",
       "Découvrir",
@@ -160,13 +176,17 @@ const CatalogueSection = memo(function CatalogueSection({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
           {uniqueItems.map((item, index) => {
             const isExpanded = expandedDescriptions.includes(index);
+            // R1 : filtrer les descriptions contenant du vocabulaire diagnostic
+            const safeDescription = isR1
+              ? sanitizeForR1Router(item.description)
+              : item.description;
             const hasDescription =
-              item.description && item.description.length > 0;
+              safeDescription && safeDescription.length > 0;
             const displayDescription = isExpanded
-              ? item.description
-              : truncateText(item.description);
+              ? safeDescription
+              : truncateText(safeDescription || "");
             const needsTruncation =
-              hasDescription && item.description.length > 120;
+              hasDescription && (safeDescription?.length ?? 0) > 120;
             // 🔗 Ancre SEO variée pour maillage interne
             const anchorText = getAnchorText(item, index);
 

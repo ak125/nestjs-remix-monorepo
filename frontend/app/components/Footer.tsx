@@ -16,7 +16,7 @@ export const Footer = () => {
   return (
     <>
       {/* Footer principal desktop */}
-      <footer className="bg-[#0d1b3e] text-white py-12 hidden md:block">
+      <footer className="bg-navy text-white py-12 hidden md:block">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             {/* Colonne 1: À propos */}

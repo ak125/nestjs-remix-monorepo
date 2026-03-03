@@ -3,9 +3,11 @@
  * Grid responsive avec cartes véhicules élégantes (shadcn/ui)
  */
 
-import { Car, Fuel, Gauge, Calendar } from 'lucide-react';
-import { Badge } from '~/components/ui/badge';
-import { Card } from '~/components/ui/card';
+import { Car, Fuel, Gauge, Calendar, ChevronDown } from "lucide-react";
+import { useState } from "react";
+import LazySection from "~/components/layout/LazySection";
+import { Badge } from "~/components/ui/badge";
+import { Card } from "~/components/ui/card";
 
 export interface CompatibleVehicle {
   type_id: number;
@@ -40,68 +42,95 @@ interface VehicleCarouselProps {
   seoSwitches?: SeoItemSwitch[];
 }
 
-const VehicleCarousel: React.FC<VehicleCarouselProps> = ({ 
+const PAGE_SIZE = 12;
+
+const VehicleCarousel: React.FC<VehicleCarouselProps> = ({
   vehicles,
   gamme,
   title,
-  seoSwitches = []
+  seoSwitches = [],
 }) => {
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
   if (!vehicles || vehicles.length === 0) {
     return null;
   }
 
   // Générer un titre dynamique basé sur la gamme
-  const dynamicTitle = title || (
-    gamme 
-      ? `${gamme.charAt(0).toUpperCase() + gamme.slice(1).replace(/-/g, ' ')} pour les véhicules les plus concernés par le remplacement`
-      : "🚗 Véhicules compatibles"
-  );
+  const gammeName = gamme
+    ? gamme.charAt(0).toUpperCase() + gamme.slice(1).replace(/-/g, " ")
+    : "";
+
+  const dynamicTitle =
+    title ||
+    (gamme
+      ? `Véhicules fréquemment concernés par le remplacement ${gammeName ? `de ${gammeName}` : ""}`
+      : "Véhicules compatibles");
 
   // Map des types de carburant pour affichage
   const fuelTypeMap: Record<string, string> = {
-    'Diesel': '⛽ Diesel',
-    'Essence': '⛽ Essence',
-    'Electrique': '🔋 Électrique',
-    'Hybrid': '🔌 Hybride',
-    'GPL': '💨 GPL',
+    Diesel: "⛽ Diesel",
+    Essence: "⛽ Essence",
+    Electrique: "🔋 Électrique",
+    Hybrid: "🔌 Hybride",
+    GPL: "💨 GPL",
   };
 
+  const hasMore = vehicles.length > visibleCount;
+
   return (
-    <section className="my-12 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-2xl p-8 shadow-lg">
-      {/* Header */}
-      <div className="mb-8 text-center">
-        <div className="inline-flex items-center gap-3 bg-muted dark:bg-primary/98/30 px-6 py-3 rounded-full mb-4">
-          <Car className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+    <LazySection minHeight={400}>
+      <section className="my-12 bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 rounded-2xl p-8 shadow-lg">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             {dynamicTitle}
           </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mt-2">
+            <strong className="text-gray-800">
+              {vehicles.length} motorisations
+            </strong>{" "}
+            identifiées d'après les données de compatibilité constructeur —
+            usure normale, usage spécifique ou kilométrage élevé.
+          </p>
         </div>
-        <p className="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-          <strong>{vehicles.length} véhicules</strong> nécessitant le remplacement de cette pièce. 
-          Sélectionnez votre modèle pour découvrir toutes les pièces détachées compatibles.
-        </p>
-      </div>
 
-      {/* Grid responsive */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {vehicles.map((vehicle) => (
-          <VehicleCard 
-            key={vehicle.type_id} 
-            vehicle={vehicle} 
-            fuelTypeMap={fuelTypeMap}
-            gamme={gamme}
-            seoSwitches={seoSwitches}
-          />
-        ))}
-      </div>
+        {/* Grid responsive */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {vehicles.slice(0, visibleCount).map((vehicle) => (
+            <VehicleCard
+              key={vehicle.type_id}
+              vehicle={vehicle}
+              fuelTypeMap={fuelTypeMap}
+              gamme={gamme}
+              seoSwitches={seoSwitches}
+            />
+          ))}
+        </div>
 
-      {/* Footer CTA */}
-      <div className="mt-8 text-center">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          💡 <strong>Astuce :</strong> Sélectionnez votre véhicule pour découvrir toutes les pièces compatibles
-        </p>
-      </div>
-    </section>
+        {/* Voir plus */}
+        {hasMore && (
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+              className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <ChevronDown className="w-4 h-4" />
+              Voir plus de véhicules ({vehicles.length - visibleCount} restants)
+            </button>
+          </div>
+        )}
+
+        {/* Footer CTA */}
+        <div className="mt-8 text-center">
+          <p className="text-xs text-gray-400 dark:text-gray-500 max-w-lg mx-auto">
+            Données de compatibilité constructeur. Vérifiez l'année et la
+            motorisation de votre véhicule avant commande.
+          </p>
+        </div>
+      </section>
+    </LazySection>
   );
 };
 
@@ -113,17 +142,22 @@ interface VehicleCardProps {
   seoSwitches?: SeoItemSwitch[];
 }
 
-const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, seoSwitches = [] }) => {
+const VehicleCard: React.FC<VehicleCardProps> = ({
+  vehicle,
+  fuelTypeMap,
+  gamme,
+  seoSwitches = [],
+}) => {
   const fuelDisplay = fuelTypeMap[vehicle.type_fuel] || vehicle.type_fuel;
-  
+
   // Générer un nom de pièce lisible
-  const pieceName = gamme 
-    ? gamme.charAt(0).toUpperCase() + gamme.slice(1).replace(/-/g, ' ')
-    : 'cette pièce';
-  
+  const pieceName = gamme
+    ? gamme.charAt(0).toUpperCase() + gamme.slice(1).replace(/-/g, " ")
+    : "cette pièce";
+
   // Utiliser les vrais switches depuis la BDD ou fallback déterministe
   // SSR-safe: sélection basée sur type_id (pas de Math.random() pour éviter mismatch hydratation)
-  let seoContent = '';
+  let seoContent = "";
   if (seoSwitches && seoSwitches.length > 0) {
     // Sélection déterministe basée sur type_id
     const selectedSwitch = seoSwitches[vehicle.type_id % seoSwitches.length];
@@ -131,12 +165,12 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
   } else {
     // Fallback: sélection déterministe basée sur type_id
     const actions = [
-      `contrôler si usée`,
-      `vérifier en cas de bruit`,
-      `changer si abîmé`,
-      `remplacer si bloqué`,
-      `contrôler si défaillant`,
-      `vérifier si nécessaire`
+      `à vérifier si vibrations`,
+      `contrôle recommandé en cas de bruit anormal`,
+      `à surveiller si usage urbain fréquent`,
+      `remplacement courant lors de la révision`,
+      `à inspecter si kilométrage > 80 000 km`,
+      `à vérifier en cas de perte d'efficacité`,
     ];
     const selectedAction = actions[vehicle.type_id % actions.length];
 
@@ -145,7 +179,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
       `pour assurer le courant d'alimentation des composants électriques`,
       `pour la production du courant nécessaire à l'alimentation du système électrique`,
       `pour garantir le bon fonctionnement du système électrique`,
-      `pour assurer une alimentation électrique stable`
+      `pour assurer une alimentation électrique stable`,
     ];
     const selectedPurpose = purposes[vehicle.type_id % purposes.length];
 
@@ -159,7 +193,6 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
       aria-label={`Voir les pièces pour ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`}
     >
       <Card className="h-full hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-400 transform hover:-translate-y-1">
-        
         {/* Header avec logo marque */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-700 dark:to-indigo-700 p-4 relative overflow-hidden">
           <div className="absolute inset-0 bg-white/10 transform -skew-y-3"></div>
@@ -174,7 +207,10 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
                 loading="lazy"
               />
             ) : (
-              <Badge variant="secondary" className="text-white bg-white/20 font-bold text-base border-0">
+              <Badge
+                variant="secondary"
+                className="text-white bg-white/20 font-bold text-base border-0"
+              >
                 {vehicle.marque_name}
               </Badge>
             )}
@@ -196,10 +232,12 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
           ) : (
             <div className="text-center">
               <Car className="w-16 h-16 text-gray-400 dark:text-gray-600 mx-auto mb-2" />
-              <p className="text-xs text-gray-500 dark:text-gray-400">Image non disponible</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Image non disponible
+              </p>
             </div>
           )}
-          
+
           {/* Badge période */}
           <Badge className="absolute top-2 right-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm shadow-lg hover:bg-white dark:hover:bg-gray-900 border-gray-200 dark:border-gray-700">
             <Calendar className="w-3 h-3 inline mr-1" />
@@ -227,8 +265,12 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
                 <Gauge className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Puissance</p>
-                <p className="font-semibold text-gray-900 dark:text-white">{vehicle.type_power} ch</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Puissance
+                </p>
+                <p className="font-semibold text-gray-900 dark:text-white">
+                  {vehicle.type_power} ch
+                </p>
               </div>
             </div>
 
@@ -238,8 +280,12 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
                 <Fuel className="w-4 h-4 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Carburant</p>
-                <p className="font-semibold text-gray-900 dark:text-white text-xs">{fuelDisplay}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Carburant
+                </p>
+                <p className="font-semibold text-gray-900 dark:text-white text-xs">
+                  {fuelDisplay}
+                </p>
               </div>
             </div>
           </div>
@@ -249,7 +295,7 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
             <div className="pt-3 pb-2 border-t border-gray-200 dark:border-gray-700">
               <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">
                 <span className="font-semibold text-blue-600 dark:text-blue-400">
-                  {pieceName} prix bas {vehicle.marque_name} {vehicle.modele_name}
+                  {pieceName} — {vehicle.marque_name} {vehicle.modele_name}
                 </span>
               </p>
               <p className="text-xs text-gray-600 dark:text-gray-400 mt-1.5 leading-relaxed">
@@ -261,14 +307,19 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, fuelTypeMap, gamme, 
           {/* CTA */}
           <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300 font-semibold text-sm">
-              <span>Voir les pièces disponibles</span>
-              <svg 
-                className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" 
-                fill="none" 
-                stroke="currentColor" 
+              <span>Voir pièces compatibles</span>
+              <svg
+                className="w-5 h-5 transform group-hover:translate-x-1 transition-transform"
+                fill="none"
+                stroke="currentColor"
                 viewBox="0 0 24 24"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </div>
           </div>

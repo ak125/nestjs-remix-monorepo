@@ -13,6 +13,7 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { Error404 } from "~/components/errors/Error404";
+import Container from "~/components/layout/Container";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
@@ -338,7 +339,7 @@ export default function LegalPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header avec bandeau coloré */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Container size="default">
           {/* Breadcrumb */}
           <nav className="text-sm text-blue-200 mb-4">
             <Link to="/" className="hover:text-white transition-colors">
@@ -348,10 +349,10 @@ export default function LegalPage() {
             <span className="text-white">{page.breadcrumb || page.title}</span>
           </nav>
           <h1 className="text-3xl md:text-4xl font-bold">{page.title}</h1>
-        </div>
+        </Container>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <Container size="default" className="py-8">
         {/* Content - HTML from database */}
         <div className="bg-white rounded-xl shadow-sm p-6 md:p-8 mb-8">
           <HtmlContent
@@ -484,7 +485,7 @@ export default function LegalPage() {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

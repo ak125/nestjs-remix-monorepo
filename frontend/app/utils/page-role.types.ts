@@ -15,6 +15,7 @@ export enum PageRole {
   R4_REFERENCE = "R4", // Référence métier
   R5_DIAGNOSTIC = "R5", // Diagnostic symptômes
   R6_SUPPORT = "R6", // Support/Légal
+  R6_GUIDE_ACHAT = "R6_GUIDE", // Guide d'achat
 }
 
 /**
@@ -26,7 +27,8 @@ export type PageIntent =
   | "education" // R3: apprendre
   | "definition" // R4: comprendre un terme
   | "diagnosis" // R5: identifier un problème
-  | "support"; // R6: obtenir de l'aide
+  | "support" // R6: obtenir de l'aide
+  | "buying_guide"; // R6_GUIDE: choisir la bonne pièce
 
 /**
  * Types de contenu par rôle
@@ -38,7 +40,8 @@ export type ContentType =
   | "reference" // R4: définition technique
   | "diagnostic" // R5: symptômes/causes
   | "legal" // R6: mentions légales, CGV
-  | "support"; // R6: contact, aide, FAQ
+  | "support" // R6: contact, aide, FAQ
+  | "guide"; // R6_GUIDE: guide d'achat
 
 /**
  * Phase 9: Étapes du funnel marketing
@@ -92,6 +95,7 @@ export const ROLE_DEFAULT_INTENT: Record<PageRole, PageIntent> = {
   [PageRole.R4_REFERENCE]: "definition",
   [PageRole.R5_DIAGNOSTIC]: "diagnosis",
   [PageRole.R6_SUPPORT]: "support",
+  [PageRole.R6_GUIDE_ACHAT]: "buying_guide",
 };
 
 /**
@@ -104,6 +108,7 @@ export const ROLE_DEFAULT_CONTENT_TYPE: Record<PageRole, ContentType> = {
   [PageRole.R4_REFERENCE]: "reference",
   [PageRole.R5_DIAGNOSTIC]: "diagnostic",
   [PageRole.R6_SUPPORT]: "legal",
+  [PageRole.R6_GUIDE_ACHAT]: "guide",
 };
 
 /**
@@ -116,6 +121,7 @@ export const ROLE_DEFAULT_FUNNEL_STAGE: Record<PageRole, FunnelStage> = {
   [PageRole.R4_REFERENCE]: "consideration",
   [PageRole.R5_DIAGNOSTIC]: "consideration",
   [PageRole.R6_SUPPORT]: "retention",
+  [PageRole.R6_GUIDE_ACHAT]: "consideration",
 };
 
 /**
@@ -128,6 +134,7 @@ export const ROLE_DEFAULT_CONVERSION_GOAL: Record<PageRole, ConversionGoal> = {
   [PageRole.R4_REFERENCE]: "engagement",
   [PageRole.R5_DIAGNOSTIC]: "engagement",
   [PageRole.R6_SUPPORT]: "lead",
+  [PageRole.R6_GUIDE_ACHAT]: "purchase",
 };
 
 /**
@@ -160,6 +167,7 @@ export const PAGE_ROLE_LABELS: Record<PageRole, string> = {
   [PageRole.R4_REFERENCE]: "Référence (Définition)",
   [PageRole.R5_DIAGNOSTIC]: "Diagnostic (Symptômes)",
   [PageRole.R6_SUPPORT]: "Support (Aide)",
+  [PageRole.R6_GUIDE_ACHAT]: "Guide d'achat (Choix)",
 };
 
 /**

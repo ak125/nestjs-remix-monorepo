@@ -61,7 +61,7 @@ const SafeCompatTable = memo(function SafeCompatTable({
     <div className="bg-blue-50/50 border border-blue-200 rounded-xl overflow-hidden">
       <div className="px-4 py-3 bg-blue-100/60 border-b border-blue-200">
         <h3 className="text-sm font-semibold text-blue-900">
-          Vérifications essentielles avant commande
+          Avant de commander : {displayRows.length} vérifications
           {gammeName ? ` — ${gammeName}` : ""}
         </h3>
       </div>

@@ -23,6 +23,7 @@ import { useState, useMemo, useCallback } from "react";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { HeroReference } from "~/components/heroes";
+import Container from "~/components/layout/Container";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -260,9 +261,9 @@ export default function ReferenceIndexPage() {
 
       {/* ═══ BREADCRUMB ═══ */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+        <Container className="py-3">
           <PublicBreadcrumb items={[{ label: "Référence Auto" }]} />
-        </div>
+        </Container>
       </div>
 
       {/* ═══ HERO ═══ */}
@@ -273,7 +274,7 @@ export default function ReferenceIndexPage() {
 
       {/* ═══ RECHERCHE + STATS ═══ */}
       <section className="bg-white border-b py-4">
-        <div className="max-w-7xl mx-auto px-4">
+        <Container>
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="relative flex-1 max-w-xl w-full">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -296,12 +297,12 @@ export default function ReferenceIndexPage() {
               </span>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* ═══ FILTRES GAMMES (STICKY) ═══ */}
       <section className="sticky top-0 z-10 bg-white border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+        <Container className="py-3">
           <div className="flex flex-col md:flex-row md:items-center gap-3">
             <ScrollArea className="w-full md:flex-1">
               <div className="flex gap-2 pb-1">
@@ -359,7 +360,7 @@ export default function ReferenceIndexPage() {
               </p>
             )}
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* ═══ NAVIGATION ALPHABÉTIQUE ═══ */}
@@ -367,7 +368,7 @@ export default function ReferenceIndexPage() {
         className="py-3 bg-gray-50 border-b"
         aria-label="Navigation alphabétique"
       >
-        <div className="max-w-7xl mx-auto px-4">
+        <Container>
           <ScrollArea className="w-full">
             <div className="flex items-center justify-center gap-1">
               {ALPHABET.map((letter) => {
@@ -391,12 +392,12 @@ export default function ReferenceIndexPage() {
             </div>
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
-        </div>
+        </Container>
       </nav>
 
       {/* ═══ GRILLE DE CARTES ═══ */}
       <section className="py-12 bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
-        <div className="max-w-7xl mx-auto px-4">
+        <Container>
           {filteredReferences.length === 0 ? (
             <div className="text-center py-16">
               <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -432,7 +433,7 @@ export default function ReferenceIndexPage() {
                 >
                   {/* Letter Header */}
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-xl bg-[#0d1b3e] text-white flex items-center justify-center text-2xl font-bold">
+                    <div className="w-12 h-12 rounded-xl bg-navy text-white flex items-center justify-center text-2xl font-bold">
                       {letter}
                     </div>
                     <div className="flex-1 h-px bg-gradient-to-r from-indigo-200 to-transparent" />
@@ -484,13 +485,13 @@ export default function ReferenceIndexPage() {
               ))}
             </div>
           )}
-        </div>
+        </Container>
       </section>
 
       {/* ═══ CTA BOTTOM ═══ */}
       <section className="py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="bg-[#0d1b3e] rounded-2xl p-8 md:p-12 text-white relative overflow-hidden">
+        <Container>
+          <div className="bg-navy rounded-2xl p-8 md:p-12 text-white relative overflow-hidden">
             {/* Pattern */}
             <div
               className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff06_1px,transparent_1px),linear-gradient(to_bottom,#ffffff06_1px,transparent_1px)] bg-[size:3rem_3rem]"
@@ -519,7 +520,7 @@ export default function ReferenceIndexPage() {
               </Link>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
     </div>
   );

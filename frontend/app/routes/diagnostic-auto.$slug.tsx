@@ -49,6 +49,7 @@ import {
 } from "~/components/content/SectionImage";
 import { Error404 } from "~/components/errors/Error404";
 import { HeroDiagnostic } from "~/components/heroes";
+import Container from "~/components/layout/Container";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -122,8 +123,8 @@ const SAFETY_GATE_CONFIG = {
   },
   stop_soon: {
     icon: AlertOctagon,
-    color: "text-orange-600",
-    bg: "bg-orange-50",
+    color: "text-cta",
+    bg: "bg-cta-50",
     label: "⚠️ Contrôle sous 24h",
   },
   stop_immediate: {
@@ -142,7 +143,7 @@ const RISK_CONFIG = {
   },
   securite: {
     label: "Sécurité",
-    color: "bg-orange-100 text-orange-800 border-orange-300",
+    color: "bg-cta-50 text-cta-hover border-cta-light",
   },
   confort: {
     label: "Confort",
@@ -153,7 +154,7 @@ const RISK_CONFIG = {
 // Urgency config
 const URGENCY_CONFIG: Record<string, { label: string; color: string }> = {
   immediate: { label: "Immédiat", color: "text-red-600" },
-  soon: { label: "Sous 48h", color: "text-orange-600" },
+  soon: { label: "Sous 48h", color: "text-cta" },
   scheduled: { label: "Planifier", color: "text-blue-600" },
 };
 
@@ -277,7 +278,7 @@ export default function DiagnosticAutoDetail() {
 
       {/* Breadcrumbs */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+        <Container className="py-3">
           <PublicBreadcrumb
             items={[
               { label: "Accueil", href: "/" },
@@ -288,7 +289,7 @@ export default function DiagnosticAutoDetail() {
               },
             ]}
           />
-        </div>
+        </Container>
       </div>
 
       {/* Safety Gate Alert (si critique) */}
@@ -296,7 +297,7 @@ export default function DiagnosticAutoDetail() {
         <div
           className={`${safetyConfig.bg} border-b-2 ${safetyConfig.color.replace("text-", "border-")}`}
         >
-          <div className="max-w-7xl mx-auto px-4 py-4">
+          <Container className="py-4">
             <div className="flex items-center gap-3">
               <SafetyIcon className={`h-8 w-8 ${safetyConfig.color}`} />
               <div>
@@ -311,7 +312,7 @@ export default function DiagnosticAutoDetail() {
                 )}
               </div>
             </div>
-          </div>
+          </Container>
         </div>
       )}
 
@@ -334,10 +335,10 @@ export default function DiagnosticAutoDetail() {
 
       {/* Back link + badges */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+        <Container className="py-3 flex items-center justify-between">
           <Link
             to="/diagnostic-auto"
-            className="inline-flex items-center text-orange-600 hover:text-orange-700"
+            className="inline-flex items-center text-cta hover:text-cta-hover"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour aux diagnostics
@@ -346,14 +347,14 @@ export default function DiagnosticAutoDetail() {
             <Badge variant="outline" className={riskConfig.color}>
               {riskConfig.label}
             </Badge>
-            <Badge variant="secondary" className="bg-orange-50 text-orange-700">
+            <Badge variant="secondary" className="bg-cta-50 text-cta-hover">
               {diagnostic.cluster_id}
             </Badge>
           </div>
-        </div>
+        </Container>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <Container className="py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Colonne principale */}
           <div className="lg:col-span-2 space-y-6">
@@ -448,10 +449,10 @@ export default function DiagnosticAutoDetail() {
 
             {/* Section 3: DTC (95%) - Codes OBD associés */}
             {diagnostic.dtc_codes && diagnostic.dtc_codes.length > 0 && (
-              <Card className="border-l-4 border-l-orange-500">
+              <Card className="border-l-4 border-l-cta">
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <Cpu className="h-6 w-6 text-orange-600" />
+                    <Cpu className="h-6 w-6 text-cta" />
                     <div>
                       <CardTitle className="text-lg">
                         💻 Codes OBD associés
@@ -471,7 +472,7 @@ export default function DiagnosticAutoDetail() {
                       >
                         <Badge
                           variant="outline"
-                          className="font-mono bg-orange-100 text-orange-800"
+                          className="font-mono bg-cta-50 text-cta-hover"
                         >
                           {code}
                         </Badge>
@@ -723,7 +724,7 @@ export default function DiagnosticAutoDetail() {
             </Card>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }
@@ -748,7 +749,7 @@ export function ErrorBoundary() {
           </p>
           <Link
             to="/diagnostic-auto"
-            className="inline-flex items-center text-orange-600 hover:text-orange-700"
+            className="inline-flex items-center text-cta hover:text-cta-hover"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour aux diagnostics

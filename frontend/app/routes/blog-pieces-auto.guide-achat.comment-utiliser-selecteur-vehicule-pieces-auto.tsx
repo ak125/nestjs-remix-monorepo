@@ -438,7 +438,7 @@ function FaqSection() {
       <Card className="border-slate-200 bg-white" aria-labelledby="faq-title">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <span className="flex items-center justify-center w-10 h-10 rounded-full bg-[#0d1b3e] text-white">
+            <span className="flex items-center justify-center w-10 h-10 rounded-full bg-navy text-white">
               <HelpCircle className="w-5 h-5" />
             </span>
             <h2

@@ -128,8 +128,8 @@ export function OEMReference({
   const baseClasses = `
     inline-flex items-center gap-2 rounded-md font-mono font-semibold
     transition-all duration-200
-    ${highlighted ? "bg-[#F5F7FA] border border-[#E5E7EB]" : "bg-transparent"}
-    ${copyable ? "cursor-pointer hover:bg-[#E5E7EB] hover:border-[#D1D5DB] active:bg-[#D1D5DB]" : ""}
+    ${highlighted ? "bg-neutral-50 border border-gray-200" : "bg-transparent"}
+    ${copyable ? "cursor-pointer hover:bg-gray-200 hover:border-gray-300 active:bg-gray-300" : ""}
     ${sizeClasses}
   `
     .trim()
@@ -141,27 +141,27 @@ export function OEMReference({
         <p className="font-semibold mb-1">Constructeur: {manufacturer}</p>
       )}
       <p>Référence d'origine constructeur (OEM)</p>
-      {copyable && <p className="text-[#9CA3AF] mt-1">Cliquez pour copier</p>}
+      {copyable && <p className="text-gray-400 mt-1">Cliquez pour copier</p>}
     </div>
   );
 
   const content = (
     <div className={baseClasses} onClick={handleCopy}>
-      <span className="text-[#6B7280] font-sans text-xs uppercase tracking-wide">
+      <span className="text-gray-500 font-sans text-xs uppercase tracking-wide">
         {label}
       </span>
-      <span className="text-[#0F4C81] font-mono font-bold tracking-wider">
+      <span className="text-secondary-500 font-mono font-bold tracking-wider">
         {value}
       </span>
 
       {copyable && (
-        <span className="text-[#9CA3AF] hover:text-[#6B7280] transition-colors">
+        <span className="text-gray-400 hover:text-gray-500 transition-colors">
           {copied ? "✓" : "📋"}
         </span>
       )}
 
       {copied && (
-        <span className="text-xs font-sans text-[#27AE60] font-semibold">
+        <span className="text-xs font-sans text-semantic-success font-semibold">
           Copié!
         </span>
       )}
@@ -188,9 +188,9 @@ export function TechnicalSpec({
   importance = "normal",
 }: TechnicalSpecProps) {
   const importanceColors = {
-    critical: "border-l-4 border-[#C0392B] bg-[#FEE2E2]",
-    important: "border-l-4 border-[#F39C12] bg-[#FFF3E0]",
-    normal: "border-l-2 border-[#E5E7EB] bg-[#F5F7FA]",
+    critical: "border-l-4 border-red-700 bg-red-100",
+    important: "border-l-4 border-amber-500 bg-orange-50",
+    normal: "border-l-2 border-gray-200 bg-neutral-50",
   };
 
   const content = (
@@ -201,18 +201,16 @@ export function TechnicalSpec({
         {icon && <div className="text-xl flex-shrink-0">{icon}</div>}
 
         <div>
-          <p className="text-sm font-sans font-medium text-[#6B7280]">
-            {label}
-          </p>
+          <p className="text-sm font-sans font-medium text-gray-500">{label}</p>
         </div>
       </div>
 
       <div className="flex items-baseline gap-1">
-        <span className="text-lg font-mono font-bold text-[#0F4C81]">
+        <span className="text-lg font-mono font-bold text-secondary-500">
           {value}
         </span>
         {unit && (
-          <span className="text-sm font-sans text-[#9CA3AF]">{unit}</span>
+          <span className="text-sm font-sans text-gray-400">{unit}</span>
         )}
       </div>
     </div>
@@ -235,32 +233,32 @@ const COMPATIBILITY_TYPE_CONFIG = {
   API: {
     icon: "🔧",
     fullName: "American Petroleum Institute",
-    color: "bg-[#0F4C81]",
+    color: "bg-secondary-500",
   },
   ACEA: {
     icon: "🇪🇺",
     fullName: "Association des Constructeurs Européens d'Automobiles",
-    color: "bg-[#0D47A1]",
+    color: "bg-blue-800",
   },
   SAE: {
     icon: "⚙️",
     fullName: "Society of Automotive Engineers",
-    color: "bg-[#1565C0]",
+    color: "bg-blue-700",
   },
   ISO: {
     icon: "🌐",
     fullName: "International Organization for Standardization",
-    color: "bg-[#00897B]",
+    color: "bg-teal-600",
   },
   DIN: {
     icon: "🇩🇪",
     fullName: "Deutsches Institut für Normung",
-    color: "bg-[#424242]",
+    color: "bg-gray-700",
   },
   custom: {
     icon: "📌",
     fullName: "Norme spécifique",
-    color: "bg-[#6B7280]",
+    color: "bg-gray-500",
   },
 } as const;
 
@@ -288,7 +286,7 @@ export function CompatibilityCode({
   const tooltipContent = (
     <div className="max-w-xs text-xs font-sans">
       <p className="font-semibold mb-1">{config.fullName}</p>
-      {description && <p className="text-[#D1D5DB]">{description}</p>}
+      {description && <p className="text-gray-300">{description}</p>}
     </div>
   );
 
@@ -331,12 +329,12 @@ export function TechnicalTooltip({
   };
 
   const arrowClasses = {
-    top: "top-full left-1/2 -translate-x-1/2 border-t-[#1F2937] border-x-transparent border-b-transparent",
+    top: "top-full left-1/2 -translate-x-1/2 border-t-gray-800 border-x-transparent border-b-transparent",
     bottom:
-      "bottom-full left-1/2 -translate-x-1/2 border-b-[#1F2937] border-x-transparent border-t-transparent",
-    left: "left-full top-1/2 -translate-y-1/2 border-l-[#1F2937] border-y-transparent border-r-transparent",
+      "bottom-full left-1/2 -translate-x-1/2 border-b-gray-800 border-x-transparent border-t-transparent",
+    left: "left-full top-1/2 -translate-y-1/2 border-l-gray-800 border-y-transparent border-r-transparent",
     right:
-      "right-full top-1/2 -translate-y-1/2 border-r-[#1F2937] border-y-transparent border-l-transparent",
+      "right-full top-1/2 -translate-y-1/2 border-r-gray-800 border-y-transparent border-l-transparent",
   };
 
   return (
@@ -350,7 +348,7 @@ export function TechnicalTooltip({
       {isVisible && (
         <div
           className={`
-            absolute z-50 px-3 py-2 bg-[#1F2937] text-white rounded-lg shadow-xl
+            absolute z-50 px-3 py-2 bg-gray-800 text-white rounded-lg shadow-xl
             ${positionClasses[position]}
             animate-fade-in pointer-events-none
           `}
@@ -401,7 +399,7 @@ export function TechnicalReferenceGroup({
   return (
     <div className="space-y-3">
       {title && (
-        <h3 className="text-sm font-sans font-semibold text-[#6B7280] uppercase tracking-wide">
+        <h3 className="text-sm font-sans font-semibold text-gray-500 uppercase tracking-wide">
           {title}
         </h3>
       )}
@@ -429,8 +427,8 @@ export function MultiOEMReference({
   copyable = true,
 }: MultiOEMReferenceProps) {
   return (
-    <div className="p-4 bg-[#F5F7FA] rounded-lg border border-[#E5E7EB]">
-      <p className="text-sm font-sans font-semibold text-[#6B7280] mb-3">
+    <div className="p-4 bg-neutral-50 rounded-lg border border-gray-200">
+      <p className="text-sm font-sans font-semibold text-gray-500 mb-3">
         {title}
       </p>
 
@@ -477,16 +475,16 @@ export function SimplifiedExplanation({
   icon = "💡",
 }: SimplifiedExplanationProps) {
   return (
-    <div className="flex gap-3 p-4 bg-[#EFF6FF] border-l-4 border-[#0F4C81] rounded-lg">
+    <div className="flex gap-3 p-4 bg-blue-50 border-l-4 border-secondary-500 rounded-lg">
       <div className="flex-shrink-0 text-2xl">{icon}</div>
 
       <div className="flex-1">
-        <p className="text-sm font-sans font-semibold text-[#0F4C81] mb-1">
+        <p className="text-sm font-sans font-semibold text-secondary-500 mb-1">
           {technicalTerm}
         </p>
-        <p className="text-sm font-sans text-[#6B7280]">{simpleExplanation}</p>
+        <p className="text-sm font-sans text-gray-500">{simpleExplanation}</p>
         {example && (
-          <p className="text-xs font-sans text-[#9CA3AF] mt-2 italic">
+          <p className="text-xs font-sans text-gray-400 mt-2 italic">
             Exemple: {example}
           </p>
         )}

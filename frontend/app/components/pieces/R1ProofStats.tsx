@@ -1,53 +1,67 @@
 /**
  * R1 "Preuves en chiffres" — Stats visuelles compactes.
- * Expose proofData (déjà dans le loader) en 2-3 lignes.
+ * Expose proofData (déjà dans le loader) en 2-4 cartes.
  */
-import { Car, Calendar, Wrench } from "lucide-react";
+import { Calendar, Car, Users, Wrench } from "lucide-react";
 
-export function R1ProofStats({
-  vehicleCount,
-  topMarques,
-  periodeRange,
-  topEquipementiers,
-}: {
-  vehicleCount: number;
+interface R1ProofStatsProps {
+  motorisationsCount: number;
+  modelsCount: number;
   topMarques: string[];
   periodeRange: string;
   topEquipementiers: string[];
-}) {
-  if (vehicleCount <= 0) return null;
+}
 
-  const stats = [
+export function R1ProofStats({
+  motorisationsCount,
+  modelsCount,
+  topMarques,
+  periodeRange,
+  topEquipementiers,
+}: R1ProofStatsProps) {
+  if (motorisationsCount < 5) return null;
+
+  const stats: Array<{
+    icon: typeof Car;
+    value: string;
+    label: string;
+  }> = [
     {
       icon: Car,
-      value: `${vehicleCount}+`,
-      label: "véhicules couverts",
+      value: `${motorisationsCount}+`,
+      label: "motorisations compatibles",
     },
-    ...(topMarques.length > 0
-      ? [
-          {
-            icon: Wrench,
-            value: topMarques.join(", "),
-            label:
-              topEquipementiers.length > 0
-                ? `+ ${topEquipementiers.slice(0, 2).join(", ")}`
-                : "marques principales",
-          },
-        ]
-      : []),
-    ...(periodeRange
-      ? [
-          {
-            icon: Calendar,
-            value: periodeRange,
-            label: "années couvertes",
-          },
-        ]
-      : []),
   ];
 
+  if (modelsCount > 3) {
+    stats.push({
+      icon: Users,
+      value: `${modelsCount}+`,
+      label: "modèles couverts",
+    });
+  }
+
+  if (topMarques.length > 0) {
+    stats.push({
+      icon: Wrench,
+      value: topMarques.join(", "),
+      label:
+        topEquipementiers.length > 0
+          ? `+ ${topEquipementiers.slice(0, 2).join(", ")}`
+          : "marques principales",
+    });
+  }
+
+  if (periodeRange) {
+    stats.push({
+      icon: Calendar,
+      value: periodeRange,
+      label: "années couvertes",
+    });
+  }
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-2">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 py-2">
       {stats.map((stat, i) => (
         <div
           key={i}

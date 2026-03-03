@@ -50,7 +50,7 @@ export const PurchaseNarrativeSection = memo(function PurchaseNarrativeSection({
       <CardHeader className="pb-3">
         <h2 className="text-xl sm:text-2xl md:text-[28px] font-bold tracking-tight text-slate-900 flex items-center gap-3">
           <span
-            className="flex-shrink-0 w-10 h-10 rounded-full bg-[#0d1b3e] text-white flex items-center justify-center"
+            className="flex-shrink-0 w-10 h-10 rounded-full bg-navy text-white flex items-center justify-center"
             aria-hidden="true"
           >
             <Info className="w-5 h-5" />
@@ -62,7 +62,7 @@ export const PurchaseNarrativeSection = memo(function PurchaseNarrativeSection({
         {/* Bloc 1: Role + pieces liees */}
         <div className="flex gap-4 p-4 bg-white rounded-lg border border-slate-200">
           <div
-            className="flex-shrink-0 w-10 h-10 rounded-full bg-[#0d1b3e]/10 text-[#0d1b3e] flex items-center justify-center font-bold"
+            className="flex-shrink-0 w-10 h-10 rounded-full bg-navy/10 text-navy flex items-center justify-center font-bold"
             aria-hidden="true"
           >
             1
@@ -132,7 +132,7 @@ export const PurchaseNarrativeSection = memo(function PurchaseNarrativeSection({
         {/* Bloc 3: Timing */}
         <div className="flex gap-4 p-4 bg-white rounded-lg border border-slate-200">
           <div
-            className="flex-shrink-0 w-10 h-10 rounded-full bg-[#e8590c]/10 text-[#e8590c] flex items-center justify-center font-bold"
+            className="flex-shrink-0 w-10 h-10 rounded-full bg-cta/10 text-cta flex items-center justify-center font-bold"
             aria-hidden="true"
           >
             <Clock className="w-5 h-5" />
@@ -161,13 +161,10 @@ export const PurchaseNarrativeSection = memo(function PurchaseNarrativeSection({
               return (
                 <div
                   key={i}
-                  className="p-3 bg-white rounded-lg border border-slate-200 hover:border-[#e8590c]/30 transition-colors"
+                  className="p-3 bg-white rounded-lg border border-slate-200 hover:border-cta/30 transition-colors"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <ArgIcon
-                      className="w-4 h-4 text-[#e8590c]"
-                      aria-hidden="true"
-                    />
+                    <ArgIcon className="w-4 h-4 text-cta" aria-hidden="true" />
                     <span className="font-semibold text-gray-900 text-base">
                       {arg.title}
                     </span>
@@ -191,7 +188,7 @@ export const PurchaseNarrativeSection = memo(function PurchaseNarrativeSection({
               {steps.map((step, i) => (
                 <div key={i} className="flex items-center gap-1.5">
                   <span
-                    className="flex-shrink-0 w-6 h-6 rounded-full bg-[#0d1b3e] text-white flex items-center justify-center text-xs font-bold"
+                    className="flex-shrink-0 w-6 h-6 rounded-full bg-navy text-white flex items-center justify-center text-xs font-bold"
                     aria-hidden="true"
                   >
                     {i + 1}

@@ -24,6 +24,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { Error404 } from "~/components/errors/Error404";
+import Container from "~/components/layout/Container";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
@@ -299,7 +300,7 @@ export default function ContactPage() {
   if (actionData?.success && actionData.ticketNumber) {
     return (
       <div className="min-h-screen bg-gray-50 py-12">
-        <div className="max-w-2xl mx-auto px-4">
+        <Container size="narrow">
           {/* Breadcrumb */}
           <PublicBreadcrumb items={[{ label: "Contact" }]} />
 
@@ -359,14 +360,14 @@ export default function ContactPage() {
               )}
             </div>
           </div>
-        </div>
+        </Container>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Container>
         {/* Header avec breadcrumb */}
         <div className="mb-8">
           <PublicBreadcrumb
@@ -1078,7 +1079,7 @@ export default function ContactPage() {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

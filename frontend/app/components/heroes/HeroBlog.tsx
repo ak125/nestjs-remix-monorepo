@@ -15,6 +15,20 @@ interface BreadcrumbItem {
   href?: string;
 }
 
+interface HeroBadge {
+  label: string;
+  value: string;
+  color: "green" | "amber" | "red" | "blue" | "slate";
+}
+
+const BADGE_COLORS: Record<string, string> = {
+  green: "bg-green-500/20 text-green-100 border-green-400/30",
+  amber: "bg-amber-500/20 text-amber-100 border-amber-400/30",
+  red: "bg-red-500/20 text-red-100 border-red-400/30",
+  blue: "bg-blue-500/20 text-blue-100 border-blue-400/30",
+  slate: "bg-white/10 text-white/80 border-white/20",
+};
+
 interface HeroBlogProps {
   /** Titre H1 principal */
   title: string;
@@ -28,6 +42,10 @@ interface HeroBlogProps {
   breadcrumb?: BreadcrumbItem[];
   /** Ligne meta: "12 fevrier 2026 · 8 min" */
   metaLine?: string;
+  /** Badges heuristiques (Difficulte, Temps, Securite) */
+  badges?: HeroBadge[];
+  /** CTA soft discret */
+  ctaSoft?: { label: string; href: string };
   /** Classes CSS additionnelles */
   className?: string;
 }
@@ -39,6 +57,8 @@ export function HeroBlog({
   image,
   breadcrumb,
   metaLine,
+  badges,
+  ctaSoft,
   className = "",
 }: HeroBlogProps) {
   const hasImage = image && image.src;
@@ -114,6 +134,31 @@ export function HeroBlog({
           {/* Slogan */}
           {slogan && (
             <p className="text-sm text-white/60 max-w-xl mt-1">{slogan}</p>
+          )}
+
+          {/* Badges */}
+          {badges && badges.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {badges.map((badge) => (
+                <span
+                  key={badge.label}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium rounded-full border ${BADGE_COLORS[badge.color] ?? BADGE_COLORS.slate}`}
+                >
+                  <span className="opacity-70">{badge.label}</span>
+                  <span className="font-semibold">{badge.value}</span>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* CTA soft */}
+          {ctaSoft && (
+            <Link
+              to={ctaSoft.href}
+              className="inline-flex items-center gap-1.5 mt-3 text-sm text-white/70 hover:text-white transition-colors underline underline-offset-2 decoration-white/30 hover:decoration-white/60"
+            >
+              {ctaSoft.label} →
+            </Link>
           )}
         </div>
       </div>

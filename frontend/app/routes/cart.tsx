@@ -38,12 +38,14 @@ import {
 import React, { useEffect } from "react";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
+import Container from "~/components/layout/Container";
 
 import {
   MobileBottomBar,
   MobileBottomBarSpacer,
 } from "~/components/layout/MobileBottomBar";
-import { Alert, Badge } from "~/components/ui";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { trackViewCart } from "~/utils/analytics";
@@ -138,8 +140,8 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
     <div
       className={`rounded-2xl p-5 mb-6 transition-all duration-300 ${
         isEligible
-          ? "bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 text-white shadow-lg shadow-green-200"
-          : "bg-white border-2 border-blue-100 shadow-md"
+          ? "bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-200"
+          : "bg-white border-2 border-slate-200 shadow-md"
       }`}
     >
       {isEligible ? (
@@ -165,8 +167,8 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
           {/* Header avec icône et progression */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="bg-blue-100 p-2.5 rounded-full">
-                <Truck className="h-5 w-5 text-blue-600" />
+              <div className="bg-cta-50 p-2.5 rounded-full">
+                <Truck className="h-5 w-5 text-cta" />
               </div>
               <div>
                 <p className="font-bold text-gray-900">
@@ -176,7 +178,10 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
               </div>
             </div>
             <div className="text-right">
-              <Badge variant="info" className="text-lg font-bold px-3 py-1">
+              <Badge
+                variant="info"
+                className="text-lg font-bold px-3 py-1 bg-cta text-white"
+              >
                 {Math.round(progress)}%
               </Badge>
             </div>
@@ -185,11 +190,11 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
           {/* Barre de progression améliorée */}
           <div className="relative w-full bg-gray-100 rounded-full h-4 overflow-hidden mb-4">
             <div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-green-500 rounded-full transition-all duration-700 ease-out"
+              className="absolute inset-y-0 left-0 bg-gradient-to-r from-cta via-cta-light to-emerald-500 rounded-full transition-all duration-700 ease-out"
               style={{ width: `${progress}%` }}
             />
             {/* Marqueur objectif */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow" />
           </div>
 
           {/* Message incitatif avec montant restant */}
@@ -197,7 +202,7 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
             <span className="text-xl">💡</span>
             <p className="text-gray-700">
               Plus que{" "}
-              <span className="font-extrabold text-xl text-blue-600 mx-1">
+              <span className="font-extrabold text-xl text-cta mx-1">
                 {formatPrice(remaining)}
               </span>
               pour débloquer la{" "}
@@ -239,7 +244,7 @@ function CartSummary({
       }`}
     >
       {/* Header avec icône */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white px-6 py-4">
+      <div className="bg-navy text-white px-6 py-4">
         <h2 className="text-xl font-bold flex items-center gap-3">
           <Package className="h-6 w-6" />
           Résumé de la commande
@@ -254,9 +259,9 @@ function CartSummary({
 
       <div className="p-6 space-y-4">
         {/* Nombre de pièces */}
-        <div className="flex justify-between items-center p-4 bg-blue-50 rounded-xl border border-blue-100">
+        <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-200">
           <span className="font-semibold text-gray-700 flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-blue-600" />
+            <ShoppingBag className="h-5 w-5 text-navy" />
             Nombre d'articles
           </span>
           <Badge variant="info" size="lg" className="text-lg px-4 py-1">
@@ -324,7 +329,7 @@ function CartSummary({
 
         {/* Total */}
         <div className="mt-4 pt-4 border-t-2 border-gray-200">
-          <div className="flex justify-between items-center p-5 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg">
+          <div className="flex justify-between items-center p-5 bg-cta rounded-xl shadow-lg">
             <span className="font-bold text-lg text-white">Total TTC</span>
             <span className="font-extrabold text-3xl text-white">
               {formatPrice(total)}
@@ -481,7 +486,7 @@ function CartItem({
 
           {/* Prix */}
           <div className="text-right">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-2xl font-bold text-navy">
               {formatPrice(totalPrice)}
             </div>
             {currentQuantity > 1 && (
@@ -494,8 +499,8 @@ function CartItem({
 
         {/* Loader discret */}
         {(isUpdating || isRemoving) && (
-          <div className="mt-3 flex items-center justify-center gap-2 text-blue-600 text-sm">
-            <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
+          <div className="mt-3 flex items-center justify-center gap-2 text-cta text-sm">
+            <div className="animate-spin w-4 h-4 border-2 border-cta border-t-transparent rounded-full"></div>
             <span>{isUpdating ? "Mise à jour..." : "Suppression..."}</span>
           </div>
         )}
@@ -654,7 +659,7 @@ export default function CartPage() {
   if (!success || error) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Container>
           <div className="text-center py-12">
             <div className="text-6xl mb-4">⚠️</div>
             <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
@@ -662,14 +667,14 @@ export default function CartPage() {
               {error || "Une erreur est survenue"}
             </p>
             <Button
-              className="inline-block  px-6 py-3 rounded-lg"
+              className="inline-block px-6 py-3 rounded-lg"
               variant="blue"
               asChild
             >
               <Link to="/">Retour à l'accueil</Link>
             </Button>
           </div>
-        </div>
+        </Container>
       </div>
     );
   }
@@ -677,16 +682,16 @@ export default function CartPage() {
   if (!cart.items || cart.items.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Container>
           <EmptyCart />
-        </div>
+        </Container>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-6 sm:py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <Container>
         {/* Breadcrumb */}
         <PublicBreadcrumb items={[{ label: "Panier" }]} />
 
@@ -708,7 +713,7 @@ export default function CartPage() {
         {/* En-tête amélioré */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-3 rounded-xl">
+            <div className="bg-cta p-3 rounded-xl">
               <ShoppingBag className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -757,7 +762,7 @@ export default function CartPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pt-4 border-t border-gray-200">
               <Link
                 to="/"
-                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium"
+                className="inline-flex items-center gap-2 text-cta hover:text-cta-hover font-medium"
               >
                 <ChevronLeft className="h-4 w-4" />
                 Continuer mes achats
@@ -787,7 +792,7 @@ export default function CartPage() {
                 <div className="space-y-3">
                   <Link
                     to="/checkout"
-                    className="w-full py-4 px-6 bg-orange-500 hover:bg-orange-600 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
+                    className="w-full py-4 px-6 bg-cta hover:bg-cta-hover rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
                   >
                     <span className="text-white text-lg">🛒</span>
                     <span className="text-white font-bold text-lg">
@@ -848,13 +853,13 @@ export default function CartPage() {
 
         {/* Spacer for MobileBottomBar */}
         <MobileBottomBarSpacer />
-      </div>
+      </Container>
 
       {/* Mobile Bottom Bar - CTA Commander */}
       <MobileBottomBar>
         <Link
           to="/checkout"
-          className="flex-1 py-3 px-4 bg-orange-500 hover:bg-orange-600 rounded-xl flex items-center justify-center gap-2 touch-target"
+          className="flex-1 py-3 px-4 bg-cta hover:bg-cta-hover rounded-xl flex items-center justify-center gap-2 touch-target"
         >
           <span className="text-white font-bold">
             Commander ({cart.summary.total_items})

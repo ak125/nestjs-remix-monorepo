@@ -30,25 +30,25 @@ import { cn } from "~/lib/utils";
 
 const BADGE_COLORS = {
   compatible: {
-    bg: "bg-gradient-to-r from-[#ECFDF5] to-[#D1FAE5]",
-    border: "border-[#6EE7B7]",
-    text: "text-[#065F46]",
-    icon: "text-[#059669]",
-    ring: "ring-[#059669]/20",
+    bg: "bg-gradient-to-r from-emerald-50 to-emerald-100",
+    border: "border-emerald-300",
+    text: "text-emerald-800",
+    icon: "text-emerald-600",
+    ring: "ring-emerald-600/20",
   },
   incompatible: {
-    bg: "bg-gradient-to-r from-[#FEF2F2] to-[#FEE2E2]",
-    border: "border-[#FCA5A5]",
-    text: "text-[#991B1B]",
-    icon: "text-[#DC2626]",
-    ring: "ring-[#DC2626]/20",
+    bg: "bg-gradient-to-r from-red-50 to-red-100",
+    border: "border-red-300",
+    text: "text-red-800",
+    icon: "text-red-600",
+    ring: "ring-red-600/20",
   },
   unknown: {
-    bg: "bg-gradient-to-r from-[#F8FAFC] to-[#F1F5F9]",
-    border: "border-[#CBD5E1]",
-    text: "text-[#475569]",
-    icon: "text-[#64748B]",
-    ring: "ring-[#64748B]/20",
+    bg: "bg-gradient-to-r from-slate-50 to-slate-100",
+    border: "border-slate-300",
+    text: "text-slate-600",
+    icon: "text-slate-500",
+    ring: "ring-slate-500/20",
   },
 } as const;
 
@@ -124,9 +124,9 @@ function VehicleDisplay({ vehicle }: { vehicle: VehicleInfoV2 }) {
 
 function ConfidenceIndicator({ score }: { score: number }) {
   const getColor = () => {
-    if (score >= 90) return "bg-[#059669]";
-    if (score >= 70) return "bg-[#D97706]";
-    return "bg-[#DC2626]";
+    if (score >= 90) return "bg-emerald-600";
+    if (score >= 70) return "bg-amber-600";
+    return "bg-red-600";
   };
 
   return (
@@ -220,7 +220,7 @@ function CompatibleBadge({
           className={cn(
             "flex items-center justify-center",
             "h-10 w-10 rounded-full",
-            "bg-[#059669]/10",
+            "bg-emerald-600/10",
             "animate-[verified-reveal_300ms_ease-out]",
           )}
         >
@@ -262,7 +262,7 @@ function CompatibleBadge({
           variant="ghost"
           size="sm"
           onClick={onChangeVehicle}
-          className="text-[#059669] hover:text-[#047857] hover:bg-[#D1FAE5]"
+          className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-100"
         >
           Modifier
         </Button>
@@ -319,7 +319,7 @@ function IncompatibleBadge({
           className={cn(
             "flex items-center justify-center",
             "h-10 w-10 rounded-full",
-            "bg-[#DC2626]/10",
+            "bg-red-600/10",
           )}
         >
           <ShieldX className={cn("h-5 w-5", BADGE_COLORS.incompatible.icon)} />
@@ -352,7 +352,7 @@ function IncompatibleBadge({
           variant="outline"
           size="sm"
           onClick={onChangeVehicle}
-          className="border-[#FCA5A5] text-[#991B1B] hover:bg-[#FEE2E2]"
+          className="border-red-300 text-red-800 hover:bg-red-100"
         >
           Changer véhicule
         </Button>
@@ -408,7 +408,7 @@ function UnknownBadge({
         BADGE_COLORS.unknown.border,
         "shadow-sm",
         "transition-all duration-200",
-        "hover:shadow-md hover:border-[#0369A1]",
+        "hover:shadow-md hover:border-sky-700",
       )}
     >
       <div className="flex items-center gap-3">
@@ -441,7 +441,7 @@ function UnknownBadge({
         onClick={onVerifyClick}
         disabled={isLoading}
         className={cn(
-          "bg-[#0369A1] hover:bg-[#075985]",
+          "bg-sky-700 hover:bg-sky-800",
           "text-white font-semibold",
           "px-4 py-2",
           "rounded-lg",

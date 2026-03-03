@@ -40,6 +40,7 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { requireUser } from "../auth/unified.server";
+import { Container, Section, ResponsiveGrid } from "../components/layout";
 import { ProductsQuickActions } from "../components/products/ProductsQuickActions";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -261,7 +262,7 @@ export default function ProductDetail() {
 
   if (error || !product) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <Section variant="white" spacing="md">
         <div className="flex items-center gap-4 mb-8">
           <Button asChild variant="outline" size="sm">
             <Link to="/products/catalog">
@@ -280,326 +281,337 @@ export default function ProductDetail() {
             Ce produit n'est pas disponible ou n'existe pas.
           </p>
         </div>
-      </div>
+      </Section>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="py-section space-y-6">
       {/* Breadcrumb */}
-      <PublicBreadcrumb
-        items={[
-          { label: "Produits", href: "/products" },
-          { label: "Catalogue", href: "/products/catalog" },
-          { label: product.piece_name },
-        ]}
-      />
+      <Container>
+        <PublicBreadcrumb
+          items={[
+            { label: "Produits", href: "/products" },
+            { label: "Catalogue", href: "/products/catalog" },
+            { label: product.piece_name },
+          ]}
+        />
+      </Container>
 
       {/* Header */}
-      <div className="flex justify-between items-start">
-        <div className="flex items-center gap-4">
-          <Button asChild variant="outline" size="sm">
-            <Link to="/products/catalog">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Retour au catalogue
-            </Link>
-          </Button>
-        </div>
-
-        {!enhanced && (
-          <Link to={`/products/${product.piece_id}?enhanced=true`}>
-            <Button variant="outline" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Mode Avancé
+      <Section variant="white" spacing="none">
+        <div className="flex justify-between items-start">
+          <div className="flex items-center gap-4">
+            <Button asChild variant="outline" size="sm">
+              <Link to="/products/catalog">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour au catalogue
+              </Link>
             </Button>
-          </Link>
-        )}
-      </div>
+          </div>
+
+          {!enhanced && (
+            <Link to={`/products/${product.piece_id}?enhanced=true`}>
+              <Button variant="outline" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                Mode Avancé
+              </Button>
+            </Link>
+          )}
+        </div>
+      </Section>
 
       {/* Product Header */}
-      <div className="bg-white p-6 border border-gray-200 rounded-lg">
-        <div className="flex items-start gap-6">
-          {product.piece_image ? (
-            <img
-              src={product.piece_image}
-              alt={product.piece_name}
-              className="w-32 h-32 object-cover rounded-lg border border-gray-200"
-            />
-          ) : (
-            <div className="w-32 h-32 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
-              <Package className="h-12 w-12 text-gray-400" />
-            </div>
-          )}
-
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  {product.piece_name}
-                </h1>
-                {product.piece_alias && (
-                  <p className="text-lg text-gray-600 mt-1">
-                    {product.piece_alias}
-                  </p>
-                )}
-                <div className="flex items-center gap-3 mt-3">
-                  <Badge variant="outline">SKU: {product.piece_sku}</Badge>
-                  {product.piece_top && (
-                    <Badge variant="secondary">
-                      <Star className="h-3 w-3 mr-1" />
-                      Top Produit
-                    </Badge>
-                  )}
-                  {!product.piece_activ && (
-                    <Badge variant="destructive">Inactif</Badge>
-                  )}
-                  {enhanced && <Badge variant="secondary">Mode Avancé</Badge>}
-                </div>
+      <Section variant="white" spacing="none">
+        <div className="bg-white p-4 md:p-6 border border-gray-200 rounded-lg">
+          <div className="flex flex-col sm:flex-row items-start gap-6">
+            {product.piece_image ? (
+              <img
+                src={product.piece_image}
+                alt={product.piece_name}
+                className="w-full sm:w-32 h-32 object-cover rounded-lg border border-gray-200"
+              />
+            ) : (
+              <div className="w-full sm:w-32 h-32 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
+                <Package className="h-12 w-12 text-gray-400" />
               </div>
+            )}
 
-              {user.role === "pro" && (
-                <div className="text-right">
-                  <Button className="flex items-center gap-2">
-                    <ShoppingCart className="h-4 w-4" />
-                    Ajouter au panier
-                  </Button>
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+                    {product.piece_name}
+                  </h1>
+                  {product.piece_alias && (
+                    <p className="text-lg text-gray-600 mt-1">
+                      {product.piece_alias}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-3 mt-3">
+                    <Badge variant="outline">SKU: {product.piece_sku}</Badge>
+                    {product.piece_top && (
+                      <Badge variant="secondary">
+                        <Star className="h-3 w-3 mr-1" />
+                        Top Produit
+                      </Badge>
+                    )}
+                    {!product.piece_activ && (
+                      <Badge variant="destructive">Inactif</Badge>
+                    )}
+                    {enhanced && <Badge variant="secondary">Mode Avancé</Badge>}
+                  </div>
                 </div>
-              )}
+
+                {user.role === "pro" && (
+                  <div className="text-right">
+                    <Button className="flex items-center gap-2">
+                      <ShoppingCart className="h-4 w-4" />
+                      Ajouter au panier
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </Section>
 
       {/* Product Information */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Information */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Description */}
-          {product.piece_description && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Info className="h-5 w-5" />
-                  Description
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 leading-relaxed">
-                  {product.piece_description}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+      <Section variant="white" spacing="none">
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Main Information */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Description */}
+            {product.piece_description && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Info className="h-5 w-5" />
+                    Description
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700 leading-relaxed">
+                    {product.piece_description}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
-          {/* Enhanced Information */}
-          {enhanced && (
-            <>
-              {/* Specifications */}
-              {product.specifications && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Spécifications Techniques</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-2 md:grid-cols-2">
-                      {Object.entries(product.specifications).map(
-                        ([key, value]) => (
-                          <div
-                            key={key}
-                            className="flex justify-between py-1 border-b border-gray-100"
-                          >
-                            <span className="font-medium text-gray-600">
-                              {key}:
-                            </span>
-                            <span className="text-gray-900">
-                              {String(value)}
-                            </span>
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Compatibility */}
-              {product.compatibility && product.compatibility.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Compatibilité</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {product.compatibility.map((vehicle, index) => (
-                        <Badge key={index} variant="outline">
-                          {vehicle}
-                        </Badge>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          )}
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Stock Information - DÉSACTIVÉ (flux tendu) */}
-
-          {/* Price Information */}
-          {product.pieces_price && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Prix</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Prix HT:</span>
-                  <span className="font-semibold">
-                    {product.pieces_price.price_ht.toFixed(2)}€
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>
-                    TVA ({(product.pieces_price.price_vat * 100).toFixed(1)}%):
-                  </span>
-                  <span>
-                    {(
-                      product.pieces_price.price_ttc -
-                      product.pieces_price.price_ht
-                    ).toFixed(2)}
-                    €
-                  </span>
-                </div>
-                <div className="flex justify-between font-bold text-lg border-t pt-2">
-                  <span>Prix TTC:</span>
-                  <span>{product.pieces_price.price_ttc.toFixed(2)}€</span>
-                </div>
-                {user.role === "pro" && product.price_pro && (
-                  <div className="flex justify-between text-green-600 font-bold">
-                    <span>Prix Pro:</span>
-                    <span>{product.price_pro.toFixed(2)}€</span>
-                  </div>
+            {/* Enhanced Information */}
+            {enhanced && (
+              <>
+                {/* Specifications */}
+                {product.specifications && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Spécifications Techniques</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ResponsiveGrid cols={{ base: 1, md: 2 }} gap="xs">
+                        {Object.entries(product.specifications).map(
+                          ([key, value]) => (
+                            <div
+                              key={key}
+                              className="flex justify-between py-1 border-b border-gray-100"
+                            >
+                              <span className="font-medium text-gray-600">
+                                {key}:
+                              </span>
+                              <span className="text-gray-900">
+                                {String(value)}
+                              </span>
+                            </div>
+                          ),
+                        )}
+                      </ResponsiveGrid>
+                    </CardContent>
+                  </Card>
                 )}
-              </CardContent>
-            </Card>
-          )}
 
-          {/* Brand Information */}
-          {product.pieces_marque && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Tag className="h-5 w-5" />
-                  Marque
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  {product.pieces_marque.marque_logo ? (
-                    <img
-                      src={product.pieces_marque.marque_logo}
-                      alt={product.pieces_marque.marque_name}
-                      className="h-12 mx-auto mb-2"
-                    />
-                  ) : (
-                    <Tag className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  )}
-                  <div className="font-semibold text-gray-900">
-                    {product.pieces_marque.marque_name}
-                  </div>
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="mt-3 w-full"
-                  >
-                    <Link
-                      to={`/products/catalog?brand=${product.pieces_marque.marque_id}`}
-                    >
-                      Voir tous les produits
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                {/* Compatibility */}
+                {product.compatibility && product.compatibility.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Compatibilité</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {product.compatibility.map((vehicle, index) => (
+                          <Badge key={index} variant="outline">
+                            {vehicle}
+                          </Badge>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            )}
+          </div>
 
-          {/* Range Information */}
-          {product.pieces_gamme && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Gamme</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="font-semibold text-gray-900">
-                    {product.pieces_gamme.gamme_name}
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Price Information */}
+            {product.pieces_price && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Prix</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Prix HT:</span>
+                    <span className="font-semibold">
+                      {product.pieces_price.price_ht.toFixed(2)}€
+                    </span>
                   </div>
-                  {product.pieces_gamme.gamme_description && (
-                    <p className="text-sm text-gray-600">
-                      {product.pieces_gamme.gamme_description}
-                    </p>
+                  <div className="flex justify-between">
+                    <span>
+                      TVA ({(product.pieces_price.price_vat * 100).toFixed(1)}
+                      %):
+                    </span>
+                    <span>
+                      {(
+                        product.pieces_price.price_ttc -
+                        product.pieces_price.price_ht
+                      ).toFixed(2)}
+                      €
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg border-t pt-2">
+                    <span>Prix TTC:</span>
+                    <span>{product.pieces_price.price_ttc.toFixed(2)}€</span>
+                  </div>
+                  {user.role === "pro" && product.price_pro && (
+                    <div className="flex justify-between text-emerald-600 font-bold">
+                      <span>Prix Pro:</span>
+                      <span>{product.price_pro.toFixed(2)}€</span>
+                    </div>
                   )}
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                  >
-                    <Link
-                      to={`/products/catalog?range=${product.pieces_gamme.gamme_id}`}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Brand Information */}
+            {product.pieces_marque && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Tag className="h-5 w-5" />
+                    Marque
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    {product.pieces_marque.marque_logo ? (
+                      <img
+                        src={product.pieces_marque.marque_logo}
+                        alt={product.pieces_marque.marque_name}
+                        className="h-12 mx-auto mb-2"
+                      />
+                    ) : (
+                      <Tag className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                    )}
+                    <div className="font-semibold text-gray-900">
+                      {product.pieces_marque.marque_name}
+                    </div>
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="mt-3 w-full"
                     >
-                      Voir la gamme
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                      <Link
+                        to={`/products/catalog?brand=${product.pieces_marque.marque_id}`}
+                      >
+                        Voir tous les produits
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Range Information */}
+            {product.pieces_gamme && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Gamme</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="font-semibold text-gray-900">
+                      {product.pieces_gamme.gamme_name}
+                    </div>
+                    {product.pieces_gamme.gamme_description && (
+                      <p className="text-sm text-gray-600">
+                        {product.pieces_gamme.gamme_description}
+                      </p>
+                    )}
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                    >
+                      <Link
+                        to={`/products/catalog?range=${product.pieces_gamme.gamme_id}`}
+                      >
+                        Voir la gamme
+                      </Link>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
-      </div>
+      </Section>
 
       {/* Related Products */}
       {enhanced &&
         product.related_products &&
         product.related_products.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Produits Associés</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-4">
-                {product.related_products
-                  .slice(0, 4)
-                  .map((relatedId, index) => (
-                    <div
-                      key={index}
-                      className="p-4 border border-gray-200 rounded-lg"
-                    >
-                      <div className="text-center">
-                        <Package className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                        <Button
-                          asChild
-                          variant="outline"
-                          size="sm"
-                          className="w-full"
-                        >
-                          <Link to={`/products/${relatedId}`}>
-                            Voir produit
-                          </Link>
-                        </Button>
+          <Section variant="white" spacing="none">
+            <Card>
+              <CardHeader>
+                <CardTitle>Produits Associés</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveGrid cols={{ base: 1, md: 2, lg: 4 }} gap="md">
+                  {product.related_products
+                    .slice(0, 4)
+                    .map((relatedId, index) => (
+                      <div
+                        key={index}
+                        className="p-4 border border-gray-200 rounded-lg"
+                      >
+                        <div className="text-center">
+                          <Package className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                          >
+                            <Link to={`/products/${relatedId}`}>
+                              Voir produit
+                            </Link>
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-              </div>
-            </CardContent>
-          </Card>
+                    ))}
+                </ResponsiveGrid>
+              </CardContent>
+            </Card>
+          </Section>
         )}
 
       {/* Quick Actions */}
-      <ProductsQuickActions enhanced={enhanced} userRole={user.role} />
+      <Container>
+        <ProductsQuickActions enhanced={enhanced} userRole={user.role} />
+      </Container>
     </div>
   );
 }

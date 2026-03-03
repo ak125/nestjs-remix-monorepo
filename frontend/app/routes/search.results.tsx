@@ -14,7 +14,8 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { Error404 } from "~/components/errors/Error404";
-import { Badge } from "~/components/ui";
+import Container from "~/components/layout/Container";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { SearchBar } from "../components/search/SearchBar";
 import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
@@ -135,19 +136,19 @@ export default function SearchResults() {
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumb */}
       <div className="bg-white border-b pt-4">
-        <div className="max-w-7xl mx-auto px-4">
+        <Container>
           <PublicBreadcrumb
             items={[
               { label: "Recherche", href: "/search" },
               { label: query || "Résultats" },
             ]}
           />
-        </div>
+        </Container>
       </div>
 
       {/* Header avec barre de recherche */}
       <div className="bg-white border-b sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <Container className="py-4">
           <SearchBar
             initialQuery={query}
             version={version}
@@ -156,10 +157,10 @@ export default function SearchResults() {
             showHistory={true}
             className="max-w-2xl"
           />
-        </div>
+        </Container>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <Container className="py-6">
         {/* Stats de recherche */}
         {query && (
           <div className="mb-6">
@@ -333,7 +334,7 @@ export default function SearchResults() {
             )}
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

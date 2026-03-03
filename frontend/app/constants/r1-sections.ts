@@ -4,6 +4,7 @@
  */
 export enum R1Section {
   HERO = "S_HERO",
+  REASSURANCE = "S_REASSURANCE",
   COMPAT = "S_COMPAT",
   QUICK_STEPS = "S_QUICK_STEPS",
   BUY_ARGS = "S_BUY_ARGS",

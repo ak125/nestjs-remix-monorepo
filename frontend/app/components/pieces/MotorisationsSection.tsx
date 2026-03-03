@@ -4,6 +4,7 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  ShieldCheck,
   TrendingUp,
 } from "lucide-react";
 import React, { useState, memo } from "react";
@@ -33,6 +34,8 @@ interface MotorisationsSectionProps {
   familleName?: string;
   totalCount?: number;
   compatibilitiesIntro?: string;
+  /** R1 = routing only (pas de diagnostic/entretien dans les cartes) */
+  variant?: "default" | "R1";
 }
 
 // Limite d'affichage par défaut (SEO: éviter dilution)
@@ -44,7 +47,9 @@ const MotorisationsSection = memo(function MotorisationsSection({
   familleName = "pièces",
   totalCount,
   compatibilitiesIntro,
+  variant = "default",
 }: MotorisationsSectionProps) {
+  const isR1 = variant === "R1";
   const [showAllVehicles, setShowAllVehicles] = useState(false);
 
   if (!motorisations?.items || motorisations.items.length === 0) {
@@ -80,7 +85,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
 
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
-                {motorisations.title}
+                {isR1 ? "Choisissez votre motorisation" : motorisations.title}
               </h2>
               <p className="text-white/80 text-sm mt-1">
                 {compatibilitiesIntro ||
@@ -163,8 +168,10 @@ const MotorisationsSection = memo(function MotorisationsSection({
                   <div className="flex-1 min-w-0">
                     {/* Titre avec meilleure hiérarchie */}
                     <h3 className="font-bold text-gray-900 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-gray-900 group-hover:to-gray-600 transition-all duration-300 mb-2.5 text-base sm:text-lg leading-tight">
-                      {motorisation.title ||
-                        `${motorisation.marque_name} ${motorisation.modele_name}`}
+                      {isR1
+                        ? `${motorisation.marque_name} ${motorisation.modele_name}`
+                        : motorisation.title ||
+                          `${motorisation.marque_name} ${motorisation.modele_name}`}
                     </h3>
 
                     {/* Badges avec meilleur spacing */}
@@ -179,27 +186,40 @@ const MotorisationsSection = memo(function MotorisationsSection({
                       </div>
                     </div>
 
+                    {/* Badge compatibilité — R1 uniquement */}
+                    {isR1 && (
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
+                        <span className="text-xs font-medium text-green-700">
+                          Compatibilité vérifiée
+                        </span>
+                      </div>
+                    )}
+
                     {/* Période plus visible */}
                     <p className="text-sm text-gray-600 mb-3 font-medium">
                       📅 {motorisation.periode}
                     </p>
 
-                    {/* Conseil SEO (fragment2 du backend, sanitized) */}
-                    {(() => {
-                      const cleanAdvice = motorisation.advice
-                        ? sanitizeAdvice(motorisation.advice)
-                        : null;
-                      return cleanAdvice ? (
-                        <p className="text-xs text-indigo-700 bg-indigo-50 rounded px-2 py-1 mb-2 line-clamp-1">
-                          Conseil : {cleanAdvice}
-                        </p>
-                      ) : null;
-                    })()}
+                    {/* Conseil SEO (fragment2 du backend, sanitized) — masqué en R1 */}
+                    {!isR1 &&
+                      (() => {
+                        const cleanAdvice = motorisation.advice
+                          ? sanitizeAdvice(motorisation.advice)
+                          : null;
+                        return cleanAdvice ? (
+                          <p className="text-xs text-indigo-700 bg-indigo-50 rounded px-2 py-1 mb-2 line-clamp-1">
+                            Conseil : {cleanAdvice}
+                          </p>
+                        ) : null;
+                      })()}
 
-                    {/* Description SEO unique par motorisation (backend buildDescription) */}
+                    {/* Description — neutre en R1, enrichie en default */}
                     <p className="text-sm text-gray-700 leading-relaxed mb-4">
-                      {motorisation.description ||
-                        `${pluralizePieceName(familleName.toLowerCase()).replace(/^./, (c) => c.toUpperCase())} compatibles avec votre ${motorisation.marque_name} ${motorisation.modele_name} ${motorisation.type_name}. Sélectionnez l'essieu (avant/arrière) pour afficher les références disponibles.`}
+                      {isR1
+                        ? `Sélectionnez votre ${motorisation.marque_name} ${motorisation.modele_name} ${motorisation.type_name} pour afficher les références compatibles.`
+                        : motorisation.description ||
+                          `${pluralizePieceName(familleName.toLowerCase()).replace(/^./, (c) => c.toUpperCase())} compatibles avec votre ${motorisation.marque_name} ${motorisation.modele_name} ${motorisation.type_name}. Sélectionnez l'essieu (avant/arrière) pour afficher les références disponibles.`}
                     </p>
 
                     {/* CTA amélioré */}

@@ -295,7 +295,7 @@ function RatingDisplayV2({
 
       {/* Review count with link style */}
       {reviewCount !== undefined && (
-        <button className="text-sm text-[#0369A1] hover:text-[#075985] hover:underline transition-colors cursor-pointer">
+        <button className="text-sm text-sky-700 hover:text-sky-800 hover:underline transition-colors cursor-pointer">
           ({reviewCount} avis)
         </button>
       )}

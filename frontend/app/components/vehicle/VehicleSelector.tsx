@@ -506,6 +506,9 @@ const VehicleSelector = memo(function VehicleSelector({
             >
               <FileText className="w-4 h-4 inline mr-2" />
               Type Mine
+              <span className="text-xs font-normal opacity-70 ml-1">
+                (carte grise D.2)
+              </span>
             </button>
           </div>
         )}
@@ -600,6 +603,11 @@ const VehicleSelector = memo(function VehicleSelector({
                       </option>
                     ))}
                   </select>
+                  {selectedYear && !loadingModels && models.length === 0 && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Essayez une autre année ou vérifiez la marque
+                    </p>
+                  )}
                 </div>
 
                 {/* Motorisation */}
@@ -633,6 +641,12 @@ const VehicleSelector = memo(function VehicleSelector({
                       </option>
                     ))}
                   </select>
+                  {selectedModel && !loadingTypes && types.length > 1 && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Carte grise champ D.2 pour identifier la bonne
+                      motorisation
+                    </p>
+                  )}
                 </div>
               </div>
 

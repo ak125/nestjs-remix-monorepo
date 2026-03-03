@@ -437,7 +437,7 @@ export default function BlogIndex() {
             : []
         }
         gradientFrom="from-blue-900"
-        gradientTo="to-[#162d5a]"
+        gradientTo="to-navy-light"
       />
 
       {/* Search Bar Section - Compact */}
@@ -1082,7 +1082,7 @@ export default function BlogIndex() {
 
       {/* Section Articles les Plus Consultés */}
       {blogData.popular && blogData.popular.length > 0 && (
-        <section className="py-16 bg-gradient-to-br from-gray-900 via-[#0f2347] to-[#162d5a] text-white">
+        <section className="py-16 bg-gradient-to-br from-gray-900 via-navy-mid to-navy-light text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-6xl mx-auto">
               <div className="flex items-center justify-between mb-12">

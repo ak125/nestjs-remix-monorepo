@@ -41,6 +41,7 @@ import { useState } from "react";
 
 import { Error404 } from "~/components/errors/Error404";
 import { HeroDiagnostic } from "~/components/heroes";
+import Container from "~/components/layout/Container";
 import {
   Accordion,
   AccordionContent,
@@ -418,14 +419,14 @@ export default function DiagnosticAutoIndex() {
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumbs */}
       <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+        <Container className="py-3">
           <PublicBreadcrumb
             items={[
               { label: "Accueil", href: "/" },
               { label: "Diagnostic Auto", href: "/diagnostic-auto" },
             ]}
           />
-        </div>
+        </Container>
       </div>
 
       {/* ═══ HERO ═══ */}
@@ -437,7 +438,7 @@ export default function DiagnosticAutoIndex() {
 
       {/* ═══ RECHERCHE + OBD ═══ */}
       <section className="bg-white border-b py-4">
-        <div className="max-w-7xl mx-auto px-4">
+        <Container>
           <div className="flex flex-col sm:flex-row gap-3 max-w-2xl">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -468,17 +469,17 @@ export default function DiagnosticAutoIndex() {
               />
               <button
                 type="submit"
-                className="h-11 px-5 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl transition-colors whitespace-nowrap"
+                className="h-11 px-5 bg-cta hover:bg-cta-hover text-white font-semibold rounded-xl transition-colors whitespace-nowrap"
               >
                 Scanner
               </button>
             </form>
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* ═══ CLUSTERS ═══ */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
+      <Container as="section" className="py-12">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Par catégorie</h2>
         <p className="text-gray-500 mb-8">
           Sélectionnez la zone concernée pour affiner le diagnostic
@@ -518,13 +519,13 @@ export default function DiagnosticAutoIndex() {
             Aucune catégorie ne correspond à « {searchQuery} »
           </p>
         )}
-      </section>
+      </Container>
 
       {/* ═══ GUIDE : COMMENT IDENTIFIER SA PANNE ═══ */}
-      <section className="max-w-7xl mx-auto px-4 py-14">
+      <Container as="section" className="py-14">
         <div className="grid lg:grid-cols-3 gap-10">
           <div className="lg:col-span-2">
-            <Badge className="mb-4 bg-orange-100 text-orange-700 border-orange-200">
+            <Badge className="mb-4 bg-cta-50 text-cta-800 border-cta-200">
               Guide expert
             </Badge>
             <h2 className="text-3xl font-extrabold text-gray-900 mb-4 leading-tight">
@@ -541,7 +542,7 @@ export default function DiagnosticAutoIndex() {
             {/* Methode 1 */}
             <div className="mb-6">
               <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full bg-orange-500 text-white text-sm flex items-center justify-center font-bold shrink-0">
+                <span className="w-7 h-7 rounded-full bg-cta text-white text-sm flex items-center justify-center font-bold shrink-0">
                   1
                 </span>
                 Observer les symptômes sensoriels (sans outil)
@@ -600,7 +601,7 @@ export default function DiagnosticAutoIndex() {
             {/* Methode 2 */}
             <div className="mb-6">
               <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full bg-orange-500 text-white text-sm flex items-center justify-center font-bold shrink-0">
+                <span className="w-7 h-7 rounded-full bg-cta text-white text-sm flex items-center justify-center font-bold shrink-0">
                   2
                 </span>
                 Lire les voyants du tableau de bord
@@ -623,7 +624,7 @@ export default function DiagnosticAutoIndex() {
               </p>
               <Link
                 to="/diagnostic-auto?cluster=electricite"
-                className="inline-flex items-center gap-1.5 text-sm text-orange-600 hover:text-orange-800 font-medium transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm text-cta hover:text-cta-hover font-medium transition-colors"
               >
                 Voir tous les diagnostics voyants{" "}
                 <ChevronRight className="h-4 w-4" />
@@ -633,7 +634,7 @@ export default function DiagnosticAutoIndex() {
             {/* Methode 3 */}
             <div>
               <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
-                <span className="w-7 h-7 rounded-full bg-orange-500 text-white text-sm flex items-center justify-center font-bold shrink-0">
+                <span className="w-7 h-7 rounded-full bg-cta text-white text-sm flex items-center justify-center font-bold shrink-0">
                   3
                 </span>
                 Scanner le code OBD (P, C, B, U)
@@ -651,10 +652,8 @@ export default function DiagnosticAutoIndex() {
 
           {/* Sidebar stats */}
           <div className="space-y-4">
-            <div className="rounded-2xl bg-[#0d1b3e] text-white p-6">
-              <p className="text-4xl font-extrabold text-orange-400 mb-1">
-                80%
-              </p>
+            <div className="rounded-2xl bg-navy text-white p-6">
+              <p className="text-4xl font-extrabold text-cta-light mb-1">80%</p>
               <p className="text-sm text-white/70">
                 des pannes présentent des signes avant-coureurs avant
                 l'immobilisation
@@ -667,7 +666,7 @@ export default function DiagnosticAutoIndex() {
               </p>
               <Link
                 to="/diagnostic-auto?cluster=moteur"
-                className="mt-3 inline-flex items-center gap-1.5 text-sm text-orange-600 font-medium hover:text-orange-800 transition-colors"
+                className="mt-3 inline-flex items-center gap-1.5 text-sm text-cta font-medium hover:text-cta-hover transition-colors"
               >
                 Explorer <ChevronRight className="h-4 w-4" />
               </Link>
@@ -684,11 +683,11 @@ export default function DiagnosticAutoIndex() {
             </div>
           </div>
         </div>
-      </section>
+      </Container>
 
       {/* ═══ SIGNES AVANT-COUREURS ═══ */}
       <section className="bg-gray-50 border-y py-14">
-        <div className="max-w-7xl mx-auto px-4">
+        <Container>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Les 10 signes avant-coureurs d'une panne auto
           </h2>
@@ -715,7 +714,7 @@ export default function DiagnosticAutoIndex() {
                   {sign.cluster && (
                     <Link
                       to={`/diagnostic-auto?cluster=${sign.cluster}`}
-                      className="mt-1.5 inline-flex items-center gap-1 text-xs text-orange-600 hover:text-orange-800 font-medium transition-colors"
+                      className="mt-1.5 inline-flex items-center gap-1 text-xs text-cta hover:text-cta-hover font-medium transition-colors"
                     >
                       Diagnostics {sign.clusterLabel}{" "}
                       <ChevronRight className="h-3 w-3" />
@@ -725,11 +724,11 @@ export default function DiagnosticAutoIndex() {
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* ═══ MÉCANIQUE VS ÉLECTRIQUE ═══ */}
-      <section className="max-w-7xl mx-auto px-4 py-14">
+      <Container as="section" className="py-14">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
           Panne mécanique ou électrique : comment les distinguer ?
         </h2>
@@ -838,11 +837,11 @@ export default function DiagnosticAutoIndex() {
             </div>
           </div>
         </div>
-      </section>
+      </Container>
 
       {/* ═══ DIAGNOSTICS POPULAIRES ═══ */}
       <section className="bg-white border-y">
-        <div className="max-w-7xl mx-auto px-4 py-12">
+        <Container className="py-12">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
@@ -871,15 +870,15 @@ export default function DiagnosticAutoIndex() {
                   >
                     <div className="h-full rounded-xl border bg-white p-5 transition-all duration-200 hover:shadow-lg hover:border-gray-300 group-hover:-translate-y-0.5">
                       <div className="flex items-start gap-3 mb-3">
-                        <div className="p-2 bg-gray-100 rounded-lg shrink-0 group-hover:bg-orange-50 transition-colors">
-                          <PerceptionIcon className="h-5 w-5 text-gray-500 group-hover:text-orange-600 transition-colors" />
+                        <div className="p-2 bg-gray-100 rounded-lg shrink-0 group-hover:bg-cta-50 transition-colors">
+                          <PerceptionIcon className="h-5 w-5 text-gray-500 group-hover:text-cta transition-colors" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="font-semibold text-gray-900 text-sm leading-tight group-hover:text-orange-700 transition-colors">
+                          <h3 className="font-semibold text-gray-900 text-sm leading-tight group-hover:text-cta-hover transition-colors">
                             {item.title}
                           </h3>
                         </div>
-                        <ArrowRight className="h-4 w-4 text-gray-300 shrink-0 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all" />
+                        <ArrowRight className="h-4 w-4 text-gray-300 shrink-0 group-hover:text-cta group-hover:translate-x-0.5 transition-all" />
                       </div>
                       <p className="text-sm text-gray-500 line-clamp-2 mb-3">
                         {item.meta_description}
@@ -913,12 +912,12 @@ export default function DiagnosticAutoIndex() {
               </p>
             </div>
           )}
-        </div>
+        </Container>
       </section>
 
       {/* ═══ URGENCE : PANNE SUR AUTOROUTE ═══ */}
       <section className="bg-gradient-to-br from-red-950 to-red-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4">
+        <Container>
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-red-800/60 rounded-xl border border-red-700/50">
               <AlertTriangle className="h-6 w-6 text-red-300" />
@@ -988,13 +987,13 @@ export default function DiagnosticAutoIndex() {
               Diagnostics électricité <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
-        </div>
+        </Container>
       </section>
 
       {/* ═══ FAQ ═══ */}
-      <section className="max-w-7xl mx-auto px-4 py-14">
+      <Container as="section" className="py-14">
         <div className="flex items-center gap-3 mb-8">
-          <HelpCircle className="h-6 w-6 text-orange-500" />
+          <HelpCircle className="h-6 w-6 text-cta" />
           <h2 className="text-2xl font-bold text-gray-900">
             Questions fréquentes sur les pannes auto
           </h2>
@@ -1015,7 +1014,7 @@ export default function DiagnosticAutoIndex() {
                   {item.link && (
                     <Link
                       to={item.link.href}
-                      className="mt-2 inline-flex items-center gap-1 text-orange-600 hover:text-orange-800 font-medium transition-colors"
+                      className="mt-2 inline-flex items-center gap-1 text-cta hover:text-cta-hover font-medium transition-colors"
                     >
                       {item.link.label} <ChevronRight className="h-3.5 w-3.5" />
                     </Link>
@@ -1025,11 +1024,11 @@ export default function DiagnosticAutoIndex() {
             ))}
           </Accordion>
         </div>
-      </section>
+      </Container>
 
       {/* ═══ CTA BOTTOM ═══ */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <div className="rounded-2xl bg-[#0d1b3e] text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
+      <Container as="section" className="py-12">
+        <div className="rounded-2xl bg-navy text-white p-8 md:p-12 flex flex-col md:flex-row items-center gap-8">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-3">
               <AlertTriangle className="h-5 w-5 text-yellow-400" />
@@ -1064,17 +1063,17 @@ export default function DiagnosticAutoIndex() {
             />
             <button
               type="submit"
-              className="h-12 px-6 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-colors flex items-center gap-2"
+              className="h-12 px-6 bg-cta hover:bg-cta-hover text-white font-bold rounded-xl transition-colors flex items-center gap-2"
             >
               Scanner
               <ChevronRight className="w-4 h-4" />
             </button>
           </form>
         </div>
-      </section>
+      </Container>
 
       {/* Cross-link glossaire */}
-      <div className="max-w-7xl mx-auto px-4 pb-12 flex items-center justify-center gap-2 text-sm text-gray-500">
+      <Container className="pb-12 flex items-center justify-center gap-2 text-sm text-gray-500">
         <BookOpen className="w-4 h-4 text-indigo-500" />
         <span>Comprendre les pièces mentionnées ?</span>
         <Link
@@ -1083,7 +1082,7 @@ export default function DiagnosticAutoIndex() {
         >
           Consulter le glossaire
         </Link>
-      </div>
+      </Container>
     </div>
   );
 }
@@ -1108,7 +1107,7 @@ export function ErrorBoundary() {
           </p>
           <Link
             to="/"
-            className="inline-flex items-center text-orange-600 hover:text-orange-800"
+            className="inline-flex items-center text-cta hover:text-cta-hover"
           >
             Retour à l'accueil
           </Link>

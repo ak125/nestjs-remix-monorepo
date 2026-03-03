@@ -54,6 +54,18 @@ Pour chaque gamme sélectionnée :
 4. **Détecter la version du schema** :
    - Si `rendering.quality.version === 'GammeContentContract.v4'` → utiliser le mapping **v4** (5 blocs)
    - Sinon → utiliser le mapping **legacy** (`page_contract`, `mechanical_rules`)
+5. **Charger le page brief** (sortie de brief-enricher, optionnel) :
+
+```sql
+SELECT primary_intent, forbidden_overlap, angles_obligatoires,
+       faq_paa, termes_techniques, preuves, writing_constraints
+FROM __seo_page_brief
+WHERE pg_id = {pg_id} AND page_role = 'R3' AND status = 'active'
+ORDER BY version DESC LIMIT 1;
+```
+
+Si le brief existe, stocker ses champs pour enrichir l'Étape 2.
+Si absent → continuer sans (backward compatible, comportement actuel).
 
 ---
 
@@ -107,6 +119,17 @@ Pour chaque gamme sélectionnée :
 - **Respecter** `domain.must_be_true` / `domain.must_not_contain` (v4) ou `mechanical_rules` (legacy)
 - **Accents français** : toujours corrects (vérifier, contrôler, sécurité, etc.)
 
+### Si page brief disponible (Étape 1.5)
+
+Appliquer ces contraintes supplémentaires lors de la génération :
+
+- **`forbidden_overlap`** : exclure ces termes/angles de `sgpg_how_to_choose` et `sgpg_intro_role` (anti-cannibalisation R3↔R1)
+- **`angles_obligatoires`** : s'assurer que chaque angle est couvert dans le contenu généré
+- **`termes_techniques`** : intégrer ces termes naturellement dans les champs narratifs
+- **`faq_paa`** : utiliser ces questions PAA pour enrichir `sgpg_faq` (compléter les FAQ RAG, pas les remplacer)
+- **`writing_constraints`** : appliquer comme contraintes additionnelles de génération
+- **`preuves`** : citer les preuves dans les champs `sgpg_arg*_text` si applicable
+
 ---
 
 ## Étape 3 — Quality gate AVANT écriture
@@ -124,6 +147,8 @@ Calculer le score qualité (100 - somme des pénalités) :
 | `TOO_LONG` | -8 | Champ narratif > 420 caractères |
 | `DUPLICATE_ITEMS` | -8 | Doublons dans les listes |
 | `INTRO_ROLE_MISMATCH` | -25 | L'intro ne correspond pas au nom de la gamme |
+| `BRIEF_TERMS_MISSING` | -12 | `termes_techniques` du page brief absents du contenu (si brief existe) |
+| `BRIEF_OVERLAP_LEAK` | -15 | Termes `forbidden_overlap` du brief trouvés dans le contenu |
 
 **Décision** :
 - Score >= 70 → écriture en DB (`sgpg_is_draft = true`)
@@ -201,3 +226,12 @@ Prochains suggérés: {5 aliases}
 | `/opt/automecanik/rag/knowledge/gammes/{slug}.md` | Knowledge files source |
 | `.claude/skills/seo-content-architect/SKILL.md` | Règles de génération héritées |
 | `.claude/skills/seo-content-architect/references/guide-achat-role.md` | Structure rôle R3 |
+
+## Tables DB consultées
+
+| Table | Usage |
+|-------|-------|
+| `__seo_gamme_purchase_guide` | Cible d'écriture (colonnes sgpg_*) |
+| `__seo_page_brief` | Page briefs enrichis (sortie brief-enricher, optionnel) |
+| `__qa_protected_meta_hash` | Protection QA meta |
+| `__rag_content_refresh_log` | Log des runs |

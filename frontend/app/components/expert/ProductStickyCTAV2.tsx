@@ -118,7 +118,7 @@ function PriceDisplayV2({
         className={cn(
           "text-2xl font-bold tracking-tight",
           "font-heading", // Lexend
-          "text-[#0F766E]", // Trust Teal
+          "text-teal-700", // Trust Teal
         )}
         style={{ fontFamily: "'Lexend', system-ui, sans-serif" }}
       >
@@ -138,7 +138,7 @@ function PriceDisplayV2({
               "inline-flex items-center",
               "px-2 py-0.5",
               "text-xs font-bold text-white",
-              "bg-gradient-to-r from-[#DC2626] to-[#B91C1C]",
+              "bg-gradient-to-r from-red-600 to-red-700",
               "rounded-sm",
               "transform -rotate-1", // Slight rotation for distinctive look
               "shadow-sm",
@@ -169,7 +169,7 @@ function StockIndicatorV2({ quantity }: { quantity: number }) {
         className={cn(
           "flex items-center gap-1.5",
           "px-2.5 py-1 rounded-md",
-          "bg-[#FEE2E2] text-[#991B1B]",
+          "bg-red-100 text-red-800",
         )}
       >
         <AlertTriangle className="h-3.5 w-3.5" />
@@ -186,7 +186,7 @@ function StockIndicatorV2({ quantity }: { quantity: number }) {
         className={cn(
           "flex items-center gap-1.5",
           "px-2.5 py-1 rounded-md",
-          "bg-[#FEF3C7] text-[#92400E]",
+          "bg-amber-100 text-amber-800",
           "transition-all duration-300",
           pulse && "ring-2 ring-amber-300 ring-offset-1",
         )}
@@ -202,7 +202,7 @@ function StockIndicatorV2({ quantity }: { quantity: number }) {
       className={cn(
         "flex items-center gap-1.5",
         "px-2.5 py-1 rounded-md",
-        "bg-[#D1FAE5] text-[#065F46]",
+        "bg-emerald-100 text-emerald-800",
       )}
     >
       <Check className="h-3.5 w-3.5" />
@@ -259,8 +259,8 @@ function CompatibilityBadgeV2({
           "flex items-center gap-2",
           "px-3 py-1.5 rounded-full",
           "text-sm font-medium",
-          "bg-[#FEE2E2] text-[#991B1B]",
-          "border border-[#FCA5A5]",
+          "bg-red-100 text-red-800",
+          "border border-red-300",
         )}
       >
         <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
@@ -276,22 +276,22 @@ function CompatibilityBadgeV2({
         "flex items-center gap-2",
         "px-3 py-1.5 rounded-full",
         "text-sm font-semibold",
-        "bg-gradient-to-r from-[#D1FAE5] to-[#A7F3D0]",
-        "text-[#065F46]",
-        "border border-[#6EE7B7]",
+        "bg-gradient-to-r from-emerald-100 to-emerald-200",
+        "text-emerald-800",
+        "border border-emerald-300",
         "shadow-sm",
       )}
     >
       <ShieldCheck
         className={cn(
-          "h-4 w-4 text-[#059669]",
+          "h-4 w-4 text-emerald-600",
           "transition-all duration-300",
           showCheck ? "scale-100 opacity-100" : "scale-0 opacity-0",
         )}
       />
       <span>Compatible</span>
       {vehicleContext && (
-        <span className="text-[#059669] text-xs truncate max-w-[80px] sm:max-w-[100px]">
+        <span className="text-emerald-600 text-xs truncate max-w-[80px] sm:max-w-[100px]">
           • {vehicleContext}
         </span>
       )}
@@ -428,7 +428,7 @@ const ProductStickyCTAV2 = memo(
                 // Size
                 "h-12 px-6 min-w-[160px]",
                 // Colors - Professional Blue (Trust & Authority)
-                "bg-[#0369A1] hover:bg-[#075985] active:bg-[#0C4A6E]",
+                "bg-sky-700 hover:bg-sky-800 active:bg-sky-900",
                 "text-white font-semibold",
                 // Typography - Lexend
                 "text-base",
@@ -444,7 +444,7 @@ const ProductStickyCTAV2 = memo(
                 "disabled:bg-slate-300 disabled:cursor-not-allowed",
                 "disabled:hover:shadow-none disabled:hover:translate-y-0",
                 // Focus ring
-                "focus-visible:ring-2 focus-visible:ring-[#0369A1] focus-visible:ring-offset-2",
+                "focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2",
                 // Attention pulse for in-stock items
                 stockQuantity > 0 &&
                   stockQuantity <= 5 &&

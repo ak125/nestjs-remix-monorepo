@@ -516,8 +516,8 @@ export default function PaymentPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-slate-50">
-      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
+      <div className="mx-auto w-full max-w-7xl px-page py-8">
         {/* Header avec stepper + breadcrumb */}
         <div className="mb-8">
           <CheckoutStepper current="payment" />
@@ -561,7 +561,7 @@ export default function PaymentPage() {
           </nav>
 
           <div className="flex items-center gap-4 mb-2">
-            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg">
+            <div className="flex-shrink-0 w-12 h-12 bg-navy rounded-2xl flex items-center justify-center shadow-lg">
               <svg
                 className="w-6 h-6 text-white"
                 fill="none"
@@ -625,7 +625,7 @@ export default function PaymentPage() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <span className="font-bold text-blue-600 text-xl">
+                  <span className="font-bold text-cta text-xl">
                     {formatPrice(order.totalTTC)}
                   </span>
                   <svg
@@ -793,7 +793,7 @@ export default function PaymentPage() {
                       <span className="font-bold text-slate-900">
                         Total TTC
                       </span>
-                      <span className="font-bold text-blue-600 text-2xl">
+                      <span className="font-bold text-cta text-2xl">
                         {formatPrice(order.totalTTC)}
                       </span>
                     </div>
@@ -914,7 +914,7 @@ export default function PaymentPage() {
                   <button
                     type="submit"
                     disabled={isProcessing}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white py-4 px-6 rounded-xl font-semibold shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-3"
+                    className="w-full bg-cta hover:bg-cta-hover text-white py-4 px-6 rounded-xl font-semibold shadow-lg shadow-cta/30 hover:shadow-xl hover:shadow-cta/40 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-3"
                   >
                     {isProcessing ? (
                       <>

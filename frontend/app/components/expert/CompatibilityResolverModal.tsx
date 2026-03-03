@@ -88,7 +88,7 @@ function HelpCard({
         <div>
           <div className="text-xs font-medium text-slate-700">{title}</div>
           <div className="text-xs text-slate-500 mt-0.5">{description}</div>
-          <code className="text-xs text-[#0369A1] bg-[#0369A1]/10 px-1.5 py-0.5 rounded mt-1 inline-block">
+          <code className="text-xs text-sky-700 bg-sky-700/10 px-1.5 py-0.5 rounded mt-1 inline-block">
             {example}
           </code>
         </div>
@@ -125,8 +125,8 @@ function VehicleResultCard({
           "relative p-4 rounded-xl border-2",
           "transition-all duration-300",
           isCompatible
-            ? "bg-gradient-to-br from-[#ECFDF5] to-[#D1FAE5] border-[#059669]"
-            : "bg-gradient-to-br from-[#FEF2F2] to-[#FEE2E2] border-[#DC2626]",
+            ? "bg-gradient-to-br from-emerald-50 to-emerald-100 border-emerald-600"
+            : "bg-gradient-to-br from-red-50 to-red-100 border-red-600",
         )}
       >
         {/* Celebration sparkles */}
@@ -144,13 +144,13 @@ function VehicleResultCard({
               "flex items-center justify-center",
               "h-12 w-12 rounded-full",
               "animate-[verified-reveal_300ms_ease-out]",
-              isCompatible ? "bg-[#059669]/20" : "bg-[#DC2626]/20",
+              isCompatible ? "bg-emerald-600/20" : "bg-red-600/20",
             )}
           >
             {isCompatible ? (
-              <ShieldCheck className="h-6 w-6 text-[#059669]" />
+              <ShieldCheck className="h-6 w-6 text-emerald-600" />
             ) : (
-              <ShieldX className="h-6 w-6 text-[#DC2626]" />
+              <ShieldX className="h-6 w-6 text-red-600" />
             )}
           </div>
 
@@ -158,7 +158,7 @@ function VehicleResultCard({
             <div
               className={cn(
                 "text-lg font-bold",
-                isCompatible ? "text-[#065F46]" : "text-[#991B1B]",
+                isCompatible ? "text-emerald-800" : "text-red-800",
               )}
               style={{ fontFamily: "'Lexend', system-ui, sans-serif" }}
             >
@@ -203,10 +203,10 @@ function VehicleResultCard({
             onClick={onConfirm}
             className={cn(
               "flex-1",
-              "bg-[#059669] hover:bg-[#047857]",
+              "bg-emerald-600 hover:bg-emerald-700",
               "text-white font-semibold",
               "min-h-[48px]",
-              "shadow-lg shadow-[#059669]/25",
+              "shadow-lg shadow-emerald-600/25",
             )}
           >
             <ShieldCheck className="h-5 w-5 mr-2" />
@@ -470,7 +470,7 @@ const CompatibilityResolverModal = memo(
                         <Button
                           onClick={() => handleSearch("cnit", cnitInput)}
                           disabled={!cnitInput.trim()}
-                          className="bg-[#0369A1] hover:bg-[#075985] min-h-[44px]"
+                          className="bg-sky-700 hover:bg-sky-800 min-h-[44px]"
                         >
                           <Search className="h-4 w-4" />
                         </Button>
@@ -506,7 +506,7 @@ const CompatibilityResolverModal = memo(
                         <Button
                           onClick={() => handleSearch("mine", mineInput)}
                           disabled={!mineInput.trim()}
-                          className="bg-[#0369A1] hover:bg-[#075985] min-h-[44px]"
+                          className="bg-sky-700 hover:bg-sky-800 min-h-[44px]"
                         >
                           <Search className="h-4 w-4" />
                         </Button>
@@ -524,7 +524,7 @@ const CompatibilityResolverModal = memo(
 
               {state === "loading" && (
                 <div className="py-12 text-center">
-                  <Loader2 className="h-10 w-10 animate-spin text-[#0369A1] mx-auto mb-4" />
+                  <Loader2 className="h-10 w-10 animate-spin text-sky-700 mx-auto mb-4" />
                   <div className="text-base font-medium text-slate-700">
                     Recherche en cours...
                   </div>

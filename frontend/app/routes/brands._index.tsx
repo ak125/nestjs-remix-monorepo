@@ -25,6 +25,7 @@ import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { BrandLogoClient } from "../components/BrandLogoClient";
+import { Container, Section, ResponsiveGrid } from "../components/layout";
 import { BrandLogosCarousel } from "../components/manufacturers/BrandLogosCarousel";
 import { FeaturedModelsCarousel } from "../components/manufacturers/FeaturedModelsCarousel";
 import { Button } from "../components/ui/button";
@@ -202,152 +203,169 @@ export default function BrandsIndex() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="py-section">
       {/* Breadcrumb */}
-      <PublicBreadcrumb items={[{ label: "Marques" }]} />
+      <Container className="mb-4">
+        <PublicBreadcrumb items={[{ label: "Marques" }]} />
+      </Container>
 
       {/* Header */}
-      <div className="text-center mb-12">
-        <div className="flex justify-center mb-4">
-          <div className="p-3 bg-muted rounded-full">
-            <Car className="h-8 w-8 text-blue-600" />
+      <Section variant="white" spacing="sm">
+        <div className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="p-3 bg-muted rounded-full">
+              <Car className="h-8 w-8 text-primary" />
+            </div>
           </div>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Marques Automobiles
+          </h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Découvrez notre catalogue complet de {total} marques automobiles et
+            explorez leurs modèles et spécifications techniques.
+          </p>
         </div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Marques Automobiles
-        </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Découvrez notre catalogue complet de {total} marques automobiles et
-          explorez leurs modèles et spécifications techniques.
-        </p>
-      </div>
+      </Section>
 
       {/* ✨ Carousel modèles populaires */}
       {popularModels.length > 0 && (
-        <div className="mb-16">
+        <Section variant="white" spacing="sm">
           <FeaturedModelsCarousel models={popularModels} />
-        </div>
+        </Section>
       )}
 
       {/* ✨ Logos de marques */}
       {brandLogos.length > 0 && (
-        <div className="mb-16">
+        <Section variant="white" spacing="sm">
           <BrandLogosCarousel brands={brandLogos} />
-        </div>
+        </Section>
       )}
 
       {/* Barre de recherche */}
-      <div className="max-w-md mx-auto mb-8">
-        <div className="relative">
-          <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-          <Input
-            placeholder="Rechercher une marque..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      <Container className="mb-8">
+        <div className="max-w-md mx-auto">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+            <Input
+              placeholder="Rechercher une marque..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
-      </div>
+      </Container>
 
       {error && (
-        <Alert intent="error">
-          <strong>Erreur :</strong> {error}
-        </Alert>
+        <Container className="mb-6">
+          <Alert intent="error">
+            <strong>Erreur :</strong> {error}
+          </Alert>
+        </Container>
       )}
 
       {/* Statistiques */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">{total}</div>
-            <div className="text-gray-600">Marques disponibles</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">
-              {filteredBrands.length}
-            </div>
-            <div className="text-gray-600">Résultats affichés</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6 text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">
-              {brands.reduce(
-                (sum, brand) => sum + (brand.models_count || 0),
-                0,
-              )}
-            </div>
-            <div className="text-gray-600">Modèles au total</div>
-          </CardContent>
-        </Card>
-      </div>
+      <Section variant="white" spacing="none">
+        <ResponsiveGrid cols={{ base: 1, md: 3 }} gap="md" className="mb-8">
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-primary mb-2">
+                {total}
+              </div>
+              <div className="text-gray-600">Marques disponibles</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-emerald-600 mb-2">
+                {filteredBrands.length}
+              </div>
+              <div className="text-gray-600">Résultats affichés</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-purple-600 mb-2">
+                {brands.reduce(
+                  (sum, brand) => sum + (brand.models_count || 0),
+                  0,
+                )}
+              </div>
+              <div className="text-gray-600">Modèles au total</div>
+            </CardContent>
+          </Card>
+        </ResponsiveGrid>
+      </Section>
 
       {/* Grille des marques */}
-      {filteredBrands.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-          {filteredBrands.map((brand) => (
-            <Link
-              key={brand.marque_id}
-              to={`/brands/${brand.marque_id}`}
-              className="block"
-            >
-              <Card className="hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group">
-                <CardContent className="p-6 text-center">
-                  {/* Logo de la marque */}
-                  <div className="flex justify-center mb-4">
-                    <div className="w-16 h-16 relative">
-                      <BrandLogoClient
-                        logoPath={null}
-                        brandName={brand.marque_name}
-                      />
+      <Section variant="white" spacing="sm">
+        {filteredBrands.length > 0 ? (
+          <ResponsiveGrid
+            cols={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }}
+            gap="md"
+          >
+            {filteredBrands.map((brand) => (
+              <Link
+                key={brand.marque_id}
+                to={`/brands/${brand.marque_id}`}
+                className="block"
+              >
+                <Card className="hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group">
+                  <CardContent className="p-6 text-center">
+                    {/* Logo de la marque */}
+                    <div className="flex justify-center mb-4">
+                      <div className="w-16 h-16 relative">
+                        <BrandLogoClient
+                          logoPath={null}
+                          brandName={brand.marque_name}
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Nom de la marque */}
-                  <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                    {brand.marque_name}
-                  </h3>
+                    {/* Nom de la marque */}
+                    <h3 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-primary transition-colors">
+                      {brand.marque_name}
+                    </h3>
 
-                  {/* Nombre de modèles */}
-                  <div className="flex items-center justify-center text-sm text-gray-500 mb-4">
-                    <Car className="h-4 w-4 mr-1" />
-                    <span>{brand.models_count || 0} modèles</span>
-                  </div>
+                    {/* Nombre de modèles */}
+                    <div className="flex items-center justify-center text-sm text-gray-500 mb-4">
+                      <Car className="h-4 w-4 mr-1" />
+                      <span>{brand.models_count || 0} modèles</span>
+                    </div>
 
-                  {/* Bouton d'action */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="sm" className="w-full" variant="outline">
-                      <span>Explorer</span>
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12">
-          <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-medium text-gray-900 mb-2">
-            Aucune marque trouvée
-          </h3>
-          <p className="text-gray-500">
-            {searchTerm
-              ? `Aucune marque ne correspond à "${searchTerm}"`
-              : "Aucune marque disponible pour le moment"}
-          </p>
-        </div>
-      )}
+                    {/* Bouton d'action */}
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button size="sm" className="w-full" variant="outline">
+                        <span>Explorer</span>
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </ResponsiveGrid>
+        ) : (
+          <div className="text-center py-12">
+            <Search className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-medium text-gray-900 mb-2">
+              Aucune marque trouvée
+            </h3>
+            <p className="text-gray-500">
+              {searchTerm
+                ? `Aucune marque ne correspond à "${searchTerm}"`
+                : "Aucune marque disponible pour le moment"}
+            </p>
+          </div>
+        )}
+      </Section>
 
       {/* Navigation */}
-      <div className="mt-12 text-center">
+      <Container className="mt-section text-center">
         <div className="inline-flex items-center justify-center space-x-2 text-sm text-gray-500">
           <span>Explorez nos marques et découvrez leurs spécifications</span>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

@@ -14,8 +14,10 @@ export interface R1Proofs {
   topEquipementiers: string[];
   /** Plage d'années couverte (ex: "2003 – 2024") */
   periodeRange: string;
-  /** Nombre total de véhicules compatibles */
-  vehicleCount: number;
+  /** Nombre total de motorisations compatibles (autoritative backend count) */
+  motorisationsCount: number;
+  /** Nombre de modèles uniques (couples marque+modèle) */
+  modelsCount?: number;
   /** Codes moteur les plus fréquents (ex: ["DV6ATED4", "K9K"]) */
   topMotorCodes: string[];
 }
@@ -57,7 +59,7 @@ export function buildR1MicroBlock(input: R1MicroBlockInput): R1MicroBlock {
   // ── Intro ──
   // Template si pas de preuves, data-driven sinon
   let intro: string;
-  if (proofs && proofs.vehicleCount > 0) {
+  if (proofs && proofs.motorisationsCount > 0) {
     const marquesText =
       proofs.topMarques.length > 0
         ? ` (${formatList(proofs.topMarques)}…)`
@@ -65,8 +67,12 @@ export function buildR1MicroBlock(input: R1MicroBlockInput): R1MicroBlock {
     const periodeText = proofs.periodeRange
       ? `, de ${proofs.periodeRange}`
       : "";
+    const modelsText =
+      proofs.modelsCount && proofs.modelsCount > 3
+        ? ` couvrant ${proofs.modelsCount}+ modèles`
+        : "";
     intro =
-      `${proofs.vehicleCount} véhicules couverts${marquesText}${periodeText}. ` +
+      `${proofs.motorisationsCount} motorisations compatibles${marquesText}${modelsText}${periodeText}. ` +
       `Sélectionnez votre motorisation exacte pour n'afficher que les ${lower} compatibles.`;
   } else {
     intro = `Pour rouler en toute sécurité, sélectionnez des ${lower} compatibles avec votre véhicule. Voici les points clés pour ne pas vous tromper.`;

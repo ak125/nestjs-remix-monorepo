@@ -79,17 +79,36 @@ export function buildProofData(params: {
   motorItems: MotorItem[];
   equipNames: string[];
   allYears: number[];
+  /** Autoritative count from backend RPC (cgc_level_3) */
+  motorisationsCount?: number;
 }) {
-  const { motorItems, equipNames, allYears } = params;
+  const { motorItems, equipNames, allYears, motorisationsCount } = params;
+
+  // A) motorisationsCount : vrai chiffre du backend, sinon items.length
+  const count = motorisationsCount ?? motorItems.length;
+
+  // B) modelsCount : couples uniques (marque_name, modele_name)
+  const modelsCount = new Set(
+    motorItems.map((m) => `${m.marque_name}|${m.modele_name}`),
+  ).size;
+
+  // C) periodeRange : garde-fous (au moins 2 années, pas de span suspect)
+  const minYear = allYears.length ? Math.min(...allYears) : 0;
+  const maxYear = allYears.length ? Math.max(...allYears) : 0;
+  const yearSpan = maxYear - minYear;
+  const periodeRange =
+    allYears.length >= 2 && !(yearSpan > 40 && count < 50)
+      ? `${minYear} – ${maxYear}`
+      : "";
+
   return {
     topMarques: [
       ...new Set(motorItems.map((m) => m.marque_name).filter(Boolean)),
     ].slice(0, 3),
     topEquipementiers: equipNames.slice(0, 4),
-    vehicleCount: motorItems.length,
-    periodeRange: allYears.length
-      ? `${Math.min(...allYears)} – ${Math.max(...allYears)}`
-      : "",
+    motorisationsCount: count,
+    modelsCount,
+    periodeRange,
     topMotorCodes: [
       ...new Set(motorItems.map((m) => m.engine_code).filter(Boolean)),
     ].slice(0, 3) as string[],
@@ -236,7 +255,7 @@ export function buildHeroProps(params: {
         : defaultBadges,
     subtitle:
       motorisationsCount && motorisationsCount > 0
-        ? `${motorisationsCount} véhicules compatibles`
+        ? `${motorisationsCount} motorisations compatibles`
         : undefined,
   };
 }

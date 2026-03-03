@@ -8,6 +8,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useState } from "react";
+import Container from "~/components/layout/Container";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -144,7 +145,7 @@ export default function DiagnosticPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <Container size="default" className="py-8 space-y-6">
         {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold text-gray-900 flex items-center justify-center gap-2">
@@ -423,7 +424,7 @@ export default function DiagnosticPage() {
             professionnel.
           </p>
         </div>
-      </div>
+      </Container>
     </div>
   );
 }

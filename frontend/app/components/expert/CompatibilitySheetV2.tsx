@@ -137,21 +137,21 @@ function CopyableCodeV2({ label, value }: { label: string; value: string }) {
           "border border-slate-200 hover:border-slate-300",
           "transition-all duration-200",
           "cursor-pointer",
-          "focus:outline-none focus:ring-2 focus:ring-[#0369A1] focus:ring-offset-2",
-          copied && "bg-[#ECFDF5] border-[#A7F3D0]",
+          "focus:outline-none focus:ring-2 focus:ring-sky-700 focus:ring-offset-2",
+          copied && "bg-emerald-50 border-emerald-200",
         )}
       >
         <code
           className={cn(
             "text-sm break-all", // break-all for long codes on mobile
-            copied ? "text-[#065F46]" : "text-slate-700",
+            copied ? "text-emerald-800" : "text-slate-700",
           )}
           style={{ fontFamily: "'JetBrains Mono', monospace" }}
         >
           {value}
         </code>
         {copied ? (
-          <CheckCircle2 className="h-4 w-4 text-[#059669] animate-[verified-reveal_300ms_ease-out]" />
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 animate-[verified-reveal_300ms_ease-out]" />
         ) : (
           <Copy className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
         )}
@@ -193,7 +193,7 @@ function VehicleCardV2({
         "transition-all duration-300",
         "animate-[stat-reveal_300ms_ease-out_forwards]",
         isCurrent
-          ? "border-[#0F766E] bg-[#F0FDFA] shadow-md"
+          ? "border-teal-700 bg-teal-50 shadow-md"
           : "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm",
         onSelect && "cursor-pointer hover:-translate-y-0.5",
       )}
@@ -207,13 +207,13 @@ function VehicleCardV2({
             className={cn(
               "flex items-center justify-center",
               "w-10 h-10 rounded-lg",
-              isCurrent ? "bg-[#0F766E]/10" : "bg-slate-100",
+              isCurrent ? "bg-teal-700/10" : "bg-slate-100",
             )}
           >
             <Car
               className={cn(
                 "h-5 w-5",
-                isCurrent ? "text-[#0F766E]" : "text-slate-500",
+                isCurrent ? "text-teal-700" : "text-slate-500",
               )}
             />
           </div>
@@ -237,7 +237,7 @@ function VehicleCardV2({
             className={cn(
               "flex items-center gap-1.5",
               "px-2.5 py-1 rounded-full",
-              "bg-[#0F766E] text-white",
+              "bg-teal-700 text-white",
               "text-xs font-semibold",
             )}
           >
@@ -364,26 +364,26 @@ function CompatibilityStatusV2({
         className={cn(
           "flex items-center gap-4",
           "p-4 rounded-xl",
-          "bg-[#FEF2F2] border-2 border-[#FECACA]",
+          "bg-red-50 border-2 border-red-200",
         )}
       >
         <div
           className={cn(
             "flex items-center justify-center",
             "w-12 h-12 rounded-full",
-            "bg-[#FEE2E2]",
+            "bg-red-100",
           )}
         >
-          <X className="h-6 w-6 text-[#DC2626]" />
+          <X className="h-6 w-6 text-red-600" />
         </div>
         <div>
           <h4
-            className="font-bold text-[#991B1B]"
+            className="font-bold text-red-800"
             style={{ fontFamily: "'Lexend', system-ui, sans-serif" }}
           >
             Non compatible
           </h4>
-          <p className="text-sm text-[#B91C1C]">
+          <p className="text-sm text-red-700">
             Cette pièce n&apos;est pas compatible avec votre véhicule
           </p>
         </div>
@@ -397,8 +397,8 @@ function CompatibilityStatusV2({
       className={cn(
         "relative flex items-center gap-4",
         "p-4 rounded-xl",
-        "bg-gradient-to-r from-[#ECFDF5] to-[#D1FAE5]",
-        "border-2 border-[#A7F3D0]",
+        "bg-gradient-to-r from-emerald-50 to-emerald-100",
+        "border-2 border-emerald-200",
         "overflow-hidden",
       )}
     >
@@ -418,7 +418,7 @@ function CompatibilityStatusV2({
         className={cn(
           "relative flex items-center justify-center",
           "w-12 h-12 rounded-full",
-          "bg-[#059669]",
+          "bg-emerald-600",
           "transition-all duration-500",
           showAnimation ? "scale-100" : "scale-0",
         )}
@@ -427,12 +427,12 @@ function CompatibilityStatusV2({
       </div>
       <div className="relative">
         <h4
-          className="font-bold text-[#065F46]"
+          className="font-bold text-emerald-800"
           style={{ fontFamily: "'Lexend', system-ui, sans-serif" }}
         >
           Compatible ✓
         </h4>
-        <p className="text-sm text-[#047857]">
+        <p className="text-sm text-emerald-700">
           Cette pièce est compatible avec votre véhicule
         </p>
       </div>
@@ -521,7 +521,7 @@ const CompatibilitySheetV2 = memo(
                     variant="ghost"
                     size="sm"
                     onClick={onChangeVehicle}
-                    className="text-[#0369A1] hover:text-[#075985] hover:bg-[#E0F2FE] cursor-pointer"
+                    className="text-sky-700 hover:text-sky-800 hover:bg-sky-50 cursor-pointer"
                   >
                     Modifier
                   </Button>
@@ -603,7 +603,7 @@ const CompatibilitySheetV2 = memo(
                     <span
                       className={cn(
                         "px-2 py-0.5 rounded-full text-xs font-semibold",
-                        "bg-[#0F766E]/10 text-[#0F766E]",
+                        "bg-teal-700/10 text-teal-700",
                       )}
                     >
                       {compatibleVehicles.length}
@@ -649,7 +649,7 @@ const CompatibilitySheetV2 = memo(
                   onClick={onChangeVehicle}
                   className={cn(
                     "w-full h-12",
-                    "bg-[#0369A1] hover:bg-[#075985]",
+                    "bg-sky-700 hover:bg-sky-800",
                     "text-white font-semibold",
                     "shadow-md hover:shadow-lg",
                     "transition-all duration-200",
@@ -667,7 +667,7 @@ const CompatibilitySheetV2 = memo(
                   onClick={() => onConfirmCompatibility(currentVehicle)}
                   className={cn(
                     "w-full h-12",
-                    "bg-[#059669] hover:bg-[#047857]",
+                    "bg-emerald-600 hover:bg-emerald-700",
                     "text-white font-semibold",
                     "shadow-md hover:shadow-lg",
                     "transition-all duration-200",

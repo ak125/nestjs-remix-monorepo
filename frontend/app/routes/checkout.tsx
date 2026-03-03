@@ -24,6 +24,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
+import Container from "~/components/layout/Container";
 
 import {
   MobileBottomBar,
@@ -536,17 +537,17 @@ export default function CheckoutPage() {
   if (!cart || loaderError) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-3xl mx-auto px-4">
+        <Container size="narrow">
           <div className="bg-destructive/15 border border-red-400 text-red-700 px-4 py-3 rounded">
             <p>{loaderError || "Erreur lors du chargement"}</p>
           </div>
           <Link
             to="/cart"
-            className="mt-4 inline-block text-blue-600 hover:underline"
+            className="mt-4 inline-block text-cta hover:underline"
           >
             ← Retour au panier
           </Link>
-        </div>
+        </Container>
       </div>
     );
   }
@@ -563,7 +564,7 @@ export default function CheckoutPage() {
         method="post"
         id="checkout-form"
         onSubmit={handleCheckoutSubmit}
-        className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8"
+        className="mx-auto w-full max-w-6xl px-page py-8"
       >
         {/* Header avec breadcrumb + stepper */}
         <div className="mb-8">
@@ -622,7 +623,7 @@ export default function CheckoutPage() {
                           ? String(actionData.conflictEmail)
                           : "") || "",
                       )}`}
-                      className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                      className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-cta text-white text-sm font-medium rounded-lg hover:bg-cta-hover transition-colors"
                     >
                       Se connecter
                       <svg
@@ -758,7 +759,7 @@ export default function CheckoutPage() {
                           disabled={
                             isCheckingEmail || !guestEmail.includes("@")
                           }
-                          className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                          className="px-6 py-3 bg-cta text-white rounded-xl font-medium hover:bg-cta-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                         >
                           {isCheckingEmail ? "..." : "Continuer"}
                         </button>
@@ -797,7 +798,7 @@ export default function CheckoutPage() {
                           <button
                             type="button"
                             onClick={handleInlineLogin}
-                            className="px-6 py-3 bg-orange-600 text-white rounded-xl font-medium hover:bg-orange-700 transition-colors"
+                            className="px-6 py-3 bg-cta text-white rounded-xl font-medium hover:bg-cta-hover transition-colors"
                           >
                             Se connecter
                           </button>
@@ -1217,7 +1218,7 @@ export default function CheckoutPage() {
                     <span className="font-bold text-slate-900 text-lg">
                       Total
                     </span>
-                    <span className="font-bold text-blue-600 text-2xl">
+                    <span className="font-bold text-cta text-2xl">
                       {total.toFixed(2)}€
                     </span>
                   </div>
@@ -1251,7 +1252,7 @@ export default function CheckoutPage() {
                 <button
                   type="submit"
                   disabled={!canSubmit}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-4 px-6 rounded-xl font-semibold shadow-lg shadow-blue-600/30 hover:shadow-xl hover:shadow-blue-600/40 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-3"
+                  className="w-full bg-cta hover:bg-cta-hover text-white py-4 px-6 rounded-xl font-semibold shadow-lg shadow-cta/30 hover:shadow-xl hover:shadow-cta/40 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-3"
                 >
                   {isSubmitting ? (
                     <>
@@ -1396,7 +1397,7 @@ export default function CheckoutPage() {
             type="submit"
             form="checkout-form"
             disabled={!canSubmit}
-            className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 px-4 bg-cta hover:bg-cta-hover text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
               <>
