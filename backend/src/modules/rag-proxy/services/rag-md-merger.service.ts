@@ -1,10 +1,14 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import type { RagMergePatch } from './pdf-rag-classifier.service';
 
 export interface MergeResult {
+  /** Whether the merge was applied (false if skipped due to low confidence) */
+  applied: boolean;
+  /** Skip reason when applied=false */
+  reason?: string;
   /** Fields that were modified */
   modifiedFields: string[];
   /** Markdown sections added */
@@ -18,6 +22,9 @@ export interface MergeResult {
   filePath: string;
 }
 
+/** Minimum LLM confidence to apply a merge patch */
+const MIN_MERGE_CONFIDENCE = 30;
+
 @Injectable()
 export class RagMdMergerService {
   private readonly logger = new Logger(RagMdMergerService.name);
@@ -30,6 +37,23 @@ export class RagMdMergerService {
    */
   merge(pgAlias: string, patch: RagMergePatch): MergeResult {
     const filePath = join(this.RAG_GAMMES_DIR, `${pgAlias}.md`);
+
+    // Guard: reject low-confidence LLM output to protect RAG files
+    if (patch.confidence < MIN_MERGE_CONFIDENCE) {
+      this.logger.warn(
+        `Skipping merge for ${pgAlias}: confidence ${patch.confidence}% < ${MIN_MERGE_CONFIDENCE}% threshold`,
+      );
+      return {
+        applied: false,
+        reason: 'LOW_CONFIDENCE',
+        modifiedFields: [],
+        markdownSectionsAdded: 0,
+        sourceAttributions: 0,
+        charsBefore: 0,
+        charsAfter: 0,
+        filePath,
+      };
+    }
 
     if (!existsSync(filePath)) {
       throw new BadRequestException(`RAG file not found: ${filePath}`);
@@ -217,10 +241,13 @@ export class RagMdMergerService {
     // 7. Reassemble file
     const finalContent = `---\n${newYaml}---\n${newBody}`;
 
-    // 8. Write file
-    writeFileSync(filePath, finalContent, 'utf-8');
+    // 8. Write file (atomic: write tmp then rename to prevent corruption)
+    const tmpPath = filePath + '.tmp';
+    writeFileSync(tmpPath, finalContent, 'utf-8');
+    renameSync(tmpPath, filePath);
 
     const result: MergeResult = {
+      applied: true,
       modifiedFields,
       markdownSectionsAdded,
       sourceAttributions,

@@ -329,10 +329,16 @@ export class ConseilEnricherService extends SupabaseBaseService {
         const patch = this.buildWebMergePatch(classified, sourceRef);
         try {
           const mergeResult = this.ragMdMerger.merge(pgAlias, patch);
-          this.logger.log(
-            `Web→MD merge for ${pgAlias}: ${mergeResult.modifiedFields.length} fields, ` +
-              `${mergeResult.markdownSectionsAdded} sections, ${mergeResult.sourceAttributions} attributions`,
-          );
+          if (mergeResult.applied) {
+            this.logger.log(
+              `Web→MD merge for ${pgAlias}: ${mergeResult.modifiedFields.length} fields, ` +
+                `${mergeResult.markdownSectionsAdded} sections, ${mergeResult.sourceAttributions} attributions`,
+            );
+          } else {
+            this.logger.warn(
+              `Web→MD merge skipped for ${pgAlias}: ${mergeResult.reason}`,
+            );
+          }
         } catch (err) {
           this.logger.warn(
             `Web→MD merge failed for ${pgAlias}: ${(err as Error).message}`,

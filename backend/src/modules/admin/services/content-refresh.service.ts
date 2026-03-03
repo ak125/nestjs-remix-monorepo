@@ -273,6 +273,7 @@ export class ContentRefreshService extends SupabaseBaseService {
   async getDashboard(): Promise<{
     counts: Record<string, number>;
     recent: unknown[];
+    skipBreakdown?: { no_rag: number; complete: number; no_contract: number };
   }> {
     // Counts by status — use head queries to avoid PostgREST max-rows limit
     const statusKeys = [
@@ -281,6 +282,7 @@ export class ContentRefreshService extends SupabaseBaseService {
       'skipped',
       'failed',
       'published',
+      'orphan_no_gamme',
     ];
     const results = await Promise.all(
       statusKeys.map((s) =>
@@ -296,6 +298,32 @@ export class ContentRefreshService extends SupabaseBaseService {
       counts[s] = results[i].count || 0;
     });
 
+    // Breakdown of skipped reasons for admin visibility
+    let skipBreakdown:
+      | { no_rag: number; complete: number; no_contract: number }
+      | undefined;
+    if (counts['skipped'] > 0) {
+      const { data: skipRows } = await this.client
+        .from('__rag_content_refresh_log')
+        .select('error_message')
+        .eq('status', 'skipped');
+      if (skipRows) {
+        const breakdown = { no_rag: 0, complete: 0, no_contract: 0 };
+        for (const row of skipRows) {
+          const msg = (row.error_message || '').toLowerCase();
+          if (msg.includes('no_rag') || msg.includes('no rag'))
+            breakdown.no_rag++;
+          else if (
+            msg.includes('no_enrichment') ||
+            msg.includes('already complete')
+          )
+            breakdown.complete++;
+          else breakdown.no_contract++;
+        }
+        skipBreakdown = breakdown;
+      }
+    }
+
     // Recent items
     const { data: recent } = await this.client
       .from('__rag_content_refresh_log')
@@ -303,7 +331,7 @@ export class ContentRefreshService extends SupabaseBaseService {
       .order('created_at', { ascending: false })
       .limit(20);
 
-    return { counts, recent: recent || [] };
+    return { counts, recent: recent || [], skipBreakdown };
   }
 
   /**

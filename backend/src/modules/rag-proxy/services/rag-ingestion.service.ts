@@ -255,6 +255,7 @@ export class RagIngestionService implements OnModuleDestroy {
   async ingestWebUrl(request: {
     url?: string;
     truthLevel?: string;
+    jobId?: string;
   }): Promise<{ jobId: string; status: string }> {
     const url = (request.url || '').trim();
     try {
@@ -263,7 +264,9 @@ export class RagIngestionService implements OnModuleDestroy {
       throw new BadRequestException('Invalid URL');
     }
 
-    const jobId = `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const jobId =
+      request.jobId ||
+      `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const truthLevel = request.truthLevel || 'L3';
 
     // Prevent concurrent web ingestions (atomic in-process lock + Redis fallback)
@@ -637,6 +640,19 @@ export class RagIngestionService implements OnModuleDestroy {
             this.logger.warn(
               `PDF ingest poll timeout for job ${jobId} after ${MAX_ATTEMPTS} attempts`,
             );
+            // Persist timeout failure to DB for admin visibility
+            void this.ragWebIngestDbService.upsertJob({
+              jobId,
+              url: `pdf-poll:${jobId}`,
+              truthLevel: 'L1',
+              status: 'failed',
+              startedAt: Math.floor(jobStartedAt / 1000),
+              finishedAt: Math.floor(Date.now() / 1000),
+              returnCode: 1,
+              logLines: [
+                `PDF poll timeout after ${MAX_ATTEMPTS} attempts (${(MAX_ATTEMPTS * INTERVAL_MS) / 1000}s)`,
+              ],
+            });
           }
         }
       } catch (err) {
@@ -830,9 +846,11 @@ export class RagIngestionService implements OnModuleDestroy {
     );
 
     // Fire-and-forget: call ingestWebUrl which will acquire the lock
+    // Pass the original jobId to prevent orphaned queued records
     void this.ingestWebUrl({
       url: next.url,
       truthLevel: next.truthLevel,
+      jobId: next.jobId,
     }).catch((err) => {
       this.logger.error(
         `Failed to drain pending ingest ${next.jobId}: ${getErrorMessage(err)}`,
