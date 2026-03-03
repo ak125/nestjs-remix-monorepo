@@ -49,7 +49,7 @@ jobs:
           mkdir -p $PROD_DIR/config/caddy
 
           # Sync configs
-          rm -f $PROD_DIR/docker-compose.prod.yml $PROD_DIR/docker-compose.caddy.yml
+          rm -f $PROD_DIR/docker-compose.prod.yml $PROD_DIR/docker-compose.caddy.yml $PROD_DIR/docker-compose.imgproxy.yml
           cp $GITHUB_WORKSPACE/docker-compose.prod.yml $PROD_DIR/
           cp $GITHUB_WORKSPACE/docker-compose.caddy.yml $PROD_DIR/
           cp $GITHUB_WORKSPACE/docker-compose.imgproxy.yml $PROD_DIR/
