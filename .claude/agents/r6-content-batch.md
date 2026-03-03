@@ -517,9 +517,11 @@ Boucler sur les `section_plans` et appliquer le prompt specialise.
 
 **Condition** : Prompt G `is_valid = true` ET `score_total >= 70` ET Prompt F `risk_level != "high"` ET `howto_strict_hits` vide ET `defamation_risk` vide
 
+**REGLE CRITIQUE** : `sgpg_intro_role` est une colonne **TEXT**. Ecrire UNIQUEMENT la string `promise` (texte plain), PAS le bloc JSON HeroDecision complet. Idem `sgpg_micro_seo_block` = TEXT plain ou JSON PriceGuide valide (avec `mode` + `tiers`/`variation_factors`).
+
 ```sql
 UPDATE __seo_gamme_purchase_guide SET
-  -- hero_decision
+  -- hero_decision (TEXT plain — juste la promise, PAS le JSON HeroDecision)
   sgpg_intro_role          = $role_md$,
   sgpg_hero_subtitle       = $hero_subtitle$,
   -- summary_pick_fast

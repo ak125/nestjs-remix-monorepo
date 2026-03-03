@@ -1,11 +1,9 @@
 import { Link } from "@remix-run/react";
 import {
-  AlertTriangle,
   BookOpen,
   CheckCircle2,
   FileText,
   Info,
-  LinkIcon,
   Shield,
   Wrench,
 } from "lucide-react";
@@ -24,8 +22,6 @@ interface R1ReusableContentProps {
   reference?: { slug: string; title: string; definition: string } | null;
   proofs?: R1Proofs;
   microSeoBlock?: string | null;
-  symptoms?: string[] | null;
-  syncParts?: string[] | null;
 }
 
 const CARD_STYLES: Record<
@@ -49,9 +45,6 @@ const CARD_STYLES: Record<
   },
 };
 
-/** Max symptoms shown to keep the block scannable */
-const MAX_SYMPTOMS = 4;
-
 export const R1ReusableContent = memo(function R1ReusableContent({
   gammeName,
   familleName,
@@ -59,8 +52,6 @@ export const R1ReusableContent = memo(function R1ReusableContent({
   reference,
   proofs,
   microSeoBlock,
-  symptoms,
-  syncParts,
 }: R1ReusableContentProps) {
   const block = buildR1MicroBlock({ gammeName, familleName, alias, proofs });
 
@@ -71,13 +62,35 @@ export const R1ReusableContent = memo(function R1ReusableContent({
       : card,
   );
 
-  const displaySymptoms = symptoms?.slice(0, MAX_SYMPTOMS) ?? [];
-  const displaySyncParts = syncParts?.filter(Boolean) ?? [];
-
   return (
     <section aria-labelledby="r1-guide-title" className="space-y-6">
       {/* Micro-bloc textuel — rendu unifié (structure toujours visible) */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 sm:p-6">
+        {/* Quick Steps compact — bandeau horizontal */}
+        <div className="mb-4 pb-4 border-b border-gray-100">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            En 4 étapes
+          </p>
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            {[
+              { num: 1, title: "Identifiez" },
+              { num: 2, title: "Vérifiez" },
+              { num: 3, title: "Comparez" },
+              { num: 4, title: "Commandez" },
+            ].map((step) => (
+              <div
+                key={step.num}
+                className="flex items-center gap-1.5 bg-gray-50 rounded-lg px-3 py-1.5 text-xs whitespace-nowrap"
+              >
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary-600 text-white text-[10px] font-bold">
+                  {step.num}
+                </span>
+                <span className="font-medium text-gray-700">{step.title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <h2
           id="r1-guide-title"
           className="text-lg sm:text-xl font-bold text-gray-900 mb-3"
@@ -85,9 +98,13 @@ export const R1ReusableContent = memo(function R1ReusableContent({
           {block.title}
         </h2>
 
-        {/* Intro : LLM enrichi ou fallback template */}
+        {/* Intro : LLM enrichi ou fallback template (guard anti-JSON brut) */}
         <p className="text-sm text-gray-700 leading-relaxed mb-4">
-          {microSeoBlock || block.intro}
+          {microSeoBlock &&
+          !microSeoBlock.trimStart().startsWith("{") &&
+          !microSeoBlock.trimStart().startsWith("[")
+            ? microSeoBlock
+            : block.intro}
         </p>
 
         {/* Bullets — toujours affichés */}
@@ -103,19 +120,6 @@ export const R1ReusableContent = memo(function R1ReusableContent({
           ))}
         </ul>
 
-        {/* Pièces liées (syncParts) */}
-        {displaySyncParts.length > 0 && (
-          <div className="flex items-start gap-2 mb-3 text-xs text-gray-600">
-            <LinkIcon className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
-            <p>
-              <span className="font-medium text-gray-700">
-                Change souvent avec :
-              </span>{" "}
-              {displaySyncParts.join(", ")}.
-            </p>
-          </div>
-        )}
-
         {/* Carte grise tip — toujours affiché */}
         <div className="flex items-start gap-2 p-3 rounded-lg bg-blue-50 border border-blue-100 mb-3">
           <Info className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
@@ -123,25 +127,6 @@ export const R1ReusableContent = memo(function R1ReusableContent({
             <strong>Astuce carte grise :</strong> {block.carteGriseTip}
           </p>
         </div>
-
-        {/* Signes d'usure à surveiller (symptoms) */}
-        {displaySymptoms.length > 0 && (
-          <div className="p-3 rounded-lg bg-orange-50 border border-orange-100 mb-3">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="w-4 h-4 text-orange-600 flex-shrink-0" />
-              <p className="text-xs font-semibold text-orange-900">
-                Signes d'usure a surveiller
-              </p>
-            </div>
-            <ul className="space-y-1 ml-6">
-              {displaySymptoms.map((symptom, i) => (
-                <li key={i} className="text-xs text-orange-800 list-disc">
-                  {symptom}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
 
         {/* Alerte sécurité — toujours affiché */}
         <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-100">

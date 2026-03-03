@@ -169,7 +169,11 @@ const CatalogueSection = memo(function CatalogueSection({
             {uniqueItems.length} produits
           </span>
         </h2>
-        {intro && <p className="text-white/80 text-sm mt-2">{intro}</p>}
+        {intro &&
+          !intro.trimStart().startsWith("{") &&
+          !intro.trimStart().startsWith("[") && (
+            <p className="text-white/80 text-sm mt-2">{intro}</p>
+          )}
       </div>
 
       <div className="p-3 md:p-4">

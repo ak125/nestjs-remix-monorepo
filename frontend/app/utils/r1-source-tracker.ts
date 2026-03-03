@@ -108,12 +108,12 @@ export function buildR1SourceMap(
   };
 
   // Sections computees (donnees API, pas de pipeline) :
-  // S_PROOF_STATS, S_REASSURANCE, S_COMPAT, S_QUICK_STEPS
+  // S_TRUST_STRIP, S_COMPAT, S_QUICK_NAV, S_KPI_COVERAGE
   for (const s of [
-    R1Section.PROOF_STATS,
-    R1Section.REASSURANCE,
+    R1Section.TRUST_STRIP,
     R1Section.COMPAT,
-    R1Section.QUICK_STEPS,
+    R1Section.QUICK_NAV,
+    R1Section.KPI_COVERAGE,
   ]) {
     map[s] = { source: "api", field: "computed" };
   }

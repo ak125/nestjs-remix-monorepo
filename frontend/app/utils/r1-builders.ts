@@ -3,6 +3,8 @@
  * Extraits de pieces.$slug.tsx pour testabilité et lisibilité.
  */
 import { type GammePagePurchaseGuideData } from "~/types/gamme-page-contract.types";
+import { dedupeStrings } from "~/utils/dedupe-strings";
+import { validateFaqItems } from "~/utils/faq-validator";
 import { buildCanonicalUrl } from "~/utils/seo/canonical";
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -102,10 +104,10 @@ export function buildProofData(params: {
       : "";
 
   return {
-    topMarques: [
-      ...new Set(motorItems.map((m) => m.marque_name).filter(Boolean)),
-    ].slice(0, 3),
-    topEquipementiers: equipNames.slice(0, 4),
+    topMarques: dedupeStrings(
+      motorItems.map((m) => m.marque_name).filter(Boolean),
+    ).slice(0, 3),
+    topEquipementiers: dedupeStrings(equipNames).slice(0, 4),
     motorisationsCount: count,
     modelsCount,
     periodeRange,
@@ -137,7 +139,7 @@ export function buildGammeJsonLd(params: {
   } = params;
 
   const faqItems = faq?.length ? faq : fallbackFaq;
-  const cappedFaq = faqItems.slice(0, 6);
+  const cappedFaq = validateFaqItems(faqItems);
 
   return {
     "@context": "https://schema.org",

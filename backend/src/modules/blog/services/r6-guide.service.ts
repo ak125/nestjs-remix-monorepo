@@ -105,8 +105,17 @@ export class R6GuideService {
   ): Promise<R6GuidePayload> {
     // Hero decision: promise from intro_role, bullets from interest_nuggets
     // (V2 reuses sgpg_interest_nuggets.hook[] as hero bullets)
+    // Guard: if agent wrote full JSON block instead of plain text, extract .promise
+    let heroPromise = (row.sgpg_intro_role as string) || '';
+    if (heroPromise.startsWith('{')) {
+      try {
+        heroPromise = JSON.parse(heroPromise).promise || heroPromise;
+      } catch {
+        /* keep raw string */
+      }
+    }
     const heroDecision: R6HeroDecision = {
-      promise: (row.sgpg_intro_role as string) || '',
+      promise: heroPromise,
       bullets:
         (row.sgpg_interest_nuggets as Array<{ hook: string }>)
           ?.map((n) => n.hook)
@@ -133,17 +142,28 @@ export class R6GuideService {
     const compatibilityAxes: R6CompatibilityAxis[] =
       (row.sgpg_compatibility_axes as R6CompatibilityAxis[]) || [];
 
-    // Price guide — build from micro_seo_block or default
-    const priceGuide: R6PriceGuideSection = {
-      mode: 'factors',
-      variation_factors: [
-        'Marque et gamme de qualité',
-        'Véhicule (citadine vs SUV vs utilitaire)',
-        "Canal d'achat (en ligne vs magasin)",
-      ],
-      disclaimer:
-        'Les prix indiqués sont des fourchettes indicatives et peuvent varier selon le véhicule et le fournisseur.',
-    };
+    // Price guide — try parsing sgpg_micro_seo_block as JSON, fallback to generic factors
+    let priceGuide: R6PriceGuideSection;
+    const rawMicroSeo = row.sgpg_micro_seo_block as string | null;
+    try {
+      const parsed = rawMicroSeo ? JSON.parse(rawMicroSeo) : null;
+      if (parsed?.mode === 'ranges' && Array.isArray(parsed.tiers)) {
+        priceGuide = parsed as R6PriceGuideSection;
+      } else {
+        throw new Error('not a valid price guide JSON');
+      }
+    } catch {
+      priceGuide = {
+        mode: 'factors',
+        variation_factors: [
+          'Marque et gamme de qualité',
+          'Véhicule (citadine vs SUV vs utilitaire)',
+          "Canal d'achat (en ligne vs magasin)",
+        ],
+        disclaimer:
+          'Les prix indiqués sont des fourchettes indicatives et peuvent varier selon le véhicule et le fournisseur.',
+      };
+    }
 
     // Brands guide from new JSONB column
     const brandsGuide: R6BrandsGuideSection | undefined = row.sgpg_brands_guide

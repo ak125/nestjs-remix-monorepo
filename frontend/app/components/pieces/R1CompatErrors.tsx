@@ -1,8 +1,8 @@
 /**
- * R1 "Erreurs fréquentes de compatibilité" — Checklist mode.
+ * R1 "Erreurs fréquentes de compatibilité" — Checklist visuelle statique.
  * Orienté compat (pas symptômes, pas diagnostic).
  */
-import { XCircle } from "lucide-react";
+import { Square } from "lucide-react";
 
 const DEFAULT_ERRORS = [
   "Confondre deux motorisations proches (ex : 1.6 HDi 90 ch vs 110 ch)",
@@ -24,12 +24,12 @@ export function R1CompatErrors({
   return (
     <div className="bg-rose-50 border border-rose-200 rounded-xl p-5 sm:p-6">
       <h3 className="text-base font-semibold text-gray-900 mb-3">
-        Erreurs à éviter avant de commander votre {gammeName}
+        Vérifiez avant de commander votre {gammeName}
       </h3>
       <ul className="space-y-2.5">
         {errors.slice(0, 4).map((error, i) => (
-          <li key={i} className="flex items-start gap-2.5">
-            <XCircle className="w-4.5 h-4.5 text-rose-500 mt-0.5 shrink-0" />
+          <li key={i} className="flex items-start gap-3">
+            <Square className="w-4 h-4 text-rose-400 mt-0.5 shrink-0" />
             <span className="text-sm text-gray-700 leading-snug">{error}</span>
           </li>
         ))}

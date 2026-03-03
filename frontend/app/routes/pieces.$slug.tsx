@@ -49,10 +49,10 @@ import DesktopStickyCTA from "~/components/pieces/DesktopStickyCTA";
 import { GuideLinkCard } from "~/components/pieces/GuideLinkCard";
 import MobileStickyBar from "~/components/pieces/MobileStickyBar";
 import { R1CompatErrors } from "~/components/pieces/R1CompatErrors";
-import { R1ProofStats } from "~/components/pieces/R1ProofStats";
-import { R1QuickSteps } from "~/components/pieces/R1QuickSteps";
-import { R1ReassuranceBar } from "~/components/pieces/R1ReassuranceBar";
+import { R1KpiCoverage } from "~/components/pieces/R1KpiCoverage";
+import { R1QuickNav } from "~/components/pieces/R1QuickNav";
 import { R1ReusableContent } from "~/components/pieces/R1ReusableContent";
+import { R1TrustStrip } from "~/components/pieces/R1TrustStrip";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   getSectionImageConfig,
@@ -71,6 +71,7 @@ import {
   trackSelectorCTA,
   trackSelectorResume,
 } from "~/utils/analytics";
+import { validateFaqItems } from "~/utils/faq-validator";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { ImageOptimizer } from "~/utils/image-optimizer";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -969,19 +970,6 @@ export default function PiecesDetailPage() {
                         );
                       }}
                     />
-                    <p className="text-center mt-3 text-white/60 text-sm">
-                      Vous avez votre carte grise ?{" "}
-                      <button
-                        onClick={() =>
-                          document
-                            .getElementById("compatibility-check")
-                            ?.scrollIntoView({ behavior: "smooth" })
-                        }
-                        className="text-white/90 underline underline-offset-4 hover:text-white"
-                      >
-                        Identifier par CNIT / Type Mine
-                      </button>
-                    </p>
                   </>
                 )}
               </div>
@@ -990,14 +978,14 @@ export default function PiecesDetailPage() {
         </div>
       </HeroTransaction>
 
-      {/* Barre rassurance — 3 cartes compactes */}
+      {/* Trust Strip — 4 items réassurance purs */}
       <PageSection
-        {...sectionAttr(R1Section.REASSURANCE)}
-        {...sourceAttr(data.r1Sources, R1Section.REASSURANCE)}
+        {...sectionAttr(R1Section.TRUST_STRIP)}
+        {...sourceAttr(data.r1Sources, R1Section.TRUST_STRIP)}
         maxWidth="5xl"
         className="py-3 sm:py-4"
       >
-        <R1ReassuranceBar />
+        <R1TrustStrip />
       </PageSection>
 
       {/* Bloc compatibilité — réassurance avant catalogue */}
@@ -1028,17 +1016,27 @@ export default function PiecesDetailPage() {
         </Suspense>
       </PageSection>
 
-      {/* Comment choisir en 15s — 4 étapes sélection véhicule */}
+      {/* Quick Nav — chips navigation rapide */}
       <PageSection
-        {...sectionAttr(R1Section.QUICK_STEPS)}
-        {...sourceAttr(data.r1Sources, R1Section.QUICK_STEPS)}
+        {...sectionAttr(R1Section.QUICK_NAV)}
+        {...sourceAttr(data.r1Sources, R1Section.QUICK_NAV)}
         maxWidth="5xl"
-        className="py-4 sm:py-6"
+        className="py-2 sm:py-3"
       >
-        <R1QuickSteps
-          gammeName={data.content?.pg_name?.toLowerCase() || "pièce"}
-        />
+        <R1QuickNav />
       </PageSection>
+
+      {/* KPI Coverage — chiffres data-driven conditionnels */}
+      {data.proofData && data.proofData.motorisationsCount > 0 && (
+        <PageSection
+          {...sectionAttr(R1Section.KPI_COVERAGE)}
+          {...sourceAttr(data.r1Sources, R1Section.KPI_COVERAGE)}
+          maxWidth="5xl"
+          className="py-4 sm:py-6"
+        >
+          <R1KpiCoverage proofData={data.proofData} />
+        </PageSection>
+      )}
 
       {/* R1 micro-bloc: texte SEO utile (court) */}
       <PageSection
@@ -1091,24 +1089,6 @@ export default function PiecesDetailPage() {
           );
         })()}
       </PageSection>
-
-      {/* Preuves en chiffres — stats visuelles compactes */}
-      {data.proofData && data.proofData.motorisationsCount > 0 && (
-        <PageSection
-          {...sectionAttr(R1Section.PROOF_STATS)}
-          {...sourceAttr(data.r1Sources, R1Section.PROOF_STATS)}
-          maxWidth="5xl"
-          className="py-4 sm:py-6"
-        >
-          <R1ProofStats
-            motorisationsCount={data.proofData.motorisationsCount}
-            modelsCount={data.proofData.modelsCount}
-            topMarques={data.proofData.topMarques}
-            periodeRange={data.proofData.periodeRange}
-            topEquipementiers={data.proofData.topEquipementiers}
-          />
-        </PageSection>
-      )}
 
       {/* 🚗 Badge véhicule actif (si présent) */}
       {selectedVehicle && (
@@ -1271,10 +1251,11 @@ export default function PiecesDetailPage() {
             }
           >
             <FAQSection
-              faq={(data.purchaseGuideData?.faq?.length
-                ? data.purchaseGuideData.faq
-                : R1_SELECTOR_FAQ
-              ).slice(0, 6)}
+              faq={validateFaqItems(
+                data.purchaseGuideData?.faq?.length
+                  ? data.purchaseGuideData.faq
+                  : R1_SELECTOR_FAQ,
+              )}
               gammeName={data.content?.pg_name || "cette pièce"}
               withJsonLd={false}
             />

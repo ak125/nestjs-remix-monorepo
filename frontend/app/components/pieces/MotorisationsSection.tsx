@@ -4,10 +4,11 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
-  ShieldCheck,
+  Search,
   TrendingUp,
 } from "lucide-react";
-import React, { useState, memo } from "react";
+import { useEffect, useState, memo } from "react";
+import { Input } from "~/components/ui/input";
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
 import { sanitizeAdvice } from "~/utils/sanitize-advice";
@@ -51,17 +52,33 @@ const MotorisationsSection = memo(function MotorisationsSection({
 }: MotorisationsSectionProps) {
   const isR1 = variant === "R1";
   const [showAllVehicles, setShowAllVehicles] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Reset pagination quand la recherche change
+  useEffect(() => {
+    setShowAllVehicles(false);
+  }, [searchQuery]);
 
   if (!motorisations?.items || motorisations.items.length === 0) {
     return null;
   }
 
+  // Filtrage client-side par marque/modèle/type
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredItems = normalizedQuery
+    ? motorisations.items.filter((m) =>
+        `${m.marque_name} ${m.modele_name} ${m.type_name}`
+          .toLowerCase()
+          .includes(normalizedQuery),
+      )
+    : motorisations.items;
+
   // Limiter l'affichage pour éviter la dilution SEO
   const vehiclesToDisplay = showAllVehicles
-    ? motorisations.items
-    : motorisations.items.slice(0, VISIBLE_LIMIT);
-  const hasMore = motorisations.items.length > VISIBLE_LIMIT;
-  const hiddenCount = motorisations.items.length - VISIBLE_LIMIT;
+    ? filteredItems
+    : filteredItems.slice(0, VISIBLE_LIMIT);
+  const hasMore = filteredItems.length > VISIBLE_LIMIT;
+  const hiddenCount = filteredItems.length - VISIBLE_LIMIT;
 
   return (
     <section className="bg-white rounded-2xl shadow-xl mb-8 overflow-hidden border border-gray-100">
@@ -109,6 +126,28 @@ const MotorisationsSection = memo(function MotorisationsSection({
 
       {/* Grid de cartes - responsive et optimisé */}
       <div className="p-6 md:p-8 bg-gradient-to-b from-gray-50/50 to-white">
+        {/* Recherche motorisation */}
+        {motorisations.items.length > 6 && (
+          <div className="relative mb-5">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <Input
+              type="text"
+              placeholder="Rechercher marque ou modèle…"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-white border-gray-200"
+            />
+          </div>
+        )}
+
+        {/* Aucun résultat */}
+        {normalizedQuery && filteredItems.length === 0 && (
+          <p className="text-center text-gray-500 py-8">
+            Aucune motorisation trouvée pour &laquo;&nbsp;{searchQuery.trim()}
+            &nbsp;&raquo;
+          </p>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
           {vehiclesToDisplay.map((motorisation, index) => (
             <Link
@@ -186,16 +225,6 @@ const MotorisationsSection = memo(function MotorisationsSection({
                       </div>
                     </div>
 
-                    {/* Badge compatibilité — R1 uniquement */}
-                    {isR1 && (
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <ShieldCheck className="w-3.5 h-3.5 text-green-600" />
-                        <span className="text-xs font-medium text-green-700">
-                          Compatibilité vérifiée
-                        </span>
-                      </div>
-                    )}
-
                     {/* Période plus visible */}
                     <p className="text-sm text-gray-600 mb-3 font-medium">
                       📅 {motorisation.periode}
@@ -217,7 +246,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
                     {/* Description — neutre en R1, enrichie en default */}
                     <p className="text-sm text-gray-700 leading-relaxed mb-4">
                       {isR1
-                        ? `Sélectionnez votre ${motorisation.marque_name} ${motorisation.modele_name} ${motorisation.type_name} pour afficher les références compatibles.`
+                        ? "Sélectionnez cette motorisation pour afficher les références compatibles."
                         : motorisation.description ||
                           `${pluralizePieceName(familleName.toLowerCase()).replace(/^./, (c) => c.toUpperCase())} compatibles avec votre ${motorisation.marque_name} ${motorisation.modele_name} ${motorisation.type_name}. Sélectionnez l'essieu (avant/arrière) pour afficher les références disponibles.`}
                     </p>

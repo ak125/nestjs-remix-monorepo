@@ -57,26 +57,11 @@ export function buildR1MicroBlock(input: R1MicroBlockInput): R1MicroBlock {
   const lower = gammeName.toLowerCase();
 
   // ── Intro ──
-  // Template si pas de preuves, data-driven sinon
-  let intro: string;
-  if (proofs && proofs.motorisationsCount > 0) {
-    const marquesText =
-      proofs.topMarques.length > 0
-        ? ` (${formatList(proofs.topMarques)}…)`
-        : "";
-    const periodeText = proofs.periodeRange
-      ? `, de ${proofs.periodeRange}`
-      : "";
-    const modelsText =
-      proofs.modelsCount && proofs.modelsCount > 3
-        ? ` couvrant ${proofs.modelsCount}+ modèles`
-        : "";
-    intro =
-      `${proofs.motorisationsCount} motorisations compatibles${marquesText}${modelsText}${periodeText}. ` +
-      `Sélectionnez votre motorisation exacte pour n'afficher que les ${lower} compatibles.`;
-  } else {
-    intro = `Pour rouler en toute sécurité, sélectionnez des ${lower} compatibles avec votre véhicule. Voici les points clés pour ne pas vous tromper.`;
-  }
+  // Texte actionnable (pas de stats — elles sont dans le TrustStrip au-dessus)
+  const intro =
+    proofs && proofs.motorisationsCount > 0
+      ? `Sélectionnez votre motorisation exacte pour n'afficher que les ${lower} compatibles avec votre véhicule.`
+      : `Pour rouler en toute sécurité, sélectionnez des ${lower} compatibles avec votre véhicule. Voici les points clés pour ne pas vous tromper.`;
 
   // ── Bullets ──
   const bullets: string[] = [];
@@ -124,9 +109,8 @@ export function buildR1MicroBlock(input: R1MicroBlockInput): R1MicroBlock {
       },
       {
         id: "conseils",
-        label: "Conseils entretien",
-        description:
-          "Quand et comment entretenir pour prolonger la durée de vie.",
+        label: "Conseils montage",
+        description: "Points de vigilance et vérifications avant montage.",
         href: `/blog-pieces-auto/conseils/${alias}`,
       },
       {
