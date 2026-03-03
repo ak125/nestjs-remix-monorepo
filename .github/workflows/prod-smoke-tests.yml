@@ -7,7 +7,7 @@ on:
 
 env:
   CONTAINER: nestjs-remix-monorepo-prod
-  CADDY_URL: https://localhost
+  CADDY_CURL: curl -sk --max-time 15 --resolve www.automecanik.com:443:127.0.0.1
   IMGPROXY_TEST_IMAGE: https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/260/6216001.JPG
 
 jobs:
@@ -61,9 +61,9 @@ jobs:
           fi
           echo "✅ API catalog: $COUNT families"
 
-      - name: 🖼️ imgproxy AVIF (via Caddy)
+      - name: 🖼️ imgproxy AVIF
         run: |
-          STATUS=$(curl -sk --max-time 15 -o /dev/null -w "%{http_code}" "$CADDY_URL/imgproxy/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@avif")
+          STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" "http://localhost:8081/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@avif")
           if [ "$STATUS" != "200" ]; then
             echo "❌ imgproxy AVIF returned HTTP $STATUS"
             exit 1
@@ -74,7 +74,7 @@ jobs:
         id: cache-check
         continue-on-error: true
         run: |
-          HEADERS=$(curl -skI --max-time 10 "$CADDY_URL/pieces/filtre-a-huile-7.html")
+          HEADERS=$($CADDY_CURL -I "https://www.automecanik.com/pieces/filtre-a-huile-7.html")
           CACHE=$(echo "$HEADERS" | grep -i "cache-control" | head -1)
           echo "Cache-Control: $CACHE"
           if ! echo "$CACHE" | grep -qi "s-maxage"; then
@@ -87,7 +87,7 @@ jobs:
         id: ttfb-check
         continue-on-error: true
         run: |
-          TTFB=$(curl -sk --max-time 15 -o /dev/null -w "%{time_starttransfer}" "$CADDY_URL/pieces/filtre-a-huile-7.html")
+          TTFB=$($CADDY_CURL -o /dev/null -w "%{time_starttransfer}" "https://www.automecanik.com/pieces/filtre-a-huile-7.html")
           echo "TTFB: ${TTFB}s"
           if (( $(echo "$TTFB > 2.0" | bc -l) )); then
             echo "⚠️ WARNING: TTFB ${TTFB}s exceeds 2s threshold"
