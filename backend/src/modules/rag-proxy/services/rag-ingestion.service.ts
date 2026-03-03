@@ -32,6 +32,9 @@ export class RagIngestionService implements OnModuleDestroy {
   /** Track active poll timers for cleanup on destroy */
   private readonly activePollTimers = new Set<ReturnType<typeof setInterval>>();
 
+  /** Atomic lock: only one web ingest at a time (single-process guard). */
+  private activeWebIngestJobId: string | null = null;
+
   onModuleDestroy() {
     const count = this.activePollTimers.size;
     for (const timer of this.activePollTimers) {
@@ -245,7 +248,12 @@ export class RagIngestionService implements OnModuleDestroy {
     const jobId = `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const truthLevel = request.truthLevel || 'L3';
 
-    // Prevent concurrent web ingestions
+    // Prevent concurrent web ingestions (atomic in-process lock + Redis fallback)
+    if (this.activeWebIngestJobId) {
+      throw new ConflictException(
+        `Web ingest already running: ${this.activeWebIngestJobId}`,
+      );
+    }
     const allJobs = await this.ragRedisJobService.getAllJobs();
     const runningJob = allJobs.find((j) => j.status === 'running');
     if (runningJob) {
@@ -253,6 +261,7 @@ export class RagIngestionService implements OnModuleDestroy {
         `Web ingest already running: ${runningJob.jobId} (${runningJob.url})`,
       );
     }
+    this.activeWebIngestJobId = jobId;
 
     const job: WebJob = {
       jobId,
@@ -268,16 +277,21 @@ export class RagIngestionService implements OnModuleDestroy {
     await this.ragRedisJobService.addToIndex(jobId);
 
     // Process asynchronously (don't block the HTTP response)
-    this.processWebIngest(job).catch(async (err) => {
-      job.status = 'failed';
-      job.finishedAt = Math.floor(Date.now() / 1000);
-      job.returnCode = 1;
-      job.logLines.push(`Error: ${getErrorMessage(err)}`);
-      await this.ragRedisJobService.setJob(job);
-      this.logger.error(
-        `Web ingest job ${jobId} failed: ${getErrorMessage(err)}`,
-      );
-    });
+    this.processWebIngest(job)
+      .then(() => {
+        this.activeWebIngestJobId = null;
+      })
+      .catch(async (err) => {
+        this.activeWebIngestJobId = null;
+        job.status = 'failed';
+        job.finishedAt = Math.floor(Date.now() / 1000);
+        job.returnCode = 1;
+        job.logLines.push(`Error: ${getErrorMessage(err)}`);
+        await this.ragRedisJobService.setJob(job);
+        this.logger.error(
+          `Web ingest job ${jobId} failed: ${getErrorMessage(err)}`,
+        );
+      });
 
     this.logger.log(`Web ingest job started: ${jobId} for ${url}`);
     return { jobId, status: 'running' };
@@ -291,6 +305,9 @@ export class RagIngestionService implements OnModuleDestroy {
    */
   private async processWebIngest(job: WebJob): Promise<void> {
     const containerName = process.env.RAG_CONTAINER_NAME || 'rag-api-prod';
+    if (!/^[a-z0-9_-]+$/i.test(containerName)) {
+      throw new Error(`Invalid container name: ${containerName}`);
+    }
     const knowledgeHostPath =
       process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
     const containerTmpPath = `/tmp/web-import/${job.jobId}`;
@@ -313,17 +330,19 @@ export class RagIngestionService implements OnModuleDestroy {
     await this.ragRedisJobService.setJob(job); // persist after ingest step
 
     // Step 2: Detect output subdirectory (web/ or web-catalog/)
-    const { execSync } = await import('node:child_process');
-    const lsOutput = execSync(
-      `docker exec ${containerName} ls ${containerTmpPath}/`,
+    const { execFileSync } = await import('node:child_process');
+    const lsOutput = execFileSync(
+      'docker',
+      ['exec', containerName, 'ls', `${containerTmpPath}/`],
       { encoding: 'utf-8', timeout: 5_000 },
     ).trim();
     const subDir = lsOutput.includes('web-catalog') ? 'web-catalog' : 'web';
     job.logLines.push(`Output: ${subDir}/ (${lsOutput.replace(/\n/g, ', ')})`);
 
     // Step 3: Copy results from container /tmp/ to host knowledge dir
-    execSync(
-      `docker cp ${containerName}:${containerTmpPath}/. ${knowledgeHostPath}/`,
+    execFileSync(
+      'docker',
+      ['cp', `${containerName}:${containerTmpPath}/.`, `${knowledgeHostPath}/`],
       { timeout: 15_000 },
     );
     job.logLines.push('Copied sections to knowledge directory');
@@ -363,11 +382,16 @@ export class RagIngestionService implements OnModuleDestroy {
     await this.execDockerCmd(containerName, reindexCmd, job);
 
     // Step 5: Cleanup container temp
-    execSync(`docker exec ${containerName} rm -rf ${containerTmpPath}`, {
-      timeout: 5_000,
-    });
+    execFileSync(
+      'docker',
+      ['exec', containerName, 'rm', '-rf', containerTmpPath],
+      {
+        timeout: 5_000,
+      },
+    );
 
     // Step 5b: Sync validated chunks to __rag_knowledge in Supabase
+    let dbSyncOk = true;
     if (validation.valid.length > 0) {
       try {
         const syncResult = await this.ragCleanupService.syncFilesToDb(
@@ -381,6 +405,7 @@ export class RagIngestionService implements OnModuleDestroy {
               : ''),
         );
       } catch (syncErr) {
+        dbSyncOk = false;
         const msg =
           syncErr instanceof Error ? syncErr.message : String(syncErr);
         job.logLines.push(`DB sync failed (non-blocking): ${msg}`);
@@ -400,6 +425,7 @@ export class RagIngestionService implements OnModuleDestroy {
       job.jobId,
       'web',
       validation,
+      dbSyncOk,
     );
   }
 
@@ -492,6 +518,7 @@ export class RagIngestionService implements OnModuleDestroy {
           }
 
           // Sync validated files to __rag_knowledge DB
+          let pdfDbSyncOk = true;
           if (validationResult && validationResult.valid.length > 0) {
             try {
               const syncResult = await this.ragCleanupService.syncFilesToDb(
@@ -505,6 +532,7 @@ export class RagIngestionService implements OnModuleDestroy {
                     : ''),
               );
             } catch (syncErr) {
+              pdfDbSyncOk = false;
               this.logger.error(
                 `PDF poll DB sync failed for ${jobId}: ${getErrorMessage(syncErr)}`,
               );
@@ -515,6 +543,7 @@ export class RagIngestionService implements OnModuleDestroy {
             jobId,
             'pdf',
             validationResult,
+            pdfDbSyncOk,
           );
         } else if (
           status.status === 'failed' ||

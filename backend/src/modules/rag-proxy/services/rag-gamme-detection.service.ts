@@ -17,6 +17,9 @@ export class RagGammeDetectionService {
   /** Cached list of known gamme aliases from gammes/ directory. */
   private knownGammeAliasesCache: string[] | null = null;
 
+  /** Guard against duplicate event emission for the same jobId (poll + webhook race). */
+  private readonly emittedJobIds = new Set<string>();
+
   constructor(
     private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
@@ -384,7 +387,19 @@ export class RagGammeDetectionService {
       valid: string[];
       quarantined: Array<{ filename: string; reason: string }>;
     },
+    dbSyncOk?: boolean,
   ): Promise<void> {
+    // Idempotency guard: skip if event already emitted for this jobId
+    if (this.emittedJobIds.has(jobId)) {
+      this.logger.warn(
+        `[emitIngestionCompleted] Skipping duplicate emission for jobId=${jobId}`,
+      );
+      return;
+    }
+    this.emittedJobIds.add(jobId);
+    // Auto-cleanup after 10 min to avoid unbounded growth
+    setTimeout(() => this.emittedJobIds.delete(jobId), 600_000);
+
     // Prefer explicit file list from validation (no mtime dependency)
     const validFiles = validationResult?.valid ?? [];
     const affectedGammesMap =
@@ -414,6 +429,7 @@ export class RagGammeDetectionService {
       affectedGammes,
       affectedGammesMap: Object.fromEntries(affectedGammesMap),
       ...(affectedDiagnostics.length > 0 ? { affectedDiagnostics } : {}),
+      ...(dbSyncOk !== undefined ? { dbSyncOk } : {}),
     };
 
     if (validationResult) {

@@ -89,6 +89,7 @@ export class RagWebhookCompletionService {
     );
 
     // Sync files to __rag_knowledge DB
+    let webhookDbSyncOk = true;
     if (absolutePaths.length > 0) {
       try {
         const syncResult = await this.ragCleanupService.syncFilesToDb(
@@ -102,6 +103,7 @@ export class RagWebhookCompletionService {
               : ''),
         );
       } catch (syncErr) {
+        webhookDbSyncOk = false;
         this.logger.error(
           `Webhook DB sync failed: ${getErrorMessage(syncErr)}`,
         );
@@ -128,6 +130,7 @@ export class RagWebhookCompletionService {
       affectedGammes,
       affectedGammesMap: Object.fromEntries(affectedGammesMap),
       ...(affectedDiagnostics.length > 0 ? { affectedDiagnostics } : {}),
+      dbSyncOk: webhookDbSyncOk,
     };
 
     this.eventEmitter.emit(RAG_INGESTION_COMPLETED, event);

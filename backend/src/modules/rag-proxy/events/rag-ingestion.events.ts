@@ -16,4 +16,6 @@ export interface RagIngestionCompletedEvent {
     quarantinedFiles: number;
     quarantined?: Array<{ filename: string; reason: string }>;
   };
+  /** Whether the DB sync (syncFilesToDb) succeeded. False = files on disk but NOT in __rag_knowledge. */
+  dbSyncOk?: boolean;
 }
