@@ -10,6 +10,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { GENERIC_PHRASES as SHARED_GENERIC_PHRASES } from '../../../config/buying-guide-quality.constants';
+import { SECTION_RAG_FIELD_MAP } from '../../../config/keyword-plan.constants';
 import type { EvidenceEntry } from '../../../workers/types/content-refresh.types';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import { EnricherYamlParser } from './enricher-yaml-parser.service';
@@ -19,11 +20,13 @@ import { EnricherYamlParser } from './enricher-yaml-parser.service';
 const SECTION_TYPES = {
   S1: 'S1', // Fonction
   S2: 'S2', // Quand changer
+  S2_DIAG: 'S2_DIAG', // Diagnostic rapide
   S3: 'S3', // Comment choisir
   S4_DEPOSE: 'S4_DEPOSE', // Démontage
   S4_REPOSE: 'S4_REPOSE', // Remontage
   S5: 'S5', // Erreurs à éviter
   S6: 'S6', // Vérification finale
+  S_GARAGE: 'S_GARAGE', // Quand aller au garage
   S7: 'S7', // Pièces associées
   S8: 'S8', // FAQ
 } as const;
@@ -31,11 +34,13 @@ const SECTION_TYPES = {
 const SECTION_ORDERS: Record<string, number> = {
   S1: 10,
   S2: 20,
+  S2_DIAG: 25,
   S3: 30,
   S4_DEPOSE: 40,
   S4_REPOSE: 50,
   S5: 60,
   S6: 65,
+  S_GARAGE: 67,
   S7: 80,
   S8: 85,
 };
@@ -83,6 +88,7 @@ interface SectionAction {
   title: string;
   content: string; // HTML content
   order: number;
+  ragField?: string;
 }
 
 interface PageContract {
@@ -96,6 +102,31 @@ interface PageContract {
   faq?: Array<{ q: string; a: string }>;
   diagnosticTree?: Array<{ if: string; then: string }>;
   associatedPieces?: string[];
+  // v4: diagnostic.quick_checks + diagnostic.causes (for S2_DIAG)
+  quickChecks?: string[];
+  diagnosticCauses?: string[];
+  // v4: depose_steps from diagnostic block (for S4_DEPOSE)
+  deposeSteps?: string[];
+  // v4: good_practices from maintenance block (for S6)
+  goodPractices?: string[];
+  // SEO: heading plan from __seo_r3_keyword_plan (section_type → H2 optimisé)
+  headingPlan?: Record<string, string>;
+  // SEO: per-section keyword terms from __seo_r3_keyword_plan.skp_section_terms
+  sectionTerms?: Record<
+    string,
+    {
+      include_terms?: string[];
+      micro_phrases?: string[];
+      forbidden_overlap?: string[];
+    }
+  >;
+  // v4: installation block (for S_GARAGE trigger)
+  installation?: {
+    difficulty?: string;
+    steps?: string[];
+    commonErrors?: string[];
+    postChecks?: string[];
+  };
 }
 
 /** Classified supplementary content from web/PDF ingestion files */
@@ -135,6 +166,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     supplementaryFiles: string[] = [],
     conservativeMode = false,
     force = false,
+    sectionsFilter?: string[],
   ): Promise<ConseilEnrichResult> {
     // 1. Load RAG knowledge doc (API first, disk fallback)
     let ragContent: string;
@@ -256,6 +288,35 @@ export class ConseilEnricherService extends SupabaseBaseService {
       );
     }
 
+    // 2d. Load SEO heading plan + section_terms from keyword plan (if available)
+    try {
+      const { data: kpRow } = await this.client
+        .from('__seo_r3_keyword_plan')
+        .select('skp_heading_plan, skp_section_terms')
+        .eq('skp_pg_id', pgId)
+        .in('skp_status', ['validated', 'active'])
+        .order('skp_version' as never, { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const h2Map = kpRow?.skp_heading_plan?.h2_map;
+      if (h2Map && typeof h2Map === 'object') {
+        contract.headingPlan = h2Map as Record<string, string>;
+        this.logger.log(
+          `Loaded SEO heading plan for ${pgAlias}: ${Object.keys(h2Map).length} sections`,
+        );
+      }
+      // Load section_terms (include_terms, micro_phrases, forbidden_overlap)
+      const sTerms = kpRow?.skp_section_terms;
+      if (sTerms && typeof sTerms === 'object') {
+        contract.sectionTerms = sTerms as PageContract['sectionTerms'];
+        this.logger.log(
+          `Loaded SEO section_terms for ${pgAlias}: ${Object.keys(sTerms).length} sections`,
+        );
+      }
+    } catch (err) {
+      this.logger.warn(`Could not load keyword plan for ${pgAlias}: ${err}`);
+    }
+
     // Build evidence pack from contract sections
     const evidenceEntries: EvidenceEntry[] = [];
     const docId = `gammes.${pgAlias}`;
@@ -288,12 +349,14 @@ export class ConseilEnricherService extends SupabaseBaseService {
       const currentHash = createHash('sha256')
         .update(JSON.stringify(evidenceEntries))
         .digest('hex');
+      // Check against any previous run (including draft) — not just published
       const { data: lastSuccess } = await this.client
         .from('__rag_content_refresh_log')
         .select('evidence_pack_hash')
         .eq('pg_alias', pgAlias)
         .eq('page_type', 'R3_conseils')
-        .in('status', ['auto_published', 'published'])
+        .in('status', ['auto_published', 'published', 'draft'])
+        .not('evidence_pack_hash', 'is', null)
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -316,9 +379,76 @@ export class ConseilEnricherService extends SupabaseBaseService {
       supplementaryEnriched,
       conservativeMode,
       force || ragChanged,
+      sectionsFilter,
     );
     result.evidencePack = evidenceEntries;
     return result;
+  }
+
+  /**
+   * Enriches conseil sections using the validated keyword plan data.
+   * Called automatically when a keyword plan is validated (pipeline chain).
+   *
+   * Loads the keyword plan's section_terms, injects them into the contract,
+   * and runs enrichSingle with force=true, filtered to sections_to_improve only.
+   */
+  async enrichWithKeywordPlan(
+    pgId: string,
+    pgAlias: string,
+  ): Promise<ConseilEnrichResult> {
+    // 1. Load validated keyword plan
+    const { data: kpRow, error: kpErr } = await this.client
+      .from('__seo_r3_keyword_plan')
+      .select('skp_id, skp_section_terms, skp_audit_result')
+      .eq('skp_pg_id', pgId)
+      .in('skp_status', ['validated', 'active'])
+      .order('skp_version', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (kpErr || !kpRow) {
+      this.logger.warn(
+        `No validated keyword plan for pgId=${pgId} — cannot enrichWithKeywordPlan`,
+      );
+      return {
+        status: 'skipped',
+        score: 0,
+        flags: ['NO_KEYWORD_PLAN'],
+        sectionsCreated: 0,
+        sectionsUpdated: 0,
+        reason: 'NO_KEYWORD_PLAN',
+      };
+    }
+
+    const auditResult = kpRow.skp_audit_result as Record<
+      string,
+      unknown
+    > | null;
+    const sectionsToImprove =
+      (auditResult?.sections_to_improve as string[]) || [];
+
+    if (sectionsToImprove.length === 0) {
+      this.logger.log(
+        `Keyword plan for ${pgAlias} has no sections_to_improve — skipping`,
+      );
+      return {
+        status: 'skipped',
+        score: 100,
+        flags: ['NO_SECTIONS_TO_IMPROVE'],
+        sectionsCreated: 0,
+        sectionsUpdated: 0,
+        reason: 'NO_SECTIONS_TO_IMPROVE',
+      };
+    }
+
+    this.logger.log(
+      `enrichWithKeywordPlan for ${pgAlias}: sections=[${sectionsToImprove.join(', ')}], kpId=${kpRow.skp_id}`,
+    );
+
+    // 2. Run enrichSingle with force + sectionsFilter
+    // The section_terms will be loaded inside enrichSingle (step 2d already loads heading_plan;
+    // we enhance it to also load section_terms below)
+    return this.enrichSingle(pgId, pgAlias, [], false, true, sectionsToImprove);
   }
 
   /**
@@ -332,6 +462,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     hasSupplementary = false,
     conservativeMode = false,
     force = false,
+    sectionsFilter?: string[],
   ): Promise<ConseilEnrichResult> {
     // 3. Load existing conseil sections
     const existing = await this.loadExistingSections(pgId);
@@ -344,8 +475,17 @@ export class ConseilEnricherService extends SupabaseBaseService {
       hasSupplementary || force,
     );
 
+    // 4b. Apply sections filter if provided (only regenerate targeted sections)
+    const filteredActions = sectionsFilter?.length
+      ? actions.map((a) =>
+          sectionsFilter.includes(a.type)
+            ? a
+            : { ...a, action: 'skip' as const },
+        )
+      : actions;
+
     // 5. Filter out skips
-    const writeActions = actions.filter((a) => a.action !== 'skip');
+    const writeActions = filteredActions.filter((a) => a.action !== 'skip');
     if (writeActions.length === 0) {
       return {
         status: 'skipped',
@@ -364,6 +504,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     if (quality.score >= 70) {
       const { created, updated } = await this.writeSections(
         pgId,
+        pgAlias,
         writeActions,
         existing,
       );
@@ -438,6 +579,8 @@ export class ConseilEnricherService extends SupabaseBaseService {
         .map((v: string) => parseInt(v.trim(), 10))
         .filter((n: number) => !isNaN(n));
 
+      const installation = fm.installation || {};
+
       const contract: PageContract = {
         intro: {
           role: domain.role || undefined,
@@ -445,7 +588,9 @@ export class ConseilEnricherService extends SupabaseBaseService {
             domain.related_parts ||
             domain.cross_gammes?.map((cg: any) => cg.slug),
         },
-        symptoms: (diagnostic.symptoms || []).map((s: any) => s?.label || s),
+        symptoms: (diagnostic.symptoms || []).map((s: any) =>
+          this.textUtils.stripSourceTags(s?.label || s),
+        ),
         timing: {
           km: interval.unit === 'km' ? intervalParts : undefined,
           years: interval.unit === 'mois' ? intervalParts : undefined,
@@ -455,17 +600,39 @@ export class ConseilEnricherService extends SupabaseBaseService {
           explanation: rendering.risk_explanation || undefined,
           consequences: rendering.risk_consequences || undefined,
         },
-        antiMistakes: selection.anti_mistakes || undefined,
+        antiMistakes:
+          (selection.anti_mistakes || []).map((s: string) =>
+            this.textUtils.stripSourceTags(s),
+          ) || undefined,
         howToChoose: selection.criteria || undefined,
         faq: (rendering.faq || []).map((f: any) => ({
           q: f.question || f.q || '',
-          a: f.answer || f.a || '',
+          a: this.textUtils.stripSourceTags(f.answer || f.a || ''),
         })),
         diagnosticTree: (diagnostic.causes || []).map((c: string) => ({
           if: c,
           then: '',
         })),
         associatedPieces: domain.related_parts || undefined,
+        // v4 new fields for S2_DIAG + S_GARAGE + S4_DEPOSE + S6
+        deposeSteps:
+          (diagnostic.depose_steps || []).map((s: string) =>
+            this.textUtils.stripSourceTags(s),
+          ) || undefined,
+        goodPractices:
+          (maintenance.good_practices || []).map((s: string) =>
+            this.textUtils.stripSourceTags(s),
+          ) || undefined,
+        quickChecks: diagnostic.quick_checks || undefined,
+        diagnosticCauses: diagnostic.causes || undefined,
+        installation: installation.difficulty
+          ? {
+              difficulty: installation.difficulty,
+              steps: installation.steps || undefined,
+              commonErrors: installation.common_errors || undefined,
+              postChecks: installation.post_checks || undefined,
+            }
+          : undefined,
       };
 
       // Validate: at least 2 useful fields present
@@ -896,6 +1063,27 @@ export class ConseilEnricherService extends SupabaseBaseService {
   ): SectionAction[] {
     const actions: SectionAction[] = [];
     const gammeName = pgAlias.replace(/-/g, ' ');
+    const hp = contract.headingPlan || {};
+
+    /**
+     * Anti-regression guard for force mode: if forced override would produce
+     * significantly shorter content, skip the override to preserve quality.
+     * Threshold: new content must be >= 50% of existing content length.
+     */
+    const wouldRegress = (
+      existingContent: string | undefined,
+      newContent: string,
+    ): boolean => {
+      if (
+        !existingContent ||
+        existingContent.length < MIN_SECTION_CONTENT_LENGTH
+      ) {
+        return false; // Existing is too short — never consider it a regression
+      }
+      const existingLen = this.textUtils.stripHtml(existingContent).length;
+      const newLen = this.textUtils.stripHtml(newContent).length;
+      return newLen < existingLen * 0.5;
+    };
 
     // S1 Fonction — update if RAG has richer intro
     if (contract.intro?.role) {
@@ -914,13 +1102,16 @@ export class ConseilEnricherService extends SupabaseBaseService {
           syncParts.length > 0
             ? `<br>Pièces liées : ${syncParts.map((p) => `<b>${p.replace(/-/g, ' ')}</b>`).join(', ')}.`
             : '';
-        actions.push({
-          type: SECTION_TYPES.S1,
-          action: existingS1 ? 'update' : 'create',
-          title: `Fonction des ${gammeName} :`,
-          content: `${contract.intro.role}${syncHtml}`,
-          order: SECTION_ORDERS.S1,
-        });
+        const s1Content = `${contract.intro.role}${syncHtml}`;
+        if (!wouldRegress(existingS1?.sgc_content, s1Content)) {
+          actions.push({
+            type: SECTION_TYPES.S1,
+            action: existingS1 ? 'update' : 'create',
+            title: hp['S1'] || `Fonction des ${gammeName} :`,
+            content: s1Content,
+            order: SECTION_ORDERS.S1,
+          });
+        }
       } else {
         actions.push({
           type: SECTION_TYPES.S1,
@@ -980,9 +1171,42 @@ export class ConseilEnricherService extends SupabaseBaseService {
         actions.push({
           type: SECTION_TYPES.S2,
           action: existingS2 ? 'update' : 'create',
-          title: `Quand changer les ${gammeName} :`,
+          title: hp['S2'] || `Quand changer les ${gammeName} :`,
           content,
           order: SECTION_ORDERS.S2,
+        });
+      }
+    }
+
+    // S2_DIAG Diagnostic rapide — trigger: ≥2 symptoms AND ≥2 quick_checks
+    if (
+      contract.symptoms &&
+      contract.symptoms.length >= 2 &&
+      contract.quickChecks &&
+      contract.quickChecks.length >= 2
+    ) {
+      const existingS2D = existing.get(SECTION_TYPES.S2_DIAG);
+      const s2dSubstantial =
+        existingS2D &&
+        (existingS2D.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
+      if (!s2dSubstantial || hasSupplementary) {
+        // Build 3-column table: Symptôme / Cause probable / Action
+        const causes = contract.diagnosticCauses || [];
+        const checks = contract.quickChecks;
+        const rows = contract.symptoms.slice(0, 6).map((symptom, i) => {
+          const cause = causes[i] || causes[0] || 'Usure normale';
+          const check = checks[i] || checks[0] || 'Inspection visuelle';
+          return `<tr><td>${symptom}</td><td>${cause}</td><td>${check}</td></tr>`;
+        });
+        const tableHtml =
+          `<table><thead><tr><th>Symptôme</th><th>Cause probable</th><th>Action</th></tr></thead>` +
+          `<tbody>${rows.join('')}</tbody></table>`;
+        actions.push({
+          type: SECTION_TYPES.S2_DIAG,
+          action: existingS2D ? 'update' : 'create',
+          title: hp['S2_DIAG'] || `Diagnostic rapide des ${gammeName} :`,
+          content: tableHtml,
+          order: SECTION_ORDERS.S2_DIAG,
         });
       }
     }
@@ -1006,29 +1230,51 @@ export class ConseilEnricherService extends SupabaseBaseService {
         actions.push({
           type: SECTION_TYPES.S3,
           action: existingS3 ? 'update' : 'create',
-          title: `Comment choisir vos ${gammeName} :`,
+          title: hp['S3'] || `Comment choisir vos ${gammeName} :`,
           content: s3Content,
           order: SECTION_ORDERS.S3,
         });
       }
     }
 
-    // S4_DEPOSE/S4_REPOSE — only touch if RAG has explicit diagnostic_tree with procedures
-    // Too risky to overwrite technical procedures without explicit data
-    if (contract.diagnosticTree && contract.diagnosticTree.length >= 1) {
+    // S4_DEPOSE — prefer depose_steps (real procedure) over diagnosticTree (cause/effect)
+    {
       const existingS4D = existing.get(SECTION_TYPES.S4_DEPOSE);
       const s4dSubstantial =
         existingS4D &&
         (existingS4D.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
-      const steps = contract.diagnosticTree
-        .map((node) => `- Si ${node.if} → ${node.then}`)
-        .join('<br>');
-      if (!s4dSubstantial || hasSupplementary) {
+
+      let s4dContent = '';
+      let s4dTitle = '';
+      if (contract.deposeSteps && contract.deposeSteps.length >= 2) {
+        // Real procedure steps from RAG diagnostic.depose_steps
+        const numbered = contract.deposeSteps.map(
+          (step, i) => `<b>${i + 1}.</b> ${step}`,
+        );
+        s4dContent = numbered.join('<br>');
+        s4dTitle =
+          hp['S4_DEPOSE'] || `Procédure de remplacement des ${gammeName} :`;
+      } else if (
+        contract.diagnosticTree &&
+        contract.diagnosticTree.length >= 1
+      ) {
+        // Fallback: diagnostic tree (cause/effect)
+        s4dContent = contract.diagnosticTree
+          .map((node) => `- Si ${node.if}${node.then ? ` → ${node.then}` : ''}`)
+          .join('<br>');
+        s4dTitle = hp['S4_DEPOSE'] || `Diagnostic des ${gammeName} :`;
+      }
+
+      if (
+        s4dContent.length > 30 &&
+        (!s4dSubstantial || hasSupplementary) &&
+        !wouldRegress(existingS4D?.sgc_content, s4dContent)
+      ) {
         actions.push({
           type: SECTION_TYPES.S4_DEPOSE,
           action: existingS4D ? 'update' : 'create',
-          title: `Diagnostic des ${gammeName} :`,
-          content: steps,
+          title: s4dTitle,
+          content: s4dContent,
           order: SECTION_ORDERS.S4_DEPOSE,
         });
       }
@@ -1047,30 +1293,111 @@ export class ConseilEnricherService extends SupabaseBaseService {
         actions.push({
           type: SECTION_TYPES.S5,
           action: existingS5 ? 'update' : 'create',
-          title: `Erreurs à éviter avec les ${gammeName} :`,
+          title: hp['S5'] || `Erreurs à éviter avec les ${gammeName} :`,
           content: items,
           order: SECTION_ORDERS.S5,
         });
       }
     }
 
-    // S6 Vérification — create from diagnostic_tree if available, update if placeholder
-    if (contract.diagnosticTree && contract.diagnosticTree.length >= 2) {
+    // S6 Vérification — prefer good_practices, fallback to diagnostic_tree
+    {
       const existingS6 = existing.get(SECTION_TYPES.S6);
       const s6Substantial =
         existingS6 &&
         (existingS6.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
-      const checks = contract.diagnosticTree
-        .map((node) => `- Vérifier : ${node.then}`)
-        .join('<br>');
-      if (!s6Substantial || hasSupplementary) {
+
+      let s6Content = '';
+      if (contract.goodPractices && contract.goodPractices.length >= 2) {
+        // Real good practices from RAG maintenance.good_practices
+        s6Content = contract.goodPractices.map((p) => `- ${p}`).join('<br>');
+      } else if (
+        contract.diagnosticTree &&
+        contract.diagnosticTree.length >= 2
+      ) {
+        // Fallback: diagnostic tree checks
+        const validChecks = contract.diagnosticTree.filter(
+          (node) => node.then && node.then.length > 5,
+        );
+        if (validChecks.length >= 2) {
+          s6Content = validChecks
+            .map((node) => `- Vérifier : ${node.then}`)
+            .join('<br>');
+        }
+      }
+
+      if (
+        s6Content.length > 30 &&
+        (!s6Substantial || hasSupplementary) &&
+        !wouldRegress(existingS6?.sgc_content, s6Content)
+      ) {
         actions.push({
           type: SECTION_TYPES.S6,
           action: existingS6 ? 'update' : 'create',
-          title: `Vérifications après remplacement des ${gammeName} :`,
-          content: checks,
+          title:
+            hp['S6'] || `Vérifications après remplacement des ${gammeName} :`,
+          content: s6Content,
           order: SECTION_ORDERS.S6,
         });
+      }
+    }
+
+    // S_GARAGE "Quand aller au garage" — trigger: difficulty=difficile OR ≥3 causes OR >10 installation steps
+    {
+      const installDifficile =
+        contract.installation?.difficulty === 'difficile';
+      const manyCauses = (contract.diagnosticCauses?.length || 0) >= 3;
+      const manySteps = (contract.installation?.steps?.length || 0) > 10;
+      const shouldGenerate = installDifficile || manyCauses || manySteps;
+
+      if (shouldGenerate) {
+        const existingSG = existing.get(SECTION_TYPES.S_GARAGE);
+        const sgSubstantial =
+          existingSG &&
+          (existingSG.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
+        if (!sgSubstantial || hasSupplementary) {
+          const reasons: string[] = [];
+          if (installDifficile) {
+            reasons.push(
+              'La difficulté de remplacement est élevée (outillage spécifique requis)',
+            );
+          }
+          if (manyCauses) {
+            reasons.push(
+              `Plusieurs causes possibles de défaillance (${contract.diagnosticCauses!.length} identifiées) nécessitent un diagnostic professionnel`,
+            );
+          }
+          if (manySteps) {
+            reasons.push(
+              `La procédure comporte plus de ${contract.installation!.steps!.length} étapes techniques`,
+            );
+          }
+          // Add common errors as safety reasons
+          const safetyErrors = (
+            contract.installation?.commonErrors || []
+          ).slice(0, 3);
+          if (safetyErrors.length > 0) {
+            reasons.push(
+              `Erreurs fréquentes en atelier amateur : ${safetyErrors.join(' ; ')}`,
+            );
+          }
+
+          const reasonsList = reasons.map((r) => `- ${r}`).join('<br>');
+          const calloutHtml =
+            `<div class="garage-callout"><p><strong>Nous vous recommandons de confier cette intervention à un professionnel :</strong></p>` +
+            `<br>${reasonsList}` +
+            `<br><br><p>Un garagiste qualifié dispose de l'outillage et de l'expérience nécessaires pour effectuer cette opération en toute sécurité.</p></div>`;
+
+          actions.push({
+            type: SECTION_TYPES.S_GARAGE,
+            action: existingSG ? 'update' : 'create',
+            title:
+              hp['S_GARAGE'] ||
+              `Quand confier le remplacement des ${gammeName} à un professionnel :`,
+            content: calloutHtml,
+            order: SECTION_ORDERS.S_GARAGE,
+          });
+        }
       }
     }
 
@@ -1097,7 +1424,9 @@ export class ConseilEnricherService extends SupabaseBaseService {
           actions.push({
             type: SECTION_TYPES.S7,
             action: existingS7 ? 'update' : 'create',
-            title: `Pièces à contrôler et à remplacer avec les ${gammeName} :`,
+            title:
+              hp['S7'] ||
+              `Pièces à contrôler et à remplacer avec les ${gammeName} :`,
             content: links,
             order: SECTION_ORDERS.S7,
           });
@@ -1121,11 +1450,75 @@ export class ConseilEnricherService extends SupabaseBaseService {
         actions.push({
           type: SECTION_TYPES.S8,
           action: existingS8 ? 'update' : 'create',
-          title: `Questions fréquentes sur les ${gammeName} :`,
+          title: hp['S8'] || `Questions fréquentes sur les ${gammeName} :`,
           content: faqHtml,
           order: SECTION_ORDERS.S8,
         });
       }
+    }
+
+    // ── Enrich with keyword plan section_terms (include_terms / micro_phrases) ──
+    // Appends micro_phrases as semantic enrichment to sections that have keyword plan data.
+    // This boosts keyword coverage without modifying the core section generators above.
+    if (contract.sectionTerms) {
+      for (const action of actions) {
+        if (action.action === 'skip') continue;
+        const terms = contract.sectionTerms[action.type];
+        if (!terms?.micro_phrases?.length) continue;
+
+        // Append micro_phrases as a contextual enrichment block
+        // Only phrases not already present in the content (dedup)
+        const lowerContent = action.content.toLowerCase();
+        const newPhrases = terms.micro_phrases.filter(
+          (phrase) =>
+            !lowerContent.includes(phrase.substring(0, 40).toLowerCase()),
+        );
+
+        if (newPhrases.length > 0) {
+          // For list-type sections (S4_DEPOSE, S5, S6, S3), append as list items
+          const listSections = ['S4_DEPOSE', 'S4_REPOSE', 'S5', 'S6', 'S3'];
+          if (listSections.includes(action.type)) {
+            const itemsHtml = newPhrases.map((p) => `<li>${p}</li>`).join('\n');
+            // Append before closing tag if exists, otherwise append raw
+            if (action.content.includes('</ul>')) {
+              action.content = action.content.replace(
+                '</ul>',
+                `${itemsHtml}\n</ul>`,
+              );
+            } else if (action.content.includes('</ol>')) {
+              action.content = action.content.replace(
+                '</ol>',
+                `${itemsHtml}\n</ol>`,
+              );
+            } else {
+              action.content += `\n<ul>\n${itemsHtml}\n</ul>`;
+            }
+          } else {
+            // For prose sections (S1, S2), append as paragraph
+            const proseHtml = newPhrases.map((p) => `<p>${p}</p>`).join('\n');
+            action.content += `\n${proseHtml}`;
+          }
+        }
+      }
+    }
+
+    // Title-only update pass: when keyword plan has a better H2 for an
+    // existing section that was NOT regenerated above, update only the title.
+    for (const [sectionType, seoTitle] of Object.entries(hp)) {
+      if (!seoTitle) continue;
+      const existingSection = existing.get(sectionType);
+      if (!existingSection) continue;
+      if (existingSection.sgc_title === seoTitle) continue;
+      const alreadyPlanned = actions.some((a) => a.type === sectionType);
+      if (alreadyPlanned) continue;
+
+      actions.push({
+        type: sectionType,
+        action: 'update',
+        title: seoTitle,
+        content: existingSection.sgc_content,
+        order: existingSection.sgc_order,
+      });
     }
 
     return actions;
@@ -1220,6 +1613,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
    */
   private async writeSections(
     pgId: string,
+    pgAlias: string,
     actions: SectionAction[],
     existing: Map<
       string,
@@ -1244,6 +1638,16 @@ export class ConseilEnricherService extends SupabaseBaseService {
         sgc_title: action.title,
         sgc_content: action.content,
         sgc_order: action.order,
+        sgc_sources: JSON.stringify([
+          {
+            type: 'rag',
+            ref: `gammes/${pgAlias}.md`,
+            field:
+              action.ragField ??
+              SECTION_RAG_FIELD_MAP[action.type] ??
+              'general',
+          },
+        ]),
       };
     });
 

@@ -6,6 +6,7 @@ import type {
   HardGateName,
   EvidenceEntry,
   ClaimEntry,
+  RagSafePack,
 } from '../../../workers/types/content-refresh.types';
 
 // ── Shared helpers (mirrors brief-gates.service.ts) ──
@@ -169,6 +170,21 @@ const THRESHOLDS = {
   scope_leakage: { warn: 1, fail: 2 },
   contradiction: { warn: 0, fail: 1 }, // strict: any contradiction = FAIL
   seo_integrity: { warn: 0, fail: 1 }, // strict: any mutation = FAIL
+  // RAG-specific gates (Chantier 3)
+  rag_citation_integrity: { warn: 0, fail: 1 }, // strict: any orphan = FAIL
+  rag_role_compliance: { warn: 0, fail: 1 }, // strict: any invalid item = FAIL
+  rag_number_sourced: { warn: 0.15, fail: 0.3 }, // fallback for unknown roles
+  anti_source: { warn: 1, fail: 1 }, // zero-tolerance: any source tag = FAIL
+};
+
+// ── Per-role thresholds for rag_number_sourced (Chantier 3) ──
+
+const RAG_NUMBER_THRESHOLDS: Record<string, { warn: number; fail: number }> = {
+  R1_ROUTER: { warn: 0, fail: 0 }, // zero-tolerance: 1 unsourced = FAIL
+  R3_GUIDE: { warn: 0.15, fail: 0.3 },
+  R3_CONSEILS: { warn: 0.15, fail: 0.3 },
+  R4_REFERENCE: { warn: 0.15, fail: 0.3 },
+  R5_DIAGNOSTIC: { warn: 0.15, fail: 0.3 },
 };
 
 @Injectable()
@@ -189,14 +205,29 @@ export class HardGatesService extends SupabaseBaseService {
     _pageType: string,
     _pgId: number,
     claims?: ClaimEntry[],
+    ragSafePack?: RagSafePack | null,
   ): ExtendedGateResult[] {
-    return [
+    const results: ExtendedGateResult[] = [
       this.checkAttribution(content, evidencePack, claims),
       this.checkNoGuess(content, allowlist),
       this.checkScopeLeakage(content, pgAlias),
       this.checkContradiction(content),
       this.checkSeoIntegrity(content),
     ];
+
+    // Anti-source gate — always runs (zero-tolerance)
+    results.push(this.checkAntiSource(content));
+
+    // RAG-specific gates — only run if ragSafePack is provided
+    if (ragSafePack) {
+      results.push(
+        this.checkRagCitationIntegrity(content, ragSafePack),
+        this.checkRagRoleCompliance(ragSafePack),
+        this.checkRagNumberSourced(content, ragSafePack),
+      );
+    }
+
+    return results;
   }
 
   runHardGatesSubset(
@@ -226,6 +257,9 @@ export class HardGatesService extends SupabaseBaseService {
           break;
         case 'seo_integrity':
           results.push(this.checkSeoIntegrity(content));
+          break;
+        case 'anti_source':
+          results.push(this.checkAntiSource(content));
           break;
       }
     }
@@ -637,6 +671,244 @@ export class HardGatesService extends SupabaseBaseService {
       [count > 0 ? issues.map((i) => i.issue).join('; ') : 'Structure OK'],
       THRESHOLDS.seo_integrity,
       issues,
+    );
+  }
+
+  // ── Gate 6: RAG Citation Integrity (STRICT) ──
+
+  private checkRagCitationIntegrity(
+    content: string,
+    ragSafePack: RagSafePack,
+  ): ExtendedGateResult {
+    const text = stripHtml(content);
+
+    // Extract source_id references from content
+    // Patterns: [source:xxx] or data-source-id="xxx"
+    const sourceRefPattern = /\[source:([^\]]+)\]|data-source-id="([^"]+)"/gi;
+    const referencedIds: string[] = [];
+    let match: RegExpExecArray | null;
+    while ((match = sourceRefPattern.exec(text)) !== null) {
+      referencedIds.push(match[1] ?? match[2]);
+    }
+
+    // If no source references in content, PASS (nothing to check)
+    if (referencedIds.length === 0) {
+      return this.makeResult(
+        'rag_citation_integrity',
+        'PASS',
+        0,
+        ['No source references in content'],
+        THRESHOLDS.rag_citation_integrity,
+      );
+    }
+
+    // Build set of valid source_ids from citations_used
+    const validIds = new Set(
+      ragSafePack.citations_used.map((c) => c.source_id),
+    );
+
+    // Find orphan references (in content but not in pack)
+    const orphans: Array<{ location: string; issue: string }> = [];
+    for (const refId of referencedIds) {
+      if (!validIds.has(refId)) {
+        orphans.push({
+          location: `source_ref:${refId}`,
+          issue: `Orphan source reference: "${refId}" not in RAG safe pack`,
+        });
+      }
+    }
+
+    const count = orphans.length;
+    const { warn, fail } = THRESHOLDS.rag_citation_integrity;
+    let verdict: ExtendedGateResult['verdict'] = 'PASS';
+    if (count >= fail) verdict = 'FAIL';
+    else if (count > warn) verdict = 'WARN';
+
+    return this.makeResult(
+      'rag_citation_integrity',
+      verdict,
+      count,
+      [
+        count > 0
+          ? `${count} orphan source refs (not in RAG pack)`
+          : 'All source refs valid',
+      ],
+      THRESHOLDS.rag_citation_integrity,
+      orphans,
+    );
+  }
+
+  // ── Gate 7: RAG Role Compliance ──
+
+  private checkRagRoleCompliance(ragSafePack: RagSafePack): ExtendedGateResult {
+    const buckets = [
+      'definitions',
+      'selection_checks',
+      'trust_proofs',
+      'support_notes',
+      'faq_pairs',
+      'procedures',
+      'spec_refs',
+      'confusions',
+      'anti_claims',
+    ] as const;
+
+    const invalid: Array<{ location: string; issue: string }> = [];
+
+    for (const bucket of buckets) {
+      for (let i = 0; i < ragSafePack[bucket].length; i++) {
+        const item = ragSafePack[bucket][i];
+        if (!item.source_id || item.source_id === 'unknown') {
+          invalid.push({
+            location: `${bucket}[${i}]`,
+            issue: `Item in ${bucket} has invalid source_id: "${item.source_id ?? ''}"`,
+          });
+        }
+      }
+    }
+
+    const count = invalid.length;
+    const { warn, fail } = THRESHOLDS.rag_role_compliance;
+    let verdict: ExtendedGateResult['verdict'] = 'PASS';
+    if (count >= fail) verdict = 'FAIL';
+    else if (count > warn) verdict = 'WARN';
+
+    return this.makeResult(
+      'rag_role_compliance',
+      verdict,
+      count,
+      [
+        count > 0
+          ? `${count} items with invalid source_id in RAG pack`
+          : 'All RAG pack items have valid source_ids',
+      ],
+      THRESHOLDS.rag_role_compliance,
+      invalid,
+    );
+  }
+
+  // ── Gate 8: RAG Number Sourced ──
+
+  private checkRagNumberSourced(
+    content: string,
+    ragSafePack: RagSafePack,
+  ): ExtendedGateResult {
+    const text = stripHtml(content);
+    const roleId = ragSafePack.roleId ?? '';
+    const roleThresholds =
+      RAG_NUMBER_THRESHOLDS[roleId] ?? THRESHOLDS.rag_number_sourced;
+
+    // Extract numeric claims from content (reuse existing regex)
+    const allClaims = Array.from(text.matchAll(NUMERIC_CLAIM_REGEX));
+    NUMERIC_CLAIM_REGEX.lastIndex = 0;
+
+    // Filter out marketing sentences (same logic as checkAttribution)
+    const claims = allClaims.filter((claim) => {
+      const idx = claim.index ?? 0;
+      const sentStart = Math.max(0, text.lastIndexOf('.', idx) + 1);
+      const sentEnd = text.indexOf('.', idx + claim[0].length);
+      const sentence = text.substring(
+        sentStart,
+        sentEnd > 0 ? sentEnd : undefined,
+      );
+      return !MARKETING_SENTENCE_PATTERNS.some((p) => p.test(sentence));
+    });
+
+    if (claims.length === 0) {
+      return this.makeResult(
+        'rag_number_sourced',
+        'PASS',
+        0,
+        ['No numeric claims in content'],
+        roleThresholds,
+      );
+    }
+
+    // Build a combined text from all citations for matching
+    const citationTexts = ragSafePack.citations_used.map((c) =>
+      c.text.toLowerCase(),
+    );
+
+    // Check each claim against citations
+    const unsourced: Array<{ location: string; issue: string }> = [];
+    for (const claim of claims) {
+      const normalizedClaim = normalizeNumericClaim(claim[0]);
+      const rawNumber = claim[0].replace(/[^\d.,]/g, '').replace(',', '.');
+
+      // Check if this number appears in any citation text
+      const isSourced = citationTexts.some(
+        (ct) =>
+          ct.includes(rawNumber) || ct.includes(normalizedClaim.toLowerCase()),
+      );
+
+      if (!isSourced) {
+        unsourced.push({
+          location: `char:${claim.index ?? 0}`,
+          issue: `Unsourced number: "${claim[0]}" not found in RAG citations`,
+        });
+      }
+    }
+
+    const ratio = unsourced.length / claims.length;
+    const { warn, fail } = roleThresholds;
+    let verdict: ExtendedGateResult['verdict'] = 'PASS';
+    if (ratio > fail) verdict = 'FAIL';
+    else if (ratio > warn) verdict = 'WARN';
+
+    return this.makeResult(
+      'rag_number_sourced',
+      verdict,
+      ratio,
+      [
+        `${unsourced.length}/${claims.length} numbers unsourced in RAG pack (ratio=${ratio.toFixed(2)}, role=${roleId}, thresholds=${warn}/${fail})`,
+      ],
+      roleThresholds,
+      unsourced,
+    );
+  }
+
+  // ── Gate 9: Anti-Source (zero-tolerance) ──
+
+  checkAntiSource(content: string): ExtendedGateResult {
+    const text = stripHtml(content);
+    const issues: Array<{ location: string; issue: string }> = [];
+
+    // Patterns that indicate leaked source attributions
+    const patterns: Array<{ regex: RegExp; label: string }> = [
+      { regex: /\(Source\s*:\s*[^)]+\)/gi, label: 'Source attribution' },
+      { regex: /\(BT-\d+[^)]*\)/gi, label: 'BT reference in parens' },
+      { regex: /\(SR\d+[^)]*\)/gi, label: 'SR reference in parens' },
+      { regex: /\bBT-\d+\b/gi, label: 'Standalone BT reference' },
+      { regex: /\bSR\d{4,}\b/gi, label: 'Standalone SR reference' },
+    ];
+
+    for (const { regex, label } of patterns) {
+      const matches = Array.from(text.matchAll(regex));
+      for (const m of matches) {
+        issues.push({
+          location: `char:${m.index ?? 0}`,
+          issue: `${label}: "${m[0]}"`,
+        });
+      }
+    }
+
+    const count = issues.length;
+    const { warn, fail } = THRESHOLDS.anti_source;
+    let verdict: ExtendedGateResult['verdict'] = 'PASS';
+    if (count >= fail) verdict = 'FAIL';
+    else if (count >= warn) verdict = 'WARN';
+
+    return this.makeResult(
+      'anti_source',
+      verdict,
+      count,
+      [
+        count > 0
+          ? `${count} source attribution(s) leaked into published content`
+          : 'No source tags detected',
+      ],
+      THRESHOLDS.anti_source,
+      issues.slice(0, 10),
     );
   }
 

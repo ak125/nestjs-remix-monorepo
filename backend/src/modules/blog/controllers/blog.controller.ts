@@ -258,7 +258,28 @@ export class BlogController {
   }
 
   /**
-   * � Récupérer un article par son slug
+   * ⬅️➡️ Récupérer les articles adjacents (prev/next)
+   * GET /api/blog/article/:slug/adjacent
+   * NOTE: Must be declared BEFORE article/:slug to avoid route collision.
+   */
+  @Get('article/:slug/adjacent')
+  async getAdjacentArticles(@Param('slug') slug: string) {
+    try {
+      this.logger.log(`⬅️➡️ Adjacent articles for: ${slug}`);
+      const result = await this.blogService.getAdjacentArticles(slug);
+      return { success: true, data: result };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur adjacent articles: ${getErrorMessage(error)}`,
+      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des articles adjacents',
+      });
+    }
+  }
+
+  /**
+   * 📄 Récupérer un article par son slug
    * GET /api/blog/article/:slug
    */
   @Get('article/:slug')

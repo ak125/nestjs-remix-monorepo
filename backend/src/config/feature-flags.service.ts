@@ -55,8 +55,54 @@ export class FeatureFlagsService {
     return this.bool('BRIEF_AWARE_ENABLED', false);
   }
 
+  // ── RAG Safe Distill flag ──
+
+  get ragSafeDistillEnabled(): boolean {
+    return this.bool('RAG_SAFE_DISTILL_ENABLED', false);
+  }
+
+  // ── R1 Content Pipeline flag ──
+
+  get r1ContentPipelineEnabled(): boolean {
+    return this.bool('R1_CONTENT_PIPELINE_ENABLED', false);
+  }
+
   get keywordDensityGateEnabled(): boolean {
     return this.bool('KEYWORD_DENSITY_GATE_ENABLED', false);
+  }
+
+  // ── Conseil Pack flags ──
+
+  get conseilPackEnabled(): boolean {
+    return this.bool('CONSEIL_PACK_ENABLED', false);
+  }
+
+  get conseilProPackEnabled(): boolean {
+    return this.bool('CONSEIL_PRO_PACK_ENABLED', false);
+  }
+
+  get conseilEeatEnabled(): boolean {
+    return this.bool('CONSEIL_EEAT_ENABLED', false);
+  }
+
+  get conseilBatchSize(): number {
+    return this.int('CONSEIL_BATCH_SIZE', 10);
+  }
+
+  // ── Pipeline chain flags ──
+
+  get pipelineChainEnabled(): boolean {
+    return this.bool('PIPELINE_CHAIN_ENABLED', false);
+  }
+
+  get pipelineChainPollIntervalMs(): number {
+    return this.int('PIPELINE_CHAIN_POLL_INTERVAL_MS', 60_000);
+  }
+
+  // ── RAG catch-up flag ──
+
+  get ragCatchupEnabled(): boolean {
+    return this.bool('RAG_CATCHUP_ENABLED', false);
   }
 
   // ── Helpers ──

@@ -120,7 +120,9 @@ export type HardGateName =
   // RAG-specific gates (Chantier 3)
   | 'rag_citation_integrity'
   | 'rag_role_compliance'
-  | 'rag_number_sourced';
+  | 'rag_number_sourced'
+  // Source-tag leak detection (zero-tolerance)
+  | 'anti_source';
 
 export interface ExtendedGateResult {
   gate: HardGateName;
@@ -144,6 +146,7 @@ export type RepairStrategy =
   | 'keep_evidenced_claim'
   | 'restore_protected_fields'
   // Pass 2: Conservative rewrite
+  | 'strip_source_tags'
   | 'strip_unsourced_numbers'
   | 'remove_unsourced_sentences'
   | 'strip_novel_terms'

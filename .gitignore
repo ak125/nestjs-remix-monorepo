@@ -180,9 +180,14 @@ agent-submissions/
 
 # PDFs (source brochures, not for git)
 frontend/*.pdf
+frontend/**/*.pdf
 backend/**/*.pdf
 backend/prisma/**/*.pdf
 .spec/**/*.pdf
+
+# Python cache (scripts)
+scripts/**/__pycache__/
+scripts/**/*.pyc
 
 # Spec documentation (main = production code only, docs on develop)
 .spec/

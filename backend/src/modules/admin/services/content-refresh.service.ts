@@ -11,6 +11,10 @@ import {
   RAG_INGESTION_COMPLETED,
   type RagIngestionCompletedEvent,
 } from '../../rag-proxy/events/rag-ingestion.events';
+import {
+  KEYWORD_PLAN_VALIDATED,
+  type KeywordPlanValidatedEvent,
+} from '../events/keyword-plan.events';
 import type {
   ContentRefreshJobData,
   ContentRefreshJobDataR5,
@@ -75,6 +79,39 @@ export class ContentRefreshService extends SupabaseBaseService {
         );
       }
     }
+  }
+
+  /**
+   * Listener: triggered when a keyword plan is validated.
+   * Queues R3_conseils refresh with force=true so sections get regenerated
+   * using the new include_terms / micro_phrases from the keyword plan.
+   */
+  @OnEvent(KEYWORD_PLAN_VALIDATED)
+  async onKeywordPlanValidated(
+    event: KeywordPlanValidatedEvent,
+  ): Promise<void> {
+    if (event.sectionsToImprove.length === 0) {
+      this.logger.warn(
+        `Keyword plan validated for ${event.pgAlias} (kpId=${event.kpId}) but no sections_to_improve — skipping`,
+      );
+      return;
+    }
+
+    this.logger.log(
+      `Keyword plan validated for ${event.pgAlias} (kpId=${event.kpId}). ` +
+        `Sections to improve: [${event.sectionsToImprove.join(', ')}]. ` +
+        `Queueing R3_conseils refresh with force=true...`,
+    );
+
+    await this.createAndQueueJob(
+      event.pgId,
+      event.pgAlias,
+      'R3_conseils',
+      `kp-${event.kpId}`,
+      'keyword_plan_validated',
+      [], // no supplementary files
+      true, // force=true — sections_to_improve means re-enrichment needed
+    );
   }
 
   /**

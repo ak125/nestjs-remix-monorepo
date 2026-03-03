@@ -11,6 +11,7 @@ export enum PageRole {
   R4_REFERENCE = 'R4', // Référence métier
   R5_DIAGNOSTIC = 'R5', // Diagnostic symptômes
   R6_SUPPORT = 'R6', // Support/Légal
+  R6_GUIDE_ACHAT = 'R6_GUIDE', // Guide d'achat
 }
 
 export interface PageRoleMeta {
@@ -52,6 +53,11 @@ export const PAGE_ROLE_META: Record<PageRole, PageRoleMeta> = {
     intention: 'Rassurer / informer',
     indexable: false, // parfois noindex
   },
+  [PageRole.R6_GUIDE_ACHAT]: {
+    label: "Guide d'achat",
+    intention: 'Choisir la bonne pièce',
+    indexable: true,
+  },
 };
 
 /**
@@ -64,6 +70,7 @@ export const PAGE_ROLE_HIERARCHY: PageRole[] = [
   PageRole.R5_DIAGNOSTIC,
   PageRole.R1_ROUTER,
   PageRole.R2_PRODUCT,
+  PageRole.R6_GUIDE_ACHAT,
   PageRole.R6_SUPPORT,
 ];
 
@@ -89,6 +96,7 @@ export const ALLOWED_LINKS: Record<PageRole, PageRole[]> = {
   [PageRole.R1_ROUTER]: [PageRole.R2_PRODUCT],
   [PageRole.R2_PRODUCT]: [PageRole.R4_REFERENCE, PageRole.R3_BLOG], // max 1 lien R4, 0-1 lien R3
   [PageRole.R6_SUPPORT]: [], // pas de liens sortants SEO
+  [PageRole.R6_GUIDE_ACHAT]: [PageRole.R4_REFERENCE, PageRole.R2_PRODUCT], // guide → référence + produit
 };
 
 /**
@@ -201,6 +209,13 @@ export const URL_ROLE_PATTERNS: UrlRolePattern[] = [
     pattern: /^\/diagnostic-auto(\/|$)/,
     role: PageRole.R5_DIAGNOSTIC,
     description: 'Diagnostic auto pages (Observable Pro)',
+  },
+
+  // ========== R6 GUIDE D'ACHAT ==========
+  {
+    pattern: /^\/blog-pieces-auto\/guide-achat\//,
+    role: PageRole.R6_GUIDE_ACHAT,
+    description: "Guide d'achat (avant catch-all R3)",
   },
 
   // ========== R3 BLOG/EXPERT ==========
@@ -377,6 +392,8 @@ export function pageRoleToRoleId(
       return RoleId.R5_DIAGNOSTIC;
     case PageRole.R6_SUPPORT:
       return RoleId.R6_SUPPORT;
+    case PageRole.R6_GUIDE_ACHAT:
+      return RoleId.R6_GUIDE_ACHAT;
     default:
       return null;
   }

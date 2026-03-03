@@ -78,6 +78,17 @@ interface PurchaseGuideRow {
   sgpg_source_type?: string | null;
   sgpg_source_ref?: string | null;
   sgpg_source_verified?: boolean | number | string | null;
+  // R1 pipeline fields
+  sgpg_hero_subtitle?: string | null;
+  sgpg_selector_microcopy?: string | string[] | null;
+  sgpg_micro_seo_block?: string | null;
+  sgpg_compatibilities_intro?: string | null;
+  sgpg_equipementiers_line?: string | null;
+  sgpg_family_cross_sell_intro?: string | null;
+  sgpg_interest_nuggets?: Record<string, unknown> | string | null;
+  sgpg_safe_table_rows?: Array<Record<string, unknown>> | string | null;
+  sgpg_visual_plan?: Record<string, unknown> | string | null;
+  sgpg_intent_lock?: Record<string, unknown> | string | null;
   [key: string]: unknown;
 }
 
@@ -147,6 +158,33 @@ export interface BuyingGuideContractV1 {
   enrichedDecisionTree?: GammeBuyingGuideDecisionNode[] | null;
   enrichedUseCases?: GammeBuyingGuideUseCase[] | null;
   enrichedAntiMistakes?: string[] | null;
+  // R1 pipeline fields (optional — populated when R1_CONTENT_PIPELINE_ENABLED=true)
+  heroSubtitle?: string | null;
+  selectorMicrocopy?: string[] | null;
+  microSeoBlock?: string | null;
+  compatibilitiesIntro?: string | null;
+  equipementiersLine?: string | null;
+  familyCrossSellIntro?: string | null;
+  interestNuggets?: Record<string, unknown> | null;
+  h1Override?: string | null;
+  safeTableRows?: Array<{ element: string; howToCheck: string }> | null;
+  visualPlan?: {
+    heroPrimaryCta?: { label: string; action?: string };
+    crossSellRules?: { maxItems: number; sameFamilyOnly?: boolean };
+    compatibilitiesLabelRule?: string;
+  } | null;
+  contentContract?: {
+    totalWordsTarget?: [number, number];
+    microSeoWordsTarget?: [number, number];
+    faqAnswerWordsTarget?: [number, number];
+    maxGammeMentions?: number;
+    maxCompatibleMentions?: number;
+  } | null;
+  hardRules?: {
+    banHowtoMarkers?: string[];
+    banAbsoluteClaims?: string[];
+    banPricePush?: string[];
+  } | null;
 }
 /** @deprecated utiliser BuyingGuideContractV1 */
 export type GammeContentContractV1 = BuyingGuideContractV1;
@@ -274,7 +312,18 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         sgpg_anti_mistakes,
         sgpg_selection_criteria,
         sgpg_decision_tree,
-        sgpg_use_cases
+        sgpg_use_cases,
+        sgpg_hero_subtitle,
+        sgpg_selector_microcopy,
+        sgpg_micro_seo_block,
+        sgpg_compatibilities_intro,
+        sgpg_equipementiers_line,
+        sgpg_family_cross_sell_intro,
+        sgpg_interest_nuggets,
+        sgpg_h1_override,
+        sgpg_safe_table_rows,
+        sgpg_visual_plan,
+        sgpg_intent_lock
       `;
 
       const provenanceSelect = `
@@ -398,6 +447,13 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         sgpg_selection_criteria,
         sgpg_decision_tree,
         sgpg_use_cases,
+        sgpg_hero_subtitle,
+        sgpg_selector_microcopy,
+        sgpg_micro_seo_block,
+        sgpg_compatibilities_intro,
+        sgpg_equipementiers_line,
+        sgpg_family_cross_sell_intro,
+        sgpg_interest_nuggets,
         sgpg_source_type,
         sgpg_source_uri,
         sgpg_source_ref,
@@ -1440,6 +1496,22 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       enrichedDecisionTree,
       enrichedUseCases,
       enrichedAntiMistakes: dbAntiMistakes.length > 0 ? dbAntiMistakes : null,
+      // R1 pipeline fields
+      heroSubtitle: raw.sgpg_hero_subtitle?.trim() || null,
+      selectorMicrocopy:
+        parseSyncParts(raw.sgpg_selector_microcopy).length > 0
+          ? parseSyncParts(raw.sgpg_selector_microcopy)
+          : null,
+      microSeoBlock: raw.sgpg_micro_seo_block?.trim() || null,
+      compatibilitiesIntro: raw.sgpg_compatibilities_intro?.trim() || null,
+      equipementiersLine: raw.sgpg_equipementiers_line?.trim() || null,
+      familyCrossSellIntro: raw.sgpg_family_cross_sell_intro?.trim() || null,
+      interestNuggets: this.parseJsonbObject(raw.sgpg_interest_nuggets),
+      h1Override: raw.sgpg_h1_override?.trim() || null,
+      safeTableRows: this.parseSafeTableRows(raw.sgpg_safe_table_rows),
+      visualPlan: this.parseVisualPlan(raw.sgpg_visual_plan),
+      contentContract: this.parseContentContract(raw.sgpg_intent_lock),
+      hardRules: this.parseHardRules(raw.sgpg_intent_lock),
     };
 
     const qualityGate = this.applyQualityGate(content, raw);
@@ -1447,6 +1519,113 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     return {
       ...qualityGate.content,
       quality: this.buildQuality(qualityGate.content, qualityGate.flags, raw),
+    };
+  }
+
+  private parseJsonbObject(
+    val: Record<string, unknown> | string | null | undefined,
+  ): Record<string, unknown> | null {
+    if (!val) return null;
+    if (typeof val === 'object') return val;
+    if (typeof val === 'string') {
+      try {
+        const parsed = JSON.parse(val);
+        return typeof parsed === 'object' && parsed !== null ? parsed : null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  private parseSafeTableRows(
+    raw: Array<Record<string, unknown>> | string | null | undefined,
+  ): Array<{ element: string; howToCheck: string }> | null {
+    if (!raw) return null;
+    let arr = raw;
+    if (typeof raw === 'string') {
+      try {
+        arr = JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    }
+    if (!Array.isArray(arr) || arr.length === 0) return null;
+    return arr.map((row: Record<string, unknown>) => ({
+      element: String(row.element || ''),
+      howToCheck: String(row.howToCheck || row.how || ''),
+    }));
+  }
+
+  private parseVisualPlan(
+    raw: Record<string, unknown> | string | null | undefined,
+  ): BuyingGuideContractV1['visualPlan'] {
+    const obj = this.parseJsonbObject(raw);
+    if (!obj) return null;
+    const cta = obj.hero_primary_cta as Record<string, unknown> | undefined;
+    const cs = obj.cross_sell_rules as Record<string, unknown> | undefined;
+    return {
+      heroPrimaryCta: cta
+        ? {
+            label: String(cta.label || ''),
+            action: (cta.action as string) || undefined,
+          }
+        : undefined,
+      crossSellRules: cs
+        ? {
+            maxItems: Number(cs.max_items) || 6,
+            sameFamilyOnly: Boolean(cs.same_family_only),
+          }
+        : undefined,
+      compatibilitiesLabelRule: obj.compatibilities_label_rule
+        ? String(obj.compatibilities_label_rule)
+        : undefined,
+    };
+  }
+
+  private parseContentContract(
+    intentLock: Record<string, unknown> | string | null | undefined,
+  ): BuyingGuideContractV1['contentContract'] {
+    const obj = this.parseJsonbObject(intentLock);
+    if (!obj?.content_contract) return null;
+    const cc = obj.content_contract as Record<string, unknown>;
+    return {
+      totalWordsTarget: Array.isArray(cc.total_words_target)
+        ? (cc.total_words_target as [number, number])
+        : undefined,
+      microSeoWordsTarget: Array.isArray(cc.micro_seo_words_target)
+        ? (cc.micro_seo_words_target as [number, number])
+        : undefined,
+      faqAnswerWordsTarget: Array.isArray(cc.faq_answer_words_target)
+        ? (cc.faq_answer_words_target as [number, number])
+        : undefined,
+      maxGammeMentions:
+        typeof cc.max_gamme_mentions === 'number'
+          ? cc.max_gamme_mentions
+          : undefined,
+      maxCompatibleMentions:
+        typeof cc.max_compatible_mentions === 'number'
+          ? cc.max_compatible_mentions
+          : undefined,
+    };
+  }
+
+  private parseHardRules(
+    intentLock: Record<string, unknown> | string | null | undefined,
+  ): BuyingGuideContractV1['hardRules'] {
+    const obj = this.parseJsonbObject(intentLock);
+    if (!obj?.hard_rules) return null;
+    const hr = obj.hard_rules as Record<string, unknown>;
+    return {
+      banHowtoMarkers: Array.isArray(hr.ban_howto_markers)
+        ? hr.ban_howto_markers.map(String)
+        : undefined,
+      banAbsoluteClaims: Array.isArray(hr.ban_absolute_claims)
+        ? hr.ban_absolute_claims.map(String)
+        : undefined,
+      banPricePush: Array.isArray(hr.ban_price_push)
+        ? hr.ban_price_push.map(String)
+        : undefined,
     };
   }
 

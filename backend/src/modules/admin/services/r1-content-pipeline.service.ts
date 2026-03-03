@@ -1,4 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { AiContentService } from '../../ai-content/ai-content.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
@@ -662,6 +664,8 @@ export class R1ContentPipelineService extends SupabaseBaseService {
 
   // ── RAG Structured Content Fetch ──
 
+  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+
   private async fetchStructuredRagContent(
     pgAlias: string,
     gammeName: string,
@@ -675,18 +679,27 @@ export class R1ContentPipelineService extends SupabaseBaseService {
         .replace(/-+/g, '-')
         .replace(/^-|-$/g, '');
 
-      // Fetch raw document from RAG knowledge base
+      // Read RAG file from disk (includes YAML frontmatter)
       let rawContent: string | null = null;
 
-      const doc = await this.ragProxy.getKnowledgeDoc(`gammes.${slug}`);
-      if (doc?.content) {
-        rawContent = doc.content;
+      const slugPath = join(this.RAG_GAMMES_DIR, `${slug}.md`);
+      const aliasPath = join(this.RAG_GAMMES_DIR, `${pgAlias}.md`);
+
+      if (existsSync(slugPath)) {
+        rawContent = readFileSync(slugPath, 'utf-8');
+      } else if (existsSync(aliasPath)) {
+        rawContent = readFileSync(aliasPath, 'utf-8');
       } else {
-        // Try alias-based lookup
-        const docByAlias = await this.ragProxy.getKnowledgeDoc(
-          `gammes.${pgAlias}`,
-        );
-        rawContent = docByAlias?.content ?? null;
+        // Fallback: RAG API (content without frontmatter)
+        const doc = await this.ragProxy.getKnowledgeDoc(`gammes.${slug}`);
+        if (doc?.content) {
+          rawContent = doc.content;
+        } else {
+          const docByAlias = await this.ragProxy.getKnowledgeDoc(
+            `gammes.${pgAlias}`,
+          );
+          rawContent = docByAlias?.content ?? null;
+        }
       }
 
       if (!rawContent) return null;
@@ -712,7 +725,7 @@ export class R1ContentPipelineService extends SupabaseBaseService {
 
         const selectionCriteria = this.yamlParser.extractYamlList(
           fmBlock,
-          'selection_criteria',
+          'criteria',
         );
         if (selectionCriteria.length > 0)
           frontmatter.selection_criteria = selectionCriteria;

@@ -325,6 +325,10 @@ export const KPI_THRESHOLDS: Record<
   [PageRole.R6_SUPPORT]: {
     ticketCreationRate: { warning: 15, critical: 25 }, // % tickets (haut = mauvais)
   },
+  [PageRole.R6_GUIDE_ACHAT]: {
+    avgCtr: { warning: 2, critical: 1 }, // CTR en %
+    bounceRate: { warning: 65, critical: 80 }, // Taux rebond %
+  },
 };
 
 // =====================================================

@@ -41,6 +41,7 @@ export class RagKnowledgeService {
           query: request.query,
           limit: request.limit || 10,
           filters: mergedFilters,
+          ...(request.routing && { routing: request.routing }),
         }),
       });
 

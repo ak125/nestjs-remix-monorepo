@@ -18,6 +18,7 @@ export enum RoleId {
   R4_REFERENCE = 'R4_REFERENCE',
   R5_DIAGNOSTIC = 'R5_DIAGNOSTIC',
   R6_SUPPORT = 'R6_SUPPORT',
+  R6_GUIDE_ACHAT = 'R6_GUIDE_ACHAT',
 }
 
 /** All role IDs as an array (useful for iteration / validation) */

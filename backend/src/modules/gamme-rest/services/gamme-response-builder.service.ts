@@ -488,6 +488,8 @@ export class GammeResponseBuilderService {
                 `blog/${blogData.ba_wall}`,
               )
             : null,
+          wall: blogData.ba_wall || '',
+          link: `/blog-pieces-auto/conseils/${blogData.ba_alias}`,
           updated: blogData.ba_update,
         }
       : null;
@@ -534,7 +536,20 @@ export class GammeResponseBuilderService {
           howToChoose: buyingGuideContract.howToChoose,
           symptoms: buyingGuideContract.symptoms,
           faq: buyingGuideContract.faq,
-          h1Override: null as string | null,
+          h1Override: buyingGuideContract.h1Override || null,
+          heroSubtitle: buyingGuideContract.heroSubtitle || null,
+          selectorMicrocopy: buyingGuideContract.selectorMicrocopy || null,
+          microSeoBlock: buyingGuideContract.microSeoBlock || null,
+          compatibilitiesIntro:
+            buyingGuideContract.compatibilitiesIntro || null,
+          equipementiersLine: buyingGuideContract.equipementiersLine || null,
+          familyCrossSellIntro:
+            buyingGuideContract.familyCrossSellIntro || null,
+          interestNuggets: buyingGuideContract.interestNuggets || null,
+          safeTableRows: buyingGuideContract.safeTableRows || null,
+          visualPlan: buyingGuideContract.visualPlan || null,
+          contentContract: buyingGuideContract.contentContract || null,
+          hardRules: buyingGuideContract.hardRules || null,
         }
       : gammeBuyingGuide
         ? {
@@ -568,6 +583,20 @@ export class GammeResponseBuilderService {
             symptoms: gammeBuyingGuide.symptoms || [],
             faq: gammeBuyingGuide.faq || [],
             h1Override: null as string | null,
+            heroSubtitle: null as string | null,
+            selectorMicrocopy: null as string[] | null,
+            microSeoBlock: null as string | null,
+            compatibilitiesIntro: null as string | null,
+            equipementiersLine: null as string | null,
+            familyCrossSellIntro: null as string | null,
+            interestNuggets: null as Record<string, unknown> | null,
+            safeTableRows: null as Array<{
+              element: string;
+              howToCheck: string;
+            }> | null,
+            visualPlan: null as Record<string, unknown> | null,
+            contentContract: null as Record<string, unknown> | null,
+            hardRules: null as Record<string, unknown> | null,
           }
         : null;
 

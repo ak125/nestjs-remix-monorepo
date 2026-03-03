@@ -25,6 +25,7 @@ import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.ser
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
 import { AiContentModule } from '../modules/ai-content/ai-content.module';
 import { BuyingGuideEnricherService } from '../modules/admin/services/buying-guide-enricher.service';
+import { R1ContentPipelineService } from '../modules/admin/services/r1-content-pipeline.service';
 import { ConseilEnricherService } from '../modules/admin/services/conseil-enricher.service';
 import { ReferenceService } from '../modules/seo/services/reference.service';
 import { DiagnosticService } from '../modules/seo/services/diagnostic.service';
@@ -39,6 +40,9 @@ import { EnricherYamlParser } from '../modules/admin/services/enricher-yaml-pars
 
 // Job health tracking (used by all processors)
 import { AdminJobHealthService } from '../modules/admin/services/admin-job-health.service';
+import { RagSafeDistillService } from '../modules/admin/services/rag-safe-distill.service';
+import { R1KeywordPlanGatesService } from '../modules/admin/services/r1-keyword-plan-gates.service';
+import { PipelineChainPollerService } from '../modules/admin/services/pipeline-chain-poller.service';
 
 // Dependencies for VideoExecutionProcessor
 import { VideoDataService } from '../modules/media-factory/services/video-data.service';
@@ -103,6 +107,7 @@ import { RenderAdapterService } from '../modules/media-factory/render/render-ada
     // WorkerModule does NOT import those modules, so NestJS creates separate instances.
     // Verified stateless (no in-memory cache/state) — safe duplicate. See audit 2026-02-19.
     BuyingGuideEnricherService,
+    R1ContentPipelineService, // 🚀 R1 4-prompt pipeline (flag-gated, stateless — safe duplicate)
     ConseilEnricherService,
     ReferenceService,
     DiagnosticService,
@@ -123,6 +128,9 @@ import { RenderAdapterService } from '../modules/media-factory/render/render-ada
 
     // Job health tracking (shared by all processors)
     AdminJobHealthService,
+    RagSafeDistillService, // 🔒 RAG Safe Distill (pre-enricher chunk filter, 0-LLM)
+    R1KeywordPlanGatesService, // 🚦 R1 KP gates (used by R1ContentPipelineService, stateless — safe duplicate)
+    PipelineChainPollerService, // 🔗 Pipeline chain poller (keyword-plan → conseil auto-refresh)
 
     // Services
     // SitemapStreamingService, // DESACTIVE

@@ -3,6 +3,8 @@ import { CacheModule } from '@nestjs/cache-manager';
 
 // Controllers - API endpoints pour chaque type de contenu blog
 import { BlogController } from './controllers/blog.controller';
+import { R3GuideController } from './controllers/r3-guide.controller';
+import { R6GuideController } from './controllers/r6-guide.controller';
 import { AdviceController } from './controllers/advice.controller';
 import { AdviceHierarchyController } from './controllers/advice-hierarchy.controller';
 import { ContentController } from './controllers/content.controller';
@@ -26,6 +28,8 @@ import { ConstructeurSearchService } from './services/constructeur-search.servic
 import { ConstructeurTransformService } from './services/constructeur-transform.service';
 import { AdviceTransformService } from './services/advice-transform.service';
 import { AdviceEnrichmentService } from './services/advice-enrichment.service';
+import { R3GuideService } from './services/r3-guide.service';
+import { R6GuideService } from './services/r6-guide.service';
 
 // Modules externes requis
 import { SearchModule } from '../search/search.module';
@@ -68,6 +72,8 @@ import { SeoModule } from '../seo/seo.module';
   ],
   controllers: [
     BlogController, // API générale blog et recherche
+    R3GuideController, // R3 page engine — single endpoint /api/r3-guide/:pg_alias
+    R6GuideController, // R6 guide d'achat — single endpoint /api/r6-guide/:pg_alias
     AdviceController, // Endpoints spécifiques conseils
     AdviceHierarchyController, // Hiérarchie conseils par famille catalogue
     ContentController, // Endpoints guides, constructeurs, glossaire
@@ -94,6 +100,8 @@ import { SeoModule } from '../seo/seo.module';
     ConstructeurTransformService,
     AdviceTransformService,
     AdviceEnrichmentService,
+    R3GuideService, // R3 page engine orchestrator
+    R6GuideService, // R6 guide d'achat orchestrator
   ],
   exports: [
     BlogService, // Exporté pour utilisation dans autres modules (ex: produits)

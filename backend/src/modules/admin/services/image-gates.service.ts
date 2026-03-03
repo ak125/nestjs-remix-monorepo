@@ -25,7 +25,7 @@ const HERO_POLICY: Record<
   string,
   'photo' | 'gradient' | 'illustration' | 'none'
 > = {
-  R1_pieces: 'photo',
+  R1_pieces: 'gradient',
   R3_guide_achat: 'photo',
   R3_conseil: 'photo',
   R5_diagnostic: 'illustration',

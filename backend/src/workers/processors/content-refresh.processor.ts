@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { BuyingGuideEnricherService } from '../../modules/admin/services/buying-guide-enricher.service';
+import { R1ContentPipelineService } from '../../modules/admin/services/r1-content-pipeline.service';
 import { ConseilEnricherService } from '../../modules/admin/services/conseil-enricher.service';
 import { ReferenceService } from '../../modules/seo/services/reference.service';
 import { DiagnosticService } from '../../modules/seo/services/diagnostic.service';
@@ -15,13 +16,16 @@ import { HardGatesService } from '../../modules/admin/services/hard-gates.servic
 import { ImageGatesService } from '../../modules/admin/services/image-gates.service';
 import { RagProxyService } from '../../modules/rag-proxy/rag-proxy.service';
 import { SectionCompilerService } from '../../modules/admin/services/section-compiler.service';
+import { RagSafeDistillService } from '../../modules/admin/services/rag-safe-distill.service';
 import {
   pageTypeToRole,
   POLICY_VERSION,
 } from '../../config/content-section-policy';
+import { pageTypeToRoleId } from '../../config/role-ids';
 import { QUALITY_SCORE_ADVISORY } from '../../config/buying-guide-quality.constants';
 import { FeatureFlagsService } from '../../config/feature-flags.service';
 import { AdminJobHealthService } from '../../modules/admin/services/admin-job-health.service';
+import { PipelineChainPollerService } from '../../modules/admin/services/pipeline-chain-poller.service';
 import type {
   AnyContentRefreshJobData,
   ContentRefreshResult,
@@ -33,6 +37,7 @@ import type {
   EvidenceEntry,
   ClaimEntry,
   SafeFallbackDraft,
+  RagSafePack,
 } from '../types/content-refresh.types';
 
 @Processor('content-refresh')
@@ -45,6 +50,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly buyingGuideEnricher: BuyingGuideEnricherService,
+    private readonly r1Pipeline: R1ContentPipelineService,
     private readonly conseilEnricher: ConseilEnricherService,
     private readonly referenceService: ReferenceService,
     private readonly diagnosticService: DiagnosticService,
@@ -55,6 +61,8 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly ragProxyService: RagProxyService,
     private readonly flags: FeatureFlagsService,
     private readonly jobHealth: AdminJobHealthService,
+    private readonly ragSafeDistill: RagSafeDistillService,
+    private readonly chainPoller: PipelineChainPollerService,
   ) {
     super(configService);
   }
@@ -74,6 +82,27 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
   @OnQueueError()
   handleQueueError(error: Error): void {
     this.logger.error(`[BullMQ] Queue error: ${error.message}`);
+  }
+
+  /**
+   * Chain-poll handler: polls __pipeline_chain_queue for pending keyword-plan
+   * validated entries and dispatches them as KEYWORD_PLAN_VALIDATED events.
+   * Runs as a BullMQ repeatable job (registered by PipelineChainPollerService).
+   */
+  @Process({ name: 'chain-poll' })
+  async handleChainPoll(): Promise<void> {
+    try {
+      const dispatched = await this.chainPoller.pollAndDispatch();
+      if (dispatched > 0) {
+        this.logger.log(
+          `[chain-poll] Dispatched ${dispatched} keyword-plan-validated event(s)`,
+        );
+      }
+    } catch (err) {
+      this.logger.error(
+        `[chain-poll] Error: ${err instanceof Error ? err.message : err}`,
+      );
+    }
   }
 
   @Process({
@@ -151,8 +180,46 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         }
       }
 
+      // RAG Safe Distill: filter chunks before enrichment (mode observe)
+      let ragSafePack: RagSafePack | null = null;
+      if (this.flags.ragSafeDistillEnabled && pgAlias) {
+        try {
+          const targetRole = pageTypeToRoleId(pageType);
+          if (targetRole) {
+            ragSafePack = await this.ragSafeDistill.distill(
+              pgAlias,
+              targetRole,
+            );
+            this.logger.log(
+              `[RAG_SAFE_DISTILL] ${pgAlias}: ${ragSafePack.citations_used.length} citations (role=${targetRole})`,
+            );
+          }
+        } catch (err) {
+          this.logger.warn(
+            `[RAG_SAFE_DISTILL] failed for ${pgAlias}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
+
       switch (pageType) {
-        case 'R1_pieces':
+        case 'R1_pieces': {
+          if (this.flags.r1ContentPipelineEnabled) {
+            // R1 4-prompt pipeline (flag-gated)
+            const gammeName = pgAlias.replace(/-/g, ' ');
+            const r1Result = await this.r1Pipeline.run(
+              String(pgId),
+              pgAlias,
+              gammeName,
+              ragSafePack,
+            );
+            qualityScore =
+              r1Result.gatekeeper.gate_score ?? r1Result.gatekeeper.score ?? 0;
+            qualityFlags = r1Result.gatekeeper.flags ?? [];
+            break;
+          }
+          // Flag off → fall through to legacy enricher (same as R3_guide_achat)
+        }
+        // eslint-disable-next-line no-fallthrough
         case 'R3_guide_achat': {
           // Delegate to BuyingGuideEnricherService
           const enrichResults = await this.buyingGuideEnricher.enrich(
@@ -229,14 +296,38 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         }
 
         case 'R3_conseils': {
-          // Delegate to ConseilEnricherService
-          const conseilResult = await this.conseilEnricher.enrichSingle(
-            String(pgId),
-            pgAlias,
-            supplementaryFiles,
-            false,
-            force,
-          );
+          // Check if this refresh was triggered by a keyword plan validation
+          // If so, use enrichWithKeywordPlan() which filters to sections_to_improve
+          let conseilResult: {
+            status: string;
+            score: number;
+            flags: string[];
+            sectionsCreated: number;
+            sectionsUpdated: number;
+            reason?: string;
+            evidencePack?: EvidenceEntry[];
+          };
+
+          const { data: logRow } = await this.client
+            .from('__rag_content_refresh_log')
+            .select('trigger_source')
+            .eq('id', refreshLogId)
+            .maybeSingle();
+
+          if (logRow?.trigger_source === 'keyword_plan_validated') {
+            conseilResult = await this.conseilEnricher.enrichWithKeywordPlan(
+              String(pgId),
+              pgAlias,
+            );
+          } else {
+            conseilResult = await this.conseilEnricher.enrichSingle(
+              String(pgId),
+              pgAlias,
+              supplementaryFiles,
+              false,
+              force,
+            );
+          }
           qualityScore = conseilResult.score;
           qualityFlags = conseilResult.flags;
           if (conseilResult.status === 'skipped') {
@@ -415,6 +506,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           softCanPublish,
           pgImg,
           ctx,
+          ragSafePack,
         );
         finalStatus = result.finalStatus;
         hardGateResults = result.hardGates;
@@ -906,6 +998,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     softCanPublish: boolean,
     pgImg?: string | null,
     ctx: string = '',
+    ragSafePack?: RagSafePack | null,
   ): Promise<{
     finalStatus: ContentRefreshResult['status'];
     reason: string;
@@ -943,6 +1036,8 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         pgAlias,
         pageType,
         pgId,
+        undefined, // claims (legacy path)
+        ragSafePack, // RAG safe pack (Chantier 3)
       );
 
       // ── P3 Image gates (OG, hero policy, alt text) ──
@@ -1278,6 +1373,16 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             passLevel,
           });
           break;
+        case 'anti_source':
+          actions.push({
+            gate: 'anti_source',
+            strategy: 'strip_source_tags',
+            description:
+              'Strip leaked source attributions (BT-xxx, Source:, SR-xxx)',
+            passLevel: 1,
+            targets: gate.triggerItems?.map((t) => t.issue),
+          });
+          break;
       }
     }
 
@@ -1403,6 +1508,36 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             applied: false,
             itemsAffected: 0,
             detail: 'No leaking sentences found',
+          };
+        }
+
+        case 'strip_source_tags': {
+          const content = await this.loadCurrentContent(
+            pgId,
+            pgAlias,
+            pageType,
+          );
+          const stripped = content
+            .replace(/\s*\(Source\s*:\s*[^)]+\)\.?/gi, '')
+            .replace(/\s*\(BT-\d+[^)]*\)\.?/gi, '')
+            .replace(/\s*\(SR\d+[^)]*\)\.?/gi, '')
+            .replace(/\bBT-\d+\b/gi, '')
+            .replace(/\bSR\d{4,}\b/gi, '')
+            .replace(/\s{2,}/g, ' ');
+          if (stripped !== content) {
+            await this.writeContentToDb(pgId, pgAlias, pageType, stripped);
+            return {
+              action,
+              applied: true,
+              itemsAffected: (action.targets || []).length,
+              detail: 'Stripped source attribution tags from content',
+            };
+          }
+          return {
+            action,
+            applied: false,
+            itemsAffected: 0,
+            detail: 'No source tags to strip',
           };
         }
 
@@ -1767,6 +1902,21 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       if (lexicon) {
         for (const l of lexicon) terms.add((l.term as string).toLowerCase());
       }
+    }
+
+    // (e) RAG knowledge file — extract all terms from the gamme .md
+    try {
+      const ragPath = join(
+        '/opt/automecanik/rag/knowledge/gammes',
+        `${pgAlias}.md`,
+      );
+      if (existsSync(ragPath)) {
+        const { readFileSync } = await import('node:fs');
+        const ragContent = readFileSync(ragPath, 'utf-8');
+        this.extractTerms(ragContent).forEach((t) => terms.add(t));
+      }
+    } catch {
+      // Non-blocking: RAG file may not exist
     }
 
     return terms;
