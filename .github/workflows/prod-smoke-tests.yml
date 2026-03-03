@@ -9,7 +9,6 @@ on:
 env:
   PROD_URL: https://www.automecanik.com
   IMGPROXY_TEST_IMAGE: https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/260/6216001.JPG
-  CURL_OPTS: -s --max-time 15 -H "User-Agent: AutoMecanik-SmokeTest/1.0"
 
 jobs:
   smoke-tests:
@@ -20,7 +19,7 @@ jobs:
     steps:
       - name: 🏥 Health endpoint
         run: |
-          RESPONSE=$(curl $CURL_OPTS "$PROD_URL/health")
+          RESPONSE=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" "$PROD_URL/health")
           echo "Response: $RESPONSE"
           if ! echo "$RESPONSE" | grep -q '"status":"ok"'; then
             echo "❌ Health check failed"
@@ -30,12 +29,12 @@ jobs:
 
       - name: 🌐 Homepage
         run: |
-          STATUS=$(curl $CURL_OPTS -o /dev/null -w "%{http_code}" "$PROD_URL/")
+          STATUS=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" -o /dev/null -w "%{http_code}" "$PROD_URL/")
           if [ "$STATUS" != "200" ]; then
             echo "❌ Homepage returned HTTP $STATUS"
             exit 1
           fi
-          TITLE=$(curl $CURL_OPTS "$PROD_URL/" | grep -oP '<title>\K[^<]+' | head -1)
+          TITLE=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" "$PROD_URL/" | grep -oP '<title>\K[^<]+' | head -1)
           if [ -z "$TITLE" ]; then
             echo "❌ Homepage has empty <title>"
             exit 1
@@ -44,7 +43,7 @@ jobs:
 
       - name: 📦 Product page
         run: |
-          STATUS=$(curl $CURL_OPTS -o /dev/null -w "%{http_code}" "$PROD_URL/pieces/filtre-a-huile-7.html")
+          STATUS=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" -o /dev/null -w "%{http_code}" "$PROD_URL/pieces/filtre-a-huile-7.html")
           if [ "$STATUS" != "200" ]; then
             echo "❌ Product page returned HTTP $STATUS"
             exit 1
@@ -53,7 +52,7 @@ jobs:
 
       - name: 🔌 API catalog
         run: |
-          RESPONSE=$(curl $CURL_OPTS "$PROD_URL/api/catalog/families")
+          RESPONSE=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" "$PROD_URL/api/catalog/families")
           if [ -z "$RESPONSE" ]; then
             echo "❌ API catalog: empty response"
             exit 1
@@ -67,7 +66,7 @@ jobs:
 
       - name: 🖼️ imgproxy AVIF
         run: |
-          STATUS=$(curl $CURL_OPTS -o /dev/null -w "%{http_code}" "$PROD_URL/imgproxy/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@avif")
+          STATUS=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" -o /dev/null -w "%{http_code}" "$PROD_URL/imgproxy/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@avif")
           if [ "$STATUS" != "200" ]; then
             echo "❌ imgproxy AVIF returned HTTP $STATUS"
             exit 1
@@ -78,7 +77,7 @@ jobs:
         id: cache-check
         continue-on-error: true
         run: |
-          HEADERS=$(curl $CURL_OPTS -I "$PROD_URL/pieces/filtre-a-huile-7.html")
+          HEADERS=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" -I "$PROD_URL/pieces/filtre-a-huile-7.html")
           CACHE=$(echo "$HEADERS" | grep -i "cache-control" | head -1)
           echo "Cache-Control: $CACHE"
           if ! echo "$CACHE" | grep -qi "s-maxage"; then
@@ -91,7 +90,7 @@ jobs:
         id: ttfb-check
         continue-on-error: true
         run: |
-          TTFB=$(curl $CURL_OPTS -o /dev/null -w "%{time_starttransfer}" "$PROD_URL/pieces/filtre-a-huile-7.html")
+          TTFB=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" -o /dev/null -w "%{time_starttransfer}" "$PROD_URL/pieces/filtre-a-huile-7.html")
           echo "TTFB: ${TTFB}s"
           if (( $(echo "$TTFB > 3.0" | bc -l) )); then
             echo "⚠️ WARNING: TTFB ${TTFB}s exceeds 3s threshold"
