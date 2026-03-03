@@ -2,24 +2,24 @@ name: 🩺 PROD Smoke Tests
 
 on:
   schedule:
-    # Toutes les 6 heures (00:00, 06:00, 12:00, 18:00 UTC)
     - cron: '0 */6 * * *'
   workflow_dispatch:
 
 env:
-  PROD_URL: https://www.automecanik.com
+  LOCAL_URL: http://localhost:3000
+  CADDY_URL: https://localhost:443
   IMGPROXY_TEST_IMAGE: https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/260/6216001.JPG
 
 jobs:
   smoke-tests:
     name: 🩺 Production Health Check
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     timeout-minutes: 5
 
     steps:
       - name: 🏥 Health endpoint
         run: |
-          RESPONSE=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" "$PROD_URL/health")
+          RESPONSE=$(curl -s --max-time 10 "$LOCAL_URL/health")
           echo "Response: $RESPONSE"
           if ! echo "$RESPONSE" | grep -q '"status":"ok"'; then
             echo "❌ Health check failed"
@@ -29,12 +29,12 @@ jobs:
 
       - name: 🌐 Homepage
         run: |
-          STATUS=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" -o /dev/null -w "%{http_code}" "$PROD_URL/")
+          STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" "$LOCAL_URL/")
           if [ "$STATUS" != "200" ]; then
             echo "❌ Homepage returned HTTP $STATUS"
             exit 1
           fi
-          TITLE=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" "$PROD_URL/" | grep -oP '<title>\K[^<]+' | head -1)
+          TITLE=$(curl -s --max-time 15 "$LOCAL_URL/" | grep -oP '<title>\K[^<]+' | head -1)
           if [ -z "$TITLE" ]; then
             echo "❌ Homepage has empty <title>"
             exit 1
@@ -43,7 +43,7 @@ jobs:
 
       - name: 📦 Product page
         run: |
-          STATUS=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" -o /dev/null -w "%{http_code}" "$PROD_URL/pieces/filtre-a-huile-7.html")
+          STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" "$LOCAL_URL/pieces/filtre-a-huile-7.html")
           if [ "$STATUS" != "200" ]; then
             echo "❌ Product page returned HTTP $STATUS"
             exit 1
@@ -52,7 +52,7 @@ jobs:
 
       - name: 🔌 API catalog
         run: |
-          RESPONSE=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" "$PROD_URL/api/catalog/families")
+          RESPONSE=$(curl -s --max-time 10 "$LOCAL_URL/api/catalog/families")
           if [ -z "$RESPONSE" ]; then
             echo "❌ API catalog: empty response"
             exit 1
@@ -64,9 +64,9 @@ jobs:
           fi
           echo "✅ API catalog: $COUNT families"
 
-      - name: 🖼️ imgproxy AVIF
+      - name: 🖼️ imgproxy AVIF (via Caddy)
         run: |
-          STATUS=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" -o /dev/null -w "%{http_code}" "$PROD_URL/imgproxy/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@avif")
+          STATUS=$(curl -sk --max-time 15 -o /dev/null -w "%{http_code}" "$CADDY_URL/imgproxy/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@avif")
           if [ "$STATUS" != "200" ]; then
             echo "❌ imgproxy AVIF returned HTTP $STATUS"
             exit 1
@@ -77,7 +77,7 @@ jobs:
         id: cache-check
         continue-on-error: true
         run: |
-          HEADERS=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" -I "$PROD_URL/pieces/filtre-a-huile-7.html")
+          HEADERS=$(curl -sk --max-time 10 -I "$CADDY_URL/pieces/filtre-a-huile-7.html")
           CACHE=$(echo "$HEADERS" | grep -i "cache-control" | head -1)
           echo "Cache-Control: $CACHE"
           if ! echo "$CACHE" | grep -qi "s-maxage"; then
@@ -90,13 +90,22 @@ jobs:
         id: ttfb-check
         continue-on-error: true
         run: |
-          TTFB=$(curl -s --max-time 15 -A "AutoMecanik-SmokeTest/1.0" -o /dev/null -w "%{time_starttransfer}" "$PROD_URL/pieces/filtre-a-huile-7.html")
+          TTFB=$(curl -s --max-time 15 -o /dev/null -w "%{time_starttransfer}" "$LOCAL_URL/pieces/filtre-a-huile-7.html")
           echo "TTFB: ${TTFB}s"
-          if (( $(echo "$TTFB > 3.0" | bc -l) )); then
-            echo "⚠️ WARNING: TTFB ${TTFB}s exceeds 3s threshold"
+          if (( $(echo "$TTFB > 2.0" | bc -l) )); then
+            echo "⚠️ WARNING: TTFB ${TTFB}s exceeds 2s threshold"
             exit 1
           fi
-          echo "✅ TTFB: ${TTFB}s (< 3s)"
+          echo "✅ TTFB: ${TTFB}s (< 2s)"
+
+      - name: 🐳 Containers status
+        if: always()
+        run: |
+          echo "=== Container Status ==="
+          docker ps --format "table {{.Names}}\t{{.Status}}" | grep -E "nestjs|caddy|imgproxy|redis" || true
+          echo ""
+          echo "=== imgproxy Memory ==="
+          docker stats imgproxy --no-stream --format "{{.Name}}: {{.MemUsage}}" 2>/dev/null || echo "imgproxy not running"
 
       - name: 📋 Summary
         if: always()
