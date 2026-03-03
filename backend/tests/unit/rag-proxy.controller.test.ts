@@ -14,6 +14,7 @@ import request from 'supertest';
 import { RagProxyController } from '../../src/modules/rag-proxy/rag-proxy.controller';
 import { RagProxyService } from '../../src/modules/rag-proxy/rag-proxy.service';
 import { RagCleanupService } from '../../src/modules/rag-proxy/services/rag-cleanup.service';
+import { RagWebIngestDbService } from '../../src/modules/rag-proxy/services/rag-web-ingest-db.service';
 
 describe('RagProxyController', () => {
   let app: INestApplication;
@@ -30,6 +31,7 @@ describe('RagProxyController', () => {
       providers: [
         { provide: RagProxyService, useValue: mockRagProxyService },
         { provide: RagCleanupService, useValue: {} },
+        { provide: RagWebIngestDbService, useValue: {} },
         { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('test-internal-api-key') } },
       ],
     }).compile();
