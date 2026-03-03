@@ -138,7 +138,7 @@ export class RagMdMergerService {
     this.setNestedValue(
       yamlObj,
       'lifecycle.last_enriched_by',
-      `pdf-${patch.source_ref.toLowerCase().replace(/\s+/g, '-')}`,
+      `${patch.truth_level === 'L2' ? 'web' : 'pdf'}-${patch.source_ref.toLowerCase().replace(/\s+/g, '-')}`,
     );
     this.setNestedValue(yamlObj, 'lifecycle.last_enriched_at', now);
 

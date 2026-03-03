@@ -14,6 +14,8 @@ import { SECTION_RAG_FIELD_MAP } from '../../../config/keyword-plan.constants';
 import type { EvidenceEntry } from '../../../workers/types/content-refresh.types';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import { EnricherYamlParser } from './enricher-yaml-parser.service';
+import { RagMdMergerService } from '../../rag-proxy/services/rag-md-merger.service';
+import type { RagMergePatch } from '../../rag-proxy/services/pdf-rag-classifier.service';
 
 // ── Section type constants matching DB values ──
 
@@ -150,6 +152,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     private readonly flags: FeatureFlagsService,
     private readonly textUtils: EnricherTextUtils,
     private readonly yamlParser: EnricherYamlParser,
+    private readonly ragMdMerger: RagMdMergerService,
     @Optional() private readonly aiContentService?: AiContentService,
     @Optional() private readonly pageBriefService?: PageBriefService,
   ) {
@@ -274,6 +277,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
     // 2c. Merge supplementary RAG content into contract
     let supplementaryEnriched = false;
+    const knowledgeRoot = '/opt/automecanik/rag/knowledge';
     if (supplementaryFiles.length > 0) {
       const classified = this.loadAndClassifySupplementary(supplementaryFiles);
       supplementaryEnriched = this.mergeSupplementaryIntoContract(
@@ -286,7 +290,37 @@ export class ConseilEnricherService extends SupabaseBaseService {
           `${classified.definitions.length} defs, ${classified.symptoms.length} symptoms, ` +
           `${classified.procedures.length} procedures, ${classified.errors.length} errors`,
       );
+
+      // 2c-bis. Write web content into gamme .md (same path as PDFs)
+      if (this.hasUsefulContent(classified)) {
+        const sourceRef = supplementaryFiles
+          .map((fp) =>
+            fp.startsWith(knowledgeRoot)
+              ? fp.slice(knowledgeRoot.length + 1)
+              : fp,
+          )
+          .join(', ');
+        const patch = this.buildWebMergePatch(classified, sourceRef);
+        try {
+          const mergeResult = this.ragMdMerger.merge(pgAlias, patch);
+          this.logger.log(
+            `Web→MD merge for ${pgAlias}: ${mergeResult.modifiedFields.length} fields, ` +
+              `${mergeResult.markdownSectionsAdded} sections, ${mergeResult.sourceAttributions} attributions`,
+          );
+        } catch (err) {
+          this.logger.warn(
+            `Web→MD merge failed for ${pgAlias}: ${(err as Error).message}`,
+          );
+        }
+      }
     }
+    const supplementaryRefs = supplementaryEnriched
+      ? supplementaryFiles.map((fp) =>
+          fp.startsWith(knowledgeRoot)
+            ? fp.slice(knowledgeRoot.length + 1)
+            : fp,
+        )
+      : [];
 
     // 2d. Load SEO heading plan + section_terms from keyword plan (if available)
     try {
@@ -342,6 +376,19 @@ export class ConseilEnricherService extends SupabaseBaseService {
       });
     }
 
+    // Evidence from supplementary web files (attribution)
+    if (supplementaryEnriched) {
+      for (const ref of supplementaryRefs) {
+        evidenceEntries.push({
+          docId: ref,
+          heading: 'supplementary',
+          charRange: [-1, -1] as [number, number],
+          rawExcerpt: `Web content merged from ${ref}`,
+          confidence: 0.8,
+        });
+      }
+    }
+
     // 2d. Auto-detect RAG content change via evidence_pack_hash comparison
     // Hash must match what the processor stores: sha256(JSON.stringify(evidencePack))
     let ragChanged = false;
@@ -380,6 +427,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       conservativeMode,
       force || ragChanged,
       sectionsFilter,
+      supplementaryRefs,
     );
     result.evidencePack = evidenceEntries;
     return result;
@@ -463,6 +511,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     conservativeMode = false,
     force = false,
     sectionsFilter?: string[],
+    supplementaryRefs: string[] = [],
   ): Promise<ConseilEnrichResult> {
     // 3. Load existing conseil sections
     const existing = await this.loadExistingSections(pgId);
@@ -507,6 +556,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
         pgAlias,
         writeActions,
         existing,
+        supplementaryRefs,
       );
 
       // 8. Generate sg_descrip draft from enriched contract
@@ -1624,12 +1674,26 @@ export class ConseilEnricherService extends SupabaseBaseService {
         sgc_order: number;
       }
     >,
+    supplementaryRefs: string[] = [],
   ): Promise<{ created: number; updated: number }> {
     const writeActions = actions.filter((a) => a.action !== 'skip');
     if (writeActions.length === 0) return { created: 0, updated: 0 };
 
     const upsertRows = writeActions.map((action) => {
       const existingRow = existing.get(action.type);
+      const sources: Array<{ type: string; ref: string; field: string }> = [
+        {
+          type: 'rag',
+          ref: `gammes/${pgAlias}.md`,
+          field:
+            action.ragField ?? SECTION_RAG_FIELD_MAP[action.type] ?? 'general',
+        },
+        ...supplementaryRefs.map((ref) => ({
+          type: 'web',
+          ref,
+          field: 'supplementary',
+        })),
+      ];
       return {
         sgc_id:
           existingRow?.sgc_id ?? `conseil-${pgId}-${action.type}-${Date.now()}`,
@@ -1638,16 +1702,8 @@ export class ConseilEnricherService extends SupabaseBaseService {
         sgc_title: action.title,
         sgc_content: action.content,
         sgc_order: action.order,
-        sgc_sources: JSON.stringify([
-          {
-            type: 'rag',
-            ref: `gammes/${pgAlias}.md`,
-            field:
-              action.ragField ??
-              SECTION_RAG_FIELD_MAP[action.type] ??
-              'general',
-          },
-        ]),
+        sgc_sources: JSON.stringify(sources),
+        sgc_enriched_at: new Date().toISOString(),
       };
     });
 
@@ -1687,6 +1743,73 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
   private static isMarketingContent(text: string): boolean {
     return ConseilEnricherService.MARKETING_PATTERNS.some((p) => p.test(text));
+  }
+
+  /**
+   * Check if a SupplementaryClassification has any useful content worth merging.
+   */
+  private hasUsefulContent(c: SupplementaryClassification): boolean {
+    return (
+      c.symptoms.length > 0 ||
+      c.procedures.length > 0 ||
+      c.errors.length > 0 ||
+      c.definitions.length > 0 ||
+      c.faq.length > 0 ||
+      c.specs.length > 0
+    );
+  }
+
+  /**
+   * Convert a SupplementaryClassification into a RagMergePatch
+   * so web content follows the same path as PDFs → gamme .md merge.
+   */
+  private buildWebMergePatch(
+    classification: SupplementaryClassification,
+    sourceRef: string,
+  ): RagMergePatch {
+    const yaml_array_appends: Record<string, string[]> = {};
+
+    if (classification.symptoms.length > 0)
+      yaml_array_appends['diagnostic.symptoms'] = classification.symptoms;
+    if (classification.procedures.length > 0)
+      yaml_array_appends['diagnostic.depose_steps'] = classification.procedures;
+    if (classification.errors.length > 0)
+      yaml_array_appends['selection.anti_mistakes'] = classification.errors;
+    if (classification.definitions.length > 0)
+      yaml_array_appends['selection.criteria'] = classification.definitions;
+
+    const yaml_field_enrichments: Record<
+      string,
+      Array<{ key: string; append: string }>
+    > = {};
+    if (classification.faq.length > 0) {
+      yaml_field_enrichments['rendering.faq'] = classification.faq.map(
+        (f, i) => ({
+          key: `web_faq_${i}`,
+          append: `Q: ${f.q}\nA: ${f.a}`,
+        }),
+      );
+    }
+
+    const markdown_sections =
+      classification.specs.length > 0
+        ? [
+            {
+              title: 'Spécifications Techniques (Web)',
+              content: classification.specs.join('\n'),
+            },
+          ]
+        : [];
+
+    return {
+      source_ref: sourceRef,
+      truth_level: 'L2',
+      yaml_array_appends,
+      yaml_field_enrichments,
+      new_yaml_blocks: {},
+      markdown_sections,
+      confidence: 65,
+    };
   }
 
   /**
