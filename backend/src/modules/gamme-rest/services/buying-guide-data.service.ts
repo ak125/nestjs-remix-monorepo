@@ -19,7 +19,9 @@ import {
   FAMILY_MARKERS,
   FLAG_PENALTIES,
   TRUSTED_SOURCE_PREFIXES,
+  R1_BOUNDARY_EXTENSIONS,
 } from '../../../config/buying-guide-quality.constants';
+import { R3_FORBIDDEN_IN_R1 } from '../../../config/r1-keyword-plan.constants';
 
 // Re-export type for backward compatibility (other files import it from here)
 export type { GammeContentQualityFlag } from '../../../config/buying-guide-quality.constants';
@@ -1695,6 +1697,23 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     );
   }
 
+  /** Returns the first R3 forbidden term found, or null if clean.
+   *  Uses word-boundary matching to avoid false positives (e.g., "vs" in "diverse"). */
+  private containsR3BoundaryTerm(value: string): string | null {
+    const normalized = this.normalizeForMatch(value);
+    if (!normalized) return null;
+
+    const allTerms = [...R3_FORBIDDEN_IN_R1, ...R1_BOUNDARY_EXTENSIONS];
+    for (const term of allTerms) {
+      const normalizedTerm = this.normalizeForMatch(term);
+      const escaped = normalizedTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (new RegExp(`\\b${escaped}\\b`).test(normalized)) {
+        return term;
+      }
+    }
+    return null;
+  }
+
   /**
    * Detects when intro_role describes a different piece than the guide's title.
    * Extracts the piece name before ':' in intro_role and checks for shared
@@ -2238,6 +2257,94 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     if (!gated.risk.conclusion) {
       const fallback = this.fallbackRisk(gammeName, familyKey);
       gated.risk.conclusion = fallback.conclusion;
+    }
+
+    // ── R1 Boundary Gate (anti-cannibalization R3) ──────────
+    // Scan R1-facing text fields for R3 diagnostic/tuto terms.
+    // Violations → null the field (frontend falls back to family-aware defaults).
+    const r1TextFields: Array<{
+      key: string;
+      value: string | null | undefined;
+    }> = [
+      { key: 'microSeoBlock', value: gated.microSeoBlock },
+      { key: 'compatibilitiesIntro', value: gated.compatibilitiesIntro },
+      { key: 'equipementiersLine', value: gated.equipementiersLine },
+      { key: 'familyCrossSellIntro', value: gated.familyCrossSellIntro },
+      { key: 'heroSubtitle', value: gated.heroSubtitle },
+      { key: 'h1Override', value: gated.h1Override },
+    ];
+
+    for (const field of r1TextFields) {
+      if (!field.value) continue;
+      const forbidden = this.containsR3BoundaryTerm(field.value);
+      if (forbidden) {
+        addFlag('R3_BOUNDARY_VIOLATION');
+        this.logger.warn(
+          `R1 boundary violation: "${forbidden}" in ${field.key} (pgId=${gated.pgId})`,
+        );
+        (gated as Record<string, unknown>)[field.key] = null;
+      }
+    }
+
+    if (gated.faq?.length) {
+      gated.faq = gated.faq.filter((item) => {
+        const forbidden = this.containsR3BoundaryTerm(item.answer || '');
+        if (forbidden) {
+          addFlag('R3_BOUNDARY_VIOLATION');
+          this.logger.warn(
+            `R1 boundary violation: "${forbidden}" in faq answer (pgId=${gated.pgId})`,
+          );
+          return false;
+        }
+        return true;
+      });
+    }
+
+    if (gated.arguments?.length) {
+      gated.arguments = gated.arguments.filter((arg) => {
+        const forbidden = this.containsR3BoundaryTerm(arg.content || '');
+        if (forbidden) {
+          addFlag('R3_BOUNDARY_VIOLATION');
+          this.logger.warn(
+            `R1 boundary violation: "${forbidden}" in argument "${arg.title}" (pgId=${gated.pgId})`,
+          );
+          return false;
+        }
+        return true;
+      });
+    }
+
+    if (gated.antiMistakes?.length) {
+      gated.antiMistakes = gated.antiMistakes.filter((item) => {
+        const forbidden = this.containsR3BoundaryTerm(item);
+        if (forbidden) {
+          addFlag('R3_BOUNDARY_VIOLATION');
+          return false;
+        }
+        return true;
+      });
+    }
+
+    if (gated.selectorMicrocopy?.length) {
+      gated.selectorMicrocopy = gated.selectorMicrocopy.filter((item) => {
+        const forbidden = this.containsR3BoundaryTerm(item);
+        if (forbidden) {
+          addFlag('R3_BOUNDARY_VIOLATION');
+          return false;
+        }
+        return true;
+      });
+    }
+
+    if (gated.safeTableRows?.length) {
+      gated.safeTableRows = gated.safeTableRows.filter((row) => {
+        const forbidden = this.containsR3BoundaryTerm(row.howToCheck || '');
+        if (forbidden) {
+          addFlag('R3_BOUNDARY_VIOLATION');
+          return false;
+        }
+        return true;
+      });
     }
 
     const source = this.resolveQualitySource(raw, gated.pgId);

@@ -30,7 +30,8 @@ export type GammeContentQualityFlag =
   | 'MISSING_ALT_TEXT'
   | 'INVALID_IMAGE_RATIO'
   | 'CONTENT_OVERLAP'
-  | 'H1_MUTATION_BLOCKED';
+  | 'H1_MUTATION_BLOCKED'
+  | 'R3_BOUNDARY_VIOLATION';
 
 // ─────────────────────────────────────────────────────────────
 // Contract versions
@@ -171,6 +172,7 @@ export const FLAG_PENALTIES: Record<GammeContentQualityFlag, number> = {
   INVALID_IMAGE_RATIO: 3, // inactive V1 (detection not yet implemented)
   CONTENT_OVERLAP: 15, // cross-gamme content cannibalization detected
   H1_MUTATION_BLOCKED: 100, // hard reject: attempted to modify a QA-protected H1
+  R3_BOUNDARY_VIOLATION: 15, // R3 diagnostic/tuto terms found in R1-facing fields
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -211,6 +213,19 @@ export function getImagePenalty(
   }
   return FLAG_PENALTIES[flag];
 }
+
+// ─────────────────────────────────────────────────────────────
+// R1 boundary extensions (diagnostic terms forbidden in R1 content)
+// Complements R3_FORBIDDEN_IN_R1 from r1-keyword-plan.constants.ts
+// ─────────────────────────────────────────────────────────────
+
+export const R1_BOUNDARY_EXTENSIONS: readonly string[] = [
+  'quand remplacer',
+  'fréquence de remplacement',
+  "intervalle d'entretien",
+  "signes d'usure",
+  'bruit anormal',
+] as const;
 
 // ─────────────────────────────────────────────────────────────
 // Action markers (actionable verbs in buying guide content)
