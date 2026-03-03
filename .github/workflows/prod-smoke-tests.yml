@@ -37,15 +37,32 @@ jobs:
           fi
           echo "✅ Homepage: title='$TITLE'"
 
-      - name: 📦 Product page
+      - name: 📦 Pages multi-rôles (8 URLs)
         run: |
-          STATUS=$(docker exec $CONTAINER wget --spider -qS http://localhost:3000/pieces/filtre-a-huile-7.html 2>&1 | grep "HTTP/" | tail -1 | awk '{print $2}')
-          if [ "$STATUS" != "200" ]; then
-            echo "❌ Product page returned HTTP $STATUS"
-            docker exec $CONTAINER wget --spider -qS http://localhost:3000/pieces/filtre-a-huile-7.html 2>&1 | head -5
+          FAILED=0
+          URLS=(
+            "/pieces/filtre-a-huile-7.html"
+            "/pieces/soufflet-de-direction-191.html"
+            "/pieces/joint-de-cache-culbuteurs-321.html"
+            "/pieces/ampoule-feu-clignotant-105.html"
+            "/pieces/bague-d-etancheite-cardan-624.html"
+            "/blog-pieces-auto/conseils/comment-changer-un-catalyseur"
+            "/blog-pieces-auto/guide-achat/roulement-de-roue"
+            "/sitemap.xml"
+          )
+          for URL in "${URLS[@]}"; do
+            STATUS=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000$URL" 2>&1 | grep "HTTP/" | tail -1 | awk '{print $2}')
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ $URL -> HTTP $STATUS"
+            else
+              echo "❌ $URL -> HTTP $STATUS"
+              FAILED=1
+            fi
+          done
+          if [ "$FAILED" = "1" ]; then
             exit 1
           fi
-          echo "✅ Product page: HTTP 200"
+          echo "✅ All 8 pages OK"
 
       - name: 🔌 API catalog
         run: |
