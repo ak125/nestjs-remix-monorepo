@@ -437,6 +437,7 @@ export class RagIngestionService implements OnModuleDestroy {
     const MAX_ATTEMPTS = 20;
     const INTERVAL_MS = 15_000;
     let attempt = 0;
+    const jobStartedAt = Date.now();
 
     const timer = setInterval(async () => {
       attempt++;
@@ -474,6 +475,7 @@ export class RagIngestionService implements OnModuleDestroy {
               const result = this.frontmatterValidator.validateIntakeZone(
                 knowledgePath,
                 subDir,
+                jobStartedAt,
               );
               if (result.quarantined.length > 0 || result.valid.length > 0) {
                 if (!validationResult) {

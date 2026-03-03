@@ -367,23 +367,41 @@ export class RagProxyController {
       pattern: string;
     },
   ) {
-    if (!body.pattern) {
-      throw new BadRequestException('pattern is required');
+    const MAX_FILES = 200;
+
+    if (!body.pattern || body.pattern.length > 256) {
+      throw new BadRequestException('pattern must be 1-256 characters');
+    }
+    if (!/^[a-z0-9._/*?-]+$/i.test(body.pattern)) {
+      throw new BadRequestException(
+        'Invalid characters in pattern (allowed: a-z 0-9 . _ / * ? -)',
+      );
     }
 
     const knowledgeBasePath =
       process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
 
-    // Resolve glob pattern to file list (supports simple * wildcard)
     const { readdirSync } = await import('node:fs');
-    const { join } = await import('node:path');
+    const { join, resolve } = await import('node:path');
 
     const parts = body.pattern.split('/');
     const dir = join(knowledgeBasePath, parts[0]);
+
+    // Path traversal guard: resolved dir must stay inside knowledgeBasePath
+    const resolvedDir = resolve(dir);
+    if (!resolvedDir.startsWith(resolve(knowledgeBasePath))) {
+      throw new BadRequestException(
+        'Invalid directory: path traversal detected',
+      );
+    }
+
+    // Build regex from glob — escape metacharacters first, then convert * and ?
     const filePattern = parts.slice(1).join('/') || '*';
-    const regex = new RegExp(
-      '^' + filePattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$',
-    );
+    const escaped = filePattern
+      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*/g, '[^/]*')
+      .replace(/\?/g, '.');
+    const regex = new RegExp('^' + escaped + '$');
 
     let files: string[] = [];
     try {
@@ -391,7 +409,13 @@ export class RagProxyController {
         .filter((f: string) => regex.test(f) && f.endsWith('.md'))
         .map((f: string) => join(dir, f));
     } catch {
-      throw new BadRequestException(`Cannot read directory: ${dir}`);
+      throw new BadRequestException(`Cannot read directory: ${parts[0]}/`);
+    }
+
+    if (files.length > MAX_FILES) {
+      throw new BadRequestException(
+        `Too many files matched (${files.length} > ${MAX_FILES}). Narrow your pattern.`,
+      );
     }
 
     if (files.length === 0) {

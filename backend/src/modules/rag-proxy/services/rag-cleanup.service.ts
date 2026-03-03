@@ -291,9 +291,9 @@ export class RagCleanupService extends SupabaseBaseService {
     canonical: { category: 'knowledge/canonical', domain: 'knowledge' },
     reference: { category: 'definition', domain: 'knowledge' },
     policies: { category: 'knowledge/policy', domain: 'knowledge' },
-    vehicle: { category: 'vehicle', domain: 'catalog' },
-    vehicles: { category: 'vehicle', domain: 'catalog' },
-    canon: { category: 'knowledge/canonical', domain: 'knowledge' },
+    vehicle: { category: 'catalog/vehicle', domain: 'catalog' },
+    vehicles: { category: 'catalog/vehicle', domain: 'catalog' },
+    canon: { category: 'definition', domain: 'knowledge' },
   };
 
   /**
