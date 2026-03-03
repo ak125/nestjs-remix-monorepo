@@ -31,6 +31,7 @@ interface IngestionJob {
   returnCode: number | null;
   type: "pdf" | "web";
   url?: string;
+  errorMessage?: string | null;
 }
 
 interface IngestResult {
@@ -57,13 +58,19 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const pdfRaw: Omit<IngestionJob, "type">[] = pdfRes.ok
     ? await pdfRes.json()
     : [];
-  const webRaw: (Omit<IngestionJob, "type"> & { url?: string })[] = webRes.ok
-    ? await webRes.json()
-    : [];
+  const webRaw: (Omit<IngestionJob, "type"> & {
+    url?: string;
+    errorMessage?: string | null;
+  })[] = webRes.ok ? await webRes.json() : [];
 
   const jobs: IngestionJob[] = [
     ...pdfRaw.map((j) => ({ ...j, type: "pdf" as const })),
-    ...webRaw.map((j) => ({ ...j, type: "web" as const, url: j.url })),
+    ...webRaw.map((j) => ({
+      ...j,
+      type: "web" as const,
+      url: j.url,
+      errorMessage: j.errorMessage,
+    })),
   ].sort((a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0));
 
   return json({ jobs });
@@ -109,12 +116,12 @@ function ResultBanner({
   if (result.success && result.jobId) {
     return (
       <div className="mt-3 rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-800 flex items-center justify-between">
-        <span>Job {type} lancé avec succès</span>
+        <span>Job {type} lance avec succes</span>
         <Link
           to={`/admin/rag/ingest/${encodeURIComponent(result.jobId)}`}
           className="inline-flex items-center gap-1 rounded-md bg-green-100 px-2.5 py-1 text-xs font-medium text-green-700 hover:bg-green-200 transition-colors"
         >
-          Voir les logs →
+          Voir les logs &rarr;
         </Link>
       </div>
     );
@@ -123,68 +130,58 @@ function ResultBanner({
   return null;
 }
 
-const ingestColumns: DataColumn<IngestionJob>[] = [
-  {
-    key: "jobId",
-    header: "Job ID",
-    render: (_val, row) => (
-      <span className="font-mono text-xs">{row.jobId.slice(0, 12)}</span>
-    ),
-  },
-  {
-    key: "type",
-    header: "Type",
-    render: (_val, row) => (
-      <Badge
-        variant={row.type === "web" ? "default" : "secondary"}
-        className={
-          row.type === "web"
-            ? "bg-blue-100 text-blue-700 hover:bg-blue-100"
-            : "bg-gray-100 text-gray-700 hover:bg-gray-100"
-        }
-      >
-        {row.type === "web" ? "URL" : "PDF"}
-      </Badge>
-    ),
-  },
-  {
-    key: "status",
-    header: "Status",
-    render: (_val, row) => (
-      <StatusBadge
-        status={JOB_STATUS[row.status] || "NEUTRAL"}
-        label={row.status}
+function RetryButton({
+  job,
+  onRetry,
+}: {
+  job: IngestionJob;
+  onRetry: () => void;
+}) {
+  const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
+
+  async function handleRetry(e: React.MouseEvent) {
+    e.stopPropagation();
+    setRetrying(true);
+    setRetryError(null);
+    try {
+      const res = await fetch(
+        `/api/rag/admin/ingest/web/jobs/${encodeURIComponent(job.jobId)}/retry`,
+        { method: "POST" },
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setRetryError(data.message || `Erreur ${res.status}`);
+      } else {
+        onRetry();
+      }
+    } catch (err) {
+      setRetryError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRetrying(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-end gap-1">
+      <Button
+        variant="outline"
         size="sm"
-      />
-    ),
-  },
-  {
-    key: "startedAt",
-    header: "Demarre",
-    render: (_val, row) => (
-      <span className="text-sm text-muted-foreground">
-        {formatTimestamp(row.startedAt)}
-      </span>
-    ),
-  },
-  {
-    key: "finishedAt",
-    header: "Termine",
-    render: (_val, row) => (
-      <span className="text-sm text-muted-foreground">
-        {formatTimestamp(row.finishedAt)}
-      </span>
-    ),
-  },
-  {
-    key: "returnCode",
-    header: "Return code",
-    align: "right" as const,
-    render: (_val, row) => (
-      <span className="font-mono text-sm">{row.returnCode ?? "\u2014"}</span>
-    ),
-  },
-];
+        onClick={handleRetry}
+        disabled={retrying}
+        className="gap-1 text-xs h-7 px-2"
+      >
+        <RefreshCw className={`h-3 w-3 ${retrying ? "animate-spin" : ""}`} />
+        Relancer
+      </Button>
+      {retryError && (
+        <span className="text-xs text-red-600 max-w-[160px] text-right">
+          {retryError}
+        </span>
+      )}
+    </div>
+  );
+}
 
 export default function AdminRagIngest() {
   const { jobs } = useLoaderData<typeof loader>();
@@ -218,6 +215,95 @@ export default function AdminRagIngest() {
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasRunningJobs]);
+
+  const ingestColumns: DataColumn<IngestionJob>[] = [
+    {
+      key: "jobId",
+      header: "Job ID",
+      render: (_val, row) => (
+        <span className="font-mono text-xs">{row.jobId.slice(0, 12)}</span>
+      ),
+    },
+    {
+      key: "type",
+      header: "Type",
+      render: (_val, row) => (
+        <Badge
+          variant={row.type === "web" ? "default" : "secondary"}
+          className={
+            row.type === "web"
+              ? "bg-blue-100 text-blue-700 hover:bg-blue-100"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-100"
+          }
+        >
+          {row.type === "web" ? "URL" : "PDF"}
+        </Badge>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      render: (_val, row) => (
+        <StatusBadge
+          status={JOB_STATUS[row.status] || "NEUTRAL"}
+          label={row.status}
+          size="sm"
+        />
+      ),
+    },
+    {
+      key: "startedAt",
+      header: "Demarre",
+      render: (_val, row) => (
+        <span className="text-sm text-muted-foreground">
+          {formatTimestamp(row.startedAt)}
+        </span>
+      ),
+    },
+    {
+      key: "finishedAt",
+      header: "Termine",
+      render: (_val, row) => (
+        <span className="text-sm text-muted-foreground">
+          {formatTimestamp(row.finishedAt)}
+        </span>
+      ),
+    },
+    {
+      key: "returnCode",
+      header: "Code",
+      align: "right" as const,
+      render: (_val, row) => (
+        <span className="font-mono text-sm">{row.returnCode ?? "\u2014"}</span>
+      ),
+    },
+    {
+      key: "errorMessage" as keyof IngestionJob,
+      header: "Erreur",
+      render: (_val, row) =>
+        row.status === "failed" && row.errorMessage ? (
+          <span
+            className="block max-w-[220px] truncate text-xs text-red-600"
+            title={row.errorMessage}
+          >
+            {row.errorMessage}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">&mdash;</span>
+        ),
+    },
+    {
+      key: "jobId" as keyof IngestionJob,
+      header: "",
+      render: (_val, row) =>
+        row.type === "web" && row.status === "failed" ? (
+          <RetryButton
+            job={row}
+            onRetry={() => refreshFetcher.load("/admin/rag/ingest")}
+          />
+        ) : null,
+    },
+  ];
 
   async function handlePdfSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -286,7 +372,7 @@ export default function AdminRagIngest() {
   return (
     <DashboardShell
       title="Ingestion"
-      description="Ingérer un PDF ou une URL dans le corpus RAG"
+      description="Ingerer un PDF ou une URL dans le corpus RAG"
       breadcrumb={
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Link to="/admin" className="hover:text-foreground">
@@ -314,7 +400,7 @@ export default function AdminRagIngest() {
             <Info className="h-5 w-5 shrink-0 text-blue-600 mt-0.5" />
             <div className="space-y-2 text-sm">
               <p className="font-medium text-blue-900">
-                Comment ingérer un document
+                Comment ingerer un document
               </p>
               <ol className="list-decimal list-inside space-y-1 text-blue-800">
                 <li>
@@ -330,13 +416,13 @@ export default function AdminRagIngest() {
                 </li>
                 <li>Choisissez le niveau de confiance selon la source</li>
                 <li>
-                  Le document sera analysé, découpé et indexé automatiquement
+                  Le document sera analyse, decoupe et indexe automatiquement
                 </li>
               </ol>
               <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <div className="rounded-md border border-blue-200 bg-white p-2">
                   <span className="block text-xs font-semibold text-green-700">
-                    L1 — Officiel
+                    L1 &mdash; Officiel
                   </span>
                   <span className="text-xs text-muted-foreground">
                     Doc constructeur OEM, normes
@@ -344,7 +430,7 @@ export default function AdminRagIngest() {
                 </div>
                 <div className="rounded-md border border-blue-200 bg-white p-2">
                   <span className="block text-xs font-semibold text-blue-700">
-                    L2 — Technique
+                    L2 &mdash; Technique
                   </span>
                   <span className="text-xs text-muted-foreground">
                     Manuels ATE, Bosch, guides montage
@@ -352,7 +438,7 @@ export default function AdminRagIngest() {
                 </div>
                 <div className="rounded-md border border-blue-200 bg-white p-2">
                   <span className="block text-xs font-semibold text-amber-700">
-                    L3 — Générique
+                    L3 &mdash; Generique
                   </span>
                   <span className="text-xs text-muted-foreground">
                     FAQ, analyses, estimations
@@ -360,10 +446,10 @@ export default function AdminRagIngest() {
                 </div>
                 <div className="rounded-md border border-blue-200 bg-white p-2">
                   <span className="block text-xs font-semibold text-red-700">
-                    L4 — Non vérifié
+                    L4 &mdash; Non verifie
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    Forum, retours non confirmés
+                    Forum, retours non confirmes
                   </span>
                 </div>
               </div>
@@ -398,7 +484,7 @@ export default function AdminRagIngest() {
                 disabled={pdfSubmitting}
               />
               <p className="text-xs text-muted-foreground">
-                Le fichier doit être accessible sur le serveur. Déposez-le via
+                Le fichier doit etre accessible sur le serveur. Deposez-le via
                 SFTP dans le dossier inbox.
               </p>
             </div>
@@ -416,10 +502,10 @@ export default function AdminRagIngest() {
                 disabled={pdfSubmitting}
                 name="truthLevel"
               >
-                <SelectItem value="L1">L1 — Officiel</SelectItem>
-                <SelectItem value="L2">L2 — Technique</SelectItem>
-                <SelectItem value="L3">L3 — Générique</SelectItem>
-                <SelectItem value="L4">L4 — Non vérifié</SelectItem>
+                <SelectItem value="L1">L1 &mdash; Officiel</SelectItem>
+                <SelectItem value="L2">L2 &mdash; Technique</SelectItem>
+                <SelectItem value="L3">L3 &mdash; Generique</SelectItem>
+                <SelectItem value="L4">L4 &mdash; Non verifie</SelectItem>
               </Select>
             </div>
             <Button type="submit" disabled={pdfSubmitting} className="gap-1.5">
@@ -462,7 +548,7 @@ export default function AdminRagIngest() {
                 disabled={webSubmitting}
               />
               <p className="text-xs text-muted-foreground">
-                La page sera fetched, convertie en markdown, puis indexée dans
+                La page sera fetched, convertie en markdown, puis indexee dans
                 le corpus RAG.
               </p>
             </div>
@@ -480,10 +566,10 @@ export default function AdminRagIngest() {
                 disabled={webSubmitting}
                 name="webTruthLevel"
               >
-                <SelectItem value="L1">L1 — Officiel</SelectItem>
-                <SelectItem value="L2">L2 — Technique</SelectItem>
-                <SelectItem value="L3">L3 — Générique</SelectItem>
-                <SelectItem value="L4">L4 — Non vérifié</SelectItem>
+                <SelectItem value="L1">L1 &mdash; Officiel</SelectItem>
+                <SelectItem value="L2">L2 &mdash; Technique</SelectItem>
+                <SelectItem value="L3">L3 &mdash; Generique</SelectItem>
+                <SelectItem value="L4">L4 &mdash; Non verifie</SelectItem>
               </Select>
             </div>
             <Button type="submit" disabled={webSubmitting} className="gap-1.5">
@@ -492,7 +578,7 @@ export default function AdminRagIngest() {
               ) : (
                 <Globe className="h-4 w-4" />
               )}
-              {webSubmitting ? "En cours..." : "Ingérer l'URL"}
+              {webSubmitting ? "En cours..." : "Ingerer l'URL"}
             </Button>
           </form>
           <ResultBanner result={webResult} type="URL" />
@@ -514,14 +600,14 @@ export default function AdminRagIngest() {
             <RefreshCw
               className={`h-3.5 w-3.5 ${refreshFetcher.state !== "idle" ? "animate-spin" : ""}`}
             />
-            Rafraîchir
+            Rafraichir
           </Button>
         </CardHeader>
         <CardContent>
           <AdminDataTable<IngestionJob>
             data={displayJobs as IngestionJob[]}
             columns={ingestColumns}
-            getRowKey={(row) => row.jobId}
+            getRowKey={(row) => `${row.jobId}-${row.type}`}
             onRowClick={(job) =>
               navigate(`/admin/rag/ingest/${encodeURIComponent(job.jobId)}`)
             }

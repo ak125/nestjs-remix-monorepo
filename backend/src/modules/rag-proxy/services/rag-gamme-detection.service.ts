@@ -388,13 +388,13 @@ export class RagGammeDetectionService {
       quarantined: Array<{ filename: string; reason: string }>;
     },
     dbSyncOk?: boolean,
-  ): Promise<void> {
+  ): Promise<{ affectedGammes: string[] }> {
     // Idempotency guard: skip if event already emitted for this jobId
     if (this.emittedJobIds.has(jobId)) {
       this.logger.warn(
         `[emitIngestionCompleted] Skipping duplicate emission for jobId=${jobId}`,
       );
-      return;
+      return { affectedGammes: [] };
     }
     this.emittedJobIds.add(jobId);
     // Auto-cleanup after 10 min to avoid unbounded growth
@@ -455,5 +455,7 @@ export class RagGammeDetectionService {
           ? `, validated=${event.validationSummary.validFiles}, quarantined=${event.validationSummary.quarantinedFiles}`
           : ''),
     );
+
+    return { affectedGammes };
   }
 }

@@ -6,7 +6,7 @@ import type { WebJob } from '../rag-proxy.service';
 export { type WebJob } from '../rag-proxy.service';
 
 const WEB_JOB_KEY_PREFIX = 'rag:web-jobs:';
-const WEB_JOB_TTL_SECONDS = 3_600; // 1 hour — matches former JOB_RETENTION_MS
+const WEB_JOB_TTL_SECONDS = 86_400; // 24 hours — DB is the permanent store
 
 @Injectable()
 export class RagRedisJobService implements OnModuleDestroy {

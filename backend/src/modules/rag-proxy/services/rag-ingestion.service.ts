@@ -20,6 +20,7 @@ import { RagRedisJobService, type WebJob } from './rag-redis-job.service';
 import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagGammeDetectionService } from './rag-gamme-detection.service';
 import { RagCleanupService } from './rag-cleanup.service';
+import { RagWebIngestDbService } from './rag-web-ingest-db.service';
 
 @Injectable()
 export class RagIngestionService implements OnModuleDestroy {
@@ -52,6 +53,7 @@ export class RagIngestionService implements OnModuleDestroy {
     private readonly frontmatterValidator: FrontmatterValidatorService,
     private readonly ragGammeDetectionService: RagGammeDetectionService,
     private readonly ragCleanupService: RagCleanupService,
+    private readonly ragWebIngestDbService: RagWebIngestDbService,
   ) {
     // URL externe obligatoire - le RAG est sur un serveur SEPARE (pas Docker local)
     this.ragUrl = this.configService.getOrThrow<string>('RAG_SERVICE_URL');
@@ -275,6 +277,7 @@ export class RagIngestionService implements OnModuleDestroy {
     };
     await this.ragRedisJobService.setJob(job);
     await this.ragRedisJobService.addToIndex(jobId);
+    void this.ragWebIngestDbService.upsertJob(job);
 
     // Process asynchronously (don't block the HTTP response)
     this.processWebIngest(job)
@@ -288,6 +291,7 @@ export class RagIngestionService implements OnModuleDestroy {
         job.returnCode = 1;
         job.logLines.push(`Error: ${getErrorMessage(err)}`);
         await this.ragRedisJobService.setJob(job);
+        void this.ragWebIngestDbService.upsertJob(job);
         this.logger.error(
           `Web ingest job ${jobId} failed: ${getErrorMessage(err)}`,
         );
@@ -326,16 +330,44 @@ export class RagIngestionService implements OnModuleDestroy {
       '-v',
     ].join(' ');
 
-    await this.execDockerCmd(containerName, ingestCmd, job);
+    try {
+      await this.execDockerCmd(containerName, ingestCmd, job);
+    } catch (err) {
+      const lastLogs = job.logLines.slice(-5).join(' ').toLowerCase();
+      const label = lastLogs.includes('no sections')
+        ? 'Step 1: No sections extracted from URL'
+        : lastLogs.includes('timed out')
+          ? 'Step 1: URL fetch timed out (site unreachable)'
+          : lastLogs.includes('connectionerror') ||
+              lastLogs.includes('httperror') ||
+              lastLogs.includes('urlopen error') ||
+              lastLogs.includes('fetch failed')
+            ? 'Step 1: URL fetch failed (network/HTTP error)'
+            : `Step 1: ingest_web.py script error`;
+      throw new Error(`${label} — ${getErrorMessage(err)}`);
+    }
     await this.ragRedisJobService.setJob(job); // persist after ingest step
 
     // Step 2: Detect output subdirectory (web/ or web-catalog/)
     const { execFileSync } = await import('node:child_process');
-    const lsOutput = execFileSync(
-      'docker',
-      ['exec', containerName, 'ls', `${containerTmpPath}/`],
-      { encoding: 'utf-8', timeout: 5_000 },
-    ).trim();
+    let lsOutput: string;
+    try {
+      lsOutput = execFileSync(
+        'docker',
+        ['exec', containerName, 'ls', `${containerTmpPath}/`],
+        { encoding: 'utf-8', timeout: 5_000 },
+      ).trim();
+      if (!lsOutput) {
+        throw new Error(
+          'Step 2: Empty output directory — no .md files produced',
+        );
+      }
+    } catch (err) {
+      if (getErrorMessage(err).startsWith('Step 2:')) throw err;
+      throw new Error(
+        `Step 2: Output detection failed — ${getErrorMessage(err)}`,
+      );
+    }
     const subDir = lsOutput.includes('web-catalog') ? 'web-catalog' : 'web';
     job.logLines.push(`Output: ${subDir}/ (${lsOutput.replace(/\n/g, ', ')})`);
 
@@ -379,7 +411,15 @@ export class RagIngestionService implements OnModuleDestroy {
       '--strict-routing',
     ].join(' ');
 
-    await this.execDockerCmd(containerName, reindexCmd, job);
+    try {
+      await this.execDockerCmd(containerName, reindexCmd, job);
+    } catch (err) {
+      const lastLogs = job.logLines.slice(-3).join(' ');
+      const label = lastLogs.includes('global lock')
+        ? 'Step 4: Flock contention — another RAG operation already running'
+        : 'Step 4: Reindex failed';
+      throw new Error(`${label} — ${getErrorMessage(err)}`);
+    }
 
     // Step 5: Cleanup container temp
     execFileSync(
@@ -417,16 +457,29 @@ export class RagIngestionService implements OnModuleDestroy {
     job.returnCode = 0;
     job.finishedAt = Math.floor(Date.now() / 1000);
     job.logLines.push(`Done — ${subDir}/ sections ingested and indexed`);
-    await this.ragRedisJobService.setJob(job); // persist final state
-    this.logger.log(`Web ingest job ${job.jobId} completed for ${job.url}`);
 
     // Emit event to trigger content refresh pipeline
-    await this.ragGammeDetectionService.emitIngestionCompleted(
-      job.jobId,
-      'web',
-      validation,
-      dbSyncOk,
-    );
+    const { affectedGammes } =
+      await this.ragGammeDetectionService.emitIngestionCompleted(
+        job.jobId,
+        'web',
+        validation,
+        dbSyncOk,
+      );
+
+    if (affectedGammes.length === 0) {
+      job.logLines.push(
+        'Warning: No gammes detected — content refresh NOT triggered',
+      );
+    } else {
+      job.logLines.push(
+        `Content refresh queued for gammes: [${affectedGammes.join(', ')}]`,
+      );
+    }
+
+    await this.ragRedisJobService.setJob(job); // persist final state
+    void this.ragWebIngestDbService.upsertJob(job, affectedGammes);
+    this.logger.log(`Web ingest job ${job.jobId} completed for ${job.url}`);
   }
 
   /** Exec a command inside a docker container with log streaming. */

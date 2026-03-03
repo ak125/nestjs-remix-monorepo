@@ -12,11 +12,13 @@ import {
   UseGuards,
   BadRequestException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { RagProxyService } from './rag-proxy.service';
 import { RagCleanupService } from './services/rag-cleanup.service';
+import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
 import type { RagDocInput, IngestDecision } from './types/rag-ingest.types';
 import {
   ChatRequestSchema,
@@ -51,6 +53,7 @@ export class RagProxyController {
   constructor(
     private readonly ragProxyService: RagProxyService,
     private readonly ragCleanupService: RagCleanupService,
+    private readonly ragWebIngestDbService: RagWebIngestDbService,
   ) {}
 
   @Post('chat')
@@ -179,10 +182,41 @@ export class RagProxyController {
 
   @Get('admin/ingest/web/jobs')
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @ApiOperation({ summary: 'List all web URL ingestion jobs' })
+  @ApiOperation({ summary: 'List all web URL ingestion jobs (Redis + DB)' })
   @ApiResponse({ status: 200, description: 'List of web ingestion jobs' })
   async listWebJobs() {
-    return this.ragProxyService.listWebJobs();
+    // Redis (hot, last 24h) + DB fallback for historical jobs
+    const redisJobs = await this.ragProxyService.listWebJobs();
+    const dbJobs = await this.ragWebIngestDbService.listJobs(50);
+
+    // Merge: Redis wins for current jobs, DB fills gaps (expired from Redis)
+    const redisIds = new Set(redisJobs.map((j) => j.jobId));
+    const dbOnly = dbJobs
+      .filter((j) => !redisIds.has(j.job_id))
+      .map((j) => ({
+        jobId: j.job_id,
+        url: j.url,
+        status: j.status,
+        truthLevel: j.truth_level,
+        startedAt: Math.floor(new Date(j.started_at).getTime() / 1000),
+        finishedAt: j.finished_at
+          ? Math.floor(new Date(j.finished_at).getTime() / 1000)
+          : null,
+        returnCode: j.return_code,
+        logLines: [] as string[],
+        errorMessage: j.error_message,
+      }));
+
+    // Add errorMessage to Redis jobs from DB (Redis doesn't store it separately)
+    const dbByJobId = new Map(dbJobs.map((j) => [j.job_id, j]));
+    const enrichedRedis = redisJobs.map((j) => ({
+      ...j,
+      errorMessage: dbByJobId.get(j.jobId)?.error_message ?? null,
+    }));
+
+    return [...enrichedRedis, ...dbOnly].sort(
+      (a, b) => (b.startedAt ?? 0) - (a.startedAt ?? 0),
+    );
   }
 
   @Get('admin/ingest/web/jobs/:jobId')
@@ -191,9 +225,46 @@ export class RagProxyController {
   @ApiResponse({ status: 200, description: 'Job status with logs' })
   @ApiResponse({ status: 404, description: 'Job not found' })
   async getWebJobStatus(@Param('jobId') jobId: string) {
-    const job = await this.ragProxyService.getWebJob(jobId);
-    if (!job) throw new NotFoundException('Web ingest job not found');
-    return job;
+    // Try Redis first (has live logLines for running jobs)
+    const redisJob = await this.ragProxyService.getWebJob(jobId);
+    if (redisJob) return redisJob;
+
+    // Fallback to DB (permanent store, survives Redis TTL expiry)
+    const dbJob = await this.ragWebIngestDbService.getJob(jobId);
+    if (!dbJob) throw new NotFoundException('Web ingest job not found');
+
+    return {
+      jobId: dbJob.job_id,
+      url: dbJob.url,
+      status: dbJob.status,
+      truthLevel: dbJob.truth_level,
+      startedAt: Math.floor(new Date(dbJob.started_at).getTime() / 1000),
+      finishedAt: dbJob.finished_at
+        ? Math.floor(new Date(dbJob.finished_at).getTime() / 1000)
+        : null,
+      returnCode: dbJob.return_code,
+      logLines: dbJob.log_lines || [],
+      errorMessage: dbJob.error_message,
+    };
+  }
+
+  @Post('admin/ingest/web/jobs/:jobId/retry')
+  @HttpCode(HttpStatus.ACCEPTED)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'Retry a failed web ingest job' })
+  @ApiResponse({ status: 202, description: 'Retry job started' })
+  @ApiResponse({ status: 404, description: 'Original job not found' })
+  @ApiResponse({ status: 409, description: 'Job still running' })
+  async retryWebJob(@Param('jobId') jobId: string) {
+    const existing = await this.ragWebIngestDbService.getJob(jobId);
+    if (!existing) throw new NotFoundException('Job not found or expired');
+    if (existing.status === 'running') {
+      throw new ConflictException('Job is still running');
+    }
+    return this.ragProxyService.ingestWebUrl({
+      url: existing.url,
+      truthLevel: existing.truth_level,
+    });
   }
 
   /** List all RAG knowledge images (admin only). */

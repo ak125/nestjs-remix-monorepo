@@ -16,6 +16,7 @@ import { RagChatService } from './services/rag-chat.service';
 import { RagGammeDetectionService } from './services/rag-gamme-detection.service';
 import { RagIngestionService } from './services/rag-ingestion.service';
 import { RagWebhookCompletionService } from './services/rag-webhook-completion.service';
+import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
 
 // PDF merge pipeline services
 import { PdfTextExtractorService } from './services/pdf-text-extractor.service';
@@ -41,6 +42,7 @@ import { RagMdMergerService } from './services/rag-md-merger.service';
     RagGammeDetectionService,
     RagIngestionService,
     RagWebhookCompletionService,
+    RagWebIngestDbService,
     // PDF merge pipeline
     PdfTextExtractorService,
     PdfRagClassifierService,
@@ -60,6 +62,7 @@ import { RagMdMergerService } from './services/rag-md-merger.service';
     RagGammeDetectionService,
     RagIngestionService,
     RagWebhookCompletionService,
+    RagWebIngestDbService,
     PdfTextExtractorService,
     PdfRagClassifierService,
     RagMdMergerService,
