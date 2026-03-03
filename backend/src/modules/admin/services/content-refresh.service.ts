@@ -123,6 +123,7 @@ export class ContentRefreshService extends SupabaseBaseService {
     triggerSource: string,
     supplementaryFiles: string[] = [],
     force?: boolean,
+    filterPageTypes?: GammePageType[],
   ): Promise<GammePageType[]> {
     // Resolve pg_alias → pg_id
     const { data: gamme } = await this.client
@@ -139,8 +140,11 @@ export class ContentRefreshService extends SupabaseBaseService {
 
     const pgId = gamme.pg_id as number;
 
-    // Determine which page types need refresh
-    const pageTypes = await this.determinePageTypes(pgId, pgAlias);
+    // Determine which page types need refresh (optionally filtered)
+    let pageTypes = await this.determinePageTypes(pgId, pgAlias);
+    if (filterPageTypes?.length) {
+      pageTypes = pageTypes.filter((pt) => filterPageTypes.includes(pt));
+    }
 
     // Queue a job for each page type
     const queued: GammePageType[] = [];
@@ -210,6 +214,7 @@ export class ContentRefreshService extends SupabaseBaseService {
     pgAliases: string[],
     supplementaryFiles: string[] = [],
     force?: boolean,
+    filterPageTypes?: GammePageType[],
   ): Promise<{
     queued: Array<{ pgAlias: string; pageTypes: GammePageType[] }>;
   }> {
@@ -222,6 +227,7 @@ export class ContentRefreshService extends SupabaseBaseService {
         'manual',
         supplementaryFiles,
         force,
+        filterPageTypes,
       );
       results.push({ pgAlias, pageTypes });
     }

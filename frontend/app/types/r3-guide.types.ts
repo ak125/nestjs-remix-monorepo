@@ -24,6 +24,14 @@ export interface R3GuidePage {
   cta_anchor: string | null;
 }
 
+export interface R3GuideSectionImage {
+  src: string;
+  alt: string;
+  caption?: string;
+  aspectRatio: "16:9" | "4:3";
+  loading: "eager" | "lazy";
+}
+
 export interface R3GuideSection {
   sectionType: string | null;
   level?: 2 | 3;
@@ -33,6 +41,7 @@ export interface R3GuideSection {
   html: string;
   sources: string[];
   qualityScore: number | null;
+  image?: R3GuideSectionImage | null;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

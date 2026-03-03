@@ -73,6 +73,26 @@ export class R3GuideService {
     const { s1Sections, bodySections, metaSections, sourceType } =
       await this.resolveCanonicalSections(conseil, article.sections, article);
 
+    // Step 3b — Inject approved images into sections
+    const approvedImages = await this.seoService.getApprovedImages(
+      gammeData.pg_id,
+    );
+    const imageMap = new Map(approvedImages.map((img) => [img.sectionId, img]));
+    const heroImg = imageMap.get('HERO');
+
+    for (const section of [...s1Sections, ...bodySections]) {
+      const img = imageMap.get(section.sectionType ?? '');
+      if (img) {
+        section.image = {
+          src: img.src,
+          alt: img.alt,
+          caption: img.caption ?? undefined,
+          aspectRatio: img.aspectRatio,
+          loading: section.sectionType === 'S1' ? 'eager' : 'lazy',
+        };
+      }
+    }
+
     // Step 4 — Compute page metrics
     const allSections = [...s1Sections, ...bodySections, ...metaSections];
     const readingTime = calcReadingTime(allSections);
@@ -92,7 +112,7 @@ export class R3GuideService {
       keywords: article.keywords || [],
       publishedAt: article.publishedAt,
       updatedAt: article.updatedAt || article.publishedAt,
-      featuredImage: article.featuredImage || null,
+      featuredImage: heroImg?.src || article.featuredImage || null,
       viewsCount: article.viewsCount || 0,
       readingTime,
       difficulty,

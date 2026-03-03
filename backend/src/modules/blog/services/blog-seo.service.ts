@@ -344,6 +344,46 @@ export class BlogSeoService {
   }
 
   /**
+   * 🖼️ Récupère les images approuvées pour une gamme (pour injection R3 Guide)
+   * Ne retourne que les images avec rip_selected=true, rip_image_url IS NOT NULL,
+   * et rip_status IN ('approved', 'exported').
+   */
+  async getApprovedImages(pgId: number): Promise<
+    Array<{
+      sectionId: string;
+      src: string;
+      alt: string;
+      caption: string | null;
+      aspectRatio: '16:9' | '4:3';
+    }>
+  > {
+    try {
+      const { data, error } = await this.supabaseService.client
+        .from('__seo_r3_image_prompts')
+        .select(
+          'rip_section_id, rip_image_url, rip_alt_text, rip_caption, rip_aspect_ratio',
+        )
+        .eq('rip_pg_id', pgId)
+        .eq('rip_selected', true)
+        .not('rip_image_url', 'is', null)
+        .in('rip_status', ['approved', 'exported']);
+
+      if (error || !data) return [];
+
+      return data.map((row) => ({
+        sectionId: row.rip_section_id,
+        src: row.rip_image_url,
+        alt: row.rip_alt_text || '',
+        caption: row.rip_caption || null,
+        aspectRatio:
+          row.rip_aspect_ratio === '4:3' ? ('4:3' as const) : ('16:9' as const),
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  /**
    * 📊 Récupère les statistiques des liens injectés dans le blog
    */
   async getInternalLinkStats(): Promise<{

@@ -5,6 +5,18 @@ export const TriggerRefreshDto = z.object({
   pgAliases: z.array(z.string().min(1)).optional(),
   supplementaryFiles: z.array(z.string()).optional(),
   force: z.boolean().optional(),
+  pageTypes: z
+    .array(
+      z.enum([
+        'R1_pieces',
+        'R3_conseils',
+        'R3_guide_achat',
+        'R4_reference',
+        'R5_diagnostic',
+        'R6_guide_achat',
+      ]),
+    )
+    .optional(),
 });
 
 export type TriggerRefreshInput = z.infer<typeof TriggerRefreshDto>;
@@ -28,6 +40,7 @@ export const RefreshStatusQueryDto = z.object({
       'R3_guide_achat',
       'R4_reference',
       'R5_diagnostic',
+      'R6_guide_achat',
     ])
     .optional(),
   pg_alias: z.string().optional(),

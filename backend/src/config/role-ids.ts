@@ -32,6 +32,7 @@ const ROLE_TO_PAGE_TYPE: Partial<Record<RoleId, PageType>> = {
   [RoleId.R3_CONSEILS]: 'R3_conseils',
   [RoleId.R4_REFERENCE]: 'R4_reference',
   [RoleId.R5_DIAGNOSTIC]: 'R5_diagnostic',
+  [RoleId.R6_GUIDE_ACHAT]: 'R6_guide_achat',
   // R2_PRODUCT and R6_SUPPORT have no PageType equivalent in the worker
 };
 
@@ -41,6 +42,7 @@ const PAGE_TYPE_TO_ROLE: Record<string, RoleId> = {
   R3_conseils: RoleId.R3_CONSEILS,
   R4_reference: RoleId.R4_REFERENCE,
   R5_diagnostic: RoleId.R5_DIAGNOSTIC,
+  R6_guide_achat: RoleId.R6_GUIDE_ACHAT,
 };
 
 /** Convert a RoleId to the worker PageType. Returns null for R2/R6 (no worker equivalent). */

@@ -71,8 +71,10 @@ import { KeywordPlanGatesService } from './services/keyword-plan-gates.service';
 import { R1KeywordPlanGatesService } from './services/r1-keyword-plan-gates.service'; // 🚦 R1 Keyword plan gates KA1-KA6
 import { AdminConseilController } from './controllers/admin-conseil.controller'; // 📊 Conseil coverage + backfill
 import { AdminRagIngestController } from './controllers/admin-rag-ingest.controller'; // 📄 PDF → RAG merge pipeline
+import { AdminR3ImagePromptsController } from './controllers/admin-r3-image-prompts.controller'; // 🎨 R3 Image Prompts generation
 import { PipelineChainPollerService } from './services/pipeline-chain-poller.service'; // 🔗 Pipeline chain poller (keyword-plan → conseil)
 import { RagCatchupService } from './services/rag-catchup.service'; // 🔄 RAG catch-up at startup (detect orphan ingestions)
+import { R3ImagePromptService } from './services/r3-image-prompt.service'; // 🎨 R3 Image Prompts (template-based, 0-LLM)
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -133,6 +135,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     AdminHealthController, // 🏥 Health Overview - /api/admin/health/*
     AdminConseilController, // 📊 Conseil coverage + backfill - /api/admin/conseil/*
     AdminRagIngestController, // 📄 PDF → RAG merge - /api/admin/rag/pdf-merge/*
+    AdminR3ImagePromptsController, // 🎨 R3 Image Prompts - /api/admin/r3-image-prompts/*
   ],
   providers: [
     ConfigurationService,
@@ -174,6 +177,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     R1KeywordPlanGatesService, // 🚦 R1 Keyword plan gates KA1-KA6 (R1 pipeline + keyword-planner R1 mode)
     PipelineChainPollerService, // 🔗 Pipeline chain poller (keyword-plan validated → conseil refresh)
     RagCatchupService, // 🔄 RAG catch-up at startup (detect orphan ingestions, flag-gated)
+    R3ImagePromptService, // 🎨 R3 Image Prompts (template-based, 0-LLM)
   ],
   exports: [
     ConfigurationService,

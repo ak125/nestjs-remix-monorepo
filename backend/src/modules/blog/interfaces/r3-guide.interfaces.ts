@@ -27,6 +27,14 @@ export interface R3GuidePage {
   cta_anchor: string | null;
 }
 
+export interface R3GuideSectionImage {
+  src: string;
+  alt: string;
+  caption?: string;
+  aspectRatio: '16:9' | '4:3';
+  loading: 'eager' | 'lazy';
+}
+
 export interface R3GuideSection {
   sectionType: string | null; // S1, S2, S4_DEPOSE... null for article H2/H3
   level?: 2 | 3; // only when sourceType=article
@@ -36,6 +44,7 @@ export interface R3GuideSection {
   html: string; // pre-normalized for S4/S5
   sources: string[];
   qualityScore: number | null;
+  image?: R3GuideSectionImage | null;
 }
 
 export interface R3GuidePayload {

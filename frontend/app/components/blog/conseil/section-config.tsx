@@ -20,6 +20,14 @@ import {
 
 // --- Types ---
 
+export interface GammeConseilImage {
+  src: string;
+  alt: string;
+  caption?: string;
+  aspectRatio: "16:9" | "4:3";
+  loading: "eager" | "lazy";
+}
+
 export interface GammeConseil {
   title: string;
   content: string;
@@ -29,6 +37,8 @@ export interface GammeConseil {
   sources: string[];
   /** Pre-computed anchor slug from server (single source of truth for TOC) */
   anchor?: string;
+  /** Image approuvée pour cette section (pipeline R3 Image Prompts) */
+  image?: GammeConseilImage | null;
 }
 
 export interface BlogSection {

@@ -5,7 +5,8 @@ export type PageType =
   | 'R3_conseils'
   | 'R3_guide_achat'
   | 'R4_reference'
-  | 'R5_diagnostic';
+  | 'R5_diagnostic'
+  | 'R6_guide_achat';
 
 /** Job data for gamme-based refresh (R1, R3, R4) */
 export interface ContentRefreshJobData {

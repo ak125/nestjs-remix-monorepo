@@ -122,6 +122,7 @@ export class AdminContentRefreshController {
       aliases,
       parsed.data.supplementaryFiles,
       parsed.data.force,
+      parsed.data.pageTypes,
     );
   }
 

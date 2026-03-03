@@ -5,6 +5,7 @@
  */
 
 import { FileText } from "lucide-react";
+import { SectionImage } from "~/components/content/SectionImage";
 import {
   GuideAlert,
   GuideSteps,
@@ -39,10 +40,25 @@ export function ConseilSections({
   return (
     <>
       {sections.map((conseilItem, index) => {
+        // --- Reusable image block for sections with approved images ---
+        const sectionImage = conseilItem.image ? (
+          <SectionImage
+            src={conseilItem.image.src}
+            alt={conseilItem.image.alt}
+            caption={conseilItem.image.caption}
+            placement="full"
+            size="lg"
+            priority={conseilItem.image.loading === "eager"}
+          />
+        ) : null;
+
         // --- Per-type dispatcher (Guide design system) ---
         if (conseilItem.sectionType === "S2") {
           return (
-            <GuideAlert key={index} section={conseilItem} severity="warning" />
+            <div key={index}>
+              <GuideAlert section={conseilItem} severity="warning" />
+              {sectionImage}
+            </div>
           );
         }
         if (conseilItem.sectionType === "S5") {
@@ -57,7 +73,10 @@ export function ConseilSections({
         }
         if (conseilItem.sectionType === "S4_DEPOSE") {
           return (
-            <GuideSteps key={index} section={conseilItem} variant="depose" />
+            <div key={index}>
+              <GuideSteps section={conseilItem} variant="depose" />
+              {sectionImage}
+            </div>
           );
         }
         if (conseilItem.sectionType === "S4_REPOSE") {
@@ -125,6 +144,7 @@ export function ConseilSections({
                   </div>
                 )}
               </CardContent>
+              {sectionImage && <div className="px-6 pb-2">{sectionImage}</div>}
               {conseilItem.sectionType === "S3" && pgAlias && pgId && (
                 <div className="px-6 pb-4">
                   <SoftCTA
