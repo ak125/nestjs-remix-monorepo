@@ -14,6 +14,8 @@ interface Props {
 }
 
 export function R6BrandsGuide({ brandsGuide, gammeName }: Props) {
+  if (!brandsGuide) return null;
+
   return (
     <section id="guide-marques" className="mb-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-purple-500">

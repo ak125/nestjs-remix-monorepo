@@ -14,6 +14,8 @@ interface Props {
 }
 
 export function R6PriceGuide({ priceGuide, gammeName }: Props) {
+  if (!priceGuide) return null;
+
   return (
     <section id="guide-prix" className="mb-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-green-500">

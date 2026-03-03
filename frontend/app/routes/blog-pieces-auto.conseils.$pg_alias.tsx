@@ -8,7 +8,6 @@
 
 import {
   json,
-  redirect,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -143,7 +142,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { pg_alias } = params;
 
   if (!pg_alias) {
-    return redirect("/blog-pieces-auto/conseils", 301);
+    throw json({ message: "Alias manquant" }, { status: 404 });
   }
 
   const controller = new AbortController();
@@ -162,7 +161,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     if (!response.ok) {
       if (response.status === 404) {
-        return redirect("/blog-pieces-auto/conseils", 301);
+        throw json(
+          { message: `Guide R3 introuvable: ${pg_alias}` },
+          { status: 404 },
+        );
       }
       throw new Error(`R3 guide endpoint returned ${response.status}`);
     }
@@ -171,7 +173,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const guide = result?.data as R3GuidePayload | null;
 
     if (!guide) {
-      return redirect("/blog-pieces-auto/conseils", 301);
+      throw json(
+        { message: `Pas de donnees R3 pour: ${pg_alias}` },
+        { status: 404 },
+      );
     }
 
     return json({ guide, pg_alias });
@@ -179,7 +184,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
     logger.error(`[R3 Guide] Error loading guide for: ${pg_alias}`, error);
-    return redirect("/blog-pieces-auto/conseils", 302);
+    throw json(
+      { message: `Erreur chargement guide R3: ${pg_alias}` },
+      { status: 404 },
+    );
   }
 }
 

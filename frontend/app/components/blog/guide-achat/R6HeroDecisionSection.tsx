@@ -20,6 +20,8 @@ export function R6HeroDecisionSection({
   pgAlias,
   pgId,
 }: Props) {
+  if (!heroDecision?.promise) return null;
+
   return (
     <section id="decision-achat" className="mb-8">
       <div className="rounded-xl border-2 border-blue-200 overflow-hidden shadow-lg">

@@ -12,6 +12,7 @@ import { BlogArticleTransformService } from './blog-article-transform.service';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
 import { PRIX_PAS_CHER } from '../../seo/seo-v4.types';
 import { deduplicateWords } from '../utils/html-normalize.utils';
+import { R6_QUALITY_TIER_IDS } from '../../../config/r6-keyword-plan.constants';
 import type {
   R6GuidePayload,
   R6GuidePage,
@@ -29,6 +30,7 @@ import type {
   R6PriceGuideSection,
   R6BrandsGuideSection,
   R6HeroDecision,
+  R6CtaFinal,
 } from '../interfaces/r6-guide.interfaces';
 
 @Injectable()
@@ -101,7 +103,8 @@ export class R6GuideService {
     row: Record<string, unknown>,
     pg_alias: string,
   ): Promise<R6GuidePayload> {
-    // Hero decision from intro_role + hero_subtitle
+    // Hero decision: promise from intro_role, bullets from interest_nuggets
+    // (V2 reuses sgpg_interest_nuggets.hook[] as hero bullets)
     const heroDecision: R6HeroDecision = {
       promise: (row.sgpg_intro_role as string) || '',
       bullets:
@@ -114,15 +117,17 @@ export class R6GuideService {
     const summaryPickFast: R6DecisionNode[] =
       (row.sgpg_decision_tree as R6DecisionNode[]) || [];
 
-    // Quality tiers from selection_criteria → mapped to tier format
+    // Quality tiers from selection_criteria — only keep canonical tier_ids
     const rawCriteria =
       (row.sgpg_selection_criteria as R6SelectionCriterion[]) || [];
-    const qualityTiers: R6QualityTier[] = rawCriteria.map((c, i) => ({
-      tier_id: c.key || `tier_${i}`,
-      label: c.label,
-      description: c.guidance,
-      available: true,
-    }));
+    const qualityTiers: R6QualityTier[] = rawCriteria
+      .filter((c) => R6_QUALITY_TIER_IDS.includes(c.key as never))
+      .map((c) => ({
+        tier_id: c.key,
+        label: c.label,
+        description: c.guidance,
+        available: true,
+      }));
 
     // Compatibility axes from new JSONB column
     const compatibilityAxes: R6CompatibilityAxis[] =
@@ -155,6 +160,37 @@ export class R6GuideService {
     // FAQ
     const faq: R6FaqItem[] = (row.sgpg_faq as R6FaqItem[]) || [];
 
+    // CTA final — further reading + internal links
+    const ctaFinal: R6CtaFinal | undefined =
+      row.sgpg_interest_nuggets || row.sgpg_family_cross_sell_intro
+        ? {
+            links: Array.isArray(row.sgpg_interest_nuggets)
+              ? (
+                  row.sgpg_interest_nuggets as Array<{
+                    hook: string;
+                    link?: string;
+                  }>
+                )
+                  .filter((n) => n.link)
+                  .map((n) => ({
+                    label: n.hook,
+                    href: n.link!,
+                    target_role: 'R6',
+                  }))
+              : [],
+            internal_links: (row.sgpg_family_cross_sell_intro as string)
+              ? [
+                  {
+                    anchor_text:
+                      (row.sgpg_family_cross_sell_intro as string) || '',
+                    href: `/pieces/${pg_alias}.html`,
+                    target_role: 'R1',
+                  },
+                ]
+              : undefined,
+          }
+        : undefined;
+
     return {
       intentType: 'R6',
       pageRole: 'R6_BUYING_GUIDE',
@@ -170,6 +206,7 @@ export class R6GuideService {
       pitfalls,
       whenPro,
       faq,
+      ctaFinal,
       sourceType: (row.sgpg_source_type as string) || null,
       sourceVerified: (row.sgpg_source_verified as boolean) ?? false,
     };
