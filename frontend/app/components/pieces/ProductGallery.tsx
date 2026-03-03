@@ -1,15 +1,30 @@
 import React, { useState, useMemo, useCallback, memo } from "react";
+import { ImageOptimizer } from "~/utils/image-optimizer";
+
+/**
+ * Extract Supabase storage path from a full URL for imgproxy transformation.
+ * Returns null if the URL is not a Supabase storage URL.
+ */
+function extractStoragePath(url: string): string | null {
+  if (!url) return null;
+  // Supabase Storage URLs: .../storage/v1/object/public/{bucket}/{path}
+  const match = url.match(/\/public\/(.+?)(?:\?|$)/);
+  return match ? match[1] : null;
+}
 
 interface ProductGalleryProps {
   images?: { id: string; url: string; sort: number; alt: string }[];
   mainImage?: string;
   alt: string;
+  /** LCP: mark as priority to use eager loading + fetchpriority="high" */
+  priority?: boolean;
 }
 
 export const ProductGallery = memo(function ProductGallery({
   images = [],
   mainImage,
   alt,
+  priority = false,
 }: ProductGalleryProps) {
   // Initialiser avec l'image principale ou la première de la liste
   const initialImage = mainImage || (images.length > 0 ? images[0].url : "");
@@ -106,8 +121,46 @@ export const ProductGallery = memo(function ProductGallery({
     );
   }
 
-  // Si une seule image, affichage simple
+  // Si une seule image, affichage simple avec <picture> AVIF/WebP
   if (allImages.length === 1) {
+    const storagePath = extractStoragePath(currentImage);
+    if (storagePath) {
+      const imgSet = ImageOptimizer.getPictureImageSet(storagePath, {
+        widths: [200, 400],
+        quality: 85,
+        sizes: "(max-width: 640px) 200px, 400px",
+        width: 400,
+        height: 400,
+      });
+      return (
+        <picture>
+          <source
+            srcSet={imgSet.avifSrcSet}
+            sizes={imgSet.sizes}
+            type="image/avif"
+          />
+          <source
+            srcSet={imgSet.webpSrcSet}
+            sizes={imgSet.sizes}
+            type="image/webp"
+          />
+          <img
+            src={imgSet.fallbackSrc}
+            alt={alt}
+            width={400}
+            height={400}
+            className="w-full h-full object-contain"
+            loading={priority ? "eager" : "lazy"}
+            decoding="async"
+            // @ts-expect-error - fetchpriority is valid HTML but React types it as fetchPriority
+            fetchpriority={priority ? "high" : "auto"}
+            onError={(e) => {
+              e.currentTarget.src = "/images/default-piece.svg";
+            }}
+          />
+        </picture>
+      );
+    }
     return (
       <img
         src={currentImage}
@@ -115,7 +168,8 @@ export const ProductGallery = memo(function ProductGallery({
         width={400}
         height={400}
         className="w-full h-full object-contain"
-        loading="lazy"
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
         onError={(e) => {
           e.currentTarget.src = "/images/default-piece.svg";
         }}
@@ -123,20 +177,63 @@ export const ProductGallery = memo(function ProductGallery({
     );
   }
 
-  // Galerie multi-images
+  // Galerie multi-images avec <picture> AVIF/WebP
+  const mainStoragePath = extractStoragePath(currentImage);
+
   return (
     <div className="relative w-full h-full group/gallery">
-      <img
-        src={currentImage}
-        alt={alt}
-        width={400}
-        height={400}
-        className="w-full h-full object-contain touch-pan-y"
-        loading="lazy"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      />
+      {mainStoragePath ? (
+        (() => {
+          const imgSet = ImageOptimizer.getPictureImageSet(mainStoragePath, {
+            widths: [200, 400],
+            quality: 85,
+            sizes: "(max-width: 640px) 200px, 400px",
+            width: 400,
+            height: 400,
+          });
+          return (
+            <picture>
+              <source
+                srcSet={imgSet.avifSrcSet}
+                sizes={imgSet.sizes}
+                type="image/avif"
+              />
+              <source
+                srcSet={imgSet.webpSrcSet}
+                sizes={imgSet.sizes}
+                type="image/webp"
+              />
+              <img
+                src={imgSet.fallbackSrc}
+                alt={alt}
+                width={400}
+                height={400}
+                className="w-full h-full object-contain touch-pan-y"
+                loading={priority ? "eager" : "lazy"}
+                decoding="async"
+                // @ts-expect-error - fetchpriority is valid HTML but React types it as fetchPriority
+                fetchpriority={priority ? "high" : "auto"}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              />
+            </picture>
+          );
+        })()
+      ) : (
+        <img
+          src={currentImage}
+          alt={alt}
+          width={400}
+          height={400}
+          className="w-full h-full object-contain touch-pan-y"
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        />
+      )}
 
       {/* 📱 Mobile swipe dot indicators - visible on touch devices only */}
       <div className="flex gap-1.5 justify-center absolute bottom-2 left-1/2 -translate-x-1/2 sm:hidden z-10">

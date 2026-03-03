@@ -202,34 +202,45 @@ export const PiecesHeader = memo(function PiecesHeader({
                       vehicle.modelePic &&
                       isValidImagePath(vehicle.modelePic) ? (
                         <>
-                          {/* 🚀 LCP FIX: srcSet responsive via imgproxy pour charger taille adaptée au viewport */}
+                          {/* 🚀 LCP FIX: <picture> AVIF/WebP via imgproxy */}
                           {(() => {
                             const heroImagePath = `constructeurs-automobiles/marques-modeles/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`;
-                            const heroSrc = ImageOptimizer.getOptimizedUrl(
+                            const imgSet = ImageOptimizer.getPictureImageSet(
                               heroImagePath,
-                              { width: 380, quality: 85 },
+                              {
+                                widths: [200, 300, 380],
+                                quality: 85,
+                                sizes:
+                                  "(max-width: 640px) 200px, (max-width: 1024px) 300px, 380px",
+                                width: 380,
+                                height: 192,
+                              },
                             );
-                            const heroSrcSet =
-                              ImageOptimizer.getResponsiveSrcSet(
-                                heroImagePath,
-                                [200, 300, 380],
-                                85,
-                              );
                             return (
-                              <img
-                                src={heroSrc}
-                                srcSet={heroSrcSet}
-                                sizes="(max-width: 640px) 200px, (max-width: 1024px) 300px, 380px"
-                                alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
-                                width={380}
-                                height={192}
-                                className="w-full h-48 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
-                                loading="eager"
-                                // @ts-expect-error - fetchpriority is a valid HTML attribute but React types it as fetchPriority
-                                fetchpriority="high"
-                                decoding="async"
-                                onError={() => setImageError(true)}
-                              />
+                              <picture>
+                                <source
+                                  srcSet={imgSet.avifSrcSet}
+                                  sizes={imgSet.sizes}
+                                  type="image/avif"
+                                />
+                                <source
+                                  srcSet={imgSet.webpSrcSet}
+                                  sizes={imgSet.sizes}
+                                  type="image/webp"
+                                />
+                                <img
+                                  src={imgSet.fallbackSrc}
+                                  alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
+                                  width={380}
+                                  height={192}
+                                  className="w-full h-48 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
+                                  loading="eager"
+                                  // @ts-expect-error - fetchpriority is a valid HTML attribute but React types it as fetchPriority
+                                  fetchpriority="high"
+                                  decoding="async"
+                                  onError={() => setImageError(true)}
+                                />
+                              </picture>
                             );
                           })()}
                           {/* Gradient overlay */}

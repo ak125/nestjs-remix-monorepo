@@ -97,6 +97,8 @@ interface PieceCardProps {
   onSelect?: (id: number) => void;
   onAddToCart: (id: number) => void;
   onOpenDetail: (id: number) => void;
+  /** LCP: above-fold cards get eager loading + fetchpriority="high" */
+  priority?: boolean;
 }
 
 const PieceCard = memo(function PieceCard({
@@ -106,6 +108,7 @@ const PieceCard = memo(function PieceCard({
   onSelect,
   onAddToCart,
   onOpenDetail,
+  priority = false,
 }: PieceCardProps) {
   const hasStock = hasStockAvailable(piece.stock);
 
@@ -206,6 +209,7 @@ const PieceCard = memo(function PieceCard({
               images={galleryImages}
               mainImage={piece.image}
               alt={`${piece.name} ${piece.brand}${piece.reference ? ` - Réf ${piece.reference}` : ""}`}
+              priority={priority}
             />
           </div>
         </div>
@@ -541,7 +545,7 @@ export function PiecesGridView({
           onClose={handleCloseModal}
         />
 
-        {pieces.map((piece) => (
+        {pieces.map((piece, index) => (
           <PieceCard
             key={piece.id}
             piece={piece}
@@ -550,6 +554,7 @@ export function PiecesGridView({
             onSelect={onSelectPiece}
             onAddToCart={handleAddToCart}
             onOpenDetail={handleOpenDetail}
+            priority={index < 6}
           />
         ))}
       </div>

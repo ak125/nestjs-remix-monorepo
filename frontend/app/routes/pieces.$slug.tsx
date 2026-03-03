@@ -408,7 +408,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     // ── LCP STREAMING: defer() — above-fold sync, below-fold streamed ──
     // pageData sort du scope après defer() → GC naturel sans mutation
     const responseHeaders: Record<string, string> = {
-      "Cache-Control": "public, max-age=3600, stale-while-revalidate=7200",
+      "Cache-Control":
+        "public, max-age=3600, s-maxage=86400, stale-while-revalidate=7200",
     };
 
     const purchaseGuideData = sanitizePurchaseGuideForR1(
@@ -563,7 +564,7 @@ export function headers({ loaderHeaders }: { loaderHeaders: Headers }) {
   const h: Record<string, string> = {
     "Cache-Control":
       loaderHeaders.get("Cache-Control") ||
-      "public, max-age=3600, stale-while-revalidate=7200",
+      "public, max-age=3600, s-maxage=86400, stale-while-revalidate=7200",
   };
   const xr = loaderHeaders.get("X-Robots-Tag");
   if (xr) h["X-Robots-Tag"] = xr;
