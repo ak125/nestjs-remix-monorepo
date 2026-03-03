@@ -51,9 +51,33 @@ const SECTION_ORDERS: Record<string, number> = {
 // Sections below this threshold are treated as placeholders and can be re-enriched.
 const MIN_SECTION_CONTENT_LENGTH = 150;
 
+// Max length for a micro_phrase injected from keyword plan
+const MAX_MICRO_PHRASE_LENGTH = 200;
+
+/** Escape HTML special characters to prevent broken markup from keyword plan data. */
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // ── Generic phrase penalties (shared + conseil-specific extras) ──
 
-const GENERIC_PHRASES = [...SHARED_GENERIC_PHRASES, 'il est important'];
+const GENERIC_PHRASES = [
+  ...SHARED_GENERIC_PHRASES,
+  'il est important',
+  'il convient de',
+  'dans ce cas',
+  'de ce fait',
+  "il s'avère",
+  'joue un rôle',
+  'à ne pas négliger',
+  'pour garantir',
+  'afin de préserver',
+];
 
 // ── Quality gate penalties ──
 
@@ -64,12 +88,14 @@ interface QualityFlag {
 }
 
 const QUALITY_FLAGS: QualityFlag[] = [
-  { id: 'MISSING_PROCEDURE', severity: 'BLOQUANT', penalty: 25 },
+  { id: 'MISSING_PROCEDURE', severity: 'BLOQUANT', penalty: 35 },
   { id: 'MISSING_ERRORS', severity: 'WARNING', penalty: 10 },
   { id: 'FAQ_TOO_SMALL', severity: 'WARNING', penalty: 14 },
   { id: 'GENERIC_PHRASES', severity: 'WARNING', penalty: 18 },
   { id: 'NO_NUMBERS_IN_S2', severity: 'WARNING', penalty: 8 },
   { id: 'S3_TOO_SHORT', severity: 'WARNING', penalty: 10 },
+  { id: 'S4_DIAGNOSTIC_FALLBACK', severity: 'WARNING', penalty: 12 },
+  { id: 'S2_PADDED_TABLE', severity: 'WARNING', penalty: 8 },
 ];
 
 // ── Result interfaces ──
@@ -1243,11 +1269,15 @@ export class ConseilEnricherService extends SupabaseBaseService {
         // Build 3-column table: Symptôme / Cause probable / Action
         const causes = contract.diagnosticCauses || [];
         const checks = contract.quickChecks;
-        const rows = contract.symptoms.slice(0, 6).map((symptom, i) => {
-          const cause = causes[i] || causes[0] || 'Usure normale';
+        let paddedRows = 0;
+        const symptomSlice = contract.symptoms.slice(0, 6);
+        const rows = symptomSlice.map((symptom, i) => {
+          const cause =
+            causes[i] || (paddedRows++, causes[0] || 'Usure normale');
           const check = checks[i] || checks[0] || 'Inspection visuelle';
           return `<tr><td>${symptom}</td><td>${cause}</td><td>${check}</td></tr>`;
         });
+        const s2dIsPadded = paddedRows > symptomSlice.length / 2;
         const tableHtml =
           `<table><thead><tr><th>Symptôme</th><th>Cause probable</th><th>Action</th></tr></thead>` +
           `<tbody>${rows.join('')}</tbody></table>`;
@@ -1257,6 +1287,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
           title: hp['S2_DIAG'] || `Diagnostic rapide des ${gammeName} :`,
           content: tableHtml,
           order: SECTION_ORDERS.S2_DIAG,
+          ...(s2dIsPadded ? { ragField: 'padded_table' } : {}),
         });
       }
     }
@@ -1288,6 +1319,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     }
 
     // S4_DEPOSE — prefer depose_steps (real procedure) over diagnosticTree (cause/effect)
+    let s4UsedDiagTree = false;
     {
       const existingS4D = existing.get(SECTION_TYPES.S4_DEPOSE);
       const s4dSubstantial =
@@ -1296,6 +1328,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
       let s4dContent = '';
       let s4dTitle = '';
+      let s4dRagField: string | undefined;
       if (contract.deposeSteps && contract.deposeSteps.length >= 2) {
         // Real procedure steps from RAG diagnostic.depose_steps
         const numbered = contract.deposeSteps.map(
@@ -1308,11 +1341,13 @@ export class ConseilEnricherService extends SupabaseBaseService {
         contract.diagnosticTree &&
         contract.diagnosticTree.length >= 1
       ) {
-        // Fallback: diagnostic tree (cause/effect)
+        // Fallback: diagnostic tree (cause/effect) — flagged as lower quality
         s4dContent = contract.diagnosticTree
           .map((node) => `- Si ${node.if}${node.then ? ` → ${node.then}` : ''}`)
           .join('<br>');
         s4dTitle = hp['S4_DEPOSE'] || `Diagnostic des ${gammeName} :`;
+        s4dRagField = 'diagnosticTree_fallback';
+        s4UsedDiagTree = true;
       }
 
       if (
@@ -1326,6 +1361,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
           title: s4dTitle,
           content: s4dContent,
           order: SECTION_ORDERS.S4_DEPOSE,
+          ...(s4dRagField ? { ragField: s4dRagField } : {}),
         });
       }
     }
@@ -1362,10 +1398,11 @@ export class ConseilEnricherService extends SupabaseBaseService {
         // Real good practices from RAG maintenance.good_practices
         s6Content = contract.goodPractices.map((p) => `- ${p}`).join('<br>');
       } else if (
+        !s4UsedDiagTree &&
         contract.diagnosticTree &&
         contract.diagnosticTree.length >= 2
       ) {
-        // Fallback: diagnostic tree checks
+        // Fallback: diagnostic tree checks (only if S4 didn't already use it)
         const validChecks = contract.diagnosticTree.filter(
           (node) => node.then && node.then.length > 5,
         );
@@ -1468,7 +1505,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
           const links = pieces
             .map(
               (p) =>
-                `- <b><a href="/pieces/${p}">${p.replace(/-/g, ' ')}</a></b>`,
+                `- <b><a href="/pieces/${p}">${this.textUtils.restoreAccents(p.replace(/-/g, ' '))}</a></b>`,
             )
             .join('<br>');
           actions.push({
@@ -1519,16 +1556,24 @@ export class ConseilEnricherService extends SupabaseBaseService {
         // Append micro_phrases as a contextual enrichment block
         // Only phrases not already present in the content (dedup)
         const lowerContent = action.content.toLowerCase();
-        const newPhrases = terms.micro_phrases.filter(
-          (phrase) =>
-            !lowerContent.includes(phrase.substring(0, 40).toLowerCase()),
-        );
+        const newPhrases = terms.micro_phrases
+          .filter(
+            (phrase) =>
+              !lowerContent.includes(phrase.substring(0, 40).toLowerCase()),
+          )
+          .map((p) =>
+            p.length > MAX_MICRO_PHRASE_LENGTH
+              ? p.slice(0, MAX_MICRO_PHRASE_LENGTH)
+              : p,
+          );
 
         if (newPhrases.length > 0) {
           // For list-type sections (S4_DEPOSE, S5, S6, S3), append as list items
           const listSections = ['S4_DEPOSE', 'S4_REPOSE', 'S5', 'S6', 'S3'];
           if (listSections.includes(action.type)) {
-            const itemsHtml = newPhrases.map((p) => `<li>${p}</li>`).join('\n');
+            const itemsHtml = newPhrases
+              .map((p) => `<li>${escapeHtml(p)}</li>`)
+              .join('\n');
             // Append before closing tag if exists, otherwise append raw
             if (action.content.includes('</ul>')) {
               action.content = action.content.replace(
@@ -1545,7 +1590,9 @@ export class ConseilEnricherService extends SupabaseBaseService {
             }
           } else {
             // For prose sections (S1, S2), append as paragraph
-            const proseHtml = newPhrases.map((p) => `<p>${p}</p>`).join('\n');
+            const proseHtml = newPhrases
+              .map((p) => `<p>${escapeHtml(p)}</p>`)
+              .join('\n');
             action.content += `\n${proseHtml}`;
           }
         }
@@ -1591,13 +1638,12 @@ export class ConseilEnricherService extends SupabaseBaseService {
   ): { score: number; flags: string[] } {
     const flags: string[] = [];
 
-    // MISSING_PROCEDURE: S4 must exist (either already or being created)
-    const hasS4 =
-      existing.has(SECTION_TYPES.S4_DEPOSE) ||
-      actions.some(
-        (a) => a.type === SECTION_TYPES.S4_DEPOSE && a.action !== 'skip',
-      );
-    if (!hasS4) {
+    // MISSING_PROCEDURE: current run must produce or update S4
+    // (stale S4 from a prior run should not suppress this flag)
+    const hasS4InActions = actions.some(
+      (a) => a.type === SECTION_TYPES.S4_DEPOSE && a.action !== 'skip',
+    );
+    if (!hasS4InActions) {
       flags.push('MISSING_PROCEDURE');
     }
 
@@ -1633,7 +1679,9 @@ export class ConseilEnricherService extends SupabaseBaseService {
     const s2Action = actions.find((a) => a.type === SECTION_TYPES.S2);
     const existingS2 = existing.get(SECTION_TYPES.S2);
     const s2Content = s2Action?.content || existingS2?.sgc_content || '';
-    if (s2Content && !/\d/.test(s2Content)) {
+    const HAS_QUANTITATIVE =
+      /\d+\s*(km|000|ans?|mois|heures?|litres?|nm|bar|°c|mm)/i;
+    if (s2Content && !HAS_QUANTITATIVE.test(s2Content)) {
       flags.push('NO_NUMBERS_IN_S2');
     }
 
@@ -1641,6 +1689,18 @@ export class ConseilEnricherService extends SupabaseBaseService {
     const s3Action = actions.find((a) => a.type === SECTION_TYPES.S3);
     if (s3Action && s3Action.content.length < 80) {
       flags.push('S3_TOO_SHORT');
+    }
+
+    // S4_DIAGNOSTIC_FALLBACK: S4 uses diagnostic tree instead of real procedure steps
+    const s4Action = actions.find((a) => a.type === SECTION_TYPES.S4_DEPOSE);
+    if (s4Action?.ragField === 'diagnosticTree_fallback') {
+      flags.push('S4_DIAGNOSTIC_FALLBACK');
+    }
+
+    // S2_PADDED_TABLE: S2_DIAG table has >50% padded rows (reused cause/check fallbacks)
+    const s2dAction = actions.find((a) => a.type === SECTION_TYPES.S2_DIAG);
+    if (s2dAction?.ragField === 'padded_table') {
+      flags.push('S2_PADDED_TABLE');
     }
 
     // Calculate score
