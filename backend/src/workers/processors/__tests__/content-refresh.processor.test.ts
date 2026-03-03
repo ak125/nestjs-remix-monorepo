@@ -103,6 +103,28 @@ jest.mock('../../../modules/rag-proxy/rag-proxy.service', () => ({
   RagProxyService: jest.fn(),
 }));
 
+jest.mock(
+  '../../../modules/admin/services/r1-content-pipeline.service',
+  () => ({
+    R1ContentPipelineService: jest.fn(),
+  }),
+);
+
+jest.mock('../../../modules/admin/services/rag-safe-distill.service', () => ({
+  RagSafeDistillService: jest.fn(),
+}));
+
+jest.mock(
+  '../../../modules/admin/services/pipeline-chain-poller.service',
+  () => ({
+    PipelineChainPollerService: jest.fn(),
+  }),
+);
+
+jest.mock('../../../modules/rag-proxy/services/rag-knowledge.service', () => ({
+  RagKnowledgeService: jest.fn(),
+}));
+
 // ── Now import the processor ──
 
 import { ContentRefreshProcessor } from '../content-refresh.processor';
@@ -123,6 +145,8 @@ const mockSupabaseFrom = jest.fn().mockReturnValue({
           limit: jest.fn().mockResolvedValue({ data: [] }),
         }),
       }),
+      maybeSingle: jest.fn().mockResolvedValue({ data: null }),
+      single: jest.fn().mockResolvedValue({ data: null }),
     }),
     single: jest.fn().mockResolvedValue({ data: null }),
   }),
@@ -165,6 +189,12 @@ beforeAll(() => {
   processor.diagnosticService = mockDiagnosticService;
   processor.jobHealth = mockJobHealth;
   processor.flags = mockFlags;
+  processor.r1Pipeline = { run: jest.fn() };
+  processor.ragSafeDistill = { distill: jest.fn() };
+  processor.chainPoller = { pollAndDispatch: jest.fn().mockResolvedValue(0) };
+  processor.ragKnowledgeService = {
+    getSupplementaryFilesForGamme: jest.fn().mockResolvedValue([]),
+  };
   processor.gammeLocksInProgress = new Set<number>();
 });
 
