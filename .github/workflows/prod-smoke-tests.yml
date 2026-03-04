@@ -309,6 +309,210 @@ jobs:
 
           if [ "$FAILED" = "1" ]; then exit 1; fi
 
+      - name: 🔎 SEO avance (og:image, h1, breadcrumb, preload)
+        run: |
+          BODY=$(docker exec $CONTAINER wget -qO- "http://localhost:3000$TEST_R1_URL" 2>/dev/null)
+          FAILED=0
+
+          # og:image absolute URL
+          OG_IMG=$(echo "$BODY" | grep -oP 'property="og:image" content="\K[^"]+' | head -1)
+          if echo "$OG_IMG" | grep -q '^https://'; then
+            echo "✅ og:image: ${OG_IMG:0:80}..."
+          else
+            echo "❌ og:image missing or not absolute: '$OG_IMG'"
+            FAILED=1
+          fi
+
+          # og:image dimensions
+          OG_W=$(echo "$BODY" | grep -oP 'property="og:image:width" content="\K[^"]+' | head -1)
+          OG_H=$(echo "$BODY" | grep -oP 'property="og:image:height" content="\K[^"]+' | head -1)
+          if [ "$OG_W" = "1200" ] && [ "$OG_H" = "630" ]; then
+            echo "✅ og:image dimensions: ${OG_W}x${OG_H}"
+          else
+            echo "❌ og:image dimensions: ${OG_W}x${OG_H} (expected 1200x630)"
+            FAILED=1
+          fi
+
+          # Exactly 1 <h1> tag
+          H1_COUNT=$(echo "$BODY" | grep -c '<h1' || echo "0")
+          if [ "$H1_COUNT" = "1" ]; then
+            H1_TEXT=$(echo "$BODY" | grep -oP '<h1[^>]*>\K[^<]+' | head -1)
+            echo "✅ h1 (x1): ${H1_TEXT:0:60}..."
+          elif [ "$H1_COUNT" = "0" ]; then
+            echo "❌ No <h1> tag found"
+            FAILED=1
+          else
+            echo "❌ Multiple <h1> tags ($H1_COUNT) — bad for SEO"
+            FAILED=1
+          fi
+
+          # JSON-LD BreadcrumbList with 3+ items
+          JSONLD=$(echo "$BODY" | grep -oP 'type="application/ld\+json">\K[^<]+' | head -1)
+          BC_RESULT=$(echo "$JSONLD" | python3 -c "
+          import sys,json
+          d=json.load(sys.stdin)
+          graph=d.get('@graph',[])
+          for node in graph:
+            if node.get('@type')=='BreadcrumbList':
+              items=node.get('itemListElement',[])
+              print(f'OK:{len(items)}')
+              sys.exit(0)
+          print('MISSING')
+          " 2>/dev/null || echo "ERROR")
+          if echo "$BC_RESULT" | grep -q "^OK:"; then
+            COUNT=${BC_RESULT#OK:}
+            if [ "$COUNT" -ge 3 ]; then
+              echo "✅ BreadcrumbList: $COUNT items"
+            else
+              echo "❌ BreadcrumbList only $COUNT items (expected 3+)"
+              FAILED=1
+            fi
+          else
+            echo "❌ BreadcrumbList missing from JSON-LD"
+            FAILED=1
+          fi
+
+          # Preload font (woff2)
+          FONT_PRELOADS=$(echo "$BODY" | grep -c 'rel="preload".*as="font"' || echo "0")
+          if [ "$FONT_PRELOADS" -ge 1 ]; then
+            echo "✅ Font preload: $FONT_PRELOADS link(s)"
+          else
+            echo "❌ No font preload hints"
+            FAILED=1
+          fi
+
+          # Preload image (logo-navbar)
+          if echo "$BODY" | grep -q 'rel="preload".*as="image"'; then
+            echo "✅ Image preload present"
+          else
+            echo "❌ No image preload (logo-navbar)"
+            FAILED=1
+          fi
+
+          if [ "$FAILED" = "1" ]; then exit 1; fi
+          echo "✅ All SEO avance checks passed"
+
+      - name: 🚫 404/410 handling
+        run: |
+          FAILED=0
+
+          # 410 on /pieces/suspension (no ID slug)
+          RESP_410=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000/pieces/suspension" 2>&1)
+          STATUS_410=$(echo "$RESP_410" | grep "HTTP/" | tail -1 | awk '{print $2}')
+          XROB_410=$(echo "$RESP_410" | grep -i "x-robots-tag" | head -1)
+          if [ "$STATUS_410" = "410" ]; then
+            echo "✅ /pieces/suspension -> 410 Gone"
+          else
+            echo "❌ /pieces/suspension -> HTTP $STATUS_410 (expected 410)"
+            FAILED=1
+          fi
+          if echo "$XROB_410" | grep -qi "noindex"; then
+            echo "✅ 410 has X-Robots-Tag: noindex"
+          else
+            echo "❌ 410 missing X-Robots-Tag noindex: '$XROB_410'"
+            FAILED=1
+          fi
+
+          # 404 on unknown URL
+          RESP_404=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000/this-page-does-not-exist-xyz" 2>&1)
+          STATUS_404=$(echo "$RESP_404" | grep "HTTP/" | tail -1 | awk '{print $2}')
+          if [ "$STATUS_404" = "404" ]; then
+            echo "✅ /this-page-does-not-exist-xyz -> 404"
+          else
+            echo "❌ /this-page-does-not-exist-xyz -> HTTP $STATUS_404 (expected 404)"
+            FAILED=1
+          fi
+
+          # Valid page must NOT have X-Robots-Tag: noindex
+          RESP_200=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000$TEST_R1_URL" 2>&1)
+          XROB_200=$(echo "$RESP_200" | grep -i "x-robots-tag" | head -1)
+          if echo "$XROB_200" | grep -qi "noindex"; then
+            echo "❌ Valid page has X-Robots-Tag noindex! '$XROB_200'"
+            FAILED=1
+          else
+            echo "✅ Valid page: no X-Robots-Tag noindex"
+          fi
+
+          if [ "$FAILED" = "1" ]; then exit 1; fi
+          echo "✅ All 404/410 checks passed"
+
+      - name: ⚡ LCP proxy checks
+        id: lcp-check
+        continue-on-error: true
+        run: |
+          BODY=$(docker exec $CONTAINER wget -qO- "http://localhost:3000$TEST_R1_URL" 2>/dev/null)
+          FAILED=0
+
+          # Server-side response time < 500ms
+          START=$(date +%s%N)
+          docker exec $CONTAINER wget -qO /dev/null "http://localhost:3000$TEST_R1_URL" 2>/dev/null
+          END=$(date +%s%N)
+          ELAPSED=$(( (END - START) / 1000000 ))
+          if [ "$ELAPSED" -lt 500 ]; then
+            echo "✅ Server response time: ${ELAPSED}ms (< 500ms)"
+          else
+            echo "⚠️ Server response time: ${ELAPSED}ms (> 500ms)"
+            FAILED=1
+          fi
+
+          # Font preload (woff2) — 2 fonts expected
+          WOFF2_COUNT=$(echo "$BODY" | grep -c 'rel="preload".*type="font/woff2"' || echo "0")
+          if [ "$WOFF2_COUNT" -ge 2 ]; then
+            echo "✅ woff2 preload: $WOFF2_COUNT fonts"
+          else
+            echo "⚠️ Only $WOFF2_COUNT woff2 preloads (expected 2: inter + montserrat)"
+            FAILED=1
+          fi
+
+          # Stylesheet preload
+          if echo "$BODY" | grep -q 'rel="preload".*as="style"'; then
+            echo "✅ Stylesheet preload present"
+          else
+            echo "⚠️ No stylesheet preload"
+            FAILED=1
+          fi
+
+          # SSR HTML size < 300KB (no bloat)
+          SIZE=$(echo "$BODY" | wc -c)
+          if [ "$SIZE" -lt 300000 ]; then
+            echo "✅ HTML size: ${SIZE}B (< 300KB)"
+          else
+            echo "⚠️ HTML size: ${SIZE}B (> 300KB — possible bloat)"
+            FAILED=1
+          fi
+
+          if [ "$FAILED" = "1" ]; then exit 1; fi
+
+      - name: 🛡️ CSP header
+        id: csp-check
+        continue-on-error: true
+        run: |
+          HEADERS=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000$TEST_R1_URL" 2>&1)
+          FAILED=0
+
+          # Content-Security-Policy present with nonce
+          CSP=$(echo "$HEADERS" | grep -i "content-security-policy" | head -1)
+          if [ -z "$CSP" ]; then
+            echo "⚠️ Content-Security-Policy header absent"
+            FAILED=1
+          elif echo "$CSP" | grep -q "nonce-"; then
+            echo "✅ CSP present with nonce"
+          else
+            echo "⚠️ CSP present but no nonce: ${CSP:0:100}..."
+            FAILED=1
+          fi
+
+          # X-Powered-By must be absent
+          POWERED=$(echo "$HEADERS" | grep -i "x-powered-by" | head -1)
+          if [ -z "$POWERED" ]; then
+            echo "✅ X-Powered-By: absent (good)"
+          else
+            echo "⚠️ X-Powered-By exposed: $POWERED"
+            FAILED=1
+          fi
+
+          if [ "$FAILED" = "1" ]; then exit 1; fi
+
       - name: 🐳 Containers status
         if: always()
         run: |
@@ -329,6 +533,8 @@ jobs:
           echo "| TTFB | ${{ steps.ttfb-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Compression | ${{ steps.compression-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Security headers | ${{ steps.security-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| LCP proxy | ${{ steps.lcp-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| CSP header | ${{ steps.csp-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "_Run: $(date -u '+%Y-%m-%d %H:%M UTC')_" >> $GITHUB_STEP_SUMMARY
 
