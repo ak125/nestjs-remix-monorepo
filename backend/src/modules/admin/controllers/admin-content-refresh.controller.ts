@@ -293,6 +293,15 @@ export class AdminContentRefreshController {
     return this.contentRefreshService.getRagCoverageSummary();
   }
 
+  /**
+   * GET /api/admin/content-refresh/r1-coverage
+   * R1 pipeline coverage per section (pipeline vs fallback counts).
+   */
+  @Get('r1-coverage')
+  async getR1PipelineCoverage() {
+    return this.contentRefreshService.getR1PipelineCoverage();
+  }
+
   // ── Quality Scoring V2 ──
 
   /**

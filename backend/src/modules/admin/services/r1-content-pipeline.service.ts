@@ -410,7 +410,10 @@ export class R1ContentPipelineService extends SupabaseBaseService {
       prompt: `Generate intent lock for gamme: ${gammeName}`,
       context: {
         gammeName,
-        ragContent: rag.rawContent.substring(0, 3000),
+        ragContent: this.stripR3SectionsFromRag(rag.rawContent).substring(
+          0,
+          3000,
+        ),
         frontmatter: rag.frontmatter,
         boundaries: boundaries || null,
         r3RiskTerms: r3RiskTerms || [],
@@ -450,7 +453,10 @@ export class R1ContentPipelineService extends SupabaseBaseService {
       context: {
         gammeName,
         intentLock,
-        ragContent: rag.rawContent.substring(0, 2000),
+        ragContent: this.stripR3SectionsFromRag(rag.rawContent).substring(
+          0,
+          2000,
+        ),
         selectionCriteria: rag.frontmatter.selection_criteria ?? [],
         familyLabel: familyLabel || '',
         ...(headingPlan && { headingPlan }),
@@ -494,7 +500,10 @@ export class R1ContentPipelineService extends SupabaseBaseService {
         gammeName,
         intentLock,
         serpPack,
-        ragContent: rag.rawContent.substring(0, 3000),
+        ragContent: this.stripR3SectionsFromRag(rag.rawContent).substring(
+          0,
+          3000,
+        ),
         htmlDraft: htmlDraft || '',
         brief: brief
           ? {
@@ -763,6 +772,26 @@ export class R1ContentPipelineService extends SupabaseBaseService {
     }
   }
 
+  // ── RAG Content Filtering (strip R3 sections for R1 prompts) ──
+
+  /**
+   * Strip R3-only YAML blocks (diagnostic, maintenance, installation) from RAG
+   * content before passing to R1 prompts. These sections contain procedural and
+   * diagnostic content that is forbidden in R1 and wastes LLM tokens.
+   *
+   * For shorter RAG files (~6700 chars), R3 blocks fall within the 3000-char
+   * window sent to P1/P3, displacing useful R1 content (selection criteria,
+   * rendering FAQ, arguments).
+   */
+  private stripR3SectionsFromRag(rawContent: string): string {
+    // Remove top-level YAML blocks: diagnostic, maintenance, installation
+    // Match: block header at col 0 + all following indented/empty lines
+    return rawContent.replace(
+      /^(diagnostic|maintenance|installation):[ \t]*\n([ \t]+.*\n|[ \t]*\n)*/gm,
+      '',
+    );
+  }
+
   // ── RAG Sufficiency Validation ──
 
   private validateRagSufficiency(rag: RagStructuredContent): {
@@ -982,9 +1011,7 @@ export class R1ContentPipelineService extends SupabaseBaseService {
             }),
           ),
         }),
-        ...(data.visual_plan && {
-          sgpg_visual_plan: data.visual_plan,
-        }),
+        // visual_plan removed from P3 output — orphan R1 column (never consumed by frontend)
         sgpg_updated_at: new Date(),
       })
       .eq('sgpg_pg_id', pgId);

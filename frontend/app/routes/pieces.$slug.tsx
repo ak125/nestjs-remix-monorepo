@@ -71,7 +71,6 @@ import {
   trackSelectorCTA,
   trackSelectorResume,
 } from "~/utils/analytics";
-import { validateFaqItems } from "~/utils/faq-validator";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { ImageOptimizer } from "~/utils/image-optimizer";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -86,9 +85,12 @@ import {
   sanitizePurchaseGuideForR1,
   type R1PurchaseGuideData,
 } from "~/utils/r1-builders";
-import { mergeR1Faq } from "~/utils/r1-faq-merge";
 import {
-  buildR1SourceMap,
+  buildR1SectionPack,
+  type R1SectionPack,
+} from "~/utils/r1-section-pack";
+import {
+  buildSourceMapFromPack,
   sourceAttr,
   type R1SourceMap,
 } from "~/utils/r1-source-tracker";
@@ -181,11 +183,6 @@ const R1_SELECTOR_FAQ = [
     question: "Où trouver le CNIT ou le Type Mine de mon véhicule ?",
     answer:
       "Le CNIT (ex : M10RENCVP04E001) et le Type Mine figurent sur votre certificat d'immatriculation. Entrez-les dans notre recherche par Type Mine pour une identification précise.",
-  },
-  {
-    question: "Quels sont les délais de livraison pour les pièces auto ?",
-    answer:
-      "Les commandes passées avant 15h sont expédiées le jour même. La livraison standard est de 24 à 48h en France métropolitaine. Vous recevez un numéro de suivi par e-mail dès l'expédition.",
   },
 ];
 
@@ -416,7 +413,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     const purchaseGuideData = sanitizePurchaseGuideForR1(
       pageData.purchaseGuideData,
     );
-    const r1Sources = buildR1SourceMap(purchaseGuideData);
+    const sectionPack = buildR1SectionPack({
+      purchaseGuideData,
+      proofData,
+      gammeName: pageData.content?.pg_name?.toLowerCase() || "piece",
+      familleName: pageData.famille?.mf_name || "",
+      gammeId: parseInt(gammeId, 10),
+      selectorFaq: R1_SELECTOR_FAQ,
+    });
+    const r1Sources = buildSourceMapFromPack(sectionPack);
 
     return defer(
       {
@@ -430,6 +435,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         famille: pageData.famille,
         performance: pageData.performance,
         purchaseGuideData,
+        sectionPack,
         r1Sources,
         substitution: pageData.substitution,
         reference: pageData.reference,
@@ -578,6 +584,7 @@ type PiecesPageData = Omit<GammePageDataV1, "purchaseGuideData"> & {
   gammeId: number;
   canonicalPath?: string;
   purchaseGuideData?: R1PurchaseGuideData;
+  sectionPack?: R1SectionPack;
   motorisationsSchema?: Array<{
     marque_name: string;
     modele_name: string;
@@ -720,7 +727,8 @@ export default function PiecesDetailPage() {
         slogan={resolveSlogan("transaction", data.content?.pg_name)}
         badges={
           buildHeroProps({
-            purchaseGuideArgs: data.purchaseGuideData?.arguments,
+            purchaseGuideArgs:
+              data.sectionPack?.sections.buyArgs.data.arguments ?? undefined,
             motorisationsCount: data.performance?.motorisations_count,
           }).badges
         }
@@ -771,7 +779,7 @@ export default function PiecesDetailPage() {
               {(() => {
                 // Priorité: h1Override > h1 existant > fallback
                 const rawH1 =
-                  data.purchaseGuideData?.h1Override ||
+                  data.sectionPack?.sections.hero.data.h1Override ||
                   data.content?.h1 ||
                   `${data.content?.pg_name || "Pièces auto"} — trouvez la référence compatible avec votre véhicule`;
                 // Nettoyer les balises HTML (<b>, </b>, etc.)
@@ -782,7 +790,7 @@ export default function PiecesDetailPage() {
         </div>
 
         <p className="text-white/80 text-base md:text-lg font-medium text-center mt-3 max-w-2xl mx-auto">
-          {data.purchaseGuideData?.heroSubtitle ||
+          {data.sectionPack?.sections.hero.data.heroSubtitle ||
             (() => {
               const name = data.content?.pg_name?.toLowerCase() || "";
               const pluralName = pluralizePieceName(name);
@@ -970,10 +978,11 @@ export default function PiecesDetailPage() {
                         );
                       }}
                     />
-                    {data.purchaseGuideData?.selectorMicrocopy &&
-                      data.purchaseGuideData.selectorMicrocopy.length > 0 && (
+                    {data.sectionPack?.sections.selectorMicrocopy.data &&
+                      data.sectionPack.sections.selectorMicrocopy.data.length >
+                        0 && (
                         <div className="mt-3 space-y-1">
-                          {data.purchaseGuideData.selectorMicrocopy
+                          {data.sectionPack.sections.selectorMicrocopy.data
                             .slice(0, 2)
                             .map((tip, i) => (
                               <p
@@ -1085,7 +1094,9 @@ export default function PiecesDetailPage() {
               alias={data.content?.pg_alias || ""}
               reference={data.reference}
               proofs={proofs}
-              microSeoBlock={data.purchaseGuideData?.microSeoBlock}
+              microSeoBlock={
+                data.sectionPack?.sections.buyArgs.data.microSeoBlock
+              }
             />
           );
 
@@ -1138,7 +1149,8 @@ export default function PiecesDetailPage() {
                   familleName={data.content?.pg_name || "pièces"}
                   totalCount={data.performance?.motorisations_count}
                   compatibilitiesIntro={
-                    data.purchaseGuideData?.compatibilitiesIntro ?? undefined
+                    data.sectionPack?.sections.motorisations.data
+                      .compatibilitiesIntro ?? undefined
                   }
                   variant="R1"
                 />
@@ -1160,7 +1172,7 @@ export default function PiecesDetailPage() {
           }
         >
           <SafeCompatTable
-            rows={data.purchaseGuideData?.safeTableRows ?? undefined}
+            rows={data.sectionPack?.sections.safeTable.data}
             gammeName={data.content?.pg_name}
             familleName={data.famille?.mf_name}
           />
@@ -1175,7 +1187,7 @@ export default function PiecesDetailPage() {
         className="py-4 sm:py-6"
       >
         <R1CompatErrors
-          compatErrors={data.purchaseGuideData?.compatErrors}
+          compatErrors={data.sectionPack?.sections.compatErrors.data}
           gammeName={data.content?.pg_name?.toLowerCase() || "pièce"}
           familleName={data.famille?.mf_name}
         />
@@ -1191,7 +1203,8 @@ export default function PiecesDetailPage() {
             <SectionHeader
               title="Équipementiers OE & qualité premium"
               sub={
-                data.purchaseGuideData?.equipementiersLine ||
+                data.sectionPack?.sections.equipementiers.data
+                  .equipementiersLine ||
                 "Fabricants de première monte et équivalent qualité"
               }
               dark
@@ -1243,7 +1256,8 @@ export default function PiecesDetailPage() {
                         }),
                       )}
                       intro={
-                        data.purchaseGuideData?.familyCrossSellIntro ||
+                        data.sectionPack?.sections.catalogue.data
+                          .familyCrossSellIntro ||
                         `Complétez votre entretien : découvrez les pièces complémentaires à votre ${data.content?.pg_name?.toLowerCase() || "pièce"}.`
                       }
                       variant="R1"
@@ -1271,9 +1285,7 @@ export default function PiecesDetailPage() {
             }
           >
             <FAQSection
-              faq={validateFaqItems(
-                mergeR1Faq(data.purchaseGuideData?.faq, R1_SELECTOR_FAQ),
-              )}
+              faq={data.sectionPack?.sections.faq.data ?? []}
               gammeName={data.content?.pg_name || "cette pièce"}
               withJsonLd={false}
             />
@@ -1303,9 +1315,7 @@ export default function PiecesDetailPage() {
       <MobileStickyBar
         gammeName={data.content?.pg_name}
         hasCompatibilities={(data.proofData?.motorisationsCount || 0) > 0}
-        hasFaq={
-          !!(data.purchaseGuideData?.faq?.length || R1_SELECTOR_FAQ?.length)
-        }
+        hasFaq={!!data.sectionPack?.sections.faq.data?.length}
       />
 
       {/* Spacer pour éviter que le contenu soit masqué par la sticky bar */}

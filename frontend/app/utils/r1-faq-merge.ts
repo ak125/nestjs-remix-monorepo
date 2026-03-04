@@ -1,14 +1,20 @@
 /**
- * Merge pipeline FAQ (sgpg_faq) with static R1_SELECTOR_FAQ.
- * Dedup by normalized question text. Pipeline FAQ takes priority.
+ * R1 FAQ resolution — pipeline vs fallback (exclusive mode).
+ *
+ * Merge policy v2: pipeline ≥ minPipelineItems valid items → pipeline ONLY.
+ * Otherwise → fallback entirely. No mixing pipeline + fallback.
  */
 
-interface FaqItem {
+import { validateFaqItems } from "~/utils/faq-validator";
+
+import { type R1Source } from "~/utils/r1-source-tracker";
+
+export interface FaqItem {
   question: string;
   answer: string;
 }
 
-function normalizeFaqKey(question: string): string {
+export function normalizeFaqKey(question: string): string {
   return question
     .toLowerCase()
     .normalize("NFD")
@@ -19,8 +25,28 @@ function normalizeFaqKey(question: string): string {
 }
 
 /**
- * Merge two FAQ sources with dedup. Pipeline/DB FAQ takes priority,
- * then selector FAQ fills remaining slots up to maxItems.
+ * Exclusive FAQ resolution: pipeline OR fallback, never both.
+ * - If pipeline has ≥ minPipelineItems valid items → use pipeline only.
+ * - Otherwise → use fallback entirely.
+ */
+export function resolveR1Faq(
+  pipelineFaq: FaqItem[] | null | undefined,
+  selectorFaq: FaqItem[],
+  minPipelineItems = 3,
+): { items: FaqItem[]; source: R1Source } {
+  const validated = validateFaqItems(
+    (pipelineFaq || []) as Array<{ question: string; answer: string }>,
+    8,
+  );
+  if (validated.length >= minPipelineItems) {
+    return { items: validated, source: "prompt" };
+  }
+  return { items: validateFaqItems(selectorFaq, 6), source: "fallback" };
+}
+
+/**
+ * @deprecated Use resolveR1Faq() instead. Kept for JSON-LD backward compat
+ * where we want maximum FAQ coverage regardless of source.
  */
 export function mergeR1Faq(
   pipelineFaq: FaqItem[] | null | undefined,

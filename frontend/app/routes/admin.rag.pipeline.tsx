@@ -25,6 +25,15 @@ import {
   Activity,
   Info,
   MoreHorizontal,
+  FlaskConical,
+  Database,
+  Fingerprint,
+  BarChart3,
+  Trash2,
+  Wrench,
+  Globe,
+  Clock,
+  Layers,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -53,6 +62,7 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Checkbox } from "~/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -155,22 +165,37 @@ export async function loader({ request }: LoaderFunctionArgs) {
   statusParams.set("limit", limit);
   statusParams.set("offset", offset);
 
-  const [dashboardRes, statusRes] = await Promise.allSettled([
-    fetch(
-      getInternalApiUrlFromRequest(
-        "/api/admin/content-refresh/dashboard",
-        request,
+  const [dashboardRes, statusRes, coverageRes, r1CoverageRes] =
+    await Promise.allSettled([
+      fetch(
+        getInternalApiUrlFromRequest(
+          "/api/admin/content-refresh/dashboard",
+          request,
+        ),
+        { headers },
       ),
-      { headers },
-    ),
-    fetch(
-      getInternalApiUrlFromRequest(
-        `/api/admin/content-refresh/status?${statusParams.toString()}`,
-        request,
+      fetch(
+        getInternalApiUrlFromRequest(
+          `/api/admin/content-refresh/status?${statusParams.toString()}`,
+          request,
+        ),
+        { headers },
       ),
-      { headers },
-    ),
-  ]);
+      fetch(
+        getInternalApiUrlFromRequest(
+          "/api/admin/content-refresh/rag-coverage-summary",
+          request,
+        ),
+        { headers },
+      ),
+      fetch(
+        getInternalApiUrlFromRequest(
+          "/api/admin/content-refresh/r1-coverage",
+          request,
+        ),
+        { headers },
+      ),
+    ]);
 
   const dashboardRaw =
     dashboardRes.status === "fulfilled" && dashboardRes.value.ok
@@ -184,10 +209,35 @@ export async function loader({ request }: LoaderFunctionArgs) {
       ? await statusRes.value.json()
       : { data: [], total: 0 };
 
+  const ragCoverage: {
+    gammesCovered?: number;
+    totalGammes?: number;
+    ragCoveragePercent?: number;
+    webContentSources?: number;
+    recentIngestionJobs?: number;
+  } =
+    coverageRes.status === "fulfilled" && coverageRes.value.ok
+      ? await coverageRes.value.json()
+      : {};
+
+  const r1Coverage: {
+    sections?: Array<{
+      section: string;
+      pipeline: number;
+      fallback: number;
+      total: number;
+    }>;
+  } =
+    r1CoverageRes.status === "fulfilled" && r1CoverageRes.value.ok
+      ? await r1CoverageRes.value.json()
+      : {};
+
   return json({
     dashboard,
     items: statusData.data,
     total: statusData.total,
+    ragCoverage,
+    r1Coverage,
     filters: {
       status,
       pageType,
@@ -217,6 +267,14 @@ const PAGE_TYPE_LABELS: Record<string, string> = {
   R4_reference: "R4 Reference",
   R5_diagnostic: "R5 Diagnostic",
 };
+
+const PAGE_TYPE_OPTIONS = [
+  { value: "R1_pieces", label: "R1 Pieces" },
+  { value: "R3_conseils", label: "R3 Conseils" },
+  { value: "R3_guide_achat", label: "R3 Guide Achat" },
+  { value: "R4_reference", label: "R4 Reference" },
+  { value: "R6_guide_achat", label: "R6 Guide Achat" },
+] as const;
 
 const GATE_LABELS: Record<string, string> = {
   attribution: "Attribution des sources",
@@ -339,12 +397,16 @@ function PipelineActions({
   onViewEvidence,
   onPublish,
   onReject,
+  onRetry,
+  retrying,
 }: {
   item: RefreshItem;
   onViewGates: () => void;
   onViewEvidence: () => void;
   onPublish: () => void;
   onReject: () => void;
+  onRetry: () => void;
+  retrying: boolean;
 }) {
   const gates = parseGateResults(item.hard_gate_results);
   const hasEvidence =
@@ -387,9 +449,15 @@ function PipelineActions({
         {item.status === "failed" && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled className="text-muted-foreground">
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Relancer (bientot)
+            <DropdownMenuItem
+              onClick={onRetry}
+              disabled={retrying}
+              className="text-orange-700"
+            >
+              <RotateCcw
+                className={`h-4 w-4 mr-2 ${retrying ? "animate-spin" : ""}`}
+              />
+              {retrying ? "Relance..." : "Relancer"}
             </DropdownMenuItem>
           </>
         )}
@@ -401,19 +469,57 @@ function PipelineActions({
 // ── Main component ──
 
 export default function AdminRagPipeline() {
-  const { dashboard, items, total, filters } = useLoaderData<typeof loader>();
+  const { dashboard, items, total, ragCoverage, r1Coverage, filters } =
+    useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const revalidator = useRevalidator();
 
   // Trigger form state
   const [triggerAlias, setTriggerAlias] = useState("");
   const [triggerForce, setTriggerForce] = useState(false);
+  const [triggerPageTypes, setTriggerPageTypes] = useState<string[]>([]);
   const [triggerSubmitting, setTriggerSubmitting] = useState(false);
   const [triggerResult, setTriggerResult] = useState<{
     success?: boolean;
     error?: string;
     queued?: Array<{ pgAlias: string; pageTypes: string[] }>;
   } | null>(null);
+
+  // Force-enrich state
+  const [enrichAlias, setEnrichAlias] = useState("");
+  const [enrichSections, setEnrichSections] = useState("");
+  const [enrichSubmitting, setEnrichSubmitting] = useState(false);
+  const [enrichResult, setEnrichResult] = useState<{
+    success?: boolean;
+    error?: string;
+    queuedPageTypes?: string[];
+  } | null>(null);
+
+  // Operations state
+  const [cleanupMode, setCleanupMode] = useState<"dry" | "commit">("dry");
+  const [cleanupSubmitting, setCleanupSubmitting] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+  const [syncPattern, setSyncPattern] = useState("gammes/*.md");
+  const [syncSubmitting, setSyncSubmitting] = useState(false);
+  const [syncResult, setSyncResult] = useState<Record<string, unknown> | null>(
+    null,
+  );
+  const [backfillSubmitting, setBackfillSubmitting] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<{
+    updated?: number;
+    error?: string;
+  } | null>(null);
+  const [qualitySubmitting, setQualitySubmitting] = useState(false);
+  const [qualityResult, setQualityResult] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+
+  // Retry state
+  const [retryingId, setRetryingId] = useState<number | null>(null);
 
   // Reject dialog state
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -425,6 +531,13 @@ export default function AdminRagPipeline() {
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [detailItem, setDetailItem] = useState<RefreshItem | null>(null);
   const [detailTab, setDetailTab] = useState<string>("gates");
+
+  // Snapshot state
+  const [snapshotData, setSnapshotData] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+  const [snapshotLoading, setSnapshotLoading] = useState(false);
 
   // Publish confirmation dialog
   const [publishDialogOpen, setPublishDialogOpen] = useState(false);
@@ -449,21 +562,29 @@ export default function AdminRagPipeline() {
 
   async function handleTrigger(e: React.FormEvent) {
     e.preventDefault();
-    const alias = triggerAlias.trim();
-    if (!alias) {
+    const raw = triggerAlias.trim();
+    if (!raw) {
       setTriggerResult({ error: "Le nom de la gamme est requis" });
       return;
     }
+    const aliases = raw
+      .split(",")
+      .map((a) => a.trim())
+      .filter(Boolean);
     setTriggerSubmitting(true);
     setTriggerResult(null);
     try {
+      const body: Record<string, unknown> = {
+        ...(aliases.length === 1
+          ? { pgAlias: aliases[0] }
+          : { pgAliases: aliases }),
+        ...(triggerForce ? { force: true } : {}),
+        ...(triggerPageTypes.length > 0 ? { pageTypes: triggerPageTypes } : {}),
+      };
       const res = await fetch("/api/admin/content-refresh/trigger", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pgAlias: alias,
-          ...(triggerForce ? { force: true } : {}),
-        }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -473,6 +594,7 @@ export default function AdminRagPipeline() {
       } else {
         setTriggerResult({ success: true, queued: data.queued });
         setTriggerAlias("");
+        setTriggerPageTypes([]);
       }
     } catch (err) {
       setTriggerResult({
@@ -481,6 +603,151 @@ export default function AdminRagPipeline() {
     } finally {
       setTriggerSubmitting(false);
       revalidator.revalidate();
+    }
+  }
+
+  async function handleForceEnrich(e: React.FormEvent) {
+    e.preventDefault();
+    const alias = enrichAlias.trim();
+    if (!alias) {
+      setEnrichResult({ error: "Le nom de la gamme est requis" });
+      return;
+    }
+    const sectionsFilter = enrichSections.trim()
+      ? enrichSections
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : undefined;
+    setEnrichSubmitting(true);
+    setEnrichResult(null);
+    try {
+      const res = await fetch("/api/admin/rag/pdf-merge/force-enrich", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pgAlias: alias,
+          ...(sectionsFilter ? { sectionsFilter } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setEnrichResult({
+          error: `Erreur ${res.status}: ${data.message || JSON.stringify(data)}`,
+        });
+      } else {
+        toast.success(`Force-enrich lance pour "${alias}"`);
+        setEnrichResult({
+          success: true,
+          queuedPageTypes: data.queuedPageTypes,
+        });
+        setEnrichAlias("");
+        setEnrichSections("");
+      }
+    } catch (err) {
+      setEnrichResult({
+        error: `Erreur: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    } finally {
+      setEnrichSubmitting(false);
+      revalidator.revalidate();
+    }
+  }
+
+  async function handleCleanupBatch() {
+    setCleanupSubmitting(true);
+    setCleanupResult(null);
+    try {
+      const res = await fetch("/api/rag/admin/cleanup/batch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: cleanupMode }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(`Erreur cleanup: ${data.message || res.status}`);
+      } else {
+        toast.success(
+          `Cleanup ${cleanupMode === "dry" ? "(dry-run)" : "(commit)"} termine`,
+        );
+        setCleanupResult(data);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setCleanupSubmitting(false);
+    }
+  }
+
+  async function handleSyncFiles() {
+    if (!syncPattern.trim()) return;
+    setSyncSubmitting(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/rag/admin/cleanup/sync-files", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pattern: syncPattern.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(`Erreur sync: ${data.message || res.status}`);
+      } else {
+        toast.success(`Sync termine : ${data.synced ?? 0} fichiers`);
+        setSyncResult(data);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSyncSubmitting(false);
+    }
+  }
+
+  async function handleBackfillFingerprints() {
+    setBackfillSubmitting(true);
+    setBackfillResult(null);
+    try {
+      const res = await fetch("/api/rag/admin/cleanup/backfill-fingerprints", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ batchSize: 50 }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(`Erreur backfill: ${data.message || res.status}`);
+        setBackfillResult({ error: data.message || String(res.status) });
+      } else {
+        toast.success(`${data.updated ?? 0} empreintes calculees`);
+        setBackfillResult({ updated: data.updated });
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBackfillSubmitting(false);
+    }
+  }
+
+  async function handleComputeQualityScores() {
+    setQualitySubmitting(true);
+    setQualityResult(null);
+    try {
+      const res = await fetch(
+        "/api/admin/content-refresh/compute-quality-scores",
+        { method: "POST" },
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(`Erreur scores: ${data.message || res.status}`);
+      } else {
+        toast.success(
+          `Scores calcules : ${data.pagesScored ?? 0} pages, ${data.gammesAggregated ?? 0} gammes`,
+        );
+        setQualityResult(data);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setQualitySubmitting(false);
     }
   }
 
@@ -549,7 +816,36 @@ export default function AdminRagPipeline() {
   function openDetailDialog(item: RefreshItem, tab: string) {
     setDetailItem(item);
     setDetailTab(tab);
+    setSnapshotData(null);
     setDetailDialogOpen(true);
+  }
+
+  async function handleRetry(item: RefreshItem) {
+    setRetryingId(item.id);
+    try {
+      const res = await fetch("/api/admin/content-refresh/trigger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pgAlias: item.pg_alias,
+          force: true,
+          pageTypes: [item.page_type],
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(`Erreur relance: ${data.message || res.status}`);
+      } else {
+        toast.success(
+          `Relance lancee pour ${item.pg_alias} (${item.page_type})`,
+        );
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setRetryingId(null);
+      revalidator.revalidate();
+    }
   }
 
   // ── Column definitions ──
@@ -658,6 +954,8 @@ export default function AdminRagPipeline() {
           }
           onPublish={() => openPublishDialog((row as RefreshItem).id)}
           onReject={() => openRejectDialog((row as RefreshItem).id)}
+          onRetry={() => handleRetry(row as RefreshItem)}
+          retrying={retryingId === (row as RefreshItem).id}
         />
       ),
     },
@@ -694,35 +992,125 @@ export default function AdminRagPipeline() {
         </Button>
       }
       kpis={
-        <KpiGrid columns={4}>
-          <KpiCard
-            title="Brouillons"
-            value={displayCounts.draft || 0}
-            icon={FileText}
-            variant="info"
-          />
-          <KpiCard
-            title="Publies"
-            value={
-              (displayCounts.published || 0) +
-              (displayCounts.auto_published || 0)
-            }
-            icon={CheckCircle2}
-            variant="success"
-          />
-          <KpiCard
-            title="Ignores"
-            value={displayCounts.skipped || 0}
-            icon={SkipForward}
-            variant="default"
-          />
-          <KpiCard
-            title="Echoues"
-            value={displayCounts.failed || 0}
-            icon={XCircle}
-            variant="danger"
-          />
-        </KpiGrid>
+        <div className="space-y-3">
+          <KpiGrid columns={4}>
+            <KpiCard
+              title="Brouillons"
+              value={displayCounts.draft || 0}
+              icon={FileText}
+              variant="info"
+            />
+            <KpiCard
+              title="Publies"
+              value={
+                (displayCounts.published || 0) +
+                (displayCounts.auto_published || 0)
+              }
+              icon={CheckCircle2}
+              variant="success"
+            />
+            <KpiCard
+              title="Ignores"
+              value={displayCounts.skipped || 0}
+              icon={SkipForward}
+              variant="default"
+            />
+            <KpiCard
+              title="Echoues"
+              value={displayCounts.failed || 0}
+              icon={XCircle}
+              variant="danger"
+            />
+          </KpiGrid>
+          <KpiGrid columns={4}>
+            <KpiCard
+              title="Gammes couvertes"
+              value={`${ragCoverage.gammesCovered ?? 0} / ${ragCoverage.totalGammes ?? 0}`}
+              icon={Layers}
+              variant="default"
+            />
+            <KpiCard
+              title="Coverage RAG"
+              value={`${ragCoverage.ragCoveragePercent ?? 0}%`}
+              icon={BarChart3}
+              variant={
+                (ragCoverage.ragCoveragePercent ?? 0) >= 70
+                  ? "success"
+                  : (ragCoverage.ragCoveragePercent ?? 0) >= 40
+                    ? "warning"
+                    : "danger"
+              }
+            />
+            <KpiCard
+              title="Sources web"
+              value={ragCoverage.webContentSources ?? 0}
+              icon={Globe}
+              variant="info"
+            />
+            <KpiCard
+              title="Jobs recents 24h"
+              value={ragCoverage.recentIngestionJobs ?? 0}
+              icon={Clock}
+              variant="default"
+            />
+          </KpiGrid>
+          {r1Coverage.sections && r1Coverage.sections.length > 0 && (
+            <div className="rounded-lg border bg-card p-4">
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
+                <Database className="h-4 w-4" />
+                R1 Pipeline Coverage
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pb-2 pr-4">Section</th>
+                      <th className="pb-2 pr-4 text-right">Pipeline</th>
+                      <th className="pb-2 pr-4 text-right">Fallback</th>
+                      <th className="pb-2 pr-4 text-right">Total</th>
+                      <th className="pb-2 text-right">%</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {r1Coverage.sections.map((s) => {
+                      const pct =
+                        s.total > 0
+                          ? Math.round((s.pipeline / s.total) * 100)
+                          : 0;
+                      return (
+                        <tr key={s.section} className="border-b last:border-0">
+                          <td className="py-1.5 pr-4 font-mono text-xs">
+                            {s.section}
+                          </td>
+                          <td className="py-1.5 pr-4 text-right font-medium">
+                            {s.pipeline}
+                          </td>
+                          <td className="py-1.5 pr-4 text-right text-muted-foreground">
+                            {s.fallback}
+                          </td>
+                          <td className="py-1.5 pr-4 text-right">{s.total}</td>
+                          <td className="py-1.5 text-right">
+                            <span
+                              className={
+                                pct >= 70
+                                  ? "text-green-600"
+                                  : pct >= 30
+                                    ? "text-yellow-600"
+                                    : "text-red-600"
+                              }
+                            >
+                              {pct}%
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
       }
     >
       {/* Guide */}
@@ -757,43 +1145,67 @@ export default function AdminRagPipeline() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form
-            onSubmit={handleTrigger}
-            className="flex flex-col gap-4 sm:flex-row sm:items-end"
-          >
-            <div className="flex-1 space-y-1.5">
-              <Label htmlFor="triggerAlias">Nom de la gamme</Label>
-              <Input
-                id="triggerAlias"
-                name="triggerAlias"
-                placeholder="disque-de-frein, plaquette-frein, filtre-a-huile..."
-                value={triggerAlias}
-                onChange={(e) => setTriggerAlias(e.target.value)}
+          <form onSubmit={handleTrigger} className="space-y-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+              <div className="flex-1 space-y-1.5">
+                <Label htmlFor="triggerAlias">
+                  Gamme(s) — separer par virgule pour batch
+                </Label>
+                <Input
+                  id="triggerAlias"
+                  name="triggerAlias"
+                  placeholder="disque-de-frein, plaquette-frein, filtre-a-huile"
+                  value={triggerAlias}
+                  onChange={(e) => setTriggerAlias(e.target.value)}
+                  disabled={triggerSubmitting}
+                />
+              </div>
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={triggerForce}
+                  onChange={(e) => setTriggerForce(e.target.checked)}
+                  disabled={triggerSubmitting}
+                  className="rounded border-gray-300"
+                />
+                Forcer
+              </label>
+              <Button
+                type="submit"
                 disabled={triggerSubmitting}
-              />
+                className="gap-1.5"
+              >
+                {triggerSubmitting ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Zap className="h-4 w-4" />
+                )}
+                {triggerSubmitting ? "En cours..." : "Lancer"}
+              </Button>
             </div>
-            <label className="flex items-center gap-2 text-sm text-muted-foreground">
-              <input
-                type="checkbox"
-                checked={triggerForce}
-                onChange={(e) => setTriggerForce(e.target.checked)}
-                disabled={triggerSubmitting}
-                className="rounded border-gray-300"
-              />
-              Forcer re-enrichissement
-            </label>
-            <Button
-              type="submit"
-              disabled={triggerSubmitting}
-              className="gap-1.5"
-            >
-              {triggerSubmitting ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              ) : (
-                <Zap className="h-4 w-4" />
-              )}
-              {triggerSubmitting ? "En cours..." : "Lancer"}
-            </Button>
+            <div className="space-y-1.5">
+              <Label className="text-xs text-muted-foreground">
+                Types de page (vide = tous les types actifs)
+              </Label>
+              <div className="flex flex-wrap gap-3">
+                {PAGE_TYPE_OPTIONS.map(({ value, label }) => (
+                  <Checkbox
+                    key={value}
+                    id={`pt-${value}`}
+                    checked={triggerPageTypes.includes(value)}
+                    onCheckedChange={(checked) => {
+                      setTriggerPageTypes((prev) =>
+                        checked
+                          ? [...prev, value]
+                          : prev.filter((t) => t !== value),
+                      );
+                    }}
+                    disabled={triggerSubmitting}
+                    label={label}
+                  />
+                ))}
+              </div>
+            </div>
           </form>
 
           {triggerResult?.error && (
@@ -819,6 +1231,265 @@ export default function AdminRagPipeline() {
               </AlertDescription>
             </Alert>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Force-enrich sans PDF */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <FlaskConical className="h-4 w-4 text-orange-500" />
+            Force-enrich sans PDF
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Lance un enrichissement force a partir du corpus RAG existant, sans
+            extraction PDF. Utile pour regenerer le contenu apres mise a jour du
+            corpus.
+          </p>
+          <form
+            onSubmit={handleForceEnrich}
+            className="flex flex-col gap-4 sm:flex-row sm:items-end"
+          >
+            <div className="flex-1 space-y-1.5">
+              <Label htmlFor="enrichAlias">Gamme</Label>
+              <Input
+                id="enrichAlias"
+                placeholder="disque-de-frein"
+                value={enrichAlias}
+                onChange={(e) => setEnrichAlias(e.target.value)}
+                disabled={enrichSubmitting}
+              />
+            </div>
+            <div className="sm:w-56 space-y-1.5">
+              <Label htmlFor="enrichSections">
+                Sections (optionnel, virgule)
+              </Label>
+              <Input
+                id="enrichSections"
+                placeholder="introduction, symptomes"
+                value={enrichSections}
+                onChange={(e) => setEnrichSections(e.target.value)}
+                disabled={enrichSubmitting}
+              />
+            </div>
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={enrichSubmitting}
+              className="gap-1.5 border-orange-200 text-orange-700 hover:bg-orange-50"
+            >
+              {enrichSubmitting ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <FlaskConical className="h-4 w-4" />
+              )}
+              {enrichSubmitting ? "En cours..." : "Force-enrich"}
+            </Button>
+          </form>
+
+          {enrichResult?.error && (
+            <Alert variant="error" className="mt-3" size="sm">
+              {enrichResult.error}
+            </Alert>
+          )}
+          {enrichResult?.success && (
+            <Alert variant="success" className="mt-3" size="sm">
+              <AlertTitle>Enrichissement lance</AlertTitle>
+              <AlertDescription>
+                Types mis en queue :{" "}
+                {enrichResult.queuedPageTypes?.join(", ") || "aucun"}
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Operations de maintenance */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <Wrench className="h-4 w-4" />
+            Operations de maintenance
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {/* Cleanup doublons */}
+            <div className="rounded-lg border p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Trash2 className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Cleanup doublons</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Scan SHA-256 pour detecter et supprimer les doublons exacts.
+              </p>
+              <div className="flex items-center gap-2">
+                <Select
+                  value={cleanupMode}
+                  onValueChange={(v) => setCleanupMode(v as "dry" | "commit")}
+                  className="h-8 flex-1 rounded-md border border-input bg-background px-2 text-xs"
+                  disabled={cleanupSubmitting}
+                  name="cleanupMode"
+                >
+                  <SelectItem value="dry">Dry-run (simulation)</SelectItem>
+                  <SelectItem value="commit">
+                    Commit (suppression reelle)
+                  </SelectItem>
+                </Select>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCleanupBatch}
+                  disabled={cleanupSubmitting}
+                  className={`gap-1.5 ${cleanupMode === "commit" ? "border-red-200 text-red-700 hover:bg-red-50" : ""}`}
+                >
+                  {cleanupSubmitting ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5" />
+                  )}
+                  {cleanupSubmitting ? "..." : "Lancer"}
+                </Button>
+              </div>
+              {cleanupResult && (
+                <pre className="rounded bg-muted/50 p-2 text-xs font-mono max-h-24 overflow-auto">
+                  {JSON.stringify(cleanupResult, null, 2)}
+                </pre>
+              )}
+            </div>
+
+            {/* Sync fichiers → DB */}
+            <div className="rounded-lg border p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Database className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">
+                  Sync fichiers &rarr; DB
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Synchronise les fichiers .md du disque vers __rag_knowledge.
+              </p>
+              <div className="flex items-center gap-2">
+                <Input
+                  value={syncPattern}
+                  onChange={(e) => setSyncPattern(e.target.value)}
+                  placeholder="gammes/*.md"
+                  disabled={syncSubmitting}
+                  className="h-8 flex-1 text-xs font-mono"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSyncFiles}
+                  disabled={syncSubmitting}
+                  className="gap-1.5"
+                >
+                  {syncSubmitting ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Database className="h-3.5 w-3.5" />
+                  )}
+                  {syncSubmitting ? "..." : "Sync"}
+                </Button>
+              </div>
+              {syncResult && (
+                <div className="flex gap-2 text-xs">
+                  <Badge
+                    variant="outline"
+                    className="bg-green-50 text-green-700"
+                  >
+                    {(syncResult as { synced?: number }).synced ?? 0} sync
+                  </Badge>
+                  <Badge variant="outline" className="text-muted-foreground">
+                    {(syncResult as { skipped?: number }).skipped ?? 0} skip
+                  </Badge>
+                </div>
+              )}
+            </div>
+
+            {/* Backfill empreintes SHA-256 */}
+            <div className="rounded-lg border p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <Fingerprint className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">
+                  Backfill empreintes SHA-256
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Calcule les empreintes manquantes pour les documents actifs
+                (batch 50).
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBackfillFingerprints}
+                disabled={backfillSubmitting}
+                className="gap-1.5"
+              >
+                {backfillSubmitting ? (
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Fingerprint className="h-3.5 w-3.5" />
+                )}
+                {backfillSubmitting ? "En cours..." : "Backfill"}
+              </Button>
+              {backfillResult && !backfillResult.error && (
+                <Badge variant="outline" className="bg-green-50 text-green-700">
+                  {backfillResult.updated} empreintes calculees
+                </Badge>
+              )}
+              {backfillResult?.error && (
+                <p className="text-xs text-red-600">{backfillResult.error}</p>
+              )}
+            </div>
+
+            {/* Calculer scores qualite */}
+            <div className="rounded-lg border p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">
+                  Calculer scores qualite
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Recalcule les scores qualite de toutes les gammes et agrege vers
+                gamme-level.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleComputeQualityScores}
+                disabled={qualitySubmitting}
+                className="gap-1.5"
+              >
+                {qualitySubmitting ? (
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <BarChart3 className="h-3.5 w-3.5" />
+                )}
+                {qualitySubmitting ? "En cours..." : "Calculer"}
+              </Button>
+              {qualityResult && (
+                <div className="flex flex-wrap gap-2 text-xs">
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                    {(qualityResult as { pagesScored?: number }).pagesScored ??
+                      0}{" "}
+                    pages
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className="bg-purple-50 text-purple-700"
+                  >
+                    {(qualityResult as { gammesAggregated?: number })
+                      .gammesAggregated ?? 0}{" "}
+                    gammes
+                  </Badge>
+                </div>
+              )}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -987,16 +1658,35 @@ export default function AdminRagPipeline() {
           <DialogHeader>
             <DialogTitle>
               {detailItem?.pg_alias} —{" "}
-              {detailTab === "gates" ? "Controles qualite" : "Sources RAG"}
+              {detailTab === "gates"
+                ? "Controles qualite"
+                : detailTab === "snapshot"
+                  ? "Snapshot"
+                  : "Sources RAG"}
             </DialogTitle>
             <DialogDescription>
               {detailTab === "gates"
                 ? "Resultats des 5 controles automatiques pour cet enrichissement"
-                : "Documents du corpus RAG utilises pour generer le contenu"}
+                : detailTab === "snapshot"
+                  ? "Scores avant/apres et dimensions de qualite"
+                  : "Documents du corpus RAG utilises pour generer le contenu"}
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs value={detailTab} onValueChange={setDetailTab}>
+          <Tabs
+            value={detailTab}
+            onValueChange={(tab) => {
+              setDetailTab(tab);
+              if (tab === "snapshot" && detailItem && !snapshotData) {
+                setSnapshotLoading(true);
+                fetch(`/api/admin/content-refresh/snapshot/${detailItem.id}`)
+                  .then((r) => (r.ok ? r.json() : null))
+                  .then((d) => setSnapshotData(d))
+                  .catch(() => setSnapshotData(null))
+                  .finally(() => setSnapshotLoading(false));
+              }
+            }}
+          >
             <TabsList>
               <TabsTrigger value="gates" className="gap-1.5">
                 <ShieldCheck className="h-3.5 w-3.5" />
@@ -1005,6 +1695,10 @@ export default function AdminRagPipeline() {
               <TabsTrigger value="evidence" className="gap-1.5">
                 <FileSearch className="h-3.5 w-3.5" />
                 Sources RAG
+              </TabsTrigger>
+              <TabsTrigger value="snapshot" className="gap-1.5">
+                <Activity className="h-3.5 w-3.5" />
+                Snapshot
               </TabsTrigger>
             </TabsList>
 
@@ -1084,6 +1778,108 @@ export default function AdminRagPipeline() {
               ) : (
                 <p className="text-sm text-muted-foreground py-4">
                   Aucune source disponible
+                </p>
+              )}
+            </TabsContent>
+
+            <TabsContent value="snapshot">
+              {snapshotLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <RefreshCw className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    Chargement...
+                  </span>
+                </div>
+              ) : snapshotData ? (
+                <div className="space-y-4">
+                  {/* Scores before/after */}
+                  {(snapshotData.scoresBefore != null ||
+                    snapshotData.scoresAfter != null) && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="rounded-lg border p-3 space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Avant
+                        </p>
+                        {snapshotData.scoresBefore ? (
+                          <pre className="text-xs font-mono">
+                            {JSON.stringify(snapshotData.scoresBefore, null, 2)}
+                          </pre>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">N/A</p>
+                        )}
+                      </div>
+                      <div className="rounded-lg border p-3 space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Apres
+                        </p>
+                        {snapshotData.scoresAfter ? (
+                          <pre className="text-xs font-mono">
+                            {JSON.stringify(snapshotData.scoresAfter, null, 2)}
+                          </pre>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">N/A</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  {/* Dimensions */}
+                  {snapshotData.dimensions != null && (
+                    <div className="rounded-lg border p-3 space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Dimensions
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                        {Object.entries(
+                          snapshotData.dimensions as Record<string, unknown>,
+                        ).map(([key, val]) => (
+                          <div key={key} className="rounded bg-muted/50 p-2">
+                            <span className="block font-medium capitalize">
+                              {key.replace(/_/g, " ")}
+                            </span>
+                            <span className="font-mono">
+                              {typeof val === "number"
+                                ? val.toFixed(2)
+                                : String(val)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {/* Locked fields */}
+                  {Array.isArray(snapshotData.lockedFields) &&
+                    snapshotData.lockedFields.length > 0 && (
+                      <div className="rounded-lg border p-3 space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Champs bloques
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(snapshotData.lockedFields as string[]).map((f) => (
+                            <Badge
+                              key={f}
+                              variant="outline"
+                              className="bg-amber-50 text-amber-700 text-xs"
+                            >
+                              {f}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  {/* Raw data fallback */}
+                  {!snapshotData.scoresBefore &&
+                    !snapshotData.scoresAfter &&
+                    !snapshotData.dimensions && (
+                      <ScrollArea className="h-[400px] rounded-lg border bg-muted/30">
+                        <pre className="p-4 text-xs font-mono whitespace-pre-wrap">
+                          {JSON.stringify(snapshotData, null, 2)}
+                        </pre>
+                      </ScrollArea>
+                    )}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground py-4">
+                  Aucun snapshot disponible
                 </p>
               )}
             </TabsContent>

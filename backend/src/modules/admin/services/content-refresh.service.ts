@@ -1573,4 +1573,147 @@ export class ContentRefreshService extends SupabaseBaseService {
 
     return { gammes, summary };
   }
+
+  /**
+   * R1 pipeline coverage per section.
+   * Returns how many gammes have pipeline content vs fallback for each R1 field.
+   */
+  async getR1PipelineCoverage(): Promise<{
+    sections: Array<{
+      section: string;
+      pipeline: number;
+      fallback: number;
+      total: number;
+    }>;
+  }> {
+    const { data, error } = await this.supabase.rpc('execute_sql', {
+      query: `
+        SELECT 'microSeoBlock' as section,
+          COUNT(*) FILTER (WHERE sgpg_micro_seo_block IS NOT NULL AND sgpg_micro_seo_block != '') as pipeline,
+          COUNT(*) as total
+        FROM __seo_gamme_purchase_guide WHERE sgpg_is_draft = false
+        UNION ALL
+        SELECT 'heroSubtitle',
+          COUNT(*) FILTER (WHERE sgpg_hero_subtitle IS NOT NULL AND sgpg_hero_subtitle != ''), COUNT(*)
+        FROM __seo_gamme_purchase_guide WHERE sgpg_is_draft = false
+        UNION ALL
+        SELECT 'faq',
+          COUNT(*) FILTER (WHERE sgpg_faq IS NOT NULL AND jsonb_array_length(sgpg_faq) > 0), COUNT(*)
+        FROM __seo_gamme_purchase_guide WHERE sgpg_is_draft = false
+        UNION ALL
+        SELECT 'safeTableRows',
+          COUNT(*) FILTER (WHERE sgpg_safe_table_rows IS NOT NULL AND jsonb_array_length(sgpg_safe_table_rows) > 0), COUNT(*)
+        FROM __seo_gamme_purchase_guide WHERE sgpg_is_draft = false
+        UNION ALL
+        SELECT 'antiMistakes',
+          COUNT(*) FILTER (WHERE sgpg_anti_mistakes IS NOT NULL AND array_length(sgpg_anti_mistakes, 1) > 0), COUNT(*)
+        FROM __seo_gamme_purchase_guide WHERE sgpg_is_draft = false
+        UNION ALL
+        SELECT 'compatibilitiesIntro',
+          COUNT(*) FILTER (WHERE sgpg_compatibilities_intro IS NOT NULL AND sgpg_compatibilities_intro != ''), COUNT(*)
+        FROM __seo_gamme_purchase_guide WHERE sgpg_is_draft = false
+        UNION ALL
+        SELECT 'equipementiersLine',
+          COUNT(*) FILTER (WHERE sgpg_equipementiers_line IS NOT NULL AND sgpg_equipementiers_line != ''), COUNT(*)
+        FROM __seo_gamme_purchase_guide WHERE sgpg_is_draft = false
+      `,
+    });
+
+    if (error) {
+      // Fallback: direct query approach
+      this.logger.warn(
+        `R1 coverage RPC failed, using direct query: ${error.message}`,
+      );
+      const sections = await this.getR1CoverageDirect();
+      return { sections };
+    }
+
+    const rows =
+      (data as Array<{ section: string; pipeline: number; total: number }>) ||
+      [];
+    return {
+      sections: rows.map((r) => ({
+        section: r.section,
+        pipeline: Number(r.pipeline),
+        fallback: Number(r.total) - Number(r.pipeline),
+        total: Number(r.total),
+      })),
+    };
+  }
+
+  private async getR1CoverageDirect(): Promise<
+    Array<{
+      section: string;
+      pipeline: number;
+      fallback: number;
+      total: number;
+    }>
+  > {
+    const { count: total } = await this.supabase
+      .from('__seo_gamme_purchase_guide')
+      .select('*', { count: 'exact', head: true })
+      .eq('sgpg_is_draft', false);
+
+    const t = total ?? 0;
+
+    // Text columns: non-null and non-empty
+    const textChecks = [
+      { section: 'microSeoBlock', col: 'sgpg_micro_seo_block' },
+      { section: 'heroSubtitle', col: 'sgpg_hero_subtitle' },
+      { section: 'compatibilitiesIntro', col: 'sgpg_compatibilities_intro' },
+      { section: 'equipementiersLine', col: 'sgpg_equipementiers_line' },
+    ];
+
+    const results: Array<{
+      section: string;
+      pipeline: number;
+      fallback: number;
+      total: number;
+    }> = [];
+
+    for (const { section, col } of textChecks) {
+      const { count } = await this.supabase
+        .from('__seo_gamme_purchase_guide')
+        .select('*', { count: 'exact', head: true })
+        .eq('sgpg_is_draft', false)
+        .neq(col, '')
+        .not(col, 'is', null);
+      const p = count ?? 0;
+      results.push({ section, pipeline: p, fallback: t - p, total: t });
+    }
+
+    // JSONB columns: non-null and non-empty array (neq '[]')
+    const jsonbChecks = [
+      { section: 'faq', col: 'sgpg_faq' },
+      { section: 'safeTableRows', col: 'sgpg_safe_table_rows' },
+    ];
+
+    for (const { section, col } of jsonbChecks) {
+      const { count } = await this.supabase
+        .from('__seo_gamme_purchase_guide')
+        .select('*', { count: 'exact', head: true })
+        .eq('sgpg_is_draft', false)
+        .not(col, 'is', null)
+        .neq(col, '[]');
+      const p = count ?? 0;
+      results.push({ section, pipeline: p, fallback: t - p, total: t });
+    }
+
+    // text[] column: non-null and non-empty (neq '{}')
+    const { count: antiMistakesCount } = await this.supabase
+      .from('__seo_gamme_purchase_guide')
+      .select('*', { count: 'exact', head: true })
+      .eq('sgpg_is_draft', false)
+      .not('sgpg_anti_mistakes', 'is', null)
+      .neq('sgpg_anti_mistakes', '{}');
+    const am = antiMistakesCount ?? 0;
+    results.push({
+      section: 'antiMistakes',
+      pipeline: am,
+      fallback: t - am,
+      total: t,
+    });
+
+    return results;
+  }
 }

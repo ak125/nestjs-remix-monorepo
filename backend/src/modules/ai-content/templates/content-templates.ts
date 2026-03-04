@@ -758,9 +758,6 @@ REGLES PAR CHAMP :
 - equipementiers_line : 1 phrase presentant les equipementiers.
 - faq_selector : 4 questions/reponses liees au selecteur vehicule et a l'achat.
 - family_cross_sell_intro : 1 phrase de transition vers le catalogue famille.
-- visual_plan.hero_primary_cta : objet { label, action } — label du CTA principal (max 30 chars), action = scroll_to_selector ou lien.
-- visual_plan.cross_sell_rules : objet { max_items (max 6), same_family_only (boolean) } — regles du catalogue associe.
-- visual_plan.compatibilities_label_rule : string — label contextuel pour la section compatibilites (ex: "Compatibilite verifiee par motorisation").
 - safe_table_rows : array de 4-6 lignes de verification compatibilite. Chaque ligne = { element, how, icon }.
   SUGGESTIONS (choisir 4-6 parmi + 1-2 custom si pertinent) :
   * Montage / version vehicule → Selectionner marque, modele et motorisation
@@ -851,7 +848,6 @@ REGLES PAR CHAMP :
   "equipementiers_line": "string — 1 phrase",
   "faq_selector": [{ "question": "string", "answer": "string — 30-45 mots, TRACABLE au RAG" }],
   "family_cross_sell_intro": "string — 1 phrase",
-  "visual_plan": { "hero_primary_cta": { "label": "string max 30 chars", "action": "string — ex: scroll_to_selector" }, "cross_sell_rules": { "max_items": 6, "same_family_only": true }, "compatibilities_label_rule": "string — ex: Compatibilite verifiee par motorisation" },
   "safe_table_rows": [{ "element": "string", "how": "string", "icon": "string|null" }]
 }\n`;
       return prompt;

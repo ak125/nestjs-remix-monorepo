@@ -8,6 +8,11 @@
  */
 import { R1Section } from "~/constants/r1-sections";
 
+import {
+  type R1SectionPack,
+  type R1SectionData,
+} from "~/utils/r1-section-pack";
+
 export type R1Source = "prompt" | "api" | "fallback";
 
 export interface R1SourceEntry {
@@ -20,14 +25,50 @@ export interface R1SourceEntry {
 
 export type R1SourceMap = Partial<Record<R1Section, R1SourceEntry>>;
 
+/** Section key → R1Section enum mapping for SectionPack */
+const SECTION_KEY_MAP: Record<string, R1Section> = {
+  hero: R1Section.HERO,
+  buyArgs: R1Section.BUY_ARGS,
+  safeTable: R1Section.SAFE_TABLE,
+  compatErrors: R1Section.COMPAT_ERRORS,
+  faq: R1Section.FAQ,
+  motorisations: R1Section.MOTORISATIONS,
+  equipementiers: R1Section.EQUIPEMENTIERS,
+  catalogue: R1Section.CATALOGUE,
+  kpiCoverage: R1Section.KPI_COVERAGE,
+};
+
 /**
- * Construit le source map en inspectant purchaseGuideData.
- * Si un champ R1 existe et est non-vide → source="prompt" (pipeline P3).
- * Sinon → source="fallback" (composant utilise ses defaults hardcodés).
- *
- * Note: on ne distingue pas "prompt" de "api" car le pipeline
- * écrit dans les mêmes colonnes sgpg_* que l'API lit.
- * Si sgpg_* est rempli et sgpg_is_draft=false, c'est du pipeline validé.
+ * Build source map from R1SectionPack.
+ * Replaces the old buildR1SourceMap() which inspected raw purchaseGuideData.
+ */
+export function buildSourceMapFromPack(pack: R1SectionPack): R1SourceMap {
+  const map: R1SourceMap = {};
+
+  for (const [key, section] of Object.entries(SECTION_KEY_MAP)) {
+    const sectionData = pack.sections[
+      key as keyof R1SectionPack["sections"]
+    ] as R1SectionData<unknown>;
+    if (sectionData) {
+      map[section] = { source: sectionData.source };
+    }
+  }
+
+  // Static sections always API
+  for (const s of [
+    R1Section.TRUST_STRIP,
+    R1Section.COMPAT,
+    R1Section.QUICK_NAV,
+  ]) {
+    map[s] = { source: "api", field: "computed" };
+  }
+
+  return map;
+}
+
+/**
+ * @deprecated Use buildSourceMapFromPack(sectionPack) instead.
+ * Kept for backward compatibility during migration.
  */
 export function buildR1SourceMap(
   purchaseGuideData?: {
@@ -48,7 +89,6 @@ export function buildR1SourceMap(
   const hasText = (v?: string | null) => !!(v && v.trim().length > 0);
   const hasArr = (v?: unknown[] | null) => !!(v && v.length > 0);
 
-  // S_HERO : h1Override + heroSubtitle
   map[R1Section.HERO] = {
     source:
       hasText(purchaseGuideData?.h1Override) ||
@@ -58,32 +98,27 @@ export function buildR1SourceMap(
     field: "sgpg_h1_override + sgpg_hero_subtitle",
   };
 
-  // S_BUY_ARGS : microSeoBlock + arguments (proof badges)
   map[R1Section.BUY_ARGS] = {
     source: hasText(purchaseGuideData?.microSeoBlock) ? "prompt" : "fallback",
     field: "sgpg_micro_seo_block",
     charCount: purchaseGuideData?.microSeoBlock?.length ?? 0,
   };
 
-  // S_SAFE_TABLE : safeTableRows
   map[R1Section.SAFE_TABLE] = {
     source: hasArr(purchaseGuideData?.safeTableRows) ? "prompt" : "fallback",
     field: "sgpg_safe_table_rows",
   };
 
-  // S_COMPAT_ERRORS : compatErrors (from antiMistakes)
   map[R1Section.COMPAT_ERRORS] = {
     source: hasArr(purchaseGuideData?.compatErrors) ? "prompt" : "fallback",
     field: "sgpg_anti_mistakes",
   };
 
-  // S_FAQ : faq
   map[R1Section.FAQ] = {
     source: hasArr(purchaseGuideData?.faq) ? "prompt" : "fallback",
     field: "sgpg_faq",
   };
 
-  // S_MOTORISATIONS : compatibilitiesIntro
   map[R1Section.MOTORISATIONS] = {
     source: hasText(purchaseGuideData?.compatibilitiesIntro)
       ? "prompt"
@@ -91,7 +126,6 @@ export function buildR1SourceMap(
     field: "sgpg_compatibilities_intro",
   };
 
-  // S_EQUIPEMENTIERS : equipementiersLine
   map[R1Section.EQUIPEMENTIERS] = {
     source: hasText(purchaseGuideData?.equipementiersLine)
       ? "prompt"
@@ -99,7 +133,6 @@ export function buildR1SourceMap(
     field: "sgpg_equipementiers_line",
   };
 
-  // S_CATALOGUE : familyCrossSellIntro
   map[R1Section.CATALOGUE] = {
     source: hasText(purchaseGuideData?.familyCrossSellIntro)
       ? "prompt"
@@ -107,8 +140,6 @@ export function buildR1SourceMap(
     field: "sgpg_family_cross_sell_intro",
   };
 
-  // Sections computees (donnees API, pas de pipeline) :
-  // S_TRUST_STRIP, S_COMPAT, S_QUICK_NAV, S_KPI_COVERAGE
   for (const s of [
     R1Section.TRUST_STRIP,
     R1Section.COMPAT,
