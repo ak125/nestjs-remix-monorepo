@@ -187,7 +187,7 @@ jobs:
           fi
 
           # sitemap-categories.xml HTTP 200
-          STATUS=$($CADDY_CURL -o /dev/null -w "%{http_code}" "https://www.automecanik.com/sitemaps/sitemap-categories.xml")
+          STATUS=$($CADDY_CURL -L -o /dev/null -w "%{http_code}" "https://www.automecanik.com/sitemaps/sitemap-categories.xml")
           if [ "$STATUS" = "200" ]; then
             echo "✅ sitemap-categories.xml: HTTP 200"
           else
