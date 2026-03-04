@@ -9,6 +9,7 @@ env:
   CONTAINER: nestjs-remix-monorepo-prod
   CADDY_CURL: curl -sk --max-time 15 --resolve www.automecanik.com:443:127.0.0.1
   IMGPROXY_TEST_IMAGE: https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/260/6216001.JPG
+  TEST_R1_URL: /pieces/filtre-a-huile-7.html
 
 jobs:
   smoke-tests:
@@ -64,6 +65,80 @@ jobs:
           fi
           echo "✅ All 8 pages OK"
 
+      - name: 🔍 SEO Meta tags
+        run: |
+          BODY=$(docker exec $CONTAINER wget -qO- "http://localhost:3000$TEST_R1_URL" 2>/dev/null)
+          FAILED=0
+
+          # meta description non-empty
+          DESC=$(echo "$BODY" | grep -oP 'name="description" content="\K[^"]+' | head -1)
+          if [ -z "$DESC" ]; then
+            echo "❌ meta description empty"
+            FAILED=1
+          else
+            echo "✅ description: ${DESC:0:80}..."
+          fi
+
+          # canonical format
+          CANONICAL=$(echo "$BODY" | grep -oP 'rel="canonical" href="\K[^"]+' | head -1)
+          if echo "$CANONICAL" | grep -qE '^https://www\.automecanik\.com/pieces/[a-z0-9-]+-[0-9]+\.html$'; then
+            echo "✅ canonical: $CANONICAL"
+          else
+            echo "❌ canonical format invalid: '$CANONICAL'"
+            FAILED=1
+          fi
+
+          # og:url matches canonical
+          OG_URL=$(echo "$BODY" | grep -oP 'property="og:url" content="\K[^"]+' | head -1)
+          if [ "$OG_URL" = "$CANONICAL" ]; then
+            echo "✅ og:url matches canonical"
+          else
+            echo "❌ og:url ($OG_URL) != canonical ($CANONICAL)"
+            FAILED=1
+          fi
+
+          # robots != noindex on valid page
+          ROBOTS=$(echo "$BODY" | grep -oP 'name="robots" content="\K[^"]+' | head -1)
+          if echo "$ROBOTS" | grep -qi "noindex"; then
+            echo "❌ noindex on valid R1 page! robots='$ROBOTS'"
+            FAILED=1
+          else
+            echo "✅ robots: ${ROBOTS:-'absent (ok)'}"
+          fi
+
+          # JSON-LD present and valid
+          JSONLD=$(echo "$BODY" | grep -oP 'type="application/ld\+json">\K[^<]+' | head -1)
+          if [ -z "$JSONLD" ]; then
+            echo "❌ JSON-LD absent"
+            FAILED=1
+          else
+            RESULT=$(echo "$JSONLD" | python3 -c "
+          import sys,json
+          d=json.load(sys.stdin)
+          graph=d.get('@graph',[])
+          types=[n.get('@type') for n in graph]
+          missing=[]
+          if 'CollectionPage' not in types: missing.append('CollectionPage')
+          if 'FAQPage' not in types: missing.append('FAQPage')
+          if missing:
+            print('MISSING:' + ','.join(missing))
+          else:
+            print('OK:' + ','.join(types))
+          " 2>/dev/null || echo "INVALID_JSON")
+            if echo "$RESULT" | grep -q "^OK:"; then
+              echo "✅ JSON-LD @graph: ${RESULT#OK:}"
+            elif echo "$RESULT" | grep -q "^MISSING:"; then
+              echo "❌ JSON-LD missing: ${RESULT#MISSING:}"
+              FAILED=1
+            else
+              echo "❌ JSON-LD invalid JSON"
+              FAILED=1
+            fi
+          fi
+
+          [ "$FAILED" = "1" ] && exit 1
+          echo "✅ All SEO meta checks passed"
+
       - name: 🔌 API catalog
         run: |
           RESPONSE=$(docker exec $CONTAINER wget -qO- http://localhost:3000/api/catalog/families 2>/dev/null)
@@ -78,20 +153,64 @@ jobs:
           fi
           echo "✅ API catalog: $COUNT families"
 
-      - name: 🖼️ imgproxy AVIF
+      - name: 🖼️ imgproxy AVIF + WebP
         run: |
-          STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" "http://localhost:8081/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@avif")
-          if [ "$STATUS" != "200" ]; then
-            echo "❌ imgproxy AVIF returned HTTP $STATUS"
-            exit 1
+          FAILED=0
+          for FMT in avif webp; do
+            STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" "http://localhost:8081/rs:fit:400/q:80/plain/$IMGPROXY_TEST_IMAGE@$FMT")
+            if [ "$STATUS" = "200" ]; then
+              echo "✅ imgproxy $FMT: HTTP 200"
+            else
+              echo "❌ imgproxy $FMT: HTTP $STATUS"
+              FAILED=1
+            fi
+          done
+          [ "$FAILED" = "1" ] && exit 1
+
+      - name: 🗺️ Sitemap + robots.txt
+        run: |
+          FAILED=0
+
+          # sitemap.xml is a sitemapindex with 5+ entries
+          SITEMAP=$($CADDY_CURL "https://www.automecanik.com/sitemap.xml" 2>/dev/null)
+          if echo "$SITEMAP" | grep -q '<sitemapindex'; then
+            COUNT=$(echo "$SITEMAP" | grep -c '<sitemap>' || echo "0")
+            if [ "$COUNT" -ge 5 ]; then
+              echo "✅ sitemap.xml: sitemapindex with $COUNT sub-sitemaps"
+            else
+              echo "❌ sitemap.xml only has $COUNT sub-sitemaps (expected 5+)"
+              FAILED=1
+            fi
+          else
+            echo "❌ sitemap.xml is not a sitemapindex"
+            FAILED=1
           fi
-          echo "✅ imgproxy AVIF: HTTP 200"
+
+          # sitemap-categories.xml HTTP 200
+          STATUS=$($CADDY_CURL -o /dev/null -w "%{http_code}" "https://www.automecanik.com/sitemaps/sitemap-categories.xml")
+          if [ "$STATUS" = "200" ]; then
+            echo "✅ sitemap-categories.xml: HTTP 200"
+          else
+            echo "❌ sitemap-categories.xml: HTTP $STATUS"
+            FAILED=1
+          fi
+
+          # robots.txt contains Sitemap directive
+          ROBOTS=$($CADDY_CURL "https://www.automecanik.com/robots.txt" 2>/dev/null)
+          if echo "$ROBOTS" | grep -q "Sitemap:"; then
+            echo "✅ robots.txt: Sitemap directive present"
+          else
+            echo "❌ robots.txt missing Sitemap directive"
+            FAILED=1
+          fi
+
+          [ "$FAILED" = "1" ] && exit 1
 
       - name: 📊 Cache headers (via Caddy)
         id: cache-check
         continue-on-error: true
         run: |
-          HEADERS=$($CADDY_CURL -I "https://www.automecanik.com/pieces/filtre-a-huile-7.html")
+          HEADERS=$($CADDY_CURL -I "https://www.automecanik.com$TEST_R1_URL")
           CACHE=$(echo "$HEADERS" | grep -i "cache-control" | head -1)
           echo "Cache-Control: $CACHE"
           if ! echo "$CACHE" | grep -qi "s-maxage"; then
@@ -104,13 +223,91 @@ jobs:
         id: ttfb-check
         continue-on-error: true
         run: |
-          TTFB=$($CADDY_CURL -o /dev/null -w "%{time_starttransfer}" "https://www.automecanik.com/pieces/filtre-a-huile-7.html")
+          TTFB=$($CADDY_CURL -o /dev/null -w "%{time_starttransfer}" "https://www.automecanik.com$TEST_R1_URL")
           echo "TTFB: ${TTFB}s"
           if (( $(echo "$TTFB > 2.0" | bc -l) )); then
             echo "⚠️ WARNING: TTFB ${TTFB}s exceeds 2s threshold"
             exit 1
           fi
           echo "✅ TTFB: ${TTFB}s (< 2s)"
+
+      - name: 📦 Compression check
+        id: compression-check
+        continue-on-error: true
+        run: |
+          HEADERS=$($CADDY_CURL -H "Accept-Encoding: gzip" -I "https://www.automecanik.com$TEST_R1_URL")
+          ENCODING=$(echo "$HEADERS" | grep -i "content-encoding:" | head -1)
+          if echo "$ENCODING" | grep -qiE "gzip|zstd|br"; then
+            echo "✅ Compression: $ENCODING"
+          else
+            echo "⚠️ No compression detected: '$ENCODING'"
+            exit 1
+          fi
+
+      - name: 🔒 Security headers
+        id: security-check
+        continue-on-error: true
+        run: |
+          HEADERS=$($CADDY_CURL -I "https://www.automecanik.com/")
+          FAILED=0
+
+          check_header() {
+            local name="$1" pattern="$2"
+            local val=$(echo "$HEADERS" | grep -i "^$name:" | head -1)
+            if echo "$val" | grep -qi "$pattern"; then
+              echo "✅ $name present"
+            else
+              echo "⚠️ $name missing or unexpected: '$val'"
+              FAILED=1
+            fi
+          }
+
+          check_header "X-Frame-Options" "SAMEORIGIN"
+          check_header "X-Content-Type-Options" "nosniff"
+          check_header "Referrer-Policy" "strict-origin"
+
+          # Server header should be suppressed
+          SERVER=$(echo "$HEADERS" | grep -i "^server:" | head -1)
+          if [ -z "$SERVER" ]; then
+            echo "✅ Server header: absent (suppressed)"
+          else
+            echo "⚠️ Server header exposed: $SERVER"
+          fi
+
+          [ "$FAILED" = "1" ] && exit 1
+
+      - name: 🔴 Redis health
+        run: |
+          REDIS=$(docker ps --format "{{.Names}} {{.Status}}" | grep "redis_prod" | head -1)
+          if [ -z "$REDIS" ]; then
+            echo "❌ redis_prod container not found"
+            exit 1
+          fi
+          if echo "$REDIS" | grep -qi "restarting"; then
+            echo "❌ redis_prod is crash-looping: $REDIS"
+            exit 1
+          fi
+          echo "✅ Redis: $REDIS"
+
+      - name: 📏 Response size (SSR check)
+        run: |
+          FAILED=0
+          check_size() {
+            local url="$1" min="$2" label="$3"
+            local size=$(docker exec $CONTAINER wget -qO- "http://localhost:3000$url" 2>/dev/null | wc -c)
+            if [ "$size" -lt "$min" ]; then
+              echo "❌ $label too small (${size}B < ${min}B) — possible SSR failure"
+              FAILED=1
+            else
+              echo "✅ $label: ${size}B"
+            fi
+          }
+
+          check_size "$TEST_R1_URL" 20000 "R1 gamme"
+          check_size "/blog-pieces-auto/conseils/amortisseur" 10000 "R3 conseil"
+          check_size "/blog-pieces-auto/guide-achat/roulement-de-roue" 10000 "R6 guide"
+
+          [ "$FAILED" = "1" ] && exit 1
 
       - name: 🐳 Containers status
         if: always()
@@ -130,6 +327,8 @@ jobs:
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Cache headers | ${{ steps.cache-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| TTFB | ${{ steps.ttfb-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Compression | ${{ steps.compression-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security headers | ${{ steps.security-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "_Run: $(date -u '+%Y-%m-%d %H:%M UTC')_" >> $GITHUB_STEP_SUMMARY
 
