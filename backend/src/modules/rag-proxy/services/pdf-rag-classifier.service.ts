@@ -56,7 +56,10 @@ export class PdfRagClassifierService {
   ): Promise<RagMergePatch> {
     const apiKey = this.config.get<string>('GROQ_API_KEY');
     if (!apiKey) {
-      throw new Error('GROQ_API_KEY not configured — cannot classify PDF');
+      this.logger.warn(
+        'GROQ_API_KEY absent — classification PDF ignoree. Utiliser le skill /rag-ops ingest.',
+      );
+      return null as any;
     }
     const model =
       this.config.get<string>('GROQ_MODEL') || 'llama-3.3-70b-versatile';

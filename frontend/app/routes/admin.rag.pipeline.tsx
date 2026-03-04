@@ -39,6 +39,10 @@ import {
   ArrowUpDown,
   ChevronUp,
   ChevronDown,
+  Play,
+  ClipboardCheck,
+  Send,
+  Loader2,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -70,6 +74,11 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "~/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -247,7 +256,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   return json({
     dashboard,
-    items: statusData.data,
+    items: Array.isArray(statusData.data) ? statusData.data : [],
     total: statusData.total,
     ragCoverage,
     r1Coverage,
@@ -410,6 +419,161 @@ function GatesSummary({ raw }: { raw: string | null | undefined }) {
           {failCount}
         </Badge>
       )}
+    </div>
+  );
+}
+
+// ── R1 Constants (FR labels) ──
+
+const SGPG_FIELD_LABELS: Record<string, string> = {
+  sgpg_hero_subtitle: "Sous-titre hero",
+  sgpg_micro_seo_block: "Bloc micro SEO",
+  sgpg_h1: "Titre H1",
+  sgpg_faq: "FAQ",
+  sgpg_anti_mistakes: "Erreurs a eviter",
+  sgpg_compatibilities: "Compatibilites vehicules",
+  sgpg_equipementiers: "Equipementiers / marques",
+  sgpg_safe_table: "Tableau comparatif",
+  sgpg_arg1: "Argument commercial 1",
+  sgpg_arg2: "Argument commercial 2",
+  sgpg_arg3: "Argument commercial 3",
+  sgpg_arg4: "Argument commercial 4",
+  sgpg_gatekeeper_score: "Score qualite",
+  sgpg_gatekeeper_flags: "Alertes qualite",
+  sgpg_intent_lock: "Verrou d'intention",
+  sgpg_is_draft: "Statut brouillon",
+  sgpg_section_checks: "Controles de sections",
+  sgpg_meta_title: "Meta titre",
+  sgpg_meta_description: "Meta description",
+  sgpg_intro: "Introduction",
+};
+
+const R1_PREVIEW_SECTIONS = [
+  {
+    title: "Contenu principal",
+    keys: [
+      "sgpg_h1",
+      "sgpg_hero_subtitle",
+      "sgpg_intro",
+      "sgpg_micro_seo_block",
+      "sgpg_meta_title",
+      "sgpg_meta_description",
+    ],
+  },
+  {
+    title: "FAQ & Aide",
+    keys: ["sgpg_faq", "sgpg_anti_mistakes"],
+  },
+  {
+    title: "Compatibilite",
+    keys: ["sgpg_compatibilities", "sgpg_equipementiers", "sgpg_safe_table"],
+  },
+  {
+    title: "Arguments commerciaux",
+    keys: ["sgpg_arg1", "sgpg_arg2", "sgpg_arg3", "sgpg_arg4"],
+  },
+  {
+    title: "Qualite pipeline",
+    keys: [
+      "sgpg_gatekeeper_score",
+      "sgpg_gatekeeper_flags",
+      "sgpg_section_checks",
+      "sgpg_intent_lock",
+      "sgpg_is_draft",
+    ],
+  },
+];
+
+const KP_STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  validated: { label: "Valide", color: "bg-green-100 text-green-800" },
+  draft: { label: "Brouillon", color: "bg-orange-100 text-orange-800" },
+  active: { label: "En cours", color: "bg-blue-100 text-blue-800" },
+};
+
+const KP_PHASE_LABELS: Record<string, string> = {
+  KP0_AUDIT: "Audit initial",
+  P1_INTENT: "Analyse d'intention",
+  P2_SERP: "Analyse SERP",
+  P3_COPY: "Generation contenu",
+  P4_GATEKEEPER: "Controle qualite",
+  complete: "Termine",
+};
+
+// ── R1 Helpers ──
+
+function humanizeSlug(slug: string): string {
+  return slug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+const R1_STEP_STATUS_LABELS: Record<string, { label: string; color: string }> =
+  {
+    pending: { label: "En attente", color: "bg-slate-100 text-slate-700" },
+    processing: { label: "En cours", color: "bg-blue-100 text-blue-800" },
+    draft: { label: "Brouillon", color: "bg-orange-100 text-orange-800" },
+    published: { label: "Publie", color: "bg-green-100 text-green-800" },
+    auto_published: {
+      label: "Auto-publie",
+      color: "bg-green-100 text-green-800",
+    },
+    failed: { label: "Erreur", color: "bg-red-100 text-red-800" },
+    skipped: { label: "Ignore", color: "bg-slate-100 text-slate-600" },
+  };
+
+function R1Stepper({ activeStep }: { activeStep: number }) {
+  const steps = [
+    { num: 1, label: "Lancer", icon: Play },
+    { num: 2, label: "Verifier", icon: ClipboardCheck },
+    { num: 3, label: "Publier", icon: Send },
+  ];
+  return (
+    <div className="flex items-center justify-center gap-0 py-3">
+      {steps.map((step, idx) => {
+        const Icon = step.icon;
+        const isActive = step.num === activeStep;
+        const isComplete = step.num < activeStep;
+        return (
+          <div key={step.num} className="flex items-center">
+            <div className="flex flex-col items-center gap-1">
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full border-2 text-sm font-semibold transition-colors ${
+                  isActive
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : isComplete
+                      ? "border-green-500 bg-green-50 text-green-700"
+                      : "border-muted-foreground/30 bg-muted text-muted-foreground"
+                }`}
+              >
+                {isComplete ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Icon className="h-3.5 w-3.5" />
+                )}
+              </div>
+              <span
+                className={`text-xs font-medium ${
+                  isActive
+                    ? "text-primary"
+                    : isComplete
+                      ? "text-green-700"
+                      : "text-muted-foreground"
+                }`}
+              >
+                {step.label}
+              </span>
+            </div>
+            {idx < steps.length - 1 && (
+              <div
+                className={`mx-3 mt-[-18px] h-0.5 w-12 ${
+                  isComplete ? "bg-green-400" : "bg-muted-foreground/20"
+                }`}
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -942,53 +1106,7 @@ export default function AdminRagPipeline() {
     }
   }
 
-  // Batch canary — preview before trigger
-  const [canarySubmitting, setCanarySubmitting] = useState(false);
-  const [canaryPreviewOpen, setCanaryPreviewOpen] = useState(false);
-  const [canaryGammes, setCanaryGammes] = useState<string[]>([]);
-  const [canaryLoading, setCanaryLoading] = useState(false);
-
-  async function openCanaryPreview() {
-    setCanaryLoading(true);
-    setCanaryPreviewOpen(true);
-    try {
-      const listRes = await fetch("/api/admin/feature-flags/canary-gammes");
-      const listJson = await listRes.json();
-      const slugs: string[] = listJson?.data ?? listJson ?? [];
-      setCanaryGammes(Array.isArray(slugs) ? slugs : []);
-    } catch {
-      setCanaryGammes([]);
-    } finally {
-      setCanaryLoading(false);
-    }
-  }
-
-  async function confirmCanaryBatch() {
-    if (canaryGammes.length === 0) return;
-    setCanarySubmitting(true);
-    setCanaryPreviewOpen(false);
-    try {
-      const trigRes = await fetch("/api/admin/content-refresh/trigger", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pgAliases: canaryGammes,
-          pageTypes: ["R1_pieces"],
-        }),
-      });
-      if (trigRes.ok) {
-        toast.success(`${canaryGammes.length} gammes canary lancees (R1)`);
-      } else {
-        const err = await trigRes.json();
-        toast.error(err?.message || "Echec batch canary");
-      }
-    } catch (err) {
-      toast.error(String(err));
-    } finally {
-      setCanarySubmitting(false);
-      revalidator.revalidate();
-    }
-  }
+  // Batch canary — desactive (LLM externe supprime)
 
   // R1 Keyword Plans (client-side fetch + sort/filter)
   type KpItem = {
@@ -1006,6 +1124,19 @@ export default function AdminRagPipeline() {
   const [kpStatusFilter, setKpStatusFilter] = useState("all");
   const [kpSortCol, setKpSortCol] = useState<keyof KpItem>("rkp_pg_alias");
   const [kpSortAsc, setKpSortAsc] = useState(true);
+
+  // R1 guided workflow state
+  const [r1Mode, setR1Mode] = useState<"trigger" | "review">("review");
+  const [kpOpen, setKpOpen] = useState(false);
+
+  const r1Items = useMemo(
+    () => items.filter((i) => i.page_type === "R1_pieces"),
+    [items],
+  );
+  const r1DraftItems = useMemo(
+    () => r1Items.filter((i) => i.status === "draft"),
+    [r1Items],
+  );
 
   async function loadKeywordPlans() {
     if (kpLoaded) return;
@@ -1376,7 +1507,7 @@ export default function AdminRagPipeline() {
             <Activity className="mr-1.5 h-3.5 w-3.5" />
             Pipeline
           </TabsTrigger>
-          <TabsTrigger value="r1" onClick={() => loadKeywordPlans()}>
+          <TabsTrigger value="r1">
             <Database className="mr-1.5 h-3.5 w-3.5" />
             R1
           </TabsTrigger>
@@ -1897,207 +2028,427 @@ export default function AdminRagPipeline() {
         </TabsContent>
 
         <TabsContent value="r1" className="space-y-4">
+          {/* Stepper visuel */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <FlaskConical className="h-4 w-4" />
-                Batch R1 Canary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Lance le pipeline R1_pieces sur toutes les gammes CANARY_GAMMES
-                en un clic.
-              </p>
-              <Button
-                onClick={openCanaryPreview}
-                disabled={canarySubmitting || canaryLoading}
-                className="gap-1.5"
-              >
-                <Zap className="h-4 w-4" />
-                {canarySubmitting ? "Lancement..." : "Lancer batch R1 canary"}
-              </Button>
+            <CardContent className="pt-4 pb-2">
+              <R1Stepper
+                activeStep={
+                  r1Mode === "trigger" ? 1 : r1DraftItems.length > 0 ? 2 : 3
+                }
+              />
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <Database className="h-4 w-4" />
-                R1 Keyword Plans
-                {kpLoaded && (
-                  <Badge variant="secondary" className="text-xs ml-auto">
-                    {filteredKpData.length}/{kpData.length}
-                  </Badge>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {kpLoaded && kpData.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1 max-w-xs">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                    <Input
-                      placeholder="Filtrer par gamme..."
-                      value={kpSearch}
-                      onChange={(e) => setKpSearch(e.target.value)}
-                      className="pl-8 h-8 text-sm"
-                    />
+          {/* Mode switcher */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant={r1Mode === "trigger" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setR1Mode("trigger")}
+              className="gap-1.5"
+            >
+              <Info className="h-3.5 w-3.5" />
+              Comment generer
+            </Button>
+            <Button
+              variant={r1Mode === "review" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setR1Mode("review")}
+              className="gap-1.5"
+            >
+              <ClipboardCheck className="h-3.5 w-3.5" />
+              Gammes en attente
+              {r1DraftItems.length > 0 && (
+                <Badge variant="secondary" className="ml-1 text-xs h-5 px-1.5">
+                  {r1DraftItems.length}
+                </Badge>
+              )}
+            </Button>
+          </div>
+
+          {/* Mode Trigger */}
+          {r1Mode === "trigger" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">
+                  Generer du contenu R1
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Alert variant="info" icon={<Info className="h-4 w-4" />}>
+                  <AlertDescription className="space-y-2">
+                    <p>
+                      La generation de contenu R1 passe par les{" "}
+                      <strong>skills Claude Code</strong> et le{" "}
+                      <strong>RAG</strong>. Le pipeline LLM automatique est
+                      desactive.
+                    </p>
+                    <div className="space-y-1 text-xs">
+                      <p className="font-medium">Skills disponibles :</p>
+                      <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                        <li>
+                          <code className="rounded bg-blue-100 px-1 py-0.5 font-mono">
+                            /seo-content-architect
+                          </code>{" "}
+                          — generation contenu SEO complet
+                        </li>
+                        <li>
+                          <code className="rounded bg-blue-100 px-1 py-0.5 font-mono">
+                            r1-content-batch
+                          </code>{" "}
+                          — agent batch R1 transactionnel
+                        </li>
+                        <li>
+                          <code className="rounded bg-blue-100 px-1 py-0.5 font-mono">
+                            keyword-planner
+                          </code>{" "}
+                          — keyword plans R1
+                        </li>
+                        <li>
+                          <code className="rounded bg-blue-100 px-1 py-0.5 font-mono">
+                            /rag-ops ingest
+                          </code>{" "}
+                          — ingestion corpus RAG
+                        </li>
+                      </ul>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Mode Review */}
+          {r1Mode === "review" && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-medium">
+                    Gammes R1 ({r1Items.length})
+                  </CardTitle>
+                  {r1DraftItems.length > 0 && (
+                    <Button
+                      size="sm"
+                      className="gap-1.5 bg-green-600 hover:bg-green-700 text-white"
+                      onClick={() => {
+                        const draftIds = r1DraftItems.map((i) => i.id);
+                        setSelectedIds(new Set(draftIds));
+                        handleBulkPublish();
+                      }}
+                      disabled={bulkPublishSubmitting}
+                    >
+                      <Send className="h-3.5 w-3.5" />
+                      Publier {r1DraftItems.length} brouillon
+                      {r1DraftItems.length > 1 ? "s" : ""}
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {r1Items.length === 0 ? (
+                  <div className="flex flex-col items-center gap-3 py-8 text-center">
+                    <Database className="h-8 w-8 text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground">
+                      Aucune gamme R1 en cours.{" "}
+                      <button
+                        type="button"
+                        className="text-primary underline underline-offset-2"
+                        onClick={() => setR1Mode("trigger")}
+                      >
+                        Lancer le pipeline
+                      </button>
+                    </p>
                   </div>
-                  <select
-                    value={kpStatusFilter}
-                    onChange={(e) => setKpStatusFilter(e.target.value)}
-                    className="h-8 rounded-md border border-input bg-background px-2 text-xs"
-                  >
-                    <option value="all">Tous</option>
-                    <option value="validated">Validated</option>
-                    <option value="draft">Draft</option>
-                    <option value="active">Active</option>
-                  </select>
-                </div>
-              )}
-              {kpLoading ? (
-                <p className="text-sm text-muted-foreground py-4">
-                  Chargement...
-                </p>
-              ) : kpData.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-4">
-                  Aucun keyword plan R1
-                </p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-left text-muted-foreground">
-                        <th
-                          className="pb-2 pr-4 cursor-pointer hover:text-foreground select-none"
-                          onClick={() => toggleKpSort("rkp_pg_alias")}
-                        >
-                          <span className="inline-flex items-center gap-1">
-                            Gamme
-                            {kpSortCol === "rkp_pg_alias" ? (
-                              kpSortAsc ? (
-                                <ChevronUp className="h-3 w-3" />
-                              ) : (
-                                <ChevronDown className="h-3 w-3" />
-                              )
-                            ) : (
-                              <ArrowUpDown className="h-3 w-3 opacity-30" />
-                            )}
-                          </span>
-                        </th>
-                        <th
-                          className="pb-2 pr-4 cursor-pointer hover:text-foreground select-none"
-                          onClick={() => toggleKpSort("rkp_status")}
-                        >
-                          <span className="inline-flex items-center gap-1">
-                            Status
-                            {kpSortCol === "rkp_status" ? (
-                              kpSortAsc ? (
-                                <ChevronUp className="h-3 w-3" />
-                              ) : (
-                                <ChevronDown className="h-3 w-3" />
-                              )
-                            ) : (
-                              <ArrowUpDown className="h-3 w-3 opacity-30" />
-                            )}
-                          </span>
-                        </th>
-                        <th className="pb-2 pr-4">Phase</th>
-                        <th
-                          className="pb-2 pr-4 text-right cursor-pointer hover:text-foreground select-none"
-                          onClick={() => toggleKpSort("rkp_quality_score")}
-                        >
-                          <span className="inline-flex items-center gap-1 justify-end">
-                            Quality
-                            {kpSortCol === "rkp_quality_score" ? (
-                              kpSortAsc ? (
-                                <ChevronUp className="h-3 w-3" />
-                              ) : (
-                                <ChevronDown className="h-3 w-3" />
-                              )
-                            ) : (
-                              <ArrowUpDown className="h-3 w-3 opacity-30" />
-                            )}
-                          </span>
-                        </th>
-                        <th className="pb-2 pr-4 text-right">Coverage</th>
-                        <th
-                          className="pb-2 cursor-pointer hover:text-foreground select-none"
-                          onClick={() => toggleKpSort("rkp_built_at")}
-                        >
-                          <span className="inline-flex items-center gap-1">
-                            Date
-                            {kpSortCol === "rkp_built_at" ? (
-                              kpSortAsc ? (
-                                <ChevronUp className="h-3 w-3" />
-                              ) : (
-                                <ChevronDown className="h-3 w-3" />
-                              )
-                            ) : (
-                              <ArrowUpDown className="h-3 w-3 opacity-30" />
-                            )}
-                          </span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredKpData.map((kp) => (
-                        <tr
-                          key={kp.rkp_pg_alias}
-                          className="border-b last:border-0"
-                        >
-                          <td className="py-1.5 pr-4 font-mono text-xs">
-                            {kp.rkp_pg_alias}
-                          </td>
-                          <td className="py-1.5 pr-4">
-                            <Badge
-                              variant={
-                                kp.rkp_status === "validated"
-                                  ? "default"
-                                  : kp.rkp_status === "active"
-                                    ? "secondary"
-                                    : "outline"
-                              }
-                              className="text-xs"
-                            >
-                              {kp.rkp_status ?? "—"}
-                            </Badge>
-                          </td>
-                          <td className="py-1.5 pr-4 text-xs text-muted-foreground">
-                            {kp.rkp_pipeline_phase ?? "—"}
-                          </td>
-                          <td className="py-1.5 pr-4 text-right">
-                            <QualityScoreBadge score={kp.rkp_quality_score} />
-                          </td>
-                          <td className="py-1.5 pr-4 text-right">
-                            {kp.rkp_coverage_score != null
-                              ? `${Math.round(kp.rkp_coverage_score * 100)}%`
-                              : "—"}
-                          </td>
-                          <td className="py-1.5 text-xs text-muted-foreground">
-                            {kp.rkp_built_at
-                              ? formatDate(kp.rkp_built_at)
-                              : "—"}
-                          </td>
-                        </tr>
-                      ))}
-                      {filteredKpData.length === 0 && (
-                        <tr>
-                          <td
-                            colSpan={6}
-                            className="py-4 text-center text-sm text-muted-foreground"
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[200px]">Gamme</TableHead>
+                        <TableHead>Statut</TableHead>
+                        <TableHead className="text-right">Score</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {r1Items.map((item) => {
+                        const statusInfo = R1_STEP_STATUS_LABELS[
+                          item.status
+                        ] ?? {
+                          label: item.status,
+                          color: "bg-slate-100 text-slate-700",
+                        };
+                        return (
+                          <TableRow key={item.id}>
+                            <TableCell className="font-medium text-sm">
+                              {humanizeSlug(item.pg_alias)}
+                              <span className="block text-xs text-muted-foreground font-mono">
+                                {item.pg_alias}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${statusInfo.color}`}
+                              >
+                                {statusInfo.label}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <QualityScoreBadge score={item.quality_score} />
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {formatDate(item.updated_at)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 w-7 p-0"
+                                  onClick={() => openR1Preview(item.pg_alias)}
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                </Button>
+                                {item.status === "draft" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 text-green-700 hover:text-green-800"
+                                    onClick={() => openPublishDialog(item.id)}
+                                  >
+                                    <Check className="h-3.5 w-3.5" />
+                                  </Button>
+                                )}
+                                {item.status === "failed" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 w-7 p-0 text-orange-700 hover:text-orange-800"
+                                    onClick={() => handleRetry(item)}
+                                    disabled={retryingId === item.id}
+                                  >
+                                    <RotateCcw
+                                      className={`h-3.5 w-3.5 ${retryingId === item.id ? "animate-spin" : ""}`}
+                                    />
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Keyword Plans — Collapsible */}
+          <Collapsible
+            open={kpOpen}
+            onOpenChange={(open) => {
+              setKpOpen(open);
+              if (open) loadKeywordPlans();
+            }}
+          >
+            <Card>
+              <CollapsibleTrigger asChild>
+                <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+                  <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                    {kpOpen ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronUp className="h-4 w-4 rotate-180" />
+                    )}
+                    Keyword Plans R1
+                    {kpLoaded && (
+                      <Badge variant="secondary" className="text-xs ml-auto">
+                        {filteredKpData.length}/{kpData.length}
+                      </Badge>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="space-y-3 pt-0">
+                  {kpLoaded && kpData.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1 max-w-xs">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                        <Input
+                          placeholder="Filtrer par gamme..."
+                          value={kpSearch}
+                          onChange={(e) => setKpSearch(e.target.value)}
+                          className="pl-8 h-8 text-sm"
+                        />
+                      </div>
+                      <select
+                        value={kpStatusFilter}
+                        onChange={(e) => setKpStatusFilter(e.target.value)}
+                        className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                      >
+                        <option value="all">Tous</option>
+                        <option value="validated">Valide</option>
+                        <option value="draft">Brouillon</option>
+                        <option value="active">En cours</option>
+                      </select>
+                    </div>
+                  )}
+                  {kpLoading ? (
+                    <div className="flex items-center justify-center gap-2 py-6">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        Chargement...
+                      </span>
+                    </div>
+                  ) : kpData.length === 0 && kpLoaded ? (
+                    <p className="text-sm text-muted-foreground py-4">
+                      Aucun keyword plan R1
+                    </p>
+                  ) : kpData.length > 0 ? (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead
+                            className="cursor-pointer hover:text-foreground select-none"
+                            onClick={() => toggleKpSort("rkp_pg_alias")}
                           >
-                            Aucun resultat
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                            <span className="inline-flex items-center gap-1">
+                              Gamme
+                              {kpSortCol === "rkp_pg_alias" ? (
+                                kpSortAsc ? (
+                                  <ChevronUp className="h-3 w-3" />
+                                ) : (
+                                  <ChevronDown className="h-3 w-3" />
+                                )
+                              ) : (
+                                <ArrowUpDown className="h-3 w-3 opacity-30" />
+                              )}
+                            </span>
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:text-foreground select-none"
+                            onClick={() => toggleKpSort("rkp_status")}
+                          >
+                            <span className="inline-flex items-center gap-1">
+                              Statut
+                              {kpSortCol === "rkp_status" ? (
+                                kpSortAsc ? (
+                                  <ChevronUp className="h-3 w-3" />
+                                ) : (
+                                  <ChevronDown className="h-3 w-3" />
+                                )
+                              ) : (
+                                <ArrowUpDown className="h-3 w-3 opacity-30" />
+                              )}
+                            </span>
+                          </TableHead>
+                          <TableHead>Phase</TableHead>
+                          <TableHead
+                            className="text-right cursor-pointer hover:text-foreground select-none"
+                            onClick={() => toggleKpSort("rkp_quality_score")}
+                          >
+                            <span className="inline-flex items-center gap-1 justify-end">
+                              Qualite
+                              {kpSortCol === "rkp_quality_score" ? (
+                                kpSortAsc ? (
+                                  <ChevronUp className="h-3 w-3" />
+                                ) : (
+                                  <ChevronDown className="h-3 w-3" />
+                                )
+                              ) : (
+                                <ArrowUpDown className="h-3 w-3 opacity-30" />
+                              )}
+                            </span>
+                          </TableHead>
+                          <TableHead className="text-right">
+                            Couverture
+                          </TableHead>
+                          <TableHead
+                            className="cursor-pointer hover:text-foreground select-none"
+                            onClick={() => toggleKpSort("rkp_built_at")}
+                          >
+                            <span className="inline-flex items-center gap-1">
+                              Date
+                              {kpSortCol === "rkp_built_at" ? (
+                                kpSortAsc ? (
+                                  <ChevronUp className="h-3 w-3" />
+                                ) : (
+                                  <ChevronDown className="h-3 w-3" />
+                                )
+                              ) : (
+                                <ArrowUpDown className="h-3 w-3 opacity-30" />
+                              )}
+                            </span>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredKpData.map((kp) => {
+                          const kpStatus = KP_STATUS_LABELS[
+                            kp.rkp_status ?? ""
+                          ] ?? {
+                            label: kp.rkp_status ?? "\u2014",
+                            color: "bg-slate-100 text-slate-600",
+                          };
+                          return (
+                            <TableRow key={kp.rkp_pg_alias}>
+                              <TableCell className="font-medium text-sm">
+                                {humanizeSlug(kp.rkp_pg_alias)}
+                                <span className="block text-xs text-muted-foreground font-mono">
+                                  {kp.rkp_pg_alias}
+                                </span>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant="outline"
+                                  className={`text-xs ${kpStatus.color}`}
+                                >
+                                  {kpStatus.label}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-xs text-muted-foreground">
+                                {KP_PHASE_LABELS[kp.rkp_pipeline_phase ?? ""] ??
+                                  kp.rkp_pipeline_phase ??
+                                  "\u2014"}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <QualityScoreBadge
+                                  score={kp.rkp_quality_score}
+                                />
+                              </TableCell>
+                              <TableCell className="text-right text-sm">
+                                {kp.rkp_coverage_score != null
+                                  ? `${Math.round(kp.rkp_coverage_score * 100)}%`
+                                  : "\u2014"}
+                              </TableCell>
+                              <TableCell className="text-xs text-muted-foreground">
+                                {kp.rkp_built_at
+                                  ? formatDate(kp.rkp_built_at)
+                                  : "\u2014"}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                        {filteredKpData.length === 0 && (
+                          <TableRow>
+                            <TableCell
+                              colSpan={6}
+                              className="py-4 text-center text-sm text-muted-foreground"
+                            >
+                              Aucun resultat
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  ) : null}
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
         </TabsContent>
 
         <TabsContent value="flags">
@@ -2109,53 +2460,165 @@ export default function AdminRagPipeline() {
         </TabsContent>
       </Tabs>
 
-      {/* R1 Preview Dialog */}
+      {/* R1 Preview Dialog — sections organisees FR */}
       <Dialog open={r1PreviewOpen} onOpenChange={setR1PreviewOpen}>
         <DialogContent className="max-w-2xl max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle>R1 Preview — {r1PreviewAlias}</DialogTitle>
+            <DialogTitle>
+              Apercu R1 — {r1PreviewAlias ? humanizeSlug(r1PreviewAlias) : ""}
+            </DialogTitle>
             <DialogDescription>
-              Contenu sgpg_* genere par le pipeline
+              Contenu genere par le pipeline R1 pour cette gamme
             </DialogDescription>
           </DialogHeader>
           {r1PreviewLoading ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">
-              Chargement...
-            </p>
+            <div className="flex items-center justify-center gap-2 py-12">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">
+                Chargement...
+              </span>
+            </div>
           ) : r1PreviewData ? (
             <ScrollArea className="h-[60vh]">
-              <div className="space-y-3 pr-4">
-                {Object.entries(r1PreviewData).map(([key, value]) => {
-                  if (value === null || value === undefined) return null;
-                  const label = key.replace(/^sgpg_/, "");
+              <div className="space-y-5 pr-4">
+                {R1_PREVIEW_SECTIONS.map((section) => {
+                  const sectionEntries = section.keys
+                    .map((key) => [key, r1PreviewData[key]] as const)
+                    .filter(([, v]) => v !== null && v !== undefined);
+                  if (sectionEntries.length === 0) return null;
                   return (
-                    <div key={key} className="rounded-lg border p-3">
-                      <div className="mb-1 flex items-center gap-2">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {label}
-                        </span>
-                        {key === "sgpg_gatekeeper_score" && (
-                          <QualityScoreBadge score={value as number} />
-                        )}
-                        {key === "sgpg_is_draft" && (
-                          <Badge
-                            variant={value ? "outline" : "default"}
-                            className="text-xs"
-                          >
-                            {value ? "draft" : "published"}
-                          </Badge>
-                        )}
+                    <div key={section.title}>
+                      <h3 className="text-sm font-semibold mb-2 text-foreground">
+                        {section.title}
+                      </h3>
+                      <div className="space-y-2">
+                        {sectionEntries.map(([key, value]) => {
+                          const label =
+                            SGPG_FIELD_LABELS[key] ?? key.replace(/^sgpg_/, "");
+                          return (
+                            <div key={key} className="rounded-lg border p-3">
+                              <div className="mb-1 flex items-center gap-2">
+                                <span className="text-xs font-medium">
+                                  {label}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground font-mono">
+                                  {key}
+                                </span>
+                                {key === "sgpg_gatekeeper_score" && (
+                                  <QualityScoreBadge score={value as number} />
+                                )}
+                                {key === "sgpg_is_draft" && (
+                                  <Badge
+                                    variant={value ? "outline" : "default"}
+                                    className="text-xs"
+                                  >
+                                    {value ? "Brouillon" : "Publie"}
+                                  </Badge>
+                                )}
+                              </div>
+                              {/* FAQ: render Q/R pairs */}
+                              {key === "sgpg_faq" && Array.isArray(value) ? (
+                                <div className="space-y-2">
+                                  {(
+                                    value as Array<{
+                                      q?: string;
+                                      a?: string;
+                                      question?: string;
+                                      answer?: string;
+                                    }>
+                                  ).map((faq, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="bg-muted/30 rounded p-2"
+                                    >
+                                      <p className="text-xs font-semibold">
+                                        Q: {faq.q ?? faq.question ?? ""}
+                                      </p>
+                                      <p className="text-xs mt-0.5">
+                                        {faq.a ?? faq.answer ?? ""}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : key === "sgpg_anti_mistakes" &&
+                                Array.isArray(value) ? (
+                                <ul className="list-disc list-inside space-y-0.5">
+                                  {(value as string[]).map((m, idx) => (
+                                    <li key={idx} className="text-sm">
+                                      {m}
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : key === "sgpg_gatekeeper_flags" &&
+                                Array.isArray(value) ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {(value as string[]).map((flag, idx) => (
+                                    <Badge
+                                      key={idx}
+                                      variant="outline"
+                                      className="text-xs bg-orange-50 text-orange-700"
+                                    >
+                                      {flag}
+                                    </Badge>
+                                  ))}
+                                  {(value as string[]).length === 0 && (
+                                    <span className="text-xs text-muted-foreground">
+                                      Aucune alerte
+                                    </span>
+                                  )}
+                                </div>
+                              ) : typeof value === "string" ? (
+                                <p className="text-sm">{value}</p>
+                              ) : typeof value === "number" ? (
+                                <p className="text-sm font-mono">{value}</p>
+                              ) : typeof value === "boolean" ? (
+                                <p className="text-sm">
+                                  {value ? "Oui" : "Non"}
+                                </p>
+                              ) : (
+                                <pre className="text-xs font-mono whitespace-pre-wrap bg-muted/30 rounded p-2">
+                                  {JSON.stringify(value, null, 2)}
+                                </pre>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
-                      {typeof value === "string" ? (
-                        <p className="text-sm">{value}</p>
-                      ) : (
-                        <pre className="text-xs font-mono whitespace-pre-wrap bg-muted/30 rounded p-2">
-                          {JSON.stringify(value, null, 2)}
-                        </pre>
-                      )}
                     </div>
                   );
                 })}
+                {/* Autres champs non mappes */}
+                {(() => {
+                  const mappedKeys = new Set(
+                    R1_PREVIEW_SECTIONS.flatMap((s) => s.keys),
+                  );
+                  const otherEntries = Object.entries(r1PreviewData).filter(
+                    ([key, v]) =>
+                      !mappedKeys.has(key) && v !== null && v !== undefined,
+                  );
+                  if (otherEntries.length === 0) return null;
+                  return (
+                    <div>
+                      <h3 className="text-sm font-semibold mb-2 text-foreground">
+                        Autres champs
+                      </h3>
+                      <div className="space-y-2">
+                        {otherEntries.map(([key, value]) => (
+                          <div key={key} className="rounded-lg border p-3">
+                            <span className="text-xs font-medium">{key}</span>
+                            {typeof value === "string" ? (
+                              <p className="text-sm mt-1">{value}</p>
+                            ) : (
+                              <pre className="text-xs font-mono whitespace-pre-wrap bg-muted/30 rounded p-2 mt-1">
+                                {JSON.stringify(value, null, 2)}
+                              </pre>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </ScrollArea>
           ) : (
@@ -2170,53 +2633,6 @@ export default function AdminRagPipeline() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Canary Preview Dialog */}
-      <AlertDialog open={canaryPreviewOpen} onOpenChange={setCanaryPreviewOpen}>
-        <AlertDialogContent className="max-w-lg">
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Batch R1 Canary — {canaryGammes.length} gammes
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Le pipeline R1_pieces sera lance sur ces gammes :
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          {canaryLoading ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              Chargement...
-            </p>
-          ) : canaryGammes.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-4 text-center">
-              Aucune gamme canary configuree
-            </p>
-          ) : (
-            <ScrollArea className="max-h-[40vh]">
-              <div className="flex flex-wrap gap-1.5 pr-4">
-                {canaryGammes.map((slug) => (
-                  <Badge
-                    key={slug}
-                    variant="outline"
-                    className="text-xs font-mono"
-                  >
-                    {slug}
-                  </Badge>
-                ))}
-              </div>
-            </ScrollArea>
-          )}
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmCanaryBatch}
-              disabled={canaryGammes.length === 0}
-            >
-              <Zap className="h-4 w-4 mr-1.5" />
-              Lancer {canaryGammes.length} gammes
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* AlertDialog de publication */}
       <AlertDialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen}>

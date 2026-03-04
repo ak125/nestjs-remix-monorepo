@@ -103,6 +103,16 @@ export class AdminRagIngestController {
       sourceRef,
     );
 
+    if (!patch) {
+      return {
+        status: 'skipped',
+        reason:
+          'LLM desactive — classification PDF ignoree. Utiliser le skill /rag-ops ingest.',
+        pgAlias: dto.pgAlias,
+        extractedChars: extractResult.fullText.length,
+      };
+    }
+
     // 3. Merge into .md
     const mergeResult = this.ragMerger.merge(dto.pgAlias, patch);
 

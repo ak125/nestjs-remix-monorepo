@@ -54,9 +54,8 @@ export class ScriptGeneratorService extends SupabaseBaseService {
     userPrompt: string,
   ): Promise<string> {
     if (!this.groqApiKey) {
-      throw new Error(
-        'GROQ_API_KEY is not configured — cannot generate script',
-      );
+      this.logger.warn('GROQ_API_KEY absent — generation video desactivee.');
+      throw new Error('Generation video desactivee (LLM externe supprime)');
     }
 
     const response = await fetch(

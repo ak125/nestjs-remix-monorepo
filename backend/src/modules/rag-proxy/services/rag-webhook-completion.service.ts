@@ -232,8 +232,11 @@ export class RagWebhookCompletionService {
 
     const apiKey = this.configService.get<string>('ANTHROPIC_API_KEY');
     if (!apiKey) {
+      this.logger.warn(
+        'ANTHROPIC_API_KEY absent — description image desactivee.',
+      );
       throw new ExternalServiceException({
-        message: 'ANTHROPIC_API_KEY not configured',
+        message: 'Description image desactivee (LLM externe supprime)',
         serviceName: 'anthropic',
       });
     }

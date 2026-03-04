@@ -85,9 +85,10 @@ export class R1ContentPipelineService extends SupabaseBaseService {
     );
 
     if (!this.aiContent) {
-      throw new Error(
-        'R1ContentPipelineService requires AiContentService (LLM_POLISH_ENABLED=true)',
+      this.logger.warn(
+        '[R1_PIPELINE] AiContentService non disponible (LLM desactive). Utiliser les skills Claude Code.',
       );
+      return { status: 'skipped', reason: 'LLM disabled' } as any;
     }
 
     // ── KP0: Audit existing R1 sections ──
