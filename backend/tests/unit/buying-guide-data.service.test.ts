@@ -7,6 +7,7 @@ describe('BuyingGuideDataService quality gate', () => {
   const service = Object.create(
     BuyingGuideDataService.prototype,
   ) as BuyingGuideDataService;
+  (service as any).logger = { warn: jest.fn(), error: jest.fn(), log: jest.fn(), debug: jest.fn() };
 
   const transform = (raw: Record<string, unknown>): BuyingGuideContractV1 =>
     (service as any).transformToV2(raw) as BuyingGuideContractV1;

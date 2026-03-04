@@ -1900,15 +1900,15 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         `Ne pas mélanger ${gammeName} avant/arrière sans validation stricte.`,
         'Toujours remplacer les disques par paire sur le même essieu.',
         "Ne pas ignorer la cote d'épaisseur minimale (MIN TH).",
-        'Ne pas valider le montage sans contrôle du couple de serrage constructeur.',
+        "Ne pas valider l'installation sans vérifier les préconisations constructeur.",
       ];
     }
 
     return [
       `Ne pas commander ${gammeName} sans vérifier la compatibilité véhicule/moteur.`,
-      'Ne pas ignorer les préconisations constructeur de montage.',
-      'Ne pas différer le remplacement en cas de symptômes persistants.',
-      'Ne pas valider le panier sans comparaison des références de montage.',
+      "Ne pas ignorer les préconisations constructeur d'installation.",
+      'Ne pas différer le remplacement en cas de dégradation persistante.',
+      'Ne pas valider le panier sans comparaison des références constructeur.',
     ];
   }
 
@@ -1921,7 +1921,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
         {
           question: "Puis-je monter du ventilé à l'arrière ?",
           answer:
-            "Uniquement si le montage d'origine et la référence constructeur le prévoient pour votre véhicule.",
+            "Uniquement si la configuration d'origine et la référence constructeur le prévoient pour votre véhicule.",
         },
         {
           question: 'Dois-je changer les plaquettes en même temps ?',
@@ -1945,12 +1945,12 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       {
         question: `Quand remplacer ${gammeName} ?`,
         answer:
-          'Remplacez la pièce dès apparition de symptômes persistants ou dès qu’un contrôle atelier confirme une usure hors tolérance.',
+          'Remplacez la pièce dès qu’un contrôle atelier révèle une dégradation hors tolérance ou selon l’intervalle préconisé par le constructeur.',
       },
       {
         question: `${gammeName} se remplace-t-il seul ?`,
         answer:
-          'Le montage peut nécessiter des contrôles de sécurité et de couple. En cas de doute, suivez la procédure constructeur ou un atelier qualifié.',
+          "L'installation peut nécessiter des contrôles de sécurité et de couple. En cas de doute, confiez l'intervention à un atelier qualifié.",
       },
     ];
   }
@@ -2006,8 +2006,8 @@ export class BuyingGuideDataService extends SupabaseBaseService {
 
     const fallback = [
       'Ne montez jamais la pièce sans vérifier la compatibilité exacte véhicule/moteur.',
-      "N'attendez pas l'apparition de plusieurs symptômes pour remplacer la pièce.",
-      'Toujours respecter le montage par paire quand la recommandation constructeur le demande.',
+      "N'attendez pas que la pièce soit totalement défaillante pour la remplacer.",
+      'Toujours respecter le remplacement par paire quand la recommandation constructeur le demande.',
     ];
 
     for (const item of fallback) {
