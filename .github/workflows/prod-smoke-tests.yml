@@ -402,9 +402,16 @@ jobs:
         run: |
           FAILED=0
 
+          # Helper: extract HTTP status code from BusyBox wget output
+          # BusyBox formats errors as: "wget: server returned error: HTTP/1.1 410 Gone"
+          # Standard format: "  HTTP/1.1 200 OK"
+          get_status() {
+            echo "$1" | grep -oE 'HTTP/[0-9.]+ [0-9]+' | tail -1 | awk '{print $2}'
+          }
+
           # 410 on /pieces/suspension (no ID slug)
           RESP_410=$(docker exec $CONTAINER wget -S -O /dev/null "http://localhost:3000/pieces/suspension" 2>&1 || true)
-          STATUS_410=$(echo "$RESP_410" | grep "HTTP/" | tail -1 | awk '{print $2}')
+          STATUS_410=$(get_status "$RESP_410")
           XROB_410=$(echo "$RESP_410" | grep -i "x-robots-tag" | head -1)
           if [ "$STATUS_410" = "410" ]; then
             echo "✅ /pieces/suspension -> 410 Gone"
@@ -415,13 +422,19 @@ jobs:
           if echo "$XROB_410" | grep -qi "noindex"; then
             echo "✅ 410 has X-Robots-Tag: noindex"
           else
-            echo "❌ 410 missing X-Robots-Tag noindex: '$XROB_410'"
-            FAILED=1
+            # BusyBox wget may not show response headers on error — check via body
+            BODY_410=$(docker exec $CONTAINER wget -qO- "http://localhost:3000/pieces/suspension" 2>/dev/null || true)
+            if echo "$BODY_410" | grep -qi 'name="robots".*noindex'; then
+              echo "✅ 410 has meta robots noindex (in body)"
+            else
+              echo "❌ 410 missing noindex directive"
+              FAILED=1
+            fi
           fi
 
           # 404 on unknown URL
           RESP_404=$(docker exec $CONTAINER wget -S -O /dev/null "http://localhost:3000/this-page-does-not-exist-xyz" 2>&1 || true)
-          STATUS_404=$(echo "$RESP_404" | grep "HTTP/" | tail -1 | awk '{print $2}')
+          STATUS_404=$(get_status "$RESP_404")
           if [ "$STATUS_404" = "404" ]; then
             echo "✅ /this-page-does-not-exist-xyz -> 404"
           else
@@ -429,14 +442,23 @@ jobs:
             FAILED=1
           fi
 
-          # Valid page must NOT have X-Robots-Tag: noindex
-          RESP_200=$(docker exec $CONTAINER wget -S -O /dev/null "http://localhost:3000$TEST_R1_URL" 2>&1 || true)
-          XROB_200=$(echo "$RESP_200" | grep -i "x-robots-tag" | head -1)
-          if echo "$XROB_200" | grep -qi "noindex"; then
-            echo "❌ Valid page has X-Robots-Tag noindex! '$XROB_200'"
+          # 404 body must contain noindex
+          BODY_404=$(docker exec $CONTAINER wget -qO- "http://localhost:3000/this-page-does-not-exist-xyz" 2>/dev/null || true)
+          if echo "$BODY_404" | grep -qi 'name="robots".*noindex'; then
+            echo "✅ 404 has meta robots noindex"
+          else
+            echo "❌ 404 missing meta robots noindex"
+            FAILED=1
+          fi
+
+          # Valid page must NOT have noindex
+          BODY_200=$(docker exec $CONTAINER wget -qO- "http://localhost:3000$TEST_R1_URL" 2>/dev/null)
+          ROBOTS_200=$(echo "$BODY_200" | grep -oP 'name="robots" content="\K[^"]+' | head -1)
+          if echo "$ROBOTS_200" | grep -qi "noindex"; then
+            echo "❌ Valid page has robots noindex! '$ROBOTS_200'"
             FAILED=1
           else
-            echo "✅ Valid page: no X-Robots-Tag noindex"
+            echo "✅ Valid page robots: ${ROBOTS_200:-'index, follow'}"
           fi
 
           if [ "$FAILED" = "1" ]; then exit 1; fi
