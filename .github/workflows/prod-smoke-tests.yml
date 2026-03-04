@@ -346,16 +346,22 @@ jobs:
             FAILED=1
           fi
 
-          # JSON-LD BreadcrumbList with 3+ items
+          # JSON-LD BreadcrumbList with 3+ items (may be nested in CollectionPage.breadcrumb)
           JSONLD=$(echo "$BODY" | grep -oP 'type="application/ld\+json">\K[^<]+' | head -1)
           BC_RESULT=$(echo "$JSONLD" | python3 -c "
           import sys,json
           d=json.load(sys.stdin)
           graph=d.get('@graph',[])
+          # Check standalone @graph node
           for node in graph:
             if node.get('@type')=='BreadcrumbList':
-              items=node.get('itemListElement',[])
-              print(f'OK:{len(items)}')
+              print(f'OK:{len(node.get(\"itemListElement\",[]))}')
+              sys.exit(0)
+          # Check nested in CollectionPage.breadcrumb
+          for node in graph:
+            bc=node.get('breadcrumb',{})
+            if isinstance(bc,dict) and bc.get('@type')=='BreadcrumbList':
+              print(f'OK:{len(bc.get(\"itemListElement\",[]))}')
               sys.exit(0)
           print('MISSING')
           " 2>/dev/null || echo "ERROR")
