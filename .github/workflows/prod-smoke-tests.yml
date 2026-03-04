@@ -403,7 +403,7 @@ jobs:
           FAILED=0
 
           # 410 on /pieces/suspension (no ID slug)
-          RESP_410=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000/pieces/suspension" 2>&1 || true)
+          RESP_410=$(docker exec $CONTAINER wget -S -O /dev/null "http://localhost:3000/pieces/suspension" 2>&1 || true)
           STATUS_410=$(echo "$RESP_410" | grep "HTTP/" | tail -1 | awk '{print $2}')
           XROB_410=$(echo "$RESP_410" | grep -i "x-robots-tag" | head -1)
           if [ "$STATUS_410" = "410" ]; then
@@ -420,7 +420,7 @@ jobs:
           fi
 
           # 404 on unknown URL
-          RESP_404=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000/this-page-does-not-exist-xyz" 2>&1 || true)
+          RESP_404=$(docker exec $CONTAINER wget -S -O /dev/null "http://localhost:3000/this-page-does-not-exist-xyz" 2>&1 || true)
           STATUS_404=$(echo "$RESP_404" | grep "HTTP/" | tail -1 | awk '{print $2}')
           if [ "$STATUS_404" = "404" ]; then
             echo "✅ /this-page-does-not-exist-xyz -> 404"
@@ -430,7 +430,7 @@ jobs:
           fi
 
           # Valid page must NOT have X-Robots-Tag: noindex
-          RESP_200=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000$TEST_R1_URL" 2>&1)
+          RESP_200=$(docker exec $CONTAINER wget -S -O /dev/null "http://localhost:3000$TEST_R1_URL" 2>&1 || true)
           XROB_200=$(echo "$RESP_200" | grep -i "x-robots-tag" | head -1)
           if echo "$XROB_200" | grep -qi "noindex"; then
             echo "❌ Valid page has X-Robots-Tag noindex! '$XROB_200'"
