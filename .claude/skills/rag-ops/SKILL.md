@@ -2,7 +2,7 @@
 name: rag-ops
 description: "RAG operations: diagnose, ingest, monitor, test, optimize. Circuit breaker, intent routing, corpus management."
 argument-hint: "[diagnose|ingest|monitor|test|audit]"
-allowed-tools: Read, Grep, Glob, Bash, mcp__supabase__execute_sql
+allowed-tools: Read, Grep, Glob, Bash, Write, mcp__supabase__execute_sql
 version: "1.2"
 ---
 
@@ -61,6 +61,7 @@ Skill opérationnel pour le système RAG AutoMecanik. Gère le debug, l'ingestio
 | `/rag-ops monitor` | Verifier l'etat du corpus et des metriques | Stats → Coverage → Intents → Sync errors |
 | `/rag-ops test` | Tester les endpoints RAG | curl templates pour tous les endpoints |
 | `/rag-ops audit` | Audit complet du corpus + score | Script Python : gaps, fichiers vides, frontmatter, score /5 |
+| `/rag-ops describe-images` | Decrire et classer les images RAG | Lister → Read image → Description → Ecrire .prompt.md |
 
 ---
 
@@ -418,6 +419,91 @@ python3 .claude/skills/rag-ops/scripts/rag_audit.py --all
 
 # Sortie JSON (pour integration)
 python3 .claude/skills/rag-ops/scripts/rag_audit.py --score --format json
+```
+
+---
+
+## Workflow: Describe Images
+
+> Utiliser quand : decrire les images RAG pour la recreation AI (anti-copyright).
+> Remplace l'endpoint `/api/rag/admin/images/:hash/describe` (API Anthropic desactivee).
+
+### Etape 1 — Lister les images disponibles
+
+```bash
+# Lister les images sans description
+ls /opt/automecanik/rag/knowledge/_raw/web-images/*.{jpg,jpeg,png,webp,gif} 2>/dev/null | while read img; do
+  base=$(basename "$img" | sed 's/\.[^.]*$//')
+  [ ! -f "/opt/automecanik/rag/knowledge/_raw/web-images/${base}.prompt.md" ] && echo "$img"
+done
+```
+
+### Etape 2 — Lire et decrire chaque image
+
+Utiliser l'outil **Read** pour voir l'image :
+```
+Read /opt/automecanik/rag/knowledge/_raw/web-images/{hash}.jpg
+```
+
+Generer une description selon les **REGLES ANTI-COPYRIGHT** :
+- JAMAIS de nom de marque, logo, sigle ou embleme (remplacer par "une marque premium", "un equipementier reconnu")
+- JAMAIS de packaging identifiable, etiquette commerciale ou code-barres
+- JAMAIS de nom de produit specifique, reference catalogue ou numero de piece
+- JAMAIS de typographie reconnaissable d'une marque
+- JAMAIS de slogan, baseline ou texte marketing
+- JAMAIS de mention de site web, URL ou QR code
+- Si logo/marque visible → decrire comme "un element graphique decoratif" ou l'omettre
+- Decrire les pieces auto de facon technique et generique (ex: "disque de frein ventile en fonte")
+- Ne JAMAIS reproduire de texte lisible present sur l'image originale
+
+**Inclure dans la description :**
+- Le sujet principal et sa position
+- Les couleurs exactes et le contraste
+- L'eclairage (direction, intensite, temperature)
+- L'arriere-plan et le contexte
+- Le style photographique (macro, studio, vue d'ensemble)
+- Les textures et materiaux visibles
+- Les proportions et la composition
+
+**Format :** paragraphe descriptif de 150-250 mots en francais, utilisable comme prompt pour un generateur d'image. 100% libre de droits.
+
+### Etape 3 — Classer l'image
+
+Identifier :
+- **Gamme associee** : quelle gamme piece auto (pgAlias) ?
+- **Type** : `hero` | `symptom` | `schema` | `fixation` | `product` | `diagnostic`
+- **Priorite** : `haute` (manque image sur la page) | `moyenne` | `basse`
+
+### Etape 4 — Sauvegarder la description
+
+Ecrire dans `/opt/automecanik/rag/knowledge/_raw/web-images/{hash}.prompt.md` :
+
+```yaml
+---
+hash: "{hash}"
+gamme: "{pgAlias}"
+type: "{type}"
+priority: "{priority}"
+described_at: "{YYYY-MM-DD}"
+described_by: "claude-code"
+---
+
+{description 150-250 mots}
+```
+
+### Etape 5 — Batch mode
+
+Pour traiter plusieurs images d'un coup :
+1. Lister toutes les images sans fichier `.prompt.md` associe
+2. Traiter par lot de 5
+3. Afficher un resume : X images decrites, Y deja faites, Z ignorees
+
+### Verification
+
+```bash
+# Compter images vs descriptions
+echo "Images: $(ls /opt/automecanik/rag/knowledge/_raw/web-images/*.{jpg,jpeg,png,webp} 2>/dev/null | wc -l)"
+echo "Decrites: $(ls /opt/automecanik/rag/knowledge/_raw/web-images/*.prompt.md 2>/dev/null | wc -l)"
 ```
 
 ---

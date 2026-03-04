@@ -56,10 +56,10 @@ export class PdfRagClassifierService {
   ): Promise<RagMergePatch> {
     const apiKey = this.config.get<string>('GROQ_API_KEY');
     if (!apiKey) {
-      this.logger.warn(
-        'GROQ_API_KEY absent — classification PDF ignoree. Utiliser le skill /rag-ops ingest.',
+      this.logger.log(
+        `Pass-through mode: PDF (${pdfText.length} chars) → section markdown pour ${pgAlias}`,
       );
-      return null as any;
+      return this.buildPassthroughPatch(pdfText, sourceRef, truthLevel);
     }
     const model =
       this.config.get<string>('GROQ_MODEL') || 'llama-3.3-70b-versatile';
@@ -203,6 +203,34 @@ Reponds UNIQUEMENT avec ce JSON :
   ],
   "confidence": 85
 }`;
+  }
+
+  /**
+   * Build a pass-through patch when no LLM API key is configured.
+   * Injects raw PDF text as a markdown section for manual structuring via /rag-ops.
+   */
+  private buildPassthroughPatch(
+    pdfText: string,
+    sourceRef: string,
+    truthLevel: string,
+  ): RagMergePatch {
+    const truncated = pdfText.substring(0, 8000);
+    const today = new Date().toISOString().split('T')[0];
+
+    return {
+      source_ref: sourceRef,
+      truth_level: truthLevel,
+      yaml_array_appends: {},
+      yaml_field_enrichments: {},
+      new_yaml_blocks: {},
+      markdown_sections: [
+        {
+          title: `Import PDF ${sourceRef} (${today})`,
+          content: truncated,
+        },
+      ],
+      confidence: 50,
+    };
   }
 
   /**

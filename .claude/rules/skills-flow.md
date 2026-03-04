@@ -36,6 +36,7 @@ Quand un de ces contextes est detecte, **proposer** le skill correspondant :
 | Mention copywriting social, generation posts IG/FB/YT | `/marketing-hub copy` | semaine ISO |
 | Mention brand gate, compliance, approbation posts | `/marketing-hub gate` | semaine ISO |
 | Mention export manifest, publication social | `/marketing-hub export` | semaine + canal |
+| Mention images RAG, description image, recreation AI | `/rag-ops describe-images` | — |
 
 ---
 
