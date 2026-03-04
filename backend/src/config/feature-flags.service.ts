@@ -4,11 +4,14 @@ import { ConfigService } from '@nestjs/config';
 /**
  * Centralized feature flag access for the RAG content pipeline and brief gates.
  *
- * All flags are read once from env vars via ConfigService.
- * Getters are cheap (no I/O) — safe to call in hot paths.
+ * Flags are read from env vars via ConfigService, with an optional volatile
+ * override layer for runtime toggling from the admin dashboard.
+ * Overrides are lost on restart (by design — safer for prod).
  */
 @Injectable()
 export class FeatureFlagsService {
+  private readonly overrides = new Map<string, string>();
+
   constructor(private readonly config: ConfigService) {}
 
   // ── Content pipeline flags ──
@@ -122,16 +125,68 @@ export class FeatureFlagsService {
     return list.includes(gammeSlug) || list.includes('*');
   }
 
+  // ── Runtime override API (volatile — lost on restart) ──
+
+  private static readonly ALLOWED_KEYS = new Set([
+    'EVIDENCE_PACK_ENABLED',
+    'HARD_GATES_ENABLED',
+    'AUTO_REPAIR_ENABLED',
+    'SAFE_FALLBACK_ENABLED',
+    'CANARY_GAMMES',
+    'R1_CONTENT_PIPELINE_ENABLED',
+    'BRIEF_GATES_ENABLED',
+    'BRIEF_GATES_OBSERVE_ONLY',
+    'PIPELINE_CHAIN_ENABLED',
+    'RAG_CATCHUP_ENABLED',
+    'CONSEIL_PACK_ENABLED',
+    'KEYWORD_DENSITY_GATE_ENABLED',
+  ]);
+
+  listFlags(): Record<
+    string,
+    { envValue: string | null; override: string | null; effective: string }
+  > {
+    const result: Record<
+      string,
+      { envValue: string | null; override: string | null; effective: string }
+    > = {};
+    for (const key of FeatureFlagsService.ALLOWED_KEYS) {
+      const envValue = this.config.get<string>(key) ?? null;
+      const override = this.overrides.get(key) ?? null;
+      result[key] = {
+        envValue,
+        override,
+        effective: override ?? envValue ?? '',
+      };
+    }
+    return result;
+  }
+
+  setOverride(key: string, value: string): void {
+    if (!FeatureFlagsService.ALLOWED_KEYS.has(key)) {
+      throw new Error(`Unknown flag key: ${key}`);
+    }
+    this.overrides.set(key, value);
+  }
+
+  clearOverride(key: string): void {
+    this.overrides.delete(key);
+  }
+
   // ── Private helpers ──
 
+  private resolve(key: string): string | undefined {
+    return this.overrides.get(key) ?? this.config.get<string>(key);
+  }
+
   private bool(key: string, defaultValue: boolean): boolean {
-    const raw = this.config.get<string>(key);
+    const raw = this.resolve(key);
     if (raw === undefined || raw === null || raw === '') return defaultValue;
     return raw === 'true';
   }
 
   private csv(key: string): string[] {
-    const raw = this.config.get<string>(key) ?? '';
+    const raw = this.resolve(key) ?? '';
     return raw
       .split(',')
       .map((s) => s.trim())
@@ -139,7 +194,7 @@ export class FeatureFlagsService {
   }
 
   private int(key: string, defaultValue: number): number {
-    const raw = this.config.get<string>(key);
+    const raw = this.resolve(key);
     if (raw === undefined || raw === null || raw === '') return defaultValue;
     const parsed = parseInt(raw, 10);
     return isNaN(parsed) ? defaultValue : parsed;

@@ -329,4 +329,59 @@ export class AdminContentRefreshController {
   async getQualityDashboard() {
     return this.contentRefreshService.getQualityDashboard();
   }
+
+  // ── R1 Management Endpoints ──
+
+  @Get('r1-keyword-plans')
+  async getR1KeywordPlans(
+    @Query('status') status?: string,
+    @Query('limit') limitParam?: string,
+  ) {
+    const limit = Math.min(parseInt(limitParam || '50', 10) || 50, 200);
+    return this.contentRefreshService.getR1KeywordPlans({ status, limit });
+  }
+
+  @Get('r1-preview/:pgAlias')
+  async getR1Preview(@Param('pgAlias') pgAlias: string) {
+    if (!pgAlias || pgAlias.length > 100 || !/^[a-z0-9-]+$/.test(pgAlias)) {
+      throw new BadRequestException('Invalid pgAlias format');
+    }
+    const result = await this.contentRefreshService.getR1Preview(pgAlias);
+    if (!result) {
+      throw new NotFoundException(`Gamme not found: ${pgAlias}`);
+    }
+    return result;
+  }
+
+  @Post('bulk-publish')
+  async bulkPublish(@Body() body: { ids?: number[] }, @Req() req: any) {
+    const ids = Array.isArray(body?.ids)
+      ? body.ids.filter((id) => typeof id === 'number' && Number.isFinite(id))
+      : [];
+    if (ids.length === 0) {
+      throw new BadRequestException(
+        'ids[] required (non-empty array of numbers)',
+      );
+    }
+    if (ids.length > 100) {
+      throw new BadRequestException('Max 100 IDs per batch');
+    }
+    const adminUser = req.user?.email?.trim() || 'admin';
+    const results = await Promise.allSettled(
+      ids.map((id) => this.contentRefreshService.publishRefresh(id, adminUser)),
+    );
+    const failures: Array<{ id: number; reason: string }> = [];
+    let published = 0;
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled') {
+        published++;
+      } else {
+        failures.push({
+          id: ids[i],
+          reason: r.reason?.message || r.reason?.toString() || 'Unknown error',
+        });
+      }
+    });
+    return { published, failed: failures.length, total: ids.length, failures };
+  }
 }

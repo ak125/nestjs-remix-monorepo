@@ -1575,6 +1575,90 @@ export class ContentRefreshService extends SupabaseBaseService {
   }
 
   /**
+   * R1 keyword plans — list from __seo_r1_keyword_plan.
+   */
+  async getR1KeywordPlans(opts: { status?: string; limit: number }): Promise<
+    Array<{
+      rkp_pg_alias: string;
+      rkp_status: string | null;
+      rkp_pipeline_phase: string | null;
+      rkp_quality_score: number | null;
+      rkp_coverage_score: number | null;
+      rkp_built_at: string | null;
+    }>
+  > {
+    let query = this.supabase
+      .from('__seo_r1_keyword_plan')
+      .select(
+        'rkp_pg_alias, rkp_status, rkp_pipeline_phase, rkp_quality_score, rkp_coverage_score, rkp_built_at',
+      )
+      .order('rkp_built_at', { ascending: false })
+      .limit(opts.limit);
+
+    if (opts.status) {
+      query = query.eq('rkp_status', opts.status);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      this.logger.error(`Failed to get R1 keyword plans: ${error.message}`);
+      return [];
+    }
+    return (data || []) as Array<{
+      rkp_pg_alias: string;
+      rkp_status: string | null;
+      rkp_pipeline_phase: string | null;
+      rkp_quality_score: number | null;
+      rkp_coverage_score: number | null;
+      rkp_built_at: string | null;
+    }>;
+  }
+
+  /**
+   * R1 content preview — returns all sgpg_* fields for a gamme.
+   */
+  async getR1Preview(pgAlias: string): Promise<Record<string, unknown> | null> {
+    const { data: gamme } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id')
+      .eq('pg_alias', pgAlias)
+      .single();
+
+    if (!gamme) return null;
+
+    const { data } = await this.supabase
+      .from('__seo_gamme_purchase_guide')
+      .select(
+        [
+          'sgpg_hero_subtitle',
+          'sgpg_selector_microcopy',
+          'sgpg_micro_seo_block',
+          'sgpg_compatibilities_intro',
+          'sgpg_equipementiers_line',
+          'sgpg_family_cross_sell_intro',
+          'sgpg_faq',
+          'sgpg_safe_table_rows',
+          'sgpg_arg1_title',
+          'sgpg_arg2_title',
+          'sgpg_arg3_title',
+          'sgpg_arg4_title',
+          'sgpg_anti_mistakes',
+          'sgpg_gatekeeper_score',
+          'sgpg_gatekeeper_flags',
+          'sgpg_gatekeeper_checks',
+          'sgpg_is_draft',
+          'sgpg_h1_override',
+          'sgpg_intent_lock',
+          'sgpg_updated_at',
+        ].join(', '),
+      )
+      .eq('sgpg_pg_id', String(gamme.pg_id))
+      .single();
+
+    return (data as unknown as Record<string, unknown>) ?? null;
+  }
+
+  /**
    * R1 pipeline coverage per section.
    * Returns how many gammes have pipeline content vs fallback for each R1 field.
    */

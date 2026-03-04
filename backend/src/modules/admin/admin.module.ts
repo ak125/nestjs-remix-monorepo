@@ -72,6 +72,7 @@ import { R1KeywordPlanGatesService } from './services/r1-keyword-plan-gates.serv
 import { AdminConseilController } from './controllers/admin-conseil.controller'; // 📊 Conseil coverage + backfill
 import { AdminRagIngestController } from './controllers/admin-rag-ingest.controller'; // 📄 PDF → RAG merge pipeline
 import { AdminR3ImagePromptsController } from './controllers/admin-r3-image-prompts.controller'; // 🎨 R3 Image Prompts generation
+import { AdminFeatureFlagsController } from './controllers/admin-feature-flags.controller';
 import { PipelineChainPollerService } from './services/pipeline-chain-poller.service'; // 🔗 Pipeline chain poller (keyword-plan → conseil)
 import { RagCatchupService } from './services/rag-catchup.service'; // 🔄 RAG catch-up at startup (detect orphan ingestions)
 import { R3ImagePromptService } from './services/r3-image-prompt.service'; // 🎨 R3 Image Prompts (template-based, 0-LLM)
@@ -136,6 +137,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     AdminConseilController, // 📊 Conseil coverage + backfill - /api/admin/conseil/*
     AdminRagIngestController, // 📄 PDF → RAG merge - /api/admin/rag/pdf-merge/*
     AdminR3ImagePromptsController, // 🎨 R3 Image Prompts - /api/admin/r3-image-prompts/*
+    AdminFeatureFlagsController, // 🏷️ Feature Flags - /api/admin/feature-flags/*
   ],
   providers: [
     ConfigurationService,

@@ -34,15 +34,22 @@ import {
   Globe,
   Clock,
   Layers,
+  Eye,
+  Search,
+  ArrowUpDown,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { AdminDataTable } from "~/components/admin/patterns/AdminDataTable";
 import {
   DashboardShell,
   KpiGrid,
 } from "~/components/admin/patterns/DashboardShell";
+import { FeatureFlagsPanel } from "~/components/admin/patterns/FeatureFlagsPanel";
 import { KpiCard } from "~/components/admin/patterns/KpiCard";
+import { ObserveStatsPanel } from "~/components/admin/patterns/ObserveStatsPanel";
 import { type DataColumn } from "~/components/admin/patterns/ResponsiveDataTable";
 import {
   StatusBadge,
@@ -99,6 +106,12 @@ import {
 } from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
@@ -326,16 +339,28 @@ function QualityScoreBadge({ score }: { score: number | null }) {
         : "[&>div]:bg-red-500";
 
   return (
-    <div className="flex items-center gap-2">
-      <Progress
-        value={score}
-        max={100}
-        className={`h-1.5 max-w-[60px] flex-1 ${progressClass}`}
-      />
-      <Badge variant="outline" className={`font-mono text-xs ${colorClass}`}>
-        {score}
-      </Badge>
-    </div>
+    <TooltipProvider delayDuration={300}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center gap-2 cursor-help">
+            <Progress
+              value={score}
+              max={100}
+              className={`h-1.5 max-w-[60px] flex-1 ${progressClass}`}
+            />
+            <Badge
+              variant="outline"
+              className={`font-mono text-xs ${colorClass}`}
+            >
+              {score}
+            </Badge>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          70+ = vert, 50-69 = jaune, &lt;50 = rouge
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -848,20 +873,252 @@ export default function AdminRagPipeline() {
     }
   }
 
+  // ── R1 Management state ──
+
+  // Bulk publish
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkPublishSubmitting, setBulkPublishSubmitting] = useState(false);
+
+  async function handleBulkPublish() {
+    if (selectedIds.size === 0) return;
+    setBulkPublishSubmitting(true);
+    try {
+      const res = await fetch("/api/admin/content-refresh/bulk-publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [...selectedIds] }),
+      });
+      const data = await res.json();
+      const result = data?.data ?? data;
+      if (res.ok) {
+        const pub = result?.published ?? 0;
+        const fail = result?.failed ?? 0;
+        const failures = result?.failures as
+          | Array<{ id: number; reason: string }>
+          | undefined;
+        if (fail > 0 && failures?.length) {
+          toast.warning(
+            `${pub} publie(s), ${fail} echec(s): ${failures.map((f) => `#${f.id}`).join(", ")}`,
+            { duration: 8000 },
+          );
+        } else {
+          toast.success(`${pub} brouillon(s) publie(s)`);
+        }
+        setSelectedIds(new Set());
+      } else {
+        toast.error(data?.message || "Echec bulk publish");
+      }
+    } catch (err) {
+      toast.error(String(err));
+    } finally {
+      setBulkPublishSubmitting(false);
+      revalidator.revalidate();
+    }
+  }
+
+  // R1 Preview
+  const [r1PreviewOpen, setR1PreviewOpen] = useState(false);
+  const [r1PreviewAlias, setR1PreviewAlias] = useState<string | null>(null);
+  const [r1PreviewData, setR1PreviewData] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
+  const [r1PreviewLoading, setR1PreviewLoading] = useState(false);
+
+  async function openR1Preview(pgAlias: string) {
+    setR1PreviewAlias(pgAlias);
+    setR1PreviewOpen(true);
+    setR1PreviewLoading(true);
+    try {
+      const res = await fetch(
+        `/api/admin/content-refresh/r1-preview/${pgAlias}`,
+      );
+      const json = res.ok ? await res.json() : null;
+      setR1PreviewData(json?.data ?? json);
+    } catch {
+      setR1PreviewData(null);
+    } finally {
+      setR1PreviewLoading(false);
+    }
+  }
+
+  // Batch canary — preview before trigger
+  const [canarySubmitting, setCanarySubmitting] = useState(false);
+  const [canaryPreviewOpen, setCanaryPreviewOpen] = useState(false);
+  const [canaryGammes, setCanaryGammes] = useState<string[]>([]);
+  const [canaryLoading, setCanaryLoading] = useState(false);
+
+  async function openCanaryPreview() {
+    setCanaryLoading(true);
+    setCanaryPreviewOpen(true);
+    try {
+      const listRes = await fetch("/api/admin/feature-flags/canary-gammes");
+      const listJson = await listRes.json();
+      const slugs: string[] = listJson?.data ?? listJson ?? [];
+      setCanaryGammes(Array.isArray(slugs) ? slugs : []);
+    } catch {
+      setCanaryGammes([]);
+    } finally {
+      setCanaryLoading(false);
+    }
+  }
+
+  async function confirmCanaryBatch() {
+    if (canaryGammes.length === 0) return;
+    setCanarySubmitting(true);
+    setCanaryPreviewOpen(false);
+    try {
+      const trigRes = await fetch("/api/admin/content-refresh/trigger", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pgAliases: canaryGammes,
+          pageTypes: ["R1_pieces"],
+        }),
+      });
+      if (trigRes.ok) {
+        toast.success(`${canaryGammes.length} gammes canary lancees (R1)`);
+      } else {
+        const err = await trigRes.json();
+        toast.error(err?.message || "Echec batch canary");
+      }
+    } catch (err) {
+      toast.error(String(err));
+    } finally {
+      setCanarySubmitting(false);
+      revalidator.revalidate();
+    }
+  }
+
+  // R1 Keyword Plans (client-side fetch + sort/filter)
+  type KpItem = {
+    rkp_pg_alias: string;
+    rkp_status: string | null;
+    rkp_pipeline_phase: string | null;
+    rkp_quality_score: number | null;
+    rkp_coverage_score: number | null;
+    rkp_built_at: string | null;
+  };
+  const [kpData, setKpData] = useState<KpItem[]>([]);
+  const [kpLoading, setKpLoading] = useState(false);
+  const [kpLoaded, setKpLoaded] = useState(false);
+  const [kpSearch, setKpSearch] = useState("");
+  const [kpStatusFilter, setKpStatusFilter] = useState("all");
+  const [kpSortCol, setKpSortCol] = useState<keyof KpItem>("rkp_pg_alias");
+  const [kpSortAsc, setKpSortAsc] = useState(true);
+
+  async function loadKeywordPlans() {
+    if (kpLoaded) return;
+    setKpLoading(true);
+    try {
+      const res = await fetch(
+        "/api/admin/content-refresh/r1-keyword-plans?limit=200",
+      );
+      if (res.ok) {
+        const json = await res.json();
+        setKpData(json?.data ?? json ?? []);
+      }
+    } finally {
+      setKpLoading(false);
+      setKpLoaded(true);
+    }
+  }
+
+  function toggleKpSort(col: keyof KpItem) {
+    if (kpSortCol === col) {
+      setKpSortAsc(!kpSortAsc);
+    } else {
+      setKpSortCol(col);
+      setKpSortAsc(true);
+    }
+  }
+
+  const filteredKpData = useMemo(() => {
+    let data = kpData;
+    if (kpSearch) {
+      const q = kpSearch.toLowerCase();
+      data = data.filter((kp) => kp.rkp_pg_alias.toLowerCase().includes(q));
+    }
+    if (kpStatusFilter !== "all") {
+      data = data.filter((kp) => kp.rkp_status === kpStatusFilter);
+    }
+    const sorted = [...data].sort((a, b) => {
+      const av = a[kpSortCol];
+      const bv = b[kpSortCol];
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      if (typeof av === "number" && typeof bv === "number") return av - bv;
+      return String(av).localeCompare(String(bv));
+    });
+    return kpSortAsc ? sorted : sorted.reverse();
+  }, [kpData, kpSearch, kpStatusFilter, kpSortCol, kpSortAsc]);
+
   // ── Column definitions ──
+  const draftIds = items.filter((i) => i.status === "draft").map((i) => i.id);
+  const allDraftsSelected =
+    draftIds.length > 0 && draftIds.every((id) => selectedIds.has(id));
+
   const pipelineColumns: DataColumn<RefreshItem>[] = [
     {
       key: "id",
-      header: "ID",
-      width: "64px",
-      render: (val) => <span className="font-mono text-xs">{String(val)}</span>,
+      header: (
+        <Checkbox
+          checked={allDraftsSelected}
+          onCheckedChange={(checked) => {
+            if (checked) {
+              setSelectedIds(new Set(draftIds));
+            } else {
+              setSelectedIds(new Set());
+            }
+          }}
+          aria-label="Tout selectionner"
+        />
+      ) as unknown as string,
+      width: "40px",
+      render: (val, row) => {
+        const item = row as RefreshItem;
+        if (item.status !== "draft") return null;
+        return (
+          <Checkbox
+            checked={selectedIds.has(item.id)}
+            onCheckedChange={(checked) => {
+              const next = new Set(selectedIds);
+              if (checked) {
+                next.add(item.id);
+              } else {
+                next.delete(item.id);
+              }
+              setSelectedIds(next);
+            }}
+          />
+        );
+      },
     },
     {
       key: "pg_alias",
       header: "Gamme",
-      render: (val) => (
-        <span className="text-sm font-medium">{String(val)}</span>
-      ),
+      render: (val, row) => {
+        const item = row as RefreshItem;
+        return (
+          <div className="flex items-center gap-1.5">
+            <span className="text-sm font-medium">{String(val)}</span>
+            {item.page_type === "R1_pieces" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 px-1 text-xs"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openR1Preview(String(val));
+                }}
+              >
+                <FileSearch className="h-3 w-3" />
+              </Button>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: "page_type",
@@ -1113,476 +1370,853 @@ export default function AdminRagPipeline() {
         </div>
       }
     >
-      {/* Guide */}
-      <Alert
-        variant="info"
-        icon={<Info className="h-4 w-4" />}
-        title="Enrichissement automatique du contenu"
-      >
-        <AlertDescription>
-          <ol className="list-decimal list-inside space-y-1 mt-1">
-            <li>
-              Entrez le nom d&apos;une gamme (ex:{" "}
-              <code className="rounded bg-blue-100 px-1 py-0.5 text-xs font-mono">
-                disque-de-frein
-              </code>
-              ) pour lancer l&apos;enrichissement
-            </li>
-            <li>
-              Consultez les resultats : controles qualite et sources utilisees
-            </li>
-            <li>Publiez les brouillons valides sur le site</li>
-          </ol>
-        </AlertDescription>
-      </Alert>
+      <Tabs defaultValue="pipeline" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="pipeline">
+            <Activity className="mr-1.5 h-3.5 w-3.5" />
+            Pipeline
+          </TabsTrigger>
+          <TabsTrigger value="r1" onClick={() => loadKeywordPlans()}>
+            <Database className="mr-1.5 h-3.5 w-3.5" />
+            R1
+          </TabsTrigger>
+          <TabsTrigger value="flags">
+            <Wrench className="mr-1.5 h-3.5 w-3.5" />
+            Flags
+          </TabsTrigger>
+          <TabsTrigger value="observe">
+            <Eye className="mr-1.5 h-3.5 w-3.5" />
+            Observe
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Lancer un enrichissement */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Zap className="h-4 w-4" />
-            Lancer un enrichissement
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleTrigger} className="space-y-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-              <div className="flex-1 space-y-1.5">
-                <Label htmlFor="triggerAlias">
-                  Gamme(s) — separer par virgule pour batch
-                </Label>
-                <Input
-                  id="triggerAlias"
-                  name="triggerAlias"
-                  placeholder="disque-de-frein, plaquette-frein, filtre-a-huile"
-                  value={triggerAlias}
-                  onChange={(e) => setTriggerAlias(e.target.value)}
-                  disabled={triggerSubmitting}
-                />
+        <TabsContent value="pipeline" className="space-y-4">
+          {/* Guide */}
+          <Alert
+            variant="info"
+            icon={<Info className="h-4 w-4" />}
+            title="Enrichissement automatique du contenu"
+          >
+            <AlertDescription>
+              <ol className="list-decimal list-inside space-y-1 mt-1">
+                <li>
+                  Entrez le nom d&apos;une gamme (ex:{" "}
+                  <code className="rounded bg-blue-100 px-1 py-0.5 text-xs font-mono">
+                    disque-de-frein
+                  </code>
+                  ) pour lancer l&apos;enrichissement
+                </li>
+                <li>
+                  Consultez les resultats : controles qualite et sources
+                  utilisees
+                </li>
+                <li>Publiez les brouillons valides sur le site</li>
+              </ol>
+            </AlertDescription>
+          </Alert>
+
+          {/* Lancer un enrichissement */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Zap className="h-4 w-4" />
+                Lancer un enrichissement
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleTrigger} className="space-y-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+                  <div className="flex-1 space-y-1.5">
+                    <Label htmlFor="triggerAlias">
+                      Gamme(s) — separer par virgule pour batch
+                    </Label>
+                    <Input
+                      id="triggerAlias"
+                      name="triggerAlias"
+                      placeholder="disque-de-frein, plaquette-frein, filtre-a-huile"
+                      value={triggerAlias}
+                      onChange={(e) => setTriggerAlias(e.target.value)}
+                      disabled={triggerSubmitting}
+                    />
+                  </div>
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      checked={triggerForce}
+                      onChange={(e) => setTriggerForce(e.target.checked)}
+                      disabled={triggerSubmitting}
+                      className="rounded border-gray-300"
+                    />
+                    Forcer
+                  </label>
+                  <Button
+                    type="submit"
+                    disabled={triggerSubmitting}
+                    className="gap-1.5"
+                  >
+                    {triggerSubmitting ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Zap className="h-4 w-4" />
+                    )}
+                    {triggerSubmitting ? "En cours..." : "Lancer"}
+                  </Button>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">
+                    Types de page (vide = tous les types actifs)
+                  </Label>
+                  <div className="flex flex-wrap gap-3">
+                    {PAGE_TYPE_OPTIONS.map(({ value, label }) => (
+                      <Checkbox
+                        key={value}
+                        id={`pt-${value}`}
+                        checked={triggerPageTypes.includes(value)}
+                        onCheckedChange={(checked) => {
+                          setTriggerPageTypes((prev) =>
+                            checked
+                              ? [...prev, value]
+                              : prev.filter((t) => t !== value),
+                          );
+                        }}
+                        disabled={triggerSubmitting}
+                        label={label}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </form>
+
+              {triggerResult?.error && (
+                <Alert variant="error" className="mt-3" size="sm">
+                  {triggerResult.error}
+                </Alert>
+              )}
+              {triggerResult?.success && triggerResult.queued && (
+                <Alert variant="success" className="mt-3" size="sm">
+                  <AlertTitle>Enrichissement lance</AlertTitle>
+                  <AlertDescription>
+                    <ul className="mt-1 list-inside list-disc">
+                      {triggerResult.queued.map((q) => (
+                        <li key={q.pgAlias}>
+                          <span className="font-mono">{q.pgAlias}</span>
+                          {" \u2192 "}
+                          {q.pageTypes.length > 0
+                            ? q.pageTypes.join(", ")
+                            : "aucun type de page"}
+                        </li>
+                      ))}
+                    </ul>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Force-enrich sans PDF */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <FlaskConical className="h-4 w-4 text-orange-500" />
+                Force-enrich sans PDF
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-3 text-xs text-muted-foreground">
+                Lance un enrichissement force a partir du corpus RAG existant,
+                sans extraction PDF. Utile pour regenerer le contenu apres mise
+                a jour du corpus.
+              </p>
+              <form
+                onSubmit={handleForceEnrich}
+                className="flex flex-col gap-4 sm:flex-row sm:items-end"
+              >
+                <div className="flex-1 space-y-1.5">
+                  <Label htmlFor="enrichAlias">Gamme</Label>
+                  <Input
+                    id="enrichAlias"
+                    placeholder="disque-de-frein"
+                    value={enrichAlias}
+                    onChange={(e) => setEnrichAlias(e.target.value)}
+                    disabled={enrichSubmitting}
+                  />
+                </div>
+                <div className="sm:w-56 space-y-1.5">
+                  <Label htmlFor="enrichSections">
+                    Sections (optionnel, virgule)
+                  </Label>
+                  <Input
+                    id="enrichSections"
+                    placeholder="introduction, symptomes"
+                    value={enrichSections}
+                    onChange={(e) => setEnrichSections(e.target.value)}
+                    disabled={enrichSubmitting}
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  variant="outline"
+                  disabled={enrichSubmitting}
+                  className="gap-1.5 border-orange-200 text-orange-700 hover:bg-orange-50"
+                >
+                  {enrichSubmitting ? (
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FlaskConical className="h-4 w-4" />
+                  )}
+                  {enrichSubmitting ? "En cours..." : "Force-enrich"}
+                </Button>
+              </form>
+
+              {enrichResult?.error && (
+                <Alert variant="error" className="mt-3" size="sm">
+                  {enrichResult.error}
+                </Alert>
+              )}
+              {enrichResult?.success && (
+                <Alert variant="success" className="mt-3" size="sm">
+                  <AlertTitle>Enrichissement lance</AlertTitle>
+                  <AlertDescription>
+                    Types mis en queue :{" "}
+                    {enrichResult.queuedPageTypes?.join(", ") || "aucun"}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Operations de maintenance */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Wrench className="h-4 w-4" />
+                Operations de maintenance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* Cleanup doublons */}
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Trash2 className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">
+                      Cleanup doublons
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Scan SHA-256 pour detecter et supprimer les doublons exacts.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={cleanupMode}
+                      onValueChange={(v) =>
+                        setCleanupMode(v as "dry" | "commit")
+                      }
+                      className="h-8 flex-1 rounded-md border border-input bg-background px-2 text-xs"
+                      disabled={cleanupSubmitting}
+                      name="cleanupMode"
+                    >
+                      <SelectItem value="dry">Dry-run (simulation)</SelectItem>
+                      <SelectItem value="commit">
+                        Commit (suppression reelle)
+                      </SelectItem>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleCleanupBatch}
+                      disabled={cleanupSubmitting}
+                      className={`gap-1.5 ${cleanupMode === "commit" ? "border-red-200 text-red-700 hover:bg-red-50" : ""}`}
+                    >
+                      {cleanupSubmitting ? (
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-3.5 w-3.5" />
+                      )}
+                      {cleanupSubmitting ? "..." : "Lancer"}
+                    </Button>
+                  </div>
+                  {cleanupResult && (
+                    <pre className="rounded bg-muted/50 p-2 text-xs font-mono max-h-24 overflow-auto">
+                      {JSON.stringify(cleanupResult, null, 2)}
+                    </pre>
+                  )}
+                </div>
+
+                {/* Sync fichiers → DB */}
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">
+                      Sync fichiers &rarr; DB
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Synchronise les fichiers .md du disque vers __rag_knowledge.
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={syncPattern}
+                      onChange={(e) => setSyncPattern(e.target.value)}
+                      placeholder="gammes/*.md"
+                      disabled={syncSubmitting}
+                      className="h-8 flex-1 text-xs font-mono"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSyncFiles}
+                      disabled={syncSubmitting}
+                      className="gap-1.5"
+                    >
+                      {syncSubmitting ? (
+                        <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Database className="h-3.5 w-3.5" />
+                      )}
+                      {syncSubmitting ? "..." : "Sync"}
+                    </Button>
+                  </div>
+                  {syncResult && (
+                    <div className="flex gap-2 text-xs">
+                      <Badge
+                        variant="outline"
+                        className="bg-green-50 text-green-700"
+                      >
+                        {(syncResult as { synced?: number }).synced ?? 0} sync
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="text-muted-foreground"
+                      >
+                        {(syncResult as { skipped?: number }).skipped ?? 0} skip
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+
+                {/* Backfill empreintes SHA-256 */}
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Fingerprint className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">
+                      Backfill empreintes SHA-256
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Calcule les empreintes manquantes pour les documents actifs
+                    (batch 50).
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBackfillFingerprints}
+                    disabled={backfillSubmitting}
+                    className="gap-1.5"
+                  >
+                    {backfillSubmitting ? (
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Fingerprint className="h-3.5 w-3.5" />
+                    )}
+                    {backfillSubmitting ? "En cours..." : "Backfill"}
+                  </Button>
+                  {backfillResult && !backfillResult.error && (
+                    <Badge
+                      variant="outline"
+                      className="bg-green-50 text-green-700"
+                    >
+                      {backfillResult.updated} empreintes calculees
+                    </Badge>
+                  )}
+                  {backfillResult?.error && (
+                    <p className="text-xs text-red-600">
+                      {backfillResult.error}
+                    </p>
+                  )}
+                </div>
+
+                {/* Calculer scores qualite */}
+                <div className="rounded-lg border p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-medium">
+                      Calculer scores qualite
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Recalcule les scores qualite de toutes les gammes et agrege
+                    vers gamme-level.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleComputeQualityScores}
+                    disabled={qualitySubmitting}
+                    className="gap-1.5"
+                  >
+                    {qualitySubmitting ? (
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <BarChart3 className="h-3.5 w-3.5" />
+                    )}
+                    {qualitySubmitting ? "En cours..." : "Calculer"}
+                  </Button>
+                  {qualityResult && (
+                    <div className="flex flex-wrap gap-2 text-xs">
+                      <Badge
+                        variant="outline"
+                        className="bg-blue-50 text-blue-700"
+                      >
+                        {(qualityResult as { pagesScored?: number })
+                          .pagesScored ?? 0}{" "}
+                        pages
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="bg-purple-50 text-purple-700"
+                      >
+                        {(qualityResult as { gammesAggregated?: number })
+                          .gammesAggregated ?? 0}{" "}
+                        gammes
+                      </Badge>
+                    </div>
+                  )}
+                </div>
               </div>
-              <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={triggerForce}
-                  onChange={(e) => setTriggerForce(e.target.checked)}
-                  disabled={triggerSubmitting}
-                  className="rounded border-gray-300"
-                />
-                Forcer
-              </label>
+            </CardContent>
+          </Card>
+
+          {/* Filtres */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Filter className="h-4 w-4" />
+                Filtres
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="space-y-1.5 sm:w-48">
+                  <Label htmlFor="filterStatus">Statut</Label>
+                  <Select
+                    name="filterStatus"
+                    value={filters.status}
+                    onValueChange={(v) => updateFilter("status", v)}
+                    className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <SelectItem value="">Tous</SelectItem>
+                    <SelectItem value="pending">En attente</SelectItem>
+                    <SelectItem value="processing">En cours</SelectItem>
+                    <SelectItem value="draft">Brouillon</SelectItem>
+                    <SelectItem value="published">Publie</SelectItem>
+                    <SelectItem value="auto_published">Auto-publie</SelectItem>
+                    <SelectItem value="failed">Echoue</SelectItem>
+                    <SelectItem value="skipped">Ignore</SelectItem>
+                  </Select>
+                </div>
+                <div className="space-y-1.5 sm:w-48">
+                  <Label htmlFor="filterPageType">Type de page</Label>
+                  <Select
+                    name="filterPageType"
+                    value={filters.pageType}
+                    onValueChange={(v) => updateFilter("page_type", v)}
+                    className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    <SelectItem value="">Tous</SelectItem>
+                    <SelectItem value="R1_pieces">R1 Pieces</SelectItem>
+                    <SelectItem value="R3_conseils">R3 Conseils</SelectItem>
+                    <SelectItem value="R3_guide_achat">
+                      R3 Guide Achat
+                    </SelectItem>
+                    <SelectItem value="R4_reference">R4 Reference</SelectItem>
+                    <SelectItem value="R5_diagnostic">R5 Diagnostic</SelectItem>
+                  </Select>
+                </div>
+                <div className="space-y-1.5 sm:w-52">
+                  <Label htmlFor="filterAlias">Gamme</Label>
+                  <Input
+                    id="filterAlias"
+                    placeholder="balais-d-essuie-glace..."
+                    defaultValue={filters.pgAlias}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter")
+                        updateFilter("pg_alias", e.currentTarget.value);
+                    }}
+                  />
+                </div>
+                <Badge variant="secondary" className="h-9 px-3">
+                  {total} resultat{total !== 1 ? "s" : ""}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Separator />
+
+          {/* Historique */}
+          <AdminDataTable<RefreshItem>
+            data={items as RefreshItem[]}
+            columns={pipelineColumns}
+            getRowKey={(r) => String(r.id)}
+            emptyMessage="Aucun enrichissement trouve"
+            statusColumn={{ key: "status", mapping: REFRESH_STATUS }}
+            isLoading={revalidator.state !== "idle"}
+            serverPagination={{
+              total,
+              page: currentPage,
+              pageSize: filters.limit,
+              onPageChange: (page) =>
+                updateFilter(
+                  "offset",
+                  page > 1 ? String((page - 1) * filters.limit) : "",
+                ),
+            }}
+            toolbar={
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Activity className="h-4 w-4" />
+                  Historique
+                </div>
+                {selectedIds.size > 0 && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleBulkPublish}
+                    disabled={bulkPublishSubmitting}
+                    className="gap-1.5 text-green-700 border-green-200 hover:bg-green-50"
+                  >
+                    <Check className="h-3.5 w-3.5" />
+                    Publier {selectedIds.size} brouillon
+                    {selectedIds.size > 1 ? "s" : ""}
+                  </Button>
+                )}
+              </div>
+            }
+          />
+        </TabsContent>
+
+        <TabsContent value="r1" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <FlaskConical className="h-4 w-4" />
+                Batch R1 Canary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Lance le pipeline R1_pieces sur toutes les gammes CANARY_GAMMES
+                en un clic.
+              </p>
               <Button
-                type="submit"
-                disabled={triggerSubmitting}
+                onClick={openCanaryPreview}
+                disabled={canarySubmitting || canaryLoading}
                 className="gap-1.5"
               >
-                {triggerSubmitting ? (
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Zap className="h-4 w-4" />
-                )}
-                {triggerSubmitting ? "En cours..." : "Lancer"}
+                <Zap className="h-4 w-4" />
+                {canarySubmitting ? "Lancement..." : "Lancer batch R1 canary"}
               </Button>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">
-                Types de page (vide = tous les types actifs)
-              </Label>
-              <div className="flex flex-wrap gap-3">
-                {PAGE_TYPE_OPTIONS.map(({ value, label }) => (
-                  <Checkbox
-                    key={value}
-                    id={`pt-${value}`}
-                    checked={triggerPageTypes.includes(value)}
-                    onCheckedChange={(checked) => {
-                      setTriggerPageTypes((prev) =>
-                        checked
-                          ? [...prev, value]
-                          : prev.filter((t) => t !== value),
-                      );
-                    }}
-                    disabled={triggerSubmitting}
-                    label={label}
-                  />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-sm font-medium">
+                <Database className="h-4 w-4" />
+                R1 Keyword Plans
+                {kpLoaded && (
+                  <Badge variant="secondary" className="text-xs ml-auto">
+                    {filteredKpData.length}/{kpData.length}
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {kpLoaded && kpData.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1 max-w-xs">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                    <Input
+                      placeholder="Filtrer par gamme..."
+                      value={kpSearch}
+                      onChange={(e) => setKpSearch(e.target.value)}
+                      className="pl-8 h-8 text-sm"
+                    />
+                  </div>
+                  <select
+                    value={kpStatusFilter}
+                    onChange={(e) => setKpStatusFilter(e.target.value)}
+                    className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+                  >
+                    <option value="all">Tous</option>
+                    <option value="validated">Validated</option>
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                  </select>
+                </div>
+              )}
+              {kpLoading ? (
+                <p className="text-sm text-muted-foreground py-4">
+                  Chargement...
+                </p>
+              ) : kpData.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4">
+                  Aucun keyword plan R1
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-muted-foreground">
+                        <th
+                          className="pb-2 pr-4 cursor-pointer hover:text-foreground select-none"
+                          onClick={() => toggleKpSort("rkp_pg_alias")}
+                        >
+                          <span className="inline-flex items-center gap-1">
+                            Gamme
+                            {kpSortCol === "rkp_pg_alias" ? (
+                              kpSortAsc ? (
+                                <ChevronUp className="h-3 w-3" />
+                              ) : (
+                                <ChevronDown className="h-3 w-3" />
+                              )
+                            ) : (
+                              <ArrowUpDown className="h-3 w-3 opacity-30" />
+                            )}
+                          </span>
+                        </th>
+                        <th
+                          className="pb-2 pr-4 cursor-pointer hover:text-foreground select-none"
+                          onClick={() => toggleKpSort("rkp_status")}
+                        >
+                          <span className="inline-flex items-center gap-1">
+                            Status
+                            {kpSortCol === "rkp_status" ? (
+                              kpSortAsc ? (
+                                <ChevronUp className="h-3 w-3" />
+                              ) : (
+                                <ChevronDown className="h-3 w-3" />
+                              )
+                            ) : (
+                              <ArrowUpDown className="h-3 w-3 opacity-30" />
+                            )}
+                          </span>
+                        </th>
+                        <th className="pb-2 pr-4">Phase</th>
+                        <th
+                          className="pb-2 pr-4 text-right cursor-pointer hover:text-foreground select-none"
+                          onClick={() => toggleKpSort("rkp_quality_score")}
+                        >
+                          <span className="inline-flex items-center gap-1 justify-end">
+                            Quality
+                            {kpSortCol === "rkp_quality_score" ? (
+                              kpSortAsc ? (
+                                <ChevronUp className="h-3 w-3" />
+                              ) : (
+                                <ChevronDown className="h-3 w-3" />
+                              )
+                            ) : (
+                              <ArrowUpDown className="h-3 w-3 opacity-30" />
+                            )}
+                          </span>
+                        </th>
+                        <th className="pb-2 pr-4 text-right">Coverage</th>
+                        <th
+                          className="pb-2 cursor-pointer hover:text-foreground select-none"
+                          onClick={() => toggleKpSort("rkp_built_at")}
+                        >
+                          <span className="inline-flex items-center gap-1">
+                            Date
+                            {kpSortCol === "rkp_built_at" ? (
+                              kpSortAsc ? (
+                                <ChevronUp className="h-3 w-3" />
+                              ) : (
+                                <ChevronDown className="h-3 w-3" />
+                              )
+                            ) : (
+                              <ArrowUpDown className="h-3 w-3 opacity-30" />
+                            )}
+                          </span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredKpData.map((kp) => (
+                        <tr
+                          key={kp.rkp_pg_alias}
+                          className="border-b last:border-0"
+                        >
+                          <td className="py-1.5 pr-4 font-mono text-xs">
+                            {kp.rkp_pg_alias}
+                          </td>
+                          <td className="py-1.5 pr-4">
+                            <Badge
+                              variant={
+                                kp.rkp_status === "validated"
+                                  ? "default"
+                                  : kp.rkp_status === "active"
+                                    ? "secondary"
+                                    : "outline"
+                              }
+                              className="text-xs"
+                            >
+                              {kp.rkp_status ?? "—"}
+                            </Badge>
+                          </td>
+                          <td className="py-1.5 pr-4 text-xs text-muted-foreground">
+                            {kp.rkp_pipeline_phase ?? "—"}
+                          </td>
+                          <td className="py-1.5 pr-4 text-right">
+                            <QualityScoreBadge score={kp.rkp_quality_score} />
+                          </td>
+                          <td className="py-1.5 pr-4 text-right">
+                            {kp.rkp_coverage_score != null
+                              ? `${Math.round(kp.rkp_coverage_score * 100)}%`
+                              : "—"}
+                          </td>
+                          <td className="py-1.5 text-xs text-muted-foreground">
+                            {kp.rkp_built_at
+                              ? formatDate(kp.rkp_built_at)
+                              : "—"}
+                          </td>
+                        </tr>
+                      ))}
+                      {filteredKpData.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={6}
+                            className="py-4 text-center text-sm text-muted-foreground"
+                          >
+                            Aucun resultat
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="flags">
+          <FeatureFlagsPanel />
+        </TabsContent>
+
+        <TabsContent value="observe">
+          <ObserveStatsPanel days={7} />
+        </TabsContent>
+      </Tabs>
+
+      {/* R1 Preview Dialog */}
+      <Dialog open={r1PreviewOpen} onOpenChange={setR1PreviewOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>R1 Preview — {r1PreviewAlias}</DialogTitle>
+            <DialogDescription>
+              Contenu sgpg_* genere par le pipeline
+            </DialogDescription>
+          </DialogHeader>
+          {r1PreviewLoading ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">
+              Chargement...
+            </p>
+          ) : r1PreviewData ? (
+            <ScrollArea className="h-[60vh]">
+              <div className="space-y-3 pr-4">
+                {Object.entries(r1PreviewData).map(([key, value]) => {
+                  if (value === null || value === undefined) return null;
+                  const label = key.replace(/^sgpg_/, "");
+                  return (
+                    <div key={key} className="rounded-lg border p-3">
+                      <div className="mb-1 flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          {label}
+                        </span>
+                        {key === "sgpg_gatekeeper_score" && (
+                          <QualityScoreBadge score={value as number} />
+                        )}
+                        {key === "sgpg_is_draft" && (
+                          <Badge
+                            variant={value ? "outline" : "default"}
+                            className="text-xs"
+                          >
+                            {value ? "draft" : "published"}
+                          </Badge>
+                        )}
+                      </div>
+                      {typeof value === "string" ? (
+                        <p className="text-sm">{value}</p>
+                      ) : (
+                        <pre className="text-xs font-mono whitespace-pre-wrap bg-muted/30 rounded p-2">
+                          {JSON.stringify(value, null, 2)}
+                        </pre>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          ) : (
+            <p className="text-sm text-muted-foreground py-4">
+              Aucune donnee disponible
+            </p>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setR1PreviewOpen(false)}>
+              Fermer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Canary Preview Dialog */}
+      <AlertDialog open={canaryPreviewOpen} onOpenChange={setCanaryPreviewOpen}>
+        <AlertDialogContent className="max-w-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Batch R1 Canary — {canaryGammes.length} gammes
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Le pipeline R1_pieces sera lance sur ces gammes :
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {canaryLoading ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              Chargement...
+            </p>
+          ) : canaryGammes.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              Aucune gamme canary configuree
+            </p>
+          ) : (
+            <ScrollArea className="max-h-[40vh]">
+              <div className="flex flex-wrap gap-1.5 pr-4">
+                {canaryGammes.map((slug) => (
+                  <Badge
+                    key={slug}
+                    variant="outline"
+                    className="text-xs font-mono"
+                  >
+                    {slug}
+                  </Badge>
                 ))}
               </div>
-            </div>
-          </form>
-
-          {triggerResult?.error && (
-            <Alert variant="error" className="mt-3" size="sm">
-              {triggerResult.error}
-            </Alert>
+            </ScrollArea>
           )}
-          {triggerResult?.success && triggerResult.queued && (
-            <Alert variant="success" className="mt-3" size="sm">
-              <AlertTitle>Enrichissement lance</AlertTitle>
-              <AlertDescription>
-                <ul className="mt-1 list-inside list-disc">
-                  {triggerResult.queued.map((q) => (
-                    <li key={q.pgAlias}>
-                      <span className="font-mono">{q.pgAlias}</span>
-                      {" \u2192 "}
-                      {q.pageTypes.length > 0
-                        ? q.pageTypes.join(", ")
-                        : "aucun type de page"}
-                    </li>
-                  ))}
-                </ul>
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Force-enrich sans PDF */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <FlaskConical className="h-4 w-4 text-orange-500" />
-            Force-enrich sans PDF
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="mb-3 text-xs text-muted-foreground">
-            Lance un enrichissement force a partir du corpus RAG existant, sans
-            extraction PDF. Utile pour regenerer le contenu apres mise a jour du
-            corpus.
-          </p>
-          <form
-            onSubmit={handleForceEnrich}
-            className="flex flex-col gap-4 sm:flex-row sm:items-end"
-          >
-            <div className="flex-1 space-y-1.5">
-              <Label htmlFor="enrichAlias">Gamme</Label>
-              <Input
-                id="enrichAlias"
-                placeholder="disque-de-frein"
-                value={enrichAlias}
-                onChange={(e) => setEnrichAlias(e.target.value)}
-                disabled={enrichSubmitting}
-              />
-            </div>
-            <div className="sm:w-56 space-y-1.5">
-              <Label htmlFor="enrichSections">
-                Sections (optionnel, virgule)
-              </Label>
-              <Input
-                id="enrichSections"
-                placeholder="introduction, symptomes"
-                value={enrichSections}
-                onChange={(e) => setEnrichSections(e.target.value)}
-                disabled={enrichSubmitting}
-              />
-            </div>
-            <Button
-              type="submit"
-              variant="outline"
-              disabled={enrichSubmitting}
-              className="gap-1.5 border-orange-200 text-orange-700 hover:bg-orange-50"
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmCanaryBatch}
+              disabled={canaryGammes.length === 0}
             >
-              {enrichSubmitting ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              ) : (
-                <FlaskConical className="h-4 w-4" />
-              )}
-              {enrichSubmitting ? "En cours..." : "Force-enrich"}
-            </Button>
-          </form>
-
-          {enrichResult?.error && (
-            <Alert variant="error" className="mt-3" size="sm">
-              {enrichResult.error}
-            </Alert>
-          )}
-          {enrichResult?.success && (
-            <Alert variant="success" className="mt-3" size="sm">
-              <AlertTitle>Enrichissement lance</AlertTitle>
-              <AlertDescription>
-                Types mis en queue :{" "}
-                {enrichResult.queuedPageTypes?.join(", ") || "aucun"}
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Operations de maintenance */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Wrench className="h-4 w-4" />
-            Operations de maintenance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {/* Cleanup doublons */}
-            <div className="rounded-lg border p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Trash2 className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">Cleanup doublons</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Scan SHA-256 pour detecter et supprimer les doublons exacts.
-              </p>
-              <div className="flex items-center gap-2">
-                <Select
-                  value={cleanupMode}
-                  onValueChange={(v) => setCleanupMode(v as "dry" | "commit")}
-                  className="h-8 flex-1 rounded-md border border-input bg-background px-2 text-xs"
-                  disabled={cleanupSubmitting}
-                  name="cleanupMode"
-                >
-                  <SelectItem value="dry">Dry-run (simulation)</SelectItem>
-                  <SelectItem value="commit">
-                    Commit (suppression reelle)
-                  </SelectItem>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCleanupBatch}
-                  disabled={cleanupSubmitting}
-                  className={`gap-1.5 ${cleanupMode === "commit" ? "border-red-200 text-red-700 hover:bg-red-50" : ""}`}
-                >
-                  {cleanupSubmitting ? (
-                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-3.5 w-3.5" />
-                  )}
-                  {cleanupSubmitting ? "..." : "Lancer"}
-                </Button>
-              </div>
-              {cleanupResult && (
-                <pre className="rounded bg-muted/50 p-2 text-xs font-mono max-h-24 overflow-auto">
-                  {JSON.stringify(cleanupResult, null, 2)}
-                </pre>
-              )}
-            </div>
-
-            {/* Sync fichiers → DB */}
-            <div className="rounded-lg border p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Database className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">
-                  Sync fichiers &rarr; DB
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Synchronise les fichiers .md du disque vers __rag_knowledge.
-              </p>
-              <div className="flex items-center gap-2">
-                <Input
-                  value={syncPattern}
-                  onChange={(e) => setSyncPattern(e.target.value)}
-                  placeholder="gammes/*.md"
-                  disabled={syncSubmitting}
-                  className="h-8 flex-1 text-xs font-mono"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSyncFiles}
-                  disabled={syncSubmitting}
-                  className="gap-1.5"
-                >
-                  {syncSubmitting ? (
-                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Database className="h-3.5 w-3.5" />
-                  )}
-                  {syncSubmitting ? "..." : "Sync"}
-                </Button>
-              </div>
-              {syncResult && (
-                <div className="flex gap-2 text-xs">
-                  <Badge
-                    variant="outline"
-                    className="bg-green-50 text-green-700"
-                  >
-                    {(syncResult as { synced?: number }).synced ?? 0} sync
-                  </Badge>
-                  <Badge variant="outline" className="text-muted-foreground">
-                    {(syncResult as { skipped?: number }).skipped ?? 0} skip
-                  </Badge>
-                </div>
-              )}
-            </div>
-
-            {/* Backfill empreintes SHA-256 */}
-            <div className="rounded-lg border p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <Fingerprint className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">
-                  Backfill empreintes SHA-256
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Calcule les empreintes manquantes pour les documents actifs
-                (batch 50).
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleBackfillFingerprints}
-                disabled={backfillSubmitting}
-                className="gap-1.5"
-              >
-                {backfillSubmitting ? (
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Fingerprint className="h-3.5 w-3.5" />
-                )}
-                {backfillSubmitting ? "En cours..." : "Backfill"}
-              </Button>
-              {backfillResult && !backfillResult.error && (
-                <Badge variant="outline" className="bg-green-50 text-green-700">
-                  {backfillResult.updated} empreintes calculees
-                </Badge>
-              )}
-              {backfillResult?.error && (
-                <p className="text-xs text-red-600">{backfillResult.error}</p>
-              )}
-            </div>
-
-            {/* Calculer scores qualite */}
-            <div className="rounded-lg border p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium">
-                  Calculer scores qualite
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Recalcule les scores qualite de toutes les gammes et agrege vers
-                gamme-level.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleComputeQualityScores}
-                disabled={qualitySubmitting}
-                className="gap-1.5"
-              >
-                {qualitySubmitting ? (
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <BarChart3 className="h-3.5 w-3.5" />
-                )}
-                {qualitySubmitting ? "En cours..." : "Calculer"}
-              </Button>
-              {qualityResult && (
-                <div className="flex flex-wrap gap-2 text-xs">
-                  <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                    {(qualityResult as { pagesScored?: number }).pagesScored ??
-                      0}{" "}
-                    pages
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="bg-purple-50 text-purple-700"
-                  >
-                    {(qualityResult as { gammesAggregated?: number })
-                      .gammesAggregated ?? 0}{" "}
-                    gammes
-                  </Badge>
-                </div>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Filtres */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <Filter className="h-4 w-4" />
-            Filtres
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <div className="space-y-1.5 sm:w-48">
-              <Label htmlFor="filterStatus">Statut</Label>
-              <Select
-                name="filterStatus"
-                value={filters.status}
-                onValueChange={(v) => updateFilter("status", v)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <SelectItem value="">Tous</SelectItem>
-                <SelectItem value="pending">En attente</SelectItem>
-                <SelectItem value="processing">En cours</SelectItem>
-                <SelectItem value="draft">Brouillon</SelectItem>
-                <SelectItem value="published">Publie</SelectItem>
-                <SelectItem value="auto_published">Auto-publie</SelectItem>
-                <SelectItem value="failed">Echoue</SelectItem>
-                <SelectItem value="skipped">Ignore</SelectItem>
-              </Select>
-            </div>
-            <div className="space-y-1.5 sm:w-48">
-              <Label htmlFor="filterPageType">Type de page</Label>
-              <Select
-                name="filterPageType"
-                value={filters.pageType}
-                onValueChange={(v) => updateFilter("page_type", v)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <SelectItem value="">Tous</SelectItem>
-                <SelectItem value="R1_pieces">R1 Pieces</SelectItem>
-                <SelectItem value="R3_conseils">R3 Conseils</SelectItem>
-                <SelectItem value="R3_guide_achat">R3 Guide Achat</SelectItem>
-                <SelectItem value="R4_reference">R4 Reference</SelectItem>
-                <SelectItem value="R5_diagnostic">R5 Diagnostic</SelectItem>
-              </Select>
-            </div>
-            <div className="space-y-1.5 sm:w-52">
-              <Label htmlFor="filterAlias">Gamme</Label>
-              <Input
-                id="filterAlias"
-                placeholder="balais-d-essuie-glace..."
-                defaultValue={filters.pgAlias}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter")
-                    updateFilter("pg_alias", e.currentTarget.value);
-                }}
-              />
-            </div>
-            <Badge variant="secondary" className="h-9 px-3">
-              {total} resultat{total !== 1 ? "s" : ""}
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Separator />
-
-      {/* Historique */}
-      <AdminDataTable<RefreshItem>
-        data={items as RefreshItem[]}
-        columns={pipelineColumns}
-        getRowKey={(r) => String(r.id)}
-        emptyMessage="Aucun enrichissement trouve"
-        statusColumn={{ key: "status", mapping: REFRESH_STATUS }}
-        isLoading={revalidator.state !== "idle"}
-        serverPagination={{
-          total,
-          page: currentPage,
-          pageSize: filters.limit,
-          onPageChange: (page) =>
-            updateFilter(
-              "offset",
-              page > 1 ? String((page - 1) * filters.limit) : "",
-            ),
-        }}
-        toolbar={
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <Activity className="h-4 w-4" />
-            Historique
-          </div>
-        }
-      />
+              <Zap className="h-4 w-4 mr-1.5" />
+              Lancer {canaryGammes.length} gammes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* AlertDialog de publication */}
       <AlertDialog open={publishDialogOpen} onOpenChange={setPublishDialogOpen}>
