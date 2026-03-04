@@ -18,6 +18,7 @@ import {
   isRouteErrorResponse,
   useRevalidator,
   useLocation,
+  useMatches,
 } from "@remix-run/react";
 
 import { ChevronUp } from "lucide-react";
@@ -47,16 +48,11 @@ import { Button } from "./components/ui/button";
 // @ts-ignore
 import stylesheet from "./global.css?url";
 // Design System CSS (chargés via links() — les @import CSS ne sont pas résolus par Vite)
-// @ts-ignore
-// @ts-ignore
 import { useHydrated } from "./hooks/useHydrated";
 import { usePageRoleDataAttrs } from "./hooks/usePageRole";
 import { useScrollBehavior } from "./hooks/useScrollBehavior";
-// @ts-ignore
-import logo from "./routes/_assets/logo-automecanik-dark.png"; // TODO: utiliser dans l'interface
 import { getCart } from "./services/cart.server";
 import animationsStylesheet from "./styles/animations.css?url";
-import { type CartData } from "./types/cart";
 
 const ChatWidget = lazy(() => import("./components/rag/ChatWidget"));
 const Footer = lazy(() =>
@@ -67,6 +63,7 @@ const FooterMobile = lazy(() =>
     default: m.FooterMobile,
   })),
 );
+const BottomNavV9 = lazy(() => import("./components/layout/BottomNavV9"));
 const LazyToaster = lazy(() =>
   import("sonner").then((m) => ({ default: m.Toaster })),
 );
@@ -77,14 +74,6 @@ const LazyToaster = lazy(() =>
 export const links: LinksFunction = () => [
   // 🚀 LCP: Preload CSS critique
   { rel: "preload", href: stylesheet, as: "style" },
-
-  // 🚀 LCP: Preload logo navbar (présent sur toutes les pages)
-  {
-    rel: "preload",
-    href: "/logo-navbar.webp",
-    as: "image",
-    type: "image/webp",
-  },
 
   // 🚀 LCP Phase 2: Preload fonts critiques (same-origin, pas de cross-origin)
   {
@@ -97,6 +86,21 @@ export const links: LinksFunction = () => [
   {
     rel: "preload",
     href: "/fonts/montserrat-latin.woff2",
+    as: "font",
+    type: "font/woff2",
+    crossOrigin: "anonymous" as const,
+  },
+  // 🚀 V9 fonts: Outfit (headings) + DM Sans (body) — mobile layout
+  {
+    rel: "preload",
+    href: "/fonts/outfit-latin.woff2",
+    as: "font",
+    type: "font/woff2",
+    crossOrigin: "anonymous" as const,
+  },
+  {
+    rel: "preload",
+    href: "/fonts/dm-sans-latin.woff2",
     as: "font",
     type: "font/woff2",
     crossOrigin: "anonymous" as const,
@@ -129,7 +133,7 @@ export const meta: MetaFunction = () => [
     content:
       "Catalogue de pièces détachées auto pour toutes marques et modèles. Livraison rapide. Qualité garantie.",
   },
-  { name: "theme-color", content: "#2563eb" },
+  { name: "theme-color", content: "#0d1b2a" },
   { property: "og:image", content: "https://www.automecanik.com/logo-og.webp" },
   { property: "og:image:width", content: "1200" },
   { property: "og:image:height", content: "630" },
@@ -221,13 +225,12 @@ function ChatWidgetSafe() {
  * (Fixes Remix 2.15 hook context timing issue)
  */
 function AppShell({ children }: { children: React.ReactNode }) {
-  const data = useRouteLoaderData("root") as
-    | { user: any; cart: CartData | null }
-    | undefined;
-  const _user = data?.user;
-  const _cart = data?.cart;
   const revalidator = useRevalidator();
   const location = useLocation();
+  const matches = useMatches();
+  const hideGlobalFooter = matches.some(
+    (m) => (m.handle as any)?.hideGlobalFooter,
+  );
 
   // 🎯 Phase 5 SEO: Récupérer les data-attributes du rôle de page
   const pageRoleAttrs = usePageRoleDataAttrs();
@@ -350,15 +353,22 @@ function AppShell({ children }: { children: React.ReactNode }) {
       className="min-h-screen flex flex-col max-w-[100vw]"
       {...pageRoleAttrs}
     >
-      <Navbar logo={logo} />
+      <Navbar />
       <main className="flex-grow flex flex-col">
         <div className="flex-grow">{children}</div>
       </main>
+      {!hideGlobalFooter && (
+        <Suspense fallback={null}>
+          <Footer />
+        </Suspense>
+      )}
+      {!hideGlobalFooter && (
+        <Suspense fallback={null}>
+          <FooterMobile />
+        </Suspense>
+      )}
       <Suspense fallback={null}>
-        <Footer />
-      </Suspense>
-      <Suspense fallback={null}>
-        <FooterMobile />
+        <BottomNavV9 />
       </Suspense>
       <NotificationContainer />
       {showScrollTop && (

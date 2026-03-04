@@ -24,55 +24,32 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { Shield } from "lucide-react";
-
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
-import { useEffect, useState, lazy, Suspense } from "react";
-// 🆕 V2 UX Components
+import { useEffect, useState, Suspense } from "react";
 
-// 🚀 LCP OPTIMIZATION: Lazy load below-fold components (économie ~200-400ms)
-// Ces sections ne sont pas visibles au premier paint - différer leur chargement
-// V2: SEOHelmet retiré — meta() est la source unique pour tous les tags <head>
-// Note: generateGammeMeta supprimé - on utilise maintenant data.meta du backend
-import { ScrollToTop } from "~/components/blog/ScrollToTop";
-import {
-  SectionImage,
-  SectionWithImage,
-} from "~/components/content/SectionImage";
 import { Error404 } from "~/components/errors/Error404";
-import { HeroTransaction } from "~/components/heroes";
-import DarkSection from "~/components/layout/DarkSection";
-import PageSection from "~/components/layout/PageSection";
-import Reveal from "~/components/layout/Reveal";
-import SectionHeader from "~/components/layout/SectionHeader";
-import DesktopStickyCTA from "~/components/pieces/DesktopStickyCTA";
-import { GuideLinkCard } from "~/components/pieces/GuideLinkCard";
-import MobileStickyBar from "~/components/pieces/MobileStickyBar";
-import { R1CompatErrors } from "~/components/pieces/R1CompatErrors";
-import { R1KpiCoverage } from "~/components/pieces/R1KpiCoverage";
-import { R1QuickNav } from "~/components/pieces/R1QuickNav";
-import { R1ReusableContent } from "~/components/pieces/R1ReusableContent";
-import { R1TrustStrip } from "~/components/pieces/R1TrustStrip";
-import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+// V9 Design System Components
 import {
-  getSectionImageConfig,
-  resolveAltText,
-  resolveSlogan,
-} from "~/config/visual-intent";
-import { R1Section, sectionAttr } from "~/constants/r1-sections";
-import { pluralizePieceName } from "~/lib/seo-utils";
+  GammeHeroV9,
+  GammeDiagnosticCTA,
+  GammeGuidesStripV9,
+  GammeContentV9,
+  GammeMotorisationsV9,
+  GammeChecklistV9,
+  GammeErrorsV9,
+  GammeEquipementiersV9,
+  GammeFamilleGridV9,
+  GammeGuideCTA,
+  GammeFaqV9,
+} from "~/components/gamme-v9";
+import { FooterV9 } from "~/components/home-v9";
+
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import {
   type GammePageDataV1,
   GAMME_PAGE_CONTRACT_VERSION,
 } from "~/types/gamme-page-contract.types";
-import {
-  trackSelectorComplete,
-  trackSelectorCTA,
-  trackSelectorResume,
-} from "~/utils/analytics";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
-import { ImageOptimizer } from "~/utils/image-optimizer";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOgImageUrl } from "~/utils/og-image.utils";
@@ -81,7 +58,6 @@ import {
   buildR1Breadcrumbs,
   buildProofData,
   buildGammeJsonLd,
-  buildHeroProps,
   sanitizePurchaseGuideForR1,
   type R1PurchaseGuideData,
 } from "~/utils/r1-builders";
@@ -91,18 +67,12 @@ import {
 } from "~/utils/r1-section-pack";
 import {
   buildSourceMapFromPack,
-  sourceAttr,
   type R1SourceMap,
 } from "~/utils/r1-source-tracker";
 import { buildCanonicalUrl } from "~/utils/seo/canonical";
-import { VehicleFilterBadge } from "../components/vehicle/VehicleFilterBadge";
-import VehicleSelector from "../components/vehicle/VehicleSelector";
-import { hierarchyApi } from "../services/api/hierarchy.api";
 import { normalizeAlias } from "../utils/url-builder.utils";
 import {
   getVehicleClient,
-  clearVehicleClient,
-  buildBreadcrumbWithVehicle,
   storeVehicleClient,
   type VehicleCookie,
 } from "../utils/vehicle-cookie";
@@ -116,50 +86,8 @@ export const handle = {
     clusterId: "gamme",
     canonicalEntity: "pieces",
   }),
+  hideGlobalFooter: true,
 };
-
-// 🚀 LCP OPTIMIZATION V7: Lazy load ALL below-fold components
-// V2: QuickGuideSection, DecisionGridSection, ReferenceEncartSection retirés du R1
-const MotorisationsSection = lazy(() =>
-  import("../components/pieces/MotorisationsSection").then((m) => ({
-    default: m.default,
-  })),
-);
-const CatalogueSection = lazy(() =>
-  import("../components/pieces/CatalogueSection").then((m) => ({
-    default: m.default,
-  })),
-);
-const EquipementiersSection = lazy(() =>
-  import("../components/pieces/EquipementiersSection").then((m) => ({
-    default: m.default,
-  })),
-);
-const SafeCompatTable = lazy(() =>
-  import("../components/pieces/SafeCompatTable").then((m) => ({
-    default: m.default,
-  })),
-);
-// R1 ROUTER: ConseilsSection (R3/conseils) et InformationsSection supprimes — hors-role
-
-// R1 ROUTER: sections hors-role supprimees (SymptomsSection=R5, AntiMistakesSection=R3, PurchaseNarrativeSection=R3)
-// Voir brief: .claude/skills/seo-content-architect/references/r1-router-role.md
-
-// V2: DecisionGridSection + ReferenceEncartSection retirés — contenu redirigé vers cartes R1ReusableContent
-
-// ✅ Bloc compatibilité véhicule (réassurance avant catalogue)
-const CompatibilityConfirmationBlock = lazy(() =>
-  import("../components/pieces/CompatibilityConfirmationBlock").then((m) => ({
-    default: m.CompatibilityConfirmationBlock,
-  })),
-);
-
-// 📖 FAQ Section avec Schema.org
-const FAQSection = lazy(() =>
-  import("../components/seo/FAQSection").then((m) => ({
-    default: m.FAQSection,
-  })),
-);
 
 // R1 ROUTER: FAQ statiques orientées sélecteur véhicule (remplace les FAQ R3/guide-achat)
 const R1_SELECTOR_FAQ = [
@@ -312,10 +240,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     // Breadcrumbs (sans vehicule sur page gamme seule — evite hydration mismatch)
     // Aligné avec le JSON-LD BreadcrumbList (3 niveaux: Accueil → Pièces Auto → gamme)
-    const breadcrumbItems = buildBreadcrumbWithVehicle(
-      buildR1Breadcrumbs(content?.pg_name || "Piece"),
-      null,
-    );
+    const breadcrumbItems = buildR1Breadcrumbs(content?.pg_name || "Piece");
 
     // Substitution : 404/410 handling
     if (substitutionResponse) {
@@ -678,648 +603,186 @@ export default function PiecesDetailPage() {
       },
     ];
 
-  // 🎨 Récupérer la couleur de la famille pour le hero
-  const familleColor = data.famille
-    ? hierarchyApi.getFamilyColor({
-        mf_id: data.famille.mf_id,
-        mf_name: data.famille.mf_name,
-        mf_pic: data.famille.mf_pic,
-      } as Parameters<typeof hierarchyApi.getFamilyColor>[0])
-    : "from-primary-950 via-primary-900 to-secondary-900"; // Fallback avec design tokens
-
-  // V2: itemListData + SEOHelmet retirés — meta() gère tout le <head>
-
-  // LCP STREAMING: proofData extrait dans le loader (sync, ~1KB)
-  // Remplace le calcul motorItems/allYears/periodeRange qui nécessitait motorisations (deferred)
-  const periodeRange = data.proofData?.periodeRange || "";
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100">
+    <div className="min-h-screen bg-[#f5f7fa] font-v9-body">
       <a
-        href="#hero-transaction"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-navy focus:rounded-lg focus:shadow-lg focus:text-sm focus:font-semibold"
+        href="#hero-v9"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:bg-blue-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg"
       >
         Aller au contenu principal
       </a>
 
-      {/* ⏳ Indicateur de chargement global */}
+      {/* ⏳ Indicateur de chargement */}
       {isLoading && (
         <div
           role="status"
           aria-label="Chargement en cours"
-          className="fixed top-0 left-0 right-0 z-50 h-1 bg-semantic-info animate-pulse"
-        >
-          <div className="h-full bg-gradient-to-r from-semantic-info via-secondary-500 to-semantic-info bg-[length:200%_100%] animate-pulse"></div>
-        </div>
-      )}
-
-      {/* Breadcrumbs visuels */}
-      <div className="container mx-auto px-page pt-4">
-        <PublicBreadcrumb items={breadcrumbs} />
-      </div>
-
-      {/* 🎯 HERO SECTION - Avec couleur de la famille */}
-      <HeroTransaction
-        id="hero-transaction"
-        {...sectionAttr(R1Section.HERO)}
-        {...sourceAttr(data.r1Sources, R1Section.HERO)}
-        gradient={familleColor}
-        slogan={resolveSlogan("transaction", data.content?.pg_name)}
-        badges={
-          buildHeroProps({
-            purchaseGuideArgs:
-              data.sectionPack?.sections.buyArgs.data.arguments ?? undefined,
-            motorisationsCount: data.performance?.motorisations_count,
-          }).badges
-        }
-        className="py-8 md:py-16 lg:py-20"
-        backgroundSlot={
-          <>
-            {/* Wallpaper OFF par défaut — perf (LCP/INP) > esthétique sur 221+ pages
-                Réactivable par gamme en Phase 2 via visual_plan.hero_wallpaper */}
-
-            {/* Effet mesh gradient adaptatif */}
-            <div
-              className="absolute inset-0 z-[1] opacity-20"
-              style={{
-                backgroundImage: `radial-gradient(circle at 25% 25%, rgba(255,255,255,0.2) 0%, transparent 50%),
-                                 radial-gradient(circle at 75% 75%, rgba(0,0,0,0.15) 0%, transparent 50%)`,
-              }}
-              aria-hidden="true"
-            />
-          </>
-        }
-      >
-        {/* Badges contextuels en haut */}
-        <div className="flex flex-wrap justify-center items-center gap-3 mb-6 md:mb-8 animate-in fade-in duration-700">
-          {data.famille && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full border border-white/20 shadow-lg">
-              <div
-                className={`w-2.5 h-2.5 rounded-full bg-gradient-to-br ${familleColor} animate-pulse shadow-lg`}
-              ></div>
-              <span className="text-white/95 font-semibold text-sm tracking-wide">
-                {data.famille.mf_name}
-              </span>
-            </div>
-          )}
-          {data.famille?.mf_name.toLowerCase().includes("frein") && (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full border border-white/20 shadow-lg">
-              <Shield className="w-4 h-4 text-red-300" />
-              <span className="text-white/95 text-sm font-semibold">
-                Votre sécurité est notre priorité
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Titre H1 dynamique optimisé SEO - utilise h1Override si disponible */}
-        <div className="text-center mb-6 md:mb-8 animate-in fade-in duration-700 delay-100">
-          <h1 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold leading-tight">
-            <span className="bg-gradient-to-r from-white via-white to-white/90 bg-clip-text text-transparent">
-              {(() => {
-                // Priorité: h1Override > h1 existant > fallback
-                const rawH1 =
-                  data.sectionPack?.sections.hero.data.h1Override ||
-                  data.content?.h1 ||
-                  `${data.content?.pg_name || "Pièces auto"} — trouvez la référence compatible avec votre véhicule`;
-                // Nettoyer les balises HTML (<b>, </b>, etc.)
-                return rawH1.replace(/<[^>]*>/g, "");
-              })()}
-            </span>
-          </h1>
-        </div>
-
-        <p className="text-white/80 text-base md:text-lg font-medium text-center mt-3 max-w-2xl mx-auto">
-          {data.sectionPack?.sections.hero.data.heroSubtitle ||
-            (() => {
-              const name = data.content?.pg_name?.toLowerCase() || "";
-              const pluralName = pluralizePieceName(name);
-              return name
-                ? `Trouvez vos ${pluralName} compatibles avec votre véhicule en quelques secondes`
-                : "Trouvez la référence compatible avec votre véhicule en quelques secondes";
-            })()}
-        </p>
-
-        {/* Cadre glassmorphism contenant Image + VehicleSelector */}
-        <div className="max-w-5xl mx-auto mb-8 md:mb-10 animate-in fade-in duration-1000 delay-200">
-          <div className="bg-gradient-to-br from-white/[0.18] to-white/[0.10] rounded-3xl shadow-[0_20px_80px_rgba(0,0,0,0.4)] p-6 md:p-8 border border-white/30 hover:border-white/50 transition-all duration-500">
-            {/* Layout horizontal : Image + VehicleSelector côte à côte */}
-            <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
-              {/* Image produit à gauche */}
-              <div className="flex-shrink-0 w-full lg:w-80">
-                <div className="relative group">
-                  {/* Cercle décoratif retiré — LCP: blur-3xl force GPU compositing layer */}
-
-                  {/* Container image */}
-                  <div className="relative bg-white/10 rounded-2xl p-6 border border-white/20 shadow-lg">
-                    <div className="w-full aspect-square flex items-center justify-center">
-                      {(() => {
-                        const imgPath = (data.content?.pg_pic || "").replace(
-                          /^\/img\//,
-                          "",
-                        );
-                        if (!imgPath) {
-                          return (
-                            <img
-                              src="/images/categories/default.svg"
-                              alt={data.content?.pg_name || "Pièce auto"}
-                              width={400}
-                              height={400}
-                              className="w-full h-full object-contain"
-                            />
-                          );
-                        }
-                        const pictureSet = ImageOptimizer.getPictureImageSet(
-                          imgPath,
-                          {
-                            widths: [200, 400, 600],
-                            quality: 85,
-                            sizes: "(max-width: 640px) 200px, 400px",
-                            width: 400,
-                            height: 400,
-                          },
-                        );
-                        return (
-                          <picture>
-                            <source
-                              srcSet={pictureSet.avifSrcSet}
-                              type="image/avif"
-                              sizes={pictureSet.sizes}
-                            />
-                            <source
-                              srcSet={pictureSet.webpSrcSet}
-                              type="image/webp"
-                              sizes={pictureSet.sizes}
-                            />
-                            <img
-                              src={pictureSet.fallbackSrc}
-                              alt={data.content?.pg_name || "Pièce auto"}
-                              width={400}
-                              height={400}
-                              className="w-full h-full object-contain"
-                              loading="eager"
-                              decoding="async"
-                              fetchPriority="high"
-                              onError={(e) => {
-                                e.currentTarget.src =
-                                  "/images/categories/default.svg";
-                                e.currentTarget.onerror = null;
-                              }}
-                            />
-                          </picture>
-                        );
-                      })()}
-                    </div>
-                  </div>
-
-                  {/* Particule décorative retirée — LCP: blur-xl force GPU layer */}
-                </div>
-              </div>
-
-              {/* VehicleSelector ou Resume vehicule */}
-              <div
-                id="vehicle-selector"
-                className="flex-1 w-full scroll-mt-20 animate-in fade-in slide-in-from-right duration-1000 delay-400"
-              >
-                {selectedVehicle ? (
-                  <div className="space-y-4">
-                    <div className="bg-white/15 backdrop-blur-sm rounded-2xl p-5 border border-white/25">
-                      <p className="text-white/70 text-sm mb-1">
-                        Votre véhicule
-                      </p>
-                      <p className="text-white text-lg font-bold">
-                        {selectedVehicle.marque_name}{" "}
-                        {selectedVehicle.modele_name}
-                      </p>
-                      <p className="text-white/80 text-sm">
-                        {selectedVehicle.type_name}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        const gammeSlug =
-                          location.pathname
-                            .split("/")
-                            .pop()
-                            ?.replace(".html", "") || "";
-                        const brandSlug = `${selectedVehicle.marque_alias}-${selectedVehicle.marque_id}`;
-                        const modelSlug = `${selectedVehicle.modele_alias}-${selectedVehicle.modele_id}`;
-                        const typeSlug = `${selectedVehicle.type_alias}-${selectedVehicle.type_id}`;
-                        const vehicleLabel = `${selectedVehicle.marque_name} ${selectedVehicle.modele_name} ${selectedVehicle.type_name}`;
-                        trackSelectorResume(
-                          data.content?.pg_name || "unknown",
-                          vehicleLabel,
-                        );
-                        navigate(
-                          `/pieces/${gammeSlug}/${brandSlug}/${modelSlug}/${typeSlug}.html`,
-                        );
-                      }}
-                      className="w-full py-3.5 px-6 bg-white text-gray-900 font-bold rounded-xl hover:bg-white/90 transition-all shadow-lg text-base"
-                    >
-                      Voir mes{" "}
-                      {pluralizePieceName(
-                        data.content?.pg_name?.toLowerCase() || "pièces",
-                      )}{" "}
-                      compatibles
-                    </button>
-                    <button
-                      onClick={() => {
-                        clearVehicleClient();
-                        setSelectedVehicle(null);
-                      }}
-                      className="w-full py-2.5 text-white/70 text-sm hover:text-white transition-colors underline underline-offset-4"
-                    >
-                      Changer de véhicule
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <VehicleSelector
-                      enableTypeMineSearch={true}
-                      context="pieces"
-                      redirectOnSelect={false}
-                      onVehicleSelect={(vehicle) => {
-                        const brandSlug = `${vehicle.brand.marque_alias || normalizeAlias(vehicle.brand.marque_name)}-${vehicle.brand.marque_id}`;
-                        const modelSlug = `${vehicle.model.modele_alias || normalizeAlias(vehicle.model.modele_name)}-${vehicle.model.modele_id}`;
-                        const typeSlug = `${vehicle.type.type_alias || normalizeAlias(vehicle.type.type_name)}-${vehicle.type.type_id}`;
-                        const gammeSlug =
-                          location.pathname
-                            .split("/")
-                            .pop()
-                            ?.replace(".html", "") || "";
-                        storeVehicleClient({
-                          marque_id: vehicle.brand.marque_id,
-                          marque_name: vehicle.brand.marque_name,
-                          marque_alias:
-                            vehicle.brand.marque_alias ||
-                            normalizeAlias(vehicle.brand.marque_name),
-                          modele_id: vehicle.model.modele_id,
-                          modele_name: vehicle.model.modele_name,
-                          modele_alias:
-                            vehicle.model.modele_alias ||
-                            normalizeAlias(vehicle.model.modele_name),
-                          type_id: vehicle.type.type_id,
-                          type_name: vehicle.type.type_name,
-                          type_alias:
-                            vehicle.type.type_alias ||
-                            normalizeAlias(vehicle.type.type_name),
-                        });
-                        const vehicleLabel = `${vehicle.brand.marque_name} ${vehicle.model.modele_name} ${vehicle.type.type_name}`;
-                        trackSelectorComplete(
-                          data.content?.pg_name || "unknown",
-                          vehicleLabel,
-                        );
-                        trackSelectorCTA(
-                          data.content?.pg_name || "unknown",
-                          vehicleLabel,
-                        );
-                        navigate(
-                          `/pieces/${gammeSlug}/${brandSlug}/${modelSlug}/${typeSlug}.html`,
-                        );
-                      }}
-                    />
-                    {data.sectionPack?.sections.selectorMicrocopy.data &&
-                      data.sectionPack.sections.selectorMicrocopy.data.length >
-                        0 && (
-                        <div className="mt-3 space-y-1">
-                          {data.sectionPack.sections.selectorMicrocopy.data
-                            .slice(0, 2)
-                            .map((tip, i) => (
-                              <p
-                                key={i}
-                                className="text-xs text-white/60 leading-snug"
-                              >
-                                {tip}
-                              </p>
-                            ))}
-                        </div>
-                      )}
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </HeroTransaction>
-
-      {/* Trust Strip — 4 items réassurance purs */}
-      <PageSection
-        {...sectionAttr(R1Section.TRUST_STRIP)}
-        {...sourceAttr(data.r1Sources, R1Section.TRUST_STRIP)}
-        maxWidth="5xl"
-        className="py-3 sm:py-4"
-      >
-        <R1TrustStrip />
-      </PageSection>
-
-      {/* Bloc compatibilité — réassurance avant catalogue */}
-      <PageSection
-        {...sectionAttr(R1Section.COMPAT)}
-        {...sourceAttr(data.r1Sources, R1Section.COMPAT)}
-        className="py-4 sm:py-6"
-        id="compatibility-check"
-      >
-        <Suspense
-          fallback={
-            <div className="h-24 bg-gray-50 animate-pulse motion-reduce:animate-none rounded-lg" />
-          }
-        >
-          <Await resolve={data.motorisations}>
-            {(motorisations) => (
-              <CompatibilityConfirmationBlock
-                selectedVehicle={selectedVehicle}
-                motorisationItems={motorisations?.items || []}
-                gammeName={
-                  data.content?.pg_name?.toLowerCase() || "pièces auto"
-                }
-                periodeRange={periodeRange}
-                gammeId={data.gammeId}
-              />
-            )}
-          </Await>
-        </Suspense>
-      </PageSection>
-
-      {/* Quick Nav — chips navigation rapide */}
-      <PageSection
-        {...sectionAttr(R1Section.QUICK_NAV)}
-        {...sourceAttr(data.r1Sources, R1Section.QUICK_NAV)}
-        maxWidth="5xl"
-        className="py-2 sm:py-3"
-      >
-        <R1QuickNav />
-      </PageSection>
-
-      {/* KPI Coverage — chiffres data-driven conditionnels */}
-      {data.proofData && data.proofData.motorisationsCount > 0 && (
-        <PageSection
-          {...sectionAttr(R1Section.KPI_COVERAGE)}
-          {...sourceAttr(data.r1Sources, R1Section.KPI_COVERAGE)}
-          maxWidth="5xl"
-          className="py-4 sm:py-6"
-        >
-          <R1KpiCoverage proofData={data.proofData} />
-        </PageSection>
-      )}
-
-      {/* R1 micro-bloc: texte SEO utile (court) */}
-      <PageSection
-        {...sectionAttr(R1Section.BUY_ARGS)}
-        {...sourceAttr(data.r1Sources, R1Section.BUY_ARGS)}
-        maxWidth="5xl"
-        className="py-6 sm:py-8"
-      >
-        {(() => {
-          const imageConfig = data.content?.pg_pic
-            ? getSectionImageConfig("transaction", "buyingGuide")
-            : undefined;
-
-          // LCP STREAMING: proofs depuis proofData (sync, extrait dans le loader)
-          const proofs =
-            data.proofData && data.proofData.motorisationsCount > 0
-              ? {
-                  topMarques: data.proofData.topMarques,
-                  topEquipementiers: data.proofData.topEquipementiers,
-                  periodeRange: data.proofData.periodeRange,
-                  motorisationsCount: data.proofData.motorisationsCount,
-                  modelsCount: data.proofData.modelsCount,
-                  topMotorCodes: data.proofData.topMotorCodes,
-                }
-              : undefined;
-
-          const r1Block = (
-            <R1ReusableContent
-              gammeName={data.content?.pg_name || "pièces auto"}
-              familleName={data.famille?.mf_name || ""}
-              alias={data.content?.pg_alias || ""}
-              reference={data.reference}
-              proofs={proofs}
-              microSeoBlock={
-                data.sectionPack?.sections.buyArgs.data.microSeoBlock
-              }
-            />
-          );
-
-          return imageConfig && data.content?.pg_pic ? (
-            <SectionWithImage>
-              <SectionImage
-                src={data.content.pg_pic}
-                alt={resolveAltText("transaction", data.content?.pg_name)}
-                placement={imageConfig.placement}
-                size={imageConfig.size}
-              />
-              {r1Block}
-            </SectionWithImage>
-          ) : (
-            r1Block
-          );
-        })()}
-      </PageSection>
-
-      {/* 🚗 Badge véhicule actif (si présent) */}
-      {selectedVehicle && (
-        <PageSection className="py-4 sm:py-4">
-          <VehicleFilterBadge
-            vehicle={selectedVehicle}
-            onClear={() => setSelectedVehicle(null)}
-            showDetails={true}
-          />
-        </PageSection>
-      )}
-
-      {/* Motorisations compatibles */}
-      <PageSection
-        {...sectionAttr(R1Section.MOTORISATIONS)}
-        {...sourceAttr(data.r1Sources, R1Section.MOTORISATIONS)}
-        bg="slate"
-        id="compatibilities"
-        className="scroll-mt-20"
-      >
-        <Reveal>
-          <Suspense
-            fallback={
-              <div className="h-96 bg-gray-50 animate-pulse motion-reduce:animate-none rounded-lg" />
-            }
-          >
-            <Await resolve={data.motorisations}>
-              {(motorisations) => (
-                <MotorisationsSection
-                  motorisations={motorisations}
-                  familleColor={familleColor}
-                  familleName={data.content?.pg_name || "pièces"}
-                  totalCount={data.performance?.motorisations_count}
-                  compatibilitiesIntro={
-                    data.sectionPack?.sections.motorisations.data
-                      .compatibilitiesIntro ?? undefined
-                  }
-                  variant="R1"
-                />
-              )}
-            </Await>
-          </Suspense>
-        </Reveal>
-      </PageSection>
-
-      {/* ✅ Tableau safe : vérifications compatibilité avant commande */}
-      <PageSection
-        {...sectionAttr(R1Section.SAFE_TABLE)}
-        {...sourceAttr(data.r1Sources, R1Section.SAFE_TABLE)}
-        className="py-6"
-      >
-        <Suspense
-          fallback={
-            <div className="h-32 bg-gray-50 animate-pulse motion-reduce:animate-none rounded-lg" />
-          }
-        >
-          <SafeCompatTable
-            rows={data.sectionPack?.sections.safeTable.data}
-            gammeName={data.content?.pg_name}
-            familleName={data.famille?.mf_name}
-          />
-        </Suspense>
-      </PageSection>
-
-      {/* Erreurs fréquentes de compatibilité — checklist */}
-      <PageSection
-        {...sectionAttr(R1Section.COMPAT_ERRORS)}
-        {...sourceAttr(data.r1Sources, R1Section.COMPAT_ERRORS)}
-        maxWidth="5xl"
-        className="py-4 sm:py-6"
-      >
-        <R1CompatErrors
-          compatErrors={data.sectionPack?.sections.compatErrors.data}
-          gammeName={data.content?.pg_name?.toLowerCase() || "pièce"}
-          familleName={data.famille?.mf_name}
+          className="fixed top-0 left-0 right-0 z-[60] h-1 bg-blue-500 animate-pulse"
         />
-      </PageSection>
-
-      {/* 🔧 Équipementiers — DarkSection navy */}
-      <DarkSection
-        {...sectionAttr(R1Section.EQUIPEMENTIERS)}
-        {...sourceAttr(data.r1Sources, R1Section.EQUIPEMENTIERS)}
-      >
-        <div className="space-y-12">
-          <div id="brands" className="scroll-mt-20">
-            <SectionHeader
-              title="Équipementiers OE & qualité premium"
-              sub={
-                data.sectionPack?.sections.equipementiers.data
-                  .equipementiersLine ||
-                "Fabricants de première monte et équivalent qualité"
-              }
-              dark
-            />
-            <Reveal delay={100}>
-              <Suspense
-                fallback={
-                  <div className="h-48 bg-white/5 animate-pulse motion-reduce:animate-none rounded-lg" />
-                }
-              >
-                <Await resolve={data.equipementiers}>
-                  {(equipementiers) => (
-                    <EquipementiersSection
-                      equipementiers={equipementiers}
-                      isDarkMode
-                      maxItems={5}
-                    />
-                  )}
-                </Await>
-              </Suspense>
-            </Reveal>
-          </div>
-        </div>
-      </DarkSection>
-
-      {/* 📦 Catalogue Même Famille */}
-      <PageSection
-        {...sectionAttr(R1Section.CATALOGUE)}
-        {...sourceAttr(data.r1Sources, R1Section.CATALOGUE)}
-        id="family"
-        className="scroll-mt-20"
-      >
-        <Reveal>
-          <Suspense
-            fallback={
-              <div className="h-48 bg-gray-50 animate-pulse motion-reduce:animate-none rounded-lg" />
-            }
-          >
-            <Await resolve={data.catalogueMameFamille}>
-              {(catalogueMameFamille) => (
-                <Await resolve={data.seoSwitches}>
-                  {(seoSwitches) => (
-                    <CatalogueSection
-                      catalogueMameFamille={catalogueMameFamille}
-                      verbSwitches={seoSwitches?.verbs?.map(
-                        (v: { id: string; content: string }) => ({
-                          id: v.id,
-                          content: v.content,
-                        }),
-                      )}
-                      intro={
-                        data.sectionPack?.sections.catalogue.data
-                          .familyCrossSellIntro ||
-                        `Complétez votre entretien : découvrez les pièces complémentaires à votre ${data.content?.pg_name?.toLowerCase() || "pièce"}.`
-                      }
-                      variant="R1"
-                    />
-                  )}
-                </Await>
-              )}
-            </Await>
-          </Suspense>
-        </Reveal>
-      </PageSection>
-
-      {/* FAQ R1 — questions universelles sur le sélecteur véhicule */}
-      <PageSection
-        {...sectionAttr(R1Section.FAQ)}
-        {...sourceAttr(data.r1Sources, R1Section.FAQ)}
-        bg="slate"
-        id="faq"
-        className="scroll-mt-20"
-      >
-        <Reveal>
-          <Suspense
-            fallback={
-              <div className="h-48 bg-slate-100 animate-pulse motion-reduce:animate-none rounded-lg" />
-            }
-          >
-            <FAQSection
-              faq={data.sectionPack?.sections.faq.data ?? []}
-              gammeName={data.content?.pg_name || "cette pièce"}
-              withJsonLd={false}
-            />
-          </Suspense>
-        </Reveal>
-      </PageSection>
-
-      {/* 📖 Cross-link R1 → R3 conseil guide */}
-      {data.content?.pg_alias && (
-        <PageSection id="guide-link" className="scroll-mt-20">
-          <Reveal>
-            <GuideLinkCard
-              pgAlias={data.content.pg_alias}
-              pgName={data.content.pg_name || "cette pièce"}
-            />
-          </Reveal>
-        </PageSection>
       )}
 
-      {/* Bouton Scroll To Top */}
-      <ScrollToTop />
-
-      {/* 🖥️ Panel sticky desktop - Accès rapide sélecteur + compatibilités */}
-      <DesktopStickyCTA />
-
-      {/* 📱 Barre sticky mobile - CTA sélection véhicule + compatibilités */}
-      <MobileStickyBar
-        gammeName={data.content?.pg_name}
-        hasCompatibilities={(data.proofData?.motorisationsCount || 0) > 0}
-        hasFaq={!!data.sectionPack?.sections.faq.data?.length}
+      <GammeHeroV9
+        gammeName={
+          data.sectionPack?.sections.hero.data.h1Override?.replace(
+            /<[^>]*>/g,
+            "",
+          ) ||
+          data.content?.h1?.replace(/<[^>]*>/g, "") ||
+          data.content?.pg_name ||
+          "Pièces auto"
+        }
+        familleTag={data.famille?.mf_name}
+        subtitle={
+          data.sectionPack?.sections.hero.data.heroSubtitle ||
+          `Trouvez votre ${data.content?.pg_name?.toLowerCase() || "pièce"} compatible en quelques secondes`
+        }
+        pgPic={data.content?.pg_pic}
+        breadcrumbs={breadcrumbs.map((b) => ({
+          label: b.label,
+          href: b.current ? undefined : b.href,
+        }))}
+        kpis={{
+          motorisationsCount:
+            data.proofData?.motorisationsCount ||
+            data.performance?.motorisations_count ||
+            0,
+          modelsCount: data.proofData?.modelsCount || 0,
+          equipCount: data.proofData?.topEquipementiers?.length || 0,
+        }}
+        onVehicleSelect={(vehicle) => {
+          const brandSlug = `${vehicle.brand.marque_alias || normalizeAlias(vehicle.brand.marque_name)}-${vehicle.brand.marque_id}`;
+          const modelSlug = `${vehicle.model.modele_alias || normalizeAlias(vehicle.model.modele_name)}-${vehicle.model.modele_id}`;
+          const typeSlug = `${vehicle.type.type_alias || normalizeAlias(vehicle.type.type_name)}-${vehicle.type.type_id}`;
+          const gammeSlug =
+            location.pathname.split("/").pop()?.replace(".html", "") || "";
+          storeVehicleClient({
+            marque_id: vehicle.brand.marque_id,
+            marque_name: vehicle.brand.marque_name,
+            marque_alias:
+              vehicle.brand.marque_alias ||
+              normalizeAlias(vehicle.brand.marque_name),
+            modele_id: vehicle.model.modele_id,
+            modele_name: vehicle.model.modele_name,
+            modele_alias:
+              vehicle.model.modele_alias ||
+              normalizeAlias(vehicle.model.modele_name),
+            type_id: vehicle.type.type_id,
+            type_name: vehicle.type.type_name,
+            type_alias:
+              vehicle.type.type_alias || normalizeAlias(vehicle.type.type_name),
+          });
+          navigate(
+            `/pieces/${gammeSlug}/${brandSlug}/${modelSlug}/${typeSlug}.html`,
+          );
+        }}
+        selectedVehicle={selectedVehicle}
       />
 
-      {/* Spacer pour éviter que le contenu soit masqué par la sticky bar */}
-      <div className="h-20 md:hidden" />
+      <GammeDiagnosticCTA />
+
+      <GammeGuidesStripV9
+        gammeName={data.content?.pg_name || "Pièces auto"}
+        pgAlias={data.content?.pg_alias}
+      />
+
+      <GammeContentV9
+        gammeName={data.content?.pg_name || "Pièces auto"}
+        content={data.content?.content}
+        microSeoBlock={
+          data.sectionPack?.sections.buyArgs.data.microSeoBlock ?? undefined
+        }
+      />
+
+      {/* Motorisations compatibles — deferred */}
+      <Suspense
+        fallback={
+          <div className="py-10 px-5">
+            <div className="max-w-[1280px] mx-auto">
+              <div className="h-96 bg-slate-100 animate-pulse rounded-2xl" />
+            </div>
+          </div>
+        }
+      >
+        <Await resolve={data.motorisations}>
+          {(motorisations) => (
+            <GammeMotorisationsV9
+              items={motorisations?.items || []}
+              totalCount={data.performance?.motorisations_count}
+            />
+          )}
+        </Await>
+      </Suspense>
+
+      <GammeChecklistV9 gammeName={data.content?.pg_name} />
+
+      <GammeErrorsV9
+        errors={data.sectionPack?.sections.compatErrors.data}
+        gammeName={data.content?.pg_name}
+      />
+
+      {/* Équipementiers — deferred */}
+      <Suspense
+        fallback={
+          <div className="py-10 bg-[#0d1b2a]">
+            <div className="max-w-[1280px] mx-auto px-5">
+              <div className="h-48 bg-white/5 animate-pulse rounded-2xl" />
+            </div>
+          </div>
+        }
+      >
+        <Await resolve={data.equipementiers}>
+          {(equipementiers) => (
+            <GammeEquipementiersV9
+              items={(equipementiers?.items || []).map(
+                (e: {
+                  title: string;
+                  description?: string;
+                  image?: string;
+                }) => ({
+                  name: e.title,
+                  description: e.description,
+                  logo: e.image,
+                }),
+              )}
+            />
+          )}
+        </Await>
+      </Suspense>
+
+      {/* Catalogue même famille — deferred */}
+      <Suspense
+        fallback={
+          <div className="py-10 px-5">
+            <div className="max-w-[1280px] mx-auto">
+              <div className="h-48 bg-slate-100 animate-pulse rounded-2xl" />
+            </div>
+          </div>
+        }
+      >
+        <Await resolve={data.catalogueMameFamille}>
+          {(catalogueMameFamille) => (
+            <GammeFamilleGridV9
+              familleName={data.famille?.mf_name || "Pièces"}
+              items={(catalogueMameFamille?.items || []).map((c) => ({
+                name: c.name,
+                link: c.link,
+                img: c.image || undefined,
+              }))}
+            />
+          )}
+        </Await>
+      </Suspense>
+
+      <GammeFaqV9
+        items={data.sectionPack?.sections.faq.data ?? R1_SELECTOR_FAQ}
+      />
+
+      <GammeGuideCTA
+        gammeName={data.content?.pg_name || "Pièces auto"}
+        pgAlias={data.content?.pg_alias}
+      />
+
+      <FooterV9 />
     </div>
   );
 }

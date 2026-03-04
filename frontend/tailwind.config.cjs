@@ -62,6 +62,10 @@ module.exports = {
           900: '#050d1f',
         },
 
+        // V9 Navy (charte graphique V9 — différent du navy legacy)
+        'v9-navy': '#0d1b2a',
+        'v9-navy-light': '#132d4a',
+
         khmerCurry: tokens.colors.accent.khmerCurry,
         persianIndigo: tokens.colors.accent.persianIndigo,
         vert: tokens.colors.accent.vert,
@@ -144,7 +148,9 @@ module.exports = {
         data: tokens.typography.fontFamily.data.split(', '),
         sans: tokens.typography.fontFamily.sans.split(', '),
         serif: tokens.typography.fontFamily.serif.split(', '),
-        mono: tokens.typography.fontFamily.mono.split(', ')
+        mono: tokens.typography.fontFamily.mono.split(', '),
+        'v9-heading': ['Outfit', 'system-ui', 'sans-serif'],
+        'v9-body': ['DM Sans', 'system-ui', 'sans-serif']
       },
       fontSize: {
         ...tokens.typography.fontSize
@@ -172,13 +178,28 @@ module.exports = {
         'reveal-up': {
           from: { opacity: '0', transform: 'translateY(20px)' },
           to: { opacity: '1', transform: 'translateY(0)' }
+        },
+        'v9-fade-in': {
+          from: { opacity: '0', transform: 'translateY(6px)' },
+          to: { opacity: '1', transform: 'translateY(0)' }
+        },
+        'v9-float': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-2px)' }
+        },
+        'v9-shimmer': {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(100%)' }
         }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'float': 'float 6s ease-in-out infinite',
-        'reveal-up': 'reveal-up 0.6s ease both'
+        'reveal-up': 'reveal-up 0.6s ease both',
+        'v9-fade-in': 'v9-fade-in 0.25s ease-out',
+        'v9-float': 'v9-float 3s ease-in-out infinite',
+        'v9-shimmer': 'v9-shimmer 2s ease-in-out infinite'
       },
       transitionDuration: {
         'instant': '100ms',

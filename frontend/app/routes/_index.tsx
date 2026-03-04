@@ -5,38 +5,29 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { lazy, Suspense } from "react";
 
-import {
-  HomepageJsonLd,
-  HeroSearchSection,
-  ConseilsDiagnosticSection,
-  CatalogueSection,
-  WhyAutomecanikSection,
-  BlogGuidesSection,
-  FaqSection,
-} from "~/components/home";
+import { HomepageJsonLd } from "~/components/home";
 import {
   BLOG,
   CATS,
-  EQUIP,
-  IMG_PROXY_EQUIP,
   IMG_PROXY_FAMILIES,
   IMG_PROXY_LOGOS,
   MARQUES,
 } from "~/components/home/constants";
+import {
+  HeroSectionV9,
+  DiagnosticSectionV9,
+  GuidesStripV9,
+  CatalogueSectionV9,
+  BrandsGridV9,
+  BlogCarouselV9,
+  FaqSectionV9,
+  FooterV9,
+} from "~/components/home-v9";
 
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
-
-const BrandsGridSection = lazy(
-  () => import("~/components/home/BrandsGridSection"),
-);
-const StatsSection = lazy(() => import("~/components/home/StatsSection"));
-const EquipementiersMarquee = lazy(
-  () => import("~/components/home/EquipementiersMarquee"),
-);
 
 // ─── SEO page role ───────────────────────────────────────
 export const handle = {
@@ -44,6 +35,7 @@ export const handle = {
     clusterId: "homepage",
     canonicalEntity: "automecanik",
   }),
+  hideGlobalFooter: true,
 };
 
 // ─── Meta tags ───────────────────────────────────────────
@@ -139,13 +131,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
           ? `${IMG_PROXY_LOGOS}/${b.marque_logo}`
           : (undefined as string | undefined),
       })),
-      equipementiers: (rpcData?.equipementiers || []).map((e: any) => ({
-        name:
-          typeof e === "string"
-            ? e
-            : e.pm_name || e.name || e.eq_name || String(e),
-        logo: e.pm_logo || null,
-      })) as Array<{ name: string; logo: string | null }>,
       blogArticles: (rpcData?.blog_articles || []) as Array<{
         ba_id: number;
         ba_title: string;
@@ -162,7 +147,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return defer({
       families: [],
       brands: [],
-      equipementiers: [],
       blogArticles: [],
       faqs: faqPromise,
     });
@@ -209,22 +193,6 @@ export default function Homepage() {
           logo: undefined,
         }));
 
-  const equipAll =
-    loaderData.equipementiers.length > 0
-      ? loaderData.equipementiers
-      : EQUIP.map((name) => ({ name, logo: null as string | null }));
-
-  const equipMarquee = equipAll.slice(0, 12).map((e) => ({
-    name: e.name,
-    logoUrl: `${IMG_PROXY_EQUIP}/${
-      e.logo ||
-      e.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "") + ".webp"
-    }`,
-  }));
-
   const blogList =
     loaderData.blogArticles.length > 0
       ? loaderData.blogArticles.map((a) => ({
@@ -239,24 +207,16 @@ export default function Homepage() {
   const faqsPromise = loaderData.faqs;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#f5f7fa] font-v9-body">
       <HomepageJsonLd />
-      <HeroSearchSection />
-
-      <ConseilsDiagnosticSection />
-      <CatalogueSection families={catalogFamilies} />
-      <WhyAutomecanikSection />
-      <Suspense fallback={null}>
-        <BrandsGridSection brands={brandsList} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <StatsSection />
-      </Suspense>
-      <BlogGuidesSection articles={blogList} />
-      <FaqSection faqsPromise={faqsPromise} />
-      <Suspense fallback={null}>
-        <EquipementiersMarquee equipementiers={equipMarquee} />
-      </Suspense>
+      <HeroSectionV9 />
+      <DiagnosticSectionV9 />
+      <GuidesStripV9 />
+      <CatalogueSectionV9 families={catalogFamilies} />
+      <BrandsGridV9 brands={brandsList} />
+      <BlogCarouselV9 articles={blogList} />
+      <FaqSectionV9 faqsPromise={faqsPromise} />
+      <FooterV9 />
     </div>
   );
 }

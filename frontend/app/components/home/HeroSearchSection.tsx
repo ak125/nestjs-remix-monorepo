@@ -46,13 +46,17 @@ export default function HeroSearchSection() {
         />
 
         <div className="relative container mx-auto px-page max-w-[780px] text-center">
-          <h1 className="text-xl sm:text-2xl md:text-[32px] font-extrabold text-white leading-tight mb-1 sm:mb-2 tracking-tight text-balance">
+          <div
+            role="heading"
+            aria-level={1}
+            className="text-xl sm:text-2xl md:text-[32px] font-extrabold text-white leading-tight mb-1 sm:mb-2 tracking-tight text-balance"
+          >
             Pi&egrave;ces d&eacute;tach&eacute;es auto{" "}
             <span className="bg-gradient-to-r from-cta to-cta-lighter bg-clip-text text-transparent">
               pas cher
             </span>{" "}
             <span className="text-white/70">&mdash; Toutes marques</span>
-          </h1>
+          </div>
 
           <div className="bg-white/[0.07] border border-white/[0.12] rounded-2xl overflow-hidden">
             <Tabs

@@ -6,6 +6,8 @@ import {
 } from "@remix-run/react";
 import { User, ShoppingBag, Mail, Key } from "lucide-react";
 
+import { AccountDashboardV9 } from "~/components/account-v9";
+
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -56,6 +58,14 @@ type DashboardStats = {
     pending: number;
     completed: number;
     revenue?: number;
+    recent?: Array<{
+      id: string | number;
+      date: string;
+      totalTtc: number;
+      isPaid: boolean;
+      status: string;
+      info?: string;
+    }>;
   };
   profile: {
     completeness: number;
@@ -197,162 +207,176 @@ export default function UnifiedAccountDashboard() {
     stats.orders.completed > 0 ? { value: 12, isPositive: true } : undefined;
 
   return (
-    <AccountLayout user={user} stats={stats}>
-      <div className="space-y-6">
-        {/* Breadcrumb */}
-        <PublicBreadcrumb items={[{ label: "Mon Compte" }]} />
+    <>
+      {/* V9 Mobile Layout (< md) */}
+      <div className="md:hidden font-v9-body bg-[var(--v9-navy)]">
+        <AccountDashboardV9 user={user} stats={stats} />
+      </div>
 
-        {/* Debug info */}
-        {mode.debug && sessionInfo && (
-          <Alert className="rounded-lg p-4 text-sm" variant="warning">
-            <strong>Debug Mode:</strong> Session info disponible
-            <pre className="mt-2 text-xs overflow-auto">
-              {JSON.stringify({ mode, sessionInfo }, null, 2)}
-            </pre>
-          </Alert>
-        )}
+      {/* Desktop Layout (>= md) */}
+      <div className="hidden md:block">
+        <AccountLayout user={user} stats={stats}>
+          <div className="space-y-6">
+            {/* Breadcrumb */}
+            <PublicBreadcrumb items={[{ label: "Mon Compte" }]} />
 
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Bonjour {user.firstName} 👋
-            </h1>
-            <p className="text-gray-600">
-              {mode.enhanced
-                ? "Dashboard enrichi"
-                : "Vue d'ensemble de votre compte"}
-            </p>
-          </div>
-          {mode.enhanced && (
-            <div className="text-right text-sm text-gray-500">
-              <p>Dernière connexion</p>
-              <p className="font-medium">
-                {user.lastLoginAt
-                  ? new Date(user.lastLoginAt).toLocaleDateString()
-                  : "N/A"}
-              </p>
+            {/* Debug info */}
+            {mode.debug && sessionInfo && (
+              <Alert className="rounded-lg p-4 text-sm" variant="warning">
+                <strong>Debug Mode:</strong> Session info disponible
+                <pre className="mt-2 text-xs overflow-auto">
+                  {JSON.stringify({ mode, sessionInfo }, null, 2)}
+                </pre>
+              </Alert>
+            )}
+
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Bonjour {user.firstName} 👋
+                </h1>
+                <p className="text-gray-600">
+                  {mode.enhanced
+                    ? "Dashboard enrichi"
+                    : "Vue d'ensemble de votre compte"}
+                </p>
+              </div>
+              {mode.enhanced && (
+                <div className="text-right text-sm text-gray-500">
+                  <p>Dernière connexion</p>
+                  <p className="font-medium">
+                    {user.lastLoginAt
+                      ? new Date(user.lastLoginAt).toLocaleDateString()
+                      : "N/A"}
+                  </p>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Mes commandes"
-            value={stats.orders.total}
-            description={`${stats.orders.pending} en cours`}
-            icon={ShoppingBag}
-            variant={stats.orders.pending > 0 ? "warning" : "default"}
-            enhanced={mode.enhanced}
-            progress={
-              mode.enhanced
-                ? (stats.orders.completed / stats.orders.total) * 100
-                : undefined
-            }
-            trend={mode.enhanced ? ordersTrend : undefined}
-          />
+            {/* Stats Cards */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <StatCard
+                title="Mes commandes"
+                value={stats.orders.total}
+                description={`${stats.orders.pending} en cours`}
+                icon={ShoppingBag}
+                variant={stats.orders.pending > 0 ? "warning" : "default"}
+                enhanced={mode.enhanced}
+                progress={
+                  mode.enhanced
+                    ? (stats.orders.completed / stats.orders.total) * 100
+                    : undefined
+                }
+                trend={mode.enhanced ? ordersTrend : undefined}
+              />
 
-          <StatCard
-            title="Messages"
-            value={stats.messages.total}
-            description={`${stats.messages.unread} non lus`}
-            icon={Mail}
-            variant={stats.messages.unread > 0 ? "danger" : "success"}
-            enhanced={mode.enhanced}
-          />
+              <StatCard
+                title="Messages"
+                value={stats.messages.total}
+                description={`${stats.messages.unread} non lus`}
+                icon={Mail}
+                variant={stats.messages.unread > 0 ? "danger" : "success"}
+                enhanced={mode.enhanced}
+              />
 
-          <StatCard
-            title="Profil"
-            value={`${profileCompleteness}%`}
-            description="Completé"
-            icon={User}
-            variant={profileCompleteness >= 80 ? "success" : "warning"}
-            enhanced={mode.enhanced}
-            progress={mode.enhanced ? profileCompleteness : undefined}
-          />
+              <StatCard
+                title="Profil"
+                value={`${profileCompleteness}%`}
+                description="Completé"
+                icon={User}
+                variant={profileCompleteness >= 80 ? "success" : "warning"}
+                enhanced={mode.enhanced}
+                progress={mode.enhanced ? profileCompleteness : undefined}
+              />
 
-          <StatCard
-            title="Sécurité"
-            value={stats.profile.securityScore}
-            description="Score de sécurité"
-            icon={Key}
-            variant={stats.profile.securityScore >= 80 ? "success" : "warning"}
-            enhanced={mode.enhanced}
-            progress={mode.enhanced ? stats.profile.securityScore : undefined}
-          />
-        </div>
+              <StatCard
+                title="Sécurité"
+                value={stats.profile.securityScore}
+                description="Score de sécurité"
+                icon={Key}
+                variant={
+                  stats.profile.securityScore >= 80 ? "success" : "warning"
+                }
+                enhanced={mode.enhanced}
+                progress={
+                  mode.enhanced ? stats.profile.securityScore : undefined
+                }
+              />
+            </div>
 
-        {/* Content Grid */}
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Quick Actions */}
-          <QuickActions stats={stats} enhanced={mode.enhanced} />
+            {/* Content Grid */}
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* Quick Actions */}
+              <QuickActions stats={stats} enhanced={mode.enhanced} />
 
-          {/* Activity Timeline - Enhanced uniquement */}
-          {mode.enhanced && (
-            <ActivityTimeline activities={recentActivity} enhanced={true} />
-          )}
+              {/* Activity Timeline - Enhanced uniquement */}
+              {mode.enhanced && (
+                <ActivityTimeline activities={recentActivity} enhanced={true} />
+              )}
 
-          {/* Mode standard - Navigation simple */}
-          {!mode.enhanced && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Informations compte
-              </h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Email:</span>
-                  <span className="font-medium">{user.email}</span>
+              {/* Mode standard - Navigation simple */}
+              {!mode.enhanced && (
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Informations compte
+                  </h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Email:</span>
+                      <span className="font-medium">{user.email}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Type de compte:</span>
+                      <span className="font-medium">
+                        {user.isPro ? "Professionnel" : "Particulier"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Statut:</span>
+                      <span
+                        className={`font-medium ${user.isActive ? "text-green-600" : "text-red-600"}`}
+                      >
+                        {user.isActive ? "Actif" : "Inactif"}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Type de compte:</span>
-                  <span className="font-medium">
-                    {user.isPro ? "Professionnel" : "Particulier"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Statut:</span>
-                  <span
-                    className={`font-medium ${user.isActive ? "text-green-600" : "text-red-600"}`}
-                  >
-                    {user.isActive ? "Actif" : "Inactif"}
-                  </span>
+              )}
+            </div>
+
+            {/* Footer actions */}
+            <div className="pt-6 border-t border-gray-200">
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <p>
+                  Mode: {mode.enhanced ? "Enrichi" : "Standard"}
+                  {mode.authenticated && " • Auth stricte"}
+                  {mode.debug && " • Debug"}
+                </p>
+                <div className="flex gap-2">
+                  {!mode.enhanced && (
+                    <a
+                      href="/account/dashboard?enhanced=true"
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      → Version enrichie
+                    </a>
+                  )}
+                  {mode.enhanced && (
+                    <a
+                      href="/account/dashboard"
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      → Version standard
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Footer actions */}
-        <div className="pt-6 border-t border-gray-200">
-          <div className="flex items-center justify-between text-sm text-gray-500">
-            <p>
-              Mode: {mode.enhanced ? "Enrichi" : "Standard"}
-              {mode.authenticated && " • Auth stricte"}
-              {mode.debug && " • Debug"}
-            </p>
-            <div className="flex gap-2">
-              {!mode.enhanced && (
-                <a
-                  href="/account/dashboard?enhanced=true"
-                  className="text-blue-600 hover:text-blue-700"
-                >
-                  → Version enrichie
-                </a>
-              )}
-              {mode.enhanced && (
-                <a
-                  href="/account/dashboard"
-                  className="text-blue-600 hover:text-blue-700"
-                >
-                  → Version standard
-                </a>
-              )}
-            </div>
           </div>
-        </div>
+        </AccountLayout>
       </div>
-    </AccountLayout>
+    </>
   );
 }
 
