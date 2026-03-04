@@ -10,16 +10,20 @@ import {
   Res,
   UsePipes,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
   BadRequestException,
   NotFoundException,
   ConflictException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { RagProxyService } from './rag-proxy.service';
 import { RagCleanupService } from './services/rag-cleanup.service';
 import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
 import { RagIngestionService } from './services/rag-ingestion.service';
+import { RagImageManagementService } from './services/rag-image-management.service';
 import type { RagDocInput, IngestDecision } from './types/rag-ingest.types';
 import {
   ChatRequestSchema,
@@ -56,6 +60,7 @@ export class RagProxyController {
     private readonly ragCleanupService: RagCleanupService,
     private readonly ragWebIngestDbService: RagWebIngestDbService,
     private readonly ragIngestionService: RagIngestionService,
+    private readonly ragImageManagementService: RagImageManagementService,
   ) {}
 
   @Post('chat')
@@ -309,6 +314,67 @@ export class RagProxyController {
   @ApiResponse({ status: 200, description: 'Image description prompt' })
   async describeImage(@Param('hash') hash: string) {
     return this.ragProxyService.describeImage(hash);
+  }
+
+  /** Upload a generated image to Supabase Storage. */
+  @Post('admin/images/:hash/upload-generated')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @UseInterceptors(FileInterceptor('file'))
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Upload a generated image for a RAG image hash' })
+  @ApiResponse({ status: 200, description: 'Upload result with public URL' })
+  async uploadGeneratedImage(
+    @Param('hash') hash: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    return this.ragImageManagementService.uploadGeneratedImage(hash, file);
+  }
+
+  /** Assign an uploaded image to a gamme (pg_pic/pg_img/pg_wall or R3 slot). */
+  @Post('admin/images/assign')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Assign an image URL to a gamme target' })
+  @ApiResponse({ status: 200, description: 'Assignment result' })
+  async assignImage(
+    @Body()
+    body: {
+      imageUrl: string;
+      pgAlias: string;
+      target: string;
+      slotId?: string;
+    },
+  ) {
+    return this.ragImageManagementService.assignImage(body);
+  }
+
+  /** Resolve a gamme alias to the exact DB pg_alias (fuzzy via pg_trgm). */
+  @Get('admin/images/resolve-gamme/:alias')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'Resolve a gamme alias to exact DB pg_alias' })
+  @ApiResponse({
+    status: 200,
+    description: 'Resolved alias with similarity score',
+  })
+  async resolveGammeAlias(@Param('alias') alias: string) {
+    const result =
+      await this.ragImageManagementService.resolveGammeAlias(alias);
+    if (!result) {
+      throw new NotFoundException(`Aucune gamme trouvee pour: "${alias}"`);
+    }
+    return result;
+  }
+
+  /** List R3 image slots for a gamme. */
+  @Get('admin/images/r3-slots/:pgAlias')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'List R3 image prompt slots for a gamme' })
+  @ApiResponse({ status: 200, description: 'Array of R3 slots' })
+  async listR3Slots(@Param('pgAlias') pgAlias: string) {
+    return this.ragImageManagementService.listR3Slots(pgAlias);
   }
 
   /** Serve RAG knowledge images (web-images ingested from URLs). */

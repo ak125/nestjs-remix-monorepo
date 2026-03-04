@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { SupabaseStorageService } from '../upload/services/supabase-storage.service';
 import { RagProxyController } from './rag-proxy.controller';
 import { RagProxyService } from './rag-proxy.service';
 
@@ -22,6 +23,9 @@ import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
 import { PdfTextExtractorService } from './services/pdf-text-extractor.service';
 import { PdfRagClassifierService } from './services/pdf-rag-classifier.service';
 import { RagMdMergerService } from './services/rag-md-merger.service';
+
+// Image management service
+import { RagImageManagementService } from './services/rag-image-management.service';
 
 // NOTE: CacheModule is @Global() (registered in app.module.ts) — CacheService
 // is available everywhere without explicit import.
@@ -47,6 +51,9 @@ import { RagMdMergerService } from './services/rag-md-merger.service';
     PdfTextExtractorService,
     PdfRagClassifierService,
     RagMdMergerService,
+    // Image management (SupabaseStorageService registered locally to avoid UploadModule CACHE_MANAGER dep)
+    SupabaseStorageService,
+    RagImageManagementService,
     // Facade (depends on all above)
     RagProxyService,
   ],
@@ -66,6 +73,7 @@ import { RagMdMergerService } from './services/rag-md-merger.service';
     PdfTextExtractorService,
     PdfRagClassifierService,
     RagMdMergerService,
+    RagImageManagementService,
   ],
 })
 export class RagProxyModule {}

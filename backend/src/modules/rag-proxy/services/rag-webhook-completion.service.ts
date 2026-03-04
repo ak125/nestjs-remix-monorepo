@@ -189,6 +189,12 @@ export class RagWebhookCompletionService {
     ext: string;
     size: number;
     url: string;
+    prompt: string | null;
+    gamme: string | null;
+    type: string | null;
+    usage: string | null;
+    style: string | null;
+    priority: string | null;
   }> {
     const knowledgePath =
       this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
@@ -202,7 +208,44 @@ export class RagWebhookCompletionService {
         .map((f) => {
           const ext = path.extname(f).slice(1);
           const size = statSync(path.join(imgDir, f)).size;
-          return { hash: f, ext, size, url: `/api/rag/images/${f}` };
+          const hashOnly = f.replace(/\.[^.]+$/, '');
+          const promptPath = path.join(imgDir, `${hashOnly}.prompt.md`);
+
+          let prompt: string | null = null;
+          let gamme: string | null = null;
+          let type: string | null = null;
+          let usage: string | null = null;
+          let style: string | null = null;
+          let priority: string | null = null;
+
+          try {
+            const raw = readFileSync(promptPath, 'utf-8');
+            const fmMatch = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+            if (fmMatch) {
+              const fm = fmMatch[1];
+              prompt = fmMatch[2].trim();
+              gamme = fm.match(/gamme:\s*"([^"]+)"/)?.[1] ?? null;
+              type = fm.match(/type:\s*"([^"]+)"/)?.[1] ?? null;
+              usage = fm.match(/usage:\s*"([^"]+)"/)?.[1] ?? null;
+              style = fm.match(/style:\s*"([^"]+)"/)?.[1] ?? null;
+              priority = fm.match(/priority:\s*"([^"]+)"/)?.[1] ?? null;
+            }
+          } catch {
+            // No .prompt.md file — fields stay null
+          }
+
+          return {
+            hash: f,
+            ext,
+            size,
+            url: `/api/rag/images/${f}`,
+            prompt,
+            gamme,
+            type,
+            usage,
+            style,
+            priority,
+          };
         })
         .sort((a, b) => b.size - a.size);
     } catch {

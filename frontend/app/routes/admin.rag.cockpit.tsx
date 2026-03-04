@@ -103,6 +103,15 @@ interface GammeScore {
   page_scores: PageScore[];
 }
 
+interface ConseilCoverageItem {
+  pgAlias: string;
+  pg_alias?: string;
+  priority: string;
+  gaps: string[];
+  coveragePercent: number;
+  coverage_percent?: number;
+}
+
 interface FamilySummary {
   name: string;
   count: number;
@@ -132,29 +141,37 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const cookie = request.headers.get("Cookie") || "";
   const headers = { Cookie: cookie };
 
-  const [dashboardRes, qualityRes, timelineRes] = await Promise.allSettled([
-    fetch(
-      getInternalApiUrlFromRequest(
-        "/api/admin/content-refresh/dashboard",
-        request,
+  const [dashboardRes, qualityRes, timelineRes, conseilRes] =
+    await Promise.allSettled([
+      fetch(
+        getInternalApiUrlFromRequest(
+          "/api/admin/content-refresh/dashboard",
+          request,
+        ),
+        { headers },
       ),
-      { headers },
-    ),
-    fetch(
-      getInternalApiUrlFromRequest(
-        "/api/admin/content-refresh/quality-dashboard",
-        request,
+      fetch(
+        getInternalApiUrlFromRequest(
+          "/api/admin/content-refresh/quality-dashboard",
+          request,
+        ),
+        { headers },
       ),
-      { headers },
-    ),
-    fetch(
-      getInternalApiUrlFromRequest(
-        "/api/admin/content-refresh/activity-timeline?limit=50",
-        request,
+      fetch(
+        getInternalApiUrlFromRequest(
+          "/api/admin/content-refresh/activity-timeline?limit=50",
+          request,
+        ),
+        { headers },
       ),
-      { headers },
-    ),
-  ]);
+      fetch(
+        getInternalApiUrlFromRequest(
+          "/api/admin/conseil/coverage?pack=standard&limit=20",
+          request,
+        ),
+        { headers },
+      ),
+    ]);
 
   const dashRaw =
     dashboardRes.status === "fulfilled" && dashboardRes.value.ok
@@ -190,7 +207,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
       : null;
   const timeline: ActivityEvent[] = tlRaw?.data ?? tlRaw ?? [];
 
-  return json({ dashboard, quality, timeline, serverNow: Date.now() });
+  const conseilRaw =
+    conseilRes.status === "fulfilled" && conseilRes.value.ok
+      ? await conseilRes.value.json()
+      : null;
+  const conseilCoverage: ConseilCoverageItem[] =
+    conseilRaw?.data ?? conseilRaw ?? [];
+
+  return json({
+    dashboard,
+    quality,
+    timeline,
+    conseilCoverage,
+    serverNow: Date.now(),
+  });
 }
 
 // ── Mappings ──
@@ -797,7 +827,7 @@ function FamilyGroup({
 // ── Main Component ──
 
 export default function AdminRagCockpit() {
-  const { dashboard, quality, timeline, serverNow } =
+  const { dashboard, quality, timeline, conseilCoverage, serverNow } =
     useLoaderData<typeof loader>();
   const refreshFetcher = useFetcher<typeof loader>();
 
@@ -810,12 +840,35 @@ export default function AdminRagCockpit() {
     "composite" | "quality" | "business" | "products"
   >("composite");
 
+  // Conseil coverage
+  const [backfillSubmitting, setBackfillSubmitting] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<{
+    updated?: number;
+    error?: string;
+  } | null>(null);
+
+  // Buying guide enrichment
+  const [enrichPgIds, setEnrichPgIds] = useState("");
+  const [enrichDryRun, setEnrichDryRun] = useState(true);
+  const [enrichSubmitting, setEnrichSubmitting] = useState(false);
+  const [enrichResult, setEnrichResult] = useState<{
+    sectionsUpdated?: number;
+    avgConfidence?: number;
+    sectionsSkipped?: number;
+    error?: string;
+  } | null>(null);
+
   useEffect(() => {
     setNow(Date.now());
   }, [timeline]);
 
   // Use refreshed data if available
-  const d = refreshFetcher.data ?? { dashboard, quality, timeline };
+  const d = refreshFetcher.data ?? {
+    dashboard,
+    quality,
+    timeline,
+    conseilCoverage,
+  };
   const counts = d.dashboard.counts;
   const qual = d.quality;
   const events = d.timeline;
@@ -1477,6 +1530,281 @@ export default function AdminRagCockpit() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* ── Conseil Coverage ── */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <FilePen className="h-4 w-4 text-teal-600" />
+            Conseil Coverage
+          </CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={backfillSubmitting}
+            className="gap-1.5"
+            onClick={async () => {
+              setBackfillSubmitting(true);
+              setBackfillResult(null);
+              try {
+                const res = await fetch("/api/admin/conseil/backfill-scores", {
+                  method: "POST",
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                  setBackfillResult({
+                    error: data.message || String(res.status),
+                  });
+                } else {
+                  setBackfillResult({
+                    updated: data.updated ?? data.count ?? 0,
+                  });
+                  refreshFetcher.load("/admin/rag/cockpit");
+                }
+              } catch (err) {
+                setBackfillResult({
+                  error: err instanceof Error ? err.message : String(err),
+                });
+              } finally {
+                setBackfillSubmitting(false);
+              }
+            }}
+          >
+            {backfillSubmitting ? (
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <BarChart3 className="h-3.5 w-3.5" />
+            )}
+            Backfill scores
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {backfillResult && (
+            <div
+              className={`mb-3 rounded-md border p-2 text-xs ${
+                backfillResult.error
+                  ? "bg-red-50 border-red-200 text-red-800"
+                  : "bg-green-50 border-green-200 text-green-800"
+              }`}
+            >
+              {backfillResult.error
+                ? backfillResult.error
+                : `${backfillResult.updated} scores mis a jour`}
+            </div>
+          )}
+          {(d.conseilCoverage as ConseilCoverageItem[]).length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aucune donnee de coverage conseil disponible
+            </p>
+          ) : (
+            <div className="rounded-lg border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/50">
+                    <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                      Gamme
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                      Priorite
+                    </th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-muted-foreground">
+                      Gaps
+                    </th>
+                    <th className="px-3 py-2 text-right text-xs font-medium text-muted-foreground">
+                      Coverage
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {(d.conseilCoverage as ConseilCoverageItem[]).map((item) => (
+                    <tr
+                      key={item.pgAlias || item.pg_alias}
+                      className="hover:bg-muted/30"
+                    >
+                      <td className="px-3 py-2 font-mono text-xs">
+                        {item.pgAlias || item.pg_alias}
+                      </td>
+                      <td className="px-3 py-2">
+                        <StatusBadge
+                          status={PRIORITY_MAP[item.priority] || "NEUTRAL"}
+                          label={
+                            PRIORITY_LABELS[item.priority] || item.priority
+                          }
+                          size="sm"
+                        />
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex flex-wrap gap-1">
+                          {(item.gaps || []).slice(0, 3).map((g) => (
+                            <Badge
+                              key={g}
+                              variant="outline"
+                              className="text-[10px] bg-amber-50 text-amber-700"
+                            >
+                              {g}
+                            </Badge>
+                          ))}
+                          {(item.gaps || []).length > 3 && (
+                            <Badge variant="outline" className="text-[10px]">
+                              +{item.gaps.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-3 py-2 text-right">
+                        <span
+                          className={`font-mono text-xs font-medium ${
+                            (item.coveragePercent ??
+                              item.coverage_percent ??
+                              0) >= 70
+                              ? "text-green-700"
+                              : (item.coveragePercent ??
+                                    item.coverage_percent ??
+                                    0) >= 40
+                                ? "text-amber-700"
+                                : "text-red-700"
+                          }`}
+                        >
+                          {item.coveragePercent ?? item.coverage_percent ?? 0}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ── Buying Guide Enrichment ── */}
+      <Card className="border-indigo-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <Wrench className="h-4 w-4 text-indigo-600" />
+            Buying Guide Enrichment
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-xs text-muted-foreground">
+            Enrichit les guides d&apos;achat pour les gammes specifiees via le
+            corpus RAG.
+          </p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div className="flex-1 space-y-1.5">
+              <label htmlFor="enrichPgIds" className="text-sm font-medium">
+                IDs des gammes (separes par virgule)
+              </label>
+              <Input
+                id="enrichPgIds"
+                placeholder="123, 456, 789"
+                value={enrichPgIds}
+                onChange={(e) => setEnrichPgIds(e.target.value)}
+                disabled={enrichSubmitting}
+              />
+            </div>
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={enrichDryRun}
+                onChange={(e) => setEnrichDryRun(e.target.checked)}
+                disabled={enrichSubmitting}
+                className="rounded border-gray-300"
+              />
+              Dry-run
+            </label>
+            <Button
+              disabled={enrichSubmitting || !enrichPgIds.trim()}
+              className="gap-1.5 bg-indigo-600 hover:bg-indigo-700"
+              onClick={async () => {
+                const pgIds = enrichPgIds
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean);
+                if (pgIds.length === 0) return;
+                setEnrichSubmitting(true);
+                setEnrichResult(null);
+                try {
+                  const res = await fetch("/api/admin/buying-guides/enrich", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ pgIds, dryRun: enrichDryRun }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) {
+                    setEnrichResult({
+                      error: `Erreur ${res.status}: ${data.message || JSON.stringify(data)}`,
+                    });
+                  } else {
+                    setEnrichResult({
+                      sectionsUpdated:
+                        data.sectionsUpdated ?? data.updated ?? 0,
+                      avgConfidence: data.avgConfidence,
+                      sectionsSkipped:
+                        data.sectionsSkipped ?? data.skipped ?? 0,
+                    });
+                  }
+                } catch (err) {
+                  setEnrichResult({
+                    error: `Erreur: ${err instanceof Error ? err.message : String(err)}`,
+                  });
+                } finally {
+                  setEnrichSubmitting(false);
+                }
+              }}
+            >
+              {enrichSubmitting ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Wrench className="h-4 w-4" />
+              )}
+              {enrichSubmitting ? "En cours..." : "Enrichir"}
+            </Button>
+          </div>
+
+          {enrichResult && (
+            <div
+              className={`rounded-md border p-3 text-sm ${
+                enrichResult.error
+                  ? "bg-red-50 border-red-200 text-red-800"
+                  : "bg-indigo-50 border-indigo-200 text-indigo-900"
+              }`}
+            >
+              {enrichResult.error ? (
+                <p>{enrichResult.error}</p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  <Badge
+                    variant="secondary"
+                    className="bg-indigo-100 text-indigo-700"
+                  >
+                    {enrichResult.sectionsUpdated} sections mises a jour
+                  </Badge>
+                  {enrichResult.avgConfidence !== undefined && (
+                    <Badge variant="outline">
+                      Confidence moy:{" "}
+                      {(enrichResult.avgConfidence * 100).toFixed(0)}%
+                    </Badge>
+                  )}
+                  {(enrichResult.sectionsSkipped ?? 0) > 0 && (
+                    <Badge variant="outline" className="text-muted-foreground">
+                      {enrichResult.sectionsSkipped} ignorees
+                    </Badge>
+                  )}
+                  {enrichDryRun && (
+                    <Badge
+                      variant="outline"
+                      className="bg-amber-50 text-amber-700"
+                    >
+                      Dry-run (aucune modification)
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </DashboardShell>
   );
 }

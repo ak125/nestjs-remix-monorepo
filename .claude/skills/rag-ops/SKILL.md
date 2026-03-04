@@ -465,14 +465,26 @@ Generer une description selon les **REGLES ANTI-COPYRIGHT** :
 - Les textures et materiaux visibles
 - Les proportions et la composition
 
-**Format :** paragraphe descriptif de 150-250 mots en francais, utilisable comme prompt pour un generateur d'image. 100% libre de droits.
+**Format :** paragraphe descriptif de 150-300 mots en francais (300 pour composites/montages), utilisable comme prompt pour un generateur d'image (Midjourney, DALL-E, ComfyUI). 100% libre de droits.
 
 ### Etape 3 — Classer l'image
 
 Identifier :
 - **Gamme associee** : quelle gamme piece auto (pgAlias) ?
-- **Type** : `hero` | `symptom` | `schema` | `fixation` | `product` | `diagnostic`
+- **Type** : `hero` | `symptom` | `schema` | `fixation` | `product` | `diagnostic` | `montage`
+- **Usage** : `page-gamme` | `blog` | `conseil` | `guide-achat`
+- **Style** : `photo-realiste` | `3d-render` | `schema-technique` | `illustration` | `composite`
 - **Priorite** : `haute` (manque image sur la page) | `moyenne` | `basse`
+
+**Structure description adaptee au type :**
+
+| Type | Points cles a couvrir |
+|------|----------------------|
+| `product` / `hero` | Piece, forme, materiaux, finition, angle de vue, eclairage studio, fond |
+| `schema` / `illustration` | Mecanisme illustre, elements geometriques, annotations generiques, palette, style trait |
+| `diagnostic` / `symptom` | Piece, defaut/usure/corrosion, localisation, indicateurs visuels, contraste sain vs abime |
+| `montage` / `composite` | Layout, contenu chaque vignette, annotations cercles/fleches, legendes generiques |
+| `fixation` | Nombre pieces, type, materiaux, disposition, symetrie |
 
 ### Etape 4 — Sauvegarder la description
 
@@ -483,12 +495,14 @@ Ecrire dans `/opt/automecanik/rag/knowledge/_raw/web-images/{hash}.prompt.md` :
 hash: "{hash}"
 gamme: "{pgAlias}"
 type: "{type}"
+usage: "{usage}"
+style: "{style}"
 priority: "{priority}"
 described_at: "{YYYY-MM-DD}"
 described_by: "claude-code"
 ---
 
-{description 150-250 mots}
+{description 150-300 mots, couvrant les points cles du type}
 ```
 
 ### Etape 5 — Batch mode
