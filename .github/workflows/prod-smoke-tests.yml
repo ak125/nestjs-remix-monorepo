@@ -10,6 +10,7 @@ env:
   CADDY_CURL: curl -sk --max-time 15 --resolve www.automecanik.com:443:127.0.0.1
   IMGPROXY_TEST_IMAGE: https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/rack-images/260/6216001.JPG
   TEST_R1_URL: /pieces/filtre-a-huile-7.html
+  TEST_R2_URL: /pieces/capteur-temperature-d-air-admission-3939/renault-140/modus-140053/1-5-dci-18314.html
 
 jobs:
   smoke-tests:
@@ -478,7 +479,7 @@ jobs:
           if [ "$WOFF2_COUNT" -ge 2 ]; then
             echo "✅ woff2 preload: $WOFF2_COUNT fonts"
           else
-            echo "⚠️ Only $WOFF2_COUNT woff2 preloads (expected 2: inter + montserrat)"
+            echo "⚠️ Only $WOFF2_COUNT woff2 preloads (expected 2: outfit + dm-sans)"
             FAILED=1
           fi
 
@@ -531,6 +532,79 @@ jobs:
 
           if [ "$FAILED" = "1" ]; then exit 1; fi
 
+      - name: 🚀 PageSpeed assertions
+        id: pagespeed-check
+        continue-on-error: true
+        run: |
+          FAILED=0
+
+          # --- R1 Page ---
+          R1_BODY=$(docker exec $CONTAINER wget -qO- "http://localhost:3000$TEST_R1_URL" 2>/dev/null)
+
+          # fetchPriority="high" on hero image
+          if echo "$R1_BODY" | grep -q 'fetchpriority="high"'; then
+            echo "✅ R1: fetchPriority=high present"
+          else
+            echo "⚠️ R1: fetchPriority=high missing on hero image"
+            FAILED=1
+          fi
+
+          # <picture> with AVIF source
+          if echo "$R1_BODY" | grep -q 'type="image/avif"'; then
+            echo "✅ R1: AVIF source in <picture>"
+          else
+            echo "⚠️ R1: No AVIF source found"
+            FAILED=1
+          fi
+
+          # <picture> with WebP source
+          if echo "$R1_BODY" | grep -q 'type="image/webp"'; then
+            echo "✅ R1: WebP source in <picture>"
+          else
+            echo "⚠️ R1: No WebP source found"
+            FAILED=1
+          fi
+
+          # Outfit font preloaded (V9 design system)
+          if echo "$R1_BODY" | grep -q 'href="/fonts/outfit-latin.woff2"'; then
+            echo "✅ R1: Outfit font preloaded"
+          else
+            echo "⚠️ R1: Outfit font not preloaded"
+            FAILED=1
+          fi
+
+          # Inter font NOT preloaded (removed for perf)
+          if echo "$R1_BODY" | grep -q 'rel="preload".*href="/fonts/inter-latin.woff2"'; then
+            echo "⚠️ R1: Inter font still preloaded (should be removed)"
+            FAILED=1
+          else
+            echo "✅ R1: Inter font not preloaded (good)"
+          fi
+
+          # --- R2 Page ---
+          R2_BODY=$(docker exec $CONTAINER wget -qO- "http://localhost:3000$TEST_R2_URL" 2>/dev/null)
+          R2_SIZE=$(echo "$R2_BODY" | wc -c)
+          if [ "$R2_SIZE" -gt 10000 ]; then
+            echo "✅ R2: Page renders (${R2_SIZE}B)"
+          else
+            echo "⚠️ R2: Page too small (${R2_SIZE}B)"
+            FAILED=1
+          fi
+
+          # R2 TTFB
+          R2_START=$(date +%s%N)
+          docker exec $CONTAINER wget -qO /dev/null "http://localhost:3000$TEST_R2_URL" 2>/dev/null
+          R2_END=$(date +%s%N)
+          R2_MS=$(( (R2_END - R2_START) / 1000000 ))
+          if [ "$R2_MS" -lt 1000 ]; then
+            echo "✅ R2: Server response ${R2_MS}ms (< 1s)"
+          else
+            echo "⚠️ R2: Server response ${R2_MS}ms (> 1s)"
+            FAILED=1
+          fi
+
+          if [ "$FAILED" = "1" ]; then exit 1; fi
+
       - name: 🐳 Containers status
         if: always()
         run: |
@@ -553,6 +627,7 @@ jobs:
           echo "| Security headers | ${{ steps.security-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| LCP proxy | ${{ steps.lcp-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| CSP header | ${{ steps.csp-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| PageSpeed | ${{ steps.pagespeed-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "_Run: $(date -u '+%Y-%m-%d %H:%M UTC')_" >> $GITHUB_STEP_SUMMARY
 
