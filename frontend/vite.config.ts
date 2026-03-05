@@ -57,6 +57,10 @@ export default defineConfig({
 					if (id.includes('/cmdk/')) {
 						return 'cmdk-vendor';
 					}
+					// Lucide icons — deduplicate across routes
+					if (id.includes('/lucide-react/')) {
+						return 'lucide-vendor';
+					}
 				},
 			},
 		},
@@ -87,7 +91,7 @@ export default defineConfig({
 						"**/*.test.{js,jsx,ts,tsx}",
 						"**/__*.*",
 						// Exclure admin, ui-kit et design-system en production
-						...(isProduction ? ["**/admin.*", "**/admin/**", "**/ui-kit.*", "**/ui-kit/**", "**/design-system.*"] : []),
+						...(isProduction ? ["**/admin.!(video-hub)*", "**/ui-kit.*", "**/ui-kit/**", "**/design-system.*"] : []),
 						// This is for server-side utilities you want to colocate next to
 						// your routes without making an additional directory.
 						// If you need a route that includes "server" or "client" in the

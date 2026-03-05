@@ -369,12 +369,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         motorisationsSchema,
         proofData,
 
-        // === DEFERRED (valeurs sync, pas de streaming) — ~100-250KB ===
-        motorisations: pageData.motorisations ?? null,
-        equipementiers: pageData.equipementiers ?? null,
-        catalogueMameFamille: pageData.catalogueMameFamille ?? null,
-        seoSwitches: pageData.seoSwitches ?? null,
-        guide: pageData.guide ?? null,
+        // === DEFERRED (real Promises → Remix streaming via Suspense) — ~100-250KB ===
+        motorisations: Promise.resolve(pageData.motorisations ?? null),
+        equipementiers: Promise.resolve(pageData.equipementiers ?? null),
+        catalogueMameFamille: Promise.resolve(
+          pageData.catalogueMameFamille ?? null,
+        ),
+        seoSwitches: Promise.resolve(pageData.seoSwitches ?? null),
+        guide: Promise.resolve(pageData.guide ?? null),
       },
       { headers: responseHeaders },
     );

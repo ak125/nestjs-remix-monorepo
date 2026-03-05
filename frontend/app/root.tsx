@@ -75,22 +75,8 @@ export const links: LinksFunction = () => [
   // 🚀 LCP: Preload CSS critique
   { rel: "preload", href: stylesheet, as: "style" },
 
-  // 🚀 LCP Phase 2: Preload fonts critiques (same-origin, pas de cross-origin)
-  {
-    rel: "preload",
-    href: "/fonts/inter-latin.woff2",
-    as: "font",
-    type: "font/woff2",
-    crossOrigin: "anonymous" as const,
-  },
-  {
-    rel: "preload",
-    href: "/fonts/montserrat-latin.woff2",
-    as: "font",
-    type: "font/woff2",
-    crossOrigin: "anonymous" as const,
-  },
-  // 🚀 V9 fonts: Outfit (headings) + DM Sans (body) — mobile layout
+  // 🚀 V9 fonts: Outfit (headings) + DM Sans (body) — above-fold critical
+  // Inter + Montserrat: font-display:swap in @font-face, no preload needed
   {
     rel: "preload",
     href: "/fonts/outfit-latin.woff2",

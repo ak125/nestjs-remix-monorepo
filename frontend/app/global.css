@@ -361,6 +361,7 @@
 @layer utilities {
   .animate-shimmer {
     animation: shimmer 3s ease-in-out infinite;
+    will-change: transform;
   }
 
   .animate-marquee {
