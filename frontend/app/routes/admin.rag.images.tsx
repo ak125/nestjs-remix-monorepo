@@ -99,6 +99,7 @@ export default function AdminRagImages() {
   const [copied, setCopied] = useState(false);
   const [filterGamme, setFilterGamme] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
+  const [filterPrompt, setFilterPrompt] = useState<string>("all");
 
   // Upload state
   const [uploading, setUploading] = useState(false);
@@ -139,6 +140,14 @@ export default function AdminRagImages() {
     };
   }, [selected?.gamme]);
 
+  const gammeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const img of images) {
+      const g = img.gamme || "sans-gamme";
+      counts[g] = (counts[g] || 0) + 1;
+    }
+    return counts;
+  }, [images]);
   const gammes = useMemo(
     () => [...new Set(images.map((i) => i.gamme).filter(Boolean))] as string[],
     [images],
@@ -152,9 +161,11 @@ export default function AdminRagImages() {
     return images.filter((img) => {
       if (filterGamme !== "all" && img.gamme !== filterGamme) return false;
       if (filterType !== "all" && img.type !== filterType) return false;
+      if (filterPrompt === "with" && !img.prompt) return false;
+      if (filterPrompt === "without" && img.prompt) return false;
       return true;
     });
-  }, [images, filterGamme, filterType]);
+  }, [images, filterGamme, filterType, filterPrompt]);
 
   const withPrompt = images.filter((i) => i.prompt).length;
 
@@ -244,7 +255,7 @@ export default function AdminRagImages() {
       if (!res.ok) {
         setAssignResult(`Erreur: ${data.message || "echec"}`);
       } else {
-        setAssignResult(`Assigne a ${selected.gamme} → ${data.target}`);
+        setAssignResult(`Assigne a ${selected?.gamme} → ${data.target}`);
       }
     } catch {
       setAssignResult("Erreur reseau");
@@ -284,10 +295,12 @@ export default function AdminRagImages() {
             <SelectValue placeholder="Gamme" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Toutes les gammes</SelectItem>
+            <SelectItem value="all">
+              Toutes les gammes ({images.length})
+            </SelectItem>
             {gammes.sort().map((g) => (
               <SelectItem key={g} value={g}>
-                {g}
+                {g} ({gammeCounts[g] || 0})
               </SelectItem>
             ))}
           </SelectContent>
@@ -305,13 +318,28 @@ export default function AdminRagImages() {
             ))}
           </SelectContent>
         </Select>
-        {(filterGamme !== "all" || filterType !== "all") && (
+        <Select value={filterPrompt} onValueChange={setFilterPrompt}>
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Prompt" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous ({images.length})</SelectItem>
+            <SelectItem value="with">Avec prompt ({withPrompt})</SelectItem>
+            <SelectItem value="without">
+              Sans prompt ({images.length - withPrompt})
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        {(filterGamme !== "all" ||
+          filterType !== "all" ||
+          filterPrompt !== "all") && (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
               setFilterGamme("all");
               setFilterType("all");
+              setFilterPrompt("all");
             }}
           >
             Effacer filtres
