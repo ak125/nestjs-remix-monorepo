@@ -165,7 +165,7 @@ export const Navbar = memo(function Navbar() {
           <div className="lg:hidden flex items-center gap-0.5 flex-shrink-0">
             <Link
               to="/blog-pieces-auto"
-              className="no-style no-visited w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+              className="no-style no-visited min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors"
               aria-label="Blog"
             >
               <BookOpen className="w-[17px] h-[17px]" />
@@ -173,7 +173,7 @@ export const Navbar = memo(function Navbar() {
             {user ? (
               <Link
                 to="/account/dashboard"
-                className="no-style no-visited w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                className="no-style no-visited min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors"
                 aria-label="Mon compte"
               >
                 <User className="w-[17px] h-[17px]" />
@@ -182,7 +182,7 @@ export const Navbar = memo(function Navbar() {
               <Link
                 to="/login"
                 rel="nofollow"
-                className="no-style no-visited w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+                className="no-style no-visited min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors"
                 aria-label="Connexion"
               >
                 <User className="w-[17px] h-[17px]" />
@@ -190,7 +190,7 @@ export const Navbar = memo(function Navbar() {
             )}
             <button
               onClick={toggleCart}
-              className="relative w-10 h-10 rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer"
+              className="relative min-w-[44px] min-h-[44px] rounded-lg flex items-center justify-center text-slate-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer"
               aria-label="Panier"
               aria-expanded={isCartOpen}
             >

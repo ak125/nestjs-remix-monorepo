@@ -14,9 +14,9 @@ import {
   IMG_PROXY_LOGOS,
   MARQUES,
 } from "~/components/home/constants";
+import WhyAutomecanikSection from "~/components/home/WhyAutomecanikSection";
 import {
   HeroSectionV9,
-  DiagnosticSectionV9,
   GuidesStripV9,
   CatalogueSectionV9,
   BrandsGridV9,
@@ -24,7 +24,6 @@ import {
   FaqSectionV9,
   FooterV9,
 } from "~/components/home-v9";
-
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -121,7 +120,12 @@ export async function loader({ request }: LoaderFunctionArgs) {
         mf_name: string;
         mf_pic: string;
         mf_description?: string;
-        gammes: Array<{ pg_id: number; pg_alias: string; pg_name: string }>;
+        gammes: Array<{
+          pg_id: number;
+          pg_alias: string;
+          pg_name: string;
+          pg_img?: string;
+        }>;
       }>,
       brands: (rpcData?.brands || []).map((b: any) => ({
         id: b.marque_id as number,
@@ -183,6 +187,14 @@ export default function Homepage() {
           gammes: c.sub.map((s) => ({ name: s, link: "#" })),
         }));
 
+  // Lookup gamme alias → image pour enrichir les articles blog
+  const gammeImgMap = new Map<string, string>();
+  for (const f of loaderData.families) {
+    for (const g of f.gammes) {
+      if (g.pg_img) gammeImgMap.set(g.pg_alias, g.pg_img);
+    }
+  }
+
   const brandsList =
     loaderData.brands.length > 0
       ? loaderData.brands
@@ -201,18 +213,22 @@ export default function Homepage() {
           d: a.ba_descrip || a.ba_preview || "",
           tag: a.pg_name || a.ba_category || "Guide",
           link: `/blog-pieces-auto/conseils/${a.pg_alias || a.ba_alias}`,
+          img:
+            a.pg_alias && gammeImgMap.get(a.pg_alias)
+              ? `/img/uploads/articles/gammes-produits/catalogue/${gammeImgMap.get(a.pg_alias)}`
+              : undefined,
         }))
       : BLOG.map((b) => ({ ...b, link: "#" }));
 
   const faqsPromise = loaderData.faqs;
 
   return (
-    <div className="min-h-screen bg-[#f5f7fa] font-v9-body">
+    <div className="min-h-screen bg-[#f5f7fa] font-v9-body pb-20 lg:pb-0">
       <HomepageJsonLd />
       <HeroSectionV9 />
-      <DiagnosticSectionV9 />
       <GuidesStripV9 />
       <CatalogueSectionV9 families={catalogFamilies} />
+      <WhyAutomecanikSection />
       <BrandsGridV9 brands={brandsList} />
       <BlogCarouselV9 articles={blogList} />
       <FaqSectionV9 faqsPromise={faqsPromise} />

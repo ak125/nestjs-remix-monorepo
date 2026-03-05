@@ -429,6 +429,7 @@ export interface BlogArticle {
   d: string;
   tag: string;
   link: string;
+  img?: string;
 }
 
 export interface EquipItem {

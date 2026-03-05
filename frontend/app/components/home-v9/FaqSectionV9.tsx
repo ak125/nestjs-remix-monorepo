@@ -33,7 +33,7 @@ function FaqAccordionV9({ items }: { items: Array<{ q: string; a: string }> }) {
           <AccordionItem
             key={i}
             value={`faq-${i}`}
-            className="bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all duration-200 hover:border-slate-300 data-[state=open]:border-blue-200 data-[state=open]:shadow-lg data-[state=open]:shadow-blue-500/[0.05]"
+            className="group bg-white border border-slate-200 rounded-2xl overflow-hidden transition-all duration-200 hover:border-slate-300 data-[state=open]:border-blue-200 data-[state=open]:shadow-lg data-[state=open]:shadow-blue-500/[0.05]"
           >
             <AccordionTrigger className="px-4 py-4 text-[13px] font-semibold text-slate-800 hover:no-underline [&>svg]:sr-only">
               <div className="flex items-center gap-3 w-full text-left">

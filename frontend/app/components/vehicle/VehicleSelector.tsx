@@ -376,11 +376,11 @@ const VehicleSelector = memo(function VehicleSelector({
   if (mode === "compact") {
     return (
       <div
-        className={`vehicle-selector-compact flex gap-4 items-center ${containerClass}`}
+        className={`vehicle-selector-compact grid grid-cols-2 gap-2.5 sm:flex sm:gap-3 sm:items-center ${containerClass}`}
         data-nosnippet
         data-noindex
       >
-        <Car className="w-5 h-5 text-blue-600" />
+        <Car className="hidden sm:block w-5 h-5 text-cta flex-shrink-0" />
 
         {/* Marque */}
         <select
@@ -389,7 +389,7 @@ const VehicleSelector = memo(function VehicleSelector({
           onChange={(e) => handleBrandChange(Number(e.target.value))}
           onFocus={() => !brands.length && !loadingBrands && loadBrands()}
           disabled={loadingBrands}
-          className="flex-1 p-2 border rounded text-base"
+          className="sm:flex-1 py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
           aria-label="Sélectionner la marque"
         >
           <option value="">Marque</option>
@@ -405,7 +405,7 @@ const VehicleSelector = memo(function VehicleSelector({
           value={selectedYear || ""}
           onChange={(e) => handleYearChange(Number(e.target.value))}
           disabled={!selectedBrand || loadingYears}
-          className="p-2 border rounded text-base"
+          className="sm:flex-1 py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
           aria-label="Sélectionner l'année"
         >
           <option value="">Année</option>
@@ -421,7 +421,7 @@ const VehicleSelector = memo(function VehicleSelector({
           value={selectedModel?.modele_id || ""}
           onChange={(e) => handleModelChange(Number(e.target.value))}
           disabled={!selectedYear || loadingModels}
-          className="flex-1 p-2 border rounded text-base"
+          className="sm:flex-1 py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
           aria-label="Sélectionner le modèle"
         >
           <option value="">Modèle</option>
@@ -442,7 +442,7 @@ const VehicleSelector = memo(function VehicleSelector({
             if (selectedType) handleTypeSelect(selectedType);
           }}
           disabled={!selectedModel || loadingTypes}
-          className="p-2 border rounded text-base"
+          className="sm:flex-1 py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
           aria-label="Sélectionner la motorisation"
         >
           <option value="">Motorisation</option>
@@ -457,6 +457,7 @@ const VehicleSelector = memo(function VehicleSelector({
           onClick={handleReset}
           variant="outline"
           size="sm"
+          className="col-span-2 sm:col-span-1 rounded-xl"
           aria-label="Réinitialiser la sélection de véhicule"
         >
           <RotateCcw className="w-4 h-4" />

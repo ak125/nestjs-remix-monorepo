@@ -32,7 +32,7 @@ export default function BlogCarouselV9({
           </h2>
           <Link
             to="/blog-pieces-auto"
-            className="text-[12px] font-semibold text-blue-600 flex items-center gap-1 hover:gap-2 transition-all"
+            className="no-style no-visited text-[12px] font-semibold text-blue-600 flex items-center gap-1 hover:gap-2 transition-all"
           >
             Voir tous <ArrowRight size={12} />
           </Link>
@@ -45,17 +45,28 @@ export default function BlogCarouselV9({
               <Link
                 key={b.t}
                 to={b.link || "#"}
-                className="flex-shrink-0 w-[250px] lg:w-auto"
+                className="no-style no-visited flex-shrink-0 w-[250px] lg:w-auto"
               >
                 <Card className="rounded-2xl border overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 group h-full">
-                  {/* Gradient header */}
+                  {/* Image or gradient header */}
                   <div
-                    className={`h-24 lg:h-36 bg-gradient-to-br ${gradient} flex items-center justify-center relative`}
+                    className={`h-24 lg:h-36 relative overflow-hidden ${b.img ? "bg-slate-100" : `bg-gradient-to-br ${gradient}`}`}
                   >
-                    <Icon
-                      size={36}
-                      className="text-white/30 group-hover:text-white/50 group-hover:scale-110 transition-all lg:!w-12 lg:!h-12"
-                    />
+                    {b.img ? (
+                      <img
+                        src={b.img}
+                        alt={b.t}
+                        width={400}
+                        height={192}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <Icon
+                        size={36}
+                        className="absolute inset-0 m-auto text-white/30 group-hover:text-white/50 group-hover:scale-110 transition-all lg:!w-12 lg:!h-12"
+                      />
+                    )}
                     <span className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur rounded-lg text-[10px] font-bold text-slate-700 shadow-sm">
                       {b.tag}
                     </span>

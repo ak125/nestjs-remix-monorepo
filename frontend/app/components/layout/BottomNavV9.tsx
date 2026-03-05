@@ -47,10 +47,10 @@ export default function BottomNavV9() {
             to={n.href}
             prefetch="intent"
             aria-current={isActive ? "page" : undefined}
-            className={`no-style no-visited flex-1 flex flex-col items-center gap-0.5 py-2 text-[9px] font-semibold transition-all relative ${isActive ? "text-blue-600" : "text-slate-400"}`}
+            className={`no-style no-visited flex-1 flex flex-col items-center gap-0.5 py-2 text-[10px] font-semibold transition-all relative ${isActive ? "text-cta" : "text-slate-400"}`}
           >
             {isActive && (
-              <span className="absolute top-0 left-[20%] w-[60%] h-[2.5px] bg-gradient-to-r from-blue-500 to-blue-600 rounded-b" />
+              <span className="absolute top-0 left-[20%] w-[60%] h-[2.5px] bg-gradient-to-r from-cta to-cta-hover rounded-b" />
             )}
             <Icon size={20} strokeWidth={isActive ? 2.5 : 1.5} />
             {n.label}

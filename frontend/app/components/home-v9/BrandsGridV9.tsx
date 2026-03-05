@@ -1,67 +1,44 @@
 import { Link } from "@remix-run/react";
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
 import { type BrandItem } from "~/components/home/constants";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+import { Section, SectionHeader } from "~/components/layout";
+import { Card, CardContent } from "~/components/ui/card";
 
 export default function BrandsGridV9({ brands }: { brands: BrandItem[] }) {
-  const [showAll, setShowAll] = useState(false);
-
   return (
-    <section className="py-7 lg:py-10 bg-slate-50">
-      <div className="px-5 lg:px-8 max-w-[1280px] mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[20px] lg:text-[24px] font-bold text-slate-900 tracking-tight font-v9-heading">
-            Par constructeur
-          </h2>
-          <Badge
-            variant="outline"
-            className="text-[12px] text-blue-600 bg-blue-50 border-blue-100 font-semibold"
-          >
-            {brands.length} marques auto
-          </Badge>
-        </div>
-
-        <div className="grid grid-cols-4 lg:grid-cols-6 gap-2.5 lg:gap-3">
-          {brands.map((b, idx) => (
-            <Link
-              key={b.name}
-              to={`/constructeurs/${b.slug}-${b.id}.html`}
-              className={`bg-white border border-slate-200 rounded-xl py-3.5 px-2 text-center cursor-pointer hover:bg-blue-50 hover:border-blue-200 hover:shadow-md hover:-translate-y-0.5 transition-all group block ${idx >= 16 && !showAll ? "hidden lg:block" : ""}`}
-            >
-              <div className="w-12 h-12 lg:w-14 lg:h-14 mx-auto mb-1.5 bg-slate-100 group-hover:bg-blue-100 rounded-xl flex items-center justify-center overflow-hidden transition-all">
-                {b.logo ? (
-                  <img
-                    src={b.logo}
-                    alt={b.name}
-                    className="w-9 h-9 lg:w-11 lg:h-11 object-contain"
-                    loading="lazy"
-                  />
-                ) : (
-                  <span className="text-[14px] font-extrabold text-slate-500 group-hover:text-blue-600 transition-all font-v9-heading">
-                    {b.name.slice(0, 2).toUpperCase()}
-                  </span>
-                )}
-              </div>
-              <div className="text-[11px] font-semibold text-slate-500 group-hover:text-blue-700 transition-colors truncate">
-                {b.name}
-              </div>
-            </Link>
-          ))}
-        </div>
-
-        {!showAll && brands.length > 16 && (
-          <Button
-            variant="outline"
-            onClick={() => setShowAll(true)}
-            className="w-full mt-3.5 py-3 h-auto rounded-xl text-[13px] font-semibold text-slate-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 lg:hidden"
-          >
-            Voir les {brands.length} marques{" "}
-            <ChevronDown size={14} className="ml-1" />
-          </Button>
-        )}
+    <Section variant="slate" spacing="md" id="marques">
+      <SectionHeader
+        title="Par constructeur"
+        sub={`${brands.length} marques auto`}
+      />
+      <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-9 gap-2.5 sm:gap-3">
+        {brands.map((b) => (
+          <Link key={b.name} to={`/constructeurs/${b.slug}-${b.id}.html`}>
+            <Card className="group hover:border-cta hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 rounded-2xl border-[1.5px]">
+              <CardContent className="flex flex-col items-center justify-center py-3 px-2 gap-1.5">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-slate-50 flex items-center justify-center overflow-hidden group-hover:bg-orange-50 transition-colors">
+                  {b.logo ? (
+                    <img
+                      src={b.logo}
+                      alt={b.name}
+                      className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+                      loading="lazy"
+                      width={64}
+                      height={64}
+                    />
+                  ) : (
+                    <span className="text-base sm:text-lg font-bold text-navy font-v9-heading">
+                      {b.name.slice(0, 2).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs font-semibold text-slate-500 text-center truncate w-full group-hover:text-cta transition-colors">
+                  {b.name}
+                </span>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
-    </section>
+    </Section>
   );
 }

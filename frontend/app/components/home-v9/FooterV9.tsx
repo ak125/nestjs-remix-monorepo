@@ -1,5 +1,6 @@
 import { Link } from "@remix-run/react";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { SITE_CONFIG } from "~/config/site";
 
 const NAV_LINKS = [
   { label: "Catalogue pièces auto", href: "/pieces" },
@@ -19,7 +20,10 @@ const LEGAL_LINKS = [
 
 export default function FooterV9() {
   return (
-    <footer className="bg-[#0d1b2a] text-white pb-20 lg:pb-0">
+    <footer
+      className="bg-v9-navy text-white pb-20 lg:pb-0"
+      aria-label="Pied de page"
+    >
       {/* Contact banner */}
       <div className="border-b border-white/[0.08]">
         <div className="max-w-[1280px] mx-auto px-5 lg:px-8 py-5 flex flex-col lg:flex-row items-center justify-between gap-3">
@@ -27,10 +31,10 @@ export default function FooterV9() {
             Besoin d&apos;aide pour trouver votre pièce ?
           </div>
           <a
-            href="tel:+33970193419"
-            className="flex items-center gap-2 px-5 py-2.5 bg-orange-500 hover:bg-orange-400 rounded-xl text-[14px] font-bold transition-all hover:-translate-y-0.5 shadow-lg shadow-orange-500/20"
+            href={`tel:${SITE_CONFIG.contact.phone.raw}`}
+            className="flex items-center gap-2 px-5 py-2.5 min-h-[44px] bg-cta hover:bg-cta-hover rounded-xl text-[14px] font-bold transition-all hover:-translate-y-0.5 shadow-lg shadow-cta/20"
           >
-            <Phone size={16} /> 09 70 19 34 19
+            <Phone size={16} /> {SITE_CONFIG.contact.phone.display}
           </a>
         </div>
       </div>
@@ -67,7 +71,7 @@ export default function FooterV9() {
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="text-[13px] text-white/50 hover:text-white transition-colors"
+                    className="no-style no-visited text-[13px] text-white/50 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -86,7 +90,7 @@ export default function FooterV9() {
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="text-[13px] text-white/50 hover:text-white transition-colors"
+                    className="no-style no-visited text-[13px] text-white/50 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -111,10 +115,10 @@ export default function FooterV9() {
               <li className="flex items-center gap-2">
                 <Phone size={14} className="text-white/30 flex-shrink-0" />
                 <a
-                  href="tel:+33970193419"
+                  href={`tel:${SITE_CONFIG.contact.phone.raw}`}
                   className="hover:text-white transition-colors"
                 >
-                  09 70 19 34 19
+                  {SITE_CONFIG.contact.phone.display}
                 </a>
               </li>
               <li className="flex items-center gap-2">
