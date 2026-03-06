@@ -10,7 +10,6 @@ import {
   useActionData,
   useLoaderData,
   useNavigation,
-  Link,
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
@@ -271,44 +270,6 @@ export default function PaymentPage() {
         {/* Header */}
         <div className="mb-8">
           <CheckoutStepper current="payment" />
-          <nav className="hidden sm:flex items-center gap-2 text-sm text-slate-600 mb-4">
-            <Link to="/cart" className="hover:text-blue-600 transition-colors">
-              Panier
-            </Link>
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-            <Link
-              to="/checkout"
-              className="hover:text-blue-600 transition-colors"
-            >
-              Finalisation
-            </Link>
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-            <span className="text-slate-900 font-medium">Paiement</span>
-          </nav>
 
           <div className="flex items-center gap-4 mb-2">
             <div className="flex-shrink-0 w-12 h-12 bg-navy rounded-2xl flex items-center justify-center shadow-lg">
@@ -522,7 +483,7 @@ export default function PaymentPage() {
                   </div>
 
                   {/* Consignes */}
-                  {order.consigneTotal != null && order.consigneTotal > 0 && (
+                  {order.consigneTotal > 0 ? (
                     <div className="flex justify-between text-sm bg-amber-50 -mx-6 px-6 py-3 border-y border-amber-100">
                       <span className="flex items-center gap-2 text-amber-700 font-medium">
                         <svg
@@ -544,7 +505,7 @@ export default function PaymentPage() {
                         {formatPrice(order.consigneTotal)}
                       </span>
                     </div>
-                  )}
+                  ) : null}
 
                   <div className="pt-3 border-t border-slate-200">
                     <div className="flex justify-between items-baseline">
@@ -637,6 +598,13 @@ export default function PaymentPage() {
                       </span>
                     </label>
                   </div>
+
+                  <p className="text-xs text-center text-slate-500">
+                    Commande #{order.orderNumber} &middot; {order.items.length}{" "}
+                    article
+                    {order.items.length > 1 ? "s" : ""} &middot;{" "}
+                    {formatPrice(order.totalTTC)}
+                  </p>
 
                   <button
                     type="submit"
