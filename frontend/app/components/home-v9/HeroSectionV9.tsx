@@ -128,46 +128,41 @@ export default function HeroSectionV9() {
               <div className="rounded-2xl border border-white/20 overflow-hidden bg-white shadow-xl shadow-white/10">
                 {/* Header */}
                 <div className="px-5 pt-5 pb-2">
-                  <div className="flex items-center justify-between">
-                    <h2 className="text-[16px] font-bold text-slate-800 font-v9-heading flex items-center gap-2">
-                      <Car size={18} className="text-cta" />
-                      Trouvez vos pièces
-                    </h2>
-                    <span className="text-[10px] font-bold text-cta bg-cta/10 px-2 py-1 rounded-lg">
-                      500 000+ réf.
-                    </span>
-                  </div>
+                  <h2 className="text-[16px] font-bold text-slate-800 font-v9-heading flex items-center gap-2">
+                    <Car size={18} className="text-cta" />
+                    Trouvez vos pièces
+                  </h2>
                   <p className="text-[12px] text-slate-400 mt-1 ml-[26px]">
-                    Sélectionnez votre véhicule pour trouver les pièces
-                    compatibles
+                    Sélectionnez votre véhicule
                   </p>
                 </div>
                 {/* Tabs */}
                 <div
-                  className="flex"
+                  className="flex bg-v9-navy lg:bg-transparent"
                   role="tablist"
                   aria-label="Mode de recherche"
                 >
                   {TAB_ITEMS.map((t, i) => {
                     const Icon = t.icon;
+                    const isActive = activeTab === i;
                     return (
                       <button
                         key={t.label}
                         type="button"
                         role="tab"
-                        aria-selected={activeTab === i}
+                        aria-selected={isActive}
                         aria-controls={`tabpanel-${i}`}
                         id={`tab-${i}`}
                         onClick={() => setActiveTab(i)}
                         className={`flex-1 py-3.5 text-center text-[11.5px] font-semibold flex items-center justify-center gap-1.5 relative transition-all ${
-                          activeTab === i
-                            ? "text-slate-900 bg-slate-50"
-                            : "text-slate-400 hover:text-slate-600"
+                          isActive
+                            ? "text-white lg:text-slate-900 lg:bg-slate-50"
+                            : "text-white/40 lg:text-slate-400 lg:hover:text-slate-600"
                         }`}
                       >
                         <Icon size={12} />
                         {t.label}
-                        {activeTab === i && (
+                        {isActive && (
                           <span className="absolute bottom-0 left-[15%] w-[70%] h-[2.5px] bg-cta rounded" />
                         )}
                       </button>
@@ -183,9 +178,17 @@ export default function HeroSectionV9() {
                   aria-labelledby={`tab-${activeTab}`}
                 >
                   {activeTab === 0 && (
-                    <div>
-                      <VehicleSelector mode="compact" context="homepage" />
-                    </div>
+                    <>
+                      <div className="lg:hidden">
+                        <VehicleSelector
+                          mode="mobile-premium"
+                          context="homepage"
+                        />
+                      </div>
+                      <div className="hidden lg:block">
+                        <VehicleSelector mode="compact" context="homepage" />
+                      </div>
+                    </>
                   )}
 
                   {activeTab === 1 && (

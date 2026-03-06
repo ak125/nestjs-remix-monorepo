@@ -6,7 +6,7 @@ const NAV_ITEMS = [
   {
     icon: Package,
     label: "Catalogue",
-    href: "/pieces",
+    href: "/#catalogue",
     match: (p: string) => p.startsWith("/pieces"),
   },
   {
@@ -24,8 +24,8 @@ const NAV_ITEMS = [
   {
     icon: ShoppingCart,
     label: "Panier",
-    href: "/panier",
-    match: (p: string) => p.startsWith("/panier"),
+    href: "/cart",
+    match: (p: string) => p.startsWith("/cart"),
   },
 ];
 

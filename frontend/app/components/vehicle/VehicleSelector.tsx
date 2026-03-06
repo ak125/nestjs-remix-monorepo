@@ -23,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface VehicleSelectorProps {
   // 🎨 Mode d'affichage
-  mode?: "compact" | "full";
+  mode?: "compact" | "full" | "mobile-premium";
 
   // 🔧 Fonctionnalités
   enableTypeMineSearch?: boolean;
@@ -462,6 +462,148 @@ const VehicleSelector = memo(function VehicleSelector({
         >
           <RotateCcw className="w-4 h-4" />
         </Button>
+      </div>
+    );
+  }
+
+  // 🎨 Mode mobile-premium (grille 2x2, CTA orange, reset discret)
+  if (mode === "mobile-premium") {
+    // Calcul du champ actif (prochain à remplir)
+    const activeField = !selectedBrand
+      ? 0
+      : !selectedYear
+        ? 1
+        : !selectedModel
+          ? 2
+          : !selectedType
+            ? 3
+            : -1;
+
+    const fieldBase =
+      "w-full py-3 px-3.5 rounded-xl text-[13px] font-medium transition-all appearance-none min-h-[44px]";
+    const fieldActive =
+      "bg-blue-50 border border-blue-400 text-slate-900 ring-1 ring-blue-200";
+    const fieldNeutral = "bg-white border border-slate-200 text-slate-900";
+    const fieldDisabled =
+      "bg-slate-100 border border-slate-100 text-slate-400 cursor-not-allowed";
+
+    const getFieldClass = (index: number, isDisabled: boolean) => {
+      if (isDisabled) return `${fieldBase} ${fieldDisabled}`;
+      if (activeField === index) return `${fieldBase} ${fieldActive}`;
+      return `${fieldBase} ${fieldNeutral}`;
+    };
+
+    const canSearch = !!selectedType;
+
+    return (
+      <div className="space-y-3" data-nosnippet data-noindex>
+        <div className="grid grid-cols-2 gap-3">
+          {/* Marque */}
+          <div className="relative">
+            <Car
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none"
+            />
+            <select
+              value={selectedBrand?.marque_id || ""}
+              onChange={(e) => handleBrandChange(Number(e.target.value))}
+              onFocus={() => !brands.length && !loadingBrands && loadBrands()}
+              disabled={loadingBrands}
+              className={`${getFieldClass(0, false)} pl-8`}
+              aria-label="Marque"
+            >
+              <option value="">
+                {loadingBrands ? "Chargement..." : "Marque"}
+              </option>
+              {brands.map((brand) => (
+                <option key={brand.marque_id} value={brand.marque_id}>
+                  {brand.marque_name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Année */}
+          <select
+            value={selectedYear || ""}
+            onChange={(e) => handleYearChange(Number(e.target.value))}
+            disabled={!selectedBrand || loadingYears}
+            className={getFieldClass(1, !selectedBrand && !loadingYears)}
+            aria-label="Année"
+          >
+            <option value="">{loadingYears ? "Chargement..." : "Année"}</option>
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </select>
+
+          {/* Modèle */}
+          <select
+            value={selectedModel?.modele_id || ""}
+            onChange={(e) => handleModelChange(Number(e.target.value))}
+            disabled={!selectedYear || loadingModels}
+            className={getFieldClass(
+              2,
+              (!selectedBrand || !selectedYear) && !loadingModels,
+            )}
+            aria-label="Modèle"
+          >
+            <option value="">
+              {loadingModels ? "Chargement..." : "Modèle"}
+            </option>
+            {models.map((model) => (
+              <option key={model.modele_id} value={model.modele_id}>
+                {model.modele_name}
+              </option>
+            ))}
+          </select>
+
+          {/* Motorisation */}
+          <select
+            value={selectedType?.type_id || ""}
+            onChange={(e) => {
+              const t = types.find(
+                (t) => t.type_id.toString() === e.target.value,
+              );
+              if (t) handleTypeSelect(t);
+            }}
+            disabled={!selectedModel || loadingTypes}
+            className={getFieldClass(3, !selectedModel && !loadingTypes)}
+            aria-label="Motorisation"
+          >
+            <option value="">
+              {loadingTypes ? "Chargement..." : "Motorisation"}
+            </option>
+            {types.map((type) => (
+              <option key={type.type_id} value={type.type_id}>
+                {type.type_name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* CTA */}
+        <Button
+          onClick={() => {
+            if (selectedType) handleTypeSelect(selectedType);
+          }}
+          disabled={!canSearch}
+          className="w-full py-3 h-auto bg-cta rounded-xl text-white text-[14px] font-bold shadow-sm hover:bg-cta-hover active:translate-y-0 disabled:opacity-40 disabled:shadow-none"
+        >
+          <Search size={15} className="mr-2" />
+          Rechercher des pièces
+        </Button>
+
+        {/* Reset */}
+        <button
+          type="button"
+          onClick={handleReset}
+          className="w-full text-center text-[13px] text-slate-400 hover:text-slate-600 transition-colors py-1"
+        >
+          Réinitialiser
+        </button>
       </div>
     );
   }
