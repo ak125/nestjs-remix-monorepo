@@ -1,17 +1,16 @@
 /**
- * 🛒 CART PAGE - Route principale du panier
- * Version simplifiée sans CartContext
+ * CART PAGE - Route principale du panier
  *
- * ✅ Fonctionnalités:
- * - Affichage du panier avec produits
- * - Actions via useFetcher (approche Remix native)
- * - Gestion des erreurs et états vides
- * - Compatible avec l'authentification NestJS/Remix
- * - Barre de progression livraison gratuite (150€)
+ * - useFetcher pour update/remove/clear (via api.cart action)
+ * - Types CartItem/CartSummary depuis ~/types/cart
+ * - Per-item fetchers (pas de global isProcessing)
+ * - Debounce 300ms sur quantite +/-
+ * - Inline confirmation pour vider le panier
  */
 
 import {
   json,
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -19,7 +18,7 @@ import {
   useLoaderData,
   Link,
   useNavigation,
-  useRevalidator,
+  useFetcher,
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
@@ -35,7 +34,7 @@ import {
   ArrowRight,
   ChevronLeft,
 } from "lucide-react";
-import React, { useEffect } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
 import Container from "~/components/layout/Container";
@@ -48,13 +47,17 @@ import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import {
+  type CartItem as CartItemType,
+  type CartSummary as CartSummaryType,
+} from "~/types/cart";
 import { trackViewCart } from "~/utils/analytics";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { getCart } from "../services/cart.server";
 
-// Phase 9: PageRole pour analytics
 export const handle = {
+  hideGlobalFooter: true,
   pageRole: createPageRoleMeta(PageRole.R2_PRODUCT, {
     clusterId: "cart",
     canonicalEntity: "panier",
@@ -63,7 +66,6 @@ export const handle = {
   }),
 };
 
-// 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [
   { title: "Mon panier | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
@@ -74,10 +76,9 @@ export const meta: MetaFunction = () => [
   },
 ];
 
-// Seuil pour la livraison gratuite
 const FREE_SHIPPING_THRESHOLD = 150;
 
-export const loader = async ({ request, context }: LoaderFunctionArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
     const url = new URL(request.url);
     const cleared = url.searchParams.get("cleared");
@@ -89,8 +90,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       error: null,
       cleared: cleared === "true",
     });
-  } catch (error) {
-    logger.error("Erreur lors du chargement du panier:", error);
+  } catch {
     return json({
       cart: {
         items: [],
@@ -100,7 +100,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
           subtotal: 0,
           tax_amount: 0,
           shipping_cost: 0,
-          consigne_total: 0, // ✅ PHASE 4
+          consigne_total: 0,
           currency: "EUR",
         },
       },
@@ -111,10 +111,65 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   }
 };
 
-// NOTE: Les fonctions API ont été supprimées.
-// Utiliser les méthodes du hook useCart() qui appellent cart.api.ts
+const API_BASE = process.env.API_BASE_URL || "http://127.0.0.1:3000";
 
-// Helper: formater le prix
+export async function action({ request }: ActionFunctionArgs) {
+  const cookie = request.headers.get("Cookie") || "";
+  const formData = await request.formData();
+  const intent = formData.get("intent") as string;
+
+  try {
+    if (intent === "update") {
+      const productId = formData.get("productId") as string;
+      const quantity = parseInt(formData.get("quantity") as string, 10);
+
+      const response = await fetch(`${API_BASE}/api/cart/items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+        body: JSON.stringify({
+          product_id: parseInt(productId, 10),
+          quantity,
+          replace: true,
+        }),
+      });
+
+      const data = await response.json();
+      return json(data);
+    }
+
+    if (intent === "remove") {
+      const productId = formData.get("productId") as string;
+
+      const response = await fetch(`${API_BASE}/api/cart/items/${productId}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+      });
+
+      const data = await response.json();
+      return json(data);
+    }
+
+    if (intent === "clear") {
+      const response = await fetch(`${API_BASE}/api/cart`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json", Cookie: cookie },
+      });
+
+      const data = await response.json();
+      return json(data);
+    }
+
+    logger.error("[Cart Action] Intent inconnu:", intent);
+    return json({ error: "Intent inconnu", intent }, { status: 400 });
+  } catch (error) {
+    logger.error("[Cart Action] Erreur:", error);
+    return json(
+      { error: "Erreur serveur", details: String(error) },
+      { status: 500 },
+    );
+  }
+}
+
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("fr-FR", {
     style: "currency",
@@ -122,109 +177,89 @@ function formatPrice(price: number): string {
   }).format(price);
 }
 
-// Composant Barre de progression livraison gratuite
 function FreeShippingProgress({ subtotal }: { subtotal: number }) {
   const progress = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100);
   const remaining = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0);
   const isEligible = subtotal >= FREE_SHIPPING_THRESHOLD;
+  const isCompact = subtotal < 60;
 
-  // Message dynamique selon la progression
+  if (isEligible) {
+    return (
+      <div className="rounded-xl p-3 sm:p-4 mb-4 bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 text-white shadow-md">
+        <div className="flex items-center gap-3">
+          <Truck className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0" />
+          <p className="font-bold text-sm sm:text-base flex-1">
+            Livraison OFFERTE
+          </p>
+          <span className="text-sm opacity-90 hidden sm:inline">
+            Vous \u00e9conomisez les frais de livraison
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  if (isCompact) {
+    return (
+      <div className="rounded-xl p-3 mb-4 bg-white border border-slate-200">
+        <div className="flex items-center gap-2 mb-2">
+          <Truck className="h-4 w-4 text-cta flex-shrink-0" />
+          <p className="text-sm text-gray-700">
+            Plus que{" "}
+            <strong className="text-cta">{formatPrice(remaining)}</strong> pour
+            livraison offerte
+          </p>
+        </div>
+        <div className="w-full bg-gray-100 rounded-full h-1.5">
+          <div
+            className="bg-cta rounded-full h-1.5 transition-all duration-700"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   const getMessage = () => {
-    if (progress >= 90) return "Vous y êtes presque ! 🔥";
+    if (progress >= 90) return "Vous y \u00eates presque !";
     if (progress >= 70) return "Encore un petit effort !";
-    if (progress >= 50) return "Vous êtes à mi-chemin !";
-    return "Ajoutez des articles pour économiser !";
+    return "Vous \u00eates \u00e0 mi-chemin !";
   };
 
   return (
-    <div
-      className={`rounded-2xl p-5 mb-6 transition-all duration-300 ${
-        isEligible
-          ? "bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-500 text-white shadow-lg shadow-emerald-200"
-          : "bg-white border-2 border-slate-200 shadow-md"
-      }`}
-    >
-      {isEligible ? (
-        <div className="flex items-center gap-4">
-          <div className="bg-white/20 p-3 rounded-full animate-bounce">
-            <Truck className="h-7 w-7" />
-          </div>
-          <div className="flex-1">
-            <p className="font-bold text-xl">
-              🎉 Félicitations ! Livraison OFFERTE
-            </p>
-            <p className="text-sm opacity-90">
-              Vous économisez 9,90€ sur cette commande
-            </p>
-          </div>
-          <div className="hidden sm:flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full">
-            <span className="text-2xl">🚚</span>
-            <span className="font-bold">0,00€</span>
-          </div>
+    <div className="rounded-xl p-4 mb-4 bg-white border-2 border-slate-200 shadow-sm">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Truck className="h-4 w-4 text-cta" />
+          <p className="text-sm font-semibold text-gray-900">
+            Livraison gratuite d\u00e8s {formatPrice(FREE_SHIPPING_THRESHOLD)}
+          </p>
         </div>
-      ) : (
-        <div>
-          {/* Header avec icône et progression */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-cta-50 p-2.5 rounded-full">
-                <Truck className="h-5 w-5 text-cta" />
-              </div>
-              <div>
-                <p className="font-bold text-gray-900">
-                  Livraison gratuite dès {formatPrice(FREE_SHIPPING_THRESHOLD)}
-                </p>
-                <p className="text-sm text-gray-500">{getMessage()}</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <Badge
-                variant="info"
-                className="text-lg font-bold px-3 py-1 bg-cta text-white"
-              >
-                {Math.round(progress)}%
-              </Badge>
-            </div>
-          </div>
+        <span className="text-xs text-gray-500">{getMessage()}</span>
+      </div>
 
-          {/* Barre de progression améliorée */}
-          <div className="relative w-full bg-gray-100 rounded-full h-4 overflow-hidden mb-4">
-            <div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-cta via-cta-light to-emerald-500 rounded-full transition-all duration-700 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-            {/* Marqueur objectif */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white shadow" />
-          </div>
+      <div className="w-full bg-gray-100 rounded-full h-2.5 mb-3">
+        <div
+          className="bg-gradient-to-r from-cta to-emerald-500 rounded-full h-2.5 transition-all duration-700"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
 
-          {/* Message incitatif avec montant restant */}
-          <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-3">
-            <span className="text-xl">💡</span>
-            <p className="text-gray-700">
-              Plus que{" "}
-              <span className="font-extrabold text-xl text-cta mx-1">
-                {formatPrice(remaining)}
-              </span>
-              pour débloquer la{" "}
-              <span className="font-bold text-green-600">
-                livraison gratuite
-              </span>{" "}
-              !
-            </p>
-          </div>
-        </div>
-      )}
+      <p className="text-sm text-center text-gray-600">
+        Plus que{" "}
+        <span className="font-bold text-cta">{formatPrice(remaining)}</span>{" "}
+        pour d\u00e9bloquer la livraison gratuite
+      </p>
     </div>
   );
 }
 
-// Composant CartSummary avec design amélioré
-function CartSummary({
+function CartSummaryBlock({
   summary,
   children,
   isUpdating,
 }: {
-  summary: any;
+  summary: CartSummaryType;
   children?: React.ReactNode;
   isUpdating?: boolean;
 }) {
@@ -236,6 +271,10 @@ function CartSummary({
       summary.shipping_cost -
       (summary.discount_amount || 0);
   const isEligibleFreeShipping = summary.subtotal >= FREE_SHIPPING_THRESHOLD;
+  const isLite =
+    summary.total_items <= 2 &&
+    !(summary.consigne_total > 0) &&
+    !(summary.discount_amount && summary.discount_amount > 0);
 
   return (
     <div
@@ -243,33 +282,29 @@ function CartSummary({
         isUpdating ? "opacity-50 scale-[0.98]" : "hover:shadow-2xl"
       }`}
     >
-      {/* Header avec icône */}
-      <div className="bg-navy text-white px-6 py-4">
-        <h2 className="text-xl font-bold flex items-center gap-3">
-          <Package className="h-6 w-6" />
-          Résumé de la commande
+      <div className="bg-navy text-white px-4 sm:px-6 py-3 sm:py-4">
+        <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+          <Package className="h-5 w-5" />
+          R\u00e9sum\u00e9 de la commande
           {isUpdating && (
-            <Badge variant="info" size="sm" className="ml-auto">
-              <div className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full mr-2 inline-block"></div>
-              Mise à jour...
-            </Badge>
+            <div className="animate-spin w-3 h-3 border-2 border-current border-t-transparent rounded-full ml-auto"></div>
           )}
         </h2>
       </div>
 
-      <div className="p-6 space-y-4">
-        {/* Nombre de pièces */}
-        <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-200">
-          <span className="font-semibold text-gray-700 flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-navy" />
-            Nombre d'articles
-          </span>
-          <Badge variant="info" size="lg" className="text-lg px-4 py-1">
-            {summary.total_items}
-          </Badge>
-        </div>
+      <div className="p-4 sm:p-6 space-y-3">
+        {!isLite && (
+          <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-200">
+            <span className="font-semibold text-gray-700 flex items-center gap-2">
+              <ShoppingBag className="h-4 w-4 text-navy" />
+              Articles
+            </span>
+            <Badge variant="info" size="sm" className="text-sm px-3 py-0.5">
+              {summary.total_items}
+            </Badge>
+          </div>
+        )}
 
-        {/* Sous-total */}
         <div className="flex justify-between items-center py-3 border-b border-gray-100">
           <span className="text-gray-600">Sous-total produits</span>
           <span className="font-semibold text-lg">
@@ -277,11 +312,10 @@ function CartSummary({
           </span>
         </div>
 
-        {/* Consignes */}
-        {summary.consigne_total > 0 && (
+        {(summary.consigne_total ?? 0) > 0 && (
           <div className="flex justify-between items-center p-3 bg-amber-50 rounded-xl border-2 border-amber-200">
             <span className="text-amber-800 font-medium flex items-center gap-2">
-              <span className="text-xl">♻️</span>
+              <span className="text-xl">&#9851;</span>
               Consignes
               <span className="text-xs bg-amber-200 text-amber-700 px-2 py-0.5 rounded-full">
                 remboursables
@@ -293,7 +327,6 @@ function CartSummary({
           </div>
         )}
 
-        {/* Livraison - Affichée uniquement si gratuite */}
         {isEligibleFreeShipping && (
           <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl border-2 border-green-200">
             <span className="text-green-700 font-medium flex items-center gap-2">
@@ -301,7 +334,7 @@ function CartSummary({
               Livraison
             </span>
             <span className="font-bold text-green-600 flex items-center gap-1">
-              ✓ OFFERTE
+              OFFERTE
             </span>
           </div>
         )}
@@ -315,19 +348,18 @@ function CartSummary({
           </div>
         )}
 
-        {summary.discount_amount > 0 && (
+        {(summary.discount_amount ?? 0) > 0 && (
           <div className="flex justify-between items-center p-3 bg-green-50 rounded-xl border-2 border-green-200">
             <span className="text-green-700 font-medium flex items-center gap-2">
-              <span className="text-xl">🎁</span>
-              Remise appliquée
+              <span className="text-xl">&#127873;</span>
+              Remise appliqu\u00e9e
             </span>
             <span className="font-bold text-green-700">
-              -{formatPrice(summary.discount_amount)}
+              -{formatPrice(summary.discount_amount!)}
             </span>
           </div>
         )}
 
-        {/* Total */}
         <div className="mt-4 pt-4 border-t-2 border-gray-200">
           <div className="flex justify-between items-center p-5 bg-cta rounded-xl shadow-lg">
             <span className="font-bold text-lg text-white">Total TTC</span>
@@ -343,55 +375,64 @@ function CartSummary({
   );
 }
 
-// Composant CartItem simplifié avec design moderne et compact
-function CartItem({
-  item,
-  onUpdate,
-  onRemove,
-}: {
-  item: any;
-  onUpdate: (productId: number, quantity: number) => void;
-  onRemove: (productId: number) => void;
-}) {
-  const [isUpdating, setIsUpdating] = React.useState(false);
-  const [isRemoving, setIsRemoving] = React.useState(false);
-  const [currentQuantity, setCurrentQuantity] = React.useState(item.quantity);
-  const [showConfirmDelete, setShowConfirmDelete] = React.useState(false);
+function CartItemRow({ item }: { item: CartItemType }) {
+  const updateFetcher = useFetcher();
+  const removeFetcher = useFetcher();
+  const [currentQuantity, setCurrentQuantity] = useState(item.quantity);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleQuantityChange = async (newQuantity: number) => {
-    if (newQuantity < 1 || newQuantity === currentQuantity || isUpdating)
-      return;
+  const isUpdating = updateFetcher.state !== "idle";
+  const isRemoving = removeFetcher.state !== "idle";
 
-    const oldQuantity = currentQuantity;
-    setIsUpdating(true);
-    setCurrentQuantity(newQuantity);
-
-    try {
-      await onUpdate(item.product_id, newQuantity);
-    } catch (error) {
-      setCurrentQuantity(oldQuantity);
-      logger.error("Erreur mise à jour quantité:", error);
-    } finally {
-      setIsUpdating(false);
+  // Sync cart:updated when fetcher completes
+  useEffect(() => {
+    if (updateFetcher.state === "idle" && updateFetcher.data) {
+      window.dispatchEvent(new Event("cart:updated"));
     }
-  };
+  }, [updateFetcher.state, updateFetcher.data]);
 
-  const handleRemove = async () => {
-    setIsRemoving(true);
-    try {
-      await onRemove(item.product_id);
-    } catch (error) {
-      logger.error("Erreur suppression:", error);
-    } finally {
-      setIsRemoving(false);
-      setShowConfirmDelete(false);
+  useEffect(() => {
+    if (removeFetcher.state === "idle" && removeFetcher.data) {
+      window.dispatchEvent(new Event("cart:updated"));
     }
-  };
+  }, [removeFetcher.state, removeFetcher.data]);
 
-  // Calcul du prix
-  const isTotal = Math.abs(item.price - item.price * item.quantity) < 0.01;
-  const unitPrice = isTotal ? item.price / item.quantity : item.price;
-  const totalPrice = isTotal ? item.price : item.price * item.quantity;
+  const handleQuantityChange = useCallback(
+    (newQuantity: number) => {
+      if (newQuantity < 1 || newQuantity === currentQuantity) return;
+
+      setCurrentQuantity(newQuantity);
+
+      // Debounce 300ms
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        updateFetcher.submit(
+          {
+            intent: "update",
+            productId: String(item.product_id),
+            quantity: String(newQuantity),
+          },
+          { method: "post" },
+        );
+      }, 300);
+    },
+    [currentQuantity, item.product_id, updateFetcher],
+  );
+
+  const handleRemove = useCallback(() => {
+    removeFetcher.submit(
+      {
+        intent: "remove",
+        productId: String(item.product_id),
+      },
+      { method: "post" },
+    );
+  }, [item.product_id, removeFetcher]);
+
+  // Price calculation: prefer explicit fields, fallback to price as unit
+  const unitPrice = Number(item.unit_price ?? item.price ?? 0);
+  const totalPrice = Number(item.total_price ?? unitPrice * currentQuantity);
 
   return (
     <div
@@ -402,7 +443,6 @@ function CartItem({
       }`}
     >
       <div className="p-4 sm:p-5">
-        {/* En-tête avec nom produit et badge consigne */}
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-gray-900 text-lg leading-tight truncate">
@@ -410,24 +450,23 @@ function CartItem({
             </h3>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               <span className="inline-flex items-center text-xs font-mono bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                Réf: {item.product_sku || item.product_id}
+                R\u00e9f: {item.product_sku || item.product_id}
               </span>
               {item.product_brand &&
                 item.product_brand !== "MARQUE INCONNUE" &&
-                item.product_brand !== "Non spécifiée" && (
+                item.product_brand !== "Non sp\u00e9cifi\u00e9e" && (
                   <Badge variant="secondary" size="sm">
                     {item.product_brand}
                   </Badge>
                 )}
-              {item.has_consigne && item.consigne_unit > 0 && (
+              {item.has_consigne && (item.consigne_unit ?? 0) > 0 && (
                 <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200">
-                  ♻️ +{formatPrice(item.consigne_unit)} consigne
+                  +{formatPrice(item.consigne_unit!)} consigne
                 </span>
               )}
             </div>
           </div>
 
-          {/* Bouton supprimer - toujours visible */}
           {!showConfirmDelete ? (
             <button
               onClick={() => setShowConfirmDelete(true)}
@@ -456,12 +495,10 @@ function CartItem({
           )}
         </div>
 
-        {/* Ligne inférieure : Quantité + Prix */}
         <div className="flex items-center justify-between gap-4 pt-3 border-t border-gray-100">
-          {/* Contrôle quantité compact */}
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-500 hidden sm:inline">
-              Quantité:
+              Quantit\u00e9:
             </span>
             <div className="flex items-center border rounded-lg overflow-hidden bg-gray-50">
               <button
@@ -484,30 +521,29 @@ function CartItem({
             </div>
           </div>
 
-          {/* Prix */}
           <div className="text-right">
             <div className="text-2xl font-bold text-navy">
               {formatPrice(totalPrice)}
             </div>
             {currentQuantity > 1 && (
               <div className="text-xs text-gray-500">
-                {currentQuantity} × {formatPrice(unitPrice)}
+                {currentQuantity} x {formatPrice(unitPrice)}
               </div>
             )}
           </div>
         </div>
 
-        {/* Loader discret */}
         {(isUpdating || isRemoving) && (
           <div className="mt-3 flex items-center justify-center gap-2 text-cta text-sm">
             <div className="animate-spin w-4 h-4 border-2 border-cta border-t-transparent rounded-full"></div>
-            <span>{isUpdating ? "Mise à jour..." : "Suppression..."}</span>
+            <span>{isUpdating ? "Mise \u00e0 jour..." : "Suppression..."}</span>
           </div>
         )}
       </div>
     </div>
   );
-} // Composant panier vide avec design amélioré
+}
+
 function EmptyCart() {
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
@@ -519,13 +555,13 @@ function EmptyCart() {
           Votre panier est vide
         </h2>
         <p className="text-gray-600 mb-8">
-          Découvrez nos pièces auto et ajoutez-les à votre panier
+          D\u00e9couvrez nos pi\u00e8ces auto et ajoutez-les \u00e0 votre panier
         </p>
 
         <Button asChild size="lg" variant="blue" className="w-full sm:w-auto">
           <Link to="/" className="inline-flex items-center gap-2">
             <ShoppingBag className="h-5 w-5" />
-            Découvrir nos produits
+            D\u00e9couvrir nos produits
           </Link>
         </Button>
       </div>
@@ -533,18 +569,15 @@ function EmptyCart() {
   );
 }
 
-// Composant principal
 export default function CartPage() {
   const { cart, success, error, cleared } = useLoaderData<typeof loader>();
   const navigation = useNavigation();
-  const revalidator = useRevalidator();
-  const [isProcessing, setIsProcessing] = React.useState(false);
-  const [notification, setNotification] = React.useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
+  const clearFetcher = useFetcher();
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
-  // 📊 GA4: Tracker la vue du panier (une seule fois au montage)
+  const isClearPending = clearFetcher.state !== "idle";
+
+  // GA4: track view_cart once on mount
   useEffect(() => {
     if (cart?.items?.length) {
       const validItems = cart.items.filter(
@@ -557,103 +590,16 @@ export default function CartPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Afficher une notification temporaire
-  const showNotification = (type: "success" | "error", message: string) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3000);
-  };
-
-  // Gérer la mise à jour de quantité via API directe
-  const handleUpdateQuantity = async (productId: number, quantity: number) => {
-    setIsProcessing(true);
-    try {
-      const response = await fetch("/api/cart/items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          product_id: productId,
-          quantity,
-          replace: true,
-        }),
-      });
-
-      if (response.ok) {
-        showNotification("success", "Quantité mise à jour");
-        revalidator.revalidate();
-        // 🔄 Synchroniser la Navbar et Sidecart
-        window.dispatchEvent(new Event("cart:updated"));
-      } else {
-        throw new Error("Erreur mise à jour");
-      }
-    } catch (err) {
-      logger.error("Erreur mise à jour quantité:", err);
-      showNotification("error", "Erreur lors de la mise à jour");
-    } finally {
-      setIsProcessing(false);
+  // Sync navbar after clear cart completes
+  useEffect(() => {
+    if (clearFetcher.state === "idle" && clearFetcher.data) {
+      window.dispatchEvent(new Event("cart:updated"));
+      setShowClearConfirm(false);
     }
-  };
+  }, [clearFetcher.state, clearFetcher.data]);
 
-  // Gérer la suppression d'article via API directe
-  const handleRemoveItem = async (productId: number) => {
-    setIsProcessing(true);
-    try {
-      const response = await fetch(`/api/cart/items/${productId}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        showNotification("success", "Article supprimé");
-        revalidator.revalidate();
-        // 🔄 Synchroniser la Navbar et Sidecart
-        window.dispatchEvent(new Event("cart:updated"));
-      } else {
-        throw new Error("Erreur suppression");
-      }
-    } catch (err) {
-      logger.error("Erreur suppression:", err);
-      showNotification("error", "Erreur lors de la suppression");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  // Vider le panier via API directe
-  const handleClearCart = async () => {
-    if (
-      !confirm(
-        "Vider le panier ? " +
-          cart.summary.total_items +
-          " article(s) seront supprimés",
-      )
-    ) {
-      return;
-    }
-
-    setIsProcessing(true);
-    try {
-      const response = await fetch("/api/cart", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        showNotification("success", "Panier vidé");
-        revalidator.revalidate();
-        // 🔄 Synchroniser la Navbar et Sidecart
-        window.dispatchEvent(new Event("cart:updated"));
-      } else {
-        throw new Error("Erreur vidage");
-      }
-    } catch (err) {
-      logger.error("Erreur vidage panier:", err);
-      showNotification("error", "Erreur lors du vidage");
-    } finally {
-      setIsProcessing(false);
-    }
+  const handleClearCart = () => {
+    clearFetcher.submit({ intent: "clear" }, { method: "post" });
   };
 
   if (!success || error) {
@@ -661,7 +607,7 @@ export default function CartPage() {
       <div className="min-h-screen bg-gray-50 py-8">
         <Container>
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">⚠️</div>
+            <div className="text-6xl mb-4">&#9888;</div>
             <h2 className="text-xl font-semibold mb-2">Erreur de chargement</h2>
             <p className="text-gray-600 mb-6">
               {error || "Une erreur est survenue"}
@@ -671,7 +617,7 @@ export default function CartPage() {
               variant="blue"
               asChild
             >
-              <Link to="/">Retour à l'accueil</Link>
+              <Link to="/">Retour \u00e0 l'accueil</Link>
             </Button>
           </div>
         </Container>
@@ -692,73 +638,50 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-6 sm:py-8">
       <Container>
-        {/* Breadcrumb */}
-        <PublicBreadcrumb items={[{ label: "Panier" }]} />
+        <PublicBreadcrumb
+          items={[{ label: "Panier" }]}
+          className="hidden sm:block"
+        />
 
-        {/* Stepper checkout */}
         <CheckoutStepper current="cart" />
 
-        {/* Notification de succès après vidage */}
         {cleared && (
           <Alert
             intent="success"
             variant="solid"
-            icon={<span className="text-lg">✅</span>}
+            icon={<span className="text-lg">&#10004;</span>}
             className="mb-4"
           >
-            Panier vidé avec succès !
+            Panier vid\u00e9 avec succ\u00e8s !
           </Alert>
         )}
 
-        {/* En-tête amélioré */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div className="flex items-center gap-3">
             <div className="bg-cta p-3 rounded-xl">
               <ShoppingBag className="h-6 w-6 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
                 Mon Panier
               </h1>
               <p className="text-gray-600">
                 {cart.summary.total_items} article
-                {cart.summary.total_items > 1 ? "s" : ""} •{" "}
+                {cart.summary.total_items > 1 ? "s" : ""} &bull;{" "}
                 {formatPrice(cart.summary.subtotal)}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Barre de progression livraison gratuite */}
         <FreeShippingProgress subtotal={cart.summary.subtotal} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Liste des articles */}
           <div className="lg:col-span-2 space-y-4">
-            {notification && (
-              <Alert
-                intent={notification.type === "success" ? "success" : "error"}
-                variant="solid"
-                icon={
-                  <span className="text-lg">
-                    {notification.type === "success" ? "✅" : "❌"}
-                  </span>
-                }
-              >
-                {notification.message}
-              </Alert>
-            )}
-
             {cart.items.map((item) => (
-              <CartItem
-                key={item.id}
-                item={item}
-                onUpdate={handleUpdateQuantity}
-                onRemove={handleRemoveItem}
-              />
+              <CartItemRow key={item.id} item={item as CartItemType} />
             ))}
 
-            {/* Actions bas de liste */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pt-4 border-t border-gray-200">
               <Link
                 to="/"
@@ -768,25 +691,47 @@ export default function CartPage() {
                 Continuer mes achats
               </Link>
 
-              <button
-                type="button"
-                onClick={handleClearCart}
-                disabled={isProcessing}
-                className="inline-flex items-center gap-1.5 text-gray-500 hover:text-red-600 text-sm transition-colors disabled:opacity-50"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                <span className="underline-offset-2 hover:underline">
-                  {isProcessing ? "Vidage..." : "Vider le panier"}
-                </span>
-              </button>
+              {!showClearConfirm ? (
+                <button
+                  type="button"
+                  onClick={() => setShowClearConfirm(true)}
+                  disabled={isClearPending}
+                  className="inline-flex items-center gap-1.5 text-gray-500 hover:text-red-600 text-sm transition-colors disabled:opacity-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span className="underline-offset-2 hover:underline">
+                    Vider le panier
+                  </span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-lg px-4 py-2">
+                  <span className="text-sm text-red-700">
+                    Supprimer {cart.summary.total_items} article
+                    {cart.summary.total_items > 1 ? "s" : ""} ?
+                  </span>
+                  <button
+                    onClick={() => setShowClearConfirm(false)}
+                    disabled={isClearPending}
+                    className="px-3 py-1 text-sm bg-white border border-gray-300 hover:bg-gray-50 rounded transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleClearCart}
+                    disabled={isClearPending}
+                    className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded transition-colors disabled:opacity-50"
+                  >
+                    {isClearPending ? "Vidage..." : "Confirmer"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Résumé et actions - Sticky sur desktop */}
           <div className="lg:col-span-1">
             <div className="lg:sticky lg:top-24 space-y-4">
-              <CartSummary
-                summary={cart.summary}
+              <CartSummaryBlock
+                summary={cart.summary as CartSummaryType}
                 isUpdating={navigation.state === "loading"}
               >
                 <div className="space-y-3">
@@ -794,75 +739,47 @@ export default function CartPage() {
                     to="/checkout"
                     className="w-full py-4 px-6 bg-cta hover:bg-cta-hover rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3"
                   >
-                    <span className="text-white text-lg">🛒</span>
+                    <span className="text-white text-lg">&#128722;</span>
                     <span className="text-white font-bold text-lg">
                       Finaliser ma commande
                     </span>
                     <ArrowRight className="h-5 w-5 text-white" />
                   </Link>
                 </div>
-              </CartSummary>
+              </CartSummaryBlock>
 
-              {/* Avantages */}
-              <div className="bg-white rounded-xl border p-4 space-y-3">
-                <div className="flex items-start gap-3">
-                  <div className="bg-green-100 p-2 rounded-lg">
-                    <Shield className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">
-                      Paiement sécurisé
-                    </h3>
-                    <p className="text-xs text-gray-600">
-                      Transactions cryptées SSL
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="bg-blue-100 p-2 rounded-lg">
-                    <Truck className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">
-                      Livraison rapide
-                    </h3>
-                    <p className="text-xs text-gray-600">
-                      Expédition sous 24-48h
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3">
-                  <div className="bg-purple-100 p-2 rounded-lg">
-                    <CreditCard className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">
-                      Paiement flexible
-                    </h3>
-                    <p className="text-xs text-gray-600">
-                      CB, PayPal, virement
-                    </p>
-                  </div>
-                </div>
+              <div className="bg-white rounded-xl border p-3 flex items-center justify-around text-xs text-gray-600">
+                <span className="flex items-center gap-1.5">
+                  <Shield className="h-4 w-4 text-green-600" />
+                  <span className="hidden sm:inline">Paiement </span>
+                  s\u00e9curis\u00e9
+                </span>
+                <span className="text-gray-300">|</span>
+                <span className="flex items-center gap-1.5">
+                  <Truck className="h-4 w-4 text-blue-600" />
+                  24-48h
+                </span>
+                <span className="text-gray-300">|</span>
+                <span className="flex items-center gap-1.5">
+                  <CreditCard className="h-4 w-4 text-purple-600" />
+                  CB / PayPal
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Spacer for MobileBottomBar */}
         <MobileBottomBarSpacer />
       </Container>
 
-      {/* Mobile Bottom Bar - CTA Commander */}
       <MobileBottomBar>
         <Link
           to="/checkout"
           className="flex-1 py-3 px-4 bg-cta hover:bg-cta-hover rounded-xl flex items-center justify-center gap-2 touch-target"
         >
           <span className="text-white font-bold">
-            Commander ({cart.summary.total_items})
+            Commander &middot;{" "}
+            {formatPrice(cart.summary.total_price || cart.summary.subtotal)}
           </span>
           <ArrowRight className="h-5 w-5 text-white" />
         </Link>
@@ -871,9 +788,6 @@ export default function CartPage() {
   );
 }
 
-// ============================================================
-// ERROR BOUNDARY - Gestion des erreurs HTTP
-// ============================================================
 export function ErrorBoundary() {
   const error = useRouteError();
 

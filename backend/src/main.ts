@@ -109,8 +109,24 @@ async function bootstrap() {
     // It catches ALL exceptions: DomainException, HttpException, and raw Errors
 
     // ⚠️ CRITIQUE: body-parser DOIT être avant passport pour éviter "stream is not readable"
-    app.use(json({ limit: '10mb' }));
-    app.use(urlencoded({ extended: true, limit: '10mb' }));
+    // Body-parser uniquement pour les routes NestJS (API, auth).
+    // Les routes Remix ont besoin du raw stream pour request.formData().
+    const needsBodyParsing = (url: string) =>
+      url.startsWith('/api/') ||
+      url.startsWith('/auth/') ||
+      url.startsWith('/authenticate');
+
+    const jsonParser = json({ limit: '10mb' });
+    const urlencodedParser = urlencoded({ extended: true, limit: '10mb' });
+
+    app.use((req: any, res: any, next: any) => {
+      if (needsBodyParsing(req.url)) return jsonParser(req, res, next);
+      next();
+    });
+    app.use((req: any, res: any, next: any) => {
+      if (needsBodyParsing(req.url)) return urlencodedParser(req, res, next);
+      next();
+    });
 
     app.use(passport.initialize());
     app.use(passport.session());
