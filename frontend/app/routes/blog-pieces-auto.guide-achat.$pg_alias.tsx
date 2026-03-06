@@ -48,6 +48,9 @@ import {
   R6PriceGuide,
   R6BrandsGuide,
   R6WhenPro,
+  R6FurtherReading,
+  R6InternalLinks,
+  R6MediaSlotRenderer,
 } from "~/components/blog/guide-achat";
 import { ScrollToTop } from "~/components/blog/ScrollToTop";
 import { TableOfContents } from "~/components/blog/TableOfContents";
@@ -290,6 +293,13 @@ function buildTocSections(guide: R6GuidePayload) {
     if (guide.faq.length > 0) {
       sections.push({ level: 2, title: "FAQ", anchor: "faq" });
     }
+    if (guide.ctaFinal?.links?.length) {
+      sections.push({
+        level: 2,
+        title: "Pour aller plus loin",
+        anchor: "pour-aller-plus-loin",
+      });
+    }
     return sections;
   }
 
@@ -494,53 +504,73 @@ function V2Sections({
   pgAlias: string;
 }) {
   const page = guide.page;
+  const ms = guide.mediaSlots;
+  const gn = page.title;
 
   return (
     <>
+      {/* Hero media slot */}
+      {ms?._hero && <R6MediaSlotRenderer slots={ms._hero} gammeName={gn} />}
+
       {/* 1. Hero Decision */}
       {guide.heroDecision && (
         <R6HeroDecisionSection
           heroDecision={guide.heroDecision}
-          gammeName={page.title}
+          gammeName={gn}
           pgAlias={pgAlias}
           pgId={page.pg_id}
         />
+      )}
+      {ms?.hero_decision && (
+        <R6MediaSlotRenderer slots={ms.hero_decision} gammeName={gn} />
       )}
 
       {/* 2. Summary Pick Fast (quiz) */}
       {guide.summaryPickFast && guide.summaryPickFast.length > 0 && (
         <R6QuizAssistant
           nodes={guide.summaryPickFast}
-          gammeName={page.title}
+          gammeName={gn}
           pgAlias={pgAlias}
           pgId={page.pg_id}
         />
       )}
+      {ms?.summary_pick_fast && (
+        <R6MediaSlotRenderer slots={ms.summary_pick_fast} gammeName={gn} />
+      )}
 
       {/* 3. Quality Tiers */}
       {guide.qualityTiers && guide.qualityTiers.length > 0 && (
-        <R6QualityTiersTable
-          tiers={guide.qualityTiers}
-          gammeName={page.title}
-        />
+        <R6QualityTiersTable tiers={guide.qualityTiers} gammeName={gn} />
+      )}
+      {ms?.quality_tiers && (
+        <R6MediaSlotRenderer slots={ms.quality_tiers} gammeName={gn} />
       )}
 
       {/* 4. Compatibility */}
       {guide.compatibilityAxes && guide.compatibilityAxes.length > 0 && (
         <R6CompatibilityChecklist
           axes={guide.compatibilityAxes}
-          gammeName={page.title}
+          gammeName={gn}
         />
+      )}
+      {ms?.compatibility && (
+        <R6MediaSlotRenderer slots={ms.compatibility} gammeName={gn} />
       )}
 
       {/* 5. Price Guide */}
       {guide.priceGuide && (
-        <R6PriceGuide priceGuide={guide.priceGuide} gammeName={page.title} />
+        <R6PriceGuide priceGuide={guide.priceGuide} gammeName={gn} />
+      )}
+      {ms?.price_guide && (
+        <R6MediaSlotRenderer slots={ms.price_guide} gammeName={gn} />
       )}
 
       {/* 6. Brands Guide */}
       {guide.brandsGuide && (
-        <R6BrandsGuide brandsGuide={guide.brandsGuide} gammeName={page.title} />
+        <R6BrandsGuide brandsGuide={guide.brandsGuide} gammeName={gn} />
+      )}
+      {ms?.brands_guide && (
+        <R6MediaSlotRenderer slots={ms.brands_guide} gammeName={gn} />
       )}
 
       {/* 7. Pitfalls */}
@@ -563,11 +593,26 @@ function V2Sections({
           </div>
         </section>
       )}
+      {ms?.pitfalls && (
+        <R6MediaSlotRenderer slots={ms.pitfalls} gammeName={gn} />
+      )}
 
       {/* 8. When Pro */}
       {guide.whenPro && guide.whenPro.length > 0 && (
-        <R6WhenPro cases={guide.whenPro} gammeName={page.title} />
+        <R6WhenPro cases={guide.whenPro} gammeName={gn} />
       )}
+      {ms?.when_pro && (
+        <R6MediaSlotRenderer slots={ms.when_pro} gammeName={gn} />
+      )}
+
+      {/* 9. CTA Final — Further Reading + Internal Links */}
+      {guide.ctaFinal?.links && guide.ctaFinal.links.length > 0 && (
+        <R6FurtherReading links={guide.ctaFinal.links} />
+      )}
+      {guide.ctaFinal?.internal_links &&
+        guide.ctaFinal.internal_links.length > 0 && (
+          <R6InternalLinks links={guide.ctaFinal.internal_links} />
+        )}
     </>
   );
 }

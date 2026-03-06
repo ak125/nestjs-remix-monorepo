@@ -136,6 +136,34 @@ export interface R6CtaFinal {
 }
 
 // ══════════════════════════════════════════════════════════
+// Media slots (from sgpg_page_contract)
+// ══════════════════════════════════════════════════════════
+
+export interface R6MediaSlotFrontend {
+  slot_id: string;
+  type:
+    | 'image'
+    | 'diagram'
+    | 'table'
+    | 'checklist'
+    | 'callout'
+    | 'cards'
+    | 'quote';
+  placement: string;
+  priority: 'high' | 'normal' | 'low';
+  source: string;
+  src?: string;
+  src_key?: string;
+  alt: { template: string; variables?: Record<string, string> };
+  caption?: string;
+  loading: 'eager' | 'lazy';
+  fetch_priority?: 'high' | 'auto' | 'low';
+  callout_style?: 'info' | 'warning' | 'tip' | 'budget';
+  content_hint?: string;
+  format?: 'webp' | 'avif';
+}
+
+// ══════════════════════════════════════════════════════════
 // Page metadata (shared V1/V2)
 // ══════════════════════════════════════════════════════════
 
@@ -176,6 +204,7 @@ export interface R6GuidePayload {
   whenPro?: R6WhenProCase[];
   faq: R6FaqItem[];
   ctaFinal?: R6CtaFinal;
+  mediaSlots?: Record<string, R6MediaSlotFrontend[]>;
 
   // ── V1 legacy sections (optional, present when roleVersion='v1') ──
   risk?: R6RiskSection;

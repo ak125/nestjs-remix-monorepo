@@ -31,6 +31,7 @@ import type {
   R6BrandsGuideSection,
   R6HeroDecision,
   R6CtaFinal,
+  R6MediaSlotFrontend,
 } from '../interfaces/r6-guide.interfaces';
 
 @Injectable()
@@ -180,6 +181,38 @@ export class R6GuideService {
     // FAQ
     const faq: R6FaqItem[] = (row.sgpg_faq as R6FaqItem[]) || [];
 
+    // Media slots — extract from sgpg_page_contract if present
+    let mediaSlots: Record<string, R6MediaSlotFrontend[]> | undefined;
+    if (row.sgpg_page_contract) {
+      try {
+        const contract =
+          typeof row.sgpg_page_contract === 'string'
+            ? JSON.parse(row.sgpg_page_contract)
+            : row.sgpg_page_contract;
+        if (contract?.sections) {
+          const extracted: Record<string, R6MediaSlotFrontend[]> = {};
+          for (const [sectionId, section] of Object.entries(
+            contract.sections,
+          )) {
+            const slots = (section as Record<string, unknown>)
+              ?.media_slots as R6MediaSlotFrontend[];
+            if (Array.isArray(slots) && slots.length > 0) {
+              extracted[sectionId] = slots;
+            }
+          }
+          if (Object.keys(extracted).length > 0) {
+            mediaSlots = extracted;
+          }
+        }
+        if (contract?.hero?.media_slots?.length) {
+          mediaSlots = mediaSlots || {};
+          mediaSlots['_hero'] = contract.hero.media_slots;
+        }
+      } catch {
+        /* ignore malformed page_contract */
+      }
+    }
+
     // CTA final — further reading + internal links
     const ctaFinal: R6CtaFinal | undefined =
       row.sgpg_interest_nuggets || row.sgpg_family_cross_sell_intro
@@ -227,6 +260,7 @@ export class R6GuideService {
       whenPro,
       faq,
       ctaFinal,
+      mediaSlots,
       sourceType: (row.sgpg_source_type as string) || null,
       sourceVerified: (row.sgpg_source_verified as boolean) ?? false,
     };

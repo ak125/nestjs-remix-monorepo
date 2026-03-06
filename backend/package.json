@@ -25,7 +25,8 @@
     "test:watch": "node --max-old-space-size=2048 ./node_modules/.bin/jest --watch --maxWorkers=2",
     "test:cov": "node --max-old-space-size=2048 ./node_modules/.bin/jest --coverage --maxWorkers=2",
     "start:prod": "node dist/main",
-    "sitemap:generate": "ts-node scripts/generate-sitemaps.ts"
+    "sitemap:generate": "ts-node scripts/generate-sitemaps.ts",
+    "generate:r6-schema": "ts-node src/config/generate-r6-json-schema.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
@@ -76,6 +77,7 @@
     "ioredis": "^5.8.2",
     "js-yaml": "^4.1.1",
     "meilisearch": "^0.52.0",
+    "msedge-tts": "^2.0.4",
     "nestjs-pino": "^4.5.0",
     "nestjs-zod": "^4.3.1",
     "nodemailer": "^8.0.0",
@@ -131,6 +133,7 @@
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "zod-to-json-schema": "^3.25.1"
   }
 }

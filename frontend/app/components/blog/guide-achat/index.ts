@@ -4,3 +4,6 @@ export { R6CompatibilityChecklist } from "./R6CompatibilityChecklist";
 export { R6PriceGuide } from "./R6PriceGuide";
 export { R6BrandsGuide } from "./R6BrandsGuide";
 export { R6WhenPro } from "./R6WhenPro";
+export { R6FurtherReading } from "./R6FurtherReading";
+export { R6InternalLinks } from "./R6InternalLinks";
+export { R6MediaSlotRenderer } from "./R6MediaSlotRenderer";
