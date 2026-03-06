@@ -453,4 +453,43 @@ export class RagImageManagementService extends SupabaseBaseService {
     }
     return enriched;
   }
+
+  /**
+   * Bulk reassign images from one gamme to another.
+   * Safety: only updates files whose current gamme matches `fromGamme`.
+   */
+  reassignImageGammes(
+    hashes: string[],
+    fromGamme: string,
+    toGamme: string,
+  ): { updated: number; skipped: string[] } {
+    const knowledgePath =
+      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
+      '/opt/automecanik/rag/knowledge';
+    const imgDir = path.join(knowledgePath, '_raw', 'web-images');
+    let updated = 0;
+    const skipped: string[] = [];
+
+    for (const hash of hashes) {
+      const promptPath = path.join(imgDir, `${hash}.prompt.md`);
+      try {
+        let content = readFileSync(promptPath, 'utf-8');
+        const pattern = `gamme: "${fromGamme}"`;
+        if (!content.includes(pattern)) {
+          skipped.push(hash);
+          continue;
+        }
+        content = content.replace(pattern, `gamme: "${toGamme}"`);
+        writeFileSync(promptPath, content, 'utf-8');
+        updated++;
+      } catch {
+        skipped.push(hash);
+      }
+    }
+
+    this.logger.log(
+      `Reassigned ${updated}/${hashes.length} images from "${fromGamme}" to "${toGamme}" (${skipped.length} skipped)`,
+    );
+    return { updated, skipped };
+  }
 }

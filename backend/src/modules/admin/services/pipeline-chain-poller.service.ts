@@ -37,38 +37,62 @@ export class PipelineChainPollerService
   }
 
   async onModuleInit(): Promise<void> {
-    if (!this.flags.pipelineChainEnabled) {
-      this.logger.log(
-        'Pipeline chain DISABLED (PIPELINE_CHAIN_ENABLED=false). Skipping poller registration.',
-      );
-      return;
-    }
-
-    const intervalMs = this.flags.pipelineChainPollIntervalMs;
-
     // Remove any stale repeatable jobs first (idempotent)
     const existingRepeatables = await this.queue.getRepeatableJobs();
+
+    // ── Chain-poll repeatable job ──
     for (const r of existingRepeatables) {
       if (r.name === 'chain-poll') {
         await this.queue.removeRepeatableByKey(r.key);
       }
     }
 
-    // Register the repeatable polling job
-    await this.queue.add(
-      'chain-poll',
-      {},
-      {
-        repeat: { every: intervalMs },
-        jobId: 'chain-poll-repeatable',
-        removeOnComplete: true,
-        removeOnFail: true,
-      },
-    );
+    if (this.flags.pipelineChainEnabled) {
+      const intervalMs = this.flags.pipelineChainPollIntervalMs;
+      await this.queue.add(
+        'chain-poll',
+        {},
+        {
+          repeat: { every: intervalMs },
+          jobId: 'chain-poll-repeatable',
+          removeOnComplete: true,
+          removeOnFail: true,
+        },
+      );
+      this.logger.log(
+        `Pipeline chain poller registered (interval=${intervalMs}ms)`,
+      );
+    } else {
+      this.logger.log('Pipeline chain DISABLED (PIPELINE_CHAIN_ENABLED=false)');
+    }
 
-    this.logger.log(
-      `Pipeline chain poller registered (interval=${intervalMs}ms)`,
-    );
+    // ── Draft auto-publish repeatable job ──
+    for (const r of existingRepeatables) {
+      if (r.name === 'draft-auto-publish') {
+        await this.queue.removeRepeatableByKey(r.key);
+      }
+    }
+
+    if (this.flags.draftAutoPublishEnabled) {
+      const publishIntervalMs = this.flags.draftAutoPublishIntervalMs;
+      await this.queue.add(
+        'draft-auto-publish',
+        {},
+        {
+          repeat: { every: publishIntervalMs },
+          jobId: 'draft-auto-publish-repeatable',
+          removeOnComplete: true,
+          removeOnFail: true,
+        },
+      );
+      this.logger.log(
+        `Draft auto-publish registered (interval=${publishIntervalMs}ms)`,
+      );
+    } else {
+      this.logger.log(
+        'Draft auto-publish DISABLED (DRAFT_AUTO_PUBLISH_ENABLED=false)',
+      );
+    }
   }
 
   /**
