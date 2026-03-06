@@ -9,8 +9,9 @@
 
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHash } from 'crypto';
-import { EdgeTTS } from 'edge-tts-universal';
+import { createHash, createHmac } from 'crypto';
+import * as http from 'http';
+import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { AudioCacheService } from './audio-cache.service';
 
@@ -59,17 +60,14 @@ export class TtsService extends SupabaseBaseService {
   private readonly enabled: boolean;
 
   constructor(
-    configService: ConfigService,
+    private readonly cfg: ConfigService,
     private readonly audioCache: AudioCacheService,
   ) {
-    super(configService);
+    super(cfg);
 
-    this.defaultVoice = (configService.get<string>('TTS_VOICE') ||
-      'onyx') as TtsVoice;
-    this.defaultSpeed = parseFloat(
-      configService.get<string>('TTS_SPEED') || '0.9',
-    );
-    this.enabled = configService.get<string>('TTS_ENABLED') !== 'false';
+    this.defaultVoice = (cfg.get<string>('TTS_VOICE') || 'onyx') as TtsVoice;
+    this.defaultSpeed = parseFloat(cfg.get<string>('TTS_SPEED') || '0.9');
+    this.enabled = cfg.get<string>('TTS_ENABLED') !== 'false';
   }
 
   /**
@@ -122,7 +120,7 @@ export class TtsService extends SupabaseBaseService {
       }
     }
 
-    // Generate with edge-tts
+    // Generate with msedge-tts
     const edgeVoice = VOICE_MAP[voice] || 'fr-FR-HenriNeural';
     const rate = speedToRate(speed);
 
@@ -130,12 +128,19 @@ export class TtsService extends SupabaseBaseService {
       `[TTS] Generating audio for ${input.briefId}: ${costChars} chars, voice=${edgeVoice}, rate=${rate}`,
     );
 
-    const tts = new EdgeTTS(text, edgeVoice, { rate });
-    const result = await tts.synthesize();
+    const tts = new MsEdgeTTS();
+    await tts.setMetadata(
+      edgeVoice,
+      OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3,
+    );
+    const { audioStream } = tts.toStream(text, { rate });
 
-    // Read as buffer
-    const arrayBuffer = await result.audio.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    // Collect stream into buffer
+    const chunks: Buffer[] = [];
+    for await (const chunk of audioStream) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    const buffer = Buffer.concat(chunks);
 
     if (buffer.length === 0) {
       throw new Error('edge-tts returned empty audio');
@@ -204,22 +209,109 @@ export class TtsService extends SupabaseBaseService {
   }
 
   private async uploadToStorage(path: string, buffer: Buffer): Promise<string> {
-    const bucket = 'automecanik-renders';
+    const endpoint =
+      this.cfg.get<string>('S3_ENDPOINT') ?? 'http://localhost:9000';
+    const accessKey = this.cfg.get<string>('S3_ACCESS_KEY');
+    const secretKey = this.cfg.get<string>('S3_SECRET_KEY');
+    const region = this.cfg.get<string>('S3_REGION') ?? 'eu-central-1';
+    const bucket =
+      this.cfg.get<string>('S3_BUCKET_NAME') ?? 'automecanik-renders';
 
-    const { error } = await this.client.storage
-      .from(bucket)
-      .upload(path, buffer, {
-        contentType: 'audio/mpeg',
-        upsert: true,
-      });
-
-    if (error) {
-      this.logger.error(`Storage upload error: ${error.message}`);
-      throw error;
+    if (!accessKey || !secretKey) {
+      throw new Error('S3_ACCESS_KEY / S3_SECRET_KEY required for MinIO');
     }
 
-    const { data } = this.client.storage.from(bucket).getPublicUrl(path);
+    const url = new URL(`/${bucket}/${path}`, endpoint);
+    const now = new Date();
+    const dateStamp = now.toISOString().replace(/[-:]/g, '').slice(0, 8);
+    const amzDate = `${dateStamp}T${now
+      .toISOString()
+      .replace(/[-:]/g, '')
+      .slice(9, 15)}Z`;
+    const contentHash = createHash('sha256').update(buffer).digest('hex');
 
-    return data.publicUrl;
+    const headers: Record<string, string> = {
+      Host: url.host,
+      'Content-Type': 'audio/mpeg',
+      'Content-Length': String(buffer.length),
+      'x-amz-content-sha256': contentHash,
+      'x-amz-date': amzDate,
+    };
+
+    // AWS Signature V4
+    const signedHeaderKeys = Object.keys(headers)
+      .map((k) => k.toLowerCase())
+      .sort();
+    const signedHeaders = signedHeaderKeys.join(';');
+    const headerLookup = new Map(
+      Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v]),
+    );
+    const canonicalHeaders =
+      signedHeaderKeys.map((k) => `${k}:${headerLookup.get(k)}`).join('\n') +
+      '\n';
+
+    const canonicalRequest = [
+      'PUT',
+      url.pathname,
+      '',
+      canonicalHeaders,
+      signedHeaders,
+      contentHash,
+    ].join('\n');
+
+    const scope = `${dateStamp}/${region}/s3/aws4_request`;
+    const stringToSign = [
+      'AWS4-HMAC-SHA256',
+      amzDate,
+      scope,
+      createHash('sha256').update(canonicalRequest).digest('hex'),
+    ].join('\n');
+
+    const hmac = (key: Buffer | string, data: string) =>
+      createHmac('sha256', key).update(data).digest();
+    const signingKey = hmac(
+      hmac(hmac(hmac(`AWS4${secretKey}`, dateStamp), region), 's3'),
+      'aws4_request',
+    );
+    const signature = createHmac('sha256', signingKey)
+      .update(stringToSign)
+      .digest('hex');
+
+    headers['Authorization'] =
+      `AWS4-HMAC-SHA256 Credential=${accessKey}/${scope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+    return new Promise<string>((resolve, reject) => {
+      const req = http.request(
+        {
+          hostname: url.hostname,
+          port: url.port || 9000,
+          path: url.pathname,
+          method: 'PUT',
+          headers,
+        },
+        (res) => {
+          const chunks: Buffer[] = [];
+          res.on('data', (c) => chunks.push(c));
+          res.on('end', () => {
+            if (
+              res.statusCode &&
+              res.statusCode >= 200 &&
+              res.statusCode < 300
+            ) {
+              resolve(`${endpoint}/${bucket}/${path}`);
+            } else {
+              const body = Buffer.concat(chunks).toString();
+              reject(
+                new Error(
+                  `MinIO PUT failed (${res.statusCode}): ${body.slice(0, 200)}`,
+                ),
+              );
+            }
+          });
+        },
+      );
+      req.on('error', reject);
+      req.end(buffer);
+    });
   }
 }

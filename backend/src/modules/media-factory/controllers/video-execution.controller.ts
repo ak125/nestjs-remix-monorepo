@@ -17,11 +17,74 @@ import {
   ParseIntPipe,
   Logger,
 } from '@nestjs/common';
+import { createHmac, createHash } from 'crypto';
 import type { Response } from 'express';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { VideoJobService } from '../services/video-job.service';
 import { PostprocessService } from '../services/postprocess.service';
+
+/**
+ * Generate S3 presigned URL using AWS Signature V4 (pure Node.js, no deps).
+ * Used as fallback when the render service is unavailable (e.g. dev env).
+ */
+function generateS3PresignedUrl(
+  bucket: string,
+  key: string,
+  expiresSecs = 3600,
+): string | null {
+  const endpoint = process.env.S3_ENDPOINT ?? 'http://localhost:9000';
+  const accessKey = process.env.S3_ACCESS_KEY;
+  const secretKey = process.env.S3_SECRET_KEY;
+  const region = process.env.S3_REGION ?? 'eu-central-1';
+  if (!accessKey || !secretKey) return null;
+
+  const url = new URL(`/${bucket}/${key}`, endpoint);
+  const host = url.host;
+  const now = new Date();
+  const date = now.toISOString().replace(/[-:]/g, '').slice(0, 8);
+  const timestamp =
+    date + 'T' + now.toISOString().replace(/[-:]/g, '').slice(9, 15) + 'Z';
+  const scope = `${date}/${region}/s3/aws4_request`;
+
+  const qp = new URLSearchParams({
+    'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+    'X-Amz-Credential': `${accessKey}/${scope}`,
+    'X-Amz-Date': timestamp,
+    'X-Amz-Expires': String(expiresSecs),
+    'X-Amz-SignedHeaders': 'host',
+  });
+  qp.sort();
+
+  const canonicalRequest = [
+    'GET',
+    url.pathname,
+    qp.toString(),
+    `host:${host}\n`,
+    'host',
+    'UNSIGNED-PAYLOAD',
+  ].join('\n');
+
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    timestamp,
+    scope,
+    createHash('sha256').update(canonicalRequest).digest('hex'),
+  ].join('\n');
+
+  const hmac = (k: Buffer | string, d: string) =>
+    createHmac('sha256', k).update(d).digest();
+  const signingKey = hmac(
+    hmac(hmac(hmac('AWS4' + secretKey, date), region), 's3'),
+    'aws4_request',
+  );
+  const signature = createHmac('sha256', signingKey)
+    .update(stringToSign)
+    .digest('hex');
+
+  qp.set('X-Amz-Signature', signature);
+  return `${url.origin}${url.pathname}?${qp.toString()}`;
+}
 
 @Controller('api/admin/video')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
@@ -311,30 +374,44 @@ export class VideoExecutionController {
       ? exec.renderOutputPath.slice(s3Prefix.length)
       : exec.renderOutputPath.replace(/^s3:\/\/[^/]+\//, '');
 
-    const baseUrl = process.env.VIDEO_RENDER_BASE_URL;
-    if (!baseUrl) {
-      res.status(503).json({ error: 'Render service not configured' });
-      return;
-    }
-
     try {
-      // Get presigned URL from renderer (internal, localhost is OK here)
-      const presignedRes = await fetch(
-        `${baseUrl}/presigned-url?key=${encodeURIComponent(key)}`,
-        { signal: AbortSignal.timeout(10000) },
-      );
+      // Try render service first (prod/preprod), fallback to direct MinIO (dev)
+      let videoUrl: string | null = null;
 
-      if (!presignedRes.ok) {
-        res
-          .status(502)
-          .json({ error: 'Failed to get video URL from renderer' });
-        return;
+      const baseUrl = process.env.VIDEO_RENDER_BASE_URL;
+      if (baseUrl) {
+        try {
+          const presignedRes = await fetch(
+            `${baseUrl}/presigned-url?key=${encodeURIComponent(key)}`,
+            { signal: AbortSignal.timeout(5000) },
+          );
+          if (presignedRes.ok) {
+            const data = (await presignedRes.json()) as { url: string };
+            videoUrl = data.url;
+          }
+        } catch {
+          this.logger.warn(
+            `Render service unreachable, falling back to direct MinIO`,
+          );
+        }
       }
 
-      const { url } = (await presignedRes.json()) as { url: string };
+      // Fallback: generate presigned URL directly via MinIO S3 API
+      if (!videoUrl) {
+        videoUrl = generateS3PresignedUrl(bucketName, key);
+        if (!videoUrl) {
+          res.status(503).json({
+            error: 'No render service and no S3 credentials configured',
+          });
+          return;
+        }
+        this.logger.log(
+          `Using direct MinIO presigned URL for execution #${executionLogId}`,
+        );
+      }
 
-      // Fetch the video from MinIO using the presigned URL (server-side, localhost works)
-      const videoRes = await fetch(url, {
+      // Fetch the video using the presigned URL
+      const videoRes = await fetch(videoUrl, {
         signal: AbortSignal.timeout(60000),
       });
 
@@ -357,7 +434,6 @@ export class VideoExecutionController {
       );
       res.setHeader('Cache-Control', 'private, max-age=3600');
 
-      // Stream the body using Node.js readable stream
       const reader = videoRes.body.getReader();
       const pump = async (): Promise<void> => {
         const { done, value } = await reader.read();

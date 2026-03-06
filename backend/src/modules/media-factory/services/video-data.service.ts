@@ -29,6 +29,7 @@ export interface CreateProductionDto {
 
 export interface UpdateProductionDto {
   status?: VideoStatus;
+  scriptText?: string;
   knowledgeContract?: Record<string, unknown>;
   claimTable?: unknown[];
   evidencePack?: unknown[];
@@ -162,6 +163,11 @@ export class VideoDataService extends SupabaseBaseService {
     };
 
     if (updates.status !== undefined) dbUpdates.status = updates.status;
+    if (updates.scriptText !== undefined) {
+      dbUpdates.script_text = updates.scriptText;
+      dbUpdates.script_generated_at = new Date().toISOString();
+      dbUpdates.script_model = 'manual';
+    }
     if (updates.knowledgeContract !== undefined)
       dbUpdates.knowledge_contract = updates.knowledgeContract;
     if (updates.claimTable !== undefined)
