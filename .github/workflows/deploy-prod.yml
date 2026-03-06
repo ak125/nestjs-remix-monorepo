@@ -85,9 +85,10 @@ jobs:
 
           docker network create automecanik-prod 2>/dev/null || true
 
-          # Sauvegarder l'image actuelle pour rollback eventuel
+          # Sauvegarder l'image actuelle pour rollback automatique
           CURRENT_IMAGE=$(docker inspect --format='{{.Image}}' nestjs-remix-monorepo-prod 2>/dev/null || echo "")
-          echo "📦 Current image: $CURRENT_IMAGE"
+          echo "Current image: $CURRENT_IMAGE"
+          docker tag massdoc/nestjs-remix-monorepo:production massdoc/nestjs-remix-monorepo:production-previous 2>/dev/null || true
 
           docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
           docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
@@ -95,32 +96,62 @@ jobs:
           docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod
           docker compose -f docker-compose.imgproxy.yml up -d --force-recreate
 
-          echo "⏳ Waiting for containers to start (60s)..."
+          echo "Waiting for containers to start (60s)..."
           sleep 60
 
           if ! docker ps | grep -q nestjs-remix-monorepo-prod; then
-            echo "❌ Container not running - checking logs..."
+            echo "Container not running - checking logs..."
             docker logs nestjs-remix-monorepo-prod --tail 50
             exit 1
           fi
 
-          echo "🏥 Running health check (inside container)..."
-          RETRIES=3
+          # Image assertion: verify container runs the correct image
+          EXPECTED_IMAGE="massdoc/nestjs-remix-monorepo:production"
+          ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Config.Image}}')
+          if [ "$ACTUAL_IMAGE" != "$EXPECTED_IMAGE" ]; then
+            echo "FATAL: Container running $ACTUAL_IMAGE instead of $EXPECTED_IMAGE"
+            exit 1
+          fi
+          echo "Image verified: $ACTUAL_IMAGE"
+
+          # Health check with retry
+          echo "Running health check (inside container)..."
+          RETRIES=5
+          HEALTH=""
           for i in $(seq 1 $RETRIES); do
             HEALTH=$(docker exec nestjs-remix-monorepo-prod wget -qO- http://localhost:3000/health 2>/dev/null || echo "")
             if echo "$HEALTH" | grep -q '"status":"ok"'; then
-              echo "✅ /health -> OK (attempt $i/$RETRIES)"
+              echo "/health -> OK (attempt $i/$RETRIES)"
               break
             fi
-            echo "⏳ Health check attempt $i/$RETRIES failed, waiting 10s..."
+            echo "Health check attempt $i/$RETRIES failed, waiting 10s..."
             sleep 10
           done
+
           if ! echo "$HEALTH" | grep -q '"status":"ok"'; then
-            echo "❌ Health check failed after $RETRIES attempts"
+            echo "Health check failed after $RETRIES attempts — initiating rollback"
             docker logs nestjs-remix-monorepo-prod --tail 30
+
+            # Rollback to previous image
+            if docker image inspect massdoc/nestjs-remix-monorepo:production-previous > /dev/null 2>&1; then
+              echo "Rolling back to production-previous..."
+              docker stop nestjs-remix-monorepo-prod 2>/dev/null || true
+              docker rm nestjs-remix-monorepo-prod 2>/dev/null || true
+              docker tag massdoc/nestjs-remix-monorepo:production-previous massdoc/nestjs-remix-monorepo:production
+              docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod
+              sleep 30
+              ROLLBACK_HEALTH=$(docker exec nestjs-remix-monorepo-prod wget -qO- http://localhost:3000/health 2>/dev/null || echo "")
+              if echo "$ROLLBACK_HEALTH" | grep -q '"status":"ok"'; then
+                echo "Rollback successful — previous version restored"
+              else
+                echo "Rollback also failed — manual intervention required"
+              fi
+            else
+              echo "No previous image available for rollback"
+            fi
             exit 1
           fi
-          echo "✅ PROD deployment successful - API responding"
+          echo "PROD deployment successful - API responding"
 
           docker image prune -f
 
@@ -132,8 +163,18 @@ jobs:
           # All checks run INSIDE the container (host networking unreliable on self-hosted runner)
           EXEC="docker exec nestjs-remix-monorepo-prod"
 
+          # Image assertion (double-check)
+          EXPECTED_IMAGE="massdoc/nestjs-remix-monorepo:production"
+          ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Config.Image}}')
+          if [ "$ACTUAL_IMAGE" != "$EXPECTED_IMAGE" ]; then
+            echo "FATAL: Container image mismatch: $ACTUAL_IMAGE (expected $EXPECTED_IMAGE)"
+            FAILED=1
+          else
+            echo "Image OK: $ACTUAL_IMAGE"
+          fi
+
           # Test health
-          echo "🏥 Testing health inside container..."
+          echo "Testing health inside container..."
           HEALTH=$($EXEC wget -qO- http://localhost:3000/health 2>/dev/null || echo "FAIL")
           if echo "$HEALTH" | grep -q '"status":"ok"'; then
             echo "✅ /health -> OK"
