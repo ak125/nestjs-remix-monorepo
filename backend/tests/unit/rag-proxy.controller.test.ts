@@ -22,6 +22,7 @@ import { RagCleanupService } from '../../src/modules/rag-proxy/services/rag-clea
 import { RagWebIngestDbService } from '../../src/modules/rag-proxy/services/rag-web-ingest-db.service';
 import { RagIngestionService } from '../../src/modules/rag-proxy/services/rag-ingestion.service';
 import { RagImageManagementService } from '../../src/modules/rag-proxy/services/rag-image-management.service';
+import { RagVideoManagementService } from '../../src/modules/rag-proxy/services/rag-video-management.service';
 
 describe('RagProxyController', () => {
   let app: INestApplication;
@@ -41,6 +42,7 @@ describe('RagProxyController', () => {
         { provide: RagWebIngestDbService, useValue: {} },
         { provide: RagIngestionService, useValue: {} },
         { provide: RagImageManagementService, useValue: {} },
+        { provide: RagVideoManagementService, useValue: {} },
         { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('test-internal-api-key') } },
       ],
     }).compile();

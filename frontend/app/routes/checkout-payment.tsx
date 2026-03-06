@@ -483,7 +483,7 @@ export default function PaymentPage() {
                   </div>
 
                   {/* Consignes */}
-                  {order.consigneTotal > 0 ? (
+                  {(order.consigneTotal ?? 0) > 0 ? (
                     <div className="flex justify-between text-sm bg-amber-50 -mx-6 px-6 py-3 border-y border-amber-100">
                       <span className="flex items-center gap-2 text-amber-700 font-medium">
                         <svg
@@ -502,7 +502,7 @@ export default function PaymentPage() {
                         Consignes
                       </span>
                       <span className="font-semibold text-amber-700">
-                        {formatPrice(order.consigneTotal)}
+                        {formatPrice(order.consigneTotal ?? 0)}
                       </span>
                     </div>
                   ) : null}
