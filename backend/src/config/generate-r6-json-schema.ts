@@ -20,8 +20,8 @@ const raw = zodToJsonSchema(R6PageContractSchema as any, {
 const jsonSchema =
   '$ref' in raw && 'definitions' in raw
     ? {
-        $schema:
-          (raw as any).$schema || 'http://json-schema.org/draft-07/schema#',
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        $id: 'https://automecanik.com/schemas/PageContractR6.json',
         title: 'PageContractR6',
         ...(raw as any).definitions?.PageContractR6,
       }

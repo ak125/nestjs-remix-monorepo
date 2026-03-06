@@ -39,9 +39,16 @@ const r6BaseSlot = {
   priority: z.enum(['high', 'normal', 'low']).default('normal'),
   source: z.enum(R6_MEDIA_SOURCES).default('none'),
   alt: R6AltTextSchema,
-  caption: z.string().max(140).optional(),
+  caption: z
+    .object({
+      template: z.string().min(3).max(140),
+      variables: z.record(z.string()).optional(),
+    })
+    .optional(),
   loading: z.enum(['eager', 'lazy']).default('lazy'),
   fetch_priority: z.enum(['high', 'auto', 'low']).optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
   notes: z.string().max(200).optional(),
 };
 

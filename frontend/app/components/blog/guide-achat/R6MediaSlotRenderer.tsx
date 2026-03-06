@@ -9,7 +9,7 @@ const CALLOUT_CONFIG: Record<string, { variant: string; icon: typeof Info }> = {
   budget: { variant: "info", icon: Wallet },
 };
 
-function interpolateAlt(
+function interpolateTemplate(
   template: string,
   variables?: Record<string, string>,
   gammeName?: string,
@@ -46,11 +46,18 @@ export function R6MediaSlotRenderer({
   return (
     <>
       {filtered.map((slot) => {
-        const alt = interpolateAlt(
+        const alt = interpolateTemplate(
           slot.alt.template,
           slot.alt.variables,
           gammeName,
         );
+        const captionText = slot.caption
+          ? interpolateTemplate(
+              slot.caption.template,
+              slot.caption.variables,
+              gammeName,
+            )
+          : undefined;
 
         switch (slot.type) {
           case "image":
@@ -64,11 +71,13 @@ export function R6MediaSlotRenderer({
                   fetchPriority={
                     slot.fetch_priority === "high" ? "high" : undefined
                   }
+                  width={slot.width}
+                  height={slot.height}
                   className="w-full rounded-lg border border-gray-200"
                 />
-                {slot.caption && (
+                {captionText && (
                   <figcaption className="mt-1.5 text-xs text-gray-500 text-center">
-                    {slot.caption}
+                    {captionText}
                   </figcaption>
                 )}
               </figure>
@@ -98,9 +107,9 @@ export function R6MediaSlotRenderer({
                 className="my-4 border-l-4 border-gray-300 pl-4 italic text-gray-600 text-sm"
               >
                 {slot.content_hint || alt}
-                {slot.caption && (
+                {captionText && (
                   <footer className="mt-1 text-xs text-gray-400 not-italic">
-                    — {slot.caption}
+                    — {captionText}
                   </footer>
                 )}
               </blockquote>

@@ -149,9 +149,11 @@ export interface R6MediaSlotFrontend {
   src?: string;
   src_key?: string;
   alt: { template: string; variables?: Record<string, string> };
-  caption?: string;
+  caption?: { template: string; variables?: Record<string, string> };
   loading: "eager" | "lazy";
   fetch_priority?: "high" | "auto" | "low";
+  width?: number;
+  height?: number;
   callout_style?: "info" | "warning" | "tip" | "budget";
   content_hint?: string;
   format?: "webp" | "avif";
