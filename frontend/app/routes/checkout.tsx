@@ -46,7 +46,7 @@ import { getCart } from "../services/cart.server";
 // Phase 9: PageRole pour analytics
 export const handle = {
   hideGlobalFooter: true,
-  pageRole: createPageRoleMeta(PageRole.R2_PRODUCT, {
+  pageRole: createPageRoleMeta(PageRole.RX_CHECKOUT, {
     clusterId: "checkout",
     canonicalEntity: "finalisation",
     funnelStage: "decision",

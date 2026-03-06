@@ -10,6 +10,7 @@ import {
 import { Response } from 'express';
 import { PayboxService } from '../services/paybox.service';
 import { ConfigService } from '@nestjs/config';
+import { PaymentDataService } from '../repositories/payment-data.service';
 import { getErrorMessage } from '../../../common/utils/error.utils';
 
 /**
@@ -23,6 +24,7 @@ export class PayboxRedirectController {
   constructor(
     private readonly payboxService: PayboxService,
     private readonly configService: ConfigService,
+    private readonly paymentDataService: PaymentDataService,
   ) {}
 
   @Get('redirect')
@@ -58,9 +60,40 @@ export class PayboxRedirectController {
         `);
       }
 
-      // Paramètres du paiement (comme l'ancien PHP - AUCUNE URL)
+      // 🔐 SECURITY: Re-read amount from DB — never trust client-supplied amount
+      const order = await this.paymentDataService.getOrderForPayment(orderId);
+      if (!order) {
+        this.logger.error(`❌ Order not found: ${orderId}`);
+        return res.status(HttpStatus.BAD_REQUEST).send(`
+          <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Erreur</title></head>
+          <body><h1>Commande introuvable</h1><a href="/checkout-payment">Retour</a></body></html>
+        `);
+      }
+      if (order.ord_is_pay === '1') {
+        this.logger.warn(`⚠️ Order already paid: ${orderId}`);
+        return res.status(HttpStatus.BAD_REQUEST).send(`
+          <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Erreur</title></head>
+          <body><h1>Commande deja payee</h1><a href="/account/orders">Mes commandes</a></body></html>
+        `);
+      }
+
+      const dbAmount = parseFloat(order.ord_total_ttc || '0');
+      if (dbAmount <= 0) {
+        this.logger.error(
+          `❌ Invalid order amount: ${dbAmount} for ${orderId}`,
+        );
+        return res.status(HttpStatus.BAD_REQUEST).send(`
+          <!DOCTYPE html><html><head><meta charset="UTF-8"><title>Erreur</title></head>
+          <body><h1>Montant invalide</h1><a href="/checkout-payment">Retour</a></body></html>
+        `);
+      }
+
+      this.logger.log(
+        `✅ Order ${orderId} verified: DB amount=${dbAmount} EUR`,
+      );
+
       const paymentParams = {
-        amount: parseFloat(amount),
+        amount: dbAmount, // Use DB amount, ignore client-supplied amount
         currency: 'EUR',
         orderId,
         customerEmail: email,

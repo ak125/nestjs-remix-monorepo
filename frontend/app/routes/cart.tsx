@@ -58,7 +58,7 @@ import { getCart } from "../services/cart.server";
 
 export const handle = {
   hideGlobalFooter: true,
-  pageRole: createPageRoleMeta(PageRole.R2_PRODUCT, {
+  pageRole: createPageRoleMeta(PageRole.RX_CHECKOUT, {
     clusterId: "cart",
     canonicalEntity: "panier",
     funnelStage: "decision",

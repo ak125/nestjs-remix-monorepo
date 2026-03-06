@@ -1,4 +1,3 @@
-
 /**
  * Types pour les paiements côté frontend
  */
@@ -43,12 +42,12 @@ export interface Payment {
 }
 
 export enum PaymentStatus {
-  PENDING = 'pending',
-  PROCESSING = 'processing',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled',
-  REFUNDED = 'refunded',
+  PENDING = "pending",
+  PROCESSING = "processing",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  CANCELLED = "cancelled",
+  REFUNDED = "refunded",
 }
 
 export interface PaymentStats {
@@ -138,4 +137,6 @@ export interface OrderItem {
   quantity: number;
   price: number;
   total: number;
+  ref?: string;
+  brand?: string;
 }
