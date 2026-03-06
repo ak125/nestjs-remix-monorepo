@@ -11,6 +11,7 @@ import { RagChatService } from './services/rag-chat.service';
 import { RagKnowledgeService } from './services/rag-knowledge.service';
 import { RagIngestionService } from './services/rag-ingestion.service';
 import { RagWebhookCompletionService } from './services/rag-webhook-completion.service';
+import { RagImageManagementService } from './services/rag-image-management.service';
 
 /** Shape of a web ingestion job stored in Redis. */
 export interface WebJob {
@@ -38,6 +39,7 @@ export class RagProxyService {
     private readonly knowledgeService: RagKnowledgeService,
     private readonly ingestionService: RagIngestionService,
     private readonly webhookService: RagWebhookCompletionService,
+    private readonly imageService: RagImageManagementService,
   ) {}
 
   // ── Chat ──
@@ -102,6 +104,7 @@ export class RagProxyService {
   ingestWebUrl(request: {
     url?: string;
     truthLevel?: string;
+    force?: boolean;
   }): Promise<{ jobId: string; status: string }> {
     return this.ingestionService.ingestWebUrl(request);
   }
@@ -126,10 +129,6 @@ export class RagProxyService {
   }
 
   listImages() {
-    return this.webhookService.listImages();
-  }
-
-  describeImage(hash: string) {
-    return this.webhookService.describeImage(hash);
+    return this.imageService.listImages();
   }
 }

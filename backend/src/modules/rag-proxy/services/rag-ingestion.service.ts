@@ -5,6 +5,7 @@ import {
   ConflictException,
   HttpException,
   OnModuleDestroy,
+  OnModuleInit,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { promises as fs, readdirSync } from 'node:fs';
@@ -21,10 +22,11 @@ import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagGammeDetectionService } from './rag-gamme-detection.service';
 import { RagCleanupService } from './rag-cleanup.service';
 import { RagWebIngestDbService } from './rag-web-ingest-db.service';
+import { RagImageManagementService } from './rag-image-management.service';
 import { classifyIngestError, ERROR_LABELS } from '../types/web-ingest-errors';
 
 @Injectable()
-export class RagIngestionService implements OnModuleDestroy {
+export class RagIngestionService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RagIngestionService.name);
   private readonly ragUrl: string;
   private readonly ragApiKey: string;
@@ -34,18 +36,94 @@ export class RagIngestionService implements OnModuleDestroy {
   /** Track active poll timers for cleanup on destroy */
   private readonly activePollTimers = new Set<ReturnType<typeof setInterval>>();
 
-  /** Atomic lock: only one web ingest at a time (single-process guard). */
-  private activeWebIngestJobId: string | null = null;
+  /** Concurrency pool: up to N web ingests in parallel. */
+  private readonly activeWebIngestJobs = new Set<string>();
+  private readonly activeWebIngestStartTimes = new Map<string, number>();
+  private lockWatchdogTimer: ReturnType<typeof setInterval> | null = null;
+  private static readonly MAX_CONCURRENT = 3;
+  private static readonly LOCK_WATCHDOG_INTERVAL_MS = 5 * 60_000; // check every 5 min
+  private static readonly LOCK_MAX_AGE_MS = 10 * 60_000; // 10 min max
 
-  /** In-memory queue for web ingest requests when lock is held. */
+  /** Deferred reindex: accumulate paths, flush when all slots free. */
+  private readonly pendingReindexPaths = new Set<string>();
+
+  /** In-memory queue for web ingest requests when all slots are busy. */
   private readonly pendingWebIngests: Array<{
     url: string;
     truthLevel: string;
     jobId: string;
   }> = [];
-  private pendingDrainTimer: ReturnType<typeof setTimeout> | null = null;
   private static readonly MAX_PENDING = 10;
-  private static readonly DRAIN_INTERVAL_MS = 30_000; // retry every 30s
+
+  async onModuleInit() {
+    // 1. Mark orphaned "running" jobs as failed in DB (crash recovery)
+    await this.ragWebIngestDbService.failOrphanedRunningJobs();
+
+    // 1b. Also mark orphaned "running" jobs as failed in Redis
+    const allRedisJobs = await this.ragRedisJobService.getAllJobs();
+    for (const job of allRedisJobs) {
+      if (job.status === 'running') {
+        job.status = 'failed';
+        job.finishedAt = Math.floor(Date.now() / 1000);
+        job.logLines = [...(job.logLines || []), 'Orphaned: server restarted'];
+        await this.ragRedisJobService.setJob(job);
+        this.logger.warn(`Marked orphaned Redis job ${job.jobId} as failed`);
+      }
+    }
+
+    // 1c. Force-clear in-memory pool (any "running" job from previous process is dead)
+    this.activeWebIngestJobs.clear();
+    this.activeWebIngestStartTimes.clear();
+
+    // 2. Rehydrate "queued" jobs from DB into pendingWebIngests
+    const queued = await this.ragWebIngestDbService.listJobsByStatus('queued');
+    for (const job of queued) {
+      this.pendingWebIngests.push({
+        jobId: job.job_id,
+        url: job.url,
+        truthLevel: job.truth_level,
+      });
+    }
+    if (this.pendingWebIngests.length > 0) {
+      this.logger.log(
+        `Rehydrated ${this.pendingWebIngests.length} queued job(s) from DB`,
+      );
+      // Drain immediately (slots are free after startup)
+      this.drainPendingQueue();
+    }
+
+    // 3. Rehydrate pending reindex paths from Redis
+    const pendingPaths = await this.ragRedisJobService.getPendingReindexPaths();
+    for (const p of pendingPaths) this.pendingReindexPaths.add(p);
+    if (pendingPaths.length > 0) {
+      this.logger.log(
+        `Rehydrated ${pendingPaths.length} pending reindex path(s)`,
+      );
+      void this.flushReindex();
+    }
+
+    // 4. Start lock watchdog
+    this.lockWatchdogTimer = setInterval(() => {
+      this.checkStaleLock();
+    }, RagIngestionService.LOCK_WATCHDOG_INTERVAL_MS);
+  }
+
+  private checkStaleLock(): void {
+    if (this.activeWebIngestStartTimes.size === 0) return;
+    let released = 0;
+    for (const [jobId, startedAt] of this.activeWebIngestStartTimes) {
+      const age = Date.now() - startedAt;
+      if (age > RagIngestionService.LOCK_MAX_AGE_MS) {
+        this.logger.warn(
+          `Watchdog: slot held by ${jobId} for ${Math.round(age / 1000)}s — force-releasing`,
+        );
+        this.activeWebIngestJobs.delete(jobId);
+        this.activeWebIngestStartTimes.delete(jobId);
+        released++;
+      }
+    }
+    if (released > 0) this.drainPendingQueue();
+  }
 
   onModuleDestroy() {
     const count = this.activePollTimers.size;
@@ -53,13 +131,13 @@ export class RagIngestionService implements OnModuleDestroy {
       clearInterval(timer);
     }
     this.activePollTimers.clear();
-    if (this.pendingDrainTimer) {
-      clearTimeout(this.pendingDrainTimer);
-      this.pendingDrainTimer = null;
+    if (this.lockWatchdogTimer) {
+      clearInterval(this.lockWatchdogTimer);
+      this.lockWatchdogTimer = null;
     }
     this.logger.log(
       `RagIngestionService destroyed, cleared ${count} poll timers, ` +
-        `${this.pendingWebIngests.length} pending ingests dropped`,
+        `${this.activeWebIngestJobs.size} active + ${this.pendingWebIngests.length} pending ingests dropped`,
     );
   }
 
@@ -70,6 +148,7 @@ export class RagIngestionService implements OnModuleDestroy {
     private readonly ragGammeDetectionService: RagGammeDetectionService,
     private readonly ragCleanupService: RagCleanupService,
     private readonly ragWebIngestDbService: RagWebIngestDbService,
+    private readonly ragImageManagementService: RagImageManagementService,
   ) {
     // URL externe obligatoire - le RAG est sur un serveur SEPARE (pas Docker local)
     this.ragUrl = this.configService.getOrThrow<string>('RAG_SERVICE_URL');
@@ -256,6 +335,7 @@ export class RagIngestionService implements OnModuleDestroy {
     url?: string;
     truthLevel?: string;
     jobId?: string;
+    force?: boolean;
   }): Promise<{ jobId: string; status: string }> {
     const url = (request.url || '').trim();
     try {
@@ -264,24 +344,30 @@ export class RagIngestionService implements OnModuleDestroy {
       throw new BadRequestException('Invalid URL');
     }
 
+    // Dedup guard: block if a successful ingest already exists for this URL
+    if (!request.force) {
+      const existing = await this.ragWebIngestDbService.findDoneJobByUrl(url);
+      if (existing) {
+        throw new ConflictException(
+          `URL already ingested (job ${existing.job_id}, ${existing.finished_at}). Use force:true to re-ingest.`,
+        );
+      }
+    }
+
     const jobId =
       request.jobId ||
       `web-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const truthLevel = request.truthLevel || 'L3';
 
-    // Prevent concurrent web ingestions (atomic in-process lock + Redis fallback)
-    const allJobs = await this.ragRedisJobService.getAllJobs();
-    const runningJob = allJobs.find((j) => j.status === 'running');
-
-    if (this.activeWebIngestJobId || runningJob) {
-      // Queue instead of rejecting — will drain when lock is released
+    // Concurrency pool: queue if all slots busy
+    if (this.activeWebIngestJobs.size >= RagIngestionService.MAX_CONCURRENT) {
       if (this.pendingWebIngests.length >= RagIngestionService.MAX_PENDING) {
         throw new ConflictException(
           `Web ingest queue full (${RagIngestionService.MAX_PENDING} pending). Try again later.`,
         );
       }
+      const busyIds = [...this.activeWebIngestJobs].join(', ');
       this.pendingWebIngests.push({ url, truthLevel, jobId });
-      this.scheduleDrain();
       const job: WebJob = {
         jobId,
         url,
@@ -291,17 +377,18 @@ export class RagIngestionService implements OnModuleDestroy {
         finishedAt: null,
         returnCode: null,
         logLines: [
-          `Queued behind ${this.activeWebIngestJobId || runningJob?.jobId}`,
+          `Queued (${this.activeWebIngestJobs.size}/${RagIngestionService.MAX_CONCURRENT} slots busy: ${busyIds})`,
         ],
       };
       await this.ragRedisJobService.setJob(job);
       void this.ragWebIngestDbService.upsertJob(job);
       this.logger.log(
-        `Web ingest queued: ${jobId} for ${url} (behind ${this.activeWebIngestJobId || runningJob?.jobId})`,
+        `Web ingest queued: ${jobId} for ${url} (${this.activeWebIngestJobs.size} slots busy)`,
       );
       return { jobId, status: 'queued' };
     }
-    this.activeWebIngestJobId = jobId;
+    this.activeWebIngestJobs.add(jobId);
+    this.activeWebIngestStartTimes.set(jobId, Date.now());
 
     const job: WebJob = {
       jobId,
@@ -320,12 +407,10 @@ export class RagIngestionService implements OnModuleDestroy {
     // Process asynchronously (don't block the HTTP response)
     this.processWebIngest(job)
       .then(() => {
-        this.activeWebIngestJobId = null;
-        this.drainPendingQueue();
+        this.releaseSlot(jobId);
       })
       .catch(async (err) => {
-        this.activeWebIngestJobId = null;
-        this.drainPendingQueue();
+        this.releaseSlot(jobId);
         job.status = 'failed';
         job.finishedAt = Math.floor(Date.now() / 1000);
         job.returnCode = 1;
@@ -357,6 +442,18 @@ export class RagIngestionService implements OnModuleDestroy {
     const containerTmpPath = `/tmp/web-import/${job.jobId}`;
     const safeUrl = job.url.replace(/'/g, "'\\''");
 
+    // Snapshot existing image hashes before ingest (to detect new ones later)
+    const imgDir = path.join(knowledgeHostPath, '_raw', 'web-images');
+    const existingImageHashes = new Set<string>();
+    try {
+      for (const f of readdirSync(imgDir)) {
+        const m = f.match(/^([a-f0-9]{16})\.(jpg|jpeg|png|webp|gif)$/);
+        if (m) existingImageHashes.add(m[1]);
+      }
+    } catch {
+      // _raw/web-images/ may not exist yet
+    }
+
     // Step 1: Run ingest_web.py (writes sections to /tmp/ in container)
     job.logLines.push(`Running ingest_web.py for ${job.url}`);
     const ingestCmd = [
@@ -366,7 +463,7 @@ export class RagIngestionService implements OnModuleDestroy {
       `--url '${safeUrl}'`,
       `--knowledge-path '${containerTmpPath}'`,
       `--truth-level ${job.truthLevel}`,
-      '--no-images',
+      `--source-url '${safeUrl}'`,
       '-v',
     ].join(' ');
 
@@ -411,6 +508,20 @@ export class RagIngestionService implements OnModuleDestroy {
     );
     job.logLines.push('Copied sections to knowledge directory');
 
+    // Detect newly downloaded images by comparing with pre-ingest snapshot
+    const newImageHashes: string[] = [];
+    try {
+      for (const f of readdirSync(imgDir)) {
+        const m = f.match(/^([a-f0-9]{16})\.(jpg|jpeg|png|webp|gif)$/);
+        if (m && !existingImageHashes.has(m[1])) newImageHashes.push(m[1]);
+      }
+    } catch {
+      // _raw/web-images/ may not exist yet
+    }
+    if (newImageHashes.length > 0) {
+      job.logLines.push(`New images: ${newImageHashes.length}`);
+    }
+
     // Step 3b: Validate frontmatter BEFORE reindex (quarantine invalid files)
     const validation = this.frontmatterValidator.validateIntakeZone(
       knowledgeHostPath,
@@ -426,31 +537,51 @@ export class RagIngestionService implements OnModuleDestroy {
         `\u2713 ${validation.valid.length} file(s) passed validation`,
       );
     }
-    await this.ragRedisJobService.setJob(job); // persist after copy + validation
-
-    // Step 4: Reindex the new files in Weaviate
-    job.logLines.push('Reindexing...');
-    const reindexCmd = [
-      'exec 8>/tmp/rag-global.lock;',
-      "if ! flock -n 8; then echo 'Another RAG operation active (global lock), aborting web reindex'; exit 1; fi;",
-      'ENV=dev',
-      'WEAVIATE_URL=http://weaviate-prod:8080',
-      'python3 /app/scripts/reindex.py',
-      `--path '/knowledge/${subDir}'`,
-      '--collection AUTO',
-      '--batch-size 5',
-      '--cpu-strict',
-      '--strict-routing',
-    ].join(' ');
-
-    try {
-      await this.execDockerCmd(containerName, reindexCmd, job);
-    } catch (err) {
-      const code = classifyIngestError(4, job.logLines);
-      throw new Error(
-        `Step 4: ${ERROR_LABELS[code]} — ${getErrorMessage(err)}`,
-      );
+    // Step 3c: Early gamme detection + image enrichment (before reindex which may timeout)
+    if (validation.valid.length > 0) {
+      try {
+        const earlyGammeMap =
+          await this.ragGammeDetectionService.resolveGammesFromFiles(
+            validation.valid,
+          );
+        const earlyGammes = Array.from(earlyGammeMap.keys());
+        if (earlyGammes.length > 0) {
+          let totalEnriched = 0;
+          // Enrich new images from this job
+          if (newImageHashes.length > 0) {
+            totalEnriched +=
+              this.ragImageManagementService.enrichNewImagePrompts(
+                newImageHashes,
+                earlyGammes[0],
+              );
+          }
+          // Also enrich orphaned images from previous failed jobs (same domain)
+          totalEnriched +=
+            this.ragImageManagementService.enrichOrphanedImagesBySourceUrl(
+              job.url,
+              earlyGammes[0],
+            );
+          if (totalEnriched > 0) {
+            job.logLines.push(
+              `Auto-enriched ${totalEnriched} image(s) with gamme: ${earlyGammes[0]}`,
+            );
+          }
+        }
+      } catch (enrichErr) {
+        job.logLines.push(
+          `Image enrichment skipped: ${enrichErr instanceof Error ? enrichErr.message : String(enrichErr)}`,
+        );
+      }
     }
+
+    await this.ragRedisJobService.setJob(job); // persist after copy + validation + enrichment
+
+    // Step 4: Defer reindex (will run as batch when all slots free)
+    this.pendingReindexPaths.add(subDir);
+    await this.ragRedisJobService.addPendingReindexPath(subDir);
+    job.logLines.push(
+      `Reindex deferred for ${subDir}/ (will batch when slots free)`,
+    );
 
     // Step 5: Cleanup container temp
     execFileSync(
@@ -518,10 +649,19 @@ export class RagIngestionService implements OnModuleDestroy {
     container: string,
     cmd: string,
     job: { logLines: string[] },
+    timeoutMs = 120_000,
   ): Promise<void> {
     const { spawn } = await import('node:child_process');
     return new Promise<void>((resolve, reject) => {
+      let settled = false;
       const child = spawn('docker', ['exec', container, 'bash', '-c', cmd]);
+      const timer = setTimeout(() => {
+        if (!settled) {
+          settled = true;
+          child.kill('SIGKILL');
+          reject(new Error(`Command timed out after ${timeoutMs / 1000}s`));
+        }
+      }, timeoutMs);
       child.stdout?.on('data', (d: Buffer) => {
         for (const line of d.toString().split('\n').filter(Boolean)) {
           job.logLines.push(line.trim());
@@ -533,6 +673,9 @@ export class RagIngestionService implements OnModuleDestroy {
         }
       });
       child.on('close', (code) => {
+        clearTimeout(timer);
+        if (settled) return;
+        settled = true;
         if (code === 0) resolve();
         else reject(new Error(`Command exited with code ${code}`));
       });
@@ -818,43 +961,88 @@ export class RagIngestionService implements OnModuleDestroy {
     };
   }
 
-  // ── Pending queue drain ──
+  // ── Slot management + queue drain ──
 
   /**
-   * Schedule a drain attempt if not already scheduled.
+   * Release a concurrency slot and trigger drain + reindex flush.
    */
-  private scheduleDrain(): void {
-    if (this.pendingDrainTimer) return;
-    this.pendingDrainTimer = setTimeout(() => {
-      this.pendingDrainTimer = null;
-      this.drainPendingQueue();
-    }, RagIngestionService.DRAIN_INTERVAL_MS);
+  private releaseSlot(jobId: string): void {
+    this.activeWebIngestJobs.delete(jobId);
+    this.activeWebIngestStartTimes.delete(jobId);
+    this.drainPendingQueue();
+    void this.flushReindex();
   }
 
   /**
-   * Drain the next pending web ingest if the lock is free.
+   * Drain pending queue: fill available slots immediately.
    */
   private drainPendingQueue(): void {
-    if (this.activeWebIngestJobId || this.pendingWebIngests.length === 0)
+    while (
+      this.activeWebIngestJobs.size < RagIngestionService.MAX_CONCURRENT &&
+      this.pendingWebIngests.length > 0
+    ) {
+      const next = this.pendingWebIngests.shift();
+      if (!next) break;
+
+      this.logger.log(
+        `Draining pending web ingest: ${next.jobId} for ${next.url}`,
+      );
+
+      void this.ingestWebUrl({
+        url: next.url,
+        truthLevel: next.truthLevel,
+        jobId: next.jobId,
+        force: true, // already validated, skip dedup
+      }).catch((err) => {
+        this.logger.error(
+          `Failed to drain pending ingest ${next.jobId}: ${getErrorMessage(err)}`,
+        );
+      });
+    }
+  }
+
+  /**
+   * Flush deferred reindex paths when all slots are free.
+   */
+  private async flushReindex(): Promise<void> {
+    if (
+      this.activeWebIngestJobs.size > 0 ||
+      this.pendingReindexPaths.size === 0
+    )
       return;
 
-    const next = this.pendingWebIngests.shift();
-    if (!next) return;
+    const paths = [...this.pendingReindexPaths];
+    this.pendingReindexPaths.clear();
+    await this.ragRedisJobService.clearPendingReindex();
+    const containerName = process.env.RAG_CONTAINER_NAME || 'rag-api-prod';
 
     this.logger.log(
-      `Draining pending web ingest: ${next.jobId} for ${next.url}`,
+      `Batch reindex for ${paths.length} path(s): ${paths.join(', ')}`,
     );
 
-    // Fire-and-forget: call ingestWebUrl which will acquire the lock
-    // Pass the original jobId to prevent orphaned queued records
-    void this.ingestWebUrl({
-      url: next.url,
-      truthLevel: next.truthLevel,
-      jobId: next.jobId,
-    }).catch((err) => {
-      this.logger.error(
-        `Failed to drain pending ingest ${next.jobId}: ${getErrorMessage(err)}`,
-      );
-    });
+    const dummyLog = { logLines: [] as string[] };
+    for (const p of paths) {
+      const reindexCmd = [
+        'exec 8>/tmp/rag-global.lock;',
+        "if ! flock -n 8; then echo 'Another RAG operation active (global lock), aborting web reindex'; exit 1; fi;",
+        'ENV=dev',
+        'WEAVIATE_URL=http://weaviate-prod:8080',
+        'python3 /app/scripts/reindex.py',
+        `--path '/knowledge/${p}'`,
+        '--collection AUTO',
+        '--batch-size 5',
+        '--cpu-strict',
+        '--strict-routing',
+      ].join(' ');
+
+      try {
+        await this.execDockerCmd(containerName, reindexCmd, dummyLog, 300_000);
+        this.logger.log(`Reindex completed for ${p}/`);
+      } catch (err) {
+        this.logger.error(
+          `Batch reindex failed for ${p}/: ${getErrorMessage(err)}`,
+        );
+      }
+    }
   }
 }

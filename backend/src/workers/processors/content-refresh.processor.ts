@@ -105,6 +105,49 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     }
   }
 
+  @Process({ name: 'draft-auto-publish' })
+  async handleDraftAutoPublish(): Promise<void> {
+    if (!this.flags.draftAutoPublishEnabled) return;
+
+    const { data: drafts } = await this.client
+      .from('__rag_content_refresh_log')
+      .select('id, pg_id, pg_alias, page_type')
+      .eq('status', 'draft')
+      .limit(50);
+
+    if (!drafts?.length) return;
+
+    let published = 0;
+    for (const draft of drafts) {
+      try {
+        await this.client
+          .from('__rag_content_refresh_log')
+          .update({
+            status: 'published',
+            published_at: new Date().toISOString(),
+            published_by: 'auto-publish-job',
+          })
+          .eq('id', draft.id);
+        await this.markAsPublished(
+          draft.pg_id,
+          draft.pg_alias,
+          draft.page_type,
+        );
+        published++;
+      } catch (err) {
+        this.logger.warn(
+          `[draft-auto-publish] Failed to publish #${draft.id}: ${err instanceof Error ? err.message : err}`,
+        );
+      }
+    }
+
+    if (published > 0) {
+      this.logger.log(
+        `[draft-auto-publish] ${published}/${drafts.length} published`,
+      );
+    }
+  }
+
   @Process({
     name: 'content-refresh',
     concurrency: parseInt(process.env.PIPELINE_CONCURRENCY || '1', 10),
@@ -1105,7 +1148,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
     // (3) No FAIL or observe-only -> publish path
     if (failedGates.length === 0 || !hardGatesBlocking) {
-      if (isCanary) {
+      if (isCanary && !this.flags.canaryAutoPublish) {
         return {
           finalStatus: 'draft',
           reason: 'CANARY_HOLD',
@@ -1117,7 +1160,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       return qaOk
         ? {
             finalStatus: 'auto_published',
-            reason: 'GATES_CLEAN',
+            reason: isCanary ? 'CANARY_AUTO_PUBLISHED' : 'GATES_CLEAN',
             hardGates,
             repairResult: null,
           }
@@ -1252,7 +1295,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
     // (6) Post-repair decision
     if (failedGates.length === 0) {
-      if (isCanary) {
+      if (isCanary && !this.flags.canaryAutoPublish) {
         return {
           finalStatus: 'draft',
           reason: 'CANARY_REPAIRED_HOLD',
@@ -1264,7 +1307,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       return qaOk
         ? {
             finalStatus: 'auto_published',
-            reason: 'REPAIRED',
+            reason: isCanary ? 'CANARY_REPAIRED_AUTO_PUBLISHED' : 'REPAIRED',
             hardGates,
             repairResult,
           }

@@ -81,6 +81,58 @@ export class RagWebIngestDbService extends SupabaseBaseService {
     return data as RagWebIngestJobRow;
   }
 
+  /** List jobs by status (for startup rehydration). */
+  async listJobsByStatus(
+    status: string,
+    limit = 20,
+  ): Promise<RagWebIngestJobRow[]> {
+    const { data, error } = await this.supabase
+      .from('__rag_web_ingest_jobs')
+      .select('job_id, url, truth_level, status')
+      .eq('status', status)
+      .order('started_at', { ascending: true })
+      .limit(limit);
+    if (error) {
+      this.logger.warn(`listJobsByStatus failed: ${error.message}`);
+      return [];
+    }
+    return (data as RagWebIngestJobRow[]) || [];
+  }
+
+  /** Find a successful (done) job for the given URL (most recent). */
+  async findDoneJobByUrl(url: string): Promise<RagWebIngestJobRow | null> {
+    const { data } = await this.supabase
+      .from('__rag_web_ingest_jobs')
+      .select('job_id, url, status, finished_at')
+      .eq('url', url)
+      .eq('status', 'done')
+      .order('finished_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return (data as RagWebIngestJobRow) ?? null;
+  }
+
+  /** Mark all "running" jobs as failed (orphan cleanup on startup). */
+  async failOrphanedRunningJobs(): Promise<number> {
+    const { data, error } = await this.supabase
+      .from('__rag_web_ingest_jobs')
+      .update({
+        status: 'failed',
+        error_message: 'Orphaned: server restarted',
+        finished_at: new Date().toISOString(),
+      })
+      .eq('status', 'running')
+      .select('job_id');
+    if (error) {
+      this.logger.warn(`failOrphanedRunningJobs failed: ${error.message}`);
+      return 0;
+    }
+    const count = data?.length ?? 0;
+    if (count > 0)
+      this.logger.warn(`Marked ${count} orphaned running job(s) as failed`);
+    return count;
+  }
+
   private extractErrorMessage(logLines: string[]): string | null {
     // Find the most informative error line
     const errorLine = logLines.find(

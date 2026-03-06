@@ -7,6 +7,8 @@ export { type WebJob } from '../rag-proxy.service';
 
 const WEB_JOB_KEY_PREFIX = 'rag:web-jobs:';
 const WEB_JOB_TTL_SECONDS = 86_400; // 24 hours — DB is the permanent store
+const PENDING_REINDEX_KEY = 'rag:pending-reindex-paths';
+const PENDING_REINDEX_TTL = 86_400; // 24h
 
 @Injectable()
 export class RagRedisJobService implements OnModuleDestroy {
@@ -117,6 +119,43 @@ export class RagRedisJobService implements OnModuleDestroy {
     } catch (err) {
       this.logger.warn(
         `Failed to update web jobs index in Redis: ${getErrorMessage(err)}`,
+      );
+    }
+  }
+
+  // ── Pending reindex paths (deferred batch reindex) ──
+
+  async addPendingReindexPath(p: string): Promise<void> {
+    try {
+      const paths =
+        (await this.cacheService.get<string[]>(PENDING_REINDEX_KEY)) || [];
+      if (!paths.includes(p)) paths.push(p);
+      await this.cacheService.set(
+        PENDING_REINDEX_KEY,
+        paths,
+        PENDING_REINDEX_TTL,
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Failed to persist pending reindex path: ${getErrorMessage(err)}`,
+      );
+    }
+  }
+
+  async getPendingReindexPaths(): Promise<string[]> {
+    try {
+      return (await this.cacheService.get<string[]>(PENDING_REINDEX_KEY)) || [];
+    } catch {
+      return [];
+    }
+  }
+
+  async clearPendingReindex(): Promise<void> {
+    try {
+      await this.cacheService.del(PENDING_REINDEX_KEY);
+    } catch (err) {
+      this.logger.warn(
+        `Failed to clear pending reindex: ${getErrorMessage(err)}`,
       );
     }
   }

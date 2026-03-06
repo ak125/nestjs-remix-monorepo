@@ -7,6 +7,7 @@ export enum WebIngestErrorCode {
   // Step 1: URL fetch + content extraction
   NO_SECTIONS = 'NO_SECTIONS',
   FETCH_TIMEOUT = 'FETCH_TIMEOUT',
+  FETCH_BLOCKED = 'FETCH_BLOCKED',
   FETCH_NETWORK = 'FETCH_NETWORK',
   SCRIPT_ERROR = 'SCRIPT_ERROR',
 
@@ -25,6 +26,7 @@ export enum WebIngestErrorCode {
 export const ERROR_LABELS: Record<WebIngestErrorCode, string> = {
   [WebIngestErrorCode.NO_SECTIONS]: 'No sections extracted from URL',
   [WebIngestErrorCode.FETCH_TIMEOUT]: 'URL fetch timed out (site unreachable)',
+  [WebIngestErrorCode.FETCH_BLOCKED]: 'Site blocked access (HTTP 403/401)',
   [WebIngestErrorCode.FETCH_NETWORK]: 'URL fetch failed (network/HTTP error)',
   [WebIngestErrorCode.SCRIPT_ERROR]: 'ingest_web.py script error',
   [WebIngestErrorCode.EMPTY_OUTPUT]:
@@ -49,6 +51,12 @@ export function classifyIngestError(
   if (step === 1) {
     if (lastLogs.includes('no sections')) return WebIngestErrorCode.NO_SECTIONS;
     if (lastLogs.includes('timed out')) return WebIngestErrorCode.FETCH_TIMEOUT;
+    if (
+      lastLogs.includes('403') ||
+      lastLogs.includes('401') ||
+      lastLogs.includes('forbidden')
+    )
+      return WebIngestErrorCode.FETCH_BLOCKED;
     if (
       lastLogs.includes('connectionerror') ||
       lastLogs.includes('httperror') ||

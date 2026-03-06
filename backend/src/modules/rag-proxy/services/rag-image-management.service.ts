@@ -4,6 +4,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import {
+  readdirSync,
+  statSync,
+  readFileSync,
+  writeFileSync,
+  unlinkSync,
+  existsSync,
+} from 'node:fs';
+import path from 'node:path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { SupabaseStorageService } from '../../upload/services/supabase-storage.service';
 
@@ -257,5 +266,191 @@ export class RagImageManagementService extends SupabaseBaseService {
     }
 
     return data || [];
+  }
+
+  /**
+   * List all images in the RAG knowledge web-images directory.
+   */
+  listImages(): Array<{
+    hash: string;
+    ext: string;
+    size: number;
+    url: string;
+    prompt: string | null;
+    gamme: string | null;
+    type: string | null;
+    usage: string | null;
+    style: string | null;
+    priority: string | null;
+  }> {
+    const knowledgePath =
+      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
+      '/opt/automecanik/rag/knowledge';
+    const imgDir = path.join(knowledgePath, '_raw', 'web-images');
+
+    try {
+      const files = readdirSync(imgDir);
+      return files
+        .filter((f) => /^[a-f0-9]{16}\.(jpg|jpeg|png|webp|gif)$/.test(f))
+        .map((f) => {
+          const ext = path.extname(f).slice(1);
+          const size = statSync(path.join(imgDir, f)).size;
+          const hashOnly = f.replace(/\.[^.]+$/, '');
+          const promptPath = path.join(imgDir, `${hashOnly}.prompt.md`);
+
+          let prompt: string | null = null;
+          let gamme: string | null = null;
+          let type: string | null = null;
+          let usage: string | null = null;
+          let style: string | null = null;
+          let priority: string | null = null;
+
+          try {
+            const raw = readFileSync(promptPath, 'utf-8');
+            const fmMatch = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+            if (fmMatch) {
+              const fm = fmMatch[1];
+              prompt = fmMatch[2].trim();
+              gamme = fm.match(/gamme:\s*"([^"]+)"/)?.[1] ?? null;
+              type = fm.match(/type:\s*"([^"]+)"/)?.[1] ?? null;
+              usage = fm.match(/usage:\s*"([^"]+)"/)?.[1] ?? null;
+              style = fm.match(/style:\s*"([^"]+)"/)?.[1] ?? null;
+              priority =
+                fm.match(/priority:\s*"?([^"\n]+)"?/)?.[1]?.trim() ?? null;
+            }
+          } catch {
+            // No .prompt.md file — fields stay null
+          }
+
+          return {
+            hash: f,
+            ext,
+            size,
+            url: `/api/rag/images/${f}`,
+            prompt,
+            gamme,
+            type,
+            usage,
+            style,
+            priority,
+          };
+        })
+        .sort((a, b) => b.size - a.size);
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Delete a RAG image and its .prompt.md sidecar from disk.
+   */
+  deleteImage(hash: string): { deleted: true; hash: string; files: string[] } {
+    if (!/^[a-f0-9]{16}$/.test(hash)) {
+      throw new BadRequestException(
+        'Invalid hash format (expected 16 hex chars)',
+      );
+    }
+
+    const knowledgePath =
+      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
+      '/opt/automecanik/rag/knowledge';
+    const imgDir = path.join(knowledgePath, '_raw', 'web-images');
+
+    const imgFile = readdirSync(imgDir).find(
+      (f) => f.startsWith(hash + '.') && !f.endsWith('.prompt.md'),
+    );
+    if (!imgFile) {
+      throw new NotFoundException(`Image not found: ${hash}`);
+    }
+
+    const deleted: string[] = [];
+
+    unlinkSync(path.join(imgDir, imgFile));
+    deleted.push(imgFile);
+
+    const promptFile = `${hash}.prompt.md`;
+    if (existsSync(path.join(imgDir, promptFile))) {
+      unlinkSync(path.join(imgDir, promptFile));
+      deleted.push(promptFile);
+    }
+
+    this.logger.log(`Deleted RAG image: ${deleted.join(', ')}`);
+    return { deleted: true, hash, files: deleted };
+  }
+
+  /**
+   * Enrich .prompt.md sidecars for newly scraped images:
+   * replace `gamme: null` with the detected gamme alias.
+   */
+  enrichNewImagePrompts(hashes: string[], gamme: string): number {
+    const knowledgePath =
+      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
+      '/opt/automecanik/rag/knowledge';
+    const imgDir = path.join(knowledgePath, '_raw', 'web-images');
+    let enriched = 0;
+    for (const hash of hashes) {
+      const promptPath = path.join(imgDir, `${hash}.prompt.md`);
+      try {
+        let content = readFileSync(promptPath, 'utf-8');
+        if (content.includes('gamme: null')) {
+          content = content.replace('gamme: null', `gamme: "${gamme}"`);
+          writeFileSync(promptPath, content, 'utf-8');
+          enriched++;
+        }
+      } catch {
+        // skip missing .prompt.md
+      }
+    }
+    return enriched;
+  }
+
+  /**
+   * Scan all .prompt.md with `gamme: null` whose source_url matches the given
+   * URL domain, and enrich them with the detected gamme.
+   * Handles orphaned images from previously failed jobs.
+   */
+  enrichOrphanedImagesBySourceUrl(sourceUrl: string, gamme: string): number {
+    const knowledgePath =
+      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
+      '/opt/automecanik/rag/knowledge';
+    const imgDir = path.join(knowledgePath, '_raw', 'web-images');
+    let enriched = 0;
+
+    let sourceDomain: string;
+    try {
+      sourceDomain = new URL(sourceUrl).hostname;
+    } catch {
+      return 0;
+    }
+
+    let files: string[];
+    try {
+      files = readdirSync(imgDir).filter((f) => f.endsWith('.prompt.md'));
+    } catch {
+      return 0;
+    }
+
+    for (const file of files) {
+      const promptPath = path.join(imgDir, file);
+      try {
+        const content = readFileSync(promptPath, 'utf-8');
+        if (!content.includes('gamme: null')) continue;
+        // Match source_url domain
+        const urlMatch = content.match(/source_url:\s*"([^"]+)"/);
+        if (!urlMatch) continue;
+        try {
+          const fileDomain = new URL(urlMatch[1]).hostname;
+          if (fileDomain !== sourceDomain) continue;
+        } catch {
+          continue;
+        }
+        const updated = content.replace('gamme: null', `gamme: "${gamme}"`);
+        writeFileSync(promptPath, updated, 'utf-8');
+        enriched++;
+      } catch {
+        // skip unreadable
+      }
+    }
+    return enriched;
   }
 }

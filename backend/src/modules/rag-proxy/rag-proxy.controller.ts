@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Delete,
   Body,
   Param,
   Query,
@@ -304,18 +305,6 @@ export class RagProxyController {
     return this.ragProxyService.listImages();
   }
 
-  /** Describe an image using Claude Vision for recreation prompt (admin only). */
-  @Post('admin/images/:hash/describe')
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Generate image description prompt via Claude Vision',
-  })
-  @ApiResponse({ status: 200, description: 'Image description prompt' })
-  async describeImage(@Param('hash') hash: string) {
-    return this.ragProxyService.describeImage(hash);
-  }
-
   /** Upload a generated image to Supabase Storage. */
   @Post('admin/images/:hash/upload-generated')
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
@@ -375,6 +364,14 @@ export class RagProxyController {
   @ApiResponse({ status: 200, description: 'Array of R3 slots' })
   async listR3Slots(@Param('pgAlias') pgAlias: string) {
     return this.ragImageManagementService.listR3Slots(pgAlias);
+  }
+
+  @Delete('admin/images/:hash')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'Delete a RAG image and its .prompt.md sidecar' })
+  @ApiResponse({ status: 200, description: 'Image deleted' })
+  async deleteImage(@Param('hash') hash: string) {
+    return this.ragImageManagementService.deleteImage(hash);
   }
 
   /** Serve RAG knowledge images (web-images ingested from URLs). */

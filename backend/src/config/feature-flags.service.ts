@@ -40,6 +40,18 @@ export class FeatureFlagsService {
     return Math.min(this.int('AUTO_REPAIR_MAX_PASSES', 2), 3);
   }
 
+  get canaryAutoPublish(): boolean {
+    return this.bool('CANARY_AUTO_PUBLISH', false);
+  }
+
+  get draftAutoPublishEnabled(): boolean {
+    return this.bool('DRAFT_AUTO_PUBLISH_ENABLED', false);
+  }
+
+  get draftAutoPublishIntervalMs(): number {
+    return this.int('DRAFT_AUTO_PUBLISH_INTERVAL_MS', 300_000);
+  }
+
   get pipelineConcurrency(): number {
     return this.int('PIPELINE_CONCURRENCY', 1);
   }
@@ -140,6 +152,9 @@ export class FeatureFlagsService {
     'RAG_CATCHUP_ENABLED',
     'CONSEIL_PACK_ENABLED',
     'KEYWORD_DENSITY_GATE_ENABLED',
+    'CANARY_AUTO_PUBLISH',
+    'DRAFT_AUTO_PUBLISH_ENABLED',
+    'DRAFT_AUTO_PUBLISH_INTERVAL_MS',
   ]);
 
   listFlags(): Record<

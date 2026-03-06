@@ -107,8 +107,8 @@ export class RagGammeDetectionService {
             .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '')
-            // Clean common suffixes: "... | Bosch", "... - Section 3"
-            .replace(/\s*[|–]\s*[a-z][\w\s]*$/i, '')
+            // Clean common suffixes: "... | Bosch", "... - Delphi", "... – Section 3"
+            .replace(/\s*[|–-]\s+[a-z][\w\s]*$/i, '')
             .replace(/ - section.*$/i, '')
             // Remove leading articles: "Des ", "Les ", "Le ", "La ", "L'"
             .replace(/^(?:des|les|le|la|l'|un|une)\s+/i, '')
@@ -119,16 +119,34 @@ export class RagGammeDetectionService {
 
           for (const alias of knownAliases) {
             if (alias.length < 4) continue;
+
+            // Match 1: title contains full alias (existing behavior)
             if (
               titleSlug.includes(alias) ||
               titleSlugDePlural.includes(alias)
             ) {
               this.logger.debug(
-                `[resolveGammesFromFiles] Strategy 3 match: "${titleSlug}" (deplural: "${titleSlugDePlural}") → alias "${alias}" for ${path.basename(fullPath)}`,
+                `[resolveGammesFromFiles] Strategy 3 match (substring): "${titleSlug}" → alias "${alias}" for ${path.basename(fullPath)}`,
               );
               addResult(alias, fullPath);
               matched = true;
               break;
+            }
+
+            // Match 2: title word matches the head of a multi-part alias
+            // Ex: titleSlugDePlural="plaquette" matches alias="plaquette-de-frein"
+            const aliasParts = alias.split('-');
+            if (aliasParts.length >= 2 && aliasParts[0].length >= 4) {
+              const aliasHead = aliasParts[0];
+              const titleParts = titleSlugDePlural.split('-');
+              if (titleParts.some((p) => p.length >= 4 && p === aliasHead)) {
+                this.logger.debug(
+                  `[resolveGammesFromFiles] Strategy 3 match (head): "${titleSlugDePlural}" segment "${aliasHead}" → alias "${alias}" for ${path.basename(fullPath)}`,
+                );
+                addResult(alias, fullPath);
+                matched = true;
+                break;
+              }
             }
           }
           if (!matched && titleMatch) {
