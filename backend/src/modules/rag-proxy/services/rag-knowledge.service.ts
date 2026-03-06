@@ -493,4 +493,41 @@ export class RagKnowledgeService {
     }
     return files;
   }
+
+  /**
+   * Get all orphan files (active, no gamme_aliases) from __rag_knowledge.
+   */
+  async getOrphans(): Promise<{
+    data: Array<{ source: string; title: string }> | null;
+    error: string | null;
+  }> {
+    const { data, error } = await this.ragCleanupService.client
+      .from('__rag_knowledge')
+      .select('source, title')
+      .eq('status', 'active')
+      .or('gamme_aliases.is.null,gamme_aliases.eq.{}');
+
+    if (error) return { data: null, error: error.message };
+    return { data: data || [], error: null };
+  }
+
+  /**
+   * Set gamme_aliases for a specific source (overwrite, not append).
+   * Used by mapTransversalOrphans to assign multi-gamme aliases to orphan files.
+   */
+  async setGammeAliases(source: string, aliases: string[]): Promise<boolean> {
+    const { error } = await this.ragCleanupService.client
+      .from('__rag_knowledge')
+      .update({ gamme_aliases: aliases })
+      .eq('source', source)
+      .eq('status', 'active');
+
+    if (error) {
+      this.logger.warn(
+        `Failed to set gamme_aliases for ${source}: ${error.message}`,
+      );
+      return false;
+    }
+    return true;
+  }
 }

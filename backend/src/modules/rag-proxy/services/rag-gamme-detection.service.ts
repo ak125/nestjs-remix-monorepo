@@ -727,6 +727,301 @@ export class RagGammeDetectionService {
   }
 
   /**
+   * Domain keyword → gamme aliases mapping for transversal content (diagnostics, guides).
+   * Each keyword is matched against orphan titles/sources to assign multi-gamme aliases.
+   */
+  private static readonly TRANSVERSAL_DOMAIN_MAP: Record<string, string[]> = {
+    // Freinage
+    freinage: [
+      'plaquette-de-frein',
+      'disque-de-frein',
+      'etrier-de-frein',
+      'kit-de-freins-arriere',
+      'machoires-de-frein',
+      'maitre-cylindre-de-frein',
+      'flexible-de-frein',
+      'cable-de-frein-a-main',
+      'tambour-de-frein',
+      'cylindre-de-roue',
+      'servo-frein',
+      'temoin-d-usure',
+      'liquide-de-frein',
+    ],
+    plaquette: ['plaquette-de-frein'],
+    'disque-frein': ['disque-de-frein'],
+    'disques-de-frein': ['disque-de-frein'],
+    'plaquettes-de-frein': ['plaquette-de-frein'],
+    vibration: ['disque-de-frein', 'plaquette-de-frein', 'roulement-de-roue'],
+    // Suspension / Amortisseurs
+    amortisseur: [
+      'amortisseur',
+      'ressort-de-suspension',
+      'kit-de-butee-de-suspension',
+      'butee-elastique-d-amortisseur',
+      'bras-de-suspension',
+      'rotule-de-suspension',
+      'biellette-de-barre-stabilisatrice',
+    ],
+    suspension: [
+      'amortisseur',
+      'ressort-de-suspension',
+      'rotule-de-suspension',
+      'bras-de-suspension',
+      'biellette-de-barre-stabilisatrice',
+      'barre-stabilisatrice',
+    ],
+    // Climatisation
+    climatisation: [
+      'compresseur-de-climatisation',
+      'condenseur-de-climatisation',
+      'evaporateur-de-climatisation',
+      'detendeur-de-climatisation',
+      'bouteille-deshydratante',
+      'pressostat-de-climatisation',
+      'filtre-d-habitacle',
+      'pulseur-d-air-d-habitacle',
+    ],
+    chauffage: [
+      'radiateur-de-chauffage',
+      'pulseur-d-air-d-habitacle',
+      'filtre-d-habitacle',
+    ],
+    // Demarrage / Electrique
+    demarrage: [
+      'demarreur',
+      'alternateur',
+      'bougie-d-allumage',
+      'bobine-d-allumage',
+    ],
+    batterie: ['demarreur', 'alternateur'],
+    alternateur: ['alternateur', 'poulie-d-alternateur'],
+    // Direction
+    direction: [
+      'cremailliere-de-direction',
+      'rotule-de-direction',
+      'barre-de-direction',
+      'pompe-de-direction-assistee',
+      'soufflet-de-direction',
+      'colonne-de-direction',
+    ],
+    cremaillere: ['cremailliere-de-direction', 'soufflet-de-direction'],
+    // Distribution
+    distribution: [
+      'kit-de-distribution',
+      'courroie-de-distribution',
+      'galet-tendeur-de-courroie-de-distribution',
+      'galet-enrouleur-de-courroie-de-distribution',
+      'chaine-de-distribution',
+      'kit-de-chaine-de-distribution',
+      'pompe-a-eau',
+    ],
+    courroie: [
+      'courroie-de-distribution',
+      'courroie-d-accessoire',
+      'kit-de-distribution',
+    ],
+    // Echappement
+    echappement: [
+      'catalyseur',
+      'silencieux',
+      'tube-d-echappement',
+      'collecteur-d-echappement',
+      'fap',
+      'sonde-lambda',
+      'vanne-egr',
+    ],
+    catalyseur: ['catalyseur', 'fap', 'sonde-lambda'],
+    // Eclairage
+    eclairage: [
+      'feu-avant',
+      'feu-arriere',
+      'feu-clignotant',
+      'ampoule-feu-avant',
+      'ampoule-feu-arriere',
+      'phares-antibrouillard',
+    ],
+    signalisation: [
+      'feu-clignotant',
+      'relais-de-clignotant',
+      'ampoule-feu-clignotant',
+      'ampoule-feu-stop',
+    ],
+    voyant: [
+      'capteur-abs',
+      'sonde-lambda',
+      'pressostat-d-huile',
+      'sonde-de-refroidissement',
+    ],
+    // Embrayage
+    embrayage: [
+      'kit-d-embrayage',
+      'butee-d-embrayage',
+      'emetteur-d-embrayage',
+      'recepteur-d-embrayage',
+      'cable-d-embrayage',
+      'volant-moteur',
+    ],
+    // Injection
+    injecteur: [
+      'injecteur',
+      'pompe-a-injection',
+      'pompe-a-haute-pression',
+      'rampe-commune-d-injection',
+    ],
+    injection: [
+      'injecteur',
+      'pompe-a-injection',
+      'pompe-a-haute-pression',
+      'debitmetre-d-air',
+      'corps-papillon',
+    ],
+    // Refroidissement
+    refroidissement: [
+      'radiateur-de-refroidissement',
+      'thermostat',
+      'pompe-a-eau',
+      'vase-d-expansion',
+      'durite-de-refroidissement',
+      'ventilateur-de-refroidissement',
+      'sonde-de-refroidissement',
+    ],
+    // Transmission
+    transmission: [
+      'cardan',
+      'soufflet-de-cardan',
+      'kit-d-embrayage',
+      'volant-moteur',
+      'filtre-de-boite-auto',
+    ],
+    boite: [
+      'filtre-de-boite-auto',
+      'support-de-boite-vitesse',
+      'mecatronique-boite-automatique',
+    ],
+    // Filtration
+    'filtre-air': ['filtre-a-air'],
+    'filtre-huile': ['filtre-a-huile'],
+    'filtre-a-air': ['filtre-a-air'],
+    'filtre-a-huile': ['filtre-a-huile'],
+    // Pompe a eau
+    'pompe-eau': ['pompe-a-eau'],
+    'pompe-a-eau': ['pompe-a-eau'],
+    // ECE R90
+    'ece-r90': [
+      'plaquette-de-frein',
+      'disque-de-frein',
+      'machoires-de-frein',
+      'tambour-de-frein',
+    ],
+    // Tableau de bord (transversal)
+    'tableau-bord': [
+      'capteur-abs',
+      'sonde-lambda',
+      'pressostat-d-huile',
+      'sonde-de-refroidissement',
+      'capteur-pression-turbo',
+      'vanne-egr',
+    ],
+  };
+
+  /**
+   * Map transversal orphan files (diagnostic, guides, canonical, reference)
+   * to their relevant gamme aliases using domain keyword matching.
+   * Returns mapping: source → gamme_aliases[].
+   */
+  public async mapTransversalOrphans(options: { dryRun?: boolean }): Promise<{
+    mapped: number;
+    skipped: number;
+    details: Array<{
+      source: string;
+      title: string;
+      aliases: string[];
+      matchedKeywords: string[];
+    }>;
+  }> {
+    // 1. Get all orphans from DB
+    const { data: orphans, error } =
+      await this.ragKnowledgeService.getOrphans();
+    if (error || !orphans) {
+      this.logger.warn(
+        `[mapTransversalOrphans] Failed to get orphans: ${error}`,
+      );
+      return { mapped: 0, skipped: 0, details: [] };
+    }
+
+    // 2. Filter to mappable categories (diagnostic, guides, canonical, reference)
+    const mappableOrphans = orphans.filter((o: { source: string }) => {
+      const src = o.source || '';
+      return (
+        src.startsWith('diagnostic/') ||
+        src.startsWith('guides/') ||
+        src.startsWith('canonical/') ||
+        src.startsWith('reference/')
+      );
+    });
+
+    const details: Array<{
+      source: string;
+      title: string;
+      aliases: string[];
+      matchedKeywords: string[];
+    }> = [];
+
+    // 3. For each orphan, match domain keywords against title + source
+    for (const orphan of mappableOrphans) {
+      const src = (orphan.source || '') as string;
+      const title = (orphan.title || '') as string;
+      // Build search text from source path + title
+      const { slug: srcSlug } = RagGammeDetectionService.normalizeTitle(src);
+      const { slug: titleSlug } =
+        RagGammeDetectionService.normalizeTitle(title);
+      const searchText = `${srcSlug} ${titleSlug}`;
+
+      const aliasSet = new Set<string>();
+      const matchedKeywords: string[] = [];
+
+      for (const [keyword, aliases] of Object.entries(
+        RagGammeDetectionService.TRANSVERSAL_DOMAIN_MAP,
+      )) {
+        if (searchText.includes(keyword)) {
+          matchedKeywords.push(keyword);
+          for (const a of aliases) aliasSet.add(a);
+        }
+      }
+
+      if (aliasSet.size > 0) {
+        details.push({
+          source: src,
+          title,
+          aliases: [...aliasSet],
+          matchedKeywords,
+        });
+      }
+    }
+
+    // 4. Persist if not dry run
+    let mapped = 0;
+    if (!options.dryRun && details.length > 0) {
+      for (const entry of details) {
+        const ok = await this.ragKnowledgeService.setGammeAliases(
+          entry.source,
+          entry.aliases,
+        );
+        if (ok) mapped++;
+      }
+      this.logger.log(
+        `[mapTransversalOrphans] Persisted ${mapped}/${details.length} orphan mappings`,
+      );
+    }
+
+    return {
+      mapped: options.dryRun ? 0 : mapped,
+      skipped: mappableOrphans.length - details.length,
+      details,
+    };
+  }
+
+  /**
    * Emit RAG_INGESTION_COMPLETED event after ingestion finishes.
    * Uses explicit file list when available; falls back to mtime scan.
    *

@@ -26,6 +26,7 @@ import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
 import { RagIngestionService } from './services/rag-ingestion.service';
 import { RagImageManagementService } from './services/rag-image-management.service';
 import { RagVideoManagementService } from './services/rag-video-management.service';
+import { RagGammeDetectionService } from './services/rag-gamme-detection.service';
 import type { RagDocInput, IngestDecision } from './types/rag-ingest.types';
 import {
   ChatRequestSchema,
@@ -64,6 +65,7 @@ export class RagProxyController {
     private readonly ragIngestionService: RagIngestionService,
     private readonly ragImageManagementService: RagImageManagementService,
     private readonly ragVideoManagementService: RagVideoManagementService,
+    private readonly ragGammeDetectionService: RagGammeDetectionService,
   ) {}
 
   @Post('chat')
@@ -376,6 +378,24 @@ export class RagProxyController {
     return this.ragImageManagementService.deleteImage(hash);
   }
 
+  @Post('admin/images/bulk-reassign')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'Bulk reassign images from one gamme to another' })
+  async bulkReassignImages(
+    @Body() body: { hashes: string[]; fromGamme: string; toGamme: string },
+  ) {
+    if (!body.hashes?.length || !body.fromGamme || !body.toGamme) {
+      throw new BadRequestException(
+        'hashes, fromGamme, and toGamme are required',
+      );
+    }
+    return this.ragImageManagementService.reassignImageGammes(
+      body.hashes,
+      body.fromGamme,
+      body.toGamme,
+    );
+  }
+
   /** Serve RAG knowledge images (web-images ingested from URLs). */
   @Get('images/:hash')
   @ApiOperation({ summary: 'Serve a RAG knowledge image by hash' })
@@ -499,6 +519,37 @@ export class RagProxyController {
       throw new BadRequestException('status must be "done" or "failed"');
     }
     return this.ragProxyService.handleWebhookCompletion(body);
+  }
+
+  // ── Gamme detection admin ─────────────────────
+
+  @Post('admin/gamme-detection/rerun')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({
+    summary: 'Re-run gamme detection on orphan entries and optionally persist',
+  })
+  @ApiResponse({ status: 200, description: 'Detection results' })
+  async rerunGammeDetection(
+    @Body() body: { dryRun?: boolean; subDir?: string },
+  ) {
+    return this.ragGammeDetectionService.rerunDetection({
+      dryRun: body.dryRun ?? true,
+      subDir: body.subDir,
+    });
+  }
+
+  @Post('admin/gamme-detection/map-orphans')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({
+    summary: 'Map transversal orphans (diagnostic, guides) to gamme aliases',
+  })
+  @ApiResponse({ status: 200, description: 'Orphan mapping results' })
+  async mapTransversalOrphans(@Body() body: { dryRun?: boolean }) {
+    return this.ragGammeDetectionService.mapTransversalOrphans({
+      dryRun: body.dryRun ?? true,
+    });
   }
 
   // ── Cleanup endpoints (RagCleanupService) ─────────────────────
