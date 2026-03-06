@@ -132,6 +132,20 @@ export class AdminContentRefreshController {
   }
 
   /**
+   * PATCH /api/admin/content-refresh/publish-all
+   * Publish all pending drafts at once.
+   */
+  @Patch('publish-all')
+  async publishAllDrafts(@Req() req: any) {
+    const adminUser =
+      req.user?.email?.trim() ||
+      req.user?.cst_id?.toString() ||
+      req.user?.id?.toString() ||
+      'admin';
+    return this.contentRefreshService.publishAllDrafts(adminUser);
+  }
+
+  /**
    * PATCH /api/admin/content-refresh/:id/publish
    * Admin validates and publishes a draft.
    */

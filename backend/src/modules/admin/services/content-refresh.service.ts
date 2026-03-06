@@ -430,6 +430,47 @@ export class ContentRefreshService extends SupabaseBaseService {
   }
 
   /**
+   * Publish all pending drafts at once.
+   */
+  async publishAllDrafts(
+    adminUser: string,
+  ): Promise<{ published: number; failed: number; errors: string[] }> {
+    const { data: drafts, error } = await this.client
+      .from('__rag_content_refresh_log')
+      .select('id, pg_alias, page_type')
+      .eq('status', 'draft');
+
+    if (error || !drafts) {
+      return {
+        published: 0,
+        failed: 0,
+        errors: [error?.message ?? 'No drafts found'],
+      };
+    }
+
+    let published = 0;
+    let failed = 0;
+    const errors: string[] = [];
+
+    for (const draft of drafts) {
+      const result = await this.publishRefresh(draft.id, adminUser);
+      if (result.success) {
+        published++;
+      } else {
+        failed++;
+        errors.push(
+          `#${draft.id} ${draft.pg_alias}/${draft.page_type}: ${result.error}`,
+        );
+      }
+    }
+
+    this.logger.log(
+      `Bulk publish by ${adminUser}: ${published} published, ${failed} failed out of ${drafts.length} drafts`,
+    );
+    return { published, failed, errors };
+  }
+
+  /**
    * Reject a draft with a reason.
    */
   async rejectRefresh(
@@ -825,22 +866,14 @@ export class ContentRefreshService extends SupabaseBaseService {
       types.push('R3_guide_achat');
     }
 
-    // R3 Conseils: check if conseil exists
-    const { count: conseilCount } = await this.client
-      .from('__seo_gamme_conseil')
-      .select('sgc_id', { count: 'exact', head: true })
-      .eq('sgc_pg_id', String(pgId));
-
-    if ((conseilCount ?? 0) > 0) {
-      types.push('R3_conseils');
-    }
-
-    // R4 Reference: auto-enabled when RAG knowledge file exists
+    // R3 Conseils + R4 Reference: enabled when RAG knowledge file exists
+    // Allows first-time creation of conseil sections from RAG knowledge
     const ragFile = join(
       '/opt/automecanik/rag/knowledge/gammes',
       `${pgAlias}.md`,
     );
     if (existsSync(ragFile)) {
+      types.push('R3_conseils');
       types.push('R4_reference');
     }
 
