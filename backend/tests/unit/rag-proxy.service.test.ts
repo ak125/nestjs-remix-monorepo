@@ -26,6 +26,7 @@ import { RagGammeDetectionService } from '../../src/modules/rag-proxy/services/r
 import { RagIngestionService } from '../../src/modules/rag-proxy/services/rag-ingestion.service';
 import { RagWebhookCompletionService } from '../../src/modules/rag-proxy/services/rag-webhook-completion.service';
 import { RagWebIngestDbService } from '../../src/modules/rag-proxy/services/rag-web-ingest-db.service';
+import { RagImageManagementService } from '../../src/modules/rag-proxy/services/rag-image-management.service';
 import { CacheService } from '../../src/cache/cache.service';
 
 describe('RagProxyService', () => {
@@ -87,6 +88,7 @@ describe('RagProxyService', () => {
         },
         { provide: RagCleanupService, useValue: { client: { from: jest.fn() } } },
         { provide: RagWebIngestDbService, useValue: { persistDoc: jest.fn(), findByHash: jest.fn() } },
+        { provide: RagImageManagementService, useValue: { describeImage: jest.fn(), deleteImage: jest.fn(), listImages: jest.fn() } },
         { provide: WebhookAuditService, useValue: { recordEvent: jest.fn(), recordWebhook: jest.fn().mockResolvedValue(undefined), getAuditTrail: jest.fn().mockResolvedValue([]) } },
         // Real sub-services (use mocked infra deps)
         RagCircuitBreakerService,
