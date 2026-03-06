@@ -19,7 +19,6 @@ import {
   Await,
   useLoaderData,
   useNavigation,
-  useLocation,
   useNavigate,
   useRouteError,
   isRouteErrorResponse,
@@ -27,12 +26,12 @@ import {
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { useEffect, useState, Suspense } from "react";
 
-import { Error404 } from "~/components/errors/Error404";
+import { Error404, Error410, ErrorGeneric } from "~/components/errors";
 // V9 Design System Components
 import {
   GammeHeroV9,
+  GammeQuickNavV9,
   GammeDiagnosticCTA,
-  GammeGuidesStripV9,
   GammeContentV9,
   GammeMotorisationsV9,
   GammeChecklistV9,
@@ -61,6 +60,7 @@ import {
   sanitizePurchaseGuideForR1,
   type R1PurchaseGuideData,
 } from "~/utils/r1-builders";
+import { inferFamilyKey } from "~/utils/r1-family-defaults";
 import {
   buildR1SectionPack,
   type R1SectionPack,
@@ -120,6 +120,13 @@ const R1_SELECTOR_FAQ = [
  * ✅ Migration 2026-01-21: Transforme les URLs Supabase en /img/* proxy
  * Avantages: Cache 1 an (Caddy), même comportement dev/prod (Vite proxy en dev)
  */
+function createNoIndexHeaders(cacheControl: string) {
+  return {
+    "X-Robots-Tag": "noindex, follow",
+    "Cache-Control": cacheControl,
+  };
+}
+
 function toProxyImageUrl(url: string | undefined): string | undefined {
   if (!url) return url;
   // Si c'est une URL Supabase, extraire le path et utiliser /img/*
@@ -152,10 +159,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     logger.log(`🛑 [410] /pieces/${slug}`);
     throw new Response(null, {
       status: 410,
-      headers: {
-        "X-Robots-Tag": "noindex, follow",
-        "Cache-Control": "public, max-age=600, stale-while-revalidate=3600",
-      },
+      headers: createNoIndexHeaders(
+        "public, max-age=600, stale-while-revalidate=3600",
+      ),
     });
   }
 
@@ -165,10 +171,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   if (gammeId === "0") {
     throw new Response(null, {
       status: 404,
-      headers: {
-        "X-Robots-Tag": "noindex, follow",
-        "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
-      },
+      headers: createNoIndexHeaders(
+        "public, max-age=60, stale-while-revalidate=300",
+      ),
     });
   }
 
@@ -251,19 +256,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     if (substitutionResponse?.httpStatus === 404) {
       throw new Response("Not Found", {
         status: 404,
-        headers: {
-          "X-Robots-Tag": "noindex, follow",
-          "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
-        },
+        headers: createNoIndexHeaders(
+          "public, max-age=60, stale-while-revalidate=300",
+        ),
       });
     }
     if (substitutionResponse?.httpStatus === 410) {
       throw new Response("Gone", {
         status: 410,
-        headers: {
-          "X-Robots-Tag": "noindex, follow",
-          "Cache-Control": "public, max-age=600, stale-while-revalidate=3600",
-        },
+        headers: createNoIndexHeaders(
+          "public, max-age=600, stale-while-revalidate=3600",
+        ),
       });
     }
 
@@ -394,7 +397,7 @@ export const meta: MetaFunction<typeof loader> = ({
   data: rawData,
   location,
 }) => {
-  const data = rawData as PiecesPageData | undefined;
+  const data = rawData as PiecesPageSyncData | undefined;
   if (!data || data.status !== 200) {
     return [
       { title: "Page non trouvée" },
@@ -491,6 +494,14 @@ export const meta: MetaFunction<typeof loader> = ({
   // Preload supprimé pour libérer la priorité browser vers CSS/fonts (vrais bloqueurs LCP)
   // pg_pic n'est pas non plus above-fold sur R1
 
+  // Logo navbar preload (above-fold on all pages)
+  result.push({
+    tagName: "link",
+    rel: "preload",
+    as: "image",
+    href: "https://www.automecanik.com/logo-navbar.webp",
+  });
+
   return result;
 };
 
@@ -505,9 +516,16 @@ export function headers({ loaderHeaders }: { loaderHeaders: Headers }) {
   return h;
 }
 
-// Type étendu pour les champs sync extraits dans le loader (LCP streaming)
-// Omit<purchaseGuideData> remplacé par R1PurchaseGuideData strict (compile-time guard)
-type PiecesPageData = Omit<GammePageDataV1, "purchaseGuideData"> & {
+// Sync data: disponible immediatement (above-fold + meta/JSON-LD)
+type PiecesPageSyncData = Omit<
+  GammePageDataV1,
+  | "purchaseGuideData"
+  | "motorisations"
+  | "equipementiers"
+  | "catalogueMameFamille"
+  | "seoSwitches"
+  | "guide"
+> & {
   gammeId: number;
   canonicalPath?: string;
   purchaseGuideData?: R1PurchaseGuideData;
@@ -529,10 +547,20 @@ type PiecesPageData = Omit<GammePageDataV1, "purchaseGuideData"> & {
   r1Sources?: R1SourceMap;
 };
 
+// Loader payload complet: sync + deferred Promises
+type PiecesPageLoaderData = PiecesPageSyncData & {
+  motorisations: Promise<GammePageDataV1["motorisations"] | null>;
+  equipementiers: Promise<GammePageDataV1["equipementiers"] | null>;
+  catalogueMameFamille: Promise<GammePageDataV1["catalogueMameFamille"] | null>;
+  seoSwitches: Promise<GammePageDataV1["seoSwitches"] | null>;
+  guide: Promise<GammePageDataV1["guide"] | null>;
+};
+
 export default function PiecesDetailPage() {
-  const data = useLoaderData<typeof loader>() as unknown as PiecesPageData;
+  const data = useLoaderData<
+    typeof loader
+  >() as unknown as PiecesPageLoaderData;
   const navigation = useNavigation();
-  const location = useLocation();
   const navigate = useNavigate();
 
   // Afficher un indicateur de chargement si les données sont en cours de chargement
@@ -562,7 +590,7 @@ export default function PiecesDetailPage() {
       .filter(Boolean) as string[];
     const dupes = [...new Set(vals.filter((v, i) => vals.indexOf(v) !== i))];
     if (dupes.length)
-      throw new Error(`[R1] Duplicate sections: ${dupes.join(", ")}`);
+      console.error(`[R1] Duplicate sections: ${dupes.join(", ")}`);
 
     // R1 Source Tracking log (mount-only debug, data stable from loader)
     if (data?.r1Sources) {
@@ -578,16 +606,7 @@ export default function PiecesDetailPage() {
   }, []);
 
   if (!data || data.status !== 200) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-neutral-900 mb-4">
-            Page non trouvée
-          </h1>
-          <p className="text-neutral-600">Désolé, cette page n'existe pas.</p>
-        </div>
-      </div>
-    );
+    return <Error404 />;
   }
 
   // Construire les breadcrumbs depuis l'API (déjà avec véhicule si présent)
@@ -654,8 +673,7 @@ export default function PiecesDetailPage() {
           const brandSlug = `${vehicle.brand.marque_alias || normalizeAlias(vehicle.brand.marque_name)}-${vehicle.brand.marque_id}`;
           const modelSlug = `${vehicle.model.modele_alias || normalizeAlias(vehicle.model.modele_name)}-${vehicle.model.modele_id}`;
           const typeSlug = `${vehicle.type.type_alias || normalizeAlias(vehicle.type.type_name)}-${vehicle.type.type_id}`;
-          const gammeSlug =
-            location.pathname.split("/").pop()?.replace(".html", "") || "";
+          const gammeSlug = `${data.content?.pg_alias || normalizeAlias(data.content?.pg_name || "")}-${data.gammeId}`;
           storeVehicleClient({
             marque_id: vehicle.brand.marque_id,
             marque_name: vehicle.brand.marque_name,
@@ -679,12 +697,9 @@ export default function PiecesDetailPage() {
         selectedVehicle={selectedVehicle}
       />
 
-      <GammeDiagnosticCTA />
+      <GammeQuickNavV9 />
 
-      <GammeGuidesStripV9
-        gammeName={data.content?.pg_name || "Pièces auto"}
-        pgAlias={data.content?.pg_alias}
-      />
+      <GammeDiagnosticCTA />
 
       <GammeContentV9
         gammeName={data.content?.pg_name || "Pièces auto"}
@@ -692,6 +707,12 @@ export default function PiecesDetailPage() {
         microSeoBlock={
           data.sectionPack?.sections.buyArgs.data.microSeoBlock ?? undefined
         }
+        arguments={data.sectionPack?.sections.buyArgs.data.arguments}
+        familyKey={inferFamilyKey(
+          data.content?.pg_name || "",
+          data.famille?.mf_name,
+        )}
+        pgAlias={data.content?.pg_alias}
       />
 
       {/* Motorisations compatibles — deferred */}
@@ -709,12 +730,22 @@ export default function PiecesDetailPage() {
             <GammeMotorisationsV9
               items={motorisations?.items || []}
               totalCount={data.performance?.motorisations_count}
+              intro={
+                data.sectionPack?.sections.motorisations.data
+                  .compatibilitiesIntro ?? undefined
+              }
             />
           )}
         </Await>
       </Suspense>
 
-      <GammeChecklistV9 gammeName={data.content?.pg_name} />
+      <GammeChecklistV9
+        gammeName={data.content?.pg_name}
+        items={data.sectionPack?.sections.safeTable.data?.map((row) => ({
+          label: row.element,
+          desc: row.howToCheck,
+        }))}
+      />
 
       <GammeErrorsV9
         errors={data.sectionPack?.sections.compatErrors.data}
@@ -745,6 +776,10 @@ export default function PiecesDetailPage() {
                   logo: e.image,
                 }),
               )}
+              intro={
+                data.sectionPack?.sections.equipementiers.data
+                  .equipementiersLine ?? undefined
+              }
             />
           )}
         </Await>
@@ -769,6 +804,10 @@ export default function PiecesDetailPage() {
                 link: c.link,
                 img: c.image || undefined,
               }))}
+              intro={
+                data.sectionPack?.sections.catalogue.data
+                  .familyCrossSellIntro ?? undefined
+              }
             />
           )}
         </Await>
@@ -789,13 +828,34 @@ export default function PiecesDetailPage() {
 }
 
 // ============================================================
-// ERROR BOUNDARY - Gestion des erreurs HTTP avec composants
+// ERROR BOUNDARY - Gestion des erreurs HTTP par status
 // ============================================================
 export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return <Error404 url={error.data?.url} />;
+    const errorData = typeof error.data === "object" ? error.data : undefined;
+
+    if (error.status === 410) {
+      return (
+        <Error410
+          url={errorData?.url}
+          isOldLink={errorData?.isOldLink}
+          redirectTo={errorData?.redirectTo}
+        />
+      );
+    }
+
+    if (error.status >= 500) {
+      return (
+        <ErrorGeneric
+          status={error.status}
+          message={error.statusText || "Erreur serveur"}
+        />
+      );
+    }
+
+    return <Error404 url={errorData?.url} />;
   }
 
   return <Error404 />;
