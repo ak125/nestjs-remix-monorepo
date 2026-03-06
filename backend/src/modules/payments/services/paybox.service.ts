@@ -166,69 +166,6 @@ export class PayboxService {
   }
 
   /**
-   * Génère la signature HMAC SHA-512
-   */
-  private generateSignature(params: Record<string, string>): string {
-    // Construire la chaîne à signer (format: param1=value1&param2=value2&...)
-    const signString = Object.keys(params)
-      .sort() // Ordre alphabétique
-      .map((key) => `${key}=${params[key]}`)
-      .join('&');
-
-    this.logger.debug(`String to sign: ${signString.substring(0, 100)}...`);
-
-    // Générer HMAC SHA-512
-    const hmac = crypto.createHmac('sha512', Buffer.from(this.hmacKey, 'hex'));
-    hmac.update(signString, 'utf8');
-    const signature = hmac.digest('hex');
-
-    return signature;
-  }
-
-  /**
-   * Verifie la signature d'une reponse Paybox (callback IPN)
-   *
-   * Note: Le mode CGI Paybox signe les callbacks avec RSA (cle publique Paybox).
-   * L'implementation HMAC ci-dessous fonctionne pour Paybox System.
-   * Si PAYBOX_STRICT_VERIFY n'est pas 'true', on log l'echec sans bloquer.
-   */
-  verifySignature(
-    params: Record<string, string>,
-    receivedSignature: string,
-  ): boolean {
-    try {
-      // Retirer les champs signature du calcul (K, Signature, PBX_HMAC)
-      const {
-        K: _k,
-        Signature: _sig,
-        PBX_HMAC: _hmac,
-        ...paramsToVerify
-      } = params;
-
-      // Recalculer la signature HMAC sur les parametres restants
-      const calculatedSignature = this.generateSignature(paramsToVerify);
-
-      const a = Buffer.from(calculatedSignature.toLowerCase());
-      const b = Buffer.from(receivedSignature.toLowerCase());
-      const isValid = a.length === b.length && crypto.timingSafeEqual(a, b);
-
-      if (isValid) {
-        this.logger.log('Signature Paybox valide (HMAC)');
-      } else {
-        this.logger.warn(
-          `Paybox signature mismatch (expected HMAC, may be RSA/CGI mode). ` +
-            `Params: ${Object.keys(paramsToVerify).join(',')}`,
-        );
-      }
-
-      return isValid;
-    } catch (error) {
-      this.logger.error('Erreur validation signature:', error);
-      return false;
-    }
-  }
-
-  /**
    * Parse le retour Paybox (format: Mt:10050;Ref:ORD123;Auto:XXXXXX;Erreur:00000;Signature:...)
    */
   parsePayboxResponse(queryString: string): Record<string, string> {

@@ -47,6 +47,12 @@
 # Monitoring - Vérification santé système (toutes les heures)
 0 * * * * curl -sf http://localhost:3000/health || echo "[$(date)] Health check failed" >> /logs/health.log
 
+# Smoke test - Cart + API (toutes les 6h)
+0 */6 * * * /app/scripts/dev-smoke-test.sh >> /logs/smoke-test.log 2>&1 || echo "[$(date)] Smoke test FAILED" >> /logs/health.log
+
+# Payment tunnel - 10 tests (toutes les 15 min)
+*/15 * * * * /app/scripts/test-payment-tunnel.sh >> /logs/payment-tunnel.log 2>&1 || echo "[$(date)] Payment tunnel FAILED" >> /logs/health.log
+
 # BullMQ - Stats quotidiennes (6h)
 0 6 * * * node /app/backend/dist/scripts/bullmq-stats.js >> /logs/bullmq-stats.log 2>&1
 

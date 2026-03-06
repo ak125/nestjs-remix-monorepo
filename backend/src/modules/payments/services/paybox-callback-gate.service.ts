@@ -10,19 +10,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
-import {
-  parseQueryStringPreservingOrder,
-  buildSignatureStringFromOrdered,
-} from '../utils/querystring-order-preserving';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { normalizeOrderId } from '../utils/normalize-order-id';
+import { PAYBOX_PUBLIC_KEYS } from '../../../config/paybox-public-keys';
 
 export type CallbackMode = 'shadow' | 'strict';
 
 export interface SignatureCheckResult {
   ok: boolean;
   present: boolean; // Distinguer "absente" vs "invalide"
-  matchedStrategy?: 'ORDER_RECEIVED' | 'ALPHABETICAL' | 'ORDERED_KEYS';
+  matchedStrategy?: 'RSA_2048' | 'RSA_1024';
   triedStrategies: string[];
   reason?: string;
 }
@@ -68,28 +65,10 @@ export interface GateDecision {
   isIdempotent: boolean;
 }
 
-// FROZEN - Ordre des clés pour signature (NE PAS MODIFIER)
-const ORDERED_KEYS_FOR_SIGNATURE = [
-  'PBX_SITE',
-  'PBX_RANG',
-  'PBX_IDENTIFIANT',
-  'PBX_TOTAL',
-  'PBX_DEVISE',
-  'PBX_CMD',
-  'PBX_PORTEUR',
-  'PBX_RETOUR',
-  'PBX_HASH',
-  'PBX_TIME',
-];
-
-const SIGNATURE_KEYS = ['Signature', 'K', 'PBX_HMAC'];
-
 @Injectable()
 export class PayboxCallbackGateService {
   private readonly logger = new Logger(PayboxCallbackGateService.name);
   private readonly mode: CallbackMode;
-  private readonly hmacKey: string;
-  // Stocker les identifiants marchands pour vérification
   private readonly expectedSite: string;
   private readonly expectedRang: string;
   private readonly expectedIdentifiant: string;
@@ -102,7 +81,6 @@ export class PayboxCallbackGateService {
       'PAYBOX_CALLBACK_MODE',
       'shadow',
     );
-    this.hmacKey = this.configService.get<string>('PAYBOX_HMAC_KEY', '');
 
     // Charger identifiants marchands pour vérification callback
     this.expectedSite = this.configService.get<string>('PAYBOX_SITE', '');
@@ -151,11 +129,10 @@ export class PayboxCallbackGateService {
       allCriticalChecksOk: false,
     };
 
-    // 1. Vérification signature multi-stratégie
+    // 1. Verification signature RSA (Paybox CGI signe avec RSA + SHA-1)
     if (signature) {
-      result.checks.signature = this.verifySignatureMultiStrategy(
+      result.checks.signature = this.verifySignatureRSA(
         rawQueryString,
-        query,
         signature,
       );
       result.checks.signature.present = true;
@@ -219,12 +196,8 @@ export class PayboxCallbackGateService {
       alreadyPaid: orderAlreadyPaid,
     };
 
-    // Calcul du statut global (signature OK si présente et valide, OU absente)
-    const signatureOkOrAbsent =
-      result.checks.signature.ok || !result.checks.signature.present;
-
     result.allCriticalChecksOk =
-      signatureOkOrAbsent &&
+      result.checks.signature.ok &&
       result.checks.orderExists.ok &&
       result.checks.amountMatch.ok &&
       result.checks.errorCode.ok &&
@@ -238,18 +211,9 @@ export class PayboxCallbackGateService {
     let reject = false;
 
     if (this.mode === 'strict' && !isIdempotent) {
-      // En strict, rejeter si:
-      // - Signature PRÉSENTE mais INVALIDE
-      // - OU orderExists=false OU amountMismatch OU errorCode!=00000 OU merchantId mismatch
-      const signatureInvalid =
-        result.checks.signature.present && !result.checks.signature.ok;
-      const criticalCheckFailed =
-        !result.checks.orderExists.ok ||
-        !result.checks.amountMatch.ok ||
-        !result.checks.errorCode.ok ||
-        !result.checks.merchantId.ok;
-
-      reject = signatureInvalid || criticalCheckFailed;
+      // En strict, rejeter si un check critique echoue
+      // (signature absente OU invalide, commande inexistante, montant incorrect, etc.)
+      reject = !result.allCriticalChecksOk;
     }
 
     return {
@@ -299,119 +263,71 @@ export class PayboxCallbackGateService {
   }
 
   /**
-   * Vérifie la signature avec 3 stratégies différentes
-   * SAFE CHANGE: Ne modifie pas l'algo HMAC existant
-   * Utilise timingSafeEqual pour comparaison sécurisée
+   * Verification RSA + SHA-1 de la signature Paybox IPN
+   * Paybox signe les donnees AVANT &K= dans la querystring brute
+   * Essaie les cles 2048 puis 1024 (Paybox peut changer de cle)
    */
-  private verifySignatureMultiStrategy(
+  private verifySignatureRSA(
     rawQueryString: string,
-    query: Record<string, string>,
     receivedSignature: string,
   ): SignatureCheckResult {
-    const strategies: Array<{ name: string; match: boolean }> = [];
+    // 1. Extraire les donnees signees = tout AVANT "&K=" dans la querystring brute
+    const kIndex = rawQueryString.indexOf('&K=');
+    if (kIndex === -1) {
+      return {
+        ok: false,
+        present: true,
+        triedStrategies: ['RSA'],
+        reason: 'NO_K_SEPARATOR',
+      };
+    }
+    const signedData = rawQueryString.substring(0, kIndex);
 
-    // Stratégie 1: Ordre de réception
+    // 2. Decoder la signature : URL decode → Base64
+    let decodedSignature: string;
     try {
-      const orderedPairs = parseQueryStringPreservingOrder(rawQueryString);
-      const signString = buildSignatureStringFromOrdered(
-        orderedPairs,
-        SIGNATURE_KEYS,
-      );
-      const sig1 = this.computeHMAC(signString);
-      strategies.push({
-        name: 'ORDER_RECEIVED',
-        match: this.timingSafeCompare(sig1, receivedSignature),
-      });
+      decodedSignature = decodeURIComponent(receivedSignature);
     } catch {
-      strategies.push({ name: 'ORDER_RECEIVED', match: false });
+      return {
+        ok: false,
+        present: true,
+        triedStrategies: ['RSA'],
+        reason: 'SIGNATURE_DECODE_ERROR',
+      };
     }
 
-    // Stratégie 2: Ordre alphabétique
-    try {
-      const paramsWithoutSig = { ...query };
-      SIGNATURE_KEYS.forEach((k) => delete paramsWithoutSig[k]);
-
-      const signString = Object.keys(paramsWithoutSig)
-        .sort()
-        .map((k) => `${k}=${paramsWithoutSig[k]}`)
-        .join('&');
-      const sig2 = this.computeHMAC(signString);
-      strategies.push({
-        name: 'ALPHABETICAL',
-        match: this.timingSafeCompare(sig2, receivedSignature),
-      });
-    } catch {
-      strategies.push({ name: 'ALPHABETICAL', match: false });
-    }
-
-    // Stratégie 3: orderedKeys[] (si applicable)
-    try {
-      const paramsWithoutSig = { ...query };
-      SIGNATURE_KEYS.forEach((k) => delete paramsWithoutSig[k]);
-
-      const applicableKeys = ORDERED_KEYS_FOR_SIGNATURE.filter(
-        (k) => paramsWithoutSig[k] !== undefined,
-      );
-
-      if (applicableKeys.length > 0) {
-        const signString = applicableKeys
-          .map((k) => `${k}=${paramsWithoutSig[k]}`)
-          .join('&');
-        const sig3 = this.computeHMAC(signString);
-        strategies.push({
-          name: 'ORDERED_KEYS',
-          match: this.timingSafeCompare(sig3, receivedSignature),
-        });
+    // 3. Essayer chaque cle publique (2048 puis 1024)
+    for (let i = 0; i < PAYBOX_PUBLIC_KEYS.length; i++) {
+      try {
+        const verify = crypto.createVerify('SHA1');
+        verify.update(signedData);
+        const isValid = verify.verify(
+          PAYBOX_PUBLIC_KEYS[i],
+          decodedSignature,
+          'base64',
+        );
+        if (isValid) {
+          const keyLabel = i === 0 ? 'RSA_2048' : 'RSA_1024';
+          this.logger.log(`Signature RSA valide avec cle ${keyLabel}`);
+          return {
+            ok: true,
+            present: true,
+            matchedStrategy:
+              keyLabel as SignatureCheckResult['matchedStrategy'],
+            triedStrategies: ['RSA'],
+          };
+        }
+      } catch {
+        // Cle invalide ou erreur crypto → essayer la suivante
       }
-    } catch {
-      // orderedKeys non applicable
     }
-
-    const matchedStrategy = strategies.find((s) => s.match);
 
     return {
-      ok: matchedStrategy !== undefined,
+      ok: false,
       present: true,
-      matchedStrategy:
-        matchedStrategy?.name as SignatureCheckResult['matchedStrategy'],
-      triedStrategies: strategies.map((s) => s.name),
-      reason: matchedStrategy ? undefined : 'NO_STRATEGY_MATCHED',
+      triedStrategies: ['RSA'],
+      reason: 'RSA_VERIFY_FAILED',
     };
-  }
-
-  /**
-   * Calcul HMAC-SHA512
-   * Retourne UPPERCASE (aligné avec le gelé de PayboxService)
-   */
-  private computeHMAC(signatureString: string): string {
-    const keyBuffer = Buffer.from(this.hmacKey, 'hex');
-    const hmac = crypto.createHmac('sha512', keyBuffer);
-    hmac.update(signatureString, 'utf8');
-    return hmac.digest('hex').toUpperCase(); // UPPERCASE comme gelé
-  }
-
-  /**
-   * Comparaison timing-safe des signatures
-   * Évite les timing attacks
-   */
-  private timingSafeCompare(calculated: string, received: string): boolean {
-    try {
-      // Normaliser en uppercase pour comparaison
-      const calcNorm = calculated.toUpperCase();
-      const recvNorm = received.toUpperCase();
-
-      // Vérifier même longueur avant timingSafeEqual
-      if (calcNorm.length !== recvNorm.length) {
-        return false;
-      }
-
-      const calcBuf = Buffer.from(calcNorm, 'utf8');
-      const recvBuf = Buffer.from(recvNorm, 'utf8');
-
-      return crypto.timingSafeEqual(calcBuf, recvBuf);
-    } catch {
-      return false;
-    }
   }
 
   /**

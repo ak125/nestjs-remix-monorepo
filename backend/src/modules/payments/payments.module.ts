@@ -13,7 +13,7 @@ import { PaymentCoreController } from './controllers/payment-core.controller';
 import { SystemPayRedirectController } from './controllers/systempay-redirect.controller';
 import { PayboxRedirectController } from './controllers/paybox-redirect.controller';
 import { PayboxCallbackController } from './controllers/paybox-callback.controller';
-import { PayboxTestController } from './controllers/paybox-test.controller';
+
 import { PayboxMonitoringController } from './controllers/paybox-monitoring.controller';
 
 // Services
@@ -62,7 +62,7 @@ import { MailService } from '../../services/mail.service';
     SystemPayRedirectController,
     PayboxRedirectController,
     PayboxCallbackController,
-    PayboxTestController,
+
     PayboxMonitoringController,
   ],
   providers: [

@@ -89,42 +89,21 @@ export class PayboxCallbackController {
         return res.status(HttpStatus.OK).send('OK');
       }
 
-      // SAFE CHANGE: En mode strict, rejeter si invalide
+      // Gate: rejeter si invalide (signature, montant, commande inexistante)
       if (gateDecision.reject) {
-        this.logger.error(`GATE REJECT: ${gateDecision.result.correlationId}`);
+        this.logger.error(
+          `GATE REJECT [${gateDecision.result.correlationId}]: ` +
+            `sig=${gateDecision.result.checks.signature.ok}, ` +
+            `order=${gateDecision.result.checks.orderExists.ok}, ` +
+            `amount=${gateDecision.result.checks.amountMatch.ok}`,
+        );
         return res.status(HttpStatus.FORBIDDEN).send('Validation failed');
       }
 
       this.logger.log(`Montant: ${params.amount}`);
-      this.logger.log(`📦 Référence: ${params.orderReference}`);
-      this.logger.log(`🔐 Autorisation: ${params.authorization}`);
-      this.logger.log(`⚠️  Erreur: ${params.errorCode}`);
-
-      // Verifier la signature
-      const signature =
-        params.signature || params.K || query.Signature || query.K;
-      if (!signature) {
-        this.logger.error('Signature manquante dans le callback Paybox');
-        return res.status(HttpStatus.BAD_REQUEST).send('Signature manquante');
-      }
-
-      const isValid = this.payboxService.verifySignature(query, signature);
-
-      if (!isValid) {
-        // Mode CGI Paybox: la signature est RSA (pas HMAC).
-        // En mode strict, on rejette. Sinon on log et on continue.
-        const strictVerify = process.env.PAYBOX_STRICT_VERIFY === 'true';
-        if (strictVerify) {
-          this.logger.error(
-            `REJECT: Signature Paybox invalide pour ${params.orderReference} (strict mode)`,
-          );
-          return res.status(HttpStatus.FORBIDDEN).send('Signature invalide');
-        }
-        this.logger.warn(
-          `Signature Paybox non verifiee pour ${params.orderReference} ` +
-            `(mode lenient — implementer RSA pour mode strict)`,
-        );
-      }
+      this.logger.log(`Reference: ${params.orderReference}`);
+      this.logger.log(`Autorisation: ${params.authorization}`);
+      this.logger.log(`Code erreur: ${params.errorCode}`);
 
       // Vérifier si le paiement est réussi
       const isSuccess = this.payboxService.isPaymentSuccessful(
@@ -271,8 +250,4 @@ export class PayboxCallbackController {
     this.logger.log('Callback Paybox GET');
     return this.handleCallback(query, '', req, res);
   }
-
-  // NOTE: L'endpoint /callback-test a été supprimé pour raisons de sécurité.
-  // Il permettait de créer des paiements sans vérification de signature HMAC.
-  // Pour tester, utiliser l'environnement sandbox Paybox avec des signatures valides.
 }
