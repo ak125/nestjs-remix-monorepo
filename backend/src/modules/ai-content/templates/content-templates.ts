@@ -573,6 +573,9 @@ REGLE FONDAMENTALE — RAG = SOURCE DE VERITE :
 REGLES SUPPLEMENTAIRES :
 - L'intention est TOUJOURS transactionnelle (achat de pieces).
 - Interdit : conseils de montage, tutoriels, diagnostics, comparatifs detailles.
+- Genere exactement 3 interest_nuggets, chacun avec angle, hook et rag_source tracable.
+- Les listes doivent etre exhaustives : forbidden_lexicon (25-35 items), allowed_lexicon (12-16 items), forbidden_topics (12-24 sujets interdits).
+- allowed_subintents : choisis 3-6 parmi compatibility_checks, mounting_variants, identifier_check, exchange_standard, consigne, delivery_returns_support.
 - Reponds UNIQUEMENT en JSON valide, sans markdown ni commentaire.`,
     user: (ctx) => {
       let prompt = `Gamme : ${ctx.gammeName}\n\n`;
@@ -617,14 +620,16 @@ REGLES SUPPLEMENTAIRES :
       prompt += `Extrais du corpus RAG ci-dessus un JSON avec ces champs exactement :\n`;
       prompt += `{
   "gamme": "string — nom de la gamme",
-  "primary_intent": "string — intention principale en 1 phrase (transactionnelle)",
+  "primary_intent": "string — intention principale en 1 phrase transactionnelle (min 20 chars)",
   "role_id": "R1_ROUTER",
+  "allowed_subintents": ["string[3-6] — choisis parmi: compatibility_checks, mounting_variants, identifier_check, exchange_standard, consigne, delivery_returns_support"],
+  "forbidden_topics": ["string[12-24] — sujets strictement interdits sur cette page R1 : montage, diagnostic, comparatif, reparation, entretien, demontage, symptome, panne, voyant, tutoriel, avis, occasion..."],
   "interest_nuggets": [
-    { "angle": "string — ex: compatibilite_vehicule, pieces_associees, reference_oe", "hook": "string — 1-2 phrases accrocheuses EXTRAITES du RAG", "rag_source": "string — reference RAG tracable" }
+    { "angle": "string — ex: compatibilite_vehicule, pieces_associees, reference_oe", "hook": "string — 1-2 phrases accrocheuses EXTRAITES du RAG (min 10 chars)", "rag_source": "string — reference RAG tracable ex: rag:gammes/xxx.md#section" }
   ],
-  "forbidden_lexicon": ["string[] — mots/expressions interdits : diagnostic, symptome, tuto, montage, universel, homologue CT, garanti a vie..."],
-  "allowed_lexicon": ["string[] — mots autorises : nom gamme, pieces associees, equipementiers, termes techniques du RAG"],
-  "confusion_pairs": [{ "term": "string", "confused_with": "string", "distinction": "string" }],
+  "forbidden_lexicon": ["string[25-35] — mots/expressions interdits : diagnostic, symptome, tuto, montage, universel, homologue CT, garanti a vie, etape, demonter, visser..."],
+  "allowed_lexicon": ["string[12-16] — mots autorises : nom gamme, pieces associees, equipementiers, termes techniques du RAG, reference, compatible, vehicule..."],
+  "confusion_pairs": [{ "term": "string", "confused_with": "string", "distinction": "string (min 10 chars)" }],
   "writing_constraints": {
     "max_words": 520,
     "min_words": 350,
@@ -758,6 +763,7 @@ REGLES PAR CHAMP :
 - equipementiers_line : 1 phrase presentant les equipementiers.
 - faq_selector : 4 questions/reponses liees au selecteur vehicule et a l'achat.
 - family_cross_sell_intro : 1 phrase de transition vers le catalogue famille.
+- hero_cta_helper_line : 1 phrase (max 180 chars) expliquant le CTA hero "Utiliser le selecteur vehicule". Contextualiser avec la gamme. Reformuler depuis le RAG.
 - safe_table_rows : array de 4-6 lignes de verification compatibilite. Chaque ligne = { element, how, icon }.
   SUGGESTIONS (choisir 4-6 parmi + 1-2 custom si pertinent) :
   * Montage / version vehicule → Selectionner marque, modele et motorisation
@@ -848,6 +854,7 @@ REGLES PAR CHAMP :
   "equipementiers_line": "string — 1 phrase",
   "faq_selector": [{ "question": "string", "answer": "string — 30-45 mots, TRACABLE au RAG" }],
   "family_cross_sell_intro": "string — 1 phrase",
+  "hero_cta_helper_line": "string — 1 phrase max 180 chars, aide contextuelle CTA hero selecteur vehicule",
   "safe_table_rows": [{ "element": "string", "how": "string", "icon": "string|null" }]
 }\n`;
       return prompt;
