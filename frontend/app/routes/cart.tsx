@@ -191,9 +191,13 @@ function FreeShippingProgress({ subtotal }: { subtotal: number }) {
           <p className="font-bold text-sm sm:text-base flex-1">
             Livraison OFFERTE
           </p>
-          <span className="text-sm opacity-90 hidden sm:inline">
-            Vous \u00e9conomisez les frais de livraison
-          </span>
+          <Badge
+            variant="secondary"
+            size="sm"
+            className="bg-white/20 text-white border-0 text-xs"
+          >
+            0,00&nbsp;€
+          </Badge>
         </div>
       </div>
     );
@@ -272,7 +276,7 @@ function CartSummaryBlock({
       (summary.discount_amount || 0);
   const isEligibleFreeShipping = summary.subtotal >= FREE_SHIPPING_THRESHOLD;
   const isLite =
-    summary.total_items <= 2 &&
+    summary.total_items <= 3 &&
     !(summary.consigne_total > 0) &&
     !(summary.discount_amount && summary.discount_amount > 0);
 
@@ -497,8 +501,8 @@ function CartItemRow({ item }: { item: CartItemType }) {
 
         <div className="flex items-center justify-between gap-4 pt-3 border-t border-gray-100">
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500 hidden sm:inline">
-              Quantit\u00e9:
+            <span className="text-sm text-gray-500 hidden md:inline">
+              Quantité:
             </span>
             <div className="flex items-center border rounded-lg overflow-hidden bg-gray-50">
               <button
@@ -683,13 +687,12 @@ export default function CartPage() {
             ))}
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pt-4 border-t border-gray-200">
-              <Link
-                to="/"
-                className="inline-flex items-center gap-2 text-cta hover:text-cta-hover font-medium"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Continuer mes achats
-              </Link>
+              <Button variant="outline" asChild className="gap-2">
+                <Link to="/">
+                  <ChevronLeft className="h-4 w-4" />
+                  Continuer mes achats
+                </Link>
+              </Button>
 
               {!showClearConfirm ? (
                 <button
@@ -784,6 +787,35 @@ export default function CartPage() {
           <ArrowRight className="h-5 w-5 text-white" />
         </Link>
       </MobileBottomBar>
+
+      {/* Mini footer transactionnel (le mega footer est masqué via hideGlobalFooter) */}
+      <div className="border-t border-gray-200 bg-white py-4 text-center text-xs text-gray-500">
+        <Container>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+            <Link to="/cgv" className="hover:text-gray-700 hover:underline">
+              CGV
+            </Link>
+            <span>&middot;</span>
+            <Link
+              to="/confidentialite"
+              className="hover:text-gray-700 hover:underline"
+            >
+              Confidentialité
+            </Link>
+            <span>&middot;</span>
+            <Link
+              to="/mentions-legales"
+              className="hover:text-gray-700 hover:underline"
+            >
+              Mentions légales
+            </Link>
+            <span>&middot;</span>
+            <Link to="/contact" className="hover:text-gray-700 hover:underline">
+              Contact
+            </Link>
+          </div>
+        </Container>
+      </div>
     </div>
   );
 }
