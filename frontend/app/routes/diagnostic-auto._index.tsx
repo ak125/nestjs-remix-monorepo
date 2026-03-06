@@ -40,6 +40,7 @@ import {
 import { useState } from "react";
 
 import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { HeroDiagnostic } from "~/components/heroes";
 import Container from "~/components/layout/Container";
 import {
@@ -49,7 +50,6 @@ import {
   AccordionTrigger,
 } from "~/components/ui/accordion";
 import { Badge } from "~/components/ui/badge";
-import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { Separator } from "~/components/ui/separator";
@@ -1090,29 +1090,10 @@ export default function DiagnosticAutoIndex() {
 export function ErrorBoundary() {
   const error = useRouteError();
 
-  if (isRouteErrorResponse(error) && error.status === 404) {
-    return <Error404 />;
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 404) return <Error404 />;
+    return <ErrorGeneric status={error.status} message={error.statusText} />;
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="max-w-md">
-        <CardContent className="py-8 text-center">
-          <AlertTriangle className="h-12 w-12 mx-auto text-red-500 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
-            Erreur de chargement
-          </h2>
-          <p className="text-gray-600 mb-4">
-            Impossible de charger la page diagnostic. Veuillez réessayer.
-          </p>
-          <Link
-            to="/"
-            className="inline-flex items-center text-cta hover:text-cta-hover"
-          >
-            Retour à l'accueil
-          </Link>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <ErrorGeneric />;
 }
