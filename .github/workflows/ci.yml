@@ -918,6 +918,19 @@ jobs:
       - name: Install Playwright browsers
         run: cd frontend && npx playwright install chromium --with-deps
 
+      - name: Wait for PREPROD to be healthy
+        run: |
+          for i in {1..12}; do
+            if curl -sf http://localhost:3100/health > /dev/null 2>&1; then
+              echo "PREPROD healthy"
+              exit 0
+            fi
+            echo "Attempt $i/12 — waiting 10s..."
+            sleep 10
+          done
+          echo "PREPROD not available on port 3100"
+          exit 1
+
       - name: 🎭 Run critical E2E tests
         run: cd frontend && npx playwright test tests/e2e/critical-path.spec.ts tests/e2e/url-validation.spec.ts --project=chromium --reporter=github,list
         env:

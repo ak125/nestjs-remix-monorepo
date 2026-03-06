@@ -10,6 +10,13 @@ import {
 import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagKnowledgeService } from './rag-knowledge.service';
 
+/** Candidate match from any detection strategy, with confidence score 0-100. */
+interface CandidateMatch {
+  alias: string;
+  score: number;
+  strategy: '2a-gamme' | '2b-category' | '3-title' | '5-url' | '6-weaviate';
+}
+
 @Injectable()
 export class RagGammeDetectionService {
   private readonly logger = new Logger(RagGammeDetectionService.name);
@@ -17,8 +24,62 @@ export class RagGammeDetectionService {
   /** Cached list of known gamme aliases from gammes/ directory. */
   private knownGammeAliasesCache: string[] | null = null;
 
+  /** Cached category → gamme aliases index (built from gammes/ frontmatter). */
+  private categoryToAliasesCache: Map<string, string[]> | null = null;
+
   /** Guard against duplicate event emission for the same jobId (poll + webhook race). */
   private readonly emittedJobIds = new Set<string>();
+
+  /**
+   * Explicit URL path segment → gamme alias mapping for foreign-language domains.
+   * Covers cases where title/category matching fails (e.g., English product names).
+   */
+  private static readonly URL_SEGMENT_TO_GAMME: Record<string, string> = {
+    'ac-compressor': 'compresseur-de-climatisation',
+    'ac-condenser': 'condenseur-de-climatisation',
+    'expansion-valve': 'detendeur-de-climatisation',
+    evaporator: 'evaporateur-de-climatisation',
+    'wiper-blade': 'balais-d-essuie-glace',
+    'wiper-blades': 'balais-d-essuie-glace',
+    'balais-standards': 'balais-d-essuie-glace',
+    'balais-plates': 'balais-d-essuie-glace',
+    'spark-plug': 'bougie-d-allumage',
+    'spark-plugs': 'bougie-d-allumage',
+    'oil-filter': 'filtre-a-huile',
+    'oil-filters': 'filtre-a-huile',
+    'air-filter': 'filtre-a-air',
+    'air-filters': 'filtre-a-air',
+    'cabin-filter': 'filtre-d-habitacle',
+    'fuel-filter': 'filtre-a-carburant',
+    'brake-pad': 'plaquette-de-frein',
+    'brake-pads': 'plaquette-de-frein',
+    'brake-disc': 'disque-de-frein',
+    'brake-discs': 'disque-de-frein',
+    alternator: 'alternateur',
+    alternators: 'alternateur',
+    'starter-motor': 'demarreur',
+    'starter-motors': 'demarreur',
+    thermostats: 'thermostat-d-eau',
+    thermostat: 'thermostat-d-eau',
+    'lambda-sensor': 'sonde-lambda',
+    'oxygen-sensor': 'sonde-lambda',
+    // DENSO A/C product pages (French slugs)
+    'soupapes-dexpansion': 'detendeur-de-climatisation',
+    'condenseur-a-c': 'condenseur-de-climatisation',
+    'ac-compressor-oil': 'compresseur-de-climatisation',
+    evaporateurs: 'evaporateur-de-climatisation',
+    intercoolers: 'intercooler',
+    radiateurs: 'radiateur-de-refroidissement',
+    'groupes-moto-ventilateurs': 'ventilateur-de-refroidissement',
+    'pressostats-et-capteurs': 'capteur-pression-et-temperature-d-huile',
+    'ventilateurs-de-la-cabine': 'ventilateur-de-refroidissement',
+    'noyaux-de-chauffage': 'radiateur-de-chauffage',
+    'secheurs-de-recepteurs': 'bouteille-deshydratante',
+    // DENSO wiper pages (French slugs)
+    'balais-dessuie-glace': 'balais-d-essuie-glace',
+    'balais-hybrides': 'balais-d-essuie-glace',
+    'balais-pour-lunette-arriere': 'balais-d-essuie-glace',
+  };
 
   constructor(
     private readonly configService: ConfigService,
@@ -27,9 +88,304 @@ export class RagGammeDetectionService {
     private readonly ragKnowledgeService: RagKnowledgeService,
   ) {}
 
+  /** Clear all caches (call after adding new gamme files). */
+  public clearCaches(): void {
+    this.knownGammeAliasesCache = null;
+    this.categoryToAliasesCache = null;
+  }
+
+  /**
+   * Build a category → gamme aliases index by scanning gammes/ frontmatter.
+   * E.g. "climatisation" → ["compresseur-de-climatisation", "condenseur-de-climatisation", ...]
+   */
+  private buildCategoryIndex(knowledgePath: string): Map<string, string[]> {
+    if (this.categoryToAliasesCache) return this.categoryToAliasesCache;
+    const gammeDir = path.join(knowledgePath, 'gammes');
+    const index = new Map<string, string[]>();
+    try {
+      for (const f of readdirSync(gammeDir)) {
+        if (!f.endsWith('.md')) continue;
+        const alias = f.replace('.md', '');
+        const head = readFileSync(path.join(gammeDir, f), 'utf-8').slice(
+          0,
+          300,
+        );
+        const catMatch = head.match(/^category:\s*(.+)$/m);
+        if (catMatch) {
+          const cat = catMatch[1].trim().toLowerCase();
+          const existing = index.get(cat) || [];
+          existing.push(alias);
+          index.set(cat, existing);
+        }
+      }
+    } catch {
+      /* gammes dir may not exist */
+    }
+    this.categoryToAliasesCache = index;
+    return index;
+  }
+
+  /**
+   * Normalize a title string into a slug for alias matching.
+   * Shared between resolveGammesFromFiles and detectAffectedGammes.
+   */
+  private static normalizeTitle(raw: string): {
+    slug: string;
+    deplural: string;
+  } {
+    const slug = raw
+      .trim()
+      .replace(/\\x([0-9a-fA-F]{2})/g, (_, hex: string) =>
+        String.fromCharCode(parseInt(hex, 16)),
+      )
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s*[|–-]\s+[a-z][\w\s]*$/i, '')
+      .replace(/ - section.*$/i, '')
+      .replace(/^(?:des|les|le|la|l'|un|une)\s+/i, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    const deplural = slug.replace(/s(-|$)/g, '$1');
+    return { slug, deplural };
+  }
+
+  /**
+   * Score how well a gamme alias matches a title slug.
+   * Returns 0 (no match) to 100 (exact match).
+   */
+  private static scoreAliasMatch(
+    titleSlug: string,
+    titleSlugDePlural: string,
+    alias: string,
+  ): number {
+    if (alias.length < 4) return 0;
+
+    // Exact match
+    if (titleSlug === alias || titleSlugDePlural === alias) return 100;
+
+    // Full alias substring in title — score by specificity ratio
+    if (titleSlug.includes(alias) || titleSlugDePlural.includes(alias)) {
+      const ratio = alias.length / Math.max(titleSlug.length, 1);
+      return Math.round(40 + ratio * 50); // 40-90
+    }
+
+    // Word-level overlap (Jaccard-like)
+    const titleWords = new Set(
+      titleSlugDePlural.split('-').filter((w) => w.length >= 4),
+    );
+    const aliasWords = alias.split('-').filter((w) => w.length >= 4);
+    if (aliasWords.length === 0 || titleWords.size === 0) return 0;
+
+    let overlap = 0;
+    for (const aw of aliasWords) {
+      if (titleWords.has(aw)) overlap++;
+    }
+    if (overlap === 0) return 0;
+
+    // Require: overlap >= 2, or all alias words match, or single long word (>=8 chars)
+    const hasLongWordMatch = aliasWords.some(
+      (w) => w.length >= 8 && titleWords.has(w),
+    );
+    if (overlap < 2 && overlap < aliasWords.length && !hasLongWordMatch) {
+      return 0;
+    }
+
+    const overlapRatio = overlap / aliasWords.length;
+    return Math.round(20 + overlapRatio * 40); // 20-60
+  }
+
+  /**
+   * Collect all candidate matches for a file's frontmatter head.
+   * Returns sorted candidates (best first). Does NOT include Strategy 6 (Weaviate).
+   */
+  private collectCandidates(
+    head: string,
+    knownAliases: string[],
+    knowledgePath: string,
+  ): CandidateMatch[] {
+    const candidates: CandidateMatch[] = [];
+
+    // Strategy 2a: explicit gamme: field
+    const gammeMatch = head.match(/^gamme:\s*(.+)$/m);
+    if (gammeMatch) {
+      const val = gammeMatch[1].trim();
+      if (knownAliases.includes(val)) {
+        candidates.push({ alias: val, score: 95, strategy: '2a-gamme' });
+      } else {
+        this.logger.debug(
+          `Strategy 2a: gamme: "${val}" not in knownAliases — ignored`,
+        );
+      }
+    }
+
+    // Strategy 2b: category → lookup category index
+    const categoryMatch = head.match(/^category:\s*(.+)$/m);
+    if (categoryMatch) {
+      const catVal = categoryMatch[1].trim().toLowerCase();
+      if (
+        catVal !== 'catalog' &&
+        catVal !== 'knowledge' &&
+        catVal !== 'guide'
+      ) {
+        const slug = catVal
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
+
+        if (slug.length > 3) {
+          // Direct alias match?
+          if (knownAliases.includes(slug)) {
+            candidates.push({
+              alias: slug,
+              score: 85,
+              strategy: '2b-category',
+            });
+          } else {
+            // Category domain lookup: score each alias in this category against the title
+            const categoryIndex = this.buildCategoryIndex(knowledgePath);
+            const categoryAliases = categoryIndex.get(catVal);
+            if (categoryAliases) {
+              const titleMatch = head.match(/^title:\s*"?(.+?)"?\s*$/m);
+              if (titleMatch) {
+                const { slug: tSlug, deplural } =
+                  RagGammeDetectionService.normalizeTitle(titleMatch[1]);
+                for (const alias of categoryAliases) {
+                  const score = RagGammeDetectionService.scoreAliasMatch(
+                    tSlug,
+                    deplural,
+                    alias,
+                  );
+                  if (score > 0) {
+                    // Boost by 10 because category confirms the domain
+                    candidates.push({
+                      alias,
+                      score: Math.min(score + 10, 90),
+                      strategy: '2b-category',
+                    });
+                  }
+                }
+              }
+              // If no title-based score, add all category aliases with low score
+              if (!titleMatch && categoryAliases.length === 1) {
+                candidates.push({
+                  alias: categoryAliases[0],
+                  score: 35,
+                  strategy: '2b-category',
+                });
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Strategy 3: title scoring against all known aliases
+    const titleMatch = head.match(/^title:\s*"?(.+?)"?\s*$/m);
+    if (titleMatch && knownAliases.length > 0) {
+      const { slug: titleSlug, deplural: titleSlugDePlural } =
+        RagGammeDetectionService.normalizeTitle(titleMatch[1]);
+
+      for (const alias of knownAliases) {
+        const score = RagGammeDetectionService.scoreAliasMatch(
+          titleSlug,
+          titleSlugDePlural,
+          alias,
+        );
+        if (score > 0) {
+          candidates.push({ alias, score, strategy: '3-title' });
+        }
+      }
+    }
+
+    // Strategy 5: source_url path segment matching
+    const urlAlias = this.matchBySourceUrl(head, knownAliases);
+    if (urlAlias) {
+      candidates.push({ alias: urlAlias, score: 70, strategy: '5-url' });
+    }
+
+    // Sort by score descending, then by alias length descending (prefer more specific)
+    candidates.sort(
+      (a, b) => b.score - a.score || b.alias.length - a.alias.length,
+    );
+    return candidates;
+  }
+
+  /**
+   * Strategy 5: Match source_url path segments against known gamme aliases.
+   * Two-level matching:
+   *   5a. Explicit URL_SEGMENT_TO_GAMME map (handles translations)
+   *   5b. Word-level overlap between URL segments and alias keywords (≥2 shared words)
+   */
+  private matchBySourceUrl(
+    head: string,
+    knownAliases: string[],
+  ): string | null {
+    const sourceUrlMatch = head.match(/^source_url:\s*"?(.+?)"?\s*$/m);
+    if (!sourceUrlMatch) return null;
+
+    let urlPath: string;
+    try {
+      urlPath = new URL(sourceUrlMatch[1].trim()).pathname;
+    } catch {
+      return null;
+    }
+
+    const segments = urlPath
+      .split('/')
+      .map((s) => s.trim().toLowerCase())
+      .filter((s) => s.length > 3);
+
+    // 5a. Explicit mapping lookup
+    for (const seg of segments) {
+      const mapped = RagGammeDetectionService.URL_SEGMENT_TO_GAMME[seg];
+      if (mapped && knownAliases.includes(mapped)) {
+        return mapped;
+      }
+    }
+
+    // 5b. Word-level overlap: extract words from URL segments, match against alias words
+    const urlWords = new Set(
+      segments.flatMap((s) =>
+        s
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .split(/[^a-z0-9]+/)
+          .filter((w) => w.length >= 4),
+      ),
+    );
+    if (urlWords.size === 0) return null;
+
+    let bestAlias: string | null = null;
+    let bestScore = 0;
+
+    for (const alias of knownAliases) {
+      if (alias.length < 4) continue;
+      const aliasWords = alias.split('-').filter((w) => w.length >= 4);
+      if (aliasWords.length === 0) continue;
+
+      let overlap = 0;
+      for (const aw of aliasWords) {
+        if (urlWords.has(aw)) overlap++;
+      }
+
+      // Require ≥2 matching words, or 1 if the word is long (≥8 chars, e.g. "climatisation")
+      const threshold = aliasWords.some((w) => w.length >= 8 && urlWords.has(w))
+        ? 1
+        : 2;
+      if (overlap >= threshold && overlap > bestScore) {
+        bestScore = overlap;
+        bestAlias = alias;
+      }
+    }
+
+    return bestAlias;
+  }
+
   /**
    * Resolve gamme aliases from an explicit list of validated file paths.
-   * Same resolution logic as detectAffectedGammes() but without mtime scanning.
+   * Uses scoring system: collects all candidate matches, picks best.
    */
   public async resolveGammesFromFiles(
     filePaths: string[],
@@ -56,131 +412,66 @@ export class RagGammeDetectionService {
     for (const fullPath of filePaths) {
       if (!fullPath.endsWith('.md')) continue;
 
-      // Strategy 1: gammes/ directory -> filename = alias
+      // Strategy 1: gammes/ directory -> filename = alias (always 100%)
       if (fullPath.startsWith(gammeDir)) {
         const filename = path.basename(fullPath, '.md');
         addResult(filename, fullPath);
         continue;
       }
 
-      // Strategies 2+3: parse frontmatter for gamme/category/title
       try {
         const head = readFileSync(fullPath, 'utf-8').slice(0, 500);
 
-        // Strategy 2a: explicit gamme: field
-        const gammeMatch = head.match(/^gamme:\s*(.+)$/m);
-        if (gammeMatch) {
-          addResult(gammeMatch[1].trim(), fullPath);
+        // Collect all candidates with scores (strategies 2a, 2b, 3, 5)
+        const candidates = this.collectCandidates(
+          head,
+          knownAliases,
+          knowledgePath,
+        );
+
+        if (candidates.length > 0 && candidates[0].score >= 20) {
+          const best = candidates[0];
+          this.logger.debug(
+            `[resolveGammesFromFiles] Best: "${best.alias}" (score=${best.score}, strategy=${best.strategy}) for ${path.basename(fullPath)}` +
+              (candidates.length > 1
+                ? ` | runner-up: "${candidates[1].alias}" (${candidates[1].score})`
+                : ''),
+          );
+          addResult(best.alias, fullPath);
           continue;
         }
 
-        // Strategy 2b: category: field
-        const categoryMatch = head.match(/^category:\s*(.+)$/m);
-        if (categoryMatch) {
-          const catVal = categoryMatch[1].trim().toLowerCase();
-          if (
-            catVal !== 'catalog' &&
-            catVal !== 'knowledge' &&
-            catVal !== 'guide'
-          ) {
-            const slug = catVal
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '')
-              .replace(/[^a-z0-9]+/g, '-')
-              .replace(/^-|-$/g, '');
-            if (slug.length > 3) {
-              addResult(slug, fullPath);
-              continue;
-            }
-          }
-        }
-
-        // Strategy 3: title matching against known aliases (improved)
-        const titleMatch = head.match(/^title:\s*"?(.+?)"?\s*$/m);
-        let matched = false;
-        if (titleMatch && knownAliases.length > 0) {
-          const titleSlug = titleMatch[1]
-            .trim()
-            .replace(/\\x([0-9a-fA-F]{2})/g, (_, hex) =>
-              String.fromCharCode(parseInt(hex, 16)),
-            )
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            // Clean common suffixes: "... | Bosch", "... - Delphi", "... – Section 3"
-            .replace(/\s*[|–-]\s+[a-z][\w\s]*$/i, '')
-            .replace(/ - section.*$/i, '')
-            // Remove leading articles: "Des ", "Les ", "Le ", "La ", "L'"
-            .replace(/^(?:des|les|le|la|l'|un|une)\s+/i, '')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-|-$/g, '');
-
-          const titleSlugDePlural = titleSlug.replace(/s(-|$)/g, '$1');
-
-          for (const alias of knownAliases) {
-            if (alias.length < 4) continue;
-
-            // Match 1: title contains full alias (existing behavior)
-            if (
-              titleSlug.includes(alias) ||
-              titleSlugDePlural.includes(alias)
-            ) {
-              this.logger.debug(
-                `[resolveGammesFromFiles] Strategy 3 match (substring): "${titleSlug}" → alias "${alias}" for ${path.basename(fullPath)}`,
-              );
-              addResult(alias, fullPath);
-              matched = true;
-              break;
-            }
-
-            // Match 2: title word matches the head of a multi-part alias
-            // Ex: titleSlugDePlural="plaquette" matches alias="plaquette-de-frein"
-            const aliasParts = alias.split('-');
-            if (aliasParts.length >= 2 && aliasParts[0].length >= 4) {
-              const aliasHead = aliasParts[0];
-              const titleParts = titleSlugDePlural.split('-');
-              if (titleParts.some((p) => p.length >= 4 && p === aliasHead)) {
+        // Strategy 6: Weaviate search fallback (async, only when no good candidate)
+        // Skip for catalog pages — their technical content mentions many products
+        const categoryForS6 = head
+          .match(/^category:\s*(.+)$/m)?.[1]
+          ?.trim()
+          .toLowerCase();
+        const snippet = head
+          .replace(/^---[\s\S]*?---/, '')
+          .trim()
+          .slice(0, 200);
+        if (snippet.length > 20 && categoryForS6 !== 'catalog') {
+          try {
+            const searchResult = await this.ragKnowledgeService.search({
+              query: snippet,
+              limit: 3,
+              filters: { truth_levels: ['L1', 'L2'] },
+            });
+            const gammeDoc = searchResult?.results?.find((r) =>
+              (r.sourcePath || '').startsWith('gammes/'),
+            );
+            if (gammeDoc) {
+              const alias = path.basename(gammeDoc.sourcePath || '', '.md');
+              if (knownAliases.includes(alias)) {
                 this.logger.debug(
-                  `[resolveGammesFromFiles] Strategy 3 match (head): "${titleSlugDePlural}" segment "${aliasHead}" → alias "${alias}" for ${path.basename(fullPath)}`,
+                  `[resolveGammesFromFiles] Strategy 6 (Weaviate): "${alias}" for ${path.basename(fullPath)}`,
                 );
                 addResult(alias, fullPath);
-                matched = true;
-                break;
               }
             }
-          }
-          if (!matched && titleMatch) {
-            this.logger.debug(
-              `[resolveGammesFromFiles] Strategy 3 NO match: "${titleSlug}" (deplural: "${titleSlugDePlural}") for ${path.basename(fullPath)}`,
-            );
-          }
-        }
-
-        // Strategy 4: Weaviate search fallback (async)
-        if (!matched) {
-          const snippet = head
-            .replace(/^---[\s\S]*?---/, '')
-            .trim()
-            .slice(0, 200);
-          if (snippet.length > 20) {
-            try {
-              const searchResult = await this.ragKnowledgeService.search({
-                query: snippet,
-                limit: 3,
-                filters: { truth_levels: ['L1', 'L2'] },
-              });
-              const gammeDoc = searchResult?.results?.find((r) =>
-                (r.sourcePath || '').startsWith('gammes/'),
-              );
-              if (gammeDoc) {
-                const alias = path.basename(gammeDoc.sourcePath || '', '.md');
-                if (knownAliases.includes(alias)) {
-                  addResult(alias, fullPath);
-                }
-              }
-            } catch {
-              /* Weaviate fallback non-bloquant */
-            }
+          } catch {
+            /* Weaviate fallback non-bloquant */
           }
         }
       } catch {
@@ -196,10 +487,7 @@ export class RagGammeDetectionService {
 
   /**
    * Scan knowledge directories for recently modified .md files.
-   * 1. gammes/ -> filename = pg_alias (direct match)
-   * 2. web/, web-catalog/ -> frontmatter gamme: or category: field
-   * 3. web/, web-catalog/ -> title: matched against known gamme aliases
-   * Returns Map of pg_alias slugs -> file paths (deduplicated).
+   * Uses scoring system for strategies 2a, 2b, 3, 5.
    *
    * @deprecated Fallback: scan filesystem with mtime window. Prefer resolveGammesFromFiles().
    */
@@ -207,10 +495,9 @@ export class RagGammeDetectionService {
     const knowledgePath =
       this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
       '/opt/automecanik/rag/knowledge';
-    const cutoff = Date.now() - 30 * 60 * 1000; // 30 min window for long PDF ingestions
+    const cutoff = Date.now() - 30 * 60 * 1000;
     const results = new Map<string, string[]>();
 
-    /** Helper to add a file path to a gamme alias in the results map */
     const addResult = (alias: string, filePath: string): void => {
       const existing = results.get(alias) || [];
       existing.push(filePath);
@@ -231,10 +518,9 @@ export class RagGammeDetectionService {
       this.logger.warn(`Could not scan gamme knowledge dir: ${gammeDir}`);
     }
 
-    // Load known gamme aliases for title matching (strategy 3)
     const knownAliases = this.getKnownGammeAliases(knowledgePath);
 
-    // 2+3. Scan ALL knowledge subdirectories (excluding gammes/ handled above)
+    // 2+3+5. Scan ALL knowledge subdirectories (excluding gammes/)
     const EXCLUDED_DIRS = new Set(['gammes', '_quarantine', '__pycache__']);
     let allSubDirs: string[] = [];
     try {
@@ -258,74 +544,18 @@ export class RagGammeDetectionService {
           if (statSync(fullPath).mtimeMs <= cutoff) continue;
 
           try {
-            // Pre-filter: skip files with invalid frontmatter
             const quickCheck = this.frontmatterValidator.validateFile(fullPath);
-            if (!quickCheck.valid) {
-              this.logger.debug(
-                `Skipping ${subDir}/${f}: ${quickCheck.errors.join(', ')}`,
-              );
-              continue;
-            }
+            if (!quickCheck.valid) continue;
 
             const head = readFileSync(fullPath, 'utf-8').slice(0, 500);
+            const candidates = this.collectCandidates(
+              head,
+              knownAliases,
+              knowledgePath,
+            );
 
-            // Strategy 2a: explicit gamme: field
-            const gammeMatch = head.match(/^gamme:\s*(.+)$/m);
-            if (gammeMatch) {
-              addResult(gammeMatch[1].trim(), fullPath);
-              continue;
-            }
-
-            // Strategy 2b: category: field (if it's a gamme name, not generic)
-            const categoryMatch = head.match(/^category:\s*(.+)$/m);
-            if (categoryMatch) {
-              const catVal = categoryMatch[1].trim().toLowerCase();
-              if (
-                catVal !== 'catalog' &&
-                catVal !== 'knowledge' &&
-                catVal !== 'guide'
-              ) {
-                const slug = catVal
-                  .normalize('NFD')
-                  .replace(/[\u0300-\u036f]/g, '')
-                  .replace(/[^a-z0-9]+/g, '-')
-                  .replace(/^-|-$/g, '');
-                if (slug.length > 3) {
-                  addResult(slug, fullPath);
-                  continue;
-                }
-              }
-            }
-
-            // Strategy 3: match title: against known gamme aliases
-            const titleMatch = head.match(/^title:\s*"?(.+?)"?\s*$/m);
-            if (titleMatch && knownAliases.length > 0) {
-              const titleSlug = titleMatch[1]
-                .trim()
-                // Unescape Python-style \xNN hex sequences from ingest_web.py
-                .replace(/\\x([0-9a-fA-F]{2})/g, (_, hex) =>
-                  String.fromCharCode(parseInt(hex, 16)),
-                )
-                .toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/ - section.*$/i, '') // strip section suffix
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-|-$/g, '');
-
-              // Also try de-pluralized slug (French: filtres->filtre, disques->disque)
-              const titleSlugDePlural = titleSlug.replace(/s(-|$)/g, '$1');
-
-              for (const alias of knownAliases) {
-                if (alias.length < 4) continue;
-                if (
-                  titleSlug.includes(alias) ||
-                  titleSlugDePlural.includes(alias)
-                ) {
-                  addResult(alias, fullPath);
-                  break;
-                }
-              }
+            if (candidates.length > 0 && candidates[0].score >= 20) {
+              addResult(candidates[0].alias, fullPath);
             }
           } catch {
             // Skip unreadable files
@@ -389,6 +619,111 @@ export class RagGammeDetectionService {
     }
 
     return results;
+  }
+
+  /**
+   * Re-run gamme detection on all files in specified subdirectories.
+   * Returns detection results; persists to DB if dryRun=false.
+   */
+  public async rerunDetection(options: {
+    dryRun?: boolean;
+    subDir?: string;
+  }): Promise<{
+    total: number;
+    matched: number;
+    orphan: number;
+    results: Array<{
+      file: string;
+      alias: string;
+      score: number;
+      strategy: string;
+    }>;
+  }> {
+    const knowledgePath =
+      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
+      '/opt/automecanik/rag/knowledge';
+
+    // Clear caches to pick up any new gamme files
+    this.clearCaches();
+
+    const dirs = options.subDir
+      ? [options.subDir]
+      : ['web', 'web-catalog', 'guides', 'diagnostic', 'vehicles', 'reference'];
+
+    const filePaths: string[] = [];
+    for (const dir of dirs) {
+      const fullDir = path.join(knowledgePath, dir);
+      try {
+        for (const f of readdirSync(fullDir)) {
+          if (f.endsWith('.md')) filePaths.push(path.join(fullDir, f));
+        }
+      } catch {
+        /* dir may not exist */
+      }
+    }
+
+    const gammesMap = await this.resolveGammesFromFiles(filePaths);
+
+    if (!options.dryRun && gammesMap.size > 0) {
+      try {
+        const persisted = await this.ragKnowledgeService.persistGammeAliases(
+          Object.fromEntries(gammesMap),
+        );
+        this.logger.log(
+          `[rerunDetection] Persisted ${persisted} gamme alias(es)`,
+        );
+      } catch (err) {
+        this.logger.warn(
+          `[rerunDetection] Failed to persist: ${(err as Error).message}`,
+        );
+      }
+    }
+
+    // Build detailed report
+    const matchedFiles = new Set(Array.from(gammesMap.values()).flat());
+    const detailResults: Array<{
+      file: string;
+      alias: string;
+      score: number;
+      strategy: string;
+    }> = [];
+
+    const knownAliases = this.getKnownGammeAliases(knowledgePath);
+    for (const [alias, files] of gammesMap) {
+      for (const fp of files) {
+        // Re-score for the report
+        let score = 0;
+        let strategy = 'unknown';
+        try {
+          const head = readFileSync(fp, 'utf-8').slice(0, 500);
+          const candidates = this.collectCandidates(
+            head,
+            knownAliases,
+            knowledgePath,
+          );
+          const best = candidates.find((c) => c.alias === alias);
+          if (best) {
+            score = best.score;
+            strategy = best.strategy;
+          }
+        } catch {
+          /* skip */
+        }
+        detailResults.push({
+          file: path.basename(fp),
+          alias,
+          score,
+          strategy,
+        });
+      }
+    }
+
+    return {
+      total: filePaths.length,
+      matched: matchedFiles.size,
+      orphan: filePaths.length - matchedFiles.size,
+      results: detailResults,
+    };
   }
 
   /**
