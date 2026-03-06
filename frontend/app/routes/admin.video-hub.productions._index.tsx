@@ -382,7 +382,22 @@ export default function VideoHubProductions() {
                 name="briefId"
                 placeholder="freinage-socle-2026-q1"
                 required
+                pattern="[a-z0-9]+(-[a-z0-9]+)*"
+                title="Slug en minuscules avec tirets (ex: presentation-automecanik)"
+                onChange={(e) => {
+                  e.target.value = e.target.value
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/\s+/g, "-")
+                    .replace(/[^a-z0-9-]/g, "")
+                    .replace(/-+/g, "-")
+                    .replace(/^-|-$/g, "");
+                }}
               />
+              <p className="text-xs text-muted-foreground">
+                Slug unique, ex: presentation-automecanik
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="videoType">Type video *</Label>

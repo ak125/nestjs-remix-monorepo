@@ -3,7 +3,12 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData, Link } from "@remix-run/react";
+import {
+  useLoaderData,
+  Link,
+  useRouteError,
+  isRouteErrorResponse,
+} from "@remix-run/react";
 import {
   ArrowLeft,
   Mail,
@@ -21,10 +26,10 @@ import {
   XCircle,
   AlertCircle,
 } from "lucide-react";
+import { Error404, ErrorGeneric } from "~/components/errors";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
@@ -234,49 +239,22 @@ export const loader = async ({ params, request }: LoaderFunctionArgs) => {
 };
 
 export function ErrorBoundary() {
-  return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Link to="/admin/users">
-          <button className="flex items-center gap-2 px-4 py-2 text-sm border rounded-md hover:bg-gray-50">
-            <ArrowLeft className="w-4 h-4" />
-            Retour à la liste
-          </button>
-        </Link>
-      </div>
+  const error = useRouteError();
 
-      <div className="space-y-4">
-        <Alert
-          intent="error"
-          variant="solid"
-          icon={<User className="w-6 h-6" />}
-          title="Utilisateur non trouvé"
-        >
-          L'ID utilisateur spécifié n'existe pas dans la base de données.
-        </Alert>
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 404)
+      return (
+        <Error404
+          suggestions={[
+            "Verifiez que l'ID utilisateur est correct",
+            "L'utilisateur a peut-etre ete supprime",
+          ]}
+        />
+      );
+    return <ErrorGeneric status={error.status} message={error.statusText} />;
+  }
 
-        <div className="bg-white border border-gray-200 rounded p-4">
-          <h3 className="font-semibold mb-2">Suggestions :</h3>
-          <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
-            <li>Vérifiez que l'ID utilisateur est correct</li>
-            <li>L'utilisateur a peut-être été supprimé</li>
-            <li>
-              Retournez à la liste des utilisateurs pour en sélectionner un
-              autre
-            </li>
-          </ul>
-        </div>
-
-        <div className="mt-6">
-          <Link to="/admin/users">
-            <Button className="px-4 py-2  rounded-md" variant="blue">
-              \n Voir tous les utilisateurs\n
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
+  return <ErrorGeneric />;
 }
 
 export default function UserDetails() {

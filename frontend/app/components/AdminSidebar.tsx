@@ -34,6 +34,7 @@ import {
   FilePen,
   Film,
   Zap,
+  ImageIcon,
 } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
@@ -391,6 +392,12 @@ export const AdminSidebar = memo(function AdminSidebar({
           href: "/admin/rag/seo-drafts",
           icon: FilePen,
           description: "Review & publish drafts",
+        },
+        {
+          name: "Images IA",
+          href: "/admin/rag/images",
+          icon: ImageIcon,
+          description: "Upload & assign images générées",
         },
       ],
     },

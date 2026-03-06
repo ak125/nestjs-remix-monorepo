@@ -13,6 +13,7 @@ import {
   Upload,
   Link2,
   Loader2,
+  Trash2,
 } from "lucide-react";
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Badge } from "~/components/ui/badge";
@@ -94,7 +95,8 @@ const SLOT_LABELS: Record<string, string> = {
 };
 
 export default function AdminRagImages() {
-  const { images } = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
+  const [images, setImages] = useState<RagImage[]>(loaderData.images);
   const [selected, setSelected] = useState<RagImage | null>(null);
   const [copied, setCopied] = useState(false);
   const [filterGamme, setFilterGamme] = useState<string>("all");
@@ -114,6 +116,10 @@ export default function AdminRagImages() {
   const [assignResult, setAssignResult] = useState<string | null>(null);
   const [r3Slots, setR3Slots] = useState<R3Slot[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
+
+  // Delete state
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   // Gamme resolver state
   const [resolvedGamme, setResolvedGamme] = useState<string | null>(null);
@@ -157,17 +163,27 @@ export default function AdminRagImages() {
     [images],
   );
 
+  const hasRealPrompt = useCallback(
+    (img: RagImage) =>
+      !!img.prompt && !img.prompt.includes("(description a generer"),
+    [],
+  );
+
   const filtered = useMemo(() => {
     return images.filter((img) => {
-      if (filterGamme !== "all" && img.gamme !== filterGamme) return false;
+      if (filterGamme === "__sans_gamme__") {
+        if (img.gamme !== null) return false;
+      } else if (filterGamme !== "all" && img.gamme !== filterGamme) {
+        return false;
+      }
       if (filterType !== "all" && img.type !== filterType) return false;
-      if (filterPrompt === "with" && !img.prompt) return false;
-      if (filterPrompt === "without" && img.prompt) return false;
+      if (filterPrompt === "with" && !hasRealPrompt(img)) return false;
+      if (filterPrompt === "without" && hasRealPrompt(img)) return false;
       return true;
     });
-  }, [images, filterGamme, filterType, filterPrompt]);
+  }, [images, filterGamme, filterType, filterPrompt, hasRealPrompt]);
 
-  const withPrompt = images.filter((i) => i.prompt).length;
+  const withPrompt = images.filter((i) => hasRealPrompt(i)).length;
 
   function handleCopy(text: string) {
     navigator.clipboard.writeText(text);
@@ -182,6 +198,7 @@ export default function AdminRagImages() {
     setAssignTarget("pg_pic");
     setAssignSlot("");
     setR3Slots([]);
+    setConfirmDelete(false);
   }
 
   async function handleUpload(file: File) {
@@ -264,6 +281,28 @@ export default function AdminRagImages() {
     }
   }
 
+  async function handleDelete() {
+    if (!selected) return;
+    setDeleting(true);
+    try {
+      const hashOnly = selected.hash.replace(/\.[^.]+$/, "");
+      const res = await fetch(`/api/rag/admin/images/${hashOnly}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ message: "echec" }));
+        alert(`Erreur: ${data.message || "echec suppression"}`);
+        return;
+      }
+      setImages((prev) => prev.filter((i) => i.hash !== selected.hash));
+      setSelected(null);
+    } catch {
+      alert("Erreur reseau");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -298,6 +337,11 @@ export default function AdminRagImages() {
             <SelectItem value="all">
               Toutes les gammes ({images.length})
             </SelectItem>
+            {(gammeCounts["sans-gamme"] || 0) > 0 && (
+              <SelectItem value="__sans_gamme__">
+                Sans gamme ({gammeCounts["sans-gamme"]})
+              </SelectItem>
+            )}
             {gammes.sort().map((g) => (
               <SelectItem key={g} value={g}>
                 {g} ({gammeCounts[g] || 0})
@@ -324,9 +368,11 @@ export default function AdminRagImages() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous ({images.length})</SelectItem>
-            <SelectItem value="with">Avec prompt ({withPrompt})</SelectItem>
+            <SelectItem value="with">
+              Avec description ({withPrompt})
+            </SelectItem>
             <SelectItem value="without">
-              Sans prompt ({images.length - withPrompt})
+              Sans description ({images.length - withPrompt})
             </SelectItem>
           </SelectContent>
         </Select>
@@ -574,6 +620,44 @@ export default function AdminRagImages() {
 
                   {uploadError && (
                     <p className="text-sm text-red-600">{uploadError}</p>
+                  )}
+                </div>
+
+                {/* Supprimer image */}
+                <div className="border-t pt-4">
+                  {!confirmDelete ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => setConfirmDelete(true)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      Supprimer cette image
+                    </Button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-red-600">Confirmer ?</span>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        disabled={deleting}
+                        onClick={handleDelete}
+                      >
+                        {deleting ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          "Oui, supprimer"
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setConfirmDelete(false)}
+                      >
+                        Annuler
+                      </Button>
+                    </div>
                   )}
                 </div>
 

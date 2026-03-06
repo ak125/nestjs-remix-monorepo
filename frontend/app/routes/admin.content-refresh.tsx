@@ -282,6 +282,9 @@ export default function AdminContentRefresh() {
   // Action state (publish)
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
+  // Publish-all state
+  const [publishAllLoading, setPublishAllLoading] = useState(false);
+
   // ── Handlers ──
 
   function updateFilter(key: string, value: string) {
@@ -380,6 +383,28 @@ export default function AdminContentRefresh() {
       setRejectDialogOpen(false);
       setRejectItemId(null);
       setRejectReason("");
+      refreshFetcher.load(`/admin/content-refresh?${searchParams.toString()}`);
+    }
+  }
+
+  async function handlePublishAll() {
+    if (!confirm("Publier tous les drafts en attente ?")) return;
+    setPublishAllLoading(true);
+    try {
+      const res = await fetch("/api/admin/content-refresh/publish-all", {
+        method: "PATCH",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(`Erreur: ${data.message || "Publication echouee"}`);
+      } else {
+        const d = data.data ?? data;
+        alert(`${d.published} publie(s), ${d.failed} echec(s)`);
+      }
+    } catch (err) {
+      alert(`Erreur: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setPublishAllLoading(false);
       refreshFetcher.load(`/admin/content-refresh?${searchParams.toString()}`);
     }
   }
@@ -506,21 +531,39 @@ export default function AdminContentRefresh() {
         </div>
       }
       actions={
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            refreshFetcher.load(
-              `/admin/content-refresh?${searchParams.toString()}`,
-            )
-          }
-          className="gap-1.5"
-        >
-          <RefreshCw
-            className={`h-3.5 w-3.5 ${refreshFetcher.state !== "idle" ? "animate-spin" : ""}`}
-          />
-          Rafraichir
-        </Button>
+        <div className="flex items-center gap-2">
+          {displayCounts.draft > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePublishAll}
+              disabled={publishAllLoading}
+              className="gap-1.5 text-green-700 border-green-200 hover:bg-green-50 hover:text-green-800"
+            >
+              {publishAllLoading ? (
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              )}
+              Publier tout ({displayCounts.draft})
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              refreshFetcher.load(
+                `/admin/content-refresh?${searchParams.toString()}`,
+              )
+            }
+            className="gap-1.5"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${refreshFetcher.state !== "idle" ? "animate-spin" : ""}`}
+            />
+            Rafraichir
+          </Button>
+        </div>
       }
       kpis={
         <KpiGrid columns={4}>

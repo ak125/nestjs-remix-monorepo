@@ -267,6 +267,24 @@ export default function AdminRagIngest() {
       ),
     },
     {
+      key: "url" as keyof IngestionJob,
+      header: "URL",
+      render: (_val, row) =>
+        row.url ? (
+          <a
+            href={row.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block max-w-[250px] truncate text-xs text-blue-600 hover:underline"
+            title={row.url}
+          >
+            {row.url.replace(/^https?:\/\//, "")}
+          </a>
+        ) : (
+          <span className="text-muted-foreground">&mdash;</span>
+        ),
+    },
+    {
       key: "status",
       header: "Status",
       render: (_val, row) => (
