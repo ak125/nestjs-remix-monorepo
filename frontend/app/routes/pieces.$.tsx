@@ -154,9 +154,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return redirect(migration.new_url, { status: 301 });
   }
 
-  // Si migration échouée, rediriger vers /pieces/ plutôt qu'afficher une page d'erreur
+  // Si migration échouée, rediriger vers l'accueil
   // Cela évite que Google indexe des pages "Page déplacée" ou "undefined"
-  return redirect("/pieces/", { status: 301 });
+  return redirect("/", { status: 301 });
 };
 
 // ====================================
@@ -204,7 +204,7 @@ export default function LegacyPartUrlMigrationPage() {
         </h1>
         <p className="text-gray-600">
           Si vous n'êtes pas redirigé automatiquement,{" "}
-          <Link to="/pieces/" className="text-blue-600 underline">
+          <Link to="/" className="text-blue-600 underline">
             cliquez ici
           </Link>
           .

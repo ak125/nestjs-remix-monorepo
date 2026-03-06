@@ -488,46 +488,6 @@ export default function ContactPage() {
               </div>
             </div>
 
-            {/* Actions rapides */}
-            <Alert className="rounded-lg p-4" variant="info">
-              <h4 className="font-medium text-semantic-info mb-3 flex items-center">
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-                Aide rapide
-              </h4>
-              <div className="space-y-3">
-                <Link
-                  to="/support/faq"
-                  className="block text-sm font-medium text-semantic-info hover:text-semantic-info/80 hover:underline"
-                >
-                  📋 Consulter la FAQ →
-                </Link>
-                <Link
-                  to="/support/status"
-                  className="block text-sm font-medium text-semantic-info hover:text-semantic-info/80 hover:underline"
-                >
-                  🔍 Suivre une commande →
-                </Link>
-                <Link
-                  to="/support/returns"
-                  className="block text-sm font-medium text-semantic-info hover:text-semantic-info/80 hover:underline"
-                >
-                  ↩️ Politique de retour →
-                </Link>
-              </div>
-            </Alert>
-
             {/* Statut du support */}
             <Alert className="rounded-lg p-4" variant="success">
               <div className="flex items-center">

@@ -73,7 +73,6 @@ export function sanitizePurchaseGuideForR1(
 export function buildR1Breadcrumbs(pgName: string) {
   return [
     { label: "Accueil", href: "/" },
-    { label: "Pièces Auto", href: "/pieces" },
     { label: pgName || "Piece", current: true as const },
   ];
 }
@@ -172,12 +171,6 @@ export function buildGammeJsonLd(params: {
             {
               "@type": "ListItem",
               position: 2,
-              name: "Pièces Auto",
-              item: "https://www.automecanik.com/pieces",
-            },
-            {
-              "@type": "ListItem",
-              position: 3,
               name: pgName,
               item: canonicalUrl,
             },

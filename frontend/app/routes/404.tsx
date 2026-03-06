@@ -108,7 +108,7 @@ export default function NotFound() {
             </Link>
 
             <Link
-              to="/pieces"
+              to="/#catalogue"
               className="p-4 border border-gray-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-50 transition-colors group"
             >
               <div className="text-indigo-600 group-hover:text-indigo-700 font-medium">

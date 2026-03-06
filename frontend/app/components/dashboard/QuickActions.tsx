@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { ArrowRight, ShoppingBag, User, MapPin, Mail, Key, Heart } from "lucide-react";
+import { ArrowRight, ShoppingBag, User, MapPin, Mail, Key } from "lucide-react";
 
 import { cn } from "../../lib/utils";
 import { Badge } from "../ui/badge";
@@ -31,39 +31,33 @@ export function QuickActions({ stats, enhanced = false }: QuickActionsProps) {
       icon: ShoppingBag,
       description: "Suivi de vos commandes",
       badge: stats?.orders?.pending,
-      variant: "primary"
+      variant: "primary",
     },
     {
       title: "Mon profil",
       href: "/account/profile",
       icon: User,
-      description: "Informations personnelles"
+      description: "Informations personnelles",
     },
     {
       title: "Mes adresses",
-      href: "/account/addresses", 
+      href: "/account/addresses",
       icon: MapPin,
-      description: "Adresses de livraison"
+      description: "Adresses de livraison",
     },
     {
       title: "Messages",
       href: "/account/messages",
       icon: Mail,
       badge: stats?.messages?.unread,
-      description: "Centre de messages"
+      description: "Centre de messages",
     },
     {
       title: "Sécurité",
       href: "/account/security",
       icon: Key,
-      description: "Mot de passe et sécurité"
+      description: "Mot de passe et sécurité",
     },
-    {
-      title: "Mes favoris",
-      href: "/account/favorites",
-      icon: Heart,
-      description: "Produits sauvegardés"
-    }
   ];
 
   if (enhanced) {
@@ -81,16 +75,21 @@ export function QuickActions({ stats, enhanced = false }: QuickActionsProps) {
                 to={action.href}
                 className={cn(
                   "flex items-center gap-3 p-3 rounded-lg border transition-all hover:shadow-md",
-                  action.variant === "primary" && "bg-primary/5 border-blue-200 hover:bg-info/20",
-                  action.variant === "secondary" && "bg-gray-50 border-gray-200 hover:bg-gray-100",
-                  !action.variant && "bg-white border-gray-200 hover:bg-gray-50"
+                  action.variant === "primary" &&
+                    "bg-primary/5 border-blue-200 hover:bg-info/20",
+                  action.variant === "secondary" &&
+                    "bg-gray-50 border-gray-200 hover:bg-gray-100",
+                  !action.variant &&
+                    "bg-white border-gray-200 hover:bg-gray-50",
                 )}
               >
-                <Icon className={cn(
-                  "h-5 w-5",
-                  action.variant === "primary" && "text-blue-600",
-                  !action.variant && "text-gray-500"
-                )} />
+                <Icon
+                  className={cn(
+                    "h-5 w-5",
+                    action.variant === "primary" && "text-blue-600",
+                    !action.variant && "text-gray-500",
+                  )}
+                />
                 <div className="flex-1">
                   <div className="font-medium text-sm text-gray-900">
                     {action.title}

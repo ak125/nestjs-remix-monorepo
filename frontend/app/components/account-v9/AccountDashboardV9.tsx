@@ -5,9 +5,7 @@ import {
   Bookmark,
   ChevronDown,
   ChevronRight,
-  CreditCard,
   FileText,
-  Heart,
   HelpCircle,
   LogOut,
   MapPinned,
@@ -112,22 +110,10 @@ const MENU_SECTIONS = [
     title: "Achats",
     items: [
       {
-        icon: Heart,
-        label: "Mes favoris",
-        href: "/account/favorites",
-        color: "text-red-500",
-      },
-      {
         icon: Bookmark,
-        label: "Listes d'achat",
+        label: "Mes commandes",
         href: "/account/orders",
         color: "text-blue-500",
-      },
-      {
-        icon: CreditCard,
-        label: "Moyens de paiement",
-        href: "/account/payment-methods",
-        color: "text-slate-500",
       },
     ],
   },

@@ -1,17 +1,14 @@
 import { Link, useLocation } from "@remix-run/react";
-import { 
-  User, 
-  ShoppingBag, 
-  MapPin, 
-  Mail, 
-  Key, 
+import {
+  User,
+  ShoppingBag,
+  MapPin,
+  Mail,
+  Key,
   Home,
   Package,
-  Heart,
-  CreditCard,
-  Bell,
   LogOut,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 
 import { cn } from "../../lib/utils";
@@ -39,58 +36,40 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
       title: "Vue d'ensemble",
       href: "/account/dashboard",
       icon: Home,
-      description: "Tableau de bord principal"
+      description: "Tableau de bord principal",
     },
     {
       title: "Mon profil",
-      href: "/account/profile", 
+      href: "/account/profile",
       icon: User,
-      description: "Informations personnelles"
+      description: "Informations personnelles",
     },
     {
       title: "Mes commandes",
       href: "/account/orders",
       icon: ShoppingBag,
       badge: stats?.orders.pending,
-      description: "Suivi de vos commandes"
+      description: "Suivi de vos commandes",
     },
     {
       title: "Mes adresses",
       href: "/account/addresses",
       icon: MapPin,
-      description: "Adresses de livraison et facturation"
+      description: "Adresses de livraison et facturation",
     },
     {
       title: "Messages",
       href: "/account/messages",
       icon: Mail,
       badge: stats?.messages.unread,
-      description: "Centre de messages"
+      description: "Centre de messages",
     },
     {
       title: "Sécurité",
       href: "/account/security",
       icon: Key,
-      description: "Mot de passe et sécurité"
+      description: "Mot de passe et sécurité",
     },
-    {
-      title: "Mes favoris",
-      href: "/account/favorites",
-      icon: Heart,
-      description: "Produits sauvegardés"
-    },
-    {
-      title: "Paiements",
-      href: "/account/payment-methods",
-      icon: CreditCard,
-      description: "Moyens de paiement"
-    },
-    {
-      title: "Notifications",
-      href: "/account/notifications",
-      icon: Bell,
-      description: "Préférences de notification"
-    }
   ];
 
   const isActive = (href: string) => {
@@ -110,11 +89,9 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-medium text-gray-900 truncate">
-              {user.firstName || user.email.split('@')[0]}
+              {user.firstName || user.email.split("@")[0]}
             </p>
-            <p className="text-sm text-gray-500 truncate">
-              {user.email}
-            </p>
+            <p className="text-sm text-gray-500 truncate">{user.email}</p>
           </div>
         </div>
       </div>
@@ -128,22 +105,24 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
             className={cn(
               "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors group",
               isActive(item.href)
-                ? 'bg-primary/10 text-primary border border-blue-200'
-                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                ? "bg-primary/10 text-primary border border-blue-200"
+                : "text-gray-700 hover:bg-gray-50 hover:text-gray-900",
             )}
           >
-            <item.icon className={cn(
-              "w-5 h-5 flex-shrink-0",
-              isActive(item.href) 
-                ? "text-blue-600" 
-                : "text-gray-400 group-hover:text-gray-500"
-            )} />
+            <item.icon
+              className={cn(
+                "w-5 h-5 flex-shrink-0",
+                isActive(item.href)
+                  ? "text-blue-600"
+                  : "text-gray-400 group-hover:text-gray-500",
+              )}
+            />
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
                 <span className="truncate">{item.title}</span>
                 {item.badge && item.badge > 0 && (
-                  <Badge 
-                    variant={isActive(item.href) ? "default" : "secondary"} 
+                  <Badge
+                    variant={isActive(item.href) ? "default" : "secondary"}
                     className="ml-2 text-xs"
                   >
                     {item.badge}
@@ -156,10 +135,12 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
                 </p>
               )}
             </div>
-            <ChevronRight className={cn(
-              "w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity",
-              isActive(item.href) && "opacity-100"
-            )} />
+            <ChevronRight
+              className={cn(
+                "w-4 h-4 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity",
+                isActive(item.href) && "opacity-100",
+              )}
+            />
           </Link>
         ))}
       </nav>
@@ -170,13 +151,23 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
           Actions rapides
         </h3>
         <div className="space-y-2">
-          <Button variant="outline" size="sm" className="w-full justify-start" asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start"
+            asChild
+          >
             <Link to="/orders/new">
               <Package className="w-4 h-4 mr-2" />
               Nouvelle commande
             </Link>
           </Button>
-          <Button variant="outline" size="sm" className="w-full justify-start" asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-start"
+            asChild
+          >
             <Link to="/account/messages/new">
               <Mail className="w-4 h-4 mr-2" />
               Contacter le support
@@ -187,7 +178,12 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
 
       {/* Déconnexion */}
       <div className="p-4 border-t border-gray-200 mt-auto">
-        <Button variant="outline" size="sm" className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10" asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+          asChild
+        >
           <Link to="/logout">
             <LogOut className="w-4 h-4 mr-2" />
             Se déconnecter
@@ -218,9 +214,7 @@ export function AccountLayout({ children, user, stats }: AccountLayoutProps) {
     <div className="min-h-screen bg-gray-50">
       <div className="flex">
         <SideNavigation user={user} stats={stats} />
-        <main className="flex-1 p-8">
-          {children}
-        </main>
+        <main className="flex-1 p-8">{children}</main>
       </div>
     </div>
   );

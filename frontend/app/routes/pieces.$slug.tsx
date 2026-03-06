@@ -598,7 +598,6 @@ export default function PiecesDetailPage() {
       current: item.current,
     })) || [
       { label: "Accueil", href: "/" },
-      { label: "Pièces Auto", href: "/pieces" },
       {
         label: data.content?.pg_name || "Pièce",
         current: true as const,

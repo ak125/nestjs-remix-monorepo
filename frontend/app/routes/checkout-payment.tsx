@@ -893,7 +893,7 @@ export default function PaymentPage() {
                       <span className="text-sm text-slate-700">
                         J'accepte les{" "}
                         <a
-                          href="/support/cgv"
+                          href="/legal/cgv"
                           target="_blank"
                           className="text-blue-600 hover:underline font-medium"
                         >
@@ -901,7 +901,7 @@ export default function PaymentPage() {
                         </a>{" "}
                         et la{" "}
                         <a
-                          href="/support/privacy"
+                          href="/legal/privacy"
                           target="_blank"
                           className="text-blue-600 hover:underline font-medium"
                         >

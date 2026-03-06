@@ -16,8 +16,6 @@
 import { Link } from "@remix-run/react";
 import {
   Bell,
-  CreditCard,
-  Heart,
   LogOut,
   MapPin,
   Package,
@@ -165,22 +163,6 @@ export const UserDropdownMenu = memo(function UserDropdownMenu({
               </div>
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link
-              to="/account/favorites"
-              className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg hover:bg-red-50 transition-all group"
-            >
-              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center group-hover:bg-red-200 transition-colors">
-                <Heart className="h-4 w-4 text-red-600" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-semibold text-sm">Favoris</span>
-                <span className="text-xs text-slate-500">
-                  Produits sauvegardés
-                </span>
-              </div>
-            </Link>
-          </DropdownMenuItem>
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator className="my-2" />
@@ -207,17 +189,6 @@ export const UserDropdownMenu = memo(function UserDropdownMenu({
                 <Settings className="h-4 w-4 text-slate-600" />
               </div>
               <span className="font-semibold text-sm">Paramètres</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link
-              to="/account/payment-methods"
-              className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg hover:bg-indigo-50 transition-all group"
-            >
-              <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
-                <CreditCard className="h-4 w-4 text-indigo-600" />
-              </div>
-              <span className="font-semibold text-sm">Moyens de paiement</span>
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>

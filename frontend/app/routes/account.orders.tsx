@@ -119,7 +119,7 @@ export default function OrdersListPage() {
         <div className="text-center">
           <p className="text-gray-500 mb-4">Erreur de chargement</p>
           <Button asChild>
-            <Link to="/auth/login">Se connecter</Link>
+            <Link to="/login">Se connecter</Link>
           </Button>
         </div>
       </div>
