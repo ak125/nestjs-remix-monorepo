@@ -13,11 +13,13 @@ interface FamilleItem {
 interface GammeFamilleGridV9Props {
   familleName: string;
   items: FamilleItem[];
+  intro?: string;
 }
 
 export default function GammeFamilleGridV9({
   familleName,
   items,
+  intro,
 }: GammeFamilleGridV9Props) {
   if (items.length === 0) return null;
 
@@ -35,6 +37,12 @@ export default function GammeFamilleGridV9({
             {items.length} pièces
           </Badge>
         </div>
+
+        {intro && (
+          <p className="text-[13px] text-slate-500 font-normal leading-relaxed font-v9-body mb-4">
+            {intro}
+          </p>
+        )}
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
           {items.map((c) => {
@@ -64,7 +72,7 @@ export default function GammeFamilleGridV9({
                 </div>
                 <div className="flex items-center justify-between mt-1.5">
                   <span className="text-[11px] text-slate-400 font-normal">
-                    Entretien
+                    {familleName}
                   </span>
                   <ArrowRight
                     size={12}

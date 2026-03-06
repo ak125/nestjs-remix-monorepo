@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { CheckCircle, Clock, Stethoscope, User } from "lucide-react";
+import { CheckCircle, Clock, SearchCheck, User } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 
 export default function GammeDiagnosticCTA() {
@@ -10,13 +10,13 @@ export default function GammeDiagnosticCTA() {
           <div className="px-5 pt-4 pb-2 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-md shadow-orange-200 flex-shrink-0">
-                <Stethoscope
+                <SearchCheck
                   size={17}
                   className="text-white animate-v9-float"
                 />
               </div>
               <h2 className="text-[17px] lg:text-[20px] font-extrabold text-slate-900 tracking-tight font-v9-heading">
-                Pas sûr de la panne ?
+                Diagnostic gratuit
               </h2>
             </div>
             <div className="flex items-center gap-1.5">
@@ -49,7 +49,7 @@ export default function GammeDiagnosticCTA() {
                 className="w-full py-4 bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl text-white text-[15px] lg:text-[14px] font-bold flex items-center justify-center gap-2.5 shadow-lg shadow-orange-500/25 hover:shadow-xl hover:-translate-y-0.5 transition-all relative overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/[0.12] to-white/0 animate-v9-shimmer" />
-                <Stethoscope size={18} /> Lancer le diagnostic
+                <SearchCheck size={18} /> Lancer le diagnostic
               </button>
             </Link>
 

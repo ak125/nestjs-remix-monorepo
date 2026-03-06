@@ -9,11 +9,13 @@ import { type GammePageMotorisationItem } from "~/types/gamme-page-contract.type
 interface GammeMotorisationsV9Props {
   items: GammePageMotorisationItem[];
   totalCount?: number;
+  intro?: string;
 }
 
 export default function GammeMotorisationsV9({
   items,
   totalCount,
+  intro,
 }: GammeMotorisationsV9Props) {
   const [showAll, setShowAll] = useState(false);
   const [search, setSearch] = useState("");
@@ -45,6 +47,12 @@ export default function GammeMotorisationsV9({
           </Badge>
         </div>
 
+        {intro && (
+          <p className="text-[13px] text-slate-500 font-normal leading-relaxed font-v9-body mb-4">
+            {intro}
+          </p>
+        )}
+
         {/* Search on desktop */}
         {items.length > 6 && (
           <div className="relative mb-4 lg:max-w-sm">
@@ -64,7 +72,7 @@ export default function GammeMotorisationsV9({
           </div>
         )}
 
-        <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:gap-3">
+        <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-3">
           {visible.map((m, i) => (
             <Link
               key={`${m.marque_name}-${m.modele_name}-${m.type_name}-${i}`}

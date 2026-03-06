@@ -9,10 +9,12 @@ interface EquipementierItem {
 
 interface GammeEquipementiersV9Props {
   items: EquipementierItem[];
+  intro?: string;
 }
 
 export default function GammeEquipementiersV9({
   items,
+  intro,
 }: GammeEquipementiersV9Props) {
   if (items.length === 0) return null;
 
@@ -30,6 +32,12 @@ export default function GammeEquipementiersV9({
             {items.length} marques
           </Badge>
         </div>
+
+        {intro && (
+          <p className="text-[13px] text-blue-200/50 font-normal leading-relaxed font-v9-body mb-4">
+            {intro}
+          </p>
+        )}
 
         <div className="flex flex-col gap-3 lg:grid lg:grid-cols-3 lg:gap-4">
           {items.map((e) => (

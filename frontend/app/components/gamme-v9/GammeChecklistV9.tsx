@@ -1,10 +1,19 @@
-import { Car, CheckCircle, FileSearch, Filter, Search } from "lucide-react";
+import {
+  Car,
+  CheckCircle,
+  FileSearch,
+  Filter,
+  Search,
+  Settings,
+  Shield,
+  Zap,
+} from "lucide-react";
 import { useState } from "react";
 
 interface CheckItem {
   label: string;
   desc: string;
-  icon: typeof Car;
+  icon?: typeof Car;
 }
 
 interface GammeChecklistV9Props {
@@ -12,20 +21,31 @@ interface GammeChecklistV9Props {
   gammeName?: string;
 }
 
-const DEFAULT_CHECKS: CheckItem[] = [
-  { label: "Marque véhicule", desc: "Sélecteur", icon: Car },
-  { label: "Modèle exact", desc: "Ex: Clio 3", icon: Search },
-  { label: "Motorisation", desc: "Cylindrée/type", icon: Filter },
-  { label: "Type pièce", desc: "Vissant/cartouche", icon: Filter },
-  { label: "Réf. OE", desc: "Comparez OE", icon: FileSearch },
-];
+/** Assign an icon based on keywords in the label. */
+function inferIcon(label: string): typeof Car {
+  const l = label.toLowerCase();
+  if (l.includes("véhicule") || l.includes("montage")) return Car;
+  if (l.includes("moteur") || l.includes("motorisation")) return Filter;
+  if (l.includes("référence") || l.includes("oe") || l.includes("réf"))
+    return FileSearch;
+  if (l.includes("diamètre") || l.includes("épaisseur") || l.includes("cote"))
+    return Search;
+  if (l.includes("paire") || l.includes("essieu")) return Settings;
+  if (l.includes("ampérage") || l.includes("électr") || l.includes("connecti"))
+    return Zap;
+  if (l.includes("retour") || l.includes("garantie") || l.includes("échange"))
+    return Shield;
+  return Filter;
+}
 
 export default function GammeChecklistV9({
   items,
   gammeName: _gammeName,
 }: GammeChecklistV9Props) {
-  const checks = items || DEFAULT_CHECKS;
+  const checks = items && items.length > 0 ? items : [];
   const [checked, setChecked] = useState<number[]>([]);
+
+  if (checks.length === 0) return null;
 
   const toggle = (i: number) =>
     setChecked((p) => (p.includes(i) ? p.filter((x) => x !== i) : [...p, i]));
@@ -37,7 +57,7 @@ export default function GammeChecklistV9({
       <div className="px-5 lg:px-8 max-w-[1280px] mx-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-[20px] lg:text-[24px] font-bold text-slate-900 tracking-tight font-v9-heading">
-            {total} vérifications
+            Checklist
           </h2>
           <span
             className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg ${
@@ -58,10 +78,10 @@ export default function GammeChecklistV9({
           />
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-2 xl:grid-cols-5 gap-2.5">
           {checks.map((s, i) => {
             const ok = checked.includes(i);
-            const Icon = s.icon;
+            const Icon = s.icon || inferIcon(s.label);
             return (
               <button
                 key={s.label}
@@ -71,11 +91,15 @@ export default function GammeChecklistV9({
                   ok
                     ? "bg-emerald-50 border-emerald-300 shadow-md shadow-emerald-100 -translate-y-0.5 ring-2 ring-emerald-200"
                     : "bg-slate-50/50 border-slate-200 hover:border-blue-200 hover:bg-white hover:shadow-sm hover:-translate-y-0.5"
-                } ${i === total - 1 && total % 2 !== 0 ? "col-span-2 lg:col-span-1" : ""}`}
+                }`}
               >
-                {ok && (
+                {ok ? (
                   <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm animate-v9-fade-in">
                     <CheckCircle size={11} className="text-white" />
+                  </div>
+                ) : (
+                  <div className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center shadow-sm border-2 border-white text-[9px] font-bold text-white">
+                    {i + 1}
                   </div>
                 )}
                 <div className="flex items-center gap-2.5">

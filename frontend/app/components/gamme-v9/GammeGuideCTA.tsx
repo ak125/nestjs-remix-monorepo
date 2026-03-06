@@ -27,7 +27,7 @@ export default function GammeGuideCTA({
               Guide complet : {gammeName}
             </div>
             <div className="text-[11px] lg:text-[12px] text-slate-500 font-normal mt-0.5">
-              Symptômes, remplacement étape par étape, FAQ technique
+              Critères de choix, budget, marques recommandées
             </div>
           </div>
           <ArrowRight

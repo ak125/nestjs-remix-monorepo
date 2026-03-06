@@ -1,10 +1,12 @@
 import { Link } from "@remix-run/react";
 import {
+  Award,
   BookOpen,
   CheckCircle,
   ChevronRight,
   Filter,
   Gauge,
+  Phone,
   Search,
   Shield,
   Truck,
@@ -44,19 +46,6 @@ export default function GammeHeroV9({
 
   return (
     <section className="bg-gradient-to-b from-[var(--v9-navy)] to-[var(--v9-navy-light)]">
-      {/* Trust strip */}
-      <div className="flex items-center justify-center gap-3 py-2.5 text-[11px] font-semibold border-b border-white/[0.06]">
-        <span className="flex items-center gap-1 text-emerald-300">
-          <Truck size={12} /> Livraison 24–48h
-        </span>
-        <span className="text-white/15">·</span>
-        <span className="flex items-center gap-1 text-emerald-300">
-          <Shield size={12} /> Retours 30j
-        </span>
-        <span className="text-white/15">·</span>
-        <span className="text-white/40">Équip. OE</span>
-      </div>
-
       <div className="px-5 pt-5 pb-2 lg:pt-8 lg:pb-4 max-w-[1280px] mx-auto lg:px-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-1 text-[10px] lg:text-[11px] text-white/25 mb-4">
@@ -234,6 +223,55 @@ export default function GammeHeroV9({
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Trust strip */}
+      <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pb-5 lg:pb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          {[
+            {
+              icon: Truck,
+              title: "Livraison 24-48h",
+              desc: "Expédition le jour même avant 15h",
+              color: "text-emerald-300",
+            },
+            {
+              icon: Shield,
+              title: "Retours 30 jours",
+              desc: "Satisfait ou remboursé",
+              color: "text-amber-300",
+            },
+            {
+              icon: Award,
+              title: "Garantie constructeur",
+              desc: "Pièces certifiées OE",
+              color: "text-purple-300",
+            },
+            {
+              icon: Phone,
+              title: "Assistance technique",
+              desc: "Un expert vous aide",
+              color: "text-blue-300",
+            },
+          ].map((t) => (
+            <div
+              key={t.title}
+              className="flex items-center gap-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl px-3.5 py-3"
+            >
+              <div className="w-9 h-9 rounded-xl bg-white/[0.06] flex items-center justify-center flex-shrink-0">
+                <t.icon size={16} className={t.color} />
+              </div>
+              <div>
+                <div className="text-[12px] font-semibold text-white/80">
+                  {t.title}
+                </div>
+                <div className="text-[10px] text-white/35 font-normal">
+                  {t.desc}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>

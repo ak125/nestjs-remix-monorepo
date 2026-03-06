@@ -1,6 +1,6 @@
 export { default as GammeHeroV9 } from "./GammeHeroV9";
+export { default as GammeQuickNavV9 } from "./GammeQuickNavV9";
 export { default as GammeDiagnosticCTA } from "./GammeDiagnosticCTA";
-export { default as GammeGuidesStripV9 } from "./GammeGuidesStripV9";
 export { default as GammeContentV9 } from "./GammeContentV9";
 export { default as GammeMotorisationsV9 } from "./GammeMotorisationsV9";
 export { default as GammeChecklistV9 } from "./GammeChecklistV9";
