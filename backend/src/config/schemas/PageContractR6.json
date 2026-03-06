@@ -186,8 +186,24 @@
                     "additionalProperties": false
                   },
                   "caption": {
-                    "type": "string",
-                    "maxLength": 140
+                    "type": "object",
+                    "properties": {
+                      "template": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 140
+                      },
+                      "variables": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "template"
+                    ],
+                    "additionalProperties": false
                   },
                   "loading": {
                     "type": "string",
@@ -204,6 +220,14 @@
                       "auto",
                       "low"
                     ]
+                  },
+                  "width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "height": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
                   },
                   "notes": {
                     "type": "string",
@@ -317,8 +341,24 @@
                     "additionalProperties": false
                   },
                   "caption": {
-                    "type": "string",
-                    "maxLength": 140
+                    "type": "object",
+                    "properties": {
+                      "template": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 140
+                      },
+                      "variables": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "template"
+                    ],
+                    "additionalProperties": false
                   },
                   "loading": {
                     "type": "string",
@@ -335,6 +375,14 @@
                       "auto",
                       "low"
                     ]
+                  },
+                  "width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "height": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
                   },
                   "notes": {
                     "type": "string",
@@ -427,8 +475,24 @@
                     "additionalProperties": false
                   },
                   "caption": {
-                    "type": "string",
-                    "maxLength": 140
+                    "type": "object",
+                    "properties": {
+                      "template": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 140
+                      },
+                      "variables": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "template"
+                    ],
+                    "additionalProperties": false
                   },
                   "loading": {
                     "type": "string",
@@ -445,6 +509,14 @@
                       "auto",
                       "low"
                     ]
+                  },
+                  "width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "height": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
                   },
                   "notes": {
                     "type": "string",
@@ -546,8 +618,24 @@
                     "additionalProperties": false
                   },
                   "caption": {
-                    "type": "string",
-                    "maxLength": 140
+                    "type": "object",
+                    "properties": {
+                      "template": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 140
+                      },
+                      "variables": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "template"
+                    ],
+                    "additionalProperties": false
                   },
                   "loading": {
                     "type": "string",
@@ -564,6 +652,14 @@
                       "auto",
                       "low"
                     ]
+                  },
+                  "width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "height": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
                   },
                   "notes": {
                     "type": "string",
@@ -654,8 +750,24 @@
                     "additionalProperties": false
                   },
                   "caption": {
-                    "type": "string",
-                    "maxLength": 140
+                    "type": "object",
+                    "properties": {
+                      "template": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 140
+                      },
+                      "variables": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "template"
+                    ],
+                    "additionalProperties": false
                   },
                   "loading": {
                     "type": "string",
@@ -672,6 +784,14 @@
                       "auto",
                       "low"
                     ]
+                  },
+                  "width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "height": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
                   },
                   "notes": {
                     "type": "string",
@@ -771,8 +891,24 @@
                     "additionalProperties": false
                   },
                   "caption": {
-                    "type": "string",
-                    "maxLength": 140
+                    "type": "object",
+                    "properties": {
+                      "template": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 140
+                      },
+                      "variables": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "template"
+                    ],
+                    "additionalProperties": false
                   },
                   "loading": {
                     "type": "string",
@@ -789,6 +925,14 @@
                       "auto",
                       "low"
                     ]
+                  },
+                  "width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "height": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
                   },
                   "notes": {
                     "type": "string",
@@ -879,8 +1023,24 @@
                     "additionalProperties": false
                   },
                   "caption": {
-                    "type": "string",
-                    "maxLength": 140
+                    "type": "object",
+                    "properties": {
+                      "template": {
+                        "type": "string",
+                        "minLength": 3,
+                        "maxLength": 140
+                      },
+                      "variables": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "template"
+                    ],
+                    "additionalProperties": false
                   },
                   "loading": {
                     "type": "string",
@@ -897,6 +1057,14 @@
                       "auto",
                       "low"
                     ]
+                  },
+                  "width": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
+                  },
+                  "height": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0
                   },
                   "notes": {
                     "type": "string",
@@ -1065,8 +1233,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -1083,6 +1267,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -1196,8 +1388,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -1214,6 +1422,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -1306,8 +1522,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -1324,6 +1556,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -1425,8 +1665,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -1443,6 +1699,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -1533,8 +1797,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -1551,6 +1831,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -1650,8 +1938,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -1668,6 +1972,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -1758,8 +2070,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -1776,6 +2104,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -1916,8 +2252,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -1934,6 +2286,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -2047,8 +2407,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -2065,6 +2441,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -2157,8 +2541,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -2175,6 +2575,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -2276,8 +2684,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -2294,6 +2718,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -2384,8 +2816,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -2402,6 +2850,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -2501,8 +2957,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -2519,6 +2991,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -2609,8 +3089,24 @@
                                 "additionalProperties": false
                               },
                               "caption": {
-                                "type": "string",
-                                "maxLength": 140
+                                "type": "object",
+                                "properties": {
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 3,
+                                    "maxLength": 140
+                                  },
+                                  "variables": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                      "type": "string"
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "template"
+                                ],
+                                "additionalProperties": false
                               },
                               "loading": {
                                 "type": "string",
@@ -2627,6 +3123,14 @@
                                   "auto",
                                   "low"
                                 ]
+                              },
+                              "width": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "height": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
                               },
                               "notes": {
                                 "type": "string",
@@ -3366,8 +3870,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -3384,6 +3904,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -3497,8 +4025,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -3515,6 +4059,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -3607,8 +4159,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -3625,6 +4193,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -3726,8 +4302,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -3744,6 +4336,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -3834,8 +4434,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -3852,6 +4468,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -3951,8 +4575,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -3969,6 +4609,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -4059,8 +4707,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -4077,6 +4741,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -4429,8 +5101,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -4447,6 +5135,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -4560,8 +5256,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -4578,6 +5290,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -4670,8 +5390,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -4688,6 +5424,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -4789,8 +5533,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -4807,6 +5567,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -4897,8 +5665,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -4915,6 +5699,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -5014,8 +5806,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -5032,6 +5840,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -5122,8 +5938,24 @@
                       "additionalProperties": false
                     },
                     "caption": {
-                      "type": "string",
-                      "maxLength": 140
+                      "type": "object",
+                      "properties": {
+                        "template": {
+                          "type": "string",
+                          "minLength": 3,
+                          "maxLength": 140
+                        },
+                        "variables": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "template"
+                      ],
+                      "additionalProperties": false
                     },
                     "loading": {
                       "type": "string",
@@ -5140,6 +5972,14 @@
                         "auto",
                         "low"
                       ]
+                    },
+                    "width": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "height": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
                     },
                     "notes": {
                       "type": "string",
@@ -5238,8 +6078,24 @@
                           "additionalProperties": false
                         },
                         "caption": {
-                          "type": "string",
-                          "maxLength": 140
+                          "type": "object",
+                          "properties": {
+                            "template": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 140
+                            },
+                            "variables": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "template"
+                          ],
+                          "additionalProperties": false
                         },
                         "loading": {
                           "type": "string",
@@ -5256,6 +6112,14 @@
                             "auto",
                             "low"
                           ]
+                        },
+                        "width": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "height": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
                         },
                         "notes": {
                           "type": "string",
@@ -5369,8 +6233,24 @@
                           "additionalProperties": false
                         },
                         "caption": {
-                          "type": "string",
-                          "maxLength": 140
+                          "type": "object",
+                          "properties": {
+                            "template": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 140
+                            },
+                            "variables": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "template"
+                          ],
+                          "additionalProperties": false
                         },
                         "loading": {
                           "type": "string",
@@ -5387,6 +6267,14 @@
                             "auto",
                             "low"
                           ]
+                        },
+                        "width": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "height": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
                         },
                         "notes": {
                           "type": "string",
@@ -5479,8 +6367,24 @@
                           "additionalProperties": false
                         },
                         "caption": {
-                          "type": "string",
-                          "maxLength": 140
+                          "type": "object",
+                          "properties": {
+                            "template": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 140
+                            },
+                            "variables": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "template"
+                          ],
+                          "additionalProperties": false
                         },
                         "loading": {
                           "type": "string",
@@ -5497,6 +6401,14 @@
                             "auto",
                             "low"
                           ]
+                        },
+                        "width": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "height": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
                         },
                         "notes": {
                           "type": "string",
@@ -5598,8 +6510,24 @@
                           "additionalProperties": false
                         },
                         "caption": {
-                          "type": "string",
-                          "maxLength": 140
+                          "type": "object",
+                          "properties": {
+                            "template": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 140
+                            },
+                            "variables": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "template"
+                          ],
+                          "additionalProperties": false
                         },
                         "loading": {
                           "type": "string",
@@ -5616,6 +6544,14 @@
                             "auto",
                             "low"
                           ]
+                        },
+                        "width": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "height": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
                         },
                         "notes": {
                           "type": "string",
@@ -5706,8 +6642,24 @@
                           "additionalProperties": false
                         },
                         "caption": {
-                          "type": "string",
-                          "maxLength": 140
+                          "type": "object",
+                          "properties": {
+                            "template": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 140
+                            },
+                            "variables": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "template"
+                          ],
+                          "additionalProperties": false
                         },
                         "loading": {
                           "type": "string",
@@ -5724,6 +6676,14 @@
                             "auto",
                             "low"
                           ]
+                        },
+                        "width": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "height": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
                         },
                         "notes": {
                           "type": "string",
@@ -5823,8 +6783,24 @@
                           "additionalProperties": false
                         },
                         "caption": {
-                          "type": "string",
-                          "maxLength": 140
+                          "type": "object",
+                          "properties": {
+                            "template": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 140
+                            },
+                            "variables": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "template"
+                          ],
+                          "additionalProperties": false
                         },
                         "loading": {
                           "type": "string",
@@ -5841,6 +6817,14 @@
                             "auto",
                             "low"
                           ]
+                        },
+                        "width": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "height": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
                         },
                         "notes": {
                           "type": "string",
@@ -5931,8 +6915,24 @@
                           "additionalProperties": false
                         },
                         "caption": {
-                          "type": "string",
-                          "maxLength": 140
+                          "type": "object",
+                          "properties": {
+                            "template": {
+                              "type": "string",
+                              "minLength": 3,
+                              "maxLength": 140
+                            },
+                            "variables": {
+                              "type": "object",
+                              "additionalProperties": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "required": [
+                            "template"
+                          ],
+                          "additionalProperties": false
                         },
                         "loading": {
                           "type": "string",
@@ -5949,6 +6949,14 @@
                             "auto",
                             "low"
                           ]
+                        },
+                        "width": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "height": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
                         },
                         "notes": {
                           "type": "string",
