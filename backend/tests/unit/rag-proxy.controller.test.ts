@@ -7,6 +7,11 @@
  *
  * @see backend/src/modules/rag-proxy/rag-proxy.controller.ts
  */
+jest.mock('@nestjs/platform-express', () => {
+  const actual = jest.requireActual('@nestjs/platform-express');
+  return { ...actual, FileInterceptor: () => jest.fn() };
+});
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { INestApplication } from '@nestjs/common';
@@ -16,6 +21,7 @@ import { RagProxyService } from '../../src/modules/rag-proxy/rag-proxy.service';
 import { RagCleanupService } from '../../src/modules/rag-proxy/services/rag-cleanup.service';
 import { RagWebIngestDbService } from '../../src/modules/rag-proxy/services/rag-web-ingest-db.service';
 import { RagIngestionService } from '../../src/modules/rag-proxy/services/rag-ingestion.service';
+import { RagImageManagementService } from '../../src/modules/rag-proxy/services/rag-image-management.service';
 
 describe('RagProxyController', () => {
   let app: INestApplication;
@@ -34,6 +40,7 @@ describe('RagProxyController', () => {
         { provide: RagCleanupService, useValue: {} },
         { provide: RagWebIngestDbService, useValue: {} },
         { provide: RagIngestionService, useValue: {} },
+        { provide: RagImageManagementService, useValue: {} },
         { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('test-internal-api-key') } },
       ],
     }).compile();

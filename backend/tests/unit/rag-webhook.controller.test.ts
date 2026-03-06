@@ -10,48 +10,9 @@
 // ── Module mocks (must be before imports) ──
 
 jest.mock('@nestjs/common', () => {
-  class HttpException extends Error {
-    statusCode: number;
-    constructor(msg: string, status: number) {
-      super(msg);
-      this.statusCode = status;
-    }
-  }
-  class BadRequestException extends HttpException {
-    constructor(msg: string) {
-      super(msg, 400);
-    }
-  }
-  class NotFoundException extends HttpException {
-    constructor(msg: string) {
-      super(msg, 404);
-    }
-  }
-  class ConflictException extends HttpException {
-    constructor(msg: string) {
-      super(msg, 409);
-    }
-  }
+  const actual = jest.requireActual('@nestjs/common');
   return {
-    Controller: () => () => undefined,
-    Get: () => () => undefined,
-    Post: () => () => undefined,
-    Body: () => () => undefined,
-    Param: () => () => undefined,
-    Query: () => () => undefined,
-    Res: () => () => undefined,
-    Req: () => () => undefined,
-    HttpCode: () => () => undefined,
-    UseGuards: () => () => undefined,
-    UsePipes: () => () => undefined,
-    Injectable: () => () => undefined,
-    Optional: () => () => undefined,
-    OnModuleDestroy: () => () => undefined,
-    HttpStatus: { OK: 200 },
-    HttpException,
-    BadRequestException,
-    NotFoundException,
-    ConflictException,
+    ...actual,
     Logger: jest.fn().mockImplementation(() => ({
       log: jest.fn(),
       warn: jest.fn(),
@@ -125,6 +86,10 @@ jest.mock('../../src/auth/is-admin.guard', () => ({
 
 jest.mock('@anthropic-ai/sdk', () => ({
   default: jest.fn(),
+}));
+
+jest.mock('@nestjs/platform-express', () => ({
+  FileInterceptor: () => jest.fn(),
 }));
 
 import { RagProxyController } from '../../src/modules/rag-proxy/rag-proxy.controller';
