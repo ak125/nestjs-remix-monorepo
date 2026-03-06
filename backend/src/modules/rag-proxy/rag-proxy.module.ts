@@ -24,8 +24,9 @@ import { PdfTextExtractorService } from './services/pdf-text-extractor.service';
 import { PdfRagClassifierService } from './services/pdf-rag-classifier.service';
 import { RagMdMergerService } from './services/rag-md-merger.service';
 
-// Image management service
+// Image & Video management services
 import { RagImageManagementService } from './services/rag-image-management.service';
+import { RagVideoManagementService } from './services/rag-video-management.service';
 
 // NOTE: CacheModule is @Global() (registered in app.module.ts) — CacheService
 // is available everywhere without explicit import.
@@ -54,6 +55,7 @@ import { RagImageManagementService } from './services/rag-image-management.servi
     // Image management (SupabaseStorageService registered locally to avoid UploadModule CACHE_MANAGER dep)
     SupabaseStorageService,
     RagImageManagementService,
+    RagVideoManagementService,
     // Facade (depends on all above)
     RagProxyService,
   ],
@@ -74,6 +76,7 @@ import { RagImageManagementService } from './services/rag-image-management.servi
     PdfRagClassifierService,
     RagMdMergerService,
     RagImageManagementService,
+    RagVideoManagementService,
   ],
 })
 export class RagProxyModule {}

@@ -25,6 +25,7 @@ import { RagCleanupService } from './services/rag-cleanup.service';
 import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
 import { RagIngestionService } from './services/rag-ingestion.service';
 import { RagImageManagementService } from './services/rag-image-management.service';
+import { RagVideoManagementService } from './services/rag-video-management.service';
 import type { RagDocInput, IngestDecision } from './types/rag-ingest.types';
 import {
   ChatRequestSchema,
@@ -62,6 +63,7 @@ export class RagProxyController {
     private readonly ragWebIngestDbService: RagWebIngestDbService,
     private readonly ragIngestionService: RagIngestionService,
     private readonly ragImageManagementService: RagImageManagementService,
+    private readonly ragVideoManagementService: RagVideoManagementService,
   ) {}
 
   @Post('chat')
@@ -407,6 +409,60 @@ export class RagProxyController {
     res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     res.sendFile(imagePath);
+  }
+
+  // ── Video management endpoints ─────────────────────────────────
+
+  @Get('admin/videos')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'List all RAG videos with metadata' })
+  async listVideos() {
+    return this.ragVideoManagementService.listVideos();
+  }
+
+  @Post('admin/ingest/video/single')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'Ingest a video from URL (yt-dlp)' })
+  async ingestVideoUrl(
+    @Body() body: { url: string; gamme?: string; type?: string },
+  ) {
+    if (!body.url) {
+      throw new BadRequestException('url is required');
+    }
+    return this.ragVideoManagementService.ingestVideoUrl(body.url, {
+      gamme: body.gamme,
+      type: body.type,
+    });
+  }
+
+  @Post('admin/videos/assign')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'Assign gamme to a video' })
+  async assignVideo(@Body() body: { hash: string; gamme: string }) {
+    if (!body.hash || !body.gamme) {
+      throw new BadRequestException('hash and gamme are required');
+    }
+    const count = this.ragVideoManagementService.enrichVideoPrompts(
+      [body.hash],
+      body.gamme,
+    );
+    return { success: true, enriched: count };
+  }
+
+  @Delete('admin/videos/:hash')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'Delete a RAG video and its sidecars' })
+  async deleteVideo(@Param('hash') hash: string) {
+    return this.ragVideoManagementService.deleteVideo(hash);
+  }
+
+  @Get('videos/:hashWithExt')
+  @ApiOperation({ summary: 'Stream a RAG video by hash' })
+  async serveVideo(
+    @Param('hashWithExt') hashWithExt: string,
+    @Res() res: Response,
+  ): Promise<void> {
+    this.ragVideoManagementService.streamVideo(hashWithExt, res);
   }
 
   // ── Webhook: RAG container → NestJS bridge ─────────────────────
