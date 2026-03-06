@@ -379,21 +379,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const customerEmail = orderDetails.customer?.cst_mail || user?.email || "";
 
-    logger.log("💰 Payment amounts:", {
-      totalAmount,
-      consigneTotal,
-      customerName,
-      customerEmail,
-    });
-
-    logger.log("💳 Calling initializePayment with:", {
+    logger.log("[Payment] Init:", {
       orderId,
-      userId: user?.id || "guest",
+      totalAmount,
       paymentMethod,
-      amount: totalAmount,
-      consigneTotal,
-      customerName,
-      customerEmail,
     });
 
     // Construire l'URL de base depuis la requête

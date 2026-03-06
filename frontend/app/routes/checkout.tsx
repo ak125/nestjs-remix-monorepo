@@ -31,6 +31,10 @@ import {
   MobileBottomBarSpacer,
 } from "~/components/layout/MobileBottomBar";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import {
+  type CartItem as CartItemType,
+  type CartSummary as CartSummaryType,
+} from "~/types/cart";
 import { trackBeginCheckout } from "~/utils/analytics";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -40,6 +44,7 @@ import { getCart } from "../services/cart.server";
 
 // Phase 9: PageRole pour analytics
 export const handle = {
+  hideGlobalFooter: true,
   pageRole: createPageRoleMeta(PageRole.R2_PRODUCT, {
     clusterId: "checkout",
     canonicalEntity: "finalisation",
@@ -151,21 +156,18 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 };
 
 export async function action({ request }: ActionFunctionArgs) {
-  logger.log("🔵 [Checkout Action] Début de l'action");
-  logger.log("🔵 [Checkout Action] Request URL:", request.url);
-  logger.log("🔵 [Checkout Action] Request method:", request.method);
+  logger.log("[Checkout Action] Start");
 
   try {
-    // Lire les données depuis l'URL (query params) car formData() bloque avec NestJS middleware
-    const url = new URL(request.url);
-    const guestEmail = url.searchParams.get("guestEmail") || null;
-    let addressFirstName = url.searchParams.get("firstName") || "";
-    let addressLastName = url.searchParams.get("lastName") || "";
-    let addressLine = url.searchParams.get("address") || "";
-    let addressZipCode = url.searchParams.get("zipCode") || "";
-    let addressCity = url.searchParams.get("city") || "";
-    const addressCivility = url.searchParams.get("civility") || "M.";
-    const addressCountry = url.searchParams.get("country") || "France";
+    const formData = await request.formData();
+    const guestEmail = (formData.get("guestEmail") as string) || null;
+    let addressFirstName = (formData.get("firstName") as string) || "";
+    let addressLastName = (formData.get("lastName") as string) || "";
+    let addressLine = (formData.get("address") as string) || "";
+    let addressZipCode = (formData.get("zipCode") as string) || "";
+    let addressCity = (formData.get("city") as string) || "";
+    const addressCivility = (formData.get("civility") as string) || "M.";
+    const addressCountry = (formData.get("country") as string) || "France";
 
     // Client connecté sans adresse dans les params → récupérer depuis le profil
     const isGuest = !!guestEmail;
@@ -183,10 +185,7 @@ export async function action({ request }: ActionFunctionArgs) {
           addressLine = profile.address || "";
           addressZipCode = addressZipCode || profile.zipCode || "";
           addressCity = addressCity || profile.city || "";
-          logger.log("📋 [Checkout Action] Adresse récupérée du profil:", {
-            firstName: addressFirstName,
-            city: addressCity,
-          });
+          logger.log("[Checkout Action] Adresse profil chargée");
         }
       } catch (err) {
         logger.warn(
@@ -195,13 +194,7 @@ export async function action({ request }: ActionFunctionArgs) {
         );
       }
     }
-    logger.log(
-      "🔵 [Checkout Action] guestEmail:",
-      guestEmail || "none (authenticated user)",
-    );
-
     // 1. Récupérer le panier
-    logger.log("🛒 [Checkout Action] Récupération du panier...");
     const cartResponse = await fetch(
       getInternalApiUrlFromRequest("/api/cart", request),
       {
@@ -244,7 +237,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // 2. Transformer les items du panier en lignes de commande
     // ✅ Phase 5: Inclure les consignes dans les lignes de commande
-    const orderLines = cartData.items.map((item: any) => ({
+    const orderLines = cartData.items.map((item: CartItemType) => ({
       productId: String(item.product_id),
       productName: item.product_name || "Produit",
       productReference: item.product_sku || String(item.product_id),
@@ -267,7 +260,7 @@ export async function action({ request }: ActionFunctionArgs) {
       country: addressCountry,
     };
     const orderPayload = {
-      customerId: cartData.metadata?.user_id || 0, // sera récupéré côté backend
+      customerId: cartData.metadata?.user_id ?? undefined,
       orderLines,
       billingAddress: addressData,
       shippingAddress: addressData,
@@ -275,17 +268,13 @@ export async function action({ request }: ActionFunctionArgs) {
       shippingMethod: "standard",
     };
 
-    logger.log(
-      "📦 [Checkout Action] Payload commande:",
-      JSON.stringify(orderPayload, null, 2),
-    );
+    logger.log("📦 [Checkout Action] Payload:", {
+      itemCount: orderLines.length,
+      isGuest,
+      hasAddress: !!addressLine,
+    });
 
-    // Debug: Vérifier les cookies
     const cookieHeader = request.headers.get("Cookie") || "";
-    logger.log(
-      "🍪 [Checkout Action] Cookie header:",
-      cookieHeader ? `${cookieHeader.substring(0, 50)}...` : "VIDE",
-    );
 
     // Choisir l'endpoint selon le mode (guest ou authentifié)
     const orderUrl = isGuest
@@ -352,17 +341,8 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     const order = await response.json();
-    logger.log("✅ [Checkout Action] Commande créée:", order);
-
-    // ✅ Phase 7: Retourner l'orderId à l'action data pour redirection côté client
-    // L'API retourne un objet avec ord_id (format BDD)
-    logger.log(
-      "📦 Réponse API création commande:",
-      JSON.stringify(order, null, 2),
-    );
-
     const orderId = order.ord_id || order.order_id || order.id;
-    logger.log("🔍 orderId extrait:", orderId);
+    logger.log("✅ [Checkout Action] Commande créée:", { orderId, isGuest });
 
     if (!orderId || orderId === "créé") {
       // Fallback si on n'a pas l'ID
@@ -397,7 +377,11 @@ export async function action({ request }: ActionFunctionArgs) {
 
 export default function CheckoutPage() {
   const data = useLoaderData<typeof loader>();
-  const { cart, user, userProfile } = data as any;
+  const { cart, user, userProfile } = data as {
+    cart: { items: CartItemType[]; summary: CartSummaryType };
+    user?: { id: string; email: string; firstName?: string; lastName?: string };
+    userProfile?: Record<string, string>;
+  };
   const loaderError = "error" in data ? data.error : undefined;
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
@@ -488,23 +472,16 @@ export default function CheckoutPage() {
 
   const handleCheckoutSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Envoyer POST avec données en query params (formData() bloque avec NestJS middleware)
-    const params = new URLSearchParams();
-    if (guestEmail) params.set("guestEmail", guestEmail);
-    // Toujours envoyer l'adresse saisie (guest et auth)
-    if (shippingAddress.firstName)
-      params.set("firstName", shippingAddress.firstName);
-    if (shippingAddress.lastName)
-      params.set("lastName", shippingAddress.lastName);
-    if (shippingAddress.address) params.set("address", shippingAddress.address);
-    if (shippingAddress.zipCode) params.set("zipCode", shippingAddress.zipCode);
-    if (shippingAddress.city) params.set("city", shippingAddress.city);
-    if (shippingAddress.civility)
-      params.set("civility", shippingAddress.civility);
-    params.set("country", shippingAddress.country);
-    const queryString = params.toString();
-    const action = queryString ? `/checkout?${queryString}` : "/checkout";
-    submit(null, { method: "post", action });
+    const fd = new FormData();
+    if (guestEmail) fd.set("guestEmail", guestEmail);
+    fd.set("firstName", shippingAddress.firstName);
+    fd.set("lastName", shippingAddress.lastName);
+    fd.set("address", shippingAddress.address);
+    fd.set("zipCode", shippingAddress.zipCode);
+    fd.set("city", shippingAddress.city);
+    fd.set("civility", shippingAddress.civility);
+    fd.set("country", shippingAddress.country);
+    submit(fd, { method: "post" });
   };
 
   logger.log(
@@ -553,10 +530,12 @@ export default function CheckoutPage() {
   }
 
   const total =
-    cart.summary.total_price ||
+    cart.summary.total_price ??
     cart.summary.subtotal +
-      cart.summary.tax_amount +
-      cart.summary.shipping_cost;
+      (cart.summary.tax_amount || 0) +
+      (cart.summary.shipping_cost || 0) +
+      (cart.summary.consigne_total || 0) -
+      (cart.summary.discount_amount || 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
@@ -570,6 +549,7 @@ export default function CheckoutPage() {
         <div className="mb-8">
           <PublicBreadcrumb
             items={[{ label: "Panier", href: "/cart" }, { label: "Commande" }]}
+            className="hidden sm:block"
           />
           <CheckoutStepper current="checkout" />
 
@@ -1100,7 +1080,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="space-y-4 mb-6">
-                {cart.items.map((item: any) => (
+                {cart.items.map((item: CartItemType) => (
                   <div
                     key={item.id}
                     className="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors"
@@ -1173,45 +1153,16 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {/* ✅ Afficher les consignes */}
-                {(() => {
-                  const consignesTotal = cart.items.reduce(
-                    (sum: number, item: any) => {
-                      if (item.has_consigne && item.consigne_unit) {
-                        return sum + item.quantity * item.consigne_unit;
-                      }
-                      return sum;
-                    },
-                    0,
-                  );
-
-                  if (consignesTotal > 0) {
-                    return (
-                      <div className="flex justify-between text-sm bg-amber-50 -mx-6 px-6 py-3 border-y border-amber-100">
-                        <span className="flex items-center gap-2 text-amber-700 font-medium">
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
-                            />
-                          </svg>
-                          Consignes
-                        </span>
-                        <span className="font-semibold text-amber-700">
-                          {consignesTotal.toFixed(2)}€
-                        </span>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
+                {(cart.summary.consigne_total ?? 0) > 0 && (
+                  <div className="flex justify-between text-sm bg-amber-50 -mx-6 px-6 py-3 border-y border-amber-100">
+                    <span className="flex items-center gap-2 text-amber-700 font-medium">
+                      &#9851; Consignes
+                    </span>
+                    <span className="font-semibold text-amber-700">
+                      {cart.summary.consigne_total.toFixed(2)}€
+                    </span>
+                  </div>
+                )}
 
                 <div className="pt-3 border-t border-slate-200">
                   <div className="flex justify-between">
@@ -1226,7 +1177,7 @@ export default function CheckoutPage() {
               </div>
 
               {/* Info consignes */}
-              {cart.items.some((item: any) => item.has_consigne) && (
+              {cart.items.some((item: CartItemType) => item.has_consigne) && (
                 <div className="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-100">
                   <p className="text-xs text-amber-800">
                     <svg
@@ -1443,6 +1394,35 @@ export default function CheckoutPage() {
           </button>
         </div>
       </MobileBottomBar>
+
+      {/* Mini footer transactionnel */}
+      <div className="border-t border-gray-200 bg-white py-4 text-center text-xs text-gray-500">
+        <Container>
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+            <Link to="/cgv" className="hover:text-gray-700 hover:underline">
+              CGV
+            </Link>
+            <span>&middot;</span>
+            <Link
+              to="/confidentialite"
+              className="hover:text-gray-700 hover:underline"
+            >
+              Confidentialité
+            </Link>
+            <span>&middot;</span>
+            <Link
+              to="/mentions-legales"
+              className="hover:text-gray-700 hover:underline"
+            >
+              Mentions légales
+            </Link>
+            <span>&middot;</span>
+            <Link to="/contact" className="hover:text-gray-700 hover:underline">
+              Contact
+            </Link>
+          </div>
+        </Container>
+      </div>
     </div>
   );
 }
