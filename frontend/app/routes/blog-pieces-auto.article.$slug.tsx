@@ -27,6 +27,7 @@ import { toast } from "sonner";
 // Error components
 import { Error404 } from "~/components/errors/Error404";
 import { Error410 } from "~/components/errors/Error410";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 
 // UI Components
 import { HtmlContent } from "~/components/seo/HtmlContent";
@@ -639,23 +640,10 @@ export function ErrorBoundary() {
     }
   }
 
-  // Erreur par défaut
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">
-          Une erreur est survenue
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Nous n'avons pas pu charger cet article. Veuillez réessayer.
-        </p>
-        <Link
-          to="/blog-pieces-auto"
-          className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-        >
-          Retour aux articles
-        </Link>
-      </div>
-    </div>
-  );
+  // Erreur par defaut
+  if (isRouteErrorResponse(error)) {
+    return <ErrorGeneric status={error.status} message={error.statusText} />;
+  }
+
+  return <ErrorGeneric />;
 }

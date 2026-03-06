@@ -42,7 +42,7 @@ import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
-import { Error404, Error410 } from "../components/errors";
+import { Error404, Error410, ErrorGeneric } from "../components/errors";
 import { HeroSelection } from "../components/heroes";
 import {
   ModelContentV1Display,
@@ -1550,31 +1550,10 @@ export function ErrorBoundary() {
   }
 
   // Generic error for other cases
-  logger.error("🔥 ERROR BOUNDARY:", error);
-  return (
-    <div className="min-h-screen bg-red-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-xl p-8 max-w-2xl">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">
-          ❌ Erreur de chargement de la page véhicule
-        </h1>
-        <p className="text-gray-700 mb-4">
-          Une erreur s'est produite lors du chargement des informations du
-          véhicule.
-        </p>
-        <div className="bg-gray-100 p-4 rounded">
-          <p className="text-sm text-gray-600">
-            Vérifiez la console pour plus de détails.
-          </p>
-        </div>
-        <div className="mt-6">
-          <a
-            href="/constructeurs"
-            className="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            ← Retour aux constructeurs
-          </a>
-        </div>
-      </div>
-    </div>
-  );
+  logger.error("ERROR BOUNDARY:", error);
+  if (isRouteErrorResponse(error)) {
+    return <ErrorGeneric status={error.status} message={error.statusText} />;
+  }
+
+  return <ErrorGeneric />;
 }

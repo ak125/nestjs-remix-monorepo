@@ -9,6 +9,7 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { z } from "zod";
+import { Error404, Error410, ErrorGeneric } from "~/components/errors";
 
 // Composants vehicle
 // LoadingSpinner not used in this route
@@ -197,44 +198,10 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {error.status} {error.statusText}
-          </h1>
-          <p className="text-gray-600 mb-8">
-            {error.status === 404
-              ? "Le véhicule que vous recherchez n'existe pas."
-              : "Une erreur est survenue lors du chargement de la page."}
-          </p>
-          <a
-            href="/"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary/90"
-          >
-            Retourner à l'accueil
-          </a>
-        </div>
-      </div>
-    );
+    if (error.status === 404) return <Error404 url={error.data?.url} />;
+    if (error.status === 410) return <Error410 url={error.data?.url} />;
+    return <ErrorGeneric status={error.status} message={error.statusText} />;
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          Erreur inattendue
-        </h1>
-        <p className="text-gray-600 mb-8">
-          Une erreur inattendue s'est produite. Veuillez réessayer.
-        </p>
-        <button
-          onClick={() => window.location.reload()}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary/90"
-        >
-          Recharger la page
-        </button>
-      </div>
-    </div>
-  );
+  return <ErrorGeneric />;
 }

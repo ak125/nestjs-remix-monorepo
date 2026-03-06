@@ -55,6 +55,7 @@ import { ScrollToTop } from "../components/blog/ScrollToTop";
 import { Error404 } from "../components/errors/Error404";
 import { Error410 } from "../components/errors/Error410";
 import { Error503 } from "../components/errors/Error503";
+import { ErrorGeneric } from "../components/errors/ErrorGeneric";
 import {
   MobileBottomBar,
   MobileBottomBarSpacer,
@@ -1017,47 +1018,10 @@ export function ErrorBoundary() {
     return <Error404 url={location.pathname} suggestions={[gammeUrl]} />;
   }
 
-  // Message d'erreur détaillé pour le développement
-  const errorMessage =
-    error instanceof Error
-      ? error.message
-      : isRouteErrorResponse(error)
-        ? `${error.status}: ${error.statusText}`
-        : "Une erreur inattendue s'est produite";
-
-  const errorDetails =
-    error instanceof Error && error.stack
-      ? error.stack
-      : JSON.stringify(error, null, 2);
-
   // Autres erreurs (500, etc.)
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl w-full">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">
-          Une erreur est survenue
-        </h1>
-        <p className="text-gray-600 mb-4">{errorMessage}</p>
+  if (isRouteErrorResponse(error)) {
+    return <ErrorGeneric status={error.status} message={error.statusText} />;
+  }
 
-        {/* Détails de l'erreur en mode développement */}
-        {process.env.NODE_ENV === "development" && (
-          <details className="mb-6 bg-gray-100 rounded p-4">
-            <summary className="cursor-pointer font-semibold text-sm text-gray-700 mb-2">
-              Détails techniques (développement)
-            </summary>
-            <pre className="text-xs text-gray-600 overflow-auto max-h-64 whitespace-pre-wrap">
-              {errorDetails}
-            </pre>
-          </details>
-        )}
-
-        <a
-          href="/"
-          className="block w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-center font-medium transition-colors"
-        >
-          Retour à l'accueil
-        </a>
-      </div>
-    </div>
-  );
+  return <ErrorGeneric />;
 }

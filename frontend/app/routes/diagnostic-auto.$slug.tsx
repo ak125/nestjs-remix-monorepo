@@ -48,6 +48,7 @@ import {
   SectionWithImage,
 } from "~/components/content/SectionImage";
 import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { HeroDiagnostic } from "~/components/heroes";
 import Container from "~/components/layout/Container";
 import { HtmlContent } from "~/components/seo/HtmlContent";
@@ -732,30 +733,10 @@ export default function DiagnosticAutoDetail() {
 export function ErrorBoundary() {
   const error = useRouteError();
 
-  if (isRouteErrorResponse(error) && error.status === 404) {
-    return <Error404 />;
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 404) return <Error404 />;
+    return <ErrorGeneric status={error.status} message={error.statusText} />;
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <Card className="max-w-md">
-        <CardContent className="py-8 text-center">
-          <AlertTriangle className="h-12 w-12 mx-auto text-red-500 mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
-            Erreur de chargement
-          </h2>
-          <p className="text-gray-600 mb-4">
-            Impossible de charger ce diagnostic. Veuillez réessayer.
-          </p>
-          <Link
-            to="/diagnostic-auto"
-            className="inline-flex items-center text-cta hover:text-cta-hover"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Retour aux diagnostics
-          </Link>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <ErrorGeneric />;
 }
