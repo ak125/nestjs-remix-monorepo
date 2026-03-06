@@ -453,6 +453,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { name: "description", content: data.seo.description },
     { property: "og:title", content: data.seo.title },
     { property: "og:description", content: data.seo.description },
+    { property: "og:url", content: canonicalUrl },
     // noindex si ≤ 1 produit (thin content) — seuil abaissé de 5 à 1
     // Pages 2+ produits ont maintenant ~300 mots SSR (FAQ, guide, compatibilité)
     {

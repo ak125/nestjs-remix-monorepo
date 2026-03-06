@@ -53,7 +53,7 @@ import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import { isValidImagePath } from "../utils/image-optimizer";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
-import { normalizeAlias, normalizeTypeAlias } from "../utils/url-builder.utils";
+import { normalizeTypeAlias } from "../utils/url-builder.utils";
 
 /**
  * Handle export pour propager le rôle SEO au root Layout
@@ -528,16 +528,21 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   // ========================================
   // 🔄 CANONICALIZATION: 301 redirect si URL non-canonique
+  // Vérifie les 3 segments (brand, model, type) contre les alias DB
   // ========================================
   const v = rpcResult.data.vehicle;
+  const canonicalBrand = `${v.marque_alias}-${v.marque_id}`;
+  const canonicalModel = `${v.modele_alias}-${v.modele_id}`;
   const canonicalTypeAlias = normalizeTypeAlias(v.type_alias, v.type_name);
-  const rawUrlTypeAlias = typeParts.slice(0, -1).join("-"); // Tout sauf l'ID
-  const urlTypeAlias = normalizeAlias(rawUrlTypeAlias); // Normaliser (espaces, accents, etc.)
+  const canonicalType = `${canonicalTypeAlias}-${type_id}`;
 
-  // Si l'alias dans l'URL ne correspond pas à l'alias canonique → 301
-  if (urlTypeAlias !== canonicalTypeAlias) {
-    const canonicalUrl = `/constructeurs/${brand}/${model}/${canonicalTypeAlias}-${type_id}.html`;
-    logger.log(`🔄 [301] Redirect "${urlTypeAlias}" → "${canonicalTypeAlias}"`);
+  if (
+    brand !== canonicalBrand ||
+    model !== canonicalModel ||
+    typeWithoutHtml !== canonicalType
+  ) {
+    const canonicalUrl = `/constructeurs/${canonicalBrand}/${canonicalModel}/${canonicalType}.html`;
+    logger.log(`🔄 [301] Full canonical redirect → ${canonicalUrl}`);
     return redirect(canonicalUrl, 301);
   }
 
@@ -701,6 +706,7 @@ export const meta: MetaFunction<typeof loader> = ({ data: rawData }) => {
     { tagName: "link", rel: "canonical", href: data.seo.canonical },
     { property: "og:title", content: data.seo.title },
     { property: "og:description", content: data.seo.description },
+    { property: "og:url", content: data.seo.canonical },
     { property: "og:type", content: "website" },
     {
       property: "og:image",

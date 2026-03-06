@@ -313,6 +313,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
     { tagName: "link", rel: "canonical", href: data.seo.canonical },
     { property: "og:title", content: data.seo.title },
     { property: "og:description", content: data.seo.description },
+    { property: "og:url", content: data.seo.canonical },
     { property: "og:type", content: "website" },
     // Schema.org BreadcrumbList
     {
