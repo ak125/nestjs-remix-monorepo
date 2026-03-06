@@ -20,6 +20,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { CreditCard, Shield, Truck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
@@ -375,6 +376,13 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(price);
+}
+
 export default function CheckoutPage() {
   const data = useLoaderData<typeof loader>();
   const { cart, user, userProfile } = data as {
@@ -553,8 +561,8 @@ export default function CheckoutPage() {
           />
           <CheckoutStepper current="checkout" />
 
-          <h1 className="text-4xl font-bold text-slate-900 tracking-tight">
-            Finaliser ma commande
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            Dernière étape avant le paiement
           </h1>
           <p className="text-slate-600 mt-2">
             Vérifiez votre commande avant de continuer
@@ -1104,16 +1112,24 @@ export default function CheckoutPage() {
                       <h3 className="font-medium text-slate-900 truncate">
                         {item.product_name}
                       </h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        Réf: {item.product_sku || item.product_id}
+                        {item.product_brand &&
+                          item.product_brand !== "MARQUE INCONNUE" &&
+                          item.product_brand !== "Non spécifiée" && (
+                            <> &middot; {item.product_brand}</>
+                          )}
+                      </p>
                       <p className="text-sm text-slate-500 mt-1">
-                        Quantité: {item.quantity}
+                        Qté {item.quantity}
                       </p>
                     </div>
                     <div className="flex-shrink-0 text-right">
                       <p className="font-semibold text-slate-900">
-                        {(item.price * item.quantity).toFixed(2)}€
+                        {formatPrice(item.price * item.quantity)}
                       </p>
                       <p className="text-xs text-slate-500 mt-1">
-                        {item.price.toFixed(2)}€ / unité
+                        {formatPrice(item.price)} / unité
                       </p>
                     </div>
                   </div>
@@ -1131,24 +1147,26 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-600">Sous-total</span>
                   <span className="font-medium text-slate-900">
-                    {cart.summary.subtotal.toFixed(2)}€
+                    {formatPrice(cart.summary.subtotal)}
                   </span>
                 </div>
 
-                {cart.summary.shipping_cost > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">Livraison</span>
+                <div className="flex justify-between text-sm">
+                  <span className="text-slate-600">Livraison</span>
+                  {cart.summary.shipping_cost > 0 ? (
                     <span className="font-medium text-slate-900">
-                      {cart.summary.shipping_cost.toFixed(2)}€
+                      {formatPrice(cart.summary.shipping_cost)}
                     </span>
-                  </div>
-                )}
+                  ) : (
+                    <span className="font-medium text-green-600">Offerte</span>
+                  )}
+                </div>
 
                 {cart.summary.tax_amount > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">TVA (20%)</span>
                     <span className="font-medium text-slate-900">
-                      {cart.summary.tax_amount.toFixed(2)}€
+                      {formatPrice(cart.summary.tax_amount)}
                     </span>
                   </div>
                 )}
@@ -1159,7 +1177,7 @@ export default function CheckoutPage() {
                       &#9851; Consignes
                     </span>
                     <span className="font-semibold text-amber-700">
-                      {cart.summary.consigne_total.toFixed(2)}€
+                      {formatPrice(cart.summary.consigne_total)}
                     </span>
                   </div>
                 )}
@@ -1170,7 +1188,7 @@ export default function CheckoutPage() {
                       Total
                     </span>
                     <span className="font-bold text-cta text-2xl">
-                      {total.toFixed(2)}€
+                      {formatPrice(total)}
                     </span>
                   </div>
                 </div>
@@ -1269,71 +1287,25 @@ export default function CheckoutPage() {
                 </Link>
               </div>
 
-              {/* Livraison info */}
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                <div className="flex items-start gap-3">
-                  <svg
-                    className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10l2-1 2 1 2-1 2 1zm6-6h-2l-2 5h4l2-5h-2zm-2 7a1 1 0 11-2 0 1 1 0 012 0zm-8 0a1 1 0 11-2 0 1 1 0 012 0z"
-                    />
-                  </svg>
-                  <div>
-                    <p className="text-sm font-medium text-blue-900">
-                      Expédition sous 24-48h ouvrées
-                    </p>
-                    <p className="text-xs text-blue-700 mt-0.5">
-                      Le délai de livraison dépend du transporteur et de votre
-                      localisation.
-                    </p>
-                  </div>
-                </div>
+              <div className="mt-6 rounded-xl border p-3 flex items-center justify-around text-xs text-gray-600">
+                <span className="flex items-center gap-1.5">
+                  <Truck className="h-4 w-4 text-blue-600" />
+                  24-48h
+                </span>
+                <span className="text-gray-300">|</span>
+                <span className="flex items-center gap-1.5">
+                  <Shield className="h-4 w-4 text-green-600" />
+                  <span className="hidden sm:inline">Paiement </span>sécurisé
+                </span>
+                <span className="text-gray-300">|</span>
+                <span className="flex items-center gap-1.5">
+                  <CreditCard className="h-4 w-4 text-purple-600" />
+                  3D Secure
+                </span>
               </div>
 
-              {/* Trust badges sécurité */}
-              <div className="mt-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="h-5 w-5 text-emerald-600"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-emerald-900">
-                      Paiement 100% sécurisé
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                        SSL/TLS
-                      </span>
-                      <span className="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                        PCI DSS
-                      </span>
-                      <span className="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                        3D Secure
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <p className="mt-4 text-xs text-center text-slate-500">
-                En confirmant, vous serez redirigé vers le paiement sécurisé.
+              <p className="mt-3 text-xs text-center text-slate-500">
+                Vous serez redirigé vers le paiement sécurisé.
               </p>
             </div>
           </div>
@@ -1375,7 +1347,7 @@ export default function CheckoutPage() {
               </>
             ) : (
               <>
-                <span>Confirmer ({total.toFixed(2)}€)</span>
+                <span>Confirmer ({formatPrice(total)})</span>
                 <svg
                   className="w-5 h-5"
                   fill="none"
