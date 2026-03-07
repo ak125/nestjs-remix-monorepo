@@ -5,6 +5,7 @@
  */
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { R6PageContractSchema } from './page-contract-r6.schema';
+import { SITE_ORIGIN } from './app.config';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 
@@ -21,7 +22,7 @@ const jsonSchema =
   '$ref' in raw && 'definitions' in raw
     ? {
         $schema: 'https://json-schema.org/draft/2020-12/schema',
-        $id: 'https://automecanik.com/schemas/PageContractR6.json',
+        $id: `${SITE_ORIGIN}/schemas/PageContractR6.json`,
         title: 'PageContractR6',
         ...(raw as any).definitions?.PageContractR6,
       }

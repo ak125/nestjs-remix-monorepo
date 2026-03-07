@@ -7,6 +7,8 @@
  * @see frontend/app/utils/image-optimizer.ts - Doit utiliser les mêmes domaines
  */
 
+import { SITE_ORIGIN } from './app.config';
+
 // ═══════════════════════════════════════════════════════════════════════════
 // 🖼️ DOMAINES D'IMAGES AUTORISÉS - SOURCE UNIQUE
 // ═══════════════════════════════════════════════════════════════════════════
@@ -16,7 +18,7 @@ export const IMAGE_DOMAINS = {
   SUPABASE: process.env.SUPABASE_URL || '',
 
   /** imgproxy pour optimisation d'images (resize, webp, avif) */
-  IMGPROXY: 'https://www.automecanik.com',
+  IMGPROXY: SITE_ORIGIN,
 
   /** Google Analytics - pixel de tracking */
   GOOGLE_ANALYTICS: 'https://www.google-analytics.com',

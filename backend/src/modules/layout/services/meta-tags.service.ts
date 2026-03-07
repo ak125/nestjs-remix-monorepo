@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CacheService } from '../../../cache/cache.service';
+import { SITE_ORIGIN } from '../../../config/app.config';
 
 export interface MetaTagsData {
   title: string;
@@ -139,10 +140,10 @@ export class MetaTagsService {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
         name: 'Automecanik',
-        url: 'https://www.automecanik.com',
+        url: SITE_ORIGIN,
         potentialAction: {
           '@type': 'SearchAction',
-          target: 'https://www.automecanik.com/search?q={search_term_string}',
+          target: `${SITE_ORIGIN}/search?q={search_term_string}`,
           'query-input': 'required name=search_term_string',
         },
       },

@@ -1,6 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { MarketingHubDataService } from './marketing-hub-data.service';
 import { UTMBuilderService } from './utm-builder.service';
+import { SITE_ORIGIN } from '../../../config/app.config';
 import { AiContentService } from '../../ai-content/ai-content.service';
 import { getSocialTemplate } from '../templates/social-post-templates';
 import type {
@@ -58,7 +59,7 @@ export class MultiChannelCopywriterService {
       try {
         // Build UTM link for this channel
         const utm = this.utmBuilder.buildUTMLink({
-          path: brief.source_url.replace('https://www.automecanik.com', ''),
+          path: brief.source_url.replace(SITE_ORIGIN, ''),
           week_iso: weekIso,
           pillar: slot.pillar,
           gamme_alias: brief.gamme_alias || 'generic',

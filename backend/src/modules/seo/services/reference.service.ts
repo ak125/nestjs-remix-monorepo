@@ -4,6 +4,7 @@ import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
+import { SITE_ORIGIN } from '../../../config/app.config';
 
 // ── V4 Schema Types ──
 
@@ -340,9 +341,9 @@ export class ReferenceService extends SupabaseBaseService {
       inDefinedTermSet: {
         '@type': 'DefinedTermSet',
         name: 'Référence Auto - Pièces Automobiles',
-        url: 'https://automecanik.com/reference-auto',
+        url: `${SITE_ORIGIN}/reference-auto`,
       },
-      url: `https://automecanik.com/reference-auto/${ref.slug}`,
+      url: `${SITE_ORIGIN}/reference-auto/${ref.slug}`,
     };
   }
 
@@ -398,33 +399,10 @@ export class ReferenceService extends SupabaseBaseService {
         (d: { id: string }) => d.id,
       );
 
-      // 5. Build content HTML from RAG data
-      let contentHtml = '';
-      if (ragData) {
-        contentHtml = '<div class="reference-content">';
-
-        if (ragData.roleSummary) {
-          contentHtml += `<section><h2>Rôle mécanique</h2><p>${ragData.roleSummary}</p></section>`;
-        }
-
-        if (ragData.mustBeTrue && ragData.mustBeTrue.length > 0) {
-          contentHtml += '<section><h2>Règles métier</h2><ul>';
-          ragData.mustBeTrue.forEach((rule) => {
-            contentHtml += `<li>${rule}</li>`;
-          });
-          contentHtml += '</ul></section>';
-        }
-
-        if (ragData.symptoms && ragData.symptoms.length > 0) {
-          contentHtml += '<section><h2>Symptômes associés</h2><ul>';
-          ragData.symptoms.forEach((symptom) => {
-            contentHtml += `<li>${symptom}</li>`;
-          });
-          contentHtml += '</ul></section>';
-        }
-
-        contentHtml += '</div>';
-      }
+      // 5. R4 Content Policy: contentHtml n'est plus assemble.
+      // Les donnees (roleMecanique, reglesMetier, symptomes) sont stockees
+      // dans les champs structures et rendues en Cards cote frontend.
+      const contentHtml: string | null = null;
 
       // 6. Créer entrée R4 en DRAFT avec enrichissement RAG
       const { error: insertError } = await this.supabase
@@ -522,58 +500,11 @@ export class ReferenceService extends SupabaseBaseService {
       .eq('slug', pgAlias)
       .single();
 
-    // 4. Build content HTML from RAG data
-    let contentHtml = '<div class="reference-content">';
-    if (ragData.roleSummary) {
-      contentHtml += `<section><h2>Rôle mécanique</h2><p>${ragData.roleSummary}</p></section>`;
-    }
-    if (ragData.mustBeTrue.length > 0) {
-      contentHtml += '<section><h2>Règles métier</h2><ul>';
-      ragData.mustBeTrue.forEach((rule) => {
-        contentHtml += `<li>${rule}</li>`;
-      });
-      contentHtml += '</ul></section>';
-    }
-    if (ragData.symptoms.length > 0) {
-      contentHtml += '<section><h2>Symptômes associés</h2><ul>';
-      ragData.symptoms.forEach((symptom) => {
-        contentHtml += `<li>${symptom}</li>`;
-      });
-      contentHtml += '</ul></section>';
-    }
-    // v4: Add Installation section if present
-    if (v4Data?.installation && v4Data.installation.steps.length > 0) {
-      contentHtml += '<section><h2>Installation</h2>';
-      contentHtml += `<p>Difficulté : ${v4Data.installation.difficulty} — Temps estimé : ${v4Data.installation.time}</p>`;
-      if (v4Data.installation.tools.length > 0) {
-        contentHtml += '<h3>Outils nécessaires</h3><ul>';
-        v4Data.installation.tools.forEach((t) => {
-          contentHtml += `<li>${t}</li>`;
-        });
-        contentHtml += '</ul>';
-      }
-      contentHtml += '<h3>Procédure</h3><ol>';
-      v4Data.installation.steps.forEach((s) => {
-        contentHtml += `<li>${s}</li>`;
-      });
-      contentHtml += '</ol>';
-      if (v4Data.installation.postChecks.length > 0) {
-        contentHtml += '<h3>Vérifications post-montage</h3><ul>';
-        v4Data.installation.postChecks.forEach((c) => {
-          contentHtml += `<li>${c}</li>`;
-        });
-        contentHtml += '</ul>';
-      }
-      if (v4Data.installation.commonErrors.length > 0) {
-        contentHtml += '<h3>Erreurs de montage à éviter</h3><ul>';
-        v4Data.installation.commonErrors.forEach((e) => {
-          contentHtml += `<li>${e}</li>`;
-        });
-        contentHtml += '</ul>';
-      }
-      contentHtml += '</section>';
-    }
-    contentHtml += '</div>';
+    // 4. R4 Content Policy: contentHtml n'est plus assemble.
+    // Les donnees structurees (roleMecanique, reglesMetier, symptomes) sont rendues
+    // en Cards cote frontend. Les sections Installation/Procedure sont du contenu R3
+    // interdit sur R4.
+    const contentHtml: string | null = null;
 
     // v4: Build richer confusions_courantes from confusion_with objects
     const confusionsCourantes =

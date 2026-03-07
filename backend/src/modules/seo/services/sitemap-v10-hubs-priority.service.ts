@@ -15,6 +15,7 @@ import * as path from 'path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { SITE_ORIGIN } from '../../../config/app.config';
 import {
   HubGenerationResult,
   HubType,
@@ -32,9 +33,7 @@ export class HubsPriorityService extends SupabaseBaseService {
     super(configService);
     this.rpcGate = rpcGate;
 
-    this.BASE_URL =
-      this.configService.get<string>('BASE_URL') ||
-      'https://www.automecanik.com';
+    this.BASE_URL = this.configService.get<string>('BASE_URL') || SITE_ORIGIN;
     this.OUTPUT_DIR =
       this.configService.get<string>('CRAWL_HUBS_DIR') || '/var/www/crawl-hubs';
   }

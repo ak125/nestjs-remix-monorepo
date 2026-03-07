@@ -2,6 +2,8 @@
  * Configuration des langues et domaines pour hreflang
  */
 
+import { SITE_ORIGIN } from '../../../config/app.config';
+
 export interface LanguageConfig {
   code: string; // Code ISO 639-1: 'fr', 'en', 'es', 'de', 'it'
   region?: string; // Code région optionnel: 'FR', 'BE', 'CH', 'CA'
@@ -18,7 +20,7 @@ export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
     code: 'fr',
     region: 'FR',
     hreflang: 'fr-FR',
-    domain: 'https://www.automecanik.com',
+    domain: SITE_ORIGIN,
     isDefault: true, // Langue par défaut
   },
   {
@@ -64,7 +66,7 @@ export const SUPPORTED_LANGUAGES: LanguageConfig[] = [
 export const X_DEFAULT_LANGUAGE: LanguageConfig = {
   code: 'fr',
   hreflang: 'x-default',
-  domain: 'https://www.automecanik.com',
+  domain: SITE_ORIGIN,
   isDefault: true,
 };
 

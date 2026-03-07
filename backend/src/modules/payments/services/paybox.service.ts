@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import { SITE_ORIGIN } from '../../../config/app.config';
 
 export interface PayboxPaymentParams {
   amount: number; // Montant en euros
@@ -88,10 +89,7 @@ export class PayboxService {
     const dateTime = new Date().toISOString();
 
     // URL de base pour les callbacks
-    const baseUrl = this.configService.get<string>(
-      'BASE_URL',
-      'https://www.automecanik.com',
-    );
+    const baseUrl = this.configService.get<string>('BASE_URL', SITE_ORIGIN);
 
     const payboxParams: Record<string, string> = {
       PBX_SITE: this.site,

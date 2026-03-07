@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { SITE_ORIGIN } from '../../../config/app.config';
 import { CrawlBudgetSupabaseService } from './crawl-budget-supabase.service';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CreateCrawlBudgetExperimentDto } from '../dto/crawl-budget-experiment.dto';
@@ -146,12 +147,12 @@ export class SitemapGeneratorService {
     // Mock data
     return [
       {
-        url: 'https://www.automecanik.com/products/piece-1',
+        url: `${SITE_ORIGIN}/products/piece-1`,
         familyCode: 'PIECE_MOTEUR',
         priority: 0.8,
       },
       {
-        url: 'https://www.automecanik.com/products/piece-2',
+        url: `${SITE_ORIGIN}/products/piece-2`,
         familyCode: 'PNEU_VIEUX',
         priority: 0.5,
       },
@@ -272,7 +273,7 @@ export class CrawlBudgetOrchestratorService {
       .split('T')[0];
 
     const gscStats = await this.gsc.getCrawlStats(
-      process.env.GSC_SITE_URL || 'https://www.automecanik.com',
+      process.env.GSC_SITE_URL || SITE_ORIGIN,
       startDate,
       endDate,
     );
@@ -299,7 +300,7 @@ export class CrawlBudgetOrchestratorService {
     const today = new Date().toISOString().split('T')[0];
 
     const gscStats = await this.gsc.getCrawlStats(
-      process.env.GSC_SITE_URL || 'https://www.automecanik.com',
+      process.env.GSC_SITE_URL || SITE_ORIGIN,
       today,
       today,
     );

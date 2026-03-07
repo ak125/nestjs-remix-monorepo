@@ -13,6 +13,7 @@ import { Observable } from 'rxjs';
 import { Request, Response } from 'express';
 import { SeoHeadersService } from '../services/seo-headers.service';
 import { RobotsTxtService } from '../services/robots-txt.service';
+import { SITE_ORIGIN } from '../../../config/app.config';
 
 @Injectable()
 export class SeoHeadersInterceptor implements NestInterceptor {
@@ -48,7 +49,7 @@ export class SeoHeadersInterceptor implements NestInterceptor {
       path.startsWith('/pieces/') ||
       path.startsWith('/produits/')
     ) {
-      const canonical = `https://www.automecanik.com${path.split('?')[0]}`;
+      const canonical = `${SITE_ORIGIN}${path.split('?')[0]}`;
       headers = this.seoHeadersService.getProductHeaders(canonical);
       // Les routes Remix /pieces gèrent elles-mêmes robots + canonical (incluant 404/410).
       // Évite les headers contradictoires (double X-Robots-Tag, canonical sur erreur).
@@ -57,7 +58,7 @@ export class SeoHeadersInterceptor implements NestInterceptor {
     }
     // Blog
     else if (path.startsWith('/blog/') || path.startsWith('/conseils/')) {
-      const canonical = `https://www.automecanik.com${path.split('?')[0]}`;
+      const canonical = `${SITE_ORIGIN}${path.split('?')[0]}`;
       headers = this.seoHeadersService.getBlogHeaders(canonical);
     }
     // Vérifier si doit être indexé

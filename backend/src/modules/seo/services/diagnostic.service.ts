@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { SITE_ORIGIN } from '../../../config/app.config';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -225,7 +226,7 @@ export class DiagnosticService extends SupabaseBaseService {
       return diagnostic.schema_org;
     }
 
-    const baseUrl = 'https://www.automecanik.com';
+    const baseUrl = SITE_ORIGIN;
     const pageUrl = `${baseUrl}/diagnostic-auto/${diagnostic.slug}`;
 
     // 1. HowTo Schema (existant, ameliore)

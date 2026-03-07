@@ -15,6 +15,7 @@ import * as path from 'path';
 import { gzipAsync } from '../../../utils/promise-helpers';
 import { createHash } from 'crypto';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SITE_ORIGIN } from '../../../config/app.config';
 import {
   StreamingConfig,
   ShardGenerationResult,
@@ -46,7 +47,7 @@ export class SitemapStreamingService {
   private readonly logger = new Logger(SitemapStreamingService.name);
   private readonly config: StreamingConfig;
   private readonly supabase: SupabaseClient;
-  private readonly BASE_URL = 'https://www.automecanik.com';
+  private readonly BASE_URL = SITE_ORIGIN;
 
   constructor(private readonly configService: ConfigService) {
     this.config = {
@@ -55,7 +56,7 @@ export class SitemapStreamingService {
       outputDirectory: path.join(process.cwd(), 'public', 'sitemaps'),
       shardSize: 50000, // 50k URLs par shard (limite Google)
       autoGenerateIndex: true,
-      publicBaseUrl: 'https://www.automecanik.com/public/sitemaps',
+      publicBaseUrl: `${SITE_ORIGIN}/public/sitemaps`,
       cleanupBeforeGeneration: false,
     };
 
@@ -406,7 +407,7 @@ ${shards
     // Mock: générer quelques URLs de test
     for (let i = 1; i <= (options.maxUrls || 1000); i++) {
       urls.push({
-        loc: `https://www.automecanik.com/pieces/produit-${i}.html`,
+        loc: `${SITE_ORIGIN}/pieces/produit-${i}.html`,
         lastmod: new Date().toISOString(),
         changefreq: 'weekly',
         priority: 0.8,

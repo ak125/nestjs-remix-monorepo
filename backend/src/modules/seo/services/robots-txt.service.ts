@@ -5,6 +5,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { SITE_ORIGIN } from '../../../config/app.config';
 
 @Injectable()
 export class RobotsTxtService {
@@ -14,10 +15,7 @@ export class RobotsTxtService {
 
   constructor(private readonly configService: ConfigService) {
     this.isProduction = this.configService.get('NODE_ENV') === 'production';
-    this.baseUrl = this.configService.get(
-      'BASE_URL',
-      'https://www.automecanik.com',
-    );
+    this.baseUrl = this.configService.get('BASE_URL', SITE_ORIGIN);
 
     this.logger.log(
       `🤖 RobotsTxtService initialized (${this.isProduction ? 'PRODUCTION' : 'DEV'})`,

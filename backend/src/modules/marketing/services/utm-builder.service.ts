@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { createHash } from 'crypto';
+import { SITE_ORIGIN } from '../../../config/app.config';
 import type {
   UTMParams,
   UTMLink,
@@ -9,7 +10,7 @@ import type {
 
 @Injectable()
 export class UTMBuilderService {
-  private readonly BASE_URL = 'https://www.automecanik.com';
+  private readonly BASE_URL = SITE_ORIGIN;
 
   /**
    * Build a deterministic UTM link.

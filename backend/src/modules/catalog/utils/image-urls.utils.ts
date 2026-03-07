@@ -12,6 +12,8 @@
  * @see https://docs.imgproxy.net/generating_the_url
  */
 
+import { SITE_ORIGIN } from '../../../config/app.config';
+
 // ═══════════════════════════════════════════════════════════════════════════
 // 🎯 CONFIGURATION CENTRALISÉE - À UTILISER PARTOUT
 // ═══════════════════════════════════════════════════════════════════════════
@@ -24,7 +26,7 @@ export const IMAGE_CONFIG = {
   // Base URLs
   PROXY_BASE: '/img', // Caddy proxy (prod+dev)
   IMGPROXY_BASE: '/imgproxy', // Transformation imgproxy
-  DOMAIN: 'https://www.automecanik.com',
+  DOMAIN: SITE_ORIGIN,
 
   // Buckets Supabase
   BUCKETS: {

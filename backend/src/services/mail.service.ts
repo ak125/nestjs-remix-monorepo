@@ -11,6 +11,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
+import { SITE_ORIGIN } from '../config/app.config';
 
 export interface MailOptions {
   to: string;
@@ -46,8 +47,7 @@ export class MailService {
     const userEmail =
       this.configService.get<string>('GMAIL_USER_EMAIL') ||
       'contact@automecanik.com';
-    this.appUrl =
-      this.configService.get<string>('APP_URL') || 'https://automecanik.com';
+    this.appUrl = this.configService.get<string>('APP_URL') || SITE_ORIGIN;
     this.fromEmail = `AutoMecanik <${userEmail}>`;
 
     if (clientId && clientSecret && refreshToken) {

@@ -9,6 +9,8 @@
  * - Les structures H1/H2
  */
 
+import { SITE_ORIGIN } from '../../../config/app.config';
+
 /**
  * Template pour une page
  */
@@ -227,7 +229,7 @@ export function buildR4SchemaOrg(
     inDefinedTermSet: {
       '@type': 'DefinedTermSet',
       name: 'Référence Auto - Glossaire des Pièces Automobiles',
-      url: 'https://automecanik.com/reference-auto',
+      url: `${SITE_ORIGIN}/reference-auto`,
     },
   };
 }

@@ -5,6 +5,7 @@ import {
   ErrorCodes,
 } from '../../../common/exceptions';
 import { getErrorMessage } from '../../../common/utils/error.utils';
+import { SITE_ORIGIN } from '../../../config/app.config';
 
 export interface SitemapStatus {
   url: string;
@@ -53,10 +54,7 @@ export class SeoMonitoringService {
   private readonly sitemapUrls: string[];
 
   constructor(private readonly configService: ConfigService) {
-    this.baseUrl = this.configService.get<string>(
-      'BASE_URL',
-      'https://www.automecanik.com',
-    );
+    this.baseUrl = this.configService.get<string>('BASE_URL', SITE_ORIGIN);
     this.slackWebhook = this.configService.get<string>('SLACK_WEBHOOK_URL', '');
 
     // Liste de tous les sitemaps à monitorer

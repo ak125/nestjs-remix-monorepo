@@ -22,6 +22,7 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { MetaTagsArianeDataService } from '../../../database/services/meta-tags-ariane-data.service';
+import { SITE_ORIGIN } from '../../../config/app.config';
 
 export interface BreadcrumbItem {
   label: string;
@@ -210,7 +211,7 @@ export class OptimizedBreadcrumbService {
         '@type': 'ListItem',
         position: item.position,
         name: item.label,
-        item: `https://www.automecanik.com${item.href}`,
+        item: `${SITE_ORIGIN}${item.href}`,
       })),
     };
   }

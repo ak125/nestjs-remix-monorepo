@@ -13,6 +13,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { SITE_ORIGIN } from '../../../config/app.config';
 import {
   type TemperatureBucket,
   type SitemapUrl,
@@ -28,8 +29,7 @@ export class SitemapV10XmlService {
   readonly OUTPUT_DIR: string;
 
   constructor(configService: ConfigService) {
-    this.BASE_URL =
-      configService.get<string>('BASE_URL') || 'https://www.automecanik.com';
+    this.BASE_URL = configService.get<string>('BASE_URL') || SITE_ORIGIN;
     this.OUTPUT_DIR =
       configService.get<string>('SITEMAP_OUTPUT_DIR') || '/var/www/sitemaps';
   }

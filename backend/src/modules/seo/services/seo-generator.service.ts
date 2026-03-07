@@ -7,6 +7,7 @@ import * as path from 'path';
 const matter = require('gray-matter');
 
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { SITE_ORIGIN } from '../../../config/app.config';
 
 // Import du service de validation qualité
 import {
@@ -477,7 +478,7 @@ Retourne UNIQUEMENT le texte reformulé, sans commentaires.`;
     const templated = applyTemplate(R4_REFERENCE_TEMPLATE, templateVars);
 
     // Générer le Schema.org
-    const url = `https://automecanik.com/reference-auto/${slug}`;
+    const url = `${SITE_ORIGIN}/reference-auto/${slug}`;
     const schemaOrg = buildR4SchemaOrg(templated.title, definition, url);
 
     return {
@@ -529,7 +530,7 @@ Retourne UNIQUEMENT le texte reformulé, sans commentaires.`;
     const symptomDescription = `${symptom.label}. Ce symptôme peut indiquer un problème lié au ${gammeName.toLowerCase()}.`;
 
     // Générer le Schema.org FAQPage
-    const url = `https://automecanik.com/diagnostic-auto/${slug}`;
+    const url = `${SITE_ORIGIN}/diagnostic-auto/${slug}`;
     const causes = [
       `Usure du ${gammeName.toLowerCase()}`,
       `Défaillance du système`,

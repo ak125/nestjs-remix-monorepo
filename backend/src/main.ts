@@ -12,6 +12,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
+import { SITE_ORIGIN } from './config/app.config';
 
 import RedisStore from 'connect-redis';
 import session from 'express-session';
@@ -171,10 +172,7 @@ async function bootstrap() {
 
     // CORS sécurisé - restreint en production
     const corsOrigin = process.env.CORS_ORIGIN?.split(',').map((s) => s.trim());
-    const defaultProdOrigins = [
-      'https://www.automecanik.com',
-      'https://automecanik.com',
-    ];
+    const defaultProdOrigins = [SITE_ORIGIN];
     app.use(
       cors({
         origin:

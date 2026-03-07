@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MarketingHubDataService } from './marketing-hub-data.service';
 import { MarketingDataService } from './marketing-data.service';
 import { UTMBuilderService } from './utm-builder.service';
+import { SITE_ORIGIN } from '../../../config/app.config';
 import type {
   WeeklyPlan,
   DaySlot,
@@ -87,8 +88,8 @@ export class WeeklyPlanGeneratorService {
         gamme_alias: gamme?.pg_alias ?? null,
         content_source: this.getContentSource(pillar),
         source_url: gamme
-          ? `https://www.automecanik.com/pieces/${gamme.pg_alias}`
-          : 'https://www.automecanik.com',
+          ? `${SITE_ORIGIN}/pieces/${gamme.pg_alias}`
+          : SITE_ORIGIN,
         target_channels: ['instagram', 'facebook', 'youtube'],
         objective: pillar === 'promo' ? 'conversion' : 'traffic',
         cta_type: pillar === 'conseil' ? 'sauvegarde' : 'lien_bio',

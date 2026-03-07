@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { google } from 'googleapis';
 import { BetaAnalyticsDataClient } from '@google-analytics/data';
+import { SITE_ORIGIN } from '../../../config/app.config';
 
 /**
  * 🔍 Service d'audit des URLs
@@ -193,8 +194,7 @@ export class UrlAuditService {
       .toISOString()
       .split('T')[0];
 
-    const siteUrl =
-      this.configService.get('GSC_SITE_URL') || 'https://www.automecanik.com';
+    const siteUrl = this.configService.get('GSC_SITE_URL') || SITE_ORIGIN;
     const ga4PropertyId = this.configService.get('GA4_PROPERTY_ID') || '';
 
     const [gscUrls, ga4Urls] = await Promise.all([
@@ -279,8 +279,7 @@ export class UrlAuditService {
       .toISOString()
       .split('T')[0];
 
-    const siteUrl =
-      this.configService.get('GSC_SITE_URL') || 'https://www.automecanik.com';
+    const siteUrl = this.configService.get('GSC_SITE_URL') || SITE_ORIGIN;
 
     const gscUrls = await this.getGscCrawledUrls(siteUrl, startDate, endDate);
 
