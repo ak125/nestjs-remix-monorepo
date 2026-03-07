@@ -18,7 +18,7 @@ const LEGAL_LINKS = [
   { label: "Cookies", href: "/politique-cookies" },
 ];
 
-export default function FooterV9() {
+export default function Footer() {
   return (
     <footer
       className="bg-v9-navy text-white pb-20 lg:pb-0"

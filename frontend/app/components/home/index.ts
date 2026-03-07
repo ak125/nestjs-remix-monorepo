@@ -1,10 +1,9 @@
 export { default as HomepageJsonLd } from "./HomepageJsonLd";
-export { default as HeroSearchSection } from "./HeroSearchSection";
-export { default as ConseilsDiagnosticSection } from "./ConseilsDiagnosticSection";
+export { default as HeroSection } from "./HeroSection";
 export { default as CatalogueSection } from "./CatalogueSection";
-export { default as WhyAutomecanikSection } from "./WhyAutomecanikSection";
-export { default as BrandsGridSection } from "./BrandsGridSection";
-export { default as StatsSection } from "./StatsSection";
-export { default as BlogGuidesSection } from "./BlogGuidesSection";
+export { default as BrandsGrid } from "./BrandsGrid";
+export { default as BlogCarousel } from "./BlogCarousel";
 export { default as FaqSection } from "./FaqSection";
-export { default as EquipementiersMarquee } from "./EquipementiersMarquee";
+export { default as Footer } from "./Footer";
+export { default as HomeResourcesAndVideoSection } from "./GuidesStrip";
+export { default as WhyAutomecanikSection } from "./WhyAutomecanikSection";

@@ -41,7 +41,7 @@ import {
   GammeGuideCTA,
   GammeFaqV9,
 } from "~/components/gamme-v9";
-import { FooterV9 } from "~/components/home-v9";
+import { Footer } from "~/components/home";
 
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import {
@@ -822,7 +822,7 @@ export default function PiecesDetailPage() {
         pgAlias={data.content?.pg_alias}
       />
 
-      <FooterV9 />
+      <Footer />
     </div>
   );
 }

@@ -6,7 +6,17 @@ import {
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 
-import { HomepageJsonLd } from "~/components/home";
+import {
+  HomepageJsonLd,
+  HeroSection,
+  HomeResourcesAndVideoSection,
+  CatalogueSection,
+  BrandsGrid,
+  BlogCarousel,
+  FaqSection,
+  Footer,
+  WhyAutomecanikSection,
+} from "~/components/home";
 import {
   BLOG,
   CATS,
@@ -14,16 +24,6 @@ import {
   IMG_PROXY_LOGOS,
   MARQUES,
 } from "~/components/home/constants";
-import WhyAutomecanikSection from "~/components/home/WhyAutomecanikSection";
-import {
-  HeroSectionV9,
-  GuidesStripV9,
-  CatalogueSectionV9,
-  BrandsGridV9,
-  BlogCarouselV9,
-  FaqSectionV9,
-  FooterV9,
-} from "~/components/home-v9";
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -225,14 +225,14 @@ export default function Homepage() {
   return (
     <div className="min-h-screen bg-[#f5f7fa] font-v9-body pb-20 lg:pb-0">
       <HomepageJsonLd />
-      <HeroSectionV9 />
-      <GuidesStripV9 />
-      <CatalogueSectionV9 families={catalogFamilies} />
+      <HeroSection />
+      <CatalogueSection families={catalogFamilies} />
+      <HomeResourcesAndVideoSection />
       <WhyAutomecanikSection />
-      <BrandsGridV9 brands={brandsList} />
-      <BlogCarouselV9 articles={blogList} />
-      <FaqSectionV9 faqsPromise={faqsPromise} />
-      <FooterV9 />
+      <BrandsGrid brands={brandsList} />
+      <BlogCarousel articles={blogList} />
+      <FaqSection faqsPromise={faqsPromise} />
+      <Footer />
     </div>
   );
 }
