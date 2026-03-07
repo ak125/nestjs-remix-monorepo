@@ -7,3 +7,4 @@ export { default as FaqSection } from "./FaqSection";
 export { default as Footer } from "./Footer";
 export { default as HomeResourcesAndVideoSection } from "./GuidesStrip";
 export { default as WhyAutomecanikSection } from "./WhyAutomecanikSection";
+export { default as DiagnosticBanner } from "./DiagnosticBanner";

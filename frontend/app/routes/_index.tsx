@@ -16,6 +16,7 @@ import {
   FaqSection,
   Footer,
   WhyAutomecanikSection,
+  DiagnosticBanner,
 } from "~/components/home";
 import {
   BLOG,
@@ -218,7 +219,7 @@ export default function Homepage() {
               ? `/img/uploads/articles/gammes-produits/catalogue/${gammeImgMap.get(a.pg_alias)}`
               : undefined,
         }))
-      : BLOG.map((b) => ({ ...b, link: "#" }));
+      : BLOG.map((b) => ({ ...b, link: "/blog-pieces-auto" }));
 
   const faqsPromise = loaderData.faqs;
 
@@ -228,8 +229,9 @@ export default function Homepage() {
       <HeroSection />
       <CatalogueSection families={catalogFamilies} />
       <HomeResourcesAndVideoSection />
-      <WhyAutomecanikSection />
+      <DiagnosticBanner />
       <BrandsGrid brands={brandsList} />
+      <WhyAutomecanikSection />
       <BlogCarousel articles={blogList} />
       <FaqSection faqsPromise={faqsPromise} />
       <Footer />
