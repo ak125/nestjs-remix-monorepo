@@ -12,7 +12,6 @@ import { BlogArticleTransformService } from './blog-article-transform.service';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
 import { PRIX_PAS_CHER } from '../../seo/seo-v4.types';
 import { deduplicateWords } from '../utils/html-normalize.utils';
-import { R6_QUALITY_TIER_IDS } from '../../../config/r6-keyword-plan.constants';
 import type {
   R6GuidePayload,
   R6GuidePage,
@@ -104,40 +103,39 @@ export class R6GuideService {
     row: Record<string, unknown>,
     pg_alias: string,
   ): Promise<R6GuidePayload> {
-    // Hero decision: promise from intro_role, bullets from interest_nuggets
-    // (V2 reuses sgpg_interest_nuggets.hook[] as hero bullets)
-    // Guard: if agent wrote full JSON block instead of plain text, extract .promise
-    let heroPromise = (row.sgpg_intro_role as string) || '';
-    if (heroPromise.startsWith('{')) {
-      try {
-        heroPromise = JSON.parse(heroPromise).promise || heroPromise;
-      } catch {
-        /* keep raw string */
-      }
-    }
+    // Hero decision: promise from intro_role (plain string in V2)
     const heroDecision: R6HeroDecision = {
-      promise: heroPromise,
-      bullets:
-        (row.sgpg_interest_nuggets as Array<{ hook: string }>)
-          ?.map((n) => n.hook)
-          ?.slice(0, 5) ?? [],
+      promise: (row.sgpg_intro_role as string) || '',
+      bullets: [], // V2 uses interest_nuggets for ctaFinal links, not hero bullets
     };
 
     // Summary pick fast = decision tree
-    const summaryPickFast: R6DecisionNode[] =
-      (row.sgpg_decision_tree as R6DecisionNode[]) || [];
+    // V2 agent format: [{question, options:string[], outcome_map:{option→outcome}}]
+    // Map to R6DecisionNode[]: [{id, question, options:[{label, outcome}]}]
+    const rawTree =
+      (row.sgpg_decision_tree as Array<{
+        question: string;
+        options: string[];
+        outcome_map: Record<string, string>;
+      }>) || [];
+    const summaryPickFast: R6DecisionNode[] = rawTree.map((node, i) => ({
+      id: `dt-${i}`,
+      question: node.question,
+      options: (node.options || []).map((opt) => ({
+        label: opt,
+        outcome: node.outcome_map?.[opt] || '',
+      })),
+    }));
 
-    // Quality tiers from selection_criteria — only keep canonical tier_ids
-    const rawCriteria =
-      (row.sgpg_selection_criteria as R6SelectionCriterion[]) || [];
-    const qualityTiers: R6QualityTier[] = rawCriteria
-      .filter((c) => R6_QUALITY_TIER_IDS.includes(c.key as never))
-      .map((c) => ({
-        tier_id: c.key,
-        label: c.label,
-        description: c.guidance,
-        available: true,
-      }));
+    // Quality tiers from selection_criteria
+    // V2 agent format: {tiers:[{tier_id, label, description, available, ...}], block_type, intro_text}
+    const rawCriteria = row.sgpg_selection_criteria as
+      | { tiers: R6QualityTier[]; intro_text?: string }
+      | R6QualityTier[]
+      | null;
+    const qualityTiers: R6QualityTier[] = Array.isArray(rawCriteria)
+      ? rawCriteria
+      : rawCriteria?.tiers || [];
 
     // Compatibility axes from new JSONB column
     const compatibilityAxes: R6CompatibilityAxis[] =
@@ -214,23 +212,23 @@ export class R6GuideService {
     }
 
     // CTA final — further reading + internal links
+    // V2 agent format: interest_nuggets = [{href, label, reason, relation}]
+    const rawNuggets = row.sgpg_interest_nuggets as Array<{
+      href?: string;
+      label?: string;
+      reason?: string;
+      relation?: string;
+    }> | null;
     const ctaFinal: R6CtaFinal | undefined =
-      row.sgpg_interest_nuggets || row.sgpg_family_cross_sell_intro
+      rawNuggets?.length || row.sgpg_family_cross_sell_intro
         ? {
-            links: Array.isArray(row.sgpg_interest_nuggets)
-              ? (
-                  row.sgpg_interest_nuggets as Array<{
-                    hook: string;
-                    link?: string;
-                  }>
-                )
-                  .filter((n) => n.link)
-                  .map((n) => ({
-                    label: n.hook,
-                    href: n.link!,
-                    target_role: 'R6',
-                  }))
-              : [],
+            links: (rawNuggets || [])
+              .filter((n) => n.href && n.label)
+              .map((n) => ({
+                label: n.label!,
+                href: n.href!,
+                target_role: 'R6',
+              })),
             internal_links: (row.sgpg_family_cross_sell_intro as string)
               ? [
                   {
