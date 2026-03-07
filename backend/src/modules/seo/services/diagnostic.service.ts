@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
-import { SITE_ORIGIN } from '../../../config/app.config';
+import { SITE_ORIGIN } from '../../../config/site.constants';
 import * as fs from 'fs';
 import * as path from 'path';
 

@@ -3,11 +3,8 @@
 
 import { ConfigurationException, ErrorCodes } from '../common/exceptions';
 
-/**
- * Domaine canonique du site — TOUJOURS avec www.
- * Utiliser cette constante partout au lieu de hardcoder le domaine.
- */
-export const SITE_ORIGIN = 'https://www.automecanik.com';
+// Re-export pour compatibilite — la source de verite est site.constants.ts
+export { SITE_ORIGIN } from './site.constants';
 
 export interface AppConfig {
   supabase: {
