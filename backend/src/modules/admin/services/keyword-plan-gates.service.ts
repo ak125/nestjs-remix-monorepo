@@ -26,6 +26,7 @@ import {
   R3_ALLOWED_INTENTS,
   VALID_ANCHOR_PREFIXES,
 } from '../../../config/keyword-plan.constants';
+import { R3PageContractSchema } from '../../../config/page-contract-r3.schema';
 import {
   PACK_DEFINITIONS,
   GENERIC_PHRASES,
@@ -476,6 +477,9 @@ export class KeywordPlanGatesService {
       `Gates for ${plan.skp_pg_alias}: score=${qualityScore}, dup=${duplicationScore.toFixed(2)}, r1Risk=${r1RiskScore.toFixed(2)}, cov=${coverageScore.toFixed(2)}`,
     );
 
+    // Observe-mode: validate against R3 contract schema (log only, never blocking)
+    this.validateContractFields(plan);
+
     return {
       gateReport,
       qualityScore,
@@ -483,6 +487,34 @@ export class KeywordPlanGatesService {
       r1RiskScore,
       coverageScore,
     };
+  }
+
+  // ── Contract validation (observe-mode) ──
+
+  private validateContractFields(plan: SkpRow): void {
+    const partial = R3PageContractSchema.partial();
+    const data: Record<string, unknown> = {
+      pg_id: plan.skp_pg_id,
+      pg_alias: plan.skp_pg_alias,
+      primary_intent: plan.skp_primary_intent,
+      secondary_intents: plan.skp_secondary_intents,
+      boundaries: plan.skp_boundaries,
+      heading_plan: plan.skp_heading_plan,
+      query_clusters: plan.skp_query_clusters,
+      section_terms: plan.skp_section_terms,
+      seo_brief: plan.skp_seo_brief,
+      gate_report: plan.skp_gate_report,
+    };
+    const result = partial.safeParse(data);
+    if (!result.success) {
+      const issues = result.error.issues
+        .slice(0, 5)
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join('; ');
+      this.logger.warn(
+        `[R3 Contract] Validation issues (observe) ${plan.skp_pg_alias}: ${issues}`,
+      );
+    }
   }
 
   // ── Private helpers ──

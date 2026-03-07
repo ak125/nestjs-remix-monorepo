@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://automecanik.com/schemas/page-contract-r3.json",
+  "title": "PageContractR3",
+  "description": "Contrat formel pour les pages R3 (guides, conseils, how-to). Aligne avec page-contract-r3.schema.ts Zod.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pg_id",
+    "pg_alias",
+    "gamme_name",
+    "pipeline_phase",
+    "built_by",
+    "primary_intent"
+  ],
+  "properties": {
+    "pg_id": { "type": "integer", "exclusiveMinimum": 0 },
+    "pg_alias": { "type": "string", "minLength": 3 },
+    "gamme_name": { "type": "string", "minLength": 3 },
+    "pipeline_phase": {
+      "type": "string",
+      "enum": ["P0", "P1", "P2-P9", "P10", "P11", "complete"]
+    },
+    "built_by": { "type": "string" },
+
+    "primary_intent": {
+      "type": "string",
+      "enum": ["informational", "how-to", "diagnostic", "comparison"]
+    },
+    "secondary_intents": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["forbidden_terms"],
+      "properties": {
+        "forbidden_terms": { "type": "array", "items": { "type": "string" } },
+        "scope_limit": { "type": "string" }
+      }
+    },
+
+    "heading_plan": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/HeadingSection" }
+    },
+
+    "query_clusters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["head"],
+      "properties": {
+        "head": { "type": "array", "items": { "$ref": "#/$defs/QueryItem" } },
+        "mid_tail": { "type": "array", "items": { "$ref": "#/$defs/QueryItem" } },
+        "long_tail": { "type": "array", "items": { "$ref": "#/$defs/QueryItem" } },
+        "paa": { "type": "array", "items": { "$ref": "#/$defs/QueryItem" } }
+      }
+    },
+
+    "section_terms": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/SectionId" },
+      "additionalProperties": { "$ref": "#/$defs/SectionPlan" }
+    },
+
+    "seo_brief": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "meta_title": { "type": "string", "minLength": 20, "maxLength": 70 },
+        "meta_description": { "type": "string", "minLength": 100, "maxLength": 170 },
+        "canonical_policy": { "const": "self" },
+        "recommended_anchors": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^/" }
+        }
+      }
+    },
+
+    "gate_report": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/GateResult" }
+    },
+    "quality_score": { "type": "integer", "minimum": 0, "maximum": 100 },
+
+    "audit_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["priority_score", "sections_to_create", "sections_to_improve"],
+      "properties": {
+        "priority_score": { "type": "number" },
+        "sections_to_create": { "type": "array", "items": { "type": "string" } },
+        "sections_to_improve": { "type": "array", "items": { "type": "string" } },
+        "sections_blocked": { "type": "array", "items": { "type": "string" } },
+        "rag_stale": { "type": "boolean" }
+      }
+    },
+
+    "media_recommendations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/MediaRecommendation" }
+    }
+  },
+
+  "$defs": {
+    "SectionId": {
+      "type": "string",
+      "enum": [
+        "S1", "S2", "S2_DIAG", "S3", "S4_DEPOSE", "S4_REPOSE",
+        "S5", "S6", "S_GARAGE", "S7", "S8", "META"
+      ]
+    },
+
+    "QueryItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["query"],
+      "properties": {
+        "query": { "type": "string", "minLength": 3 },
+        "volume_hint": { "type": "string", "enum": ["high", "mid", "low"] },
+        "section_target": { "$ref": "#/$defs/SectionId" },
+        "paa_questions": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "HeadingSection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["section_id", "h2"],
+      "properties": {
+        "section_id": { "$ref": "#/$defs/SectionId" },
+        "h2": { "type": "string", "minLength": 5, "maxLength": 90 },
+        "h3s": { "type": "array", "items": { "type": "string", "minLength": 3, "maxLength": 90 } },
+        "goal": { "type": "string", "minLength": 10, "maxLength": 220 }
+      }
+    },
+
+    "SnippetBlock": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "string", "enum": ["image", "table", "steps", "checklist", "faq", "cards", "callout"] },
+        "trigger_query": { "type": "string" },
+        "target_position": { "type": "string", "enum": ["featured", "paragraph", "list"] }
+      }
+    },
+
+    "InternalLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["anchor_text", "href", "target_role"],
+      "properties": {
+        "anchor_text": { "type": "string", "minLength": 3, "maxLength": 60 },
+        "href": { "type": "string", "pattern": "^/" },
+        "target_role": { "type": "string", "enum": ["R4_GLOSSARY", "R3_GUIDE", "R1_CATEGORY"] }
+      }
+    },
+
+    "ImageSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["topic", "format", "aspect_ratio", "min_width", "alt_template", "loading"],
+      "properties": {
+        "topic": { "type": "string", "minLength": 3 },
+        "format": { "type": "string", "enum": ["webp", "avif"] },
+        "aspect_ratio": { "type": "string", "enum": ["16:9", "4:3", "1:1"] },
+        "min_width": { "type": "integer", "minimum": 320, "maximum": 2400 },
+        "alt_template": { "type": "string", "minLength": 5, "maxLength": 140 },
+        "loading": { "type": "string", "enum": ["eager", "lazy"] },
+        "caption_template": { "type": "string", "maxLength": 140 },
+        "fetchpriority": { "type": "string", "enum": ["high", "auto", "low"] }
+      }
+    },
+
+    "TableSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["columns", "row_count_target"],
+      "properties": {
+        "columns": { "type": "array", "minItems": 2, "maxItems": 6, "items": { "type": "string", "minLength": 1, "maxLength": 50 } },
+        "row_count_target": { "type": "string", "pattern": "^\\d+-\\d+$" }
+      }
+    },
+
+    "ListSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item_count_target"],
+      "properties": {
+        "item_count_target": { "type": "string", "pattern": "^\\d+-\\d+$" }
+      }
+    },
+
+    "MediaSlot": {
+      "type": "object",
+      "required": ["slot_id", "placement", "purpose", "type", "budget_cost"],
+      "properties": {
+        "slot_id": { "type": "string", "minLength": 3, "maxLength": 50 },
+        "placement": { "type": "string", "enum": ["before_content", "inline", "after_content"] },
+        "purpose": { "type": "string", "minLength": 5, "maxLength": 180 },
+        "type": { "type": "string", "enum": ["image", "table", "steps", "checklist", "faq", "cards", "callout"] },
+        "budget_cost": { "type": "integer", "minimum": 0, "maximum": 1 },
+        "image_spec": { "$ref": "#/$defs/ImageSpec" },
+        "table_spec": { "$ref": "#/$defs/TableSpec" },
+        "list_spec": { "$ref": "#/$defs/ListSpec" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "image" } } },
+          "then": { "required": ["image_spec"], "properties": { "budget_cost": { "const": 1 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "table" } } },
+          "then": { "required": ["table_spec"], "properties": { "budget_cost": { "const": 0 } } }
+        },
+        {
+          "if": {
+            "properties": { "type": { "enum": ["steps", "checklist", "faq", "cards", "callout"] } }
+          },
+          "then": { "properties": { "budget_cost": { "const": 0 } } }
+        }
+      ]
+    },
+
+    "SectionPlan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include_terms"],
+      "properties": {
+        "include_terms": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 2, "maxLength": 60 } },
+        "micro_phrases": { "type": "array", "items": { "type": "string", "minLength": 8, "maxLength": 200 } },
+        "faq_questions": { "type": "array", "items": { "type": "string", "minLength": 5, "maxLength": 120 } },
+        "forbidden_overlap": { "type": "array", "items": { "type": "string", "minLength": 3, "maxLength": 120 } },
+        "snippet_block": { "$ref": "#/$defs/SnippetBlock" },
+        "internal_links": { "type": "array", "items": { "$ref": "#/$defs/InternalLink" } },
+        "media_slots": { "type": "array", "items": { "$ref": "#/$defs/MediaSlot" } }
+      }
+    },
+
+    "GateResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gate", "status", "message"],
+      "properties": {
+        "gate": { "type": "string" },
+        "status": { "type": "string", "enum": ["pass", "fail", "warn"] },
+        "message": { "type": "string" },
+        "fixes_applied": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "MediaRecommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["section_id", "recommended_slots"],
+      "properties": {
+        "section_id": { "$ref": "#/$defs/SectionId" },
+        "recommended_slots": { "type": "array", "items": { "$ref": "#/$defs/MediaSlot" } },
+        "rationale": { "type": "string" }
+      }
+    }
+  }
+}
