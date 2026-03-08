@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { Search, X } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import {
   CATALOG_DOMAINS,
@@ -27,8 +27,9 @@ interface CatalogCardProps {
   cat: CatalogFamily;
   index: number;
   isOpen: boolean;
-  onToggle: (name: string) => void;
+  onToggle: (name: string, familyId?: number) => void;
   className?: string;
+  isLoading?: boolean;
 }
 
 const CatalogFamilyCard = memo(function CatalogFamilyCard({
@@ -37,9 +38,13 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
   isOpen,
   onToggle,
   className,
+  isLoading,
 }: CatalogCardProps) {
   const displayedGammes = isOpen ? cat.gammes : cat.gammes.slice(0, 3);
   const pop = isPopular(cat.n);
+  const totalGammes = cat.gammes_count ?? cat.gammes.length;
+  const hasMore = totalGammes > 3;
+
   return (
     <Reveal key={cat.n} delay={Math.min(index * 40, 400)} className={className}>
       <Card className="group transition-all duration-200 rounded-[26px] lg:rounded-2xl shadow-[0_14px_34px_rgba(15,23,42,0.08)] lg:shadow-none overflow-hidden hover:shadow-xl hover:-translate-y-1">
@@ -92,13 +97,20 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
                 </Badge>
               </Link>
             ))}
-            {cat.gammes.length > 3 && (
+            {hasMore && (
               <button
                 type="button"
                 onClick={() => onToggle(cat.n)}
-                className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-cta hover:bg-orange-50 transition-colors border border-cta/20 cursor-pointer min-h-[44px] inline-flex items-center"
+                disabled={isLoading}
+                className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-cta hover:bg-orange-50 transition-colors border border-cta/20 cursor-pointer min-h-[44px] inline-flex items-center gap-1 disabled:opacity-50"
               >
-                {isOpen ? "Voir moins" : `+${cat.gammes.length - 3} gammes`}
+                {isLoading ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : isOpen ? (
+                  "Voir moins"
+                ) : (
+                  `+${totalGammes - 3} gammes`
+                )}
               </button>
             )}
           </div>
@@ -117,14 +129,91 @@ export default function CatalogueSection({
   const [catSearch, setCatSearch] = useState("");
   const [showAllFamilies, setShowAllFamilies] = useState(false);
   const [showAllDesktop, setShowAllDesktop] = useState(false);
-  const toggleCat = useCallback((name: string) => {
-    setExpandedCats((prev) => {
-      const next = new Set(prev);
-      if (next.has(name)) next.delete(name);
-      else next.add(name);
-      return next;
-    });
-  }, []);
+  const [loadingFamily, setLoadingFamily] = useState<string | null>(null);
+  // Expanded gammes fetched from API (keyed by family name)
+  const [expandedGammes, setExpandedGammes] = useState<
+    Map<string, Array<{ name: string; link: string }>>
+  >(new Map());
+
+  const toggleCat = useCallback(
+    async (name: string) => {
+      // Collapsing
+      if (expandedCats.has(name)) {
+        setExpandedCats((prev) => {
+          const next = new Set(prev);
+          next.delete(name);
+          return next;
+        });
+        return;
+      }
+
+      // Find the family to get its mf_id (stored as part of first gamme link)
+      const family = families.find((f) => f.n === name);
+      if (!family) return;
+
+      // If we already have full gammes (SSR had all of them or already fetched)
+      const totalGammes = family.gammes_count ?? family.gammes.length;
+      if (family.gammes.length >= totalGammes || expandedGammes.has(name)) {
+        setExpandedCats((prev) => new Set(prev).add(name));
+        return;
+      }
+
+      // Need to fetch remaining gammes from API
+      // Extract familyId from the family data — we need to look it up
+      // The families array comes from mapFamiliesToCatalog which doesn't include mf_id
+      // We'll use the gamme link pattern: /pieces/{alias}-{pg_id}.html
+      setLoadingFamily(name);
+      try {
+        // Find mf_id: we need to match by name in the original data
+        // Since we don't have mf_id in CatalogFamily, fetch via a search endpoint
+        const res = await fetch(`/api/catalog/families`);
+        if (res.ok) {
+          const data = await res.json();
+          const match = (data.families ?? []).find(
+            (f: any) => f.mf_name === name || f.mf_name_display === name,
+          );
+          if (match) {
+            const gammesRes = await fetch(
+              `/api/catalog/family-gammes/${match.mf_id}`,
+            );
+            if (gammesRes.ok) {
+              const gammesData = await gammesRes.json();
+              if (gammesData.success && gammesData.gammes) {
+                const mappedGammes = gammesData.gammes.map(
+                  (g: {
+                    pg_id: number;
+                    pg_alias: string;
+                    pg_name: string;
+                  }) => ({
+                    name: g.pg_name,
+                    link: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
+                  }),
+                );
+                setExpandedGammes((prev) =>
+                  new Map(prev).set(name, mappedGammes),
+                );
+              }
+            }
+          }
+        }
+      } catch {
+        // Silently fail — user sees the 3 initial gammes
+      } finally {
+        setLoadingFamily(null);
+        setExpandedCats((prev) => new Set(prev).add(name));
+      }
+    },
+    [expandedCats, families, expandedGammes],
+  );
+
+  // Build display families: merge SSR gammes with dynamically-loaded gammes
+  const displayFamilies = families.map((cat) => {
+    const extra = expandedGammes.get(cat.n);
+    if (extra) {
+      return { ...cat, gammes: extra };
+    }
+    return cat;
+  });
 
   return (
     <Section variant="white" spacing="md" id="catalogue">
@@ -150,10 +239,10 @@ export default function CatalogueSection({
             <TabsList className="w-full justify-start overflow-x-auto hide-scroll rounded-xl bg-slate-100 p-1 flex-nowrap h-auto">
               {CATALOG_DOMAINS.map((domain) => {
                 const count = domain.families
-                  ? families.filter((c) =>
+                  ? displayFamilies.filter((c) =>
                       domain.families!.some((d) => d === c.n),
                     ).length
-                  : families.length;
+                  : displayFamilies.length;
                 const DomainIcon = domain.icon;
                 return (
                   <TabsTrigger
@@ -203,8 +292,8 @@ export default function CatalogueSection({
         {CATALOG_DOMAINS.map((domain) => {
           const domainFiltered =
             domain.families === null
-              ? families
-              : families.filter((cat) =>
+              ? displayFamilies
+              : displayFamilies.filter((cat) =>
                   domain.families!.some((d) => d === cat.n),
                 );
           const q = catSearch.toLowerCase();
@@ -241,6 +330,7 @@ export default function CatalogueSection({
                         index={i}
                         isOpen={expandedCats.has(cat.n)}
                         onToggle={toggleCat}
+                        isLoading={loadingFamily === cat.n}
                         className={
                           !showAllFamilies && i >= 4
                             ? !showAllDesktop && i >= 6

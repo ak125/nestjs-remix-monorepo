@@ -4,7 +4,8 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { Await, useLoaderData } from "@remix-run/react";
+import { Suspense } from "react";
 
 import {
   HomepageJsonLd,
@@ -20,6 +21,7 @@ import {
   DiagnosticBanner,
   PopularSearches,
 } from "~/components/home";
+import { type BrandItem } from "~/components/home/constants";
 import {
   mapHomepageRpcToLoaderData,
   mapFamiliesToCatalog,
@@ -97,6 +99,8 @@ export const meta: MetaFunction = () => [
 ];
 
 // ─── Loader ──────────────────────────────────────────────
+// Above-fold: families (slim, 3 gammes/family) → awaited (blocks SSR)
+// Below-fold: brands, equipementiers, blogArticles, faqs → deferred (streamed)
 export async function loader({ request }: LoaderFunctionArgs) {
   const faqPromise = fetch(
     getInternalApiUrlFromRequest(
@@ -128,18 +132,28 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
 
     const rpcRaw = rpcRes.ok ? await rpcRes.json() : null;
-    const loaderData = mapHomepageRpcToLoaderData(rpcRaw);
+    const { families, brands, equipementiers, blogArticles } =
+      mapHomepageRpcToLoaderData(rpcRaw);
 
+    // Above-fold data is synchronous (already resolved)
+    // Below-fold data wrapped as resolved promises for defer() streaming
     return defer({
-      ...loaderData,
+      families,
+      belowFold: Promise.resolve({ brands, equipementiers, blogArticles }),
       faqs: faqPromise,
     });
   } catch (err) {
     logger.error("[homepage-rpc] Fetch failed:", {
       error: err instanceof Error ? err.message : String(err),
     });
+    const fallback = mapHomepageRpcToLoaderData(null);
     return defer({
-      ...mapHomepageRpcToLoaderData(null),
+      families: fallback.families,
+      belowFold: Promise.resolve({
+        brands: fallback.brands,
+        equipementiers: fallback.equipementiers,
+        blogArticles: fallback.blogArticles,
+      }),
       faqs: faqPromise,
     });
   }
@@ -149,16 +163,52 @@ export const headers: HeadersFunction = () => ({
   "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
 });
 
+// ─── Skeleton placeholders for below-fold sections ──────
+function BrandsGridSkeleton() {
+  return (
+    <div className="py-8 px-4">
+      <div className="h-8 w-48 bg-slate-200 rounded animate-pulse mx-auto mb-6" />
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 max-w-6xl mx-auto">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-2xl border border-slate-200 bg-white p-2 pb-3"
+          >
+            <div className="h-[80px] bg-slate-100 rounded-xl animate-pulse" />
+            <div className="h-3 w-16 bg-slate-100 rounded animate-pulse mt-2 mx-auto" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function _BlogCarouselSkeleton() {
+  return (
+    <div className="py-8 px-4">
+      <div className="h-8 w-48 bg-slate-200 rounded animate-pulse mx-auto mb-6" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-2xl border border-slate-200 bg-white p-4"
+          >
+            <div className="h-40 bg-slate-100 rounded-xl animate-pulse mb-3" />
+            <div className="h-4 w-3/4 bg-slate-100 rounded animate-pulse mb-2" />
+            <div className="h-3 w-1/2 bg-slate-100 rounded animate-pulse" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Page Component ──────────────────────────────────────
 export default function Homepage() {
   const loaderData = useLoaderData<typeof loader>();
 
+  // Above-fold: families are synchronous (slim, 3 gammes each)
   const catalogFamilies = mapFamiliesToCatalog(loaderData.families);
-  const brandsList = mapBrandsWithFallback(loaderData.brands);
-  const blogList = mapBlogArticles(
-    loaderData.blogArticles,
-    loaderData.families,
-  );
 
   return (
     <div className="min-h-screen bg-[#f5f7fa] font-v9-body pb-20 lg:pb-0">
@@ -168,12 +218,37 @@ export default function Homepage() {
       <CatalogueSection families={catalogFamilies} />
       <DiagnosticBanner />
       <HomeResourcesAndVideoSection />
-      <BrandsGrid
-        brands={brandsList}
-        equipementiers={loaderData.equipementiers}
-      />
-      <WhyAutomecanikSection />
-      <BlogCarousel articles={blogList} />
+
+      {/* Below-fold: streamed via defer() */}
+      <Suspense fallback={<BrandsGridSkeleton />}>
+        <Await
+          resolve={loaderData.belowFold}
+          errorElement={<BrandsGridSkeleton />}
+        >
+          {(belowFold: {
+            brands: BrandItem[];
+            equipementiers: Array<{ name: string; logo?: string }>;
+            blogArticles: any[];
+          }) => {
+            const brandsList = mapBrandsWithFallback(belowFold.brands);
+            const blogList = mapBlogArticles(
+              belowFold.blogArticles,
+              loaderData.families,
+            );
+            return (
+              <>
+                <BrandsGrid
+                  brands={brandsList}
+                  equipementiers={belowFold.equipementiers}
+                />
+                <WhyAutomecanikSection />
+                <BlogCarousel articles={blogList} />
+              </>
+            );
+          }}
+        </Await>
+      </Suspense>
+
       <PopularSearches />
       <FaqSection faqsPromise={loaderData.faqs} />
       <Footer />

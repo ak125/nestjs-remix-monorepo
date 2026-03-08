@@ -222,4 +222,17 @@ export class CatalogFamilyService extends SupabaseBaseService {
   async getFamiliesWithGammes(): Promise<CatalogFamiliesResponse> {
     return this.getCatalogFamiliesPhpLogic();
   }
+
+  /**
+   * Récupère toutes les gammes d'une famille (pour expand on-demand)
+   * Cachée Redis 1h (même TTL que le catalogue)
+   */
+  async getGammesByFamilyId(familyId: number): Promise<CatalogGamme[]> {
+    return this.cacheService.cached(
+      `family-gammes:${familyId}`,
+      () => this.getGammesForFamily(familyId),
+      3600,
+      'catalog',
+    );
+  }
 }

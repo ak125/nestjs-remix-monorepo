@@ -220,6 +220,39 @@ export class CatalogController {
   }
 
   /**
+   * GET /api/catalog/family-gammes/:familyId
+   * Gammes d'une famille pour chargement on-demand (expand catalogue)
+   */
+  @Get('family-gammes/:familyId')
+  @ApiOperation({
+    summary: 'Gammes par famille (on-demand)',
+    description:
+      "Retourne toutes les gammes d'une famille. Utilisé pour expand côté catalogue homepage.",
+  })
+  @ApiParam({
+    name: 'familyId',
+    description: 'ID de la famille (mf_id)',
+    example: '1',
+  })
+  @ApiResponse({ status: 200, description: 'Gammes récupérées avec succès' })
+  async getFamilyGammes(@Param('familyId') familyId: string) {
+    const id = parseInt(familyId, 10);
+    if (isNaN(id) || id <= 0) {
+      return { success: false, gammes: [], error: 'Invalid familyId' };
+    }
+    const gammes = await this.catalogFamilyService.getGammesByFamilyId(id);
+    return {
+      success: true,
+      gammes: gammes.map((g) => ({
+        pg_id: g.pg_id,
+        pg_alias: g.pg_alias,
+        pg_name: g.pg_name,
+        pg_img: g.pg_img,
+      })),
+    };
+  }
+
+  /**
    * GET /api/catalog/homepage-data
    * Données complètes optimisées pour la page d'accueil
    */
@@ -265,7 +298,12 @@ export class CatalogController {
       this.logger.log(
         `✅ RPC homepage en ${(performance.now() - startTime).toFixed(1)}ms`,
       );
-      return result;
+      // Strip debug metadata from client response (saves ~200 bytes + avoids data leak)
+      const { _performance, _cache, ...clientData } = result as Record<
+        string,
+        unknown
+      >;
+      return clientData;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error('❌ RPC homepage error:', message);

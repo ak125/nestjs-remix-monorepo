@@ -383,6 +383,8 @@ export interface CatalogFamily {
   desc: string;
   color: string;
   gammes: Array<{ name: string; link: string }>;
+  /** Total gammes count (may exceed gammes.length when SSR-trimmed) */
+  gammes_count?: number;
 }
 
 export interface BrandItem {
