@@ -602,7 +602,7 @@ const VehicleSelector = memo(function VehicleSelector({
         <button
           type="button"
           onClick={handleReset}
-          className="mx-auto block text-[14px] font-medium text-slate-500 underline underline-offset-4 hover:text-slate-700 transition-colors py-1"
+          className="mx-auto block text-[14px] font-medium text-slate-500 underline underline-offset-4 hover:text-slate-700 transition-colors py-2.5 min-h-[44px]"
         >
           Réinitialiser
         </button>

@@ -35,7 +35,7 @@ export default function DiagnosticBanner() {
                 <Link
                   key={s.param}
                   to={`/diagnostic-auto?symptome=${s.param}`}
-                  className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-2.5 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+                  className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-3 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors min-h-[44px] inline-flex items-center"
                 >
                   {s.label}
                 </Link>

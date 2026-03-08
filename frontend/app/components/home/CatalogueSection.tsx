@@ -61,7 +61,7 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
             </span>
           )}
           {pop && (
-            <span className="absolute top-3 right-3 text-[9px] font-bold text-white bg-cta/90 px-2 py-0.5 rounded-md shadow-sm z-10">
+            <span className="absolute top-3 right-3 text-xs font-bold text-white bg-cta/90 px-2 py-0.5 rounded-md shadow-sm z-10">
               TOP
             </span>
           )}
@@ -79,10 +79,14 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
           )}
           <div className="flex flex-wrap gap-1.5">
             {displayedGammes.map((g) => (
-              <Link key={g.name} to={g.link}>
+              <Link
+                key={g.name}
+                to={g.link}
+                className="inline-flex items-center min-h-[44px]"
+              >
                 <Badge
                   variant="secondary"
-                  className="px-2.5 py-1 bg-white rounded-lg text-[11px] text-slate-600 font-medium hover:bg-orange-50 hover:text-cta transition-colors border border-slate-100 hover:border-cta/20 cursor-pointer"
+                  className="px-2.5 py-1.5 bg-white rounded-lg text-xs text-slate-600 font-medium hover:bg-orange-50 hover:text-cta transition-colors border border-slate-100 hover:border-cta/20 cursor-pointer"
                 >
                   {g.name}
                 </Badge>
@@ -92,7 +96,7 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
               <button
                 type="button"
                 onClick={() => onToggle(cat.n)}
-                className="px-2.5 py-1 rounded-lg text-[11px] font-medium text-cta hover:bg-orange-50 transition-colors border border-cta/20 cursor-pointer"
+                className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-cta hover:bg-orange-50 transition-colors border border-cta/20 cursor-pointer min-h-[44px] inline-flex items-center"
               >
                 {isOpen ? "Voir moins" : `+${cat.gammes.length - 3} gammes`}
               </button>
@@ -155,14 +159,14 @@ export default function CatalogueSection({
                   <TabsTrigger
                     key={domain.label}
                     value={domain.label}
-                    className="group text-[12px] sm:text-[13px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg whitespace-nowrap font-semibold flex items-center gap-1.5 text-slate-500 hover:text-slate-700 hover:bg-white/60 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-slate-200"
+                    className="group text-xs sm:text-[13px] px-3 sm:px-4 py-2.5 sm:py-2.5 rounded-lg whitespace-nowrap font-semibold flex items-center gap-1.5 min-h-[44px] text-slate-500 hover:text-slate-700 hover:bg-white/60 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-slate-200"
                   >
                     <DomainIcon className="w-3.5 h-3.5 flex-shrink-0 group-data-[state=active]:text-cta" />
                     <span className="hidden sm:inline">{domain.label}</span>
                     <span className="sm:hidden">
                       {domain.label.split(" ")[0]}
                     </span>
-                    <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-slate-200/60 font-medium leading-none group-data-[state=active]:bg-cta/10 group-data-[state=active]:text-cta">
+                    <span className="px-1.5 py-0.5 text-xs rounded-full bg-slate-200/60 font-medium leading-none group-data-[state=active]:bg-cta/10 group-data-[state=active]:text-cta">
                       {count}
                     </span>
                   </TabsTrigger>
@@ -180,7 +184,7 @@ export default function CatalogueSection({
             <Input
               value={catSearch}
               onChange={(e) => setCatSearch(e.target.value)}
-              className="pl-9 pr-8 h-10 bg-slate-50 border-slate-200 rounded-xl text-[13px] focus-visible:border-cta/40 focus-visible:ring-cta/10"
+              className="pl-9 pr-8 h-11 bg-slate-50 border-slate-200 rounded-xl text-[13px] focus-visible:border-cta/40 focus-visible:ring-cta/10"
               placeholder="Rechercher une pièce..."
             />
             {catSearch && (

@@ -146,7 +146,7 @@ export const Navbar = memo(function Navbar() {
             <Link
               to="/"
               prefetch="intent"
-              className="no-style no-visited"
+              className="no-style no-visited min-h-[44px] flex items-center"
               aria-label="Retour à l'accueil"
             >
               <span className="font-v9-heading font-extrabold text-base tracking-tight select-none">

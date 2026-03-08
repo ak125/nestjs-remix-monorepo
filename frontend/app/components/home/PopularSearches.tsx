@@ -10,7 +10,6 @@ const POPULAR = [
     label: "Vérifier une référence alternateur",
     href: "/pieces/alternateur-4.html",
   },
-  { label: "Choisir une batterie compatible", href: "/pieces/batterie-1.html" },
   { label: "Identifier une vanne EGR", href: "/pieces/vanne-egr-1145.html" },
   {
     label: "Trouver un kit d'embrayage",
