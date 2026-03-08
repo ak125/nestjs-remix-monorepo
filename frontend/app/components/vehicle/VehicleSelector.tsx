@@ -91,11 +91,8 @@ const VehicleSelector = memo(function VehicleSelector({
 
   const navigate = useNavigate();
 
-  // Charger les marques au montage (le composant ne monte que sur interaction)
-  useEffect(() => {
-    loadBrands();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // P1 perf: état pour lazy-load des marques
+  const [brandsRequested, setBrandsRequested] = useState(false);
 
   const loadBrands = useCallback(async () => {
     if (loadingBrands || brands.length > 0) return;
@@ -135,6 +132,23 @@ const VehicleSelector = memo(function VehicleSelector({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingBrands, brands.length, currentVehicle?.brand?.id]);
+
+  // Charger les marques au premier focus/interaction (P1 perf: évite fetch au mount)
+  const onSelectorInteraction = useCallback(() => {
+    if (!brandsRequested) {
+      setBrandsRequested(true);
+      loadBrands();
+    }
+  }, [brandsRequested, loadBrands]);
+
+  // Si un véhicule est pré-sélectionné, charger les marques immédiatement
+  useEffect(() => {
+    if (currentVehicle?.brand?.id && !brandsRequested) {
+      setBrandsRequested(true);
+      loadBrands();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentVehicle?.brand?.id]);
 
   // 🏷️ Gestion sélection marque
   const handleBrandChange = useCallback(
@@ -365,11 +379,12 @@ const VehicleSelector = memo(function VehicleSelector({
           id="brand-v2"
           value={selectedBrand?.marque_id || ""}
           onChange={(e) => handleBrandChange(Number(e.target.value))}
+          onFocus={onSelectorInteraction}
           disabled={loadingBrands}
           className="sm:flex-1 py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
           aria-label="Sélectionner la marque"
         >
-          <option value="">Marque</option>
+          <option value="">{loadingBrands ? "Chargement..." : "Marque"}</option>
           {brands.map((brand) => (
             <option key={brand.marque_id} value={brand.marque_id}>
               {brand.marque_name}
@@ -489,6 +504,7 @@ const VehicleSelector = memo(function VehicleSelector({
               <select
                 value={selectedBrand?.marque_id || ""}
                 onChange={(e) => handleBrandChange(Number(e.target.value))}
+                onFocus={onSelectorInteraction}
                 disabled={loadingBrands}
                 className={`${getFieldClass(0, false)} pl-8`}
                 aria-label="Marque"
@@ -679,9 +695,7 @@ const VehicleSelector = memo(function VehicleSelector({
                     id="brand-v2"
                     value={selectedBrand?.marque_id || ""}
                     onChange={(e) => handleBrandChange(Number(e.target.value))}
-                    onFocus={() =>
-                      !brands.length && !loadingBrands && loadBrands()
-                    }
+                    onFocus={onSelectorInteraction}
                     disabled={loadingBrands}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                   >

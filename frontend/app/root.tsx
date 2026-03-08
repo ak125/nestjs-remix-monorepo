@@ -2,6 +2,8 @@ import tokenStyles from "@fafa/design-tokens/css?url";
 import utilitiesStyles from "@fafa/design-tokens/utilities?url";
 import {
   type ActionFunctionArgs,
+  defer,
+  type HeadersFunction,
   type LinksFunction,
   type LoaderFunctionArgs,
   json,
@@ -123,21 +125,25 @@ export const meta: MetaFunction = () => [
 ];
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
-  // Charger user et cart en parallèle pour la performance
-  const [user, cart] = await Promise.all([
-    getOptionalUser({ context }),
-    getCart(request).catch((err) => {
-      logger.warn("⚠️ [root.loader] Erreur chargement panier:", err.message);
-      return null;
-    }),
-  ]);
+  // User synchrone (Redis, rapide) — nécessaire pour Navbar SSR
+  const user = await getOptionalUser({ context });
 
-  return json({
+  // Cart deferred — ne bloque PAS le rendu SSR (P0 perf: -1-2s FCP)
+  const cartPromise = getCart(request).catch((err) => {
+    logger.warn("⚠️ [root.loader] Erreur chargement panier:", err.message);
+    return null;
+  });
+
+  return defer({
     user,
-    cart,
+    cart: cartPromise,
     cspNonce: ((context as Record<string, unknown>)?.cspNonce as string) || "",
   });
 };
+
+export const headers: HeadersFunction = () => ({
+  "Cache-Control": "private, max-age=60",
+});
 
 // Reject POST requests from bots/crawlers — root route has no forms
 export const action = async (_args: ActionFunctionArgs) => {

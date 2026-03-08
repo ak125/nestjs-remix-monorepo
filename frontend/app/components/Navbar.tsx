@@ -55,19 +55,24 @@ export const Navbar = memo(function Navbar() {
   const rafIdRef = useRef<number>();
   const navRef = useRef<HTMLElement>(null);
 
-  // Scroll detection + progress bar
+  // Scroll detection + progress bar (P3 perf: refs pour éviter setState inutiles)
+  const wasScrolledRef = useRef(false);
+  const wasCompactRef = useRef(false);
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
 
-      setIsScrolled((prev) => {
-        const next = y > 10;
-        return prev === next ? prev : next;
-      });
-      setIsCompact((prev) => {
-        const next = y > 100;
-        return prev === next ? prev : next;
-      });
+      const nowScrolled = y > 10;
+      if (nowScrolled !== wasScrolledRef.current) {
+        wasScrolledRef.current = nowScrolled;
+        setIsScrolled(nowScrolled);
+      }
+
+      const nowCompact = y > 100;
+      if (nowCompact !== wasCompactRef.current) {
+        wasCompactRef.current = nowCompact;
+        setIsCompact(nowCompact);
+      }
 
       if (progressBarRef.current && y > 10) {
         if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
