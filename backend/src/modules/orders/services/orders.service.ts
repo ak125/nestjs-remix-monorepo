@@ -162,8 +162,13 @@ export class OrdersService extends SupabaseBaseService {
       // Générer numéro unique de commande
       const orderNumber = await this.generateOrderNumber();
 
-      // Calculer frais de port
-      const shippingCost = await this.calculateShippingCost();
+      // Calculer frais de port a partir du subtotal des lignes
+      const subtotalForShipping = orderData.orderLines.reduce(
+        (sum, line) => sum + line.quantity * line.unitPrice,
+        0,
+      );
+      const shippingCost =
+        await this.calculateShippingCost(subtotalForShipping);
 
       // Calculer totaux
       // ✅ Phase 5: Les prix sont TTC, donc taxRate = 0 (pas de TVA supplémentaire)
@@ -619,15 +624,20 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Calculer frais de port
    */
-  private async calculateShippingCost(): Promise<number> {
-    try {
-      // Pour l'instant, logique simple basée sur le montant
-      // ShippingService.calculateShippingFee() nécessite orderId
-      // On appliquera le calcul après création de la commande
-      return 5.99; // Forfait par défaut
-    } catch (error) {
-      this.logger.warn('Erreur calcul port, utilisation forfait:', error);
-      return 5.99;
+  private async calculateShippingCost(subtotal: number = 0): Promise<number> {
+    const FREE_SHIPPING_THRESHOLD = 150;
+    const STANDARD_SHIPPING_FEE = 15.9;
+
+    if (subtotal >= FREE_SHIPPING_THRESHOLD) {
+      this.logger.log(
+        `Livraison gratuite (subtotal ${subtotal.toFixed(2)}€ >= ${FREE_SHIPPING_THRESHOLD}€)`,
+      );
+      return 0;
     }
+
+    this.logger.log(
+      `Frais de port standard ${STANDARD_SHIPPING_FEE}€ (subtotal ${subtotal.toFixed(2)}€ < ${FREE_SHIPPING_THRESHOLD}€)`,
+    );
+    return STANDARD_SHIPPING_FEE;
   }
 }
