@@ -6,7 +6,9 @@
 
 ## Vue d'ensemble
 
-Le système AI-COS comprend **88 agents** organisés en **6 Squads** avec un budget total de **€1,080K** et un ROI annuel de **+€4,839K**.
+Le système AI-COS comprend **88 agents actifs/planifiés** organisés en **6 Squads** avec un budget total de **€1,080K** et un ROI annuel de **+€4,839K**.
+
+> **Note REG-001 v2.1.0 (2026-03-08)** : Le registre total recense **136 agents** (59 APPROVED, 16 APPROVED_WITH_CONDITIONS, 27 NOT_APPROVED, 34 conceptuels). Les 88 ici sont les agents des Squads actifs/budgétisés.
 
 **ROI Global : 448%**
 

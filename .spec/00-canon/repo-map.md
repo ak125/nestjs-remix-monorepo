@@ -1,6 +1,6 @@
 # Repo Map - AutoMecanik Monorepo
 
-> **Source de verite** - Structure reelle du code au 2026-01-06
+> **Source de verite** - Structure reelle du code au 2026-03-08
 > **Version**: 2.0.0 | **Status**: CANON
 
 ---
@@ -17,7 +17,7 @@
 └── docs/             # Documentation publique
 ```
 
-**Note**: Le corpus RAG est dans `/opt/automecanik/rag/knowledge/` (15 docs).
+**Note**: Le corpus RAG est dans `automecanik-rag/knowledge/` (352 docs — diagnostics, gammes, FAQ, guides, fiches véhicules, SEO).
 
 ---
 
