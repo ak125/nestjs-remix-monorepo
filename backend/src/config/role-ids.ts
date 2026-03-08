@@ -11,6 +11,7 @@
 import type { PageType } from '../workers/types/content-refresh.types';
 
 export enum RoleId {
+  R0_HOME = 'R0_HOME',
   R1_ROUTER = 'R1_ROUTER',
   R2_PRODUCT = 'R2_PRODUCT',
   R3_GUIDE = 'R3_GUIDE',

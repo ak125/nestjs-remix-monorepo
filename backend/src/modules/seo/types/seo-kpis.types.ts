@@ -298,6 +298,10 @@ export const KPI_THRESHOLDS: Record<
   PageRole,
   Record<string, { warning: number; critical: number }>
 > = {
+  [PageRole.R0_HOME]: {
+    bounceRate: { warning: 50, critical: 65 }, // Taux rebond % (homepage doit orienter)
+    avgTimeOnPage: { warning: 20, critical: 10 }, // Temps en secondes
+  },
   [PageRole.R4_REFERENCE]: {
     definitionCtr: { warning: 3, critical: 1 }, // CTR en %
     avgPosition: { warning: 10, critical: 20 }, // Position moyenne

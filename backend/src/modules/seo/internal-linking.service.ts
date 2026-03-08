@@ -87,6 +87,7 @@ interface CachedSwitches {
  * R6 = 0 car pages support ne doivent pas avoir de liens SEO sortants
  */
 const MAX_LINKS_BY_ROLE: Record<PageRole, number> = {
+  [PageRole.R0_HOME]: 0, // Homepage - pas de liens SEO injectés (maillage manuel)
   [PageRole.R1_ROUTER]: 2, // Contenu court - max 2 liens
   [PageRole.R2_PRODUCT]: 1, // Page commerciale - max 1 lien vers référence
   [PageRole.R3_BLOG]: 3, // Contenu pédagogique - 3 liens contextuels
