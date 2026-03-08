@@ -66,6 +66,7 @@ interface LoaderData {
 
 interface ActionData {
   error?: string;
+  redirectUrl?: string;
 }
 
 // -- Loader ------------------------------------------------------------------
@@ -227,7 +228,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const redirectUrl = `/api/paybox/redirect?orderId=${encodeURIComponent(orderId)}&amount=${encodeURIComponent(totalTTC)}&email=${encodeURIComponent(customerEmail)}`;
 
-    return redirect(redirectUrl);
+    return json<ActionData>({ redirectUrl });
   } catch (error) {
     logger.error("[Payment] Action error:", error);
     return json<ActionData>(
@@ -256,6 +257,9 @@ export default function PaymentPage() {
   }, []);
 
   useEffect(() => {
+    if (actionData?.redirectUrl) {
+      window.location.href = actionData.redirectUrl;
+    }
     if (actionData?.error) {
       toast.error(actionData.error);
     }
