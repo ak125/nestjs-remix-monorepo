@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
 import { Error404 } from "~/components/errors/Error404";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { HeroDiagnostic } from "~/components/heroes";
@@ -435,6 +436,15 @@ export default function DiagnosticAutoIndex() {
         description="Décrivez le symptôme, notre outil identifie les causes probables et vous oriente vers la bonne pièce. Gratuit, sans inscription."
         severity="warning"
       />
+
+      {/* ═══ WIZARD DIAGNOSTIC INTELLIGENT ═══ */}
+      <section className="bg-white border-b py-8">
+        <Container>
+          <div className="max-w-2xl mx-auto">
+            <DiagnosticWizard />
+          </div>
+        </Container>
+      </section>
 
       {/* ═══ RECHERCHE + OBD ═══ */}
       <section className="bg-white border-b py-4">
