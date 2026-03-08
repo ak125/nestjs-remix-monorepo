@@ -1,6 +1,7 @@
 /**
- * 🛍️ CHECKOUT PAGE - Finalisation de commande
- * Route simple pour créer une commande depuis le panier
+ * CHECKOUT PAGE — One-page accordion (Livraison + Paiement)
+ * Fusionne l'ancien checkout.tsx + checkout-payment.tsx
+ * Flow: /cart → /checkout → Paybox (2 etapes au lieu de 4)
  */
 
 import {
@@ -20,30 +21,41 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { CreditCard, Shield, Truck } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+
+import {
+  CheckoutLivraisonSection,
+  type ShippingAddress,
+} from "~/components/checkout/CheckoutLivraisonSection";
+import { CheckoutOrderSummary } from "~/components/checkout/CheckoutOrderSummary";
+import { CheckoutPaiementSection } from "~/components/checkout/CheckoutPaiementSection";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
-import Container from "~/components/layout/Container";
-
 import {
   MobileBottomBar,
   MobileBottomBarSpacer,
 } from "~/components/layout/MobileBottomBar";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "~/components/ui/accordion";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
 } from "~/types/cart";
-import { trackBeginCheckout } from "~/utils/analytics";
+import { type PaymentMethod } from "~/types/payment";
+import { trackBeginCheckout, trackAddPaymentInfo } from "~/utils/analytics";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { getOptionalUser } from "../auth/unified.server";
 import { getCart } from "../services/cart.server";
+import { getAvailablePaymentMethods } from "../services/payment.server";
 
-// Phase 9: PageRole pour analytics
 export const handle = {
   hideGlobalFooter: true,
   pageRole: createPageRoleMeta(PageRole.RX_CHECKOUT, {
@@ -54,7 +66,6 @@ export const handle = {
   }),
 };
 
-// 🤖 SEO: Page transactionnelle non indexable
 export const meta: MetaFunction = () => [
   { title: "Finalisation de commande | AutoMecanik" },
   { name: "robots", content: "noindex, nofollow" },
@@ -65,43 +76,28 @@ export const meta: MetaFunction = () => [
   },
 ];
 
+// -- Loader ------------------------------------------------------------------
+
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
-  // ✅ Auth optionnelle - guest checkout autorisé
   const user = await getOptionalUser({ context });
   const userId = user?.id || null;
 
-  logger.log("🔍 Checkout loader - User:", userId || "guest");
+  logger.log("[Checkout] Loader - User:", userId || "guest");
 
   try {
     const cart = await getCart(request, context);
-    logger.log("🔍 Checkout loader - Cart data received:", {
-      hasCart: !!cart,
-      itemsLength: cart?.items?.length,
-      itemsIsArray: Array.isArray(cart?.items),
-      summaryItems: cart?.summary?.total_items,
-      keys: cart ? Object.keys(cart) : [],
-    });
 
-    // ✅ Vérification plus robuste du panier
     if (!cart || !cart.items) {
-      logger.warn("⚠️ Checkout loader - Structure panier invalide");
       return json({
         cart: null,
         error: "Erreur de structure du panier. Veuillez recharger.",
       });
     }
 
-    // Vérifier que le panier contient des articles
     const itemsCount = Array.isArray(cart.items) ? cart.items.length : 0;
     const totalItems = cart?.summary?.total_items || 0;
 
-    logger.log("🔍 Checkout loader - Items check:", {
-      itemsCount,
-      totalItems,
-    });
-
     if (itemsCount === 0 && totalItems === 0) {
-      logger.warn("⚠️ Checkout loader - Panier vide");
       return json({
         cart: null,
         error:
@@ -109,15 +105,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       });
     }
 
-    logger.log(
-      "✅ Checkout loader - Panier OK:",
-      itemsCount,
-      "lignes,",
-      totalItems,
-      "articles total",
-    );
-
-    // Si client connecté, récupérer le profil complet (adresse)
+    // Profil utilisateur (adresse pre-remplie)
     let userProfile: Record<string, any> | null = null;
     if (user) {
       try {
@@ -130,34 +118,27 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
           userProfile = profileData.data || profileData;
         }
       } catch (err) {
-        logger.warn(
-          "⚠️ Checkout loader - Impossible de charger le profil:",
-          err,
-        );
+        logger.warn("[Checkout] Impossible de charger le profil:", err);
       }
     }
 
-    return json({ cart, user, userProfile });
+    // Payment methods (merged from checkout-payment)
+    const paymentMethods = await getAvailablePaymentMethods();
+
+    return json({ cart, user, userProfile, paymentMethods });
   } catch (error) {
-    logger.error("❌ Erreur chargement panier checkout:", error);
-    logger.error(
-      "❌ Error type:",
-      error instanceof Error ? error.constructor.name : typeof error,
-    );
-    logger.error(
-      "❌ Message:",
-      error instanceof Error ? error.message : String(error),
-    );
-    logger.error("❌ Stack:", error instanceof Error ? error.stack : "N/A");
+    logger.error("[Checkout] Erreur chargement:", error);
     return json({
       cart: null,
-      error: "Erreur lors du chargement du panier. Veuillez réessayer.",
+      error: "Erreur lors du chargement du panier. Veuillez reessayer.",
     });
   }
 };
 
+// -- Action ------------------------------------------------------------------
+
 export async function action({ request }: ActionFunctionArgs) {
-  logger.log("[Checkout Action] Start");
+  logger.log("[Checkout] Action Start");
 
   try {
     const formData = await request.formData();
@@ -169,9 +150,20 @@ export async function action({ request }: ActionFunctionArgs) {
     let addressCity = (formData.get("city") as string) || "";
     const addressCivility = (formData.get("civility") as string) || "M.";
     const addressCountry = (formData.get("country") as string) || "France";
+    const addressPhone = (formData.get("phone") as string) || "";
+    const acceptTerms = formData.get("acceptTerms");
 
-    // Client connecté sans adresse dans les params → récupérer depuis le profil
+    // Validate CGV acceptance
+    if (acceptTerms !== "on") {
+      return json(
+        { error: "Vous devez accepter les conditions generales de vente." },
+        { status: 400 },
+      );
+    }
+
     const isGuest = !!guestEmail;
+
+    // Client connecte sans adresse → recuperer du profil
     if (!isGuest && !addressLine) {
       try {
         const profileRes = await fetch(
@@ -186,80 +178,56 @@ export async function action({ request }: ActionFunctionArgs) {
           addressLine = profile.address || "";
           addressZipCode = addressZipCode || profile.zipCode || "";
           addressCity = addressCity || profile.city || "";
-          logger.log("[Checkout Action] Adresse profil chargée");
         }
       } catch (err) {
-        logger.warn(
-          "⚠️ [Checkout Action] Impossible de charger le profil:",
-          err,
-        );
+        logger.warn("[Checkout] Impossible de charger le profil:", err);
       }
     }
-    // 1. Récupérer le panier
+
+    // 1. Recuperer le panier
     const cartResponse = await fetch(
       getInternalApiUrlFromRequest("/api/cart", request),
-      {
-        headers: {
-          Cookie: request.headers.get("Cookie") || "",
-        },
-      },
+      { headers: { Cookie: request.headers.get("Cookie") || "" } },
     );
 
-    logger.log("🛒 [Checkout Action] Statut panier:", cartResponse.status);
-
     if (!cartResponse.ok) {
-      logger.error("❌ [Checkout Action] Erreur récupération panier");
       return json(
-        {
-          success: false,
-          error: "Impossible de récupérer le panier. Veuillez réessayer.",
-        },
+        { error: "Impossible de recuperer le panier. Veuillez reessayer." },
         { status: 400 },
       );
     }
 
     const cartData = await cartResponse.json();
-    logger.log(
-      "🛒 [Checkout Action] Panier récupéré:",
-      cartData.items?.length || 0,
-      "articles",
-    );
 
     if (!cartData.items || cartData.items.length === 0) {
-      return json(
-        {
-          success: false,
-          error:
-            "Votre panier est vide. Veuillez ajouter des articles avant de passer commande.",
-        },
-        { status: 400 },
-      );
+      return json({ error: "Votre panier est vide." }, { status: 400 });
     }
 
-    // 2. Transformer les items du panier en lignes de commande
-    // ✅ Phase 5: Inclure les consignes dans les lignes de commande
+    // 2. Transformer les items en lignes de commande
     const orderLines = cartData.items.map((item: CartItemType) => ({
       productId: String(item.product_id),
       productName: item.product_name || "Produit",
       productReference: item.product_sku || String(item.product_id),
       quantity: item.quantity,
       unitPrice: item.price,
-      vatRate: 20, // TVA par défaut
+      vatRate: 20,
       discount: 0,
-      consigne_unit: item.consigne_unit || 0, // ✅ Phase 5: Consigne unitaire
-      has_consigne: item.has_consigne || false, // ✅ Phase 5: Produit avec consigne
+      consigne_unit: item.consigne_unit || 0,
+      has_consigne: item.has_consigne || false,
     }));
 
-    // 3. Créer la commande avec données structurées
+    // 3. Creer la commande
     const addressData = {
       civility: addressCivility,
       firstName: addressFirstName,
       lastName: addressLastName,
       address: addressLine,
+      phone: addressPhone,
       zipCode: addressZipCode,
       city: addressCity,
       country: addressCountry,
     };
+
     const orderPayload = {
       customerId: cartData.metadata?.user_id ?? undefined,
       orderLines,
@@ -269,24 +237,17 @@ export async function action({ request }: ActionFunctionArgs) {
       shippingMethod: "standard",
     };
 
-    logger.log("📦 [Checkout Action] Payload:", {
-      itemCount: orderLines.length,
-      isGuest,
-      hasAddress: !!addressLine,
-    });
-
     const cookieHeader = request.headers.get("Cookie") || "";
-
-    // Choisir l'endpoint selon le mode (guest ou authentifié)
     const orderUrl = isGuest
       ? getInternalApiUrlFromRequest("/api/orders/guest", request)
       : getInternalApiUrlFromRequest("/api/orders", request);
 
     const payload = isGuest ? { ...orderPayload, guestEmail } : orderPayload;
 
-    logger.log(
-      `🚀 [Checkout Action] Envoi requête ${isGuest ? "guest" : "auth"} création commande...`,
-    );
+    logger.log("[Checkout] Creating order...", {
+      itemCount: orderLines.length,
+      isGuest,
+    });
 
     const response = await fetch(orderUrl, {
       method: "POST",
@@ -297,23 +258,12 @@ export async function action({ request }: ActionFunctionArgs) {
       body: JSON.stringify(payload),
     });
 
-    logger.log(
-      "📦 [Checkout Action] Statut création commande:",
-      response.status,
-    );
-
     if (!response.ok) {
-      logger.error(
-        "❌ [Checkout Action] Erreur création commande, statut:",
-        response.status,
-      );
-
-      // Guest checkout: email déjà enregistré → message inline (pas de redirect)
+      // Guest: email conflict
       if (response.status === 409 && isGuest) {
         return json(
           {
-            success: false,
-            error: `Un compte existe déjà avec l'email ${guestEmail}. Connectez-vous ou utilisez une autre adresse email.`,
+            error: `Un compte existe deja avec l'email ${guestEmail}. Connectez-vous ou utilisez une autre adresse email.`,
             emailConflict: true,
             conflictEmail: guestEmail,
           },
@@ -321,12 +271,11 @@ export async function action({ request }: ActionFunctionArgs) {
         );
       }
 
-      // Détecter si l'erreur est due à un manque d'authentification
       if (response.status === 403 || response.status === 401) {
         const loginUrl = new URL("/login", request.url);
         loginUrl.searchParams.set(
           "message",
-          "Vous devez être connecté pour passer commande",
+          "Vous devez etre connecte pour passer commande",
         );
         loginUrl.searchParams.set("redirectTo", "/checkout");
         return redirect(loginUrl.toString());
@@ -335,46 +284,79 @@ export async function action({ request }: ActionFunctionArgs) {
       const error = await response
         .json()
         .catch(() => ({ message: "Erreur serveur" }));
-      logger.error("❌ [Checkout Action] Détails erreur:", error);
       throw new Error(
-        error.message || "Erreur lors de la création de la commande",
+        error.message || "Erreur lors de la creation de la commande",
       );
     }
 
     const order = await response.json();
     const orderId = order.ord_id || order.order_id || order.id;
-    logger.log("✅ [Checkout Action] Commande créée:", { orderId, isGuest });
 
-    if (!orderId || orderId === "créé") {
-      // Fallback si on n'a pas l'ID
-      logger.log(
-        "✅ Commande créée sans ID, redirection vers la liste des commandes",
-      );
+    if (!orderId || orderId === "cree") {
       return redirect("/account/orders?created=true");
     }
 
-    const redirectUrl = `/checkout-payment?orderId=${orderId}`;
-    logger.log(
-      `✅ [Checkout Action] Commande ${orderId} créée, redirection vers: ${redirectUrl}`,
+    // 4. Fetch order details pour construire l'URL Paybox
+    const orderResponse = await fetch(
+      getInternalApiUrlFromRequest(`/api/orders/${orderId}`, request),
+      {
+        headers: {
+          Cookie: cookieHeader,
+          "Internal-Call": "true",
+        },
+      },
     );
 
-    // ✅ SOLUTION: Utiliser redirect() au lieu de json() pour une vraie redirection
-    return redirect(redirectUrl);
+    if (!orderResponse.ok) {
+      return json(
+        {
+          error: "Commande creee mais impossible de recuperer les details.",
+        },
+        { status: 500 },
+      );
+    }
+
+    const orderData = await orderResponse.json();
+    const orderDetails = orderData.data;
+
+    if (parseInt(orderDetails.ord_is_pay || "0") !== 0) {
+      return redirect(`/account/orders/${orderId}`);
+    }
+
+    const totalTTC = parseFloat(orderDetails.ord_total_ttc || "0");
+    if (totalTTC <= 0) {
+      return json({ error: "Montant de commande invalide." }, { status: 400 });
+    }
+
+    const customerEmail = orderDetails.customer?.cst_mail || guestEmail || "";
+    if (!customerEmail) {
+      return json(
+        { error: "Email client manquant sur la commande." },
+        { status: 400 },
+      );
+    }
+
+    logger.log("[Checkout] Order created, building Paybox redirect:", {
+      orderId,
+      totalTTC,
+    });
+
+    // 5. Build Paybox redirect URL — client will use window.location.href
+    const redirectUrl = `/api/paybox/redirect?orderId=${encodeURIComponent(orderId)}&amount=${encodeURIComponent(totalTTC)}&email=${encodeURIComponent(customerEmail)}`;
+
+    return json({ redirectUrl });
   } catch (error) {
-    logger.error("❌ [Checkout Action] Erreur création commande:", error);
-    logger.error(
-      "❌ [Checkout Action] Stack:",
-      error instanceof Error ? error.stack : "No stack",
-    );
+    logger.error("[Checkout] Action error:", error);
     return json(
       {
-        success: false,
         error: error instanceof Error ? error.message : "Erreur inconnue",
       },
       { status: 500 },
     );
   }
 }
+
+// -- Component ---------------------------------------------------------------
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("fr-FR", {
@@ -383,103 +365,186 @@ function formatPrice(price: number): string {
   }).format(price);
 }
 
+// -- localStorage helpers for guest persistence (point 7) --
+const STORAGE_KEY = "automecanik_checkout";
+
+function loadCheckoutState(): {
+  guestEmail?: string;
+  shippingAddress?: Partial<ShippingAddress>;
+} {
+  try {
+    const raw =
+      typeof window !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null;
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveCheckoutState(guestEmail: string, addr: ShippingAddress) {
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ guestEmail, shippingAddress: addr }),
+    );
+  } catch {
+    // localStorage full or unavailable — ignore
+  }
+}
+
+function clearCheckoutState() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 export default function CheckoutPage() {
   const data = useLoaderData<typeof loader>();
-  const { cart, user, userProfile } = data as {
-    cart: { items: CartItemType[]; summary: CartSummaryType };
-    user?: { id: string; email: string; firstName?: string; lastName?: string };
+  const { cart, user, userProfile, paymentMethods } = data as {
+    cart: { items: CartItemType[]; summary: CartSummaryType } | null;
+    user?: {
+      id: string;
+      email: string;
+      firstName?: string;
+      lastName?: string;
+    };
     userProfile?: Record<string, string>;
+    paymentMethods?: PaymentMethod[];
   };
-  const loaderError = "error" in data ? data.error : undefined;
+  const loaderError = "error" in data ? (data as any).error : undefined;
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
   const submit = useSubmit();
-  const [guestEmail, setGuestEmail] = useState("");
-  const [emailChecked, setEmailChecked] = useState(false);
-  const [emailExists, setEmailExists] = useState(false);
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
-  const [loginPassword, setLoginPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
 
-  // Détection adresse complète du profil
+  // Refs for smooth scroll (point 2)
+  const paiementRef = useRef<HTMLDivElement>(null);
+  // Double-submit guard (point 5)
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const isLocked = isSubmitting || isRedirecting;
+
+  // (point 1) Auto-detect if connected user has complete address → skip livraison
   const hasCompleteAddress = !!(
     userProfile &&
     userProfile.address?.trim() &&
     userProfile.zipCode?.trim() &&
     userProfile.city?.trim()
   );
+  const shouldAutoSkip = !!user && hasCompleteAddress;
 
-  // Mode édition : false si le client a déjà une adresse complète
-  const [isEditingAddress, setIsEditingAddress] = useState(!hasCompleteAddress);
+  // (point 7) Restore guest state from localStorage
+  const savedState = useRef(loadCheckoutState());
 
-  // Vérifier si l'email existe (style Amazon)
-  const handleEmailCheck = async () => {
-    if (!guestEmail || !guestEmail.includes("@")) return;
-    setIsCheckingEmail(true);
-    try {
-      const res = await fetch("/auth/check-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: guestEmail }),
-      });
-      const data = await res.json();
-      setEmailExists(data.exists);
-      setEmailChecked(true);
-    } catch {
-      setEmailChecked(true);
-      setEmailExists(false);
-    }
-    setIsCheckingEmail(false);
-  };
+  // Accordion state — start on paiement if auto-skip (point 1)
+  const [activeSection, setActiveSection] = useState<string>(
+    shouldAutoSkip ? "paiement" : "livraison",
+  );
+  const [addressValidated, setAddressValidated] = useState(shouldAutoSkip);
 
-  // Login inline depuis le checkout
-  const handleInlineLogin = async (e?: React.SyntheticEvent) => {
-    e?.preventDefault();
-    setLoginError("");
-    try {
-      const res = await fetch("/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: guestEmail, password: loginPassword }),
-      });
+  // Guest email — restore from localStorage (point 7)
+  const [guestEmail, setGuestEmail] = useState(
+    !user ? savedState.current.guestEmail || "" : "",
+  );
 
-      if (res.ok) {
-        const data = await res.json().catch(() => ({ success: true }));
-        if (data.success !== false) {
-          // Session établie + panier fusionné côté serveur → recharger
-          window.location.href = "/checkout";
-        } else {
-          setLoginError(data.error || "Email ou mot de passe incorrect");
-        }
-      } else {
-        // 401 ou autre erreur HTTP → lire le message d'erreur
-        const data = await res.json().catch(() => ({}));
-        setLoginError(
-          data.message || data.error || "Email ou mot de passe incorrect",
-        );
-      }
-    } catch {
-      setLoginError("Erreur de connexion. Veuillez réessayer.");
-    }
-  };
-
-  const [shippingAddress, setShippingAddress] = useState({
+  // Shipping address — restore from localStorage for guest (point 7)
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     civility: "M.",
-    firstName: userProfile?.firstName || user?.firstName || "",
-    lastName: userProfile?.lastName || user?.lastName || "",
-    address: userProfile?.address || "",
-    zipCode: userProfile?.zipCode || "",
-    city: userProfile?.city || "",
-    country: userProfile?.country || "France",
+    firstName:
+      userProfile?.firstName ||
+      user?.firstName ||
+      savedState.current.shippingAddress?.firstName ||
+      "",
+    lastName:
+      userProfile?.lastName ||
+      user?.lastName ||
+      savedState.current.shippingAddress?.lastName ||
+      "",
+    address:
+      userProfile?.address || savedState.current.shippingAddress?.address || "",
+    zipCode:
+      userProfile?.zipCode || savedState.current.shippingAddress?.zipCode || "",
+    city: userProfile?.city || savedState.current.shippingAddress?.city || "",
+    phone:
+      userProfile?.phone || savedState.current.shippingAddress?.phone || "",
+    country:
+      userProfile?.country ||
+      savedState.current.shippingAddress?.country ||
+      "France",
   });
 
-  // Le guest ne peut soumettre que si email vérifié et nouveau
-  const guestReady = !user ? emailChecked && !emailExists : true;
-  const canSubmit = !isSubmitting && guestReady;
+  // Payment
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
+  // (point 7) Persist guest state to localStorage on change
+  useEffect(() => {
+    if (!user) {
+      saveCheckoutState(guestEmail, shippingAddress);
+    }
+  }, [user, guestEmail, shippingAddress]);
+
+  // Redirect to Paybox when action returns redirectUrl (point 5 — double-submit lock)
+  useEffect(() => {
+    if (actionData && "redirectUrl" in actionData && actionData.redirectUrl) {
+      setIsRedirecting(true);
+      // Clear localStorage on successful order
+      clearCheckoutState();
+      window.location.href = actionData.redirectUrl as string;
+    }
+    if (actionData && "error" in actionData && actionData.error) {
+      setIsRedirecting(false);
+      toast.error(actionData.error as string);
+    }
+  }, [actionData]);
+
+  // GA4: track begin checkout
+  useEffect(() => {
+    if (cart?.items?.length) {
+      trackBeginCheckout(cart.items, cart.summary?.total_price || 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // (point 4) Handle orderId in query param (backward compat from old checkout-payment)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get("orderId");
+    if (orderId) {
+      // Old flow had orderId — the order already exists, user is returning
+      // Clean the URL without reload
+      window.history.replaceState({}, "", "/checkout");
+    }
+  }, []);
+
+  // Accordion guard
+  const handleAccordionChange = (value: string) => {
+    if (value === "paiement" && !addressValidated) return;
+    setActiveSection(value);
+  };
+
+  // (point 2) Smooth scroll to paiement section
+  const scrollToPaiement = useCallback(() => {
+    setTimeout(() => {
+      paiementRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 350); // Wait for accordion animation
+  }, []);
+
+  // Livraison validated → open paiement + scroll (points 1, 2)
+  // Note: trackAddPaymentInfo is called in a separate effect below (after total is computed)
+  const handleLivraisonValidated = useCallback(() => {
+    setAddressValidated(true);
+    setActiveSection("paiement");
+    scrollToPaiement();
+  }, [scrollToPaiement]);
+
+  // Form submit (point 5 — guard against double submit)
   const handleCheckoutSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isLocked) return;
     const fd = new FormData();
     if (guestEmail) fd.set("guestEmail", guestEmail);
     fd.set("firstName", shippingAddress.firstName);
@@ -489,71 +554,66 @@ export default function CheckoutPage() {
     fd.set("city", shippingAddress.city);
     fd.set("civility", shippingAddress.civility);
     fd.set("country", shippingAddress.country);
+    if (shippingAddress.phone) fd.set("phone", shippingAddress.phone);
+    if (acceptedTerms) fd.set("acceptTerms", "on");
     submit(fd, { method: "post" });
   };
 
-  logger.log(
-    "🔍 CheckoutPage render, actionData:",
-    actionData ? "present" : "null",
-  );
-
-  // Erreur peut venir du loader ou de l'action
+  // Error states
   const error =
     loaderError ||
     (actionData && "error" in actionData ? actionData.error : undefined);
 
-  // ✅ Afficher un toast d'erreur si présent
+  const total = cart
+    ? (cart.summary.total_price ??
+      cart.summary.subtotal +
+        (cart.summary.tax_amount || 0) +
+        (cart.summary.shipping_cost || 0) +
+        (cart.summary.consigne_total || 0) -
+        (cart.summary.discount_amount || 0))
+    : 0;
+
   useEffect(() => {
     if (error) {
-      toast.error(error, {
-        duration: 5000,
-      });
+      toast.error(error as string, { duration: 5000 });
     }
   }, [error]);
 
-  // 📊 GA4: Tracker le debut du checkout (une seule fois au montage)
+  // Track payment info when paiement section opens
   useEffect(() => {
-    if (cart?.items?.length) {
-      trackBeginCheckout(cart.items, cart.summary?.total_price || 0);
+    if (addressValidated && total > 0) {
+      trackAddPaymentInfo(total, "card");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [addressValidated, total]);
 
+  // Empty cart state
   if (!cart || loaderError) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
-        <Container size="narrow">
-          <div className="bg-destructive/15 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <div className="mx-auto max-w-2xl px-4">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
             <p>{loaderError || "Erreur lors du chargement"}</p>
           </div>
           <Link
             to="/cart"
             className="mt-4 inline-block text-cta hover:underline"
           >
-            ← Retour au panier
+            &larr; Retour au panier
           </Link>
-        </Container>
+        </div>
       </div>
     );
   }
 
-  const total =
-    cart.summary.total_price ??
-    cart.summary.subtotal +
-      (cart.summary.tax_amount || 0) +
-      (cart.summary.shipping_cost || 0) +
-      (cart.summary.consigne_total || 0) -
-      (cart.summary.discount_amount || 0);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
       <Form
         method="post"
         id="checkout-form"
         onSubmit={handleCheckoutSubmit}
         className="mx-auto w-full max-w-6xl px-page py-8"
       >
-        {/* Header avec breadcrumb + stepper */}
+        {/* Header */}
         <div className="mb-8">
           <PublicBreadcrumb
             items={[{ label: "Panier", href: "/cart" }, { label: "Commande" }]}
@@ -562,14 +622,14 @@ export default function CheckoutPage() {
           <CheckoutStepper current="checkout" />
 
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-            Dernière étape avant le paiement
+            Finalisez votre commande
           </h1>
           <p className="text-slate-600 mt-2">
-            Vérifiez votre commande avant de continuer
+            Remplissez les informations ci-dessous pour proceder au paiement
           </p>
         </div>
 
-        {/* Affichage erreur si action a échoué */}
+        {/* Error banner */}
         {error && (
           <div
             className={`mb-6 rounded-xl border p-4 shadow-sm ${
@@ -577,34 +637,40 @@ export default function CheckoutPage() {
               "emailConflict" in actionData &&
               actionData.emailConflict
                 ? "border-orange-300 bg-orange-50"
-                : "border-destructive bg-destructive/10"
+                : "border-red-200 bg-red-50"
             }`}
           >
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0">
-                <svg
-                  className={`h-5 w-5 ${actionData && "emailConflict" in actionData && actionData.emailConflict ? "text-orange-600" : "text-red-600"}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <div className="flex-1">
+              <svg
+                className={`h-5 w-5 flex-shrink-0 ${
+                  actionData &&
+                  "emailConflict" in actionData &&
+                  actionData.emailConflict
+                    ? "text-orange-600"
+                    : "text-red-600"
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div>
                 {actionData &&
                 "emailConflict" in actionData &&
                 actionData.emailConflict ? (
                   <>
                     <h3 className="font-semibold text-orange-900">
-                      Email déjà utilisé
+                      Email deja utilise
                     </h3>
-                    <p className="text-sm text-orange-700 mt-1">{error}</p>
+                    <p className="text-sm text-orange-700 mt-1">
+                      {error as string}
+                    </p>
                     <Link
                       to={`/login?redirectTo=/checkout&email=${encodeURIComponent(
                         ("conflictEmail" in actionData
@@ -614,28 +680,10 @@ export default function CheckoutPage() {
                       className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-cta text-white text-sm font-medium rounded-lg hover:bg-cta-hover transition-colors"
                     >
                       Se connecter
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M14 5l7 7m0 0l-7 7m7-7H3"
-                        />
-                      </svg>
                     </Link>
                   </>
                 ) : (
-                  <>
-                    <h3 className="font-semibold text-red-900">
-                      Erreur lors de la création de la commande
-                    </h3>
-                    <p className="text-sm text-red-700 mt-1">{error}</p>
-                  </>
+                  <p className="text-sm text-red-700">{error as string}</p>
                 )}
               </div>
             </div>
@@ -643,181 +691,31 @@ export default function CheckoutPage() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Informations client */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Utilisateur connecté - Identité */}
-            {user && (
-              <div className="bg-white rounded-2xl shadow-sm border border-emerald-200 p-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex-shrink-0 w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-emerald-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+          {/* Left column: Accordion */}
+          <div className="lg:col-span-2">
+            <Accordion
+              type="single"
+              value={activeSection}
+              onValueChange={handleAccordionChange}
+              className="space-y-4"
+            >
+              {/* Section 1: Livraison */}
+              <AccordionItem
+                value="livraison"
+                className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
+              >
+                <AccordionTrigger className="px-6 py-5 hover:no-underline">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all duration-500 ${
+                        addressValidated
+                          ? "bg-emerald-500 text-white scale-110"
+                          : "bg-blue-600 text-white"
+                      }`}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-emerald-900">
-                      Connecté en tant que{" "}
-                      <strong>
-                        {user.firstName} {user.lastName}
-                      </strong>
-                    </p>
-                    <p className="text-xs text-emerald-700">{user.email}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Email invité - Flow Amazon : email d'abord, puis login ou formulaire */}
-            {!user && (
-              <div className="bg-white rounded-2xl shadow-sm border border-blue-100 p-6 border-2">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-blue-600"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold text-slate-900">
-                      Votre email
-                    </h2>
-                    <p className="text-sm text-slate-500">
-                      Pour recevoir la confirmation de commande
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  {/* Champ email + bouton Continuer */}
-                  <div>
-                    <label
-                      htmlFor="guestEmail"
-                      className="block text-sm font-medium text-slate-700 mb-2"
-                    >
-                      Adresse email *
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="email"
-                        id="guestEmail"
-                        name="guestEmail"
-                        required
-                        value={guestEmail}
-                        onChange={(e) => {
-                          setGuestEmail(e.target.value);
-                          // Reset si l'email change
-                          if (emailChecked) {
-                            setEmailChecked(false);
-                            setEmailExists(false);
-                            setLoginError("");
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !emailChecked) {
-                            e.preventDefault();
-                            handleEmailCheck();
-                          }
-                        }}
-                        className="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="votre.email@exemple.com"
-                      />
-                      {!emailChecked && (
-                        <button
-                          type="button"
-                          onClick={handleEmailCheck}
-                          disabled={
-                            isCheckingEmail || !guestEmail.includes("@")
-                          }
-                          className="px-6 py-3 bg-cta text-white rounded-xl font-medium hover:bg-cta-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                        >
-                          {isCheckingEmail ? "..." : "Continuer"}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Email existe : formulaire de connexion inline */}
-                  {emailChecked && emailExists && (
-                    <div className="bg-orange-50 rounded-xl p-5 border border-orange-200">
-                      <h3 className="font-semibold text-orange-900 mb-1">
-                        Un compte existe avec cet email
-                      </h3>
-                      <p className="text-sm text-orange-700 mb-4">
-                        Connectez-vous pour retrouver vos informations et passer
-                        commande directement.
-                      </p>
-                      <div className="space-y-3">
-                        <input
-                          type="password"
-                          value={loginPassword}
-                          onChange={(e) => setLoginPassword(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleInlineLogin();
-                            }
-                          }}
-                          className="w-full px-4 py-3 rounded-xl border border-orange-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                          placeholder="Mot de passe"
-                        />
-                        {loginError && (
-                          <p className="text-sm text-red-600">{loginError}</p>
-                        )}
-                        <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            onClick={handleInlineLogin}
-                            className="px-6 py-3 bg-cta text-white rounded-xl font-medium hover:bg-cta-hover transition-colors"
-                          >
-                            Se connecter
-                          </button>
-                          <Link
-                            to={`/login?redirectTo=/checkout&email=${encodeURIComponent(guestEmail)}`}
-                            className="text-sm text-orange-700 hover:underline"
-                          >
-                            Mot de passe oublié ?
-                          </Link>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEmailChecked(false);
-                          setEmailExists(false);
-                          setGuestEmail("");
-                        }}
-                        className="mt-3 text-sm text-slate-500 hover:underline"
-                      >
-                        Utiliser un autre email
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Email nouveau : confirmer et continuer vers le formulaire */}
-                  {emailChecked && !emailExists && (
-                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-200">
-                      <div className="flex items-center gap-2">
+                      {addressValidated ? (
                         <svg
-                          className="w-5 h-5 text-emerald-600"
+                          className="w-4 h-4 animate-checkmark"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -825,583 +723,226 @@ export default function CheckoutPage() {
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeWidth={2}
+                            strokeWidth={2.5}
                             d="M5 13l4 4L19 7"
                           />
                         </svg>
-                        <p className="text-sm font-medium text-emerald-900">
-                          {guestEmail}
+                      ) : (
+                        "1"
+                      )}
+                    </div>
+                    <div className="text-left">
+                      <h2 className="text-lg font-semibold text-slate-900">
+                        Livraison
+                      </h2>
+                      {addressValidated && activeSection !== "livraison" && (
+                        <p className="text-sm text-slate-500 animate-fadeIn">
+                          {shippingAddress.firstName} {shippingAddress.lastName}{" "}
+                          &mdash; {shippingAddress.zipCode}{" "}
+                          {shippingAddress.city}
+                          <span className="ml-2 text-blue-600 text-xs font-medium">
+                            Modifier
+                          </span>
                         </p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEmailChecked(false);
-                            setGuestEmail("");
-                          }}
-                          className="ml-auto text-sm text-emerald-700 hover:underline"
-                        >
-                          Modifier
-                        </button>
-                      </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              </div>
-            )}
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <CheckoutLivraisonSection
+                    user={user || null}
+                    userProfile={userProfile || null}
+                    shippingAddress={shippingAddress}
+                    onShippingAddressChange={setShippingAddress}
+                    guestEmail={guestEmail}
+                    onGuestEmailChange={setGuestEmail}
+                    onValidated={handleLivraisonValidated}
+                  />
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* Adresse de livraison : visible seulement pour les connectés OU guest avec email vérifié et nouveau */}
-            {(user || (emailChecked && !emailExists)) && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                <div className="flex items-center justify-between mb-4">
+              {/* Section 2: Paiement */}
+              <AccordionItem
+                value="paiement"
+                ref={paiementRef}
+                disabled={!addressValidated}
+                className={`bg-white rounded-2xl shadow-sm border overflow-hidden transition-all duration-300 ${
+                  addressValidated
+                    ? "border-slate-200"
+                    : "border-slate-100 opacity-50 cursor-not-allowed"
+                }`}
+              >
+                <AccordionTrigger
+                  className={`px-6 py-5 hover:no-underline ${!addressValidated ? "pointer-events-none" : ""}`}
+                >
                   <div className="flex items-center gap-3">
-                    <div className="flex-shrink-0 w-10 h-10 bg-muted rounded-xl flex items-center justify-center">
-                      <svg
-                        className="w-5 h-5 text-blue-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
+                    <div
+                      className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all duration-300 ${
+                        addressValidated
+                          ? "bg-blue-600 text-white"
+                          : "bg-slate-200 text-slate-400"
+                      }`}
+                    >
+                      2
                     </div>
-                    <h2 className="text-xl font-semibold text-slate-900">
-                      Adresse de livraison
+                    <h2 className="text-lg font-semibold text-slate-900">
+                      Paiement
                     </h2>
                   </div>
-                  {/* Bouton Modifier visible seulement en mode récapitulatif */}
-                  {user && hasCompleteAddress && !isEditingAddress && (
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingAddress(true)}
-                      className="text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline"
-                    >
-                      Modifier
-                    </button>
-                  )}
-                </div>
-
-                {/* Mode récapitulatif : client connecté avec adresse complète */}
-                {user && hasCompleteAddress && !isEditingAddress ? (
-                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                    <p className="font-medium text-slate-900">
-                      {shippingAddress.firstName} {shippingAddress.lastName}
-                    </p>
-                    <p className="text-sm text-slate-600 mt-1">
-                      {shippingAddress.address}
-                    </p>
-                    <p className="text-sm text-slate-600">
-                      {shippingAddress.zipCode} {shippingAddress.city},{" "}
-                      {shippingAddress.country}
-                    </p>
-                  </div>
-                ) : (
-                  /* Mode formulaire : invité ou client sans adresse ou modification */
-                  <div className="space-y-4">
-                    {!user && (
-                      <p className="text-sm text-slate-500 mb-2">
-                        Requise pour l'expédition
-                      </p>
-                    )}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label
-                          htmlFor="firstName"
-                          className="block text-sm font-medium text-slate-700 mb-1"
-                        >
-                          Prénom *
-                        </label>
-                        <input
-                          type="text"
-                          id="firstName"
-                          required
-                          value={shippingAddress.firstName}
-                          onChange={(e) =>
-                            setShippingAddress((prev) => ({
-                              ...prev,
-                              firstName: e.target.value,
-                            }))
-                          }
-                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                          placeholder="Prénom"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="lastName"
-                          className="block text-sm font-medium text-slate-700 mb-1"
-                        >
-                          Nom *
-                        </label>
-                        <input
-                          type="text"
-                          id="lastName"
-                          required
-                          value={shippingAddress.lastName}
-                          onChange={(e) =>
-                            setShippingAddress((prev) => ({
-                              ...prev,
-                              lastName: e.target.value,
-                            }))
-                          }
-                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                          placeholder="Nom"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="address"
-                        className="block text-sm font-medium text-slate-700 mb-1"
-                      >
-                        Adresse *
-                      </label>
-                      <input
-                        type="text"
-                        id="address"
-                        required
-                        value={shippingAddress.address}
-                        onChange={(e) =>
-                          setShippingAddress((prev) => ({
-                            ...prev,
-                            address: e.target.value,
-                          }))
-                        }
-                        className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                        placeholder="Numéro et nom de rue"
-                      />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label
-                          htmlFor="zipCode"
-                          className="block text-sm font-medium text-slate-700 mb-1"
-                        >
-                          Code postal *
-                        </label>
-                        <input
-                          type="text"
-                          id="zipCode"
-                          required
-                          pattern="[0-9]{5}"
-                          maxLength={5}
-                          value={shippingAddress.zipCode}
-                          onChange={(e) =>
-                            setShippingAddress((prev) => ({
-                              ...prev,
-                              zipCode: e.target.value,
-                            }))
-                          }
-                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                          placeholder="75000"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          htmlFor="city"
-                          className="block text-sm font-medium text-slate-700 mb-1"
-                        >
-                          Ville *
-                        </label>
-                        <input
-                          type="text"
-                          id="city"
-                          required
-                          value={shippingAddress.city}
-                          onChange={(e) =>
-                            setShippingAddress((prev) => ({
-                              ...prev,
-                              city: e.target.value,
-                            }))
-                          }
-                          className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                          placeholder="Ville"
-                        />
-                      </div>
-                    </div>
-                    {/* Bouton annuler si on est en mode modification d'une adresse existante */}
-                    {user && hasCompleteAddress && isEditingAddress && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          // Restaurer l'adresse du profil
-                          setShippingAddress({
-                            civility: "M.",
-                            firstName:
-                              userProfile?.firstName || user?.firstName || "",
-                            lastName:
-                              userProfile?.lastName || user?.lastName || "",
-                            address: userProfile?.address || "",
-                            zipCode: userProfile?.zipCode || "",
-                            city: userProfile?.city || "",
-                            country: userProfile?.country || "France",
-                          });
-                          setIsEditingAddress(false);
-                        }}
-                        className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
-                      >
-                        Annuler et utiliser l'adresse enregistrée
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Résumé panier */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="flex-shrink-0 w-10 h-10 bg-muted rounded-xl flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-slate-900">
-                    Récapitulatif de la commande
-                  </h2>
-                  <p className="text-sm text-slate-500">
-                    {cart.items.length} article
-                    {cart.items.length > 1 ? "s" : ""}
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-4 mb-6">
-                {cart.items.map((item: CartItemType) => (
-                  <div
-                    key={item.id}
-                    className="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-50 transition-colors"
-                  >
-                    <div className="flex-shrink-0 w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center">
-                      <svg
-                        className="w-8 h-8 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-slate-900 truncate">
-                        {item.product_name}
-                      </h3>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        Réf: {item.product_sku || item.product_id}
-                        {item.product_brand &&
-                          item.product_brand !== "MARQUE INCONNUE" &&
-                          item.product_brand !== "Non spécifiée" && (
-                            <> &middot; {item.product_brand}</>
-                          )}
-                      </p>
-                      <p className="text-sm text-slate-500 mt-1">
-                        Qté {item.quantity}
-                      </p>
-                    </div>
-                    <div className="flex-shrink-0 text-right">
-                      <p className="font-semibold text-slate-900">
-                        {formatPrice(item.price * item.quantity)}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        {formatPrice(item.price)} / unité
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-6 pb-6">
+                  <CheckoutPaiementSection
+                    paymentMethods={paymentMethods || []}
+                    acceptedTerms={acceptedTerms}
+                    onAcceptedTermsChange={setAcceptedTerms}
+                    isProcessing={isLocked}
+                    totalTTC={total}
+                    itemCount={cart.items.length}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
 
-          {/* Sidebar résumé et totaux */}
+          {/* Right column: Order summary sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sticky top-8">
-              <h3 className="font-semibold text-slate-900 mb-4">Résumé</h3>
-
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Sous-total</span>
-                  <span className="font-medium text-slate-900">
-                    {formatPrice(cart.summary.subtotal)}
-                  </span>
-                </div>
-
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-600">Livraison</span>
-                  {cart.summary.shipping_cost > 0 ? (
-                    <span className="font-medium text-slate-900">
-                      {formatPrice(cart.summary.shipping_cost)}
-                    </span>
-                  ) : (
-                    <span className="font-medium text-green-600">Offerte</span>
-                  )}
-                </div>
-
-                {cart.summary.tax_amount > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-slate-600">TVA (20%)</span>
-                    <span className="font-medium text-slate-900">
-                      {formatPrice(cart.summary.tax_amount)}
-                    </span>
-                  </div>
-                )}
-
-                {(cart.summary.consigne_total ?? 0) > 0 && (
-                  <div className="flex justify-between text-sm bg-amber-50 -mx-6 px-6 py-3 border-y border-amber-100">
-                    <span className="flex items-center gap-2 text-amber-700 font-medium">
-                      &#9851; Consignes
-                    </span>
-                    <span className="font-semibold text-amber-700">
-                      {formatPrice(cart.summary.consigne_total)}
-                    </span>
-                  </div>
-                )}
-
-                <div className="pt-3 border-t border-slate-200">
-                  <div className="flex justify-between">
-                    <span className="font-bold text-slate-900 text-lg">
-                      Total
-                    </span>
-                    <span className="font-bold text-cta text-2xl">
-                      {formatPrice(total)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Info consignes */}
-              {cart.items.some((item: CartItemType) => item.has_consigne) && (
-                <div className="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-100">
-                  <p className="text-xs text-amber-800">
-                    <svg
-                      className="w-4 h-4 inline mr-1"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    Les consignes seront remboursées lors du retour des pièces
-                    usagées
-                  </p>
-                </div>
-              )}
-
-              <div className="mt-6 space-y-4">
-                <button
-                  type="submit"
-                  disabled={!canSubmit}
-                  className="w-full bg-cta hover:bg-cta-hover text-white py-4 px-6 rounded-xl font-semibold shadow-lg shadow-cta/30 hover:shadow-xl hover:shadow-cta/40 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-3"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <svg
-                        className="animate-spin h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      <span>Création en cours...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Confirmer la commande</span>
-                      <svg
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 7l5 5m0 0l-5 5m5-5H6"
-                        />
-                      </svg>
-                    </>
-                  )}
-                </button>
-
-                <Link
-                  to="/cart"
-                  className="w-full inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 px-6 rounded-xl font-medium transition-colors"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                  <span>Retour au panier</span>
-                </Link>
-              </div>
-
-              <div className="mt-6 rounded-xl border p-3 flex items-center justify-around text-xs text-gray-600">
-                <span className="flex items-center gap-1.5">
-                  <Truck className="h-4 w-4 text-blue-600" />
-                  24-48h
-                </span>
-                <span className="text-gray-300">|</span>
-                <span className="flex items-center gap-1.5">
-                  <Shield className="h-4 w-4 text-green-600" />
-                  <span className="hidden sm:inline">Paiement </span>sécurisé
-                </span>
-                <span className="text-gray-300">|</span>
-                <span className="flex items-center gap-1.5">
-                  <CreditCard className="h-4 w-4 text-purple-600" />
-                  3D Secure
-                </span>
-              </div>
-
-              <p className="mt-3 text-xs text-center text-slate-500">
-                Vous serez redirigé vers le paiement sécurisé.
-              </p>
-            </div>
+            <CheckoutOrderSummary cart={cart} total={total} />
           </div>
         </div>
       </Form>
 
-      {/* Mobile Bottom Bar - Sticky CTA */}
+      {/* Redirecting overlay (point 5) */}
+      {isRedirecting && (
+        <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <svg
+              className="animate-spin h-10 w-10 text-cta"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
+            <p className="text-lg font-semibold text-slate-900">
+              Redirection vers le paiement securise...
+            </p>
+            <p className="text-sm text-slate-500">Ne fermez pas cette page</p>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Bottom Bar (point 6 — progress indicator) */}
       <MobileBottomBarSpacer />
       <MobileBottomBar>
         <div className="flex-1">
-          <button
-            type="submit"
-            form="checkout-form"
-            disabled={!canSubmit}
-            className="w-full py-3 px-4 bg-cta hover:bg-cta-hover text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? (
-              <>
-                <svg
-                  className="animate-spin h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                <span>En cours...</span>
-              </>
-            ) : (
-              <>
-                <span>Confirmer ({formatPrice(total)})</span>
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
-              </>
-            )}
-          </button>
+          {/* Progress dots */}
+          <div className="flex items-center justify-center gap-1.5 mb-2">
+            <div
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                activeSection === "livraison"
+                  ? "w-6 bg-blue-600"
+                  : "w-1.5 bg-emerald-500"
+              }`}
+            />
+            <div
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                activeSection === "paiement"
+                  ? "w-6 bg-blue-600"
+                  : addressValidated
+                    ? "w-1.5 bg-slate-300"
+                    : "w-1.5 bg-slate-200"
+              }`}
+            />
+          </div>
+          {activeSection === "paiement" && addressValidated ? (
+            <button
+              type="submit"
+              form="checkout-form"
+              disabled={isLocked || !acceptedTerms}
+              className="w-full py-3 px-4 bg-cta hover:bg-cta-hover text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLocked ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  <span>
+                    {isRedirecting ? "Redirection..." : "En cours..."}
+                  </span>
+                </>
+              ) : (
+                <span>Payer {formatPrice(total)}</span>
+              )}
+            </button>
+          ) : (
+            <div className="text-center text-sm text-slate-500 py-2">
+              Etape 1/2 &middot; {formatPrice(total)} &middot;{" "}
+              {cart.items.length} article
+              {cart.items.length > 1 ? "s" : ""}
+            </div>
+          )}
         </div>
       </MobileBottomBar>
 
-      {/* Mini footer transactionnel */}
-      <div className="border-t border-gray-200 bg-white py-4 text-center text-xs text-gray-500">
-        <Container>
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-            <Link to="/cgv" className="hover:text-gray-700 hover:underline">
-              CGV
-            </Link>
-            <span>&middot;</span>
-            <Link
-              to="/confidentialite"
-              className="hover:text-gray-700 hover:underline"
-            >
-              Confidentialité
-            </Link>
-            <span>&middot;</span>
-            <Link
-              to="/mentions-legales"
-              className="hover:text-gray-700 hover:underline"
-            >
-              Mentions légales
-            </Link>
-            <span>&middot;</span>
-            <Link to="/contact" className="hover:text-gray-700 hover:underline">
-              Contact
-            </Link>
-          </div>
-        </Container>
-      </div>
+      {/* Mini footer */}
+      <footer className="border-t border-gray-200 bg-white py-4 text-center text-xs text-gray-500">
+        <div className="mx-auto max-w-6xl px-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          <Link to="/cgv" className="hover:text-gray-700 hover:underline">
+            CGV
+          </Link>
+          <span>&middot;</span>
+          <Link
+            to="/confidentialite"
+            className="hover:text-gray-700 hover:underline"
+          >
+            Confidentialite
+          </Link>
+          <span>&middot;</span>
+          <Link
+            to="/mentions-legales"
+            className="hover:text-gray-700 hover:underline"
+          >
+            Mentions legales
+          </Link>
+          <span>&middot;</span>
+          <Link to="/contact" className="hover:text-gray-700 hover:underline">
+            Contact
+          </Link>
+        </div>
+      </footer>
     </div>
   );
 }
 
-// ============================================================
-// ERROR BOUNDARY - Gestion des erreurs HTTP
-// ============================================================
+// -- Error Boundary ----------------------------------------------------------
+
 export function ErrorBoundary() {
   const error = useRouteError();
 

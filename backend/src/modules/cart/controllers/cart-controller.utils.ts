@@ -43,7 +43,7 @@ export function getSessionId(req: RequestWithUser, logger: Logger): string {
 }
 
 /**
- * Résoudre l'identifiant utilisateur pour le panier (userId ou sessionId)
+ * Resoudre l'identifiant utilisateur pour le panier (userId ou sessionId)
  */
 export function getCartUserId(
   req: RequestWithUser,
@@ -52,4 +52,49 @@ export function getCartUserId(
   const sessionId = getSessionId(req, logger);
   const userId = req.user?.id;
   return { sessionId, userId, userIdForCart: userId || sessionId };
+}
+
+/**
+ * Forcer express-session a persister le cookie connect.sid
+ * Appeler apres toute mutation panier pour que le visiteur non connecte
+ * conserve son panier entre les requetes (saveUninitialized: false)
+ */
+export function ensureSessionPersisted(req: RequestWithUser): void {
+  if (req.session) {
+    const sess = req.session as unknown as Record<string, unknown>;
+    if (!sess.cartInitialized) {
+      sess.cartInitialized = true;
+    }
+  }
+}
+
+/**
+ * Calculer les frais de port et le total coherent a partir des stats du panier
+ */
+const FREE_SHIPPING_THRESHOLD = 150;
+const STANDARD_SHIPPING_FEE = 15.9;
+
+export function computeShippingAndTotal(stats: {
+  subtotal: number;
+  shippingCost: number;
+  consigne_total?: number;
+  promoDiscount?: number;
+}): { shippingFee: number; totalWithShipping: number } {
+  const shippingFee =
+    stats.shippingCost > 0
+      ? stats.shippingCost
+      : stats.subtotal > 0 && stats.subtotal < FREE_SHIPPING_THRESHOLD
+        ? STANDARD_SHIPPING_FEE
+        : 0;
+
+  const totalWithShipping =
+    stats.subtotal +
+    (stats.consigne_total || 0) -
+    (stats.promoDiscount || 0) +
+    shippingFee;
+
+  return {
+    shippingFee: Math.round(shippingFee * 100) / 100,
+    totalWithShipping: Math.round(totalWithShipping * 100) / 100,
+  };
 }

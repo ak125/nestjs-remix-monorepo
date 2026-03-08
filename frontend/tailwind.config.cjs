@@ -190,6 +190,15 @@ module.exports = {
         'v9-shimmer': {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' }
+        },
+        'checkmark': {
+          '0%': { transform: 'scale(0) rotate(-45deg)', opacity: '0' },
+          '50%': { transform: 'scale(1.2) rotate(0deg)', opacity: '1' },
+          '100%': { transform: 'scale(1) rotate(0deg)', opacity: '1' }
+        },
+        'fadeIn': {
+          from: { opacity: '0' },
+          to: { opacity: '1' }
         }
       },
       animation: {
@@ -199,7 +208,9 @@ module.exports = {
         'reveal-up': 'reveal-up 0.6s ease both',
         'v9-fade-in': 'v9-fade-in 0.25s ease-out',
         'v9-float': 'v9-float 3s ease-in-out infinite',
-        'v9-shimmer': 'v9-shimmer 2s ease-in-out infinite'
+        'v9-shimmer': 'v9-shimmer 2s ease-in-out infinite',
+        'checkmark': 'checkmark 0.3s ease-in-out',
+        'fadeIn': 'fadeIn 0.3s ease-in'
       },
       transitionDuration: {
         'instant': '100ms',

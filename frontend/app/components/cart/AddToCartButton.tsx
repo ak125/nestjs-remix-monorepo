@@ -6,7 +6,7 @@ import { ShoppingCart, Check, AlertCircle, Loader2 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 
 import { Alert } from "~/components/ui/alert";
-import { logger } from "~/utils/logger";
+import { useCart } from "~/hooks/useCart";
 import { useNotifications } from "../notifications/NotificationContainer";
 
 interface PieceData {
@@ -46,99 +46,60 @@ export const AddToCartButton = memo(function AddToCartButton({
   const [isOptimistic, setIsOptimistic] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { showSuccess, showError } = useNotifications();
+  const { addToCart } = useCart();
 
-  // ⚡ Utiliser fetch directement vers l'API NestJS au lieu de Remix fetcher
-  // Optimisé: Réduction des state updates séquentiels
   const handleAddToCart = useCallback(async () => {
     if (quantity <= 0) {
-      setErrorMessage("La quantité doit être supérieure à 0");
+      setErrorMessage("La quantite doit etre superieure a 0");
       return;
     }
 
     if (piece.stock !== "En stock" && quantity > 1) {
-      setErrorMessage("Stock limité, veuillez réduire la quantité");
+      setErrorMessage("Stock limite, veuillez reduire la quantite");
       return;
     }
 
-    // ⚡ OPTIMISTIC UI: Combiner les state updates pour réduire les re-renders
-    // React 18 batch automatiquement mais on reste explicite
+    // Optimistic UI
     setIsOptimistic(true);
     setIsSuccess(true);
     setErrorMessage(null);
     setIsLoading(true);
 
-    // 🎬 Animation flying to cart (déjà optimisée avec requestAnimationFrame)
     if (buttonRef.current) {
       createFlyingAnimation(buttonRef.current);
     }
 
-    // 🔔 Notification immédiate
-    showSuccess(`✅ ${piece.name} ajouté au panier (${quantity}x)`);
-
-    // 🎯 Bounce du badge panier (si disponible)
+    showSuccess(`${piece.name} ajoute au panier (${quantity}x)`);
     triggerCartBadgeBounce();
 
     try {
-      const response = await fetch("/api/cart/items", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // 🔥 Transmet les cookies de session
-        body: JSON.stringify({
-          product_id: piece.id.toString(),
-          quantity: quantity,
-          custom_price: piece.price,
-        }),
-      });
+      const success = await addToCart(piece.id, quantity);
 
-      if (response.ok) {
-        await response.json(); // Consommer la réponse
-        // ✅ Succès confirmé - garder l'état optimistic
+      if (success) {
         setIsOptimistic(false);
         onSuccess?.();
-
-        // 🔄 Émettre l'événement pour synchroniser le panier partout
-        window.dispatchEvent(new Event("cart:updated"));
       } else {
-        // ❌ Échec - revert optimistic update
-        const errorData = await response.json().catch((err) => {
-          logger.debug("[AddToCart] Failed to parse error response:", err);
-          return {};
-        });
-        const error = errorData.message || "Erreur lors de l'ajout au panier";
-
-        // Revert état
         setIsOptimistic(false);
         setIsSuccess(false);
-        setErrorMessage(error);
-        onError?.(error);
-
-        // Notification d'erreur
-        showError(`❌ ${error}`);
-
-        logger.error("❌ [AddToCart] Erreur HTTP:", response.status, error);
+        setErrorMessage("Erreur lors de l'ajout au panier");
+        onError?.("Erreur lors de l'ajout au panier");
+        showError("Erreur lors de l'ajout au panier");
       }
     } catch (error) {
-      // ❌ Erreur réseau - revert optimistic update
-      logger.error("❌ [AddToCart] Erreur réseau:", error);
       const errorMsg =
         error instanceof Error
-          ? `Erreur: ${error.message}`
+          ? error.message
           : "Impossible de contacter le serveur";
 
-      // Revert état
       setIsOptimistic(false);
       setIsSuccess(false);
       setErrorMessage(errorMsg);
       onError?.(errorMsg);
-
-      // Notification d'erreur
-      showError(`❌ ${errorMsg}`);
+      showError(errorMsg);
     } finally {
       setIsLoading(false);
     }
-  }, [quantity, piece, showSuccess, showError, onSuccess, onError]);
+  }, [quantity, piece, showSuccess, showError, onSuccess, onError, addToCart]);
 
   /**
    * 🎬 Crée une animation de "flying" vers l'icône panier

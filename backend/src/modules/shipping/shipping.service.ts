@@ -132,9 +132,9 @@ export class ShippingService extends SupabaseBaseService {
         );
       }
 
-      // Livraison gratuite au-dessus de 100€
-      if (parseFloat(order.ord_total_ttc || '0') >= 100) {
-        this.logger.log('Free shipping applied (>= 100€)');
+      // Livraison gratuite au-dessus de 150€
+      if (parseFloat(order.ord_total_ttc || '0') >= 150) {
+        this.logger.log('Free shipping applied (>= 150€)');
         await this.updateOrderShipping(orderId, 0);
         return 0;
       }

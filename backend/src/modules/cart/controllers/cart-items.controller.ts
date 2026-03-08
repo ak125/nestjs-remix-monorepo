@@ -25,7 +25,12 @@ import { StockService } from '../../products/services/stock.service';
 import { validateAddItem } from '../dto/add-item.dto';
 import { validateUpdateItem } from '../dto/update-item.dto';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
-import { RequestWithUser, getCartUserId } from './cart-controller.utils';
+import {
+  RequestWithUser,
+  getCartUserId,
+  computeShippingAndTotal,
+  ensureSessionPersisted,
+} from './cart-controller.utils';
 
 @ApiTags('Cart Items')
 @Controller('api/cart')
@@ -77,6 +82,9 @@ export class CartItemsController {
 
       const isReplace = (body as Record<string, unknown>)?.replace === true;
 
+      // Forcer la persistance de la session pour les visiteurs non connectes
+      ensureSessionPersisted(req);
+
       const result = await this.cartDataService.addCartItem(
         userIdForCart,
         productIdNum,
@@ -102,30 +110,35 @@ export class CartItemsController {
         item: result,
         productId: productIdNum,
         quantity: addItemDto.quantity,
-        cart: {
-          cart_id: `cart_${userIdForCart}`,
-          user_id: userId || null,
-          items: cartData.items,
-          totals: {
-            total_items: cartData.stats.totalQuantity,
-            item_count: cartData.stats.totalQuantity,
-            subtotal: cartData.stats.subtotal,
-            consigne_total: cartData.stats.consigne_total || 0,
-            tax: 0,
-            shipping: 0,
-            discount: cartData.stats.promoDiscount,
-            total: cartData.stats.total,
-          },
-          summary: {
-            total_items: cartData.stats.totalQuantity,
-            total_price: cartData.stats.total,
-            subtotal: cartData.stats.subtotal,
-            tax_amount: 0,
-            shipping_cost: 0,
-            consigne_total: cartData.stats.consigne_total || 0,
-            currency: 'EUR',
-          },
-        },
+        cart: (() => {
+          const { shippingFee, totalWithShipping } = computeShippingAndTotal(
+            cartData.stats,
+          );
+          return {
+            cart_id: `cart_${userIdForCart}`,
+            user_id: userId || null,
+            items: cartData.items,
+            totals: {
+              total_items: cartData.stats.totalQuantity,
+              item_count: cartData.stats.totalQuantity,
+              subtotal: cartData.stats.subtotal,
+              consigne_total: cartData.stats.consigne_total || 0,
+              tax: 0,
+              shipping: shippingFee,
+              discount: cartData.stats.promoDiscount,
+              total: totalWithShipping,
+            },
+            summary: {
+              total_items: cartData.stats.totalQuantity,
+              total_price: totalWithShipping,
+              subtotal: cartData.stats.subtotal,
+              tax_amount: 0,
+              shipping_cost: shippingFee,
+              consigne_total: cartData.stats.consigne_total || 0,
+              currency: 'EUR',
+            },
+          };
+        })(),
       };
     } catch (error) {
       this.logger.error(
@@ -277,18 +290,23 @@ export class CartItemsController {
         success: true,
         message: 'Article supprimé avec succès',
         itemId: itemId,
-        cart: {
-          items: cartData.items,
-          summary: {
-            total_items: cartData.stats.totalQuantity,
-            total_price: cartData.stats.total,
-            subtotal: cartData.stats.subtotal,
-            tax_amount: 0,
-            shipping_cost: 0,
-            consigne_total: cartData.stats.consigne_total || 0,
-            currency: 'EUR',
-          },
-        },
+        cart: (() => {
+          const { shippingFee, totalWithShipping } = computeShippingAndTotal(
+            cartData.stats,
+          );
+          return {
+            items: cartData.items,
+            summary: {
+              total_items: cartData.stats.totalQuantity,
+              total_price: totalWithShipping,
+              subtotal: cartData.stats.subtotal,
+              tax_amount: 0,
+              shipping_cost: shippingFee,
+              consigne_total: cartData.stats.consigne_total || 0,
+              currency: 'EUR',
+            },
+          };
+        })(),
       };
     } catch (error) {
       this.logger.error(

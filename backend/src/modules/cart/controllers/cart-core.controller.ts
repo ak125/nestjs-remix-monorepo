@@ -15,7 +15,11 @@ import {
 } from '@nestjs/swagger';
 import { CartDataService } from '../../../database/services/cart-data.service';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
-import { RequestWithUser, getCartUserId } from './cart-controller.utils';
+import {
+  RequestWithUser,
+  getCartUserId,
+  computeShippingAndTotal,
+} from './cart-controller.utils';
 
 @ApiTags('Cart')
 @Controller('api/cart')
@@ -64,6 +68,10 @@ export class CartCoreController {
       const cartData =
         await this.cartDataService.getCartWithMetadata(userIdForCart);
 
+      const { shippingFee, totalWithShipping } = computeShippingAndTotal(
+        cartData.stats,
+      );
+
       const cart = {
         cart_id: `cart_${userIdForCart}`,
         user_id: userId || null,
@@ -75,9 +83,9 @@ export class CartCoreController {
           subtotal: cartData.stats.subtotal,
           consigne_total: cartData.stats.consigne_total || 0,
           tax: 0,
-          shipping: 0,
+          shipping: shippingFee,
           discount: cartData.stats.promoDiscount,
-          total: cartData.stats.total,
+          total: totalWithShipping,
         },
         metadata: {
           currency: 'EUR',

@@ -83,7 +83,7 @@ export class CartShippingController {
         },
         remainingForFreeShipping: estimate.freeShipping
           ? 0
-          : Math.max(0, 100 - cart.stats.subtotal),
+          : Math.max(0, 150 - cart.stats.subtotal),
       };
     } catch (error) {
       this.logger.error('Erreur calcul shipping:', error);
