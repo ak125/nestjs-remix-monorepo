@@ -1,7 +1,15 @@
-import { useNavigate } from "@remix-run/react";
+import { Link, useNavigate } from "@remix-run/react";
 import { ScanLine } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
+
+const SYMPTOM_TAGS = [
+  { label: "Bruit au freinage", param: "bruit-freinage" },
+  { label: "Perte de puissance", param: "perte-puissance" },
+  { label: "Voyant moteur", param: "voyant-moteur" },
+  { label: "Surchauffe", param: "surchauffe" },
+  { label: "Vibrations", param: "vibrations" },
+];
 
 export default function DiagnosticBanner() {
   const navigate = useNavigate();
@@ -22,6 +30,17 @@ export default function DiagnosticBanner() {
               Décrivez vos symptômes pour identifier les causes et pièces
               concernées. Gratuit, 2 min.
             </p>
+            <div className="flex flex-wrap gap-2 mt-3 justify-center lg:justify-start">
+              {SYMPTOM_TAGS.map((s) => (
+                <Link
+                  key={s.param}
+                  to={`/diagnostic-auto?symptome=${s.param}`}
+                  className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-2.5 text-xs font-medium text-white/70 hover:bg-white/10 hover:text-white transition-colors"
+                >
+                  {s.label}
+                </Link>
+              ))}
+            </div>
           </div>
 
           <Button

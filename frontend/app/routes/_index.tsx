@@ -9,6 +9,7 @@ import { useLoaderData } from "@remix-run/react";
 import {
   HomepageJsonLd,
   HeroSection,
+  QuickAccessGrid,
   HomeResourcesAndVideoSection,
   CatalogueSection,
   BrandsGrid,
@@ -17,21 +18,21 @@ import {
   Footer,
   WhyAutomecanikSection,
   DiagnosticBanner,
+  PopularSearches,
 } from "~/components/home";
 import {
-  BLOG,
-  CATS,
-  IMG_PROXY_FAMILIES,
-  IMG_PROXY_LOGOS,
-  MARQUES,
-} from "~/components/home/constants";
-import { getFamilyTheme } from "~/utils/family-theme";
+  mapHomepageRpcToLoaderData,
+  mapFamiliesToCatalog,
+  mapBrandsWithFallback,
+  mapBlogArticles,
+} from "~/utils/homepage-rpc.mapper";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
+import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 // ─── SEO page role ───────────────────────────────────────
 export const handle = {
-  pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
+  pageRole: createPageRoleMeta(PageRole.R0_HOME, {
     clusterId: "homepage",
     canonicalEntity: "automecanik",
   }),
@@ -41,25 +42,25 @@ export const handle = {
 // ─── Meta tags ───────────────────────────────────────────
 export const meta: MetaFunction = () => [
   {
-    title:
-      "Catalogue de pièces détachées auto – Toutes marques & modèles | Automecanik",
+    title: "Pièces auto neuves compatibles toutes marques | AutoMecanik",
   },
   {
     name: "description",
     content:
-      "Pièces détachées auto pas cher pour toutes marques. Catalogue 400 000+ références, livraison 24-48h, qualité garantie. Filtrez par véhicule.",
+      "Trouvez la pièce compatible avec votre véhicule grâce à la recherche par véhicule, référence OE ou Type Mine. Pièces neuves, grandes marques, diagnostic assisté et livraison rapide.",
   },
   { tagName: "link", rel: "canonical", href: "https://www.automecanik.com/" },
   { property: "og:type", content: "website" },
   { property: "og:url", content: "https://www.automecanik.com/" },
+  { property: "og:site_name", content: "Automecanik" },
   {
     property: "og:title",
-    content: "Catalogue de pièces détachées auto | Automecanik",
+    content: "Pièces auto neuves compatibles toutes marques | AutoMecanik",
   },
   {
     property: "og:description",
     content:
-      "400 000+ pièces auto en stock pour toutes marques. Livraison 24-48h. Qualité garantie.",
+      "Trouvez la pièce compatible avec votre véhicule. Recherche par véhicule, référence OE ou Type Mine. Grandes marques, livraison rapide.",
   },
   {
     property: "og:image",
@@ -69,20 +70,27 @@ export const meta: MetaFunction = () => [
   { property: "og:image:height", content: "630" },
   {
     property: "og:image:alt",
-    content: "Automecanik - Pièces auto à prix pas cher",
+    content: "AutoMecanik - Pièces auto neuves compatibles toutes marques",
   },
   { property: "og:locale", content: "fr_FR" },
   { name: "twitter:card", content: "summary_large_image" },
   { name: "twitter:site", content: "@automecanik" },
-  { name: "twitter:title", content: "Catalogue pièces auto | Automecanik" },
+  {
+    name: "twitter:title",
+    content: "Pièces auto neuves compatibles toutes marques | AutoMecanik",
+  },
   {
     name: "twitter:description",
     content:
-      "400 000+ pièces auto en stock pour toutes marques. Livraison 24-48h.",
+      "Trouvez la pièce compatible avec votre véhicule. Recherche par véhicule, référence OE ou Type Mine. Grandes marques, livraison rapide.",
   },
   {
     name: "twitter:image",
     content: "https://www.automecanik.com/logo-og.webp",
+  },
+  {
+    name: "twitter:image:alt",
+    content: "AutoMecanik - Pièces auto neuves compatibles toutes marques",
   },
   { name: "robots", content: "index, follow" },
   { name: "googlebot", content: "index, follow" },
@@ -90,7 +98,6 @@ export const meta: MetaFunction = () => [
 
 // ─── Loader ──────────────────────────────────────────────
 export async function loader({ request }: LoaderFunctionArgs) {
-  // FAQ fetch — deferred (below-the-fold, does not block HTML)
   const faqPromise = fetch(
     getInternalApiUrlFromRequest(
       "/api/support/faq?status=published&limit=5",
@@ -109,50 +116,30 @@ export async function loader({ request }: LoaderFunctionArgs) {
     .catch(() => [] as Array<{ id: string; question: string; answer: string }>);
 
   try {
-    // RPC fetch — synchronous (above-the-fold: families, brands, stats)
     const rpcRes = await fetch(
       getInternalApiUrlFromRequest("/api/catalog/homepage-rpc", request),
     );
-    const rpcData = rpcRes.ok ? await rpcRes.json() : null;
+
+    if (!rpcRes.ok) {
+      logger.warn("[homepage-rpc] Non-OK status:", {
+        status: rpcRes.status,
+        statusText: rpcRes.statusText,
+      });
+    }
+
+    const rpcRaw = rpcRes.ok ? await rpcRes.json() : null;
+    const loaderData = mapHomepageRpcToLoaderData(rpcRaw);
 
     return defer({
-      families: (rpcData?.catalog?.families || []) as Array<{
-        mf_id: number;
-        mf_name: string;
-        mf_pic: string;
-        mf_description?: string;
-        gammes: Array<{
-          pg_id: number;
-          pg_alias: string;
-          pg_name: string;
-          pg_img?: string;
-        }>;
-      }>,
-      brands: (rpcData?.brands || []).map((b: any) => ({
-        id: b.marque_id as number,
-        name: b.marque_name as string,
-        slug: b.marque_alias as string,
-        logo: b.marque_logo
-          ? `${IMG_PROXY_LOGOS}/${b.marque_logo}`
-          : (undefined as string | undefined),
-      })),
-      blogArticles: (rpcData?.blog_articles || []) as Array<{
-        ba_id: number;
-        ba_title: string;
-        ba_alias: string;
-        ba_descrip: string;
-        ba_preview: string;
-        ba_category?: string;
-        pg_name?: string;
-        pg_alias?: string;
-      }>,
+      ...loaderData,
       faqs: faqPromise,
     });
-  } catch {
+  } catch (err) {
+    logger.error("[homepage-rpc] Fetch failed:", {
+      error: err instanceof Error ? err.message : String(err),
+    });
     return defer({
-      families: [],
-      brands: [],
-      blogArticles: [],
+      ...mapHomepageRpcToLoaderData(null),
       faqs: faqPromise,
     });
   }
@@ -166,74 +153,29 @@ export const headers: HeadersFunction = () => ({
 export default function Homepage() {
   const loaderData = useLoaderData<typeof loader>();
 
-  // Transform API data → component props (with fallbacks)
-  const catalogFamilies =
-    loaderData.families.length > 0
-      ? loaderData.families.map((f) => ({
-          img: f.mf_pic ? `${IMG_PROXY_FAMILIES}/${f.mf_pic}` : undefined,
-          i: "📦",
-          n: f.mf_name,
-          desc: f.mf_description || "",
-          color: getFamilyTheme(f.mf_name).gradient,
-          gammes: f.gammes.map((g) => ({
-            name: g.pg_name,
-            link: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
-          })),
-        }))
-      : CATS.map((c) => ({
-          ...c,
-          desc: c.desc || "",
-          color: getFamilyTheme(c.n).gradient,
-          img: c.pic ? `${IMG_PROXY_FAMILIES}/${c.pic}` : undefined,
-          gammes: c.sub.map((s) => ({ name: s, link: "#" })),
-        }));
-
-  // Lookup gamme alias → image pour enrichir les articles blog
-  const gammeImgMap = new Map<string, string>();
-  for (const f of loaderData.families) {
-    for (const g of f.gammes) {
-      if (g.pg_img) gammeImgMap.set(g.pg_alias, g.pg_img);
-    }
-  }
-
-  const brandsList =
-    loaderData.brands.length > 0
-      ? loaderData.brands
-      : MARQUES.map((m) => ({
-          id: 0,
-          name: m.n,
-          slug: m.n.toLowerCase().replace(/\s/g, "-"),
-          logo: undefined,
-        }));
-
-  const blogList =
-    loaderData.blogArticles.length > 0
-      ? loaderData.blogArticles.map((a) => ({
-          ico: "📰",
-          t: a.ba_title,
-          d: a.ba_descrip || a.ba_preview || "",
-          tag: a.pg_name || a.ba_category || "Guide",
-          link: `/blog-pieces-auto/conseils/${a.pg_alias || a.ba_alias}`,
-          img:
-            a.pg_alias && gammeImgMap.get(a.pg_alias)
-              ? `/img/uploads/articles/gammes-produits/catalogue/${gammeImgMap.get(a.pg_alias)}`
-              : undefined,
-        }))
-      : BLOG.map((b) => ({ ...b, link: "/blog-pieces-auto" }));
-
-  const faqsPromise = loaderData.faqs;
+  const catalogFamilies = mapFamiliesToCatalog(loaderData.families);
+  const brandsList = mapBrandsWithFallback(loaderData.brands);
+  const blogList = mapBlogArticles(
+    loaderData.blogArticles,
+    loaderData.families,
+  );
 
   return (
     <div className="min-h-screen bg-[#f5f7fa] font-v9-body pb-20 lg:pb-0">
       <HomepageJsonLd />
       <HeroSection />
+      <QuickAccessGrid />
       <CatalogueSection families={catalogFamilies} />
-      <HomeResourcesAndVideoSection />
       <DiagnosticBanner />
-      <BrandsGrid brands={brandsList} />
+      <HomeResourcesAndVideoSection />
+      <BrandsGrid
+        brands={brandsList}
+        equipementiers={loaderData.equipementiers}
+      />
       <WhyAutomecanikSection />
       <BlogCarousel articles={blogList} />
-      <FaqSection faqsPromise={faqsPromise} />
+      <PopularSearches />
+      <FaqSection faqsPromise={loaderData.faqs} />
       <Footer />
     </div>
   );

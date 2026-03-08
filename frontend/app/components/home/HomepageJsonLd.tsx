@@ -1,6 +1,14 @@
 import { FAQ_DATA } from "./constants";
 
-export default function HomepageJsonLd() {
+interface HomepageJsonLdProps {
+  faqs?: Array<{ question: string; answer: string }>;
+}
+
+export default function HomepageJsonLd({ faqs }: HomepageJsonLdProps) {
+  const faqItems =
+    faqs && faqs.length > 0
+      ? faqs.map((f) => ({ q: f.question, a: f.answer }))
+      : FAQ_DATA;
   return (
     <script
       type="application/ld+json"
@@ -43,7 +51,7 @@ export default function HomepageJsonLd() {
             {
               "@type": "FAQPage",
               "@id": "https://www.automecanik.com/#faq",
-              mainEntity: FAQ_DATA.map((faq) => ({
+              mainEntity: faqItems.map((faq) => ({
                 "@type": "Question",
                 name: faq.q,
                 acceptedAnswer: {

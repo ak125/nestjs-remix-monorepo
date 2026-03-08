@@ -7,7 +7,6 @@
 
 export { default as Container } from "./Container";
 export { default as DarkSection } from "./DarkSection";
-export { default as FooterMobile } from "./FooterMobile";
 export { default as GlassCard } from "./GlassCard";
 export { default as HeroSection } from "./HeroSection";
 export { default as LazySection } from "./LazySection";

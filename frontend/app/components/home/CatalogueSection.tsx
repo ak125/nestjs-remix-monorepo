@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { memo, useCallback, useState } from "react";
 import {
   CATALOG_DOMAINS,
@@ -73,7 +73,7 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
         </div>
         <CardContent className="pt-4 pb-4">
           {cat.desc && (
-            <p className="text-sm text-slate-500 mb-3 line-clamp-3 font-v9-body">
+            <p className="text-sm text-slate-500 mb-3 line-clamp-2 font-v9-body">
               {cat.desc}
             </p>
           )}
@@ -112,6 +112,7 @@ export default function CatalogueSection({
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
   const [catSearch, setCatSearch] = useState("");
   const [showAllFamilies, setShowAllFamilies] = useState(false);
+  const [showAllDesktop, setShowAllDesktop] = useState(false);
   const toggleCat = useCallback((name: string) => {
     setExpandedCats((prev) => {
       const next = new Set(prev);
@@ -128,49 +129,72 @@ export default function CatalogueSection({
         sub={`Pièces neuves pour toutes marques — ${families.length} familles techniques`}
       />
 
-      {/* Recherche */}
-      <div className="relative max-w-sm mb-4">
-        <Search
-          size={14}
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 z-10"
-        />
-        <Input
-          value={catSearch}
-          onChange={(e) => setCatSearch(e.target.value)}
-          className="pl-9 bg-slate-50 border-slate-200 rounded-xl text-[13px] focus-visible:border-cta/40 focus-visible:ring-cta/10"
-          placeholder="Filtrer les familles..."
-        />
-      </div>
-
       <Tabs
         defaultValue="Tout"
         className="w-full"
         aria-label="Catalogue par domaine technique"
-        onValueChange={() => setShowAllFamilies(false)}
+        onValueChange={() => {
+          setShowAllFamilies(false);
+          setShowAllDesktop(false);
+        }}
       >
-        <TabsList className="w-full justify-start overflow-x-auto hide-scroll bg-[#081a4b] lg:bg-navy rounded-2xl p-1.5 mb-5 sm:mb-6 flex-nowrap h-auto shadow-lg">
-          {CATALOG_DOMAINS.map((domain) => {
-            const count = domain.families
-              ? families.filter((c) => domain.families!.some((d) => d === c.n))
-                  .length
-              : families.length;
-            const DomainIcon = domain.icon;
-            return (
-              <TabsTrigger
-                key={domain.label}
-                value={domain.label}
-                className="group tab-pill text-xs sm:text-sm px-3 sm:px-5 py-2.5 sm:py-3 rounded-full whitespace-nowrap font-semibold flex items-center gap-1.5 sm:gap-2 text-white/50 hover:text-white/80 hover:bg-white/[0.06] data-[state=active]:bg-orange-500 data-[state=active]:text-white data-[state=active]:shadow-[0_0_20px_rgba(232,89,12,0.3)]"
+        {/* Barre unifiée : filtres + recherche */}
+        <div className="mb-5 sm:mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:gap-4">
+          {/* Pills scroll horizontal */}
+          <div className="relative flex-1 min-w-0">
+            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 lg:hidden" />
+            <TabsList className="w-full justify-start overflow-x-auto hide-scroll rounded-xl bg-slate-100 p-1 flex-nowrap h-auto">
+              {CATALOG_DOMAINS.map((domain) => {
+                const count = domain.families
+                  ? families.filter((c) =>
+                      domain.families!.some((d) => d === c.n),
+                    ).length
+                  : families.length;
+                const DomainIcon = domain.icon;
+                return (
+                  <TabsTrigger
+                    key={domain.label}
+                    value={domain.label}
+                    className="group text-[12px] sm:text-[13px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg whitespace-nowrap font-semibold flex items-center gap-1.5 text-slate-500 hover:text-slate-700 hover:bg-white/60 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-sm data-[state=active]:ring-1 data-[state=active]:ring-slate-200"
+                  >
+                    <DomainIcon className="w-3.5 h-3.5 flex-shrink-0 group-data-[state=active]:text-cta" />
+                    <span className="hidden sm:inline">{domain.label}</span>
+                    <span className="sm:hidden">
+                      {domain.label.split(" ")[0]}
+                    </span>
+                    <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-slate-200/60 font-medium leading-none group-data-[state=active]:bg-cta/10 group-data-[state=active]:text-cta">
+                      {count}
+                    </span>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </div>
+
+          {/* Recherche */}
+          <div className="relative w-full lg:w-64 shrink-0">
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 z-10"
+            />
+            <Input
+              value={catSearch}
+              onChange={(e) => setCatSearch(e.target.value)}
+              className="pl-9 pr-8 h-10 bg-slate-50 border-slate-200 rounded-xl text-[13px] focus-visible:border-cta/40 focus-visible:ring-cta/10"
+              placeholder="Rechercher une pièce..."
+            />
+            {catSearch && (
+              <button
+                type="button"
+                onClick={() => setCatSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors"
+                aria-label="Effacer la recherche"
               >
-                <DomainIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                <span className="hidden sm:inline">{domain.label}</span>
-                <span className="sm:hidden">{domain.label.split(" ")[0]}</span>
-                <span className="px-1.5 py-0.5 text-[10px] rounded-full bg-white/10 font-medium leading-none group-data-[state=active]:bg-white/20">
-                  {count}
-                </span>
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
+                <X size={14} />
+              </button>
+            )}
+          </div>
+        </div>
 
         {CATALOG_DOMAINS.map((domain) => {
           const domainFiltered =
@@ -179,11 +203,15 @@ export default function CatalogueSection({
               : families.filter((cat) =>
                   domain.families!.some((d) => d === cat.n),
                 );
+          const q = catSearch.toLowerCase();
           const filtered =
-            catSearch === ""
+            q === ""
               ? domainFiltered
-              : domainFiltered.filter((cat) =>
-                  cat.n.toLowerCase().includes(catSearch.toLowerCase()),
+              : domainFiltered.filter(
+                  (cat) =>
+                    cat.n.toLowerCase().includes(q) ||
+                    cat.desc?.toLowerCase().includes(q) ||
+                    cat.gammes.some((g) => g.name.toLowerCase().includes(q)),
                 );
           return (
             <TabsContent
@@ -211,8 +239,12 @@ export default function CatalogueSection({
                         onToggle={toggleCat}
                         className={
                           !showAllFamilies && i >= 4
-                            ? "hidden lg:block"
-                            : undefined
+                            ? !showAllDesktop && i >= 6
+                              ? "hidden"
+                              : "hidden lg:block"
+                            : !showAllDesktop && i >= 6
+                              ? "lg:hidden"
+                              : undefined
                         }
                       />
                     ))}
@@ -225,6 +257,17 @@ export default function CatalogueSection({
                         className="px-6 py-3 rounded-full bg-orange-500 text-white text-sm font-semibold shadow-[0_14px_34px_rgba(15,23,42,0.08)] hover:bg-orange-600 transition-colors tracking-[-0.03em]"
                       >
                         Voir toutes les familles ({filtered.length})
+                      </button>
+                    </div>
+                  )}
+                  {!showAllDesktop && filtered.length > 6 && (
+                    <div className="hidden lg:flex justify-center mt-5">
+                      <button
+                        type="button"
+                        onClick={() => setShowAllDesktop(true)}
+                        className="px-6 py-3 rounded-full border border-slate-200 bg-white text-slate-700 text-sm font-semibold shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-colors tracking-[-0.03em]"
+                      >
+                        Voir les {filtered.length - 6} familles restantes
                       </button>
                     </div>
                   )}

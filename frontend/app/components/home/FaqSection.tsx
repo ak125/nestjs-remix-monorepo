@@ -52,7 +52,7 @@ export default function FaqSection({
     <section className="py-7 lg:py-10 bg-slate-50">
       <div className="px-5 lg:px-8 max-w-[1280px] mx-auto">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-[2rem] lg:text-[2rem] font-extrabold text-slate-900 tracking-[-0.03em] font-v9-heading">
+          <h2 className="text-[1.5rem] lg:text-[2rem] font-extrabold text-slate-900 tracking-[-0.03em] font-v9-heading">
             Questions fréquentes
           </h2>
           <div className="h-10 w-10 rounded-full border border-slate-200 bg-white flex items-center justify-center shadow-sm">

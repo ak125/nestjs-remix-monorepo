@@ -91,33 +91,11 @@ const VehicleSelector = memo(function VehicleSelector({
 
   const navigate = useNavigate();
 
-  // 🚀 Chargement lazy des marques au premier focus (optimisation performance)
+  // Charger les marques au montage (le composant ne monte que sur interaction)
   useEffect(() => {
-    // SSR-safe: document n'existe pas côté serveur
-    if (typeof document === "undefined") return;
-
-    // Ne charge pas au montage, attendre interaction utilisateur
-    const handleFocus = () => {
-      if (brands.length === 0 && !loadingBrands) {
-        loadBrands();
-      }
-    };
-
-    // Pré-charger si currentVehicle fourni
-    if (currentVehicle?.brand?.id) {
-      loadBrands();
-    }
-
-    // Écouter focus sur le select marque pour lazy load
-    const brandSelect =
-      document.getElementById("brand-v2") || document.getElementById("brand");
-    brandSelect?.addEventListener("focus", handleFocus, { once: true });
-
-    return () => {
-      brandSelect?.removeEventListener("focus", handleFocus);
-    };
+    loadBrands();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentVehicle]);
+  }, []);
 
   const loadBrands = useCallback(async () => {
     if (loadingBrands || brands.length > 0) return;
@@ -387,7 +365,6 @@ const VehicleSelector = memo(function VehicleSelector({
           id="brand-v2"
           value={selectedBrand?.marque_id || ""}
           onChange={(e) => handleBrandChange(Number(e.target.value))}
-          onFocus={() => !brands.length && !loadingBrands && loadBrands()}
           disabled={loadingBrands}
           className="sm:flex-1 py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
           aria-label="Sélectionner la marque"
@@ -466,9 +443,9 @@ const VehicleSelector = memo(function VehicleSelector({
     );
   }
 
-  // 🎨 Mode mobile-premium (grille 2x2, CTA orange, reset discret)
+  // Mode mobile-premium (grille 2x2, labels, CTA orange, reset discret)
   if (mode === "mobile-premium") {
-    // Calcul du champ actif (prochain à remplir)
+    // Calcul du champ actif (prochain a remplir)
     const activeField = !selectedBrand
       ? 0
       : !selectedYear
@@ -480,12 +457,12 @@ const VehicleSelector = memo(function VehicleSelector({
             : -1;
 
     const fieldBase =
-      "w-full py-3 px-3.5 rounded-xl text-[13px] font-medium transition-all appearance-none min-h-[44px]";
+      "w-full h-12 rounded-2xl border px-3 text-[15px] shadow-sm transition-all appearance-none";
     const fieldActive =
-      "bg-blue-50 border border-blue-400 text-slate-900 ring-1 ring-blue-200";
-    const fieldNeutral = "bg-white border border-slate-200 text-slate-900";
+      "bg-blue-50 border-blue-400 text-slate-800 ring-1 ring-blue-200";
+    const fieldNeutral = "border-slate-200 bg-white text-slate-800";
     const fieldDisabled =
-      "bg-slate-100 border border-slate-100 text-slate-400 cursor-not-allowed";
+      "border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed";
 
     const getFieldClass = (index: number, isDisabled: boolean) => {
       if (isDisabled) return `${fieldBase} ${fieldDisabled}`;
@@ -495,93 +472,119 @@ const VehicleSelector = memo(function VehicleSelector({
 
     const canSearch = !!selectedType;
 
+    const labelClass = (disabled: boolean) =>
+      `mb-1.5 block text-[13px] font-semibold ${disabled ? "text-slate-400" : "text-slate-800"}`;
+
     return (
       <div className="space-y-3" data-nosnippet data-noindex>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2.5">
           {/* Marque */}
-          <div className="relative">
-            <Car
-              size={14}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none"
-            />
+          <label className="block">
+            <span className={labelClass(false)}>Marque</span>
+            <div className="relative">
+              <Car
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none"
+              />
+              <select
+                value={selectedBrand?.marque_id || ""}
+                onChange={(e) => handleBrandChange(Number(e.target.value))}
+                disabled={loadingBrands}
+                className={`${getFieldClass(0, false)} pl-8`}
+                aria-label="Marque"
+              >
+                <option value="">
+                  {loadingBrands ? "Chargement..." : "Sélectionner"}
+                </option>
+                {brands.map((brand) => (
+                  <option key={brand.marque_id} value={brand.marque_id}>
+                    {brand.marque_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </label>
+
+          {/* Annee */}
+          <label className="block">
+            <span className={labelClass(!selectedBrand && !loadingYears)}>
+              Année
+            </span>
             <select
-              value={selectedBrand?.marque_id || ""}
-              onChange={(e) => handleBrandChange(Number(e.target.value))}
-              onFocus={() => !brands.length && !loadingBrands && loadBrands()}
-              disabled={loadingBrands}
-              className={`${getFieldClass(0, false)} pl-8`}
-              aria-label="Marque"
+              value={selectedYear || ""}
+              onChange={(e) => handleYearChange(Number(e.target.value))}
+              disabled={!selectedBrand || loadingYears}
+              className={getFieldClass(1, !selectedBrand && !loadingYears)}
+              aria-label="Année"
             >
               <option value="">
-                {loadingBrands ? "Chargement..." : "Marque"}
+                {loadingYears ? "Chargement..." : "Sélectionner"}
               </option>
-              {brands.map((brand) => (
-                <option key={brand.marque_id} value={brand.marque_id}>
-                  {brand.marque_name}
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
                 </option>
               ))}
             </select>
-          </div>
+          </label>
 
-          {/* Année */}
-          <select
-            value={selectedYear || ""}
-            onChange={(e) => handleYearChange(Number(e.target.value))}
-            disabled={!selectedBrand || loadingYears}
-            className={getFieldClass(1, !selectedBrand && !loadingYears)}
-            aria-label="Année"
-          >
-            <option value="">{loadingYears ? "Chargement..." : "Année"}</option>
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
+          {/* Modele */}
+          <label className="block">
+            <span
+              className={labelClass(
+                (!selectedBrand || !selectedYear) && !loadingModels,
+              )}
+            >
+              Modèle
+            </span>
+            <select
+              value={selectedModel?.modele_id || ""}
+              onChange={(e) => handleModelChange(Number(e.target.value))}
+              disabled={!selectedYear || loadingModels}
+              className={getFieldClass(
+                2,
+                (!selectedBrand || !selectedYear) && !loadingModels,
+              )}
+              aria-label="Modèle"
+            >
+              <option value="">
+                {loadingModels ? "Chargement..." : "Sélectionner"}
               </option>
-            ))}
-          </select>
-
-          {/* Modèle */}
-          <select
-            value={selectedModel?.modele_id || ""}
-            onChange={(e) => handleModelChange(Number(e.target.value))}
-            disabled={!selectedYear || loadingModels}
-            className={getFieldClass(
-              2,
-              (!selectedBrand || !selectedYear) && !loadingModels,
-            )}
-            aria-label="Modèle"
-          >
-            <option value="">
-              {loadingModels ? "Chargement..." : "Modèle"}
-            </option>
-            {models.map((model) => (
-              <option key={model.modele_id} value={model.modele_id}>
-                {model.modele_name}
-              </option>
-            ))}
-          </select>
+              {models.map((model) => (
+                <option key={model.modele_id} value={model.modele_id}>
+                  {model.modele_name}
+                </option>
+              ))}
+            </select>
+          </label>
 
           {/* Motorisation */}
-          <select
-            value={selectedType?.type_id || ""}
-            onChange={(e) => {
-              const t = types.find(
-                (t) => t.type_id.toString() === e.target.value,
-              );
-              if (t) handleTypeSelect(t);
-            }}
-            disabled={!selectedModel || loadingTypes}
-            className={getFieldClass(3, !selectedModel && !loadingTypes)}
-            aria-label="Motorisation"
-          >
-            <option value="">
-              {loadingTypes ? "Chargement..." : "Motorisation"}
-            </option>
-            {types.map((type) => (
-              <option key={type.type_id} value={type.type_id}>
-                {type.type_name}
+          <label className="block">
+            <span className={labelClass(!selectedModel && !loadingTypes)}>
+              Motorisation
+            </span>
+            <select
+              value={selectedType?.type_id || ""}
+              onChange={(e) => {
+                const t = types.find(
+                  (t) => t.type_id.toString() === e.target.value,
+                );
+                if (t) handleTypeSelect(t);
+              }}
+              disabled={!selectedModel || loadingTypes}
+              className={getFieldClass(3, !selectedModel && !loadingTypes)}
+              aria-label="Motorisation"
+            >
+              <option value="">
+                {loadingTypes ? "Chargement..." : "Sélectionner"}
               </option>
-            ))}
-          </select>
+              {types.map((type) => (
+                <option key={type.type_id} value={type.type_id}>
+                  {type.type_name}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {/* CTA */}
@@ -590,9 +593,8 @@ const VehicleSelector = memo(function VehicleSelector({
             if (selectedType) handleTypeSelect(selectedType);
           }}
           disabled={!canSearch}
-          className="w-full py-3 h-auto bg-cta rounded-xl text-white text-[14px] font-bold shadow-sm hover:bg-cta-hover active:translate-y-0 disabled:opacity-40 disabled:shadow-none"
+          className="w-full h-12 bg-cta rounded-2xl text-white text-[16px] font-semibold shadow-[0_12px_24px_rgba(249,115,22,0.28)] hover:bg-cta-hover active:translate-y-0 disabled:opacity-40 disabled:shadow-none"
         >
-          <Search size={15} className="mr-2" />
           Rechercher des pièces
         </Button>
 
@@ -600,7 +602,7 @@ const VehicleSelector = memo(function VehicleSelector({
         <button
           type="button"
           onClick={handleReset}
-          className="w-full text-center text-[13px] text-slate-400 hover:text-slate-600 transition-colors py-1"
+          className="mx-auto block text-[14px] font-medium text-slate-500 underline underline-offset-4 hover:text-slate-700 transition-colors py-1"
         >
           Réinitialiser
         </button>

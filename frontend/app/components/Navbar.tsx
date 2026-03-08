@@ -8,7 +8,6 @@ import {
   Phone,
   ScanLine,
   Search,
-  Shield,
   ShoppingCart,
   Truck,
   User,
@@ -261,9 +260,9 @@ export const Navbar = memo(function Navbar() {
           {/* DESKTOP SEARCH — between nav links and actions */}
           <form
             onSubmit={handleSearch}
-            className="hidden lg:flex flex-1 max-w-xs xl:max-w-sm relative group/search"
+            className="hidden lg:flex flex-1 max-w-sm xl:max-w-lg relative group/search"
           >
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 group-focus-within/search:text-white/60 transition-colors pointer-events-none" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-white/30 group-focus-within/search:text-white/60 transition-colors pointer-events-none" />
             <input
               type="search"
               name="search"
@@ -276,17 +275,18 @@ export const Navbar = memo(function Navbar() {
                   (e.target as HTMLInputElement).blur();
                 }
               }}
-              placeholder="Rechercher une pièce..."
-              className="w-full py-2.5 pl-10 pr-4 bg-white/10 border border-white/10 rounded-xl text-sm text-white outline-none placeholder:text-white/35 transition-all focus:bg-white/15 focus:border-white/25 focus:shadow-lg focus:shadow-black/10 hover:bg-white/[0.12]"
+              placeholder="Rechercher une pièce, référence ou véhicule…"
+              className="w-full h-12 pl-11 pr-10 bg-white/[0.04] border border-white/10 rounded-2xl text-[15px] font-medium text-white outline-none placeholder:text-white/35 transition-all duration-200 focus:bg-white/[0.08] focus:border-white/20 focus:shadow-lg focus:shadow-black/10 hover:bg-white/[0.06] hover:border-white/16"
             />
+            <span className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-cta/50 to-transparent opacity-60" />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
                 aria-label="Effacer la recherche"
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded transition-all"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/10 rounded-lg transition-all"
               >
-                <X className="w-3 h-3 text-white/40" />
+                <X className="w-3.5 h-3.5 text-white/40" />
               </button>
             )}
           </form>
@@ -462,17 +462,10 @@ export const Navbar = memo(function Navbar() {
 
       {/* ===== TRUST STRIP (all viewports) ===== */}
       <div className="bg-gradient-to-b from-v9-navy to-v9-navy-light border-b border-white/[0.06]">
-        <div className="flex items-center justify-center gap-3 lg:gap-6 py-2.5 lg:py-2 px-4 lg:px-8 text-[11px] lg:text-xs font-semibold overflow-x-auto scrollbar-hide">
+        <div className="flex items-center justify-center gap-3 lg:gap-6 py-2.5 lg:py-2 px-4 lg:px-8 text-xs font-semibold overflow-x-auto scrollbar-hide">
           <span className="flex items-center gap-1.5 text-emerald-300 whitespace-nowrap">
             <Truck className="w-3 h-3" />
             Livraison gratuite dès 150€
-          </span>
-          <span className="text-white/15" aria-hidden="true">
-            ·
-          </span>
-          <span className="flex items-center gap-1.5 text-emerald-300 whitespace-nowrap">
-            <Shield className="w-3 h-3" />
-            Garantie 2 ans
           </span>
           <span className="text-white/15" aria-hidden="true">
             ·

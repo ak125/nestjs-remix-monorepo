@@ -5,6 +5,7 @@
  * Hiérarchie: R4 → R3 → R5 → R1 → R2
  */
 export enum PageRole {
+  R0_HOME = 'R0', // Accueil/Découverte
   R1_ROUTER = 'R1', // Sélection/Navigation
   R2_PRODUCT = 'R2', // Transaction/Achat
   R3_BLOG = 'R3', // Pédagogie/Expert
@@ -22,6 +23,11 @@ export interface PageRoleMeta {
 }
 
 export const PAGE_ROLE_META: Record<PageRole, PageRoleMeta> = {
+  [PageRole.R0_HOME]: {
+    label: 'Accueil',
+    intention: 'Découvrir le catalogue et orienter la navigation',
+    indexable: true,
+  },
   [PageRole.R1_ROUTER]: {
     label: 'Routeur',
     intention: 'Trouver la bonne pièce pour son véhicule',
@@ -65,6 +71,7 @@ export const PAGE_ROLE_META: Record<PageRole, PageRoleMeta> = {
  * R4 → R3 → R5 → R1 → R2
  */
 export const PAGE_ROLE_HIERARCHY: PageRole[] = [
+  PageRole.R0_HOME,
   PageRole.R4_REFERENCE,
   PageRole.R3_BLOG,
   PageRole.R5_DIAGNOSTIC,
@@ -86,6 +93,14 @@ export const PAGE_ROLE_HIERARCHY: PageRole[] = [
  * - R2 Produit → R4 (1 max) + R3 (0-1 max)
  */
 export const ALLOWED_LINKS: Record<PageRole, PageRole[]> = {
+  [PageRole.R0_HOME]: [
+    PageRole.R1_ROUTER,
+    PageRole.R2_PRODUCT,
+    PageRole.R3_BLOG,
+    PageRole.R4_REFERENCE,
+    PageRole.R5_DIAGNOSTIC,
+    PageRole.R6_GUIDE_ACHAT,
+  ],
   [PageRole.R4_REFERENCE]: [
     PageRole.R3_BLOG,
     PageRole.R5_DIAGNOSTIC,
@@ -114,6 +129,9 @@ export interface UrlRolePattern {
  * IMPORTANT: L'ordre est critique - les patterns plus spécifiques doivent être en premier
  */
 export const URL_ROLE_PATTERNS: UrlRolePattern[] = [
+  // ========== R0 ACCUEIL ==========
+  { pattern: /^\/$/, role: PageRole.R0_HOME, description: 'Homepage' },
+
   // ========== EXCLURE (retourne null) ==========
   // Ces pages sont noindex ou privées - ne pas assigner de rôle
   { pattern: /^\/cart$/, role: null, description: 'Cart (noindex)' },
@@ -379,6 +397,8 @@ export function pageRoleToRoleId(
   r3SubRole?: R3SubRole,
 ): RoleId | null {
   switch (role) {
+    case PageRole.R0_HOME:
+      return RoleId.R0_HOME;
     case PageRole.R1_ROUTER:
       return RoleId.R1_ROUTER;
     case PageRole.R2_PRODUCT:

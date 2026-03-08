@@ -1,77 +1,220 @@
 import { Link } from "@remix-run/react";
-import { Mail, MapPin, Phone } from "lucide-react";
+import {
+  Facebook,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  Youtube,
+} from "lucide-react";
 import { SITE_CONFIG } from "~/config/site";
 
-const NAV_LINKS = [
-  { label: "Catalogue pièces auto", href: "/pieces" },
-  { label: "Constructeurs", href: "/constructeurs" },
+const USEFUL_LINKS = [
+  { label: "Catalogue pièces", href: "/#catalogue" },
+  { label: "Constructeurs", href: "/#marques" },
   { label: "Diagnostic auto", href: "/diagnostic-auto" },
-  { label: "Blog & Guides", href: "/blog-pieces-auto" },
-  { label: "Conseils entretien", href: "/blog-pieces-auto/conseils" },
-  { label: "Mon compte", href: "/account/dashboard" },
+  { label: "Blog & Conseils", href: "/blog-pieces-auto" },
+  { label: "Contact", href: "/contact" },
+  { label: "Plan du site", href: "/plan-du-site" },
 ];
 
 const LEGAL_LINKS = [
-  { label: "Mentions légales", href: "/mentions-legales" },
-  { label: "CGV", href: "/cgv" },
-  { label: "Politique de confidentialité", href: "/politique-confidentialite" },
-  { label: "Cookies", href: "/politique-cookies" },
+  { label: "CGV", href: "/legal/cgv" },
+  { label: "Politique de confidentialité", href: "/legal/privacy" },
+  { label: "Gestion des cookies", href: "/legal/cookies" },
+  { label: "Mentions légales", href: "/legal/legal-notice" },
+];
+
+const SOCIAL_LINKS = [
+  { label: "Facebook", href: SITE_CONFIG.social.facebook, Icon: Facebook },
+  { label: "Instagram", href: SITE_CONFIG.social.instagram, Icon: Instagram },
+  { label: "YouTube", href: SITE_CONFIG.social.youtube, Icon: Youtube },
 ];
 
 export default function Footer() {
   return (
-    <footer
-      className="bg-v9-navy text-white pb-20 lg:pb-0"
-      aria-label="Pied de page"
-    >
-      {/* Contact banner */}
-      <div className="border-b border-white/[0.08]">
-        <div className="max-w-[1280px] mx-auto px-5 lg:px-8 py-5 flex flex-col lg:flex-row items-center justify-between gap-3">
-          <div className="text-[15px] font-bold font-v9-heading text-center lg:text-left">
-            Besoin d&apos;aide pour trouver votre pièce ?
+    <footer className="bg-v9-navy text-white pb-20 lg:pb-0">
+      {/* ── Desktop: 4-col grid ── */}
+      <div className="hidden md:block py-12">
+        <div className="max-w-[1280px] mx-auto px-5 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+            {/* Col 1 — À propos */}
+            <div>
+              <h3 className="text-[16px] font-extrabold font-v9-heading mb-4 text-white">
+                À propos
+              </h3>
+              <p className="text-[13px] text-white/50 mb-4 leading-relaxed">
+                Votre spécialiste de pièces détachées automobiles neuves et
+                d&apos;origine. Plus de 500 000 références pour toutes les
+                marques et modèles.
+              </p>
+              <div className="flex gap-2.5">
+                {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+                  <a
+                    key={label}
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    className="w-11 h-11 rounded-full bg-white/[0.08] hover:bg-cta flex items-center justify-center transition-colors"
+                  >
+                    <Icon size={16} />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Col 2 — Liens utiles */}
+            <div>
+              <h3 className="text-[16px] font-extrabold font-v9-heading mb-4 text-white">
+                Liens utiles
+              </h3>
+              <ul className="space-y-1">
+                {USEFUL_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      to={link.href}
+                      className="no-style no-visited inline-flex items-center min-h-[44px] text-[13px] text-white/50 hover:text-white transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Col 3 — Informations légales */}
+            <div>
+              <h3 className="text-[16px] font-extrabold font-v9-heading mb-4 text-white">
+                Informations légales
+              </h3>
+              <ul className="space-y-1">
+                {LEGAL_LINKS.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      to={link.href}
+                      className="no-style no-visited inline-flex items-center min-h-[44px] text-[13px] text-white/50 hover:text-white transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Col 4 — Contact */}
+            <div>
+              <h3 className="text-[16px] font-extrabold font-v9-heading mb-4 text-white">
+                Contact
+              </h3>
+              <ul className="space-y-3">
+                <li className="flex items-start gap-2.5">
+                  <MapPin size={16} className="text-cta flex-shrink-0 mt-0.5" />
+                  <span className="text-[13px] text-white/50">
+                    184 avenue Aristide Briand
+                    <br />
+                    93320 Les Pavillons-sous-Bois
+                  </span>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Phone size={16} className="text-cta flex-shrink-0" />
+                  <a
+                    href={`tel:${SITE_CONFIG.contact.phone.raw}`}
+                    className="text-[13px] text-white/50 hover:text-white transition-colors"
+                  >
+                    {SITE_CONFIG.contact.phone.display}
+                  </a>
+                </li>
+                <li className="flex items-center gap-2.5">
+                  <Mail size={16} className="text-cta flex-shrink-0" />
+                  <a
+                    href={`mailto:${SITE_CONFIG.contact.email}`}
+                    className="text-[13px] text-white/50 hover:text-white transition-colors"
+                  >
+                    {SITE_CONFIG.contact.email}
+                  </a>
+                </li>
+              </ul>
+              <div className="mt-3">
+                <p className="text-[12px] text-white/30">
+                  Service client disponible
+                  <br />
+                  <span className="text-white/60 font-medium">
+                    {SITE_CONFIG.contact.phone.hours}
+                  </span>
+                </p>
+              </div>
+            </div>
           </div>
-          <a
-            href={`tel:${SITE_CONFIG.contact.phone.raw}`}
-            className="flex items-center gap-2 px-5 py-2.5 min-h-[44px] bg-cta hover:bg-cta-hover rounded-xl text-[14px] font-bold transition-all hover:-translate-y-0.5 shadow-lg shadow-cta/20"
-          >
-            <Phone size={16} /> {SITE_CONFIG.contact.phone.display}
-          </a>
+
+          {/* Copyright desktop */}
+          <div className="border-t border-white/[0.08] pt-6">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-[12px] text-white/30" suppressHydrationWarning>
+                © {new Date().getFullYear()} AutoMecanik. Tous droits réservés.
+              </p>
+              <div className="flex gap-4 text-[12px]">
+                <Link
+                  to="/legal/cgv"
+                  className="no-style no-visited text-white/30 hover:text-white transition-colors"
+                >
+                  CGV
+                </Link>
+                <span className="text-white/15">·</span>
+                <Link
+                  to="/legal/privacy"
+                  className="no-style no-visited text-white/30 hover:text-white transition-colors"
+                >
+                  Confidentialité
+                </Link>
+                <span className="text-white/15">·</span>
+                <span className="text-white/30">
+                  Paiement sécurisé · Livraison 24-48h
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="max-w-[1280px] mx-auto px-5 lg:px-8 py-8 lg:py-12">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* Col 1 — About */}
-          <div className="col-span-2 lg:col-span-1">
-            <div className="text-[18px] font-extrabold font-v9-heading mb-3">
-              AutoMecanik
-            </div>
-            <p className="text-[13px] text-white/50 leading-relaxed mb-4">
-              Pièces auto de qualité, équipementiers d&apos;origine. Livraison
-              rapide partout en France.
-            </p>
-            <div className="flex flex-wrap gap-2 text-[10px] font-bold text-white/30">
-              <span className="bg-white/[0.06] px-2 py-1 rounded">Bosch</span>
-              <span className="bg-white/[0.06] px-2 py-1 rounded">Valeo</span>
-              <span className="bg-white/[0.06] px-2 py-1 rounded">LuK</span>
-              <span className="bg-white/[0.06] px-2 py-1 rounded">TRW</span>
-              <span className="bg-white/[0.06] px-2 py-1 rounded">SKF</span>
-              <span className="bg-white/[0.06] px-2 py-1 rounded">SNR</span>
-            </div>
+      {/* ── Mobile: compact stacked ── */}
+      <div className="md:hidden px-5 py-8">
+        {/* Brand + socials */}
+        <div className="text-center mb-6">
+          <div className="text-[18px] font-extrabold font-v9-heading tracking-[-0.02em]">
+            AutoMecanik
           </div>
+          <p className="text-[12px] text-white/40 mt-1">
+            Pièces auto de qualité · Livraison rapide
+          </p>
+          <div className="flex justify-center gap-3 mt-3">
+            {SOCIAL_LINKS.map(({ label, href, Icon }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className="w-11 h-11 rounded-full bg-white/[0.08] hover:bg-cta flex items-center justify-center transition-colors"
+              >
+                <Icon size={16} />
+              </a>
+            ))}
+          </div>
+        </div>
 
-          {/* Col 2 — Navigation */}
+        {/* Links 2-col */}
+        <div className="grid grid-cols-2 gap-5 py-5 border-t border-white/[0.06]">
           <div>
-            <div className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-3">
+            <div className="text-xs font-bold text-white/25 uppercase tracking-widest mb-1">
               Navigation
             </div>
-            <ul className="space-y-2">
-              {NAV_LINKS.map((link) => (
+            <ul>
+              {USEFUL_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="no-style no-visited text-[13px] text-white/50 hover:text-white transition-colors"
+                    className="no-style no-visited inline-flex items-center min-h-[44px] text-xs text-white/45 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -79,18 +222,16 @@ export default function Footer() {
               ))}
             </ul>
           </div>
-
-          {/* Col 3 — Legal */}
           <div>
-            <div className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-3">
+            <div className="text-xs font-bold text-white/25 uppercase tracking-widest mb-1">
               Informations
             </div>
-            <ul className="space-y-2">
+            <ul>
               {LEGAL_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="no-style no-visited text-[13px] text-white/50 hover:text-white transition-colors"
+                    className="no-style no-visited inline-flex items-center min-h-[44px] text-xs text-white/45 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -98,53 +239,32 @@ export default function Footer() {
               ))}
             </ul>
           </div>
-
-          {/* Col 4 — Contact */}
-          <div>
-            <div className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-3">
-              Contact
-            </div>
-            <ul className="space-y-3 text-[13px] text-white/50">
-              <li className="flex items-start gap-2">
-                <MapPin
-                  size={14}
-                  className="text-white/30 mt-0.5 flex-shrink-0"
-                />
-                <span>France métropolitaine</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Phone size={14} className="text-white/30 flex-shrink-0" />
-                <a
-                  href={`tel:${SITE_CONFIG.contact.phone.raw}`}
-                  className="hover:text-white transition-colors"
-                >
-                  {SITE_CONFIG.contact.phone.display}
-                </a>
-              </li>
-              <li className="flex items-center gap-2">
-                <Mail size={14} className="text-white/30 flex-shrink-0" />
-                <a
-                  href="mailto:contact@automecanik.com"
-                  className="hover:text-white transition-colors"
-                >
-                  contact@automecanik.com
-                </a>
-              </li>
-              <li className="text-[12px] text-white/30 mt-2">
-                Lun–Ven : 9h–18h
-              </li>
-            </ul>
-          </div>
         </div>
-      </div>
 
-      {/* Copyright */}
-      <div className="border-t border-white/[0.06]">
-        <div className="max-w-[1280px] mx-auto px-5 lg:px-8 py-4 flex flex-col lg:flex-row items-center justify-between gap-2 text-[11px] text-white/25">
-          <span>
-            © {new Date().getFullYear()} AutoMecanik. Tous droits réservés.
-          </span>
-          <span>Paiement sécurisé · Livraison 24-48h</span>
+        {/* Contact compact */}
+        <div className="py-4 border-t border-white/[0.06]">
+          <a
+            href={`tel:${SITE_CONFIG.contact.phone.raw}`}
+            className="flex items-center gap-2 min-h-[44px] text-xs text-white/45 hover:text-white transition-colors"
+          >
+            <Phone size={14} className="text-cta" />
+            {SITE_CONFIG.contact.phone.display}
+          </a>
+          <a
+            href={`mailto:${SITE_CONFIG.contact.email}`}
+            className="flex items-center gap-2 min-h-[44px] text-xs text-white/45 hover:text-white transition-colors"
+          >
+            <Mail size={14} className="text-cta" />
+            {SITE_CONFIG.contact.email}
+          </a>
+        </div>
+
+        {/* Copyright mobile */}
+        <div className="pt-4 border-t border-white/[0.06] text-center">
+          <p className="text-[10px] text-white/20" suppressHydrationWarning>
+            © {new Date().getFullYear()} AutoMecanik · Paiement sécurisé ·
+            Livraison 24-48h
+          </p>
         </div>
       </div>
     </footer>

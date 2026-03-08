@@ -1,10 +1,11 @@
 import { Link } from "@remix-run/react";
 import {
-  BookOpen,
-  FileText,
-  Stethoscope,
+  BookMarked,
+  Layers,
+  ScanLine,
   Play,
   ArrowRight,
+  Wrench,
 } from "lucide-react";
 import { cn } from "~/lib/utils";
 
@@ -19,25 +20,32 @@ type ResourceCard = {
 const resources: ResourceCard[] = [
   {
     title: "Guides d'achat",
-    description: "Choisir la bonne pièce sans erreur",
+    description: "Comparatifs, critères de choix et aide à la sélection",
     href: "/blog-pieces-auto/guide-achat",
-    icon: BookOpen,
+    icon: BookMarked,
     iconWrapperClassName: "bg-blue-50 text-blue-600 ring-1 ring-blue-100",
   },
   {
     title: "Réf. techniques",
-    description: "Équivalences OEM et aftermarket",
+    description: "Équivalences par numéro OE ou constructeur",
     href: "/reference-auto",
-    icon: FileText,
+    icon: Layers,
     iconWrapperClassName: "bg-violet-50 text-violet-600 ring-1 ring-violet-100",
   },
   {
     title: "Diagnostic assisté",
-    description: "Identifier rapidement les causes probables",
+    description: "Décrivez vos symptômes, trouvez les pièces à vérifier",
     href: "/diagnostic-auto",
-    icon: Stethoscope,
+    icon: ScanLine,
     iconWrapperClassName:
       "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-100",
+  },
+  {
+    title: "Conseils d'entretien",
+    description: "Comprendre quand contrôler ou remplacer une pièce",
+    href: "/blog-pieces-auto/conseil",
+    icon: Wrench,
+    iconWrapperClassName: "bg-amber-50 text-amber-600 ring-1 ring-amber-100",
   },
 ];
 
@@ -52,38 +60,31 @@ function ResourceCardItem({
     <Link
       to={href}
       className={cn(
-        "group relative flex min-w-[232px] snap-start flex-col rounded-[20px] border border-slate-200/80 bg-white p-4 shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-all duration-200",
+        "group relative flex rounded-[20px] border border-slate-200/80 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition-all duration-200",
         "hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgba(15,23,42,0.10)]",
         "active:scale-[0.99]",
+        "flex-row items-center gap-4 p-4 lg:min-w-[232px] lg:snap-start lg:flex-col lg:items-stretch lg:gap-0",
       )}
     >
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div
-          className={cn(
-            "flex h-12 w-12 items-center justify-center rounded-2xl",
-            iconWrapperClassName,
-          )}
-        >
-          <Icon className="h-5 w-5" />
-        </div>
-
-        <ArrowRight className="mt-1 h-4 w-4 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-500" />
+      <div
+        className={cn(
+          "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl lg:mb-4",
+          iconWrapperClassName,
+        )}
+      >
+        <Icon className="h-5 w-5" />
       </div>
 
-      <div className="space-y-2">
-        <h3 className="text-[20px] font-extrabold leading-[1.1] tracking-[-0.02em] text-slate-950">
+      <div className="flex-1 min-w-0">
+        <h3 className="text-[15px] lg:text-[20px] font-extrabold leading-[1.1] tracking-[-0.02em] text-slate-950">
           {title}
         </h3>
-
-        <p className="line-clamp-2 text-[15px] leading-6 text-slate-600">
+        <p className="line-clamp-1 lg:line-clamp-2 text-[13px] lg:text-[15px] leading-5 lg:leading-6 text-slate-600 mt-0.5 lg:mt-2">
           {description}
         </p>
       </div>
 
-      <div className="mt-5 flex items-center gap-2 text-[15px] font-semibold text-[#2563eb]">
-        <span>Consulter</span>
-        <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-      </div>
+      <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-500 lg:mt-5 lg:text-[#2563eb]" />
     </Link>
   );
 }
@@ -91,7 +92,7 @@ function ResourceCardItem({
 export default function HomeResourcesAndVideoSection() {
   return (
     <section
-      className="bg-white px-4 py-8 sm:px-5"
+      className="bg-white px-5 py-7 lg:py-10"
       aria-labelledby="resources-video-title"
     >
       <div className="mx-auto max-w-6xl">
@@ -100,23 +101,18 @@ export default function HomeResourcesAndVideoSection() {
           <div className="space-y-1">
             <h2
               id="resources-video-title"
-              className="text-[32px] font-black leading-none tracking-[-0.03em] text-slate-950"
+              className="text-[20px] lg:text-[32px] font-black leading-none tracking-[-0.03em] text-slate-950"
             >
-              Ressources
+              Besoin d'aide pour choisir ou vérifier ?
             </h2>
-            <p className="text-[15px] leading-6 text-slate-500">
-              Aides utiles pour choisir, vérifier et comprendre
-            </p>
           </div>
         </div>
 
-        {/* Mobile-first horizontal cards */}
-        <div className="-mx-4 mb-8 overflow-x-auto px-4 pb-2">
-          <div className="flex snap-x snap-mandatory gap-3">
-            {resources.map((item) => (
-              <ResourceCardItem key={item.title} {...item} />
-            ))}
-          </div>
+        {/* Resource cards — stacked mobile, horizontal desktop */}
+        <div className="flex flex-col gap-3 mb-8 lg:-mx-4 lg:flex-row lg:overflow-x-auto lg:px-4 lg:pb-2 lg:snap-x lg:snap-mandatory">
+          {resources.map((item) => (
+            <ResourceCardItem key={item.title} {...item} />
+          ))}
         </div>
 
         {/* Premium video card */}

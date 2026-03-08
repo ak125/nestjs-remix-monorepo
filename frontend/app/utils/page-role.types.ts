@@ -9,6 +9,7 @@
  * 1 URL = 1 rôle = 1 intention = 1 signal Google
  */
 export enum PageRole {
+  R0_HOME = "R0", // Accueil/Découverte
   R1_ROUTER = "R1", // Sélection/Navigation
   R2_PRODUCT = "R2", // Transaction/Achat
   R3_BLOG = "R3", // Pédagogie/Expert
@@ -23,6 +24,7 @@ export enum PageRole {
  * Intentions de page associées à chaque rôle
  */
 export type PageIntent =
+  | "discovery" // R0: découvrir le catalogue
   | "selection" // R1: choisir son véhicule
   | "purchase" // R2: acheter
   | "education" // R3: apprendre
@@ -36,6 +38,7 @@ export type PageIntent =
  * Types de contenu par rôle
  */
 export type ContentType =
+  | "homepage" // R0: page d'accueil
   | "router" // R1: navigation/filtres
   | "product" // R2: fiche produit
   | "article" // R3: article/guide
@@ -92,6 +95,7 @@ export interface RouteHandleWithRole {
  * Mapping rôle → intention par défaut
  */
 export const ROLE_DEFAULT_INTENT: Record<PageRole, PageIntent> = {
+  [PageRole.R0_HOME]: "discovery",
   [PageRole.R1_ROUTER]: "selection",
   [PageRole.R2_PRODUCT]: "purchase",
   [PageRole.R3_BLOG]: "education",
@@ -106,6 +110,7 @@ export const ROLE_DEFAULT_INTENT: Record<PageRole, PageIntent> = {
  * Mapping rôle → type de contenu par défaut
  */
 export const ROLE_DEFAULT_CONTENT_TYPE: Record<PageRole, ContentType> = {
+  [PageRole.R0_HOME]: "homepage",
   [PageRole.R1_ROUTER]: "router",
   [PageRole.R2_PRODUCT]: "product",
   [PageRole.R3_BLOG]: "article",
@@ -120,6 +125,7 @@ export const ROLE_DEFAULT_CONTENT_TYPE: Record<PageRole, ContentType> = {
  * Phase 9: Mapping rôle → funnel stage par défaut
  */
 export const ROLE_DEFAULT_FUNNEL_STAGE: Record<PageRole, FunnelStage> = {
+  [PageRole.R0_HOME]: "awareness",
   [PageRole.R1_ROUTER]: "awareness",
   [PageRole.R2_PRODUCT]: "decision",
   [PageRole.R3_BLOG]: "consideration",
@@ -134,6 +140,7 @@ export const ROLE_DEFAULT_FUNNEL_STAGE: Record<PageRole, FunnelStage> = {
  * Phase 9: Mapping rôle → conversion goal par défaut
  */
 export const ROLE_DEFAULT_CONVERSION_GOAL: Record<PageRole, ConversionGoal> = {
+  [PageRole.R0_HOME]: "navigation",
   [PageRole.R1_ROUTER]: "navigation",
   [PageRole.R2_PRODUCT]: "purchase",
   [PageRole.R3_BLOG]: "engagement",
@@ -168,6 +175,7 @@ export function createPageRoleMeta(
  * Labels lisibles pour les rôles (affichage debug/admin)
  */
 export const PAGE_ROLE_LABELS: Record<PageRole, string> = {
+  [PageRole.R0_HOME]: "Accueil (Découverte)",
   [PageRole.R1_ROUTER]: "Routeur (Sélection)",
   [PageRole.R2_PRODUCT]: "Produit (Transaction)",
   [PageRole.R3_BLOG]: "Blog/Expert (Pédagogie)",

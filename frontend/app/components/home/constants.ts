@@ -1,22 +1,9 @@
-import {
-  type LucideIcon,
-  Award,
-  Car,
-  Cog,
-  Phone,
-  Shield,
-  Star,
-  TrendingUp,
-  Truck,
-  Wrench,
-  Zap,
-} from "lucide-react";
+import { type LucideIcon, Car, Cog, Shield, Wrench, Zap } from "lucide-react";
 
 // ─── Image proxy paths ───────────────────────────────────
 export const IMG_PROXY_LOGOS =
   "/img/uploads/constructeurs-automobiles/marques-logos";
 export const IMG_PROXY_FAMILIES = "/img/uploads/articles/familles-produits";
-export const IMG_PROXY_EQUIP = "/img/uploads/equipementiers-automobiles";
 
 // ─── Fallback: 19 product families ───────────────────────
 export const CATS = [
@@ -24,7 +11,7 @@ export const CATS = [
     i: "🛢️",
     pic: "Filtres.webp",
     n: "Système de filtration",
-    desc: "Le système de filtration du véhicule est conçu pour filtrer l'air et les fluides entrant dans le moteur et dans l'habitacle. Les filtres doivent être régulièrement remplacés selon les préconisations des constructeurs automobiles.",
+    desc: "Filtres huile, air, carburant et habitacle. Remplacement selon préconisations.",
     sub: [
       "Filtre à huile",
       "Filtre à air",
@@ -36,7 +23,7 @@ export const CATS = [
     i: "🛞",
     pic: "Freinage.webp",
     n: "Système de freinage",
-    desc: "Le système de freinage est l'élément de sécurité le plus important du véhicule. Il doit être en parfait état de fonctionnement afin d'assurer le freinage à tout instant.",
+    desc: "Plaquettes, disques et étriers pour un freinage fiable et sécurisé.",
     sub: [
       "Plaquette de frein",
       "Disque de frein",
@@ -48,7 +35,7 @@ export const CATS = [
     i: "⛓️",
     pic: "Courroie_galet_poulie.webp",
     n: "Courroie, galet, poulie et chaîne",
-    desc: "L'entraînement des différents composants du moteur se fait par l'intermédiaire des courroies, des galets et des poulies qui synchronisent l'ensemble des pièces moteur.",
+    desc: "Courroies, galets et kits de distribution pour la synchronisation moteur.",
     sub: [
       "Courroie d'accessoire",
       "Galet tendeur de courroie d'accessoire",
@@ -60,7 +47,7 @@ export const CATS = [
     i: "🔥",
     pic: "Allumage_Prechauffage.webp",
     n: "Allumage / Préchauffage",
-    desc: "L'allumage du moteur essence et le préchauffage du moteur diesel sont actionnés par les différents composants du système qui assurent le démarrage et la combustion du moteur.",
+    desc: "Bougies, faisceaux et boîtiers pour le démarrage et la combustion moteur.",
     sub: [
       "Bougie de préchauffage",
       "Boîtier de préchauffage",
@@ -72,7 +59,7 @@ export const CATS = [
     i: "🔧",
     pic: "Direction.webp",
     n: "Direction / Train avant",
-    desc: "Le système de direction est l'ensemble des pièces de liaison au sol et de direction qui assure votre sécurité et le confort de conduite.",
+    desc: "Rotules, bras et barres de direction pour la tenue de route et la sécurité.",
     sub: [
       "Rotule de direction",
       "Barre de direction",
@@ -84,7 +71,7 @@ export const CATS = [
     i: "🏎️",
     pic: "Amortisseur.webp",
     n: "Amortisseur / Suspension",
-    desc: "Le système de suspension est l'ensemble des pièces qui garantit l'amortissement des chocs pour une bonne tenue de route lors de la conduite.",
+    desc: "Amortisseurs, ressorts et butées pour le confort et la tenue de route.",
     sub: [
       "Amortisseur",
       "Butée de suspension",
@@ -96,14 +83,14 @@ export const CATS = [
     i: "⚙️",
     pic: "Support.webp",
     n: "Support moteur",
-    desc: "La suspension du moteur et de la boîte de vitesses est assurée par des supports qui absorbent les chocs et vibrations lors du fonctionnement du véhicule.",
+    desc: "Supports moteur et boîte de vitesses pour absorber vibrations et chocs.",
     sub: ["Support moteur", "Support de boîte de vitesses"],
   },
   {
     i: "🔩",
     pic: "Embrayage.webp",
     n: "Embrayage",
-    desc: "Le système d'embrayage est l'ensemble des composants qui assurent l'accouplement du moteur à la boîte de vitesses pour garantir le passage des vitesses.",
+    desc: "Kits, butées et récepteurs d'embrayage pour un passage de vitesses fluide.",
     sub: [
       "Kit d'embrayage",
       "Butée d'embrayage hydraulique",
@@ -115,7 +102,7 @@ export const CATS = [
     i: "🔗",
     pic: "Transmission.webp",
     n: "Transmission",
-    desc: "Le système de transmission est l'ensemble des composants qui assure la transmission du mouvement du moteur vers les roues du véhicule.",
+    desc: "Cardans, soufflets et paliers pour transmettre le mouvement aux roues.",
     sub: [
       "Cardan",
       "Soufflet de cardan",
@@ -127,14 +114,14 @@ export const CATS = [
     i: "⚡",
     pic: "Systeme_electrique.webp",
     n: "Électrique",
-    desc: "Le système électrique est l'ensemble des composants qui assure le démarrage du moteur et la charge électrique des différents accessoires.",
+    desc: "Alternateurs, démarreurs et contacteurs pour le circuit électrique du véhicule.",
     sub: ["Alternateur", "Démarreur", "Neiman", "Contacteur démarreur"],
   },
   {
     i: "📡",
     pic: "Capteurs.webp",
     n: "Capteurs / Sondes",
-    desc: "Les capteurs sont des composants électroniques qui captent l'information et l'envoient aux différents actionneurs pour assurer le bon fonctionnement du véhicule.",
+    desc: "Capteurs pression, niveau et impulsion pour le contrôle électronique moteur.",
     sub: [
       "Pressostat d'huile",
       "Capteur d'impulsion",
@@ -146,7 +133,7 @@ export const CATS = [
     i: "⛽",
     pic: "Alimentation.webp",
     n: "Alimentation Carburant & Air",
-    desc: "Le système d'alimentation est l'ensemble des éléments qui gèrent l'air et le carburant nécessaire pour le bon fonctionnement du moteur.",
+    desc: "Débitmètres, vannes EGR et pompes pour l'alimentation air et carburant.",
     sub: [
       "Débitmètre d'air",
       "Vanne EGR",
@@ -158,7 +145,7 @@ export const CATS = [
     i: "🔧",
     pic: "Moteur.webp",
     n: "Moteur",
-    desc: "L'étanchéité du moteur est l'ensemble des joints et des pièces qui assurent la jointure entre les différents éléments du moteur pour une bonne circulation des fluides.",
+    desc: "Joints de culasse, cache-culbuteurs et bagues d'étanchéité moteur.",
     sub: [
       "Joint de culasse",
       "Joint cache culbuteurs",
@@ -170,7 +157,7 @@ export const CATS = [
     i: "🌡️",
     pic: "Refroidissement.webp",
     n: "Refroidissement",
-    desc: "Le système de refroidissement est l'ensemble des composants qui font circuler le liquide de refroidissement pour refroidir le moteur.",
+    desc: "Pompes à eau, radiateurs et thermostats pour le circuit de refroidissement.",
     sub: [
       "Pompe à eau",
       "Radiateur",
@@ -182,7 +169,7 @@ export const CATS = [
     i: "❄️",
     pic: "Climatisation.webp",
     n: "Climatisation",
-    desc: "Le système de climatisation et chauffage est l'ensemble des composants qui créent l'air frais et chaud circulant du moteur vers l'habitacle.",
+    desc: "Compresseurs, condenseurs et pulseurs pour la climatisation et le chauffage.",
     sub: [
       "Pulseur d'air",
       "Compresseur de climatisation",
@@ -194,7 +181,7 @@ export const CATS = [
     i: "💨",
     pic: "Echappement.webp",
     n: "Échappement",
-    desc: "Le système d'échappement est l'ensemble des pièces qui font évacuer les gaz d'échappement du moteur.",
+    desc: "Catalyseurs, FAP, sondes lambda et joints pour la ligne d'échappement.",
     sub: [
       "Catalyseur",
       "Filtre à particules (FAP)",
@@ -206,14 +193,14 @@ export const CATS = [
     i: "💡",
     pic: "Eclairage.webp",
     n: "Éclairage / Signalisation",
-    desc: "Le système d'éclairage est l'ensemble des pièces qui éclairent l'avant et l'arrière du véhicule pour la sécurité et le confort de conduite.",
+    desc: "Phares, feux arrière et clignotants pour l'éclairage et la signalisation.",
     sub: ["Feu avant", "Feu arrière", "Feu clignotant", "Phare antibrouillard"],
   },
   {
     i: "🧹",
     pic: "Accessoires.webp",
     n: "Accessoires",
-    desc: "Les accessoires sont l'ensemble des pièces utilisées pour la sécurité et le confort de conduite au quotidien.",
+    desc: "Essuie-glaces, rétroviseurs et lève-vitres pour le confort au quotidien.",
     sub: [
       "Balai d'essuie-glace",
       "Commande d'essuie-glace",
@@ -225,7 +212,7 @@ export const CATS = [
     i: "🌀",
     pic: "Turbo.webp",
     n: "Turbo / Suralimentation",
-    desc: "Le turbo est un composant de suralimentation qui assure l'augmentation de la puissance du moteur.",
+    desc: "Turbocompresseurs, gaines et valves pour la suralimentation moteur.",
     sub: [
       "Turbocompresseur",
       "Gaine de turbo",
@@ -336,28 +323,12 @@ export const MARQUES = [
   { n: "Tesla", f: "🇺🇸" },
 ];
 
-// ─── Fallback: equipment suppliers ───────────────────────
-export const EQUIP = [
-  "BOSCH",
-  "VALEO",
-  "TRW",
-  "BREMBO",
-  "SNR",
-  "MONROE",
-  "SKF",
-  "SACHS",
-  "LUK",
-  "GATES",
-  "DAYCO",
-  "MANN",
-];
-
 // ─── Fallback: blog articles ─────────────────────────────
 export const BLOG = [
   {
     ico: "🛒",
-    t: "Comment choisir ses plaquettes de frein",
-    d: "Organique, semi-métallique ou céramique ? Le guide complet pour faire le bon choix.",
+    t: "Plaquettes de frein : organique, semi-métallique ou céramique ?",
+    d: "Les critères essentiels pour sélectionner la bonne matière selon votre usage.",
     tag: "Guide d'achat",
   },
   {
@@ -369,17 +340,15 @@ export const BLOG = [
   {
     ico: "💡",
     t: "5 pièces à vérifier avant le contrôle technique",
-    d: "Freinage, éclairage, échappement, suspension, direction — la checklist complète.",
+    d: "Freinage, éclairage, échappement, suspension, direction — les points clés.",
     tag: "Guide",
   },
-];
-
-// ─── Stats social proof ──────────────────────────────────
-export const STATS = [
-  { value: "50K+", label: "Références", icon: TrendingUp },
-  { value: "120+", label: "Marques auto", icon: Car },
-  { value: "98%", label: "Clients satisfaits", icon: Star },
-  { value: "24-48h", label: "Livraison", icon: Truck },
+  {
+    ico: "🔧",
+    t: "Alternateur défaillant : les signes à surveiller",
+    d: "Voyant batterie, démarrage difficile, phares faibles — ce que ces symptômes indiquent.",
+    tag: "Diagnostic",
+  },
 ];
 
 // ─── FAQ fallback ────────────────────────────────────────
@@ -431,20 +400,3 @@ export interface BlogArticle {
   link: string;
   img?: string;
 }
-
-export interface EquipItem {
-  name: string;
-  logoUrl: string;
-}
-
-// ─── Why Automecanik advantages ──────────────────────────
-export const ADVANTAGES = [
-  { icon: Truck, title: "Livraison 24-48h", desc: "France métropolitaine" },
-  {
-    icon: Shield,
-    title: "Garantie 2 ans",
-    desc: "Pièces origine et adaptables",
-  },
-  { icon: Award, title: "Qualité certifiée", desc: "Marques ISO 9001 / TÜV" },
-  { icon: Phone, title: "Support expert", desc: "Conseillers techniques" },
-];

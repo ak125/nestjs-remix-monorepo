@@ -156,7 +156,7 @@ export default function BlogCarousel({
 }: {
   articles: BlogArticle[];
 }) {
-  const items = articles.slice(0, 3);
+  const items = articles.slice(0, 4);
   const [first, ...rest] = items;
 
   if (!first) return null;
@@ -184,8 +184,8 @@ export default function BlogCarousel({
           ))}
         </div>
 
-        {/* Desktop: 3-col grid */}
-        <div className="hidden lg:grid lg:grid-cols-3 lg:gap-5 lg:px-8">
+        {/* Desktop: 4-col grid */}
+        <div className="hidden lg:grid lg:grid-cols-4 lg:gap-5 lg:px-8">
           {items.map((b) => (
             <DesktopCard key={b.t} b={b} />
           ))}

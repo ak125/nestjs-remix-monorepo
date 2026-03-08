@@ -44,7 +44,6 @@ import {
   NotificationContainer,
   NotificationProvider,
 } from "./components/notifications/NotificationContainer";
-import { Button } from "./components/ui/button";
 // @ts-ignore
 import stylesheet from "./global.css?url";
 // Design System CSS (chargés via links() — les @import CSS ne sont pas résolus par Vite)
@@ -55,14 +54,7 @@ import { getCart } from "./services/cart.server";
 import animationsStylesheet from "./styles/animations.css?url";
 
 const ChatWidget = lazy(() => import("./components/rag/ChatWidget"));
-const Footer = lazy(() =>
-  import("./components/Footer").then((m) => ({ default: m.Footer })),
-);
-const FooterMobile = lazy(() =>
-  import("./components/layout/FooterMobile").then((m) => ({
-    default: m.FooterMobile,
-  })),
-);
+const GlobalFooter = lazy(() => import("./components/home/Footer"));
 const BottomNavV9 = lazy(() => import("./components/layout/BottomNavV9"));
 const LazyToaster = lazy(() =>
   import("sonner").then((m) => ({ default: m.Toaster })),
@@ -345,28 +337,21 @@ function AppShell({ children }: { children: React.ReactNode }) {
       </main>
       {!hideGlobalFooter && (
         <Suspense fallback={null}>
-          <Footer />
-        </Suspense>
-      )}
-      {!hideGlobalFooter && (
-        <Suspense fallback={null}>
-          <FooterMobile />
+          <GlobalFooter />
         </Suspense>
       )}
       <Suspense fallback={null}>
         <BottomNavV9 />
       </Suspense>
       <NotificationContainer />
-      {showScrollTop && (
-        <Button
-          onClick={scrollToTop}
-          className="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-50 w-11 h-11 rounded-full shadow-2xl text-white bg-cta hover:bg-cta-hover transition-all duration-300 hover:scale-110"
-          size="icon"
-          aria-label="Retour en haut"
-        >
-          <ChevronUp className="w-5 h-5" />
-        </Button>
-      )}
+      <button
+        onClick={scrollToTop}
+        type="button"
+        className={`fixed bottom-40 right-4 md:bottom-24 md:right-8 z-[9999] w-12 h-12 rounded-full shadow-2xl flex items-center justify-center bg-[#e8590c] hover:bg-[#d9480f] text-white transition-all duration-300 hover:scale-110 ${showScrollTop ? "opacity-100 scale-100" : "opacity-0 scale-50 pointer-events-none"}`}
+        aria-label="Retour en haut"
+      >
+        <ChevronUp className="w-6 h-6" />
+      </button>
       {!location.pathname.startsWith("/admin") && <ChatWidgetSafe />}
     </div>
   );

@@ -1,27 +1,73 @@
+import {
+  Award,
+  CheckCircle,
+  Headset,
+  Package,
+  RotateCcw,
+  Truck,
+} from "lucide-react";
 import { Reveal, Section } from "~/components/layout";
-import { Card, CardContent } from "~/components/ui/card";
-import { ADVANTAGES } from "./constants";
+
+const VALUE_PROPS = [
+  {
+    icon: CheckCircle,
+    title: "Compatibilité vérifiée",
+    desc: "Recherche par véhicule, référence ou Type Mine.",
+  },
+  {
+    icon: Award,
+    title: "Pièces neuves de grandes marques",
+    desc: "Aftermarket reconnu et qualité certifiée.",
+  },
+  {
+    icon: Headset,
+    title: "Support technique",
+    desc: "Une aide claire pour éviter les erreurs de commande.",
+  },
+  {
+    icon: Truck,
+    title: "Livraison rapide",
+    desc: "Expédition soignée et délais courts.",
+  },
+  {
+    icon: Package,
+    title: "500 000+ références",
+    desc: "Toutes marques et modèles, pièces neuves uniquement.",
+  },
+  {
+    icon: RotateCcw,
+    title: "Retours 30 jours",
+    desc: "Satisfait ou remboursé, pièce non montée.",
+  },
+];
 
 export default function WhyAutomecanikSection() {
   return (
     <Section variant="navy-gradient" spacing="md">
-      <h2 className="sr-only">Pourquoi choisir Automecanik</h2>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-        {ADVANTAGES.map(({ icon: Icon, title, desc }, i) => (
+      <div className="mb-3 flex items-center justify-between">
+        <div>
+          <h2 className="text-[1.05rem] lg:text-xl font-semibold tracking-[-0.02em] text-white font-v9-heading">
+            Pourquoi choisir AutoMecanik
+          </h2>
+          <p className="mt-1 text-sm text-white/70">
+            Les engagements qui font la différence
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+        {VALUE_PROPS.map(({ icon: Icon, title, desc }, i) => (
           <Reveal key={title} delay={i * 80}>
-            <Card className="bg-white/[0.06] border-white/10 hover:bg-white/[0.09] hover:border-white/20 transition-all duration-200 rounded-2xl">
-              <CardContent className="p-4 sm:p-5 text-center">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-cta/15 flex items-center justify-center mx-auto mb-2.5 sm:mb-3">
-                  <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-cta" />
-                </div>
-                <div className="text-sm sm:text-[15px] font-semibold text-white mb-0.5">
-                  {title}
-                </div>
-                <div className="text-[11px] sm:text-xs text-white/60 leading-relaxed">
-                  {desc}
-                </div>
-              </CardContent>
-            </Card>
+            <article className="rounded-[22px] border border-white/10 bg-white/[0.045] px-3 py-3 sm:px-4 sm:py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm">
+              <div className="mb-2 inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-white/10">
+                <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
+              </div>
+              <h3 className="text-sm sm:text-[0.98rem] font-semibold leading-[1.15] text-white">
+                {title}
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-white/60">
+                {desc}
+              </p>
+            </article>
           </Reveal>
         ))}
       </div>
