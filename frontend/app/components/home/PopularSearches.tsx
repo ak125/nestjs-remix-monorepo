@@ -4,13 +4,22 @@ import { TrendingUp } from "lucide-react";
 const POPULAR = [
   {
     label: "Trouver des disques de frein par véhicule",
-    href: "/pieces/freinage",
+    href: "/pieces/disque-de-frein-82.html",
   },
-  { label: "Vérifier une référence alternateur", href: "/pieces/electrique" },
-  { label: "Choisir une batterie compatible", href: "/pieces/electrique" },
-  { label: "Identifier une vanne EGR", href: "/pieces/alimentation" },
-  { label: "Trouver un kit d'embrayage", href: "/pieces/embrayage" },
-  { label: "Comparer des plaquettes de frein", href: "/pieces/freinage" },
+  {
+    label: "Vérifier une référence alternateur",
+    href: "/pieces/alternateur-4.html",
+  },
+  { label: "Choisir une batterie compatible", href: "/pieces/batterie-1.html" },
+  { label: "Identifier une vanne EGR", href: "/pieces/vanne-egr-1145.html" },
+  {
+    label: "Trouver un kit d'embrayage",
+    href: "/pieces/kit-d-embrayage-479.html",
+  },
+  {
+    label: "Comparer des plaquettes de frein",
+    href: "/pieces/plaquette-de-frein-402.html",
+  },
 ];
 
 export default function PopularSearches() {

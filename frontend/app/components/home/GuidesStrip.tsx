@@ -43,7 +43,7 @@ const resources: ResourceCard[] = [
   {
     title: "Conseils d'entretien",
     description: "Comprendre quand contrôler ou remplacer une pièce",
-    href: "/blog-pieces-auto/conseil",
+    href: "/blog-pieces-auto/conseils",
     icon: Wrench,
     iconWrapperClassName: "bg-amber-50 text-amber-600 ring-1 ring-amber-100",
   },
