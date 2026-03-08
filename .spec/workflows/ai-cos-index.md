@@ -31,9 +31,9 @@ Le système AI-COS comprend **88 agents actifs/planifiés** organisés en **6 Sq
 
 | Squad | Agents | Budget | ROI/an | Ratio |
 |-------|--------|--------|--------|-------|
-| Tech Squad | **16** | €261K | +€2,024K | 775% |
-| Strategy Squad | 7 | €193K | +€330K | 171% |
-| Business Squad | 15 | €207K | +€835K | 403% |
+| Tech Squad | **15** | €261K | +€2,024K | 775% |
+| Strategy Squad | 6 | €193K | +€330K | 171% |
+| Business Squad | 17 | €207K | +€835K | 403% |
 | Quality Squad | 11 | €184K | +€630K | 342% |
 | Ops Squad | 6 | €128K | +€460K | 359% |
 | Perf & Expansion | 33 | €107K | +€560K | 523% |
@@ -43,7 +43,7 @@ Le système AI-COS comprend **88 agents actifs/planifiés** organisés en **6 Sq
 
 ## Navigation par Squad
 
-### [Tech Squad](./ai-cos-tech-squad.md) - 16 agents - €261K - ROI +€2,024K
+### [Tech Squad](./ai-cos-tech-squad.md) - 15 agents - €261K - ROI +€2,024K
 
 Excellence technique, architecture, gouvernance code, API contracts et diagnostic automobile.
 
@@ -71,7 +71,7 @@ Excellence technique, architecture, gouvernance code, API contracts et diagnosti
 
 ---
 
-### [Strategy Squad](./ai-cos-strategy-squad.md) - 7 agents - €193K - ROI +€330K
+### [Strategy Squad](./ai-cos-strategy-squad.md) - 6 agents - €193K - ROI +€330K
 
 Vision stratégique, priorisation et gouvernance risques.
 
@@ -88,7 +88,7 @@ Vision stratégique, priorisation et gouvernance risques.
 
 ---
 
-### [Business Squad](./ai-cos-business-squad.md) - 15 agents - €207K - ROI +€835K
+### [Business Squad](./ai-cos-business-squad.md) - 17 agents - €207K - ROI +€835K
 
 E-commerce, marketing, ventes et analytics.
 
@@ -155,12 +155,13 @@ Logistique, stock, transport et resilience.
 
 Squads transversaux pour performance et expansion internationale.
 
-#### Performance Squad - 13 agents
+#### Performance Squad - 15 agents
 
 ```
 Tech Perf (5)    : Database Optimizer, Cache Optimizer, Bundle Optimizer, Query Analyzer, Memory Monitor
 Observability (5): APM Monitor, Log Analyzer, Trace Correlator, Alert Manager, SLO Tracker
 UX Perf (3)      : CWV Optimizer, Image Optimizer, Font Loader
++ 2 agents transversaux coordonnés (voir ai-cos-perf-expansion.md)
 ```
 
 #### Expansion Squad - 15 agents
@@ -171,11 +172,11 @@ Legal (5)          : Compliance Bot, Contract AI, IP Monitor, RGPD Auditor, Trad
 Partnerships (5)   : IA-Partners, Alliance Manager, M&A Scout, Franchise Bot, Channel Manager
 ```
 
-#### Support Squad - 5 agents
+#### Support Squad - 3 agents
 
 ```
-Auto-Fix (3): Bug Triage, Auto-Resolver, Hotfix Generator
-Docs (2)   : Knowledge Base, FAQ Generator
+Auto-Fix (2): Bug Triage, Auto-Resolver
+Docs (1)   : Knowledge Base / FAQ Generator
 ```
 
 **Fichier** : [ai-cos-perf-expansion.md](./ai-cos-perf-expansion.md)
