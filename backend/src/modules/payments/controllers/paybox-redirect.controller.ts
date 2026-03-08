@@ -205,30 +205,22 @@ export class PayboxRedirectController {
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">🔒</div>
-        <h1>Redirection sécurisée</h1>
-        <div class="spinner"></div>
-        <p>Redirection vers la page de paiement Paybox...</p>
-        <p style="margin-top: 1rem; font-size: 0.875rem; color: #999;">
-            Si la redirection ne fonctionne pas, cliquez sur le bouton ci-dessous.
-        </p>
-    </div>
-
     <form id="payboxForm" method="POST" action="${url}">
         ${inputs}
-        <button type="submit" id="fallbackBtn" style="display:none; margin-top: 2rem; padding: 1rem 2rem; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem;">
-            Continuer vers le paiement
-        </button>
+        <div class="container">
+            <div class="logo">🔒</div>
+            <h1>Redirection sécurisée</h1>
+            <div class="spinner" id="spinner"></div>
+            <p id="msg">Redirection vers la page de paiement...</p>
+            <button type="submit" id="payBtn" style="margin-top: 1.5rem; padding: 1rem 2rem; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; min-height: 44px; min-width: 200px;">
+                Payer maintenant
+            </button>
+            <noscript><p style="margin-top:1rem;color:#c00;">JavaScript est désactivé. Cliquez sur le bouton ci-dessus.</p></noscript>
+        </div>
     </form>
 
     <script data-cfasync="false" nonce="${nonce}">
-        // Auto-submit immédiat (le form est déjà dans le DOM)
-        document.getElementById('payboxForm').submit();
-        // Afficher le bouton fallback après 3s si l'auto-submit échoue
-        setTimeout(function() {
-            document.getElementById('fallbackBtn').style.display = 'block';
-        }, 3000);
+        try { document.getElementById('payboxForm').submit(); } catch(e) {}
     </script>
 </body>
 </html>`;
