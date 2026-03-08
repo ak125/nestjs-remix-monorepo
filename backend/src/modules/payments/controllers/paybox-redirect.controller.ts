@@ -222,11 +222,9 @@ export class PayboxRedirectController {
         </button>
     </form>
 
-    <script nonce="${nonce}">
-        // Auto-submit après un court délai
-        setTimeout(function() {
-            document.getElementById('payboxForm').submit();
-        }, 500);
+    <script data-cfasync="false" nonce="${nonce}">
+        // Auto-submit immédiat (le form est déjà dans le DOM)
+        document.getElementById('payboxForm').submit();
         // Afficher le bouton fallback après 3s si l'auto-submit échoue
         setTimeout(function() {
             document.getElementById('fallbackBtn').style.display = 'block';
