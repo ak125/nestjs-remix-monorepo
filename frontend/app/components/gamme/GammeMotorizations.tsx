@@ -6,17 +6,17 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { type GammePageMotorisationItem } from "~/types/gamme-page-contract.types";
 
-interface GammeMotorisationsV9Props {
+interface GammeMotorizationsProps {
   items: GammePageMotorisationItem[];
   totalCount?: number;
   intro?: string;
 }
 
-export default function GammeMotorisationsV9({
+export default function GammeMotorizations({
   items,
   totalCount,
   intro,
-}: GammeMotorisationsV9Props) {
+}: GammeMotorizationsProps) {
   const [showAll, setShowAll] = useState(false);
   const [search, setSearch] = useState("");
 

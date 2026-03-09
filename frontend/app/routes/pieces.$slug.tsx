@@ -27,20 +27,19 @@ import {
 import { useEffect, useState, Suspense } from "react";
 
 import { Error404, Error410, ErrorGeneric } from "~/components/errors";
-// V9 Design System Components
 import {
-  GammeHeroV9,
-  GammeQuickNavV9,
+  GammeHero,
+  GammeQuickNav,
   GammeDiagnosticCTA,
-  GammeContentV9,
-  GammeMotorisationsV9,
-  GammeChecklistV9,
-  GammeErrorsV9,
-  GammeEquipementiersV9,
-  GammeFamilleGridV9,
+  GammeContent,
+  GammeMotorizations,
+  GammeChecklist,
+  GammeErrors,
+  GammeEquipementiers,
+  GammeFamilleGrid,
   GammeGuideCTA,
-  GammeFaqV9,
-} from "~/components/gamme-v9";
+  GammeFaq,
+} from "~/components/gamme";
 import { Footer } from "~/components/home";
 
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
@@ -641,7 +640,7 @@ export default function PiecesDetailPage() {
         />
       )}
 
-      <GammeHeroV9
+      <GammeHero
         gammeName={
           data.sectionPack?.sections.hero.data.h1Override?.replace(
             /<[^>]*>/g,
@@ -697,11 +696,11 @@ export default function PiecesDetailPage() {
         selectedVehicle={selectedVehicle}
       />
 
-      <GammeQuickNavV9 />
+      <GammeQuickNav />
 
       <GammeDiagnosticCTA />
 
-      <GammeContentV9
+      <GammeContent
         gammeName={data.content?.pg_name || "Pièces auto"}
         content={data.content?.content}
         microSeoBlock={
@@ -727,7 +726,7 @@ export default function PiecesDetailPage() {
       >
         <Await resolve={data.motorisations}>
           {(motorisations) => (
-            <GammeMotorisationsV9
+            <GammeMotorizations
               items={motorisations?.items || []}
               totalCount={data.performance?.motorisations_count}
               intro={
@@ -739,7 +738,7 @@ export default function PiecesDetailPage() {
         </Await>
       </Suspense>
 
-      <GammeChecklistV9
+      <GammeChecklist
         gammeName={data.content?.pg_name}
         items={data.sectionPack?.sections.safeTable.data?.map((row) => ({
           label: row.element,
@@ -747,7 +746,7 @@ export default function PiecesDetailPage() {
         }))}
       />
 
-      <GammeErrorsV9
+      <GammeErrors
         errors={data.sectionPack?.sections.compatErrors.data}
         gammeName={data.content?.pg_name}
       />
@@ -764,7 +763,7 @@ export default function PiecesDetailPage() {
       >
         <Await resolve={data.equipementiers}>
           {(equipementiers) => (
-            <GammeEquipementiersV9
+            <GammeEquipementiers
               items={(equipementiers?.items || []).map(
                 (e: {
                   title: string;
@@ -797,7 +796,7 @@ export default function PiecesDetailPage() {
       >
         <Await resolve={data.catalogueMameFamille}>
           {(catalogueMameFamille) => (
-            <GammeFamilleGridV9
+            <GammeFamilleGrid
               familleName={data.famille?.mf_name || "Pièces"}
               items={(catalogueMameFamille?.items || []).map((c) => ({
                 name: c.name,
@@ -813,7 +812,7 @@ export default function PiecesDetailPage() {
         </Await>
       </Suspense>
 
-      <GammeFaqV9
+      <GammeFaq
         items={data.sectionPack?.sections.faq.data ?? R1_SELECTOR_FAQ}
       />
 

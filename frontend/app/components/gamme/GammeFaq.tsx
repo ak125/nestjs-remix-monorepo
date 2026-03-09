@@ -6,13 +6,13 @@ interface FaqItem {
   answer: string;
 }
 
-interface GammeFaqV9Props {
+interface GammeFaqProps {
   items: FaqItem[];
 }
 
 const ICON_MAP = [Filter, Settings, Calendar, HelpCircle, Filter];
 
-export default function GammeFaqV9({ items }: GammeFaqV9Props) {
+export default function GammeFaq({ items }: GammeFaqProps) {
   const [open, setOpen] = useState<number | null>(null);
 
   if (items.length === 0) return null;

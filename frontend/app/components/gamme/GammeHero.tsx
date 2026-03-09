@@ -16,7 +16,7 @@ import { Button } from "~/components/ui/button";
 import VehicleSelector from "~/components/vehicle/VehicleSelector";
 import { ImageOptimizer } from "~/utils/image-optimizer";
 
-interface GammeHeroV9Props {
+interface GammeHeroProps {
   gammeName: string;
   familleTag?: string;
   subtitle?: string;
@@ -32,7 +32,7 @@ const TABS = [
   { label: "Type Mine", icon: BookOpen },
 ];
 
-export default function GammeHeroV9({
+export default function GammeHero({
   gammeName,
   familleTag,
   subtitle,
@@ -41,7 +41,7 @@ export default function GammeHeroV9({
   kpis,
   onVehicleSelect,
   selectedVehicle: _selectedVehicle,
-}: GammeHeroV9Props) {
+}: GammeHeroProps) {
   const [tab, setTab] = useState(0);
 
   return (

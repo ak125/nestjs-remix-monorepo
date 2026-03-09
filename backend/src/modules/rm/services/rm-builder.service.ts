@@ -639,4 +639,61 @@ export class RmBuilderService extends SupabaseBaseService {
       };
     }
   }
+
+  /**
+   * 🔄 Get alternative gammes and vehicles when a combination has 0 products
+   *
+   * @param gamme_id - Current gamme (excluded from results)
+   * @param type_id - Current vehicle type (excluded from results)
+   * @param limit - Max results per category
+   */
+  async getAlternatives(
+    gamme_id: number,
+    type_id: number,
+    limit: number,
+  ): Promise<{
+    alternativeGammes: Array<{
+      pg_id: number;
+      pg_name: string;
+      pg_alias: string;
+      pg_pic: string | null;
+    }>;
+    alternativeVehicles: Array<{
+      type_id: string;
+      type_name: string;
+      type_alias: string | null;
+      modele_name: string;
+      modele_alias: string;
+      modele_id: number;
+      marque_name: string;
+      marque_alias: string;
+      marque_id: number;
+    }>;
+  }> {
+    const startTime = performance.now();
+
+    // Parallel queries
+    const [gammesResult, vehiclesResult] = await Promise.all([
+      // Other gammes available for this vehicle
+      this.supabase.rpc('get_alternative_gammes_for_vehicle', {
+        p_type_id: type_id,
+        p_exclude_gamme_id: gamme_id,
+        p_limit: limit,
+      }),
+      // Other vehicles with products for this gamme
+      this.supabase.rpc('get_alternative_vehicles_for_gamme', {
+        p_gamme_id: gamme_id,
+        p_exclude_type_id: type_id,
+        p_limit: Math.min(limit, 6),
+      }),
+    ]);
+
+    const duration = Math.round(performance.now() - startTime);
+    this.logger.debug(`Alternatives fetched in ${duration}ms`);
+
+    return {
+      alternativeGammes: gammesResult.data || [],
+      alternativeVehicles: vehiclesResult.data || [],
+    };
+  }
 }

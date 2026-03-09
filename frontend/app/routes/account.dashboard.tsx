@@ -5,8 +5,9 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { User, ShoppingBag, Mail, Key } from "lucide-react";
+import { z } from "zod";
 
-import { AccountDashboardV9 } from "~/components/account-v9";
+import AccountDashboard from "~/components/account/AccountDashboard";
 
 import { Error404 } from "~/components/errors/Error404";
 import { Alert } from "~/components/ui/alert";
@@ -33,46 +34,60 @@ export const meta: MetaFunction = () => [
   },
 ];
 
-type User = {
-  id: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  status?: string;
-  lastLoginAt?: string | null;
-  createdAt?: string;
-  isPro?: boolean;
-  isActive?: boolean;
-  level?: number;
-  isAdmin?: boolean;
-};
+const orderStatusSchema = z.enum([
+  "paid",
+  "pending",
+  "shipped",
+  "delivered",
+  "cancelled",
+]);
 
-type DashboardStats = {
-  messages: {
-    total: number;
-    unread: number;
-    threads: number;
-  };
-  orders: {
-    total: number;
-    pending: number;
-    completed: number;
-    revenue?: number;
-    recent?: Array<{
-      id: string | number;
-      date: string;
-      totalTtc: number;
-      isPaid: boolean;
-      status: string;
-      info?: string;
-    }>;
-  };
-  profile: {
-    completeness: number;
-    hasActiveSubscription: boolean;
-    securityScore: number;
-  };
-};
+const dashboardDataSchema = z.object({
+  user: z.object({
+    id: z.union([z.string(), z.number()]).transform(String),
+    email: z.string().email(),
+    firstName: z.string().default(""),
+    lastName: z.string().default(""),
+    status: z.string().optional(),
+    lastLoginAt: z.string().nullable().optional(),
+    createdAt: z.string().optional(),
+    isPro: z.boolean().optional().default(false),
+    isActive: z.boolean().optional().default(true),
+    level: z.number().optional(),
+    isAdmin: z.boolean().optional(),
+  }),
+  stats: z.object({
+    messages: z.object({
+      total: z.number().int().nonnegative().default(0),
+      unread: z.number().int().nonnegative().default(0),
+      threads: z.number().int().nonnegative().default(0),
+    }),
+    orders: z.object({
+      total: z.number().int().nonnegative().default(0),
+      pending: z.number().int().nonnegative().default(0),
+      completed: z.number().int().nonnegative().default(0),
+      revenue: z.number().optional(),
+      recent: z
+        .array(
+          z.object({
+            id: z.union([z.string(), z.number()]),
+            date: z.string(),
+            totalTtc: z.number(),
+            status: orderStatusSchema.catch("pending"),
+            info: z.string().optional(),
+          }),
+        )
+        .optional(),
+    }),
+    profile: z.object({
+      completeness: z.number().min(0).max(100).default(0),
+      hasActiveSubscription: z.boolean().default(false),
+      securityScore: z.number().min(0).max(100).default(0),
+    }),
+  }),
+});
+
+type DashboardData = z.infer<typeof dashboardDataSchema>;
 
 type Activity = {
   id: string;
@@ -84,8 +99,8 @@ type Activity = {
 };
 
 interface LoaderData {
-  user: User;
-  stats: DashboardStats;
+  user: DashboardData["user"];
+  stats: DashboardData["stats"];
   recentActivity: Activity[];
   mode: {
     enhanced: boolean;
@@ -136,7 +151,14 @@ export const loader: LoaderFunction = async ({ request }) => {
       });
     }
 
-    const dashboardData = await dashboardResponse.json();
+    const rawData = await dashboardResponse.json();
+    const parseResult = dashboardDataSchema.safeParse(rawData);
+
+    if (!parseResult.success) {
+      logger.error("⚠️ Dashboard data validation failed:", parseResult.error.flatten());
+    }
+
+    const dashboardData = parseResult.success ? parseResult.data : rawData;
 
     // Mock recent activity pour version enhanced
     const recentActivity: Activity[] = enhanced
@@ -208,9 +230,9 @@ export default function UnifiedAccountDashboard() {
 
   return (
     <>
-      {/* V9 Mobile Layout (< md) */}
+      {/* Mobile Layout (< md) */}
       <div className="md:hidden font-v9-body bg-[var(--v9-navy)]">
-        <AccountDashboardV9 user={user} stats={stats} />
+        <AccountDashboard user={user} stats={stats} />
       </div>
 
       {/* Desktop Layout (>= md) */}

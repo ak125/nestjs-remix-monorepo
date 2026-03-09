@@ -10,17 +10,17 @@ interface FamilleItem {
   icon?: string;
 }
 
-interface GammeFamilleGridV9Props {
+interface GammeFamilleGridProps {
   familleName: string;
   items: FamilleItem[];
   intro?: string;
 }
 
-export default function GammeFamilleGridV9({
+export default function GammeFamilleGrid({
   familleName,
   items,
   intro,
-}: GammeFamilleGridV9Props) {
+}: GammeFamilleGridProps) {
   if (items.length === 0) return null;
 
   return (

@@ -20,6 +20,7 @@
 
 import {
   defer,
+  json,
   redirect,
   type HeadersFunction,
   type LoaderFunctionArgs,
@@ -47,6 +48,10 @@ import {
 // ========================================
 
 // Composants UI CRITIQUES (above-fold - chargés immédiatement)
+import {
+  NoProductsAlternatives,
+  type NoProductsData,
+} from "~/components/pieces/NoProductsAlternatives";
 import { FAQSection } from "~/components/seo/FAQSection";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
@@ -255,26 +260,59 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   // 🚀 LCP V9: seoSwitches deferred (below-fold only, has fallback anchors)
   const rmV2Response = await rmV2Promise;
 
-  // 🔄 SEO: Validation RM V2 - Si échec → 404 avec page utile
-  // Raison: 301 vers page gamme crée des "pages avec redirection" dans GSC (43.9k URLs)
-  // 404 dit à Google "cette page n'existe pas" → désindexation propre
-  // L'ErrorBoundary affiche un lien vers la page gamme pour guider l'utilisateur
+  // 🔄 SEO: 0 produits → page utile avec alternatives (200 + noindex)
+  // Mieux que 404 : pas d'erreur GSC, liens internes suivis, UX guidée
   if (!rmV2Response || !isRmV2DataUsable(rmV2Response, 1)) {
     logger.log(
-      `🚫 [404] RM V2 invalide ou 0 produits pour: /pieces/${gammeData.alias}-${gammeId}.html`,
+      `🔄 [NO_PRODUCTS] 0 produits, page alternatives pour: /pieces/${gammeData.alias}-${gammeId}.html`,
     );
-    throw new Response(
-      JSON.stringify({
-        reason: "no_products",
-        gammeAlias: gammeData.alias,
-        gammeId,
-        gammeUrl: `/pieces/${gammeData.alias}-${gammeId}.html`,
-      }),
+
+    // Fetch alternatives en parallèle (autres gammes pour ce véhicule + autres véhicules pour cette gamme)
+    const alternativesData = await fetchJsonOrNull<{
+      success: boolean;
+      alternativeGammes: Array<{
+        pg_id: number;
+        pg_name: string;
+        pg_alias: string;
+        pg_pic: string | null;
+      }>;
+      alternativeVehicles: Array<{
+        type_id: string;
+        type_name: string;
+        type_alias: string | null;
+        modele_name: string;
+        modele_alias: string;
+        modele_id: number;
+        marque_name: string;
+        marque_alias: string;
+        marque_id: number;
+      }>;
+    }>(
+      `http://127.0.0.1:3000/api/rm/alternatives?gamme_id=${gammeId}&type_id=${vehicleIds.typeId}&limit=12`,
+      3000,
+    );
+
+    // Construire le label véhicule lisible depuis les params URL
+    const vehicleLabel = [rawMarque, rawModele, rawType]
+      .filter(Boolean)
+      .map((s) => s!.replace(/-\d+$/, "").replace(/-/g, " "))
+      .join(" ");
+
+    return json(
       {
-        status: 404,
+        noProducts: true as const,
+        gammeId,
+        gammeAlias: gammeData.alias,
+        gammeName:
+          rmV2Response?.gamme?.pg_name || gammeData.alias.replace(/-/g, " "),
+        vehicleLabel,
+        alternativeGammes: alternativesData?.alternativeGammes || [],
+        alternativeVehicles: alternativesData?.alternativeVehicles || [],
+      } satisfies NoProductsData,
+      {
         headers: {
-          "Content-Type": "application/json",
           "X-Robots-Tag": "noindex, follow",
+          "Cache-Control": "public, max-age=300, s-maxage=3600",
         },
       },
     );
@@ -428,38 +466,54 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     ];
   }
 
+  // Page alternatives (0 produits) — noindex
+  if ("noProducts" in data && data.noProducts) {
+    return [
+      { title: `${data.gammeName} - Non disponible | AutoMecanik` },
+      {
+        name: "description",
+        content: `${data.gammeName} pour ${data.vehicleLabel}. Découvrez nos alternatives disponibles.`,
+      },
+      { name: "robots", content: "noindex, follow" },
+    ];
+  }
+
+  // Type narrowing: après les early returns, data est forcément le type complet
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const d = data as any;
+
   // Construire URL canonique depuis les données RM V2 (pas location.pathname)
   // Evite les doublons canonical quand le slug URL != alias réel
-  const canonicalUrl = data.canonicalPath
-    ? `https://www.automecanik.com${data.canonicalPath}`
+  const canonicalUrl = d.canonicalPath
+    ? `https://www.automecanik.com${d.canonicalPath}`
     : `https://www.automecanik.com${location.pathname}`;
 
   // 📊 Schema.org @graph - Extrait dans pieces-schema.utils.ts
   const productSchema = buildPiecesProductSchema({
-    vehicle: data.vehicle,
-    gamme: data.gamme,
-    pieces: data.pieces,
-    seo: { description: data.seo.description },
-    minPrice: data.minPrice,
-    maxPrice: data.maxPrice,
-    count: data.count,
-    oemRefs: data.oemRefs,
-    oemRefsSeo: data.oemRefsSeo,
-    crossSellingGammes: data.crossSellingGammes,
+    vehicle: d.vehicle,
+    gamme: d.gamme,
+    pieces: d.pieces,
+    seo: { description: d.seo.description },
+    minPrice: d.minPrice,
+    maxPrice: d.maxPrice,
+    count: d.count,
+    oemRefs: d.oemRefs,
+    oemRefsSeo: d.oemRefsSeo,
+    crossSellingGammes: d.crossSellingGammes,
     canonicalUrl,
   });
 
   return [
-    { title: data.seo.title },
-    { name: "description", content: data.seo.description },
-    { property: "og:title", content: data.seo.title },
-    { property: "og:description", content: data.seo.description },
+    { title: d.seo.title },
+    { name: "description", content: d.seo.description },
+    { property: "og:title", content: d.seo.title },
+    { property: "og:description", content: d.seo.description },
     { property: "og:url", content: canonicalUrl },
     // noindex si ≤ 1 produit (thin content) — seuil abaissé de 5 à 1
     // Pages 2+ produits ont maintenant ~300 mots SSR (FAQ, guide, compatibilité)
     {
       name: "robots",
-      content: data.count <= 1 ? "noindex, follow" : "index, follow",
+      content: d.count <= 1 ? "noindex, follow" : "index, follow",
     },
 
     // âœ¨ NOUVEAU: Canonical URL
@@ -473,7 +527,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     },
 
     // 🚀 LCP Optimization V5: Preload hero vehicle image - Fonction extraite
-    ...buildHeroImagePreload(data.vehicle),
+    ...buildHeroImagePreload(d.vehicle),
 
     // âœ¨ NOUVEAU: Schema.org Product (rich snippets)
     ...(productSchema
@@ -485,13 +539,13 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       : []),
 
     // Schema.org FAQPage dans <head> pour rich snippets (SSR garanti)
-    ...(data.faqItems && data.faqItems.length > 0
+    ...(d.faqItems && d.faqItems.length > 0
       ? [
           {
             "script:ld+json": {
               "@context": "https://schema.org",
               "@type": "FAQPage",
-              mainEntity: data.faqItems
+              mainEntity: d.faqItems
                 .filter((item: { schema?: boolean }) => item.schema !== false)
                 .map((item: { question: string; answer: string }) => ({
                   "@type": "Question",
@@ -513,7 +567,21 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 // ========================================
 
 export default function PiecesVehicleRoute() {
-  const data = useLoaderData<typeof loader>();
+  const rawData = useLoaderData<typeof loader>();
+
+  // 🔄 Page alternatives quand 0 produits (200 + noindex)
+  if ("noProducts" in rawData && rawData.noProducts) {
+    return <NoProductsAlternatives data={rawData as NoProductsData} />;
+  }
+
+  return <PiecesVehicleContent />;
+}
+
+/** Composant interne avec tous les hooks — évite la violation rules-of-hooks */
+function PiecesVehicleContent() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const data = useLoaderData<typeof loader>() as any;
+
   const location = useLocation(); // 🆕 Pour Schema.org breadcrumb
   const { trackClick, trackImpression } = useSeoLinkTracking();
   const [showFilters, setShowFilters] = useState(false);

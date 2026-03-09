@@ -16,7 +16,7 @@ interface BuyArgument {
   icon?: string;
 }
 
-interface GammeContentV9Props {
+interface GammeContentProps {
   gammeName: string;
   content?: string;
   microSeoBlock?: string;
@@ -84,7 +84,7 @@ function getArgIcon(iconName?: string, index?: number): typeof CheckCircle {
   return fallbacks[(index ?? 0) % fallbacks.length];
 }
 
-export default function GammeContentV9({
+export default function GammeContent({
   gammeName,
   content,
   microSeoBlock,
@@ -92,7 +92,7 @@ export default function GammeContentV9({
   pgAlias,
   arguments: buyArgs,
   familyKey,
-}: GammeContentV9Props) {
+}: GammeContentProps) {
   const displayContent =
     content ||
     microSeoBlock ||

@@ -1,6 +1,6 @@
 import { AlertTriangle, X } from "lucide-react";
 
-interface GammeErrorsV9Props {
+interface GammeErrorsProps {
   errors?: string[];
   gammeName?: string;
 }
@@ -12,10 +12,10 @@ const DEFAULT_ERRORS = [
   "Sans comparer réf. OE",
 ];
 
-export default function GammeErrorsV9({
+export default function GammeErrors({
   errors,
   gammeName: _gammeName,
-}: GammeErrorsV9Props) {
+}: GammeErrorsProps) {
   const items = errors || DEFAULT_ERRORS;
 
   return (

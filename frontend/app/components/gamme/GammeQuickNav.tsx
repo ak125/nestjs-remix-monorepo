@@ -8,7 +8,7 @@ const SECTIONS = [
   { id: "guide-link", label: "Guide", icon: BookOpen },
 ];
 
-export default function GammeQuickNavV9() {
+export default function GammeQuickNav() {
   return (
     <nav
       aria-label="Navigation rapide"

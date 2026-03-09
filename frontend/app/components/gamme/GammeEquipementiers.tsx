@@ -7,15 +7,15 @@ interface EquipementierItem {
   logo?: string;
 }
 
-interface GammeEquipementiersV9Props {
+interface GammeEquipementiersProps {
   items: EquipementierItem[];
   intro?: string;
 }
 
-export default function GammeEquipementiersV9({
+export default function GammeEquipementiers({
   items,
   intro,
-}: GammeEquipementiersV9Props) {
+}: GammeEquipementiersProps) {
   if (items.length === 0) return null;
 
   return (

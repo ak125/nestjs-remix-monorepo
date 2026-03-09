@@ -57,7 +57,7 @@ import animationsStylesheet from "./styles/animations.css?url";
 
 const ChatWidget = lazy(() => import("./components/rag/ChatWidget"));
 const GlobalFooter = lazy(() => import("./components/home/Footer"));
-const BottomNavV9 = lazy(() => import("./components/layout/BottomNavV9"));
+const BottomNav = lazy(() => import("./components/layout/BottomNav"));
 const LazyToaster = lazy(() =>
   import("sonner").then((m) => ({ default: m.Toaster })),
 );
@@ -352,7 +352,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       )}
       {!hideBottomNav && (
         <Suspense fallback={null}>
-          <BottomNavV9 />
+          <BottomNav />
         </Suspense>
       )}
       <NotificationContainer />

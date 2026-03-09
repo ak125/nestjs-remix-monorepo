@@ -29,7 +29,7 @@ const NAV_ITEMS = [
   },
 ];
 
-export default function BottomNavV9() {
+export default function BottomNav() {
   const location = useLocation();
 
   return (

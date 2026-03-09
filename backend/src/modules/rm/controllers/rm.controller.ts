@@ -242,6 +242,34 @@ export class RmController {
   }
 
   /**
+   * 🔄 GET /api/rm/alternatives
+   *
+   * Returns alternative gammes for a vehicle and alternative vehicles for a gamme.
+   * Used when a gamme+vehicle combination has 0 products.
+   *
+   * @param gamme_id - Product family ID to exclude / find alternatives for
+   * @param type_id - Vehicle type ID to exclude / find alternatives for
+   * @param limit - Max results per category (default: 12)
+   *
+   * @example
+   * GET /api/rm/alternatives?gamme_id=620&type_id=500&limit=12
+   */
+  @Get('alternatives')
+  async getAlternatives(
+    @Query('gamme_id', ParseIntPipe) gamme_id: number,
+    @Query('type_id', ParseIntPipe) type_id: number,
+    @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
+  ) {
+    const clampedLimit = Math.min(Math.max(limit, 1), 24);
+    const result = await this.rmBuilder.getAlternatives(
+      gamme_id,
+      type_id,
+      clampedLimit,
+    );
+    return { success: true, ...result };
+  }
+
+  /**
    * 📈 GET /api/rm/health
    *
    * Returns RM system health status.

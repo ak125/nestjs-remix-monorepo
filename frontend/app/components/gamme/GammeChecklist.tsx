@@ -16,7 +16,7 @@ interface CheckItem {
   icon?: typeof Car;
 }
 
-interface GammeChecklistV9Props {
+interface GammeChecklistProps {
   items?: CheckItem[];
   gammeName?: string;
 }
@@ -38,10 +38,10 @@ function inferIcon(label: string): typeof Car {
   return Filter;
 }
 
-export default function GammeChecklistV9({
+export default function GammeChecklist({
   items,
   gammeName: _gammeName,
-}: GammeChecklistV9Props) {
+}: GammeChecklistProps) {
   const checks = items && items.length > 0 ? items : [];
   const [checked, setChecked] = useState<number[]>([]);
 
