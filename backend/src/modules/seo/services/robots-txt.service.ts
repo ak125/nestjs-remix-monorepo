@@ -41,7 +41,7 @@ export class RobotsTxtService {
    * - Disallow: /fiche/ (fiches produits - duplicate content)
    * - Disallow: /find/ (recherche générale)
    * - Disallow: /searchmine/ (recherche par type mine)
-   * - Disallow: /account/ (espace client privé)
+   * - /account/ retiré du Disallow (pages ont noindex meta tag, robots.txt empêchait GSC de le lire)
    *
    * ✅ Ce qui N'EST PAS bloqué (stratégie positive):
    * - /constructeurs/ → Indexé (sitemap constructeurs)
@@ -66,7 +66,7 @@ Disallow: /_form.get.car.*    # Formulaires AJAX sélection véhicule
 Disallow: /fiche/              # Fiches produits (duplicate avec /pieces/)
 Disallow: /find/               # Résultats recherche générale
 Disallow: /searchmine/         # Recherche par type mine
-Disallow: /account/            # Espace client privé
+# /account/ retiré : les pages ont noindex meta tag, robots.txt empêchait Google de le lire (GSC issue)
 
 # ❌ Blocages additionnels NestJS
 Disallow: /api/                # Endpoints API REST
@@ -93,7 +93,6 @@ Disallow: /_form.get.car.*
 Disallow: /fiche/
 Disallow: /find/
 Disallow: /searchmine/
-Disallow: /account/
 Disallow: /api/
 Disallow: /admin/
 Disallow: /imgproxy/
