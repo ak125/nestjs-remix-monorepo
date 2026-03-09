@@ -1,0 +1,2 @@
+# Lighthouse CWV audit — 4x/day (01h, 07h, 13h, 19h UTC)
+0 1,7,13,19 * * * /app/lighthouse-cron.sh >> /var/log/lighthouse.log 2>&1

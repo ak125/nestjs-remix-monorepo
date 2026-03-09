@@ -146,6 +146,30 @@ services:
       - automecanik-prod
     restart: "no"
 
+  # Lighthouse CWV monitoring — 4x/day audits, results in Supabase
+  lighthouse-runner:
+    build:
+      context: .
+      dockerfile: docker/lighthouse/Dockerfile
+    container_name: lighthouse-runner-prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+      - SITE_URL=https://www.automecanik.com
+      - CHROME_PATH=/usr/bin/chromium
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1'
+    volumes:
+      - /var/log/lighthouse:/var/log
+    networks:
+      - automecanik-prod
+
   redis_prod:
     image: redis:7-alpine
     restart: always
