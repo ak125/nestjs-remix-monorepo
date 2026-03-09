@@ -3,6 +3,9 @@
 # Install: crontab -e → */5 * * * * /home/deploy/production/watchdog.sh
 # Checks: container running, correct image, health OK, Caddy up
 
+# Supabase report helper
+source "$(dirname "$0")/cron/lib-supabase-report.sh" 2>/dev/null || true
+
 LOG="/var/log/prod-watchdog.log"
 EXPECTED_IMAGE="massdoc/nestjs-remix-monorepo:production"
 SLACK_WEBHOOK="${SLACK_WEBHOOK_URL:-}"
@@ -28,6 +31,7 @@ fi
 # Check 1: Container running
 if ! docker ps --format '{{.Names}}' | grep -q "^nestjs-remix-monorepo-prod$"; then
   alert "prod container not running"
+  cron_report "prod-watchdog" "error" 0 '{"container_ok":false,"health_ok":false,"caddy_ok":false,"image_correct":false}' "container not running"
   exit 1
 fi
 
@@ -35,18 +39,21 @@ fi
 ACTUAL_IMAGE=$(docker inspect nestjs-remix-monorepo-prod --format='{{.Config.Image}}' 2>/dev/null)
 if [ "$ACTUAL_IMAGE" != "$EXPECTED_IMAGE" ]; then
   alert "wrong image: $ACTUAL_IMAGE (expected $EXPECTED_IMAGE)"
+  cron_report "prod-watchdog" "error" 0 '{"container_ok":true,"health_ok":false,"caddy_ok":false,"image_correct":false}' "wrong image"
   exit 1
 fi
 
 # Check 3: Health check
 if ! docker exec nestjs-remix-monorepo-prod wget -qO- http://localhost:3000/health 2>/dev/null | grep -q '"status":"ok"'; then
   alert "health check failed (image: $ACTUAL_IMAGE)"
+  cron_report "prod-watchdog" "error" 0 '{"container_ok":true,"health_ok":false,"caddy_ok":false,"image_correct":true}' "health check failed"
   exit 1
 fi
 
 # Check 4: Caddy running
 if ! docker ps --format '{{.Names}}' | grep -q "^nestjs-remix-caddy$"; then
   alert "Caddy container not running"
+  cron_report "prod-watchdog" "error" 0 '{"container_ok":true,"health_ok":true,"caddy_ok":false,"image_correct":true}' "Caddy not running"
   exit 1
 fi
 
@@ -55,8 +62,10 @@ APP_NETWORK=$(docker inspect nestjs-remix-monorepo-prod --format='{{range $k,$v 
 CADDY_NETWORK=$(docker inspect nestjs-remix-caddy --format='{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null)
 if [ "$APP_NETWORK" != "$CADDY_NETWORK" ]; then
   alert "network mismatch: app=$APP_NETWORK caddy=$CADDY_NETWORK"
+  cron_report "prod-watchdog" "error" 0 '{"container_ok":true,"health_ok":true,"caddy_ok":true,"image_correct":true}' "network mismatch"
   exit 1
 fi
 
-# All checks passed (silent, no log spam)
+# All checks passed — report to Supabase (silent, no log spam)
+cron_report "prod-watchdog" "ok" 0 '{"container_ok":true,"health_ok":true,"caddy_ok":true,"image_correct":true}' "all checks passed"
 exit 0

@@ -10,6 +10,9 @@
 # ==============================================================================
 set -euo pipefail
 
+# Supabase report helper
+source "$(dirname "$0")/lib-supabase-report.sh" 2>/dev/null || true
+
 THRESHOLD="${DISK_THRESHOLD:-85}"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
@@ -26,8 +29,14 @@ if [ "$USAGE" -ge "$THRESHOLD" ]; then
       -d "{\"text\":\"[AutoMecanik] Disk ALERT: ${USAGE}% (>=${THRESHOLD}%). Docker: ${DOCKER_SIZE}\"}" \
       >/dev/null 2>&1 || true
   fi
+  cron_report "disk-alert" "error" 0 \
+    "$(jq -nc --argjson pct "$USAGE" --arg docker "$DOCKER_SIZE" '{disk_pct:$pct, docker_images:$docker}')" \
+    "ALERT: ${USAGE}% (>=${THRESHOLD}%)"
   exit 1
 else
   echo "[$TIMESTAMP] OK: Disk at ${USAGE}% (threshold: ${THRESHOLD}%)"
+  cron_report "disk-alert" "ok" 0 \
+    "$(jq -nc --argjson pct "$USAGE" '{disk_pct:$pct}')" \
+    "OK: ${USAGE}%"
   exit 0
 fi

@@ -6,6 +6,10 @@
 
 set -e
 
+# Supabase report helper
+source "$(dirname "$0")/cron/lib-supabase-report.sh" 2>/dev/null || true
+_CW_START=$(date +%s)
+
 # Configuration
 BASE_URL="${BASE_URL:-https://www.automecanik.com}"
 LIMIT="${1:-500}"
@@ -97,6 +101,17 @@ log "${GREEN}✅ Cache Warming Complete${NC}"
 log "   Success: $SUCCESS"
 log "   Failed: $FAILED"
 log "   Total: $((SUCCESS + FAILED))"
+
+# Report to Supabase
+_CW_END=$(date +%s)
+_CW_DUR=$((_CW_END - _CW_START))
+_CW_TOTAL=$((SUCCESS + FAILED))
+_CW_STATUS="ok"
+[ $FAILED -gt $((SUCCESS / 5)) ] && [ $SUCCESS -gt 0 ] && _CW_STATUS="warn"
+cron_report "cache-warmer" "$_CW_STATUS" "$_CW_DUR" \
+  "$(jq -nc --argjson total "$_CW_TOTAL" --argjson ok "$SUCCESS" --argjson fail "$FAILED" \
+    '{urls_total:$total, urls_success:$ok, urls_failed:$fail}')" \
+  "OK=${SUCCESS} FAIL=${FAILED} Total=${_CW_TOTAL}"
 
 # Exit with error if more than 20% failed (410s for removed pages are expected)
 if [ $FAILED -gt $((SUCCESS / 5)) ] && [ $SUCCESS -gt 0 ]; then

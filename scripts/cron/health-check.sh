@@ -13,6 +13,30 @@
 # ==============================================================================
 set -euo pipefail
 
+# Supabase report helper
+source "$(dirname "$0")/lib-supabase-report.sh" 2>/dev/null || true
+_HC_START=$(date +%s)
+
+# Report to Supabase on ANY exit (success, failure, or warning)
+_report_health() {
+  local _HC_END _HC_DUR _HC_STATUS _HC_API_OK _HC_REDIS_OK _HC_RAG_OK
+  _HC_END=$(date +%s)
+  _HC_DUR=$((_HC_END - _HC_START))
+  _HC_STATUS="ok"
+  [ "${WARNINGS:-0}" -gt 0 ] && _HC_STATUS="warn"
+  [ "${FAILURES:-0}" -gt 0 ] && _HC_STATUS="error"
+  _HC_API_OK=$( [ "${HEALTH_STATUS:-}" = "ok" ] && echo true || echo false )
+  _HC_REDIS_OK=$( [ "${REDIS_PING:-}" = "PONG" ] && echo true || echo false )
+  _HC_RAG_OK=$( [ "${RAG_STATUS:-}" = "ok" ] && echo true || echo false )
+  cron_report "health-check" "$_HC_STATUS" "$_HC_DUR" \
+    "$(jq -nc --argjson api "$_HC_API_OK" --argjson redis "$_HC_REDIS_OK" --argjson rag "$_HC_RAG_OK" \
+      --arg resp "${RESPONSE_TIME:-0}" --arg cpu "${APP_CPU:-0}" --arg mem "${APP_MEM:-0}" \
+      --arg disk "${DISK_PCT:-0}" --arg failed "${BQ_FAILED:-0}" \
+      '{api_ok:$api, redis_ok:$redis, rag_ok:$rag, response_ms:($resp|tonumber*1000|floor), cpu_pct:($cpu|tonumber), mem_pct:($mem|tonumber), disk_pct:($disk|tonumber), failed_jobs:($failed|tonumber)}' 2>/dev/null || echo '{}')" \
+    "F=${FAILURES:-0} W=${WARNINGS:-0} CPU=${APP_CPU:-0}% MEM=${APP_MEM:-0}% Disk=${DISK_PCT:-0}%"
+}
+trap _report_health EXIT
+
 BASE="${BASE:-http://localhost:3000}"
 REDIS_CONTAINER="${REDIS_CONTAINER:-redis_prod}"
 APP_CONTAINER="${APP_CONTAINER:-nestjs-remix-monorepo-prod}"

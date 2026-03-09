@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Supabase report helper
+source "$(dirname "$0")/cron/lib-supabase-report.sh" 2>/dev/null || true
+_RI_START=$(date +%s)
+
 # Two-pass RAG reindex job for cron:
 # 1) normal files (below threshold)
 # 2) large files (one-by-one)
@@ -90,7 +94,17 @@ run_in_container() {
   echo "[$(date -Is)] END ${label}" | tee -a "$LOG_FILE"
 }
 
-run_in_container "PASS 1 normal files" "normal"
-run_in_container "PASS 2 large files" "large"
+run_in_container "PASS 1 normal files" "normal" && _RI_P1=0 || _RI_P1=1
+run_in_container "PASS 2 large files" "large" && _RI_P2=0 || _RI_P2=1
 
 echo "[$(date -Is)] DONE two-pass reindex" | tee -a "$LOG_FILE"
+
+# Report to Supabase
+_RI_END=$(date +%s)
+_RI_DUR=$((_RI_END - _RI_START))
+_RI_STATUS="ok"
+[ "$_RI_P1" -ne 0 ] || [ "$_RI_P2" -ne 0 ] && _RI_STATUS="error"
+cron_report "reindex-rag" "$_RI_STATUS" "$_RI_DUR" \
+  "$(jq -nc --argjson p1 "$_RI_P1" --argjson p2 "$_RI_P2" \
+    '{pass1_error:($p1 != 0), pass2_error:($p2 != 0)}')" \
+  "pass1=$([ $_RI_P1 -eq 0 ] && echo ok || echo fail) pass2=$([ $_RI_P2 -eq 0 ] && echo ok || echo fail) ${_RI_DUR}s"

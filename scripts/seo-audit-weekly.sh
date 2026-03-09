@@ -16,8 +16,10 @@
 
 set -eo pipefail  # Removed -u to allow unset variables
 
-#!/bin/bash
-set -eo pipefail
+# Supabase report helper
+source "$(dirname "$0")/cron/lib-supabase-report.sh" 2>/dev/null || true
+_SA_START=$(date +%s)
+
 
 # â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 # SEO WEEKLY AUDIT SCRIPT
@@ -27,8 +29,8 @@ set -eo pipefail
 # CONFIGURATION
 # â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # ðŸ”§ PRODUCTION: Remplacer .fr par .com lors du dÃ©ploiement en production
-SITEMAP_URL="${SITEMAP_URL:-https://automecanik.fr/sitemap.xml}"
-BASE_URL="${BASE_URL:-https://automecanik.fr}"
+SITEMAP_URL="${SITEMAP_URL:-https://www.automecanik.com/sitemap.xml}"
+BASE_URL="${BASE_URL:-https://www.automecanik.com}"
 LOKI_URL="${LOKI_URL:-http://loki:3100}"
 MEILISEARCH_HOST="${MEILISEARCH_HOST:-http://localhost:7700}"
 MEILISEARCH_API_KEY="${MEILISEARCH_API_KEY:-}"  # Optionnel
@@ -78,24 +80,22 @@ else
     
     CHILD_ERRORS=0
     for CHILD_SITEMAP in $SITEMAP_URLS; do
-      # ðŸ”§ PRODUCTION: Supprimer cette ligne de remplacement .com â†’ .fr en production
-      CHILD_SITEMAP_ADJUSTED="${CHILD_SITEMAP/automecanik.com/automecanik.fr}"
       
-      echo -e "${BLUE}ðŸ“¥ TÃ©lÃ©chargement: $CHILD_SITEMAP_ADJUSTED${NC}"
-      CHILD_FILE="$OUTPUT_DIR/sitemap-child-$(basename $CHILD_SITEMAP_ADJUSTED)"
+      echo -e "${BLUE}ðŸ“¥ TÃ©lÃ©chargement: $CHILD_SITEMAP${NC}"
+      CHILD_FILE="$OUTPUT_DIR/sitemap-child-$(basename $CHILD_SITEMAP)"
       
       # TÃ©lÃ©charger avec vÃ©rification du code HTTP
-      HTTP_CODE=$(curl -s -w "%{http_code}" -o "$CHILD_FILE" "$CHILD_SITEMAP_ADJUSTED")
+      HTTP_CODE=$(curl -s -w "%{http_code}" -o "$CHILD_FILE" "$CHILD_SITEMAP")
       
       if [ "$HTTP_CODE" != "200" ]; then
-        echo -e "${RED}âŒ Erreur HTTP $HTTP_CODE pour $CHILD_SITEMAP_ADJUSTED${NC}"
+        echo -e "${RED}âŒ Erreur HTTP $HTTP_CODE pour $CHILD_SITEMAP${NC}"
         ((CHILD_ERRORS++))
         continue
       fi
       
       # VÃ©rifier que ce n'est pas une page d'erreur HTML
       if grep -q "<html" "$CHILD_FILE" || grep -q "404 Not Found" "$CHILD_FILE"; then
-        echo -e "${YELLOW}âš ï¸  Page d'erreur reÃ§ue pour $CHILD_SITEMAP_ADJUSTED${NC}"
+        echo -e "${YELLOW}âš ï¸  Page d'erreur reÃ§ue pour $CHILD_SITEMAP${NC}"
         ((CHILD_ERRORS++))
         continue
       fi
@@ -418,5 +418,18 @@ EOF
 fi
 
 echo -e "${BLUE}â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”${NC}"
+
+# Report to Supabase
+_SA_END=$(date +%s)
+_SA_DUR=$((_SA_END - _SA_START))
+_SA_STATUS="ok"
+[ "${TOTAL_WARNINGS:-0}" -gt 0 ] && _SA_STATUS="warn"
+[ "${TOTAL_ERRORS:-0}" -gt 0 ] && _SA_STATUS="error"
+cron_report "seo-audit" "$_SA_STATUS" "$_SA_DUR" \
+  "$(jq -nc --argjson urls "${TOTAL_URLS:-0}" --argjson noindex "${NOINDEX_COUNT:-0}" \
+    --argjson err4xx "${ERROR_COUNT:-0}" --argjson hreflang "${HREFLANG_ERROR_COUNT:-0}" \
+    --argjson canon "${CANONICAL_ERROR_COUNT:-0}" --argjson errs "${TOTAL_ERRORS:-0}" --argjson warns "${TOTAL_WARNINGS:-0}" \
+    '{urls_checked:$urls, noindex_count:$noindex, errors_4xx:$err4xx, hreflang_issues:$hreflang, canonical_divergent:$canon, total_errors:$errs, total_warnings:$warns}')" \
+  "E=${TOTAL_ERRORS:-0} W=${TOTAL_WARNINGS:-0} URLs=${TOTAL_URLS:-0}"
 
 exit $EXIT_CODE
