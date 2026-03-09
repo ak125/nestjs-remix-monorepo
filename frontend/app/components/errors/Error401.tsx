@@ -29,7 +29,7 @@ export const Error401 = memo(function Error401({
   // Construire l'URL de login avec redirect
   const currentPath =
     typeof window !== "undefined" ? window.location.pathname : url || "/";
-  const loginUrl = `/login?redirect=${encodeURIComponent(redirectTo || currentPath)}`;
+  const loginUrl = `/login?redirectTo=${encodeURIComponent(redirectTo || currentPath)}`;
 
   // Reporting centralisé
   useErrorAutoReport({
@@ -42,7 +42,7 @@ export const Error401 = memo(function Error401({
   // Countdown + auto-redirect
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
       return () => clearTimeout(timer);
     } else if (!isRedirecting && typeof window !== "undefined") {
       setIsRedirecting(true);

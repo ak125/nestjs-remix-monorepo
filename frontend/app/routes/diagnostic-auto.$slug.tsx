@@ -30,11 +30,13 @@ import {
   CheckCircle,
   Clock,
   ExternalLink,
+  GitCompare,
   HeartPulse,
   Info,
   Shield,
   ShoppingCart,
   ScanLine,
+  Stethoscope,
   Wrench,
   XCircle,
   Eye,
@@ -105,6 +107,17 @@ interface DiagnosticData {
   estimated_repair_cost_min: number;
   estimated_repair_cost_max: number;
   estimated_repair_duration: string;
+  differentiation_checklist: Array<{
+    criterion: string;
+    if_yes: string;
+    if_no: string;
+  }> | null;
+  consultation_triggers: Array<{
+    trigger: string;
+    urgency: "urgent" | "soon" | "routine";
+    reason: string;
+  }> | null;
+  do_dont_list: { do: string[]; dont: string[] } | null;
   schema_org: object;
 }
 
@@ -566,7 +579,7 @@ export default function DiagnosticAutoDetail() {
 
                         return (
                           <div
-                            key={index}
+                            key={action.action}
                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                           >
                             <div className="flex items-center gap-3">
@@ -591,6 +604,171 @@ export default function DiagnosticAutoDetail() {
                           </div>
                         );
                       })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+            {/* Section 6: Comment différencier les causes */}
+            {diagnostic.differentiation_checklist &&
+              diagnostic.differentiation_checklist.length > 0 && (
+                <Card className="border-l-4 border-l-orange-500">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <GitCompare className="h-5 w-5 text-orange-500" />
+                      Comment différencier les causes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b">
+                            <th className="text-left py-2 pr-3 font-medium text-gray-700">
+                              Critère
+                            </th>
+                            <th className="text-left py-2 px-3 font-medium text-green-700">
+                              Si oui
+                            </th>
+                            <th className="text-left py-2 pl-3 font-medium text-red-700">
+                              Si non
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {diagnostic.differentiation_checklist.map(
+                            (item, index) => (
+                              <tr
+                                key={item.criterion}
+                                className="border-b last:border-b-0"
+                              >
+                                <td className="py-2 pr-3 font-medium text-gray-900">
+                                  {item.criterion}
+                                </td>
+                                <td className="py-2 px-3 text-green-700">
+                                  {item.if_yes}
+                                </td>
+                                <td className="py-2 pl-3 text-red-700">
+                                  {item.if_no}
+                                </td>
+                              </tr>
+                            ),
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+            {/* Section 7: Quand consulter un professionnel */}
+            {diagnostic.consultation_triggers &&
+              diagnostic.consultation_triggers.length > 0 && (
+                <Card className="border-l-4 border-l-red-500">
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Stethoscope className="h-5 w-5 text-red-500" />
+                      Quand consulter un professionnel
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {diagnostic.consultation_triggers.map((item, index) => {
+                        const urgencyStyles = {
+                          urgent: "bg-red-100 text-red-800 border-red-200",
+                          soon: "bg-amber-100 text-amber-800 border-amber-200",
+                          routine: "bg-blue-100 text-blue-800 border-blue-200",
+                        };
+                        const urgencyLabels = {
+                          urgent: "Urgent",
+                          soon: "Sous 48h",
+                          routine: "Routine",
+                        };
+                        return (
+                          <div
+                            key={item.trigger}
+                            className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
+                          >
+                            <Badge
+                              variant="outline"
+                              className={
+                                urgencyStyles[item.urgency] ||
+                                urgencyStyles.routine
+                              }
+                            >
+                              {urgencyLabels[item.urgency] || item.urgency}
+                            </Badge>
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {item.trigger}
+                              </p>
+                              <p className="text-sm text-gray-500 mt-0.5">
+                                {item.reason}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+            {/* Section 8: À faire / À éviter */}
+            {diagnostic.do_dont_list &&
+              ((diagnostic.do_dont_list.do &&
+                diagnostic.do_dont_list.do.length > 0) ||
+                (diagnostic.do_dont_list.dont &&
+                  diagnostic.do_dont_list.dont.length > 0)) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />À faire
+                      / À éviter
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {diagnostic.do_dont_list.do &&
+                        diagnostic.do_dont_list.do.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-green-700 flex items-center gap-1.5">
+                              <CheckCircle className="h-4 w-4" />À faire
+                            </h4>
+                            <ul className="space-y-1.5">
+                              {diagnostic.do_dont_list.do.map((item) => (
+                                <li
+                                  key={item}
+                                  className="text-sm text-gray-700 flex items-start gap-2"
+                                >
+                                  <span className="text-green-500 mt-0.5">
+                                    ✓
+                                  </span>
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      {diagnostic.do_dont_list.dont &&
+                        diagnostic.do_dont_list.dont.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-red-700 flex items-center gap-1.5">
+                              <XCircle className="h-4 w-4" />À éviter
+                            </h4>
+                            <ul className="space-y-1.5">
+                              {diagnostic.do_dont_list.dont.map((item) => (
+                                <li
+                                  key={item}
+                                  className="text-sm text-gray-700 flex items-start gap-2"
+                                >
+                                  <span className="text-red-500 mt-0.5">✗</span>
+                                  {item}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                     </div>
                   </CardContent>
                 </Card>
@@ -653,25 +831,28 @@ export default function DiagnosticAutoDetail() {
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                       <BookOpen className="h-5 w-5 text-amber-600" />
-                      Conseils et guides
+                      Que faire
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {diagnostic.related_blog_articles.map((slug) => (
-                        <Link
-                          key={slug}
-                          to={`/blog-pieces-auto/conseils/${slug}`}
-                          className="flex items-center justify-between p-3 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
-                        >
-                          <span className="text-amber-700">
-                            {slug
-                              .replace(/-/g, " ")
-                              .replace(/\b\w/g, (c) => c.toUpperCase())}
-                          </span>
-                          <ExternalLink className="h-4 w-4 text-amber-600" />
-                        </Link>
-                      ))}
+                      {diagnostic.related_blog_articles.map((slug) => {
+                        const label = slug
+                          .replace(/-/g, " ")
+                          .replace(/\b\w/g, (c) => c.toUpperCase());
+                        return (
+                          <Link
+                            key={slug}
+                            to={`/blog-pieces-auto/conseils/${slug}`}
+                            className="flex items-center justify-between p-3 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors"
+                          >
+                            <span className="text-amber-700">
+                              Que faire : {label}
+                            </span>
+                            <ExternalLink className="h-4 w-4 text-amber-600" />
+                          </Link>
+                        );
+                      })}
                     </div>
                   </CardContent>
                 </Card>
