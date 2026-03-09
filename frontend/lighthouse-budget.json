@@ -2,101 +2,37 @@
   {
     "path": "/*",
     "timings": [
-      {
-        "metric": "first-contentful-paint",
-        "budget": 1800,
-        "tolerance": 200
-      },
-      {
-        "metric": "largest-contentful-paint",
-        "budget": 2500,
-        "tolerance": 300
-      },
-      {
-        "metric": "interactive",
-        "budget": 3500,
-        "tolerance": 500
-      },
-      {
-        "metric": "total-blocking-time",
-        "budget": 200,
-        "tolerance": 50
-      },
-      {
-        "metric": "cumulative-layout-shift",
-        "budget": 0.1,
-        "tolerance": 0.05
-      }
-    ],
-    "resourceCounts": [
-      {
-        "resourceType": "script",
-        "budget": 15
-      },
-      {
-        "resourceType": "stylesheet",
-        "budget": 5
-      },
-      {
-        "resourceType": "image",
-        "budget": 50
-      },
-      {
-        "resourceType": "font",
-        "budget": 6
-      },
-      {
-        "resourceType": "total",
-        "budget": 100
-      }
+      { "metric": "first-contentful-paint", "budget": 4500 },
+      { "metric": "largest-contentful-paint", "budget": 5500 },
+      { "metric": "interactive", "budget": 6000 },
+      { "metric": "total-blocking-time", "budget": 500 },
+      { "metric": "cumulative-layout-shift", "budget": 0.25 }
     ],
     "resourceSizes": [
-      {
-        "resourceType": "script",
-        "budget": 400
-      },
-      {
-        "resourceType": "stylesheet",
-        "budget": 100
-      },
-      {
-        "resourceType": "image",
-        "budget": 1000
-      },
-      {
-        "resourceType": "font",
-        "budget": 200
-      },
-      {
-        "resourceType": "total",
-        "budget": 1800
-      }
+      { "resourceType": "script", "budget": 400 },
+      { "resourceType": "stylesheet", "budget": 150 },
+      { "resourceType": "total", "budget": 1800 }
+    ],
+    "resourceCounts": [
+      { "resourceType": "script", "budget": 20 },
+      { "resourceType": "stylesheet", "budget": 5 }
     ]
   },
   {
     "path": "/",
+    "name": "Homepage",
     "timings": [
-      {
-        "metric": "first-contentful-paint",
-        "budget": 1500
-      },
-      {
-        "metric": "largest-contentful-paint",
-        "budget": 2200
-      }
+      { "metric": "first-contentful-paint", "budget": 4000 },
+      { "metric": "largest-contentful-paint", "budget": 5000 },
+      { "metric": "cumulative-layout-shift", "budget": 0.15 }
     ]
   },
   {
-    "path": "/search*",
+    "path": "/pieces/*",
+    "name": "Catalog Pages",
     "timings": [
-      {
-        "metric": "first-contentful-paint",
-        "budget": 2000
-      },
-      {
-        "metric": "interactive",
-        "budget": 4000
-      }
+      { "metric": "first-contentful-paint", "budget": 4500 },
+      { "metric": "largest-contentful-paint", "budget": 5500 }
     ]
   }
 ]

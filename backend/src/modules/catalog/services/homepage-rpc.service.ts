@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
@@ -24,8 +25,10 @@ import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 export class HomepageRpcService extends SupabaseBaseService {
   protected override readonly logger = new Logger(HomepageRpcService.name);
 
-  // TTL Cache: 5 minutes pour données homepage
-  private readonly CACHE_TTL_SECONDS = 300;
+  // TTL Cache: 30 minutes pour données homepage (Phase 2 perf: families/brands changent rarement)
+  private readonly CACHE_TTL_SECONDS = 1800;
+  // TTL Cache families-only: 30 minutes
+  private readonly FAMILIES_CACHE_TTL_SECONDS = 1800;
   // Timeout RPC
   private readonly RPC_TIMEOUT_MS = 2000;
   // Singleflight: partage la promise RPC entre requêtes concurrentes
@@ -157,12 +160,119 @@ export class HomepageRpcService extends SupabaseBaseService {
   }
 
   /**
-   * 🗑️ Invalide le cache homepage
+   * ⚡ Families-only pour above-fold SSR (Phase 1 perf: split RPC)
+   * Requête Supabase directe — plus rapide que le RPC complet (~50ms vs ~150ms)
+   */
+  async getHomepageFamilies() {
+    const startTime = performance.now();
+    const cacheKey = 'homepage:families:v1';
+
+    const cached = await this.cacheService.get<unknown>(cacheKey);
+    if (cached) {
+      this.logger.debug(
+        `🎯 CACHE HIT families en ${(performance.now() - startTime).toFixed(1)}ms`,
+      );
+      return cached;
+    }
+
+    this.logger.debug('❌ CACHE MISS families, requête Supabase...');
+
+    // Parallel: fetch families + catalog_gamme mapping
+    const [familiesRes, catalogGammesRes] = await Promise.all([
+      this.supabase
+        .from(TABLES.catalog_family)
+        .select('mf_id, mf_name, mf_pic, mf_description')
+        .eq('mf_display', '1')
+        .order('mf_sort', { ascending: true }),
+      this.supabase
+        .from(TABLES.catalog_gamme)
+        .select('mc_pg_id, mc_mf_prime, mc_sort')
+        .order('mc_sort', { ascending: true }),
+    ]);
+
+    if (familiesRes.error) {
+      throw new DatabaseException({
+        code: ErrorCodes.CATALOG.RPC_FAILED,
+        message: `Families query failed: ${familiesRes.error.message}`,
+      });
+    }
+
+    // Get gamme IDs from catalog_gamme mapping
+    const gammeIds = (catalogGammesRes.data || []).map((cg) => cg.mc_pg_id);
+
+    const { data: gammes, error: gammesError } = await this.supabase
+      .from(TABLES.pieces_gamme)
+      .select('pg_id, pg_name, pg_alias, pg_img')
+      .in('pg_id', gammeIds);
+
+    if (gammesError) {
+      this.logger.warn('⚠️ Gammes query failed, continuing without gammes');
+    }
+
+    // Build gamme lookup map (String keys to handle type mismatches from Supabase)
+    const gammeMap = new Map((gammes || []).map((g) => [String(g.pg_id), g]));
+
+    // Build families with gammes hierarchy
+    const families = (familiesRes.data || []).map((family) => {
+      const familyGammeLinks = (catalogGammesRes.data || [])
+        .filter((cg) => String(cg.mc_mf_prime) === String(family.mf_id))
+        .sort((a, b) => (a.mc_sort || 0) - (b.mc_sort || 0));
+
+      const familyGammes = familyGammeLinks
+        .map((cg) => gammeMap.get(String(cg.mc_pg_id)))
+        .filter(Boolean);
+
+      return {
+        mf_id: family.mf_id,
+        mf_name: family.mf_name,
+        mf_pic: family.mf_pic,
+        mf_description: family.mf_description,
+        gammes: familyGammes,
+        gammes_count: familyGammes.length,
+      };
+    });
+
+    const result = { success: true, catalog: { families } };
+
+    // Cache asynchronously
+    this.cacheService
+      .set(cacheKey, result, this.FAMILIES_CACHE_TTL_SECONDS)
+      .catch((err) => this.logger.error('Erreur cache families:', err));
+
+    this.logger.log(
+      `✅ Families query en ${(performance.now() - startTime).toFixed(1)}ms (${families.length} familles)`,
+    );
+    return result;
+  }
+
+  /**
+   * ⚡ Below-fold data only (brands, equipementiers, blog)
+   * Uses the full RPC (cached) but returns only below-fold portion
+   */
+  async getHomepageBelowFold() {
+    const data = (await this.getHomepageDataOptimized()) as Record<
+      string,
+      unknown
+    >;
+    const { _performance, _cache, _catalog, _success, _stats, ...belowFold } =
+      data as Record<string, unknown>;
+    return {
+      brands: belowFold.brands ?? [],
+      equipementiers: belowFold.equipementiers ?? [],
+      blog_articles: belowFold.blog_articles ?? [],
+    };
+  }
+
+  /**
+   * 🗑️ Invalide le cache homepage (full RPC + families)
    */
   async invalidateCache(): Promise<void> {
     const cacheKey = this.getCacheKey();
-    await this.cacheService.del(cacheKey);
-    this.logger.log('🗑️ Cache invalidé pour homepage');
+    await Promise.all([
+      this.cacheService.del(cacheKey),
+      this.cacheService.del('homepage:families:v1'),
+    ]);
+    this.logger.log('🗑️ Cache invalidé pour homepage (RPC + families)');
   }
 
   /**

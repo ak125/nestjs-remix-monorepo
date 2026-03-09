@@ -312,6 +312,46 @@ export class CatalogController {
   }
 
   /**
+   * GET /api/catalog/homepage-families
+   * Above-fold families only — lightweight Supabase query (Phase 1 perf)
+   */
+  @Get('homepage-families')
+  @ApiOperation({
+    summary: 'Homepage families (above-fold)',
+    description:
+      'Retourne uniquement les familles catalogue pour above-fold SSR. Plus rapide que le RPC complet.',
+  })
+  async getHomepageFamilies() {
+    try {
+      return await this.homepageRpcService.getHomepageFamilies();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Homepage families error:', message);
+      throw error;
+    }
+  }
+
+  /**
+   * GET /api/catalog/homepage-below-fold
+   * Below-fold data (brands, equipementiers, blog) — deferred by frontend
+   */
+  @Get('homepage-below-fold')
+  @ApiOperation({
+    summary: 'Homepage below-fold data',
+    description:
+      'Retourne brands, equipementiers, blog articles pour below-fold streaming.',
+  })
+  async getHomepageBelowFold() {
+    try {
+      return await this.homepageRpcService.getHomepageBelowFold();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('❌ Homepage below-fold error:', message);
+      throw error;
+    }
+  }
+
+  /**
    * GET /api/catalog/brands-selector
    * Marques optimisées pour le sélecteur de véhicule
    */

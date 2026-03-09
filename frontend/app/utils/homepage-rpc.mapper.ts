@@ -103,6 +103,67 @@ export function mapHomepageRpcToLoaderData(
   return { families, brands, equipementiers, blogArticles };
 }
 
+// ─── Split endpoint mappers (Phase 1 perf) ──────────────
+
+/** Map /homepage-families response to SlimFamily[] */
+export function mapFamiliesFromSplit(raw: unknown): SlimFamily[] {
+  if (!raw || typeof raw !== "object") return [];
+  const data = raw as { catalog?: { families?: unknown[] } };
+  const families = data.catalog?.families;
+  if (!Array.isArray(families)) return [];
+
+  return families.map((f: any) => {
+    const allGammes = f.gammes ?? [];
+    return {
+      mf_id: f.mf_id,
+      mf_name: f.mf_name,
+      mf_pic: f.mf_pic,
+      mf_description: f.mf_description,
+      gammes: allGammes.slice(0, INITIAL_GAMMES_PER_FAMILY).map((g: any) => ({
+        pg_id: g.pg_id,
+        pg_alias: g.pg_alias,
+        pg_name: g.pg_name,
+        pg_img: g.pg_img,
+      })),
+      gammes_count: f.gammes_count ?? allGammes.length,
+    };
+  });
+}
+
+/** Map /homepage-below-fold response to below-fold data */
+export function mapBelowFoldData(raw: unknown): {
+  brands: BrandItem[];
+  equipementiers: Array<{ name: string; logo?: string }>;
+  blogArticles: HomepageBlogArticle[];
+} {
+  if (!raw || typeof raw !== "object") {
+    return { brands: [], equipementiers: [], blogArticles: [] };
+  }
+  const data = raw as Record<string, any>;
+
+  const brands: BrandItem[] = (data.brands ?? []).map((b: HomepageBrand) => ({
+    id: b.marque_id,
+    name: b.marque_name,
+    slug: b.marque_alias,
+    logo: b.marque_logo ? `${IMG_PROXY_LOGOS}/${b.marque_logo}` : undefined,
+  }));
+
+  const equipementiers = (data.equipementiers ?? []).map(
+    (e: HomepageEquipementier) => ({
+      name: e.pm_name,
+      logo: e.pm_logo
+        ? `/img/uploads/equipementiers-automobiles/${e.pm_logo}`
+        : undefined,
+    }),
+  );
+
+  return {
+    brands,
+    equipementiers,
+    blogArticles: data.blog_articles ?? [],
+  };
+}
+
 // ─── Families → CatalogFamily[] (with fallback) ─────────
 export function mapFamiliesToCatalog(families: SlimFamily[]): CatalogFamily[] {
   if (families.length > 0) {

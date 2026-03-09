@@ -1,5 +1,3 @@
-import tokenStyles from "@fafa/design-tokens/css?url";
-import utilitiesStyles from "@fafa/design-tokens/utilities?url";
 import {
   type ActionFunctionArgs,
   defer,
@@ -48,7 +46,6 @@ import {
 } from "./components/notifications/NotificationContainer";
 // @ts-ignore
 import stylesheet from "./global.css?url";
-// Design System CSS (chargés via links() — les @import CSS ne sont pas résolus par Vite)
 import { useHydrated } from "./hooks/useHydrated";
 import { usePageRoleDataAttrs } from "./hooks/usePageRole";
 import { useScrollBehavior } from "./hooks/useScrollBehavior";
@@ -86,11 +83,7 @@ export const links: LinksFunction = () => [
     crossOrigin: "anonymous" as const,
   },
 
-  // Stylesheets - Design tokens AVANT global.css (définissent les CSS variables)
-  { rel: "stylesheet", href: tokenStyles },
-  { rel: "stylesheet", href: utilitiesStyles },
-  // CSS principal (utilise les variables définies ci-dessus)
-  // Note: brand-colors.css déplacé vers les routes constructeurs.* (seules utilisatrices)
+  // CSS principal (inclut design tokens + utilities via @import, bundlé par Vite)
   { rel: "stylesheet", href: stylesheet },
 
   // DNS Prefetch & Preconnect

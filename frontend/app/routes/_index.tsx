@@ -23,7 +23,9 @@ import {
 } from "~/components/home";
 import { type BrandItem } from "~/components/home/constants";
 import {
-  mapHomepageRpcToLoaderData,
+  type SlimFamily,
+  mapFamiliesFromSplit,
+  mapBelowFoldData,
   mapFamiliesToCatalog,
   mapBrandsWithFallback,
   mapBlogArticles,
@@ -98,10 +100,25 @@ export const meta: MetaFunction = () => [
   { name: "googlebot", content: "index, follow" },
 ];
 
-// ─── Loader ──────────────────────────────────────────────
-// Above-fold: families (slim, 3 gammes/family) → awaited (blocks SSR)
-// Below-fold: brands, equipementiers, blogArticles, faqs → deferred (streamed)
+// ─── Loader (Phase 1 perf: split above-fold / below-fold) ─
+// Above-fold: families via lightweight /homepage-families → awaited (blocks SSR)
+// Below-fold: brands, equipementiers, blog via /homepage-below-fold → REAL deferred streaming
 export async function loader({ request }: LoaderFunctionArgs) {
+  // Below-fold + FAQ: fire immediately, NOT awaited (real streaming)
+  const belowFoldPromise = fetch(
+    getInternalApiUrlFromRequest("/api/catalog/homepage-below-fold", request),
+  )
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      if (!data) return { brands: [], equipementiers: [], blogArticles: [] };
+      return mapBelowFoldData(data);
+    })
+    .catch(() => ({
+      brands: [] as BrandItem[],
+      equipementiers: [] as Array<{ name: string; logo?: string }>,
+      blogArticles: [] as any[],
+    }));
+
   const faqPromise = fetch(
     getInternalApiUrlFromRequest(
       "/api/support/faq?status=published&limit=5",
@@ -119,41 +136,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
     )
     .catch(() => [] as Array<{ id: string; question: string; answer: string }>);
 
+  // Above-fold: AWAIT families only (lightweight, fast)
   try {
-    const rpcRes = await fetch(
-      getInternalApiUrlFromRequest("/api/catalog/homepage-rpc", request),
+    const familiesRes = await fetch(
+      getInternalApiUrlFromRequest("/api/catalog/homepage-families", request),
     );
 
-    if (!rpcRes.ok) {
-      logger.warn("[homepage-rpc] Non-OK status:", {
-        status: rpcRes.status,
-        statusText: rpcRes.statusText,
-      });
-    }
+    const familiesRaw = familiesRes.ok ? await familiesRes.json() : null;
+    const families = mapFamiliesFromSplit(familiesRaw);
 
-    const rpcRaw = rpcRes.ok ? await rpcRes.json() : null;
-    const { families, brands, equipementiers, blogArticles } =
-      mapHomepageRpcToLoaderData(rpcRaw);
-
-    // Above-fold data is synchronous (already resolved)
-    // Below-fold data wrapped as resolved promises for defer() streaming
     return defer({
       families,
-      belowFold: Promise.resolve({ brands, equipementiers, blogArticles }),
+      belowFold: belowFoldPromise, // REAL promise — enables Remix streaming
       faqs: faqPromise,
     });
   } catch (err) {
-    logger.error("[homepage-rpc] Fetch failed:", {
+    logger.error("[homepage-families] Fetch failed:", {
       error: err instanceof Error ? err.message : String(err),
     });
-    const fallback = mapHomepageRpcToLoaderData(null);
     return defer({
-      families: fallback.families,
-      belowFold: Promise.resolve({
-        brands: fallback.brands,
-        equipementiers: fallback.equipementiers,
-        blogArticles: fallback.blogArticles,
-      }),
+      families: [] as SlimFamily[],
+      belowFold: belowFoldPromise,
       faqs: faqPromise,
     });
   }

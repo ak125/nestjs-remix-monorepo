@@ -1,3 +1,7 @@
+/* === DESIGN TOKENS (bundled by Vite) === */
+@import "@fafa/design-tokens/css";
+@import "@fafa/design-tokens/utilities";
+
 /* === SELF-HOSTED FONTS (ex-Google Fonts) === */
 /* LCP Phase 2: Fonts servies localement, élimine 2 DNS lookups cross-origin */
 /* Inter = variable font (400-600 dans un seul fichier) */
@@ -94,8 +98,7 @@
 }
 
 /* === DESIGN SYSTEM === */
-/* tokens.css + utilities.css chargés via links() dans root.tsx */
-/* (les @import CSS ne sont pas résolus par Vite en dev mode) */
+/* tokens.css + utilities.css importés via @import en haut de ce fichier */
 
 /* === MAILLAGE INTERNE === */
 /* (intégré directement pour éviter erreur @layer sans @tailwind directives) */

@@ -45,8 +45,12 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
   const totalGammes = cat.gammes_count ?? cat.gammes.length;
   const hasMore = totalGammes > 3;
 
+  // Phase 4 perf: skip Reveal animation delay on above-fold cards (index < 4)
+  const isAboveFold = index < 4;
+  const revealDelay = isAboveFold ? 0 : Math.min(index * 40, 400);
+
   return (
-    <Reveal key={cat.n} delay={Math.min(index * 40, 400)} className={className}>
+    <Reveal key={cat.n} delay={revealDelay} className={className}>
       <Card className="group transition-all duration-200 rounded-[26px] lg:rounded-2xl shadow-[0_14px_34px_rgba(15,23,42,0.08)] lg:shadow-none overflow-hidden hover:shadow-xl hover:-translate-y-1">
         <div
           className={`relative aspect-[4/3] lg:h-40 lg:aspect-auto xl:h-48 overflow-hidden bg-gradient-to-br ${cat.color}`}
@@ -56,7 +60,8 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
               src={cat.img}
               alt={cat.n}
               className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
+              loading={isAboveFold ? "eager" : "lazy"}
+              fetchPriority={isAboveFold ? "high" : undefined}
               width="400"
               height="300"
             />
