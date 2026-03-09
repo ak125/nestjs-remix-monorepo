@@ -144,7 +144,7 @@ export async function getAvailablePaymentMethods(): Promise<PaymentMethod[]> {
 function getDefaultPaymentMethods(): PaymentMethod[] {
   return [
     {
-      id: "CYBERPLUS",
+      id: "cyberplus",
       name: "Carte bancaire",
       description: "Paiement sécurisé par carte bancaire",
       logo: "/images/cards.png",
@@ -152,19 +152,19 @@ function getDefaultPaymentMethods(): PaymentMethod[] {
       isDefault: true,
     },
     {
-      id: "PAYPAL",
-      name: "PayPal",
-      description: "Paiement via votre compte PayPal",
-      logo: "/images/paypal.png",
+      id: "credit_card",
+      name: "Carte de crédit",
+      description: "Paiement par carte de crédit",
+      logo: "/images/cards.png",
       enabled: true,
       isDefault: false,
     },
     {
-      id: "BANK_TRANSFER",
-      name: "Virement bancaire",
-      description: "Paiement par virement (délai 2-3 jours)",
-      logo: "/images/bank-transfer.png",
-      enabled: false,
+      id: "debit_card",
+      name: "Carte de débit",
+      description: "Paiement par carte de débit",
+      logo: "/images/cards.png",
+      enabled: true,
       isDefault: false,
     },
   ];

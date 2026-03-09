@@ -460,7 +460,7 @@ export default function CheckoutPage() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>(
     paymentMethods?.find((m) => m.isDefault)?.id ||
       paymentMethods?.[0]?.id ||
-      "card_paybox",
+      "cyberplus",
   );
 
   // (point 7) Persist guest state to localStorage on change
@@ -551,7 +551,7 @@ export default function CheckoutPage() {
     fd.set("country", shippingAddress.country);
     fd.set("paymentMethod", selectedPaymentMethod);
     if (shippingAddress.phone) fd.set("phone", shippingAddress.phone);
-    if (acceptedTerms) fd.set("acceptTerms", "on");
+    fd.set("acceptTerms", acceptedTerms ? "on" : "");
     submit(fd, { method: "post" });
   };
 

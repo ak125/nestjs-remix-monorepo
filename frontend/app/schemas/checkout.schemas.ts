@@ -59,10 +59,13 @@ export const shippingAddressSchema = z.object({
 // Payment method
 // ---------------------------------------------------------------------------
 
-export const paymentMethodSchema = z.enum(["card_paybox"], {
-  required_error: "Methode de paiement requise.",
-  invalid_type_error: "Methode de paiement invalide.",
-});
+export const paymentMethodSchema = z.enum(
+  ["cyberplus", "credit_card", "debit_card"],
+  {
+    required_error: "Methode de paiement requise.",
+    invalid_type_error: "Methode de paiement invalide.",
+  },
+);
 
 // ---------------------------------------------------------------------------
 // Main checkout submit schema (used in action)
@@ -180,7 +183,7 @@ export function parseCheckoutFormData(formData: FormData) {
     city: String(formData.get("city") ?? ""),
     country: String(formData.get("country") ?? "France"),
     phone: String(formData.get("phone") ?? ""),
-    paymentMethod: String(formData.get("paymentMethod") ?? "card_paybox"),
+    paymentMethod: String(formData.get("paymentMethod") ?? "cyberplus"),
     acceptTerms: formData.get("acceptTerms"),
   };
 
