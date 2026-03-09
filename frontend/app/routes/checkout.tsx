@@ -625,7 +625,7 @@ export default function CheckoutPage() {
     fd.set("civility", shippingAddress.civility);
     fd.set("country", shippingAddress.country);
     fd.set("paymentMethod", selectedPaymentMethod);
-    if (shippingAddress.phone) fd.set("phone", shippingAddress.phone);
+    fd.set("phone", shippingAddress.phone);
     fd.set("acceptTerms", "on");
     submit(fd, { method: "post" });
   };

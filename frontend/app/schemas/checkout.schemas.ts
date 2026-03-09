@@ -25,7 +25,7 @@ const trimmedString = (label: string, min = 1) =>
 // ---------------------------------------------------------------------------
 
 const frenchZipCodeRegex = /^[0-9]{4,10}$/;
-const phoneRegex = /^[0-9+\s().-]{6,20}$/;
+const phoneCharsRegex = /^[0-9+\s().-]+$/;
 
 // ---------------------------------------------------------------------------
 // Shipping address schema
@@ -45,14 +45,9 @@ export const shippingAddressSchema = z.object({
     .regex(frenchZipCodeRegex, "Code postal invalide."),
   city: trimmedString("Ville", 2).max(120, "Ville trop longue."),
   country: trimmedString("Pays", 2).max(120, "Pays trop long."),
-  phone: z
-    .string({ invalid_type_error: "Telephone invalide." })
-    .trim()
-    .optional()
-    .or(z.literal(""))
-    .refine((value) => !value || phoneRegex.test(value), {
-      message: "Telephone invalide.",
-    }),
+  phone: trimmedString("Telephone", 6)
+    .max(20, "Telephone trop long.")
+    .regex(phoneCharsRegex, "Telephone invalide."),
 });
 
 // ---------------------------------------------------------------------------

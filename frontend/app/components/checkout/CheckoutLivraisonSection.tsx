@@ -466,10 +466,7 @@ export function CheckoutLivraisonSection({
                   htmlFor="phone"
                   className="block text-sm font-medium text-slate-700 mb-1"
                 >
-                  Telephone{" "}
-                  <span className="text-slate-400 font-normal">
-                    (optionnel)
-                  </span>
+                  Telephone <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="tel"
