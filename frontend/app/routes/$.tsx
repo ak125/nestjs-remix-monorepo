@@ -294,6 +294,24 @@ function isGarbageUrl(pathname: string): boolean {
  * Exécuté AVANT l'appel API pour une résolution instantanée.
  */
 function resolveKnownPattern(pathname: string): string | null {
+  // URLs accentuées → normalisation sans accent (301)
+  // Couvre /pièces/ → /pieces/, /référence-auto/ → /reference-auto/, etc.
+  try {
+    const decoded = decodeURIComponent(pathname);
+    const normalized = decoded.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (normalized !== decoded) {
+      return normalized;
+    }
+  } catch {
+    // decodeURIComponent peut échouer sur des URLs malformées — on continue
+  }
+
+  // /blog-pieces-auto/comment-* → /blog-pieces-auto/conseils/* (slugs conseils gamme)
+  if (pathname.startsWith("/blog-pieces-auto/comment-")) {
+    const slug = pathname.replace("/blog-pieces-auto/", "");
+    return `/blog-pieces-auto/conseils/${slug}`;
+  }
+
   // /blog-pieces-auto/guide/* → /blog-pieces-auto/guide-achat/* (manque le "-achat")
   if (
     pathname.startsWith("/blog-pieces-auto/guide/") &&
