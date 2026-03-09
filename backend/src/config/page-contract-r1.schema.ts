@@ -16,6 +16,7 @@
 
 import { z } from 'zod';
 import { R1_MEDIA_RULES } from './r1-media-rules.constants';
+import type { PageRole } from './page-contract-shared.constants';
 
 // ── Enums ────────────────────────────────────────────────
 
@@ -186,7 +187,7 @@ export type R1MediaSlots = z.infer<typeof R1MediaSlotsSchema>;
 
 export const PageContractR1Schema = z
   .object({
-    page_role: z.literal('R1_ROUTER'),
+    page_role: z.literal('R1_ROUTER' satisfies PageRole),
     primary_intent: z.string().min(20).max(220),
     allowed_subintents: z.array(AllowedSubintent).min(3).max(6),
     forbidden_topics: z.array(z.string()).min(12).max(24),

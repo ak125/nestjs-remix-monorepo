@@ -26,7 +26,7 @@
     "test:cov": "node --max-old-space-size=2048 ./node_modules/.bin/jest --coverage --maxWorkers=2",
     "start:prod": "node dist/main",
     "sitemap:generate": "ts-node scripts/generate-sitemaps.ts",
-    "generate:r6-schema": "ts-node src/config/generate-r6-json-schema.ts"
+    "generate:schemas": "ts-node src/config/generate-json-schemas.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",

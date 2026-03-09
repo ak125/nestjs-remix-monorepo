@@ -8,6 +8,7 @@
  */
 
 import { z } from 'zod';
+import type { PageRole } from './page-contract-shared.constants';
 import {
   R6_SECTION_IDS,
   R6_MEDIA_PLACEMENTS,
@@ -556,7 +557,9 @@ export const R6PageContractSchema = z.object({
 
   // ── Intent & role V2 ───────────────────────────────────
   intentType: z.literal('R6').default('R6'),
-  pageRole: z.literal('R6_BUYING_GUIDE').default('R6_BUYING_GUIDE'),
+  pageRole: z
+    .literal('R6_BUYING_GUIDE' satisfies PageRole)
+    .default('R6_BUYING_GUIDE'),
   canonicalRoleUrl: z.string().startsWith('/').optional(),
   roleVersion: z.enum(['v1', 'v2']).default('v2'),
 

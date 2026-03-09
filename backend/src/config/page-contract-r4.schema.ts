@@ -7,6 +7,7 @@
  */
 
 import { z } from 'zod';
+import type { PageRole } from './page-contract-shared.constants';
 
 // ── Enums ────────────────────────────────────────────────
 
@@ -180,7 +181,7 @@ const Section = z.object({
 
 export const PageContractR4Schema = z.object({
   contract_version: z.string().regex(/^R4\.[0-9]+\.[0-9]+$/),
-  page_role: z.literal('R4_REFERENCE'),
+  page_role: z.literal('R4_REFERENCE' satisfies PageRole),
   entity: z.object({
     slug: z.string().min(1),
     short_title: z.string().min(1),
