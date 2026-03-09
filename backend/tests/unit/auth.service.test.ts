@@ -10,6 +10,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../../src/auth/auth.service';
 import { UserDataConsolidatedService } from '../../src/modules/users/services/user-data-consolidated.service';
 import { CacheService } from '../../src/cache/cache.service';
@@ -93,6 +94,7 @@ describe('AuthService', () => {
         { provide: UserDataConsolidatedService, useValue: mockUserService },
         { provide: CacheService, useValue: mockCacheService },
         { provide: PasswordCryptoService, useValue: mockPasswordCrypto },
+        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('') } },
       ],
     }).compile();
 
