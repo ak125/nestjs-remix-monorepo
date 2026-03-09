@@ -110,6 +110,32 @@ export class FeatureFlagsService {
     return this.int('CONSEIL_BATCH_SIZE', 10);
   }
 
+  // ── Agentic Engine flags ──
+
+  get agenticEngineEnabled(): boolean {
+    return this.bool('AGENTIC_ENGINE_ENABLED', false);
+  }
+
+  get agenticApplyEnabled(): boolean {
+    return this.bool('AGENTIC_APPLY_ENABLED', false);
+  }
+
+  get agenticMaxBranches(): number {
+    return Math.min(this.int('AGENTIC_MAX_BRANCHES', 3), 5);
+  }
+
+  get agenticMaxCriticLoops(): number {
+    return Math.min(this.int('AGENTIC_MAX_CRITIC_LOOPS', 2), 3);
+  }
+
+  get agenticAirlockEnabled(): boolean {
+    return this.bool('AGENTIC_AIRLOCK_ENABLED', false);
+  }
+
+  get agenticDailyTokenBudget(): number {
+    return this.int('AGENTIC_DAILY_TOKEN_BUDGET', 100_000);
+  }
+
   // ── Pipeline chain flags ──
 
   get pipelineChainEnabled(): boolean {
@@ -155,6 +181,12 @@ export class FeatureFlagsService {
     'CANARY_AUTO_PUBLISH',
     'DRAFT_AUTO_PUBLISH_ENABLED',
     'DRAFT_AUTO_PUBLISH_INTERVAL_MS',
+    'AGENTIC_ENGINE_ENABLED',
+    'AGENTIC_APPLY_ENABLED',
+    'AGENTIC_MAX_BRANCHES',
+    'AGENTIC_MAX_CRITIC_LOOPS',
+    'AGENTIC_AIRLOCK_ENABLED',
+    'AGENTIC_DAILY_TOKEN_BUDGET',
   ]);
 
   listFlags(): Record<

@@ -57,6 +57,7 @@ import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Docke
 import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 NOUVEAU - Module marketing avec backlinks, content roadmap et KPIs !
 import { MediaFactoryModule } from './modules/media-factory/media-factory.module'; // 🎬 NOUVEAU - Module video governance (P1) !
 import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-engine.module'; // 🔧 NOUVEAU - Moteur diagnostic mecanique MVP !
+import { AgenticEngineModule } from './modules/agentic-engine/agentic-engine.module'; // 🤖 NOUVEAU - Moteur agentique (Phase 1) !
 
 /**
  * AppModule - Architecture Modulaire Restaurée
@@ -187,6 +188,7 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
     MarketingModule, // 📊 ACTIVÉ - Module marketing avec backlinks, content roadmap et KPIs !
     MediaFactoryModule, // 🎬 ACTIVÉ - Video governance (gates, productions, assets) !
     DiagnosticEngineModule, // 🔧 ACTIVÉ - Moteur diagnostic mecanique MVP (Slice 1) !
+    ...(process.env.AGENTIC_ENGINE_ENABLED === 'true' ? [AgenticEngineModule] : []), // 🤖 Moteur agentique (flag-gated)
 
     // 🔄 WORKERS & BACKGROUND JOBS
     WorkerModule, // 🔄 ACTIVÉ - Module Workers BullMQ (sitemaps, cache, SEO monitor) !
