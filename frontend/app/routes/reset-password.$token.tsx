@@ -43,7 +43,7 @@ export const loader: LoaderFunction = async ({ params }) => {
   return json({ token });
 };
 
-export const action: ActionFunction = async ({ params, request, context }) => {
+export const action: ActionFunction = async ({ params, request }) => {
   const token = params.token;
 
   if (!token) {
@@ -65,29 +65,52 @@ export const action: ActionFunction = async ({ params, request, context }) => {
     );
   }
 
-  if (typeof password === "string" && password.length < 6) {
+  const pwd = password.toString();
+
+  if (pwd.length < 8) {
     return json(
-      { error: "Le mot de passe doit contenir au moins 6 caractères" },
+      { error: "Le mot de passe doit contenir au moins 8 caractères" },
       { status: 400 },
     );
   }
 
-  // Utiliser l'intégration directe pour réinitialiser le mot de passe
-  const { getRemixIntegrationService } = await import(
-    "~/server/remix-integration.server"
-  );
-  const integration: any = await getRemixIntegrationService(context);
-  const result = await integration.resetPasswordForRemix?.(
-    token,
-    password.toString(),
-  );
-
-  if (result.success) {
-    return redirect("/login?reset=success");
-  } else {
+  if (!/[a-zA-Z]/.test(pwd)) {
     return json(
-      { error: result.error || "Token invalide ou expiré" },
+      { error: "Le mot de passe doit contenir au moins une lettre" },
       { status: 400 },
+    );
+  }
+
+  if (!/[0-9]/.test(pwd)) {
+    return json(
+      { error: "Le mot de passe doit contenir au moins un chiffre" },
+      { status: 400 },
+    );
+  }
+
+  try {
+    const baseUrl =
+      process.env.INTERNAL_API_BASE_URL || "http://localhost:3000";
+    const response = await fetch(`${baseUrl}/api/password/reset`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, newPassword: pwd }),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      return redirect("/login?reset=success");
+    }
+
+    return json(
+      { error: result.message || "Token invalide ou expiré" },
+      { status: 400 },
+    );
+  } catch {
+    return json(
+      { error: "Une erreur est survenue. Veuillez réessayer." },
+      { status: 500 },
     );
   }
 };
@@ -127,8 +150,8 @@ export default function ResetPassword() {
                 name="password"
                 type="password"
                 required
-                minLength={6}
-                placeholder="Au moins 6 caractères"
+                minLength={8}
+                placeholder="8 caractères min., 1 lettre et 1 chiffre"
                 className="w-full"
               />
             </div>
@@ -140,7 +163,7 @@ export default function ResetPassword() {
                 name="confirmPassword"
                 type="password"
                 required
-                minLength={6}
+                minLength={8}
                 placeholder="Confirmez votre mot de passe"
                 className="w-full"
               />

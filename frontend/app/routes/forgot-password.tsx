@@ -31,7 +31,7 @@ export const meta: MetaFunction = () => [
   { name: "robots", content: "noindex, nofollow" },
 ];
 
-export const action: ActionFunction = async ({ request, context }) => {
+export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const email = formData.get("email");
 
@@ -39,19 +39,28 @@ export const action: ActionFunction = async ({ request, context }) => {
     return json({ error: "Email is required" }, { status: 400 });
   }
 
-  // Utiliser l'intégration directe pour la demande de réinitialisation
-  const { getRemixIntegrationService } =
-    await import("~/server/remix-integration.server");
-  const integration: any = await getRemixIntegrationService(context);
-  const result = await integration.forgotPasswordForRemix?.(email.toString());
+  try {
+    const baseUrl =
+      process.env.INTERNAL_API_BASE_URL || "http://localhost:3000";
+    const response = await fetch(`${baseUrl}/api/password/request-reset`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.toString() }),
+    });
 
-  if (result.success) {
-    return redirect("/forgot-password?status=sent");
-  } else {
+    const result = await response.json();
+
+    if (result.success) {
+      return redirect("/forgot-password?status=sent");
+    }
+
     return json(
-      { error: result.error || "Une erreur est survenue" },
-      { status: 500 },
+      { error: result.message || "Une erreur est survenue" },
+      { status: response.status },
     );
+  } catch {
+    // Toujours afficher le message de succès (sécurité : ne pas révéler si l'email existe)
+    return redirect("/forgot-password?status=sent");
   }
 };
 

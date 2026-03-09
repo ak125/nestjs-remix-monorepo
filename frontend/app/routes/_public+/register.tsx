@@ -77,6 +77,9 @@ const RegisterSchemaBase = z.object({
     .regex(/[0-9]/, "Au moins un chiffre requis"),
   confirmPassword: z.string().min(1, "Veuillez confirmer le mot de passe"),
   newsletterOptIn: z.boolean().default(false),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "Vous devez accepter les conditions générales de vente",
+  }),
   billingAddress: z.object({
     address1: z
       .string()
@@ -135,6 +138,7 @@ function parseRegisterFormData(formData: FormData) {
     password: String(formData.get("password") ?? ""),
     confirmPassword: String(formData.get("confirmPassword") ?? ""),
     newsletterOptIn: formData.get("newsletterOptIn") === "on",
+    acceptTerms: formData.get("acceptTerms") === "on",
     billingAddress: {
       address1: String(formData.get("billing.address1") ?? ""),
       address2: String(formData.get("billing.address2") ?? ""),
@@ -1050,6 +1054,11 @@ export default function RegisterPage() {
                         </span>
                       }
                     />
+                    {fieldErrors.acceptTerms?.[0] && (
+                      <p className="text-xs text-red-600 mt-1">
+                        {fieldErrors.acceptTerms[0]}
+                      </p>
+                    )}
                   </div>
 
                   {/* CTA */}
