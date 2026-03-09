@@ -138,7 +138,7 @@ export class OrdersController {
       this.logger.log(`Listing orders for user ${userId}`);
 
       const filters: OrderFilters = {
-        customerId: parseInt(userId),
+        customerId: userId,
         status: query.status ? parseInt(query.status) : undefined,
         startDate: query.year
           ? new Date(`${query.year}-01-01`)
@@ -241,7 +241,7 @@ export class OrdersController {
       // S'assurer que le customerId correspond à l'utilisateur connecté
       const dataWithUserId = {
         ...orderData,
-        customerId: Number(userId),
+        customerId: userId,
       };
 
       return await this.ordersService.createOrder(dataWithUserId);
@@ -323,7 +323,7 @@ export class OrdersController {
       // Créer la commande avec le nouveau userId
       const dataWithUserId = {
         ...orderData,
-        customerId: Number(newUser.id),
+        customerId: newUser.id,
       };
 
       const order = await this.ordersService.createOrder(dataWithUserId);
@@ -367,6 +367,14 @@ export class OrdersController {
       return order;
     } catch (error) {
       this.logger.error('Error in guest checkout:', error);
+
+      // Race condition: le compte a été créé entre checkIfUserExists et register
+      if (error instanceof Error && error.message.includes('déjà utilisé')) {
+        throw new ConflictException(
+          'Un compte existe déjà avec cet email. Veuillez vous connecter.',
+        );
+      }
+
       throw error;
     }
   }
@@ -449,12 +457,12 @@ export class OrdersController {
       this.logger.log(`Getting stats for user ${userId}`);
 
       const allOrders = await this.ordersService.listOrders({
-        customerId: parseInt(userId),
+        customerId: userId,
         limit: 1000,
       });
 
       const recentOrders = await this.ordersService.listOrders({
-        customerId: parseInt(userId),
+        customerId: userId,
         startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         limit: 1000,
       });
@@ -493,7 +501,7 @@ export class OrdersController {
       this.logger.log('Admin listing all orders with filters:', query);
 
       const filters: OrderFilters = {
-        customerId: query.customerId ? parseInt(query.customerId) : undefined,
+        customerId: query.customerId || undefined,
         status: query.status ? parseInt(query.status) : undefined,
         startDate: query.startDate ? new Date(query.startDate) : undefined,
         endDate: query.endDate ? new Date(query.endDate) : undefined,
@@ -612,7 +620,7 @@ export class OrdersController {
   @ApiQuery({ name: 'limit', required: false, example: 20 })
   @ApiResponse({ status: 200, description: 'Commandes du client' })
   async getCustomerOrders(
-    @Param('customerId', ParseIntPipe) customerId: number,
+    @Param('customerId') customerId: string,
     @Query() query: OrderListQuery,
   ) {
     try {
@@ -708,7 +716,7 @@ export class OrdersController {
       );
 
       const mockOrderData: CreateOrderData = {
-        customerId: Number(customerId),
+        customerId: String(customerId),
         orderLines: [
           {
             productId: 'TEST001',
@@ -780,7 +788,7 @@ export class OrdersController {
       );
 
       const mockOrderData: CreateOrderData = {
-        customerId: Number(customerId),
+        customerId: String(customerId),
         orderLines: [
           {
             productId: '3047339',

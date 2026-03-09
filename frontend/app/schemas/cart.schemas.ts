@@ -113,6 +113,7 @@ export const cartSchema = z.object({
       session_id: z.string().optional(),
       last_updated: z.string().optional(),
     })
+    .nullable()
     .optional(),
 });
 

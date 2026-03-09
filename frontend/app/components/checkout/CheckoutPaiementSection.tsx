@@ -1,3 +1,6 @@
+import { Lock, ArrowRight } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { Spinner } from "~/components/ui/spinner";
 import { type CheckoutFieldErrors } from "~/schemas/checkout.schemas";
 import { type PaymentMethod } from "~/types/payment";
 
@@ -216,66 +219,25 @@ export function CheckoutPaiementSection({
       )}
 
       {/* Submit button */}
-      <button
+      <Button
         type="submit"
         disabled={isProcessing}
-        className={`w-full text-white py-4 px-6 rounded-xl font-semibold shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-3 ${canSubmit ? "bg-cta hover:bg-cta-hover shadow-cta/30 hover:shadow-xl hover:shadow-cta/40" : "bg-cta/70 shadow-cta/20"}`}
+        size="lg"
+        className={`w-full py-4 px-6 rounded-xl font-semibold shadow-lg transition-all duration-200 ${canSubmit ? "bg-cta hover:bg-cta-hover text-white shadow-cta/30 hover:shadow-xl hover:shadow-cta/40" : "bg-cta/70 text-white shadow-cta/20"}`}
       >
         {isProcessing ? (
           <>
-            <svg
-              className="animate-spin h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
+            <Spinner className="h-5 w-5" />
             <span>Traitement en cours...</span>
           </>
         ) : (
           <>
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-              />
-            </svg>
+            <Lock className="w-5 h-5" />
             <span>Payer {formatPrice(totalTTC)}</span>
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 7l5 5m0 0l-5 5m5-5H6"
-              />
-            </svg>
+            <ArrowRight className="w-5 h-5" />
           </>
         )}
-      </button>
+      </Button>
     </div>
   );
 }

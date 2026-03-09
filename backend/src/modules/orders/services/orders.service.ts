@@ -26,7 +26,7 @@ export interface OrderAddress {
 }
 
 export interface CreateOrderData {
-  customerId: number;
+  customerId: string;
   orderLines: Array<{
     productId: string;
     productName: string;
@@ -52,7 +52,7 @@ export interface UpdateOrderData {
 }
 
 export interface OrderFilters {
-  customerId?: number;
+  customerId?: string;
   status?: number;
   startDate?: Date;
   endDate?: Date;
@@ -193,7 +193,7 @@ export class OrdersService extends SupabaseBaseService {
       // IMPORTANT: Table legacy - toutes les colonnes sont TEXT
       const orderToInsert = {
         ord_id: orderNumber, // ✅ CORRECTIF: Générer l'ID obligatoire
-        ord_cst_id: String(orderData.customerId),
+        ord_cst_id: orderData.customerId,
         ord_date: new Date().toISOString(),
         ord_parent: '0',
         ord_is_pay: '0',
@@ -371,7 +371,7 @@ export class OrdersService extends SupabaseBaseService {
 
       // Filtres
       if (filters.customerId) {
-        query = query.eq('ord_cst_id', filters.customerId.toString());
+        query = query.eq('ord_cst_id', filters.customerId);
       }
 
       if (filters.status) {
@@ -569,7 +569,7 @@ export class OrdersService extends SupabaseBaseService {
    * Récupérer les commandes d'un client
    */
   async getCustomerOrders(
-    customerId: number,
+    customerId: string,
     page = 1,
     limit = 20,
   ): Promise<OrderListResult> {
@@ -579,7 +579,7 @@ export class OrdersService extends SupabaseBaseService {
   /**
    * Obtenir statistiques commandes
    */
-  async getOrderStats(customerId?: number): Promise<OrderStats> {
+  async getOrderStats(customerId?: string): Promise<OrderStats> {
     try {
       let query = this.supabase.from(TABLES.xtr_order).select('*', {
         count: 'exact',
@@ -587,7 +587,7 @@ export class OrdersService extends SupabaseBaseService {
       });
 
       if (customerId) {
-        query = query.eq('ord_cst_id', customerId.toString());
+        query = query.eq('ord_cst_id', customerId);
       }
 
       const { data: orders, count } = await query;

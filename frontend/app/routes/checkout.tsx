@@ -43,7 +43,9 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "~/components/ui/accordion";
+import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { Spinner } from "~/components/ui/spinner";
 import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
@@ -418,9 +420,10 @@ export default function CheckoutPage() {
 
   // Refs for smooth scroll (point 2)
   const paiementRef = useRef<HTMLDivElement>(null);
-  // Double-submit guard (point 5)
+  // Double-submit guard — ref synchrone (pas de délai React state)
+  const submitGuardRef = useRef(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const isLocked = isSubmitting || isRedirecting;
+  const isLocked = isSubmitting || isRedirecting || submitGuardRef.current;
 
   // Auto-detect if connected user has complete address → skip livraison
   const hasCompleteAddress = !!(
@@ -511,6 +514,7 @@ export default function CheckoutPage() {
       "error" in actionData
     ) {
       setIsRedirecting(false);
+      submitGuardRef.current = false;
       toast.error(actionData.error as string);
     }
   }, [actionData]);
@@ -590,7 +594,8 @@ export default function CheckoutPage() {
   // Form submit — client-side Zod validation before server submit
   const handleCheckoutSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (isLocked) return;
+    if (isLocked || submitGuardRef.current) return;
+    submitGuardRef.current = true;
 
     // Client-side validation (same Zod schema as server)
     const data = {
@@ -611,6 +616,7 @@ export default function CheckoutPage() {
     if (errors) {
       setClientErrors(errors);
       scrollToFirstError(errors);
+      submitGuardRef.current = false;
       return;
     }
 
@@ -1097,39 +1103,22 @@ export default function CheckoutPage() {
               }`}
             />
           </div>
-          <button
+          <Button
             type="submit"
             form="checkout-form"
             disabled={isLocked}
-            className={`w-full py-3 px-4 text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target disabled:opacity-50 disabled:cursor-not-allowed ${canSubmitOrder ? "bg-cta hover:bg-cta-hover" : "bg-cta/70"}`}
+            size="lg"
+            className={`w-full rounded-xl font-bold touch-target ${canSubmitOrder ? "bg-cta hover:bg-cta-hover text-white" : "bg-cta/70 text-white"}`}
           >
             {isLocked ? (
               <>
-                <svg
-                  className="animate-spin h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
+                <Spinner className="h-5 w-5" />
                 <span>{isRedirecting ? "Redirection..." : "En cours..."}</span>
               </>
             ) : (
               <span>Payer {formatPrice(total)}</span>
             )}
-          </button>
+          </Button>
         </div>
       </MobileBottomBar>
 
