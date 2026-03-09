@@ -267,7 +267,7 @@ export default function CartPage() {
               variant="blue"
               asChild
             >
-              <Link to="/">Retour {"\u00e0"} l'accueil</Link>
+              <Link to="/">Retour à l'accueil</Link>
             </Button>
           </div>
         </Container>
@@ -300,13 +300,13 @@ export default function CartPage() {
                 Mon panier
               </h1>
               <p className="text-slate-600">
-                {cart.items.length} r{"\u00e9"}f{"\u00e9"}rence
-                {cart.items.length > 1 ? "s" : ""} {"\u00b7"}{" "}
-                {cart.summary.total_items} unit{"\u00e9"}
-                {cart.summary.total_items > 1 ? "s" : ""} pr
-                {cart.summary.total_items > 1 ? "\u00eates" : "\u00eate"}{" "}
-                {"\u00e0"} {"\u00eatre"} command{"\u00e9"}
-                {cart.summary.total_items > 1 ? "es" : "e"}
+                {cart.items.length} référence
+                {cart.items.length > 1 ? "s" : ""} · {cart.summary.total_items}{" "}
+                unité
+                {cart.summary.total_items > 1 ? "s" : ""}{" "}
+                {cart.summary.total_items > 1
+                  ? "prêtes à être commandées"
+                  : "prête à être commandée"}
               </p>
             </div>
           </div>
@@ -340,7 +340,7 @@ export default function CartPage() {
                       }
                     >
                       <Car className="h-4 w-4" />
-                      Voir d'autres pi{"\u00e8"}ces compatibles pour mon{" "}
+                      Voir d'autres pièces compatibles pour mon{" "}
                       {(vehicle as VehicleCookie).marque_name}{" "}
                       {(vehicle as VehicleCookie).modele_name}
                     </Link>
@@ -419,7 +419,7 @@ export default function CartPage() {
         </Link>
       </MobileBottomBar>
 
-      {/* Mini footer transactionnel (le mega footer est masqu\u00e9 via hideGlobalFooter) */}
+      {/* Mini footer transactionnel (le mega footer est masqué via hideGlobalFooter) */}
       <div className="border-t border-slate-100 bg-slate-50/50 py-3 text-center text-[11px] text-slate-400">
         <Container>
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
@@ -431,14 +431,14 @@ export default function CartPage() {
               to="/confidentialite"
               className="hover:text-slate-700 hover:underline"
             >
-              Confidentialit\u00e9
+              Confidentialité
             </Link>
             <span>&middot;</span>
             <Link
               to="/mentions-legales"
               className="hover:text-slate-700 hover:underline"
             >
-              Mentions l\u00e9gales
+              Mentions légales
             </Link>
             <span>&middot;</span>
             <Link

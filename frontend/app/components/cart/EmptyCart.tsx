@@ -27,14 +27,14 @@ const POPULAR_GAMMES = [
   { id: 82, name: "Disque de frein", alias: "disque-de-frein", Icon: Disc3 },
   {
     id: 7,
-    name: "Filtre \u00e0 huile",
+    name: "Filtre à huile",
     alias: "filtre-a-huile",
     Icon: Droplets,
   },
-  { id: 8, name: "Filtre \u00e0 air", alias: "filtre-a-air", Icon: Wind },
+  { id: 8, name: "Filtre à air", alias: "filtre-a-air", Icon: Wind },
   {
     id: 479,
-    name: "Kit d\u2019embrayage",
+    name: "Kit d'embrayage",
     alias: "kit-d-embrayage",
     Icon: Cog,
   },
@@ -97,8 +97,8 @@ export function EmptyCart({ vehicle }: EmptyCartProps) {
         </h2>
         <p className="text-slate-600 mb-6">
           {vehicleLabel
-            ? `Trouvez les pi\u00e8ces compatibles pour votre ${vehicleLabel}.`
-            : "Trouvez la bonne pi\u00e8ce en quelques clics."}
+            ? `Trouvez les pièces compatibles pour votre ${vehicleLabel}.`
+            : "Trouvez la bonne pièce en quelques clics."}
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

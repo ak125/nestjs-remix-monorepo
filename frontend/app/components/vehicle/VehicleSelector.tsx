@@ -85,6 +85,7 @@ const VehicleSelector = memo(function VehicleSelector({
   const [loadingModels, setLoadingModels] = useState(false);
   const [loadingTypes, setLoadingTypes] = useState(false);
 
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [, setSearchQuery] = useState("");
   const [searchMode, setSearchMode] = useState<"vehicle" | "mine">("vehicle");
   const [mineCode, setMineCode] = useState("");
@@ -98,9 +99,14 @@ const VehicleSelector = memo(function VehicleSelector({
     if (loadingBrands || brands.length > 0) return;
 
     setLoadingBrands(true);
+    setLoadError(null);
     try {
       const brandsData = await enhancedVehicleApi.getBrands();
       setBrands(brandsData);
+
+      if (brandsData.length === 0) {
+        setLoadError("Aucune marque disponible. Réessayez.");
+      }
 
       // 🎯 Pré-sélectionner la marque si fournie dans currentVehicle
       if (currentVehicle?.brand?.id && brandsData.length > 0) {
@@ -127,6 +133,7 @@ const VehicleSelector = memo(function VehicleSelector({
     } catch (error) {
       logger.error("❌ Erreur chargement marques:", error);
       setBrands([]);
+      setLoadError("Erreur de chargement. Cliquez pour réessayer.");
     } finally {
       setLoadingBrands(false);
     }
@@ -134,12 +141,15 @@ const VehicleSelector = memo(function VehicleSelector({
   }, [loadingBrands, brands.length, currentVehicle?.brand?.id]);
 
   // Charger les marques au premier focus/interaction (P1 perf: évite fetch au mount)
+  // Retry si erreur précédente
   const onSelectorInteraction = useCallback(() => {
     if (!brandsRequested) {
       setBrandsRequested(true);
       loadBrands();
+    } else if (loadError && brands.length === 0 && !loadingBrands) {
+      loadBrands();
     }
-  }, [brandsRequested, loadBrands]);
+  }, [brandsRequested, loadBrands, loadError, brands.length, loadingBrands]);
 
   // Si un véhicule est pré-sélectionné, charger les marques immédiatement
   useEffect(() => {
@@ -160,6 +170,7 @@ const VehicleSelector = memo(function VehicleSelector({
       setSelectedType(null);
       setModels([]);
       setTypes([]);
+      setLoadError(null);
 
       if (brand) {
         setLoadingYears(true);
@@ -171,6 +182,7 @@ const VehicleSelector = memo(function VehicleSelector({
         } catch (error) {
           logger.warn("❌ Erreur chargement années:", error);
           setYears([]);
+          setLoadError("Erreur chargement des années. Réessayez.");
         } finally {
           setLoadingYears(false);
         }
@@ -204,6 +216,7 @@ const VehicleSelector = memo(function VehicleSelector({
         } catch (error) {
           logger.warn("❌ Erreur chargement modèles:", error);
           setModels([]);
+          setLoadError("Erreur chargement des modèles. Réessayez.");
         } finally {
           setLoadingModels(false);
         }
@@ -229,6 +242,7 @@ const VehicleSelector = memo(function VehicleSelector({
         } catch (error) {
           logger.warn("❌ Erreur chargement types:", error);
           setTypes([]);
+          setLoadError("Erreur chargement des motorisations. Réessayez.");
         } finally {
           setLoadingTypes(false);
         }
@@ -454,6 +468,16 @@ const VehicleSelector = memo(function VehicleSelector({
         >
           <RotateCcw className="w-4 h-4" />
         </Button>
+
+        {loadError && (
+          <p
+            className="col-span-2 sm:col-span-full text-xs text-red-600 bg-red-50 rounded-lg px-3 py-1.5 cursor-pointer hover:bg-red-100 transition-colors"
+            onClick={onSelectorInteraction}
+            role="alert"
+          >
+            {loadError}
+          </p>
+        )}
       </div>
     );
   }
@@ -613,6 +637,16 @@ const VehicleSelector = memo(function VehicleSelector({
         >
           Rechercher des pièces
         </Button>
+
+        {loadError && (
+          <p
+            className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-1.5 text-center cursor-pointer hover:bg-red-100 transition-colors"
+            onClick={onSelectorInteraction}
+            role="alert"
+          >
+            {loadError}
+          </p>
+        )}
 
         {/* Reset */}
         <button
@@ -820,6 +854,17 @@ const VehicleSelector = memo(function VehicleSelector({
                     Chargement...
                   </div>
                 </div>
+              )}
+
+              {/* Message d'erreur */}
+              {loadError && (
+                <p
+                  className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2 text-center cursor-pointer hover:bg-red-100 transition-colors"
+                  onClick={onSelectorInteraction}
+                  role="alert"
+                >
+                  {loadError}
+                </p>
               )}
             </>
           )}

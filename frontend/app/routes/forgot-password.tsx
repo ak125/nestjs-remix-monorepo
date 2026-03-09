@@ -40,9 +40,8 @@ export const action: ActionFunction = async ({ request, context }) => {
   }
 
   // Utiliser l'intégration directe pour la demande de réinitialisation
-  const { getRemixIntegrationService } = await import(
-    "~/server/remix-integration.server"
-  );
+  const { getRemixIntegrationService } =
+    await import("~/server/remix-integration.server");
   const integration: any = await getRemixIntegrationService(context);
   const result = await integration.forgotPasswordForRemix?.(email.toString());
 
@@ -63,7 +62,7 @@ export default function ForgotPassword() {
   const error = searchParams.get("error");
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 px-4">
+    <div className="flex items-center justify-center min-h-[70vh] bg-gradient-to-b from-v9-navy to-v9-navy-light px-4 py-12">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader>
           <CardTitle>Mot de passe oublié</CardTitle>
@@ -103,7 +102,11 @@ export default function ForgotPassword() {
               />
             </div>
 
-            <Button type="submit" size="lg" className="w-full">
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full bg-cta hover:bg-cta-hover text-white"
+            >
               Envoyer le lien de réinitialisation
             </Button>
           </Form>
@@ -111,7 +114,7 @@ export default function ForgotPassword() {
           <div className="mt-4 text-center">
             <Link
               to="/login"
-              className="inline-flex items-center justify-center px-4 py-2 text-sm text-blue-600 hover:underline hover:bg-blue-50 rounded-lg transition-colors"
+              className="inline-flex items-center justify-center px-4 py-2 text-sm text-cta hover:underline hover:bg-cta/5 rounded-lg transition-colors"
             >
               Retour à la connexion
             </Link>

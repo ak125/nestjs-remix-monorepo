@@ -175,6 +175,15 @@ const PieceCard = memo(function PieceCard({
           : "shadow-sm hover:shadow-lg hover:-translate-y-0.5"
       }`}
       onClick={handleClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={`Voir ${piece.name} ${piece.brand} — ${piece.priceFormatted || ""}`}
     >
       {/* Header: Logo + Barre Fiabilité */}
       <div className="flex items-center justify-between gap-2 p-2.5 pb-1">

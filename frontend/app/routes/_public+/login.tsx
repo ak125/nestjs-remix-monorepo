@@ -13,7 +13,7 @@ import {
   useNavigation,
   useSearchParams,
 } from "@remix-run/react";
-import { CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
 import { Button } from "~/components/ui/button";
@@ -76,17 +76,41 @@ export async function action({ request }: ActionFunctionArgs) {
 
   // Appel interne au backend (même pattern que unified.server.ts)
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
-  const backendResponse = await fetch(`${baseUrl}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: request.headers.get("Cookie") || "",
-    },
-    body: JSON.stringify({
-      email: parsed.data.email,
-      password: parsed.data.password,
-    }),
-  });
+
+  let backendResponse: Response;
+  try {
+    backendResponse = await fetch(`${baseUrl}/auth/login`, {
+      method: "POST",
+      redirect: "manual",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: request.headers.get("Cookie") || "",
+      },
+      body: JSON.stringify({
+        email: parsed.data.email,
+        password: parsed.data.password,
+      }),
+    });
+  } catch {
+    return json(
+      {
+        ok: false as const,
+        formError: "Erreur de connexion au serveur. Veuillez réessayer.",
+      },
+      { status: 500 },
+    );
+  }
+
+  // Gérer les redirects inattendus du backend (Passport)
+  if (backendResponse.status >= 300 && backendResponse.status < 400) {
+    return json(
+      {
+        ok: false as const,
+        formError: "Email ou mot de passe incorrect.",
+      },
+      { status: 401 },
+    );
+  }
 
   if (!backendResponse.ok) {
     const body = await backendResponse.json().catch(() => null);
@@ -178,9 +202,11 @@ export default function LoginPage() {
           {/* Error/Message display */}
           {(error || message) && (
             <div
-              className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 font-v9-body"
-              aria-live="polite"
+              className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 font-v9-body flex items-center gap-2"
+              role="alert"
+              aria-live="assertive"
             >
+              <AlertCircle className="w-4 h-4 shrink-0" />
               {message ? decodeURIComponent(message) : error}
             </div>
           )}
