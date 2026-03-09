@@ -14,8 +14,8 @@ import {
   Logger,
   HttpException,
   HttpStatus,
-  InjectQueue,
 } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { RunManagerService } from './services/run-manager.service';
 import { AgenticDataService } from './services/agentic-data.service';
@@ -38,22 +38,37 @@ export class AgenticEngineController {
    */
   @Post('runs')
   async createRun(
-    @Body() body: { goal: string; goal_type: string; triggered_by: string; correlation_id?: string },
+    @Body()
+    body: {
+      goal: string;
+      goal_type: string;
+      triggered_by: string;
+      correlation_id?: string;
+    },
   ) {
     const result = await this.runManager.createRun(body);
     if (!result.success) {
+      throw new HttpException({ error: result.error }, HttpStatus.BAD_REQUEST);
+    }
+
+    // Transition to planning phase and dispatch the first job
+    const transitioned = await this.runManager.transitionPhase(
+      result.run!.id,
+      'planning',
+    );
+
+    if (!transitioned) {
       throw new HttpException(
-        { error: result.error },
-        HttpStatus.BAD_REQUEST,
+        { error: 'Failed to transition to planning phase' },
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
 
-    // Dispatch the first job: planning
     await this.agenticQueue.add('agentic-plan', {
       runId: result.run!.id,
     });
 
-    return { success: true, run: result.run };
+    return { success: true, run: { ...result.run, phase: 'planning' } };
   }
 
   /**
@@ -78,10 +93,7 @@ export class AgenticEngineController {
   async getRun(@Param('id') id: string) {
     const run = await this.runManager.getRun(id);
     if (!run) {
-      throw new HttpException(
-        { error: 'Run not found' },
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException({ error: 'Run not found' }, HttpStatus.NOT_FOUND);
     }
 
     const [branches, evidence, gates] = await Promise.all([
@@ -109,10 +121,7 @@ export class AgenticEngineController {
   async resumeRun(@Param('id') id: string) {
     const run = await this.runManager.getRun(id);
     if (!run) {
-      throw new HttpException(
-        { error: 'Run not found' },
-        HttpStatus.NOT_FOUND,
-      );
+      throw new HttpException({ error: 'Run not found' }, HttpStatus.NOT_FOUND);
     }
 
     if (run.phase !== 'suspended') {

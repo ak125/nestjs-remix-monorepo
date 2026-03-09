@@ -115,7 +115,8 @@ async function bootstrap() {
     const needsBodyParsing = (url: string) =>
       url.startsWith('/api/') ||
       url.startsWith('/auth/') ||
-      url.startsWith('/authenticate');
+      url.startsWith('/authenticate') ||
+      url.startsWith('/register-and-login');
 
     const jsonParser = json({ limit: '10mb' });
     const urlencodedParser = urlencoded({ extended: true, limit: '10mb' });

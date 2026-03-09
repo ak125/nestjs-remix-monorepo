@@ -5,8 +5,6 @@
 import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { FeatureFlagsModule } from '../config/feature-flags.module';
 
 // Processors
 // import { SitemapProcessor } from './processors/sitemap.processor'; // DESACTIVE temporairement
@@ -15,7 +13,6 @@ import { FeatureFlagsModule } from '../config/feature-flags.module';
 import { SeoMonitorProcessor } from './processors/seo-monitor.processor';
 import { ContentRefreshProcessor } from './processors/content-refresh.processor';
 import { VideoExecutionProcessor } from './processors/video-execution.processor';
-import { AgenticProcessor } from '../modules/agentic-engine/agentic.processor';
 
 // Services (depuis modules existants)
 // import { SitemapStreamingService } from '../modules/seo/services/sitemap-streaming.service'; // DESACTIVE
@@ -41,16 +38,6 @@ import { KeywordDensityGateService } from '../modules/admin/services/keyword-den
 import { EnricherTextUtils } from '../modules/admin/services/enricher-text-utils.service';
 import { EnricherYamlParser } from '../modules/admin/services/enricher-yaml-parser.service';
 
-// AgenticProcessor dependencies (stateless — safe duplicate in worker context)
-import { AgenticDataService } from '../modules/agentic-engine/services/agentic-data.service';
-import { EvidenceLedgerService } from '../modules/agentic-engine/services/evidence-ledger.service';
-import { RunManagerService } from '../modules/agentic-engine/services/run-manager.service';
-import { PlannerService } from '../modules/agentic-engine/services/planner.service';
-import { SolverService } from '../modules/agentic-engine/services/solver.service';
-import { CriticService } from '../modules/agentic-engine/services/critic.service';
-import { VerifierService } from '../modules/agentic-engine/services/verifier.service';
-import { ArbiterService } from '../modules/agentic-engine/services/arbiter.service';
-
 // Job health tracking (used by all processors)
 import { AdminJobHealthService } from '../modules/admin/services/admin-job-health.service';
 import { RagSafeDistillService } from '../modules/admin/services/rag-safe-distill.service';
@@ -61,6 +48,16 @@ import { PipelineChainPollerService } from '../modules/admin/services/pipeline-c
 import { VideoDataService } from '../modules/media-factory/services/video-data.service';
 import { VideoGatesService } from '../modules/media-factory/services/video-gates.service';
 import { RenderAdapterService } from '../modules/media-factory/render/render-adapter.service';
+
+// Dependencies for AgenticProcessor
+import { AgenticProcessor } from './processors/agentic.processor';
+import { AgenticDataService } from '../modules/agentic-engine/services/agentic-data.service';
+import { EvidenceLedgerService } from '../modules/agentic-engine/services/evidence-ledger.service';
+import { RunManagerService } from '../modules/agentic-engine/services/run-manager.service';
+import { PlannerService } from '../modules/agentic-engine/services/planner.service';
+import { SolverService } from '../modules/agentic-engine/services/solver.service';
+import { CriticService } from '../modules/agentic-engine/services/critic.service';
+import { FeatureFlagsModule } from '../config/feature-flags.module';
 
 @Module({
   imports: [
@@ -102,14 +99,10 @@ import { RenderAdapterService } from '../modules/media-factory/render/render-ada
       { name: 'agentic-engine' },
     ),
 
-    // Event Emitter for agentic engine events
-    EventEmitterModule.forRoot(),
-    // Feature flags (needed by RunManagerService in agentic engine)
-    FeatureFlagsModule,
-
-    // Modules for ContentRefreshProcessor dependencies
+    // Modules for ContentRefreshProcessor + AgenticProcessor dependencies
     RagProxyModule,
-    ...(process.env.LLM_POLISH_ENABLED === 'true' ? [AiContentModule] : []),
+    AiContentModule, // Always loaded: used by AgenticProcessor (Phase 2) + ContentRefreshProcessor
+    FeatureFlagsModule, // Used by RunManagerService (agentic budget guard + flags)
   ],
 
   providers: [
@@ -120,7 +113,6 @@ import { RenderAdapterService } from '../modules/media-factory/render/render-ada
     SeoMonitorProcessor,
     ContentRefreshProcessor,
     VideoExecutionProcessor,
-    AgenticProcessor,
 
     // Enricher services (used by ContentRefreshProcessor)
     // NOTE: These 4 services are also declared in AdminModule/SeoModule.
@@ -146,15 +138,15 @@ import { RenderAdapterService } from '../modules/media-factory/render/render-ada
     VideoGatesService,
     RenderAdapterService,
 
-    // Agentic engine services (stateless — safe duplicate for worker context)
+    // Agentic engine processor + dependencies (Phase 2: LLM-powered plan/solve/critique)
+    // NOTE: Stateless services, safe duplicate (same pattern as enricher services above)
+    AgenticProcessor,
     AgenticDataService,
     EvidenceLedgerService,
     RunManagerService,
     PlannerService,
     SolverService,
     CriticService,
-    VerifierService,
-    ArbiterService,
 
     // Job health tracking (shared by all processors)
     AdminJobHealthService,

@@ -110,6 +110,22 @@ export class FeatureFlagsService {
     return this.int('CONSEIL_BATCH_SIZE', 10);
   }
 
+  // ── Pipeline chain flags ──
+
+  get pipelineChainEnabled(): boolean {
+    return this.bool('PIPELINE_CHAIN_ENABLED', false);
+  }
+
+  get pipelineChainPollIntervalMs(): number {
+    return this.int('PIPELINE_CHAIN_POLL_INTERVAL_MS', 60_000);
+  }
+
+  // ── RAG catch-up flag ──
+
+  get ragCatchupEnabled(): boolean {
+    return this.bool('RAG_CATCHUP_ENABLED', false);
+  }
+
   // ── Agentic Engine flags ──
 
   get agenticEngineEnabled(): boolean {
@@ -128,28 +144,16 @@ export class FeatureFlagsService {
     return Math.min(this.int('AGENTIC_MAX_CRITIC_LOOPS', 2), 3);
   }
 
-  get agenticAirlockEnabled(): boolean {
-    return this.bool('AGENTIC_AIRLOCK_ENABLED', false);
+  get agenticAirlockCheckEnabled(): boolean {
+    return this.bool('AGENTIC_AIRLOCK_CHECK_ENABLED', false);
   }
 
   get agenticDailyTokenBudget(): number {
     return this.int('AGENTIC_DAILY_TOKEN_BUDGET', 100_000);
   }
 
-  // ── Pipeline chain flags ──
-
-  get pipelineChainEnabled(): boolean {
-    return this.bool('PIPELINE_CHAIN_ENABLED', false);
-  }
-
-  get pipelineChainPollIntervalMs(): number {
-    return this.int('PIPELINE_CHAIN_POLL_INTERVAL_MS', 60_000);
-  }
-
-  // ── RAG catch-up flag ──
-
-  get ragCatchupEnabled(): boolean {
-    return this.bool('RAG_CATCHUP_ENABLED', false);
+  get agenticAirlockEnabled(): boolean {
+    return this.bool('AGENTIC_AIRLOCK_CHECK_ENABLED', false);
   }
 
   // ── Helpers ──
@@ -185,7 +189,7 @@ export class FeatureFlagsService {
     'AGENTIC_APPLY_ENABLED',
     'AGENTIC_MAX_BRANCHES',
     'AGENTIC_MAX_CRITIC_LOOPS',
-    'AGENTIC_AIRLOCK_ENABLED',
+    'AGENTIC_AIRLOCK_CHECK_ENABLED',
     'AGENTIC_DAILY_TOKEN_BUDGET',
   ]);
 

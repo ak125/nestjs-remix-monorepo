@@ -17,6 +17,7 @@ import {
   DiagnosticService,
   SeoDiagnostic,
   SeoDiagnosticListItem,
+  DiagnosticQualityResult,
 } from '../services/diagnostic.service';
 
 /**
@@ -84,6 +85,33 @@ export class DiagnosticController {
   }
 
   /**
+   * Audit qualite de toutes les pages R5 (read-only, grace mode).
+   * GET /api/seo/diagnostic/quality-audit
+   * ADMIN ONLY
+   */
+  @Get('quality-audit')
+  @UseGuards(IsAdminGuard)
+  async qualityAudit(): Promise<{
+    total: number;
+    publishable: number;
+    blocked: number;
+    avgScore: number;
+    topFlags: Array<{ flag: string; count: number }>;
+    details: Array<{
+      slug: string;
+      title: string;
+      score: number;
+      flags: string[];
+      isPublishable: boolean;
+      vehicleDependencyScore: number;
+      surfaceRecommendation: string | null;
+    }>;
+  }> {
+    this.logger.log('📊 GET /api/seo/diagnostic/quality-audit');
+    return this.diagnosticService.qualityAudit();
+  }
+
+  /**
    * Liste les diagnostics d'un cluster
    * GET /api/seo/diagnostic/cluster/:clusterId
    *
@@ -126,6 +154,28 @@ export class DiagnosticController {
   // ============================================
   // ROUTES AVEC :slug (sous-routes d'abord)
   // ============================================
+
+  /**
+   * Valide la qualite d'un diagnostic (read-only, grace mode).
+   * GET /api/seo/diagnostic/:slug/quality
+   */
+  @Get(':slug/quality')
+  async getQuality(@Param('slug') slug: string): Promise<{
+    slug: string;
+    quality: DiagnosticQualityResult | null;
+    error?: string;
+  }> {
+    this.logger.debug(`GET /api/seo/diagnostic/${slug}/quality`);
+
+    const diagnostic = await this.diagnosticService.getBySlug(slug);
+    if (!diagnostic) {
+      return { slug, quality: null, error: 'Diagnostic not found' };
+    }
+
+    const quality =
+      this.diagnosticService.validateDiagnosticQuality(diagnostic);
+    return { slug, quality };
+  }
 
   /**
    * Verifie si un diagnostic existe (pour prechargement)
@@ -182,6 +232,17 @@ export class DiagnosticController {
       estimated_repair_cost_min: number;
       estimated_repair_cost_max: number;
       estimated_repair_duration: string;
+      differentiation_checklist: Array<{
+        criterion: string;
+        if_yes: string;
+        if_no: string;
+      }>;
+      consultation_triggers: Array<{
+        trigger: string;
+        urgency: string;
+        reason: string;
+      }>;
+      do_dont_list: { do: string[]; dont: string[] };
     }>,
   ): Promise<{ success: boolean; error?: string }> {
     this.logger.log(`✏️ PATCH /api/seo/diagnostic/${slug}`);

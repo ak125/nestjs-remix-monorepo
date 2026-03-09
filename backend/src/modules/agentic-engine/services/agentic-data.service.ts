@@ -90,26 +90,24 @@ export class AgenticDataService extends SupabaseBaseService {
     return true;
   }
 
-  async incrementBranchesCompleted(runId: string): Promise<number | null> {
-    // Atomic increment via RPC or manual update
-    const run = await this.getRun(runId);
-    if (!run) return null;
+  async incrementBranchesCompleted(
+    runId: string,
+  ): Promise<{ branches_completed: number; branches_total: number } | null> {
+    // Atomic increment via RPC (SQL UPDATE ... RETURNING) — no race condition
+    const { data, error } = await this.supabase.rpc(
+      'agentic_increment_branches_completed',
+      { p_run_id: runId },
+    );
 
-    const newCount = (run.branches_completed ?? 0) + 1;
-    const { error } = await this.supabase
-      .from('__agentic_runs')
-      .update({
-        branches_completed: newCount,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', runId)
-      .eq('branches_completed', run.branches_completed); // optimistic lock
-
-    if (error) {
-      this.logger.warn('Failed to increment branches_completed', error.message);
+    if (error || !data || data.length === 0) {
+      this.logger.warn(
+        `Failed to increment branches_completed for run ${runId}`,
+        error?.message,
+      );
       return null;
     }
-    return newCount;
+
+    return data[0] as { branches_completed: number; branches_total: number };
   }
 
   async getDailyTokenUsage(goalType: string): Promise<number> {
@@ -135,10 +133,7 @@ export class AgenticDataService extends SupabaseBaseService {
     return data;
   }
 
-  async listRuns(
-    limit = 20,
-    goalType?: string,
-  ): Promise<AgenticRun[]> {
+  async listRuns(limit = 20, goalType?: string): Promise<AgenticRun[]> {
     let query = this.supabase
       .from('__agentic_runs')
       .select('*')
@@ -165,7 +160,11 @@ export class AgenticDataService extends SupabaseBaseService {
   ): Promise<AgenticBranch | null> {
     const { data, error } = await this.supabase
       .from('__agentic_branches')
-      .insert({ run_id: runId, strategy_label: strategyLabel, status: 'pending' })
+      .insert({
+        run_id: runId,
+        strategy_label: strategyLabel,
+        status: 'pending',
+      })
       .select('*')
       .single();
 
@@ -307,9 +306,7 @@ export class AgenticDataService extends SupabaseBaseService {
     return data;
   }
 
-  async getLatestCheckpoint(
-    runId: string,
-  ): Promise<AgenticCheckpoint | null> {
+  async getLatestCheckpoint(runId: string): Promise<AgenticCheckpoint | null> {
     const { data, error } = await this.supabase
       .from('__agentic_checkpoints')
       .select('*')

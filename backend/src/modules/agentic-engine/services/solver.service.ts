@@ -1,13 +1,22 @@
 /**
- * SolverService — Phase SOLVING stub
+ * SolverService — Phase SOLVING
  *
- * Executes steps within a branch to solve the goal.
- * Phase 2: will use AiContentService + RAG for LLM-based solving.
+ * Executes a single branch: RAG fetch + LLM call + step recording.
+ * Uses AiContentService with agentic_solve template.
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { AgenticDataService } from './agentic-data.service';
 import { EvidenceLedgerService } from './evidence-ledger.service';
-import type { AgenticBranch } from '../types/run-state.schema';
+import { AiContentService } from '../../ai-content/ai-content.service';
+import type { AgenticBranch, AgenticRun } from '../types/run-state.schema';
+import { getErrorMessage } from '../../../common/utils/error.utils';
+
+interface SolveResult {
+  success: boolean;
+  output?: Record<string, unknown>;
+  tokensUsed?: number;
+  error?: string;
+}
 
 @Injectable()
 export class SolverService {
@@ -16,57 +25,217 @@ export class SolverService {
   constructor(
     private readonly dataService: AgenticDataService,
     private readonly evidenceLedger: EvidenceLedgerService,
+    private readonly aiContent: AiContentService,
   ) {}
 
   /**
-   * Execute solving steps for a branch.
-   * Stub: creates a single "solve" step and marks it completed.
+   * Execute solving steps for a branch via LLM.
    */
-  async solve(
-    runId: string,
-    branch: AgenticBranch,
-  ): Promise<{ success: boolean; output?: Record<string, unknown> }> {
-    this.logger.log(`Solving branch ${branch.id} (stub mode)`);
+  async solve(run: AgenticRun, branch: AgenticBranch): Promise<SolveResult> {
+    const startTime = performance.now();
+    this.logger.log(
+      `Solving branch ${branch.id.slice(0, 8)} (${branch.strategy_label}) for run ${run.id.slice(0, 8)}`,
+    );
 
-    // Create a step
-    const step = await this.dataService.createStep({
+    // Mark branch as running
+    await this.dataService.updateBranchStatus(branch.id, 'running', {
+      started_at: new Date().toISOString(),
+    } as Partial<AgenticBranch>);
+
+    // Get strategy details from run plan
+    const strategy = this.getStrategy(run.plan, branch.strategy_label);
+
+    // Step 1: RAG fetch
+    const ragStep = await this.dataService.createStep({
       branch_id: branch.id,
-      run_id: runId,
-      step_name: 'solve-stub',
-      step_type: 'computation',
+      run_id: run.id,
+      step_name: 'rag_fetch',
+      step_type: 'rag_fetch',
       step_index: 0,
     });
 
-    if (!step) {
-      return { success: false };
+    const ragContent = await this.fetchRagForBranch(run);
+
+    if (ragStep) {
+      await this.dataService.updateStep(ragStep.id, {
+        status: 'completed',
+        output: { has_rag: !!ragContent, length: ragContent?.length ?? 0 },
+        duration_ms: Math.round(performance.now() - startTime),
+      });
+
+      if (ragContent) {
+        await this.evidenceLedger.record({
+          runId: run.id,
+          branchId: branch.id,
+          stepId: ragStep.id,
+          evidenceType: 'rag_citation',
+          content: {
+            action: 'rag_fetched',
+            content_length: ragContent.length,
+            preview: ragContent.substring(0, 200),
+          },
+          source: 'solver:rag',
+          truthLevel: 'L1',
+        });
+      }
     }
 
-    // Stub output
-    const output = { result: 'stub_solution', branch_id: branch.id };
-
-    // Mark step completed
-    await this.dataService.updateStep(step.id, {
-      status: 'completed',
-      output,
-      duration_ms: 0,
+    // Step 2: LLM solve
+    const llmStep = await this.dataService.createStep({
+      branch_id: branch.id,
+      run_id: run.id,
+      step_name: 'llm_solve',
+      step_type: 'llm_call',
+      step_index: 1,
     });
 
-    // Record evidence
-    await this.evidenceLedger.record({
-      runId,
-      branchId: branch.id,
-      stepId: step.id,
-      evidenceType: 'computation',
-      content: { action: 'solve_completed', output },
-      source: 'solver',
-      truthLevel: 'L3',
-    });
+    let solveOutput: Record<string, unknown>;
+    let tokensUsed = 0;
+    let provider = 'unknown';
 
-    // Mark branch completed
+    try {
+      const llmStart = performance.now();
+
+      const response = await this.aiContent.generateContent({
+        type: 'agentic_solve',
+        prompt: `Execute strategy: ${branch.strategy_label}`,
+        context: {
+          goal: run.goal,
+          strategyLabel: branch.strategy_label,
+          strategyDescription: strategy?.description ?? branch.strategy_label,
+          strategySteps: strategy?.steps ?? [],
+          ragContent: ragContent ?? null,
+          additionalContext: run.feature_flags ?? null,
+        },
+        temperature: 0.5,
+        maxLength: 3000,
+        useCache: false,
+      });
+
+      solveOutput = this.parseSolveResponse(response.content, branch);
+      tokensUsed = response.metadata.tokens ?? 0;
+      provider = response.metadata.provider ?? 'unknown';
+
+      if (llmStep) {
+        await this.dataService.updateStep(llmStep.id, {
+          status: 'completed',
+          output: solveOutput,
+          provider_used: provider,
+          tokens_used: tokensUsed,
+          duration_ms: Math.round(performance.now() - llmStart),
+        });
+      }
+
+      // Record LLM evidence
+      await this.evidenceLedger.recordLlmOutput(
+        run.id,
+        branch.id,
+        llmStep?.id ?? '',
+        solveOutput,
+        provider,
+        tokensUsed,
+      );
+    } catch (error) {
+      const errorMsg = getErrorMessage(error);
+      this.logger.error(
+        `LLM solve failed for branch ${branch.id.slice(0, 8)}: ${errorMsg}`,
+      );
+
+      if (llmStep) {
+        await this.dataService.updateStep(llmStep.id, {
+          status: 'failed',
+          error_message: errorMsg,
+          duration_ms: Math.round(performance.now() - startTime),
+        });
+      }
+
+      // Mark branch as failed
+      await this.dataService.updateBranchStatus(branch.id, 'failed', {
+        error_message: errorMsg,
+        completed_at: new Date().toISOString(),
+        duration_ms: Math.round(performance.now() - startTime),
+      } as Partial<AgenticBranch>);
+
+      return { success: false, error: errorMsg };
+    }
+
+    // Mark branch as completed
+    const durationMs = Math.round(performance.now() - startTime);
     await this.dataService.updateBranchStatus(branch.id, 'completed', {
-      output,
-    });
+      output: solveOutput,
+      completed_at: new Date().toISOString(),
+      duration_ms: durationMs,
+    } as Partial<AgenticBranch>);
 
-    return { success: true, output };
+    this.logger.log(
+      `Solved branch ${branch.id.slice(0, 8)} in ${durationMs}ms (${tokensUsed} tokens, ${provider})`,
+    );
+
+    return { success: true, output: solveOutput, tokensUsed };
+  }
+
+  // ── Private helpers ──
+
+  private parseSolveResponse(
+    raw: string,
+    branch: AgenticBranch,
+  ): Record<string, unknown> {
+    try {
+      const cleaned = raw
+        .replace(/^```json?\s*\n?/i, '')
+        .replace(/\n?```\s*$/i, '')
+        .trim();
+      return JSON.parse(cleaned);
+    } catch {
+      this.logger.warn(
+        `Failed to parse solve response for branch ${branch.id.slice(0, 8)}, wrapping as text`,
+      );
+      return {
+        strategy_executed: branch.strategy_label,
+        result: {
+          content: raw.substring(0, 5000),
+          confidence: 50,
+          sources_used: [],
+          limitations: ['Response was not valid JSON'],
+        },
+        steps_completed: [],
+        parse_error: true,
+      };
+    }
+  }
+
+  private getStrategy(
+    plan: unknown,
+    label: string,
+  ): { description: string; steps: string[] } | null {
+    if (!plan || typeof plan !== 'object') return null;
+    const strategies = (plan as Record<string, unknown>).strategies;
+    if (!Array.isArray(strategies)) return null;
+    return (
+      strategies.find((s: Record<string, unknown>) => s.label === label) ?? null
+    );
+  }
+
+  private async fetchRagForBranch(run: AgenticRun): Promise<string | null> {
+    if (run.goal_type === 'seo_content_refresh') {
+      try {
+        const { readFileSync, existsSync } = await import('fs');
+        const { join } = await import('path');
+
+        const gammeMatch = run.goal.match(/gamme[:\s]+(\S+)/i);
+        if (gammeMatch) {
+          const ragPath = join(
+            '/opt/automecanik/rag/knowledge/gammes',
+            `${gammeMatch[1]}.md`,
+          );
+          if (existsSync(ragPath)) {
+            return readFileSync(ragPath, 'utf-8').substring(0, 5000);
+          }
+        }
+      } catch {
+        // RAG is best-effort
+      }
+    }
+    return null;
   }
 }

@@ -24,6 +24,10 @@ export const ContentTypeSchema = z.enum([
   'r1_serp_pack',
   'r1_section_copy',
   'r1_gatekeeper',
+  // Agentic Engine (Phase 2)
+  'agentic_plan',
+  'agentic_solve',
+  'agentic_critique',
 ]);
 
 export type ContentType = z.infer<typeof ContentTypeSchema>;

@@ -937,6 +937,152 @@ Reponds UNIQUEMENT en JSON valide, sans markdown ni commentaire.`,
       return prompt;
     },
   },
+
+  // ── Agentic Engine Templates (Phase 2) ──────────────────────
+
+  agentic_plan: {
+    system: `Tu es un architecte de resolution de problemes pour une plateforme e-commerce de pieces automobiles.
+Ta mission : decomposer un objectif en 2-3 strategies alternatives (branches) qui seront executees en parallele.
+
+REGLES :
+- Chaque strategie doit etre DISTINCTE (angles differents, pas des variantes mineures).
+- Chaque strategie doit etre ACTIONNABLE (pas de voeux pieux).
+- Reponds UNIQUEMENT en JSON valide, sans markdown.
+- Format attendu :
+{
+  "strategies": [
+    {
+      "label": "string — identifiant court snake_case (ex: focus_faq, deep_technical)",
+      "description": "string — 1-2 phrases decrivant l'approche",
+      "steps": ["string — etape 1", "string — etape 2", "..."],
+      "expected_outcome": "string — resultat attendu"
+    }
+  ],
+  "reasoning": "string — pourquoi ces strategies sont complementaires"
+}`,
+    user: (ctx) => {
+      let prompt = `=== OBJECTIF ===\n${sanitizeBriefField(ctx.goal)}\n\n`;
+      prompt += `Type d'objectif : ${ctx.goalType}\n\n`;
+
+      if (ctx.criticFeedback) {
+        prompt += `=== FEEDBACK DU CRITIQUE (iteration precedente) ===\n${sanitizeBriefField(ctx.criticFeedback)}\n\n`;
+        prompt += `IMPORTANT : Adapte tes strategies en fonction de ce feedback. Corrige les faiblesses identifiees.\n\n`;
+      }
+
+      if (ctx.ragContext) {
+        prompt += `=== CONTEXTE RAG (donnees de reference) ===\n${sanitizeBriefField(ctx.ragContext.substring(0, 3000))}\n\n`;
+      }
+
+      prompt += `Genere exactement ${ctx.maxBranches || 2} strategies.`;
+      return prompt;
+    },
+  },
+
+  agentic_solve: {
+    system: `Tu es un executeur specialise pour une plateforme e-commerce de pieces automobiles.
+Ta mission : executer UNE strategie specifique pour atteindre un objectif donne.
+
+REGLES :
+- Utilise EXCLUSIVEMENT les donnees RAG fournies comme source de verite.
+- Si une information n'est pas dans le RAG, indique "NON_DISPONIBLE".
+- Produis un output structure et actionnable.
+- Reponds UNIQUEMENT en JSON valide, sans markdown.
+- Format attendu :
+{
+  "strategy_executed": "string — label de la strategie",
+  "result": {
+    "content": "string ou object — le resultat principal",
+    "confidence": "number 0-100 — confiance dans le resultat",
+    "sources_used": ["string — references RAG utilisees"],
+    "limitations": ["string — limites identifiees"]
+  },
+  "steps_completed": [
+    {
+      "step": "string — description",
+      "status": "completed|partial|skipped",
+      "output_summary": "string — resume du resultat"
+    }
+  ],
+  "tokens_estimate": "number — estimation tokens utilises"
+}`,
+    user: (ctx) => {
+      let prompt = `=== OBJECTIF ===\n${sanitizeBriefField(ctx.goal)}\n\n`;
+      prompt += `=== STRATEGIE A EXECUTER ===\n`;
+      prompt += `Label : ${ctx.strategyLabel}\n`;
+      prompt += `Description : ${sanitizeBriefField(ctx.strategyDescription)}\n`;
+      if (ctx.strategySteps?.length) {
+        prompt += `Etapes prevues :\n`;
+        ctx.strategySteps.forEach((s: string, i: number) => {
+          prompt += `  ${i + 1}. ${sanitizeBriefField(s)}\n`;
+        });
+      }
+      prompt += '\n';
+
+      if (ctx.ragContent) {
+        prompt += `=== CORPUS RAG (source de verite) ===\n${sanitizeBriefField(ctx.ragContent.substring(0, 4000))}\n\n`;
+      }
+
+      if (ctx.additionalContext) {
+        prompt += `=== CONTEXTE ADDITIONNEL ===\n${sanitizeBriefField(JSON.stringify(ctx.additionalContext))}\n\n`;
+      }
+
+      prompt += `Execute la strategie et produis le resultat en JSON.`;
+      return prompt;
+    },
+  },
+
+  agentic_critique: {
+    system: `Tu es un evaluateur critique pour une plateforme e-commerce de pieces automobiles.
+Ta mission : comparer les resultats de plusieurs strategies et attribuer un score a chacune.
+
+REGLES :
+- Evalue chaque branche sur 5 axes : pertinence (0-20), qualite (0-20), completude (0-20), fiabilite_sources (0-20), actionabilite (0-20).
+- Le score total est sur 100.
+- Sois OBJECTIF et RIGOUREUX — pas de complaisance.
+- Si TOUTES les branches sont en dessous de 60/100, recommande un replan.
+- Reponds UNIQUEMENT en JSON valide, sans markdown.
+- Format attendu :
+{
+  "evaluations": [
+    {
+      "branch_id": "string",
+      "strategy_label": "string",
+      "scores": {
+        "pertinence": "number 0-20",
+        "qualite": "number 0-20",
+        "completude": "number 0-20",
+        "fiabilite_sources": "number 0-20",
+        "actionabilite": "number 0-20"
+      },
+      "total_score": "number 0-100",
+      "feedback": "string — 2-3 phrases de feedback constructif",
+      "strengths": ["string"],
+      "weaknesses": ["string"]
+    }
+  ],
+  "recommendation": {
+    "needs_replan": "boolean",
+    "replan_reason": "string | null — si replan, pourquoi",
+    "best_branch_id": "string — id de la meilleure branche"
+  }
+}`,
+    user: (ctx) => {
+      let prompt = `=== OBJECTIF ORIGINAL ===\n${sanitizeBriefField(ctx.goal)}\n\n`;
+      prompt += `=== BRANCHES A EVALUER ===\n`;
+
+      for (const branch of ctx.branches || []) {
+        prompt += `\n--- Branche: ${branch.id} (${branch.strategy_label}) ---\n`;
+        prompt += `Output:\n${JSON.stringify(branch.output, null, 2)}\n`;
+      }
+
+      if (ctx.ragContext) {
+        prompt += `\n=== REFERENCE RAG (pour verifier la fiabilite) ===\n${sanitizeBriefField(ctx.ragContext.substring(0, 2000))}\n`;
+      }
+
+      prompt += `\nEvalue chaque branche et produis le JSON de critique.`;
+      return prompt;
+    },
+  },
 };
 
 export const TONE_MODIFIERS: Record<Tone, string> = {

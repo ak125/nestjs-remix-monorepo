@@ -2,6 +2,19 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { SITE_ORIGIN } from '../../../config/site.constants';
+import {
+  R5_BLOCKING_FLAGS,
+  R5_WARNING_FLAGS,
+  R5_STRATEGIC_TOPICS,
+  R5_VEHICLE_DEPENDENCY_SIGNALS,
+  R5_FORBIDDEN_R3_TERMS,
+  R5_FORBIDDEN_R4_TERMS,
+  R5_GENERIC_PATTERNS,
+  R5_QUALITY_THRESHOLDS,
+  R5_AFTER_REPAIR_PATTERNS,
+  type R5QualityFlag,
+  type SurfaceTarget,
+} from '../../../config/r5-diagnostic.constants';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -39,6 +52,17 @@ export interface SeoDiagnostic {
   estimated_repair_cost_min: number | null;
   estimated_repair_cost_max: number | null;
   estimated_repair_duration: string | null;
+  differentiation_checklist: Array<{
+    criterion: string;
+    if_yes: string;
+    if_no: string;
+  }> | null;
+  consultation_triggers: Array<{
+    trigger: string;
+    urgency: 'urgent' | 'soon' | 'routine';
+    reason: string;
+  }> | null;
+  do_dont_list: { do: string[]; dont: string[] } | null;
   schema_org: Record<string, unknown> | null;
   created_at: string;
   updated_at: string;
@@ -57,6 +81,18 @@ export interface SeoDiagnosticListItem {
   risk_level: 'confort' | 'securite' | 'critique';
   safety_gate: string;
   cluster_id: string | null;
+}
+
+/**
+ * Resultat de validation qualite R5 (double filtre).
+ * Pattern: reference.service.ts validateReferenceQuality()
+ */
+export interface DiagnosticQualityResult {
+  score: number;
+  flags: R5QualityFlag[];
+  isPublishable: boolean;
+  vehicleDependencyScore: number;
+  surfaceRecommendation: SurfaceTarget | null;
 }
 
 /**
@@ -513,6 +549,16 @@ export class DiagnosticService extends SupabaseBaseService {
           continue;
         }
 
+        // Policy gate: check if slug is blocked by observable_policy
+        const policyBlock = await this.checkPolicyGate(slug);
+        if (policyBlock) {
+          this.logger.debug(
+            `🚫 Policy blocked: ${slug} → ${policyBlock.redirect_to} (${policyBlock.reason})`,
+          );
+          skipped++;
+          continue;
+        }
+
         // Parse RAG diagnostic file for enriched content
         const ragData = this.parseRagDiagnosticFile(gamme.pg_alias);
 
@@ -633,13 +679,36 @@ export class DiagnosticService extends SupabaseBaseService {
   }
 
   /**
-   * Publie un diagnostic (is_published: true)
-   * @param slug - Le slug du diagnostic à publier
-   * @returns Succès ou échec
+   * Publie un diagnostic (is_published: true) avec validation qualite.
+   * Phase 1B : bloque si flags bloquants presents.
+   * @param slug - Le slug du diagnostic a publier
+   * @returns Succes ou echec avec flags
    */
-  async publish(slug: string): Promise<{ success: boolean; error?: string }> {
+  async publish(
+    slug: string,
+  ): Promise<{ success: boolean; error?: string; flags?: R5QualityFlag[] }> {
     this.logger.log(`📢 Publishing diagnostic: ${slug}`);
 
+    // 1. Fetch diagnostic
+    const diag = await this.getBySlug(slug);
+    if (!diag) {
+      return { success: false, error: 'Diagnostic not found' };
+    }
+
+    // 2. Validate quality (double filter)
+    const quality = this.validateDiagnosticQuality(diag);
+    if (!quality.isPublishable) {
+      this.logger.warn(
+        `❌ Publish blocked for ${slug}: ${quality.flags.join(', ')}`,
+      );
+      return {
+        success: false,
+        error: `Blocked by quality gates: ${quality.flags.filter((f) => (R5_BLOCKING_FLAGS as readonly string[]).includes(f)).join(', ')}`,
+        flags: quality.flags,
+      };
+    }
+
+    // 3. Update is_published
     const { error } = await this.supabase
       .from('__seo_observable')
       .update({
@@ -654,6 +723,316 @@ export class DiagnosticService extends SupabaseBaseService {
     }
 
     return { success: true };
+  }
+
+  // ============================================
+  // QUALITY VALIDATION (Phase 1A — Double Filter)
+  // ============================================
+
+  /**
+   * Valide la qualite d'un diagnostic R5 avec double filtre.
+   * Filtre 1 : intention (R3/R4/R5/TOOL)
+   * Filtre 2 : dependance vehicule
+   *
+   * Pattern: reference.service.ts:1425 validateReferenceQuality()
+   *
+   * @param diag - Le diagnostic complet
+   * @returns Score, flags, publishability, surface recommendation
+   */
+  validateDiagnosticQuality(diag: SeoDiagnostic): DiagnosticQualityResult {
+    const flags: R5QualityFlag[] = [];
+
+    // Concatenate all text fields for content analysis
+    const allText = [
+      diag.title,
+      diag.symptom_description,
+      diag.sign_description,
+      diag.meta_description,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    const allTextClean = this.stripHtml(allText);
+
+    // ── Filtre 1 — Intention (le contenu est-il au bon endroit ?) ──
+
+    // 1. R3_ANGLE_LEAK — vocabulaire procedural
+    const r3TermCount = R5_FORBIDDEN_R3_TERMS.filter((term) =>
+      allTextClean.includes(term.toLowerCase()),
+    ).length;
+    if (r3TermCount > R5_QUALITY_THRESHOLDS.maxR3TermCount) {
+      flags.push('R3_ANGLE_LEAK');
+    }
+
+    // 2. R4_ANGLE_LEAK — vocabulaire encyclopedique
+    const r4TermCount = R5_FORBIDDEN_R4_TERMS.filter((term) =>
+      allTextClean.includes(term.toLowerCase()),
+    ).length;
+    if (r4TermCount > R5_QUALITY_THRESHOLDS.maxR4TermCount) {
+      flags.push('R4_ANGLE_LEAK');
+    }
+
+    // 3. NOT_STRATEGIC_TOPIC — slug hors whitelist (WARNING)
+    const isStrategic = R5_STRATEGIC_TOPICS.some((topic) =>
+      diag.slug.startsWith(topic),
+    );
+    if (!isStrategic) {
+      flags.push('NOT_STRATEGIC_TOPIC');
+    }
+
+    // ── Filtre 2 — Dependance vehicule ──
+
+    // 4. VEHICLE_DEPENDENT — score par signaux (WARNING)
+    const vehicleDependencyScore = R5_VEHICLE_DEPENDENCY_SIGNALS.reduce(
+      (score, pattern) => score + (pattern.test(allText) ? 1 : 0),
+      0,
+    );
+    if (vehicleDependencyScore >= 1) {
+      flags.push('VEHICLE_DEPENDENT');
+    }
+
+    // 5. AFTER_REPAIR_TOPIC — sujet "apres reparation" (WARNING)
+    const isAfterRepair = R5_AFTER_REPAIR_PATTERNS.some((p) => p.test(allText));
+    if (isAfterRepair) {
+      flags.push('AFTER_REPAIR_TOPIC');
+    }
+
+    // ── Qualite contenu ──
+
+    // 6. VAGUE_PROMISE — symptom trop court ou generique
+    const symptomText = diag.symptom_description || '';
+    const isGeneric = R5_GENERIC_PATTERNS.some((p) => p.test(symptomText));
+    if (
+      symptomText.length < R5_QUALITY_THRESHOLDS.minSymptomLength ||
+      isGeneric
+    ) {
+      flags.push('VAGUE_PROMISE');
+    }
+
+    // 7. SHORT_SYMPTOM (WARNING si > 0 mais < seuil)
+    if (
+      symptomText.length > 0 &&
+      symptomText.length < R5_QUALITY_THRESHOLDS.minSymptomLength &&
+      !flags.includes('VAGUE_PROMISE')
+    ) {
+      flags.push('SHORT_SYMPTOM');
+    }
+
+    // 8. SHORT_SIGN (WARNING)
+    const signText = diag.sign_description || '';
+    if (
+      signText.length > 0 &&
+      signText.length < R5_QUALITY_THRESHOLDS.minSignLength
+    ) {
+      flags.push('SHORT_SIGN');
+    }
+
+    // 9. GENERIC_PAGE — aucun contexte (WARNING)
+    if (!diag.ctx_phase?.length && !diag.ctx_temp?.length && !diag.ctx_freq) {
+      flags.push('GENERIC_PAGE');
+    }
+
+    // 10. NO_DIFFERENTIATION — pas de signe ni actions (WARNING)
+    if (
+      (!diag.sign_description || diag.sign_description.length < 50) &&
+      (!diag.recommended_actions || diag.recommended_actions.length === 0)
+    ) {
+      flags.push('NO_DIFFERENTIATION');
+    }
+
+    // ── Champs obligatoires ──
+
+    // 11. MISSING_SAFETY_GATE (BLOCKING)
+    if (!diag.safety_gate || diag.safety_gate === ('none' as string)) {
+      // 'none' is a valid value — only flag if truly empty
+      if (!diag.safety_gate) {
+        flags.push('MISSING_SAFETY_GATE');
+      }
+    }
+
+    // 12. MISSING_ACTIONS (BLOCKING)
+    if (
+      !diag.recommended_actions ||
+      diag.recommended_actions.length < R5_QUALITY_THRESHOLDS.minActionsCount
+    ) {
+      flags.push('MISSING_ACTIONS');
+    }
+
+    // 13. DTC_WITHOUT_CODES (BLOCKING)
+    if (
+      diag.observable_type === 'dtc' &&
+      (!diag.dtc_codes || diag.dtc_codes.length === 0)
+    ) {
+      flags.push('DTC_WITHOUT_CODES');
+    }
+
+    // 14. MISSING_RISK_LEVEL (WARNING)
+    if (!diag.risk_level) {
+      flags.push('MISSING_RISK_LEVEL');
+    }
+
+    // 15. MISSING_GAMMES (WARNING)
+    if (
+      !diag.related_gammes ||
+      diag.related_gammes.length < R5_QUALITY_THRESHOLDS.minGammesCount
+    ) {
+      flags.push('MISSING_GAMMES');
+    }
+
+    // ── Maillage (WARNINGs) ──
+
+    if (
+      !diag.related_blog_articles ||
+      diag.related_blog_articles.length === 0
+    ) {
+      flags.push('NO_R3_LINK');
+    }
+    if (!diag.related_references || diag.related_references.length === 0) {
+      flags.push('NO_R4_LINK');
+    }
+
+    // ── Meta (WARNING) ──
+
+    const metaLen = (diag.meta_description || '').length;
+    if (
+      metaLen > 0 &&
+      (metaLen < R5_QUALITY_THRESHOLDS.minMetaDescLength ||
+        metaLen > R5_QUALITY_THRESHOLDS.maxMetaDescLength)
+    ) {
+      flags.push('META_LENGTH');
+    }
+
+    // ── Cost estimate (WARNING) ──
+
+    if (!diag.estimated_repair_cost_min && !diag.estimated_repair_cost_max) {
+      flags.push('MISSING_COST_ESTIMATE');
+    }
+
+    // ── Context partial (WARNING) ──
+
+    const contextFields = [diag.ctx_phase, diag.ctx_temp].filter(
+      (f) => f && f.length > 0,
+    ).length;
+    if (contextFields > 0 && contextFields < 2 && !diag.ctx_freq) {
+      flags.push('MISSING_CONTEXT');
+    }
+
+    // ── Scoring ──
+
+    const blockingCount = flags.filter((f) =>
+      (R5_BLOCKING_FLAGS as readonly string[]).includes(f),
+    ).length;
+    const warningCount = flags.filter((f) =>
+      (R5_WARNING_FLAGS as readonly string[]).includes(f),
+    ).length;
+    const score = Math.max(0, 12 - blockingCount * 2 - warningCount);
+
+    // ── Surface recommendation ──
+
+    let surfaceRecommendation: SurfaceTarget | null = null;
+    if (flags.includes('R3_ANGLE_LEAK')) {
+      surfaceRecommendation = 'R3';
+    } else if (flags.includes('R4_ANGLE_LEAK')) {
+      surfaceRecommendation = 'R4';
+    } else if (
+      vehicleDependencyScore >=
+      R5_QUALITY_THRESHOLDS.vehicleDependencyBlockingScore
+    ) {
+      surfaceRecommendation = 'TOOL';
+    } else if (isAfterRepair) {
+      surfaceRecommendation = 'R3';
+    }
+
+    return {
+      score,
+      flags,
+      isPublishable: blockingCount === 0,
+      vehicleDependencyScore,
+      surfaceRecommendation,
+    };
+  }
+
+  /**
+   * Audit qualite de toutes les pages R5 existantes (read-only).
+   * Retourne la distribution des scores et flags pour calibrage.
+   */
+  async qualityAudit(): Promise<{
+    total: number;
+    publishable: number;
+    blocked: number;
+    avgScore: number;
+    topFlags: Array<{ flag: string; count: number }>;
+    details: Array<{
+      slug: string;
+      title: string;
+      score: number;
+      flags: string[];
+      isPublishable: boolean;
+      vehicleDependencyScore: number;
+      surfaceRecommendation: string | null;
+    }>;
+  }> {
+    this.logger.log('📊 Running R5 quality audit on all pages...');
+
+    const { data, error } = await this.supabase
+      .from('__seo_observable')
+      .select('*')
+      .order('slug');
+
+    if (error || !data) {
+      this.logger.error('❌ Error fetching observables for audit:', error);
+      return {
+        total: 0,
+        publishable: 0,
+        blocked: 0,
+        avgScore: 0,
+        topFlags: [],
+        details: [],
+      };
+    }
+
+    const details = data.map((row) => {
+      const diag = this.mapRowToDiagnostic(row);
+      const quality = this.validateDiagnosticQuality(diag);
+      return {
+        slug: diag.slug,
+        title: diag.title,
+        score: quality.score,
+        flags: quality.flags,
+        isPublishable: quality.isPublishable,
+        vehicleDependencyScore: quality.vehicleDependencyScore,
+        surfaceRecommendation: quality.surfaceRecommendation,
+      };
+    });
+
+    // Aggregate flags
+    const flagCounts: Record<string, number> = {};
+    for (const d of details) {
+      for (const f of d.flags) {
+        flagCounts[f] = (flagCounts[f] || 0) + 1;
+      }
+    }
+    const topFlags = Object.entries(flagCounts)
+      .map(([flag, count]) => ({ flag, count }))
+      .sort((a, b) => b.count - a.count);
+
+    const publishable = details.filter((d) => d.isPublishable).length;
+    const avgScore =
+      details.length > 0
+        ? +(
+            details.reduce((sum, d) => sum + d.score, 0) / details.length
+          ).toFixed(1)
+        : 0;
+
+    return {
+      total: details.length,
+      publishable,
+      blocked: details.length - publishable,
+      avgScore,
+      topFlags,
+      details: details.sort((a, b) => a.score - b.score),
+    };
   }
 
   /**
@@ -970,6 +1349,50 @@ export class DiagnosticService extends SupabaseBaseService {
   }
 
   /**
+   * Verifie si un slug est bloque par la policy table.
+   * Retourne null si autorise, sinon { redirect_to, reason }.
+   */
+  private async checkPolicyGate(
+    slug: string,
+  ): Promise<{ redirect_to: string; reason: string } | null> {
+    // Check 1: slug is in accepted_aliases of another topic
+    const { data: aliasMatch } = await this.supabase
+      .from('__seo_observable_policy')
+      .select('canonical_topic, redirect_to, surface_owner')
+      .contains('accepted_aliases', [slug])
+      .limit(1);
+
+    if (aliasMatch && aliasMatch.length > 0) {
+      const match = aliasMatch[0];
+      return {
+        redirect_to: (match.redirect_to || match.surface_owner) as string,
+        reason: `Alias of ${match.canonical_topic}`,
+      };
+    }
+
+    // Check 2: slug matches a blocked policy entry
+    const { data: directMatch } = await this.supabase
+      .from('__seo_observable_policy')
+      .select(
+        'canonical_topic, redirect_to, surface_owner, is_allowed_in_r5, vehicle_dependency',
+      )
+      .eq('canonical_topic', slug)
+      .limit(1);
+
+    if (directMatch && directMatch.length > 0) {
+      const policy = directMatch[0];
+      if (!policy.is_allowed_in_r5) {
+        return {
+          redirect_to: (policy.redirect_to || policy.surface_owner) as string,
+          reason: `Policy: vehicle_dependency=${policy.vehicle_dependency}`,
+        };
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Mappe une ligne de la base de donnees vers un SeoDiagnostic complet
    */
   private mapRowToDiagnostic(row: Record<string, unknown>): SeoDiagnostic {
@@ -1003,6 +1426,11 @@ export class DiagnosticService extends SupabaseBaseService {
       estimated_repair_cost_min: row.estimated_repair_cost_min as number | null,
       estimated_repair_cost_max: row.estimated_repair_cost_max as number | null,
       estimated_repair_duration: row.estimated_repair_duration as string | null,
+      differentiation_checklist:
+        row.differentiation_checklist as SeoDiagnostic['differentiation_checklist'],
+      consultation_triggers:
+        row.consultation_triggers as SeoDiagnostic['consultation_triggers'],
+      do_dont_list: row.do_dont_list as SeoDiagnostic['do_dont_list'],
       schema_org: row.schema_org as Record<string, unknown> | null,
       created_at: row.created_at as string,
       updated_at: row.updated_at as string,
