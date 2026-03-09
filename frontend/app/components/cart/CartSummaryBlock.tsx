@@ -1,4 +1,14 @@
-import { Info, Package, ShoppingBag, Truck } from "lucide-react";
+import { Link } from "@remix-run/react";
+import {
+  ArrowRight,
+  Car,
+  Info,
+  Package,
+  RotateCcw,
+  Shield,
+  ShoppingBag,
+  Truck,
+} from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import {
   Tooltip,
@@ -11,12 +21,14 @@ import { formatPrice, FREE_SHIPPING_THRESHOLD } from "./cart-utils";
 
 export function CartSummaryBlock({
   summary,
-  children,
   isUpdating,
+  vehicleLabel,
+  checkoutDisabled,
 }: {
   summary: CartSummaryType;
-  children?: React.ReactNode;
   isUpdating?: boolean;
+  vehicleLabel?: string;
+  checkoutDisabled?: boolean;
 }) {
   const total =
     summary.total_price ||
@@ -144,7 +156,43 @@ export function CartSummaryBlock({
         </div>
       </div>
 
-      {children && <div className="px-6 pb-6">{children}</div>}
+      <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3">
+        {vehicleLabel && (
+          <p className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+            <Car className="h-3 w-3" />
+            Pi{"\u00e8"}ces s{"\u00e9"}lectionn{"\u00e9"}es pour :{" "}
+            {vehicleLabel}
+          </p>
+        )}
+
+        <Link
+          to="/checkout"
+          aria-disabled={checkoutDisabled}
+          className={`w-full py-4 px-6 bg-cta hover:bg-cta-hover rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3 ${checkoutDisabled ? "pointer-events-none opacity-50" : ""}`}
+        >
+          <span className="text-white font-bold text-lg">
+            Continuer vers la livraison
+          </span>
+          <ArrowRight className="h-5 w-5 text-white" />
+        </Link>
+
+        <div className="grid grid-cols-3 gap-3 pt-2 text-center text-xs text-slate-500">
+          <div className="flex flex-col items-center gap-1">
+            <Shield className="h-4 w-4" />
+            <span>
+              Paiement s{"\u00e9"}curis{"\u00e9"}
+            </span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <Truck className="h-4 w-4" />
+            <span>Exp{"\u00e9"}dition 24-48h</span>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <RotateCcw className="h-4 w-4" />
+            <span>Retours 30 jours</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

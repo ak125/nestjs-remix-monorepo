@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { ArrowRight } from "lucide-react";
+import { ChevronRight, Package } from "lucide-react";
 import { type VehicleCookie } from "~/utils/vehicle-cookie";
 
 export interface CrossSellGamme {
@@ -23,46 +23,61 @@ export function CartCrossSell({
     : null;
 
   return (
-    <div className="mt-6 rounded-xl border bg-slate-50 p-4">
-      <h3 className="mb-3 text-sm font-semibold text-slate-800">
-        {vehicleLabel
-          ? `Produits compl\u00e9mentaires pour votre ${vehicleLabel}`
-          : "Compl\u00e9tez votre entretien"}
-      </h3>
-      <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
+    <section className="mt-10">
+      <div className="mb-5">
+        <h2 className="text-2xl font-black tracking-tight text-slate-900">
+          {vehicleLabel
+            ? `Produits compl\u00e9mentaires pour votre ${vehicleLabel}`
+            : "Compl\u00e9tez votre entretien"}
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">
+          S{"\u00e9"}lectionn{"\u00e9"}es pour compl{"\u00e9"}ter votre
+          entretien
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {gammes.map((gamme) => (
-          <Link
+          <article
             key={gamme.pg_id}
-            to={`/pieces/${gamme.pg_alias}`}
-            className="flex min-w-[140px] flex-col items-center gap-2 rounded-lg border bg-white p-3 transition-shadow hover:shadow-md"
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
-            {gamme.pg_img ? (
-              <img
-                src={gamme.pg_img}
-                alt=""
-                className="h-12 w-12 rounded object-contain"
-                loading="lazy"
-              />
-            ) : (
-              <div className="flex h-12 w-12 items-center justify-center rounded bg-slate-100 text-xs text-slate-400">
-                Auto
-              </div>
-            )}
-            <span className="text-center text-xs font-medium leading-tight text-slate-700">
-              {gamme.pg_name}
-            </span>
-            {vehicle && (
-              <span className="text-center text-[10px] text-slate-400 leading-tight">
-                Pour votre v{"\u00e9"}hicule
-              </span>
-            )}
-            <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-teal-600">
-              Voir le produit
-              <ArrowRight className="h-2.5 w-2.5" />
-            </span>
-          </Link>
+            <div className="flex h-36 items-center justify-center rounded-xl bg-slate-50 p-4">
+              {gamme.pg_img ? (
+                <img
+                  src={gamme.pg_img}
+                  alt=""
+                  className="max-h-full max-w-full object-contain"
+                  loading="lazy"
+                />
+              ) : (
+                <Package className="h-12 w-12 text-slate-300" />
+              )}
+            </div>
+
+            <div className="mt-4">
+              <h3 className="line-clamp-2 text-base font-bold tracking-tight text-slate-900">
+                {gamme.pg_name}
+              </h3>
+              {vehicle && (
+                <p className="mt-2 text-sm text-slate-500">
+                  Pour votre v{"\u00e9"}hicule
+                </p>
+              )}
+            </div>
+
+            <div className="mt-4">
+              <Link
+                to={`/pieces/${gamme.pg_alias}`}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+              >
+                Voir le produit
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </article>
         ))}
       </div>
-    </div>
+    </section>
   );
 }

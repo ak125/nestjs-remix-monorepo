@@ -26,11 +26,8 @@ import {
   ArrowRight,
   Car,
   ChevronLeft,
-  RotateCcw,
-  Shield,
   ShoppingBag,
   Trash2,
-  Truck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatPrice } from "~/components/cart/cart-utils";
@@ -41,7 +38,6 @@ import {
 import { CartHelpBlock } from "~/components/cart/CartHelpBlock";
 import { CartItemRow } from "~/components/cart/CartItemRow";
 import { CartSummaryBlock } from "~/components/cart/CartSummaryBlock";
-import { CartVehicleBanner } from "~/components/cart/CartVehicleBanner";
 import { EmptyCart } from "~/components/cart/EmptyCart";
 import { FreeShippingProgress } from "~/components/cart/FreeShippingProgress";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
@@ -269,8 +265,6 @@ export default function CartPage() {
       <Container>
         <CheckoutStepper current="cart" />
 
-        <CartVehicleBanner vehicle={vehicle as VehicleCookie | null} />
-
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
           <div className="flex items-center gap-3">
             <div className="bg-cta p-3 rounded-xl">
@@ -303,8 +297,8 @@ export default function CartPage() {
           }
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          <div className="lg:col-span-2 space-y-4">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="space-y-4">
             {cart.items.map((item) => (
               <CartItemRow
                 key={item.id}
@@ -376,58 +370,28 @@ export default function CartPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-1">
+          <div>
             <div className="lg:sticky lg:top-24 space-y-4">
               <CartHelpBlock />
 
               <CartSummaryBlock
                 summary={cart.summary as CartSummaryType}
                 isUpdating={isAnyMutating}
-              >
-                <div className="space-y-3">
-                  {vehicle && (
-                    <p className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
-                      <Car className="h-3 w-3" />
-                      Pi{"\u00e8"}ces s{"\u00e9"}lectionn{"\u00e9"}es pour :{" "}
-                      {(vehicle as VehicleCookie).marque_name}{" "}
-                      {(vehicle as VehicleCookie).modele_name}{" "}
-                      {(vehicle as VehicleCookie).type_name}
-                    </p>
-                  )}
-                  <Link
-                    to="/checkout"
-                    aria-disabled={isAnyMutating}
-                    className={`w-full py-4 px-6 bg-cta hover:bg-cta-hover rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3 ${isAnyMutating ? "pointer-events-none opacity-50" : ""}`}
-                  >
-                    <span className="text-white font-bold text-lg">
-                      Continuer vers la livraison
-                    </span>
-                    <ArrowRight className="h-5 w-5 text-white" />
-                  </Link>
-                  <div className="flex items-center justify-center gap-4 mt-2">
-                    <span className="flex items-center gap-1 text-xs text-slate-500">
-                      <Shield className="h-3.5 w-3.5 text-slate-400" />
-                      Paiement s{"\u00e9"}curis{"\u00e9"}
-                    </span>
-                    <span className="flex items-center gap-1 text-xs text-slate-500">
-                      <Truck className="h-3.5 w-3.5 text-slate-400" />
-                      Exp{"\u00e9"}dition 24-48h
-                    </span>
-                    <span className="flex items-center gap-1 text-xs text-slate-500">
-                      <RotateCcw className="h-3.5 w-3.5 text-slate-400" />
-                      Retours 30 jours
-                    </span>
-                  </div>
-                </div>
-              </CartSummaryBlock>
-
-              <CartCrossSell
-                gammes={crossSellGammes as CrossSellGamme[]}
-                vehicle={vehicle as VehicleCookie | null}
+                vehicleLabel={
+                  vehicle
+                    ? `${(vehicle as VehicleCookie).marque_name} ${(vehicle as VehicleCookie).modele_name} ${(vehicle as VehicleCookie).type_name}`
+                    : undefined
+                }
+                checkoutDisabled={isAnyMutating}
               />
             </div>
           </div>
         </div>
+
+        <CartCrossSell
+          gammes={crossSellGammes as CrossSellGamme[]}
+          vehicle={vehicle as VehicleCookie | null}
+        />
 
         <MobileBottomBarSpacer />
       </Container>

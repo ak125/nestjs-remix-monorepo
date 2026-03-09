@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { Sparkles, Truck } from "lucide-react";
+import { ChevronRight, Sparkles, Truck } from "lucide-react";
 import { formatPrice, FREE_SHIPPING_THRESHOLD } from "./cart-utils";
 
 export function FreeShippingProgress({
@@ -55,30 +55,29 @@ export function FreeShippingProgress({
       className={`overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-b from-amber-50 via-yellow-50 to-orange-50 shadow-md ${className}`}
       aria-label="Progression vers la livraison offerte"
     >
-      <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300 px-6 py-4 text-center">
+      <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-300 via-yellow-300 to-orange-300 px-5 py-3 text-center">
         <Sparkles className="h-5 w-5 text-orange-700" />
-        <h2 className="text-xl font-black tracking-tight text-slate-900">
+        <h2 className="text-lg font-black tracking-tight text-slate-900">
           Livraison offerte d{"\u00e8"}s {formatPrice(FREE_SHIPPING_THRESHOLD)}
         </h2>
       </div>
 
-      <div className="px-6 py-6">
-        <p className="text-center text-lg font-medium text-slate-800">
-          Ajoutez encore{" "}
+      <div className="px-5 py-4">
+        <p className="text-center text-base font-medium text-slate-800 sm:text-lg">
+          Plus que{" "}
           <span className="font-black text-orange-600">
             {formatPrice(remaining)}
           </span>{" "}
-          pour d{"\u00e9"}bloquer la{" "}
-          <span className="font-black text-slate-900">livraison offerte</span>
+          pour en profiter
         </p>
 
-        <div className="mt-5">
-          <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <div className="mt-4">
+          <div className="mb-2 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             <span>Progression</span>
             <span>{Math.round(progress)}%</span>
           </div>
 
-          <div className="h-3 w-full overflow-hidden rounded-full bg-white shadow-inner">
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/90 ring-1 ring-black/5">
             <div
               className="h-full rounded-full bg-gradient-to-r from-orange-500 via-amber-500 to-emerald-500 transition-all duration-500"
               style={{ width: `${progress}%` }}
@@ -86,22 +85,14 @@ export function FreeShippingProgress({
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-center gap-2 text-sm text-slate-600">
-          <Truck className="h-4 w-4 text-emerald-600" />
-          <span>
-            Plus votre panier augmente, plus vite vous d{"\u00e9"}bloquez la
-            livraison offerte.
-          </span>
-        </div>
-
         {vehicleUrl && (
-          <div className="mt-5 flex justify-center">
+          <div className="mt-4 flex justify-center">
             <Link
               to={vehicleUrl}
-              className="inline-flex items-center rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm transition hover:bg-slate-50"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50"
             >
-              Voir des pi{"\u00e8"}ces compatibles pour atteindre{" "}
-              {formatPrice(FREE_SHIPPING_THRESHOLD)}
+              Voir des pi{"\u00e8"}ces compatibles
+              <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
         )}
