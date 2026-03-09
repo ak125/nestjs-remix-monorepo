@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
 import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -755,8 +756,13 @@ export default function RegisterPage() {
                           <button
                             type="button"
                             tabIndex={-1}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                             onClick={() => setShowPassword((p) => !p)}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-slate-600 focus-visible:ring-2 focus-visible:ring-cta/50 focus:outline-none rounded-lg transition-colors"
+                            aria-label={
+                              showPassword
+                                ? "Masquer le mot de passe"
+                                : "Afficher le mot de passe"
+                            }
                           >
                             {showPassword ? (
                               <EyeOff className="w-4 h-4" />
@@ -821,8 +827,13 @@ export default function RegisterPage() {
                           <button
                             type="button"
                             tabIndex={-1}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                             onClick={() => setShowConfirmPassword((p) => !p)}
+                            className="absolute right-1 top-1/2 -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-slate-600 focus-visible:ring-2 focus-visible:ring-cta/50 focus:outline-none rounded-lg transition-colors"
+                            aria-label={
+                              showConfirmPassword
+                                ? "Masquer la confirmation"
+                                : "Afficher la confirmation"
+                            }
                           >
                             {showConfirmPassword ? (
                               <EyeOff className="w-4 h-4" />
@@ -957,21 +968,12 @@ export default function RegisterPage() {
                   </fieldset>
 
                   {/* Newsletter */}
-                  <div className="flex items-center gap-3">
-                    <input
-                      name="newsletterOptIn"
-                      type="checkbox"
-                      id="newsletterOptIn"
-                      disabled={isSubmitting}
-                      className="h-4 w-4 text-cta border-slate-300 rounded accent-cta"
-                    />
-                    <Label
-                      htmlFor="newsletterOptIn"
-                      className="text-sm font-normal text-slate-600 cursor-pointer font-v9-body"
-                    >
-                      Je souhaite recevoir les offres et actualités AutoMecanik
-                    </Label>
-                  </div>
+                  <Checkbox
+                    id="newsletterOptIn"
+                    name="newsletterOptIn"
+                    disabled={isSubmitting}
+                    label="Je souhaite recevoir les offres et actualités AutoMecanik"
+                  />
 
                   {/* CTA */}
                   <div className="space-y-3 pt-2">
