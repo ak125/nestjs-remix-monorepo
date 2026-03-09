@@ -124,6 +124,273 @@ export class AuthLoginController {
   }
 
   /**
+   * POST /register-and-login
+   * Inscription + auto-login + cart merge + redirect (form-urlencoded)
+   * Pattern identique à POST /authenticate mais avec création de compte
+   */
+  @Post('register-and-login')
+  async registerAndLogin(
+    @Req() request: Express.Request,
+    @Res() response: Response,
+  ) {
+    const body = (request as Request).body || {};
+    const email = String(body.email || '')
+      .toLowerCase()
+      .trim();
+    const password = String(body.password || '');
+    const confirmPassword = String(body.confirmPassword || '');
+    const firstName = String(body.firstName || '').trim();
+    const lastName = String(body.lastName || '').trim();
+    const civility = body.civility || undefined;
+    const phone = String(body.phone || '').trim() || undefined;
+
+    // Billing → mapped to CreateUserDto fields
+    const address1 = String(body['billing.address1'] || '').trim();
+    const address2 = String(body['billing.address2'] || '').trim();
+    const address = address2 ? `${address1}, ${address2}` : address1;
+    const zipCode =
+      String(body['billing.postalCode'] || '').trim() || undefined;
+    const city = String(body['billing.city'] || '').trim() || undefined;
+    const country = String(body['billing.country'] || 'FR').trim();
+
+    // Honeypot anti-spam : champ invisible rempli = bot
+    if (body.website) {
+      return response.redirect('/register');
+    }
+
+    // Validation basique
+    if (!email) {
+      return response.redirect(
+        '/register?error=' + encodeURIComponent('Email requis'),
+      );
+    }
+    if (password.length < 8) {
+      return response.redirect(
+        '/register?error=' +
+          encodeURIComponent(
+            'Le mot de passe doit contenir au moins 8 caractères',
+          ),
+      );
+    }
+    if (password !== confirmPassword) {
+      return response.redirect(
+        '/register?error=' +
+          encodeURIComponent('Les mots de passe ne correspondent pas'),
+      );
+    }
+
+    // Création du compte
+    try {
+      await this.userDataService.create({
+        email,
+        password,
+        firstName: firstName || undefined,
+        lastName: lastName || undefined,
+        civility,
+        phone,
+        address: address || undefined,
+        zipCode,
+        city,
+        country,
+      });
+    } catch (error: unknown) {
+      const errMsg =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'object' && error !== null
+            ? JSON.stringify(error)
+            : String(error);
+      this.logger.error(`[REGISTER] Erreur création compte: ${errMsg}`);
+
+      if (errMsg.includes('déjà utilisé') || errMsg.includes('duplicate')) {
+        return response.redirect(
+          '/register?error=' + encodeURIComponent('Cet email est déjà utilisé'),
+        );
+      }
+      return response.redirect(
+        '/register?error=' +
+          encodeURIComponent('Erreur lors de la création du compte'),
+      );
+    }
+
+    // Auto-login (même pattern que POST /authenticate)
+    let loginResult: LoginResult;
+    try {
+      loginResult = await this.authService.login(
+        email,
+        password,
+        (request as Request).ip,
+      );
+    } catch (loginErr: unknown) {
+      this.logger.error(
+        `[REGISTER] Login après inscription échoué: ${loginErr instanceof Error ? loginErr.message : String(loginErr)}`,
+      );
+      // Compte créé mais login échoué → rediriger vers login
+      return response.redirect(
+        '/login?register=success&message=' +
+          encodeURIComponent('Compte créé, veuillez vous connecter'),
+      );
+    }
+
+    // Cart merge: extraire guest session AVANT regeneration
+    const cookieHeader = (request as Request).headers?.cookie || '';
+    const guestSessionId = extractGuestSessionId(cookieHeader);
+
+    // Session: regenerate → login → save
+    try {
+      await promisifySessionRegenerate(request.session);
+      await promisifyLoginNoRegenerate(request, loginResult.user);
+      await promisifySessionSave(request.session);
+    } catch (sessionErr: unknown) {
+      this.logger.error(
+        `[REGISTER] Session error: ${sessionErr instanceof Error ? sessionErr.message : String(sessionErr)}`,
+      );
+      return response.redirect('/');
+    }
+
+    // Cart merge
+    const userId = loginResult.user?.id;
+    if (guestSessionId && userId && guestSessionId !== String(userId)) {
+      try {
+        const mergedCount = await this.cartDataService.mergeCart(
+          guestSessionId,
+          String(userId),
+        );
+        if (mergedCount > 0) {
+          this.logger.log(
+            `[REGISTER] Panier fusionné: ${mergedCount} articles`,
+          );
+        }
+      } catch (mergeError: unknown) {
+        this.logger.error(
+          `[REGISTER] Erreur fusion panier: ${mergeError instanceof Error ? mergeError.message : String(mergeError)}`,
+        );
+      }
+    }
+
+    // Redirect
+    const expressReq = request as Request;
+    const redirectTo =
+      expressReq.body?.redirectTo || expressReq.query?.redirectTo;
+
+    if (
+      redirectTo &&
+      typeof redirectTo === 'string' &&
+      redirectTo.startsWith('/') &&
+      !redirectTo.startsWith('//')
+    ) {
+      return response.redirect(redirectTo);
+    }
+
+    const user = loginResult.user;
+    const userLevel = parseInt(String(user?.level)) || 0;
+
+    if (user?.isAdmin && userLevel >= 7) {
+      return response.redirect('/admin');
+    } else if (user?.isPro) {
+      return response.redirect('/pro/dashboard');
+    }
+
+    return response.redirect('/');
+  }
+
+  /**
+   * POST /auth/google
+   * Authentification via Google Identity Services (ID token)
+   */
+  @Post('auth/google')
+  @ApiOperation({
+    summary: 'Login or register with Google',
+    description:
+      'Authenticate using a Google ID token from Google Identity Services. Creates account if needed.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['credential'],
+      properties: {
+        credential: {
+          type: 'string',
+          description: 'Google ID token from GIS callback',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Google auth successful' })
+  @ApiResponse({ status: 401, description: 'Invalid Google token' })
+  async googleAuth(
+    @Body() body: { credential: string },
+    @Req() request: Express.Request,
+  ): Promise<Record<string, unknown>> {
+    if (!body.credential) {
+      throw new HttpException(
+        { success: false, message: 'Token Google manquant' },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // Extraire le guest session ID AVANT modification de session
+    const cookieHeader = (request as Request).headers?.cookie || '';
+    const guestSessionId = extractGuestSessionId(cookieHeader);
+
+    // Authentifier avec Google (vérifie token, crée/lie compte)
+    const authUser = await this.authService.authenticateWithGoogle(
+      body.credential,
+    );
+
+    // Créer la session directement (pas de login() car pas de password)
+    try {
+      await promisifySessionRegenerate(request.session);
+      await promisifyLoginNoRegenerate(request, authUser);
+      await promisifySessionSave(request.session);
+    } catch (sessionErr: unknown) {
+      this.logger.error(
+        `[GOOGLE-AUTH] Session error: ${sessionErr instanceof Error ? sessionErr.message : String(sessionErr)}`,
+      );
+      throw new HttpException(
+        { success: false, message: 'Erreur de session' },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    // Cart merge
+    const userId = authUser.id;
+    if (guestSessionId && userId && guestSessionId !== String(userId)) {
+      try {
+        const mergedCount = await this.cartDataService.mergeCart(
+          guestSessionId,
+          String(userId),
+        );
+        if (mergedCount > 0) {
+          this.logger.log(
+            `[GOOGLE-AUTH] Panier fusionné: ${mergedCount} articles`,
+          );
+        }
+      } catch (mergeErr: unknown) {
+        this.logger.error(
+          `[GOOGLE-AUTH] Erreur fusion panier: ${mergeErr instanceof Error ? mergeErr.message : String(mergeErr)}`,
+        );
+      }
+    }
+
+    // Déterminer l'URL de redirection
+    const userLevel = parseInt(String(authUser.level)) || 0;
+    let redirectUrl = '/';
+    if (authUser.isAdmin && userLevel >= 7) {
+      redirectUrl = '/admin';
+    } else if (authUser.isPro) {
+      redirectUrl = '/pro/dashboard';
+    }
+
+    return {
+      success: true,
+      message: 'Connexion Google réussie',
+      user: authUser,
+      redirectUrl,
+    };
+  }
+
+  /**
    * POST /auth/check-email
    * Vérifie si un email existe (pour le checkout style Amazon)
    */

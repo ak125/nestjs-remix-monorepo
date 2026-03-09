@@ -19,13 +19,8 @@ export const RegisterSchema = z.object({
     .string({ required_error: 'Mot de passe requis' })
     .min(8, { message: 'Minimum 8 caractères' })
     .max(100, 'Mot de passe trop long')
-    .regex(/[A-Z]/, 'Au moins une majuscule requise')
-    .regex(/[a-z]/, 'Au moins une minuscule requise')
-    .regex(/[0-9]/, 'Au moins un chiffre requis')
-    .regex(
-      /[^A-Za-z0-9]/,
-      'Au moins un caractère spécial requis (!@#$%^&*...)',
-    ),
+    .regex(/[a-zA-Z]/, 'Au moins une lettre requise')
+    .regex(/[0-9]/, 'Au moins un chiffre requis'),
 
   firstName: z
     .string()
@@ -73,9 +68,8 @@ export class RegisterDtoClass {
   email: string;
 
   @ApiProperty({
-    description:
-      'User password (min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special char)',
-    example: 'SecurePass123!',
+    description: 'User password (min 8 chars, 1 letter, 1 number)',
+    example: 'Secure123',
     type: String,
   })
   password: string;

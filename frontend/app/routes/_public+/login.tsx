@@ -1,27 +1,29 @@
 import {
   json,
   redirect,
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { useSearchParams, Link } from "@remix-run/react";
-import { useState } from "react";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+  Form,
+  Link,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+} from "@remix-run/react";
+import { CheckCircle2, Eye, EyeOff } from "lucide-react";
+import { useState } from "react";
+import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
+import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { logger } from "~/utils/logger";
+import { loginSchema } from "~/schemas/auth";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { safeRedirect } from "~/utils/safe-redirect.server";
 import { getOptionalUser } from "../../auth/unified.server";
 
-// Phase 9: PageRole pour analytics
 export const handle = {
   pageRole: createPageRoleMeta(PageRole.R6_SUPPORT, {
     clusterId: "auth",
@@ -50,242 +52,301 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     if (user.isPro) return redirect("/commercial");
     return redirect("/account");
   }
-  return json({});
+  return json({
+    googleClientId: process.env.VITE_GOOGLE_CLIENT_ID || "",
+  });
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+
+  const parsed = loginSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+
+  if (!parsed.success) {
+    return json(
+      { ok: false as const, errors: parsed.error.flatten().fieldErrors },
+      { status: 400 },
+    );
+  }
+
+  const redirectTo = safeRedirect(formData.get("redirectTo") as string | null);
+
+  // Appel interne au backend (même pattern que unified.server.ts)
+  const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
+  const backendResponse = await fetch(`${baseUrl}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: request.headers.get("Cookie") || "",
+    },
+    body: JSON.stringify({
+      email: parsed.data.email,
+      password: parsed.data.password,
+    }),
+  });
+
+  if (!backendResponse.ok) {
+    const body = await backendResponse.json().catch(() => null);
+    return json(
+      {
+        ok: false as const,
+        formError: body?.message || "Email ou mot de passe incorrect.",
+      },
+      { status: 401 },
+    );
+  }
+
+  // Forward Set-Cookie du backend vers le browser
+  const headers = new Headers();
+  const setCookies =
+    backendResponse.headers.getSetCookie?.() ??
+    [backendResponse.headers.get("set-cookie")].filter(Boolean);
+  for (const cookie of setCookies) {
+    if (cookie) headers.append("Set-Cookie", cookie);
+  }
+
+  // Déterminer la destination de redirect selon le rôle
+  const data = await backendResponse.json().catch(() => ({}));
+  const user = data.user;
+  let destination = redirectTo;
+  if (destination === "/account") {
+    const level = parseInt(String(user?.level)) || 0;
+    if (user?.isAdmin && level >= 7) destination = "/admin";
+    else if (user?.isPro) destination = "/commercial";
+  }
+
+  return redirect(destination, { headers });
 }
 
 export default function LoginPage() {
+  const { googleClientId } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
+  const navigation = useNavigation();
   const [searchParams] = useSearchParams();
-  const [isLoading, setIsLoading] = useState(false);
-  const error = searchParams.get("error");
+  const [googleError, setGoogleError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isLoading = navigation.state === "submitting";
+  const error =
+    (actionData && "formError" in actionData ? actionData.formError : null) ||
+    searchParams.get("error") ||
+    googleError;
+  const fieldErrors =
+    actionData && "errors" in actionData ? actionData.errors : null;
   const message = searchParams.get("message");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    e.stopPropagation(); // 🔧 EMPÊCHER LA PROPAGATION à Remix
-    setIsLoading(true);
-
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-
-    // ✅ Récupérer le redirectTo pour rediriger après connexion
-    const redirectTo = searchParams.get("redirectTo");
-
-    logger.log("🔄 [Login] Connexion en cours...");
-    if (redirectTo) {
-      logger.log("🔄 [Login] Redirection après connexion:", redirectTo);
-    }
-
-    // Soumettre directement au backend via navigation native
-    const tempForm = document.createElement("form");
-    tempForm.method = "POST";
-    tempForm.action = redirectTo
-      ? `/authenticate?redirectTo=${encodeURIComponent(redirectTo)}`
-      : "/authenticate";
-    tempForm.style.display = "none";
-
-    const emailInput = document.createElement("input");
-    emailInput.name = "email";
-    emailInput.value = formData.get("email") as string;
-    tempForm.appendChild(emailInput);
-
-    const passwordInput = document.createElement("input");
-    passwordInput.name = "password";
-    passwordInput.value = formData.get("password") as string;
-    tempForm.appendChild(passwordInput);
-
-    // ✅ Ajouter le redirectTo au formulaire si présent
-    if (redirectTo) {
-      const redirectInput = document.createElement("input");
-      redirectInput.name = "redirectTo";
-      redirectInput.value = redirectTo;
-      tempForm.appendChild(redirectInput);
-      logger.log("✅ [Login] RedirectTo ajouté:", redirectTo);
-    }
-
-    // 🔑 Capturer et envoyer la session invité pour fusion de panier
-    const cookieHeader = document.cookie;
-    const sessionCookie = cookieHeader
-      .split(";")
-      .find((c) => c.trim().startsWith("connect.sid="));
-
-    if (sessionCookie) {
-      try {
-        const cookieValue = sessionCookie.split("=")[1];
-        const decoded = decodeURIComponent(cookieValue);
-        // Format: s:<sessionId>.<signature>
-        const match = decoded.match(/^s:([^.]+)\./);
-        if (match) {
-          const guestSessionId = match[1];
-          const sessionInput = document.createElement("input");
-          sessionInput.name = "guestSessionId";
-          sessionInput.value = guestSessionId;
-          tempForm.appendChild(sessionInput);
-          logger.log("✅ [Login] Session invité envoyée:", guestSessionId);
-        }
-      } catch (err) {
-        logger.warn("⚠️ [Login] Erreur parsing cookie:", err);
-      }
-    }
-
-    logger.log("📤 [Login] Soumission du formulaire vers /authenticate");
-    document.body.appendChild(tempForm);
-    tempForm.submit();
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-        {/* Header avec animation */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Bienvenue
+    <>
+      {/* Hero sombre — aligné charte homepage */}
+      <section className="bg-gradient-to-b from-v9-navy to-v9-navy-light">
+        <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-8 pb-16 lg:pt-12 lg:pb-20 text-center">
+          <h1 className="text-[28px] lg:text-[42px] font-extrabold leading-[1.1] tracking-tight text-white font-v9-heading">
+            Connectez-vous à votre espace
           </h1>
-          <p className="text-gray-600">Connectez-vous à votre compte</p>
+          <p className="text-[14px] lg:text-[16px] text-white/60 font-v9-body max-w-xl mx-auto mt-3">
+            Retrouvez vos commandes, vos véhicules et vos pièces compatibles.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3 mt-6">
+            {["Suivi de commande", "Historique d'achats", "Vos véhicules"].map(
+              (chip) => (
+                <span
+                  key={chip}
+                  className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-2 lg:px-4 lg:py-2.5 text-[12px] lg:text-[13px] font-medium text-white/70"
+                >
+                  {chip}
+                </span>
+              ),
+            )}
+          </div>
         </div>
+      </section>
 
-        {/* Success message */}
-        {searchParams.get("register") === "success" && (
-          <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-            <Badge className="w-full justify-center py-2 bg-success/20 text-success hover:bg-success/20 border-green-200">
-              ✓ Compte créé avec succès !
-            </Badge>
-          </div>
-        )}
+      {/* Card flottante — remonte sur le hero */}
+      <div className="relative z-10 -mt-8 lg:-mt-12 pb-16">
+        <div className="max-w-md mx-auto px-5 lg:px-8">
+          {/* Success message après inscription */}
+          {searchParams.get("register") === "success" && (
+            <div className="mb-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800 font-v9-body flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0" />
+              Compte créé avec succès !
+            </div>
+          )}
 
-        {/* Error/Message display */}
-        {(error || message) && (
-          <div className="animate-in fade-in slide-in-from-top-2 duration-500">
-            <Card className="border-destructive bg-destructive/10">
-              <CardContent className="pt-6">
-                <p className="text-sm text-red-800 flex items-center gap-2">
-                  <span className="text-lg">⚠️</span>
-                  {message ? decodeURIComponent(message) : error}
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+          {/* Error/Message display */}
+          {(error || message) && (
+            <div
+              className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 font-v9-body"
+              aria-live="polite"
+            >
+              {message ? decodeURIComponent(message) : error}
+            </div>
+          )}
 
-        {/* Login Card */}
-        <Card className="shadow-xl border-gray-200 backdrop-blur-sm bg-white/90">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">
-              Connexion
-            </CardTitle>
-            <CardDescription className="text-center">
-              Entrez vos identifiants pour accéder à votre espace
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Adresse email
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  disabled={isLoading}
-                  defaultValue={searchParams.get("email") || ""}
-                  placeholder="vous@exemple.com"
-                  className="h-11 transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                  autoComplete="email"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-sm font-medium">
-                    Mot de passe
-                  </Label>
-                  <Link
-                    to="/forgot-password"
-                    className="text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-                  >
-                    Mot de passe oublié ?
-                  </Link>
+          <div className="rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_60px_rgba(2,6,23,0.08)] overflow-hidden">
+            <div className="p-6 sm:p-8 lg:p-10">
+              {/* Google Sign-In */}
+              {googleClientId && (
+                <div className="mb-6">
+                  <GoogleSignInButton
+                    clientId={googleClientId}
+                    text="signin_with"
+                    onError={(err) => setGoogleError(err)}
+                  />
+                  <div className="relative my-5">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-slate-200" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-slate-500">
+                        Ou par email
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <Input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  disabled={isLoading}
-                  placeholder="••••••••"
-                  className="h-11 transition-all duration-200 focus:ring-2 focus:ring-blue-500"
-                  autoComplete="current-password"
-                />
-              </div>
+              )}
 
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-11 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <svg
-                      className="animate-spin h-5 w-5"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
+              <Form method="post" className="space-y-5">
+                <input
+                  type="hidden"
+                  name="redirectTo"
+                  value={searchParams.get("redirectTo") || ""}
+                />
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="email">Adresse email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    disabled={isLoading}
+                    defaultValue={searchParams.get("email") || ""}
+                    placeholder="vous@exemple.com"
+                    className="h-12 rounded-2xl bg-white border-slate-200 text-sm placeholder:text-slate-400 focus-visible:border-cta focus-visible:ring-4 focus-visible:ring-cta/10"
+                    autoComplete="email"
+                  />
+                  {fieldErrors?.email ? (
+                    <p className="text-xs text-red-600" aria-live="polite">
+                      {fieldErrors.email[0]}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Mot de passe</Label>
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs text-cta hover:text-cta-hover transition-colors"
                     >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Connexion en cours...
-                  </span>
-                ) : (
-                  "Se connecter"
-                )}
-              </Button>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-gray-200" />
+                      Mot de passe oublié ?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      disabled={isLoading}
+                      placeholder="••••••••"
+                      className="h-12 pr-10 rounded-2xl bg-white border-slate-200 text-sm placeholder:text-slate-400 focus-visible:border-cta focus-visible:ring-4 focus-visible:ring-cta/10"
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                      aria-label={
+                        showPassword
+                          ? "Masquer le mot de passe"
+                          : "Afficher le mot de passe"
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                  {fieldErrors?.password ? (
+                    <p className="text-xs text-red-600" aria-live="polite">
+                      {fieldErrors.password[0]}
+                    </p>
+                  ) : null}
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-500">Ou</span>
+
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-14 bg-cta hover:bg-cta-hover text-white font-bold text-base rounded-2xl shadow-[0_12px_30px_rgba(249,115,22,0.28)] transition-colors"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <svg
+                        className="animate-spin h-5 w-5"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Connexion en cours...
+                    </span>
+                  ) : (
+                    "Se connecter"
+                  )}
+                </Button>
+
+                <div className="text-center pt-2">
+                  <p className="text-sm text-slate-600 font-v9-body">
+                    Pas encore de compte ?{" "}
+                    <Link
+                      to="/register"
+                      className="text-cta hover:text-cta-hover font-medium"
+                    >
+                      Créer mon compte
+                    </Link>
+                  </p>
                 </div>
-              </div>
+              </Form>
+            </div>
+          </div>
 
-              <div className="text-center space-y-2">
-                <p className="text-sm text-gray-600">
-                  Vous n'avez pas encore de compte ?
-                </p>
-                <Link to="/register">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full h-11 border-2 hover:bg-gray-50 transition-all duration-200"
-                  >
-                    Créer un compte
-                  </Button>
-                </Link>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {/* Footer info */}
-        <p className="text-center text-xs text-gray-500">
-          En vous connectant, vous acceptez nos conditions d'utilisation et
-          notre politique de confidentialité.
-        </p>
+          {/* Mention légale */}
+          <p className="text-center text-xs text-slate-400 font-v9-body mt-6">
+            En vous connectant, vous acceptez nos{" "}
+            <Link to="/cgv" className="underline hover:text-slate-600">
+              conditions d'utilisation
+            </Link>{" "}
+            et notre{" "}
+            <Link
+              to="/confidentialite"
+              className="underline hover:text-slate-600"
+            >
+              politique de confidentialité
+            </Link>
+            .
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
