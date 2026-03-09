@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Health Check L0 — Lightweight wrapper
-# Extracted from: scripts/runbook-content-refresh-e2e.sh (section L0)
+# Health Check L0 — Unified production monitor
+# Consolidates: health-check + prod-watchdog (merged 2026-03-09)
 #
-# Checks: API health, Redis, BullMQ failed jobs, RAG, performance
+# Checks: API health, Redis, BullMQ, RAG, performance, containers, Caddy
 # Runs: every 5 minutes via cron
 #
 # Env:
 #   BASE               — API base URL (default: http://localhost:3000)
-#   REDIS_CONTAINER    — Redis container name (default: app-redis_prod-1)
+#   REDIS_CONTAINER    — Redis container name (default: redis_prod)
+#   APP_CONTAINER      — App container name (default: nestjs-remix-monorepo-prod)
+#   CADDY_CONTAINER    — Caddy container name (default: nestjs-remix-caddy)
+#   EXPECTED_IMAGE     — Expected Docker image (default: massdoc/nestjs-remix-monorepo:production)
 #   ALERT_WEBHOOK_URL  — Optional webhook for alerts (Slack/Discord/ntfy)
 # ==============================================================================
 set -euo pipefail
@@ -28,11 +31,16 @@ _report_health() {
   _HC_API_OK=$( [ "${HEALTH_STATUS:-}" = "ok" ] && echo true || echo false )
   _HC_REDIS_OK=$( [ "${REDIS_PING:-}" = "PONG" ] && echo true || echo false )
   _HC_RAG_OK=$( [ "${RAG_STATUS:-}" = "ok" ] && echo true || echo false )
+  local _HC_CONT=$( [ "${CONTAINER_OK:-false}" = "true" ] && echo true || echo false )
+  local _HC_IMG=$( [ "${IMAGE_OK:-false}" = "true" ] && echo true || echo false )
+  local _HC_CADDY=$( [ "${CADDY_OK:-false}" = "true" ] && echo true || echo false )
+  local _HC_NET=$( [ "${NETWORK_OK:-false}" = "true" ] && echo true || echo false )
   cron_report "health-check" "$_HC_STATUS" "$_HC_DUR" \
     "$(jq -nc --argjson api "$_HC_API_OK" --argjson redis "$_HC_REDIS_OK" --argjson rag "$_HC_RAG_OK" \
       --arg resp "${RESPONSE_TIME:-0}" --arg cpu "${APP_CPU:-0}" --arg mem "${APP_MEM:-0}" \
       --arg disk "${DISK_PCT:-0}" --arg failed "${BQ_FAILED:-0}" \
-      '{api_ok:$api, redis_ok:$redis, rag_ok:$rag, response_ms:($resp|tonumber*1000|floor), cpu_pct:($cpu|tonumber), mem_pct:($mem|tonumber), disk_pct:($disk|tonumber), failed_jobs:($failed|tonumber)}' 2>/dev/null || echo '{}')" \
+      --argjson cont "$_HC_CONT" --argjson img "$_HC_IMG" --argjson caddy "$_HC_CADDY" --argjson net "$_HC_NET" \
+      '{api_ok:$api, redis_ok:$redis, rag_ok:$rag, response_ms:($resp|tonumber*1000|floor), cpu_pct:($cpu|tonumber), mem_pct:($mem|tonumber), disk_pct:($disk|tonumber), failed_jobs:($failed|tonumber), container_ok:$cont, image_correct:$img, caddy_ok:$caddy, network_ok:$net}' 2>/dev/null || echo '{}')" \
     "F=${FAILURES:-0} W=${WARNINGS:-0} CPU=${APP_CPU:-0}% MEM=${APP_MEM:-0}% Disk=${DISK_PCT:-0}%"
 }
 trap _report_health EXIT
@@ -40,6 +48,8 @@ trap _report_health EXIT
 BASE="${BASE:-http://localhost:3000}"
 REDIS_CONTAINER="${REDIS_CONTAINER:-redis_prod}"
 APP_CONTAINER="${APP_CONTAINER:-nestjs-remix-monorepo-prod}"
+CADDY_CONTAINER="${CADDY_CONTAINER:-nestjs-remix-caddy}"
+EXPECTED_IMAGE="${EXPECTED_IMAGE:-massdoc/nestjs-remix-monorepo:production}"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 FAILURES=0
 WARNINGS=0
@@ -137,6 +147,53 @@ log "L0.9 Load: ${LOAD_1M} (1min)"
 if [ "$(echo "${LOAD_1M:-0} > 4" | bc -l 2>/dev/null || echo 0)" = "1" ]; then
   log "L0.9 Load: HIGH (${LOAD_1M} > 4)"
   WARNINGS=$((WARNINGS + 1))
+fi
+
+# L0.10 — App container running
+CONTAINER_OK=false
+if docker ps --format '{{.Names}}' | grep -q "^${APP_CONTAINER}$"; then
+  log "L0.10 Container: OK (${APP_CONTAINER})"
+  CONTAINER_OK=true
+else
+  log "L0.10 Container: FAIL (${APP_CONTAINER} not running)"
+  FAILURES=$((FAILURES + 1))
+fi
+
+# L0.11 — Correct Docker image
+IMAGE_OK=false
+ACTUAL_IMAGE=$(docker inspect "$APP_CONTAINER" --format='{{.Config.Image}}' 2>/dev/null || echo "unknown")
+if [ "$ACTUAL_IMAGE" = "$EXPECTED_IMAGE" ]; then
+  log "L0.11 Image: OK (${ACTUAL_IMAGE})"
+  IMAGE_OK=true
+else
+  log "L0.11 Image: MISMATCH (${ACTUAL_IMAGE} != ${EXPECTED_IMAGE})"
+  WARNINGS=$((WARNINGS + 1))
+fi
+
+# L0.12 — Caddy container running
+CADDY_OK=false
+if docker ps --format '{{.Names}}' | grep -q "^${CADDY_CONTAINER}$"; then
+  log "L0.12 Caddy: OK"
+  CADDY_OK=true
+else
+  log "L0.12 Caddy: FAIL (${CADDY_CONTAINER} not running)"
+  FAILURES=$((FAILURES + 1))
+fi
+
+# L0.13 — Same Docker network (app + caddy)
+NETWORK_OK=false
+if [ "$CONTAINER_OK" = true ] && [ "$CADDY_OK" = true ]; then
+  APP_NET=$(docker inspect "$APP_CONTAINER" --format='{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' 2>/dev/null | awk '{print $1}')
+  CADDY_NET=$(docker inspect "$CADDY_CONTAINER" --format='{{range $k,$v := .NetworkSettings.Networks}}{{$k}} {{end}}' 2>/dev/null | awk '{print $1}')
+  if [ -n "$APP_NET" ] && [ "$APP_NET" = "$CADDY_NET" ]; then
+    log "L0.13 Network: OK (${APP_NET})"
+    NETWORK_OK=true
+  else
+    log "L0.13 Network: MISMATCH (app=${APP_NET} caddy=${CADDY_NET})"
+    WARNINGS=$((WARNINGS + 1))
+  fi
+else
+  log "L0.13 Network: SKIP (container(s) not running)"
 fi
 
 # Summary + optional webhook alert

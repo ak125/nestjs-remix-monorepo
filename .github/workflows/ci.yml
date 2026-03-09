@@ -892,6 +892,16 @@ jobs:
             exit 1
           fi
 
+      - name: 📡 Deploy Watcher (Supabase report)
+        if: always()
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DEPLOY_URL: "http://localhost:3100"
+          STARTUP_WAIT: "5"
+        run: |
+          bash scripts/cron/deploy-watcher.sh || true
+
   e2e-smoke:
     name: 🎭 E2E Smoke Tests
     runs-on: [self-hosted, Linux, X64]
