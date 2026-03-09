@@ -15,6 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { CartDataService } from '../../../database/services/cart-data.service';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
+import { ShippingCalculatorService } from '../services/shipping-calculator.service';
 import {
   RequestWithUser,
   getCartUserId,
@@ -28,7 +29,10 @@ import {
 export class CartCoreController {
   private readonly logger = new Logger(CartCoreController.name);
 
-  constructor(private readonly cartDataService: CartDataService) {}
+  constructor(
+    private readonly cartDataService: CartDataService,
+    private readonly shippingCalculator: ShippingCalculatorService,
+  ) {}
 
   @Get('health')
   @ApiOperation({
@@ -68,9 +72,22 @@ export class CartCoreController {
       const cartData =
         await this.cartDataService.getCartWithMetadata(userIdForCart);
 
-      const { shippingFee, totalWithShipping } = computeShippingAndTotal(
-        cartData.stats,
+      // Calcul frais de port basé sur le poids réel (Colissimo 2026)
+      const cartItems = (cartData.items || []).map((item) => ({
+        productId: item.product_id,
+        quantity: item.quantity,
+      }));
+      const totalWeightG =
+        await this.shippingCalculator.getCartItemsWeight(cartItems);
+      const shippingCost = this.shippingCalculator.calculateByWeight(
+        totalWeightG,
+        cartData.stats.subtotal,
       );
+
+      const { shippingFee, totalWithShipping } = computeShippingAndTotal({
+        ...cartData.stats,
+        shippingCost,
+      });
 
       const cart = {
         cart_id: `cart_${userIdForCart}`,
@@ -86,6 +103,8 @@ export class CartCoreController {
           shipping: shippingFee,
           discount: cartData.stats.promoDiscount,
           total: totalWithShipping,
+          weight_g: totalWeightG,
+          weight_kg: +(totalWeightG / 1000).toFixed(2),
         },
         metadata: {
           currency: 'EUR',

@@ -70,22 +70,15 @@ export function ensureSessionPersisted(req: RequestWithUser): void {
 
 /**
  * Calculer les frais de port et le total coherent a partir des stats du panier
+ * shippingCost est fourni par ShippingCalculatorService (grille Colissimo 2026)
  */
-const FREE_SHIPPING_THRESHOLD = 150;
-const STANDARD_SHIPPING_FEE = 15.9;
-
 export function computeShippingAndTotal(stats: {
   subtotal: number;
   shippingCost: number;
   consigne_total?: number;
   promoDiscount?: number;
 }): { shippingFee: number; totalWithShipping: number } {
-  const shippingFee =
-    stats.shippingCost > 0
-      ? stats.shippingCost
-      : stats.subtotal > 0 && stats.subtotal < FREE_SHIPPING_THRESHOLD
-        ? STANDARD_SHIPPING_FEE
-        : 0;
+  const shippingFee = stats.shippingCost;
 
   const totalWithShipping =
     stats.subtotal +

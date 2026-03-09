@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
-import { ShippingModule } from '../shipping/shipping.module';
 import { ProductsModule } from '../products/products.module';
 import { PromoModule } from '../promo/promo.module';
 
@@ -13,15 +12,15 @@ import { CartAnalyticsController } from './controllers/cart-analytics.controller
 
 // Services
 import { CartService } from './services/cart.service';
-import { CartCalculationService } from './services/cart-calculation.service';
 import { CartValidationService } from './services/cart-validation.service';
 import { CartAnalyticsService } from './services/cart-analytics.service';
+import { ShippingCalculatorService } from './services/shipping-calculator.service';
 import { CartDataService } from '../../database/services/cart-data.service';
 import { PromoDataService } from '../../database/services/promo-data.service';
 import { ShippingDataService } from '../../database/services/shipping-data.service';
 
 @Module({
-  imports: [DatabaseModule, ShippingModule, ProductsModule, PromoModule],
+  imports: [DatabaseModule, ProductsModule, PromoModule],
   controllers: [
     CartCoreController,
     CartItemsController,
@@ -31,18 +30,18 @@ import { ShippingDataService } from '../../database/services/shipping-data.servi
   ],
   providers: [
     CartService,
-    CartCalculationService,
     CartValidationService,
     CartAnalyticsService,
+    ShippingCalculatorService,
     CartDataService,
     PromoDataService,
     ShippingDataService,
   ],
   exports: [
     CartService,
-    CartCalculationService,
     CartValidationService,
     CartAnalyticsService,
+    ShippingCalculatorService,
     CartDataService,
   ],
 })

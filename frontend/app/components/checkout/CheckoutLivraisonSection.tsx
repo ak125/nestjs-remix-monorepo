@@ -19,12 +19,21 @@ interface Props {
     firstName?: string;
     lastName?: string;
   } | null;
-  userProfile: Record<string, string> | null;
+  userProfile: {
+    firstName: string;
+    lastName: string;
+    address: string;
+    zipCode: string;
+    city: string;
+    country: string;
+    phone: string;
+  } | null;
   shippingAddress: ShippingAddress;
   onShippingAddressChange: (addr: ShippingAddress) => void;
   guestEmail: string;
   onGuestEmailChange: (email: string) => void;
   onValidated: () => void;
+  fieldErrors?: Partial<Record<string, string[]>>;
 }
 
 export function CheckoutLivraisonSection({
@@ -35,6 +44,7 @@ export function CheckoutLivraisonSection({
   guestEmail,
   onGuestEmailChange,
   onValidated,
+  fieldErrors,
 }: Props) {
   const [emailChecked, setEmailChecked] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
@@ -44,9 +54,12 @@ export function CheckoutLivraisonSection({
 
   const hasCompleteAddress = !!(
     userProfile &&
+    userProfile.firstName?.trim() &&
+    userProfile.lastName?.trim() &&
     userProfile.address?.trim() &&
     userProfile.zipCode?.trim() &&
-    userProfile.city?.trim()
+    userProfile.city?.trim() &&
+    userProfile.country?.trim()
   );
   const [isEditingAddress, setIsEditingAddress] = useState(!hasCompleteAddress);
 
@@ -173,9 +186,13 @@ export function CheckoutLivraisonSection({
                     handleEmailCheck();
                   }
                 }}
-                className="flex-1 px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                autoComplete="email"
+                className={`flex-1 px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.guestEmail ? "border-red-400" : "border-slate-300"}`}
                 placeholder="votre.email@exemple.com"
               />
+              {fieldErrors?.guestEmail && (
+                <p className="text-xs text-red-600 mt-1">{fieldErrors.guestEmail[0]}</p>
+              )}
               {!emailChecked && (
                 <button
                   type="button"
@@ -330,6 +347,7 @@ export function CheckoutLivraisonSection({
                     type="text"
                     id="firstName"
                     required
+                    autoComplete="given-name"
                     value={shippingAddress.firstName}
                     onChange={(e) =>
                       onShippingAddressChange({
@@ -337,9 +355,12 @@ export function CheckoutLivraisonSection({
                         firstName: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.firstName ? "border-red-400" : "border-slate-300"}`}
                     placeholder="Prenom"
                   />
+                  {fieldErrors?.firstName && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.firstName[0]}</p>
+                  )}
                 </div>
                 <div>
                   <label
@@ -352,6 +373,7 @@ export function CheckoutLivraisonSection({
                     type="text"
                     id="lastName"
                     required
+                    autoComplete="family-name"
                     value={shippingAddress.lastName}
                     onChange={(e) =>
                       onShippingAddressChange({
@@ -359,9 +381,12 @@ export function CheckoutLivraisonSection({
                         lastName: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.lastName ? "border-red-400" : "border-slate-300"}`}
                     placeholder="Nom"
                   />
+                  {fieldErrors?.lastName && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.lastName[0]}</p>
+                  )}
                 </div>
               </div>
               <div>
@@ -375,6 +400,7 @@ export function CheckoutLivraisonSection({
                   type="text"
                   id="address"
                   required
+                  autoComplete="street-address"
                   value={shippingAddress.address}
                   onChange={(e) =>
                     onShippingAddressChange({
@@ -382,20 +408,24 @@ export function CheckoutLivraisonSection({
                       address: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.address ? "border-red-400" : "border-slate-300"}`}
                   placeholder="Numero et nom de rue"
                 />
+                {fieldErrors?.address && (
+                  <p className="text-xs text-red-600 mt-1">{fieldErrors.address[0]}</p>
+                )}
               </div>
               <div>
                 <label
                   htmlFor="phone"
                   className="block text-sm font-medium text-slate-700 mb-1"
                 >
-                  Telephone
+                  Telephone <span className="text-slate-400 font-normal">(optionnel)</span>
                 </label>
                 <input
                   type="tel"
                   id="phone"
+                  autoComplete="tel"
                   value={shippingAddress.phone}
                   onChange={(e) =>
                     onShippingAddressChange({
@@ -424,6 +454,7 @@ export function CheckoutLivraisonSection({
                     type="text"
                     id="zipCode"
                     required
+                    autoComplete="postal-code"
                     pattern="[0-9]{5}"
                     maxLength={5}
                     value={shippingAddress.zipCode}
@@ -433,9 +464,12 @@ export function CheckoutLivraisonSection({
                         zipCode: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.zipCode ? "border-red-400" : "border-slate-300"}`}
                     placeholder="75000"
                   />
+                  {fieldErrors?.zipCode && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.zipCode[0]}</p>
+                  )}
                 </div>
                 <div>
                   <label
@@ -448,6 +482,7 @@ export function CheckoutLivraisonSection({
                     type="text"
                     id="city"
                     required
+                    autoComplete="address-level2"
                     value={shippingAddress.city}
                     onChange={(e) =>
                       onShippingAddressChange({
@@ -455,9 +490,12 @@ export function CheckoutLivraisonSection({
                         city: e.target.value,
                       })
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.city ? "border-red-400" : "border-slate-300"}`}
                     placeholder="Ville"
                   />
+                  {fieldErrors?.city && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.city[0]}</p>
+                  )}
                 </div>
               </div>
               {user && hasCompleteAddress && isEditingAddress && (

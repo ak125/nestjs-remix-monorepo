@@ -19,7 +19,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { CartDataService } from '../../../database/services/cart-data.service';
-import { ShippingService } from '../../shipping/shipping.service';
+import { ShippingCalculatorService } from '../services/shipping-calculator.service';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 import { RequestWithUser, getCartUserId } from './cart-controller.utils';
 
@@ -32,7 +32,7 @@ export class CartShippingController {
 
   constructor(
     private readonly cartDataService: CartDataService,
-    private readonly shippingService: ShippingService,
+    private readonly shippingCalculator: ShippingCalculatorService,
   ) {}
 
   @Post('shipping/calculate')
@@ -60,28 +60,34 @@ export class CartShippingController {
       const cart =
         await this.cartDataService.getCartWithMetadata(userIdForCart);
 
-      const totalWeight = cart.items.reduce(
-        (sum, item) => sum + (item.weight || 0) * item.quantity,
-        0,
-      );
+      // Poids réel via pieces_price
+      const cartItems = (cart.items || []).map((item) => ({
+        productId: item.product_id,
+        quantity: item.quantity,
+      }));
+      const totalWeightG =
+        await this.shippingCalculator.getCartItemsWeight(cartItems);
 
-      const estimate = await this.shippingService.calculateShippingEstimate({
-        weight: totalWeight,
-        country: 'FR',
-        postalCode: postalCode,
-        orderAmount: cart.stats.subtotal,
-      });
+      // Zone géographique via code postal
+      const zone = this.shippingCalculator.determineZone(postalCode);
+      const fee = this.shippingCalculator.calculateByWeight(
+        totalWeightG,
+        cart.stats.subtotal,
+        zone,
+      );
+      const isFree = fee === 0 && cart.stats.subtotal > 0;
 
       return {
         success: true,
         shipping: {
-          zone: estimate.zone,
-          cost: estimate.fee,
-          isFree: estimate.freeShipping,
-          estimatedDays: estimate.deliveryEstimate.minDays,
-          method: estimate.freeShipping ? 'Livraison gratuite' : 'Colissimo',
+          zone,
+          cost: fee,
+          isFree,
+          method: isFree ? 'Livraison gratuite' : 'Colissimo',
+          weight_g: totalWeightG,
+          weight_kg: +(totalWeightG / 1000).toFixed(2),
         },
-        remainingForFreeShipping: estimate.freeShipping
+        remainingForFreeShipping: isFree
           ? 0
           : Math.max(0, 150 - cart.stats.subtotal),
       };
@@ -122,24 +128,26 @@ export class CartShippingController {
       const cart =
         await this.cartDataService.getCartWithMetadata(userIdForCart);
 
-      const totalWeight = cart.items.reduce(
-        (sum, item) => sum + (item.weight || 0) * item.quantity,
-        0,
-      );
+      const cartItems = (cart.items || []).map((item) => ({
+        productId: item.product_id,
+        quantity: item.quantity,
+      }));
+      const totalWeightG =
+        await this.shippingCalculator.getCartItemsWeight(cartItems);
 
-      const estimate = await this.shippingService.calculateShippingEstimate({
-        weight: totalWeight,
-        country: 'FR',
-        postalCode: postalCode,
-        orderAmount: cart.stats.subtotal,
-      });
+      const zone = this.shippingCalculator.determineZone(postalCode);
+      const fee = this.shippingCalculator.calculateByWeight(
+        totalWeightG,
+        cart.stats.subtotal,
+        zone,
+      );
+      const isFree = fee === 0 && cart.stats.subtotal > 0;
 
       const shippingInfo = {
-        zone: estimate.zone,
-        cost: estimate.fee,
-        isFree: estimate.freeShipping,
-        estimatedDays: estimate.deliveryEstimate.minDays,
-        method: estimate.freeShipping ? 'Livraison gratuite' : 'Colissimo',
+        zone,
+        cost: fee,
+        isFree,
+        method: isFree ? 'Livraison gratuite' : 'Colissimo',
       };
 
       await this.cartDataService.applyShipping(userIdForCart, {
@@ -147,7 +155,7 @@ export class CartShippingController {
         method_name: shippingInfo.method,
         zone: shippingInfo.zone,
         cost: shippingInfo.cost,
-        estimated_days: shippingInfo.estimatedDays,
+        estimated_days: zone === 'france' || zone === 'corse' ? 2 : 7,
         postal_code: postalCode,
         address,
       });

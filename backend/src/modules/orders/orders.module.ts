@@ -2,6 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from '../../database/database.module';
 import { ShippingModule } from '../shipping/shipping.module';
+import { CartModule } from '../cart/cart.module';
 import { ApiModule } from '../api.module';
 import { AuthModule } from '../../auth/auth.module';
 
@@ -55,6 +56,7 @@ import { MailService } from '../../services/mail.service';
   imports: [
     forwardRef(() => DatabaseModule),
     ShippingModule,
+    CartModule, // Pour ShippingCalculatorService (Colissimo 2026)
     ApiModule, // Pour accéder au LegacyOrderService si besoin
     AuthModule, // Pour guest checkout (AuthService)
     ConfigModule, // Requis par MailService (ConfigService)

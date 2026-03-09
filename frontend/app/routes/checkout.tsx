@@ -24,6 +24,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { CartVehicleBanner } from "~/components/cart/CartVehicleBanner";
 import {
   CheckoutLivraisonSection,
   type ShippingAddress,
@@ -47,11 +48,27 @@ import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
 } from "~/schemas/cart.schemas";
+import {
+  type CheckoutActionError,
+  type CheckoutFieldErrors,
+  type CheckoutUserProfile,
+  parseCheckoutFormData,
+} from "~/schemas/checkout.schemas";
+import {
+  buildOrderLines,
+  buildPayboxRedirectUrl,
+  createCheckoutOrder,
+  getOrderForPayment,
+} from "~/services/order.server";
+import { getUserProfile } from "~/services/profile.server";
 import { type PaymentMethod } from "~/types/payment";
 import { trackBeginCheckout, trackAddPaymentInfo } from "~/utils/analytics";
-import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import {
+  getVehicleFromCookie,
+  type VehicleCookie,
+} from "~/utils/vehicle-cookie";
 import { getOptionalUser } from "../auth/unified.server";
 import { getCart } from "../services/cart.server";
 import { getAvailablePaymentMethods } from "../services/payment.server";
@@ -81,6 +98,7 @@ export const meta: MetaFunction = () => [
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const user = await getOptionalUser({ context });
   const userId = user?.id || null;
+  const vehicle = await getVehicleFromCookie(request.headers.get("Cookie"));
 
   logger.log("[Checkout] Loader - User:", userId || "guest");
 
@@ -106,26 +124,14 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     }
 
     // Profil utilisateur (adresse pre-remplie)
-    let userProfile: Record<string, any> | null = null;
-    if (user) {
-      try {
-        const profileRes = await fetch(
-          getInternalApiUrlFromRequest("/api/users/profile", request),
-          { headers: { Cookie: request.headers.get("Cookie") || "" } },
-        );
-        if (profileRes.ok) {
-          const profileData = await profileRes.json();
-          userProfile = profileData.data || profileData;
-        }
-      } catch (err) {
-        logger.warn("[Checkout] Impossible de charger le profil:", err);
-      }
-    }
+    const userProfile: CheckoutUserProfile | null = user
+      ? await getUserProfile(request)
+      : null;
 
     // Payment methods (merged from checkout-payment)
     const paymentMethods = await getAvailablePaymentMethods();
 
-    return json({ cart, user, userProfile, paymentMethods });
+    return json({ cart, user, userProfile, paymentMethods, vehicle });
   } catch (error) {
     logger.error("[Checkout] Erreur chargement:", error);
     return json({
@@ -137,220 +143,192 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
 
 // -- Action ------------------------------------------------------------------
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function action({ request, context }: ActionFunctionArgs) {
   logger.log("[Checkout] Action Start");
 
   try {
+    // 1. Parse + validate with Zod (single schema, structured errors)
     const formData = await request.formData();
-    const guestEmail = (formData.get("guestEmail") as string) || null;
-    let addressFirstName = (formData.get("firstName") as string) || "";
-    let addressLastName = (formData.get("lastName") as string) || "";
-    let addressLine = (formData.get("address") as string) || "";
-    let addressZipCode = (formData.get("zipCode") as string) || "";
-    let addressCity = (formData.get("city") as string) || "";
-    const addressCivility = (formData.get("civility") as string) || "M.";
-    const addressCountry = (formData.get("country") as string) || "France";
-    const addressPhone = (formData.get("phone") as string) || "";
-    const acceptTerms = formData.get("acceptTerms");
+    const parsed = parseCheckoutFormData(formData);
 
-    // Validate CGV acceptance
-    if (acceptTerms !== "on") {
+    if (!parsed.success) {
       return json(
-        { error: "Vous devez accepter les conditions generales de vente." },
+        {
+          ok: false,
+          error: "Veuillez corriger les informations du formulaire.",
+          code: "VALIDATION_ERROR",
+          fieldErrors: parsed.fieldErrors,
+        } satisfies CheckoutActionError,
         { status: 400 },
       );
     }
+
+    const {
+      guestEmail,
+      firstName,
+      lastName,
+      address,
+      zipCode,
+      city,
+      civility,
+      country,
+      phone,
+      paymentMethod,
+    } = parsed.data;
 
     const isGuest = !!guestEmail;
 
-    // Client connecte sans adresse → recuperer du profil
-    if (!isGuest && !addressLine) {
-      try {
-        const profileRes = await fetch(
-          getInternalApiUrlFromRequest("/api/users/profile", request),
-          { headers: { Cookie: request.headers.get("Cookie") || "" } },
-        );
-        if (profileRes.ok) {
-          const profileData = await profileRes.json();
-          const profile = profileData.data || profileData;
-          addressFirstName = addressFirstName || profile.firstName || "";
-          addressLastName = addressLastName || profile.lastName || "";
-          addressLine = profile.address || "";
-          addressZipCode = addressZipCode || profile.zipCode || "";
-          addressCity = addressCity || profile.city || "";
-        }
-      } catch (err) {
-        logger.warn("[Checkout] Impossible de charger le profil:", err);
+    // 2. Client connecte sans adresse complete → completer avec le profil
+    let finalFirstName = firstName;
+    let finalLastName = lastName;
+    let finalAddress = address;
+    let finalZipCode = zipCode;
+    let finalCity = city;
+
+    if (!isGuest && !address) {
+      const profile = await getUserProfile(request);
+      if (profile) {
+        finalFirstName = finalFirstName || profile.firstName;
+        finalLastName = finalLastName || profile.lastName;
+        finalAddress = profile.address;
+        finalZipCode = finalZipCode || profile.zipCode;
+        finalCity = finalCity || profile.city;
       }
     }
 
-    // 1. Recuperer le panier
-    const cartResponse = await fetch(
-      getInternalApiUrlFromRequest("/api/cart", request),
-      { headers: { Cookie: request.headers.get("Cookie") || "" } },
-    );
+    // 3. Recuperer le panier via service
+    const cartData = await getCart(request);
 
-    if (!cartResponse.ok) {
+    if (!cartData.items || cartData.items.length === 0) {
       return json(
-        { error: "Impossible de recuperer le panier. Veuillez reessayer." },
+        {
+          ok: false,
+          error: "Votre panier est vide.",
+          code: "EMPTY_CART",
+        } satisfies CheckoutActionError,
         { status: 400 },
       );
     }
 
-    const cartData = await cartResponse.json();
+    // 4. Transformer les items en lignes de commande
+    const orderLines = buildOrderLines(cartData.items);
 
-    if (!cartData.items || cartData.items.length === 0) {
-      return json({ error: "Votre panier est vide." }, { status: 400 });
-    }
-
-    // 2. Transformer les items en lignes de commande
-    const orderLines = cartData.items.map((item: CartItemType) => ({
-      productId: String(item.product_id),
-      productName: item.product_name || "Produit",
-      productReference: item.product_sku || String(item.product_id),
-      quantity: item.quantity,
-      unitPrice: item.price,
-      vatRate: 20,
-      discount: 0,
-      consigne_unit: item.consigne_unit || 0,
-      has_consigne: item.has_consigne || false,
-    }));
-
-    // 3. Creer la commande
+    // 5. Creer la commande via service
     const addressData = {
-      civility: addressCivility,
-      firstName: addressFirstName,
-      lastName: addressLastName,
-      address: addressLine,
-      phone: addressPhone,
-      zipCode: addressZipCode,
-      city: addressCity,
-      country: addressCountry,
+      civility,
+      firstName: finalFirstName,
+      lastName: finalLastName,
+      address: finalAddress,
+      phone: phone || "",
+      zipCode: finalZipCode,
+      city: finalCity,
+      country,
     };
 
-    const orderPayload = {
+    const orderResult = await createCheckoutOrder(request, {
       customerId: cartData.metadata?.user_id ?? undefined,
+      guestEmail: isGuest ? guestEmail : undefined,
       orderLines,
       billingAddress: addressData,
       shippingAddress: addressData,
       customerNote: "",
       shippingMethod: "standard",
-    };
-
-    const cookieHeader = request.headers.get("Cookie") || "";
-    const orderUrl = isGuest
-      ? getInternalApiUrlFromRequest("/api/orders/guest", request)
-      : getInternalApiUrlFromRequest("/api/orders", request);
-
-    const payload = isGuest ? { ...orderPayload, guestEmail } : orderPayload;
-
-    logger.log("[Checkout] Creating order...", {
-      itemCount: orderLines.length,
-      isGuest,
+      paymentMethod,
     });
 
-    const response = await fetch(orderUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieHeader,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      // Guest: email conflict
-      if (response.status === 409 && isGuest) {
+    if (!orderResult.success) {
+      // Handle redirect (auth required, or orderId fallback)
+      if (orderResult.redirect) {
+        return redirect(orderResult.redirect);
+      }
+      // Handle email conflict
+      if (orderResult.emailConflict) {
         return json(
           {
-            error: `Un compte existe deja avec l'email ${guestEmail}. Connectez-vous ou utilisez une autre adresse email.`,
+            ok: false,
+            error: orderResult.error,
+            code: "EMAIL_CONFLICT",
             emailConflict: true,
-            conflictEmail: guestEmail,
-          },
-          { status: 409 },
+            conflictEmail: orderResult.conflictEmail,
+          } satisfies CheckoutActionError,
+          { status: orderResult.status },
         );
       }
-
-      if (response.status === 403 || response.status === 401) {
-        const loginUrl = new URL("/login", request.url);
-        loginUrl.searchParams.set(
-          "message",
-          "Vous devez etre connecte pour passer commande",
-        );
-        loginUrl.searchParams.set("redirectTo", "/checkout");
-        return redirect(loginUrl.toString());
-      }
-
-      const error = await response
-        .json()
-        .catch(() => ({ message: "Erreur serveur" }));
-      throw new Error(
-        error.message || "Erreur lors de la creation de la commande",
+      return json(
+        {
+          ok: false,
+          error: orderResult.error,
+          code: "ORDER_CREATION_FAILED",
+        } satisfies CheckoutActionError,
+        { status: orderResult.status },
       );
     }
 
-    const order = await response.json();
-    const orderId = order.ord_id || order.order_id || order.id;
+    const { orderId } = orderResult;
 
-    if (!orderId || orderId === "cree") {
-      return redirect("/account/orders?created=true");
-    }
+    // 6. Recuperer les details pour Paybox
+    const orderDetails = await getOrderForPayment(request, orderId);
 
-    // 4. Fetch order details pour construire l'URL Paybox
-    const orderResponse = await fetch(
-      getInternalApiUrlFromRequest(`/api/orders/${orderId}`, request),
-      {
-        headers: {
-          Cookie: cookieHeader,
-          "Internal-Call": "true",
-        },
-      },
-    );
-
-    if (!orderResponse.ok) {
+    if (!orderDetails) {
       return json(
         {
+          ok: false,
           error: "Commande creee mais impossible de recuperer les details.",
-        },
+          code: "PAYMENT_UNAVAILABLE",
+        } satisfies CheckoutActionError,
         { status: 500 },
       );
     }
 
-    const orderData = await orderResponse.json();
-    const orderDetails = orderData.data;
-
-    if (parseInt(orderDetails.ord_is_pay || "0") !== 0) {
+    if (orderDetails.isPaid) {
       return redirect(`/account/orders/${orderId}`);
     }
 
-    const totalTTC = parseFloat(orderDetails.ord_total_ttc || "0");
-    if (totalTTC <= 0) {
-      return json({ error: "Montant de commande invalide." }, { status: 400 });
+    if (orderDetails.totalTTC <= 0) {
+      return json(
+        {
+          ok: false,
+          error: "Montant de commande invalide.",
+          code: "ORDER_CREATION_FAILED",
+        } satisfies CheckoutActionError,
+        { status: 400 },
+      );
     }
 
-    const customerEmail = orderDetails.customer?.cst_mail || guestEmail || "";
+    const customerEmail =
+      orderDetails.customerEmail || guestEmail || "";
     if (!customerEmail) {
       return json(
-        { error: "Email client manquant sur la commande." },
+        {
+          ok: false,
+          error: "Email client manquant sur la commande.",
+          code: "ORDER_CREATION_FAILED",
+        } satisfies CheckoutActionError,
         { status: 400 },
       );
     }
 
     logger.log("[Checkout] Order created, building Paybox redirect:", {
       orderId,
-      totalTTC,
+      totalTTC: orderDetails.totalTTC,
     });
 
-    // 5. Build Paybox redirect URL — client will use window.location.href
-    const redirectUrl = `/api/paybox/redirect?orderId=${encodeURIComponent(orderId)}&amount=${encodeURIComponent(totalTTC)}&email=${encodeURIComponent(customerEmail)}`;
+    // 7. Build Paybox redirect URL
+    const redirectUrl = buildPayboxRedirectUrl(
+      orderId,
+      orderDetails.totalTTC,
+      customerEmail,
+    );
 
-    return json({ redirectUrl });
+    return json({ ok: true, redirectUrl, orderId });
   } catch (error) {
     logger.error("[Checkout] Action error:", error);
     return json(
       {
+        ok: false,
         error: error instanceof Error ? error.message : "Erreur inconnue",
-      },
+        code: "UNKNOWN_ERROR",
+      } satisfies CheckoutActionError,
       { status: 500 },
     );
   }
@@ -402,7 +380,7 @@ function clearCheckoutState() {
 
 export default function CheckoutPage() {
   const data = useLoaderData<typeof loader>();
-  const { cart, user, userProfile, paymentMethods } = data as {
+  const { cart, user, userProfile, paymentMethods, vehicle } = data as {
     cart: { items: CartItemType[]; summary: CartSummaryType } | null;
     user?: {
       id: string;
@@ -410,8 +388,9 @@ export default function CheckoutPage() {
       firstName?: string;
       lastName?: string;
     };
-    userProfile?: Record<string, string>;
+    userProfile?: CheckoutUserProfile;
     paymentMethods?: PaymentMethod[];
+    vehicle?: VehicleCookie | null;
   };
   const loaderError = "error" in data ? (data as any).error : undefined;
   const actionData = useActionData<typeof action>();
@@ -425,12 +404,15 @@ export default function CheckoutPage() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const isLocked = isSubmitting || isRedirecting;
 
-  // (point 1) Auto-detect if connected user has complete address → skip livraison
+  // Auto-detect if connected user has complete address → skip livraison
   const hasCompleteAddress = !!(
     userProfile &&
+    userProfile.firstName?.trim() &&
+    userProfile.lastName?.trim() &&
     userProfile.address?.trim() &&
     userProfile.zipCode?.trim() &&
-    userProfile.city?.trim()
+    userProfile.city?.trim() &&
+    userProfile.country?.trim()
   );
   const shouldAutoSkip = !!user && hasCompleteAddress;
 
@@ -476,6 +458,11 @@ export default function CheckoutPage() {
 
   // Payment
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>(
+    paymentMethods?.find((m) => m.isDefault)?.id ||
+      paymentMethods?.[0]?.id ||
+      "card_paybox",
+  );
 
   // (point 7) Persist guest state to localStorage on change
   useEffect(() => {
@@ -484,15 +471,14 @@ export default function CheckoutPage() {
     }
   }, [user, guestEmail, shippingAddress]);
 
-  // Redirect to Paybox when action returns redirectUrl (point 5 — double-submit lock)
+  // Redirect to Paybox when action returns ok + redirectUrl
   useEffect(() => {
-    if (actionData && "redirectUrl" in actionData && actionData.redirectUrl) {
+    if (actionData && "ok" in actionData && actionData.ok === true && "redirectUrl" in actionData) {
       setIsRedirecting(true);
-      // Clear localStorage on successful order
       clearCheckoutState();
       window.location.href = actionData.redirectUrl as string;
     }
-    if (actionData && "error" in actionData && actionData.error) {
+    if (actionData && "ok" in actionData && actionData.ok === false && "error" in actionData) {
       setIsRedirecting(false);
       toast.error(actionData.error as string);
     }
@@ -541,7 +527,7 @@ export default function CheckoutPage() {
     scrollToPaiement();
   }, [scrollToPaiement]);
 
-  // Form submit (point 5 — guard against double submit)
+  // Form submit — guard against double submit
   const handleCheckoutSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isLocked) return;
@@ -554,15 +540,22 @@ export default function CheckoutPage() {
     fd.set("city", shippingAddress.city);
     fd.set("civility", shippingAddress.civility);
     fd.set("country", shippingAddress.country);
+    fd.set("paymentMethod", selectedPaymentMethod);
     if (shippingAddress.phone) fd.set("phone", shippingAddress.phone);
     if (acceptedTerms) fd.set("acceptTerms", "on");
     submit(fd, { method: "post" });
   };
 
-  // Error states
-  const error =
-    loaderError ||
-    (actionData && "error" in actionData ? actionData.error : undefined);
+  // Error states — read from typed action response
+  const actionError =
+    actionData && "ok" in actionData && actionData.ok === false
+      ? (actionData as CheckoutActionError)
+      : undefined;
+  const error = loaderError || actionError?.error;
+
+  // Field-level errors from Zod validation
+  const fieldErrors: CheckoutFieldErrors | undefined =
+    actionError?.fieldErrors ?? undefined;
 
   const total = cart
     ? (cart.summary.total_price ??
@@ -572,6 +565,14 @@ export default function CheckoutPage() {
         (cart.summary.consigne_total || 0) -
         (cart.summary.discount_amount || 0))
     : 0;
+
+  const canSubmitOrder =
+    addressValidated &&
+    acceptedTerms &&
+    (cart?.items?.length ?? 0) > 0 &&
+    total > 0 &&
+    !isLocked &&
+    !!selectedPaymentMethod;
 
   useEffect(() => {
     if (error) {
@@ -624,18 +625,48 @@ export default function CheckoutPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             Finalisez votre commande
           </h1>
-          <p className="text-slate-600 mt-2">
-            Remplissez les informations ci-dessous pour proceder au paiement
+          {vehicle && (
+            <p className="text-sm font-medium text-slate-700 mt-2 flex items-center gap-2">
+              Commande pour votre{" "}
+              <span className="font-semibold">
+                {[vehicle.marque_name, vehicle.modele_name, vehicle.type_name].filter(Boolean).join(" ")}
+              </span>
+              <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                Compatibilite verifiee
+              </span>
+            </p>
+          )}
+          <p className="text-slate-600 mt-1">
+            Completez vos coordonnees pour acceder au paiement securise.
           </p>
+
+          {/* Reassurance badges */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500 mt-3">
+            <span className="flex items-center gap-1.5">
+              <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg>
+              Expedition 24-48h
+            </span>
+            <span className="flex items-center gap-1.5">
+              <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+              Paiement securise
+            </span>
+            <span className="flex items-center gap-1.5">
+              <svg className="h-4 w-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              Retours 30 jours
+            </span>
+            <span className="flex items-center gap-1.5">
+              <svg className="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+              Support expert
+            </span>
+          </div>
         </div>
 
         {/* Error banner */}
         {error && (
           <div
             className={`mb-6 rounded-xl border p-4 shadow-sm ${
-              actionData &&
-              "emailConflict" in actionData &&
-              actionData.emailConflict
+              actionError?.code === "EMAIL_CONFLICT"
                 ? "border-orange-300 bg-orange-50"
                 : "border-red-200 bg-red-50"
             }`}
@@ -643,9 +674,7 @@ export default function CheckoutPage() {
             <div className="flex items-start gap-3">
               <svg
                 className={`h-5 w-5 flex-shrink-0 ${
-                  actionData &&
-                  "emailConflict" in actionData &&
-                  actionData.emailConflict
+                  actionError?.code === "EMAIL_CONFLICT"
                     ? "text-orange-600"
                     : "text-red-600"
                 }`}
@@ -661,21 +690,17 @@ export default function CheckoutPage() {
                 />
               </svg>
               <div>
-                {actionData &&
-                "emailConflict" in actionData &&
-                actionData.emailConflict ? (
+                {actionError?.code === "EMAIL_CONFLICT" ? (
                   <>
                     <h3 className="font-semibold text-orange-900">
                       Email deja utilise
                     </h3>
                     <p className="text-sm text-orange-700 mt-1">
-                      {error as string}
+                      {error}
                     </p>
                     <Link
                       to={`/login?redirectTo=/checkout&email=${encodeURIComponent(
-                        ("conflictEmail" in actionData
-                          ? String(actionData.conflictEmail)
-                          : "") || "",
+                        actionError.conflictEmail || "",
                       )}`}
                       className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-cta text-white text-sm font-medium rounded-lg hover:bg-cta-hover transition-colors"
                     >
@@ -683,7 +708,7 @@ export default function CheckoutPage() {
                     </Link>
                   </>
                 ) : (
-                  <p className="text-sm text-red-700">{error as string}</p>
+                  <p className="text-sm text-red-700">{error}</p>
                 )}
               </div>
             </div>
@@ -693,6 +718,9 @@ export default function CheckoutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left column: Accordion */}
           <div className="lg:col-span-2">
+            {/* Vehicle context banner */}
+            <CartVehicleBanner vehicle={vehicle || null} />
+
             <Accordion
               type="single"
               value={activeSection}
@@ -733,9 +761,9 @@ export default function CheckoutPage() {
                     </div>
                     <div className="text-left">
                       <h2 className="text-lg font-semibold text-slate-900">
-                        Livraison
+                        Coordonnees et livraison
                       </h2>
-                      {addressValidated && activeSection !== "livraison" && (
+                      {addressValidated && activeSection !== "livraison" ? (
                         <p className="text-sm text-slate-500 animate-fadeIn">
                           {shippingAddress.firstName} {shippingAddress.lastName}{" "}
                           &mdash; {shippingAddress.zipCode}{" "}
@@ -744,7 +772,21 @@ export default function CheckoutPage() {
                             Modifier
                           </span>
                         </p>
-                      )}
+                      ) : user && activeSection !== "livraison" ? (
+                        <p className="text-xs mt-0.5">
+                          {hasCompleteAddress ? (
+                            <span className="text-emerald-600 flex items-center gap-1">
+                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                              Adresse enregistree
+                            </span>
+                          ) : (
+                            <span className="text-amber-600 flex items-center gap-1">
+                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                              Coordonnees a completer
+                            </span>
+                          )}
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                 </AccordionTrigger>
@@ -757,14 +799,15 @@ export default function CheckoutPage() {
                     guestEmail={guestEmail}
                     onGuestEmailChange={setGuestEmail}
                     onValidated={handleLivraisonValidated}
+                    fieldErrors={fieldErrors}
                   />
                 </AccordionContent>
               </AccordionItem>
 
               {/* Section 2: Paiement */}
+              <div ref={paiementRef}>
               <AccordionItem
                 value="paiement"
-                ref={paiementRef}
                 disabled={!addressValidated}
                 className={`bg-white rounded-2xl shadow-sm border overflow-hidden transition-all duration-300 ${
                   addressValidated
@@ -786,27 +829,32 @@ export default function CheckoutPage() {
                       2
                     </div>
                     <h2 className="text-lg font-semibold text-slate-900">
-                      Paiement
+                      Paiement securise
                     </h2>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-6 pb-6">
                   <CheckoutPaiementSection
                     paymentMethods={paymentMethods || []}
+                    selectedPaymentMethod={selectedPaymentMethod}
+                    onPaymentMethodChange={setSelectedPaymentMethod}
                     acceptedTerms={acceptedTerms}
                     onAcceptedTermsChange={setAcceptedTerms}
                     isProcessing={isLocked}
+                    canSubmit={canSubmitOrder}
                     totalTTC={total}
                     itemCount={cart.items.length}
+                    vehicleLabel={vehicle ? [vehicle.marque_name, vehicle.modele_name, vehicle.type_name].filter(Boolean).join(" ") : null}
                   />
                 </AccordionContent>
               </AccordionItem>
+              </div>
             </Accordion>
           </div>
 
           {/* Right column: Order summary sidebar */}
           <div className="lg:col-span-1">
-            <CheckoutOrderSummary cart={cart} total={total} />
+            <CheckoutOrderSummary cart={cart} total={total} vehicle={vehicle} />
           </div>
         </div>
       </Form>
@@ -869,7 +917,7 @@ export default function CheckoutPage() {
             <button
               type="submit"
               form="checkout-form"
-              disabled={isLocked || !acceptedTerms}
+              disabled={!canSubmitOrder}
               className="w-full py-3 px-4 bg-cta hover:bg-cta-hover text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLocked ? (
@@ -903,9 +951,11 @@ export default function CheckoutPage() {
             </button>
           ) : (
             <div className="text-center text-sm text-slate-500 py-2">
-              Etape 1/2 &middot; {formatPrice(total)} &middot;{" "}
-              {cart.items.length} article
-              {cart.items.length > 1 ? "s" : ""}
+              {!addressValidated
+                ? "Completez vos coordonnees"
+                : !acceptedTerms
+                  ? "Acceptez les CGV pour continuer"
+                  : `${formatPrice(total)} — ${cart.items.length} article${cart.items.length > 1 ? "s" : ""}`}
             </div>
           )}
         </div>
