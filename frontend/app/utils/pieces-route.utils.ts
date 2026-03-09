@@ -453,7 +453,11 @@ function getStarsFromQuality(quality: string | undefined): number | undefined {
 export function mapApiPieceToData(p: any): PieceData {
   return {
     id: p.id,
-    name: p.nom || p.name || "Pièce",
+    name:
+      p.nom ||
+      ((p.marque || p.brand) && p.reference
+        ? `${p.marque || p.brand} - ${p.reference}`
+        : p.name || "Pièce"),
     brand: p.marque || p.brand || "Marque inconnue",
     reference: p.reference || "",
     price: p.prix_unitaire || p.prix_ttc || p.price || 0,

@@ -215,6 +215,10 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const hideGlobalFooter = matches.some(
     (m) => (m.handle as any)?.hideGlobalFooter,
   );
+  const hideGlobalNavbar = matches.some(
+    (m) => (m.handle as any)?.hideGlobalNavbar,
+  );
+  const hideBottomNav = matches.some((m) => (m.handle as any)?.hideBottomNav);
 
   // 🎯 Phase 5 SEO: Récupérer les data-attributes du rôle de page
   const pageRoleAttrs = usePageRoleDataAttrs();
@@ -337,7 +341,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       className="min-h-screen flex flex-col max-w-[100vw]"
       {...pageRoleAttrs}
     >
-      <Navbar />
+      {!hideGlobalNavbar && <Navbar />}
       <main className="flex-grow flex flex-col">
         <div className="flex-grow">{children}</div>
       </main>
@@ -346,9 +350,11 @@ function AppShell({ children }: { children: React.ReactNode }) {
           <GlobalFooter />
         </Suspense>
       )}
-      <Suspense fallback={null}>
-        <BottomNavV9 />
-      </Suspense>
+      {!hideBottomNav && (
+        <Suspense fallback={null}>
+          <BottomNavV9 />
+        </Suspense>
+      )}
       <NotificationContainer />
       <button
         onClick={scrollToTop}
@@ -478,10 +484,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* 🎉 Sonner Toaster - Lazy-loaded (non-critique pour first paint) */}
         <Suspense fallback={null}>
           <LazyToaster
-            position="top-right"
-            expand={true}
+            position="bottom-right"
             richColors
             closeButton
+            duration={3000}
           />
         </Suspense>
         <ScrollRestoration nonce={nonce} />

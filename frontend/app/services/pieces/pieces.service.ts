@@ -74,7 +74,11 @@ export class PiecesService {
           const pieces: PieceData[] = data.data.pieces.map(
             (piece: any, index: number) => ({
               id: piece.id || index + 1,
-              name: piece.nom || `Pièce ${index + 1}`,
+              name:
+                piece.nom ||
+                (piece.marque && piece.reference
+                  ? `${piece.marque} - ${piece.reference}`
+                  : `Pièce ${index + 1}`),
               price: parseFloat(piece.prix_ttc) || 0,
               priceFormatted: `${(parseFloat(piece.prix_ttc) || 0).toFixed(2)}€`,
               brand: piece.marque || "MARQUE INCONNUE",
