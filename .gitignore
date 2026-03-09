@@ -192,3 +192,16 @@ frontend/tests/e2e/reports/
 
 # Claude Code backups
 .claude/*.bak
+
+# Cookies (curl debug artifacts)
+cookies.txt
+
+# PDFs in config/ (source brochures, RAG inputs)
+config/**/*.pdf
+.spec/**/*.pdf
+
+# Playwright test results (generated)
+**/test-results/
+
+# AI-COS dashboard (separate VPS project)
+aicos-dashboard/
