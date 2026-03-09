@@ -1,10 +1,11 @@
-import { Check, ShoppingCart, ClipboardList } from "lucide-react";
+import { Check, ShoppingCart, Truck, ClipboardList } from "lucide-react";
 
-type Step = "cart" | "checkout";
+type Step = "cart" | "shipping" | "checkout";
 
 const STEPS: { key: Step; label: string; icon: typeof ShoppingCart }[] = [
-  { key: "cart", label: "Panier", icon: ShoppingCart },
-  { key: "checkout", label: "Commande & Paiement", icon: ClipboardList },
+  { key: "cart", label: "1. Panier", icon: ShoppingCart },
+  { key: "shipping", label: "2. Livraison", icon: Truck },
+  { key: "checkout", label: "3. Paiement", icon: ClipboardList },
 ];
 
 function getStepIndex(current: Step): number {

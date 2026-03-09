@@ -5,9 +5,9 @@
 
 import { Trash2, Plus, Minus, AlertTriangle } from "lucide-react";
 import { useState, useCallback, memo } from "react";
+import { type CartItem as CartItemType } from "~/schemas/cart.schemas";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";
-import { type CartItem as CartItemType } from "../../types/cart";
 import { getOptimizedPartImageUrl } from "../../utils/image-optimizer";
 
 // Formatter prix extrait pour éviter recréation à chaque render

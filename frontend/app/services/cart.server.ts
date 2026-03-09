@@ -7,10 +7,14 @@
 
 import { type AppLoadContext } from "@remix-run/node";
 import { logger } from "~/utils/logger";
-import { type CartItem, type CartSummary, type CartData } from "../types/cart";
+import {
+  type CartItem,
+  type CartSummary,
+  type CartData,
+} from "../schemas/cart.schemas";
 
 // Re-export des types pour compatibilité
-export type { CartItem, CartSummary, CartData } from "../types/cart";
+export type { CartItem, CartSummary, CartData } from "../schemas/cart.schemas";
 
 // Interface pour l'ancienne compatibilité avec les totaux
 export interface Cart {
@@ -40,12 +44,7 @@ export interface CartActionResult {
  */
 class CartServerService {
   /**
-   * 🔗 Référence vers l'API service existant
-   */
-  private apiService: any = null;
-
-  /**
-   * 🎯 Obtenir le panier complet
+   * Obtenir le panier complet
    */
   async getCart(request: Request, context?: AppLoadContext): Promise<CartData> {
     try {
@@ -136,30 +135,51 @@ class CartServerService {
   }
 
   /**
-   * ➕ Ajouter un article au panier
+   * Ajouter un article au panier
    */
   async addItem(
     request: Request,
     productId: string,
     quantity: number = 1,
-    context?: AppLoadContext,
   ): Promise<CartActionResult> {
     try {
-      logger.log(`➕ [CartServer] Ajout article ${productId} x${quantity}`);
+      logger.log(`[CartServer] Ajout article ${productId} x${quantity}`);
 
-      // Tentative d'utilisation de l'API service existant
-      if (this.apiService?.cart?.addItem) {
-        return await this.apiService.cart.addItem(request, productId, quantity);
+      const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+      const cookie = request.headers.get("Cookie") || "";
+
+      const response = await fetch(`${backendUrl}/api/cart/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: cookie,
+          "User-Agent": "RemixCartService/1.0",
+        },
+        body: JSON.stringify({
+          product_id: parseInt(productId, 10),
+          quantity,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error:
+            (errorData as Record<string, string>).message ||
+            `Erreur HTTP ${response.status}`,
+        };
       }
 
-      // Simulation d'ajout
+      const result = await response.json();
       return {
         success: true,
-        message: `Article ${productId} ajouté au panier (x${quantity})`,
-        cart: await this.getCartAsLegacyFormat(request, context),
+        message:
+          (result as Record<string, string>).message ||
+          `Article ${productId} ajouté`,
       };
     } catch (error) {
-      logger.error("❌ [CartServer] Erreur addItem:", error);
+      logger.error("[CartServer] Erreur addItem:", error);
       return {
         success: false,
         error: "Erreur lors de l'ajout au panier",
@@ -168,69 +188,104 @@ class CartServerService {
   }
 
   /**
-   * 🔄 Mettre à jour la quantité d'un article
+   * Mettre a jour la quantite d'un article
    */
   async updateQuantity(
     request: Request,
     itemId: string,
     quantity: number,
-    context?: AppLoadContext,
   ): Promise<CartActionResult> {
     try {
-      logger.log(`🔄 [CartServer] Mise à jour quantité ${itemId}: ${quantity}`);
+      logger.log(`[CartServer] Mise a jour quantite ${itemId}: ${quantity}`);
 
       if (quantity <= 0) {
-        return await this.removeFromCart(request, itemId, context);
+        return await this.removeFromCart(request, itemId);
       }
 
-      // Tentative d'utilisation de l'API service existant
-      if (this.apiService?.cart?.updateQuantity) {
-        return await this.apiService.cart.updateQuantity(
-          request,
-          itemId,
+      const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+      const cookie = request.headers.get("Cookie") || "";
+
+      const response = await fetch(`${backendUrl}/api/cart/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: cookie,
+          "User-Agent": "RemixCartService/1.0",
+        },
+        body: JSON.stringify({
+          product_id: parseInt(itemId, 10),
           quantity,
-        );
+          replace: true,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error:
+            (errorData as Record<string, string>).message ||
+            `Erreur HTTP ${response.status}`,
+        };
       }
 
-      // Simulation de mise à jour
+      const result = await response.json();
       return {
         success: true,
-        message: `Quantité mise à jour pour l'article ${itemId}`,
-        cart: await this.getCartAsLegacyFormat(request, context),
+        message:
+          (result as Record<string, string>).message ||
+          `Quantite mise a jour pour l'article ${itemId}`,
       };
     } catch (error) {
-      logger.error("❌ [CartServer] Erreur updateQuantity:", error);
+      logger.error("[CartServer] Erreur updateQuantity:", error);
       return {
         success: false,
-        error: "Erreur lors de la mise à jour",
+        error: "Erreur lors de la mise a jour",
       };
     }
   }
 
   /**
-   * 🗑️ Supprimer un article du panier
+   * Supprimer un article du panier
    */
   async removeFromCart(
     request: Request,
     itemId: string,
-    context?: AppLoadContext,
   ): Promise<CartActionResult> {
     try {
-      logger.log(`🗑️ [CartServer] Suppression article ${itemId}`);
+      logger.log(`[CartServer] Suppression article ${itemId}`);
 
-      // Tentative d'utilisation de l'API service existant
-      if (this.apiService?.cart?.removeItem) {
-        return await this.apiService.cart.removeItem(request, itemId);
+      const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+      const cookie = request.headers.get("Cookie") || "";
+
+      const response = await fetch(`${backendUrl}/api/cart/items/${itemId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: cookie,
+          "User-Agent": "RemixCartService/1.0",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        return {
+          success: false,
+          error:
+            (errorData as Record<string, string>).message ||
+            `Erreur HTTP ${response.status}`,
+        };
       }
 
-      // Simulation de suppression
+      const result = await response.json();
       return {
         success: true,
-        message: `Article ${itemId} supprimé du panier`,
-        cart: await this.getCartAsLegacyFormat(request, context),
+        message:
+          (result as Record<string, string>).message ||
+          `Article ${itemId} supprime`,
       };
     } catch (error) {
-      logger.error("❌ [CartServer] Erreur removeFromCart:", error);
+      logger.error("[CartServer] Erreur removeFromCart:", error);
       return {
         success: false,
         error: "Erreur lors de la suppression",
@@ -239,30 +294,21 @@ class CartServerService {
   }
 
   /**
-   * 🧹 Vider le panier
+   * Vider le panier
    */
-  async clearCart(
-    request: Request,
-    context?: AppLoadContext,
-  ): Promise<CartActionResult> {
+  async clearCart(request: Request): Promise<CartActionResult> {
     try {
-      logger.log("🧹 [CartServer] Vidage du panier");
+      logger.log("[CartServer] Vidage du panier");
 
-      // Faire un appel direct au backend avec les cookies de la requête
-      const url = new URL(request.url);
-      const baseUrl = `${url.protocol}//${url.host}`;
+      const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+      const cookie = request.headers.get("Cookie") || "";
 
-      const response = await fetch(`${baseUrl}/api/cart`, {
+      const response = await fetch(`${backendUrl}/api/cart`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          // Transmettre TOUS les cookies de la requête originale
-          Cookie: request.headers.get("Cookie") || "",
-          "User-Agent": request.headers.get("User-Agent") || "RemixServer",
-          // Copier les headers d'authentification s'ils existent
-          ...(request.headers.get("authorization") && {
-            authorization: request.headers.get("authorization")!,
-          }),
+          Cookie: cookie,
+          "User-Agent": "RemixCartService/1.0",
         },
       });
 
@@ -394,6 +440,8 @@ class CartServerService {
         consigne_unit: item.consigne_unit || 0,
         has_consigne: item.has_consigne || false,
         consigne_total: item.consigne_total || 0,
+        // Gamme ID pour cross-sell
+        pg_id: item.pg_id || undefined,
       })),
       summary: {
         total_items: (totals?.total_items as number) || 0,
@@ -501,14 +549,6 @@ class CartServerService {
       },
     };
   }
-
-  /**
-   * 🔧 Initialiser avec l'API service existant (si disponible)
-   */
-  setApiService(apiService: any) {
-    this.apiService = apiService;
-    logger.log("🔗 [CartServer] API Service connecté");
-  }
 }
 
 /**
@@ -526,24 +566,19 @@ export const addItem = (
   request: Request,
   productId: string,
   quantity: number = 1,
-  context?: AppLoadContext,
-) => cartServerService.addItem(request, productId, quantity, context);
+) => cartServerService.addItem(request, productId, quantity);
 
 export const updateQuantity = (
   request: Request,
   itemId: string,
   quantity: number,
-  context?: AppLoadContext,
-) => cartServerService.updateQuantity(request, itemId, quantity, context);
+) => cartServerService.updateQuantity(request, itemId, quantity);
 
-export const removeFromCart = (
-  request: Request,
-  itemId: string,
-  context?: AppLoadContext,
-) => cartServerService.removeFromCart(request, itemId, context);
+export const removeFromCart = (request: Request, itemId: string) =>
+  cartServerService.removeFromCart(request, itemId);
 
-export const clearCart = (request: Request, context?: AppLoadContext) =>
-  cartServerService.clearCart(request, context);
+export const clearCart = (request: Request) =>
+  cartServerService.clearCart(request);
 
 export const validateCart = (request: Request, context?: AppLoadContext) =>
   cartServerService.validateCart(request, context);

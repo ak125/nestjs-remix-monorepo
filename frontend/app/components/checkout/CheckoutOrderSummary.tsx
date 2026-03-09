@@ -4,7 +4,7 @@ import { CreditCard, Shield, Truck } from "lucide-react";
 import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
-} from "~/types/cart";
+} from "~/schemas/cart.schemas";
 import { FreeShippingBar } from "./FreeShippingBar";
 import { PromoCodeInput } from "./PromoCodeInput";
 

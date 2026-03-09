@@ -187,6 +187,13 @@ export class CartDataService extends SupabaseBaseService {
               weight: product.piece_weight_kgm || item.weight,
               // Prix depuis produit si pas défini dans l'item
               price: item.price || product.price_ttc || 0,
+              // Gamme ID pour cross-sell
+              pg_id: (product as Record<string, unknown>).piece_pg_id
+                ? parseInt(
+                    String((product as Record<string, unknown>).piece_pg_id),
+                    10,
+                  )
+                : undefined,
               // ✅ PHASE 4: Consignes
               consigne_unit: consigneUnit,
               has_consigne: hasConsigne,

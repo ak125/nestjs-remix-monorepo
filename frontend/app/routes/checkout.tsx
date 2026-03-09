@@ -46,7 +46,7 @@ import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
-} from "~/types/cart";
+} from "~/schemas/cart.schemas";
 import { type PaymentMethod } from "~/types/payment";
 import { trackBeginCheckout, trackAddPaymentInfo } from "~/utils/analytics";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
