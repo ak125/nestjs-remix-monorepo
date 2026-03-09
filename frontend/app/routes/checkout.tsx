@@ -53,6 +53,7 @@ import {
   type CheckoutFieldErrors,
   type CheckoutUserProfile,
   parseCheckoutFormData,
+  validateCheckoutClient,
 } from "~/schemas/checkout.schemas";
 import {
   buildOrderLines,
@@ -152,10 +153,28 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const parsed = parseCheckoutFormData(formData);
 
     if (!parsed.success) {
+      const labelMap: Record<string, string> = {
+        civility: "Civilite",
+        firstName: "Prenom",
+        lastName: "Nom",
+        address: "Adresse",
+        zipCode: "Code postal",
+        city: "Ville",
+        country: "Pays",
+        phone: "Telephone",
+        guestEmail: "Email",
+        paymentMethod: "Methode de paiement",
+        acceptTerms: "Conditions generales",
+      };
+      const errors = parsed.fieldErrors ?? {};
+      const details = Object.entries(errors)
+        .map(([k, msgs]) => `${labelMap[k] || k} : ${(msgs as string[])[0]}`)
+        .join(" | ");
+      logger.warn("[Checkout] Validation failed:", details);
       return json(
         {
           ok: false,
-          error: "Veuillez corriger les informations du formulaire.",
+          error: details || "Veuillez corriger les informations du formulaire.",
           code: "VALIDATION_ERROR",
           fieldErrors: parsed.fieldErrors,
         } satisfies CheckoutActionError,
@@ -457,11 +476,20 @@ export default function CheckoutPage() {
 
   // Payment
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [clientErrors, setClientErrors] = useState<CheckoutFieldErrors | null>(
+    null,
+  );
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>(
     paymentMethods?.find((m) => m.isDefault)?.id ||
       paymentMethods?.[0]?.id ||
       "cyberplus",
   );
+
+  // Clear client errors when user edits fields
+  useEffect(() => {
+    if (clientErrors) setClientErrors(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shippingAddress, acceptedTerms, selectedPaymentMethod, guestEmail]);
 
   // (point 7) Persist guest state to localStorage on change
   useEffect(() => {
@@ -536,10 +564,63 @@ export default function CheckoutPage() {
     scrollToPaiement();
   }, [scrollToPaiement]);
 
-  // Form submit — guard against double submit
+  // Scroll to first field in error
+  const scrollToFirstError = useCallback(
+    (errors: CheckoutFieldErrors) => {
+      const livFields = [
+        "guestEmail",
+        "firstName",
+        "lastName",
+        "address",
+        "zipCode",
+        "city",
+        "phone",
+      ];
+      const firstField = [...livFields, "paymentMethod", "acceptTerms"].find(
+        (f) => errors[f as keyof CheckoutFieldErrors],
+      );
+      if (!firstField) return;
+      // If error is in livraison and we're on paiement, switch accordion
+      if (livFields.includes(firstField) && activeSection !== "livraison") {
+        setActiveSection("livraison");
+      }
+      setTimeout(() => {
+        const el = document.querySelector(`[name="${firstField}"]`);
+        el?.scrollIntoView({ behavior: "smooth", block: "center" });
+        (el as HTMLInputElement)?.focus();
+      }, 350);
+    },
+    [activeSection],
+  );
+
+  // Form submit — client-side Zod validation before server submit
   const handleCheckoutSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (isLocked) return;
+
+    // Client-side validation (same Zod schema as server)
+    const data = {
+      guestEmail: guestEmail || "",
+      civility: shippingAddress.civility,
+      firstName: shippingAddress.firstName,
+      lastName: shippingAddress.lastName,
+      address: shippingAddress.address,
+      zipCode: shippingAddress.zipCode,
+      city: shippingAddress.city,
+      country: shippingAddress.country,
+      phone: shippingAddress.phone || "",
+      paymentMethod: selectedPaymentMethod,
+      acceptTerms: acceptedTerms ? "on" : "",
+    };
+
+    const errors = validateCheckoutClient(data);
+    if (errors) {
+      setClientErrors(errors);
+      scrollToFirstError(errors);
+      return;
+    }
+
+    setClientErrors(null);
     const fd = new FormData();
     if (guestEmail) fd.set("guestEmail", guestEmail);
     fd.set("firstName", shippingAddress.firstName);
@@ -551,7 +632,7 @@ export default function CheckoutPage() {
     fd.set("country", shippingAddress.country);
     fd.set("paymentMethod", selectedPaymentMethod);
     if (shippingAddress.phone) fd.set("phone", shippingAddress.phone);
-    fd.set("acceptTerms", acceptedTerms ? "on" : "");
+    fd.set("acceptTerms", "on");
     submit(fd, { method: "post" });
   };
 
@@ -562,9 +643,9 @@ export default function CheckoutPage() {
       : undefined;
   const error = loaderError || actionError?.error;
 
-  // Field-level errors from Zod validation
+  // Field-level errors: client-side first, server fallback
   const fieldErrors: CheckoutFieldErrors | undefined =
-    actionError?.fieldErrors ?? undefined;
+    clientErrors ?? actionError?.fieldErrors ?? undefined;
 
   const total = cart
     ? (cart.summary.total_price ??
@@ -937,6 +1018,7 @@ export default function CheckoutPage() {
                       canSubmit={canSubmitOrder}
                       totalTTC={total}
                       itemCount={cart.items.length}
+                      fieldErrors={fieldErrors}
                       vehicleLabel={
                         vehicle
                           ? [

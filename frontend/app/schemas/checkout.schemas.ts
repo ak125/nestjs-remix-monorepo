@@ -169,6 +169,26 @@ export interface CheckoutUserProfile {
 }
 
 // ---------------------------------------------------------------------------
+// Client-side validation helpers (reuse same Zod schemas)
+// ---------------------------------------------------------------------------
+
+export function validateShippingAddress(
+  data: Record<string, unknown>,
+): CheckoutFieldErrors | null {
+  const result = shippingAddressSchema.safeParse(data);
+  if (result.success) return null;
+  return result.error.flatten().fieldErrors as CheckoutFieldErrors;
+}
+
+export function validateCheckoutClient(
+  data: Record<string, unknown>,
+): CheckoutFieldErrors | null {
+  const result = checkoutSubmitSchema.safeParse(data);
+  if (result.success) return null;
+  return result.error.flatten().fieldErrors as CheckoutFieldErrors;
+}
+
+// ---------------------------------------------------------------------------
 // FormData parser helper
 // ---------------------------------------------------------------------------
 

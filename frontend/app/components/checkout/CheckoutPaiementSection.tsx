@@ -1,3 +1,4 @@
+import { type CheckoutFieldErrors } from "~/schemas/checkout.schemas";
 import { type PaymentMethod } from "~/types/payment";
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
   itemCount: number;
   orderNumber?: string;
   vehicleLabel?: string | null;
+  fieldErrors?: CheckoutFieldErrors;
 }
 
 function formatPrice(amount: number): string {
@@ -33,6 +35,7 @@ export function CheckoutPaiementSection({
   itemCount,
   orderNumber,
   vehicleLabel,
+  fieldErrors,
 }: Props) {
   return (
     <div className="space-y-6 pt-2">
@@ -78,6 +81,11 @@ export function CheckoutPaiementSection({
               </label>
             ))}
         </div>
+        {fieldErrors?.paymentMethod && (
+          <p className="text-xs text-red-600 mt-2">
+            {fieldErrors.paymentMethod[0]}
+          </p>
+        )}
       </div>
 
       {/* CGV */}
@@ -110,6 +118,11 @@ export function CheckoutPaiementSection({
             </a>
           </span>
         </label>
+        {fieldErrors?.acceptTerms && (
+          <p className="text-xs text-red-600 mt-2 ml-8">
+            {fieldErrors.acceptTerms[0]}
+          </p>
+        )}
       </div>
 
       {/* Security badges */}

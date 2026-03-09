@@ -1,6 +1,11 @@
 import { Link } from "@remix-run/react";
 import { useState } from "react";
 
+import {
+  validateShippingAddress,
+  type CheckoutFieldErrors,
+} from "~/schemas/checkout.schemas";
+
 export interface ShippingAddress {
   civility: string;
   firstName: string;
@@ -111,6 +116,16 @@ export function CheckoutLivraisonSection({
 
   const showAddressForm = user || (emailChecked && !emailExists);
 
+  const [localErrors, setLocalErrors] = useState<CheckoutFieldErrors | null>(
+    null,
+  );
+
+  // Wrap parent onChange to clear local errors on edit
+  const handleFieldChange = (updated: ShippingAddress) => {
+    if (localErrors) setLocalErrors(null);
+    onShippingAddressChange(updated);
+  };
+
   const isAddressValid =
     shippingAddress.firstName.trim() &&
     shippingAddress.lastName.trim() &&
@@ -119,9 +134,36 @@ export function CheckoutLivraisonSection({
     shippingAddress.city.trim();
 
   const handleContinue = () => {
-    if (!isAddressValid) return;
+    const errors = validateShippingAddress({
+      ...shippingAddress,
+      phone: shippingAddress.phone || "",
+    });
+    if (errors) {
+      setLocalErrors(errors);
+      // Scroll to first error field
+      const firstField = [
+        "firstName",
+        "lastName",
+        "address",
+        "zipCode",
+        "city",
+        "phone",
+      ].find((f) => errors[f as keyof CheckoutFieldErrors]);
+      if (firstField) {
+        setTimeout(() => {
+          const el = document.querySelector(`[name="${firstField}"]`);
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+          (el as HTMLInputElement)?.focus();
+        }, 100);
+      }
+      return;
+    }
+    setLocalErrors(null);
     onValidated();
   };
+
+  // Merge: parent fieldErrors (from server) + localErrors (from client)
+  const mergedErrors = localErrors ?? fieldErrors ?? undefined;
 
   return (
     <div className="space-y-6 pt-2">
@@ -187,12 +229,12 @@ export function CheckoutLivraisonSection({
                   }
                 }}
                 autoComplete="email"
-                className={`flex-1 px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.guestEmail ? "border-red-400" : "border-slate-300"}`}
+                className={`flex-1 px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${mergedErrors?.guestEmail ? "border-red-400" : "border-slate-300"}`}
                 placeholder="votre.email@exemple.com"
               />
-              {fieldErrors?.guestEmail && (
+              {mergedErrors?.guestEmail && (
                 <p className="text-xs text-red-600 mt-1">
-                  {fieldErrors.guestEmail[0]}
+                  {mergedErrors.guestEmail[0]}
                 </p>
               )}
               {!emailChecked && (
@@ -348,21 +390,22 @@ export function CheckoutLivraisonSection({
                   <input
                     type="text"
                     id="firstName"
+                    name="firstName"
                     required
                     autoComplete="given-name"
                     value={shippingAddress.firstName}
                     onChange={(e) =>
-                      onShippingAddressChange({
+                      handleFieldChange({
                         ...shippingAddress,
                         firstName: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.firstName ? "border-red-400" : "border-slate-300"}`}
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${mergedErrors?.firstName ? "border-red-400" : "border-slate-300"}`}
                     placeholder="Prenom"
                   />
-                  {fieldErrors?.firstName && (
+                  {mergedErrors?.firstName && (
                     <p className="text-xs text-red-600 mt-1">
-                      {fieldErrors.firstName[0]}
+                      {mergedErrors.firstName[0]}
                     </p>
                   )}
                 </div>
@@ -376,21 +419,22 @@ export function CheckoutLivraisonSection({
                   <input
                     type="text"
                     id="lastName"
+                    name="lastName"
                     required
                     autoComplete="family-name"
                     value={shippingAddress.lastName}
                     onChange={(e) =>
-                      onShippingAddressChange({
+                      handleFieldChange({
                         ...shippingAddress,
                         lastName: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.lastName ? "border-red-400" : "border-slate-300"}`}
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${mergedErrors?.lastName ? "border-red-400" : "border-slate-300"}`}
                     placeholder="Nom"
                   />
-                  {fieldErrors?.lastName && (
+                  {mergedErrors?.lastName && (
                     <p className="text-xs text-red-600 mt-1">
-                      {fieldErrors.lastName[0]}
+                      {mergedErrors.lastName[0]}
                     </p>
                   )}
                 </div>
@@ -405,21 +449,22 @@ export function CheckoutLivraisonSection({
                 <input
                   type="text"
                   id="address"
+                  name="address"
                   required
                   autoComplete="street-address"
                   value={shippingAddress.address}
                   onChange={(e) =>
-                    onShippingAddressChange({
+                    handleFieldChange({
                       ...shippingAddress,
                       address: e.target.value,
                     })
                   }
-                  className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.address ? "border-red-400" : "border-slate-300"}`}
+                  className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${mergedErrors?.address ? "border-red-400" : "border-slate-300"}`}
                   placeholder="Numero et nom de rue"
                 />
-                {fieldErrors?.address && (
+                {mergedErrors?.address && (
                   <p className="text-xs text-red-600 mt-1">
-                    {fieldErrors.address[0]}
+                    {mergedErrors.address[0]}
                   </p>
                 )}
               </div>
@@ -436,21 +481,28 @@ export function CheckoutLivraisonSection({
                 <input
                   type="tel"
                   id="phone"
+                  name="phone"
                   autoComplete="tel"
                   value={shippingAddress.phone}
                   onChange={(e) =>
-                    onShippingAddressChange({
+                    handleFieldChange({
                       ...shippingAddress,
                       phone: e.target.value,
                     })
                   }
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${mergedErrors?.phone ? "border-red-400" : "border-slate-300"}`}
                   placeholder="06 12 34 56 78"
                   maxLength={14}
                 />
-                <p className="text-xs text-slate-400 mt-1">
-                  Pour le transporteur en cas de besoin
-                </p>
+                {mergedErrors?.phone ? (
+                  <p className="text-xs text-red-600 mt-1">
+                    {mergedErrors.phone[0]}
+                  </p>
+                ) : (
+                  <p className="text-xs text-slate-400 mt-1">
+                    Pour le transporteur en cas de besoin
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -464,23 +516,24 @@ export function CheckoutLivraisonSection({
                   <input
                     type="text"
                     id="zipCode"
+                    name="zipCode"
                     required
                     autoComplete="postal-code"
                     pattern="[0-9]{5}"
                     maxLength={5}
                     value={shippingAddress.zipCode}
                     onChange={(e) =>
-                      onShippingAddressChange({
+                      handleFieldChange({
                         ...shippingAddress,
                         zipCode: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.zipCode ? "border-red-400" : "border-slate-300"}`}
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${mergedErrors?.zipCode ? "border-red-400" : "border-slate-300"}`}
                     placeholder="75000"
                   />
-                  {fieldErrors?.zipCode && (
+                  {mergedErrors?.zipCode && (
                     <p className="text-xs text-red-600 mt-1">
-                      {fieldErrors.zipCode[0]}
+                      {mergedErrors.zipCode[0]}
                     </p>
                   )}
                 </div>
@@ -494,21 +547,22 @@ export function CheckoutLivraisonSection({
                   <input
                     type="text"
                     id="city"
+                    name="city"
                     required
                     autoComplete="address-level2"
                     value={shippingAddress.city}
                     onChange={(e) =>
-                      onShippingAddressChange({
+                      handleFieldChange({
                         ...shippingAddress,
                         city: e.target.value,
                       })
                     }
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${fieldErrors?.city ? "border-red-400" : "border-slate-300"}`}
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${mergedErrors?.city ? "border-red-400" : "border-slate-300"}`}
                     placeholder="Ville"
                   />
-                  {fieldErrors?.city && (
+                  {mergedErrors?.city && (
                     <p className="text-xs text-red-600 mt-1">
-                      {fieldErrors.city[0]}
+                      {mergedErrors.city[0]}
                     </p>
                   )}
                 </div>
