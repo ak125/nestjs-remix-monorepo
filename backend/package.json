@@ -71,6 +71,7 @@
     "edge-tts-universal": "^1.4.0",
     "eventemitter2": "^6.4.9",
     "express-session": "^1.17.3",
+    "google-auth-library": "^10.6.1",
     "googleapis": "^164.1.0",
     "gray-matter": "^4.0.3",
     "helmet": "^8.1.0",

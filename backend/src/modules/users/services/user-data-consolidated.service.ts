@@ -146,16 +146,28 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
    */
   async create(userData: CreateUserDto): Promise<User> {
     try {
+      // Vérifier doublon email (pas de UNIQUE constraint en DB)
+      if (userData.email) {
+        const { data: existing } = await this.supabase
+          .from(TABLES.xtr_customer)
+          .select('cst_id')
+          .eq('cst_mail', userData.email.toLowerCase().trim())
+          .limit(1)
+          .maybeSingle();
+
+        if (existing) {
+          throw new Error('Cet email est déjà utilisé');
+        }
+      }
+
       // Hash du mot de passe
       const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-      // Préparer les données
+      // Préparer les données (pas de cst_created_at/cst_updated_at — colonnes absentes)
       const insertData = {
         cst_id: `usr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         cst_pswd: hashedPassword,
         cst_activ: '1',
-        cst_created_at: new Date().toISOString(),
-        cst_updated_at: new Date().toISOString(),
         ...mapUserToSupabase(userData),
       };
 
@@ -179,10 +191,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
    */
   async update(userId: string, updates: UpdateUserDto): Promise<User> {
     try {
-      const updateData = {
-        ...mapUserToSupabase(updates),
-        cst_updated_at: new Date().toISOString(),
-      };
+      const updateData = mapUserToSupabase(updates);
 
       const { data, error } = await this.supabase
         .from(TABLES.xtr_customer)
@@ -207,7 +216,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
     try {
       const { error } = await this.supabase
         .from(TABLES.xtr_customer)
-        .update({ cst_activ: '0', cst_updated_at: new Date().toISOString() })
+        .update({ cst_activ: '0' })
         .eq('cst_id', userId);
 
       if (error) throw error;
@@ -226,7 +235,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
     try {
       const { data, error } = await this.supabase
         .from(TABLES.xtr_customer)
-        .update({ cst_activ: '1', cst_updated_at: new Date().toISOString() })
+        .update({ cst_activ: '1' })
         .eq('cst_id', userId)
         .select()
         .single();
@@ -249,10 +258,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
 
       const { error } = await this.supabase
         .from(TABLES.xtr_customer)
-        .update({
-          cst_pswd: hashedPassword,
-          cst_updated_at: new Date().toISOString(),
-        })
+        .update({ cst_pswd: hashedPassword })
         .eq('cst_id', userId);
 
       if (error) throw error;
@@ -443,6 +449,45 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
   }
 
   /**
+   * Trouver un utilisateur par Google ID
+   * Usage : Google Sign-In
+   */
+  async findByGoogleId(googleId: string): Promise<User | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from(TABLES.xtr_customer)
+        .select('*')
+        .eq('cst_google_id', googleId)
+        .single();
+
+      if (error || !data) return null;
+
+      return mapSupabaseToUser(data);
+    } catch (error) {
+      this.logger.error(`Error finding user by Google ID ${googleId}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Lier un Google ID à un utilisateur existant
+   */
+  async linkGoogleId(userId: string, googleId: string): Promise<boolean> {
+    try {
+      const { error } = await this.supabase
+        .from(TABLES.xtr_customer)
+        .update({ cst_google_id: googleId })
+        .eq('cst_id', userId);
+
+      if (error) throw error;
+      return true;
+    } catch (error) {
+      this.logger.error(`Error linking Google ID for user ${userId}:`, error);
+      return false;
+    }
+  }
+
+  /**
    * Ecrire un hash de mot de passe deja calcule (par userId)
    * Usage : upgrade MD5→bcrypt dans auth.service
    */
@@ -453,10 +498,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
     try {
       const { error } = await this.supabase
         .from(TABLES.xtr_customer)
-        .update({
-          cst_pswd: hashedPassword,
-          cst_updated_at: new Date().toISOString(),
-        })
+        .update({ cst_pswd: hashedPassword })
         .eq('cst_id', userId);
 
       if (error) throw error;
@@ -481,10 +523,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
     try {
       const { error } = await this.supabase
         .from(TABLES.xtr_customer)
-        .update({
-          cst_pswd: hashedPassword,
-          cst_updated_at: new Date().toISOString(),
-        })
+        .update({ cst_pswd: hashedPassword })
         .eq('cst_mail', email);
 
       if (error) throw error;
@@ -509,7 +548,6 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
       lastName: 'cst_name',
       level: 'cst_level',
       city: 'cst_city',
-      createdAt: 'cst_created_at',
       status: 'cst_activ',
     };
 

@@ -17,7 +17,9 @@ import {
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
 import { UserDataConsolidatedService } from '../modules/users/services/user-data-consolidated.service';
 import type { User } from '../modules/users/dto/user.dto';
 import { CacheService } from '../cache/cache.service';
@@ -44,15 +46,22 @@ export interface LoginResult {
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly googleClient: OAuth2Client | null;
+  private readonly googleClientId: string;
 
   constructor(
     private readonly jwtService: JwtService,
     private readonly userDataService: UserDataConsolidatedService,
     private readonly cacheService: CacheService,
     private readonly passwordCrypto: PasswordCryptoService,
+    private readonly configService: ConfigService,
   ) {
+    this.googleClientId = this.configService.get('GOOGLE_CLIENT_ID') || '';
+    this.googleClient = this.googleClientId
+      ? new OAuth2Client(this.googleClientId)
+      : null;
     this.logger.log(
-      'AuthService initialized - Complete modular version with legacy support',
+      `AuthService initialized - Google Sign-In ${this.googleClientId ? 'enabled' : 'disabled (no GOOGLE_CLIENT_ID)'}`,
     );
   }
 
@@ -227,6 +236,75 @@ export class AuthService {
       this.logger.error(`Registration failed for ${registerDto.email}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Authentification via Google ID token (Google Identity Services)
+   * Vérifie le token, crée ou lie le compte, retourne l'AuthUser
+   */
+  async authenticateWithGoogle(idToken: string): Promise<AuthUser> {
+    if (!this.googleClient || !this.googleClientId) {
+      throw new BadRequestException(
+        'Google Sign-In is not configured on this server',
+      );
+    }
+
+    // 1. Vérifier le token Google
+    let payload;
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken,
+        audience: this.googleClientId,
+      });
+      payload = ticket.getPayload();
+    } catch (error) {
+      this.logger.warn(
+        `Google token verification failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new UnauthorizedException('Token Google invalide ou expiré');
+    }
+
+    if (!payload || !payload.sub || !payload.email) {
+      throw new UnauthorizedException('Token Google incomplet');
+    }
+
+    const googleId = payload.sub;
+    const email = payload.email.toLowerCase().trim();
+    const firstName = payload.given_name || '';
+    const lastName = payload.family_name || '';
+
+    this.logger.debug(`Google auth for: ${email} (sub: ${googleId})`);
+
+    // 2. Chercher par google_id
+    let user = await this.userDataService.findByGoogleId(googleId);
+    if (user) {
+      this.logger.log(`Google login: existing user ${email}`);
+      return this.mapUserToAuthUser(user);
+    }
+
+    // 3. Chercher par email → lier automatiquement
+    user = await this.userDataService.findByEmail(email);
+    if (user) {
+      await this.userDataService.linkGoogleId(user.id, googleId);
+      this.logger.log(`Google login: linked existing account ${email}`);
+      return this.mapUserToAuthUser(user);
+    }
+
+    // 4. Créer un nouveau compte
+    const randomPassword =
+      crypto.randomBytes(32).toString('base64url') + '!Aa1';
+    const newUser = await this.userDataService.create({
+      email,
+      password: randomPassword,
+      firstName,
+      lastName,
+    });
+
+    // Lier le Google ID au nouveau compte
+    await this.userDataService.linkGoogleId(newUser.id, googleId);
+
+    this.logger.log(`Google login: new account created for ${email}`);
+    return this.mapUserToAuthUser(newUser);
   }
 
   /**
