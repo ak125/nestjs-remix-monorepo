@@ -63,11 +63,22 @@ export function CheckoutPaiementSection({
                 />
                 <div className="ml-4 flex items-center gap-3">
                   <div className="w-12 h-8 bg-white rounded flex items-center justify-center border border-slate-200">
-                    <img
-                      src={method.logo}
-                      alt={method.name}
-                      className="h-6 w-auto object-contain"
-                    />
+                    <svg
+                      className="h-5 w-5 text-slate-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <rect
+                        x="1"
+                        y="4"
+                        width="22"
+                        height="16"
+                        rx="2"
+                        strokeWidth="2"
+                      />
+                      <line x1="1" y1="10" x2="23" y2="10" strokeWidth="2" />
+                    </svg>
                   </div>
                   <div>
                     <div className="font-medium text-slate-900">

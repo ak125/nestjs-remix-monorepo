@@ -364,11 +364,9 @@ export function CheckoutLivraisonSection({
                 {shippingAddress.zipCode} {shippingAddress.city},{" "}
                 {shippingAddress.country}
               </p>
-              {shippingAddress.phone && (
-                <p className="text-sm text-slate-500 mt-1">
-                  Tel: {shippingAddress.phone}
-                </p>
-              )}
+              <p className="text-sm text-slate-500 mt-1">
+                Tel : {shippingAddress.phone || "—"}
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -472,6 +470,7 @@ export function CheckoutLivraisonSection({
                   type="tel"
                   id="phone"
                   name="phone"
+                  required
                   autoComplete="tel"
                   value={shippingAddress.phone}
                   onChange={(e) =>
@@ -482,15 +481,11 @@ export function CheckoutLivraisonSection({
                   }
                   className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${mergedErrors?.phone ? "border-red-400" : "border-slate-300"}`}
                   placeholder="06 12 34 56 78"
-                  maxLength={14}
+                  maxLength={20}
                 />
-                {mergedErrors?.phone ? (
+                {mergedErrors?.phone && (
                   <p className="text-xs text-red-600 mt-1">
                     {mergedErrors.phone[0]}
-                  </p>
-                ) : (
-                  <p className="text-xs text-slate-400 mt-1">
-                    Pour le transporteur en cas de besoin
                   </p>
                 )}
               </div>
