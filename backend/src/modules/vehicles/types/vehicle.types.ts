@@ -47,6 +47,7 @@ export interface PaginationOptions {
   onlyFavorites?: boolean;
   onlyActive?: boolean;
   year?: number; // ✅ Ajout pour filtrage par année
+  includeAll?: boolean; // Bypass display filters (diagnostic)
 }
 
 export interface VehicleResponse<T> {

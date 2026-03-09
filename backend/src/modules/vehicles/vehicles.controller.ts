@@ -58,6 +58,7 @@ export class VehiclesController {
       year: query.year ? parseInt(query.year, 10) : undefined,
       limit: query.limit ? parseInt(query.limit, 10) : undefined,
       page: query.page ? parseInt(query.page, 10) : undefined,
+      includeAll: query.includeAll === 'true',
     };
   }
 

@@ -135,6 +135,7 @@ class EnhancedVehicleApiService {
       search?: string;
       onlyFavorites?: boolean;
       onlyActive?: boolean;
+      includeAll?: boolean;
     },
   ): Promise<VehicleBrand[]> {
     const params = toSearchParams({
@@ -143,6 +144,7 @@ class EnhancedVehicleApiService {
       search: options?.search,
       onlyFavorites: options?.onlyFavorites,
       onlyActive: options?.onlyActive,
+      includeAll: options?.includeAll,
     });
     const url = `${this.baseUrl}${this.apiPrefix}/brands${params.toString() ? `?${params}` : ""}`;
     const res = await httpJSON<VehicleResponse<any[]>>(url);
@@ -161,13 +163,16 @@ class EnhancedVehicleApiService {
 
   async getModels(
     brandId: number,
-    options?: { year?: number } & PaginationOptions & { search?: string },
+    options?: { year?: number; includeAll?: boolean } & PaginationOptions & {
+        search?: string;
+      },
   ): Promise<VehicleModel[]> {
     const params = toSearchParams({
       year: options?.year,
       page: options?.page,
       limit: options?.limit,
       search: options?.search,
+      includeAll: options?.includeAll,
     });
     const url = `${this.baseUrl}${this.apiPrefix}/brands/${brandId}/models${params.toString() ? `?${params}` : ""}`;
     const res = await httpJSON<VehicleResponse<any[]>>(url);

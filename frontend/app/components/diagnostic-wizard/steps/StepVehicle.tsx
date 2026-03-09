@@ -1,10 +1,13 @@
 /**
  * StepVehicle — Step 1: Vehicle + usage context
+ * Hybrid selector: Combobox for brand/model, free text for year/km
  */
 import { Car, Gauge, Route } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Combobox } from "~/components/ui/combobox";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { useDiagnosticVehicleSelector } from "../hooks/use-diagnostic-vehicle-selector";
 import { type WizardState, type WizardAction } from "../types";
 
 const USAGE_PROFILES = [
@@ -21,6 +24,63 @@ interface Props {
 }
 
 export function StepVehicle({ state, dispatch }: Props) {
+  const {
+    brands,
+    models,
+    loadingBrands,
+    loadingModels,
+    fetchModels,
+    clearModels,
+  } = useDiagnosticVehicleSelector();
+
+  const handleBrandChange = (value: string, item?: { label: string }) => {
+    if (!value) {
+      // Clear brand → reset model too
+      dispatch({
+        type: "SET_VEHICLE",
+        payload: {
+          ...state.vehicle,
+          brand: "",
+          brandId: undefined,
+          model: "",
+          modelId: undefined,
+        },
+      });
+      clearModels();
+      return;
+    }
+    const brandId = parseInt(value, 10);
+    dispatch({
+      type: "SET_VEHICLE",
+      payload: {
+        ...state.vehicle,
+        brand: item?.label || "",
+        brandId,
+        model: "",
+        modelId: undefined,
+      },
+    });
+    fetchModels(brandId);
+  };
+
+  const handleModelChange = (value: string, item?: { label: string }) => {
+    if (!value) {
+      dispatch({
+        type: "SET_VEHICLE",
+        payload: { ...state.vehicle, model: "", modelId: undefined },
+      });
+      return;
+    }
+    dispatch({
+      type: "SET_VEHICLE",
+      payload: {
+        ...state.vehicle,
+        model: item?.label || "",
+        modelId: parseInt(value, 10),
+      },
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center space-y-2">
@@ -44,31 +104,42 @@ export function StepVehicle({ state, dispatch }: Props) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="brand">Marque</Label>
-              <Input
-                id="brand"
-                placeholder="ex: Peugeot"
-                value={state.vehicle.brand}
-                onChange={(e) =>
-                  dispatch({
-                    type: "SET_VEHICLE",
-                    payload: { ...state.vehicle, brand: e.target.value },
-                  })
+              <Label>Marque</Label>
+              <Combobox
+                items={brands}
+                value={
+                  state.vehicle.brandId
+                    ? String(state.vehicle.brandId)
+                    : undefined
                 }
+                onValueChange={handleBrandChange}
+                placeholder="Sélectionner une marque"
+                searchPlaceholder="Rechercher..."
+                emptyMessage="Aucune marque trouvée"
+                loading={loadingBrands}
+                allowClear
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="model">Modèle</Label>
-              <Input
-                id="model"
-                placeholder="ex: 308"
-                value={state.vehicle.model}
-                onChange={(e) =>
-                  dispatch({
-                    type: "SET_VEHICLE",
-                    payload: { ...state.vehicle, model: e.target.value },
-                  })
+              <Label>Modèle</Label>
+              <Combobox
+                items={models}
+                value={
+                  state.vehicle.modelId
+                    ? String(state.vehicle.modelId)
+                    : undefined
                 }
+                onValueChange={handleModelChange}
+                placeholder="Sélectionner un modèle"
+                searchPlaceholder="Rechercher..."
+                emptyMessage={
+                  state.vehicle.brandId
+                    ? "Aucun modèle trouvé"
+                    : "Sélectionnez d'abord une marque"
+                }
+                loading={loadingModels}
+                disabled={!state.vehicle.brandId}
+                allowClear
               />
             </div>
           </div>

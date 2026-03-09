@@ -7,7 +7,9 @@ export interface WizardState {
   step: number;
   vehicle: {
     brand: string;
+    brandId?: number;
     model: string;
+    modelId?: number;
     year?: number;
     mileage_km?: number;
     fuel?: string;

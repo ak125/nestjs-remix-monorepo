@@ -57,12 +57,13 @@ export class VehicleBrandsService extends SupabaseBaseService {
           const { page = 0, limit = 50, search } = options;
           const offset = page * limit;
 
-          let query = this.client
-            .from(TABLES.auto_marque)
-            .select('*')
-            .eq('marque_display', 1)
-            .limit(limit)
-            .range(offset, offset + limit - 1);
+          let query = this.client.from(TABLES.auto_marque).select('*');
+
+          if (!options.includeAll) {
+            query = query.eq('marque_display', 1);
+          }
+
+          query = query.limit(limit).range(offset, offset + limit - 1);
 
           if (search?.trim()) {
             query = query.ilike('marque_name', `%${search}%`);

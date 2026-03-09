@@ -40,6 +40,7 @@ export interface VehiclePaginationDto {
   year?: number;
   limit?: number;
   page?: number;
+  includeAll?: boolean;
 }
 
 /**

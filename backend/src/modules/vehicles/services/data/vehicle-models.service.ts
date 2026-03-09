@@ -316,8 +316,11 @@ export class VehicleModelsService extends SupabaseBaseService {
           .from(TABLES.auto_modele)
           .select('*', { count: 'exact' })
           .eq('modele_marque_id', marqueId)
-          .eq('modele_display', 1)
           .in('modele_id', modelIdsWithTypes);
+
+        if (!options.includeAll) {
+          query = query.eq('modele_display', 1);
+        }
 
         if (search?.trim()) {
           // Recherche par alias OU par nom
