@@ -142,12 +142,10 @@ export const PieceDetailModal = memo(function PieceDetailModal({
     return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose]);
 
-  // Bloquer le scroll body (rAF to avoid layout thrashing on interaction)
+  // Bloquer le scroll body quand le modal est ouvert
   useEffect(() => {
-    requestAnimationFrame(() => {
-      document.body.style.overflow = pieceId ? "hidden" : "";
-    });
-
+    if (!pieceId) return;
+    document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "";
     };

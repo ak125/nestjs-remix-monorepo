@@ -39,12 +39,11 @@ export function CartCrossSell({
       <div className="mb-4">
         <h2 className="text-lg font-bold tracking-tight text-slate-900">
           {vehicleLabel
-            ? `Produits compl\u00e9mentaires pour votre ${vehicleLabel}`
-            : "Compl\u00e9tez votre entretien"}
+            ? `Produits complémentaires pour votre ${vehicleLabel}`
+            : "Complétez votre entretien"}
         </h2>
         <p className="mt-1 text-sm text-slate-500">
-          S{"\u00e9"}lectionn{"\u00e9"}es pour compl{"\u00e9"}ter votre
-          entretien
+          Sélectionnées pour compléter votre entretien
         </p>
       </div>
 
@@ -73,7 +72,7 @@ export function CartCrossSell({
               </h3>
               {vehicle && (
                 <p className="mt-2 text-sm text-slate-500">
-                  Pour votre v{"\u00e9"}hicule
+                  Pour votre véhicule
                 </p>
               )}
             </div>

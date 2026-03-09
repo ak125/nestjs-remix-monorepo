@@ -675,16 +675,21 @@ export default function CheckoutPage() {
   if (!cart || loaderError) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
-        <div className="mx-auto max-w-2xl px-4">
+        <div className="mx-auto max-w-2xl px-4 text-center">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl">
             <p>{loaderError || "Erreur lors du chargement"}</p>
           </div>
-          <Link
-            to="/cart"
-            className="mt-4 inline-block text-cta hover:underline"
-          >
-            &larr; Retour au panier
-          </Link>
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link to="/cart" className="text-cta hover:underline text-sm">
+              &larr; Retour au panier
+            </Link>
+            <Link
+              to="/#catalogue"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-cta hover:bg-cta-hover text-white font-semibold rounded-xl transition-colors"
+            >
+              Trouver des pièces
+            </Link>
+          </div>
         </div>
       </div>
     );

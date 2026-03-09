@@ -312,6 +312,18 @@ export default function RegisterPage() {
       trackEvent("register_validation_error", {
         fields: Object.keys(flattened.fieldErrors).join(","),
       });
+      // Scroll to first error field
+      const errorFields = Object.keys(flattened.fieldErrors);
+      if (errorFields.length > 0) {
+        setTimeout(() => {
+          const firstField = errorFields[0];
+          const el = document.querySelector(
+            `[name="${firstField}"], [name="billing.${firstField.replace("billing", "").toLowerCase()}"]`,
+          );
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+          (el as HTMLInputElement)?.focus();
+        }, 100);
+      }
       return;
     }
 
@@ -624,6 +636,41 @@ export default function RegisterPage() {
                   onSubmit={handleSubmit}
                   className="space-y-8"
                 >
+                  {/* Bandeau erreur global au submit */}
+                  {Object.keys(fieldErrors).length > 0 &&
+                    touchedFields.size > 3 && (
+                      <div
+                        className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 flex items-start gap-2"
+                        role="alert"
+                      >
+                        <svg
+                          className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                          />
+                        </svg>
+                        <div>
+                          <p className="font-semibold">
+                            Veuillez corriger les erreurs suivantes :
+                          </p>
+                          <ul className="mt-1 list-disc list-inside text-red-700">
+                            {Object.entries(fieldErrors).map(
+                              ([field, errors]) => (
+                                <li key={field}>{(errors as string[])?.[0]}</li>
+                              ),
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+
                   {/* Honeypot anti-spam */}
                   <input
                     type="text"
@@ -670,7 +717,7 @@ export default function RegisterPage() {
                           }
                         />
                         {getError("firstName") && (
-                          <p className="text-xs text-red-600">
+                          <p className="text-sm text-red-600 font-medium">
                             {getError("firstName")}
                           </p>
                         )}
@@ -691,7 +738,7 @@ export default function RegisterPage() {
                           }
                         />
                         {getError("lastName") && (
-                          <p className="text-xs text-red-600">
+                          <p className="text-sm text-red-600 font-medium">
                             {getError("lastName")}
                           </p>
                         )}
@@ -721,7 +768,7 @@ export default function RegisterPage() {
                         }
                       />
                       {getError("email") ? (
-                        <p className="text-xs text-red-600">
+                        <p className="text-sm text-red-600 font-medium">
                           {getError("email")}
                         </p>
                       ) : (
@@ -796,7 +843,7 @@ export default function RegisterPage() {
                           </div>
                         )}
                         {getError("password") ? (
-                          <p className="text-xs text-red-600">
+                          <p className="text-sm text-red-600 font-medium">
                             {getError("password")}
                           </p>
                         ) : (
@@ -843,7 +890,7 @@ export default function RegisterPage() {
                           </button>
                         </div>
                         {getError("confirmPassword") && (
-                          <p className="text-xs text-red-600">
+                          <p className="text-sm text-red-600 font-medium">
                             {getError("confirmPassword")}
                           </p>
                         )}
@@ -875,7 +922,7 @@ export default function RegisterPage() {
                           }
                         />
                         {getError("billingAddress") && (
-                          <p className="text-xs text-red-600">
+                          <p className="text-sm text-red-600 font-medium">
                             {getError("billingAddress")}
                           </p>
                         )}
@@ -917,7 +964,7 @@ export default function RegisterPage() {
                             }
                           />
                           {getError("billingPostalCode") && (
-                            <p className="text-xs text-red-600">
+                            <p className="text-sm text-red-600 font-medium">
                               {getError("billingPostalCode")}
                             </p>
                           )}
@@ -940,7 +987,7 @@ export default function RegisterPage() {
                             }
                           />
                           {getError("billingCity") && (
-                            <p className="text-xs text-red-600">
+                            <p className="text-sm text-red-600 font-medium">
                               {getError("billingCity")}
                             </p>
                           )}
@@ -974,6 +1021,36 @@ export default function RegisterPage() {
                     disabled={isSubmitting}
                     label="Je souhaite recevoir les offres et actualités AutoMecanik"
                   />
+
+                  {/* CGV — consentement explicite (RGPD) */}
+                  <div className="space-y-1">
+                    <Checkbox
+                      id="acceptTerms"
+                      name="acceptTerms"
+                      required
+                      disabled={isSubmitting}
+                      label={
+                        <span>
+                          J'accepte les{" "}
+                          <Link
+                            to="/cgv"
+                            target="_blank"
+                            className="text-cta hover:text-cta-hover underline"
+                          >
+                            conditions générales de vente
+                          </Link>{" "}
+                          et la{" "}
+                          <Link
+                            to="/confidentialite"
+                            target="_blank"
+                            className="text-cta hover:text-cta-hover underline"
+                          >
+                            politique de confidentialité
+                          </Link>
+                        </span>
+                      }
+                    />
+                  </div>
 
                   {/* CTA */}
                   <div className="space-y-3 pt-2">
@@ -1041,9 +1118,9 @@ export default function RegisterPage() {
                     )}
                   </div>
 
-                  {/* Mention légale */}
+                  {/* Mention légale (renforcée par checkbox CGV) */}
                   <p className="text-center text-[11px] text-slate-400 font-v9-body pt-2">
-                    En créant un compte, vous acceptez nos{" "}
+                    Vos données sont protégées conformément à nos{" "}
                     <Link to="/cgv" className="underline hover:text-slate-600">
                       conditions d'utilisation
                     </Link>{" "}

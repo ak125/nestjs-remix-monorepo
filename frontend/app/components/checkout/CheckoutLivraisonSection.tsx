@@ -121,8 +121,9 @@ export function CheckoutLivraisonSection({
   );
 
   // Wrap parent onChange to clear local errors on edit
+  // Use empty object (not null) so mergedErrors doesn't fallback to stale fieldErrors
   const handleFieldChange = (updated: ShippingAddress) => {
-    if (localErrors) setLocalErrors(null);
+    if (localErrors) setLocalErrors({});
     onShippingAddressChange(updated);
   };
 

@@ -125,10 +125,10 @@ export function CartItemRow({ item }: { item: CartItemType }) {
             <p className="text-xs text-slate-500 mt-1">
               {item.product_brand &&
               item.product_brand !== "MARQUE INCONNUE" &&
-              item.product_brand !== "Non sp\u00e9cifi\u00e9e"
-                ? `${item.product_brand} \u00b7 `
+              item.product_brand !== "Non spécifiée"
+                ? `${item.product_brand} · `
                 : ""}
-              R{"\u00e9"}f. {item.product_sku || item.product_id}
+              Réf. {item.product_sku || item.product_id}
             </p>
             <div className="flex flex-wrap items-center gap-2 mt-2">
               {" "}
@@ -143,8 +143,8 @@ export function CartItemRow({ item }: { item: CartItemType }) {
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-[200px] text-xs">
-                        La consigne est remboursable {"\u00e0"} la restitution
-                        de l'ancienne pi{"\u00e8"}ce.
+                        La consigne est remboursable à la restitution de
+                        l'ancienne pièce.
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -184,14 +184,14 @@ export function CartItemRow({ item }: { item: CartItemType }) {
         <div className="flex items-center justify-between gap-4 pt-3 border-t border-slate-100">
           <div className="flex items-center gap-3">
             <span className="text-sm text-slate-500 hidden md:inline">
-              Quantit{"\u00e9"}:
+              Quantité :
             </span>
             <div className="flex items-center border rounded-lg overflow-hidden bg-slate-50">
               <button
                 onClick={() => handleQuantityChange(currentQuantity - 1)}
                 disabled={isUpdating || isRemoving || currentQuantity <= 1}
                 className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                aria-label="Diminuer la quantit\u00e9"
+                aria-label="Diminuer la quantité"
               >
                 <Minus className="h-4 w-4 text-slate-600" />
               </button>
@@ -206,7 +206,7 @@ export function CartItemRow({ item }: { item: CartItemType }) {
                   currentQuantity >= MAX_CART_QUANTITY
                 }
                 className="min-h-[44px] min-w-[44px] flex items-center justify-center hover:bg-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                aria-label="Augmenter la quantit\u00e9"
+                aria-label="Augmenter la quantité"
               >
                 <Plus className="h-4 w-4 text-slate-600" />
               </button>
@@ -219,7 +219,7 @@ export function CartItemRow({ item }: { item: CartItemType }) {
             </div>
             <div className="text-xs text-slate-500">
               {currentQuantity > 1
-                ? `${currentQuantity} \u00d7 ${formatPrice(unitPrice)}`
+                ? `${currentQuantity} × ${formatPrice(unitPrice)}`
                 : `Prix unitaire : ${formatPrice(unitPrice)}`}
             </div>
           </div>
@@ -228,7 +228,7 @@ export function CartItemRow({ item }: { item: CartItemType }) {
         {(isUpdating || isRemoving) && (
           <div className="mt-3 flex items-center justify-center gap-2 text-cta text-sm">
             <div className="animate-spin w-4 h-4 border-2 border-cta border-t-transparent rounded-full"></div>
-            <span>{isUpdating ? "Mise \u00e0 jour..." : "Suppression..."}</span>
+            <span>{isUpdating ? "Mise à jour..." : "Suppression..."}</span>
           </div>
         )}
 
