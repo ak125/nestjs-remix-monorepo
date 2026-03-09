@@ -126,13 +126,6 @@ export function CheckoutLivraisonSection({
     onShippingAddressChange(updated);
   };
 
-  const isAddressValid =
-    shippingAddress.firstName.trim() &&
-    shippingAddress.lastName.trim() &&
-    shippingAddress.address.trim() &&
-    shippingAddress.zipCode.trim() &&
-    shippingAddress.city.trim();
-
   const handleContinue = () => {
     const errors = validateShippingAddress({
       ...shippingAddress,
@@ -596,8 +589,7 @@ export function CheckoutLivraisonSection({
           <button
             type="button"
             onClick={handleContinue}
-            disabled={!isAddressValid}
-            className="w-full py-3 bg-cta hover:bg-cta-hover text-white rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-3 bg-cta hover:bg-cta-hover text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
           >
             <span>Continuer vers le paiement</span>
             <svg

@@ -485,12 +485,6 @@ export default function CheckoutPage() {
       "cyberplus",
   );
 
-  // Clear client errors when user edits fields
-  useEffect(() => {
-    if (clientErrors) setClientErrors(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shippingAddress, acceptedTerms, selectedPaymentMethod, guestEmail]);
-
   // (point 7) Persist guest state to localStorage on change
   useEffect(() => {
     if (!user) {
@@ -1098,51 +1092,39 @@ export default function CheckoutPage() {
               }`}
             />
           </div>
-          {activeSection === "paiement" && addressValidated ? (
-            <button
-              type="submit"
-              form="checkout-form"
-              disabled={!canSubmitOrder}
-              className="w-full py-3 px-4 bg-cta hover:bg-cta-hover text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLocked ? (
-                <>
-                  <svg
-                    className="animate-spin h-5 w-5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  <span>
-                    {isRedirecting ? "Redirection..." : "En cours..."}
-                  </span>
-                </>
-              ) : (
-                <span>Payer {formatPrice(total)}</span>
-              )}
-            </button>
-          ) : (
-            <div className="text-center text-sm text-slate-500 py-2">
-              {!addressValidated
-                ? "Completez vos coordonnees"
-                : !acceptedTerms
-                  ? "Acceptez les CGV pour continuer"
-                  : `${formatPrice(total)} — ${cart.items.length} article${cart.items.length > 1 ? "s" : ""}`}
-            </div>
-          )}
+          <button
+            type="submit"
+            form="checkout-form"
+            disabled={isLocked}
+            className={`w-full py-3 px-4 text-white rounded-xl font-bold flex items-center justify-center gap-2 touch-target disabled:opacity-50 disabled:cursor-not-allowed ${canSubmitOrder ? "bg-cta hover:bg-cta-hover" : "bg-cta/70"}`}
+          >
+            {isLocked ? (
+              <>
+                <svg
+                  className="animate-spin h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                <span>{isRedirecting ? "Redirection..." : "En cours..."}</span>
+              </>
+            ) : (
+              <span>Payer {formatPrice(total)}</span>
+            )}
+          </button>
         </div>
       </MobileBottomBar>
 

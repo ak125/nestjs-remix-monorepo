@@ -207,8 +207,8 @@ export function CheckoutPaiementSection({
       {/* Submit button */}
       <button
         type="submit"
-        disabled={!canSubmit}
-        className="w-full bg-cta hover:bg-cta-hover text-white py-4 px-6 rounded-xl font-semibold shadow-lg shadow-cta/30 hover:shadow-xl hover:shadow-cta/40 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-3"
+        disabled={isProcessing}
+        className={`w-full text-white py-4 px-6 rounded-xl font-semibold shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-3 ${canSubmit ? "bg-cta hover:bg-cta-hover shadow-cta/30 hover:shadow-xl hover:shadow-cta/40" : "bg-cta/70 shadow-cta/20"}`}
       >
         {isProcessing ? (
           <>
