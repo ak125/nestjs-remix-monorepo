@@ -29,15 +29,15 @@ export function CartVehicleBanner({
           {vehicleLabel}
         </span>
         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">
-          <CheckCircle className="h-3 w-3" />
-          Compatibilité vérifiée
+          <CheckCircle className="h-3 w-3" />V{"\u00e9"}hicule s{"\u00e9"}
+          lectionn{"\u00e9"}
         </span>
       </div>
       <Link
         to={vehicleUrl}
         className="hidden items-center gap-1 text-xs font-medium text-emerald-700 hover:text-emerald-900 sm:inline-flex"
       >
-        Changer
+        Changer de v{"\u00e9"}hicule
         <ArrowRight className="h-3 w-3" />
       </Link>
     </div>

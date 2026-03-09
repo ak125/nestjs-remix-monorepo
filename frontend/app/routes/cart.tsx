@@ -26,8 +26,11 @@ import {
   ArrowRight,
   Car,
   ChevronLeft,
+  RotateCcw,
+  Shield,
   ShoppingBag,
   Trash2,
+  Truck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatPrice } from "~/components/cart/cart-utils";
@@ -255,7 +258,7 @@ export default function CartPage() {
     return (
       <div className="min-h-[100dvh] bg-slate-50 py-8">
         <Container>
-          <EmptyCart />
+          <EmptyCart vehicle={vehicle as VehicleCookie | null} />
         </Container>
       </div>
     );
@@ -275,25 +278,39 @@ export default function CartPage() {
             </div>
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
-                Mon Panier
+                Mon panier
               </h1>
               <p className="text-slate-600">
-                {cart.summary.total_items} article
-                {cart.summary.total_items > 1 ? "s" : ""}{" "}
-                {cart.summary.total_items > 1 ? "pr\u00eats" : "pr\u00eat"}{" "}
-                \u00e0 \u00eatre command\u00e9
-                {cart.summary.total_items > 1 ? "s" : ""}
+                {cart.items.length} r{"\u00e9"}f{"\u00e9"}rence
+                {cart.items.length > 1 ? "s" : ""} {"\u00b7"}{" "}
+                {cart.summary.total_items} unit{"\u00e9"}
+                {cart.summary.total_items > 1 ? "s" : ""} pr
+                {cart.summary.total_items > 1 ? "\u00eates" : "\u00eate"}{" "}
+                {"\u00e0"} {"\u00eatre"} command{"\u00e9"}
+                {cart.summary.total_items > 1 ? "es" : "e"}
               </p>
             </div>
           </div>
         </div>
 
-        <FreeShippingProgress subtotal={cart.summary.subtotal} />
+        <FreeShippingProgress
+          subtotal={cart.summary.subtotal}
+          className="mb-6"
+          vehicleUrl={
+            vehicle
+              ? `/constructeurs/${(vehicle as VehicleCookie).marque_alias}/${(vehicle as VehicleCookie).modele_alias}/${(vehicle as VehicleCookie).type_alias}`
+              : undefined
+          }
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           <div className="lg:col-span-2 space-y-4">
             {cart.items.map((item) => (
-              <CartItemRow key={item.id} item={item as CartItemType} />
+              <CartItemRow
+                key={item.id}
+                item={item as CartItemType}
+                vehicle={vehicle as VehicleCookie | null}
+              />
             ))}
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pt-4 border-t border-slate-200">
@@ -314,7 +331,7 @@ export default function CartPage() {
                       to={`/constructeurs/${(vehicle as VehicleCookie).marque_alias}/${(vehicle as VehicleCookie).modele_alias}/${(vehicle as VehicleCookie).type_alias}`}
                     >
                       <Car className="h-4 w-4" />
-                      Pi\u00e8ces pour mon{" "}
+                      Voir d'autres pi{"\u00e8"}ces compatibles pour mon{" "}
                       {(vehicle as VehicleCookie).marque_name}{" "}
                       {(vehicle as VehicleCookie).modele_name}
                     </Link>
@@ -371,9 +388,10 @@ export default function CartPage() {
                   {vehicle && (
                     <p className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
                       <Car className="h-3 w-3" />
-                      Pi\u00e8ces pour :{" "}
+                      Pi{"\u00e8"}ces s{"\u00e9"}lectionn{"\u00e9"}es pour :{" "}
                       {(vehicle as VehicleCookie).marque_name}{" "}
-                      {(vehicle as VehicleCookie).modele_name}
+                      {(vehicle as VehicleCookie).modele_name}{" "}
+                      {(vehicle as VehicleCookie).type_name}
                     </p>
                   )}
                   <Link
@@ -382,18 +400,31 @@ export default function CartPage() {
                     className={`w-full py-4 px-6 bg-cta hover:bg-cta-hover rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-3 ${isAnyMutating ? "pointer-events-none opacity-50" : ""}`}
                   >
                     <span className="text-white font-bold text-lg">
-                      Passer commande
+                      Continuer vers la livraison
                     </span>
                     <ArrowRight className="h-5 w-5 text-white" />
                   </Link>
-                  <p className="text-xs text-center text-slate-500 mt-2">
-                    Paiement s\u00e9curis\u00e9 \u00b7 Exp\u00e9dition 24-48h
-                    \u00b7 Retours 30 jours
-                  </p>
+                  <div className="flex items-center justify-center gap-4 mt-2">
+                    <span className="flex items-center gap-1 text-xs text-slate-500">
+                      <Shield className="h-3.5 w-3.5 text-slate-400" />
+                      Paiement s{"\u00e9"}curis{"\u00e9"}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-slate-500">
+                      <Truck className="h-3.5 w-3.5 text-slate-400" />
+                      Exp{"\u00e9"}dition 24-48h
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-slate-500">
+                      <RotateCcw className="h-3.5 w-3.5 text-slate-400" />
+                      Retours 30 jours
+                    </span>
+                  </div>
                 </div>
               </CartSummaryBlock>
 
-              <CartCrossSell gammes={crossSellGammes as CrossSellGamme[]} />
+              <CartCrossSell
+                gammes={crossSellGammes as CrossSellGamme[]}
+                vehicle={vehicle as VehicleCookie | null}
+              />
             </div>
           </div>
         </div>

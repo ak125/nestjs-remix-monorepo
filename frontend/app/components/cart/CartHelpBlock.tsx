@@ -13,7 +13,10 @@ export function CartHelpBlock() {
         </div>
         <div className="space-y-2">
           <p className="text-sm font-semibold text-slate-800">
-            Un doute sur la compatibilité ?
+            Un doute sur la compatibilit{"\u00e9"} ?
+          </p>
+          <p className="text-xs text-slate-500">
+            Nos experts vous conseillent avant validation
           </p>
           <a
             href={`tel:${phone.raw}`}
@@ -27,7 +30,7 @@ export function CartHelpBlock() {
             className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-600 hover:text-teal-800"
           >
             <Stethoscope className="h-3.5 w-3.5" />
-            Diagnostic gratuit
+            Lancer un diagnostic gratuit
           </Link>
         </div>
       </div>

@@ -1,7 +1,6 @@
 import { useFetcher } from "@remix-run/react";
-import { Info, Minus, Package, Plus, Trash2 } from "lucide-react";
+import { Car, Info, Minus, Package, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Badge } from "~/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
@@ -9,9 +8,16 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { type CartItem as CartItemType } from "~/schemas/cart.schemas";
+import { type VehicleCookie } from "~/utils/vehicle-cookie";
 import { formatPrice, MAX_CART_QUANTITY } from "./cart-utils";
 
-export function CartItemRow({ item }: { item: CartItemType }) {
+export function CartItemRow({
+  item,
+  vehicle,
+}: {
+  item: CartItemType;
+  vehicle?: VehicleCookie | null;
+}) {
   const updateFetcher = useFetcher();
   const removeFetcher = useFetcher();
   const [currentQuantity, setCurrentQuantity] = useState(item.quantity);
@@ -123,25 +129,16 @@ export function CartItemRow({ item }: { item: CartItemType }) {
             <h3 className="font-bold text-slate-900 text-base sm:text-lg leading-tight truncate">
               {item.product_name || item.name || "Produit sans nom"}
             </h3>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span className="inline-flex items-center text-xs font-mono bg-slate-100 text-slate-600 px-2 py-1 rounded">
-                R{"\u00e9"}f: {item.product_sku || item.product_id}
-              </span>
+            <p className="text-xs text-slate-500 mt-1">
               {item.product_brand &&
               item.product_brand !== "MARQUE INCONNUE" &&
-              item.product_brand !== "Non sp\u00e9cifi\u00e9e" ? (
-                <Badge variant="secondary" size="sm">
-                  {item.product_brand}
-                </Badge>
-              ) : (
-                <Badge
-                  variant="outline"
-                  size="sm"
-                  className="text-slate-400 border-slate-200"
-                >
-                  Marque {"\u00e0"} v{"\u00e9"}rifier
-                </Badge>
-              )}
+              item.product_brand !== "Non sp\u00e9cifi\u00e9e"
+                ? `${item.product_brand} \u00b7 `
+                : ""}
+              R{"\u00e9"}f. {item.product_sku || item.product_id}
+            </p>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {" "}
               {item.has_consigne && (item.consigne_unit ?? 0) > 0 && (
                 <TooltipProvider>
                   <Tooltip>
@@ -161,6 +158,13 @@ export function CartItemRow({ item }: { item: CartItemType }) {
                 </TooltipProvider>
               )}
             </div>
+            {vehicle && (
+              <p className="flex items-center gap-1.5 text-xs text-slate-500 mt-1.5">
+                <Car className="h-3.5 w-3.5 flex-shrink-0 text-slate-400" />
+                Pi{"\u00e8"}ce s{"\u00e9"}lectionn{"\u00e9"}e pour votre{" "}
+                {vehicle.marque_name} {vehicle.modele_name} {vehicle.type_name}
+              </p>
+            )}
           </div>
 
           {!showConfirmDelete ? (
@@ -229,7 +233,7 @@ export function CartItemRow({ item }: { item: CartItemType }) {
             </div>
             <div className="text-xs text-slate-500">
               {currentQuantity > 1
-                ? `${currentQuantity} x ${formatPrice(unitPrice)}`
+                ? `${currentQuantity} \u00d7 ${formatPrice(unitPrice)}`
                 : `Prix unitaire : ${formatPrice(unitPrice)}`}
             </div>
           </div>
