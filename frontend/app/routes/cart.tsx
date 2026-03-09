@@ -35,7 +35,6 @@ import {
   CartCrossSell,
   type CrossSellGamme,
 } from "~/components/cart/CartCrossSell";
-import { CartHelpBlock } from "~/components/cart/CartHelpBlock";
 import { CartItemRow } from "~/components/cart/CartItemRow";
 import { CartSummaryBlock } from "~/components/cart/CartSummaryBlock";
 import { EmptyCart } from "~/components/cart/EmptyCart";
@@ -58,6 +57,7 @@ import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import {
   getVehicleFromCookie,
+  getVehicleBreadcrumbData,
   type VehicleCookie,
 } from "~/utils/vehicle-cookie";
 import {
@@ -103,14 +103,34 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       );
     }
 
+    // Derive dominant type_id from cart items (priorite sur cookie)
+    const typeIdCounts = new Map<number, number>();
+    for (const item of cartData.items) {
+      if (item.type_id) {
+        typeIdCounts.set(
+          item.type_id,
+          (typeIdCounts.get(item.type_id) || 0) + (item.quantity || 1),
+        );
+      }
+    }
+    let cartTypeId: number | null = null;
+    let maxCount = 0;
+    for (const [tid, count] of typeIdCounts) {
+      if (count > maxCount) {
+        maxCount = count;
+        cartTypeId = tid;
+      }
+    }
+    const crossSellTypeId = cartTypeId || vehicle?.type_id;
+
     // Cross-sell : fetch en parallele (non-bloquant)
     let crossSellGammes: CrossSellGamme[] = [];
     const firstPgId = cartData.items.find((i) => i.pg_id)?.pg_id;
-    if (vehicle && firstPgId) {
+    if (crossSellTypeId && firstPgId) {
       try {
         const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
         const res = await fetch(
-          `${backendUrl}/api/cross-selling/v5/${vehicle.type_id}/${firstPgId}`,
+          `${backendUrl}/api/cross-selling/v5/${crossSellTypeId}/${firstPgId}`,
           { headers: { "User-Agent": "RemixCartLoader/1.0" } },
         );
         if (res.ok) {
@@ -124,9 +144,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       }
     }
 
+    // Vehicle display: use cookie if cart type_id matches, or if no cart type_id (backwards compat)
+    // Only hide vehicle if cart has type_ids but they don't match the cookie
+    const effectiveVehicle =
+      cartTypeId && vehicle && cartTypeId !== vehicle.type_id ? null : vehicle;
+
     return json({
       cart: cartData,
-      vehicle,
+      vehicle: effectiveVehicle,
       crossSellGammes,
       success: true,
       error: null,
@@ -261,7 +286,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-b from-slate-50 to-slate-100 py-6 sm:py-8">
+    <div className="min-h-[100dvh] bg-gradient-to-b from-slate-50 to-slate-100 py-4 sm:py-6">
       <Container>
         <CheckoutStepper current="cart" />
 
@@ -287,24 +312,12 @@ export default function CartPage() {
           </div>
         </div>
 
-        <FreeShippingProgress
-          subtotal={cart.summary.subtotal}
-          className="mb-6"
-          vehicleUrl={
-            vehicle
-              ? `/constructeurs/${(vehicle as VehicleCookie).marque_alias}/${(vehicle as VehicleCookie).modele_alias}/${(vehicle as VehicleCookie).type_alias}`
-              : undefined
-          }
-        />
-
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div className="space-y-4">
+            <FreeShippingProgress subtotal={cart.summary.subtotal} />
+
             {cart.items.map((item) => (
-              <CartItemRow
-                key={item.id}
-                item={item as CartItemType}
-                vehicle={vehicle as VehicleCookie | null}
-              />
+              <CartItemRow key={item.id} item={item as CartItemType} />
             ))}
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pt-4 border-t border-slate-200">
@@ -322,7 +335,9 @@ export default function CartPage() {
                     className="gap-2 text-slate-500"
                   >
                     <Link
-                      to={`/constructeurs/${(vehicle as VehicleCookie).marque_alias}/${(vehicle as VehicleCookie).modele_alias}/${(vehicle as VehicleCookie).type_alias}`}
+                      to={
+                        getVehicleBreadcrumbData(vehicle as VehicleCookie).href
+                      }
                     >
                       <Car className="h-4 w-4" />
                       Voir d'autres pi{"\u00e8"}ces compatibles pour mon{" "}
@@ -368,30 +383,23 @@ export default function CartPage() {
                 </div>
               )}
             </div>
+
+            <CartCrossSell
+              gammes={crossSellGammes as CrossSellGamme[]}
+              vehicle={vehicle as VehicleCookie | null}
+            />
           </div>
 
           <div>
-            <div className="lg:sticky lg:top-24 space-y-4">
-              <CartHelpBlock />
-
+            <div className="lg:sticky lg:top-24">
               <CartSummaryBlock
                 summary={cart.summary as CartSummaryType}
                 isUpdating={isAnyMutating}
-                vehicleLabel={
-                  vehicle
-                    ? `${(vehicle as VehicleCookie).marque_name} ${(vehicle as VehicleCookie).modele_name} ${(vehicle as VehicleCookie).type_name}`
-                    : undefined
-                }
                 checkoutDisabled={isAnyMutating}
               />
             </div>
           </div>
         </div>
-
-        <CartCrossSell
-          gammes={crossSellGammes as CrossSellGamme[]}
-          vehicle={vehicle as VehicleCookie | null}
-        />
 
         <MobileBottomBarSpacer />
       </Container>

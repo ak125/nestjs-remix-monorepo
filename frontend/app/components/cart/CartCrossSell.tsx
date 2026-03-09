@@ -1,5 +1,6 @@
 import { Link } from "@remix-run/react";
 import { ChevronRight, Package } from "lucide-react";
+import { normalizeTypeAlias } from "~/utils/url-builder.utils";
 import { type VehicleCookie } from "~/utils/vehicle-cookie";
 
 export interface CrossSellGamme {
@@ -22,10 +23,21 @@ export function CartCrossSell({
     ? [vehicle.marque_name, vehicle.modele_name].filter(Boolean).join(" ")
     : null;
 
+  const safeTypeAlias = vehicle
+    ? normalizeTypeAlias(vehicle.type_alias, vehicle.type_name)
+    : null;
+
+  function gammeUrl(gamme: CrossSellGamme) {
+    if (vehicle && safeTypeAlias) {
+      return `/pieces/${gamme.pg_alias}-${gamme.pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${safeTypeAlias}-${vehicle.type_id}.html`;
+    }
+    return `/pieces/${gamme.pg_alias}-${gamme.pg_id}.html`;
+  }
+
   return (
-    <section className="mt-10">
-      <div className="mb-5">
-        <h2 className="text-2xl font-black tracking-tight text-slate-900">
+    <section className="mt-8">
+      <div className="mb-4">
+        <h2 className="text-lg font-bold tracking-tight text-slate-900">
           {vehicleLabel
             ? `Produits compl\u00e9mentaires pour votre ${vehicleLabel}`
             : "Compl\u00e9tez votre entretien"}
@@ -36,7 +48,7 @@ export function CartCrossSell({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         {gammes.map((gamme) => (
           <article
             key={gamme.pg_id}
@@ -68,7 +80,7 @@ export function CartCrossSell({
 
             <div className="mt-4">
               <Link
-                to={`/pieces/${gamme.pg_alias}`}
+                to={gammeUrl(gamme)}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
               >
                 Voir le produit

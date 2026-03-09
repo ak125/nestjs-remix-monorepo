@@ -150,9 +150,10 @@ export const cartApi = {
   async addItem(
     productId: number,
     quantity: number = 1,
+    typeId?: number,
   ): Promise<AddItemResponse> {
     try {
-      logger.log("➕ [cartApi.addItem]", { productId, quantity });
+      logger.log("➕ [cartApi.addItem]", { productId, quantity, typeId });
 
       const response = await fetch(`${API_BASE}/items`, {
         method: "POST",
@@ -160,6 +161,7 @@ export const cartApi = {
         body: JSON.stringify({
           product_id: productId,
           quantity,
+          ...(typeId && { type_id: typeId }),
         }),
       });
 

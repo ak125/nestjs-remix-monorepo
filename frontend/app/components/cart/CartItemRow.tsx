@@ -1,5 +1,5 @@
 import { useFetcher } from "@remix-run/react";
-import { Car, Info, Minus, Package, Plus, Trash2 } from "lucide-react";
+import { Info, Minus, Package, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Tooltip,
@@ -8,16 +8,9 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { type CartItem as CartItemType } from "~/schemas/cart.schemas";
-import { type VehicleCookie } from "~/utils/vehicle-cookie";
 import { formatPrice, MAX_CART_QUANTITY } from "./cart-utils";
 
-export function CartItemRow({
-  item,
-  vehicle,
-}: {
-  item: CartItemType;
-  vehicle?: VehicleCookie | null;
-}) {
+export function CartItemRow({ item }: { item: CartItemType }) {
   const updateFetcher = useFetcher();
   const removeFetcher = useFetcher();
   const [currentQuantity, setCurrentQuantity] = useState(item.quantity);
@@ -158,13 +151,6 @@ export function CartItemRow({
                 </TooltipProvider>
               )}
             </div>
-            {vehicle && (
-              <p className="flex items-center gap-1.5 text-xs text-slate-500 mt-1.5">
-                <Car className="h-3.5 w-3.5 flex-shrink-0 text-slate-400" />
-                Pi{"\u00e8"}ce s{"\u00e9"}lectionn{"\u00e9"}e pour votre{" "}
-                {vehicle.marque_name} {vehicle.modele_name} {vehicle.type_name}
-              </p>
-            )}
           </div>
 
           {!showConfirmDelete ? (

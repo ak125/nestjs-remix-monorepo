@@ -43,6 +43,7 @@ interface PiecesGroupedDisplayProps {
   vehicleMarque: string;
   selectedPieces: number[];
   onSelectPiece: (pieceId: number) => void;
+  typeId?: number;
 }
 
 /**
@@ -118,6 +119,7 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
   vehicleMarque,
   selectedPieces,
   onSelectPiece,
+  typeId,
 }: PiecesGroupedDisplayProps) {
   // 📱 Pagination mobile-first: état du nombre de produits visibles par groupe
   const [visibleCounts, setVisibleCounts] = useState<Record<string, number>>(
@@ -188,6 +190,7 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
                 onSelectPiece={onSelectPiece}
                 selectedPieces={selectedPieces}
                 vehicleMarque={vehicleMarque}
+                typeId={typeId}
               />
             )}
 
@@ -196,6 +199,7 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
                 pieces={visiblePieces}
                 onSelectPiece={onSelectPiece}
                 selectedPieces={selectedPieces}
+                typeId={typeId}
               />
             )}
 

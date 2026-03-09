@@ -11,7 +11,10 @@ import {
   Wind,
 } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { type VehicleCookie } from "~/utils/vehicle-cookie";
+import {
+  type VehicleCookie,
+  getVehicleBreadcrumbData,
+} from "~/utils/vehicle-cookie";
 import { CartHelpBlock } from "./CartHelpBlock";
 
 const POPULAR_GAMMES = [
@@ -51,9 +54,7 @@ export function EmptyCart({ vehicle }: EmptyCartProps) {
   const vehicleLabel = vehicle
     ? [vehicle.marque_name, vehicle.modele_name].filter(Boolean).join(" ")
     : null;
-  const vehicleUrl = vehicle
-    ? `/constructeurs/${vehicle.marque_alias}/${vehicle.modele_alias}/${vehicle.type_alias}`
-    : null;
+  const vehicleUrl = vehicle ? getVehicleBreadcrumbData(vehicle).href : null;
 
   return (
     <div className="max-w-2xl mx-auto space-y-6 py-4">
@@ -67,7 +68,7 @@ export function EmptyCart({ vehicle }: EmptyCartProps) {
               </div>
               <div>
                 <p className="text-sm text-emerald-700">
-                  Vous cherchez des pi\u00e8ces pour votre
+                  Vous cherchez des pièces pour votre
                 </p>
                 <p className="font-bold text-emerald-900">{vehicleLabel} ?</p>
               </div>
@@ -78,7 +79,7 @@ export function EmptyCart({ vehicle }: EmptyCartProps) {
               className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
             >
               <Link to={vehicleUrl}>
-                Voir les pi\u00e8ces compatibles
+                Voir les pièces compatibles
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -104,7 +105,7 @@ export function EmptyCart({ vehicle }: EmptyCartProps) {
           <Button asChild size="lg" variant="blue" className="w-full sm:w-auto">
             <Link to="/" className="inline-flex items-center gap-2">
               <ShoppingBag className="h-5 w-5" />
-              Trouver une pi\u00e8ce
+              Trouver une pièce
             </Link>
           </Button>
           <Button
@@ -127,7 +128,7 @@ export function EmptyCart({ vehicle }: EmptyCartProps) {
       {/* Section C — Categories populaires */}
       <div>
         <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-3">
-          Cat\u00e9gories populaires
+          Catégories populaires
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {POPULAR_GAMMES.map((gamme) => (

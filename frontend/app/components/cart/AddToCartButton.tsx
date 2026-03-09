@@ -28,6 +28,7 @@ interface AddToCartButtonProps {
   onSuccess?: () => void;
   onError?: (error: string) => void;
   showQuantitySelector?: boolean;
+  typeId?: number;
 }
 
 export const AddToCartButton = memo(function AddToCartButton({
@@ -38,6 +39,7 @@ export const AddToCartButton = memo(function AddToCartButton({
   onSuccess,
   onError,
   showQuantitySelector = false,
+  typeId,
 }: AddToCartButtonProps) {
   const [quantity, setQuantity] = useState(initialQuantity);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +75,7 @@ export const AddToCartButton = memo(function AddToCartButton({
     triggerCartBadgeBounce();
 
     try {
-      const success = await addToCart(piece.id, quantity);
+      const success = await addToCart(piece.id, quantity, typeId);
 
       if (success) {
         setIsOptimistic(false);
@@ -99,7 +101,16 @@ export const AddToCartButton = memo(function AddToCartButton({
     } finally {
       setIsLoading(false);
     }
-  }, [quantity, piece, showSuccess, showError, onSuccess, onError, addToCart]);
+  }, [
+    quantity,
+    piece,
+    showSuccess,
+    showError,
+    onSuccess,
+    onError,
+    addToCart,
+    typeId,
+  ]);
 
   /**
    * 🎬 Crée une animation de "flying" vers l'icône panier

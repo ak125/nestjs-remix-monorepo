@@ -24,6 +24,7 @@ export const CartItemSchema = z.object({
   product_description: z.string().optional(), // Description
   product_image: z.string().optional(), // URL image
   weight: z.number().min(0).optional(),
+  type_id: z.number().int().positive().optional(), // Vehicle type_id (contexte vehicule a l'ajout)
 });
 
 export const CartMetadataSchema = z.object({
@@ -184,6 +185,8 @@ export class CartDataService extends SupabaseBaseService {
               product_brand: brandName, // Toujours définir la marque
               product_description:
                 product.piece_des || item.product_description,
+              product_image:
+                product.piece_image || item.product_image || undefined,
               weight: product.piece_weight_kgm || item.weight,
               // Prix depuis produit si pas défini dans l'item
               price: item.price || product.price_ttc || 0,
@@ -310,6 +313,7 @@ export class CartDataService extends SupabaseBaseService {
     quantity: number,
     customPrice?: number,
     replace: boolean = false,
+    typeId?: number,
   ): Promise<CartItem> {
     try {
       // 1. Récupérer le produit avec TOUTES les vraies données
@@ -348,7 +352,9 @@ export class CartDataService extends SupabaseBaseService {
         product_sku: product.piece_ref,
         product_brand: product.piece_marque || 'Non spécifiée', // S'assurer qu'il y a toujours une valeur
         product_description: product.piece_des,
+        product_image: product.piece_image || undefined,
         weight: product.piece_weight_kgm,
+        ...(typeId && { type_id: typeId }),
       };
 
       if (existingItemIndex >= 0) {
@@ -370,6 +376,7 @@ export class CartDataService extends SupabaseBaseService {
         }
 
         updatedItems[existingItemIndex].updated_at = new Date().toISOString();
+        if (typeId) updatedItems[existingItemIndex].type_id = typeId;
         await this.saveCartToRedis(sessionId, updatedItems);
         return updatedItems[existingItemIndex];
       } else {
@@ -782,6 +789,7 @@ export class CartDataService extends SupabaseBaseService {
           existingItem.updated_at = new Date().toISOString();
           // Garder le prix le plus récent (celui du panier source)
           existingItem.price = sourceItem.price;
+          existingItem.type_id = sourceItem.type_id || existingItem.type_id;
           this.logger.log(
             `➕ Fusion produit ${sourceItem.product_name}: ${existingItem.quantity} total`,
           );

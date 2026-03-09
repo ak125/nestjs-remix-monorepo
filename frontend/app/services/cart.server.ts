@@ -442,6 +442,8 @@ class CartServerService {
         consigne_total: item.consigne_total || 0,
         // Gamme ID pour cross-sell
         pg_id: item.pg_id || undefined,
+        // Vehicle type_id pour cross-sell contextuel
+        type_id: item.type_id || undefined,
       })),
       summary: {
         total_items: (totals?.total_items as number) || 0,

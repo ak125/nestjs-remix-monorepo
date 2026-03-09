@@ -858,6 +858,7 @@ function PiecesVehicleContent() {
                     vehicleMarque={data.vehicle.marque}
                     selectedPieces={selectedPieces}
                     onSelectPiece={handleSelectPiece}
+                    typeId={data.vehicle.typeId}
                   />
                 ) : (
                   // âœ¨ FALLBACK: Affichage simple si pas de groupes
@@ -868,6 +869,7 @@ function PiecesVehicleContent() {
                         onSelectPiece={handleSelectPiece}
                         selectedPieces={selectedPieces}
                         vehicleMarque={data.vehicle.marque}
+                        typeId={data.vehicle.typeId}
                       />
                     )}
 
@@ -876,6 +878,7 @@ function PiecesVehicleContent() {
                         pieces={filteredProducts}
                         onSelectPiece={handleSelectPiece}
                         selectedPieces={selectedPieces}
+                        typeId={data.vehicle.typeId}
                       />
                     )}
                   </>

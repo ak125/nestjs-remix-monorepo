@@ -1,7 +1,6 @@
 import { Link } from "@remix-run/react";
 import {
   ArrowRight,
-  Car,
   Info,
   Package,
   RotateCcw,
@@ -22,12 +21,10 @@ import { formatPrice, FREE_SHIPPING_THRESHOLD } from "./cart-utils";
 export function CartSummaryBlock({
   summary,
   isUpdating,
-  vehicleLabel,
   checkoutDisabled,
 }: {
   summary: CartSummaryType;
   isUpdating?: boolean;
-  vehicleLabel?: string;
   checkoutDisabled?: boolean;
 }) {
   const total =
@@ -157,14 +154,6 @@ export function CartSummaryBlock({
       </div>
 
       <div className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3">
-        {vehicleLabel && (
-          <p className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
-            <Car className="h-3 w-3" />
-            Pi{"\u00e8"}ces s{"\u00e9"}lectionn{"\u00e9"}es pour :{" "}
-            {vehicleLabel}
-          </p>
-        )}
-
         <Link
           to="/checkout"
           aria-disabled={checkoutDisabled}

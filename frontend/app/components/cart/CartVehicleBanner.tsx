@@ -1,6 +1,9 @@
 import { Link } from "@remix-run/react";
 import { Car, CheckCircle, ArrowRight } from "lucide-react";
-import { type VehicleCookie } from "~/utils/vehicle-cookie";
+import {
+  type VehicleCookie,
+  getVehicleBreadcrumbData,
+} from "~/utils/vehicle-cookie";
 
 export function CartVehicleBanner({
   vehicle,
@@ -17,7 +20,7 @@ export function CartVehicleBanner({
     .filter(Boolean)
     .join(" ");
 
-  const vehicleUrl = `/constructeurs/${vehicle.marque_alias}/${vehicle.modele_alias}/${vehicle.type_alias}`;
+  const vehicleUrl = getVehicleBreadcrumbData(vehicle).href;
 
   return (
     <div className="mb-4 flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">

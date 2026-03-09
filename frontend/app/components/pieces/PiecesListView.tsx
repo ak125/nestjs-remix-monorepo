@@ -20,6 +20,7 @@ interface PiecesListViewProps {
   pieces: PieceData[];
   onSelectPiece?: (pieceId: number) => void;
   selectedPieces?: number[];
+  typeId?: number;
 }
 
 /**
@@ -61,6 +62,7 @@ export const PiecesListView = React.memo(
     pieces,
     onSelectPiece,
     selectedPieces = [],
+    typeId,
   }: PiecesListViewProps) {
     const { addToCart } = useCart();
 
@@ -95,7 +97,7 @@ export const PiecesListView = React.memo(
       setLoadingItems((prev) => new Set(prev).add(pieceId));
 
       try {
-        await addToCart(pieceId, 1);
+        await addToCart(pieceId, 1, typeId);
         // Petit délai avant de réactiver (debounce)
         await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {

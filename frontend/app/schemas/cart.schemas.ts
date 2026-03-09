@@ -57,6 +57,9 @@ export const cartItemSchema = z
     // Cross-sell
     pg_id: z.number().optional(),
 
+    // Vehicle context (type_id du vehicule a l'ajout)
+    type_id: z.number().optional(),
+
     // Metadata flexible
     options: z.record(z.any()).optional(),
 

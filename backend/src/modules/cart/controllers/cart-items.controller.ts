@@ -91,6 +91,7 @@ export class CartItemsController {
         addItemDto.quantity,
         addItemDto.custom_price,
         isReplace,
+        addItemDto.type_id,
       );
 
       this.logger.log(

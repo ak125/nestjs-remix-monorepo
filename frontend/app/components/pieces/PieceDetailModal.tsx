@@ -38,6 +38,7 @@ interface PieceDetailModalProps {
   pieceId: number | null;
   onClose: () => void;
   vehicleMarque?: string;
+  typeId?: number;
 }
 
 interface PieceDetail {
@@ -74,6 +75,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
   pieceId,
   onClose,
   vehicleMarque,
+  typeId,
 }: PieceDetailModalProps) {
   const [piece, setPiece] = useState<PieceDetail | null>(null);
   const [loading, setLoading] = useState(false);
@@ -173,7 +175,7 @@ export const PieceDetailModal = memo(function PieceDetailModal({
 
     setAddingToCart(true);
     try {
-      await addToCart(piece.id, 1);
+      await addToCart(piece.id, 1, typeId);
       // Modal reste ouvert, le panier side s'ouvre automatiquement via useCart
     } catch (error) {
       logger.error("❌ Erreur ajout panier:", error);

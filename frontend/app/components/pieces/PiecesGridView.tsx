@@ -87,6 +87,7 @@ interface PiecesGridViewProps {
   onSelectPiece?: (pieceId: number) => void;
   selectedPieces?: number[];
   vehicleMarque?: string;
+  typeId?: number;
 }
 
 // ⚡ Composant PieceCard mémorisé
@@ -392,6 +393,7 @@ export function PiecesGridView({
   onSelectPiece,
   selectedPieces = [],
   vehicleMarque,
+  typeId,
 }: PiecesGridViewProps) {
   const { addToCart } = useCart();
 
@@ -426,7 +428,7 @@ export function PiecesGridView({
       }
 
       try {
-        const success = await addToCart(pieceId, 1);
+        const success = await addToCart(pieceId, 1, typeId);
         if (success) {
           toast.success(`${piece?.name || "Article"} ajouté au panier`);
         } else {
@@ -441,7 +443,7 @@ export function PiecesGridView({
         setLoadingItems(new Set(loadingItemsRef.current));
       }
     },
-    [pieces, addToCart],
+    [pieces, addToCart, typeId],
   );
 
   // ⚡ Handler mémorisé pour ouvrir détail
@@ -542,6 +544,7 @@ export function PiecesGridView({
         <PieceDetailModal
           pieceId={selectedPieceId}
           vehicleMarque={vehicleMarque}
+          typeId={typeId}
           onClose={handleCloseModal}
         />
 
