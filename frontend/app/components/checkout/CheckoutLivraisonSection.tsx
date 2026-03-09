@@ -191,7 +191,9 @@ export function CheckoutLivraisonSection({
                 placeholder="votre.email@exemple.com"
               />
               {fieldErrors?.guestEmail && (
-                <p className="text-xs text-red-600 mt-1">{fieldErrors.guestEmail[0]}</p>
+                <p className="text-xs text-red-600 mt-1">
+                  {fieldErrors.guestEmail[0]}
+                </p>
               )}
               {!emailChecked && (
                 <button
@@ -359,7 +361,9 @@ export function CheckoutLivraisonSection({
                     placeholder="Prenom"
                   />
                   {fieldErrors?.firstName && (
-                    <p className="text-xs text-red-600 mt-1">{fieldErrors.firstName[0]}</p>
+                    <p className="text-xs text-red-600 mt-1">
+                      {fieldErrors.firstName[0]}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -385,7 +389,9 @@ export function CheckoutLivraisonSection({
                     placeholder="Nom"
                   />
                   {fieldErrors?.lastName && (
-                    <p className="text-xs text-red-600 mt-1">{fieldErrors.lastName[0]}</p>
+                    <p className="text-xs text-red-600 mt-1">
+                      {fieldErrors.lastName[0]}
+                    </p>
                   )}
                 </div>
               </div>
@@ -412,7 +418,9 @@ export function CheckoutLivraisonSection({
                   placeholder="Numero et nom de rue"
                 />
                 {fieldErrors?.address && (
-                  <p className="text-xs text-red-600 mt-1">{fieldErrors.address[0]}</p>
+                  <p className="text-xs text-red-600 mt-1">
+                    {fieldErrors.address[0]}
+                  </p>
                 )}
               </div>
               <div>
@@ -420,7 +428,10 @@ export function CheckoutLivraisonSection({
                   htmlFor="phone"
                   className="block text-sm font-medium text-slate-700 mb-1"
                 >
-                  Telephone <span className="text-slate-400 font-normal">(optionnel)</span>
+                  Telephone{" "}
+                  <span className="text-slate-400 font-normal">
+                    (optionnel)
+                  </span>
                 </label>
                 <input
                   type="tel"
@@ -468,7 +479,9 @@ export function CheckoutLivraisonSection({
                     placeholder="75000"
                   />
                   {fieldErrors?.zipCode && (
-                    <p className="text-xs text-red-600 mt-1">{fieldErrors.zipCode[0]}</p>
+                    <p className="text-xs text-red-600 mt-1">
+                      {fieldErrors.zipCode[0]}
+                    </p>
                   )}
                 </div>
                 <div>
@@ -494,7 +507,9 @@ export function CheckoutLivraisonSection({
                     placeholder="Ville"
                   />
                   {fieldErrors?.city && (
-                    <p className="text-xs text-red-600 mt-1">{fieldErrors.city[0]}</p>
+                    <p className="text-xs text-red-600 mt-1">
+                      {fieldErrors.city[0]}
+                    </p>
                   )}
                 </div>
               </div>

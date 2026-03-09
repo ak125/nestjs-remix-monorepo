@@ -145,8 +145,7 @@ export async function createCheckoutOrder(
         .catch(() => ({ message: "Erreur serveur" }));
       return {
         success: false,
-        error:
-          errorData.message || "Erreur lors de la creation de la commande",
+        error: errorData.message || "Erreur lors de la creation de la commande",
         status: response.status,
       };
     }

@@ -295,8 +295,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
       );
     }
 
-    const customerEmail =
-      orderDetails.customerEmail || guestEmail || "";
+    const customerEmail = orderDetails.customerEmail || guestEmail || "";
     if (!customerEmail) {
       return json(
         {
@@ -473,12 +472,22 @@ export default function CheckoutPage() {
 
   // Redirect to Paybox when action returns ok + redirectUrl
   useEffect(() => {
-    if (actionData && "ok" in actionData && actionData.ok === true && "redirectUrl" in actionData) {
+    if (
+      actionData &&
+      "ok" in actionData &&
+      actionData.ok === true &&
+      "redirectUrl" in actionData
+    ) {
       setIsRedirecting(true);
       clearCheckoutState();
       window.location.href = actionData.redirectUrl as string;
     }
-    if (actionData && "ok" in actionData && actionData.ok === false && "error" in actionData) {
+    if (
+      actionData &&
+      "ok" in actionData &&
+      actionData.ok === false &&
+      "error" in actionData
+    ) {
       setIsRedirecting(false);
       toast.error(actionData.error as string);
     }
@@ -629,10 +638,24 @@ export default function CheckoutPage() {
             <p className="text-sm font-medium text-slate-700 mt-2 flex items-center gap-2">
               Commande pour votre{" "}
               <span className="font-semibold">
-                {[vehicle.marque_name, vehicle.modele_name, vehicle.type_name].filter(Boolean).join(" ")}
+                {[vehicle.marque_name, vehicle.modele_name, vehicle.type_name]
+                  .filter(Boolean)
+                  .join(" ")}
               </span>
               <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium">
-                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                <svg
+                  className="h-3.5 w-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
                 Compatibilite verifiee
               </span>
             </p>
@@ -644,19 +667,67 @@ export default function CheckoutPage() {
           {/* Reassurance badges */}
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500 mt-3">
             <span className="flex items-center gap-1.5">
-              <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" /></svg>
+              <svg
+                className="h-4 w-4 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"
+                />
+              </svg>
               Expedition 24-48h
             </span>
             <span className="flex items-center gap-1.5">
-              <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+              <svg
+                className="h-4 w-4 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                />
+              </svg>
               Paiement securise
             </span>
             <span className="flex items-center gap-1.5">
-              <svg className="h-4 w-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              <svg
+                className="h-4 w-4 text-orange-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
               Retours 30 jours
             </span>
             <span className="flex items-center gap-1.5">
-              <svg className="h-4 w-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+              <svg
+                className="h-4 w-4 text-slate-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                />
+              </svg>
               Support expert
             </span>
           </div>
@@ -695,9 +766,7 @@ export default function CheckoutPage() {
                     <h3 className="font-semibold text-orange-900">
                       Email deja utilise
                     </h3>
-                    <p className="text-sm text-orange-700 mt-1">
-                      {error}
-                    </p>
+                    <p className="text-sm text-orange-700 mt-1">{error}</p>
                     <Link
                       to={`/login?redirectTo=/checkout&email=${encodeURIComponent(
                         actionError.conflictEmail || "",
@@ -776,12 +845,36 @@ export default function CheckoutPage() {
                         <p className="text-xs mt-0.5">
                           {hasCompleteAddress ? (
                             <span className="text-emerald-600 flex items-center gap-1">
-                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                              <svg
+                                className="h-3 w-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
                               Adresse enregistree
                             </span>
                           ) : (
                             <span className="text-amber-600 flex items-center gap-1">
-                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+                              <svg
+                                className="h-3 w-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                />
+                              </svg>
                               Coordonnees a completer
                             </span>
                           )}
@@ -806,48 +899,58 @@ export default function CheckoutPage() {
 
               {/* Section 2: Paiement */}
               <div ref={paiementRef}>
-              <AccordionItem
-                value="paiement"
-                disabled={!addressValidated}
-                className={`bg-white rounded-2xl shadow-sm border overflow-hidden transition-all duration-300 ${
-                  addressValidated
-                    ? "border-slate-200"
-                    : "border-slate-100 opacity-50 cursor-not-allowed"
-                }`}
-              >
-                <AccordionTrigger
-                  className={`px-6 py-5 hover:no-underline ${!addressValidated ? "pointer-events-none" : ""}`}
+                <AccordionItem
+                  value="paiement"
+                  disabled={!addressValidated}
+                  className={`bg-white rounded-2xl shadow-sm border overflow-hidden transition-all duration-300 ${
+                    addressValidated
+                      ? "border-slate-200"
+                      : "border-slate-100 opacity-50 cursor-not-allowed"
+                  }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all duration-300 ${
-                        addressValidated
-                          ? "bg-blue-600 text-white"
-                          : "bg-slate-200 text-slate-400"
-                      }`}
-                    >
-                      2
+                  <AccordionTrigger
+                    className={`px-6 py-5 hover:no-underline ${!addressValidated ? "pointer-events-none" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-all duration-300 ${
+                          addressValidated
+                            ? "bg-blue-600 text-white"
+                            : "bg-slate-200 text-slate-400"
+                        }`}
+                      >
+                        2
+                      </div>
+                      <h2 className="text-lg font-semibold text-slate-900">
+                        Paiement securise
+                      </h2>
                     </div>
-                    <h2 className="text-lg font-semibold text-slate-900">
-                      Paiement securise
-                    </h2>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-6 pb-6">
-                  <CheckoutPaiementSection
-                    paymentMethods={paymentMethods || []}
-                    selectedPaymentMethod={selectedPaymentMethod}
-                    onPaymentMethodChange={setSelectedPaymentMethod}
-                    acceptedTerms={acceptedTerms}
-                    onAcceptedTermsChange={setAcceptedTerms}
-                    isProcessing={isLocked}
-                    canSubmit={canSubmitOrder}
-                    totalTTC={total}
-                    itemCount={cart.items.length}
-                    vehicleLabel={vehicle ? [vehicle.marque_name, vehicle.modele_name, vehicle.type_name].filter(Boolean).join(" ") : null}
-                  />
-                </AccordionContent>
-              </AccordionItem>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-6">
+                    <CheckoutPaiementSection
+                      paymentMethods={paymentMethods || []}
+                      selectedPaymentMethod={selectedPaymentMethod}
+                      onPaymentMethodChange={setSelectedPaymentMethod}
+                      acceptedTerms={acceptedTerms}
+                      onAcceptedTermsChange={setAcceptedTerms}
+                      isProcessing={isLocked}
+                      canSubmit={canSubmitOrder}
+                      totalTTC={total}
+                      itemCount={cart.items.length}
+                      vehicleLabel={
+                        vehicle
+                          ? [
+                              vehicle.marque_name,
+                              vehicle.modele_name,
+                              vehicle.type_name,
+                            ]
+                              .filter(Boolean)
+                              .join(" ")
+                          : null
+                      }
+                    />
+                  </AccordionContent>
+                </AccordionItem>
               </div>
             </Accordion>
           </div>

@@ -141,9 +141,24 @@ export function CheckoutPaiementSection({
       {/* Vehicle reminder near CTA */}
       {vehicleLabel && (
         <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2">
-          <svg className="h-4 w-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+          <svg
+            className="h-4 w-4 text-emerald-600 flex-shrink-0"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"
+            />
           </svg>
           <span className="text-xs text-emerald-700">
             {vehicleLabel} — <strong>Compatibilite verifiee</strong>
@@ -154,11 +169,17 @@ export function CheckoutPaiementSection({
       {/* Help block */}
       <p className="text-xs text-center text-slate-400">
         Un doute sur votre commande ?{" "}
-        <a href="tel:+33148479627" className="text-slate-500 hover:text-slate-700 font-medium">
+        <a
+          href="tel:+33148479627"
+          className="text-slate-500 hover:text-slate-700 font-medium"
+        >
           01 48 47 96 27
-        </a>
-        {" "}&middot;{" "}
-        <a href="mailto:contact@automecanik.com" className="text-slate-500 hover:text-slate-700 font-medium">
+        </a>{" "}
+        &middot;{" "}
+        <a
+          href="mailto:contact@automecanik.com"
+          className="text-slate-500 hover:text-slate-700 font-medium"
+        >
           contact@automecanik.com
         </a>
       </p>

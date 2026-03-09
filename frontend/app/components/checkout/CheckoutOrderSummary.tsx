@@ -13,10 +13,7 @@ import {
   type CartItem as CartItemType,
   type CartSummary as CartSummaryType,
 } from "~/schemas/cart.schemas";
-import {
-  calculateDeliveryETA,
-  type StockStatus,
-} from "~/utils/delivery-eta";
+import { calculateDeliveryETA, type StockStatus } from "~/utils/delivery-eta";
 import { type VehicleCookie } from "~/utils/vehicle-cookie";
 import { FreeShippingBar } from "./FreeShippingBar";
 import { PromoCodeInput } from "./PromoCodeInput";
@@ -52,7 +49,8 @@ export function CheckoutOrderSummary({
 
   // Delivery ETA — map stock_available to StockStatus
   const stockStatuses: StockStatus[] = cart.items.map((item) => {
-    if (item.stock_available == null || item.stock_available > 5) return "in-stock";
+    if (item.stock_available == null || item.stock_available > 5)
+      return "in-stock";
     if (item.stock_available > 0) return "low-stock";
     return "out-of-stock";
   });
@@ -86,9 +84,7 @@ export function CheckoutOrderSummary({
             Livraison estimee {deliveryETA.formattedRange}
           </p>
           {deliveryETA.estimatedDays <= 3 && (
-            <p className="text-xs text-blue-600 mt-0.5">
-              Expedition sous 24h
-            </p>
+            <p className="text-xs text-blue-600 mt-0.5">Expedition sous 24h</p>
           )}
         </div>
       </div>
@@ -146,7 +142,9 @@ export function CheckoutOrderSummary({
           <div className="mt-2 space-y-1">
             <p className="flex items-center gap-1.5 text-xs text-emerald-600">
               <Package className="h-3 w-3 flex-shrink-0" />
-              {cart.items.length} article{cart.items.length > 1 ? "s" : ""} pret{cart.items.length > 1 ? "s" : ""} a etre expedie{cart.items.length > 1 ? "s" : ""}
+              {cart.items.length} article{cart.items.length > 1 ? "s" : ""} pret
+              {cart.items.length > 1 ? "s" : ""} a etre expedie
+              {cart.items.length > 1 ? "s" : ""}
             </p>
             {vehicleLabel && (
               <p className="flex items-center gap-1.5 text-xs text-emerald-600">
