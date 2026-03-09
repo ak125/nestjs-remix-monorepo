@@ -38,7 +38,7 @@ done
 if [[ "$ENV" == "production" ]]; then
   BASE_URL="https://www.automecanik.com"
 else
-  BASE_URL="http://localhost:3100"
+  BASE_URL="http://localhost:3200"
 fi
 
 # Fetch health data

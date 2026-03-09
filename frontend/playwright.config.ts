@@ -113,7 +113,7 @@ export default defineConfig({
       ],
 
   // Web server disabled:
-  // - CI: PREPROD already deployed on port 3100 (see ci.yml deploy job)
+  // - CI: PREPROD already deployed on port 3200 (see ci.yml deploy job)
   // - Local: start server manually with `npm run dev` from project root
   webServer: undefined,
 });

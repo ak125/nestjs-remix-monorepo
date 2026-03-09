@@ -732,7 +732,7 @@ jobs:
           echo "⏳ Waiting for PREPROD to start..."
           HEALTHY=0
           for i in {1..12}; do
-            if curl -sf http://localhost:3100/health > /dev/null 2>&1; then
+            if curl -sf http://localhost:3200/health > /dev/null 2>&1; then
               echo "✅ PREPROD is healthy after $((i*10))s"
               HEALTHY=1
               break
@@ -748,15 +748,15 @@ jobs:
             exit 1
           fi
 
-          echo "✅ PREPROD deployed successfully on port 3100"
-          echo "🔗 Test URL: http://$(hostname -I | awk '{print $1}'):3100"
+          echo "✅ PREPROD deployed successfully on port 3200"
+          echo "🔗 Test URL: http://$(hostname -I | awk '{print $1}'):3200"
 
           # Nettoyer les images
           docker image prune -f
 
       - name: 🔍 API Smoke Tests
         run: |
-          BASE="http://localhost:3100"
+          BASE="http://localhost:3200"
           FAILED=0
 
           echo "Testing critical API endpoints..."
@@ -824,7 +824,7 @@ jobs:
 
       - name: ⏱️ Response Time Baseline
         run: |
-          BASE="http://localhost:3100"
+          BASE="http://localhost:3200"
           echo "## ⏱️ PREPROD Response Times" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Endpoint | Median (ms) | Budget (ms) | Status |" >> $GITHUB_STEP_SUMMARY
@@ -857,7 +857,7 @@ jobs:
 
       - name: ⏱️ API Timing Gate (blocking)
         run: |
-          BASE="http://localhost:3100"
+          BASE="http://localhost:3200"
           echo "## ⏱️ API Timing Gate" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| RPC | duration_ms | Budget (ms) | Status |" >> $GITHUB_STEP_SUMMARY
@@ -897,7 +897,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          DEPLOY_URL: "http://localhost:3100"
+          DEPLOY_URL: "http://localhost:3200"
           STARTUP_WAIT: "5"
         run: |
           bash scripts/cron/deploy-watcher.sh || true
@@ -926,21 +926,21 @@ jobs:
       - name: Wait for PREPROD to be healthy
         run: |
           for i in {1..12}; do
-            if curl -sf http://localhost:3100/health > /dev/null 2>&1; then
+            if curl -sf http://localhost:3200/health > /dev/null 2>&1; then
               echo "PREPROD healthy"
               exit 0
             fi
             echo "Attempt $i/12 — waiting 10s..."
             sleep 10
           done
-          echo "PREPROD not available on port 3100"
+          echo "PREPROD not available on port 3200"
           exit 1
 
       - name: 🎭 Run critical E2E tests
         run: cd frontend && npx playwright test tests/e2e/critical-path.spec.ts tests/e2e/url-validation.spec.ts --project=chromium --reporter=github,list
         env:
           CI: true
-          PLAYWRIGHT_BASE_URL: http://localhost:3100
+          PLAYWRIGHT_BASE_URL: http://localhost:3200
 
       - name: Upload test results
         if: failure()
@@ -972,14 +972,14 @@ jobs:
       - name: Verify PREPROD is healthy
         run: |
           for i in {1..6}; do
-            if curl -sf http://localhost:3100/health > /dev/null 2>&1; then
+            if curl -sf http://localhost:3200/health > /dev/null 2>&1; then
               echo "✅ PREPROD healthy"
               exit 0
             fi
             echo "Attempt $i/6 — waiting 10s..."
             sleep 10
           done
-          echo "❌ PREPROD not available on port 3100"
+          echo "❌ PREPROD not available on port 3200"
           exit 1
 
       - name: Install Chrome (if not present)
@@ -990,15 +990,15 @@ jobs:
             rm google-chrome-stable_current_amd64.deb
           fi
 
-      - name: Run Lighthouse CI (PREPROD port 3100)
+      - name: Run Lighthouse CI (PREPROD port 3200)
         uses: treosh/lighthouse-ci-action@v12
         env:
           CHROME_PATH: /usr/bin/google-chrome-stable
         with:
           urls: |
-            http://localhost:3100/
-            http://localhost:3100/search?q=plaquette
-            http://localhost:3100/pieces/catalogue
+            http://localhost:3200/
+            http://localhost:3200/search?q=plaquette
+            http://localhost:3200/pieces/catalogue
           budgetPath: ./frontend/lighthouse-budget.json
           uploadArtifacts: true
           temporaryPublicStorage: true
@@ -1007,7 +1007,7 @@ jobs:
       - name: Lighthouse summary
         if: always()
         run: |
-          echo "## 🔦 Lighthouse CI — PREPROD (port 3100)" >> $GITHUB_STEP_SUMMARY
+          echo "## 🔦 Lighthouse CI — PREPROD (port 3200)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Metric | Target |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|--------|" >> $GITHUB_STEP_SUMMARY

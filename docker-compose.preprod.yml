@@ -20,7 +20,7 @@ services:
     image: massdoc/nestjs-remix-monorepo:preprod
     restart: always
     ports:
-      - "3100:3000"
+      - "3200:3000"
     networks:
       - automecanik-preprod
     healthcheck:
