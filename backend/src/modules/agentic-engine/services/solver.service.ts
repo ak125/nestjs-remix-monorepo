@@ -2,12 +2,12 @@
  * SolverService — Phase SOLVING
  *
  * Executes a single branch: RAG fetch + LLM call + step recording.
- * Uses AiContentService with agentic_solve template.
+ * Uses Claude CLI for LLM calls (no external API key needed).
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { AgenticDataService } from './agentic-data.service';
 import { EvidenceLedgerService } from './evidence-ledger.service';
-import { AiContentService } from '../../ai-content/ai-content.service';
+import { ClaudeCliService } from './claude-cli.service';
 import type { AgenticBranch, AgenticRun } from '../types/run-state.schema';
 import { getErrorMessage } from '../../../common/utils/error.utils';
 
@@ -25,7 +25,7 @@ export class SolverService {
   constructor(
     private readonly dataService: AgenticDataService,
     private readonly evidenceLedger: EvidenceLedgerService,
-    private readonly aiContent: AiContentService,
+    private readonly claudeCli: ClaudeCliService,
   ) {}
 
   /**
@@ -96,25 +96,33 @@ export class SolverService {
     try {
       const llmStart = performance.now();
 
-      const response = await this.aiContent.generateContent({
-        type: 'agentic_solve',
-        prompt: `Execute strategy: ${branch.strategy_label}`,
-        context: {
-          goal: run.goal,
-          strategyLabel: branch.strategy_label,
-          strategyDescription: strategy?.description ?? branch.strategy_label,
-          strategySteps: strategy?.steps ?? [],
-          ragContent: ragContent ?? null,
-          additionalContext: run.feature_flags ?? null,
-        },
-        temperature: 0.5,
-        maxLength: 3000,
-        useCache: false,
+      const systemPrompt = `Tu es un solveur specialise pour un moteur agentique SEO automobile.
+Execute la strategie demandee et produis un resultat structure.
+Reponds UNIQUEMENT en JSON valide avec cette structure:
+{
+  "strategy_executed": "label",
+  "result": { "content": "...", "confidence": 0-100, "sources_used": [], "limitations": [] },
+  "steps_completed": ["..."]
+}`;
+
+      const userPrompt = [
+        `Objectif: ${run.goal}`,
+        `Strategie: ${branch.strategy_label}`,
+        strategy?.description ? `Description: ${strategy.description}` : null,
+        strategy?.steps?.length ? `Etapes: ${strategy.steps.join(', ')}` : null,
+        ragContent ? `Contexte RAG:\n${ragContent.substring(0, 4000)}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
+
+      const response = await this.claudeCli.execute(userPrompt, {
+        systemPrompt,
+        timeoutMs: 180_000,
       });
 
       solveOutput = this.parseSolveResponse(response.content, branch);
       tokensUsed = response.metadata.tokens ?? 0;
-      provider = response.metadata.provider ?? 'unknown';
+      provider = response.metadata.provider ?? 'claude-cli';
 
       if (llmStep) {
         await this.dataService.updateStep(llmStep.id, {

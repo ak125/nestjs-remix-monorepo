@@ -106,7 +106,7 @@ export class AgenticProcessor {
 
   // ── SOLVE ─────────────────────────────────────────────
 
-  @Process({ name: 'agentic-solve', concurrency: 2 })
+  @Process({ name: 'agentic-solve', concurrency: 1 })
   async handleSolve(job: Job<AgenticSolveJobData>): Promise<void> {
     const { runId, branchId } = job.data;
     const startTime = performance.now();
@@ -143,8 +143,23 @@ export class AgenticProcessor {
         counts.branches_completed >= counts.branches_total &&
         counts.branches_total > 0
       ) {
+        // Check if ANY branch actually succeeded before advancing
+        const allBranches = await this.dataService.getBranchesByRun(runId);
+        const anyCompleted = allBranches.some((b) => b.status === 'completed');
+
+        if (!anyCompleted) {
+          this.logger.error(
+            `❌ [SOLVE] Run ${runId.slice(0, 8)} — All ${counts.branches_total} branches failed, aborting run`,
+          );
+          await this.runManager.failRun(
+            runId,
+            'All branches failed during solving',
+          );
+          return;
+        }
+
         this.logger.log(
-          `✅ [SOLVE] Run ${runId.slice(0, 8)} — All ${counts.branches_total} branches complete, enqueueing critique`,
+          `✅ [SOLVE] Run ${runId.slice(0, 8)} — All ${counts.branches_total} branches done (${allBranches.filter((b) => b.status === 'completed').length} completed), enqueueing critique`,
         );
 
         await this.runManager.transitionPhase(runId, 'critiquing');
@@ -167,7 +182,7 @@ export class AgenticProcessor {
 
     const elapsed = (performance.now() - startTime).toFixed(1);
     this.logger.log(
-      `✅ [SOLVE] Branch ${branchId.slice(0, 8)} done in ${elapsed}ms`,
+      `${result.success ? '✅' : '⚠️'} [SOLVE] Branch ${branchId.slice(0, 8)} done in ${elapsed}ms`,
     );
   }
 
@@ -189,6 +204,18 @@ export class AgenticProcessor {
 
     // Use CriticService for real LLM-based evaluation
     const result = await this.critic.critique(run, branches);
+
+    // Fail-fast: no branches could be scored
+    if (result.scores.length === 0 && !result.needsReplan) {
+      this.logger.error(
+        `❌ [CRITIQUE] Run ${runId.slice(0, 8)} — No branches could be scored`,
+      );
+      await this.runManager.failRun(
+        runId,
+        'No branches could be scored by critic',
+      );
+      return;
+    }
 
     // Critic loop: if re-plan needed and loops remaining
     if (result.needsReplan && this.runManager.canCriticLoop(run)) {
