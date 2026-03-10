@@ -19,10 +19,37 @@ export const ErrorGeneric = memo(function ErrorGeneric({
   const isServerError = status >= 500;
   const isClientError = status >= 400 && status < 500;
 
+  const colorMap = {
+    red: {
+      text: "text-red-600",
+      bg: "bg-red-50",
+      border: "border-red-200",
+      icon: "text-red-400",
+      detail: "text-red-700",
+      btn: "bg-red-600 hover:bg-red-700 focus:ring-red-500",
+    },
+    orange: {
+      text: "text-orange-600",
+      bg: "bg-orange-50",
+      border: "border-orange-200",
+      icon: "text-orange-400",
+      detail: "text-orange-700",
+      btn: "bg-orange-600 hover:bg-orange-700 focus:ring-orange-500",
+    },
+    gray: {
+      text: "text-gray-600",
+      bg: "bg-gray-50",
+      border: "border-gray-200",
+      icon: "text-gray-400",
+      detail: "text-gray-700",
+      btn: "bg-gray-600 hover:bg-gray-700 focus:ring-gray-500",
+    },
+  } as const;
+
   const getStatusColor = () => {
-    if (isServerError) return "red";
-    if (isClientError) return "orange";
-    return "gray";
+    if (isServerError) return "red" as const;
+    if (isClientError) return "orange" as const;
+    return "gray" as const;
   };
 
   const getStatusDescription = () => {
@@ -76,7 +103,9 @@ export const ErrorGeneric = memo(function ErrorGeneric({
     <div className="min-h-screen bg-gray-100 px-4 py-16 sm:px-6 sm:py-24 md:grid md:place-items-center lg:px-8">
       <div className="max-w-max mx-auto">
         <main className="sm:flex">
-          <p className={`text-4xl font-bold text-${color}-600 sm:text-5xl`}>
+          <p
+            className={`text-4xl font-bold ${colorMap[color].text} sm:text-5xl`}
+          >
             {status}
           </p>
           <div className="sm:ml-6">
@@ -88,12 +117,12 @@ export const ErrorGeneric = memo(function ErrorGeneric({
 
               {details && (
                 <div
-                  className={`mt-4 p-4 bg-${color}-50 border border-${color}-200 rounded-md`}
+                  className={`mt-4 p-4 ${colorMap[color].bg} border ${colorMap[color].border} rounded-md`}
                 >
                   <div className="flex">
                     <div className="flex-shrink-0">
                       <svg
-                        className={`h-5 w-5 text-${color}-400`}
+                        className={`h-5 w-5 ${colorMap[color].icon}`}
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >
@@ -105,7 +134,7 @@ export const ErrorGeneric = memo(function ErrorGeneric({
                       </svg>
                     </div>
                     <div className="ml-3">
-                      <p className={`text-sm text-${color}-700`}>
+                      <p className={`text-sm ${colorMap[color].detail}`}>
                         <strong>Détails :</strong>
                         <br />
                         {details}
@@ -167,7 +196,7 @@ export const ErrorGeneric = memo(function ErrorGeneric({
             <div className="mt-10 flex space-x-3 sm:border-l sm:border-gray-200 sm:pl-6">
               <button
                 onClick={() => window.location.reload()}
-                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-${color}-600 hover:bg-${color}-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${color}-500`}
+                className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${colorMap[color].btn} focus:outline-none focus:ring-2 focus:ring-offset-2`}
               >
                 <svg
                   className="mr-2 -ml-1 h-4 w-4"

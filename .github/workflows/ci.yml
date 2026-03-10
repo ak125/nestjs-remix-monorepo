@@ -693,6 +693,7 @@ jobs:
       - name: 🧪 Deploy to PREPROD
         env:
           NODE_ENV: preprod
+          ALLOW_PROD_ENV_COPY: "1"
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
