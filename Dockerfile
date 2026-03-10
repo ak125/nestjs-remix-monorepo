@@ -33,6 +33,9 @@ ENV TZ=Europe/Paris
 ENV NODE_ENV="production"
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 
+ARG VITE_GOOGLE_CLIENT_ID=""
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+
 # Cache-busting: invalidate build layer on each commit
 ARG CACHEBUST=1
 

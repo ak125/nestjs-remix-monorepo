@@ -11,8 +11,9 @@ import AccountDashboard from "~/components/account/AccountDashboard";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
+import { getProxyHeaders } from "~/utils/proxy-headers.server";
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { ActivityTimeline } from "../components/dashboard/ActivityTimeline";
@@ -133,15 +134,16 @@ export const loader: LoaderFunction = async ({ request }) => {
     }
 
     // API Call - même endpoint que les versions précédentes
-    const baseUrl = getInternalApiUrl("");
-    const dashboardResponse = await fetch(
-      `${baseUrl}/api/legacy-users/dashboard`,
-      {
-        headers: {
-          Cookie: request.headers.get("Cookie") || "",
-        },
-      },
+    const dashboardUrl = getInternalApiUrlFromRequest(
+      "/api/legacy-users/dashboard",
+      request,
     );
+    const dashboardResponse = await fetch(dashboardUrl, {
+      headers: {
+        Cookie: request.headers.get("Cookie") || "",
+        ...getProxyHeaders(request),
+      },
+    });
 
     logger.log("📡 Dashboard API status:", dashboardResponse.status);
 
