@@ -1063,7 +1063,7 @@ jobs:
           echo "⏳ Waiting for PROD to start..."
           HEALTHY=0
           for i in {1..12}; do
-            if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
+            if docker exec nestjs-remix-monorepo-prod wget -qO- http://localhost:3000/health > /dev/null 2>&1; then
               echo "✅ PROD is healthy after $((i*10))s"
               HEALTHY=1
               break
