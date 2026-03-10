@@ -57,6 +57,7 @@ import { RunManagerService } from '../modules/agentic-engine/services/run-manage
 import { PlannerService } from '../modules/agentic-engine/services/planner.service';
 import { SolverService } from '../modules/agentic-engine/services/solver.service';
 import { CriticService } from '../modules/agentic-engine/services/critic.service';
+import { ClaudeCliService } from '../modules/agentic-engine/services/claude-cli.service';
 import { FeatureFlagsModule } from '../config/feature-flags.module';
 
 @Module({
@@ -101,7 +102,7 @@ import { FeatureFlagsModule } from '../config/feature-flags.module';
 
     // Modules for ContentRefreshProcessor + AgenticProcessor dependencies
     RagProxyModule,
-    AiContentModule, // Always loaded: used by AgenticProcessor (Phase 2) + ContentRefreshProcessor
+    AiContentModule, // Used by ContentRefreshProcessor (enrichers need AI providers)
     FeatureFlagsModule, // Used by RunManagerService (agentic budget guard + flags)
   ],
 
@@ -138,9 +139,10 @@ import { FeatureFlagsModule } from '../config/feature-flags.module';
     VideoGatesService,
     RenderAdapterService,
 
-    // Agentic engine processor + dependencies (Phase 2: LLM-powered plan/solve/critique)
+    // Agentic engine processor + dependencies (Phase 2: Claude CLI plan/solve/critique)
     // NOTE: Stateless services, safe duplicate (same pattern as enricher services above)
     AgenticProcessor,
+    ClaudeCliService,
     AgenticDataService,
     EvidenceLedgerService,
     RunManagerService,
