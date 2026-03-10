@@ -9,7 +9,7 @@ import { z } from 'zod';
  */
 
 const SeoFragmentRowSchema = z.object({
-  sis_id: z.number(),
+  sis_id: z.union([z.string(), z.number()]),
   sis_content: z.string(),
 });
 
@@ -73,16 +73,19 @@ export const GammeRpcAggregatedDataSchema = z
     page_info: PageInfoSchema,
     seo: z.record(z.unknown()).nullable().optional(),
     conseils: z.array(ConseilRowSchema).optional(),
-    informations: z.array(z.record(z.unknown())).optional(),
-    equipementiers: z.array(EquipementierRowSchema).optional(),
+    informations: z.array(z.record(z.unknown())).nullable().optional(),
+    equipementiers: z.array(EquipementierRowSchema).nullable().optional(),
     blog: z.record(z.unknown()).nullable().optional(),
     catalogue_famille: z.array(z.record(z.unknown())).optional(),
     famille_info: z.record(z.unknown()).nullable().optional(),
-    motorisations_enriched: z.array(MotorizationRowSchema).optional(),
-    seo_fragments_1: z.array(SeoFragmentRowSchema).optional(),
-    seo_fragments_2: z.array(SeoFragmentRowSchema).optional(),
+    motorisations_enriched: z
+      .array(MotorizationRowSchema)
+      .nullable()
+      .optional(),
+    seo_fragments_1: z.array(SeoFragmentRowSchema).nullable().optional(),
+    seo_fragments_2: z.array(SeoFragmentRowSchema).nullable().optional(),
     cgc_level_stats: CgcLevelStatsSchema.optional(),
-    motorisations_blog: z.array(MotorizationRowSchema).optional(),
+    motorisations_blog: z.array(MotorizationRowSchema).nullable().optional(),
     seo_validation: SeoValidationSchema.optional(),
   })
   .passthrough();

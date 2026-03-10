@@ -24,6 +24,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
 import { CartVehicleBanner } from "~/components/cart/CartVehicleBanner";
 import {
   CheckoutLivraisonSection,
@@ -130,7 +131,16 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     // Payment methods (merged from checkout-payment)
     const paymentMethods = await getAvailablePaymentMethods();
 
-    return json({ cart, user, userProfile, paymentMethods, vehicle });
+    const googleClientId = process.env.VITE_GOOGLE_CLIENT_ID || "";
+
+    return json({
+      cart,
+      user,
+      userProfile,
+      paymentMethods,
+      vehicle,
+      googleClientId,
+    });
   } catch (error) {
     logger.error("[Checkout] Erreur chargement:", error);
     return json({
@@ -404,18 +414,20 @@ function clearCheckoutState() {
 
 export default function CheckoutPage() {
   const data = useLoaderData<typeof loader>();
-  const { cart, user, userProfile, paymentMethods, vehicle } = data as {
-    cart: { items: CartItemType[]; summary: CartSummaryType } | null;
-    user?: {
-      id: string;
-      email: string;
-      firstName?: string;
-      lastName?: string;
+  const { cart, user, userProfile, paymentMethods, vehicle, googleClientId } =
+    data as {
+      cart: { items: CartItemType[]; summary: CartSummaryType } | null;
+      user?: {
+        id: string;
+        email: string;
+        firstName?: string;
+        lastName?: string;
+      };
+      userProfile?: CheckoutUserProfile;
+      paymentMethods?: PaymentMethod[];
+      vehicle?: VehicleCookie | null;
+      googleClientId?: string;
     };
-    userProfile?: CheckoutUserProfile;
-    paymentMethods?: PaymentMethod[];
-    vehicle?: VehicleCookie | null;
-  };
   const loaderError = "error" in data ? (data as any).error : undefined;
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
@@ -951,6 +963,30 @@ export default function CheckoutPage() {
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-6 pb-6">
+                  {/* Google Sign-In pour les guests */}
+                  {!user && googleClientId && (
+                    <div className="mb-6">
+                      <p className="text-sm text-slate-600 mb-3 text-center">
+                        Gagnez du temps en vous connectant
+                      </p>
+                      <GoogleSignInButton
+                        clientId={googleClientId}
+                        text="continue_with"
+                        redirectTo="/checkout"
+                        onError={(err) => toast.error(err)}
+                      />
+                      <div className="relative my-5">
+                        <div className="absolute inset-0 flex items-center">
+                          <div className="w-full border-t border-slate-200" />
+                        </div>
+                        <div className="relative flex justify-center text-xs">
+                          <span className="bg-white px-3 text-slate-400">
+                            ou continuer en tant qu&apos;invité
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <CheckoutLivraisonSection
                     user={user || null}
                     userProfile={userProfile || null}

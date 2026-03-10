@@ -185,6 +185,30 @@ INSERT INTO __diag_symptom_cause_link (symptom_id, cause_id, relative_score, evi
    ARRAY['Bruit généralement moins prononcé'])
 ON CONFLICT (symptom_id, cause_id) DO NOTHING;
 
+-- brake_noise_grinding : 65% plaquettes (usure avancee), 20% disques, 10% etrier, 5% glissieres
+INSERT INTO __diag_symptom_cause_link (symptom_id, cause_id, relative_score, evidence_for, evidence_against) VALUES
+  ((SELECT id FROM __diag_symptom WHERE slug = 'brake_noise_grinding'),
+   (SELECT id FROM __diag_cause WHERE slug = 'brake_pads_worn'),
+   65,
+   ARRAY['Grondement = usure avancée de la garniture', 'Bruit sourd quand plaquettes quasi au métal'],
+   ARRAY['Épaisseur non mesurée — pas de confirmation directe']),
+  ((SELECT id FROM __diag_symptom WHERE slug = 'brake_noise_grinding'),
+   (SELECT id FROM __diag_cause WHERE slug = 'brake_disc_warped'),
+   20,
+   ARRAY['Grondement peut indiquer disque usé irrégulièrement', 'Vibration ressentie dans la pédale'],
+   ARRAY['Vibration plus caractéristique du voilage que grondement']),
+  ((SELECT id FROM __diag_symptom WHERE slug = 'brake_noise_grinding'),
+   (SELECT id FROM __diag_cause WHERE slug = 'brake_caliper_seized'),
+   10,
+   ARRAY['Étrier grippé provoque frottement permanent = grondement'],
+   ARRAY['Pas de tirage latéral signalé']),
+  ((SELECT id FROM __diag_symptom WHERE slug = 'brake_noise_grinding'),
+   (SELECT id FROM __diag_cause WHERE slug = 'brake_slide_pins_dry'),
+   5,
+   ARRAY['Glissières sèches = plaquettes frottent anormalement'],
+   ARRAY['Effet généralement moins prononcé'])
+ON CONFLICT (symptom_id, cause_id) DO NOTHING;
+
 -- brake_vibration_pedal : 60% disques, 25% plaquettes, 15% etrier
 INSERT INTO __diag_symptom_cause_link (symptom_id, cause_id, relative_score, evidence_for, evidence_against) VALUES
   ((SELECT id FROM __diag_symptom WHERE slug = 'brake_vibration_pedal'),

@@ -1,4 +1,3 @@
-import { useSearchParams } from "@remix-run/react";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { ErrorGeneric } from "../components/errors/ErrorGeneric";
 
@@ -14,15 +13,6 @@ export const handle = {
 };
 
 export default function GonePage() {
-  const [searchParams] = useSearchParams();
-
-  const _url = searchParams.get("url") || undefined;
-  const _isOldLink = searchParams.get("isOldLink") === "true";
-  const _redirectTo = searchParams.get("redirectTo") || undefined;
-  const _userAgent = searchParams.get("userAgent") || undefined;
-  const _referrer = searchParams.get("referrer") || undefined;
-  const _method = searchParams.get("method") || undefined;
-
   return (
     <ErrorGeneric
       status={410}
