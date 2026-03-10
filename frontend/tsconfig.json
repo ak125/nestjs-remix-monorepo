@@ -1,7 +1,7 @@
 {
 	"extends": "@fafa/typescript-config/base.json",
 	"include": ["env.d.ts", "vite-env.d.ts", "**/*.ts", "**/*.tsx", "../playwright.config.ts", "tailwind.config.cjs"],
-	"exclude": ["index.d.cts"],
+	"exclude": ["index.d.cts", "tests/qa-audit"],
 	"compilerOptions": {
 		"module": "ESNext",
 		"skipLibCheck": true,
