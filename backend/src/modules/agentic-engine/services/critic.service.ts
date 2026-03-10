@@ -3,12 +3,12 @@
  *
  * Evaluates branch outputs via LLM, scores them, and decides
  * whether a re-plan is needed (critic loop).
- * Uses AiContentService with agentic_critique template.
+ * Uses Claude CLI for LLM calls (no external API key needed).
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { AgenticDataService } from './agentic-data.service';
 import { EvidenceLedgerService } from './evidence-ledger.service';
-import { AiContentService } from '../../ai-content/ai-content.service';
+import { ClaudeCliService } from './claude-cli.service';
 import type { AgenticBranch, AgenticRun } from '../types/run-state.schema';
 import { getErrorMessage } from '../../../common/utils/error.utils';
 
@@ -63,7 +63,7 @@ export class CriticService {
   constructor(
     private readonly dataService: AgenticDataService,
     private readonly evidenceLedger: EvidenceLedgerService,
-    private readonly aiContent: AiContentService,
+    private readonly claudeCli: ClaudeCliService,
   ) {}
 
   /**
@@ -97,21 +97,51 @@ export class CriticService {
     const ragContext = await this.fetchRagContext(run);
 
     try {
-      const response = await this.aiContent.generateContent({
-        type: 'agentic_critique',
-        prompt: `Evaluate ${completedBranches.length} branches`,
-        context: {
-          goal: run.goal,
-          branches: completedBranches.map((b) => ({
-            id: b.id,
-            strategy_label: b.strategy_label,
-            output: b.output,
-          })),
-          ragContext,
-        },
-        temperature: 0.3, // Low temperature for consistent scoring
-        maxLength: 3000,
-        useCache: false,
+      const systemPrompt = `Tu es un critique expert pour un moteur agentique SEO automobile.
+Evalue chaque branche sur 5 axes (0-20 chacun, total 0-100):
+- pertinence (par rapport a l'objectif)
+- qualite (redaction, structure)
+- completude (couverture du sujet)
+- fiabilite_sources (citations, preuves)
+- actionabilite (utilisable en production)
+
+Reponds UNIQUEMENT en JSON valide avec cette structure:
+{
+  "evaluations": [{
+    "branch_id": "...",
+    "strategy_label": "...",
+    "scores": { "pertinence": 0, "qualite": 0, "completude": 0, "fiabilite_sources": 0, "actionabilite": 0 },
+    "total_score": 0,
+    "feedback": "...",
+    "strengths": ["..."],
+    "weaknesses": ["..."]
+  }],
+  "recommendation": {
+    "needs_replan": false,
+    "replan_reason": null,
+    "best_branch_id": "..."
+  }
+}`;
+
+      const branchSummaries = completedBranches.map((b) => ({
+        id: b.id,
+        strategy_label: b.strategy_label,
+        output: b.output,
+      }));
+
+      const userPrompt = [
+        `Objectif: ${run.goal}`,
+        `Branches a evaluer:\n${JSON.stringify(branchSummaries, null, 2)}`,
+        ragContext
+          ? `Contexte RAG (reference):\n${ragContext.substring(0, 2000)}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
+
+      const response = await this.claudeCli.execute(userPrompt, {
+        systemPrompt,
+        timeoutMs: 90_000,
       });
 
       critiqueResult = this.parseCritiqueResponse(
@@ -128,10 +158,10 @@ export class CriticService {
           action: 'critique_completed',
           raw_response: response.content.substring(0, 5000),
           evaluations_count: critiqueResult.evaluations.length,
-          provider: response.metadata.provider,
+          provider: 'claude-cli',
           tokens: tokensUsed,
         },
-        source: `critic:${response.metadata.provider}`,
+        source: 'critic:claude-cli',
         truthLevel: 'L3',
       });
     } catch (error) {

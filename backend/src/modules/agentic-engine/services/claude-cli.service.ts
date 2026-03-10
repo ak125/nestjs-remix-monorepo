@@ -1,21 +1,21 @@
 /**
  * ClaudeCliService — Wrapper for Claude Code CLI
  *
- * Executes prompts via the `claude` binary (Claude Code CLI)
- * instead of external API calls. No API key needed.
- *
- * Usage: claude -p "prompt" --system-prompt "..." --output-format text
+ * Uses a shell wrapper script (`scripts/claude-cli-wrapper.sh`) that properly
+ * unsets CLAUDECODE env vars before invoking the CLI binary.
+ * This avoids the "nested session" blocking issue.
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
-import { getErrorMessage } from '../../../common/utils/error.utils';
 
 const execFileAsync = promisify(execFile);
 
-/** Path to the Claude CLI binary (VSCode extension) */
-const CLAUDE_CLI_PATH =
-  '/home/deploy/.vscode-server/.vscode-server/extensions/anthropic.claude-code-2.1.71-linux-x64/resources/native-binary/claude';
+/** Path to the wrapper script (absolute — process.cwd() = backend/) */
+const WRAPPER_PATH = '/opt/automecanik/app/scripts/claude-cli-wrapper.sh';
+
+/** Max output buffer: 2MB */
+const MAX_BUFFER = 2 * 1024 * 1024;
 
 export interface ClaudeCliResponse {
   content: string;
@@ -33,11 +33,8 @@ export class ClaudeCliService {
   /** Default timeout: 120 seconds */
   private static readonly TIMEOUT_MS = 120_000;
 
-  /** Max output buffer: 2MB */
-  private static readonly MAX_BUFFER = 2 * 1024 * 1024;
-
   /**
-   * Execute a prompt via Claude CLI and return the response.
+   * Execute a prompt via Claude CLI wrapper.
    */
   async execute(
     prompt: string,
@@ -53,25 +50,20 @@ export class ClaudeCliService {
       `Executing Claude CLI (${prompt.length} chars, timeout: ${timeout}ms)`,
     );
 
-    // Build args array
-    const args = ['-p', prompt, '--output-format', 'text'];
+    // Wrapper args: <prompt> [system-prompt]
+    const args = [prompt];
     if (options?.systemPrompt) {
-      args.push('--system-prompt', options.systemPrompt);
+      args.push(options.systemPrompt);
     }
 
     try {
-      // Build clean env: only unset CLAUDECODE (blocks nesting), keep auth vars
-      const cleanEnv: Record<string, string | undefined> = {
-        ...process.env,
-        CI: 'true',
-        CLAUDECODE: undefined,
-      };
-
-      const { stdout, stderr } = await execFileAsync(CLAUDE_CLI_PATH, args, {
+      const { stdout, stderr } = await execFileAsync(WRAPPER_PATH, args, {
         timeout,
-        maxBuffer: ClaudeCliService.MAX_BUFFER,
-        env: cleanEnv as NodeJS.ProcessEnv,
+        maxBuffer: MAX_BUFFER,
       });
+
+      // Use stdout first, fallback to stderr
+      const content = (stdout || stderr || '').trim();
 
       if (stderr && stderr.trim()) {
         this.logger.warn(
@@ -79,20 +71,18 @@ export class ClaudeCliService {
         );
       }
 
-      const content = stdout.trim();
       const durationMs = Math.round(performance.now() - startTime);
 
       if (!content) {
-        throw new Error('Claude CLI returned empty response');
+        throw new Error(`Claude CLI returned empty response`);
       }
 
-      // Estimate tokens (~4 chars per token)
       const totalChars =
         prompt.length + (options?.systemPrompt?.length ?? 0) + content.length;
       const estimatedTokens = Math.round(totalChars / 4);
 
       this.logger.log(
-        `Claude CLI response: ${content.length} chars in ${durationMs}ms (~${estimatedTokens} tokens)`,
+        `Claude CLI: ${content.length} chars in ${durationMs}ms (~${estimatedTokens} tokens)`,
       );
 
       return {
@@ -105,9 +95,7 @@ export class ClaudeCliService {
       };
     } catch (error: unknown) {
       const durationMs = Math.round(performance.now() - startTime);
-      const msg = getErrorMessage(error);
 
-      // Check for timeout
       if (
         typeof error === 'object' &&
         error !== null &&
@@ -117,6 +105,7 @@ export class ClaudeCliService {
         throw new Error(`Claude CLI timeout after ${durationMs}ms`);
       }
 
+      const msg = error instanceof Error ? error.message : String(error);
       this.logger.error(`Claude CLI failed after ${durationMs}ms: ${msg}`);
       throw new Error(`Claude CLI error: ${msg}`);
     }
@@ -124,7 +113,6 @@ export class ClaudeCliService {
 
   /**
    * Execute and parse JSON response.
-   * Strips markdown code fences before parsing.
    */
   async executeJson<T = Record<string, unknown>>(
     prompt: string,
@@ -135,7 +123,6 @@ export class ClaudeCliService {
   ): Promise<{ data: T; metadata: ClaudeCliResponse['metadata'] }> {
     const response = await this.execute(prompt, options);
 
-    // Strip markdown code fences
     const cleaned = response.content
       .replace(/^```json?\s*\n?/i, '')
       .replace(/\n?```\s*$/i, '')
@@ -145,27 +132,23 @@ export class ClaudeCliService {
       const data = JSON.parse(cleaned) as T;
       return { data, metadata: response.metadata };
     } catch {
-      this.logger.warn(
-        `Failed to parse JSON from Claude CLI response (${cleaned.length} chars)`,
-      );
       throw new Error(
-        `Claude CLI returned invalid JSON: ${cleaned.substring(0, 200)}...`,
+        `Claude CLI invalid JSON: ${cleaned.substring(0, 200)}...`,
       );
     }
   }
 
   /**
-   * Health check: verify Claude CLI is accessible.
+   * Health check.
    */
   async checkHealth(): Promise<boolean> {
     try {
-      const { stdout } = await execFileAsync(CLAUDE_CLI_PATH, ['--version'], {
-        timeout: 5_000,
+      const { stdout } = await execFileAsync(WRAPPER_PATH, ['--version'], {
+        timeout: 10_000,
       });
       this.logger.log(`Claude CLI health OK: ${stdout.trim()}`);
       return true;
     } catch {
-      this.logger.warn('Claude CLI health check failed');
       return false;
     }
   }

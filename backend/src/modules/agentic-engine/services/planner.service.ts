@@ -2,12 +2,12 @@
  * PlannerService — Phase PLANNING
  *
  * Decomposes a goal into N parallel strategies (branches) via LLM.
- * Uses AiContentService with agentic_plan template.
+ * Uses Claude CLI for LLM calls (no external API key needed).
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { AgenticDataService } from './agentic-data.service';
 import { EvidenceLedgerService } from './evidence-ledger.service';
-import { AiContentService } from '../../ai-content/ai-content.service';
+import { ClaudeCliService } from './claude-cli.service';
 import { AGENTIC_DEFAULTS } from '../constants/agentic.constants';
 import type { AgenticRun, AgenticBranch } from '../types/run-state.schema';
 import { getErrorMessage } from '../../../common/utils/error.utils';
@@ -31,7 +31,7 @@ export class PlannerService {
   constructor(
     private readonly dataService: AgenticDataService,
     private readonly evidenceLedger: EvidenceLedgerService,
-    private readonly aiContent: AiContentService,
+    private readonly claudeCli: ClaudeCliService,
   ) {}
 
   /**
@@ -58,19 +58,28 @@ export class PlannerService {
     let planResult: PlanResult;
 
     try {
-      const response = await this.aiContent.generateContent({
-        type: 'agentic_plan',
-        prompt: `Decompose goal into ${branchCount} strategies`,
-        context: {
-          goal: run.goal,
-          goalType: run.goal_type,
-          criticFeedback: criticFeedback ?? null,
-          ragContext,
-          maxBranches: branchCount,
-        },
-        temperature: 0.7,
-        maxLength: 2000,
-        useCache: false,
+      const systemPrompt = `Tu es un planificateur strategique pour un moteur agentique SEO automobile.
+Decompose l'objectif en ${branchCount} strategies paralleles.
+Reponds UNIQUEMENT en JSON valide avec cette structure:
+{
+  "strategies": [{ "label": "snake_case_name", "description": "...", "steps": ["..."], "expected_outcome": "..." }],
+  "reasoning": "..."
+}`;
+
+      const userPrompt = [
+        `Objectif: ${run.goal}`,
+        `Type: ${run.goal_type}`,
+        criticFeedback
+          ? `Feedback critique precedent: ${criticFeedback}`
+          : null,
+        ragContext ? `Contexte RAG:\n${ragContext.substring(0, 3000)}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n\n');
+
+      const response = await this.claudeCli.execute(userPrompt, {
+        systemPrompt,
+        timeoutMs: 90_000,
       });
 
       planResult = this.parsePlanResponse(response.content);

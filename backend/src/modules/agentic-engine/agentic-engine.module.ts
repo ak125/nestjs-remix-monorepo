@@ -11,7 +11,7 @@ import { Module, Logger } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { DatabaseModule } from '../../database/database.module';
 import { FeatureFlagsModule } from '../../config/feature-flags.module';
-import { AiContentModule } from '../ai-content/ai-content.module';
+import { ClaudeCliService } from './services/claude-cli.service';
 import { AgenticEngineController } from './agentic-engine.controller';
 import { AgenticDataService } from './services/agentic-data.service';
 import { EvidenceLedgerService } from './services/evidence-ledger.service';
@@ -27,11 +27,11 @@ import { AGENTIC_QUEUE_NAME } from './constants/agentic.constants';
   imports: [
     DatabaseModule,
     FeatureFlagsModule,
-    AiContentModule,
     BullModule.registerQueue({ name: AGENTIC_QUEUE_NAME }),
   ],
   controllers: [AgenticEngineController],
   providers: [
+    ClaudeCliService,
     AgenticDataService,
     EvidenceLedgerService,
     RunManagerService,
