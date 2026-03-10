@@ -26,6 +26,7 @@ import React, { useState, useMemo } from "react";
 import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
@@ -132,12 +133,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const search = url.searchParams.get("search")?.trim() || "";
     const category = url.searchParams.get("category")?.trim() || "";
 
-    // API call to localhost for internal monorepo communication
-    const apiUrl = `http://127.0.0.1:3000/api/blog/advice?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`;
+    const apiUrl = getInternalApiUrlFromRequest(
+      `/api/blog/advice?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`,
+      request,
+    );
 
     const [mainResponse, statsResponse] = await Promise.allSettled([
       fetch(apiUrl),
-      fetch("http://127.0.0.1:3000/api/blog/advice/stats"),
+      fetch(getInternalApiUrlFromRequest("/api/blog/advice/stats", request)),
     ]);
 
     if (mainResponse.status === "rejected" || !mainResponse.value.ok) {

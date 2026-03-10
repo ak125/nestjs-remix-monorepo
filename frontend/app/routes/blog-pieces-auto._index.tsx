@@ -10,7 +10,6 @@
  */
 
 import {
-  defer,
   json,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -63,6 +62,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
@@ -208,15 +208,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-    const response = await fetch("http://127.0.0.1:3000/api/blog/homepage", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "User-Agent": "Remix-Blog-Client/1.0",
+    const response = await fetch(
+      getInternalApiUrlFromRequest("/api/blog/homepage", request),
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "User-Agent": "Remix-Blog-Client/1.0",
+        },
+        signal: controller.signal,
       },
-      signal: controller.signal,
-    });
+    );
 
     clearTimeout(timeoutId);
 
@@ -247,20 +250,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
       logger.warn(`API returned ${response.status}: ${response.statusText}`);
     }
   } catch (error) {
-    logger.warn(
-      "Blog API error:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+    logger.warn({ err: error, url: request.url }, "Blog API error");
   }
 
-  return defer(
+  return json(
     {
       blogData,
       searchParams,
     },
     {
       headers: {
-        "Cache-Control": "public, max-age=300, s-maxage=600",
+        "Cache-Control":
+          "public, max-age=300, s-maxage=600, stale-while-revalidate=86400",
       },
     },
   );
@@ -311,9 +312,12 @@ export default function BlogIndex() {
   useEffect(() => {
     if (!blogData.stats) return;
 
-    // L'API retourne stats avec overview, mais le type ne le reflète pas
-    const stats = blogData.stats as any;
-    const overview = stats.overview || stats;
+    const {
+      totalArticles = 0,
+      totalAdvice = 0,
+      totalGuides = 0,
+      totalViews = 0,
+    } = blogData.stats;
 
     const duration = 2000; // 2 secondes
     const steps = 60;
@@ -325,19 +329,19 @@ export default function BlogIndex() {
       const progress = currentStep / steps;
 
       setAnimatedStats({
-        articles: Math.floor((overview.totalArticles || 0) * progress),
-        advice: Math.floor((overview.totalAdvice || 0) * progress),
-        guides: Math.floor((overview.totalGuides || 0) * progress),
-        views: Math.floor((overview.totalViews || 0) * progress),
+        articles: Math.floor(totalArticles * progress),
+        advice: Math.floor(totalAdvice * progress),
+        guides: Math.floor(totalGuides * progress),
+        views: Math.floor(totalViews * progress),
       });
 
       if (currentStep >= steps) {
         clearInterval(timer);
         setAnimatedStats({
-          articles: overview.totalArticles || 0,
-          advice: overview.totalAdvice || 0,
-          guides: overview.totalGuides || 0,
-          views: overview.totalViews || 0,
+          articles: totalArticles,
+          advice: totalAdvice,
+          guides: totalGuides,
+          views: totalViews,
         });
       }
     }, interval);
@@ -347,16 +351,23 @@ export default function BlogIndex() {
 
   // Fonctions utilitaires optimisées
   const formatReadingTime = (minutes: number | undefined) => {
-    if (!minutes || minutes < 1) return "< 1 min";
-    if (minutes > 60) return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
-    return `${minutes} min de lecture`;
+    const m = Math.max(1, Math.round(minutes ?? 1));
+    if (m >= 60) return `${Math.floor(m / 60)}h ${m % 60}m`;
+    return `${m} min de lecture`;
   };
 
   const formatViews = (views: number | undefined) => {
-    if (!views) return "0 vues";
-    if (views > 1000000) return `${(views / 1000000).toFixed(1)}M vues`;
-    if (views > 1000) return `${(views / 1000).toFixed(1)}k vues`;
-    return `${views} vues`;
+    if (!views) return "0";
+    if (views > 1000000) return `${(views / 1000000).toFixed(1)}M`;
+    if (views > 1000) return `${(views / 1000).toFixed(1)}k`;
+    return String(views);
+  };
+
+  const formatDate = (article: { publishedAt: string; updatedAt?: string }) => {
+    if (article.updatedAt) {
+      return `Mis à jour ${new Date(article.updatedAt).toLocaleDateString("fr-FR")}`;
+    }
+    return new Date(article.publishedAt).toLocaleDateString("fr-FR");
   };
 
   const getTypeLabel = (type: string) => {
@@ -563,13 +574,14 @@ export default function BlogIndex() {
                           </div>
                           <div className="flex items-center">
                             <Eye className="w-4 h-4 mr-1" />
-                            {formatViews(article.viewsCount)}
+                            {formatViews(article.viewsCount)} vues
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <Link
+                          prefetch="intent"
                           to={
                             article.pg_alias
                               ? `/blog-pieces-auto/conseils/${article.pg_alias}`
@@ -911,7 +923,7 @@ export default function BlogIndex() {
                           </Badge>
                           <div className="flex items-center text-sm text-gray-500">
                             <Eye className="w-4 h-4 mr-1" />
-                            {formatViews(article.viewsCount)}
+                            {formatViews(article.viewsCount)} vues
                           </div>
                         </div>
                         <CardTitle className="text-xl group-hover:text-blue-600 transition-colors line-clamp-2">
@@ -929,17 +941,14 @@ export default function BlogIndex() {
                             <Clock className="w-4 h-4 mr-1" />
                             {formatReadingTime(article.readingTime)}
                           </div>
-                          {article.publishedAt && (
-                            <div className="flex items-center">
-                              <Calendar className="w-4 h-4 mr-1" />
-                              {new Date(article.publishedAt).toLocaleDateString(
-                                "fr-FR",
-                              )}
-                            </div>
-                          )}
+                          <div className="flex items-center">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            {formatDate(article)}
+                          </div>
                         </div>
 
                         <Link
+                          prefetch="intent"
                           to={
                             article.pg_alias
                               ? `/blog-pieces-auto/conseils/${article.pg_alias}`
@@ -1008,6 +1017,7 @@ export default function BlogIndex() {
                               {formatReadingTime(article.readingTime)}
                             </span>
                             <Link
+                              prefetch="intent"
                               to={
                                 article.pg_alias
                                   ? `/blog-pieces-auto/conseils/${article.pg_alias}`
@@ -1111,7 +1121,7 @@ export default function BlogIndex() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {blogData.popular.slice(0, 3).map((article) => (
+                {blogData.popular.slice(3, 6).map((article) => (
                   <Link
                     key={article.id}
                     to={
@@ -1132,7 +1142,7 @@ export default function BlogIndex() {
                           </Badge>
                           <Badge className="bg-orange-500/90 text-white">
                             <Eye className="w-3 h-3 mr-1" />
-                            {formatViews(article.viewsCount)}
+                            {formatViews(article.viewsCount)} vues
                           </Badge>
                         </div>
                         <h3 className="font-bold text-white mb-3 line-clamp-2 group-hover:text-blue-200 transition-colors text-lg">
@@ -1144,15 +1154,7 @@ export default function BlogIndex() {
                         <div className="flex items-center gap-4 text-xs text-blue-300">
                           <div className="flex items-center">
                             <Calendar className="w-3 h-3 mr-1" />
-                            {article.publishedAt
-                              ? new Date(
-                                  article.publishedAt,
-                                ).toLocaleDateString("fr-FR", {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                })
-                              : "N/A"}
+                            {formatDate(article)}
                           </div>
                         </div>
                       </CardContent>

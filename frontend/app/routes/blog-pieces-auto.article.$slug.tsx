@@ -36,6 +36,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
 
@@ -180,7 +181,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 };
 
 // Loader
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function loader({ params, request }: LoaderFunctionArgs) {
   const { slug } = params;
 
   if (!slug) {
@@ -232,18 +233,24 @@ export async function loader({ params }: LoaderFunctionArgs) {
     // Lancer les 2 fetches en parallele (popular ne depend pas de l'article)
     const [articleResponse, similarResponse] = await Promise.all([
       fetch(
-        `http://127.0.0.1:3000/api/blog/article/${encodeURIComponent(slug)}`,
+        getInternalApiUrlFromRequest(
+          `/api/blog/article/${encodeURIComponent(slug)}`,
+          request,
+        ),
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
           signal: controller.signal,
         },
       ),
-      fetch(`http://127.0.0.1:3000/api/blog/popular?limit=4`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
-      }).catch(() => null),
+      fetch(
+        getInternalApiUrlFromRequest("/api/blog/popular?limit=4", request),
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          signal: controller.signal,
+        },
+      ).catch(() => null),
     ]);
 
     clearTimeout(timeoutId);

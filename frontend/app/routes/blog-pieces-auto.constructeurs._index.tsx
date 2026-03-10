@@ -27,6 +27,7 @@ import { BlogNavigation } from "~/components/blog/BlogNavigation";
 import { Error404 } from "~/components/errors/Error404";
 import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
@@ -39,7 +40,7 @@ export const handle = {
   }),
 };
 
-const API_BASE_URL = process.env.API_BASE_URL || "http://127.0.0.1:3000";
+// API_BASE_URL replaced by getInternalApiUrlFromRequest() in loader
 
 // ⚠️ NOTE: Backend API tourne sur port 3000, Frontend sur port 5173
 
@@ -340,7 +341,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   // Essayer de récupérer depuis l'API brands (catalogue technique)
   try {
-    const apiUrl = new URL(`${API_BASE_URL}/api/brands`);
+    const apiUrl = new URL(
+      getInternalApiUrlFromRequest("/api/brands", request),
+    );
     if (search) apiUrl.searchParams.set("search", search);
     if (letter) apiUrl.searchParams.set("letter", letter);
     // Pagination gérée côté client pour l'instant
