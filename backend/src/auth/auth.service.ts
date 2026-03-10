@@ -34,6 +34,7 @@ export interface AuthUser {
   isActive: boolean;
   level: number;
   isAdmin: boolean;
+  authSource?: 'admin' | 'customer';
   error?: string;
 }
 
@@ -79,45 +80,16 @@ export class AuthService {
     try {
       this.logger.debug(`Authenticating user: ${email}`);
 
-      let passwordHash: string;
-      let authUser: AuthUser;
-      let userId: string;
-      let isAdmin = false;
+      // Lookup unifié via RPC : admin prioritaire, puis customer
+      const resolved = await this.userDataService.resolveUserByEmail(email);
 
-      // 1. Essayer d'abord dans la table des customers
-      const customerResult =
-        await this.userDataService.findByEmailForAuth(email);
-
-      if (customerResult) {
-        passwordHash = customerResult.passwordHash;
-        userId = customerResult.user.id;
-        authUser = this.mapUserToAuthUser(customerResult.user);
-      } else {
-        // 2. Si non trouvé, essayer dans la table des admins
-        const adminResult =
-          await this.userDataService.findAdminByEmailForAuth(email);
-        if (!adminResult) {
-          this.logger.warn(`User not found in both tables: ${email}`);
-          return null;
-        }
-
-        passwordHash = adminResult.passwordHash;
-        userId = adminResult.id;
-        isAdmin = true;
-        authUser = {
-          id: adminResult.id,
-          email: adminResult.email,
-          firstName: adminResult.firstName,
-          lastName: adminResult.lastName,
-          isPro: true, // Les admins sont considérés comme des pros
-          isActive: adminResult.isActive,
-          level: adminResult.level,
-          isAdmin: adminResult.level >= 7,
-        };
-        this.logger.debug(
-          `Admin user found: ${email} with level ${adminResult.level}`,
-        );
+      if (!resolved) {
+        this.logger.warn(`User not found in any table: ${email}`);
+        return null;
       }
+
+      const { userId, passwordHash, authSource } = resolved;
+      const isAdmin = authSource === 'admin';
 
       // Vérifier le mot de passe
       const isPasswordValid = await this.validatePassword(
@@ -129,18 +101,16 @@ export class AuthService {
         return null;
       }
 
-      // ✅ UPGRADE AUTOMATIQUE: Migrer les mots de passe legacy vers bcrypt
+      // UPGRADE AUTOMATIQUE: Migrer les mots de passe legacy vers bcrypt
       if (this.passwordCrypto.needsRehash(passwordHash)) {
-        this.logger.log(`🔄 Upgrading password for user: ${email}`);
+        this.logger.log(`Upgrading password for user: ${email}`);
         try {
           await this.passwordCrypto.upgradeHashIfNeeded(
             userId,
             password,
             passwordHash,
             async (uid, newHash) => {
-              // Callback pour mettre à jour le hash dans la base
               if (isAdmin) {
-                // Update admin dans ___config_admin (utiliser column cnfa_pswd)
                 const url = `${process.env.SUPABASE_URL}/rest/v1/___config_admin?cnfa_id=eq.${uid}`;
                 await fetch(url, {
                   method: 'PATCH',
@@ -153,20 +123,30 @@ export class AuthService {
                   body: JSON.stringify({ cnfa_pswd: newHash }),
                 });
               } else {
-                // Update customer via canonical service
                 await this.userDataService.setPasswordHash(uid, newHash);
               }
             },
           );
-          this.logger.log(`✅ Password upgraded successfully for: ${email}`);
+          this.logger.log(`Password upgraded successfully for: ${email}`);
         } catch (upgradeError) {
           this.logger.error(
             `Failed to upgrade password for ${email}:`,
             upgradeError,
           );
-          // Ne pas bloquer la connexion si l'upgrade échoue
         }
       }
+
+      const authUser: AuthUser = {
+        id: resolved.userId,
+        email: resolved.email,
+        firstName: resolved.firstName,
+        lastName: resolved.lastName,
+        level: resolved.level,
+        isActive: resolved.isActive,
+        isPro: isAdmin || resolved.level >= 5,
+        isAdmin: isAdmin && resolved.level >= 7,
+        authSource,
+      };
 
       // Vérifier que l'utilisateur est actif
       if (!authUser.isActive) {
@@ -175,7 +155,7 @@ export class AuthService {
       }
 
       this.logger.log(
-        `Authentication successful for ${email} (admin: ${isAdmin})`,
+        `Authentication successful for ${email} (source: ${authSource}, admin: ${authUser.isAdmin})`,
       );
       return authUser;
     } catch (error) {
@@ -453,8 +433,28 @@ export class AuthService {
       }
 
       if (params.email) {
-        const user = await this.userDataService.findByEmail(params.email);
-        return user ? this.mapUserToAuthUser(user) : null;
+        // Check cross-tables (admin + customer) via RPC
+        const exists = await this.userDataService.emailExistsAnywhere(
+          params.email,
+        );
+        if (!exists) return null;
+
+        const resolved = await this.userDataService.resolveUserByEmail(
+          params.email,
+        );
+        if (!resolved) return null;
+
+        return {
+          id: resolved.userId,
+          email: resolved.email,
+          firstName: resolved.firstName,
+          lastName: resolved.lastName,
+          level: resolved.level,
+          isActive: resolved.isActive,
+          isPro: resolved.authSource === 'admin' || resolved.level >= 5,
+          isAdmin: resolved.authSource === 'admin' && resolved.level >= 7,
+          authSource: resolved.authSource,
+        };
       }
 
       return null;

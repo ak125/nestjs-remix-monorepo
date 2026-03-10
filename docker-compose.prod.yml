@@ -49,6 +49,10 @@ services:
       # P9: Enable video pipeline submissions from Admin UI
       - VIDEO_PIPELINE_ENABLED=true
       - S3_BUCKET_NAME=${S3_BUCKET_NAME:-automecanik-renders}
+      # Google Sign-In (OAuth)
+      - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
 
     deploy:
       resources:

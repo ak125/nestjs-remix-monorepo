@@ -559,4 +559,81 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
 
     return mapping[column] || 'cst_id';
   }
+
+  // =============================================
+  // AUTH UNIFIED LOOKUP (RPC cross-tables)
+  // =============================================
+
+  /**
+   * Résoudre un utilisateur par email via RPC unifié.
+   * Cherche admin D'ABORD, puis customer. Retourne la source ('admin'|'customer').
+   */
+  async resolveUserByEmail(email: string): Promise<{
+    userId: string;
+    email: string;
+    passwordHash: string;
+    firstName: string;
+    lastName: string;
+    level: number;
+    isActive: boolean;
+    authSource: 'admin' | 'customer';
+  } | null> {
+    try {
+      const { data, error } = await this.supabase
+        .rpc('auth_resolve_user', { p_email: email })
+        .maybeSingle();
+
+      if (error || !data) {
+        this.logger.debug(`resolveUserByEmail: no result for ${email}`);
+        return null;
+      }
+
+      const row = data as {
+        user_id: string;
+        email: string;
+        password_hash: string;
+        first_name: string;
+        last_name: string;
+        level: number;
+        is_active: boolean;
+        auth_source: string;
+      };
+
+      return {
+        userId: row.user_id,
+        email: row.email,
+        passwordHash: row.password_hash,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        level: row.level,
+        isActive: row.is_active,
+        authSource: row.auth_source as 'admin' | 'customer',
+      };
+    } catch (error) {
+      this.logger.error(`resolveUserByEmail failed for ${email}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Vérifier si un email existe dans l'une des deux tables (admin ou customer).
+   * Utilisé pour bloquer les inscriptions avec des emails déjà pris.
+   */
+  async emailExistsAnywhere(email: string): Promise<boolean> {
+    try {
+      const { data, error } = await this.supabase
+        .rpc('auth_email_exists', { p_email: email })
+        .single();
+
+      if (error) {
+        this.logger.error(`emailExistsAnywhere failed for ${email}:`, error);
+        return false;
+      }
+
+      return data === true;
+    } catch (error) {
+      this.logger.error(`emailExistsAnywhere failed for ${email}:`, error);
+      return false;
+    }
+  }
 }
