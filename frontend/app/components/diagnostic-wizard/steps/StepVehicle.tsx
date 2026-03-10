@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Combobox } from "~/components/ui/combobox";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { useDiagnosticVehicleSelector } from "../hooks/use-diagnostic-vehicle-selector";
+import { type useDiagnosticVehicleSelector } from "../hooks/use-diagnostic-vehicle-selector";
 import { type WizardState, type WizardAction } from "../types";
 
 const USAGE_PROFILES = [
@@ -21,9 +21,10 @@ const USAGE_PROFILES = [
 interface Props {
   state: WizardState;
   dispatch: React.Dispatch<WizardAction>;
+  vehicleSelector: ReturnType<typeof useDiagnosticVehicleSelector>;
 }
 
-export function StepVehicle({ state, dispatch }: Props) {
+export function StepVehicle({ state, dispatch, vehicleSelector }: Props) {
   const {
     brands,
     models,
@@ -31,7 +32,7 @@ export function StepVehicle({ state, dispatch }: Props) {
     loadingModels,
     fetchModels,
     clearModels,
-  } = useDiagnosticVehicleSelector();
+  } = vehicleSelector;
 
   const handleBrandChange = (value: string, item?: { label: string }) => {
     if (!value) {

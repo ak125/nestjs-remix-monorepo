@@ -21,18 +21,24 @@ import { BookOpen, Search, ChevronRight, ShoppingCart } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
-import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { HeroReference } from "~/components/heroes";
 import Container from "~/components/layout/Container";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area";
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
-import { Input } from "../components/ui/input";
-import { ScrollArea, ScrollBar } from "../components/ui/scroll-area";
+
+// --- SEO URL helpers ---
+const SITE_ORIGIN = "https://www.automecanik.com";
+function absUrl(pathname: string): string {
+  return `${SITE_ORIGIN}${pathname}`;
+}
 
 // Types
 interface ReferenceItem {
@@ -69,7 +75,7 @@ const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
    Meta
 =========================== */
 export const meta: MetaFunction = () => {
-  const canonicalUrl = "https://www.automecanik.com/reference-auto";
+  const canonicalUrl = absUrl("/reference-auto");
 
   return [
     {
@@ -95,14 +101,14 @@ export const meta: MetaFunction = () => {
     { property: "og:url", content: canonicalUrl },
     {
       property: "og:image",
-      content: "https://www.automecanik.com/images/og/glossaire-reference.webp",
+      content: absUrl("/images/og/glossaire-reference.webp"),
     },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
     { name: "twitter:card", content: "summary_large_image" },
     {
       name: "twitter:image",
-      content: "https://www.automecanik.com/images/og/glossaire-reference.webp",
+      content: absUrl("/images/og/glossaire-reference.webp"),
     },
   ];
 };
@@ -145,11 +151,11 @@ function SchemaJsonLd({ references }: { references: ReferenceItem[] }) {
     name: "Référence Auto - Glossaire des Pièces Automobiles",
     description:
       "Glossaire complet des pièces automobiles avec définitions techniques détaillées.",
-    url: "https://automecanik.com/reference-auto",
+    url: absUrl("/reference-auto"),
     hasDefinedTerm: references.slice(0, 20).map((ref) => ({
       "@type": "DefinedTerm",
       name: ref.title.replace(/ : Définition.*$/, ""),
-      url: `https://automecanik.com/reference-auto/${ref.slug}`,
+      url: absUrl(`/reference-auto/${ref.slug}`),
     })),
   };
 
@@ -161,13 +167,13 @@ function SchemaJsonLd({ references }: { references: ReferenceItem[] }) {
         "@type": "ListItem",
         position: 1,
         name: "Accueil",
-        item: "https://automecanik.com/",
+        item: absUrl("/"),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Référence Auto",
-        item: "https://automecanik.com/reference-auto",
+        item: absUrl("/reference-auto"),
       },
     ],
   };
@@ -533,8 +539,8 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return <Error404 url={error.data?.url} />;
+    return <ErrorGeneric status={error.status} message={error.data?.message} />;
   }
 
-  return <Error404 />;
+  return <ErrorGeneric />;
 }

@@ -33,10 +33,14 @@ export const ErrorGeneric = memo(function ErrorGeneric({
         return "Non autorisé";
       case 403:
         return "Accès interdit";
+      case 404:
+        return "Page introuvable";
       case 405:
         return "Méthode non autorisée";
       case 408:
         return "Délai d'attente dépassé";
+      case 410:
+        return "Contenu supprimé";
       case 429:
         return "Trop de requêtes";
       case 500:

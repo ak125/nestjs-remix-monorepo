@@ -19,7 +19,7 @@ import {
 } from "@remix-run/react";
 import { Search, Car, AlertCircle, ArrowRight } from "lucide-react";
 import { useState } from "react";
-import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -326,8 +326,8 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return <Error404 url={error.data?.url} />;
+    return <ErrorGeneric status={error.status} message={error.data?.message} />;
   }
 
-  return <Error404 />;
+  return <ErrorGeneric />;
 }

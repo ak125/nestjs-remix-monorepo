@@ -32,13 +32,7 @@ import {
 } from "react";
 import { logger } from "~/utils/logger";
 import { getOptionalUser } from "./auth/unified.server";
-import {
-  Error401,
-  Error404,
-  Error410,
-  Error503,
-  ErrorGeneric,
-} from "./components/errors";
+import { ErrorGeneric } from "./components/errors";
 import { Navbar } from "./components/Navbar";
 import {
   NotificationContainer,
@@ -502,47 +496,13 @@ export function ErrorBoundary() {
   // Déterminer le contenu d'erreur à afficher
   const getErrorContent = () => {
     if (isRouteErrorResponse(error)) {
-      switch (error.status) {
-        case 401:
-          return (
-            <Error401
-              url={error.data?.url}
-              redirectTo={error.data?.redirectTo}
-              message={error.data?.message}
-            />
-          );
-        case 404:
-          return (
-            <Error404
-              url={error.data?.url}
-              suggestions={error.data?.suggestions}
-            />
-          );
-        case 410:
-          return (
-            <Error410
-              url={error.data?.url}
-              isOldLink={error.data?.isOldLink}
-              redirectTo={error.data?.redirectTo}
-            />
-          );
-        case 503:
-          return (
-            <Error503
-              url={error.data?.url}
-              message={error.data?.message}
-              retryAfter={error.data?.retryAfter || 30}
-            />
-          );
-        default:
-          return (
-            <ErrorGeneric
-              status={error.status}
-              message={error.statusText || error.data?.message}
-              details={error.data?.details}
-            />
-          );
-      }
+      return (
+        <ErrorGeneric
+          status={error.status}
+          message={error.statusText || error.data?.message}
+          details={error.data?.details}
+        />
+      );
     }
 
     // Erreur non-HTTP (erreur JavaScript, etc.)

@@ -9,7 +9,7 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { z } from "zod";
-import { Error404, Error410, ErrorGeneric } from "~/components/errors";
+import { ErrorGeneric } from "~/components/errors";
 
 // Composants vehicle
 // LoadingSpinner not used in this route
@@ -198,8 +198,13 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    if (error.status === 404) return <Error404 url={error.data?.url} />;
-    if (error.status === 410) return <Error410 url={error.data?.url} />;
+    if (error.status === 404 || error.status === 410)
+      return (
+        <ErrorGeneric
+          status={error.status}
+          message={error.data?.message || error.statusText}
+        />
+      );
     return <ErrorGeneric status={error.status} message={error.statusText} />;
   }
 

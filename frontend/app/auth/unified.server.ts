@@ -56,10 +56,7 @@ export const getOptionalUser = async ({
   context: AppLoadContext;
 }): Promise<AuthUser | null> => {
   try {
-    if (
-      context.user &&
-      typeof context.user === "object"
-    ) {
+    if (context.user && typeof context.user === "object") {
       const rawUser = context.user as RawContextUser;
       if (rawUser.error) {
         return null;
@@ -216,7 +213,9 @@ export const requireAuth = async (
     const url = request.url;
     if (url && url !== "undefined") {
       const pathname = new URL(url).pathname;
-      throw redirect(`${redirectTo}?redirect=` + encodeURIComponent(pathname));
+      throw redirect(
+        `${redirectTo}?redirectTo=` + encodeURIComponent(pathname),
+      );
     } else {
       throw redirect(redirectTo);
     }

@@ -26,7 +26,7 @@ import {
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { useEffect, useState, Suspense } from "react";
 
-import { Error404, Error410, ErrorGeneric } from "~/components/errors";
+import { ErrorGeneric } from "~/components/errors";
 import {
   GammeHero,
   GammeQuickNav,
@@ -605,7 +605,7 @@ export default function PiecesDetailPage() {
   }, []);
 
   if (!data || data.status !== 200) {
-    return <Error404 />;
+    return <ErrorGeneric />;
   }
 
   // Construire les breadcrumbs depuis l'API (déjà avec véhicule si présent)
@@ -833,29 +833,13 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    const errorData = typeof error.data === "object" ? error.data : undefined;
-
-    if (error.status === 410) {
-      return (
-        <Error410
-          url={errorData?.url}
-          isOldLink={errorData?.isOldLink}
-          redirectTo={errorData?.redirectTo}
-        />
-      );
-    }
-
-    if (error.status >= 500) {
-      return (
-        <ErrorGeneric
-          status={error.status}
-          message={error.statusText || "Erreur serveur"}
-        />
-      );
-    }
-
-    return <Error404 url={errorData?.url} />;
+    return (
+      <ErrorGeneric
+        status={error.status}
+        message={error.statusText || error.data?.message}
+      />
+    );
   }
 
-  return <Error404 />;
+  return <ErrorGeneric />;
 }

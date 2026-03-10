@@ -14,7 +14,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { Error401, Error404, ErrorGeneric } from "~/components/errors";
+import { ErrorGeneric } from "~/components/errors";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getOptionalUser, getAuthUser } from "../auth/unified.server";
@@ -130,15 +130,17 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    if (error.status === 401) return <Error401 redirectTo="/admin" />;
-    if (error.status === 403)
+    if (error.status === 401 || error.status === 403)
       return (
-        <Error401
-          redirectTo="/admin"
-          message="Vous n'avez pas les permissions necessaires pour acceder a cette ressource."
+        <ErrorGeneric
+          status={error.status}
+          message={error.data?.message || error.statusText}
         />
       );
-    if (error.status === 404) return <Error404 url={error.data?.url} />;
+    if (error.status === 404)
+      return (
+        <ErrorGeneric status={error.status} message={error.data?.message} />
+      );
     return <ErrorGeneric status={error.status} message={error.statusText} />;
   }
 

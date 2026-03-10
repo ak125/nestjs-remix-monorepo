@@ -23,7 +23,7 @@ import {
   Filter,
   Download,
 } from "lucide-react";
-import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
 import { logger } from "~/utils/logger";
 import { getReviewStats } from "../services/api/review.api";
@@ -134,9 +134,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ].map((item) => ({
       ...item,
       percentage:
-        stats.total > 0
-          ? Math.round((item.count / stats.total) * 100)
-          : 0,
+        stats.total > 0 ? Math.round((item.count / stats.total) * 100) : 0,
     }));
 
     return json<LoaderData>({
@@ -275,8 +273,7 @@ export default function ReviewAnalyticsPage() {
           <div className="mt-4">
             <p className="text-sm text-gray-600">
               <p className="text-sm text-gray-600">
-                {stats.totalPublished || stats.approved || 0}{" "}
-                avis publiés
+                {stats.totalPublished || stats.approved || 0} avis publiés
               </p>
             </p>
           </div>
@@ -309,9 +306,7 @@ export default function ReviewAnalyticsPage() {
               </p>
               <p className="text-2xl font-bold text-gray-900">
                 {stats.total > 0
-                  ? Math.round(
-                      (stats.approved / stats.total) * 100,
-                    )
+                  ? Math.round((stats.approved / stats.total) * 100)
                   : 0}
                 %
               </p>
@@ -534,8 +529,8 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return <Error404 url={error.data?.url} />;
+    return <ErrorGeneric status={error.status} message={error.data?.message} />;
   }
 
-  return <Error404 />;
+  return <ErrorGeneric />;
 }

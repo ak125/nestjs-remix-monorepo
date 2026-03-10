@@ -26,7 +26,7 @@ import {
   XCircle,
   AlertCircle,
 } from "lucide-react";
-import { Error404, ErrorGeneric } from "~/components/errors";
+import { ErrorGeneric } from "~/components/errors";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -243,14 +243,7 @@ export function ErrorBoundary() {
 
   if (isRouteErrorResponse(error)) {
     if (error.status === 404)
-      return (
-        <Error404
-          suggestions={[
-            "Verifiez que l'ID utilisateur est correct",
-            "L'utilisateur a peut-etre ete supprime",
-          ]}
-        />
-      );
+      return <ErrorGeneric status={404} message="Utilisateur introuvable" />;
     return <ErrorGeneric status={error.status} message={error.statusText} />;
   }
 

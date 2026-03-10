@@ -14,7 +14,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import {
@@ -192,8 +192,8 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return <Error404 url={error.data?.url} />;
+    return <ErrorGeneric status={error.status} message={error.data?.message} />;
   }
 
-  return <Error404 />;
+  return <ErrorGeneric />;
 }

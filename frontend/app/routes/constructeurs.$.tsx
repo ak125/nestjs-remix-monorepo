@@ -17,8 +17,7 @@ import {
   Link,
 } from "@remix-run/react";
 import { Car, ChevronRight, Fuel, Gauge, Calendar } from "lucide-react";
-import { Error404 } from "~/components/errors/Error404";
-import { Error410 } from "~/components/errors/Error410";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { normalizeTypeAlias } from "~/utils/url-builder.utils";
@@ -517,17 +516,11 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    // 410 = Gone - Utiliser le composant Error410 standard
     if (error.status === 410) {
-      return (
-        <Error410
-          url={typeof window !== "undefined" ? window.location.href : undefined}
-          isOldLink={false}
-        />
-      );
+      return <ErrorGeneric status={410} message="Contenu supprimé" />;
     }
   }
 
   // Autres erreurs → 404
-  return <Error404 />;
+  return <ErrorGeneric />;
 }

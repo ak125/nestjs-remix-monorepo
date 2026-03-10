@@ -19,6 +19,7 @@ import {
 import { useReducer, useCallback, useEffect, useState, useRef } from "react";
 import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
+import { useDiagnosticVehicleSelector } from "./hooks/use-diagnostic-vehicle-selector";
 import { DiagnosticResults } from "./results/DiagnosticResults";
 import { StepSymptom } from "./steps/StepSymptom";
 import { StepVehicle } from "./steps/StepVehicle";
@@ -29,6 +30,7 @@ import {
 } from "./types";
 
 const STORAGE_KEY = "diag-wizard-draft";
+const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 jours
 
 const STEPS = [
   { id: 1, label: "Vehicule", description: "Identifiez votre vehicule" },
@@ -54,13 +56,18 @@ const initialState: WizardState = {
   error: null,
 };
 
-/** Restore draft from sessionStorage (steps 1-2 only) */
+/** Restore draft from localStorage (steps 1-2 only, with TTL) */
 function loadDraft(): Partial<WizardState> | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const draft = JSON.parse(raw);
+    // TTL check
+    if (draft.savedAt && Date.now() - draft.savedAt > DRAFT_TTL_MS) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
     if (draft.step && draft.step <= 2) return draft;
     return null;
   } catch {
@@ -68,12 +75,12 @@ function loadDraft(): Partial<WizardState> | null {
   }
 }
 
-/** Save draft to sessionStorage (only steps 1-2, skip result) */
+/** Save draft to localStorage (only steps 1-2, skip result) */
 function saveDraft(state: WizardState) {
   if (typeof window === "undefined") return;
   try {
     if (state.step > 2) {
-      sessionStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY);
       return;
     }
     const draft = {
@@ -83,10 +90,11 @@ function saveDraft(state: WizardState) {
       lastServiceKm: state.lastServiceKm,
       systemScope: state.systemScope,
       symptomSlugs: state.symptomSlugs,
+      savedAt: Date.now(),
     };
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
   } catch {
-    // sessionStorage full or unavailable
+    // localStorage full or unavailable
   }
 }
 
@@ -142,15 +150,23 @@ export function DiagnosticWizard() {
   const [transitioning, setTransitioning] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  // Vehicle selector (lifted from StepVehicle for draft restore)
+  const vehicleSelector = useDiagnosticVehicleSelector();
+
   // Restore draft on mount
   useEffect(() => {
     const draft = loadDraft();
     if (draft) {
-      if (draft.vehicle)
+      if (draft.vehicle) {
         dispatch({
           type: "SET_VEHICLE",
           payload: draft.vehicle as WizardState["vehicle"],
         });
+        // Re-fetch models if brand was saved
+        if (draft.vehicle.brandId) {
+          vehicleSelector.fetchModels(draft.vehicle.brandId);
+        }
+      }
       if (draft.usageProfile || draft.lastServiceKm) {
         dispatch({
           type: "SET_USAGE",
@@ -168,6 +184,7 @@ export function DiagnosticWizard() {
       if (draft.step && draft.step === 2)
         dispatch({ type: "SET_STEP", payload: 2 });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Save draft on change (steps 1-2)
@@ -347,7 +364,13 @@ export function DiagnosticWizard() {
           transitioning ? "opacity-0" : "opacity-100"
         }`}
       >
-        {state.step === 1 && <StepVehicle state={state} dispatch={dispatch} />}
+        {state.step === 1 && (
+          <StepVehicle
+            state={state}
+            dispatch={dispatch}
+            vehicleSelector={vehicleSelector}
+          />
+        )}
         {state.step === 2 && <StepSymptom state={state} dispatch={dispatch} />}
         {state.step === 3 && (
           <DiagnosticResults

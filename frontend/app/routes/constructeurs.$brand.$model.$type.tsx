@@ -42,7 +42,7 @@ import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
-import { Error404, Error410, ErrorGeneric } from "../components/errors";
+import { ErrorGeneric } from "../components/errors";
 import { HeroSelection } from "../components/heroes";
 import {
   ModelContentV1Display,
@@ -1531,20 +1531,15 @@ export default function VehicleDetailPage() {
 export function ErrorBoundary() {
   const error = useRouteError();
 
-  // Handle 410 - Vehicle removed from catalog (SEO: Google will deindex faster)
-  if (isRouteErrorResponse(error) && error.status === 410) {
+  // Handle 410/404
+  if (
+    isRouteErrorResponse(error) &&
+    (error.status === 410 || error.status === 404)
+  ) {
     return (
-      <Error410
-        url={typeof window !== "undefined" ? window.location.href : undefined}
-      />
-    );
-  }
-
-  // Handle 404 - Generic not found
-  if (isRouteErrorResponse(error) && error.status === 404) {
-    return (
-      <Error404
-        url={typeof window !== "undefined" ? window.location.href : undefined}
+      <ErrorGeneric
+        status={error.status}
+        message={error.statusText || error.data?.message}
       />
     );
   }

@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import AccountDashboard from "~/components/account/AccountDashboard";
 
-import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -155,7 +155,10 @@ export const loader: LoaderFunction = async ({ request }) => {
     const parseResult = dashboardDataSchema.safeParse(rawData);
 
     if (!parseResult.success) {
-      logger.error("⚠️ Dashboard data validation failed:", parseResult.error.flatten());
+      logger.error(
+        "⚠️ Dashboard data validation failed:",
+        parseResult.error.flatten(),
+      );
     }
 
     const dashboardData = parseResult.success ? parseResult.data : rawData;
@@ -409,8 +412,8 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return <Error404 url={error.data?.url} />;
+    return <ErrorGeneric status={error.status} message={error.data?.message} />;
   }
 
-  return <Error404 />;
+  return <ErrorGeneric />;
 }

@@ -1,6 +1,6 @@
 import { useSearchParams } from "@remix-run/react";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
-import { Error410 } from "../components/errors/Error410";
+import { ErrorGeneric } from "../components/errors/ErrorGeneric";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 
@@ -16,21 +16,17 @@ export const handle = {
 export default function GonePage() {
   const [searchParams] = useSearchParams();
 
-  const url = searchParams.get("url") || undefined;
-  const isOldLink = searchParams.get("isOldLink") === "true";
-  const redirectTo = searchParams.get("redirectTo") || undefined;
-  const userAgent = searchParams.get("userAgent") || undefined;
-  const referrer = searchParams.get("referrer") || undefined;
-  const method = searchParams.get("method") || undefined;
+  const _url = searchParams.get("url") || undefined;
+  const _isOldLink = searchParams.get("isOldLink") === "true";
+  const _redirectTo = searchParams.get("redirectTo") || undefined;
+  const _userAgent = searchParams.get("userAgent") || undefined;
+  const _referrer = searchParams.get("referrer") || undefined;
+  const _method = searchParams.get("method") || undefined;
 
   return (
-    <Error410
-      url={url}
-      isOldLink={isOldLink}
-      redirectTo={redirectTo}
-      userAgent={userAgent}
-      referrer={referrer}
-      method={method}
+    <ErrorGeneric
+      status={410}
+      message="Cette ressource a été définitivement supprimée"
     />
   );
 }

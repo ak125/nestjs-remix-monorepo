@@ -40,7 +40,6 @@ import {
 import { useState } from "react";
 
 import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
-import { Error404 } from "~/components/errors/Error404";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { HeroDiagnostic } from "~/components/heroes";
 import Container from "~/components/layout/Container";
@@ -1101,7 +1100,7 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    if (error.status === 404) return <Error404 />;
+    if (error.status === 404) return <ErrorGeneric />;
     return <ErrorGeneric status={error.status} message={error.statusText} />;
   }
 

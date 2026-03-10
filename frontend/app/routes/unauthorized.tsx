@@ -8,7 +8,7 @@
 import { type MetaFunction } from "@remix-run/node";
 import { Link, useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { AlertTriangle, Home, Mail, Phone } from "lucide-react";
-import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 
@@ -93,8 +93,8 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return <Error404 url={error.data?.url} />;
+    return <ErrorGeneric status={error.status} message={error.data?.message} />;
   }
 
-  return <Error404 />;
+  return <ErrorGeneric />;
 }

@@ -26,7 +26,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { useState } from "react";
-import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
@@ -143,9 +143,8 @@ export const action: ActionFunction = async ({ request, context }) => {
     }
 
     // Utiliser l'intégration directe pour créer la commande
-    const { getRemixIntegrationService } = await import(
-      "~/server/remix-integration.server"
-    );
+    const { getRemixIntegrationService } =
+      await import("~/server/remix-integration.server");
     const integration: any = await getRemixIntegrationService(context);
     const result = await integration.createOrderForRemix?.(orderData);
 
@@ -637,8 +636,8 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return <Error404 url={error.data?.url} />;
+    return <ErrorGeneric status={error.status} message={error.data?.message} />;
   }
 
-  return <Error404 />;
+  return <ErrorGeneric />;
 }

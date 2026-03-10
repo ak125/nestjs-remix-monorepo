@@ -6,8 +6,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
-import { Error404 } from "~/components/errors/Error404";
-import { Error410 } from "~/components/errors/Error410";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
@@ -433,27 +432,14 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    const data = error.data || {};
-
-    // 410 Gone - Contenu supprimé
-    if (error.status === 410) {
-      return (
-        <Error410
-          url={data.url}
-          isOldLink={data.isOldLink}
-          redirectTo={data.redirectTo}
-        />
-      );
-    }
-
-    // 404 Not Found (default)
-    return <Error404 url={data.url} suggestions={data.suggestions} />;
+    return (
+      <ErrorGeneric
+        status={error.status}
+        message={error.statusText || error.data?.message}
+      />
+    );
   }
 
   // Erreur JavaScript non-Response (fallback)
-  return (
-    <Error404
-      url={typeof window !== "undefined" ? window.location.pathname : ""}
-    />
-  );
+  return <ErrorGeneric />;
 }

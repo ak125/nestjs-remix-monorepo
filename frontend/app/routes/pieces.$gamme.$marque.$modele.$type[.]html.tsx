@@ -57,9 +57,6 @@ import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { ScrollToTop } from "../components/blog/ScrollToTop";
-import { Error404 } from "../components/errors/Error404";
-import { Error410 } from "../components/errors/Error410";
-import { Error503 } from "../components/errors/Error503";
 import { ErrorGeneric } from "../components/errors/ErrorGeneric";
 import {
   MobileBottomBar,
@@ -1037,9 +1034,6 @@ function PiecesVehicleContent() {
 
 export function ErrorBoundary() {
   const error = useRouteError();
-  // SSR-safe: utiliser useLocation au lieu de window.location
-  const location = useLocation();
-
   // SSR-safe: Log détaillé de l'erreur uniquement côté client
   useEffect(() => {
     logger.error("🚨 [ERROR BOUNDARY] Erreur capturée:", error);
@@ -1051,47 +1045,13 @@ export function ErrorBoundary() {
   }, [error]);
 
   // 🛡️ Gestion spécifique du 503 Service Unavailable (erreur réseau temporaire)
-  if (isRouteErrorResponse(error) && error.status === 503) {
+  if (isRouteErrorResponse(error)) {
     return (
-      <Error503
-        retryAfter={10}
-        message="Notre service est temporairement surchargé."
-        url={location.pathname}
+      <ErrorGeneric
+        status={error.status}
+        message={error.statusText || error.data?.message}
       />
     );
-  }
-
-  // Gestion spécifique du 410 Gone (page sans résultats)
-  if (isRouteErrorResponse(error) && error.status === 410) {
-    return (
-      <>
-        <head>
-          <meta name="robots" content="noindex, nofollow" />
-          <meta name="googlebot" content="noindex, nofollow" />
-        </head>
-        <Error410 url={location.pathname} isOldLink={false} />
-      </>
-    );
-  }
-
-  // 🚫 Gestion 404 — Produit non disponible pour ce véhicule
-  // Utilise le composant Error404 existant (recherche, catégories, suggestions, auto-report)
-  if (isRouteErrorResponse(error) && error.status === 404) {
-    let gammeUrl = "/pieces/";
-    try {
-      const parsed =
-        typeof error.data === "string" ? JSON.parse(error.data) : error.data;
-      if (parsed?.gammeUrl) gammeUrl = parsed.gammeUrl;
-    } catch {
-      // Pas de JSON → utiliser les valeurs par défaut
-    }
-
-    return <Error404 url={location.pathname} suggestions={[gammeUrl]} />;
-  }
-
-  // Autres erreurs (500, etc.)
-  if (isRouteErrorResponse(error)) {
-    return <ErrorGeneric status={error.status} message={error.statusText} />;
   }
 
   return <ErrorGeneric />;

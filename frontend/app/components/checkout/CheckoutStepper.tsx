@@ -16,7 +16,7 @@ export function CheckoutStepper({ current }: { current: Step }) {
   const currentIndex = getStepIndex(current);
 
   return (
-    <nav aria-label="Etapes de la commande" className="mb-8">
+    <nav aria-label="Etapes de la commande" className="mb-4">
       <ol className="flex items-center justify-center gap-0">
         {STEPS.map((step, index) => {
           const isCompleted = index < currentIndex;

@@ -23,7 +23,7 @@ import {
 } from "@remix-run/react";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import Container from "~/components/layout/Container";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
@@ -1051,8 +1051,8 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return <Error404 url={error.data?.url} />;
+    return <ErrorGeneric status={error.status} message={error.data?.message} />;
   }
 
-  return <Error404 />;
+  return <ErrorGeneric />;
 }

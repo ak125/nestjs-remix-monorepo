@@ -61,8 +61,11 @@ export class ClaudeCliService {
 
     try {
       // Build clean env: only unset CLAUDECODE (blocks nesting), keep auth vars
-      const cleanEnv = { ...process.env, CI: 'true' };
-      delete cleanEnv.CLAUDECODE;
+      const cleanEnv: Record<string, string | undefined> = {
+        ...process.env,
+        CI: 'true',
+        CLAUDECODE: undefined,
+      };
 
       const { stdout, stderr } = await execFileAsync(CLAUDE_CLI_PATH, args, {
         timeout,

@@ -25,8 +25,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 // Error components
-import { Error404 } from "~/components/errors/Error404";
-import { Error410 } from "~/components/errors/Error410";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 
 // UI Components
@@ -616,34 +614,12 @@ export function ErrorBoundary() {
   if (isRouteErrorResponse(error)) {
     // 410 Gone - Contenu définitivement supprimé (URLs legacy "entretien-...")
     if (error.status === 410) {
-      // Extraire les données JSON si disponibles
-      let errorData: { searchUrl?: string; message?: string } = {};
-      try {
-        if (typeof error.data === "string") {
-          errorData = JSON.parse(error.data);
-        } else if (error.data) {
-          errorData = error.data;
-        }
-      } catch {
-        // Ignorer les erreurs de parsing
-      }
-
-      return (
-        <Error410
-          url={typeof window !== "undefined" ? window.location.href : undefined}
-          isOldLink={true}
-          redirectTo={errorData.searchUrl}
-        />
-      );
+      return <ErrorGeneric status={410} message="Cet article a été supprimé" />;
     }
 
     // 404 Not Found
     if (error.status === 404) {
-      return (
-        <Error404
-          url={typeof window !== "undefined" ? window.location.href : undefined}
-        />
-      );
+      return <ErrorGeneric status={404} message="Article introuvable" />;
     }
   }
 

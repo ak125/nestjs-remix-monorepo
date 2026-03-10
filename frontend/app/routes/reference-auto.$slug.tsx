@@ -45,7 +45,7 @@ import {
   SectionImage,
   SectionWithImage,
 } from "~/components/content/SectionImage";
-import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { HeroReference, HeroRole } from "~/components/heroes";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Badge } from "~/components/ui/badge";
@@ -218,7 +218,17 @@ interface Reference {
     | null;
   commonQuestions: { q: string; a: string }[] | null;
   contaminationFlags: string[] | null;
+  sectionOverrides: Record<string, string> | null;
   updatedAt: string;
+}
+
+/** Résout le titre d'une section R4 : override DB > fallback hardcodé */
+function sectionTitle(
+  overrides: Record<string, string> | null,
+  key: string,
+  fallback: string,
+): string {
+  return overrides?.[key] || fallback;
 }
 
 interface RelatedRef {
@@ -614,61 +624,70 @@ export default function ReferenceDetailPage() {
           <article className="min-w-0 max-w-3xl space-y-8">
             {/* Sommaire dynamique */}
             {(() => {
+              const ov = reference.sectionOverrides;
               const tocItems = [
-                { id: "definition", label: "Définition", present: true },
+                {
+                  id: "definition",
+                  label: sectionTitle(ov, "definition", "Définition"),
+                  present: true,
+                },
                 {
                   id: "takeaways",
-                  label: "À retenir",
+                  label: sectionTitle(ov, "takeaways", "À retenir"),
                   present: !!reference.takeaways?.length,
                 },
                 {
                   id: "synonyms",
-                  label: "Synonymes",
+                  label: sectionTitle(ov, "synonyms", "Synonymes"),
                   present: !!reference.synonyms?.length,
                 },
                 {
                   id: "role",
-                  label: "Rôle mécanique",
+                  label: sectionTitle(ov, "role", "Rôle mécanique"),
                   present: !!reference.roleMecanique,
                 },
                 {
                   id: "composition",
-                  label: "Composition",
+                  label: sectionTitle(ov, "composition", "Composition"),
                   present: !!reference.composition?.length,
                 },
                 {
                   id: "variants",
-                  label: "Variantes & types",
+                  label: sectionTitle(ov, "variants", "Variantes & types"),
                   present: !!reference.variants?.length,
                 },
                 {
                   id: "key-specs",
-                  label: "Valeurs & critères",
+                  label: sectionTitle(ov, "key-specs", "Valeurs & critères"),
                   present: !!reference.keySpecs?.length,
                 },
                 {
                   id: "confusions",
-                  label: "Confusions courantes",
+                  label: sectionTitle(ov, "confusions", "Confusions courantes"),
                   present: !!reference.confusionsCourantes?.length,
                 },
                 {
                   id: "faq",
-                  label: "Questions fréquentes",
+                  label: sectionTitle(ov, "faq", "Questions fréquentes"),
                   present: !!reference.commonQuestions?.length,
                 },
                 {
                   id: "ne-fait-pas",
-                  label: "Ce que ça ne fait pas",
+                  label: sectionTitle(
+                    ov,
+                    "ne-fait-pas",
+                    "Ce que ça ne fait pas",
+                  ),
                   present: !!reference.roleNegatif,
                 },
                 {
                   id: "regles",
-                  label: "Règles métier",
+                  label: sectionTitle(ov, "regles", "Règles métier"),
                   present: !!reference.reglesMetier?.length,
                 },
                 {
                   id: "scope",
-                  label: "Scope & limites",
+                  label: sectionTitle(ov, "scope", "Scope & limites"),
                   present: !!reference.scopeLimites,
                 },
               ].filter((s) => s.present);
@@ -698,7 +717,11 @@ export default function ReferenceDetailPage() {
             <R4Section
               id="definition"
               icon={<FileText className="w-5 h-5" />}
-              title="Définition"
+              title={sectionTitle(
+                reference.sectionOverrides,
+                "definition",
+                "Définition",
+              )}
               tone="indigo"
             >
               <dl>
@@ -715,7 +738,11 @@ export default function ReferenceDetailPage() {
               <R4Section
                 id="takeaways"
                 icon={<Sparkles className="w-5 h-5" />}
-                title="À retenir"
+                title={sectionTitle(
+                  reference.sectionOverrides,
+                  "takeaways",
+                  "À retenir",
+                )}
                 tone="indigo"
               >
                 <ul className="space-y-2">
@@ -733,7 +760,11 @@ export default function ReferenceDetailPage() {
               <R4Section
                 id="synonyms"
                 icon={<Tag className="w-5 h-5" />}
-                title="Synonymes & appellations"
+                title={sectionTitle(
+                  reference.sectionOverrides,
+                  "synonyms",
+                  "Synonymes & appellations",
+                )}
                 tone="slate"
               >
                 <div className="flex flex-wrap gap-2">
@@ -767,7 +798,11 @@ export default function ReferenceDetailPage() {
                   <R4Section
                     id="role"
                     icon={<Wrench className="w-5 h-5" />}
-                    title="Rôle mécanique"
+                    title={sectionTitle(
+                      reference.sectionOverrides,
+                      "role",
+                      "Rôle mécanique",
+                    )}
                     tone="green"
                   >
                     {imgConfig && reference.gamme.pgImg ? (
@@ -794,7 +829,11 @@ export default function ReferenceDetailPage() {
               <R4Section
                 id="composition"
                 icon={<Layers className="w-5 h-5" />}
-                title="Composition"
+                title={sectionTitle(
+                  reference.sectionOverrides,
+                  "composition",
+                  "Composition",
+                )}
                 tone="blue"
               >
                 <ul className="space-y-2">
@@ -814,7 +853,11 @@ export default function ReferenceDetailPage() {
               <R4Section
                 id="variants"
                 icon={<ListChecks className="w-5 h-5" />}
-                title="Variantes & types"
+                title={sectionTitle(
+                  reference.sectionOverrides,
+                  "variants",
+                  "Variantes & types",
+                )}
                 tone="blue"
               >
                 <dl className="space-y-4">
@@ -832,7 +875,11 @@ export default function ReferenceDetailPage() {
               <R4Section
                 id="key-specs"
                 icon={<Info className="w-5 h-5" />}
-                title="Valeurs & critères"
+                title={sectionTitle(
+                  reference.sectionOverrides,
+                  "key-specs",
+                  "Valeurs & critères",
+                )}
                 tone="slate"
               >
                 <div className="overflow-x-auto">
@@ -878,7 +925,11 @@ export default function ReferenceDetailPage() {
                 <R4Section
                   id="confusions"
                   icon={<AlertTriangle className="w-5 h-5" />}
-                  title="Confusions courantes"
+                  title={sectionTitle(
+                    reference.sectionOverrides,
+                    "confusions",
+                    "Confusions courantes",
+                  )}
                   tone="amber"
                 >
                   <ul className="space-y-3">
@@ -902,7 +953,11 @@ export default function ReferenceDetailPage() {
                 <R4Section
                   id="faq"
                   icon={<HelpCircle className="w-5 h-5" />}
-                  title="Questions fréquentes"
+                  title={sectionTitle(
+                    reference.sectionOverrides,
+                    "faq",
+                    "Questions fréquentes",
+                  )}
                   tone="amber"
                 >
                   <dl className="space-y-4">
@@ -922,7 +977,11 @@ export default function ReferenceDetailPage() {
               <R4Section
                 id="ne-fait-pas"
                 icon={<XCircle className="w-5 h-5" />}
-                title="Ce que ça NE fait PAS"
+                title={sectionTitle(
+                  reference.sectionOverrides,
+                  "ne-fait-pas",
+                  "Ce que ça NE fait PAS",
+                )}
                 tone="red"
               >
                 <ul className="space-y-3">
@@ -948,7 +1007,11 @@ export default function ReferenceDetailPage() {
               <R4Section
                 id="regles"
                 icon={<Shield className="w-5 h-5" />}
-                title="Règles métier (anti-erreur)"
+                title={sectionTitle(
+                  reference.sectionOverrides,
+                  "regles",
+                  "Règles métier (anti-erreur)",
+                )}
                 tone="purple"
               >
                 <ul className="space-y-3">
@@ -971,7 +1034,11 @@ export default function ReferenceDetailPage() {
               <R4Section
                 id="scope"
                 icon={<Info className="w-5 h-5" />}
-                title="Scope et limites"
+                title={sectionTitle(
+                  reference.sectionOverrides,
+                  "scope",
+                  "Scope et limites",
+                )}
                 tone="slate"
               >
                 <p className="text-slate-600 leading-relaxed whitespace-pre-line">
@@ -1165,8 +1232,8 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return <Error404 url={error.data?.url} />;
+    return <ErrorGeneric status={error.status} message={error.data?.message} />;
   }
 
-  return <Error404 />;
+  return <ErrorGeneric />;
 }

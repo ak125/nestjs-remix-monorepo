@@ -32,7 +32,6 @@ import {
 import { CheckoutOrderSummary } from "~/components/checkout/CheckoutOrderSummary";
 import { CheckoutPaiementSection } from "~/components/checkout/CheckoutPaiementSection";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
-import { Error404 } from "~/components/errors/Error404";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   MobileBottomBar,
@@ -1142,7 +1141,9 @@ export function ErrorBoundary() {
 
   if (isRouteErrorResponse(error)) {
     if (error.status === 404) {
-      return <Error404 url={error.data?.url} />;
+      return (
+        <ErrorGeneric status={error.status} message={error.data?.message} />
+      );
     }
     return (
       <ErrorGeneric
