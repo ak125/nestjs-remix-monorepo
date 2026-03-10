@@ -516,8 +516,7 @@ export class AuthService {
   private async logFailedAttempt(email: string, ip: string): Promise<void> {
     try {
       const key = `login_attempts:${email}:${ip}`;
-      const current = await this.checkLoginAttempts(email, ip);
-      await this.cacheService.set(key, (current + 1).toString(), 900); // 15 minutes
+      await this.cacheService.atomicIncr(key, 900); // 15 minutes, atomic
 
       // Log également dans l'historique
       await this.logLoginHistory(email, ip, 'FAILED');

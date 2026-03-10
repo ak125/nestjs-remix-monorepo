@@ -52,11 +52,13 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
    */
   async findByEmail(email: string): Promise<User | null> {
     try {
+      const normalizedEmail = email.toLowerCase().trim();
       const { data, error } = await this.supabase
         .from(TABLES.xtr_customer)
         .select('*')
-        .eq('cst_mail', email)
-        .single();
+        .eq('cst_mail', normalizedEmail)
+        .limit(1)
+        .maybeSingle();
 
       if (error || !data) return null;
 
@@ -353,11 +355,13 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
     email: string,
   ): Promise<{ user: User; passwordHash: string } | null> {
     try {
+      const normalizedEmail = email.toLowerCase().trim();
       const { data, error } = await this.supabase
         .from(TABLES.xtr_customer)
         .select('*')
-        .eq('cst_mail', email)
-        .single();
+        .eq('cst_mail', normalizedEmail)
+        .limit(1)
+        .maybeSingle();
 
       if (error || !data) return null;
 
@@ -388,11 +392,13 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
     isActive: boolean;
   } | null> {
     try {
+      const normalizedEmail = email.toLowerCase().trim();
       const { data, error } = await this.supabase
         .from(TABLES.config_admin)
         .select('*')
-        .eq('cnfa_mail', email)
-        .single();
+        .eq('cnfa_mail', normalizedEmail)
+        .limit(1)
+        .maybeSingle();
 
       if (error || !data) return null;
 

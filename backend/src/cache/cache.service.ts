@@ -222,11 +222,25 @@ export class CacheService implements OnModuleInit {
     await this.del(userKey);
   }
 
+  /**
+   * Atomic increment with TTL (uses Redis INCR — race-condition safe)
+   */
+  async atomicIncr(key: string, ttlSeconds: number): Promise<number> {
+    if (!this.redisClient || !this.redisReady) return 1;
+    const newCount = await this.redisClient.incr(key);
+    if (newCount === 1) {
+      await this.redisClient.expire(key, ttlSeconds);
+    }
+    return newCount;
+  }
+
   async incrementLoginAttempts(email: string): Promise<number> {
     const key = `login_attempts:${email}`;
-    const current = (await this.get<number>(key)) || 0;
-    const newCount = current + 1;
-    await this.set(key, newCount, 900); // 15 minutes
+    if (!this.redisClient || !this.redisReady) return 1;
+    const newCount = await this.redisClient.incr(key);
+    if (newCount === 1) {
+      await this.redisClient.expire(key, 900); // 15 minutes TTL on first attempt
+    }
     return newCount;
   }
 

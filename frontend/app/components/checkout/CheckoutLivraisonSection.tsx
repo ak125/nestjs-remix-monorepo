@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   validateShippingAddress,
@@ -39,6 +39,7 @@ interface Props {
   onGuestEmailChange: (email: string) => void;
   onValidated: () => void;
   fieldErrors?: Partial<Record<string, string[]>>;
+  emailConflict?: boolean;
 }
 
 export function CheckoutLivraisonSection({
@@ -50,12 +51,21 @@ export function CheckoutLivraisonSection({
   onGuestEmailChange,
   onValidated,
   fieldErrors,
+  emailConflict,
 }: Props) {
   const [emailChecked, setEmailChecked] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+
+  // When server returns EMAIL_CONFLICT after form submit, activate inline login
+  useEffect(() => {
+    if (emailConflict) {
+      setEmailChecked(true);
+      setEmailExists(true);
+    }
+  }, [emailConflict]);
 
   const hasCompleteAddress = !!(
     userProfile &&
@@ -87,8 +97,12 @@ export function CheckoutLivraisonSection({
     setIsCheckingEmail(false);
   };
 
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
   const handleInlineLogin = async (e?: React.SyntheticEvent) => {
     e?.preventDefault();
+    if (isLoggingIn) return;
+    setIsLoggingIn(true);
     setLoginError("");
     try {
       const res = await fetch("/auth/login", {
@@ -100,6 +114,7 @@ export function CheckoutLivraisonSection({
         const data = await res.json().catch(() => ({ success: true }));
         if (data.success !== false) {
           window.location.href = "/checkout";
+          return; // Keep isLoggingIn=true during redirect
         } else {
           setLoginError(data.error || "Email ou mot de passe incorrect");
         }
@@ -112,6 +127,7 @@ export function CheckoutLivraisonSection({
     } catch {
       setLoginError("Erreur de connexion. Veuillez réessayer.");
     }
+    setIsLoggingIn(false);
   };
 
   const showAddressForm = user || (emailChecked && !emailExists);
@@ -259,12 +275,13 @@ export function CheckoutLivraisonSection({
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter" && !isLoggingIn) {
                       e.preventDefault();
                       handleInlineLogin();
                     }
                   }}
-                  className="w-full px-4 py-3 rounded-xl border border-orange-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  disabled={isLoggingIn}
+                  className="w-full px-4 py-3 rounded-xl border border-orange-300 focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50"
                   placeholder="Mot de passe"
                 />
                 {loginError && (
@@ -274,9 +291,10 @@ export function CheckoutLivraisonSection({
                   <button
                     type="button"
                     onClick={handleInlineLogin}
-                    className="px-6 py-3 bg-cta text-white rounded-xl font-medium hover:bg-cta-hover transition-colors"
+                    disabled={isLoggingIn}
+                    className="px-6 py-3 bg-cta text-white rounded-xl font-medium hover:bg-cta-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Se connecter
+                    {isLoggingIn ? "Connexion..." : "Se connecter"}
                   </button>
                   <Link
                     to={`/login?redirectTo=/checkout&email=${encodeURIComponent(guestEmail)}`}

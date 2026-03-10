@@ -119,11 +119,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const totalItems = cart?.summary?.total_items || 0;
 
     if (itemsCount === 0 && totalItems === 0) {
-      return json({
-        cart: null,
-        error:
-          "Votre panier est vide. Ajoutez des articles avant de passer commande.",
-      });
+      return redirect("/cart");
     }
 
     // Profil utilisateur (adresse pre-remplie)
@@ -515,7 +511,13 @@ export default function CheckoutPage() {
     ) {
       setIsRedirecting(false);
       submitGuardRef.current = false;
-      toast.error(actionData.error as string);
+      // EMAIL_CONFLICT: switch to livraison for inline login (no toast needed)
+      if ("code" in actionData && actionData.code === "EMAIL_CONFLICT") {
+        setActiveSection("livraison");
+        setAddressValidated(false);
+      } else {
+        toast.error(actionData.error as string);
+      }
     }
   }, [actionData]);
 
@@ -665,10 +667,10 @@ export default function CheckoutPage() {
     !!selectedPaymentMethod;
 
   useEffect(() => {
-    if (error) {
+    if (error && actionError?.code !== "EMAIL_CONFLICT") {
       toast.error(error as string, { duration: 5000 });
     }
-  }, [error]);
+  }, [error, actionError?.code]);
 
   // Track payment info when paiement section opens
   useEffect(() => {
@@ -819,22 +821,12 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* Error banner */}
-        {error && (
-          <div
-            className={`mb-6 rounded-xl border p-4 shadow-sm ${
-              actionError?.code === "EMAIL_CONFLICT"
-                ? "border-orange-300 bg-orange-50"
-                : "border-red-200 bg-red-50"
-            }`}
-          >
+        {/* Error banner (EMAIL_CONFLICT handled inline in livraison section) */}
+        {error && actionError?.code !== "EMAIL_CONFLICT" && (
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 shadow-sm">
             <div className="flex items-start gap-3">
               <svg
-                className={`h-5 w-5 flex-shrink-0 ${
-                  actionError?.code === "EMAIL_CONFLICT"
-                    ? "text-orange-600"
-                    : "text-red-600"
-                }`}
+                className="h-5 w-5 flex-shrink-0 text-red-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -846,26 +838,7 @@ export default function CheckoutPage() {
                   d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <div>
-                {actionError?.code === "EMAIL_CONFLICT" ? (
-                  <>
-                    <h3 className="font-semibold text-orange-900">
-                      Email deja utilise
-                    </h3>
-                    <p className="text-sm text-orange-700 mt-1">{error}</p>
-                    <Link
-                      to={`/login?redirectTo=/checkout&email=${encodeURIComponent(
-                        actionError.conflictEmail || "",
-                      )}`}
-                      className="inline-flex items-center gap-2 mt-3 px-4 py-2 bg-cta text-white text-sm font-medium rounded-lg hover:bg-cta-hover transition-colors"
-                    >
-                      Se connecter
-                    </Link>
-                  </>
-                ) : (
-                  <p className="text-sm text-red-700">{error}</p>
-                )}
-              </div>
+              <p className="text-sm text-red-700">{error}</p>
             </div>
           </div>
         )}
@@ -979,6 +952,7 @@ export default function CheckoutPage() {
                     onGuestEmailChange={setGuestEmail}
                     onValidated={handleLivraisonValidated}
                     fieldErrors={fieldErrors}
+                    emailConflict={actionError?.code === "EMAIL_CONFLICT"}
                   />
                 </AccordionContent>
               </AccordionItem>
