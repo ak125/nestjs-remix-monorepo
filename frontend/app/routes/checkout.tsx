@@ -33,6 +33,7 @@ import { CheckoutOrderSummary } from "~/components/checkout/CheckoutOrderSummary
 import { CheckoutPaiementSection } from "~/components/checkout/CheckoutPaiementSection";
 import { CheckoutStepper } from "~/components/checkout/CheckoutStepper";
 import { Error404 } from "~/components/errors/Error404";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   MobileBottomBar,
   MobileBottomBarSpacer,
@@ -253,6 +254,13 @@ export async function action({ request, context }: ActionFunctionArgs) {
       paymentMethod,
     });
 
+    logger.log("[Checkout] Order result:", {
+      success: orderResult.success,
+      orderId: orderResult.success ? orderResult.orderId : undefined,
+      error: !orderResult.success ? orderResult.error : undefined,
+      status: !orderResult.success ? orderResult.status : undefined,
+    });
+
     if (!orderResult.success) {
       // Handle redirect (auth required, or orderId fallback)
       if (orderResult.redirect) {
@@ -287,6 +295,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     const orderDetails = await getOrderForPayment(request, orderId);
 
     if (!orderDetails) {
+      logger.error("[Checkout] getOrderForPayment returned null for:", orderId);
       return json(
         {
           ok: false,
@@ -1132,8 +1141,25 @@ export function ErrorBoundary() {
   const error = useRouteError();
 
   if (isRouteErrorResponse(error)) {
-    return <Error404 url={error.data?.url} />;
+    if (error.status === 404) {
+      return <Error404 url={error.data?.url} />;
+    }
+    return (
+      <ErrorGeneric
+        status={error.status}
+        message="Erreur lors du traitement de votre commande. Votre panier est conserve."
+        details={error.data?.message || error.statusText}
+      />
+    );
   }
 
-  return <Error404 />;
+  return (
+    <ErrorGeneric
+      status={500}
+      message="Erreur lors du traitement de votre commande. Votre panier est conserve."
+      details={error instanceof Error ? error.message : String(error)}
+      showStackTrace={process.env.NODE_ENV !== "production"}
+      stack={error instanceof Error ? error.stack : undefined}
+    />
+  );
 }
