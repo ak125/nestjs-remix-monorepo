@@ -96,16 +96,23 @@ export function ResponsiveImage({
   aspectRatio,
 }: ResponsiveImageProps) {
   const [hasError, setHasError] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  // SSR: commence visible (pas de JS → pas de onLoad). Client: si placeholder, commence caché.
+  const [isLoaded, setIsLoaded] = useState(!showPlaceholder);
+  const [isMounted, setIsMounted] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  // ✅ FIX SSR Hydration: Vérifier si l'image est déjà chargée après mount
-  // Quand l'image charge avant que React hydrate, onLoad ne fire jamais
+  // Après hydration: activer le mode placeholder et vérifier si l'image est déjà chargée
   useEffect(() => {
-    if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
-      setIsLoaded(true);
+    setIsMounted(true);
+    if (showPlaceholder) {
+      // Vérifier si l'image était déjà chargée avant hydration
+      if (imgRef.current?.complete && imgRef.current?.naturalWidth > 0) {
+        setIsLoaded(true);
+      } else {
+        setIsLoaded(false);
+      }
     }
-  }, []);
+  }, [showPlaceholder]);
 
   const handleError = () => {
     setHasError(true);
@@ -123,8 +130,8 @@ export function ResponsiveImage({
     <div
       className={`relative overflow-hidden ${aspectRatio ? `aspect-[${aspectRatio}]` : ""}`}
     >
-      {/* Placeholder pendant chargement */}
-      {showPlaceholder && !isLoaded && (
+      {/* Placeholder pendant chargement (client-side only) */}
+      {isMounted && showPlaceholder && !isLoaded && (
         <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
       )}
 
@@ -134,7 +141,7 @@ export function ResponsiveImage({
         srcSet={srcSet || undefined}
         sizes={srcSet ? sizes : undefined}
         alt={alt}
-        className={`${className} ${!isLoaded && showPlaceholder ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}
+        className={`${className} ${isMounted && !isLoaded && showPlaceholder ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}
         loading={loading}
         decoding={decoding}
         onError={handleError}

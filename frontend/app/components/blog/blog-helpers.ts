@@ -1,6 +1,7 @@
 /**
  * blog-helpers — Shared utility functions for blog components
  */
+import { isValidImagePath, IMAGE_CONFIG } from "~/utils/image-optimizer";
 
 export type BlogIntent = "diagnostic" | "howto" | "buying" | "reference";
 export type BlogBadgeType =
@@ -9,18 +10,26 @@ export type BlogBadgeType =
   | "mis-a-jour"
   | "guide-complet";
 
+export type ContentType = "HOWTO" | "DIAGNOSTIC" | "BUYING_GUIDE" | "GLOSSARY";
+
 export interface BlogArticle {
   id: string;
   title: string;
   slug: string;
   alias?: string;
   pg_alias?: string | null;
+  ba_pg_id?: string | null;
   canonicalUrl?: string;
   intent?: BlogIntent;
   badges?: BlogBadgeType[];
   excerpt: string;
   content?: string;
   type: "advice" | "guide" | "constructeur" | "glossaire";
+  contentType?: ContentType;
+  difficulty?: number; // 1-5
+  timeMinutes?: number;
+  toolsCount?: number;
+  primaryGammeSlug?: string;
   featuredImage?: string;
   viewsCount: number;
   readingTime: number;
@@ -31,7 +40,6 @@ export interface BlogArticle {
     avatar?: string;
   };
   tags?: string[];
-  difficulty?: "beginner" | "intermediate" | "advanced";
   isPopular?: boolean;
   isFeatured?: boolean;
 }
@@ -102,15 +110,73 @@ export function getTypeLabel(type: string): string {
   return labels[type] || type;
 }
 
-export function getDifficultyColor(difficulty?: string): string {
+export function getDifficultyColor(difficulty?: string | number): string {
+  if (typeof difficulty === "number") {
+    if (difficulty <= 2) return "bg-green-100 text-green-800";
+    if (difficulty <= 3) return "bg-yellow-100 text-yellow-800";
+    return "bg-red-100 text-red-800";
+  }
   switch (difficulty) {
     case "beginner":
-      return "success";
+      return "bg-green-100 text-green-800";
     case "intermediate":
-      return "warning";
+      return "bg-yellow-100 text-yellow-800";
     case "advanced":
-      return "error";
+      return "bg-red-100 text-red-800";
     default:
       return "bg-gray-100 text-gray-800";
   }
+}
+
+export function getContentTypeLabel(type?: ContentType): string {
+  const labels: Record<ContentType, string> = {
+    HOWTO: "Montage",
+    DIAGNOSTIC: "Diagnostic",
+    BUYING_GUIDE: "Guide d\u2019achat",
+    GLOSSARY: "D\u00e9finition",
+  };
+  return type ? labels[type] || type : "";
+}
+
+export function getContentTypeBadgeColor(type?: ContentType): string {
+  switch (type) {
+    case "HOWTO":
+      return "bg-blue-100 text-blue-800";
+    case "DIAGNOSTIC":
+      return "bg-orange-100 text-orange-800";
+    case "BUYING_GUIDE":
+      return "bg-green-100 text-green-800";
+    case "GLOSSARY":
+      return "bg-gray-100 text-gray-700";
+    default:
+      return "bg-gray-100 text-gray-600";
+  }
+}
+
+export function getDifficultyLabel(n?: number): string {
+  if (!n) return "";
+  if (n <= 2) return "Facile";
+  if (n <= 3) return "Moyen";
+  return "Avanc\u00e9";
+}
+
+export function formatTimeMinutes(minutes?: number): string {
+  if (!minutes) return "";
+  if (minutes < 60) return `~${minutes} min`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `~${h}h${m.toString().padStart(2, "0")}` : `~${h}h`;
+}
+
+/**
+ * Normalise l'URL d'image d'un article blog.
+ * Utilise isValidImagePath + IMAGE_CONFIG (source unique frontend).
+ */
+export function getArticleImageUrl(
+  featuredImage?: string | null,
+): string | null {
+  if (!isValidImagePath(featuredImage)) return null;
+  if (featuredImage!.startsWith("/") || featuredImage!.startsWith("http"))
+    return featuredImage!;
+  return `${IMAGE_CONFIG.PROXY_BASE}/${IMAGE_CONFIG.BUCKETS.UPLOADS}/${IMAGE_CONFIG.PATHS.GAMMES}/${featuredImage}`;
 }

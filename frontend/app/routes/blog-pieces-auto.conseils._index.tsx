@@ -1,10 +1,12 @@
 // app/routes/blog-pieces-auto.conseils._index.tsx
 /**
  * Route : /blog-pieces-auto/conseils
- * Liste des conseils de montage et entretien par famille
+ * HUB SEO-First — Page d'orientation conseils auto
  *
- * Rôle SEO : R3 - BLOG
- * Intention : Trouver des conseils pratiques
+ * Role SEO : R3 - BLOG HUB
+ * Intention : Decouvrir categories, reparer, diagnostiquer, choisir
+ * 8 sections : Hero → Comment utiliser → Categories → Guides essentiels
+ *              → Par intention → Securite → FAQ → CTA
  */
 
 import {
@@ -18,25 +20,34 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { BookOpen, Calendar, Eye, Filter, ArrowRight, Tag } from "lucide-react";
-import * as React from "react";
+import {
+  Wrench,
+  AlertTriangle,
+  ShoppingCart,
+  Eye,
+  ArrowRight,
+  ShieldCheck,
+  ChevronDown,
+  Package,
+} from "lucide-react";
+import { useState } from "react";
 
-// SEO Page Role (Phase 5 - Quasi-Incopiable)
-
+import { ArticleCardEnhanced } from "~/components/blog/ArticleCardEnhanced";
+import {
+  type BlogArticle,
+  getArticleUrl,
+} from "~/components/blog/blog-helpers";
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
-import { HeroBlog } from "~/components/heroes";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
-/**
- * Handle export pour propager le rôle SEO au root Layout
- */
+// ── Handle ──────────────────────────────────────────────
+
 export const handle = {
   pageRole: createPageRoleMeta(PageRole.R3_BLOG, {
     clusterId: "conseils",
@@ -44,74 +55,161 @@ export const handle = {
   }),
 };
 
-/* ===========================
-   Types
-=========================== */
-interface BlogArticle {
-  id: string;
-  type: string;
-  title: string;
-  slug: string;
-  pg_alias: string | null;
-  excerpt: string;
-  publishedAt: string;
-  viewsCount: number;
-  featuredImage: string | null;
-  tags?: string[];
-}
+// ── Types ───────────────────────────────────────────────
 
 interface CategoryGroup {
   category: string;
   categorySlug: string;
   count: number;
-  articles: BlogArticle[];
-}
-
-interface FamilyGroup {
-  family: string;
-  categories: CategoryGroup[];
-  totalArticles: number;
   totalViews: number;
+  articles: BlogArticle[];
+  gammeLinks: Array<{ slug: string; name: string }>;
 }
 
 interface LoaderData {
   groupedArticles: CategoryGroup[];
-  familyGroups: FamilyGroup[]; // laissé pour compat éventuelle
+  allArticles: BlogArticle[];
   totalArticles: number;
-  stats: {
-    totalViews: number;
-    totalCategories: number;
-  };
+  stats: { totalViews: number; totalCategories: number };
 }
 
-/* ===========================
-   Styles par famille (source unique: family-theme.ts)
-=========================== */
+// ── Top 2 gammes par famille (liens e-commerce) ─────────
+
+const FAMILY_GAMMES: Record<string, Array<{ slug: string; name: string }>> = {
+  Freinage: [
+    { slug: "plaquette-de-frein", name: "Plaquettes de frein" },
+    { slug: "disque-de-frein", name: "Disques de frein" },
+  ],
+  Filtres: [
+    { slug: "filtre-a-huile", name: "Filtre \u00e0 huile" },
+    { slug: "filtre-a-air", name: "Filtre \u00e0 air" },
+  ],
+  "Courroie, galet, poulie et cha\u00eene": [
+    { slug: "courroie-d-accessoire", name: "Courroie d\u2019accessoire" },
+    { slug: "galet-tendeur-de-courroie-d-accessoire", name: "Galet tendeur" },
+  ],
+  "Pr\u00e9chauffage et allumage": [
+    { slug: "bougie-de-prechauffage", name: "Bougie de pr\u00e9chauffage" },
+    {
+      slug: "boitier-de-prechauffage",
+      name: "Bo\u00eetier de pr\u00e9chauffage",
+    },
+  ],
+  "Direction et liaison au sol": [
+    { slug: "rotule-de-direction", name: "Rotule de direction" },
+    { slug: "barre-de-direction", name: "Barre de direction" },
+  ],
+  "Amortisseur et suspension": [
+    { slug: "amortisseur", name: "Amortisseur" },
+    {
+      slug: "kit-de-butee-de-suspension",
+      name: "Kit but\u00e9e de suspension",
+    },
+  ],
+  "Support moteur": [
+    { slug: "support-moteur", name: "Support moteur" },
+    { slug: "support-de-boite-vitesse", name: "Support bo\u00eete vitesse" },
+  ],
+  Embrayage: [
+    { slug: "kit-d-embrayage", name: "Kit d\u2019embrayage" },
+    { slug: "butee-d-embrayage", name: "But\u00e9e d\u2019embrayage" },
+  ],
+  Transmission: [
+    { slug: "cardan", name: "Cardan" },
+    { slug: "soufflet-de-cardan", name: "Soufflet de cardan" },
+  ],
+  "Syst\u00e8me \u00e9lectrique": [
+    { slug: "alternateur", name: "Alternateur" },
+    { slug: "demarreur", name: "D\u00e9marreur" },
+  ],
+  Capteurs: [
+    { slug: "pressostat-d-huile", name: "Pressostat d\u2019huile" },
+    { slug: "capteur-impulsion", name: "Capteur impulsion" },
+  ],
+  "Syst\u00e8me d'alimentation": [
+    { slug: "debitmetre-d-air", name: "D\u00e9bitm\u00e8tre d\u2019air" },
+    { slug: "vanne-egr", name: "Vanne EGR" },
+  ],
+  Moteur: [
+    { slug: "joint-de-culasse", name: "Joint de culasse" },
+    { slug: "joint-de-cache-culbuteurs", name: "Joint cache culbuteurs" },
+  ],
+  Refroidissement: [
+    { slug: "pompe-a-eau", name: "Pompe \u00e0 eau" },
+    { slug: "radiateur-de-refroidissement", name: "Radiateur" },
+  ],
+  Climatisation: [
+    { slug: "pulseur-d-air-d-habitacle", name: "Pulseur d\u2019air" },
+    { slug: "compresseur-de-climatisation", name: "Compresseur clim" },
+  ],
+  Echappement: [
+    { slug: "silencieux", name: "Silencieux" },
+    { slug: "tube-d-echappement", name: "Tube d\u2019\u00e9chappement" },
+  ],
+  Eclairage: [
+    { slug: "feu-avant", name: "Feu avant" },
+    { slug: "feu-arriere", name: "Feu arri\u00e8re" },
+  ],
+  Accessoires: [
+    { slug: "balais-d-essuie-glace", name: "Balais d\u2019essuie-glace" },
+    { slug: "commande-d-essuie-glace", name: "Commande essuie-glace" },
+  ],
+  Turbo: [
+    { slug: "turbo", name: "Turbo" },
+    { slug: "gaine-de-turbo", name: "Gaine de turbo" },
+  ],
+};
 
 const FAMILY_ICONS: Record<string, string> = {
-  Freinage: "🛑",
-  "Direction et liaison au sol": "🎯",
-  Embrayage: "⚙️",
-  "Courroie, galet, poulie et chaîne": "🔗",
-  Moteur: "🏎️",
-  "Système d'alimentation": "⛽",
-  Refroidissement: "❄️",
-  "Préchauffage et allumage": "🔥",
-  Echappement: "💨",
-  "Système électrique": "⚡",
-  Filtres: "🔍",
-  Climatisation: "🌡️",
-  Eclairage: "💡",
-  Transmission: "🔧",
-  "Support moteur": "🏗️",
-  Accessoires: "🛠️",
-  "Amortisseur et suspension": "🔵",
-  Turbo: "🚀",
-  Autres: "📦",
+  Freinage: "\ud83d\uded1",
+  "Direction et liaison au sol": "\ud83c\udfaf",
+  Embrayage: "\u2699\ufe0f",
+  "Courroie, galet, poulie et cha\u00eene": "\ud83d\udd17",
+  Moteur: "\ud83c\udfd7\ufe0f",
+  "Syst\u00e8me d'alimentation": "\u26fd",
+  Refroidissement: "\u2744\ufe0f",
+  "Pr\u00e9chauffage et allumage": "\ud83d\udd25",
+  Echappement: "\ud83d\udca8",
+  "Syst\u00e8me \u00e9lectrique": "\u26a1",
+  Filtres: "\ud83d\udd0d",
+  Climatisation: "\ud83c\udf21\ufe0f",
+  Eclairage: "\ud83d\udca1",
+  Transmission: "\ud83d\udd27",
+  "Support moteur": "\ud83c\udfd7\ufe0f",
+  Accessoires: "\ud83d\udee0\ufe0f",
+  "Amortisseur et suspension": "\ud83d\udd35",
+  Turbo: "\ud83d\ude80",
+  Capteurs: "\ud83d\udce1",
+  Autres: "\ud83d\udce6",
 };
-/* ===========================
-   Loader
-=========================== */
+
+// ── FAQ data ────────────────────────────────────────────
+
+const FAQ_ITEMS = [
+  {
+    q: "Quelle diff\u00e9rence entre un guide de montage et un guide de diagnostic\u00a0?",
+    a: "Un guide de montage explique comment remplacer une pi\u00e8ce \u00e9tape par \u00e9tape. Un guide de diagnostic aide d\u2019abord \u00e0 identifier la cause probable d\u2019un sympt\u00f4me avant de remplacer.",
+  },
+  {
+    q: "Comment \u00eatre s\u00fbr de la compatibilit\u00e9 d\u2019une pi\u00e8ce\u00a0?",
+    a: "La compatibilit\u00e9 d\u00e9pend de la motorisation, de l\u2019ann\u00e9e, et parfois de variantes. Utilisez la recherche par v\u00e9hicule (marque/mod\u00e8le/motorisation) avant achat.",
+  },
+  {
+    q: "Quels outils sont souvent n\u00e9cessaires\u00a0?",
+    a: "Selon l\u2019intervention\u00a0: cl\u00e9s, douilles, cric/chandelles, tournevis, pinces. Chaque guide indique la liste d\u2019outillage recommand\u00e9e.",
+  },
+  {
+    q: "Quand vaut-il mieux faire appel \u00e0 un professionnel\u00a0?",
+    a: "Si l\u2019intervention touche la direction, le freinage, ou si un voyant s\u00e9curit\u00e9 reste allum\u00e9 apr\u00e8s r\u00e9paration.",
+  },
+  {
+    q: "\u00c0 quelle fr\u00e9quence faut-il remplacer certaines pi\u00e8ces\u00a0?",
+    a: "Cela d\u00e9pend du v\u00e9hicule, de l\u2019usage et des sympt\u00f4mes. Les guides donnent des rep\u00e8res g\u00e9n\u00e9raux et des signes d\u2019usure.",
+  },
+];
+
+// ── Loader ──────────────────────────────────────────────
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
     const backendUrl = getInternalApiUrl("");
@@ -121,25 +219,31 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const data = await res.json();
 
     if (!data?.success || !data.data?.families) {
-      logger.error("Format de réponse inattendu:", data);
+      logger.error("Format de r\u00e9ponse inattendu:", data);
       return json<LoaderData>({
         groupedArticles: [],
-        familyGroups: [],
+        allArticles: [],
         totalArticles: 0,
         stats: { totalViews: 0, totalCategories: 0 },
       });
     }
 
+    const allArticles: BlogArticle[] = [];
     const groupedArticles: CategoryGroup[] = data.data.families.map(
-      (family: any) => ({
-        category: family.familyName as string,
-        categorySlug: (family.familyName as string)
-          .toLowerCase()
-          .replace(/\s+/g, "-"),
-        count: family.count as number,
-        // Garder l'ordre de l'API (trié par mc_sort dans le backend)
-        articles: family.articles as BlogArticle[],
-      }),
+      (family: any) => {
+        const articles = family.articles as BlogArticle[];
+        allArticles.push(...articles);
+        return {
+          category: family.familyName as string,
+          categorySlug: (family.familyName as string)
+            .toLowerCase()
+            .replace(/\s+/g, "-"),
+          count: family.count as number,
+          totalViews: family.totalViews ?? 0,
+          articles,
+          gammeLinks: FAMILY_GAMMES[family.familyName as string] || [],
+        };
+      },
     );
 
     const totalArticles: number =
@@ -152,7 +256,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     return json<LoaderData>({
       groupedArticles,
-      familyGroups: [], // pas de sous-groupement dans cette version
+      allArticles,
       totalArticles,
       stats: {
         totalViews,
@@ -163,42 +267,41 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     logger.error("Erreur loader conseils:", e);
     return json<LoaderData>({
       groupedArticles: [],
-      familyGroups: [],
+      allArticles: [],
       totalArticles: 0,
       stats: { totalViews: 0, totalCategories: 0 },
     });
   }
 };
 
-/* ===========================
-   Meta
-=========================== */
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
+// ── Meta ────────────────────────────────────────────────
+
+export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
   const count = data?.totalArticles ?? 0;
-  return [
-    { title: "Montage et entretien - Conseils auto | Automecanik" },
+  const hasFilters = location?.search && location.search.length > 1;
+
+  const tags = [
     {
-      name: "description",
-      content: `Découvrez nos ${count} conseils d'experts pour l'entretien et la réparation de votre véhicule. Guides pratiques sur tous les systèmes automobiles.`,
+      title:
+        "Conseils & Guides Auto \u2014 R\u00e9parer, diagnostiquer, choisir la bonne pi\u00e8ce | Automecanik",
     },
     {
-      name: "keywords",
-      content:
-        "montage, entretien, conseil auto, réparation, mécanique, tutoriel",
+      name: "description",
+      content: `Guides pratiques auto\u00a0: montage, diagnostic, choix de pi\u00e8ces. ${count} articles avec difficult\u00e9, outils, erreurs \u00e0 \u00e9viter. Pi\u00e8ces neuves compatibles.`,
     },
     {
       tagName: "link",
       rel: "canonical",
       href: "https://www.automecanik.com/blog-pieces-auto/conseils",
     },
-    { name: "robots", content: "index, follow" },
     {
       property: "og:title",
-      content: "Montage et entretien - Conseils auto | Automecanik",
+      content:
+        "Conseils & Guides Auto \u2014 R\u00e9parer, diagnostiquer, choisir | Automecanik",
     },
     {
       property: "og:description",
-      content: `Découvrez nos ${count} conseils d'experts pour l'entretien et la réparation de votre véhicule.`,
+      content: `${count} guides pratiques auto\u00a0: montage, diagnostic, choix de pi\u00e8ces.`,
     },
     { property: "og:type", content: "website" },
     {
@@ -217,363 +320,637 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       content: "https://www.automecanik.com/images/og/blog-conseil.webp",
     },
   ];
+
+  // noindex for filtered URLs
+  if (hasFilters) {
+    tags.push({ name: "robots", content: "noindex, follow" });
+  } else {
+    tags.push({ name: "robots", content: "index, follow" });
+  }
+
+  return tags;
 };
 
-/* ===========================
-   Page
-=========================== */
+// ── Schema.org JSON-LD ──────────────────────────────────
+
+function generateStructuredData(
+  categories: CategoryGroup[],
+  totalArticles: number,
+) {
+  const collectionPage = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Conseils & Guides Auto \u2014 R\u00e9parer, diagnostiquer, choisir la bonne pi\u00e8ce",
+    description: `${totalArticles} guides pratiques auto\u00a0: montage, diagnostic, choix de pi\u00e8ces.`,
+    url: "https://www.automecanik.com/blog-pieces-auto/conseils",
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: categories.length,
+      itemListElement: categories.map((cat, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: cat.category,
+        url: `https://www.automecanik.com/blog-pieces-auto/conseils#${cat.categorySlug}`,
+      })),
+    },
+  };
+
+  const faqPage = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQ_ITEMS.map((item) => ({
+      "@type": "Question",
+      name: item.q,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.a,
+      },
+    })),
+  };
+
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Accueil",
+        item: "https://www.automecanik.com",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Blog",
+        item: "https://www.automecanik.com/blog-pieces-auto",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: "Conseils & Guides",
+        item: "https://www.automecanik.com/blog-pieces-auto/conseils",
+      },
+    ],
+  };
+
+  return [collectionPage, faqPage, breadcrumb];
+}
+
+// ── Page ────────────────────────────────────────────────
+
 export default function BlogConseilsIndex() {
-  const { groupedArticles, totalArticles, stats } =
+  const { groupedArticles, allArticles, totalArticles, stats } =
     useLoaderData<typeof loader>();
+  const [activeTab, setActiveTab] = useState<"useful" | "recent" | "popular">(
+    "useful",
+  );
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
-  const formatViews = (views: number) => {
-    if (views >= 1_000_000) return `${(views / 1_000_000).toFixed(1)}M`;
-    if (views >= 1_000) return `${(views / 1_000).toFixed(1)}k`;
-    return `${views}`;
-  };
+  const structuredData = generateStructuredData(groupedArticles, totalArticles);
 
-  const getFamilyColor = (family: string) => {
-    const theme = getFamilyTheme(family);
-    return {
-      bg: theme.bg,
-      border: theme.border,
-      text: theme.fgStrong,
-      gradient: theme.gradient,
-      badge: theme.badge,
-    };
-  };
+  // Top articles for "Guides essentiels" section
+  const sortedByViews = [...allArticles].sort(
+    (a, b) => (b.viewsCount || 0) - (a.viewsCount || 0),
+  );
+  const sortedByDate = [...allArticles].sort(
+    (a, b) =>
+      new Date(b.updatedAt || b.publishedAt).getTime() -
+      new Date(a.updatedAt || a.publishedAt).getTime(),
+  );
+
+  // Featured categories (top 4 by article count)
+  const sortedCategories = [...groupedArticles].sort(
+    (a, b) => b.count - a.count,
+  );
+  const featuredCategories = sortedCategories.slice(0, 4);
+  const otherCategories = showAllCategories ? sortedCategories.slice(4) : [];
+
+  // Articles by content type
+  const howtoArticles = allArticles.filter((a) => a.contentType === "HOWTO");
+  const diagnosticArticles = allArticles.filter(
+    (a) => a.contentType === "DIAGNOSTIC",
+  );
+  const buyingGuideArticles = allArticles.filter(
+    (a) => a.contentType === "BUYING_GUIDE",
+  );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-orange-50/30">
+      {/* Schema.org JSON-LD */}
+      {structuredData.map((sd, i) => (
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(sd) }}
+        />
+      ))}
+
       {/* Navigation */}
       <BlogPiecesAutoNavigation />
 
-      {/* Hero Blog */}
-      <HeroBlog
-        title="Montage et Entretien"
-        description={`${totalArticles} guides pratiques · ${stats.totalCategories} catégories · ${formatViews(stats.totalViews)} vues`}
-        metaLine={`${totalArticles} articles · ${stats.totalCategories} catégories`}
-      />
+      {/* ══════════════════════════════════════════════════
+          SECTION 1 — Hero HUB d'intention
+          ══════════════════════════════════════════════════ */}
+      <section className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white py-16 lg:py-20">
+        <div className="absolute inset-0 bg-[url('/images/og/blog-conseil.webp')] bg-cover bg-center opacity-10" />
+        <div className="relative container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
+              Conseils & Guides Auto &mdash; R&eacute;parer, diagnostiquer,
+              choisir la bonne pi&egrave;ce
+            </h1>
+            <p className="text-lg text-gray-300 mb-10 max-w-3xl mx-auto leading-relaxed">
+              Trouvez rapidement le bon guide selon votre besoin&nbsp;:
+              r&eacute;parer (tutoriels pas &agrave; pas), diagnostiquer
+              (sympt&ocirc;mes et causes), ou choisir la pi&egrave;ce
+              (crit&egrave;res et comparatifs). Chaque article indique le niveau
+              de difficult&eacute;, les outils n&eacute;cessaires et les erreurs
+              &agrave; &eacute;viter pour r&eacute;ussir votre intervention. Et
+              si vous souhaitez passer &agrave; l&rsquo;action, nous vous
+              dirigeons vers les pi&egrave;ces compatibles (neuves)
+              adapt&eacute;es &agrave; votre v&eacute;hicule.
+            </p>
 
-      {/* Points clés */}
-      <section className="py-8 bg-gradient-to-r from-orange-50 to-red-50 border-b border-orange-100">
+            {/* 3 CTA d'intention */}
+            <div className="grid sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+              <Link
+                to="?type=HOWTO"
+                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-5 transition-all hover:bg-blue-600/30 hover:border-blue-400/50"
+              >
+                <Wrench className="h-8 w-8 text-blue-400 group-hover:scale-110 transition-transform" />
+                <span className="font-semibold text-sm">
+                  R&eacute;parer / Monter
+                </span>
+                <span className="text-xs text-gray-400">
+                  Tutoriels pas &agrave; pas, outils, erreurs &agrave;
+                  &eacute;viter
+                </span>
+              </Link>
+              <Link
+                to="?type=DIAGNOSTIC"
+                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-5 transition-all hover:bg-orange-600/30 hover:border-orange-400/50"
+              >
+                <AlertTriangle className="h-8 w-8 text-orange-400 group-hover:scale-110 transition-transform" />
+                <span className="font-semibold text-sm">
+                  Diagnostiquer une panne
+                </span>
+                <span className="text-xs text-gray-400">
+                  Sympt&ocirc;mes, causes, tests avant remplacement
+                </span>
+              </Link>
+              <Link
+                to="?type=BUYING_GUIDE"
+                className="group flex flex-col items-center gap-2 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 p-5 transition-all hover:bg-green-600/30 hover:border-green-400/50"
+              >
+                <ShoppingCart className="h-8 w-8 text-green-400 group-hover:scale-110 transition-transform" />
+                <span className="font-semibold text-sm">
+                  Choisir la bonne pi&egrave;ce
+                </span>
+                <span className="text-xs text-gray-400">
+                  Crit&egrave;res, compatibilit&eacute;, comparatifs
+                </span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 2 — Comment utiliser ce hub
+          ══════════════════════════════════════════════════ */}
+      <section className="py-12 border-b border-gray-100">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-2xl font-bold text-gray-900 mb-3 text-center">
+              Comment utiliser ce hub
+            </h2>
+            <p className="text-gray-600 text-center mb-8 max-w-2xl mx-auto">
+              Vous h&eacute;sitez entre plusieurs articles&nbsp;? Commencez par
+              votre cat&eacute;gorie (ex&nbsp;: Freinage), puis affinez selon
+              votre objectif&nbsp;: montage, diagnostic ou achat. Les guides
+              &laquo;&nbsp;montage&nbsp;&raquo; donnent des &eacute;tapes
+              claires, les pages &laquo;&nbsp;diagnostic&nbsp;&raquo; aident
+              &agrave; identifier une panne, et les &laquo;&nbsp;guides
+              d&rsquo;achat&nbsp;&raquo; expliquent comment choisir la bonne
+              pi&egrave;ce selon votre v&eacute;hicule.
+            </p>
             <div className="grid md:grid-cols-3 gap-6">
-              <div className="flex items-start bg-white/80 backdrop-blur rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold mr-4 flex-shrink-0 text-lg">
+              <div className="relative flex flex-col items-center text-center p-6 rounded-xl bg-white border border-gray-200 shadow-sm">
+                <div className="w-12 h-12 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xl mb-3">
                   1
                 </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 mb-2 text-lg">
-                    Instructions détaillées
-                  </h4>
-                  <p className="text-gray-600 text-sm">
-                    Étapes claires avec photos et schémas explicatifs pour
-                    chaque intervention
-                  </p>
-                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  Choisissez une cat&eacute;gorie
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Freinage, Filtration, Moteur&hellip;
+                </p>
               </div>
-              <div className="flex items-start bg-white/80 backdrop-blur rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold mr-4 flex-shrink-0 text-lg">
+              <div className="relative flex flex-col items-center text-center p-6 rounded-xl bg-white border border-gray-200 shadow-sm">
+                <div className="w-12 h-12 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xl mb-3">
                   2
                 </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 mb-2 text-lg">
-                    Outils nécessaires
-                  </h4>
-                  <p className="text-gray-600 text-sm">
-                    Liste complète du matériel requis pour réussir le montage de
-                    vos pièces
-                  </p>
-                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  Filtrez par besoin
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Dur&eacute;e, difficult&eacute;, type de guide
+                </p>
               </div>
-              <div className="flex items-start bg-white/80 backdrop-blur rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
-                <div className="bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-full w-12 h-12 flex items-center justify-center font-bold mr-4 flex-shrink-0 text-lg">
+              <div className="relative flex flex-col items-center text-center p-6 rounded-xl bg-white border border-gray-200 shadow-sm">
+                <div className="w-12 h-12 rounded-full bg-orange-100 text-orange-700 flex items-center justify-center font-bold text-xl mb-3">
                   3
                 </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 mb-2 text-lg">
-                    Conseils d'experts
-                  </h4>
-                  <p className="text-gray-600 text-sm">
-                    Astuces professionnelles et recommandations pour un montage
-                    réussi
-                  </p>
-                </div>
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  Passez &agrave; la pi&egrave;ce
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Liens vers gammes et catalogue
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Section Filtres Améliorée */}
-      <section className="py-12 bg-gradient-to-br from-orange-50 via-white to-red-50">
+      {/* ══════════════════════════════════════════════════
+          SECTION 3 — Cat&eacute;gories principales
+          ══════════════════════════════════════════════════ */}
+      <section className="py-14 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            {/* En-tête */}
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-red-600 text-white px-4 py-2 rounded-full mb-3">
-                <Filter className="w-5 h-5" />
-                <span className="font-semibold">Par Catégorie</span>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                Explorez par type d'intervention
-              </h3>
-              <p className="text-gray-600">
-                Trouvez rapidement le guide adapté à votre besoin
-              </p>
-            </div>
-
-            {/* Grille de filtres */}
-            <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2">
-              {groupedArticles.map((group, index) => {
-                const colors = getFamilyColor(group.category);
-                const icon = FAMILY_ICONS[group.category] || "📦";
-                return (
-                  <button
-                    key={group.categorySlug}
-                    onClick={() => {
-                      // 🚀 LCP Fix: scrollIntoView + CSS scroll-margin (évite getBoundingClientRect)
-                      document
-                        .getElementById(group.categorySlug)
-                        ?.scrollIntoView({
-                          behavior: "smooth",
-                          block: "start",
-                        });
-                    }}
-                    style={{ animationDelay: `${index * 50}ms` }}
-                    className={`group relative p-2.5 rounded-lg ${colors.bg} border-2 ${colors.border} transition-all duration-300 hover:shadow-lg hover:scale-105 cursor-pointer text-center`}
-                  >
-                    {/* Icône */}
-                    <div
-                      className={`text-2xl mb-1.5 transform group-hover:scale-110 transition-transform duration-200`}
-                    >
-                      {icon}
-                    </div>
-
-                    {/* Nom de la catégorie */}
-                    <h4
-                      className={`${colors.text} font-bold text-xs leading-tight line-clamp-2`}
-                    >
-                      {group.category}
-                    </h4>
-
-                    {/* Effet de survol */}
-                    <div
-                      className={`absolute inset-0 rounded-lg bg-gradient-to-br ${colors.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
-                    />
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Statistiques */}
-            <div className="mt-8 flex items-center justify-center gap-8 text-sm text-gray-600">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-orange-600" />
-                <span>
-                  <strong className="text-gray-900">{totalArticles}</strong>{" "}
-                  guides disponibles
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4 text-orange-600" />
-                <span>
-                  <strong className="text-gray-900">
-                    {stats.totalViews.toLocaleString()}
-                  </strong>{" "}
-                  vues totales
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-orange-600" />
-                <span>
-                  <strong className="text-gray-900">
-                    {stats.totalCategories}
-                  </strong>{" "}
-                  catégories
-                </span>
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Cat&eacute;gories principales
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  {stats.totalCategories} familles &middot; {totalArticles}{" "}
+                  guides
+                </p>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* Content */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-7xl mx-auto space-y-24">
-            {groupedArticles.length > 0 ? (
-              groupedArticles.map((group, _groupIndex) => {
-                const colors = getFamilyColor(group.category);
-                const icon = FAMILY_ICONS[group.category] || "📦";
-                const groupViews = group.articles.reduce(
-                  (s, a) => s + (a.viewsCount || 0),
-                  0,
-                );
+            {/* Featured 4 categories */}
+            <div className="grid md:grid-cols-2 gap-6 mb-6">
+              {featuredCategories.map((group) => {
+                const theme = getFamilyTheme(group.category);
+                const icon = FAMILY_ICONS[group.category] || "\ud83d\udce6";
+                const topArticles = group.articles.slice(0, 3);
 
                 return (
                   <div
                     key={group.categorySlug}
                     id={group.categorySlug}
-                    className="scroll-mt-28"
+                    className={`rounded-xl border-2 ${theme.border} ${theme.bg} p-6 scroll-mt-28`}
                   >
-                    {/* Header */}
-                    <div className="relative mb-10">
-                      <div
-                        className={`flex items-center gap-4 p-6 rounded-2xl ${colors.bg} border-2 ${colors.border}`}
-                      >
-                        <div
-                          className={`w-16 h-16 rounded-xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center text-3xl`}
-                        >
-                          {icon}
-                        </div>
-                        <div className="flex-1">
-                          <h2
-                            className={`text-3xl md:text-4xl font-bold ${colors.text} mb-1`}
-                          >
-                            {group.category}
-                          </h2>
-                          <div className="flex items-center gap-3">
-                            <Badge className={colors.badge}>
-                              {group.count} article{group.count > 1 ? "s" : ""}
-                            </Badge>
-                            <span className="text-sm text-gray-500">•</span>
-                            <span
-                              className={`text-sm font-medium ${colors.text}`}
-                            >
-                              {groupViews.toLocaleString()} vues
-                            </span>
-                          </div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <span className="text-3xl">{icon}</span>
+                      <div className="flex-1">
+                        <h3 className={`text-xl font-bold ${theme.fgStrong}`}>
+                          {group.category}
+                        </h3>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span>
+                            {group.count} article
+                            {group.count > 1 ? "s" : ""}
+                          </span>
+                          <span>&middot;</span>
+                          <span className="flex items-center gap-1">
+                            <Eye className="h-3 w-3" />
+                            {(group.totalViews || 0).toLocaleString()}
+                          </span>
                         </div>
                       </div>
-                      <div
-                        className={`h-1.5 w-full bg-gradient-to-r ${colors.gradient} rounded-full mt-2`}
-                      />
                     </div>
 
-                    {/* Grid */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      {group.articles.map((article) => (
-                        <Link
-                          key={article.id}
-                          to={`/blog-pieces-auto/conseils/${article.pg_alias || article.slug}`}
-                          className="group block"
-                        >
-                          <Card className="h-full hover:shadow-2xl hover:shadow-blue-100/50 transition-all duration-300 border-2 border-gray-100 hover:border-blue-300 bg-white overflow-hidden group-hover:-translate-y-1">
-                            {/* Layout horizontal: image à gauche + contenu à droite */}
-                            <div className="flex flex-row h-full">
-                              {/* Image à gauche - fixe 160px */}
-                              <div className="relative w-40 flex-shrink-0 overflow-hidden bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
-                                {article.featuredImage ? (
-                                  <img
-                                    src={article.featuredImage}
-                                    alt={article.title}
-                                    className="w-full h-full object-contain p-4 group-hover:scale-110 transition-transform duration-500"
-                                    loading="lazy"
-                                  />
-                                ) : (
-                                  <div
-                                    className={`h-full flex items-center justify-center bg-gradient-to-br ${colors.gradient}`}
-                                  >
-                                    <span className="text-5xl opacity-50 drop-shadow-sm">
-                                      {icon}
-                                    </span>
-                                  </div>
-                                )}
-
-                                {/* Nom de la pièce en bas avec glassmorphism */}
-                                {article.pg_alias && (
-                                  <div className="absolute bottom-0 left-0 right-0 p-2">
-                                    <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-md shadow-lg px-2.5 py-1.5 text-center">
-                                      <p className="text-xs font-bold text-gray-900 truncate capitalize">
-                                        {article.pg_alias.replace(/-/g, " ")}
-                                      </p>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Contenu à droite */}
-                              <CardContent className="p-5 flex-1 flex flex-col min-w-0">
-                                {/* Header avec vues */}
-                                <div className="flex items-start justify-between gap-3 mb-3">
-                                  <h3 className="font-bold text-lg text-gray-900 line-clamp-2 group-hover:text-blue-600 transition-colors leading-tight flex-1">
-                                    {article.title}
-                                  </h3>
-                                  {article.viewsCount > 0 && (
-                                    <Badge
-                                      variant="secondary"
-                                      className="flex items-center gap-1.5 text-xs font-semibold bg-primary/5 text-blue-700 border-blue-200 flex-shrink-0 px-2.5 py-1"
-                                    >
-                                      <Eye className="w-3.5 h-3.5" />
-                                      <span>
-                                        {formatViews(article.viewsCount)}
-                                      </span>
-                                    </Badge>
-                                  )}
-                                </div>
-
-                                {/* Description */}
-                                <p className="text-muted-foreground text-sm line-clamp-2 mb-4 leading-relaxed">
-                                  {article.excerpt}
-                                </p>
-
-                                {/* Footer avec design amélioré */}
-                                <div className="flex items-center justify-between pt-3 border-t-2 border-gray-100 mt-auto">
-                                  <div className="flex items-center gap-2 text-xs text-muted-foreground font-medium">
-                                    <div className="p-1 bg-gray-100 rounded-md">
-                                      <Calendar className="w-3.5 h-3.5 text-gray-600" />
-                                    </div>
-                                    <span>
-                                      {new Date(
-                                        article.publishedAt,
-                                      ).toLocaleDateString("fr-FR", {
-                                        day: "numeric",
-                                        month: "short",
-                                        year: "numeric",
-                                      })}
-                                    </span>
-                                  </div>
-
-                                  <div className="flex items-center gap-2 text-primary font-bold text-sm group-hover:gap-3 transition-all">
-                                    <span>Lire l'article</span>
-                                    <div className="p-1 bg-primary/5 rounded-md group-hover:bg-info/20 transition-colors">
-                                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </div>
-                          </Card>
-                        </Link>
+                    {/* Top 3 articles */}
+                    <ul className="space-y-1.5 mb-4">
+                      {topArticles.map((article) => (
+                        <li key={article.id}>
+                          <Link
+                            to={getArticleUrl(article)}
+                            className="text-sm text-gray-700 hover:text-primary hover:underline flex items-start gap-1.5"
+                          >
+                            <ArrowRight className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-gray-400" />
+                            <span className="line-clamp-1">
+                              {article.title}
+                            </span>
+                          </Link>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
+
+                    {/* Gamme links (e-commerce) */}
+                    {group.gammeLinks.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200/60">
+                        <Package className="h-4 w-4 text-gray-400 mt-0.5" />
+                        {group.gammeLinks.map((gamme) => (
+                          <Link
+                            key={gamme.slug}
+                            to={`/pieces/${gamme.slug}`}
+                            className="text-xs font-medium text-primary hover:underline"
+                          >
+                            {gamme.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
-              })
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-gray-600 text-xl">
-                  Aucun article disponible pour le moment
+              })}
+            </div>
+
+            {/* Other categories (compact) */}
+            {sortedCategories.length > 4 && (
+              <>
+                {!showAllCategories ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAllCategories(true)}
+                    className="w-full gap-2"
+                  >
+                    Voir les {sortedCategories.length - 4} autres
+                    cat&eacute;gories
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {otherCategories.map((group) => {
+                      const icon =
+                        FAMILY_ICONS[group.category] || "\ud83d\udce6";
+                      return (
+                        <a
+                          key={group.categorySlug}
+                          href={`#${group.categorySlug}`}
+                          className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3 hover:border-primary hover:shadow-sm transition-all"
+                        >
+                          <span className="text-xl">{icon}</span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {group.category}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {group.count} article
+                              {group.count > 1 ? "s" : ""}
+                            </p>
+                          </div>
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 4 — Guides essentiels (onglets)
+          ══════════════════════════════════════════════════ */}
+      <section className="py-14 bg-gray-50/50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Guides essentiels
+            </h2>
+            <p className="text-gray-600 mb-6 max-w-2xl">
+              Voici nos guides les plus consult&eacute;s et les plus utiles
+              selon les retours des automobilistes&nbsp;: interventions
+              fr&eacute;quentes, &eacute;tapes claires, outils
+              n&eacute;cessaires et points de vigilance.
+            </p>
+
+            {/* Tabs */}
+            <div className="flex gap-2 mb-6">
+              {(
+                [
+                  { key: "useful", label: "Les plus utiles" },
+                  { key: "recent", label: "Mis \u00e0 jour r\u00e9cemment" },
+                  { key: "popular", label: "Les plus consult\u00e9s" },
+                ] as const
+              ).map((tab) => (
+                <Button
+                  key={tab.key}
+                  variant={activeTab === tab.key ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setActiveTab(tab.key)}
+                >
+                  {tab.label}
+                </Button>
+              ))}
+            </div>
+
+            {/* Articles grid */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {(activeTab === "popular"
+                ? sortedByViews
+                : activeTab === "recent"
+                  ? sortedByDate
+                  : sortedByViews
+              )
+                .slice(0, 12)
+                .map((article) => (
+                  <ArticleCardEnhanced
+                    key={article.id}
+                    article={article}
+                    compact
+                  />
+                ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 5 — Guides par intention
+          ══════════════════════════════════════════════════ */}
+      <section className="py-14 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto space-y-12">
+            {/* 5A — Reparer / Monter */}
+            <div>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                  <Wrench className="h-5 w-5 text-blue-700" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    R&eacute;parer / Monter
+                  </h2>
+                  <p className="text-sm text-gray-600">
+                    {howtoArticles.length} guides de montage
+                  </p>
+                </div>
+              </div>
+              <p className="text-gray-600 mb-5">
+                Les guides de montage expliquent comment remplacer une
+                pi&egrave;ce &eacute;tape par &eacute;tape&nbsp;:
+                d&eacute;montage, remontage, contr&ocirc;les, essais, et erreurs
+                &agrave; &eacute;viter.
+              </p>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {howtoArticles.slice(0, 8).map((article) => (
+                  <ArticleCardEnhanced
+                    key={article.id}
+                    article={article}
+                    compact
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* 5B — Diagnostiquer */}
+            {diagnosticArticles.length > 0 && (
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center">
+                    <AlertTriangle className="h-5 w-5 text-orange-700" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      Diagnostiquer une panne
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      {diagnosticArticles.length} guides de diagnostic
+                    </p>
+                  </div>
+                </div>
+                <p className="text-gray-600 mb-5">
+                  Les guides de diagnostic vous aident &agrave; identifier une
+                  cause probable &agrave; partir de sympt&ocirc;mes (voyants,
+                  bruits, fum&eacute;es, pertes de puissance), puis &agrave;
+                  v&eacute;rifier avant remplacement.
                 </p>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {diagnosticArticles.slice(0, 8).map((article) => (
+                    <ArticleCardEnhanced
+                      key={article.id}
+                      article={article}
+                      compact
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 5C — Choisir */}
+            {buyingGuideArticles.length > 0 && (
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                    <ShoppingCart className="h-5 w-5 text-green-700" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      Choisir la bonne pi&egrave;ce
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      {buyingGuideArticles.length} guides d&rsquo;achat
+                    </p>
+                  </div>
+                </div>
+                <p className="text-gray-600 mb-5">
+                  Les guides d&rsquo;achat expliquent comment choisir selon la
+                  motorisation, la compatibilit&eacute;, la qualit&eacute;, et
+                  l&rsquo;usage (ville, autoroute, charge, performance), pour
+                  &eacute;viter les erreurs.
+                </p>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {buyingGuideArticles.slice(0, 8).map((article) => (
+                    <ArticleCardEnhanced
+                      key={article.id}
+                      article={article}
+                      compact
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>
         </div>
       </section>
 
-      {/* CTA - Design orange moderne */}
+      {/* ══════════════════════════════════════════════════
+          SECTION 6 — S&eacute;curit&eacute; & bonnes pratiques
+          ══════════════════════════════════════════════════ */}
+      <section className="py-12 bg-amber-50/50 border-y border-amber-100">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-3 mb-6">
+              <ShieldCheck className="h-7 w-7 text-amber-700" />
+              <h2 className="text-2xl font-bold text-gray-900">
+                S&eacute;curit&eacute; & bonnes pratiques
+              </h2>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {[
+                "Travaillez sur sol plat, v\u00e9hicule s\u00e9curis\u00e9 (frein de parking, chandelles).",
+                "Laissez refroidir les \u00e9l\u00e9ments chauds (moteur, \u00e9chappement, freins).",
+                "Respectez les couples de serrage quand ils sont indiqu\u00e9s.",
+                "Si un voyant s\u00e9curit\u00e9 persiste apr\u00e8s intervention, stop et diagnostic.",
+                "En cas de doute (freinage/direction), faites v\u00e9rifier par un professionnel.",
+                "Utilisez des pi\u00e8ces compatibles avec votre v\u00e9hicule et votre motorisation.",
+              ].map((text, i) => (
+                <div
+                  key={i}
+                  className="flex items-start gap-3 rounded-lg bg-white p-4 border border-amber-200/60"
+                >
+                  <div className="w-6 h-6 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                    {i + 1}
+                  </div>
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    {text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 7 — FAQ
+          ══════════════════════════════════════════════════ */}
+      <section className="py-14 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+              Questions fr&eacute;quentes
+            </h2>
+            <div className="space-y-4">
+              {FAQ_ITEMS.map((item, i) => (
+                <details
+                  key={i}
+                  className="group rounded-lg border border-gray-200 bg-white"
+                >
+                  <summary className="flex cursor-pointer items-center justify-between px-5 py-4 font-medium text-gray-900 hover:bg-gray-50">
+                    <span>{item.q}</span>
+                    <ChevronDown className="h-4 w-4 text-gray-500 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="px-5 pb-4 text-sm text-gray-600 leading-relaxed">
+                    {item.a}
+                  </div>
+                </details>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 8 — CTA business
+          ══════════════════════════════════════════════════ */}
       <section className="py-16 bg-gradient-to-r from-orange-600 to-red-600 text-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h3 className="text-3xl md:text-4xl font-bold mb-4">
-              Besoin d'aide pour une réparation ?
-            </h3>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Besoin d&rsquo;aide pour une r&eacute;paration&nbsp;?
+            </h2>
             <p className="text-xl mb-8 text-white/90">
-              Nos experts sont là pour vous conseiller sur le choix des pièces
-              et les techniques de montage
+              Nos experts sont l&agrave; pour vous conseiller sur le choix des
+              pi&egrave;ces et les techniques de montage
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/contact">
@@ -585,12 +962,12 @@ export default function BlogConseilsIndex() {
                   Contacter un expert
                 </Button>
               </Link>
-              <Link to="/blog-pieces-auto/auto">
+              <Link to="/pieces">
                 <Button
                   size="lg"
                   className="bg-white text-orange-600 hover:bg-gray-100 px-8 py-4 text-lg rounded-xl font-semibold"
                 >
-                  Voir les pièces
+                  Voir les pi&egrave;ces compatibles
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
@@ -598,13 +975,76 @@ export default function BlogConseilsIndex() {
           </div>
         </div>
       </section>
+
+      {/* ══════════════════════════════════════════════════
+          All categories articles (full listing below fold)
+          ══════════════════════════════════════════════════ */}
+      <section className="py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto space-y-20">
+            {groupedArticles.map((group) => {
+              const theme = getFamilyTheme(group.category);
+              const icon = FAMILY_ICONS[group.category] || "\ud83d\udce6";
+
+              return (
+                <div
+                  key={group.categorySlug}
+                  id={group.categorySlug}
+                  className="scroll-mt-28"
+                >
+                  {/* Category header */}
+                  <div
+                    className={`flex items-center gap-4 p-5 rounded-xl ${theme.bg} border-2 ${theme.border} mb-6`}
+                  >
+                    <span className="text-3xl">{icon}</span>
+                    <div className="flex-1">
+                      <h2 className={`text-2xl font-bold ${theme.fgStrong}`}>
+                        {group.category}
+                      </h2>
+                      <div className="flex items-center gap-3 text-sm text-gray-600">
+                        <Badge className={theme.badge}>
+                          {group.count} article
+                          {group.count > 1 ? "s" : ""}
+                        </Badge>
+                        {group.totalViews > 0 && (
+                          <span>{group.totalViews.toLocaleString()} vues</span>
+                        )}
+                      </div>
+                    </div>
+                    {/* E-commerce links */}
+                    {group.gammeLinks.length > 0 && (
+                      <div className="hidden md:flex items-center gap-2">
+                        {group.gammeLinks.map((gamme) => (
+                          <Link
+                            key={gamme.slug}
+                            to={`/pieces/${gamme.slug}`}
+                            className="text-xs font-medium bg-white/80 rounded-full px-3 py-1 text-primary hover:bg-white border border-gray-200 transition-colors"
+                          >
+                            {gamme.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Articles grid */}
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {group.articles.map((article) => (
+                      <ArticleCardEnhanced key={article.id} article={article} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
 
-// ============================================================
-// ERROR BOUNDARY - Gestion des erreurs HTTP avec composants
-// ============================================================
+// ── Error Boundary ──────────────────────────────────────
+
 export function ErrorBoundary() {
   const error = useRouteError();
 

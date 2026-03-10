@@ -119,6 +119,12 @@ export class AdviceTransformService {
         pg_alias: null,
         pg_id: null,
         ba_pg_id: advice.ba_pg_id || null,
+        contentType:
+          (advice.ba_content_type as BlogArticle['contentType']) || undefined,
+        difficulty: advice.ba_difficulty ?? undefined,
+        timeMinutes: advice.ba_time_minutes ?? undefined,
+        toolsCount: advice.ba_tools_count ?? undefined,
+        primaryGammeSlug: advice.ba_primary_gamme_slug || undefined,
         excerpt: decodeHtmlEntities(
           advice.ba_preview || advice.ba_descrip || '',
         ),
@@ -214,6 +220,12 @@ export class AdviceTransformService {
         pg_alias: null,
         pg_id: null,
         ba_pg_id: advice.ba_pg_id || null,
+        contentType:
+          (advice.ba_content_type as BlogArticle['contentType']) || undefined,
+        difficulty: advice.ba_difficulty ?? undefined,
+        timeMinutes: advice.ba_time_minutes ?? undefined,
+        toolsCount: advice.ba_tools_count ?? undefined,
+        primaryGammeSlug: advice.ba_primary_gamme_slug || undefined,
         excerpt: decodeHtmlEntities(
           advice.ba_preview || advice.ba_descrip || '',
         ),

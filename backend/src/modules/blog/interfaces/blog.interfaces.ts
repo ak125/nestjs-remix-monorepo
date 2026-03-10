@@ -50,6 +50,11 @@ export interface BlogArticle {
   source?: 'manual' | 'auto';
   cta_anchor?: string | null; // Texte du bouton CTA principal
   cta_link?: string | null; // URL du bouton CTA principal
+  contentType?: 'HOWTO' | 'DIAGNOSTIC' | 'BUYING_GUIDE' | 'GLOSSARY';
+  difficulty?: number; // 1-5
+  timeMinutes?: number;
+  toolsCount?: number;
+  primaryGammeSlug?: string;
   relatedArticles?: BlogArticle[]; // Articles croisés (sidebar "On vous propose")
   compatibleVehicles?: Record<string, unknown>[]; // Véhicules compatibles (à implémenter)
   seo_data?: {
@@ -109,6 +114,11 @@ export interface BaRow {
   ba_pg_id?: string;
   ba_cta_anchor?: string | null;
   ba_cta_link?: string | null;
+  ba_content_type?: string | null;
+  ba_difficulty?: number | null;
+  ba_time_minutes?: number | null;
+  ba_tools_count?: number | null;
+  ba_primary_gamme_slug?: string | null;
   pg_alias?: string;
   [key: string]: unknown;
 }

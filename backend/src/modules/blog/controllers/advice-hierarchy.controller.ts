@@ -1,4 +1,4 @@
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, Query } from '@nestjs/common';
 import { AdviceService } from '../services/advice.service';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogCacheService } from '../services/blog-cache.service';
@@ -30,19 +30,25 @@ export class AdviceHierarchyController {
    * ⚡ Avec cache Redis (5 min TTL)
    */
   @Get()
-  async getAdviceByFamily() {
+  async getAdviceByFamily(@Query('type') contentType?: string) {
     try {
-      // 🔍 Check cache first
+      const cacheKey = contentType
+        ? `${this.CACHE_KEY}:type:${contentType}`
+        : this.CACHE_KEY;
+
+      // Check cache first
       const cached = await this.cacheService.get<unknown>(
-        this.CACHE_KEY,
+        cacheKey,
         this.CACHE_TTL,
       );
       if (cached) {
-        this.logger.log('✅ Cache HIT - hierarchy');
+        this.logger.log(
+          `Cache HIT - hierarchy${contentType ? ` (type=${contentType})` : ''}`,
+        );
         return cached;
       }
 
-      this.logger.log('📦 Cache MISS - Récupération conseils par famille...');
+      this.logger.log('Cache MISS - Récupération conseils par famille...');
 
       // 1. Récupérer tous les conseils
       const adviceResult = await this.adviceService.getAllAdvice({
@@ -57,8 +63,21 @@ export class AdviceHierarchyController {
         });
       }
 
-      const articles = adviceResult.articles;
-      this.logger.log(`✅ ${articles.length} conseils récupérés`);
+      let articles = adviceResult.articles;
+
+      // Server-side filtering by content type
+      if (contentType) {
+        const validTypes = ['HOWTO', 'DIAGNOSTIC', 'BUYING_GUIDE', 'GLOSSARY'];
+        if (validTypes.includes(contentType.toUpperCase())) {
+          articles = articles.filter(
+            (a) => a.contentType === contentType.toUpperCase(),
+          );
+        }
+      }
+
+      this.logger.log(
+        `${articles.length} conseils récupérés${contentType ? ` (type=${contentType})` : ''}`,
+      );
 
       // 2. Récupérer le mapping pg_id → famille depuis catalog_gamme
       const pgIds = [
@@ -192,9 +211,9 @@ export class AdviceHierarchyController {
         },
       };
 
-      // 💾 Store in cache (5 minutes)
-      await this.cacheService.set(this.CACHE_KEY, response, this.CACHE_TTL);
-      this.logger.log('💾 Hierarchy cached for 5 minutes');
+      // Store in cache (5 minutes)
+      await this.cacheService.set(cacheKey, response, this.CACHE_TTL);
+      this.logger.log('Hierarchy cached for 5 minutes');
 
       return response;
     } catch (error) {
