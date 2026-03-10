@@ -4,7 +4,7 @@
  */
 export function safeRedirect(
   to: string | null | undefined,
-  fallback = "/account",
+  fallback = "/account/dashboard",
 ): string {
   if (!to || typeof to !== "string") return fallback;
   if (!to.startsWith("/") || to.startsWith("//")) return fallback;

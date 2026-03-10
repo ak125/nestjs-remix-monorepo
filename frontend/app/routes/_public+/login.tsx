@@ -51,7 +51,7 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     const userLevel = user.level || 1;
     if (user.isAdmin && userLevel >= 7) return redirect("/admin");
     if (user.isPro) return redirect("/commercial");
-    return redirect("/account");
+    return redirect("/account/dashboard");
   }
   return json({
     googleClientId: process.env.VITE_GOOGLE_CLIENT_ID || "",
@@ -140,7 +140,7 @@ export async function action({ request }: ActionFunctionArgs) {
   const data = await backendResponse.json().catch(() => ({}));
   const user = data.user;
   let destination = redirectTo;
-  if (destination === "/account") {
+  if (destination === "/account" || destination === "/account/dashboard") {
     const level = parseInt(String(user?.level)) || 0;
     if (user?.isAdmin && level >= 7) destination = "/admin";
     else if (user?.isPro) destination = "/commercial";
