@@ -16,7 +16,21 @@ import { UserDataConsolidatedService } from '../../src/modules/users/services/us
 import { CacheService } from '../../src/cache/cache.service';
 import { PasswordCryptoService } from '../../src/shared/crypto/password-crypto.service';
 
-// ─── Shared mock fixtures (User shape, not raw DB columns) ──────────────────
+// ─── Shared mock fixtures ──────────────────────────────────────────────
+
+// resolveUserByEmail() shape (RPC cross-table lookup)
+const mockResolved = {
+  userId: 'user-123',
+  email: 'test@example.com',
+  passwordHash: '$2b$10$hashedPasswordHere',
+  firstName: 'John',
+  lastName: 'Doe',
+  level: 1,
+  isActive: true,
+  authSource: 'customer' as const,
+};
+
+// findById() shape (User object)
 const mockUserData = {
   id: 'user-123',
   email: 'test@example.com',
@@ -25,12 +39,6 @@ const mockUserData = {
   isActive: true,
   isPro: false,
   level: 1,
-};
-
-// findByEmailForAuth returns { user, passwordHash }
-const mockAuthResult = {
-  user: mockUserData,
-  passwordHash: '$2b$10$hashedPasswordHere',
 };
 
 describe('AuthService', () => {
@@ -51,6 +59,8 @@ describe('AuthService', () => {
     update: jest.fn(),
     create: jest.fn(),
     findByEmail: jest.fn(),
+    resolveUserByEmail: jest.fn(),
+    emailExistsAnywhere: jest.fn(),
   };
 
   const mockCacheService = {
@@ -70,7 +80,9 @@ describe('AuthService', () => {
   beforeEach(async () => {
     jest.clearAllMocks();
 
-    // Default: no admin found (most tests are for regular customers)
+    // Default: no user found (override in individual tests)
+    mockUserService.resolveUserByEmail.mockResolvedValue(null);
+    mockUserService.emailExistsAnywhere.mockResolvedValue(false);
     mockUserService.findAdminByEmailForAuth.mockResolvedValue(null);
 
     // Default: needsRehash returns false (no upgrade needed)
@@ -105,7 +117,7 @@ describe('AuthService', () => {
   // TEST 1: authenticateUser — valid email + valid password → returns AuthUser
   // ═══════════════════════════════════════════════════════════════
   it('authenticateUser() should return AuthUser when email and password are valid', async () => {
-    mockUserService.findByEmailForAuth.mockResolvedValue(mockAuthResult);
+    mockUserService.resolveUserByEmail.mockResolvedValue(mockResolved);
     mockPasswordCrypto.validatePassword.mockResolvedValue({
       isValid: true,
       format: 'bcrypt',
@@ -129,7 +141,7 @@ describe('AuthService', () => {
   // TEST 2: authenticateUser — valid email + wrong password → returns null
   // ═══════════════════════════════════════════════════════════════
   it('authenticateUser() should return null when password is invalid', async () => {
-    mockUserService.findByEmailForAuth.mockResolvedValue(mockAuthResult);
+    mockUserService.resolveUserByEmail.mockResolvedValue(mockResolved);
     mockPasswordCrypto.validatePassword.mockResolvedValue({
       isValid: false,
       format: 'bcrypt',
@@ -147,8 +159,7 @@ describe('AuthService', () => {
   // TEST 3: authenticateUser — user not found in either table → returns null
   // ═══════════════════════════════════════════════════════════════
   it('authenticateUser() should return null when user is not found in any table', async () => {
-    mockUserService.findByEmailForAuth.mockResolvedValue(null);
-    mockUserService.findAdminByEmailForAuth.mockResolvedValue(null);
+    mockUserService.resolveUserByEmail.mockResolvedValue(null);
 
     const result = await service.authenticateUser(
       'unknown@example.com',
@@ -164,11 +175,10 @@ describe('AuthService', () => {
   // TEST 4: authenticateUser — inactive user → throws UnauthorizedException
   // ═══════════════════════════════════════════════════════════════
   it('authenticateUser() should throw UnauthorizedException when user account is inactive', async () => {
-    const inactiveAuthResult = {
-      user: { ...mockUserData, isActive: false },
-      passwordHash: '$2b$10$hashedPasswordHere',
-    };
-    mockUserService.findByEmailForAuth.mockResolvedValue(inactiveAuthResult);
+    mockUserService.resolveUserByEmail.mockResolvedValue({
+      ...mockResolved,
+      isActive: false,
+    });
     mockPasswordCrypto.validatePassword.mockResolvedValue({
       isValid: true,
       format: 'bcrypt',
@@ -183,11 +193,10 @@ describe('AuthService', () => {
   // TEST 5: authenticateUser — legacy hash triggers password upgrade
   // ═══════════════════════════════════════════════════════════════
   it('authenticateUser() should trigger password upgrade when legacy hash is detected', async () => {
-    const legacyAuthResult = {
-      user: mockUserData,
+    mockUserService.resolveUserByEmail.mockResolvedValue({
+      ...mockResolved,
       passwordHash: 'im10tech7legacy', // legacy non-bcrypt hash
-    };
-    mockUserService.findByEmailForAuth.mockResolvedValue(legacyAuthResult);
+    });
     mockPasswordCrypto.validatePassword.mockResolvedValue({
       isValid: true,
       format: 'md5-crypt',
@@ -218,7 +227,7 @@ describe('AuthService', () => {
   // TEST 6: login — successful login → returns { user, access_token, expires_in }
   // ═══════════════════════════════════════════════════════════════
   it('login() should return access_token and user on successful login', async () => {
-    mockUserService.findByEmailForAuth.mockResolvedValue(mockAuthResult);
+    mockUserService.resolveUserByEmail.mockResolvedValue(mockResolved);
     mockPasswordCrypto.validatePassword.mockResolvedValue({
       isValid: true,
       format: 'bcrypt',
