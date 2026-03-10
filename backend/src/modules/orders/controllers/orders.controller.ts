@@ -300,11 +300,19 @@ export class OrdersController {
       } else {
         // Créer un compte silencieux avec mot de passe aléatoire
         const randomPassword = crypto.randomBytes(32).toString('hex');
+        const guestFirstName =
+          orderData.billingAddress?.firstName ||
+          orderData.shippingAddress?.firstName ||
+          'Client';
+        const guestLastName =
+          orderData.billingAddress?.lastName ||
+          orderData.shippingAddress?.lastName ||
+          '';
         newUser = await this.authService.register({
           email: guestEmail,
           password: randomPassword,
-          firstName: 'Invité',
-          lastName: '',
+          firstName: guestFirstName,
+          lastName: guestLastName,
         });
         this.logger.log(
           `Guest account created: ${newUser.id} for ${guestEmail}`,

@@ -23,18 +23,16 @@ export const RegisterSchema = z.object({
     .regex(/[0-9]/, 'Au moins un chiffre requis'),
 
   firstName: z
-    .string()
+    .string({ required_error: 'Prénom requis' })
     .min(2, 'Prénom minimum 2 caractères')
     .max(50, 'Prénom trop long')
-    .trim()
-    .optional(),
+    .trim(),
 
   lastName: z
-    .string()
+    .string({ required_error: 'Nom requis' })
     .min(2, 'Nom minimum 2 caractères')
     .max(50, 'Nom trop long')
-    .trim()
-    .optional(),
+    .trim(),
 
   // Champs optionnels pour correspondre au schéma DB
   civility: z.enum(['M', 'Mme', 'Mlle']).optional(),
@@ -77,18 +75,18 @@ export class RegisterDtoClass {
   @ApiProperty({
     description: 'First name',
     example: 'Jean',
-    required: false,
+    required: true,
     type: String,
   })
-  firstName?: string;
+  firstName: string;
 
   @ApiProperty({
     description: 'Last name',
     example: 'Dupont',
-    required: false,
+    required: true,
     type: String,
   })
-  lastName?: string;
+  lastName: string;
 
   @ApiProperty({
     description: 'Civility',
