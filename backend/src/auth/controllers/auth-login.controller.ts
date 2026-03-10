@@ -164,11 +164,11 @@ export class AuthLoginController {
         '/register?error=' + encodeURIComponent('Email requis'),
       );
     }
-    if (password.length < 8) {
+    if (password.length < 6) {
       return response.redirect(
         '/register?error=' +
           encodeURIComponent(
-            'Le mot de passe doit contenir au moins 8 caractères',
+            'Le mot de passe doit contenir au moins 6 caractères',
           ),
       );
     }
@@ -319,7 +319,7 @@ export class AuthLoginController {
   @ApiResponse({ status: 200, description: 'Google auth successful' })
   @ApiResponse({ status: 401, description: 'Invalid Google token' })
   async googleAuth(
-    @Body() body: { credential: string },
+    @Body() body: { credential: string; redirectTo?: string },
     @Req() request: Express.Request,
   ): Promise<Record<string, unknown>> {
     if (!body.credential) {
@@ -374,12 +374,22 @@ export class AuthLoginController {
     }
 
     // Déterminer l'URL de redirection
+    // Si redirectTo est fourni et est un chemin relatif sûr, l'utiliser
+    const safeRedirectTo =
+      body.redirectTo &&
+      body.redirectTo.startsWith('/') &&
+      !body.redirectTo.startsWith('//')
+        ? body.redirectTo
+        : null;
+
     const userLevel = parseInt(String(authUser.level)) || 0;
-    let redirectUrl = '/';
-    if (authUser.isAdmin && userLevel >= 7) {
-      redirectUrl = '/admin';
-    } else if (authUser.isPro) {
-      redirectUrl = '/pro/dashboard';
+    let redirectUrl = safeRedirectTo || '/';
+    if (!safeRedirectTo) {
+      if (authUser.isAdmin && userLevel >= 7) {
+        redirectUrl = '/admin';
+      } else if (authUser.isPro) {
+        redirectUrl = '/pro/dashboard';
+      }
     }
 
     return {
@@ -459,7 +469,8 @@ export class AuthLoginController {
     description: 'Server error during login',
   })
   async loginPost(
-    @Body() credentials: { email: string; password: string },
+    @Body()
+    credentials: { email: string; password: string; rememberMe?: boolean },
     @Req() request: Express.Request,
   ): Promise<Record<string, unknown>> {
     // Extraire le guest session ID AVANT toute modification de session (même pattern que /authenticate)
@@ -501,6 +512,15 @@ export class AuthLoginController {
     }
 
     await promisifyLoginNoRegenerate(request, loginResult.user);
+
+    // Remember me: extend session to 90 days, default 7 days
+    const sessionMaxAge = credentials.rememberMe
+      ? 1000 * 60 * 60 * 24 * 90 // 90 days
+      : 1000 * 60 * 60 * 24 * 7; // 7 days
+    if (request.session?.cookie) {
+      request.session.cookie.maxAge = sessionMaxAge;
+    }
+
     await promisifySessionSave(request.session);
 
     // Fusionner le panier guest vers l'utilisateur authentifié

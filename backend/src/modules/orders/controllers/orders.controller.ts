@@ -33,7 +33,6 @@ import {
   ParseIntPipe,
   Req,
   BadRequestException,
-  ConflictException,
   NotFoundException,
 } from '@nestjs/common';
 import { Request as ExpressRequest } from 'express';
@@ -263,10 +262,6 @@ export class OrdersController {
   })
   @ApiResponse({ status: 201, description: 'Commande créée avec succès' })
   @ApiResponse({ status: 400, description: 'Email invalide' })
-  @ApiResponse({
-    status: 409,
-    description: 'Email déjà enregistré - connexion requise',
-  })
   async createGuestOrder(
     @Body() body: CreateOrderData & { guestEmail?: string },
     @Req() req: AuthenticatedRequest,
@@ -289,26 +284,32 @@ export class OrdersController {
 
       this.logger.log(`Guest checkout for email: ${guestEmail}`);
 
-      // Vérifier si l'email existe déjà
+      // Vérifier si l'email existe déjà — si oui, réutiliser le compte existant
       const existingUser = await this.authService.checkIfUserExists({
         email: guestEmail,
       });
+
+      let newUser: { id: string; email: string };
+
       if (existingUser) {
-        throw new ConflictException(
-          'Un compte existe déjà avec cet email. Veuillez vous connecter.',
+        // Réutiliser le compte existant (guest checkout tolérant)
+        this.logger.log(
+          `Guest checkout: existing account found for ${guestEmail}, reusing user ${existingUser.id}`,
+        );
+        newUser = { id: existingUser.id, email: guestEmail };
+      } else {
+        // Créer un compte silencieux avec mot de passe aléatoire
+        const randomPassword = crypto.randomBytes(32).toString('hex');
+        newUser = await this.authService.register({
+          email: guestEmail,
+          password: randomPassword,
+          firstName: 'Invité',
+          lastName: '',
+        });
+        this.logger.log(
+          `Guest account created: ${newUser.id} for ${guestEmail}`,
         );
       }
-
-      // Créer un compte silencieux avec mot de passe aléatoire
-      const randomPassword = crypto.randomBytes(32).toString('hex');
-      const newUser = await this.authService.register({
-        email: guestEmail,
-        password: randomPassword,
-        firstName: 'Invité',
-        lastName: '',
-      });
-
-      this.logger.log(`Guest account created: ${newUser.id} for ${guestEmail}`);
 
       // Passport 0.7 + connect-redis 5.x compat
       await promisifySessionRegenerate(req.session);
@@ -367,14 +368,6 @@ export class OrdersController {
       return order;
     } catch (error) {
       this.logger.error('Error in guest checkout:', error);
-
-      // Race condition: le compte a été créé entre checkIfUserExists et register
-      if (error instanceof Error && error.message.includes('déjà utilisé')) {
-        throw new ConflictException(
-          'Un compte existe déjà avec cet email. Veuillez vous connecter.',
-        );
-      }
-
       throw error;
     }
   }

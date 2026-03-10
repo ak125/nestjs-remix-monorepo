@@ -73,6 +73,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   const redirectTo = safeRedirect(formData.get("redirectTo") as string | null);
+  const rememberMe = formData.get("rememberMe") === "on";
 
   // Appel interne au backend (même pattern que unified.server.ts)
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
@@ -89,6 +90,7 @@ export async function action({ request }: ActionFunctionArgs) {
       body: JSON.stringify({
         email: parsed.data.email,
         password: parsed.data.password,
+        rememberMe,
       }),
     });
   } catch {
@@ -305,6 +307,21 @@ export default function LoginPage() {
                       {fieldErrors.password[0]}
                     </p>
                   ) : null}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    name="rememberMe"
+                    className="h-4 w-4 rounded border-slate-300 text-cta focus:ring-cta/50"
+                  />
+                  <Label
+                    htmlFor="rememberMe"
+                    className="text-sm text-slate-600 font-normal cursor-pointer"
+                  >
+                    Se souvenir de moi
+                  </Label>
                 </div>
 
                 <Button

@@ -130,6 +130,37 @@ export function CheckoutLivraisonSection({
     setIsLoggingIn(false);
   };
 
+  // Zip code → city autocomplete (API Adresse gouv.fr)
+  const [citySuggestions, setCitySuggestions] = useState<string[]>([]);
+  useEffect(() => {
+    const zip = shippingAddress.zipCode?.trim();
+    if (!zip || zip.length !== 5 || !/^\d{5}$/.test(zip)) {
+      setCitySuggestions([]);
+      return;
+    }
+    const controller = new AbortController();
+    fetch(
+      `https://api-adresse.data.gouv.fr/search/?q=${zip}&type=municipality&postcode=${zip}&limit=5`,
+      { signal: controller.signal },
+    )
+      .then((r) => r.json())
+      .then((data) => {
+        const cities: string[] = (data.features || [])
+          .map(
+            (f: { properties: { city?: string; label?: string } }) =>
+              f.properties.city || f.properties.label || "",
+          )
+          .filter(Boolean);
+        setCitySuggestions(cities);
+        // Auto-fill city if only one result and city is empty
+        if (cities.length === 1 && !shippingAddress.city) {
+          handleFieldChange({ ...shippingAddress, city: cities[0] });
+        }
+      })
+      .catch(() => setCitySuggestions([]));
+    return () => controller.abort();
+  }, [shippingAddress.zipCode]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const showAddressForm = user || (emailChecked && !emailExists);
 
   const [localErrors, setLocalErrors] = useState<CheckoutFieldErrors | null>(
@@ -548,22 +579,45 @@ export function CheckoutLivraisonSection({
                   >
                     Ville *
                   </label>
-                  <input
-                    type="text"
-                    id="city"
-                    name="city"
-                    required
-                    autoComplete="address-level2"
-                    value={shippingAddress.city}
-                    onChange={(e) =>
-                      handleFieldChange({
-                        ...shippingAddress,
-                        city: e.target.value,
-                      })
-                    }
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${mergedErrors?.city ? "border-red-400" : "border-slate-300"}`}
-                    placeholder="Ville"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      id="city"
+                      name="city"
+                      required
+                      autoComplete="address-level2"
+                      value={shippingAddress.city}
+                      onChange={(e) =>
+                        handleFieldChange({
+                          ...shippingAddress,
+                          city: e.target.value,
+                        })
+                      }
+                      className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${mergedErrors?.city ? "border-red-400" : "border-slate-300"}`}
+                      placeholder="Ville"
+                    />
+                    {citySuggestions.length > 1 && (
+                      <ul className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-40 overflow-y-auto">
+                        {citySuggestions.map((city) => (
+                          <li key={city}>
+                            <button
+                              type="button"
+                              className="w-full text-left px-4 py-2 text-sm hover:bg-blue-50 transition-colors"
+                              onClick={() => {
+                                handleFieldChange({
+                                  ...shippingAddress,
+                                  city,
+                                });
+                                setCitySuggestions([]);
+                              }}
+                            >
+                              {city}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
                   {mergedErrors?.city && (
                     <p className="text-xs text-red-600 mt-1">
                       {mergedErrors.city[0]}

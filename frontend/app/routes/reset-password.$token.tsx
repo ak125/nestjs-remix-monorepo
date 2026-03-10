@@ -14,6 +14,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { useState } from "react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
@@ -67,23 +68,9 @@ export const action: ActionFunction = async ({ params, request }) => {
 
   const pwd = password.toString();
 
-  if (pwd.length < 8) {
+  if (pwd.length < 6) {
     return json(
-      { error: "Le mot de passe doit contenir au moins 8 caractères" },
-      { status: 400 },
-    );
-  }
-
-  if (!/[a-zA-Z]/.test(pwd)) {
-    return json(
-      { error: "Le mot de passe doit contenir au moins une lettre" },
-      { status: 400 },
-    );
-  }
-
-  if (!/[0-9]/.test(pwd)) {
-    return json(
-      { error: "Le mot de passe doit contenir au moins un chiffre" },
+      { error: "Le mot de passe doit contenir au moins 6 caractères" },
       { status: 400 },
     );
   }
@@ -115,11 +102,31 @@ export const action: ActionFunction = async ({ params, request }) => {
   }
 };
 
+function calculatePasswordStrength(password: string): number {
+  let strength = 0;
+  if (password.length >= 6) strength += 25;
+  if (password.length >= 12) strength += 25;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
+  if (/[0-9]/.test(password)) strength += 15;
+  if (/[^a-zA-Z0-9]/.test(password)) strength += 10;
+  return Math.min(100, strength);
+}
+
+function getStrengthLabel(strength: number): { text: string; color: string } {
+  if (strength >= 75) return { text: "Fort", color: "bg-green-500" };
+  if (strength >= 50) return { text: "Moyen", color: "bg-yellow-500" };
+  if (strength >= 25) return { text: "Faible", color: "bg-orange-500" };
+  return { text: "Tres faible", color: "bg-red-500" };
+}
+
 export default function ResetPassword() {
   const { token } = useLoaderData<typeof loader>();
   const [searchParams] = useSearchParams();
   const actionData = useActionData<typeof action>();
   const error = searchParams.get("error");
+  const [passwordStrength, setPasswordStrength] = useState(0);
+
+  const strengthInfo = getStrengthLabel(passwordStrength);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -150,10 +157,26 @@ export default function ResetPassword() {
                 name="password"
                 type="password"
                 required
-                minLength={8}
-                placeholder="8 caractères min., 1 lettre et 1 chiffre"
+                minLength={6}
+                placeholder="6 caracteres minimum"
                 className="w-full"
+                onChange={(e) =>
+                  setPasswordStrength(calculatePasswordStrength(e.target.value))
+                }
               />
+              {passwordStrength > 0 && (
+                <div className="space-y-1">
+                  <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${strengthInfo.color}`}
+                      style={{ width: `${passwordStrength}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Force : {strengthInfo.text}
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -163,7 +186,7 @@ export default function ResetPassword() {
                 name="confirmPassword"
                 type="password"
                 required
-                minLength={8}
+                minLength={6}
                 placeholder="Confirmez votre mot de passe"
                 className="w-full"
               />

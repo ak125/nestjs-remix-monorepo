@@ -30,7 +30,12 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { formatPrice } from "~/components/cart/cart-utils";
+import {
+  formatPrice,
+  saveCartToLocalStorage,
+  loadCartFromLocalStorage,
+  clearCartLocalStorage,
+} from "~/components/cart/cart-utils";
 import {
   CartCrossSell,
   type CrossSellGamme,
@@ -240,6 +245,15 @@ export default function CartPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // localStorage backup: save cart items whenever they change
+  useEffect(() => {
+    if (cart?.items?.length) {
+      saveCartToLocalStorage(cart.items);
+    } else {
+      clearCartLocalStorage();
+    }
+  }, [cart?.items]);
+
   // Sync navbar after clear cart completes
   useEffect(() => {
     if (clearFetcher.state === "idle" && clearFetcher.data) {
@@ -251,6 +265,21 @@ export default function CartPage() {
   const handleClearCart = () => {
     clearFetcher.submit({ intent: "clear" }, { method: "post" });
   };
+
+  // Restore cart from localStorage if session is empty
+  const [backupItems, setBackupItems] = useState<
+    { product_id: number; quantity: number; product_name?: string }[] | null
+  >(null);
+  const [isRestoring, setIsRestoring] = useState(false);
+
+  useEffect(() => {
+    if (!cart.items || cart.items.length === 0) {
+      const backup = loadCartFromLocalStorage();
+      if (backup && backup.length > 0) {
+        setBackupItems(backup);
+      }
+    }
+  }, [cart.items]);
 
   if (!success || error) {
     return (
@@ -275,10 +304,60 @@ export default function CartPage() {
     );
   }
 
+  const handleRestoreCart = async () => {
+    if (!backupItems) return;
+    setIsRestoring(true);
+    try {
+      for (const item of backupItems) {
+        await fetch("/api/cart/items", {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_id: item.product_id,
+            quantity: item.quantity,
+          }),
+        });
+      }
+      clearCartLocalStorage();
+      window.location.reload();
+    } catch {
+      setIsRestoring(false);
+    }
+  };
+
   if (!cart.items || cart.items.length === 0) {
     return (
       <div className="min-h-[100dvh] bg-slate-50 py-8">
         <Container>
+          {backupItems && backupItems.length > 0 && (
+            <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
+              <p className="text-sm text-blue-800 mb-2">
+                Votre panier precedent contenait {backupItems.length} article
+                {backupItems.length > 1 ? "s" : ""}. Voulez-vous le restaurer ?
+              </p>
+              <div className="flex gap-3">
+                <Button
+                  variant="blue"
+                  size="sm"
+                  disabled={isRestoring}
+                  onClick={handleRestoreCart}
+                >
+                  {isRestoring ? "Restauration..." : "Restaurer mon panier"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    clearCartLocalStorage();
+                    setBackupItems(null);
+                  }}
+                >
+                  Non merci
+                </Button>
+              </div>
+            </div>
+          )}
           <EmptyCart vehicle={vehicle as VehicleCookie | null} />
         </Container>
       </div>

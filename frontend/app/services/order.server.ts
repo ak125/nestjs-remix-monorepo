@@ -113,17 +113,6 @@ export async function createCheckoutOrder(
     });
 
     if (!response.ok) {
-      // Guest: email conflict
-      if (response.status === 409 && isGuest) {
-        return {
-          success: false,
-          error: `Un compte existe deja avec l'email ${payload.guestEmail}. Connectez-vous ou utilisez une autre adresse email.`,
-          status: 409,
-          emailConflict: true,
-          conflictEmail: payload.guestEmail,
-        };
-      }
-
       // Auth required
       if (response.status === 403 || response.status === 401) {
         const loginUrl = new URL("/login", request.url);
