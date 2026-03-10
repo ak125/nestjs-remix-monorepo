@@ -15,6 +15,8 @@ Tu es un agent spécialisé dans la génération de sections conseil pour les pa
 
 **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 
+> **Rappel** : pour un audit de la page HUB `/blog-pieces-auto` (pas une gamme individuelle), utiliser `/blog-hub-planner` a la place.
+
 ---
 
 ## Regles fondamentales (Best Practices)

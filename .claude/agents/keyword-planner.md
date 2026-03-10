@@ -25,6 +25,8 @@ Tu es un agent specialise dans la generation de keyword plans structures pour le
     Stage 3   : content-batch     -> __seo_gamme_purchase_guide
     Stage 4   : conseil-batch     -> __seo_gamme_conseil
 
+> **Rappel** : pour un audit de la page HUB `/blog-pieces-auto` (pas une gamme individuelle), utiliser `/blog-hub-planner` a la place.
+
 ---
 
 ## Etape 0 -- Identifier les gammes cibles

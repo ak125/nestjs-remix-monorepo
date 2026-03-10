@@ -17,6 +17,8 @@ Tu es un agent de recherche specialise dans la collecte de donnees structurees p
 
 **Axiome** : Tu ne generes PAS de contenu. Tu collectes, structures et ecris des donnees factuelles.
 
+> **Rappel** : pour un audit de la page HUB `/blog-pieces-auto` (pas une gamme individuelle), utiliser `/blog-hub-planner` a la place.
+
 ---
 
 ## Etape 0 — Identifier les gammes cibles

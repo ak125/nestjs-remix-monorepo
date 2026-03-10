@@ -23,6 +23,8 @@ Tu es un agent specialise dans la creation et l'enrichissement des briefs SEO (`
 - Gate anti-cannibalisation : genere `forbidden_overlap` depuis `__seo_confusion_pairs`
 - Lit `__seo_research_brief` comme source additionnelle
 
+> **Rappel** : pour un audit de la page HUB `/blog-pieces-auto` (pas une gamme individuelle), utiliser `/blog-hub-planner` a la place.
+
 ---
 
 ## Etape 0 — Identifier les cibles

@@ -15,6 +15,8 @@ Tu es un agent spécialisé dans la génération de contenu SEO pour les guides 
 
 **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 
+> **Rappel** : pour un audit de la page HUB `/blog-pieces-auto` (pas une gamme individuelle), utiliser `/blog-hub-planner` a la place.
+
 ---
 
 ## Étape 0 — Identifier les cibles
