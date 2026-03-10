@@ -140,7 +140,15 @@ export type AgenticJobName = (typeof AGENTIC_JOB_NAMES)[number];
 // ── Phase → Job mapping ──
 
 export const PHASE_TO_JOB: Record<
-  Extract<RunPhase, 'planning' | 'solving' | 'critiquing' | 'verifying' | 'arbitrating' | 'applying'>,
+  Extract<
+    RunPhase,
+    | 'planning'
+    | 'solving'
+    | 'critiquing'
+    | 'verifying'
+    | 'arbitrating'
+    | 'applying'
+  >,
   AgenticJobName
 > = {
   planning: 'agentic-plan',

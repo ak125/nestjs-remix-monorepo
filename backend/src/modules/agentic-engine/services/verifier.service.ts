@@ -30,9 +30,17 @@ export class VerifierService {
     this.logger.log(`Verifying run ${runId} (stub mode)`);
 
     const gates = [
-      { name: 'budget_within_limit', type: 'hard' as const, verdict: 'PASS' as const },
+      {
+        name: 'budget_within_limit',
+        type: 'hard' as const,
+        verdict: 'PASS' as const,
+      },
       { name: 'output_valid', type: 'hard' as const, verdict: 'PASS' as const },
-      { name: 'no_forbidden_mutations', type: 'hard' as const, verdict: 'PASS' as const },
+      {
+        name: 'no_forbidden_mutations',
+        type: 'hard' as const,
+        verdict: 'PASS' as const,
+      },
     ];
 
     // Record gate results

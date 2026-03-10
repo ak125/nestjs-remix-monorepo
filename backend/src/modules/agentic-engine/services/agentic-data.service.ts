@@ -94,10 +94,9 @@ export class AgenticDataService extends SupabaseBaseService {
     runId: string,
   ): Promise<{ branches_completed: number; branches_total: number } | null> {
     // Atomic increment via RPC (SQL UPDATE ... RETURNING) — no race condition
-    const { data, error } = await this.supabase.rpc(
-      'agentic_increment_branches_completed',
-      { p_run_id: runId },
-    );
+    const { data, error } = await this.callRpc<
+      { branches_completed: number; branches_total: number }[]
+    >('agentic_increment_branches_completed', { p_run_id: runId });
 
     if (error || !data || data.length === 0) {
       this.logger.warn(

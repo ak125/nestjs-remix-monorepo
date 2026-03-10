@@ -7,7 +7,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AgenticDataService } from './agentic-data.service';
 import { EvidenceLedgerService } from './evidence-ledger.service';
-import type { AgenticBranch } from '../types/run-state.schema';
+import type { AgenticBranch as _AgenticBranch } from '../types/run-state.schema';
 
 @Injectable()
 export class ArbiterService {
@@ -36,9 +36,7 @@ export class ArbiterService {
     }
 
     // Sort by critic_score descending, pick highest
-    completed.sort(
-      (a, b) => (b.critic_score ?? 0) - (a.critic_score ?? 0),
-    );
+    completed.sort((a, b) => (b.critic_score ?? 0) - (a.critic_score ?? 0));
     const winner = completed[0];
 
     await this.evidenceLedger.record({

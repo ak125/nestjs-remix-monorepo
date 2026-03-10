@@ -117,7 +117,9 @@ export class RunManagerService {
     // Compute duration_ms for terminal phases
     const transitionExtra = { ...extra };
     if (toPhase === 'completed' || toPhase === 'failed') {
-      const startedAt = run.created_at ? new Date(run.created_at).getTime() : Date.now();
+      const startedAt = run.created_at
+        ? new Date(run.created_at).getTime()
+        : Date.now();
       transitionExtra.duration_ms = Date.now() - startedAt;
     }
 
@@ -157,7 +159,9 @@ export class RunManagerService {
         });
       }
 
-      this.logger.log(`Phase transition: ${runId} ${currentPhase} → ${toPhase}`);
+      this.logger.log(
+        `Phase transition: ${runId} ${currentPhase} → ${toPhase}`,
+      );
     }
 
     return success;
