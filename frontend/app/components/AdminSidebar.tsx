@@ -173,6 +173,12 @@ export const AdminSidebar = memo(function AdminSidebar({
           icon: BarChart3,
           description: "Analytics et optimisations",
         },
+        {
+          name: "Blog Analytics",
+          href: "/admin/blog-analytics",
+          icon: TrendingUp,
+          description: "Stats détaillées et insights",
+        },
       ],
     },
     {

@@ -11,12 +11,14 @@ import {
   DefaultValuePipe,
 } from '@nestjs/common';
 import { BlogService } from '../services/blog.service';
+import { BlogStatisticsService } from '../services/blog-statistics.service';
 import { AdviceService } from '../services/advice.service';
 import { GuideService } from '../services/guide.service';
 import { ConstructeurService } from '../services/constructeur.service';
 import { GlossaryService } from '../services/glossary.service';
 import { AuthGuard } from '@nestjs/passport';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { getErrorMessage } from '../../../common/utils/error.utils';
 import {
   OperationFailedException,
@@ -39,6 +41,7 @@ export class BlogController {
 
   constructor(
     private readonly blogService: BlogService,
+    private readonly statisticsService: BlogStatisticsService,
     private readonly adviceService: AdviceService,
     private readonly guideService: GuideService,
     private readonly constructeurService: ConstructeurService,
@@ -587,6 +590,111 @@ export class BlogController {
       );
       throw new OperationFailedException({
         message: 'Erreur lors du rafraîchissement',
+      });
+    }
+  }
+
+  /**
+   * 🚗 Marques ayant des articles blog
+   * GET /api/blog/vehicle-marques
+   */
+  @Get('vehicle-marques')
+  async getVehicleMarques() {
+    try {
+      const marques = await this.statisticsService.getVehicleMarques();
+      return {
+        success: true,
+        data: marques,
+        total: marques.length,
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur vehicle marques: ${(error as Error).message}`,
+      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des marques',
+      });
+    }
+  }
+
+  /**
+   * 🚗 Modèles d'une marque ayant des articles blog
+   * GET /api/blog/vehicle-modeles/:marqueId
+   */
+  @Get('vehicle-modeles/:marqueId')
+  async getVehicleModeles(@Param('marqueId', ParseIntPipe) marqueId: number) {
+    try {
+      const modeles = await this.statisticsService.getVehicleModeles(marqueId);
+      return {
+        success: true,
+        data: modeles,
+        total: modeles.length,
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur vehicle modeles: ${(error as Error).message}`,
+      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des modèles',
+      });
+    }
+  }
+
+  /**
+   * 🚗 Articles blog liés à un véhicule
+   * GET /api/blog/by-vehicle?marque_id=1&modele_id=2&limit=12
+   */
+  @Get('by-vehicle')
+  async getArticlesByVehicle(
+    @Query('marque_id', ParseIntPipe) marqueId: number,
+    @Query('modele_id') modeleIdStr?: string,
+    @Query('limit', new DefaultValuePipe(12), ParseIntPipe)
+    limit: number = 12,
+  ) {
+    try {
+      const modeleId = modeleIdStr ? parseInt(modeleIdStr, 10) : undefined;
+      const articles = await this.statisticsService.getArticlesByVehicle(
+        marqueId,
+        modeleId && !isNaN(modeleId) ? modeleId : undefined,
+        limit,
+      );
+
+      return {
+        success: true,
+        data: {
+          articles,
+          total: articles.length,
+          filters: { marqueId, modeleId: modeleId || null },
+        },
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur articles by vehicle: ${(error as Error).message}`,
+      );
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des articles par véhicule',
+      });
+    }
+  }
+
+  /**
+   * 📊 Analytics détaillées (admin)
+   * GET /api/blog/analytics
+   */
+  @Get('analytics')
+  @UseGuards(IsAdminGuard)
+  async getDetailedAnalytics() {
+    try {
+      const analytics = await this.statisticsService.getDetailedAnalytics();
+      return {
+        success: true,
+        data: analytics,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(`❌ Erreur analytics: ${(error as Error).message}`);
+      throw new OperationFailedException({
+        message: 'Erreur lors de la récupération des analytics',
       });
     }
   }
