@@ -1,0 +1,94 @@
+# docker-compose.ci-deploy.yml
+# Fichier dedie au deploiement CI → PROD
+# Contient UNIQUEMENT monorepo + redis
+# Les autres services (remotion, minio, lighthouse) sont geres manuellement
+
+services:
+  monorepo_prod:
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis_prod:6379
+      - REDIS_HOST=redis_prod
+      - REDIS_PORT=6379
+      - NODE_ENV
+      - DATABASE_URL
+      - SUPABASE_SERVICE_ROLE_KEY
+      - SUPABASE_URL
+      - USE_UNIFIED_RPC=true
+      - USE_RM_API=true
+      - USE_RM_PAGE=true
+      # RPC Safety Gate
+      - RPC_GATE_MODE=enforce
+      - RPC_GATE_ENFORCE_LEVEL=P2
+      # BotGuard
+      - BOT_GUARD_ENABLED=true
+      - BOT_GUARD_BLOCKED_COUNTRIES=CN
+      - BOT_GUARD_SUSPICION_THRESHOLD=80
+      # RAG Pipeline
+      - EVIDENCE_PACK_ENABLED=true
+      - HARD_GATES_ENABLED=true
+      - AUTO_REPAIR_ENABLED=true
+      - SAFE_FALLBACK_ENABLED=true
+      - CANARY_GAMMES=disque-de-frein,filtre-a-huile,bougie-d-allumage,courroie-de-distribution,pompe-a-eau,agregat-de-freinage,alternateur,arbre-a-came,attelage,bague-d-etancheite-cardan,bagues-d-etancheite-moteur,balais-d-essuie-glace,barre-de-direction,barre-stabilisatrice,biellette-de-barre-stabilisatrice,bobine-d-allumage,boitier-de-prechauffage,bouchon-de-vidange,bougie-de-prechauffage,bouteille-deshydratante,bras-de-suspension,bride-de-liquide-de-refroidissement,butee-d-embrayage,butee-elastique-d-amortisseur,cable-d-embrayage
+      # Brief Gates
+      - BRIEF_GATES_ENABLED=true
+      - BRIEF_GATES_OBSERVE_ONLY=true
+      - KEYWORD_DENSITY_GATE_ENABLED=true
+      - RAG_SERVICE_URL=http://rag-api:8000
+      - RAG_API_KEY=856528eb83bd8b36867bc0bbf8ead7796f69de30fa6888a6876b54f4d98be08a
+      - INTERNAL_API_KEY=${INTERNAL_API_KEY}
+      # Video Render
+      - VIDEO_RENDER_ENABLED=true
+      - VIDEO_CANARY_ENABLED=true
+      - VIDEO_RENDER_ENGINE=remotion
+      - VIDEO_CANARY_ELIGIBLE_VIDEO_TYPES=short
+      - VIDEO_CANARY_QUOTA_PER_DAY=5
+      - VIDEO_RENDER_BASE_URL=http://remotion_renderer:3100
+      - VIDEO_PIPELINE_CONCURRENCY=1
+      - VIDEO_PIPELINE_ENABLED=true
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME:-automecanik-renders}
+      # Google OAuth
+      - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '2'
+    container_name: nestjs-remix-monorepo-prod
+    image: massdoc/nestjs-remix-monorepo:production
+    restart: always
+    expose:
+      - "3000"
+    volumes:
+      - /var/www/sitemaps:/var/www/sitemaps:rw
+      - /var/www/crawl-hubs:/var/www/crawl-hubs:rw
+      - /opt/automecanik/rag/knowledge:/opt/automecanik/rag/knowledge:ro
+    networks:
+      - automecanik-prod
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  redis_prod:
+    image: redis:7-alpine
+    restart: always
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - /dev/volumes/nestjs-remix/production/sessions/:/data
+    networks:
+      - automecanik-prod
+
+networks:
+  automecanik-prod:
+    external: true
