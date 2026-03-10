@@ -1053,8 +1053,11 @@ jobs:
 
           cd $PROD_DIR
 
-          # Restart avec la nouvelle image
-          docker compose -f docker-compose.prod.yml up -d --pull always
+          # Pull uniquement l'image monorepo (pas remotion ni redis)
+          docker pull massdoc/nestjs-remix-monorepo:production
+
+          # Restart les containers
+          docker compose -f docker-compose.prod.yml up -d
 
           # Health check (max 2 min)
           echo "⏳ Waiting for PROD to start..."
