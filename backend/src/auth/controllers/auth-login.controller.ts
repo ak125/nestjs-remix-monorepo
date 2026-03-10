@@ -3,6 +3,7 @@ import {
   Get,
   Next,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -398,6 +399,155 @@ export class AuthLoginController {
       user: authUser,
       redirectUrl,
     };
+  }
+
+  /**
+   * GET /auth/google
+   * Redirige vers l'écran de consentement Google OAuth2
+   */
+  @Get('auth/google')
+  @ApiOperation({
+    summary: 'Redirect to Google OAuth2 consent screen',
+    description:
+      'Initiates Google OAuth2 redirect flow. Redirects user to Google for authentication.',
+  })
+  googleRedirect(
+    @Query('redirectTo') redirectTo: string | undefined,
+    @Req() request: Express.Request,
+    @Res() response: Response,
+  ) {
+    const expressReq = request as Request;
+    const protocol =
+      expressReq.headers['x-forwarded-proto'] || expressReq.protocol || 'http';
+    const host =
+      expressReq.headers['x-forwarded-host'] || expressReq.headers.host;
+    const redirectUri = `${protocol}://${host}/auth/callback`;
+
+    const authUrl = this.authService.getGoogleAuthUrl(redirectUri, redirectTo);
+
+    this.logger.log(
+      `[GOOGLE-OAUTH] Redirecting to Google, callback: ${redirectUri}`,
+    );
+    return response.redirect(authUrl);
+  }
+
+  /**
+   * GET /auth/callback
+   * Callback Google OAuth2 — échange code, crée session, redirige
+   */
+  @Get('auth/callback')
+  @ApiOperation({
+    summary: 'Google OAuth2 callback',
+    description:
+      'Handles the Google OAuth2 callback. Exchanges code for tokens, creates or links user account, and establishes session.',
+  })
+  async googleCallback(
+    @Query('code') code: string | undefined,
+    @Query('state') state: string | undefined,
+    @Query('error') googleError: string | undefined,
+    @Req() request: Express.Request,
+    @Res() response: Response,
+  ) {
+    // Google returned an error
+    if (googleError) {
+      this.logger.warn(`[GOOGLE-OAUTH] Google returned error: ${googleError}`);
+      return response.redirect(
+        '/login?error=' + encodeURIComponent('Connexion Google annulée'),
+      );
+    }
+
+    if (!code) {
+      return response.redirect(
+        '/login?error=' + encodeURIComponent('Code Google manquant'),
+      );
+    }
+
+    // Decode state to get redirectTo
+    let redirectTo = '/';
+    if (state) {
+      try {
+        const decoded = JSON.parse(Buffer.from(state, 'base64url').toString());
+        if (
+          decoded.redirectTo &&
+          typeof decoded.redirectTo === 'string' &&
+          decoded.redirectTo.startsWith('/') &&
+          !decoded.redirectTo.startsWith('//')
+        ) {
+          redirectTo = decoded.redirectTo;
+        }
+      } catch {
+        this.logger.warn('[GOOGLE-OAUTH] Failed to decode state param');
+      }
+    }
+
+    // Build redirect URI (same as the one used in /auth/google)
+    const expressReq = request as Request;
+    const protocol =
+      expressReq.headers['x-forwarded-proto'] || expressReq.protocol || 'http';
+    const host =
+      expressReq.headers['x-forwarded-host'] || expressReq.headers.host;
+    const redirectUri = `${protocol}://${host}/auth/callback`;
+
+    try {
+      // 1. Exchange code for ID token
+      const idToken = await this.authService.exchangeCodeForTokens(
+        code,
+        redirectUri,
+      );
+
+      // 2. Authenticate with Google (verify token, create/link account)
+      const authUser = await this.authService.authenticateWithGoogle(idToken);
+
+      // 3. Extract guest session BEFORE session modification
+      const cookieHeader = expressReq.headers?.cookie || '';
+      const guestSessionId = extractGuestSessionId(cookieHeader);
+
+      // 4. Create session
+      await promisifySessionRegenerate(request.session);
+      await promisifyLoginNoRegenerate(request, authUser);
+      await promisifySessionSave(request.session);
+
+      // 5. Cart merge
+      const userId = authUser.id;
+      if (guestSessionId && userId && guestSessionId !== String(userId)) {
+        try {
+          const mergedCount = await this.cartDataService.mergeCart(
+            guestSessionId,
+            String(userId),
+          );
+          if (mergedCount > 0) {
+            this.logger.log(
+              `[GOOGLE-OAUTH] Panier fusionné: ${mergedCount} articles`,
+            );
+          }
+        } catch (mergeErr: unknown) {
+          this.logger.error(
+            `[GOOGLE-OAUTH] Erreur fusion panier: ${mergeErr instanceof Error ? mergeErr.message : String(mergeErr)}`,
+          );
+        }
+      }
+
+      // 6. Redirect based on role (if no explicit redirectTo)
+      if (redirectTo === '/') {
+        const userLevel = parseInt(String(authUser.level)) || 0;
+        if (authUser.isAdmin && userLevel >= 7) {
+          redirectTo = '/admin';
+        } else if (authUser.isPro) {
+          redirectTo = '/pro/dashboard';
+        }
+      }
+
+      this.logger.log(
+        `[GOOGLE-OAUTH] Auth successful for ${authUser.email}, redirecting to ${redirectTo}`,
+      );
+      return response.redirect(redirectTo);
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[GOOGLE-OAUTH] Auth failed: ${errMsg}`);
+      return response.redirect(
+        '/login?error=' + encodeURIComponent('Erreur de connexion Google'),
+      );
+    }
   }
 
   /**

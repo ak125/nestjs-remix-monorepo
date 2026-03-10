@@ -49,6 +49,8 @@ export class AuthService {
   private readonly googleClient: OAuth2Client | null;
   private readonly googleClientId: string;
 
+  private readonly googleClientSecret: string;
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly userDataService: UserDataConsolidatedService,
@@ -57,6 +59,8 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {
     this.googleClientId = this.configService.get('GOOGLE_CLIENT_ID') || '';
+    this.googleClientSecret =
+      this.configService.get('GOOGLE_CLIENT_SECRET') || '';
     this.googleClient = this.googleClientId
       ? new OAuth2Client(this.googleClientId)
       : null;
@@ -305,6 +309,72 @@ export class AuthService {
 
     this.logger.log(`Google login: new account created for ${email}`);
     return this.mapUserToAuthUser(newUser);
+  }
+
+  /**
+   * Construit l'URL d'autorisation Google OAuth2 (redirect flow)
+   */
+  getGoogleAuthUrl(redirectUri: string, redirectTo?: string): string {
+    if (!this.googleClientId) {
+      throw new BadRequestException(
+        'Google Sign-In is not configured on this server',
+      );
+    }
+
+    // State param avec nonce CSRF + redirectTo
+    const nonce = crypto.randomBytes(16).toString('hex');
+    const state = Buffer.from(
+      JSON.stringify({ nonce, redirectTo: redirectTo || '/' }),
+    ).toString('base64url');
+
+    const params = new URLSearchParams({
+      client_id: this.googleClientId,
+      redirect_uri: redirectUri,
+      response_type: 'code',
+      scope: 'openid email profile',
+      access_type: 'online',
+      state,
+      prompt: 'select_account',
+    });
+
+    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+  }
+
+  /**
+   * Échange un code d'autorisation Google contre un ID token
+   */
+  async exchangeCodeForTokens(
+    code: string,
+    redirectUri: string,
+  ): Promise<string> {
+    if (!this.googleClientId || !this.googleClientSecret) {
+      throw new BadRequestException(
+        'Google OAuth2 is not fully configured (missing client_id or client_secret)',
+      );
+    }
+
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: this.googleClientId,
+        client_secret: this.googleClientSecret,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      }).toString(),
+    });
+
+    const tokenData = await tokenResponse.json();
+
+    if (!tokenResponse.ok || !tokenData.id_token) {
+      this.logger.error(
+        `Google token exchange failed: ${JSON.stringify(tokenData)}`,
+      );
+      throw new UnauthorizedException("Échec de l'échange du code Google");
+    }
+
+    return tokenData.id_token as string;
   }
 
   /**
