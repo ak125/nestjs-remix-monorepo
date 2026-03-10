@@ -248,7 +248,8 @@ export default function CartPage() {
   // localStorage backup: save cart items whenever they change
   useEffect(() => {
     if (cart?.items?.length) {
-      saveCartToLocalStorage(cart.items);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Remix Jsonify adds null to array type
+      saveCartToLocalStorage(cart.items.filter(Boolean) as any);
     } else {
       clearCartLocalStorage();
     }
