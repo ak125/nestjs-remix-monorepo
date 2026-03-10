@@ -13,14 +13,24 @@ export interface BlogSection {
   wall?: string | null; // Image de la section
 }
 
+export type BlogIntent = 'diagnostic' | 'howto' | 'buying' | 'reference';
+export type BlogBadge =
+  | 'nouveau'
+  | 'populaire'
+  | 'mis-a-jour'
+  | 'guide-complet';
+
 export interface BlogArticle {
   id: string;
   type: 'advice' | 'guide' | 'constructeur' | 'glossaire';
+  intent?: BlogIntent; // Couche intent calculée (Phase B)
   title: string;
   slug: string;
   pg_alias?: string | null; // Alias de la gamme (pieces_gamme.pg_alias) pour URL legacy
   pg_id?: number | null; // ID de la gamme (pieces_gamme.pg_id) pour récupérer SEO switches et conseils
   ba_pg_id?: string | null; // ID de gamme (string) depuis __blog_advice - pour catégorisation frontend
+  canonicalUrl?: string; // URL canonique calculée backend-side
+  badges?: BlogBadge[]; // Badges calculés backend-side
   excerpt: string;
   content: string;
   h1?: string;

@@ -63,21 +63,67 @@ export class BlogService {
     this.logger.log('🏠 Génération du contenu homepage');
 
     try {
-      const [featured, recent, popular, categories, stats] = await Promise.all([
-        this.statisticsService.getFeaturedArticles(3),
-        this.statisticsService.getRecentArticles(6),
-        this.statisticsService.getPopularArticles(5),
+      // Fetch stats + categories en parallele (pas de dependance)
+      const [categories, statsRaw] = await Promise.all([
         this.statisticsService.getCategories(),
         this.statisticsService.getBlogStats(),
       ]);
 
+      // Stats plates (pas de nesting overview)
+      const stats = {
+        totalArticles: statsRaw.overview?.totalArticles ?? 0,
+        totalViews: statsRaw.overview?.totalViews ?? 0,
+        totalAdvice: statsRaw.overview?.totalAdvice ?? 0,
+        totalGuides: statsRaw.overview?.totalGuides ?? 0,
+      };
+
+      // Fetch articles avec deduplication sequentielle
+      const featured = await this.statisticsService.getFeaturedArticles(3);
+      const featuredIds = new Set(featured.map((a) => a.id));
+
+      const popularRaw = await this.statisticsService.getPopularArticles(12);
+      const popular = popularRaw
+        .filter((a) => !featuredIds.has(a.id))
+        .slice(0, 9);
+      const usedIds = new Set([...featuredIds, ...popular.map((a) => a.id)]);
+
+      const recentRaw = await this.statisticsService.getRecentArticles(12);
+      const recent = recentRaw.filter((a) => !usedIds.has(a.id)).slice(0, 6);
+
+      // Trending 7j + recently updated (parallel, independant)
+      const allUsedIds = new Set([...usedIds, ...recent.map((a) => a.id)]);
+      const [trendingRaw, recentlyUpdatedRaw, diagnosticRaw] =
+        await Promise.all([
+          this.statisticsService.getTrendingArticles(9, 7),
+          this.statisticsService.getRecentlyUpdatedArticles(9),
+          this.statisticsService.getDiagnosticArticles(9),
+        ]);
+      const trending7d = trendingRaw
+        .filter((a) => !allUsedIds.has(a.id))
+        .slice(0, 6);
+      const recentlyUpdated = recentlyUpdatedRaw
+        .filter((a) => !allUsedIds.has(a.id))
+        .slice(0, 6);
+      const diagnostic = diagnosticRaw
+        .filter((a) => !allUsedIds.has(a.id))
+        .slice(0, 6);
+
       const result: BlogDashboard = {
+        sections: {
+          pillars: featured,
+          popularAllTime: popular,
+          recentUpdated: recentlyUpdated,
+          trending7d,
+          diagnostic,
+        },
+        // Garder aussi les arrays racine pour retro-compatibilite
         featured,
         recent,
         popular,
         categories,
         stats,
         lastUpdated: new Date().toISOString(),
+        generatedAt: new Date().toISOString(),
         success: true,
       };
 

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   BlogArticle,
+  BlogIntent,
   BlogSection,
   BaRow,
   BaH2Row,
@@ -39,9 +40,11 @@ export class BlogArticleTransformService {
    * Utilisé pour les listes d'articles où les sections ne sont pas nécessaires
    */
   transformAdviceToArticle(advice: BaRow): BlogArticle {
+    const keywords = advice.ba_keywords ? advice.ba_keywords.split(', ') : [];
     const article: BlogArticle = {
       id: `advice_${advice.ba_id}`,
       type: 'advice',
+      intent: this.computeIntent('advice', keywords),
       title: decodeHtmlEntities(advice.ba_title || ''),
       slug: advice.ba_alias,
       pg_alias: null, // Sera enrichi par enrichWithPgAlias()
@@ -49,11 +52,12 @@ export class BlogArticleTransformService {
       content: decodeHtmlEntities(advice.ba_content || ''),
       h1: decodeHtmlEntities(advice.ba_h1 || ''),
       h2: decodeHtmlEntities(advice.ba_h2 || ''),
-      keywords: advice.ba_keywords ? advice.ba_keywords.split(', ') : [],
-      tags: advice.ba_keywords ? advice.ba_keywords.split(', ') : [],
+      keywords,
+      tags: keywords,
       publishedAt: advice.ba_create,
       updatedAt: advice.ba_update,
       viewsCount: parseInt(advice.ba_visit) || 0,
+      readingTime: _calculateReadingTime(advice.ba_content || ''),
       featuredImage: null, // pg_alias pas disponible ici, sera enrichi après
       sections: [], // Pas de sections pour les listes
       legacy_id: advice.ba_id,
@@ -108,9 +112,11 @@ export class BlogArticleTransformService {
       });
     });
 
+    const kwSections = advice.ba_keywords ? advice.ba_keywords.split(', ') : [];
     return {
       id: `advice_${advice.ba_id}`,
-      type: 'advice',
+      type: 'advice' as const,
+      intent: this.computeIntent('advice', kwSections),
       title: decodeHtmlEntities(advice.ba_title || ''),
       slug: advice.ba_alias,
       pg_alias: null, // Sera enrichi par enrichWithPgAlias() si besoin
@@ -118,11 +124,12 @@ export class BlogArticleTransformService {
       content: decodeHtmlEntities(advice.ba_content || ''),
       h1: decodeHtmlEntities(advice.ba_h1 || ''),
       h2: decodeHtmlEntities(advice.ba_h2 || ''),
-      keywords: advice.ba_keywords ? advice.ba_keywords.split(', ') : [],
-      tags: advice.ba_keywords ? advice.ba_keywords.split(', ') : [],
+      keywords: kwSections,
+      tags: kwSections,
       publishedAt: advice.ba_create,
       updatedAt: advice.ba_update,
       viewsCount: parseInt(advice.ba_visit) || 0,
+      readingTime: _calculateReadingTime(advice.ba_content || ''),
       featuredImage: advice.pg_alias
         ? this.buildImageUrl(
             `${advice.pg_alias}.webp`,
@@ -145,21 +152,24 @@ export class BlogArticleTransformService {
    * 🔄 Transformation guide → BlogArticle
    */
   transformGuideToArticle(guide: BgRow): BlogArticle {
+    const guideKw = guide.bg_keywords ? guide.bg_keywords.split(', ') : [];
     return {
       id: `guide_${guide.bg_id}`,
       type: 'guide',
+      intent: this.computeIntent('guide', guideKw),
       title: decodeHtmlEntities(guide.bg_title || ''),
       slug: guide.bg_alias,
       excerpt: decodeHtmlEntities(guide.bg_preview || guide.bg_descrip || ''),
       content: decodeHtmlEntities(guide.bg_content || ''),
       h1: decodeHtmlEntities(guide.bg_h1 || ''),
       h2: decodeHtmlEntities(guide.bg_h2 || ''),
-      keywords: guide.bg_keywords ? guide.bg_keywords.split(', ') : [],
-      tags: guide.bg_keywords ? guide.bg_keywords.split(', ') : [],
+      keywords: guideKw,
+      tags: guideKw,
       publishedAt: guide.bg_create,
       featuredImage: null, // Les guides n'ont pas de gamme, pas d'image featured
       updatedAt: guide.bg_update,
       viewsCount: parseInt(guide.bg_visit) || 0,
+      readingTime: _calculateReadingTime(guide.bg_content || ''),
       sections: [],
       legacy_id: guide.bg_id,
       legacy_table: '__blog_guide',
@@ -169,6 +179,47 @@ export class BlogArticleTransformService {
         keywords: guide.bg_keywords ? guide.bg_keywords.split(', ') : [],
       },
     };
+  }
+
+  /**
+   * 🎯 Calcul de l'intent utilisateur à partir du type et des keywords
+   */
+  computeIntent(type: string, keywords: string[]): BlogIntent {
+    if (type === 'glossaire' || type === 'constructeur') return 'reference';
+    if (type === 'guide') {
+      const buyingKw = [
+        'choisir',
+        'acheter',
+        'comparatif',
+        'meilleur',
+        'prix',
+        'achat',
+      ];
+      if (
+        keywords.some((k) =>
+          buyingKw.some((bk) => k.toLowerCase().includes(bk)),
+        )
+      ) {
+        return 'buying';
+      }
+      return 'howto';
+    }
+    // advice
+    const diagKw = [
+      'symptome',
+      'panne',
+      'bruit',
+      'vibration',
+      'voyant',
+      'diagnostic',
+      'signe',
+    ];
+    if (
+      keywords.some((k) => diagKw.some((dk) => k.toLowerCase().includes(dk)))
+    ) {
+      return 'diagnostic';
+    }
+    return 'howto';
   }
 
   /**
