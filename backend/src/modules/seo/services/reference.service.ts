@@ -121,6 +121,15 @@ export interface SeoReference {
   relatedReferences: number[] | null;
   blogSlugs: string[] | null;
   canonicalUrl: string | null;
+  takeaways: string[] | null;
+  synonyms: string[] | null;
+  variants: { name: string; description: string }[] | null;
+  keySpecs:
+    | { label: string; value: string; note?: string; source?: string }[]
+    | null;
+  commonQuestions: { q: string; a: string }[] | null;
+  contaminationFlags: string[] | null;
+  sectionOverrides: Record<string, string> | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -981,6 +990,17 @@ export class ReferenceService extends SupabaseBaseService {
       relatedReferences: row.related_references as number[] | null,
       blogSlugs: row.blog_slugs as string[] | null,
       canonicalUrl: row.canonical_url as string | null,
+      takeaways: row.takeaways as string[] | null,
+      synonyms: row.synonyms as string[] | null,
+      variants: row.variants as { name: string; description: string }[] | null,
+      keySpecs: row.key_specs as
+        | { label: string; value: string; note?: string; source?: string }[]
+        | null,
+      commonQuestions: row.common_questions as
+        | { q: string; a: string }[]
+        | null,
+      contaminationFlags: row.contamination_flags as string[] | null,
+      sectionOverrides: row.section_overrides as Record<string, string> | null,
       createdAt: new Date(row.created_at as string),
       updatedAt: new Date(row.updated_at as string),
     };
@@ -1473,11 +1493,63 @@ export class ReferenceService extends SupabaseBaseService {
       flags.push('TITLE_FORMAT');
     }
 
+    // --- R4 PROOF PACK GATES (Phase 5B) ---
+
+    // 9. Contamination R4 : termes R3/R5 dans les champs texte
+    const R4_FORBIDDEN = [
+      'installation',
+      'procédure',
+      'outils nécessaires',
+      'temps estimé',
+      'difficulté',
+      'rodage',
+      'erreurs de montage',
+      'vérifications post-montage',
+    ];
+    const allText = [
+      ref.definition,
+      ref.roleMecanique,
+      ref.roleNegatif,
+      ref.scopeLimites,
+      ref.contentHtml,
+      ...(ref.composition || []),
+      ...(ref.reglesMetier || []),
+      ...(ref.confusionsCourantes || []),
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    if (R4_FORBIDDEN.some((term) => allText.includes(term))) {
+      flags.push('R4_CONTAMINATED');
+    }
+
+    // 10. Règles métier = mots-clés au lieu de phrases
+    if (ref.reglesMetier && ref.reglesMetier.length > 0) {
+      const keywordRules = ref.reglesMetier.filter(
+        (r) => r.split(/\s+/).length < 5,
+      );
+      if (keywordRules.length > ref.reglesMetier.length * 0.5) {
+        flags.push('RULES_ARE_KEYWORDS');
+      }
+    }
+
+    // 11. Pas de "À retenir" (takeaways)
+    if (!ref.takeaways || ref.takeaways.length < 2) {
+      flags.push('MISSING_TAKEAWAYS');
+    }
+
+    // 12. Pas de FAQ structurée
+    if (!ref.commonQuestions || ref.commonQuestions.length === 0) {
+      flags.push('MISSING_FAQ');
+    }
+
     // Score: 6 - nombre de flags bloquants
     const blockingFlags = [
       'GENERIC_DEFINITION',
       'NO_NUMBERS_IN_DEFINITION',
       'GENERIC_COMPOSITION',
+      'R4_CONTAMINATED',
     ];
     const blockingCount = flags.filter((f) => blockingFlags.includes(f)).length;
     const warningCount = flags.filter((f) => !blockingFlags.includes(f)).length;
@@ -1511,10 +1583,51 @@ export class ReferenceService extends SupabaseBaseService {
     const stubs = details.filter((d) => !d.isPublishable).length;
     const real = details.filter((d) => d.isPublishable).length;
 
+    // Persist contamination flags in DB (Phase 5B)
+    const PERSIST_FLAGS = ['R4_CONTAMINATED', 'RULES_ARE_KEYWORDS'];
+    for (const ref of allRefs) {
+      const detail = details.find((d) => d.slug === ref.slug);
+      if (!detail) continue;
+
+      const newFlags = detail.flags
+        .filter((f) => PERSIST_FLAGS.includes(f))
+        .sort();
+      const currentFlags = (ref.contaminationFlags || []).sort();
+
+      if (JSON.stringify(newFlags) !== JSON.stringify(currentFlags)) {
+        await this.supabase
+          .from('__seo_reference')
+          .update({
+            contamination_flags: newFlags.length > 0 ? newFlags : null,
+          })
+          .eq('id', ref.id);
+      }
+    }
+
+    // R4 Health stats (Phase 5B)
+    const r4Health = {
+      contaminated: details.filter((d) => d.flags.includes('R4_CONTAMINATED'))
+        .length,
+      missingFaq: details.filter((d) => d.flags.includes('MISSING_FAQ')).length,
+      missingTakeaways: details.filter((d) =>
+        d.flags.includes('MISSING_TAKEAWAYS'),
+      ).length,
+      rulesAreKeywords: details.filter((d) =>
+        d.flags.includes('RULES_ARE_KEYWORDS'),
+      ).length,
+      avgScore:
+        details.length > 0
+          ? +(
+              details.reduce((sum, d) => sum + d.score, 0) / details.length
+            ).toFixed(1)
+          : 0,
+    };
+
     return {
       total: details.length,
       stubs,
       real,
+      r4Health,
       details: details.sort((a, b) => a.score - b.score),
     };
   }
@@ -1560,9 +1673,18 @@ export interface ReferenceAuditDetail {
   definitionLength: number;
 }
 
+export interface R4HealthStats {
+  contaminated: number;
+  missingFaq: number;
+  missingTakeaways: number;
+  rulesAreKeywords: number;
+  avgScore: number;
+}
+
 export interface ReferenceAuditResult {
   total: number;
   stubs: number;
   real: number;
+  r4Health: R4HealthStats;
   details: ReferenceAuditDetail[];
 }

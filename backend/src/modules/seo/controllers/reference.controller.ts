@@ -47,6 +47,14 @@ interface ReferenceResponse {
   relatedReferences: number[] | null;
   blogSlugs: string[] | null;
   canonicalUrl: string;
+  takeaways: string[] | null;
+  synonyms: string[] | null;
+  variants: { name: string; description: string }[] | null;
+  keySpecs:
+    | { label: string; value: string; note?: string; source?: string }[]
+    | null;
+  commonQuestions: { q: string; a: string }[] | null;
+  contaminationFlags: string[] | null;
   updatedAt: string;
 }
 
@@ -142,6 +150,23 @@ export class ReferenceController {
   async auditReferences(): Promise<ReferenceAuditResult> {
     this.logger.log('🔍 GET /api/seo/reference/audit');
     return this.referenceService.auditAllReferences();
+  }
+
+  /**
+   * R4 Health : stats qualité rapides (top 10 pires pages)
+   * GET /api/seo/reference/r4-health
+   * ADMIN ONLY
+   */
+  @Get('r4-health')
+  @UseGuards(IsAdminGuard)
+  async getR4Health() {
+    this.logger.log('🩺 GET /api/seo/reference/r4-health');
+    const audit = await this.referenceService.auditAllReferences();
+    return {
+      total: audit.total,
+      r4Health: audit.r4Health,
+      worstPages: audit.details.slice(0, 10),
+    };
   }
 
   /**
@@ -340,6 +365,12 @@ export class ReferenceController {
       relatedReferences: ref.relatedReferences,
       blogSlugs: ref.blogSlugs,
       canonicalUrl: `/reference-auto/${ref.slug}`,
+      takeaways: ref.takeaways,
+      synonyms: ref.synonyms,
+      variants: ref.variants,
+      keySpecs: ref.keySpecs,
+      commonQuestions: ref.commonQuestions,
+      contaminationFlags: ref.contaminationFlags,
       updatedAt: ref.updatedAt.toISOString(),
     };
   }

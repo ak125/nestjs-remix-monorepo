@@ -33,6 +33,84 @@
 - Pas un diagnostic de panne → R5 `/diagnostic-auto/{slug}`
 - Pas une page marketing — zéro CTA commercial, zéro prix promotionnel
 
+### Regle superieure — Double filtre
+
+Chaque sujet candidat R4 passe par 2 filtres avant d'etre accepte :
+
+**Filtre 1 -- Intention dominante**
+
+| Intention | Surface | Exemple |
+|-----------|---------|---------|
+| Comprendre (definition, fonctionnement, comparatif, usure, confusions) | **R4** | "qu'est-ce qu'un alternateur" |
+| Agir (reaction, entretien, prevention, controle, apres intervention) | R3 | "que faire si le voyant moteur s'allume" |
+| Personnaliser (vehicule, km, historique, symptomes croises) | Outil | "diesel 180k demarre mal a froid" |
+| Orienter (symptome fort, generaliste, non personnalise) | R5 | "surchauffe moteur" |
+
+**Filtre 2 -- Dependance vehicule**
+
+| Dependance | Decision |
+|:----------:|----------|
+| Faible | Contenu R4 classique (reference generique) |
+| Forte | → Outil, jamais R4 |
+
+Un sujet qui depend du kilometrage precis, de la motorisation, de l'historique entretien ou d'un modele specifique **sort du contenu editorial** et va dans l'outil.
+
+### Sous-piliers R4
+
+| Sous-pilier | Vehicle dep. | Intention | Sections R4 | Exemples |
+|-------------|:------------:|-----------|-------------|----------|
+| **R4A -- Pieces / organes** | low | Definir un composant | definition, role, composition, scope | Qu'est-ce qu'un alternateur ; role du capteur ABS |
+| **R4B -- Systemes** | low | Expliquer un circuit/systeme | definition, role, composition, variants | Comment fonctionne le systeme de freinage |
+| **R4C -- Comparatifs / differences** | low | Distinguer 2 variantes | variants, key_specs, confusions | Disque plein vs ventile ; courroie vs chaine |
+| **R4D -- Usure / symptomes organe** | low | Reconnaitre l'usure d'un organe | definition, confusions, symptomes_associes | Signes d'usure d'un disque de frein |
+| **R4E -- Confusions frequentes** | low | Clarifier ce qu'un symptome ne prouve pas | confusions, does_not, scope | Difference plaquette usee vs disque voile |
+
+**R4A = coeur historique de R4** (definir chaque piece). Les autres sous-piliers etendent R4 sans changer la structure des sections.
+
+### Frontieres R4
+
+**R4 vs R3** :
+- R4 = "qu'est-ce que c'est" / R3 = "que faire"
+- Si le contenu donne une procedure meme avec une explication rapide → R3
+- Si le contenu explique le fonctionnement sans action concrete → R4
+- Zone grise : "signes d'usure d'un disque de frein" → R4D (comprendre), PAS R3
+
+**R4 vs R5** :
+- R4 = reference technique, centree organe/systeme
+- R5 = entree diagnostic, centree symptome/voyant/code
+- Si centree sur un organe precis → R4
+- Si centree sur un symptome generaliste → R5
+
+**R4 vs Outil** :
+- R4 = reponse pedagogique, peu dependante du vehicule
+- Outil = reponse personnalisee, depend du vehicule/km/historique
+- **Regle** : si la reponse utile necessite le vehicule, le km ou l'historique → outil, pas R4
+
+| Cas | Surface | Raison |
+|-----|---------|--------|
+| "Qu'est-ce qu'un capteur ABS ?" | **R4** (R4A) | Definition organe |
+| "Que faire si voyant ABS s'allume ?" | **R3** (R3A) | Action / reaction |
+| "Voyant ABS" | **R5** | Orientation generaliste |
+| "Voyant ABS sur Clio 3 180k" | **Outil** | Depend du vehicule |
+| "Difference disque plein vs ventile" | **R4** (R4C) | Comparatif technique |
+| "Signes d'usure disque de frein" | **R4** (R4D) | Comprendre usure organe |
+| "Bruit au freinage" | **R5** | Symptome generaliste |
+| "Comment changer un disque de frein" | **R3** (R3B) | Procedure |
+
+### Exclusions R4
+
+Ne **jamais** creer de page R4 pour :
+
+- Procedure pas-a-pas / tutoriel → R3
+- Diagnostic personnalise dependant du vehicule → Outil
+- Orientation symptome generaliste → R5
+- Contenu transactionnel / catalogue → R1
+- Guide d'achat / comparatif marques → R6
+- Revision personnalisee au km/modele → Outil
+- Cas combines multi-signaux → Outil
+
+**Regle** : si la reponse utile necessite de connaitre le vehicule, le km ou l'historique → outil, pas R4.
+
 ---
 
 ## 2. Schéma DB — Champs à remplir
@@ -239,3 +317,11 @@
 | `TITLE_FORMAT` | Ne suit pas la convention §11 | WARNING |
 
 **Règle : aucun flag BLOQUANT → publication autorisée.**
+
+---
+
+## 14. Version
+
+- **Version :** 2.0.0
+- **Derniere mise a jour :** 2026-03-08
+- **Changement v2** : ajout double filtre (intention + dependance vehicule), sous-piliers R4A-E, frontieres R4/R3/R5/Outil, exclusions
