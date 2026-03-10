@@ -579,16 +579,7 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
     authSource: 'admin' | 'customer';
   } | null> {
     try {
-      const { data, error } = await this.supabase
-        .rpc('auth_resolve_user', { p_email: email })
-        .maybeSingle();
-
-      if (error || !data) {
-        this.logger.debug(`resolveUserByEmail: no result for ${email}`);
-        return null;
-      }
-
-      const row = data as {
+      interface ResolvedRow {
         user_id: string;
         email: string;
         password_hash: string;
@@ -597,7 +588,19 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
         level: number;
         is_active: boolean;
         auth_source: string;
-      };
+      }
+
+      const { data, error } = await this.callRpc<ResolvedRow[]>(
+        'auth_resolve_user',
+        { p_email: email },
+      );
+
+      if (error || !data || data.length === 0) {
+        this.logger.debug(`resolveUserByEmail: no result for ${email}`);
+        return null;
+      }
+
+      const row = data[0];
 
       return {
         userId: row.user_id,
@@ -621,9 +624,9 @@ export class UserDataConsolidatedService extends SupabaseBaseService {
    */
   async emailExistsAnywhere(email: string): Promise<boolean> {
     try {
-      const { data, error } = await this.supabase
-        .rpc('auth_email_exists', { p_email: email })
-        .single();
+      const { data, error } = await this.callRpc<boolean>('auth_email_exists', {
+        p_email: email,
+      });
 
       if (error) {
         this.logger.error(`emailExistsAnywhere failed for ${email}:`, error);
