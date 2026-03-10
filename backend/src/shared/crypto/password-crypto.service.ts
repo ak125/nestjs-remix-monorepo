@@ -221,39 +221,13 @@ export class PasswordCryptoService {
 
   /**
    * Valider la force d'un mot de passe
-   * ✅ Minimum 8 caractères
-   * ✅ Au moins une majuscule
-   * ✅ Au moins une minuscule
-   * ✅ Au moins un chiffre
-   * ✅ (Optionnel) Au moins un caractère spécial
+   * ✅ Minimum 6 caractères
    */
-  validatePasswordStrength(password: string, requireSpecialChar = false): void {
-    const errors: string[] = [];
-
-    if (password.length < 8) {
-      errors.push('Le mot de passe doit contenir au moins 8 caractères');
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      errors.push('Le mot de passe doit contenir au moins une majuscule');
-    }
-
-    if (!/[a-z]/.test(password)) {
-      errors.push('Le mot de passe doit contenir au moins une minuscule');
-    }
-
-    if (!/[0-9]/.test(password)) {
-      errors.push('Le mot de passe doit contenir au moins un chiffre');
-    }
-
-    if (requireSpecialChar && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      errors.push(
-        'Le mot de passe doit contenir au moins un caractère spécial',
+  validatePasswordStrength(password: string): void {
+    if (password.length < 6) {
+      throw new BadRequestException(
+        'Le mot de passe doit contenir au moins 6 caractères',
       );
-    }
-
-    if (errors.length > 0) {
-      throw new BadRequestException(errors.join('. '));
     }
   }
 

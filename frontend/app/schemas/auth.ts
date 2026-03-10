@@ -51,11 +51,8 @@ export const registerSchema = z
       .trim(),
     password: z
       .string()
-      .min(8, "Minimum 8 caractères")
-      .max(100, "Maximum 100 caractères")
-      .regex(/[A-Z]/, "Au moins une majuscule")
-      .regex(/[a-z]/, "Au moins une minuscule")
-      .regex(/[0-9]/, "Au moins un chiffre"),
+      .min(6, "Minimum 6 caractères")
+      .max(100, "Maximum 100 caractères"),
     confirmPassword: z.string(),
     acceptTerms: z
       .boolean()
@@ -89,11 +86,8 @@ export const resetPasswordSchema = z
   .object({
     password: z
       .string()
-      .min(8, "Minimum 8 caractères")
-      .max(100, "Maximum 100 caractères")
-      .regex(/[A-Z]/, "Au moins une majuscule")
-      .regex(/[a-z]/, "Au moins une minuscule")
-      .regex(/[0-9]/, "Au moins un chiffre"),
+      .min(6, "Minimum 6 caractères")
+      .max(100, "Maximum 100 caractères"),
     confirmPassword: z.string(),
     token: z.string().min(1, "Token invalide"),
   })
@@ -213,10 +207,8 @@ export const changePasswordSchema = z
     currentPassword: z.string().min(1, "Mot de passe actuel requis"),
     newPassword: z
       .string()
-      .min(8, "Minimum 8 caractères")
-      .regex(/[A-Z]/, "Au moins une majuscule")
-      .regex(/[a-z]/, "Au moins une minuscule")
-      .regex(/[0-9]/, "Au moins un chiffre"),
+      .min(6, "Minimum 6 caractères")
+      .max(100, "Maximum 100 caractères"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

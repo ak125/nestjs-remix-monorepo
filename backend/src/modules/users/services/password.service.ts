@@ -355,33 +355,10 @@ export class PasswordService extends SupabaseBaseService {
    * Valider la force du mot de passe
    */
   private validatePasswordStrength(password: string): void {
-    if (password.length < 8) {
+    if (password.length < 6) {
       throw new BadRequestException(
-        'Le mot de passe doit contenir au moins 8 caractères',
+        'Le mot de passe doit contenir au moins 6 caractères',
       );
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      throw new BadRequestException(
-        'Le mot de passe doit contenir au moins une majuscule',
-      );
-    }
-
-    if (!/[a-z]/.test(password)) {
-      throw new BadRequestException(
-        'Le mot de passe doit contenir au moins une minuscule',
-      );
-    }
-
-    if (!/[0-9]/.test(password)) {
-      throw new BadRequestException(
-        'Le mot de passe doit contenir au moins un chiffre',
-      );
-    }
-
-    // Optionnel: vérifier les caractères spéciaux
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-      this.logger.warn('Password without special characters');
     }
   }
 
