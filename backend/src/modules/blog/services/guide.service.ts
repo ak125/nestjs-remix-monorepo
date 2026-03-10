@@ -8,6 +8,7 @@ import {
 } from '@repo/database-types';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
+import { buildGammeImageUrl } from '../../catalog/utils/image-urls.utils';
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
@@ -41,7 +42,7 @@ interface PurchaseGuideRow {
 
 type GammePartial = Pick<
   PiecesGamme,
-  'pg_id' | 'pg_alias' | 'pg_name' | 'pg_parent'
+  'pg_id' | 'pg_alias' | 'pg_name' | 'pg_parent' | 'pg_pic'
 >;
 
 /**
@@ -106,6 +107,29 @@ export class GuideService {
         (article): article is BlogArticle => article !== null,
       );
 
+      // Résoudre les images produit pour les guides manuels (batch)
+      const manualAliasesForImages = (guidesList || [])
+        .map((g: Pick<BlogGuide, 'bg_alias'>) => g.bg_alias)
+        .filter(Boolean);
+      if (manualAliasesForImages.length > 0) {
+        const { data: manualGammes } = await client
+          .from('pieces_gamme')
+          .select('pg_alias, pg_pic')
+          .in('pg_alias', manualAliasesForImages);
+        const aliasToImage = new Map<string, string>();
+        for (const g of manualGammes || []) {
+          aliasToImage.set(
+            g.pg_alias,
+            buildGammeImageUrl(g.pg_pic || `${g.pg_alias}.webp`),
+          );
+        }
+        for (const article of manualArticles) {
+          if (!article.featuredImage && article.slug) {
+            article.featuredImage = aliasToImage.get(article.slug) || null;
+          }
+        }
+      }
+
       // 2) Guides auto-générés depuis __seo_gamme_purchase_guide
       const { data: purchaseGuides } = await client
         .from('__seo_gamme_purchase_guide')
@@ -125,7 +149,7 @@ export class GuideService {
       if (pgIds.length > 0) {
         const { data: gammes } = await client
           .from('pieces_gamme')
-          .select('pg_id, pg_name, pg_alias, pg_parent')
+          .select('pg_id, pg_name, pg_alias, pg_parent, pg_pic')
           .in('pg_id', pgIds)
           .eq('pg_display', '1');
 
@@ -151,6 +175,7 @@ export class GuideService {
               this.guessFamilyFromName(g.pg_name),
             g.pg_name,
           ].filter(Boolean),
+          featuredImage: buildGammeImageUrl(g.pg_pic || `${g.pg_alias}.webp`),
           publishedAt: new Date().toISOString(),
           viewsCount: 0,
           sections: [],
@@ -255,7 +280,7 @@ export class GuideService {
       // 2) Fallback : slug = pg_alias directement → purchase guide
       const { data: gamme } = await client
         .from('pieces_gamme')
-        .select('pg_id, pg_name, pg_alias, pg_parent')
+        .select('pg_id, pg_name, pg_alias, pg_parent, pg_pic')
         .eq('pg_alias', slug)
         .eq('pg_display', '1')
         .single();
@@ -750,6 +775,9 @@ export class GuideService {
       keywords: [],
       tags: [this.guessFamilyFromName(gamme.pg_name), gamme.pg_name].filter(
         Boolean,
+      ),
+      featuredImage: buildGammeImageUrl(
+        gamme.pg_pic || `${gamme.pg_alias}.webp`,
       ),
       publishedAt: pg.sgpg_created_at || new Date().toISOString(),
       updatedAt: pg.sgpg_updated_at || null,

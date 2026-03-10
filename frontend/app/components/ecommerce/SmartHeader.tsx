@@ -2,20 +2,21 @@
  * ═══════════════════════════════════════════════════════════════════════════
  * 🚗 SMART HEADER E-COMMERCE - Automobile
  * ═══════════════════════════════════════════════════════════════════════════
- * 
+ *
  * Header intelligent optimisé pour site e-commerce pièces auto avec :
  * • Recherche centrale (marque/modèle/moteur/année)
  * • CTA "Mon véhicule" mémorisé
  * • Sticky (visible tout le temps)
  * • Responsive mobile → desktop
- * 
+ *
  * Design System intégré :
  * • Couleurs : Secondary (navigation), Primary (CTA)
  * • Typographie : Montserrat (headings), Inter (body), Roboto Mono (data)
  * • Espacement : 8px grid (sm, md, lg, xl)
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { BrandLogo } from "~/components/ui/ResponsiveImage";
 
 // Types
 export interface Vehicle {
@@ -45,14 +46,14 @@ export function SmartHeader({
   onVehicleSelect: _onVehicleSelect,
   onSearch,
   cartItemCount = 0,
-  logoUrl = '/logo.svg',
-  companyName = 'AutoPieces Pro',
+  logoUrl = "/logo.svg",
+  companyName = "AutoPieces Pro",
 }: SmartHeaderProps) {
   // State
   const [isSticky, setIsSticky] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isVehicleModalOpen, setIsVehicleModalOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Sticky header on scroll
   useEffect(() => {
@@ -60,8 +61,8 @@ export function SmartHeader({
       setIsSticky(window.scrollY > 100);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Handle search
@@ -87,7 +88,7 @@ export function SmartHeader({
           fixed top-0 left-0 right-0 z-50
           bg-secondary-500 text-white
           transition-all duration-300
-          ${isSticky ? 'shadow-lg py-sm' : 'py-md'}
+          ${isSticky ? "shadow-lg py-sm" : "py-md"}
         `}
       >
         <div className="max-w-7xl mx-auto px-md">
@@ -101,9 +102,14 @@ export function SmartHeader({
               Logo + Nom (font-heading)
               • gap-sm → Espacement serré entre logo et texte
             */}
-            <a href="/" className="flex items-center gap-sm hover:opacity-90 transition-opacity">
-              <img src={logoUrl} alt={companyName} width={32} height={32} className="h-8" />
-              <span className="font-heading text-xl font-bold">{companyName}</span>
+            <a
+              href="/"
+              className="flex items-center gap-sm hover:opacity-90 transition-opacity"
+            >
+              <BrandLogo src={logoUrl} alt={companyName} className="h-8 w-8" />
+              <span className="font-heading text-xl font-bold">
+                {companyName}
+              </span>
             </a>
 
             {/* 
@@ -129,7 +135,7 @@ export function SmartHeader({
                     transition-all
                   "
                 />
-                
+
                 {/* Icône recherche */}
                 <button
                   type="submit"
@@ -141,8 +147,18 @@ export function SmartHeader({
                   "
                   aria-label="Rechercher"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
                   </svg>
                 </button>
               </div>
@@ -152,16 +168,19 @@ export function SmartHeader({
                 • gap-xs → Micro-espacement entre badges
               */}
               <div className="flex items-center gap-xs mt-xs">
-                <span className="font-sans text-xs text-secondary-200">Recherches fréquentes:</span>
-                {['Plaquettes frein', 'Filtre huile', 'Disques frein'].map((term) => (
-                  <button
-                    key={term}
-                    type="button"
-                    onClick={() => {
-                      setSearchQuery(term);
-                      onSearch?.(term);
-                    }}
-                    className="
+                <span className="font-sans text-xs text-secondary-200">
+                  Recherches fréquentes:
+                </span>
+                {["Plaquettes frein", "Filtre huile", "Disques frein"].map(
+                  (term) => (
+                    <button
+                      key={term}
+                      type="button"
+                      onClick={() => {
+                        setSearchQuery(term);
+                        onSearch?.(term);
+                      }}
+                      className="
                       px-xs py-xs
                       bg-secondary-600 hover:bg-secondary-500
                       text-secondary-100 hover:text-white
@@ -169,10 +188,11 @@ export function SmartHeader({
                       rounded
                       transition-colors
                     "
-                  >
-                    {term}
-                  </button>
-                ))}
+                    >
+                      {term}
+                    </button>
+                  ),
+                )}
               </div>
             </form>
 
@@ -200,8 +220,18 @@ export function SmartHeader({
               "
             >
               {/* Icône voiture */}
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
               </svg>
 
               {/* Texte adaptatif */}
@@ -234,8 +264,18 @@ export function SmartHeader({
                 "
                 aria-label="Mon compte"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
                 </svg>
               </a>
 
@@ -250,13 +290,24 @@ export function SmartHeader({
                 "
                 aria-label={`Panier (${cartItemCount} articles)`}
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
                 </svg>
-                
+
                 {/* Badge compteur (bg-primary-500) */}
                 {cartItemCount > 0 && (
-                  <span className="
+                  <span
+                    className="
                     absolute -top-xs -right-xs
                     px-xs py-xs
                     min-w-[20px]
@@ -265,8 +316,9 @@ export function SmartHeader({
                     font-mono text-xs font-bold
                     rounded-full
                     flex items-center justify-center
-                  ">
-                    {cartItemCount > 99 ? '99+' : cartItemCount}
+                  "
+                  >
+                    {cartItemCount > 99 ? "99+" : cartItemCount}
                   </span>
                 )}
               </a>
@@ -285,15 +337,27 @@ export function SmartHeader({
               className="p-sm text-white"
               aria-label="Menu"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
 
             {/* Logo mobile */}
             <a href="/" className="flex items-center gap-xs">
-              <img src={logoUrl} alt={companyName} width={24} height={24} className="h-6" />
-              <span className="font-heading text-lg font-bold">{companyName}</span>
+              <BrandLogo src={logoUrl} alt={companyName} className="h-6 w-6" />
+              <span className="font-heading text-lg font-bold">
+                {companyName}
+              </span>
             </a>
 
             {/* Actions mobile */}
@@ -303,14 +367,34 @@ export function SmartHeader({
                 className="p-sm text-white"
                 aria-label="Mon véhicule"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
                 </svg>
               </button>
-              
+
               <a href="/cart" className="relative p-sm text-white">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
                 </svg>
                 {cartItemCount > 0 && (
                   <span className="absolute -top-xs -right-xs px-xs min-w-[16px] bg-primary-500 text-white font-mono text-xs rounded-full flex items-center justify-center">
@@ -351,13 +435,13 @@ export function SmartHeader({
             <div className="max-w-7xl mx-auto px-md py-sm">
               <ul className="flex items-center gap-lg font-sans text-sm">
                 {[
-                  'Freinage',
-                  'Filtration',
-                  'Moteur',
-                  'Transmission',
-                  'Suspension',
-                  'Éclairage',
-                  'Promotions',
+                  "Freinage",
+                  "Filtration",
+                  "Moteur",
+                  "Transmission",
+                  "Suspension",
+                  "Éclairage",
+                  "Promotions",
                 ].map((category) => (
                   <li key={category}>
                     <a
@@ -375,7 +459,7 @@ export function SmartHeader({
       </header>
 
       {/* Spacer pour compenser le header fixed */}
-      <div className={isSticky ? 'h-16' : 'h-24'} />
+      <div className={isSticky ? "h-16" : "h-24"} />
 
       {/* 
         ═════════════════════════════════════════════════════════════════════
@@ -383,16 +467,34 @@ export function SmartHeader({
         ═════════════════════════════════════════════════════════════════════
       */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-black/50" onClick={() => setIsMobileMenuOpen(false)}>
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/50"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
           <div
             className="absolute left-0 top-0 bottom-0 w-80 bg-white p-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-lg">
-              <h2 className="font-heading text-xl font-bold text-neutral-900">Menu</h2>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="p-sm">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <h2 className="font-heading text-xl font-bold text-neutral-900">
+                Menu
+              </h2>
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-sm"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -400,13 +502,13 @@ export function SmartHeader({
             <nav>
               <ul className="space-y-sm font-sans">
                 {[
-                  'Freinage',
-                  'Filtration',
-                  'Moteur',
-                  'Transmission',
-                  'Suspension',
-                  'Éclairage',
-                  'Promotions',
+                  "Freinage",
+                  "Filtration",
+                  "Moteur",
+                  "Transmission",
+                  "Suspension",
+                  "Éclairage",
+                  "Promotions",
                 ].map((category) => (
                   <li key={category}>
                     <a

@@ -5,7 +5,7 @@
  * avec 4 modes de placement : left (float), right (float), full, center.
  *
  * Accepte n'importe quelle URL : pg_img, Supabase Storage, static asset.
- * Utilise LazyImage pour le chargement differe (below-fold).
+ * Utilise ResponsiveImage pour le chargement (SSR-safe, fallback, srcSet).
  *
  * Responsive : mobile (< 640px) → toutes les images passent en full-width.
  * Desktop (>= 640px) → placement configure.
@@ -14,7 +14,7 @@
  * @see frontend/app/components/heroes/_hero.contract.md
  */
 
-import { LazyImage, generateImgproxySrcSet } from "~/components/ui/lazy-image";
+import { ResponsiveImage } from "~/components/ui/ResponsiveImage";
 import {
   type ImagePlacement,
   type ImageSize,
@@ -69,10 +69,6 @@ export function SectionImage({
   const widthPx = IMAGE_SIZES[size];
   const isFull = placement === "full";
 
-  // Generer srcset si l'URL est compatible imgproxy
-  const srcSet = generateImgproxySrcSet(src, SRCSET_WIDTHS);
-  const hasSrcSet = srcSet !== src;
-
   return (
     <figure
       className={cn(
@@ -81,16 +77,18 @@ export function SectionImage({
         className,
       )}
     >
-      <LazyImage
+      <ResponsiveImage
         src={src}
         alt={alt}
-        width={isFull ? undefined : widthPx}
-        height={isFull ? undefined : widthPx}
-        priority={priority}
-        objectFit="contain"
-        srcSet={hasSrcSet ? srcSet : undefined}
-        sizes={hasSrcSet ? `(max-width: 640px) 100vw, ${widthPx}px` : undefined}
-        className={cn("rounded-lg", isFull ? "w-full max-h-[400px]" : "w-full")}
+        className={cn(
+          "rounded-lg object-contain",
+          isFull ? "w-full max-h-[400px]" : "w-full",
+        )}
+        loading={priority ? "eager" : "lazy"}
+        showPlaceholder
+        fallback="/images/pieces/default.png"
+        widths={SRCSET_WIDTHS}
+        sizes={`(max-width: 640px) 100vw, ${widthPx}px`}
       />
       {caption && (
         <figcaption className="mt-1.5 text-xs text-gray-500 text-center leading-tight">

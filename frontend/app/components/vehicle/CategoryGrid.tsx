@@ -1,6 +1,7 @@
 import { Link } from "@remix-run/react";
 import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { Badge } from "~/components/ui/badge";
+import { ResponsiveImage } from "~/components/ui/ResponsiveImage";
 import { type VehicleData } from "~/types/vehicle.types";
 import { logger } from "~/utils/logger";
 
@@ -40,120 +41,6 @@ export interface CategoryGridProps {
   showPartsCount?: boolean;
 }
 
-interface LazyImageProps {
-  src: string;
-  alt: string;
-  className?: string;
-  onLoad?: () => void;
-  onError?: (error: Error) => void;
-  _placeholder?: string; // Préfixé avec _ pour éviter l'erreur
-}
-
-// ========================================
-// 🖼️ COMPOSANT LAZY IMAGE MODERNE
-// ========================================
-
-const LazyImage = memo(function LazyImage({
-  src,
-  alt,
-  className = "",
-  onLoad,
-  onError,
-  _placeholder = "/images/loading-placeholder.svg",
-}: LazyImageProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
-  const [isInView, setIsInView] = useState(false);
-
-  const imgRef = useCallback((node: HTMLImageElement | null) => {
-    if (!node) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
-      },
-      {
-        threshold: 0.1,
-        rootMargin: "50px", // Précharge 50px avant d'être visible
-      },
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-
-  const handleLoad = useCallback(() => {
-    setIsLoaded(true);
-    onLoad?.();
-  }, [onLoad]);
-
-  const handleError = useCallback(
-    (_e: React.SyntheticEvent<HTMLImageElement>) => {
-      setHasError(true);
-      const error = new Error(`Failed to load image: ${src}`);
-      onError?.(error);
-    },
-    [src, onError],
-  );
-
-  if (hasError) {
-    return (
-      <div
-        className={`bg-gray-100 flex items-center justify-center ${className}`}
-      >
-        <div className="text-center p-4">
-          <svg
-            className="w-8 h-8 mx-auto text-gray-400 mb-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1}
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-          <p className="text-xs text-gray-500">Image indisponible</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`relative overflow-hidden ${className}`}>
-      {/* Placeholder pendant le chargement */}
-      {!isLoaded && (
-        <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
-          <div className="animate-pulse">
-            <div className="w-8 h-8 bg-muted/50 rounded"></div>
-          </div>
-        </div>
-      )}
-
-      {/* Image réelle */}
-      {isInView && (
-        <img
-          ref={imgRef}
-          src={src}
-          alt={alt}
-          onLoad={handleLoad}
-          onError={handleError}
-          className={`
-            w-full h-full object-cover transition-opacity duration-300
-            ${isLoaded ? "opacity-100" : "opacity-0"}
-          `}
-          loading="lazy"
-        />
-      )}
-    </div>
-  );
-});
-
 // ========================================
 // 🎨 COMPOSANT CATEGORY CARD
 // ========================================
@@ -174,7 +61,7 @@ const CategoryCard = memo(function CategoryCard({
   showSubcategories,
   showPartsCount,
   onCategoryClick,
-  onImageLoad,
+  onImageLoad: _onImageLoad,
   onImageError,
 }: CategoryCardProps) {
   const buildPartUrl = useCallback(
@@ -211,12 +98,21 @@ const CategoryCard = memo(function CategoryCard({
     <div className="group bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
       {/* Image avec aspect ratio fixe */}
       <div className="aspect-[4/3] bg-gray-100">
-        <LazyImage
+        <ResponsiveImage
           src={category.image_url}
           alt={`Pièces ${category.name} pour ${vehicle.brand} ${vehicle.model}`}
           className="w-full h-full object-cover"
-          onLoad={onImageLoad}
-          onError={onImageError}
+          loading="lazy"
+          showPlaceholder
+          aspectRatio="4/3"
+          fallback="/images/pieces/default.png"
+          widths={[240, 320, 480]}
+          sizes="(max-width: 640px) 50vw, 33vw"
+          onError={() =>
+            onImageError?.(
+              new Error(`Failed to load image: ${category.image_url}`),
+            )
+          }
         />
       </div>
 
