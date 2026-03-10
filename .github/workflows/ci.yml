@@ -1021,13 +1021,83 @@ jobs:
           echo "> Non-blocking: violations signalees mais ne bloquent pas le pipeline." >> $GITHUB_STEP_SUMMARY
 
   # ============================================
+  # AUTO-DEPLOY to PROD (after PREPROD passes)
+  # ============================================
+
+  deploy-prod:
+    name: 🚀 Deploy to PROD
+    runs-on: [self-hosted, Linux, X64]
+    needs: [lighthouse]
+    if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🏷️ Promote preprod → production
+        run: |
+          docker tag massdoc/nestjs-remix-monorepo:preprod massdoc/nestjs-remix-monorepo:production
+          echo "✅ Image retagged: preprod → production"
+
+      - name: 🐳 Push production image to DockerHub
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          docker push massdoc/nestjs-remix-monorepo:production
+          echo "✅ Image pushed to DockerHub"
+
+      - name: 🚀 Deploy PROD (port 3000)
+        run: |
+          PROD_DIR=~/production
+
+          # Copier docker-compose.prod.yml a jour
+          cp $GITHUB_WORKSPACE/docker-compose.prod.yml $PROD_DIR/
+
+          cd $PROD_DIR
+
+          # Restart avec la nouvelle image
+          docker compose -f docker-compose.prod.yml up -d --pull always
+
+          # Health check (max 2 min)
+          echo "⏳ Waiting for PROD to start..."
+          HEALTHY=0
+          for i in {1..12}; do
+            if curl -sf http://localhost:3000/health > /dev/null 2>&1; then
+              echo "✅ PROD is healthy after $((i*10))s"
+              HEALTHY=1
+              break
+            fi
+            echo "Attempt $i/12 - waiting 10s..."
+            sleep 10
+          done
+
+          if [ "$HEALTHY" != "1" ]; then
+            echo "❌ PROD health check failed after 2 minutes"
+            docker ps | grep prod || true
+            docker logs nestjs-remix-monorepo-prod --tail 50
+            exit 1
+          fi
+
+          echo "✅ PROD deployed successfully on port 3000"
+
+          # Cleanup
+          docker image prune -f
+
+      - name: 📊 Deploy summary
+        if: always()
+        run: |
+          echo "## 🚀 PROD Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`${GITHUB_SHA::7}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** massdoc/nestjs-remix-monorepo:production" >> $GITHUB_STEP_SUMMARY
+          echo "- **Port:** 3000" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================
   # Notifications (Phase 3)
   # ============================================
 
   notify-failure:
     name: 🔔 Notify on Failure
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test, test-frontend, security, core-build, import-firewall, rpc-gate-check, governance-check, gitleaks, migration-safety, build, deploy, e2e-smoke, lighthouse]
+    needs: [lint, typecheck, test, test-frontend, security, core-build, import-firewall, rpc-gate-check, governance-check, gitleaks, migration-safety, build, deploy, e2e-smoke, lighthouse, deploy-prod]
     if: ${{ failure() && github.ref == 'refs/heads/main' }}
     steps:
       - name: 🔔 Send Slack notification
