@@ -16,6 +16,7 @@
  */
 
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
+import { getProxyHeaders } from "~/utils/proxy-headers.server";
 
 export interface AdminFetchOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -42,6 +43,7 @@ export async function adminFetch<T = unknown>(
     headers: {
       "Content-Type": "application/json",
       Cookie: cookie,
+      ...getProxyHeaders(request),
       ...options?.headers,
     },
     ...(options?.body !== undefined
@@ -78,6 +80,7 @@ export async function adminFetchOptional<T = unknown>(
     headers: {
       "Content-Type": "application/json",
       Cookie: cookie,
+      ...getProxyHeaders(request),
       ...options?.headers,
     },
     ...(options?.body !== undefined

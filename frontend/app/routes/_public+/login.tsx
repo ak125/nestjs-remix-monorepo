@@ -21,6 +21,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { loginSchema } from "~/schemas/auth";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+import { getProxyHeaders } from "~/utils/proxy-headers.server";
 import { safeRedirect } from "~/utils/safe-redirect.server";
 import { getOptionalUser } from "../../auth/unified.server";
 
@@ -86,6 +87,7 @@ export async function action({ request }: ActionFunctionArgs) {
       headers: {
         "Content-Type": "application/json",
         Cookie: request.headers.get("Cookie") || "",
+        ...getProxyHeaders(request),
       },
       body: JSON.stringify({
         email: parsed.data.email,

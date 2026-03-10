@@ -1,6 +1,7 @@
 import { redirect, type AppLoadContext } from "@remix-run/node";
 import { z } from "zod";
 import { logger } from "~/utils/logger";
+import { getProxyHeaders } from "~/utils/proxy-headers.server";
 
 /**
  * 🔐 SYSTÈME D'AUTHENTIFICATION UNIFIÉ
@@ -103,6 +104,7 @@ export const getAuthUser = async (
       headers: {
         Accept: "application/json",
         Cookie: request.headers.get("Cookie") || "",
+        ...getProxyHeaders(request),
       },
     });
 
@@ -135,6 +137,7 @@ export const getAuthUser = async (
       headers: {
         Accept: "application/json",
         Cookie: request.headers.get("Cookie") || "",
+        ...getProxyHeaders(request),
       },
     });
 
