@@ -60,17 +60,14 @@ export class ClaudeCliService {
     }
 
     try {
-      // Build clean env: unset CLAUDECODE to allow nested CLI sessions
-      const cleanEnv: Record<string, string | undefined> = {
-        ...process.env,
-        CI: 'true',
-      };
+      // Build clean env: only unset CLAUDECODE (blocks nesting), keep auth vars
+      const cleanEnv = { ...process.env, CI: 'true' };
       delete cleanEnv.CLAUDECODE;
 
       const { stdout, stderr } = await execFileAsync(CLAUDE_CLI_PATH, args, {
         timeout,
         maxBuffer: ClaudeCliService.MAX_BUFFER,
-        env: cleanEnv,
+        env: cleanEnv as NodeJS.ProcessEnv,
       });
 
       if (stderr && stderr.trim()) {
