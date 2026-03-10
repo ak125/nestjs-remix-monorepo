@@ -50,7 +50,6 @@ import { NewsletterCTA } from "~/components/blog/NewsletterCTA";
 import { PillarArticlesGrid } from "~/components/blog/PillarArticlesGrid";
 import { QuickChecklist } from "~/components/blog/QuickChecklist";
 import { ThemeExplorer } from "~/components/blog/ThemeExplorer";
-import { VehicleArticleFilter } from "~/components/blog/VehicleArticleFilter";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 
 // UI Components
@@ -300,9 +299,6 @@ export default function BlogIndex() {
 
       {/* Diagnostiquer par symptôme (aimant SEO long-tail) */}
       <DiagnosticSection articles={blogData.diagnostic ?? []} />
-
-      {/* Trouver des articles pour votre véhicule */}
-      <VehicleArticleFilter />
 
       {/* Articles en vedette (3 piliers) */}
       <PillarArticlesGrid articles={blogData.featured ?? []} />
