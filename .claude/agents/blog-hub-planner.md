@@ -57,7 +57,6 @@ Read frontend/app/components/blog/IntentHero.tsx
 Read frontend/app/components/blog/EditorialTrust.tsx
 Read frontend/app/components/blog/BlogSearchBar.tsx
 Read frontend/app/components/blog/DiagnosticSection.tsx
-Read frontend/app/components/blog/VehicleArticleFilter.tsx
 Read frontend/app/components/blog/PillarArticlesGrid.tsx
 Read frontend/app/components/blog/CategoriesSection.tsx
 Read frontend/app/components/blog/ContentTabs.tsx
@@ -177,8 +176,10 @@ Pour chaque cluster :
 - **long** : 10-20 questions long-tail
 - **variants** : termes lies (HS/panne/voyant/bruit/usure...)
 - **negative** : termes a NE PAS cibler (anti-cannibalisation)
-- **content_opportunity** : quel type de section ajouter/ameliorer (section | faq | checklist | symptom-finder | vehicle-entry | pillar-links | diagnostic-tree)
+- **content_opportunity** : quel type de section ajouter/ameliorer (section | faq | checklist | symptom-finder | pillar-links | diagnostic-tree)
 - **owner_routing** : si owner != R3, lien interne vers page owner avec exemples d'ancres
+- **impact_score** : 0-100 = (volume estime) + (long-tail fit) + (business relevance) - (cannibal risk)
+- **effort** : S | M | L (Small = edit existant, Medium = nouvelle section, Large = nouveau composant)
 
 ### Owner routing — regles strictes
 
@@ -221,16 +222,60 @@ Pour chaque H2 :
 
 ---
 
-## Etape 5 — Anti-cannibalisation (MATRIX + Terms Forbidden)
+## Etape 5 — Media Plan (par section)
 
-### 5a. Matrice Topic -> Owner -> Regle
+Pour chaque H2, proposer **0 a 2 medias UTILES** (pas decoratifs). Un media doit apporter plus que du texte seul.
+
+Types possibles :
+- `image` : hero, illustration, photo technique
+- `table` : comparatif, symptomes, specifications
+- `diagram` : flow symptome → test → action, timeline entretien
+- `checklist` : composant UI texte (pas image)
+- `component` : accordion, cards, topic map, vehicle selector
+
+Pour chaque media, fournir :
+- `media_id` : M01, M02... (unique)
+- `placement` : after_H1 | inside_H2_{nom_section} | before_FAQ | after_FAQ
+- `section` : nom de la section H2
+- `media_type` : image | table | diagram | checklist | component
+- `goal` : SEO | UX | Trust (1 a 2 max)
+- `content_spec` : ce que montre le media (1-2 phrases concretes)
+- `alt_text` : FR, descriptif naturel, pas keyword stuffing (max 140 chars)
+- `caption` : 1 phrase utile (optionnel)
+- `perf` : `{ "loading": "lazy|eager", "fetchpriority": "high|auto" }`
+- `accessibility` : `{ "text_equivalent_required": true|false }`
+
+### Regles media
+
+- **1 SEUL media `eager` + `fetchpriority: high`** = le hero/LCP. Tout le reste = `lazy` + `auto`
+- **Max 10 medias** total sur la page hub (eviter surcharge)
+- **Pas de `format_spec`** detaille ici — utiliser les specs de `media-slots.constants.ts`
+- **Pas de style guidance** detaille — deleguer a l'agent `/r3-image-prompt` pour generer les prompts image
+- Les **tables et diagrammes** doivent TOUJOURS avoir `text_equivalent_required: true`
+- Les **checklists** sont des composants texte (meilleur SEO + accessibilite qu'une image)
+
+### Gaps media connus sur le hub (a evaluer)
+
+| Zone | Etat actuel | Gap potentiel |
+|------|------------|---------------|
+| IntentHero | Icones Lucide seulement | Hero banner image ? |
+| DiagnosticSection | 6 chips texte | Table symptomes / diagramme decision ? |
+| ThemeExplorer | 10 icones Lucide | Illustrations thematiques ? |
+| PillarArticlesGrid | Images articles (pas de srcset) | Responsive image optimization ? |
+| ContentTabs | Images articles (lazy) | srcset/sizes manquants ? |
+
+---
+
+## Etape 6 — Anti-cannibalisation (MATRIX + Terms Forbidden)
+
+### 6a. Matrice Topic -> Owner -> Regle
 
 | Topic | Owner | Regle |
 |-------|-------|-------|
 | Ex: "prix plaquettes frein" | R1 | NE PAS cibler — lien vers /pieces/plaquettes-de-frein |
 | Ex: "definition ABS" | R4 | NE PAS developper — lien vers /reference-auto/abs |
 
-### 5b. Termes interdits
+### 6b. Termes interdits
 
 **Globaux** (sur toute la page hub) :
 - acheter, commander, prix, promo, livraison, stock, reference OEM
@@ -238,24 +283,25 @@ Pour chaque H2 :
 
 **Par section** : termes specifiques a eviter dans chaque H2
 
-### 5c. Regles techniques
+### 6c. Regles techniques
 
 - **Canonical** : `https://www.automecanik.com/blog-pieces-auto` (sans query string)
 - **Filtres/query params** : `noindex,follow` par defaut
 - **Un article n'apparait qu'UNE SEULE fois** sur la page hub
 - **"Tendances 7j" != "Populaires all-time"** : deux jeux de donnees distincts
+- **Freshness** : si un titre contient [YYYY] ou une annee, la section DOIT afficher `updatedAt` + badge "Mis a jour". Sinon, retirer l'annee du titre ou la generer dynamiquement
 
 ---
 
-## Etape 6 — Deliverables testables
+## Etape 7 — Deliverables testables
 
-### 6a. Roadmap P0/P1/P2 (priorisee)
+### 7a. Roadmap P0/P1/P2 (priorisee)
 
 - **P0 (quick wins)** : 5 items max, tres concrets, implementables en 1 session
 - **P1 (structure + contenu)** : 5-8 items, modifications de sections/composants
 - **P2 (bonus)** : 5 items, ameliorations futures
 
-### 6b. Definition of Done (DoD)
+### 7b. Definition of Done (DoD)
 
 10 criteres verifiables, ex :
 - [ ] Chaque H2 porte une intention claire
@@ -267,7 +313,7 @@ Pour chaque H2 :
 
 ---
 
-## Etape 7 — Output
+## Etape 8 — Output
 
 ### Format 1 : Rapport Markdown structure
 
@@ -305,8 +351,10 @@ Presenter directement dans la conversation :
       "long": ["..."],
       "variants": ["..."],
       "negative": ["..."],
-      "content_opportunity": "section|faq|checklist|symptom-finder|vehicle-entry|pillar-links|diagnostic-tree",
-      "owner_routing": { "to": "/pieces/...", "anchor_examples": ["..."] }
+      "content_opportunity": "section|faq|checklist|symptom-finder|pillar-links|diagnostic-tree",
+      "owner_routing": { "to": "/pieces/...", "anchor_examples": ["..."] },
+      "impact_score": 75,
+      "effort": "S|M|L"
     }
   ],
   "headings": {
@@ -326,6 +374,20 @@ Presenter directement dans la conversation :
       "verbs": ["..."],
       "avoid": ["..."],
       "cta_links": [{ "to": "...", "purpose": "...", "anchor_examples": ["..."] }]
+    }
+  ],
+  "media_plan": [
+    {
+      "media_id": "M01",
+      "placement": "after_H1",
+      "section": "Hero",
+      "media_type": "image",
+      "goal": ["SEO","UX"],
+      "content_spec": "Description concrete de ce que montre le media",
+      "alt_text": "Texte alternatif FR descriptif (max 140 chars)",
+      "caption": "Legende optionnelle (1 phrase utile)",
+      "perf": { "loading": "eager", "fetchpriority": "high" },
+      "accessibility": { "text_equivalent_required": false }
     }
   ],
   "anti_cannibalization": {
@@ -357,3 +419,5 @@ Presenter directement dans la conversation :
 - Tu dois **proposer des exemples concrets** (titres de sections, exemples de questions long-tail, exemples d'ancres internes)
 - Tu dois **rester coherent avec une page HUB R3** : pedagogique, actionnable, non transactionnelle
 - **Presenter les resultats etape par etape**, attendre validation entre chaque etape majeure
+- Pour **generer les prompts image** (Midjourney/DALL-E) apres le media plan, utiliser `/r3-image-prompt`
+- Les **specs techniques image** (ratio, taille, format) sont dans `media-slots.constants.ts` — ne pas les redefinir
