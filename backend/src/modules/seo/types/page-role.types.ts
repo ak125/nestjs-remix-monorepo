@@ -13,6 +13,8 @@ export enum PageRole {
   R5_DIAGNOSTIC = 'R5', // Diagnostic symptômes
   R6_SUPPORT = 'R6', // Support/Légal
   R6_GUIDE_ACHAT = 'R6_GUIDE', // Guide d'achat
+  R7_BRAND = 'R7', // Marque/Constructeur
+  R8_VEHICLE = 'R8', // Véhicule (sélection pièces par véhicule spécifique)
 }
 
 export interface PageRoleMeta {
@@ -64,6 +66,16 @@ export const PAGE_ROLE_META: Record<PageRole, PageRoleMeta> = {
     intention: 'Choisir la bonne pièce',
     indexable: true,
   },
+  [PageRole.R7_BRAND]: {
+    label: 'Marque (Constructeur)',
+    intention: 'Selectionner par marque/constructeur',
+    indexable: true,
+  },
+  [PageRole.R8_VEHICLE]: {
+    label: 'Vehicule (Catalogue pieces)',
+    intention: 'Selectionner des pieces pour un vehicule specifique',
+    indexable: true,
+  },
 };
 
 /**
@@ -77,6 +89,8 @@ export const PAGE_ROLE_HIERARCHY: PageRole[] = [
   PageRole.R5_DIAGNOSTIC,
   PageRole.R1_ROUTER,
   PageRole.R2_PRODUCT,
+  PageRole.R7_BRAND,
+  PageRole.R8_VEHICLE,
   PageRole.R6_GUIDE_ACHAT,
   PageRole.R6_SUPPORT,
 ];
@@ -100,6 +114,7 @@ export const ALLOWED_LINKS: Record<PageRole, PageRole[]> = {
     PageRole.R4_REFERENCE,
     PageRole.R5_DIAGNOSTIC,
     PageRole.R6_GUIDE_ACHAT,
+    PageRole.R7_BRAND,
   ],
   [PageRole.R4_REFERENCE]: [
     PageRole.R3_BLOG,
@@ -110,6 +125,17 @@ export const ALLOWED_LINKS: Record<PageRole, PageRole[]> = {
   [PageRole.R5_DIAGNOSTIC]: [PageRole.R4_REFERENCE, PageRole.R1_ROUTER],
   [PageRole.R1_ROUTER]: [PageRole.R2_PRODUCT],
   [PageRole.R2_PRODUCT]: [PageRole.R4_REFERENCE, PageRole.R3_BLOG], // max 1 lien R4, 0-1 lien R3
+  [PageRole.R7_BRAND]: [
+    PageRole.R1_ROUTER,
+    PageRole.R2_PRODUCT,
+    PageRole.R7_BRAND,
+    PageRole.R8_VEHICLE,
+  ],
+  [PageRole.R8_VEHICLE]: [
+    PageRole.R1_ROUTER,
+    PageRole.R2_PRODUCT,
+    PageRole.R7_BRAND,
+  ],
   [PageRole.R6_SUPPORT]: [], // pas de liens sortants SEO
   [PageRole.R6_GUIDE_ACHAT]: [PageRole.R4_REFERENCE, PageRole.R2_PRODUCT], // guide → référence + produit
 };
@@ -266,25 +292,27 @@ export const URL_ROLE_PATTERNS: UrlRolePattern[] = [
     role: PageRole.R1_ROUTER,
     description: 'Catalog page',
   },
+  // ========== R7 MARQUE/CONSTRUCTEUR ==========
   {
     pattern: /^\/constructeurs\/[^/]+\.html$/,
-    role: PageRole.R1_ROUTER,
+    role: PageRole.R7_BRAND,
     description: 'Brand page',
   },
   {
-    pattern: /^\/constructeurs\/[^/]+\/[^/]+\/[^/]+\.html$/,
-    role: PageRole.R1_ROUTER,
-    description: 'Vehicle type page',
-  },
-  {
     pattern: /^\/marques$/,
-    role: PageRole.R1_ROUTER,
+    role: PageRole.R7_BRAND,
     description: 'Brands list',
   },
   {
     pattern: /^\/brands/,
-    role: PageRole.R1_ROUTER,
+    role: PageRole.R7_BRAND,
     description: 'Brands (EN)',
+  },
+  // ========== R8 VEHICULE ==========
+  {
+    pattern: /^\/constructeurs\/[^/]+\/[^/]+\/[^/]+\.html$/,
+    role: PageRole.R8_VEHICLE,
+    description: 'Vehicle type page (catalogue pieces)',
   },
   {
     pattern: /^\/products\/ranges/,
@@ -414,6 +442,10 @@ export function pageRoleToRoleId(
       return RoleId.R6_SUPPORT;
     case PageRole.R6_GUIDE_ACHAT:
       return RoleId.R6_GUIDE_ACHAT;
+    case PageRole.R7_BRAND:
+      return RoleId.R7_BRAND;
+    case PageRole.R8_VEHICLE:
+      return RoleId.R8_VEHICLE;
     default:
       return null;
   }

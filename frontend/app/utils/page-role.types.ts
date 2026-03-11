@@ -17,6 +17,8 @@ export enum PageRole {
   R5_DIAGNOSTIC = "R5", // Diagnostic symptômes
   R6_SUPPORT = "R6", // Support/Légal
   R6_GUIDE_ACHAT = "R6_GUIDE", // Guide d'achat
+  R7_BRAND = "R7", // Marque/Constructeur
+  R8_VEHICLE = "R8", // Véhicule (sélection pièces par véhicule spécifique)
   RX_CHECKOUT = "RX_CHECKOUT", // Checkout/Paiement (funnel transactionnel)
 }
 
@@ -32,6 +34,8 @@ export type PageIntent =
   | "diagnosis" // R5: identifier un problème
   | "support" // R6: obtenir de l'aide
   | "buying_guide" // R6_GUIDE: choisir la bonne pièce
+  | "brand_selection" // R7: sélectionner par marque
+  | "vehicle_selection" // R8: sélectionner pièces pour un véhicule
   | "checkout"; // RX_CHECKOUT: finaliser l'achat
 
 /**
@@ -47,6 +51,8 @@ export type ContentType =
   | "legal" // R6: mentions légales, CGV
   | "support" // R6: contact, aide, FAQ
   | "guide" // R6_GUIDE: guide d'achat
+  | "brand" // R7: page constructeur/marque
+  | "vehicle" // R8: page véhicule (catalogue pièces)
   | "checkout"; // RX_CHECKOUT: tunnel de conversion
 
 /**
@@ -103,6 +109,8 @@ export const ROLE_DEFAULT_INTENT: Record<PageRole, PageIntent> = {
   [PageRole.R5_DIAGNOSTIC]: "diagnosis",
   [PageRole.R6_SUPPORT]: "support",
   [PageRole.R6_GUIDE_ACHAT]: "buying_guide",
+  [PageRole.R7_BRAND]: "brand_selection",
+  [PageRole.R8_VEHICLE]: "vehicle_selection",
   [PageRole.RX_CHECKOUT]: "checkout",
 };
 
@@ -118,6 +126,8 @@ export const ROLE_DEFAULT_CONTENT_TYPE: Record<PageRole, ContentType> = {
   [PageRole.R5_DIAGNOSTIC]: "diagnostic",
   [PageRole.R6_SUPPORT]: "legal",
   [PageRole.R6_GUIDE_ACHAT]: "guide",
+  [PageRole.R7_BRAND]: "brand",
+  [PageRole.R8_VEHICLE]: "vehicle",
   [PageRole.RX_CHECKOUT]: "checkout",
 };
 
@@ -133,6 +143,8 @@ export const ROLE_DEFAULT_FUNNEL_STAGE: Record<PageRole, FunnelStage> = {
   [PageRole.R5_DIAGNOSTIC]: "consideration",
   [PageRole.R6_SUPPORT]: "retention",
   [PageRole.R6_GUIDE_ACHAT]: "consideration",
+  [PageRole.R7_BRAND]: "awareness",
+  [PageRole.R8_VEHICLE]: "awareness",
   [PageRole.RX_CHECKOUT]: "decision",
 };
 
@@ -148,6 +160,8 @@ export const ROLE_DEFAULT_CONVERSION_GOAL: Record<PageRole, ConversionGoal> = {
   [PageRole.R5_DIAGNOSTIC]: "engagement",
   [PageRole.R6_SUPPORT]: "lead",
   [PageRole.R6_GUIDE_ACHAT]: "purchase",
+  [PageRole.R7_BRAND]: "navigation",
+  [PageRole.R8_VEHICLE]: "navigation",
   [PageRole.RX_CHECKOUT]: "purchase",
 };
 
@@ -183,6 +197,8 @@ export const PAGE_ROLE_LABELS: Record<PageRole, string> = {
   [PageRole.R5_DIAGNOSTIC]: "Diagnostic (Symptômes)",
   [PageRole.R6_SUPPORT]: "Support (Aide)",
   [PageRole.R6_GUIDE_ACHAT]: "Guide d'achat (Choix)",
+  [PageRole.R7_BRAND]: "Marque (Constructeur)",
+  [PageRole.R8_VEHICLE]: "Vehicule (Catalogue pieces)",
   [PageRole.RX_CHECKOUT]: "Checkout (Transaction)",
 };
 

@@ -95,6 +95,8 @@ const MAX_LINKS_BY_ROLE: Record<PageRole, number> = {
   [PageRole.R5_DIAGNOSTIC]: 2, // Contenu diagnostic - 2 liens
   [PageRole.R6_SUPPORT]: 0, // Support - pas de liens SEO sortants
   [PageRole.R6_GUIDE_ACHAT]: 2, // Guide d'achat - 2 liens vers référence/produit
+  [PageRole.R7_BRAND]: 3, // Page marque - 3 liens vers gammes/véhicules
+  [PageRole.R8_VEHICLE]: 2, // Page véhicule - 2 liens vers gammes
 };
 
 /**

@@ -333,6 +333,14 @@ export const KPI_THRESHOLDS: Record<
     avgCtr: { warning: 2, critical: 1 }, // CTR en %
     bounceRate: { warning: 65, critical: 80 }, // Taux rebond %
   },
+  [PageRole.R7_BRAND]: {
+    clickThroughToVehicle: { warning: 20, critical: 10 }, // % passage vers R8
+    avgTimeOnPage: { warning: 30, critical: 15 }, // Temps en secondes
+  },
+  [PageRole.R8_VEHICLE]: {
+    clickThroughToProduct: { warning: 25, critical: 15 }, // % passage vers R2
+    avgTimeOnPage: { warning: 45, critical: 90 }, // Temps en secondes (trop long = confus)
+  },
 };
 
 // =====================================================
