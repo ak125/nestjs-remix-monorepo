@@ -126,23 +126,42 @@ export class GuideService {
         (article): article is BlogArticle => article !== null,
       );
 
-      // Résoudre les images produit pour les guides manuels (batch)
+      // Résoudre les images produit + gammeSort pour les guides manuels (batch)
       const manualAliasesForImages = (guidesList || [])
         .map((g: Pick<BlogGuide, 'bg_alias'>) => g.bg_alias)
         .filter(Boolean);
       if (manualAliasesForImages.length > 0) {
         const { data: manualGammes } = await client
           .from('pieces_gamme')
-          .select('pg_alias, pg_pic')
+          .select('pg_id, pg_alias, pg_pic')
           .in('pg_alias', manualAliasesForImages);
         const aliasToImage = new Map<string, string>();
+        const aliasToPgId = new Map<string, string>();
         for (const g of manualGammes || []) {
           aliasToImage.set(g.pg_alias, gammeImage(g.pg_pic, g.pg_alias));
+          aliasToPgId.set(g.pg_alias, String(g.pg_id));
         }
+
+        // Resolve gamme sort from catalog_gamme
+        const manualPgIds = [...aliasToPgId.values()];
+        const manualSortMap = new Map<string, number>();
+        if (manualPgIds.length > 0) {
+          const { data: sortRows } = await client
+            .from('catalog_gamme')
+            .select('mc_pg_id, mc_sort')
+            .in('mc_pg_id', manualPgIds);
+          for (const row of sortRows || []) {
+            manualSortMap.set(String(row.mc_pg_id), Number(row.mc_sort) || 999);
+          }
+        }
+
         for (const article of manualArticles) {
           if (!article.featuredImage && article.slug) {
             article.featuredImage = aliasToImage.get(article.slug) || null;
           }
+          // Attach gammeSort
+          const pgId = article.slug ? aliasToPgId.get(article.slug) : undefined;
+          article.gammeSort = pgId ? (manualSortMap.get(pgId) ?? 999) : 999;
         }
       }
 
@@ -186,6 +205,18 @@ export class GuideService {
           (g: GammePartial) => g.pg_id?.toString() ?? '',
         );
         const familyMap = await this.resolveFamilyNames(client, gammeIds);
+
+        // Resolve gamme sort order from catalog_gamme
+        const gammeSortMap = new Map<string, number>();
+        if (gammeIds.length > 0) {
+          const { data: sortRows } = await client
+            .from('catalog_gamme')
+            .select('mc_pg_id, mc_sort')
+            .in('mc_pg_id', gammeIds);
+          for (const row of sortRows || []) {
+            gammeSortMap.set(String(row.mc_pg_id), Number(row.mc_sort) || 999);
+          }
+        }
 
         autoGuides = filteredGammes.map((g: GammePartial) => {
           const pgRow = pgDataMap.get(g.pg_id.toString()) || {};
@@ -232,6 +263,7 @@ export class GuideService {
             legacy_id: Number(g.pg_id) || 0,
             legacy_table: '__seo_gamme_purchase_guide',
             source: 'auto' as const,
+            gammeSort: gammeSortMap.get(g.pg_id.toString()) ?? 999,
           };
         });
       }

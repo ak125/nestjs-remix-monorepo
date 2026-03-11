@@ -2,6 +2,7 @@
 // 🏗️ Service API pour la hiérarchie Familles → Gammes
 // Source unique : /api/catalog/homepage-families (CatalogHierarchyService)
 
+import { FAMILY_REGISTRY } from "@repo/database-types";
 import { getFamilyTheme } from "~/utils/family-theme";
 import { logger } from "~/utils/logger";
 import { type CatalogGamme } from "../../types/catalog.types";
@@ -137,66 +138,9 @@ class HierarchyApiService {
    * 🎨 Récupère l'icône d'une famille
    */
   getFamilyIcon(family: FamilyWithGammes): string {
-    const iconMapById: { [id: string]: string } = {
-      "1": "🔧",
-      "2": "🛠️",
-      "3": "⚙️",
-      "4": "🔌",
-      "5": "🏁",
-      "6": "🛡️",
-      "7": "💡",
-      "8": "🌡️",
-      "9": "🚗",
-      "10": "🔩",
-      "11": "🔊",
-      "12": "⚙️",
-      "13": "🔌",
-      "14": "⛽",
-      "15": "🏭",
-      "16": "💨",
-      "17": "❄️",
-      "18": "🎨",
-      "19": "🔄",
-    };
-
-    const idStr = family.mf_id?.toString();
-    if (idStr && iconMapById[idStr]) {
-      return iconMapById[idStr];
-    }
-
-    const familyName = (family.mf_name_system || family.mf_name || "")
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-
-    const iconMapByName: { [key: string]: string } = {
-      filtration: "🔧",
-      freinage: "🛠️",
-      distribution: "⚙️",
-      allumage: "🔌",
-      direction: "🏁",
-      amortisseur: "🛡️",
-      eclairage: "💡",
-      refroidissement: "🌡️",
-      moteur: "🔩",
-      echappement: "🔊",
-      transmission: "⚙️",
-      capteur: "🔌",
-      alimentation: "⛽",
-      support: "🏭",
-      turbo: "💨",
-      climatisation: "❄️",
-      accessoire: "🎨",
-      embrayage: "🔄",
-    };
-
-    for (const [keyword, icon] of Object.entries(iconMapByName)) {
-      if (familyName.includes(keyword)) {
-        return icon;
-      }
-    }
-
-    return "🔧";
+    const mfId = Number(family.mf_id);
+    const meta = FAMILY_REGISTRY[mfId];
+    return meta?.emoji ?? "🔧";
   }
 
   /**

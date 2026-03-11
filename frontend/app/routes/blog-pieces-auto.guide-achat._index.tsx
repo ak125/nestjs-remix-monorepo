@@ -9,7 +9,7 @@
  * - Start here (3 guides pratiques)
  * - Featured guide (le plus recent)
  * - Recherche locale + navigation familles
- * - Guides groupes par famille (KNOWN_FAMILIES)
+ * - Guides groupes par famille (via FAMILY_REGISTRY)
  * - Guides populaires (top qualite)
  * - Cross-link conseils
  * - Contenu editorial SEO
@@ -27,7 +27,10 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { FAMILY_REGISTRY, FAMILY_IDS_ORDERED } from "@repo/database-types";
+import {
+  FAMILY_IDS_ORDERED,
+  findFamilyIdByKeyword,
+} from "@repo/database-types";
 import {
   ArrowRight,
   BookOpen,
@@ -87,6 +90,7 @@ interface BlogGuide {
   readingTime?: number;
   keywords?: string[];
   tags?: string[];
+  gammeSort?: number;
 }
 
 interface AdviceSummary {
@@ -355,24 +359,26 @@ const qualityScore = (g: BlogGuide) => {
   return h2 * 2 + rt;
 };
 
-/* Construit les noms courts des familles depuis le registre */
-const KNOWN_FAMILIES = new Set(
-  Object.values(FAMILY_REGISTRY).map(
-    (meta) =>
-      meta.keywords[0].charAt(0).toUpperCase() + meta.keywords[0].slice(1),
-  ),
-);
+/**
+ * Résout un tag DB vers un mf_id via findFamilyIdByKeyword.
+ * Retourne le tag original (affiché tel quel) + le mf_id pour le tri.
+ */
+const UNCATEGORIZED = "Toutes les pieces";
 
-/** Ordre fixe aligne sur le registre */
-const FAMILY_ORDER = FAMILY_IDS_ORDERED.map((id) => {
-  const kw = FAMILY_REGISTRY[id]?.keywords[0] ?? "";
-  return kw.charAt(0).toUpperCase() + kw.slice(1);
-});
-
-/** Extrait la famille d'un guide depuis ses tags (robuste) */
+/** Extrait la famille d'un guide depuis ses tags (robuste via keywords registre) */
 const getFamily = (g: BlogGuide): string => {
-  const family = (g.tags ?? []).find((t) => KNOWN_FAMILIES.has(t));
-  return family ?? "Toutes les pieces";
+  for (const tag of g.tags ?? []) {
+    if (findFamilyIdByKeyword(tag) != null) return tag;
+  }
+  return UNCATEGORIZED;
+};
+
+/** Retourne le mf_id d'un nom de famille (tag DB) pour le tri */
+const getFamilySortIndex = (familyTag: string): number => {
+  const mfId = findFamilyIdByKeyword(familyTag);
+  if (mfId == null) return FAMILY_IDS_ORDERED.length;
+  const idx = FAMILY_IDS_ORDERED.indexOf(mfId as number);
+  return idx === -1 ? FAMILY_IDS_ORDERED.length : idx;
 };
 
 /** Detecte un guide "outil" (transversal, pas lie a une famille produit) */
@@ -386,36 +392,53 @@ const familyAnchor = (family: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/-+$/, "")}`;
 
-/** Icones SVG par famille (celles qui existent dans /images/categories/) */
-const FAMILY_ICON: Record<string, string> = {
-  Freinage: "/images/categories/Freinage.svg",
-  Filtration: "/images/categories/Filtres.svg",
+/** Icones SVG par famille keyed par mf_id */
+const FAMILY_ICON_BY_ID: Record<number, string> = {
+  1: "/images/categories/Filtres.svg",
+  2: "/images/categories/Freinage.svg",
 };
 const DEFAULT_FAMILY_ICON = "/images/categories/default.svg";
 
-/** Image de couverture par famille (fallback quand bg_wall absent) */
-const FAMILY_COVER: Record<string, string> = {
-  Filtration: "/images/og/guide-achat.webp",
-  Freinage: "/images/og/guide-achat.webp",
-  "Courroie et distribution": "/images/og/outil.webp",
-  "Allumage et préchauffage": "/images/og/guide-achat.webp",
-  Direction: "/images/og/diagnostic.webp",
-  "Amortisseur et suspension": "/images/og/diagnostic.webp",
-  "Support moteur": "/images/og/guide-achat.webp",
-  Embrayage: "/images/og/glossaire-reference.webp",
-  Transmission: "/images/og/guide-achat.webp",
-  Electrique: "/images/og/guide-achat.webp",
-  "Capteurs et sondes": "/images/og/guide-achat.webp",
-  Alimentation: "/images/og/guide-achat.webp",
-  Moteur: "/images/og/guide-achat.webp",
-  Refroidissement: "/images/og/guide-achat.webp",
-  Climatisation: "/images/og/guide-achat.webp",
-  Echappement: "/images/og/panne-symptome.webp",
-  Eclairage: "/images/og/selection.webp",
-  Accessoires: "/images/og/transaction.webp",
-  Turbo: "/images/og/blog-conseil.webp",
+/** Image de couverture par famille keyed par mf_id */
+const FAMILY_COVER_BY_ID: Record<number, string> = {
+  1: "/images/og/guide-achat.webp", // Filtration
+  2: "/images/og/guide-achat.webp", // Freinage
+  3: "/images/og/outil.webp", // Distribution
+  4: "/images/og/guide-achat.webp", // Allumage
+  5: "/images/og/diagnostic.webp", // Direction
+  6: "/images/og/diagnostic.webp", // Amortisseur
+  7: "/images/og/guide-achat.webp", // Support moteur
+  8: "/images/og/glossaire-reference.webp", // Embrayage
+  9: "/images/og/guide-achat.webp", // Transmission
+  10: "/images/og/guide-achat.webp", // Electrique
+  11: "/images/og/guide-achat.webp", // Alimentation
+  12: "/images/og/guide-achat.webp", // Capteurs
+  13: "/images/og/guide-achat.webp", // Moteur
+  14: "/images/og/guide-achat.webp", // Refroidissement
+  15: "/images/og/guide-achat.webp", // Climatisation
+  16: "/images/og/panne-symptome.webp", // Echappement
+  17: "/images/og/selection.webp", // Eclairage
+  18: "/images/og/transaction.webp", // Accessoires
+  19: "/images/og/blog-conseil.webp", // Turbo
+  20: "/images/og/guide-achat.webp", // Pièces équipementier
 };
 const DEFAULT_FAMILY_COVER = "/images/og/guide-achat.webp";
+
+/** Résout un tag famille vers son icône */
+const getFamilyIconByTag = (tag: string): string => {
+  const mfId = findFamilyIdByKeyword(tag);
+  return mfId != null
+    ? (FAMILY_ICON_BY_ID[mfId as number] ?? DEFAULT_FAMILY_ICON)
+    : DEFAULT_FAMILY_ICON;
+};
+
+/** Résout un tag famille vers son image de couverture */
+const getFamilyCoverByTag = (tag: string): string => {
+  const mfId = findFamilyIdByKeyword(tag);
+  return mfId != null
+    ? (FAMILY_COVER_BY_ID[mfId as number] ?? DEFAULT_FAMILY_COVER)
+    : DEFAULT_FAMILY_COVER;
+};
 
 /** Nombre max de guides affichés par famille avant "Afficher plus" */
 const FAMILY_PREVIEW_COUNT = 8;
@@ -620,7 +643,7 @@ export default function BlogGuidesIndex() {
   const toolGuides = filteredGuides.filter(isToolGuide);
   const productGuides = filteredGuides.filter((g) => !isToolGuide(g));
 
-  // Groupement par famille (robuste via KNOWN_FAMILIES)
+  // Groupement par famille (via findFamilyIdByKeyword)
   const groupedGuides = useMemo(() => {
     const groups: Record<string, BlogGuide[]> = {};
     productGuides.forEach((guide) => {
@@ -628,17 +651,20 @@ export default function BlogGuidesIndex() {
       if (!groups[family]) groups[family] = [];
       groups[family].push(guide);
     });
-    // Trier chaque famille : meilleurs guides en premier
+    // Trier chaque famille par ordre catalogue (gammeSort), puis qualité
     for (const familyGuides of Object.values(groups)) {
-      familyGuides.sort((a, b) => qualityScore(b) - qualityScore(a));
+      familyGuides.sort((a, b) => {
+        const sortA = a.gammeSort ?? 999;
+        const sortB = b.gammeSort ?? 999;
+        if (sortA !== sortB) return sortA - sortB;
+        return qualityScore(b) - qualityScore(a);
+      });
     }
     return Object.entries(groups).sort(([famA], [famB]) => {
-      if (famA === "Toutes les pieces") return 1;
-      if (famB === "Toutes les pieces") return -1;
-      const idxA = FAMILY_ORDER.indexOf(famA);
-      const idxB = FAMILY_ORDER.indexOf(famB);
-      const posA = idxA === -1 ? FAMILY_ORDER.length : idxA;
-      const posB = idxB === -1 ? FAMILY_ORDER.length : idxB;
+      if (famA === UNCATEGORIZED) return 1;
+      if (famB === UNCATEGORIZED) return -1;
+      const posA = getFamilySortIndex(famA);
+      const posB = getFamilySortIndex(famB);
       if (posA !== posB) return posA - posB;
       return famA.localeCompare(famB);
     });
@@ -914,10 +940,7 @@ export default function BlogGuidesIndex() {
                       ) : (
                         <div className="w-full h-full min-h-[200px] relative">
                           <img
-                            src={
-                              FAMILY_COVER[getFamily(featuredGuide)] ??
-                              DEFAULT_FAMILY_COVER
-                            }
+                            src={getFamilyCoverByTag(getFamily(featuredGuide))}
                             alt={cleanGuideTitle(featuredGuide.title)}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             loading="eager"
@@ -1098,7 +1121,7 @@ export default function BlogGuidesIndex() {
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-white border border-gray-200 hover:border-green-400 hover:bg-green-50 transition-colors"
                     >
                       <img
-                        src={FAMILY_ICON[family] || DEFAULT_FAMILY_ICON}
+                        src={getFamilyIconByTag(family)}
                         alt=""
                         className="w-4 h-4"
                         loading="lazy"
@@ -1120,7 +1143,7 @@ export default function BlogGuidesIndex() {
       {groupedGuides.map(([family, familyGuides], famIdx) => {
         const isExpanded = expandedFamilies.has(family);
         const previewCount =
-          family === "Toutes les pieces"
+          family === UNCATEGORIZED
             ? AUTRES_PREVIEW_COUNT
             : FAMILY_PREVIEW_COUNT;
         const hasMore = familyGuides.length > previewCount;
@@ -1172,9 +1195,7 @@ export default function BlogGuidesIndex() {
                             ) : (
                               <div className="relative w-full h-full min-h-[140px] overflow-hidden">
                                 <img
-                                  src={
-                                    FAMILY_COVER[family] ?? DEFAULT_FAMILY_COVER
-                                  }
+                                  src={getFamilyCoverByTag(family)}
                                   alt=""
                                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                   loading="lazy"
@@ -1262,10 +1283,7 @@ export default function BlogGuidesIndex() {
                     <Card className="h-full hover:shadow-lg transition-all duration-200 border border-green-100 hover:border-green-300 group-hover:-translate-y-0.5 bg-white overflow-hidden">
                       <div className="relative h-24 overflow-hidden">
                         <img
-                          src={
-                            FAMILY_COVER[getFamily(guide)] ??
-                            DEFAULT_FAMILY_COVER
-                          }
+                          src={getFamilyCoverByTag(getFamily(guide))}
                           alt=""
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
