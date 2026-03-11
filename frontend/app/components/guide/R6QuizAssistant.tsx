@@ -151,16 +151,28 @@ export function R6QuizAssistant({
             {current.question}
           </p>
           <div className="flex flex-col gap-2">
-            {current.options.map((opt, idx) => (
-              <Button
-                key={idx}
-                variant="outline"
-                className="justify-start text-left h-auto py-3 px-4 whitespace-normal hover:bg-indigo-50 hover:border-indigo-300"
-                onClick={() => handleOption(opt.outcome)}
-              >
-                {opt.label}
-              </Button>
-            ))}
+            {current.options.map((opt, idx) => {
+              // Handle malformed data: label can be string or {label, outcome}
+              const labelText =
+                typeof opt.label === "string"
+                  ? opt.label
+                  : ((opt.label as Record<string, string>)?.label ?? "");
+              const outcome =
+                opt.outcome ||
+                (typeof opt.label === "object"
+                  ? ((opt.label as Record<string, string>)?.outcome ?? "")
+                  : "");
+              return (
+                <Button
+                  key={idx}
+                  variant="outline"
+                  className="justify-start text-left h-auto py-3 px-4 whitespace-normal hover:bg-indigo-50 hover:border-indigo-300"
+                  onClick={() => handleOption(outcome)}
+                >
+                  {labelText}
+                </Button>
+              );
+            })}
           </div>
         </div>
       )}

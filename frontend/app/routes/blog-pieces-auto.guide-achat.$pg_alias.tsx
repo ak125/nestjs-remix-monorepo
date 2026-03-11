@@ -98,37 +98,81 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const timeoutId = setTimeout(() => controller.abort(), 12000);
 
   try {
-    const apiUrl = getInternalApiUrlFromRequest(
+    // 1) Try R6 guide endpoint (purchase guides)
+    const r6Url = getInternalApiUrlFromRequest(
       `/api/r6-guide/${pg_alias}`,
       request,
     );
-    const response = await fetch(apiUrl, { signal: controller.signal });
+    const r6Response = await fetch(r6Url, { signal: controller.signal });
+
+    if (r6Response.ok) {
+      clearTimeout(timeoutId);
+      const result = await r6Response.json();
+      const guide = result?.data as R6GuidePayload | null;
+
+      if (guide && (!guide.intentType || guide.intentType === "R6")) {
+        return json({ guide, pg_alias });
+      }
+    }
+
+    // 2) Fallback: blog guide endpoint (manual guides from __blog_guide)
+    const blogUrl = getInternalApiUrlFromRequest(
+      `/api/blog/guides/slug/${pg_alias}`,
+      request,
+    );
+    const blogResponse = await fetch(blogUrl, { signal: controller.signal });
     clearTimeout(timeoutId);
 
-    if (!response.ok) {
+    if (!blogResponse.ok) {
       throw json(
         { message: `Guide "${pg_alias}" non trouve` },
         { status: 404 },
       );
     }
 
-    const result = await response.json();
-    const guide = result?.data as R6GuidePayload | null;
+    const blogResult = await blogResponse.json();
+    const blogGuide = blogResult?.data;
 
-    if (!guide) {
+    if (!blogGuide) {
       throw json(
         { message: `Guide "${pg_alias}" non disponible` },
         { status: 404 },
       );
     }
 
-    // Intent check: if API says this is not R6, return 404 noindex
-    if (guide.intentType && guide.intentType !== "R6") {
-      throw json(
-        { message: `Contenu non-R6 pour "${pg_alias}"` },
-        { status: 404 },
-      );
-    }
+    // Convert BlogArticle → R6GuidePayload (V1 format for rendering)
+    const guide: R6GuidePayload = {
+      intentType: "R6",
+      pageRole: "R6_BUYING_GUIDE",
+      canonicalRoleUrl: `/blog-pieces-auto/guide-achat/${pg_alias}`,
+      roleVersion: "v1",
+      page: {
+        pg_alias: blogGuide.slug || pg_alias,
+        pg_id: blogGuide.legacy_id || 0,
+        title: blogGuide.title || pg_alias,
+        heroSubtitle: blogGuide.excerpt || null,
+        metaTitle:
+          blogGuide.seo_data?.meta_title || blogGuide.title || pg_alias,
+        metaDescription:
+          blogGuide.seo_data?.meta_description || blogGuide.excerpt || "",
+        featuredImage: blogGuide.featuredImage || null,
+        updatedAt:
+          blogGuide.updatedAt ||
+          blogGuide.publishedAt ||
+          new Date().toISOString(),
+        readingTime: blogGuide.readingTime || 5,
+      },
+      howToChoose: (blogGuide.sections || [])
+        .filter((s: { level: number }) => s.level === 2)
+        .map(
+          (s: { title: string; content: string }) =>
+            `<h2>${s.title}</h2>\n${s.content}`,
+        )
+        .join("\n\n"),
+      faq: [],
+      sourceType: "manual",
+      sourceVerified: true,
+    };
 
     return json({ guide, pg_alias });
   } catch (error) {
@@ -255,12 +299,17 @@ function buildTocSections(guide: R6GuidePayload) {
         anchor: "niveaux-qualite",
       });
     }
-    if (guide.compatibilityAxes && guide.compatibilityAxes.length > 0) {
-      sections.push({
-        level: 2,
-        title: "Compatibilite",
-        anchor: "compatibilite",
-      });
+    if (guide.compatibilityAxes) {
+      const axes = Array.isArray(guide.compatibilityAxes)
+        ? guide.compatibilityAxes
+        : (guide.compatibilityAxes as Record<string, unknown>).axes;
+      if (Array.isArray(axes) && axes.length > 0) {
+        sections.push({
+          level: 2,
+          title: "Compatibilite",
+          anchor: "compatibilite",
+        });
+      }
     }
     if (guide.priceGuide) {
       sections.push({
@@ -283,7 +332,12 @@ function buildTocSections(guide: R6GuidePayload) {
         anchor: "pieges-eviter",
       });
     }
-    if (guide.whenPro && guide.whenPro.length > 0) {
+    const whenProCases = guide.whenPro
+      ? Array.isArray(guide.whenPro)
+        ? guide.whenPro
+        : (guide.whenPro as Record<string, unknown>).cases
+      : null;
+    if (Array.isArray(whenProCases) && whenProCases.length > 0) {
       sections.push({
         level: 2,
         title: "Quand faire appel a un pro",
@@ -546,10 +600,15 @@ function V2Sections({
         <R6MediaSlotRenderer slots={ms.quality_tiers} gammeName={gn} />
       )}
 
-      {/* 4. Compatibility */}
-      {guide.compatibilityAxes && guide.compatibilityAxes.length > 0 && (
+      {/* 4. Compatibility — data may be array or {axes: [...]} wrapper */}
+      {guide.compatibilityAxes && (
         <R6CompatibilityChecklist
-          axes={guide.compatibilityAxes}
+          axes={
+            Array.isArray(guide.compatibilityAxes)
+              ? guide.compatibilityAxes
+              : (((guide.compatibilityAxes as Record<string, unknown>)
+                  .axes as typeof guide.compatibilityAxes) ?? [])
+          }
           gammeName={gn}
         />
       )}
@@ -597,9 +656,17 @@ function V2Sections({
         <R6MediaSlotRenderer slots={ms.pitfalls} gammeName={gn} />
       )}
 
-      {/* 8. When Pro */}
-      {guide.whenPro && guide.whenPro.length > 0 && (
-        <R6WhenPro cases={guide.whenPro} gammeName={gn} />
+      {/* 8. When Pro — data may be array or {cases: [...]} wrapper */}
+      {guide.whenPro && (
+        <R6WhenPro
+          cases={
+            Array.isArray(guide.whenPro)
+              ? guide.whenPro
+              : (((guide.whenPro as Record<string, unknown>)
+                  .cases as typeof guide.whenPro) ?? [])
+          }
+          gammeName={gn}
+        />
       )}
       {ms?.when_pro && (
         <R6MediaSlotRenderer slots={ms.when_pro} gammeName={gn} />

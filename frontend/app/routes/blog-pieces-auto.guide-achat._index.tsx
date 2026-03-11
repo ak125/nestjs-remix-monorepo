@@ -153,8 +153,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
   );
 
-  // Limiter SSR a 60 guides max (perf : 225 guides = 3.6 MB HTML)
-  guides = guides.slice(0, 60);
+  // Pas de troncature : hub SEO doit afficher tous les guides pour le crawl
 
   logger.log(
     `Guides: ${guides.length}, Conseils: ${relatedAdvice.length}/${totalAdvice}`,
@@ -355,17 +354,31 @@ const qualityScore = (g: BlogGuide) => {
   return h2 * 2 + rt;
 };
 
-/* Familles connues — source de verite front (en attendant family_slug API) */
+/* 19 familles — alignées sur CATS[] (homepage constants.ts) */
 const KNOWN_FAMILIES = new Set([
+  "Filtration",
   "Freinage",
-  "Eclairage",
-  "Courroie, galet, poulie et chaîne",
-  "Accessoires",
-  "Echappement",
+  "Courroie et distribution",
+  "Allumage et préchauffage",
+  "Direction",
   "Amortisseur et suspension",
+  "Support moteur",
   "Embrayage",
+  "Transmission",
+  "Electrique",
+  "Capteurs et sondes",
+  "Alimentation",
+  "Moteur",
+  "Refroidissement",
+  "Climatisation",
+  "Echappement",
+  "Eclairage",
+  "Accessoires",
   "Turbo",
 ]);
+
+/** Ordre fixe aligne sur la homepage (constants.ts CATS[]) */
+const FAMILY_ORDER = [...KNOWN_FAMILIES];
 
 /** Extrait la famille d'un guide depuis ses tags (robuste) */
 const getFamily = (g: BlogGuide): string => {
@@ -387,28 +400,39 @@ const familyAnchor = (family: string) =>
 /** Icones SVG par famille (celles qui existent dans /images/categories/) */
 const FAMILY_ICON: Record<string, string> = {
   Freinage: "/images/categories/Freinage.svg",
-  Filtres: "/images/categories/Filtres.svg",
+  Filtration: "/images/categories/Filtres.svg",
 };
 const DEFAULT_FAMILY_ICON = "/images/categories/default.svg";
 
 /** Image de couverture par famille (fallback quand bg_wall absent) */
 const FAMILY_COVER: Record<string, string> = {
+  Filtration: "/images/og/guide-achat.webp",
   Freinage: "/images/og/guide-achat.webp",
-  Eclairage: "/images/og/selection.webp",
-  "Courroie, galet, poulie et chaîne": "/images/og/outil.webp",
-  Accessoires: "/images/og/transaction.webp",
-  Echappement: "/images/og/panne-symptome.webp",
+  "Courroie et distribution": "/images/og/outil.webp",
+  "Allumage et préchauffage": "/images/og/guide-achat.webp",
+  Direction: "/images/og/diagnostic.webp",
   "Amortisseur et suspension": "/images/og/diagnostic.webp",
+  "Support moteur": "/images/og/guide-achat.webp",
   Embrayage: "/images/og/glossaire-reference.webp",
+  Transmission: "/images/og/guide-achat.webp",
+  Electrique: "/images/og/guide-achat.webp",
+  "Capteurs et sondes": "/images/og/guide-achat.webp",
+  Alimentation: "/images/og/guide-achat.webp",
+  Moteur: "/images/og/guide-achat.webp",
+  Refroidissement: "/images/og/guide-achat.webp",
+  Climatisation: "/images/og/guide-achat.webp",
+  Echappement: "/images/og/panne-symptome.webp",
+  Eclairage: "/images/og/selection.webp",
+  Accessoires: "/images/og/transaction.webp",
   Turbo: "/images/og/blog-conseil.webp",
 };
 const DEFAULT_FAMILY_COVER = "/images/og/guide-achat.webp";
 
 /** Nombre max de guides affichés par famille avant "Afficher plus" */
-const FAMILY_PREVIEW_COUNT = 4;
+const FAMILY_PREVIEW_COUNT = 8;
 
 /** Cap pour "Toutes les pieces" (non-expanded) */
-const AUTRES_PREVIEW_COUNT = 12;
+const AUTRES_PREVIEW_COUNT = 24;
 
 /* ===========================
    Guides épinglés (routes statiques hors DB)
@@ -615,10 +639,19 @@ export default function BlogGuidesIndex() {
       if (!groups[family]) groups[family] = [];
       groups[family].push(guide);
     });
-    return Object.entries(groups).sort(([famA, a], [famB, b]) => {
+    // Trier chaque famille : meilleurs guides en premier
+    for (const familyGuides of Object.values(groups)) {
+      familyGuides.sort((a, b) => qualityScore(b) - qualityScore(a));
+    }
+    return Object.entries(groups).sort(([famA], [famB]) => {
       if (famA === "Toutes les pieces") return 1;
       if (famB === "Toutes les pieces") return -1;
-      return b.length - a.length;
+      const idxA = FAMILY_ORDER.indexOf(famA);
+      const idxB = FAMILY_ORDER.indexOf(famB);
+      const posA = idxA === -1 ? FAMILY_ORDER.length : idxA;
+      const posB = idxB === -1 ? FAMILY_ORDER.length : idxB;
+      if (posA !== posB) return posA - posB;
+      return famA.localeCompare(famB);
     });
   }, [productGuides]);
 

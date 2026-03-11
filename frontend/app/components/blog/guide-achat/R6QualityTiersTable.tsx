@@ -30,8 +30,22 @@ const TIER_BADGE_COLORS: Record<string, string> = {
   echange_standard: "bg-teal-100 text-teal-800 border-teal-300",
 };
 
+/** Alternate format from some V2 pipelines: {key, label, guidance, priority} */
+interface AltTier {
+  key?: string;
+  label?: string;
+  guidance?: string;
+  priority?: string;
+}
+
+type AnyTier = R6QualityTier | AltTier;
+
+function isStandardTier(t: AnyTier): t is R6QualityTier {
+  return "tier_id" in t && typeof (t as R6QualityTier).tier_id === "string";
+}
+
 export function R6QualityTiersTable({ tiers, gammeName }: Props) {
-  if (tiers.length === 0) return null;
+  if (!tiers || tiers.length === 0) return null;
 
   return (
     <section id="niveaux-qualite" className="mb-8">
@@ -39,49 +53,84 @@ export function R6QualityTiersTable({ tiers, gammeName }: Props) {
         Niveaux de qualite — {gammeName}
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {tiers.map((tier) => (
-          <Card
-            key={tier.tier_id}
-            className={`border-2 ${TIER_COLORS[tier.tier_id] || "border-gray-200 bg-gray-50"} ${!tier.available ? "opacity-60" : ""}`}
-          >
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-2">
-                <Badge
-                  variant="outline"
-                  className={
-                    TIER_BADGE_COLORS[tier.tier_id] ||
-                    "bg-gray-100 text-gray-800"
-                  }
-                >
-                  {tier.label}
-                </Badge>
-                {tier.available ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                ) : (
-                  <XCircle className="w-4 h-4 text-gray-400" />
+        {(tiers as AnyTier[]).map((tier, i) => {
+          if (isStandardTier(tier)) {
+            // Standard V2 format with tier_id, description, available, etc.
+            return (
+              <Card
+                key={tier.tier_id}
+                className={`border-2 ${TIER_COLORS[tier.tier_id] || "border-gray-200 bg-gray-50"} ${!tier.available ? "opacity-60" : ""}`}
+              >
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-2">
+                    <Badge
+                      variant="outline"
+                      className={
+                        TIER_BADGE_COLORS[tier.tier_id] ||
+                        "bg-gray-100 text-gray-800"
+                      }
+                    >
+                      {tier.label}
+                    </Badge>
+                    {tier.available ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-gray-400" />
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-700 leading-relaxed mb-2">
+                    {tier.description}
+                  </p>
+                  {tier.target_profile && (
+                    <p className="text-xs text-gray-500">
+                      Pour : {tier.target_profile}
+                    </p>
+                  )}
+                  {tier.price_hint && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Budget : {tier.price_hint}
+                    </p>
+                  )}
+                  {!tier.available && (
+                    <p className="text-xs text-gray-400 mt-1 italic">
+                      Non disponible pour cette gamme
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          }
+
+          // Alternate format: {key, label, guidance, priority}
+          const alt = tier as AltTier;
+          return (
+            <Card
+              key={alt.key || i}
+              className="border-2 border-gray-200 bg-gray-50"
+            >
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between mb-2">
+                  <Badge
+                    variant="outline"
+                    className="bg-gray-100 text-gray-800"
+                  >
+                    {alt.label || alt.key || `Critere ${i + 1}`}
+                  </Badge>
+                  {alt.priority === "required" ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-gray-400" />
+                  )}
+                </div>
+                {alt.guidance && (
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    {alt.guidance}
+                  </p>
                 )}
-              </div>
-              <p className="text-sm text-gray-700 leading-relaxed mb-2">
-                {tier.description}
-              </p>
-              {tier.target_profile && (
-                <p className="text-xs text-gray-500">
-                  Pour : {tier.target_profile}
-                </p>
-              )}
-              {tier.price_hint && (
-                <p className="text-xs text-gray-500 mt-1">
-                  Budget : {tier.price_hint}
-                </p>
-              )}
-              {!tier.available && (
-                <p className="text-xs text-gray-400 mt-1 italic">
-                  Non disponible pour cette gamme
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </section>
   );

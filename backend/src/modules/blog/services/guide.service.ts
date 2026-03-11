@@ -9,10 +9,48 @@ import {
 import { SupabaseClient } from '@supabase/supabase-js';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { buildGammeImageUrl } from '../../catalog/utils/image-urls.utils';
+
+/** pg_pic "no" = pas d'image en DB. Utiliser alias.webp comme fallback. */
+function gammeImage(pgPic: string | null | undefined, alias: string): string {
+  const pic = pgPic && pgPic !== 'no' && !pgPic.endsWith('/no.') ? pgPic : null;
+  return buildGammeImageUrl(pic || `${alias}.webp`);
+}
 import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
 import { BlogArticle, BlogSection } from '../interfaces/blog.interfaces';
+
+/**
+ * Normalise catalog_family.mf_name (DB) → nom court utilisé sur le hub guide d'achat.
+ * Aligné sur l'ordre des CATS[] dans frontend/app/components/home/constants.ts
+ */
+const FAMILY_NORMALIZE: Record<string, string> = {
+  'Système de filtration': 'Filtration',
+  'Système de freinage': 'Freinage',
+  'Courroie, galet, poulie et chaîne': 'Courroie et distribution',
+  'Allumage / Préchauffage': 'Allumage et préchauffage',
+  'Préchauffage et allumage': 'Allumage et préchauffage',
+  'Direction / Train avant': 'Direction',
+  'Direction et liaison au sol': 'Direction',
+  'Amortisseur / Suspension': 'Amortisseur et suspension',
+  'Amortisseur et suspension': 'Amortisseur et suspension',
+  'Support moteur': 'Support moteur',
+  Embrayage: 'Embrayage',
+  Transmission: 'Transmission',
+  Électrique: 'Electrique',
+  'Capteurs / Sondes': 'Capteurs et sondes',
+  'Alimentation Carburant & Air': 'Alimentation',
+  "Système d'alimentation": 'Alimentation',
+  Moteur: 'Moteur',
+  Refroidissement: 'Refroidissement',
+  Climatisation: 'Climatisation',
+  Échappement: 'Echappement',
+  Echappement: 'Echappement',
+  'Éclairage / Signalisation': 'Eclairage',
+  Accessoires: 'Accessoires',
+  'Turbo / Suralimentation': 'Turbo',
+  Turbo: 'Turbo',
+};
 
 export interface GuideFilters {
   type?: 'achat' | 'technique' | 'entretien' | 'réparation';
@@ -118,10 +156,7 @@ export class GuideService {
           .in('pg_alias', manualAliasesForImages);
         const aliasToImage = new Map<string, string>();
         for (const g of manualGammes || []) {
-          aliasToImage.set(
-            g.pg_alias,
-            buildGammeImageUrl(g.pg_pic || `${g.pg_alias}.webp`),
-          );
+          aliasToImage.set(g.pg_alias, gammeImage(g.pg_pic, g.pg_alias));
         }
         for (const article of manualArticles) {
           if (!article.featuredImage && article.slug) {
@@ -133,12 +168,21 @@ export class GuideService {
       // 2) Guides auto-générés depuis __seo_gamme_purchase_guide
       const { data: purchaseGuides } = await client
         .from('__seo_gamme_purchase_guide')
-        .select('sgpg_pg_id')
-        .not('sgpg_how_to_choose', 'is', null);
+        .select(
+          'sgpg_pg_id, sgpg_intro_role, sgpg_how_to_choose, sgpg_risk_explanation, sgpg_timing_note, sgpg_arg1_title, sgpg_arg2_title, sgpg_arg3_title, sgpg_arg4_title, sgpg_faq',
+        )
+        .not('sgpg_how_to_choose', 'is', null)
+        .eq('sgpg_is_draft', false);
 
-      const pgIds = (purchaseGuides || []).map(
-        (p: { sgpg_pg_id: string }) => p.sgpg_pg_id,
-      );
+      // Build map pgId → purchase guide data for enrichment
+      const pgDataMap = new Map<string, Record<string, unknown>>();
+      const pgIds: string[] = [];
+      for (const p of purchaseGuides || []) {
+        const row = p as Record<string, unknown>;
+        const pgId = String(row.sgpg_pg_id);
+        pgIds.push(pgId);
+        pgDataMap.set(pgId, row);
+      }
 
       // Exclure les gammes qui ont déjà un guide manuel dans __blog_guide
       const manualAliases = new Set(
@@ -162,27 +206,53 @@ export class GuideService {
         );
         const familyMap = await this.resolveFamilyNames(client, gammeIds);
 
-        autoGuides = filteredGammes.map((g: GammePartial) => ({
-          id: `gamme_guide_${g.pg_id}`,
-          type: 'guide' as const,
-          title: `Comment choisir son ${(g.pg_name || '').toLowerCase()} ?`,
-          slug: g.pg_alias,
-          excerpt: '',
-          content: '',
-          keywords: [],
-          tags: [
-            familyMap.get(g.pg_id.toString()) ||
-              this.guessFamilyFromName(g.pg_name),
-            g.pg_name,
-          ].filter(Boolean),
-          featuredImage: buildGammeImageUrl(g.pg_pic || `${g.pg_alias}.webp`),
-          publishedAt: new Date().toISOString(),
-          viewsCount: 0,
-          sections: [],
-          legacy_id: Number(g.pg_id) || 0,
-          legacy_table: '__seo_gamme_purchase_guide',
-          source: 'auto' as const,
-        }));
+        autoGuides = filteredGammes.map((g: GammePartial) => {
+          const pgRow = pgDataMap.get(g.pg_id.toString()) || {};
+          // Count non-null sections for h2Count
+          const sectionFields = [
+            pgRow.sgpg_how_to_choose,
+            pgRow.sgpg_risk_explanation,
+            pgRow.sgpg_timing_note,
+            pgRow.sgpg_arg1_title,
+            pgRow.sgpg_arg2_title,
+            pgRow.sgpg_arg3_title,
+            pgRow.sgpg_arg4_title,
+          ];
+          const h2Count = sectionFields.filter(Boolean).length;
+          const faqCount = Array.isArray(pgRow.sgpg_faq)
+            ? pgRow.sgpg_faq.length
+            : 0;
+          // Estimate reading time from total content chars
+          const allText = sectionFields.filter(Boolean).map(String).join(' ');
+          const readingTime = Math.max(1, Math.ceil(allText.length / 1000));
+          const excerpt = ((pgRow.sgpg_intro_role as string) || '')
+            .slice(0, 200)
+            .trim();
+
+          return {
+            id: `gamme_guide_${g.pg_id}`,
+            type: 'guide' as const,
+            title: `Comment choisir son ${(g.pg_name || '').toLowerCase()} ?`,
+            slug: g.pg_alias,
+            excerpt,
+            content: '',
+            keywords: [],
+            tags: [
+              familyMap.get(g.pg_id.toString()) ||
+                this.guessFamilyFromName(g.pg_name),
+              g.pg_name,
+            ].filter(Boolean),
+            featuredImage: buildGammeImageUrl(g.pg_pic || `${g.pg_alias}.webp`),
+            publishedAt: new Date().toISOString(),
+            viewsCount: 0,
+            sections: [],
+            h2Count: h2Count + (faqCount > 0 ? 1 : 0),
+            readingTime,
+            legacy_id: Number(g.pg_id) || 0,
+            legacy_table: '__seo_gamme_purchase_guide',
+            source: 'auto' as const,
+          };
+        });
       }
 
       // Combiner : manuels d'abord, puis auto (paginés)
@@ -776,9 +846,7 @@ export class GuideService {
       tags: [this.guessFamilyFromName(gamme.pg_name), gamme.pg_name].filter(
         Boolean,
       ),
-      featuredImage: buildGammeImageUrl(
-        gamme.pg_pic || `${gamme.pg_alias}.webp`,
-      ),
+      featuredImage: gammeImage(gamme.pg_pic, gamme.pg_alias),
       publishedAt: pg.sgpg_created_at || new Date().toISOString(),
       updatedAt: pg.sgpg_updated_at || null,
       viewsCount: 0,
@@ -992,8 +1060,10 @@ export class GuideService {
       }
 
       for (const [pgId, mfId] of pgToMf) {
-        const name = mfToName.get(mfId);
-        if (name) map.set(pgId, name);
+        const rawName = mfToName.get(mfId);
+        if (rawName) {
+          map.set(pgId, FAMILY_NORMALIZE[rawName] ?? rawName);
+        }
       }
     } catch (error) {
       this.logger.warn(
@@ -1009,28 +1079,135 @@ export class GuideService {
    */
   private guessFamilyFromName(name: string): string {
     const n = (name || '').toLowerCase();
+    // Filtration
+    if (n.includes('filtre') || n.includes('filtration')) return 'Filtration';
+    // Freinage
     if (
       n.includes('frein') ||
       n.includes('abs') ||
       n.includes('plaquette') ||
       n.includes('étrier') ||
+      n.includes('etrier') ||
       n.includes('tambour') ||
-      n.includes('mâchoire')
+      n.includes('mâchoire') ||
+      n.includes('machoire')
     )
       return 'Freinage';
+    // Courroie et distribution
+    if (
+      n.includes('courroie') ||
+      n.includes('distribution') ||
+      n.includes('galet') ||
+      n.includes('poulie')
+    )
+      return 'Courroie et distribution';
+    // Allumage et préchauffage
+    if (
+      n.includes('bougie') ||
+      n.includes('allumage') ||
+      n.includes('préchauffage') ||
+      n.includes('prechauffage')
+    )
+      return 'Allumage et préchauffage';
+    // Direction
+    if (
+      n.includes('direction') ||
+      n.includes('rotule') ||
+      n.includes('bras de') ||
+      n.includes('biellette')
+    )
+      return 'Direction';
+    // Amortisseur et suspension
+    if (
+      n.includes('amortisseur') ||
+      n.includes('suspension') ||
+      n.includes('ressort')
+    )
+      return 'Amortisseur et suspension';
+    // Support moteur
+    if (
+      n.includes('support moteur') ||
+      n.includes('silent bloc') ||
+      n.includes('support de boîte')
+    )
+      return 'Support moteur';
+    // Embrayage
+    if (n.includes('embrayage') || n.includes('volant moteur'))
+      return 'Embrayage';
+    // Transmission
+    if (
+      n.includes('cardan') ||
+      n.includes('transmission') ||
+      n.includes('soufflet')
+    )
+      return 'Transmission';
+    // Electrique
+    if (
+      n.includes('alternateur') ||
+      n.includes('démarreur') ||
+      n.includes('demarreur') ||
+      n.includes('neiman') ||
+      n.includes('contacteur')
+    )
+      return 'Electrique';
+    // Capteurs et sondes
+    if (
+      n.includes('capteur') ||
+      n.includes('sonde') ||
+      n.includes('pressostat')
+    )
+      return 'Capteurs et sondes';
+    // Alimentation
+    if (
+      n.includes('débitmètre') ||
+      n.includes('debitmetre') ||
+      n.includes('vanne egr') ||
+      n.includes('pompe à carburant') ||
+      n.includes('pompe a carburant') ||
+      n.includes('injecteur')
+    )
+      return 'Alimentation';
+    // Moteur
+    if (
+      n.includes('joint de culasse') ||
+      n.includes('culbuteur') ||
+      n.includes('vilebrequin') ||
+      n.includes('culasse') ||
+      n.includes('vis de culasse')
+    )
+      return 'Moteur';
+    // Refroidissement
+    if (
+      n.includes('pompe à eau') ||
+      n.includes('pompe a eau') ||
+      n.includes('radiateur') ||
+      n.includes('thermostat') ||
+      n.includes('refroidissement') ||
+      n.includes('calorstat')
+    )
+      return 'Refroidissement';
+    // Climatisation
+    if (
+      n.includes('climatisation') ||
+      n.includes('compresseur clim') ||
+      n.includes('pulseur') ||
+      n.includes('condenseur') ||
+      n.includes('évaporateur') ||
+      n.includes('evaporateur')
+    )
+      return 'Climatisation';
+    // Echappement
     if (
       n.includes('échappement') ||
       n.includes('echappement') ||
       n.includes('catalyseur') ||
-      n.includes('collecteur')
+      n.includes('collecteur') ||
+      n.includes('fap') ||
+      n.includes('particules') ||
+      n.includes('lambda')
     )
       return 'Echappement';
-    if (
-      n.includes('turbo') ||
-      n.includes('intercooler') ||
-      n.includes('gaine de turbo')
-    )
-      return 'Turbo';
+    // Eclairage
     if (
       n.includes('feu') ||
       n.includes('éclairage') ||
@@ -1039,20 +1216,24 @@ export class GuideService {
       n.includes('clignotant')
     )
       return 'Eclairage';
+    // Accessoires
     if (
       n.includes('essuie') ||
       n.includes('balai') ||
       n.includes('rétroviseur') ||
       n.includes('retroviseur') ||
       n.includes('lève-vitre') ||
+      n.includes('leve-vitre') ||
       n.includes('attelage')
     )
       return 'Accessoires';
-    if (n.includes('amortisseur') || n.includes('suspension'))
-      return 'Amortisseur et suspension';
-    if (n.includes('courroie') || n.includes('distribution'))
-      return 'Courroie, galet, poulie et chaîne';
-    if (n.includes('embrayage')) return 'Embrayage';
+    // Turbo
+    if (
+      n.includes('turbo') ||
+      n.includes('intercooler') ||
+      n.includes('suralimentation')
+    )
+      return 'Turbo';
     return 'Autres';
   }
 }

@@ -23,6 +23,16 @@ Tu generes du contenu pour les pages **R6 Guide d'Achat** d'AutoMecanik. Tu lis 
 
 ---
 
+## REGLE ABSOLUE : 1 gamme par invocation
+
+**JAMAIS de batch multi-gammes.** L'appelant fournit `pg_alias` dans le prompt. L'agent traite cette gamme uniquement.
+
+Si le prompt contient plusieurs pg_alias ou demande un batch → REFUSER. Repondre : "Mode batch desactive. Lancer 1 invocation par gamme."
+
+Si aucun `pg_alias` n'est fourni → REFUSER. Repondre : "pg_alias requis. Exemple : pg_alias=filtre-a-huile"
+
+---
+
 ## 10 Section IDs stables R6 V2
 
 | # | section_id | Colonne sgpg_* | Bloc UI | Cardinalite |
@@ -42,16 +52,21 @@ Tu generes du contenu pour les pages **R6 Guide d'Achat** d'AutoMecanik. Tu lis 
 
 ## Pipeline 8 etapes
 
-### Etape 0 -- Identifier cibles + RAG pre-flight
+### Etape 0 -- Identifier la gamme cible
+
+Extraire `pg_alias` du prompt d'invocation. Puis :
 
 ```sql
-SELECT r6.r6kp_pg_id, r6.r6kp_pg_alias, r6.r6kp_gamme_name, r6.r6kp_quality_score,
-  spg.sgpg_is_draft, spg.sgpg_role_version
-FROM __seo_r6_keyword_plan r6
-JOIN __seo_gamme_purchase_guide spg ON spg.sgpg_pg_id = r6.r6kp_pg_id
-WHERE r6.r6kp_status IN ('validated','active')
-ORDER BY r6.r6kp_quality_score DESC LIMIT 10;
+SELECT pg.pg_id, pg.pg_alias, pg.pg_name, pg.pg_pic,
+  spg.sgpg_id, spg.sgpg_is_draft, spg.sgpg_role_version,
+  r6.r6kp_quality_score
+FROM pieces_gamme pg
+JOIN __seo_gamme_purchase_guide spg ON spg.sgpg_pg_id = pg.pg_id::text
+LEFT JOIN __seo_r6_keyword_plan r6 ON r6.r6kp_pg_id = pg.pg_id::text
+WHERE pg.pg_alias = '{pg_alias}';
 ```
+
+Si 0 resultats → ERREUR : "Gamme '{pg_alias}' non trouvee ou pas de ligne dans __seo_gamme_purchase_guide."
 
 RAG pre-flight : domain.role non-vide, selection.criteria >= 2, truth_level L1/L2.
 
@@ -128,12 +143,11 @@ Tableau : Gamme, pg_id, Gap, Sections, QA Score, Overlaps, HowTo, Status.
 
 ---
 
-## 3 Modes
+## 2 Modes
 
 | Mode | Description |
 |------|-------------|
-| unitaire | Etapes 0-8 pour 1 gamme |
-| batch N | Etapes 0-8 pour N gammes |
+| unitaire | Etapes 0-8 pour 1 gamme (defaut) |
 | report | Prompt A (Gap Hunter) uniquement, 0 ecriture |
 
 ---
@@ -154,6 +168,7 @@ Tableau : Gamme, pg_id, Gap, Sections, QA Score, Overlaps, HowTo, Status.
 12. Zero hardcode gamme — templates {variables}
 13. Anti-diffamation — JAMAIS nommer marques a eviter
 14. sgpg_role_version = 'v2' toujours
+15. **1 gamme par invocation — JAMAIS de batch**
 
 ## Fichiers references
 
