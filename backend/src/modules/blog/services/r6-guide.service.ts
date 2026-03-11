@@ -118,14 +118,22 @@ export class R6GuideService {
         options: string[];
         outcome_map: Record<string, string>;
       }>) || [];
-    const summaryPickFast: R6DecisionNode[] = rawTree.map((node, i) => ({
-      id: `dt-${i}`,
-      question: node.question,
-      options: (node.options || []).map((opt) => ({
-        label: opt,
-        outcome: node.outcome_map?.[opt] || '',
-      })),
-    }));
+    const summaryPickFast: R6DecisionNode[] = rawTree
+      .filter((node) => {
+        // Reject generic diagnostic nodes (R3 content leaked into R6)
+        const q = (node.question || '').toLowerCase();
+        return (
+          !q.includes('diagnostic') && !q.includes('procédure de diagnostic')
+        );
+      })
+      .map((node, i) => ({
+        id: `dt-${i}`,
+        question: this.sanitizeRagLeaks(node.question),
+        options: (node.options || []).map((opt) => ({
+          label: this.sanitizeRagLeaks(opt),
+          outcome: node.outcome_map?.[opt] || '',
+        })),
+      }));
 
     // Quality tiers from selection_criteria
     // V2 agent format: {tiers:[{tier_id, label, description, available, ...}], block_type, intro_text}
@@ -133,13 +141,38 @@ export class R6GuideService {
       | { tiers: R6QualityTier[]; intro_text?: string }
       | R6QualityTier[]
       | null;
-    const qualityTiers: R6QualityTier[] = Array.isArray(rawCriteria)
+    const rawTiers: R6QualityTier[] = Array.isArray(rawCriteria)
       ? rawCriteria
       : rawCriteria?.tiers || [];
+    // Sanitize: filter out RAG chunks and clean markdown artifacts from labels
+    const qualityTiers: R6QualityTier[] = rawTiers
+      .filter((t) => {
+        const label = t.label || '';
+        const guidance =
+          ((t as unknown as Record<string, unknown>).guidance as string) || '';
+        return !this.isRagChunk(label) && !this.isRagChunk(guidance);
+      })
+      .map((t) => {
+        const cleaned = { ...t };
+        if (cleaned.label) cleaned.label = this.sanitizeRagLeaks(cleaned.label);
+        const rec = cleaned as unknown as Record<string, unknown>;
+        if (rec.guidance) {
+          rec.guidance = this.sanitizeRagLeaks(rec.guidance as string);
+        }
+        if (cleaned.description)
+          cleaned.description = this.sanitizeRagLeaks(cleaned.description);
+        return cleaned;
+      });
 
-    // Compatibility axes from new JSONB column
-    const compatibilityAxes: R6CompatibilityAxis[] =
+    // Compatibility axes from new JSONB column — sanitize RAG leaks
+    const rawAxes =
       (row.sgpg_compatibility_axes as R6CompatibilityAxis[]) || [];
+    const compatibilityAxes: R6CompatibilityAxis[] = rawAxes.map((ax) => ({
+      ...ax,
+      axis: this.sanitizeRagLeaks(ax.axis || ''),
+      where_to_find: this.sanitizeRagLeaks(ax.where_to_find || ''),
+      risk_if_wrong: this.sanitizeRagLeaks(ax.risk_if_wrong || ''),
+    }));
 
     // Price guide — try parsing sgpg_micro_seo_block as JSON, fallback to generic factors
     let priceGuide: R6PriceGuideSection;
@@ -384,7 +417,9 @@ export class R6GuideService {
           `Comment bien choisir ${title.toLowerCase()} pour votre véhicule.`,
       ),
       featuredImage: this.transformService.buildImageUrl(
-        gamme.pg_pic || `${pg_alias}.webp`,
+        gamme.pg_pic && gamme.pg_pic !== 'no'
+          ? gamme.pg_pic
+          : `${pg_alias}.webp`,
         'articles/gammes-produits/catalogue',
       ),
       updatedAt:
@@ -438,5 +473,28 @@ export class R6GuideService {
       .replace(R6GuideService.PRICING_RE, '')
       .replace(/\s{2,}/g, ' ')
       .trim();
+  }
+
+  /**
+   * Sanitize a text field by stripping RAG source references and markdown artifacts.
+   * Removes patterns like "(Source: web-catalog/xxx.md, ...)" and stray "**" bold markers.
+   */
+  private sanitizeRagLeaks(text: string): string {
+    if (!text) return text;
+    return text
+      .replace(/\s*\(Source:[^)]*\)/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
+
+  /**
+   * Detect if a text string is a raw RAG chunk (not authored content).
+   * RAG chunks typically contain source references or start with markdown headers.
+   */
+  private isRagChunk(text: string): boolean {
+    if (!text) return false;
+    const t = text.trim();
+    return /\(Source:\s*\w/.test(t) || /^#{1,3}\s/.test(t);
   }
 }

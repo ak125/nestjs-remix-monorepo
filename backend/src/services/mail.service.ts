@@ -48,11 +48,15 @@ export class MailService {
       this.configService.get<string>('GMAIL_USER_EMAIL') ||
       'contact@automecanik.com';
     this.appUrl = this.configService.get<string>('APP_URL') || SITE_ORIGIN;
-    this.fromEmail = `AutoMecanik <${userEmail}>`;
+    this.fromEmail = `Automecanik <${userEmail}>`;
+
+    const appPassword = this.configService.get<string>('GMAIL_APP_PASSWORD');
 
     if (clientId && clientSecret && refreshToken) {
       this.transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
         auth: {
           type: 'OAuth2',
           user: userEmail,
@@ -63,6 +67,15 @@ export class MailService {
       } as nodemailer.TransportOptions);
       this.isConfigured = true;
       this.logger.log('Mail transport configured (Gmail OAuth2)');
+    } else if (appPassword && userEmail) {
+      this.transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: { user: userEmail, pass: appPassword },
+      });
+      this.isConfigured = true;
+      this.logger.log('Mail transport configured (Gmail App Password)');
     } else {
       this.logger.warn(
         'Gmail credentials missing — emails will be logged only',
@@ -90,7 +103,7 @@ export class MailService {
     const html = this.getOrderConfirmationTemplate(order, customer);
     await this.doSend(
       customer.cst_mail,
-      `Commande ${order.ord_id} confirmee - AutoMecanik`,
+      `Commande ${order.ord_id} confirmee - Automecanik`,
       html,
     );
   }
@@ -103,7 +116,7 @@ export class MailService {
     const html = this.getShippingTemplate(order, customer, trackingNumber);
     await this.doSend(
       customer.cst_mail,
-      `Commande ${order.ord_id} expediee - AutoMecanik`,
+      `Commande ${order.ord_id} expediee - Automecanik`,
       html,
     );
   }
@@ -128,9 +141,14 @@ export class MailService {
     const html = this.getCancellationTemplate(order, customer, reason);
     await this.doSend(
       customer.cst_mail,
-      `Commande ${order.ord_id} annulee - AutoMecanik`,
+      `Commande ${order.ord_id} annulee - Automecanik`,
       html,
     );
+  }
+
+  async sendWelcomeEmail(email: string, firstName: string): Promise<void> {
+    const html = this.getWelcomeTemplate(firstName);
+    await this.doSend(email, 'Bienvenue sur Automecanik !', html);
   }
 
   async sendGuestAccountActivation(
@@ -139,7 +157,7 @@ export class MailService {
     orderId?: string,
   ): Promise<void> {
     const html = this.getGuestActivationTemplate(email, resetToken, orderId);
-    await this.doSend(email, `Activez votre compte AutoMecanik`, html);
+    await this.doSend(email, `Activez votre compte Automecanik`, html);
   }
 
   // ============================================================
@@ -261,7 +279,7 @@ export class MailService {
       ${body}
     </div>
     <p style="text-align:center;color:#9ca3af;font-size:12px;margin-top:16px;">
-      AutoMecanik - Pieces auto au meilleur prix
+      Automecanik - Pieces auto au meilleur prix
     </p>
   </div>
 </body></html>`;
@@ -830,7 +848,7 @@ export class MailService {
 
     <div class="content">
       <p>Bonjour,</p>
-      <p>Un compte a été créé pour vous sur <strong>AutoMecanik</strong> avec l'adresse <strong>${email}</strong>.</p>
+      <p>Un compte a été créé pour vous sur <strong>Automecanik</strong> avec l'adresse <strong>${email}</strong>.</p>
       ${orderInfo}
 
       <div class="activation-box">
@@ -847,11 +865,102 @@ export class MailService {
 
     <div class="footer">
       <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
-      <p style="margin-top: 8px;">&copy; ${new Date().getFullYear()} AutoMecanik - Tous droits réservés</p>
+      <p style="margin-top: 8px;">&copy; ${new Date().getFullYear()} Automecanik - Tous droits réservés</p>
     </div>
   </div>
 </body>
 </html>
     `.trim();
+  }
+
+  private getWelcomeTemplate(firstName: string): string {
+    const name = firstName || 'Client';
+    const year = new Date().getFullYear();
+    return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenue sur Automecanik</title>
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;line-height:1.6;color:#1f2937;margin:0;padding:0;background:#f0f2f5}
+    .wrap{max-width:600px;margin:32px auto}
+    .card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+    .hero{background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);color:#fff;padding:40px 32px;text-align:center}
+    .hero h1{margin:0 0 8px;font-size:26px;font-weight:700;letter-spacing:-.3px}
+    .hero p{margin:0;font-size:15px;opacity:.85}
+    .body{padding:32px}
+    .body p{margin:0 0 16px;font-size:15px;color:#374151}
+    .steps{margin:24px 0}
+    .step{display:flex;align-items:flex-start;margin-bottom:20px}
+    .step-num{flex-shrink:0;width:36px;height:36px;border-radius:50%;background:#2563eb;color:#fff;font-weight:700;font-size:16px;text-align:center;line-height:36px;margin-right:14px}
+    .step-text{flex:1}
+    .step-text strong{display:block;font-size:15px;color:#1f2937;margin-bottom:2px}
+    .step-text span{font-size:13px;color:#6b7280}
+    .cta{text-align:center;margin:28px 0 8px}
+    .cta a{display:inline-block;background:#2563eb;color:#fff!important;padding:14px 32px;text-decoration:none;border-radius:8px;font-weight:600;font-size:15px}
+    .guarantee{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px 20px;margin:24px 0 0;text-align:center}
+    .guarantee strong{color:#166534;font-size:14px}
+    .guarantee span{display:block;color:#4b5563;font-size:13px;margin-top:4px}
+    .help{background:#f9fafb;padding:24px 32px;text-align:center}
+    .help p{margin:0 0 8px;font-size:14px;color:#4b5563}
+    .help a{color:#2563eb;text-decoration:none;font-weight:500}
+    .footer{text-align:center;padding:20px 32px;font-size:12px;color:#9ca3af}
+    .footer a{color:#9ca3af;text-decoration:underline}
+    @media(max-width:620px){.wrap{margin:0}.card{border-radius:0}.hero{padding:32px 20px}.body{padding:24px 20px}}
+  </style>
+</head>
+<body>
+  <div class="wrap"><div class="card">
+    <div class="hero">
+      <h1>Bienvenue chez Automecanik !</h1>
+      <p>Votre compte a bien &eacute;t&eacute; cr&eacute;&eacute;</p>
+    </div>
+    <div class="body">
+      <p>Bonjour <strong>${name}</strong>,</p>
+      <p>Nous sommes ravis de vous compter parmi nos clients. Votre compte est actif et pr&ecirc;t &agrave; l&rsquo;emploi.</p>
+      <p style="font-weight:600;color:#1f2937">Comment commander vos pi&egrave;ces :</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <strong>S&eacute;lectionnez votre v&eacute;hicule</strong>
+            <span>Indiquez la marque, le mod&egrave;le et la motorisation pour afficher uniquement les pi&egrave;ces compatibles.</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <strong>Trouvez vos pi&egrave;ces</strong>
+            <span>Parcourez notre catalogue de plus de 4&nbsp;millions de r&eacute;f&eacute;rences aux meilleurs prix.</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <strong>Recevez votre commande</strong>
+            <span>Exp&eacute;dition sous 24 &agrave; 48h. Livraison suivie &agrave; domicile ou en point relais.</span>
+          </div>
+        </div>
+      </div>
+      <div class="cta">
+        <a href="${this.appUrl}">Acc&eacute;der &agrave; mon compte</a>
+      </div>
+      <div class="guarantee">
+        <strong>Satisfait ou rembours&eacute; sous 14 jours</strong>
+        <span>Toutes nos pi&egrave;ces sont garanties compatibles avec votre v&eacute;hicule.</span>
+      </div>
+    </div>
+    <div class="help">
+      <p>Une question ? Notre &eacute;quipe est l&agrave; pour vous aider.</p>
+      <p><a href="mailto:contact@automecanik.com">contact@automecanik.com</a></p>
+    </div>
+    <div class="footer">
+      <p>&copy; ${year} Automecanik &mdash; Pi&egrave;ces automobiles en ligne</p>
+      <p><a href="${this.appUrl}">automecanik.com</a></p>
+    </div>
+  </div></div>
+</body>
+</html>`.trim();
   }
 }
