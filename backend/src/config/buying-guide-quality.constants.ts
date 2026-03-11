@@ -125,8 +125,23 @@ export const BAN_ABSOLUTE_CLAIMS: readonly string[] = [
 ] as const;
 
 // ─────────────────────────────────────────────────────────────
-// Family domain terms (required for family-specific validation)
+// Family domain terms — source : FAMILY_REGISTRY dans @repo/database-types
+// Ces 6 domaines agrègent les 19 familles par zone fonctionnelle
 // ─────────────────────────────────────────────────────────────
+import { FAMILY_REGISTRY } from '@repo/database-types';
+
+// Construit seoTerms par domaine en agrègeant depuis le registre
+const _buildDomainTerms = () => {
+  const map: Record<string, string[]> = {};
+  for (const meta of Object.values(FAMILY_REGISTRY)) {
+    const d = meta.domain === 'chassis' ? 'suspension' : meta.domain;
+    if (!map[d]) map[d] = [];
+    for (const t of meta.seoTerms) {
+      if (!map[d].includes(t)) map[d].push(t);
+    }
+  }
+  return map as Record<FamilyKey, string[]>;
+};
 
 export const FAMILY_REQUIRED_TERMS = {
   freinage: ['frein', 'freinage', 'distance', 'sécurité'],
@@ -140,17 +155,23 @@ export const FAMILY_REQUIRED_TERMS = {
 export type FamilyKey = keyof typeof FAMILY_REQUIRED_TERMS;
 
 // ─────────────────────────────────────────────────────────────
-// Family markers (for inferring family from gamme name)
+// Family markers — construit depuis FAMILY_REGISTRY.keywords
 // ─────────────────────────────────────────────────────────────
 
-export const FAMILY_MARKERS: Record<FamilyKey, string[]> = {
-  freinage: ['frein', 'disque', 'plaquette', 'étrier', 'abs'],
-  moteur: ['moteur', 'injecteur', 'distribution', 'lubrification'],
-  suspension: ['suspension', 'amortisseur', 'coupelle', 'ressort'],
-  transmission: ['embrayage', 'cardan', 'boîte', 'transmission'],
-  electrique: ['alternateur', 'batterie', 'démarreur', 'électrique'],
-  climatisation: ['climatisation', 'compresseur', 'condenseur', 'évaporateur'],
+const _buildDomainMarkers = (): Record<FamilyKey, string[]> => {
+  const map: Record<string, string[]> = {};
+  for (const meta of Object.values(FAMILY_REGISTRY)) {
+    const d = meta.domain === 'chassis' ? 'suspension' : meta.domain;
+    if (!map[d]) map[d] = [];
+    for (const kw of meta.keywords) {
+      if (!map[d].includes(kw)) map[d].push(kw);
+    }
+  }
+  return map as Record<FamilyKey, string[]>;
 };
+
+export const FAMILY_MARKERS: Record<FamilyKey, string[]> =
+  _buildDomainMarkers();
 
 // ─────────────────────────────────────────────────────────────
 // Flag penalties (quality score = 100 - sum of penalties)

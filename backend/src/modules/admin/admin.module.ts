@@ -35,6 +35,7 @@ import { AdminGammesSeoAggregatesController } from './controllers/admin-gammes-s
 import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 🚀 SEO Cockpit Unifié
 // AdminVehicleResolveController supprimé — méthode resolveVehicleTypes jamais implémentée
 import { AdminBuyingGuideController } from './controllers/admin-buying-guide.controller'; // 📖 Buying Guide RAG enrichment
+import { AdminR8VehicleController } from './controllers/admin-r8-vehicle.controller'; // 🚗 R8 Vehicle enrichment
 import { AdminContentRefreshController } from './controllers/admin-content-refresh.controller'; // 🔄 Content Refresh pipeline
 import { InternalEnrichController } from './controllers/internal-enrich.controller'; // 🔑 Internal enrichment (API key auth)
 import { AdminPageBriefController } from './controllers/admin-page-brief.controller'; // 📋 Page Briefs SEO
@@ -76,6 +77,7 @@ import { AdminFeatureFlagsController } from './controllers/admin-feature-flags.c
 import { PipelineChainPollerService } from './services/pipeline-chain-poller.service'; // 🔗 Pipeline chain poller (keyword-plan → conseil)
 import { RagCatchupService } from './services/rag-catchup.service'; // 🔄 RAG catch-up at startup (detect orphan ingestions)
 import { R3ImagePromptService } from './services/r3-image-prompt.service'; // 🎨 R3 Image Prompts (template-based, 0-LLM)
+import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service'; // 🚗 R8 Vehicle page enricher (RAG + diversity scoring)
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -138,6 +140,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     AdminRagIngestController, // 📄 PDF → RAG merge - /api/admin/rag/pdf-merge/*
     AdminR3ImagePromptsController, // 🎨 R3 Image Prompts - /api/admin/r3-image-prompts/*
     AdminFeatureFlagsController, // 🏷️ Feature Flags - /api/admin/feature-flags/*
+    AdminR8VehicleController, // 🚗 R8 Vehicle enrichment - /api/admin/r8/enrich/:typeId
   ],
   providers: [
     ConfigurationService,
@@ -180,6 +183,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     PipelineChainPollerService, // 🔗 Pipeline chain poller (keyword-plan validated → conseil refresh)
     RagCatchupService, // 🔄 RAG catch-up at startup (detect orphan ingestions, flag-gated)
     R3ImagePromptService, // 🎨 R3 Image Prompts (template-based, 0-LLM)
+    R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
   ],
   exports: [
     ConfigurationService,
@@ -199,6 +203,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     RagSafeDistillService, // 🔒 Export for WorkerModule (RAG safe distill)
     KeywordPlanGatesService, // 🚦 Export for keyword-planner agent
     R1KeywordPlanGatesService, // 🚦 Export for R1 pipeline + keyword-planner R1 mode
+    R8VehicleEnricherService, // 🚗 Export for content-refresh processor
   ],
 })
 export class AdminModule {}

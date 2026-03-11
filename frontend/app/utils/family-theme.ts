@@ -1,10 +1,11 @@
 /**
- * Source unique de verite pour les themes visuels par famille/gamme.
+ * Themes visuels par famille/gamme.
  *
- * Remplace toutes les maps couleur dupliquees dans les routes et composants.
  * Approche baseColor : chaque famille a une couleur de base + gradient,
  * les variantes (bg, fg, accent, etc.) sont derivees via COLOR_VARIANTS.
+ * Les données famille viennent de FAMILY_REGISTRY (@repo/database-types).
  */
+import { FAMILY_REGISTRY, findFamilyIdByKeyword } from "@repo/database-types";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -222,8 +223,7 @@ const COLOR_VARIANTS: Record<string, Omit<FamilyTheme, "gradient">> = {
 };
 
 // ---------------------------------------------------------------------------
-// Source de verite par famille (ID → baseColor + gradient)
-// Gradients repris de hierarchy.api.ts
+// FamilyDef type (pour buildTheme)
 // ---------------------------------------------------------------------------
 
 interface FamilyDef {
@@ -231,153 +231,13 @@ interface FamilyDef {
   gradient: string;
 }
 
-const FAMILY_THEMES_BY_ID: Record<string, FamilyDef> = {
-  // === MECANIQUE & MOTEUR ===
-  "1": { baseColor: "blue", gradient: "from-blue-500 to-blue-700" }, // Filtration
-  "2": { baseColor: "red", gradient: "from-red-600 to-rose-700" }, // Freinage
-  "3": { baseColor: "slate", gradient: "from-slate-600 to-slate-800" }, // Distribution
-  "4": { baseColor: "yellow", gradient: "from-yellow-400 to-amber-600" }, // Electrique/Allumage
-  "10": { baseColor: "orange", gradient: "from-orange-600 to-red-700" }, // Moteur
-  "14": { baseColor: "lime", gradient: "from-lime-500 to-green-600" }, // Alimentation
-  "16": { baseColor: "rose", gradient: "from-rose-600 to-pink-700" }, // Turbo
-  "19": { baseColor: "green", gradient: "from-emerald-600 to-green-700" }, // Embrayage
-
-  // === TRAIN ROULANT ===
-  "5": { baseColor: "emerald", gradient: "from-emerald-500 to-teal-600" }, // Train avant
-  "6": { baseColor: "purple", gradient: "from-purple-600 to-violet-700" }, // Amortisseur
-  "12": { baseColor: "teal", gradient: "from-teal-600 to-cyan-700" }, // Transmission
-  "15": { baseColor: "violet", gradient: "from-violet-600 to-purple-800" }, // Support moteur
-
-  // === SYSTEMES ELECTRONIQUES ===
-  "7": { baseColor: "indigo", gradient: "from-indigo-500 to-blue-700" }, // Eclairage
-  "13": { baseColor: "amber", gradient: "from-amber-600 to-orange-700" }, // Capteurs
-
-  // === CONFORT & HABITACLE ===
-  "8": { baseColor: "cyan", gradient: "from-cyan-400 to-blue-600" }, // Refroidissement
-  "17": { baseColor: "sky", gradient: "from-sky-400 to-cyan-600" }, // Climatisation
-  "18": { baseColor: "fuchsia", gradient: "from-fuchsia-500 to-pink-600" }, // Accessoires
-
-  // === STRUCTURE & CARROSSERIE ===
-  "9": { baseColor: "pink", gradient: "from-pink-500 to-rose-600" }, // Carrosserie
-  "11": { baseColor: "gray", gradient: "from-gray-700 to-neutral-800" }, // Echappement
-
-  // === COULEURS SUPPLEMENTAIRES (ID 20-50) ===
-  "20": { baseColor: "blue", gradient: "from-blue-400 to-indigo-600" },
-  "21": { baseColor: "green", gradient: "from-green-400 to-emerald-600" },
-  "22": { baseColor: "red", gradient: "from-red-400 to-rose-600" },
-  "23": { baseColor: "purple", gradient: "from-purple-400 to-fuchsia-600" },
-  "24": { baseColor: "yellow", gradient: "from-yellow-300 to-orange-500" },
-  "25": { baseColor: "cyan", gradient: "from-cyan-300 to-teal-600" },
-  "26": { baseColor: "indigo", gradient: "from-indigo-400 to-purple-700" },
-  "27": { baseColor: "lime", gradient: "from-lime-400 to-green-700" },
-  "28": { baseColor: "amber", gradient: "from-amber-400 to-yellow-700" },
-  "29": { baseColor: "rose", gradient: "from-rose-400 to-red-700" },
-  "30": { baseColor: "teal", gradient: "from-teal-400 to-cyan-700" },
-  "31": { baseColor: "violet", gradient: "from-violet-400 to-purple-700" },
-  "32": { baseColor: "sky", gradient: "from-sky-300 to-blue-700" },
-  "33": { baseColor: "emerald", gradient: "from-emerald-400 to-teal-700" },
-  "34": { baseColor: "orange", gradient: "from-orange-400 to-red-600" },
-  "35": { baseColor: "pink", gradient: "from-pink-400 to-fuchsia-700" },
-  "36": { baseColor: "slate", gradient: "from-slate-400 to-gray-700" },
-  "37": { baseColor: "zinc", gradient: "from-zinc-500 to-slate-700" },
-  "38": { baseColor: "gray", gradient: "from-neutral-500 to-gray-700" },
-  "39": { baseColor: "slate", gradient: "from-stone-500 to-slate-700" },
-  "40": { baseColor: "red", gradient: "from-red-500 to-orange-700" },
-  "41": { baseColor: "blue", gradient: "from-blue-300 to-cyan-600" },
-  "42": { baseColor: "green", gradient: "from-green-300 to-lime-600" },
-  "43": { baseColor: "purple", gradient: "from-purple-300 to-violet-600" },
-  "44": { baseColor: "yellow", gradient: "from-yellow-200 to-amber-600" },
-  "45": { baseColor: "pink", gradient: "from-pink-300 to-rose-600" },
-  "46": { baseColor: "indigo", gradient: "from-indigo-300 to-blue-600" },
-  "47": { baseColor: "teal", gradient: "from-teal-300 to-emerald-600" },
-  "48": { baseColor: "orange", gradient: "from-orange-300 to-red-600" },
-  "49": { baseColor: "fuchsia", gradient: "from-fuchsia-300 to-pink-600" },
-  "50": { baseColor: "cyan", gradient: "from-cyan-200 to-teal-600" },
-};
-
-// ---------------------------------------------------------------------------
-// Mapping par mot-cle (normalise, sans accents)
-// ---------------------------------------------------------------------------
-
-const KEYWORD_TO_FAMILY_ID: Record<string, string> = {
-  // Mecanique & Moteur
-  filtration: "1",
-  filtre: "1",
-  filtres: "1",
-  freinage: "2",
-  frein: "2",
-  distribution: "3",
-  courroie: "3",
-  galet: "3",
-  poulie: "3",
-  chaine: "3",
-  electrique: "4",
-  allumage: "4",
-  batterie: "4",
-  prechauffage: "4",
-  moteur: "10",
-  bloc: "10",
-  alimentation: "14",
-  carburant: "14",
-  essence: "14",
-  diesel: "14",
-  turbo: "16",
-  compresseur: "16",
-  embrayage: "19",
-  volant: "19",
-
-  // Train roulant
-  train: "5",
-  direction: "5",
-  cremaillere: "5",
-  liaison: "5",
-  amortisseur: "6",
-  suspension: "6",
-  ressort: "6",
-  transmission: "12",
-  boite: "12",
-  differentiel: "12",
-  support: "15",
-  silent: "15",
-  tampon: "15",
-
-  // Electronique
-  eclairage: "7",
-  phare: "7",
-  feu: "7",
-  capteur: "13",
-  sonde: "13",
-  calculateur: "13",
-
-  // Confort
-  refroidissement: "8",
-  radiateur: "8",
-  eau: "8",
-  climatisation: "17",
-  clim: "17",
-  condenseur: "17",
-  accessoire: "18",
-  interieur: "18",
-  equipement: "18",
-
-  // Structure
-  carrosserie: "9",
-  aile: "9",
-  pare: "9",
-  capot: "9",
-  echappement: "11",
-  silencieux: "11",
-  pot: "11",
-
-  // Autres
-  lubrifiant: "13",
-  huile: "13",
-  liquide: "8",
-  pneumatique: "11",
-  pneu: "11",
-  roue: "11",
-  vitrage: "17",
-};
+// Construit FAMILY_THEMES_BY_ID depuis FAMILY_REGISTRY (source unique)
+const FAMILY_THEMES_BY_ID: Record<string, FamilyDef> = Object.fromEntries(
+  Object.entries(FAMILY_REGISTRY).map(([id, meta]) => [
+    id,
+    { baseColor: meta.baseColor, gradient: meta.gradient },
+  ]),
+);
 
 // ---------------------------------------------------------------------------
 // Default theme (fallback gris neutre)
@@ -427,13 +287,6 @@ function buildTheme(def: FamilyDef): FamilyTheme {
   return { ...variants, gradient: def.gradient };
 }
 
-function normalize(str: string): string {
-  return str
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
 /**
  * Retourne le theme visuel complet pour une famille/gamme.
  *
@@ -457,16 +310,14 @@ export function getFamilyTheme(idOrName: string | number): FamilyTheme {
     return theme;
   }
 
-  // 2. Lookup par mot-cle dans le nom
-  const normalized = normalize(key);
-  for (const [keyword, familyId] of Object.entries(KEYWORD_TO_FAMILY_ID)) {
-    if (normalized.includes(keyword)) {
-      const def = FAMILY_THEMES_BY_ID[familyId];
-      if (def) {
-        theme = buildTheme(def);
-        themeCache.set(key, theme);
-        return theme;
-      }
+  // 2. Lookup par mot-cle via FAMILY_REGISTRY
+  const foundId = findFamilyIdByKeyword(key);
+  if (foundId) {
+    const def = FAMILY_THEMES_BY_ID[String(foundId)];
+    if (def) {
+      theme = buildTheme(def);
+      themeCache.set(key, theme);
+      return theme;
     }
   }
 

@@ -35,20 +35,6 @@ export class GammeUnifiedController {
   }
 
   /**
-   * 🏗️ GET /api/catalog/gammes/hierarchy - Hiérarchie familles → gammes
-   * 🚀 Cache: 1h (données quasi-statiques)
-   */
-  @Get('hierarchy')
-  @Header(
-    'Cache-Control',
-    'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600',
-  )
-  async getHierarchy() {
-    this.logger.log('🏗️ [GET] /api/catalog/gammes/hierarchy');
-    return this.gammeService.getHierarchy();
-  }
-
-  /**
    * ⭐ GET /api/catalog/gammes/featured - Gammes en vedette
    */
   @Get('featured')
@@ -86,12 +72,12 @@ export class GammeUnifiedController {
   async getStats() {
     this.logger.log('📊 [GET] /api/catalog/gammes/stats');
 
-    const hierarchy = await this.gammeService.getHierarchy();
+    const allGammes = await this.gammeService.getAllGammes();
     const featured = await this.gammeService.getFeaturedGammes();
 
     return {
       success: true,
-      data: hierarchy.stats,
+      data: { total_gammes: allGammes.length },
       featured_count: featured.length,
       timestamp: new Date().toISOString(),
     };

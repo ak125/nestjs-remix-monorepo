@@ -27,6 +27,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { FAMILY_REGISTRY, FAMILY_IDS_ORDERED } from "@repo/database-types";
 import {
   ArrowRight,
   BookOpen,
@@ -354,31 +355,19 @@ const qualityScore = (g: BlogGuide) => {
   return h2 * 2 + rt;
 };
 
-/* 19 familles — alignées sur CATS[] (homepage constants.ts) */
-const KNOWN_FAMILIES = new Set([
-  "Filtration",
-  "Freinage",
-  "Courroie et distribution",
-  "Allumage et préchauffage",
-  "Direction",
-  "Amortisseur et suspension",
-  "Support moteur",
-  "Embrayage",
-  "Transmission",
-  "Electrique",
-  "Capteurs et sondes",
-  "Alimentation",
-  "Moteur",
-  "Refroidissement",
-  "Climatisation",
-  "Echappement",
-  "Eclairage",
-  "Accessoires",
-  "Turbo",
-]);
+/* Construit les noms courts des familles depuis le registre */
+const KNOWN_FAMILIES = new Set(
+  Object.values(FAMILY_REGISTRY).map(
+    (meta) =>
+      meta.keywords[0].charAt(0).toUpperCase() + meta.keywords[0].slice(1),
+  ),
+);
 
-/** Ordre fixe aligne sur la homepage (constants.ts CATS[]) */
-const FAMILY_ORDER = [...KNOWN_FAMILIES];
+/** Ordre fixe aligne sur le registre */
+const FAMILY_ORDER = FAMILY_IDS_ORDERED.map((id) => {
+  const kw = FAMILY_REGISTRY[id]?.keywords[0] ?? "";
+  return kw.charAt(0).toUpperCase() + kw.slice(1);
+});
 
 /** Extrait la famille d'un guide depuis ses tags (robuste) */
 const getFamily = (g: BlogGuide): string => {

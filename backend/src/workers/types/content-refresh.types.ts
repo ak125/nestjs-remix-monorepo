@@ -6,7 +6,8 @@ export type PageType =
   | 'R3_guide_achat'
   | 'R4_reference'
   | 'R5_diagnostic'
-  | 'R6_guide_achat';
+  | 'R6_guide_achat'
+  | 'R8_vehicle';
 
 /** Job data for gamme-based refresh (R1, R3, R4) */
 export interface ContentRefreshJobData {
@@ -35,10 +36,19 @@ export interface ContentRefreshJobDataR5 {
   correlationId?: string;
 }
 
+/** Job data for vehicle page refresh (R8) — keyed by typeId, NOT pgAlias */
+export interface ContentRefreshJobDataR8 {
+  refreshLogId?: number;
+  typeId: number;
+  pageType: 'R8_vehicle';
+  correlationId?: string;
+}
+
 /** Union of all job data types */
 export type AnyContentRefreshJobData =
   | ContentRefreshJobData
-  | ContentRefreshJobDataR5;
+  | ContentRefreshJobDataR5
+  | ContentRefreshJobDataR8;
 
 export interface ContentRefreshResult {
   status: 'draft' | 'failed' | 'skipped' | 'auto_published';

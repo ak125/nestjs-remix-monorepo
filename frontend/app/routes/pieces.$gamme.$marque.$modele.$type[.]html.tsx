@@ -28,6 +28,7 @@ import {
 } from "@remix-run/node";
 import {
   Await,
+  Link,
   isRouteErrorResponse,
   useLoaderData,
   useLocation,
@@ -223,6 +224,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         headers: {
           "Content-Type": "application/json",
           "X-Robots-Tag": "noindex, follow",
+          "Cache-Control":
+            "public, max-age=60, s-maxage=3600, stale-while-revalidate=3600",
         },
       },
     );
@@ -233,7 +236,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   // 🚀 LCP V8: Lancer hierarchy immédiatement (pour catalogueMameFamille deferred)
   const hierarchyPromise = fetchJsonOrNull<HierarchyData>(
-    `http://127.0.0.1:3000/api/catalog/gammes/hierarchy`,
+    `http://127.0.0.1:3000/api/catalog/homepage-families`,
     3000,
   );
 
@@ -339,17 +342,34 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
   const canonicalPath = `/pieces/${correctGammeSlug}/${correctBrandSlug}/${correctModelSlug}/${correctTypeSlug}.html`;
 
-  // 301 redirect si l'URL courante ne correspond pas a l'URL canonique
-  if (url.pathname !== canonicalPath) {
-    logger.log(`🔄 [301] URL mismatch: ${url.pathname} → ${canonicalPath}`);
-    return redirect(canonicalPath, 301);
+  // 301 redirect si l'URL courante ne correspond pas à l'URL canonique
+  // Normalisation URI pour éviter les faux positifs (encoding, trailing slash)
+  const currentPath = decodeURIComponent(url.pathname);
+  const targetPath = decodeURIComponent(canonicalPath);
+
+  if (currentPath !== targetPath) {
+    // Anti-boucle : si déjà redirigé (param r=1), servir la page telle quelle
+    if (url.searchParams.get("r") === "1") {
+      logger.warn(
+        `⚠️ [301-LOOP] Anti-boucle activé, page servie sans redirect: ${currentPath}`,
+      );
+    } else {
+      logger.log(`🔄 [301] Canonical mismatch: ${currentPath} → ${targetPath}`);
+      const redirectUrl = new URL(request.url);
+      redirectUrl.pathname = canonicalPath;
+      redirectUrl.searchParams.set("r", "1");
+      return redirect(redirectUrl.toString(), 301);
+    }
   }
 
   // 🔗 SEO: URLs pré-calculées pour section "Voir aussi" (pas de construction côté client)
   const voirAussiLinks = buildVoirAussiLinks(gamme, vehicle);
 
   // Generated Content (FAQ and buying guide with vehicle context)
-  const faqItems = generateFAQ(vehicle, gamme);
+  // FAQ gating : ne garder que les Q/R avec réponse substantielle (>= 20 chars)
+  const faqItems = generateFAQ(vehicle, gamme).filter(
+    (item) => item.answer && item.answer.length >= 20,
+  );
   const buyingGuide = generateBuyingGuide(vehicle, gamme);
 
   // LCP: blogData deferred (below-fold, non-bloquant pour TTFB)
@@ -359,10 +379,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   );
 
   // 🚀 LCP OPTIMIZATION V8: Catalogue Famille streamé via defer() (below-fold)
+  // T5: Top 8 liens SSR pour crawl interne, reste deferred
   const catalogueMameFamillePromise = buildCataloguePromise(
     gammeId,
     hierarchyPromise,
   );
+  // Await hierarchy (already fetched in parallel with RM V2, should be resolved)
+  const catalogueMameFamille = await catalogueMameFamillePromise.catch(
+    () => null,
+  );
+  const catalogueTop8 = catalogueMameFamille?.items?.slice(0, 8) ?? [];
 
   const loadTime = Date.now() - startTime;
 
@@ -408,6 +434,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       oemRefs: loaderData.oemRefs,
       oemRefsSeo: loaderData.oemRefsSeo,
       voirAussiLinks, // 🔗 SEO: URLs pré-calculées pour section "Voir aussi"
+      catalogueTop8, // 🕷️ SEO: Top 8 liens catalogue SSR pour crawl interne
       seo: {
         title:
           rmV2Response.seo?.title ||
@@ -424,14 +451,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         cacheHit: rmV2Response.cacheHit || false,
         rmDuration: rmV2Response.duration_ms,
       },
+      dataQuality: rmV2Response.validation?.dataQuality?.quality ?? 0,
 
       // === DONNÉES STREAMÉES (non-bloquantes, chargées en background) ===
       // LCP: blogData deferred (below-fold, Googlebot exécute JS)
       blogData: blogDataPromise,
       // 🚀 LCP V9: seoSwitches deferred (below-fold, fallback anchors in getAnchorText)
       seoSwitches: seoSwitchesPromise,
-      // 🚀 LCP OPTIMIZATION V7: catalogueMameFamille streamé (below-fold)
-      catalogueMameFamille: catalogueMameFamillePromise,
+      // Catalogue complet (déjà résolu pour SSR top 8, passé en direct)
+      catalogueMameFamille: catalogueMameFamille
+        ? Promise.resolve(catalogueMameFamille)
+        : Promise.resolve(null),
     },
     {
       headers: {
@@ -506,11 +536,14 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { property: "og:title", content: d.seo.title },
     { property: "og:description", content: d.seo.description },
     { property: "og:url", content: canonicalUrl },
-    // noindex si ≤ 1 produit (thin content) — seuil abaissé de 5 à 1
-    // Pages 2+ produits ont maintenant ~300 mots SSR (FAQ, guide, compatibilité)
+    // Robots: index si 2+ produits, OU si 1 produit avec qualité données suffisante
+    // Pages 2+ produits ont ~300 mots SSR (FAQ, guide, compatibilité)
     {
       name: "robots",
-      content: d.count <= 1 ? "noindex, follow" : "index, follow",
+      content:
+        d.count >= 2 || (d.count === 1 && (d.dataQuality ?? 0) >= 50)
+          ? "index, follow"
+          : "noindex, follow",
     },
 
     // âœ¨ NOUVEAU: Canonical URL
@@ -524,7 +557,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     },
 
     // 🚀 LCP Optimization V5: Preload hero vehicle image - Fonction extraite
-    ...buildHeroImagePreload(d.vehicle),
+    ...buildHeroImagePreload(d.vehicle, d.gamme),
 
     // âœ¨ NOUVEAU: Schema.org Product (rich snippets)
     ...(productSchema
@@ -536,7 +569,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
       : []),
 
     // Schema.org FAQPage dans <head> pour rich snippets (SSR garanti)
-    ...(d.faqItems && d.faqItems.length > 0
+    ...(d.faqItems && d.faqItems.length >= 2
       ? [
           {
             "script:ld+json": {
@@ -767,12 +800,13 @@ function PiecesVehicleContent() {
                   </div>
                 </div>
               </div>
-              <a
-                href={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`}
+              <Link
+                to={`/pieces/${data.gamme.alias}-${data.gamme.id}.html`}
                 className="px-3 py-1.5 text-sm font-medium text-blue-400 md:text-blue-600 hover:text-blue-300 md:hover:text-blue-800 md:hover:bg-blue-50 rounded-lg transition-colors"
+                prefetch="intent"
               >
                 Changer
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -808,7 +842,33 @@ function PiecesVehicleContent() {
               />
             </div>
 
-            {/* Catalogue collapsible - Composant extrait */}
+            {/* Catalogue — Top 8 liens SSR pour crawl interne */}
+            {data.catalogueTop8 && data.catalogueTop8.length > 0 && (
+              <nav
+                aria-label="Gammes similaires"
+                className="bg-white rounded-lg border border-gray-200 p-3"
+              >
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  Gammes similaires
+                </h3>
+                <ul className="space-y-1">
+                  {data.catalogueTop8.map(
+                    (item: { name: string; link: string }) => (
+                      <li key={item.link}>
+                        <a
+                          href={item.link}
+                          className="text-sm text-blue-700 hover:text-blue-900 hover:underline block py-0.5"
+                        >
+                          {item.name}
+                        </a>
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </nav>
+            )}
+
+            {/* Catalogue collapsible complet - deferred (below-fold) */}
             <PiecesCatalogueFamille
               catalogueMameFamillePromise={data.catalogueMameFamille}
               getAnchorText={getAnchorText}
@@ -828,6 +888,22 @@ function PiecesVehicleContent() {
                 minPrice={data.minPrice}
                 selectedPiecesCount={selectedPieces.length}
               />
+
+              {/* CTA VIN compact — rassurance compatibilité */}
+              <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 flex items-center justify-between gap-3">
+                <p className="text-sm text-amber-800">
+                  <span className="font-medium">
+                    Pas sûr de la compatibilité ?
+                  </span>{" "}
+                  Vérifiez avec votre numéro de châssis (VIN)
+                </p>
+                <a
+                  href="#compatibilite"
+                  className="flex-shrink-0 text-sm font-semibold text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-md transition-colors"
+                >
+                  Vérifier
+                </a>
+              </div>
 
               {/* Trust bar - reassurance mobile */}
               <FrictionReducerGroup
@@ -917,12 +993,14 @@ function PiecesVehicleContent() {
                 {/* SSR: Composants SEO rendus côté serveur (visibilité Googlebot) */}
                 <PiecesBuyingGuide guide={data.buyingGuide} />
                 <FAQSection faq={data.faqItems} withJsonLd={false} />
-                <PiecesCompatibilityInfo
-                  compatibility={data.compatibilityInfo}
-                  vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
-                  motorCodesFormatted={data.vehicle.motorCodesFormatted}
-                  mineCodesFormatted={data.vehicle.mineCodesFormatted}
-                />
+                <div id="compatibilite">
+                  <PiecesCompatibilityInfo
+                    compatibility={data.compatibilityInfo}
+                    vehicleName={`${data.vehicle.marque} ${data.vehicle.modele}`}
+                    motorCodesFormatted={data.vehicle.motorCodesFormatted}
+                    mineCodesFormatted={data.vehicle.mineCodesFormatted}
+                  />
+                </div>
 
                 {/* PiecesStatistics reste lazy (pur UX, zéro valeur SEO) */}
                 <Suspense

@@ -29,30 +29,10 @@ import {
   GammeDetailResult,
 } from './gamme-detail-enricher.service';
 import { GammeVLevelService } from './gamme-vlevel.service';
-
-// ============== HIÉRARCHIE OFFICIELLE DES FAMILLES ==============
-// Ordre du catalogue Automecanik par familles techniques
-const FAMILY_HIERARCHY_ORDER: string[] = [
-  'Système de filtration',
-  'Système de freinage',
-  'Courroie, galet, poulie et chaîne',
-  'Préchauffage et allumage',
-  'Direction et liaison au sol',
-  'Amortisseur et suspension',
-  'Support moteur',
-  'Embrayage',
-  'Transmission',
-  'Système électrique',
-  'Capteurs',
-  "Système d'alimentation",
-  'Moteur',
-  'Refroidissement',
-  'Climatisation',
-  'Echappement',
-  'Eclairage',
-  'Accessoires',
-  'Turbo',
-];
+import {
+  FAMILY_IDS_ORDERED,
+  findFamilyIdByKeyword,
+} from '@repo/database-types';
 
 // ============== INTERFACES ==============
 
@@ -396,11 +376,13 @@ export class AdminGammesSeoService extends SupabaseBaseService {
 
       // 6. Merge data (incluant Agent 2 et badges v2)
       let result: GammeSeoItem[] = (gammes || []).map((g) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const seo: any = seoMetricsMap.get(g.pg_id) || {};
         const familyId = pgToFamilyMap.get(g.pg_id);
         const familyName = familyId ? familiesMap.get(familyId) : null;
 
         // Parse Agent 2 data from user_notes JSON
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let agent2Data: any = {};
         try {
           if (seo.user_notes) {
@@ -534,20 +516,11 @@ export class AdminGammesSeoService extends SupabaseBaseService {
       if (sortBy === 'family_name') {
         // Helper function to get family hierarchy index
         const getFamilyHierarchyIndex = (familyName: string | null): number => {
-          if (!familyName) return FAMILY_HIERARCHY_ORDER.length; // Sans famille at the end
-
-          // Normalize: remove accents and lowercase for comparison
-          const normalize = (s: string) =>
-            s
-              .toLowerCase()
-              .normalize('NFD')
-              .replace(/[\u0300-\u036f]/g, '');
-
-          const normalizedInput = normalize(familyName);
-          const index = FAMILY_HIERARCHY_ORDER.findIndex(
-            (f) => normalize(f) === normalizedInput,
-          );
-          return index === -1 ? FAMILY_HIERARCHY_ORDER.length : index;
+          if (!familyName) return FAMILY_IDS_ORDERED.length;
+          const mfId = findFamilyIdByKeyword(familyName);
+          if (!mfId) return FAMILY_IDS_ORDERED.length;
+          const index = FAMILY_IDS_ORDERED.indexOf(mfId);
+          return index === -1 ? FAMILY_IDS_ORDERED.length : index;
         };
 
         // Debug: log unique families and their positions

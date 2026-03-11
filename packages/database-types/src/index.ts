@@ -75,6 +75,12 @@ export * from './helpers/index.js';
  */
 export * from './vehicle.js';
 
+/**
+ * Registre familles produit — source unique des métadonnées (couleurs, icônes, keywords)
+ * Les NOMS et l'ORDRE viennent de la DB via CatalogHierarchyService
+ */
+export * from './family-registry.js';
+
 // ============================================================================
 // 🔥 RE-EXPORTS PRATIQUES
 // ============================================================================

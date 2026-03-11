@@ -20,37 +20,18 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject } from '@nestjs/common';
 import { BlogArticle, BlogSection } from '../interfaces/blog.interfaces';
 
-/**
- * Normalise catalog_family.mf_name (DB) → nom court utilisé sur le hub guide d'achat.
- * Aligné sur l'ordre des CATS[] dans frontend/app/components/home/constants.ts
- */
-const FAMILY_NORMALIZE: Record<string, string> = {
-  'Système de filtration': 'Filtration',
-  'Système de freinage': 'Freinage',
-  'Courroie, galet, poulie et chaîne': 'Courroie et distribution',
-  'Allumage / Préchauffage': 'Allumage et préchauffage',
-  'Préchauffage et allumage': 'Allumage et préchauffage',
-  'Direction / Train avant': 'Direction',
-  'Direction et liaison au sol': 'Direction',
-  'Amortisseur / Suspension': 'Amortisseur et suspension',
-  'Amortisseur et suspension': 'Amortisseur et suspension',
-  'Support moteur': 'Support moteur',
-  Embrayage: 'Embrayage',
-  Transmission: 'Transmission',
-  Électrique: 'Electrique',
-  'Capteurs / Sondes': 'Capteurs et sondes',
-  'Alimentation Carburant & Air': 'Alimentation',
-  "Système d'alimentation": 'Alimentation',
-  Moteur: 'Moteur',
-  Refroidissement: 'Refroidissement',
-  Climatisation: 'Climatisation',
-  Échappement: 'Echappement',
-  Echappement: 'Echappement',
-  'Éclairage / Signalisation': 'Eclairage',
-  Accessoires: 'Accessoires',
-  'Turbo / Suralimentation': 'Turbo',
-  Turbo: 'Turbo',
-};
+import { FAMILY_REGISTRY } from '@repo/database-types';
+
+/** Normalise mf_name DB → nom court via FAMILY_REGISTRY keywords[0] */
+function normalizeFamilyName(mfId: string, rawName: string): string {
+  const id = Number(mfId);
+  const meta = FAMILY_REGISTRY[id];
+  if (meta?.keywords.length) {
+    const short = meta.keywords[0];
+    return short.charAt(0).toUpperCase() + short.slice(1);
+  }
+  return rawName;
+}
 
 export interface GuideFilters {
   type?: 'achat' | 'technique' | 'entretien' | 'réparation';
@@ -1062,7 +1043,7 @@ export class GuideService {
       for (const [pgId, mfId] of pgToMf) {
         const rawName = mfToName.get(mfId);
         if (rawName) {
-          map.set(pgId, FAMILY_NORMALIZE[rawName] ?? rawName);
+          map.set(pgId, normalizeFamilyName(mfId, rawName));
         }
       }
     } catch (error) {

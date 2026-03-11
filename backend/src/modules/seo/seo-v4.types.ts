@@ -191,21 +191,13 @@ export const VOUS_PROPOSE = [
   'présente',
 ] as const;
 
-export const FAMILY_SWITCH_DEFAULTS: Record<number, string> = {
-  1: 'nos pièces de qualité',
-  2: 'notre sélection premium',
-  3: 'nos équipements performants',
-  4: 'nos composants certifiés',
-  5: 'notre gamme complète',
-  6: 'nos produits fiables',
-  7: "nos pièces d'origine",
-  8: 'notre catalogue spécialisé',
-  9: 'nos équipements adaptés',
-  10: 'nos solutions techniques',
-  11: 'nos pièces moteur haute performance',
-  12: 'nos systèmes de freinage éprouvés',
-  13: 'nos équipements électriques certifiés',
-  14: 'nos composants de suspension premium',
-  15: 'nos pièces de transmission robustes',
-  16: "nos éléments de carrosserie d'origine",
-};
+// FAMILY_SWITCH_DEFAULTS migré vers FAMILY_REGISTRY.seoSwitch dans @repo/database-types
+// Re-export pour compatibilité
+import { FAMILY_REGISTRY } from '@repo/database-types';
+export const FAMILY_SWITCH_DEFAULTS: Record<number, string> =
+  Object.fromEntries(
+    Object.entries(FAMILY_REGISTRY).map(([id, meta]) => [
+      Number(id),
+      meta.seoSwitch,
+    ]),
+  );

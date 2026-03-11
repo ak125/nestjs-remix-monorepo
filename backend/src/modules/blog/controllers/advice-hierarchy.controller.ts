@@ -96,8 +96,7 @@ export class AdviceHierarchyController {
           .in('mc_pg_id', pgIds),
         this.supabaseService.client
           .from('catalog_family')
-          .select('mf_id, mf_name, mf_sort')
-          .order('mf_sort'),
+          .select('mf_id, mf_name, mf_sort'),
       ]);
 
       if (catalogResult.error) {
@@ -111,14 +110,14 @@ export class AdviceHierarchyController {
         );
       }
 
-      // 3. Créer des Maps pour accès O(1)
+      // 3. Créer des Maps pour accès O(1) — tri numérique (mf_sort est TEXT en DB)
       const familyMap = new Map();
       if (familiesResult.data) {
         for (const f of familiesResult.data) {
           familyMap.set(f.mf_id, {
             id: f.mf_id,
             name: f.mf_name,
-            sort: f.mf_sort,
+            sort: Number(f.mf_sort || 0),
           });
         }
       }
@@ -133,7 +132,7 @@ export class AdviceHierarchyController {
           if (family) {
             pgToFamily.set(mapping.mc_pg_id.toString(), {
               ...family,
-              gammeSort: mapping.mc_sort || 999,
+              gammeSort: Number(mapping.mc_sort || 999),
             });
           }
         }
@@ -146,6 +145,7 @@ export class AdviceHierarchyController {
           familyId: number;
           familyName: string;
           familySort: number;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           articles: any[];
         }
       >();

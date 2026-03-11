@@ -7,7 +7,6 @@ import { DatabaseModule } from '../../database/database.module';
 // ========================================
 import { CatalogController } from './catalog.controller';
 import { EnhancedVehicleCatalogController } from './controllers/enhanced-vehicle-catalog.controller';
-import { FamilyGammeHierarchyController } from './controllers/family-gamme-hierarchy.controller';
 import { GammeUnifiedController } from './controllers/gamme-unified.controller';
 import { EquipementiersController } from './controllers/equipementiers.controller';
 import { VehicleFilteredCatalogV4Controller } from './controllers/vehicle-filtered-catalog-v4-hybrid.controller';
@@ -23,8 +22,6 @@ import { CompatibilityController } from './controllers/compatibility.controller'
 // ========================================
 import { CatalogService } from './catalog.service';
 import { EnhancedVehicleCatalogService } from './services/enhanced-vehicle-catalog.service';
-import { CatalogFamilyService } from './services/catalog-family.service';
-import { FamilyGammeHierarchyService } from './services/family-gamme-hierarchy.service';
 import { GammeUnifiedService } from './services/gamme-unified.service';
 import { EquipementiersService } from './services/equipementiers.service';
 import { VehicleFilteredCatalogV4HybridService } from './services/vehicle-filtered-catalog-v4-hybrid.service';
@@ -35,6 +32,7 @@ import { OemPlatformMappingService } from './services/oem-platform-mapping.servi
 import { UnifiedPageDataService } from './services/unified-page-data.service';
 import { SeoTemplateService } from './services/seo-template.service'; // ⚡ SEO processing NestJS (RPC V4)
 import { HomepageRpcService } from './services/homepage-rpc.service';
+import { CatalogHierarchyService } from './services/catalog-hierarchy.service';
 import { CacheWarmingService } from './services/cache-warming.service';
 import { CompatibilityService } from './services/compatibility.service'; // 🎯 Service compatibilité pièce/véhicule
 import { PopularGammesService } from './services/popular-gammes.service'; // 🔗 Service maillage SEO (découplage Catalog↔Vehicles)
@@ -71,7 +69,6 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
   controllers: [
     CatalogController,
     EnhancedVehicleCatalogController,
-    FamilyGammeHierarchyController,
     GammeUnifiedController, // ✅ Controller unifié actif
     EquipementiersController,
     VehicleFilteredCatalogV4Controller,
@@ -86,8 +83,6 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     // 🔧 Services principaux
     CatalogService,
     EnhancedVehicleCatalogService,
-    CatalogFamilyService,
-    FamilyGammeHierarchyService,
     GammeUnifiedService,
     EquipementiersService,
     VehicleFilteredCatalogV4HybridService,
@@ -101,8 +96,10 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     SeoTemplateService,
     // ⚡ UNIFIED PAGE DATA - RPC V4 (1 requête + SEO NestJS)
     UnifiedPageDataService,
-    // 🏠 HOMEPAGE RPC - 4 appels API en 1
+    // 🏠 HOMEPAGE RPC - below-fold (brands/blog/equipementiers)
     HomepageRpcService,
+    // 🏗️ CATALOG HIERARCHY - Single source of truth pour familles → gammes
+    CatalogHierarchyService,
     // 🔥 CACHE WARMING - Préchauffage au démarrage
     CacheWarmingService,
     // 🎯 COMPATIBILITY SERVICE - Vérification compatibilité pièce/véhicule (Pack Confiance V2)
@@ -117,8 +114,6 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
   exports: [
     CatalogService,
     EnhancedVehicleCatalogService,
-    CatalogFamilyService,
-    FamilyGammeHierarchyService,
     VehicleFilteredCatalogV4HybridService,
     CatalogDataIntegrityService, // 🛡️ Exporté pour validation sitemap
     GammeUnifiedService, // ✅ Exporté pour GammeRestModule
@@ -127,6 +122,7 @@ import { GammePricePreviewService } from './services/gamme-price-preview.service
     SeoTemplateService, // ⚡ Exporté pour traitement SEO externe
     UnifiedPageDataService, // ✅ Exporté pour GammeRestModule (RPC V4)
     HomepageRpcService, // 🏠 Exporté pour homepage RPC
+    CatalogHierarchyService, // 🏗️ Single source of truth hiérarchie catalogue
     CompatibilityService, // 🎯 Exporté pour Pack Confiance V2
     PopularGammesService, // 🔗 Exporté pour VehiclesModule (maillage SEO)
   ],

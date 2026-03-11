@@ -26,6 +26,7 @@ import { QUALITY_SCORE_ADVISORY } from '../../config/buying-guide-quality.consta
 import { FeatureFlagsService } from '../../config/feature-flags.service';
 import { AdminJobHealthService } from '../../modules/admin/services/admin-job-health.service';
 import { PipelineChainPollerService } from '../../modules/admin/services/pipeline-chain-poller.service';
+import { R8VehicleEnricherService } from '../../modules/admin/services/r8-vehicle-enricher.service';
 import type {
   AnyContentRefreshJobData,
   ContentRefreshResult,
@@ -63,6 +64,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly ragSafeDistill: RagSafeDistillService,
     private readonly chainPoller: PipelineChainPollerService,
     private readonly ragKnowledgeService: RagKnowledgeService,
+    private readonly r8Enricher: R8VehicleEnricherService,
   ) {
     super(configService);
   }
@@ -408,6 +410,26 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           } else if (diagResult.updated) {
             qualityScore = diagResult.confidence >= 0.8 ? 85 : 65;
             qualityFlags = diagResult.flags;
+          }
+          break;
+        }
+
+        case 'R8_vehicle': {
+          const typeId =
+            'typeId' in job.data ? (job.data as { typeId: number }).typeId : 0;
+          if (typeId <= 0) {
+            errorMessage = 'R8_vehicle: missing typeId';
+            qualityFlags = ['MISSING_TYPE_ID'];
+            break;
+          }
+          const r8Result = await this.r8Enricher.enrichSingle(typeId);
+          qualityScore = r8Result.diversityScore;
+          qualityFlags = [
+            ...r8Result.reasons,
+            ...r8Result.warnings.map((w) => `WARN_${w.slice(0, 40)}`),
+          ];
+          if (r8Result.status === 'failed') {
+            errorMessage = r8Result.warnings[0] || 'R8 enrichment failed';
           }
           break;
         }
