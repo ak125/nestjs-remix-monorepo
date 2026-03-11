@@ -14,7 +14,13 @@ import { RagKnowledgeService } from './rag-knowledge.service';
 interface CandidateMatch {
   alias: string;
   score: number;
-  strategy: '2a-gamme' | '2b-category' | '3-title' | '5-url' | '6-weaviate';
+  strategy:
+    | '2a-gamme'
+    | '2b-category'
+    | '3-title'
+    | '4-web-combined'
+    | '5-url'
+    | '6-weaviate';
 }
 
 @Injectable()
@@ -79,6 +85,20 @@ export class RagGammeDetectionService {
     'balais-dessuie-glace': 'balais-d-essuie-glace',
     'balais-hybrides': 'balais-d-essuie-glace',
     'balais-pour-lunette-arriere': 'balais-d-essuie-glace',
+    // Common French URL slugs (plural/variant forms)
+    'etriers-de-frein': 'etrier-de-frein',
+    'etrier-de-frein': 'etrier-de-frein',
+    'plaquettes-de-frein': 'plaquette-de-frein',
+    'disques-frein': 'disque-de-frein',
+    'disques-de-frein': 'disque-de-frein',
+    'filtres-a-air': 'filtre-a-air',
+    'filtre-air': 'filtre-a-air',
+    'filtre-huile': 'filtre-a-huile',
+    'filtre-habitacle': 'filtre-d-habitacle',
+    'filtre-carburant': 'filtre-a-carburant',
+    'bobines-allumage': 'bobine-d-allumage',
+    'bougies-allumage': 'bougie-d-allumage',
+    'compresseur-climatisation': 'compresseur-de-climatisation',
   };
 
   constructor(
@@ -296,6 +316,58 @@ export class RagGammeDetectionService {
         if (score > 0) {
           candidates.push({ alias, score, strategy: '3-title' });
         }
+      }
+    }
+
+    // Strategy 4: combined title + URL for web-ingested guide files
+    const sourceTypeMatch = head.match(/^source_type:\s*(.+)$/m);
+    const sourceUrlMatch4 = head.match(/^source_url:\s*"?(.+?)"?\s*$/m);
+    if (
+      sourceTypeMatch &&
+      sourceTypeMatch[1].trim().toLowerCase() === 'guide' &&
+      sourceUrlMatch4 &&
+      titleMatch
+    ) {
+      try {
+        const urlPath = new URL(sourceUrlMatch4[1].trim()).pathname;
+        const urlWords = new Set(
+          urlPath.split('/').flatMap((s) =>
+            s
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .split(/[^a-z0-9]+/)
+              .filter((w) => w.length >= 4),
+          ),
+        );
+        // Merge title words + URL words
+        const { deplural: titleDeplural } =
+          RagGammeDetectionService.normalizeTitle(titleMatch[1]);
+        const combinedWords = new Set([
+          ...titleDeplural.split('-').filter((w) => w.length >= 4),
+          ...urlWords,
+        ]);
+
+        for (const alias of knownAliases) {
+          if (alias.length < 4) continue;
+          const aliasWords = alias.split('-').filter((w) => w.length >= 4);
+          if (aliasWords.length === 0) continue;
+
+          let overlap = 0;
+          for (const aw of aliasWords) {
+            if (combinedWords.has(aw)) overlap++;
+          }
+          if (overlap < 2) continue;
+
+          const ratio = overlap / aliasWords.length;
+          if (ratio >= 1) {
+            candidates.push({ alias, score: 80, strategy: '4-web-combined' });
+          } else if (ratio >= 0.5) {
+            candidates.push({ alias, score: 65, strategy: '4-web-combined' });
+          }
+        }
+      } catch {
+        // Invalid URL — skip Strategy 4
       }
     }
 

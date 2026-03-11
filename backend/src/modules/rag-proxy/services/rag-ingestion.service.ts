@@ -1024,19 +1024,20 @@ export class RagIngestionService implements OnModuleInit, OnModuleDestroy {
     for (const p of paths) {
       const reindexCmd = [
         'exec 8>/tmp/rag-global.lock;',
-        "if ! flock -n 8; then echo 'Another RAG operation active (global lock), aborting web reindex'; exit 1; fi;",
+        'for i in 1 2 3 4 5 6; do flock -n 8 && break; echo "Lock busy, retry $i/6 in 20s..."; sleep 20; done;',
+        "if ! flock -n 8; then echo 'Lock still held after 120s, aborting'; exit 1; fi;",
         'ENV=dev',
         'WEAVIATE_URL=http://weaviate-prod:8080',
         'python3 /app/scripts/reindex.py',
         `--path '/knowledge/${p}'`,
         '--collection AUTO',
-        '--batch-size 5',
+        '--batch-size 10',
         '--cpu-strict',
         '--strict-routing',
       ].join(' ');
 
       try {
-        await this.execDockerCmd(containerName, reindexCmd, dummyLog, 300_000);
+        await this.execDockerCmd(containerName, reindexCmd, dummyLog, 600_000);
         this.logger.log(`Reindex completed for ${p}/`);
       } catch (err) {
         this.logger.error(
