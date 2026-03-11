@@ -12,6 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { FAMILY_CLUSTERS } from './sitemap-v10-hubs.types';
@@ -132,7 +133,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
           currentBatch = currentBatch.slice(SHARD_SIZE);
 
           const shardUrls: SitemapUrl[] = shardPieces.map((p) => ({
-            url: `/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
+            url: `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
             page_type: 'piece',
             changefreq: config.changefreq,
             priority: config.priority,
@@ -167,7 +168,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
     // 🚀 P7.4: Écrire le dernier shard partiel
     if (currentBatch.length > 0) {
       const shardUrls: SitemapUrl[] = currentBatch.map((p) => ({
-        url: `/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
+        url: `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
         page_type: 'piece',
         changefreq: config.changefreq,
         priority: config.priority,
@@ -304,7 +305,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
 
       // 4. Construire les SitemapUrl
       const urls: SitemapUrl[] = allPieces.map((p) => ({
-        url: `/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
+        url: `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
         page_type: 'product',
         changefreq: 'weekly',
         priority: '0.6',
