@@ -2,6 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogArticleTransformService } from './blog-article-transform.service';
+import { normalizeTypeAlias } from '../../../common/utils/url-builder.utils';
 
 /**
  * 🔗 BlogArticleRelationService - Relations et véhicules compatibles
@@ -239,8 +240,8 @@ export class BlogArticleRelationService {
             ),
             // URL vers la gamme du véhicule
             catalog_url: pg_alias
-              ? `/pieces/${pg_alias}-${pg_id}/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${type.type_alias}-${type.type_id}.html`
-              : `/constructeurs/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${type.type_alias}-${type.type_id}.html`,
+              ? `/pieces/${pg_alias}-${pg_id}/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${normalizeTypeAlias(type.type_alias, type.type_name)}-${type.type_id}.html`
+              : `/constructeurs/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${normalizeTypeAlias(type.type_alias, type.type_name)}-${type.type_id}.html`,
           };
         })
         .filter((v) => v !== null);
