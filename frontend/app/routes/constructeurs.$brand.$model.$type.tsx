@@ -1,6 +1,6 @@
 // 🚗 Page détail véhicule - Logique métier PHP intégrée
 //
-// Rôle SEO : R1 - ROUTER
+// Rôle SEO : R8 - VEHICLE (sélection pièces pour un véhicule spécifique)
 // Intention : Sélection de pièces pour un véhicule spécifique
 
 import {
@@ -19,22 +19,23 @@ import {
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import {
+  AlertTriangle,
+  Award,
   Car,
-  Package,
-  Shield,
-  Truck,
-  HeadphonesIcon,
   CheckCircle,
   ChevronDown,
   ChevronUp,
-  Fuel,
-  Gauge,
-  Calendar,
-  Info,
-  Star,
-  Award,
-  RotateCcw,
+  Copy,
   FileText,
+  HeadphonesIcon,
+  Info,
+  ListChecks,
+  Package,
+  RotateCcw,
+  Search,
+  Shield,
+  Star,
+  Truck,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { resolveSlogan } from "~/config/visual-intent";
@@ -59,7 +60,7 @@ import { normalizeTypeAlias } from "../utils/url-builder.utils";
  * Handle export pour propager le rôle SEO au root Layout
  */
 export const handle = {
-  pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
+  pageRole: createPageRoleMeta(PageRole.R8_VEHICLE, {
     clusterId: "constructeurs",
   }),
 };
@@ -323,16 +324,12 @@ function transformRpcToLoaderData(
   } else {
     const comp_switch_title = getSeoSwitch(1, type_id);
     const comp_switch_desc = getSeoSwitch(2, type_id);
-    const comp_switch_content1 = getSeoSwitch(10, type_id);
-    const comp_switch_content2 = getSeoSwitch(11, type_id);
-    const comp_switch_content3 = getSeoSwitch(12, type_id);
-
     seoTitle = `Pièces ${vehicleData.marque_name_meta_title} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta} ${comp_switch_title}`;
     seoDescription = `Catalogue pièces détachées pour ${vehicleData.marque_name_meta} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta} ${vehicleData.type_power_ps} ch ${type_date} neuves ${comp_switch_desc}`;
     seoKeywords = `${vehicleData.marque_name_meta}, ${vehicleData.modele_name_meta}, ${vehicleData.type_name_meta}, ${vehicleData.type_power_ps} ch, ${type_date}`;
     h1 = `${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name} ${vehicleData.type_power_ps} ch ${type_date}`;
-    content = `${comp_switch_content1} pour le modèle <b>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_body}</b> <strong>${type_date}</strong> de motorisation <strong>${vehicleData.type_name} ${vehicleData.type_power_ps}</strong> ch.`;
-    content2 = `${comp_switch_content2} du catalogue sont compatibles au modèle de la voiture <strong>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name}</strong> que vous avez sélectionné. Choisissez les pièces correspondantes à votre recherche dans les gammes disponibles et choisissez un article proposé par ${comp_switch_content3}.`;
+    content = `Accédez au catalogue de pièces compatibles avec votre <b>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name}</b> ${vehicleData.type_power_ps} ch (${vehicleData.type_year_from}–${vehicleData.type_year_to || "aujourd'hui"}). Les gammes ci-dessous sont filtrées selon la motorisation, la période de production et la carrosserie. Pour confirmer la compatibilité, utilisez votre VIN / CNIT (carte grise) : cela évite les erreurs entre versions proches.`;
+    content2 = `En cas de doute, notre équipe valide la référence avant expédition.${vehicleData.motor_codes_formatted ? ` Code moteur connu : <strong>${vehicleData.motor_codes_formatted}</strong>.` : ""}`;
   }
 
   // Canonical URL (uses normalizeTypeAlias to handle null, empty, or "null" string values)
@@ -409,7 +406,11 @@ function transformRpcToLoaderData(
           url: `/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}.html`,
         },
         {
-          name: `${vehicleData.modele_name} ${vehicleData.type_name}`,
+          name: vehicleData.modele_name,
+          url: "",
+        },
+        {
+          name: `${vehicleData.type_name} ${vehicleData.type_power_ps} ch`,
           url: "",
         },
       ],
@@ -657,32 +658,15 @@ function generateVehicleSchema(
           {
             "@type": "ListItem",
             position: 4,
-            name: `${breadcrumb.model} ${breadcrumb.type}`,
+            name: breadcrumb.model,
+          },
+          {
+            "@type": "ListItem",
+            position: 5,
+            name: `${breadcrumb.type} ${vehicle.type_power_ps} ch`,
             item: canonicalUrl,
           },
         ],
-      },
-      // 3️⃣ Product avec AggregateOffer - Prix min/max des pièces pour SEO
-      {
-        "@type": "Product",
-        "@id": `${canonicalUrl}#product`,
-        name: `Pièces détachées ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`,
-        description: `Catalogue de pièces auto pour ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}. Livraison rapide et garantie 1 an.`,
-        brand: { "@type": "Brand", name: vehicle.marque_name },
-        category: "Pièces automobiles",
-        offers: {
-          "@type": "AggregateOffer",
-          priceCurrency: "EUR",
-          lowPrice: "4.50",
-          highPrice: "500.00",
-          offerCount: 100,
-          availability: "https://schema.org/InStock",
-          seller: {
-            "@type": "Organization",
-            name: "Automecanik",
-            url: "https://www.automecanik.com",
-          },
-        },
       },
     ],
   };
@@ -738,6 +722,21 @@ export const meta: MetaFunction<typeof loader> = ({ data: rawData }) => {
   return result;
 };
 
+const FAMILY_MICRO_DESCRIPTIONS: Record<string, string> = {
+  Freinage: "Plaquettes, disques, etriers : securite & freinage",
+  Filtration: "Huile, air, carburant, habitacle : entretien moteur",
+  Distribution: "Courroie, galets, pompe a eau : fiabilite",
+  Suspension: "Amortisseurs, ressorts, rotules : tenue de route",
+  Moteur: "Pieces moteur, joints, composants internes",
+  Echappement: "Silencieux, catalyseurs, flexibles",
+  Embrayage: "Kit embrayage, volant moteur, butee",
+  Electrique: "Demarreur, alternateur, batterie : demarrage & charge",
+  Refroidissement: "Radiateur, thermostat, pompe a eau",
+  Direction: "Cremaillere, biellettes, rotules de direction",
+  Carrosserie: "Retroviseurs, pare-chocs, optiques",
+  Essuyage: "Balais, moteur, gicleurs d'essuie-glaces",
+};
+
 // 🎨 Composant principal avec logique PHP intégrée
 export default function VehicleDetailPage() {
   const data = useLoaderData<LoaderData>();
@@ -749,6 +748,8 @@ export default function VehicleDetailPage() {
   const [imageError, setImageError] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [showStickyCta, setShowStickyCta] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<"cards" | "compact">("cards");
 
   // Effet pour afficher le CTA sticky au scroll
   useEffect(() => {
@@ -798,6 +799,14 @@ export default function VehicleDetailPage() {
     },
   ];
 
+  // Add carte grise FAQ if CNIT/mine codes exist
+  if (vehicle.mine_codes_formatted || vehicle.cnit_codes_formatted) {
+    faqItems.push({
+      question: `Comment trouver le type mine ou CNIT sur ma carte grise ?`,
+      answer: `Le type mine se trouve en case D.2 de votre carte grise (format ancien : lettres+chiffres). Le CNIT (Code National d'Identification du Type) est le format actuel. Pour votre ${vehicle.marque_name} ${vehicle.modele_name}, les codes connus sont : ${[vehicle.mine_codes_formatted, vehicle.cnit_codes_formatted].filter(Boolean).join(", ")}. Utilisez ces codes pour confirmer la compatibilité des pièces.`,
+    });
+  }
+
   return (
     <div
       className="min-h-screen bg-gray-50"
@@ -807,6 +816,7 @@ export default function VehicleDetailPage() {
       <nav
         className="bg-white border-b border-gray-200 py-3"
         aria-label="Breadcrumb"
+        data-section="S_BREADCRUMB"
       >
         <div className="container mx-auto px-4">
           <ol
@@ -837,11 +847,11 @@ export default function VehicleDetailPage() {
               itemType="https://schema.org/ListItem"
             >
               <a
-                href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`}
+                href="/constructeurs"
                 itemProp="item"
                 className="hover:underline text-brand"
               >
-                <span itemProp="name">{breadcrumb.brand}</span>
+                <span itemProp="name">Constructeurs</span>
               </a>
               <meta itemProp="position" content="2" />
             </li>
@@ -853,24 +863,56 @@ export default function VehicleDetailPage() {
               itemScope
               itemType="https://schema.org/ListItem"
             >
-              <span itemProp="name" className="font-semibold text-gray-900">
-                {breadcrumb.model} {breadcrumb.type}
-              </span>
+              <a
+                href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`}
+                itemProp="item"
+                className="hover:underline text-brand"
+              >
+                <span itemProp="name">{breadcrumb.brand}</span>
+              </a>
               <meta itemProp="position" content="3" />
+            </li>
+            <li>
+              <span className="text-gray-400">→</span>
+            </li>
+            <li
+              itemProp="itemListElement"
+              itemScope
+              itemType="https://schema.org/ListItem"
+            >
+              <span itemProp="name" className="text-gray-600">
+                {breadcrumb.model}
+              </span>
+              <meta itemProp="position" content="4" />
+            </li>
+            <li>
+              <span className="text-gray-400">→</span>
+            </li>
+            <li
+              itemProp="itemListElement"
+              itemScope
+              itemType="https://schema.org/ListItem"
+            >
+              <span itemProp="name" className="font-semibold text-gray-900">
+                {vehicle.type_name} {vehicle.type_power_ps} ch
+              </span>
+              <meta itemProp="position" content="5" />
             </li>
           </ol>
         </div>
       </nav>
 
       {/* Hero Selection — H1 unique (image-matrix-v1 §7, gradient-only) */}
-      <HeroSelection
-        title={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch de ${vehicle.type_year_from} à ${vehicle.type_year_to || "aujourd'hui"}`}
-        subtitle={`${vehicle.type_fuel} · ${vehicle.type_body} · ${vehicle.type_year_from}–${vehicle.type_year_to || "Auj."}`}
-        slogan={resolveSlogan("selection")}
-      />
+      <div data-section="S_HERO">
+        <HeroSelection
+          title={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch de ${vehicle.type_year_from} à ${vehicle.type_year_to || "aujourd'hui"}`}
+          subtitle={`${vehicle.type_fuel} · ${vehicle.type_body} · ${vehicle.type_year_from}–${vehicle.type_year_to || "Auj."}`}
+          slogan={resolveSlogan("selection")}
+        />
+      </div>
 
       {/* Vehicle image + specs (hors hero — SELECTION = gradient-only) */}
-      <section className="bg-white border-b">
+      <section className="bg-white border-b" data-section="S_IDENTITY">
         <div className="container mx-auto px-4 max-w-7xl py-6">
           <div className="flex flex-col md:flex-row gap-6 items-start">
             {/* Vehicle image */}
@@ -899,20 +941,19 @@ export default function VehicleDetailPage() {
               </div>
             </div>
 
-            {/* Specs badges */}
-            <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
-                <Fuel className="w-4 h-4" /> {vehicle.type_fuel}
+            {/* Proof bar */}
+            <div className="flex flex-wrap gap-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 border border-green-200 rounded-lg text-sm font-medium text-green-700">
+                <CheckCircle className="w-4 h-4" /> 100% compatible
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
-                <Gauge className="w-4 h-4" /> {vehicle.type_power_ps} ch
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-700">
+                <FileText className="w-4 h-4" /> Vérif VIN / CNIT
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
-                <Calendar className="w-4 h-4" /> {vehicle.type_year_from}–
-                {vehicle.type_year_to || "Auj."}
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 border border-indigo-200 rounded-lg text-sm font-medium text-indigo-700">
+                <Truck className="w-4 h-4" /> Livraison 24-48h
               </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-700">
-                <Car className="w-4 h-4" /> {vehicle.type_body}
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg text-sm font-medium text-orange-700">
+                <RotateCcw className="w-4 h-4" /> Retour 30 jours
               </span>
             </div>
           </div>
@@ -921,8 +962,59 @@ export default function VehicleDetailPage() {
 
       {/* Contenu principal */}
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Acces rapide + Recherche */}
+        {catalogFamilies.length > 0 && (
+          <div data-section="S_FAST_ACCESS" className="mb-8">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">
+                Acces rapide
+              </h2>
+
+              {/* Search input */}
+              <div className="relative mb-4">
+                <Search
+                  size={18}
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                />
+                <input
+                  type="text"
+                  placeholder="Rechercher une gamme (ex: plaquettes, filtre a huile...)"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    x
+                  </button>
+                )}
+              </div>
+
+              {/* Quick access chips */}
+              <div className="flex flex-wrap gap-2">
+                {catalogFamilies.slice(0, 6).map((family) => (
+                  <a
+                    key={family.mf_id}
+                    href="#catalogue"
+                    onClick={() => setSearchQuery(family.mf_name)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-blue-50 hover:text-blue-700 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+                  >
+                    {family.mf_name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Description SEO (logique PHP avec switches) */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div
+          className="bg-white rounded-lg shadow-sm p-6 mb-8"
+          data-section="S_SEO_INTRO"
+        >
           <div className="prose max-w-none">
             <HtmlContent html={seo.content} trackLinks={true} />
             <HtmlContent html={seo.content2} trackLinks={true} />
@@ -930,163 +1022,236 @@ export default function VehicleDetailPage() {
         </div>
 
         {/* 📦 CATALOGUE PRINCIPAL - Design inspiré de la page index */}
-        {catalogFamilies.length > 0 && (
-          <div className="mb-16">
-            {/* Header impactant */}
-            <div className="text-center mb-12 animate-in fade-in duration-700">
-              <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight">
-                Catalogue de pièces auto
-              </h2>
-              <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-6"></div>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
-                Trouvez la pièce exacte pour votre{" "}
-                <span className="font-bold text-brand">
-                  {vehicle.marque_name} {vehicle.modele_name}{" "}
-                  {vehicle.type_name}
-                </span>{" "}
-                • {vehicle.type_power_ps} ch • {vehicle.type_year_from}-
-                {vehicle.type_year_to || "Auj."}
-              </p>
-            </div>
+        {catalogFamilies.length > 0 &&
+          (() => {
+            const filteredFamilies = searchQuery
+              ? catalogFamilies.filter(
+                  (f) =>
+                    f.mf_name
+                      .toLowerCase()
+                      .includes(searchQuery.toLowerCase()) ||
+                    f.gammes.some((g) =>
+                      g.pg_name
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase()),
+                    ),
+                )
+              : catalogFamilies;
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {catalogFamilies.map((family, index) => {
-                const familyColor = hierarchyApi.getFamilyColor(
-                  family as unknown as Parameters<
-                    typeof hierarchyApi.getFamilyColor
-                  >[0],
-                );
-                const familyImage = hierarchyApi.getFamilyImage(
-                  family as unknown as Parameters<
-                    typeof hierarchyApi.getFamilyImage
-                  >[0],
-                );
-                const isExpanded = expandedFamilies.has(family.mf_id);
-                const displayedGammes = isExpanded
-                  ? family.gammes
-                  : family.gammes.slice(0, 5);
+            return (
+              <div className="mb-16" id="catalogue" data-section="S_CATALOG">
+                {/* Header impactant */}
+                <div className="text-center mb-12 animate-in fade-in duration-700">
+                  <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-4 tracking-tight">
+                    Catalogue de pieces auto
+                  </h2>
+                  <div className="h-1 w-16 bg-gradient-to-r from-blue-500 to-indigo-600 mx-auto rounded mb-6"></div>
+                  <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
+                    Trouvez la piece exacte pour votre{" "}
+                    <span className="font-bold text-brand">
+                      {vehicle.marque_name} {vehicle.modele_name}{" "}
+                      {vehicle.type_name}
+                    </span>{" "}
+                    • {vehicle.type_power_ps} ch • {vehicle.type_year_from}-
+                    {vehicle.type_year_to || "Auj."}
+                  </p>
+                </div>
 
-                return (
-                  <div
-                    key={family.mf_id}
-                    className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300 overflow-hidden"
-                  >
-                    {/* Image header avec gradient léger */}
-                    <div
-                      className={`relative h-36 overflow-hidden bg-gradient-to-br ${familyColor}`}
+                {/* View toggle + count */}
+                <div className="flex items-center justify-between mb-6">
+                  <p className="text-sm text-gray-500">
+                    {filteredFamilies.length} famille
+                    {filteredFamilies.length > 1 ? "s" : ""} ·{" "}
+                    {filteredFamilies.reduce(
+                      (acc, f) => acc + f.gammes.length,
+                      0,
+                    )}{" "}
+                    gammes
+                  </p>
+                  <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5">
+                    <button
+                      onClick={() => setViewMode("cards")}
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${viewMode === "cards" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
                     >
-                      <img
-                        src={familyImage}
-                        alt={family.mf_name}
-                        className="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-110"
-                        loading="lazy"
-                      />
-
-                      {/* Badge nombre de gammes */}
-                      <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-700 shadow-sm">
-                        {family.gammes.length} pièces
-                      </div>
-                    </div>
-
-                    {/* Titre */}
-                    <div className="px-4 pt-4 pb-2 border-b border-gray-100">
-                      <h3 className="font-bold text-gray-900 text-base">
-                        {family.mf_name}
-                      </h3>
-                    </div>
-
-                    {/* Liste des gammes - 5 premiers ou tous */}
-                    <div className="p-4">
-                      <div className="space-y-1.5 mb-3 max-h-80 overflow-y-auto">
-                        {displayedGammes.map((gamme) => (
-                          <a
-                            key={gamme.pg_id}
-                            href={`/pieces/${gamme.pg_alias}-${gamme.pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
-                            className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md px-2 py-1.5 transition-all duration-200 group/item"
-                          >
-                            <span className="w-1 h-1 bg-gray-400 rounded-full group-hover/item:bg-blue-600 transition-colors" />
-                            <span className="font-medium line-clamp-1 flex-1">
-                              {gamme.pg_name}
-                            </span>
-                            <svg
-                              className="h-3 w-3 text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 5l7 7-7 7"
-                              />
-                            </svg>
-                          </a>
-                        ))}
-                      </div>
-
-                      {/* Bouton voir plus/moins si > 5 gammes */}
-                      {family.gammes.length > 5 && (
-                        <button
-                          onClick={() => {
-                            const newExpanded = new Set(expandedFamilies);
-                            if (isExpanded) {
-                              newExpanded.delete(family.mf_id);
-                            } else {
-                              newExpanded.add(family.mf_id);
-                            }
-                            setExpandedFamilies(newExpanded);
-                          }}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors flex items-center justify-center gap-1.5"
-                        >
-                          {isExpanded ? (
-                            <>
-                              Voir moins
-                              <svg
-                                className="h-3 w-3 rotate-180"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M19 9l-7 7-7-7"
-                                />
-                              </svg>
-                            </>
-                          ) : (
-                            <>
-                              +{family.gammes.length - 5} pièces
-                              <svg
-                                className="h-3 w-3"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M19 9l-7 7-7-7"
-                                />
-                              </svg>
-                            </>
-                          )}
-                        </button>
-                      )}
-                    </div>
+                      Cartes
+                    </button>
+                    <button
+                      onClick={() => setViewMode("compact")}
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${viewMode === "compact" ? "bg-white shadow-sm text-gray-900" : "text-gray-500 hover:text-gray-700"}`}
+                    >
+                      Compact
+                    </button>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
+                </div>
+
+                {viewMode === "cards" ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                    {filteredFamilies.map((family, index) => {
+                      const familyColor = hierarchyApi.getFamilyColor(
+                        family as unknown as Parameters<
+                          typeof hierarchyApi.getFamilyColor
+                        >[0],
+                      );
+                      const familyImage = hierarchyApi.getFamilyImage(
+                        family as unknown as Parameters<
+                          typeof hierarchyApi.getFamilyImage
+                        >[0],
+                      );
+                      const isExpanded = expandedFamilies.has(family.mf_id);
+                      const displayedGammes = isExpanded
+                        ? family.gammes
+                        : family.gammes.slice(0, 5);
+
+                      return (
+                        <div
+                          key={family.mf_id}
+                          className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300 overflow-hidden"
+                        >
+                          {/* Image header avec gradient léger */}
+                          <div
+                            className={`relative h-36 overflow-hidden bg-gradient-to-br ${familyColor}`}
+                          >
+                            <img
+                              src={familyImage}
+                              alt={family.mf_name}
+                              className="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-110"
+                              loading="lazy"
+                            />
+
+                            {/* Badge nombre de gammes */}
+                            <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full text-xs font-semibold text-gray-700 shadow-sm">
+                              {family.gammes.length} pièces
+                            </div>
+                          </div>
+
+                          {/* Titre */}
+                          <div className="px-4 pt-4 pb-2 border-b border-gray-100">
+                            <h3 className="font-bold text-gray-900 text-base">
+                              {family.mf_name}
+                            </h3>
+                            {FAMILY_MICRO_DESCRIPTIONS[family.mf_name] && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                {FAMILY_MICRO_DESCRIPTIONS[family.mf_name]}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Liste des gammes - 5 premiers ou tous */}
+                          <div className="p-4">
+                            <div className="space-y-1.5 mb-3 max-h-80 overflow-y-auto">
+                              {displayedGammes.map((gamme) => (
+                                <a
+                                  key={gamme.pg_id}
+                                  href={`/pieces/${gamme.pg_alias}-${gamme.pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
+                                  className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-md px-2 py-1.5 transition-all duration-200 group/item"
+                                >
+                                  <span className="w-1 h-1 bg-gray-400 rounded-full group-hover/item:bg-blue-600 transition-colors" />
+                                  <span className="font-medium line-clamp-1 flex-1">
+                                    {gamme.pg_name}
+                                  </span>
+                                  <svg
+                                    className="h-3 w-3 text-gray-400 opacity-0 group-hover/item:opacity-100 transition-opacity"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M9 5l7 7-7 7"
+                                    />
+                                  </svg>
+                                </a>
+                              ))}
+                            </div>
+
+                            {/* Bouton voir plus/moins si > 5 gammes */}
+                            {family.gammes.length > 5 && (
+                              <button
+                                onClick={() => {
+                                  const newExpanded = new Set(expandedFamilies);
+                                  if (isExpanded) {
+                                    newExpanded.delete(family.mf_id);
+                                  } else {
+                                    newExpanded.add(family.mf_id);
+                                  }
+                                  setExpandedFamilies(newExpanded);
+                                }}
+                                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-colors flex items-center justify-center gap-1.5"
+                              >
+                                {isExpanded ? (
+                                  <>
+                                    Voir moins
+                                    <svg
+                                      className="h-3 w-3 rotate-180"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 9l-7 7-7-7"
+                                      />
+                                    </svg>
+                                  </>
+                                ) : (
+                                  <>
+                                    +{family.gammes.length - 5} pièces
+                                    <svg
+                                      className="h-3 w-3"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 9l-7 7-7-7"
+                                      />
+                                    </svg>
+                                  </>
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* Compact view */
+                  <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
+                    {filteredFamilies.map((family) => (
+                      <div key={family.mf_id} className="p-4">
+                        <h3 className="font-bold text-gray-900 text-sm mb-2">
+                          {family.mf_name}
+                        </h3>
+                        <div className="flex flex-wrap gap-1.5">
+                          {family.gammes.map((gamme) => (
+                            <a
+                              key={gamme.pg_id}
+                              href={`/pieces/${gamme.pg_alias}-${gamme.pg_id}/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`}
+                              className="text-xs px-2.5 py-1 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 rounded-md text-gray-700 transition-colors"
+                            >
+                              {gamme.pg_name}
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
         {/* 🔥 Pièces populaires - Design moderne amélioré */}
         {popularParts.length > 0 && (
-          <div className="mb-12">
+          <div className="mb-12" data-section="S_BESTSELLERS">
             {/* Header moderne avec gradient et stats */}
             <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-2xl p-8 mb-8 border border-blue-100 shadow-sm">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -1219,8 +1384,8 @@ export default function VehicleDetailPage() {
           </div>
         )}
 
-        {/* 📋 Fiche technique du véhicule */}
-        <div className="mb-12">
+        {/* Fiche technique du vehicule */}
+        <div className="mb-12" data-section="S_SAFE_TABLE">
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white p-6">
               <div className="flex items-center gap-3">
@@ -1237,88 +1402,200 @@ export default function VehicleDetailPage() {
               </div>
             </div>
             <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <div className="p-2 rounded-lg bg-brand-light">
-                    <Car size={20} className="text-brand" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase">
-                      Carrosserie
-                    </div>
-                    <div className="font-semibold text-gray-900">
-                      {vehicle.type_body || "Non spécifié"}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <div className="p-2 rounded-lg bg-brand-light">
-                    <Fuel size={20} className="text-brand" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase">
-                      Carburant
-                    </div>
-                    <div className="font-semibold text-gray-900">
-                      {vehicle.type_fuel || "Non spécifié"}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <div className="p-2 rounded-lg bg-brand-light">
-                    <Gauge size={20} className="text-brand" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase">
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-gray-100">
+                  <tr>
+                    <td className="py-3 pr-4 font-medium text-gray-500 w-1/3">
+                      Motorisation
+                    </td>
+                    <td className="py-3 font-semibold text-gray-900">
+                      {vehicle.type_name}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 pr-4 font-medium text-gray-500">
                       Puissance
-                    </div>
-                    <div className="font-semibold text-gray-900">
+                    </td>
+                    <td className="py-3 font-semibold text-gray-900">
                       {vehicle.type_power_ps} ch
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                  <div className="p-2 rounded-lg bg-brand-light">
-                    <Calendar size={20} className="text-brand" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 uppercase">
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 pr-4 font-medium text-gray-500">
+                      Carburant
+                    </td>
+                    <td className="py-3 font-semibold text-gray-900">
+                      {vehicle.type_fuel || "Non spécifié"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 pr-4 font-medium text-gray-500">
+                      Carrosserie
+                    </td>
+                    <td className="py-3 font-semibold text-gray-900">
+                      {vehicle.type_body || "Non spécifié"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="py-3 pr-4 font-medium text-gray-500">
                       Période
-                    </div>
-                    <div className="font-semibold text-gray-900">
+                    </td>
+                    <td className="py-3 font-semibold text-gray-900">
                       {vehicle.type_year_from} -{" "}
                       {vehicle.type_year_to || "aujourd'hui"}
-                    </div>
-                  </div>
-                </div>
-                {/* 🔧 Type Mine / CNIT - affiché uniquement si disponible */}
-                {(vehicle.mine_codes_formatted ||
-                  vehicle.cnit_codes_formatted) && (
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl">
-                    <div className="p-2 rounded-lg bg-brand-light">
-                      <FileText size={20} className="text-brand" />
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-500 uppercase">
-                        Type Mine / CNIT
-                      </div>
-                      <div className="font-semibold text-gray-900 text-sm">
-                        {vehicle.mine_codes_formatted}
-                        {vehicle.mine_codes_formatted &&
-                          vehicle.cnit_codes_formatted &&
-                          " / "}
-                        {vehicle.cnit_codes_formatted}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+                    </td>
+                  </tr>
+                  {vehicle.motor_codes_formatted && (
+                    <tr>
+                      <td className="py-3 pr-4 font-medium text-gray-500">
+                        Code moteur
+                      </td>
+                      <td className="py-3 font-semibold text-gray-900">
+                        {vehicle.motor_codes_formatted}
+                      </td>
+                    </tr>
+                  )}
+                  {(vehicle.mine_codes_formatted ||
+                    vehicle.cnit_codes_formatted) && (
+                    <tr>
+                      <td className="py-3 pr-4 font-medium text-gray-500">
+                        Type mine / CNIT
+                      </td>
+                      <td className="py-3 font-semibold text-gray-900 flex items-center gap-2">
+                        <span className="truncate max-w-[200px]">
+                          {vehicle.mine_codes_formatted}
+                          {vehicle.mine_codes_formatted &&
+                            vehicle.cnit_codes_formatted &&
+                            " / "}
+                          {vehicle.cnit_codes_formatted}
+                        </span>
+                        <button
+                          onClick={() => {
+                            const text = [
+                              vehicle.mine_codes_formatted,
+                              vehicle.cnit_codes_formatted,
+                            ]
+                              .filter(Boolean)
+                              .join(" / ");
+                            navigator.clipboard.writeText(text);
+                          }}
+                          className="p-1 hover:bg-gray-100 rounded transition-colors"
+                          title="Copier"
+                        >
+                          <Copy size={14} className="text-gray-400" />
+                        </button>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
 
+        {/* Erreurs fréquentes à éviter */}
+        <div className="mb-12" data-section="S_ANTI_ERRORS">
+          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <AlertTriangle
+                size={24}
+                className="text-amber-600 flex-shrink-0 mt-0.5"
+              />
+              <h2 className="text-xl font-bold text-gray-900">
+                Erreurs fréquentes à éviter
+              </h2>
+            </div>
+            <ul className="space-y-3 ml-9">
+              <li className="flex items-start gap-2 text-gray-700">
+                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
+                <span>
+                  Vérifier l'année exacte ({vehicle.type_year_from}–
+                  {vehicle.type_year_to || "aujourd'hui"}) : les pièces peuvent
+                  différer d'une année à l'autre
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-gray-700">
+                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
+                <span>
+                  Puissance proche ≠ moteur identique : confirmez avec le CNIT
+                  ou le code moteur
+                  {vehicle.motor_codes_formatted
+                    ? ` (${vehicle.motor_codes_formatted})`
+                    : ""}
+                </span>
+              </li>
+              <li className="flex items-start gap-2 text-gray-700">
+                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
+                <span>
+                  En cas de doute entre deux motorisations, utilisez le VIN (17
+                  caractères, carte grise case E)
+                </span>
+              </li>
+              {vehicle.type_body && vehicle.type_body.includes("/") && (
+                <li className="flex items-start gap-2 text-gray-700">
+                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
+                  <span>
+                    Attention à la carrosserie ({vehicle.type_body}) : les
+                    pièces peuvent varier selon la version
+                  </span>
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
+
+        {/* Comment choisir sans se tromper */}
+        <div className="mb-12" data-section="S_HOWTO">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <div className="flex items-start gap-3 mb-4">
+              <ListChecks
+                size={24}
+                className="text-blue-600 flex-shrink-0 mt-0.5"
+              />
+              <h2 className="text-xl font-bold text-gray-900">
+                Comment choisir sans se tromper
+              </h2>
+            </div>
+            <ol className="space-y-3 ml-9 list-decimal list-inside">
+              <li className="text-gray-700">
+                Vérifier la période de production ({vehicle.type_year_from}–
+                {vehicle.type_year_to || "aujourd'hui"})
+              </li>
+              <li className="text-gray-700">
+                Confirmer le carburant ({vehicle.type_fuel}) et la puissance (
+                {vehicle.type_power_ps} ch)
+              </li>
+              <li className="text-gray-700">
+                Identifier le code moteur
+                {vehicle.motor_codes_formatted
+                  ? ` (${vehicle.motor_codes_formatted})`
+                  : ""}{" "}
+                ou le CNIT (carte grise case D.2)
+              </li>
+              <li className="text-gray-700">
+                Choisir la gamme dans le{" "}
+                <a
+                  href="#catalogue"
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  catalogue ci-dessus
+                </a>
+              </li>
+              <li className="text-gray-700">
+                En cas de doute →{" "}
+                <a
+                  href="/contact"
+                  className="text-blue-600 hover:underline font-medium"
+                >
+                  contacter notre assistance
+                </a>
+              </li>
+            </ol>
+          </div>
+        </div>
+
         {/* ❓ FAQ dynamique avec Schema.org */}
-        <div className="mb-12">
+        <div className="mb-12" data-section="S_FAQ">
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div className="p-6 border-b border-gray-100">
               <div className="flex items-center gap-3">
@@ -1401,7 +1678,7 @@ export default function VehicleDetailPage() {
         )}
 
         {/* 🛡️ Badges de confiance */}
-        <div className="mb-12">
+        <div className="mb-12" data-section="S_TRUST">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
               <div className="inline-flex p-3 rounded-full bg-green-100 mb-3">
@@ -1439,35 +1716,37 @@ export default function VehicleDetailPage() {
         </div>
       </div>
 
-      {/* 🎯 CTA Sticky - Apparaît au scroll */}
+      {/* Sticky vehicle bar - top */}
       {showStickyCta && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-2xl py-3 px-4 animate-in slide-in-from-bottom duration-300">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm py-2 px-4 animate-in slide-in-from-top duration-300">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div className="hidden sm:flex items-center gap-3">
-              <Car size={24} className="text-brand" />
-              <div>
-                <div className="font-bold text-gray-900 text-sm">
-                  {vehicle.marque_name} {vehicle.modele_name}
+            <div className="flex items-center gap-3 min-w-0">
+              <Car size={20} className="text-brand flex-shrink-0" />
+              <div className="min-w-0">
+                <div className="font-bold text-gray-900 text-sm truncate">
+                  {vehicle.marque_name} {vehicle.modele_name}{" "}
+                  {vehicle.type_name}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {vehicle.type_name} - {vehicle.type_power_ps} ch
+                  {vehicle.type_power_ps} ch · {vehicle.type_fuel} ·{" "}
+                  {vehicle.type_year_from}–{vehicle.type_year_to || "Auj."}
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-3 flex-1 sm:flex-none">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <a
                 href="#catalogue"
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg bg-brand"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-white bg-brand hover:brightness-110 transition-all"
               >
-                <Package size={18} />
-                <span>Voir le catalogue</span>
+                <Package size={16} />
+                <span className="hidden sm:inline">Catalogue</span>
               </a>
               <a
                 href="/contact"
-                className="hidden md:flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold border-2 transition-all hover:bg-gray-50 border-brand text-brand"
+                className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
               >
-                <HeadphonesIcon size={18} />
-                <span>Assistance</span>
+                <HeadphonesIcon size={16} />
+                <span>Aide</span>
               </a>
             </div>
           </div>
