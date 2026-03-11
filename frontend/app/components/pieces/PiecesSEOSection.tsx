@@ -6,7 +6,7 @@
  * ✨ Utilise HtmlContent pour le maillage interne (liens SPA + tracking)
  */
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Alert } from "~/components/ui/alert";
 import { type SEOEnrichedContent } from "../../types/pieces-route.types";
 import {
@@ -47,16 +47,8 @@ export const PiecesSEOSection = memo(function PiecesSEOSection({
       </div>
 
       <div className="p-6 space-y-8">
-        {/* Description longue - Support HTML depuis API backend */}
-        {/* ✨ HtmlContent pour maillage interne: convertit les <a> en <Link> Remix avec tracking */}
-        {/* 🎨 font-heading pour uniformiser la police avec le H1 (Montserrat) */}
-        <div className="prose prose-gray max-w-none font-heading">
-          <HtmlContent
-            html={cleanLongDescription}
-            trackLinks={true}
-            className="text-lg text-gray-700 leading-relaxed"
-          />
-        </div>
+        {/* Description longue — collapsible pour scan-friendly */}
+        <SeoDescriptionBlock html={cleanLongDescription} />
 
         {/* Sections H2 */}
         {content.h2Sections.length > 0 && (
@@ -178,6 +170,44 @@ export const PiecesSEOSection = memo(function PiecesSEOSection({
     </div>
   );
 });
+
+/**
+ * Description SEO collapsible — affiche un aperçu court + "Lire la suite"
+ * Le contenu HTML complet est toujours dans le DOM (SSR) pour Googlebot
+ */
+function SeoDescriptionBlock({ html }: { html: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = html.length > 500;
+
+  return (
+    <div className="prose prose-gray max-w-none font-heading">
+      <div
+        className={
+          !expanded && isLong
+            ? "max-h-[200px] overflow-hidden relative"
+            : undefined
+        }
+      >
+        <HtmlContent
+          html={html}
+          trackLinks={true}
+          className="text-lg text-gray-700 leading-relaxed"
+        />
+        {!expanded && isLong && (
+          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+        )}
+      </div>
+      {isLong && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          {expanded ? "Réduire" : "Lire la suite"}
+        </button>
+      )}
+    </div>
+  );
+}
 
 /**
  * Helper pour générer du contenu contextuel par section

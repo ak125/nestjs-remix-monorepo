@@ -50,6 +50,18 @@ export const PiecesCompatibilityInfo = memo(function PiecesCompatibilityInfo({
       </div>
 
       <div className="p-6 space-y-6">
+        {/* Micro-bloc sémantique SSR — précision moteur/mine pour crawl */}
+        {(motorCodesFormatted || mineCodesFormatted) && (
+          <p className="text-sm text-gray-700 leading-relaxed">
+            Cette pièce est compatible avec votre {vehicleName}
+            {motorCodesFormatted
+              ? ` équipé du moteur ${motorCodesFormatted}`
+              : ""}
+            {mineCodesFormatted ? ` (code mine ${mineCodesFormatted})` : ""}.
+            Vérifiez la référence d'origine avant commande.
+          </p>
+        )}
+
         {/* Années de production */}
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0 w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">

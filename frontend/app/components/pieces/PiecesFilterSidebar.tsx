@@ -485,6 +485,20 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
                         <span className="leading-tight text-center">
                           {quality.label}
                         </span>
+                        <span
+                          className={`text-[8px] leading-tight opacity-70 ${
+                            isSelected ? "text-white/80" : "text-gray-500"
+                          }`}
+                        >
+                          {quality.id === "OES" ||
+                          quality.label?.includes("Origine")
+                            ? "Équipementier 1re monte"
+                            : quality.id === "AFTERMARKET"
+                              ? "Qualité standard"
+                              : quality.id === "Echange Standard"
+                                ? "Pièce reconditionnée"
+                                : ""}
+                        </span>
                         {quality.count > 0 && (
                           <span
                             className={`text-[9px] px-1.5 py-0.5 rounded-full ${

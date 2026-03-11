@@ -36,6 +36,7 @@ import {
   Shield,
   Star,
   Truck,
+  Wrench,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { resolveSlogan } from "~/config/visual-intent";
@@ -162,6 +163,24 @@ interface SEOData {
   canonical: string;
 }
 
+// R8 enriched content (from __seo_r8_pages, optional overlay)
+interface R8Block {
+  id: string;
+  type: string;
+  title: string;
+  renderedText: string;
+  specificityWeight: number;
+}
+
+interface R8Content {
+  h1: string;
+  metaTitle: string;
+  metaDescription: string;
+  blocks: R8Block[];
+  seoDecision: string;
+  diversityScore: number;
+}
+
 interface LoaderData {
   vehicle: VehicleData;
   catalogFamilies: CatalogFamily[];
@@ -176,6 +195,8 @@ interface LoaderData {
   };
   // V1 Content - Encyclopedic content for model pages (optional)
   modelContentV1?: ModelContentV1Data | null;
+  // R8 enriched content (from R8VehicleEnricherService, optional)
+  r8Content?: R8Content | null;
 }
 
 // ⚡ Contrôle de revalidation pour éviter les rechargements inutiles
@@ -419,6 +440,7 @@ function transformRpcToLoaderData(
       type: vehicleData.type_name,
     },
     modelContentV1,
+    r8Content: rpcData.r8_content || null,
   };
 }
 
@@ -682,14 +704,19 @@ export const meta: MetaFunction<typeof loader> = ({ data: rawData }) => {
     ];
   }
 
+  // R8 enriched meta override (only if indexed R8 content exists)
+  const seoTitle = data.r8Content?.metaTitle || data.seo.title;
+  const seoDescription =
+    data.r8Content?.metaDescription || data.seo.description;
+
   const result: Record<string, unknown>[] = [
-    { title: data.seo.title },
-    { name: "description", content: data.seo.description },
+    { title: seoTitle },
+    { name: "description", content: seoDescription },
     { name: "keywords", content: data.seo.keywords },
     { name: "robots", content: data.seo.robots },
     { tagName: "link", rel: "canonical", href: data.seo.canonical },
-    { property: "og:title", content: data.seo.title },
-    { property: "og:description", content: data.seo.description },
+    { property: "og:title", content: seoTitle },
+    { property: "og:description", content: seoDescription },
     { property: "og:url", content: data.seo.canonical },
     { property: "og:type", content: "website" },
     {
@@ -767,6 +794,7 @@ export default function VehicleDetailPage() {
     seo,
     breadcrumb,
     modelContentV1,
+    r8Content,
   } = data;
 
   // Récupérer le gradient de marque dynamique
@@ -775,8 +803,20 @@ export default function VehicleDetailPage() {
     vehicle.marque_alias,
   );
 
-  // FAQ items dynamiques basés sur le véhicule
-  const faqItems = [
+  // R8 FAQ: parse dedicated_faq block ("**q**\na\n\n**q**\na" format)
+  const r8FaqBlock = r8Content?.blocks.find((b) => b.type === "dedicated_faq");
+  const r8FaqParsed: Array<{ question: string; answer: string }> = [];
+  if (r8FaqBlock?.renderedText) {
+    for (const pair of r8FaqBlock.renderedText.split("\n\n").filter(Boolean)) {
+      const lines = pair.split("\n");
+      const q = (lines[0] || "").replace(/^\*\*|\*\*$/g, "").trim();
+      const a = lines.slice(1).join(" ").trim();
+      if (q && a) r8FaqParsed.push({ question: q, answer: a });
+    }
+  }
+
+  // FAQ: use R8 dedicated FAQ if >= 2 items, else fallback to template
+  const defaultFaqItems = [
     {
       question: `Quelles pièces sont compatibles avec ma ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ?`,
       answer: `Toutes les pièces proposées sur cette page sont 100% compatibles avec votre ${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch. Nous vérifions systématiquement la compatibilité avec les références constructeur.`,
@@ -799,13 +839,15 @@ export default function VehicleDetailPage() {
     },
   ];
 
-  // Add carte grise FAQ if CNIT/mine codes exist
+  // Add carte grise FAQ to defaults if CNIT/mine codes exist
   if (vehicle.mine_codes_formatted || vehicle.cnit_codes_formatted) {
-    faqItems.push({
+    defaultFaqItems.push({
       question: `Comment trouver le type mine ou CNIT sur ma carte grise ?`,
       answer: `Le type mine se trouve en case D.2 de votre carte grise (format ancien : lettres+chiffres). Le CNIT (Code National d'Identification du Type) est le format actuel. Pour votre ${vehicle.marque_name} ${vehicle.modele_name}, les codes connus sont : ${[vehicle.mine_codes_formatted, vehicle.cnit_codes_formatted].filter(Boolean).join(", ")}. Utilisez ces codes pour confirmer la compatibilité des pièces.`,
     });
   }
+
+  const faqItems = r8FaqParsed.length >= 2 ? r8FaqParsed : defaultFaqItems;
 
   return (
     <div
@@ -1010,15 +1052,39 @@ export default function VehicleDetailPage() {
           </div>
         )}
 
-        {/* Description SEO (logique PHP avec switches) */}
+        {/* Description SEO — R8 enriched or fallback */}
         <div
           className="bg-white rounded-lg shadow-sm p-6 mb-8"
           data-section="S_SEO_INTRO"
         >
-          <div className="prose max-w-none">
-            <HtmlContent html={seo.content} trackLinks={true} />
-            <HtmlContent html={seo.content2} trackLinks={true} />
-          </div>
+          {r8Content && r8Content.blocks.length > 0 ? (
+            <div className="space-y-6">
+              {r8Content.blocks
+                .filter(
+                  (b) =>
+                    b.type === "vehicle_identity" ||
+                    b.type === "selection_help",
+                )
+                .map((block) => (
+                  <div key={block.id}>
+                    <h2 className="text-lg font-semibold text-gray-900 mb-2">
+                      {block.title}
+                    </h2>
+                    <div className="prose prose-sm max-w-none text-gray-700">
+                      <HtmlContent
+                        html={block.renderedText}
+                        trackLinks={true}
+                      />
+                    </div>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <div className="prose max-w-none">
+              <HtmlContent html={seo.content} trackLinks={true} />
+              <HtmlContent html={seo.content2} trackLinks={true} />
+            </div>
+          )}
         </div>
 
         {/* 📦 CATALOGUE PRINCIPAL - Design inspiré de la page index */}
@@ -1490,8 +1556,69 @@ export default function VehicleDetailPage() {
                 </tbody>
               </table>
             </div>
+            {/* R8 technical_specs overlay (RAG motorisations) */}
+            {r8Content?.blocks
+              .filter((b) => b.type === "technical_specs")
+              .map((block) => (
+                <div
+                  key={block.id}
+                  className="p-6 border-t border-gray-200 bg-gray-50"
+                >
+                  <h3 className="font-semibold text-gray-900 mb-2">
+                    {block.title}
+                  </h3>
+                  <div className="prose prose-sm max-w-none text-gray-700">
+                    <HtmlContent html={block.renderedText} trackLinks={true} />
+                  </div>
+                </div>
+              ))}
           </div>
         </div>
+
+        {/* R8 enriched sections — variant_difference + maintenance_context */}
+        {r8Content?.blocks.some(
+          (b) =>
+            b.type === "variant_difference" || b.type === "maintenance_context",
+        ) && (
+          <div className="mb-12 space-y-6" data-section="S_R8_ENRICHED">
+            {r8Content.blocks
+              .filter(
+                (b) =>
+                  b.type === "variant_difference" ||
+                  b.type === "maintenance_context",
+              )
+              .map((block) => (
+                <div
+                  key={block.id}
+                  className={`rounded-2xl border p-6 ${
+                    block.type === "variant_difference"
+                      ? "bg-indigo-50 border-indigo-200"
+                      : "bg-blue-50 border-blue-200"
+                  }`}
+                >
+                  <div className="flex items-start gap-3 mb-3">
+                    {block.type === "variant_difference" ? (
+                      <Car
+                        size={24}
+                        className="text-indigo-600 flex-shrink-0 mt-0.5"
+                      />
+                    ) : (
+                      <Wrench
+                        size={24}
+                        className="text-blue-600 flex-shrink-0 mt-0.5"
+                      />
+                    )}
+                    <h2 className="text-xl font-bold text-gray-900">
+                      {block.title}
+                    </h2>
+                  </div>
+                  <div className="prose prose-sm max-w-none text-gray-700 ml-9">
+                    <HtmlContent html={block.renderedText} trackLinks={true} />
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
 
         {/* Erreurs fréquentes à éviter */}
         <div className="mb-12" data-section="S_ANTI_ERRORS">

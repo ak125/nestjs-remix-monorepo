@@ -356,9 +356,12 @@ export class VehiclesController {
       const result =
         await this.vehicleRpcService.getVehiclePageDataOptimized(typeIdNum);
 
+      // Overlay R8 enriched content (non-blocking, ~5ms)
+      const r8Content = await this.vehicleRpcService.getR8Content(typeIdNum);
+
       return {
         success: true,
-        data: result,
+        data: { ...result, r8_content: r8Content },
         _performance: result._performance,
       };
     } catch (error) {

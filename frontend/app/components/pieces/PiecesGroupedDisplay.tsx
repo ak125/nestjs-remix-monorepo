@@ -172,16 +172,21 @@ export const PiecesGroupedDisplay = memo(function PiecesGroupedDisplay({
             key={groupKey}
             className="animate-in fade-in slide-in-from-top duration-500"
           >
-            {/* Titre H2 dynamique avec modèle véhicule */}
-            <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-3 border-b-2 border-blue-500 flex items-center gap-3">
-              <span className="w-1.5 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></span>
-              {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`}{" "}
-              {vehicleModele}
-              <span className="text-sm font-normal text-gray-500 ml-auto">
-                ({groupPieces.length} article{groupPieces.length > 1 ? "s" : ""}
-                )
-              </span>
-            </h2>
+            {/* Titre dynamique — H2 pour groupes riches, H3 compact pour groupes ≤ 1 */}
+            {groupPieces.length > 1 ? (
+              <h2 className="text-2xl font-bold text-gray-900 mb-4 pb-3 border-b-2 border-blue-500 flex items-center gap-3">
+                <span className="w-1.5 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></span>
+                {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`}{" "}
+                {vehicleModele}
+                <span className="text-sm font-normal text-gray-500 ml-auto">
+                  ({groupPieces.length} articles)
+                </span>
+              </h2>
+            ) : (
+              <h3 className="text-lg font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-200">
+                {group.title_h2 || `${group.filtre_gamme} ${group.filtre_side}`}
+              </h3>
+            )}
 
             {/* Grille ou liste de pièces (avec pagination) */}
             {viewMode === "grid" && (

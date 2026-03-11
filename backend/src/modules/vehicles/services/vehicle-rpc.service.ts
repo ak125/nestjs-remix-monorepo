@@ -221,6 +221,45 @@ export class VehicleRpcService extends SupabaseBaseService {
   }
 
   /**
+   * 🚗 Récupère le contenu R8 enrichi pour un véhicule (si INDEX).
+   * Retourne null si pas de contenu R8 ou si seo_decision != INDEX.
+   */
+  async getR8Content(typeId: number): Promise<{
+    h1: string;
+    metaTitle: string;
+    metaDescription: string;
+    blocks: Array<{
+      id: string;
+      type: string;
+      title: string;
+      renderedText: string;
+      specificityWeight: number;
+    }>;
+    seoDecision: string;
+    diversityScore: number;
+  } | null> {
+    const { data, error } = await this.client
+      .from('__seo_r8_pages')
+      .select(
+        'h1, meta_title, meta_description, rendered_json, seo_decision, diversity_score',
+      )
+      .eq('type_id', String(typeId))
+      .eq('seo_decision', 'INDEX')
+      .maybeSingle();
+
+    if (error || !data) return null;
+
+    return {
+      h1: data.h1,
+      metaTitle: data.meta_title,
+      metaDescription: data.meta_description,
+      blocks: data.rendered_json?.blocks || [],
+      seoDecision: data.seo_decision,
+      diversityScore: data.diversity_score,
+    };
+  }
+
+  /**
    * 🗑️ Invalide le cache d'un véhicule
    */
   async invalidateCache(typeId: number): Promise<void> {

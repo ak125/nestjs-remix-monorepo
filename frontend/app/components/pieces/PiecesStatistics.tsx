@@ -123,7 +123,7 @@ export const PiecesStatistics = memo(function PiecesStatistics({
               Qualité OES
             </div>
             <div className="text-xs text-yellow-600 mt-1">
-              {stats.oesPercentage.toFixed(0)}% du catalogue
+              Équipementier 1re monte
             </div>
           </div>
         </div>
@@ -257,20 +257,22 @@ export const PiecesStatistics = memo(function PiecesStatistics({
                 offrant un large choix pour votre {vehicleName}.
               </span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-orange-500 mt-0.5">•</span>
-              <span>
-                <strong>{stats.stockPercentage.toFixed(0)}%</strong> des pièces
-                sont en stock immédiat, prêtes à être expédiées sous 24-48h.
-              </span>
-            </li>
+            {stats.stockPercentage > 0 && (
+              <li className="flex items-start gap-2">
+                <span className="text-orange-500 mt-0.5">•</span>
+                <span>
+                  <strong>{stats.stockPercentage.toFixed(0)}%</strong> des
+                  pièces sont expédiables sous 24-48h.
+                </span>
+              </li>
+            )}
             {stats.oesPercentage > 0 && (
               <li className="flex items-start gap-2">
                 <span className="text-orange-500 mt-0.5">•</span>
                 <span>
-                  <strong>{stats.oesPieces} pièces de qualité OES</strong>{" "}
-                  (équivalent origine constructeur) sont disponibles pour une
-                  qualité optimale.
+                  <strong>{stats.oesPieces} pièces OES</strong> (équipementier
+                  première monte, équivalent qualité constructeur) sont
+                  disponibles.
                 </span>
               </li>
             )}
