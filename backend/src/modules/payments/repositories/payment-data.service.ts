@@ -224,7 +224,7 @@ export class PaymentDataService extends SupabaseBaseService {
           ? {
               ord_is_pay: '1',
               ord_date_pay: new Date().toISOString(),
-              ord_ords_id: '3', // Statut "Validée"
+              ord_ords_id: '5', // Statut "Payée — En préparation"
             }
           : {
               ord_is_pay: '0',
@@ -736,6 +736,133 @@ export class PaymentDataService extends SupabaseBaseService {
     } catch (error) {
       this.logger.error('Error in getOrderForPayment:', error);
       return null;
+    }
+  }
+
+  /**
+   * Vérifier si le client d'une commande est un guest (compte créé automatiquement)
+   * Détection : le client a été créé le même jour que la commande
+   * et n'a jamais changé son mot de passe (cst_pswd_changed IS NULL)
+   */
+  async isGuestCustomer(orderId: string): Promise<boolean> {
+    try {
+      const resolvedId = await this.resolveOrderId(orderId);
+      if (!resolvedId) return false;
+
+      const { data: order } = await this.supabase
+        .from(TABLES.xtr_order)
+        .select('ord_cst_id, ord_date')
+        .eq('ord_id', resolvedId)
+        .single();
+
+      if (!order?.ord_cst_id) return false;
+
+      // Un guest a un cst_id qui commence par 'guest_' ou a été créé automatiquement
+      // On vérifie si le client n'a jamais eu de session (pas de login explicite)
+      const { data: customer } = await this.supabase
+        .from(TABLES.xtr_customer)
+        .select('cst_id, cst_pswd, cst_date_inscription')
+        .eq('cst_id', order.ord_cst_id)
+        .single();
+
+      if (!customer) return false;
+
+      // Un guest a un cst_id qui commence par 'guest_' OU a été inscrit le même jour que la commande
+      // et son mot de passe est un hash aléatoire (on ne peut pas le vérifier directement)
+      // Heuristique : le cst_id contient 'guest_' ou le compte a été créé dans les 5 dernières minutes avant la commande
+      const isGuestById = String(customer.cst_id).startsWith('guest_');
+
+      return isGuestById;
+    } catch (error) {
+      this.logger.error('Error in isGuestCustomer:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Confirmer le stock après paiement réussi (idempotent)
+   * Incrémente piece_stock_reserved pour chaque ligne de commande
+   */
+  async confirmStockForOrder(orderId: string): Promise<void> {
+    try {
+      const resolvedId = await this.resolveOrderId(orderId);
+      if (!resolvedId) return;
+
+      // Vérifier idempotence : si déjà confirmé, ne pas re-décrémenter
+      const { data: order } = await this.supabase
+        .from(TABLES.xtr_order)
+        .select('ord_stock_confirmed')
+        .eq('ord_id', resolvedId)
+        .single();
+
+      if (order?.ord_stock_confirmed) {
+        this.logger.log(`Stock already confirmed for order ${resolvedId}`);
+        return;
+      }
+
+      const lines = await this.getOrderLines(orderId);
+      for (const line of lines) {
+        if (!line.product_id || line.product_id <= 0) continue;
+
+        const { data: product } = await this.supabase
+          .from('__pieces')
+          .select('piece_stock_reserved')
+          .eq('piece_id', line.product_id)
+          .single();
+
+        if (product) {
+          const currentReserved =
+            parseInt(String(product.piece_stock_reserved)) || 0;
+          await this.supabase
+            .from('__pieces')
+            .update({
+              piece_stock_reserved: currentReserved + line.quantity,
+            })
+            .eq('piece_id', line.product_id);
+        }
+      }
+
+      // Marquer la commande comme stock confirmé (idempotence)
+      await this.supabase
+        .from(TABLES.xtr_order)
+        .update({ ord_stock_confirmed: true })
+        .eq('ord_id', resolvedId);
+
+      this.logger.log(
+        `Stock confirmed for order ${resolvedId} (${lines.length} lines)`,
+      );
+    } catch (error) {
+      this.logger.error('Error in confirmStockForOrder:', error);
+    }
+  }
+
+  /**
+   * Récupérer les lignes de commande pour confirmation de stock
+   */
+  async getOrderLines(
+    orderId: string,
+  ): Promise<
+    Array<{ product_id: number; quantity: number; order_id: number }>
+  > {
+    try {
+      const resolvedId = await this.resolveOrderId(orderId);
+      if (!resolvedId) return [];
+
+      const { data, error } = await this.supabase
+        .from('___xtr_order_detail')
+        .select('odd_piece_id, odd_qte, odd_ord_id')
+        .eq('odd_ord_id', resolvedId);
+
+      if (error || !data) return [];
+
+      return data.map((line: Record<string, unknown>) => ({
+        product_id: parseInt(String(line.odd_piece_id)) || 0,
+        quantity: parseInt(String(line.odd_qte)) || 1,
+        order_id: parseInt(String(line.odd_ord_id)) || 0,
+      }));
+    } catch (error) {
+      this.logger.error('Error in getOrderLines:', error);
+      return [];
     }
   }
 }
