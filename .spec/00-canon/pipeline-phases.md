@@ -1,6 +1,6 @@
 # Cadre canonique des phases — Pipeline RAG v2
 
-> Version figee : 2026-03-13 v2
+> Version figee : 2026-03-14 v4
 
 ## Principe directeur
 
@@ -13,9 +13,44 @@ Les phases ciblent des roles R* (metier/surface). Les controles G* (gouvernance 
 | Phase | Nom canonique | Finalite | Nature | Peut ecrire ? | Peut muter la ressource canonique ? | Ecritures autorisees | Interdit principal | Bloque l'aval ? |
 |-------|--------------|----------|--------|---------------|-------------------------------------|----------------------|-------------------|-----------------|
 | 1 | Ingestion securisee | Faire entrer sans corruption | technique | oui | oui, dans le perimetre d'entree | stockage, sync, provenance, logs | toute ecriture metier | oui |
-| 1.5 | Normalisation canonique | Stabiliser l'identite | structurelle | oui | oui, sur identite et mapping | identite canonique, alias, mapping, anti-collision | toute generation metier | oui |
-| 1.6 | Admissibilite metier | Decider l'usage aval | decisionnelle | oui | non sur le fond, oui sur les verdicts | verdicts, scores, limitations, policies | toute generation / publication | oui |
+| 1.5 | Normalisation canonique | Stabiliser l'identite canonique sans muter le sens metier | structurelle | oui | oui, sur identite et mapping | identite canonique, alias, mapping, anti-collision | toute generation metier, mutation du sens metier | oui |
+| 1.6 | Admissibilite metier | Qualifier les roles R* candidats et borner l'usage aval | decisionnelle | oui | non sur le fond, oui sur les verdicts | verdicts, scores, limitations, policies | toute generation / publication | oui |
 | 2 | Exploitation metier controlee | Produire les artefacts metier | metier | oui | non sur la source brute, oui sur les derives | drafts, sections, contracts, assemblage metier | contourner 1 / 1.5 / 1.6 | oui |
+
+## Tableau canonique — entrees / sorties / blocages / garde-fous
+
+| Phase | Fonction canonique | Entrees autorisees | Sorties autorisees | Blocages natifs | Garde-fous G1 a G5 |
+|-------|-------------------|-------------------|-------------------|-----------------|---------------------|
+| 1 | Ingestion securisee | sources brutes (PDF, URL, markdown, CSV, JSON, exports DB, medias, documents techniques, corpus SEO, fichiers RAG) | fichier stocke, enregistrement DB sync, metadonnees minimales, provenance tracable, log d'ingestion | provenance absente, collision destructive, ecriture sauvage, sync incomplete, source illisible/corrompue | G1 purete provenance. G3 collision destination potentielle. G4 interdit ecriture aval si provenance KO. G5 escalation si doute source |
+| 1.5 | Normalisation canonique | sorties validees de phase 1 uniquement | matiere canonisee, mapping de champs, typologie source stabilisee, conventions de nommage unifiees, structure exploitable par les phases aval | structure non reconciliable, mapping ambigu, champs critiques manquants, collision de schema, perte de tracabilite, fusion destructive | G1 empeche changement de nature metier. G2 repere doublons structurels. G3 repere collisions inter-surfaces. G4 interdit passage aval si structure canonique non stabilisee. G5 review si arbitrage necessaire |
+| 1.6 | Admissibilite metier | matiere canonisee issue de phase 1.5 | verdict d'admissibilite (ADMISSIBLE, ADMISSIBLE_AVEC_LIMITES, INCOMPLETE, AMBIGU, BLOCKED, REVIEW_REQUIRED), role cible R* pressenti, limites d'usage, besoins d'enrichissement | role non determinable, matiere insuffisante, conflit inter-roles, dependance vehicule/contexte non resolue, risque de cannibalisation fort, manque de preuve matiere | G1 verifie purete de role. G2 verifie risque de quasi-duplicate. G3 verifie frontieres R/R. G4 interdit phase 2 sans admissibilite explicite. G5 escalation si ambiguite metier |
+| 2 | Generation metier ciblee | uniquement matiere declaree admissible par phase 1.6 + contraintes de role + contrats de sections + eventuels briefs | artefact ciblant un role R* : page, brief, contrat rempli, draft structure, blocs de sections, liens internes, metadonnees du role | tentative de generation sans admissibilite, violation de role, contrat incomplet, matiere insuffisante, contenu hors frontiere, score/qualite insuffisants | G1 purete de role. G2 diversite. G3 anti-cannibalisation. G4 publication control (PASS/REVIEW/BLOCK). G5 review ou escalation humaine |
+
+## Lecture canonique par phase
+
+### Phase 1
+
+Entree : source brute.
+Sortie : source securisee et tracable.
+Question : "Peut-on faire entrer cette matiere dans le systeme sans l'abimer ni corrompre l'existant ?"
+
+### Phase 1.5
+
+Entree : source securisee.
+Sortie : matiere canonique.
+Question : "Peut-on rendre cette matiere stable, comparable et exploitable sans lui faire dire autre chose ?"
+
+### Phase 1.6
+
+Entree : matiere canonique.
+Sortie : admissibilite metier.
+Question : "Cette matiere a-t-elle le droit d'alimenter une surface R*, et laquelle ?"
+
+### Phase 2
+
+Entree : matiere admissible pour un role R*.
+Sortie : artefact metier.
+Question : "Peut-on produire un contenu metier propre, pur et publiable pour ce role ?"
 
 ## Loi de pipeline
 
@@ -99,32 +134,33 @@ Phase 1.5 protege l'identite.
 Phase 1.6 protege l'usage.
 Phase 2 borne la production et transforme seulement ce qui a ete admis.
 
-## Gouvernance G* par phase
+## Garde-fous G1 a G5 figes
 
-| Phase | G1 Purete | G2 Diversite | G3 Anti-cannib | G4 Publication | G5 Review |
-|-------|-----------|-------------|----------------|----------------|-----------|
-| 1 | purete technique provenance | — | — | droit d'entrer dans le systeme | provenance douteuse / collision |
-| 1.5 | normalisation ne change pas la nature metier | — | collisions familles / destinations | — | normalisation impossible / ambigue |
-| 1.6 | alignement role unique | quasi-duplicate detection | frontieres inter-roles | — | conflit / doute → arbitrage humain |
-| 2 | toutes gates actives | toutes gates actives | toutes gates actives | decide PASS/REVIEW/BLOCK | toutes gates actives |
+| Garde-fou | Nom canonique | Fonction transverse | Peut bloquer ? | Peut publier ? |
+|-----------|--------------|---------------------|----------------|----------------|
+| G1 | Purete | garantit qu'un contenu reste dans son role cible et n'empiete pas sur un autre | oui | non |
+| G2 | Diversite | evite repetition, duplication, similarite excessive, footprints | oui | non |
+| G3 | Anti-cannibalisation | empeche collisions entre surfaces, intentions et clusters | oui | non |
+| G4 | Publication Control | decide publish / hold / block / noindex / review gate | oui | oui |
+| G5 | Review / Escalation | sort les cas ambigus ou a risque vers arbitrage humain ou workflow de review | oui | non |
 
-## Matrice courte canonique
+## Regles de dependance figees
 
-| Phase | Fonction | Peut ecrire contenu final ? | Cible un role R* ? | Soumise a G* ? |
-|-------|----------|----------------------------|--------------------|-|
-| 1 | ingestion securisee | non | non | oui |
-| 1.5 | normalisation canonique | non | non | oui |
-| 1.6 | admissibilite metier | non | oui (qualification) | oui |
-| 2 | generation metier ciblee | oui | oui | oui |
+1. Aucune phase > 1 ne peut ecrire du contenu si la phase 1 n'a pas valide la provenance et la securite d'ecriture.
+2. Aucune phase > 1.5 ne peut travailler sur une matiere dont la structure canonique n'est pas stabilisee.
+3. Aucune phase 2 ne peut demarrer sans verdict explicite de phase 1.6.
+4. Aucune couche G* ne constitue un role metier ni une destination editoriale.
+5. Tout contenu genere cible un role R*, jamais une couche G*.
+6. Toute decision publish / hold / block releve de G4, pas de la phase elle-meme.
 
-## Regles de dependance canoniques
+## Version courte ultra-canonique
 
-1. Phase 1 est le verrou de provenance et d'ecriture.
-2. Phase 1.5 est le verrou de structure canonique.
-3. Phase 1.6 est le verrou d'admissibilite metier.
-4. Phase 2 n'existe que pour une matiere deja admissible vers un role R*.
-5. Aucune couche G* n'est une destination editoriale.
-6. Aucune phase ne doit creer un faux role pour resoudre un probleme de gouvernance.
+| Phase | Verbe canonique | Objet | Resultat |
+|-------|----------------|-------|----------|
+| 1 | securiser | la source | matiere ingeree sans corruption |
+| 1.5 | normaliser | la matiere | matiere canonique |
+| 1.6 | admettre | la matiere vers un role R* | verdict metier |
+| 2 | generer | la surface R* | artefact metier |
 
 ## Raffinements canoniques R1-R4
 
