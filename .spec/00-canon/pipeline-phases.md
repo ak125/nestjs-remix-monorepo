@@ -1,6 +1,6 @@
 # Cadre canonique des phases — Pipeline RAG v2
 
-> Version figee : 2026-03-14 v4
+> Version figee : 2026-03-14 v5
 
 ## Principe directeur
 
@@ -21,10 +21,10 @@ Les phases ciblent des roles R* (metier/surface). Les controles G* (gouvernance 
 
 | Phase | Fonction canonique | Entrees autorisees | Sorties autorisees | Blocages natifs | Garde-fous G1 a G5 |
 |-------|-------------------|-------------------|-------------------|-----------------|---------------------|
-| 1 | Ingestion securisee | sources brutes (PDF, URL, markdown, CSV, JSON, exports DB, medias, documents techniques, corpus SEO, fichiers RAG) | fichier stocke, enregistrement DB sync, metadonnees minimales, provenance tracable, log d'ingestion | provenance absente, collision destructive, ecriture sauvage, sync incomplete, source illisible/corrompue | G1 purete provenance. G3 collision destination potentielle. G4 interdit ecriture aval si provenance KO. G5 escalation si doute source |
-| 1.5 | Normalisation canonique | sorties validees de phase 1 uniquement | matiere canonisee, mapping de champs, typologie source stabilisee, conventions de nommage unifiees, structure exploitable par les phases aval | structure non reconciliable, mapping ambigu, champs critiques manquants, collision de schema, perte de tracabilite, fusion destructive | G1 empeche changement de nature metier. G2 repere doublons structurels. G3 repere collisions inter-surfaces. G4 interdit passage aval si structure canonique non stabilisee. G5 review si arbitrage necessaire |
-| 1.6 | Admissibilite metier | matiere canonisee issue de phase 1.5 | verdict d'admissibilite (ADMISSIBLE, ADMISSIBLE_AVEC_LIMITES, INCOMPLETE, AMBIGU, BLOCKED, REVIEW_REQUIRED), role cible R* pressenti, limites d'usage, besoins d'enrichissement | role non determinable, matiere insuffisante, conflit inter-roles, dependance vehicule/contexte non resolue, risque de cannibalisation fort, manque de preuve matiere | G1 verifie purete de role. G2 verifie risque de quasi-duplicate. G3 verifie frontieres R/R. G4 interdit phase 2 sans admissibilite explicite. G5 escalation si ambiguite metier |
-| 2 | Generation metier ciblee | uniquement matiere declaree admissible par phase 1.6 + contraintes de role + contrats de sections + eventuels briefs | artefact ciblant un role R* : page, brief, contrat rempli, draft structure, blocs de sections, liens internes, metadonnees du role | tentative de generation sans admissibilite, violation de role, contrat incomplet, matiere insuffisante, contenu hors frontiere, score/qualite insuffisants | G1 purete de role. G2 diversite. G3 anti-cannibalisation. G4 publication control (PASS/REVIEW/BLOCK). G5 review ou escalation humaine |
+| 1 | Ingestion securisee | sources brutes (PDF, URL, markdown, CSV, JSON, exports DB, medias, documents techniques, corpus SEO, fichiers RAG) | fichier stocke, enregistrement DB sync, metadonnees minimales, provenance tracable, log d'ingestion | provenance absente, collision destructive, ecriture sauvage, sync incomplete, source illisible/corrompue | G1 purete provenance. G2 non bloquant, signal faible uniquement. G3 collision destination potentielle. G4 interdit ecriture aval si provenance KO. G5 escalation si doute source |
+| 1.5 | Normalisation canonique | sorties validees de phase 1 uniquement | matiere canonisee, identite canonique stabilisee, mapping de champs, typologie source stabilisee, conventions de nommage unifiees, structure exploitable par les phases aval | structure non reconciliable, mapping ambigu, champs critiques manquants, collision de schema, perte de tracabilite, fusion destructive | G1 empeche changement de nature metier. G2 repere doublons structurels. G3 repere collisions inter-surfaces. G4 interdit passage aval si structure canonique non stabilisee. G5 review si arbitrage necessaire |
+| 1.6 | Admissibilite metier | matiere canonisee issue de phase 1.5 | verdict d'admissibilite (ADMISSIBLE, ADMISSIBLE_AVEC_LIMITES, INCOMPLETE, AMBIGU, BLOCKED, REVIEW_REQUIRED), role R* candidat qualifie, niveau de confiance, limites d'usage, besoins d'enrichissement | role non determinable, matiere insuffisante, conflit inter-roles, dependance vehicule/contexte non resolue, risque de cannibalisation fort, manque de preuve matiere | G1 verifie purete de role. G2 verifie risque de quasi-duplicate. G3 verifie frontieres R/R. G4 interdit phase 2 sans admissibilite explicite. G5 escalation si ambiguite metier |
+| 2 | Generation metier ciblee | uniquement matiere declaree admissible par phase 1.6 + contraintes de role + contrats de sections + eventuels briefs | artefact metier ciblant un role R* : brief, contrat rempli, draft structure, blocs de sections, liens internes, metadonnees du role | tentative de generation sans admissibilite, violation de role, contrat incomplet, matiere insuffisante, contenu hors frontiere, score/qualite insuffisants | G1 purete de role. G2 diversite. G3 anti-cannibalisation. G4 publication control (PASS/REVIEW/BLOCK). G5 review ou escalation humaine |
 
 ## Lecture canonique par phase
 
@@ -147,11 +147,12 @@ Phase 2 borne la production et transforme seulement ce qui a ete admis.
 ## Regles de dependance figees
 
 1. Aucune phase > 1 ne peut ecrire du contenu si la phase 1 n'a pas valide la provenance et la securite d'ecriture.
-2. Aucune phase > 1.5 ne peut travailler sur une matiere dont la structure canonique n'est pas stabilisee.
+2. Aucune phase > 1.5 ne peut travailler sur une matiere dont l'identite et la structure canoniques ne sont pas stabilisees.
 3. Aucune phase 2 ne peut demarrer sans verdict explicite de phase 1.6.
 4. Aucune couche G* ne constitue un role metier ni une destination editoriale.
 5. Tout contenu genere cible un role R*, jamais une couche G*.
 6. Toute decision publish / hold / block releve de G4, pas de la phase elle-meme.
+7. Aucune phase ne peut compenser silencieusement un blocage amont par une logique locale de rattrapage.
 
 ## Version courte ultra-canonique
 
