@@ -296,3 +296,5 @@ Phase 2 genere une surface R* a partir de matiere validee.
 G* = couche de controle appliquee autour et apres ces phases — pas une destination.
 
 **Loi de verrouillage** : aucune phase > 1 ne peut ecrire du contenu si la provenance, l'identite canonique et l'admissibilite metier ne sont pas validees.
+
+Detail complet : `.spec/00-canon/pipeline-phases.md` (matrice G* par phase, contrats de passage, statuts, invariants).
