@@ -1,6 +1,6 @@
 # Matrice canonique des roles R0-R8 + Couche de gouvernance G*
 
-> Version figee : 2026-03-13 v3
+> Version figee : 2026-03-13 v4
 
 ## Statut de ce document
 
@@ -223,6 +223,13 @@ Visibilite : internal — PAS un role editorial public.
 **Sorties interdites** : contenu public metier principal.
 **forbidden_dominant_signals** : `["editorial_content", "public_page", "transactional_listing", "procedure_steps", "user_facing_navigation"]`
 
+### Regles d'implementation G*
+
+**Regle G-1** : Un agent, script, brief, contract ou pipeline ne doit jamais traiter G* comme un role metier.
+**Regle G-2** : Tout contenu genere doit cibler un role R0 a R8, jamais une couche G*.
+**Regle G-3** : Toute decision de validation, blocage, score, review ou publication releve de G*, jamais d'un role R*.
+**Regle G-4** : Les collisions entre surfaces se reglent par les controles G*, pas en creant un faux role supplementaire.
+
 ## Matrice de frontieres fortes
 
 | Paire | Distinction |
@@ -283,8 +290,9 @@ Le critere principal de qualification est la promesse centrale exclusive du role
 ## Lien avec les phases pipeline
 
 Phase 1 garantit la matiere sure.
-Phase 1.5 garantit l'identite canonique de la matiere.
-Phase 1.6 garantit que cette matiere peut servir un role donne sans derive.
-Phase 2 genere un role canonique a partir d'une matiere deja validee.
+Phase 1.5 normalise et qualifie la matiere vers un role R*.
+Phase 1.6 valide l'admissibilite metier d'ecriture vers un role R*.
+Phase 2 genere une surface R* a partir de matiere validee.
+G* = couche de controle appliquee autour et apres ces phases — pas une destination.
 
 **Loi de verrouillage** : aucune phase > 1 ne peut ecrire du contenu si la provenance, l'identite canonique et l'admissibilite metier ne sont pas validees.
