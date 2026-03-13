@@ -64,6 +64,48 @@ interface PaymentResult {
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
+
+  // --- Paybox return (params: Mt, Ref, Auto, Erreur, K) ---
+  const isPaybox =
+    url.searchParams.has("Erreur") || url.searchParams.has("Auto");
+
+  if (isPaybox) {
+    const erreur = url.searchParams.get("Erreur") || "";
+    const auto = url.searchParams.get("Auto") || "";
+    const ref = url.searchParams.get("Ref") || "";
+    const mt = url.searchParams.get("Mt") || "0";
+    // statusHint vient de notre PBX_EFFECTUE/REFUSE/ANNULE (ex: ?status=CANCELLED)
+    const statusHint = url.searchParams.get("status");
+
+    let derivedStatus: PaymentResult["status"];
+    if (erreur === "00000") {
+      derivedStatus = "SUCCESS";
+    } else if (statusHint === "CANCELLED") {
+      derivedStatus = "CANCELLED";
+    } else {
+      derivedStatus = "REFUSED";
+    }
+
+    logger.log("[PaymentReturn] Paybox return:", {
+      erreur,
+      auto,
+      ref,
+      status: derivedStatus,
+    });
+
+    return json({
+      result: {
+        status: derivedStatus,
+        transactionId: auto,
+        orderId: ref,
+        amount: parseInt(mt, 10) / 100,
+        date: new Date().toISOString(),
+        errorCode: erreur !== "00000" ? erreur : undefined,
+      } satisfies PaymentResult,
+    });
+  }
+
+  // --- SystemPay / Cyberplus return ---
   const status =
     url.searchParams.get("status") || url.searchParams.get("vads_trans_status");
   const transactionId =

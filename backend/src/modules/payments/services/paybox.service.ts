@@ -101,6 +101,9 @@ export class PayboxService {
       PBX_PORTEUR: params.customerEmail,
       PBX_REPONDRE_A: `${baseUrl}/api/paybox/callback`, // URL IPN (server-to-server)
       PBX_RETOUR: 'Mt:M;Ref:R;Auto:A;Erreur:E;K:K', // K:K = signature pour verification
+      PBX_EFFECTUE: `${baseUrl}/checkout-payment-return?gateway=paybox&status=SUCCESS`,
+      PBX_REFUSE: `${baseUrl}/checkout-payment-return?gateway=paybox&status=REFUSED`,
+      PBX_ANNULE: `${baseUrl}/checkout-payment-return?gateway=paybox&status=CANCELLED`,
       PBX_HASH: 'SHA512',
       PBX_TIME: dateTime,
     };
@@ -152,6 +155,9 @@ export class PayboxService {
       'PBX_PORTEUR',
       'PBX_REPONDRE_A',
       'PBX_RETOUR',
+      'PBX_EFFECTUE',
+      'PBX_REFUSE',
+      'PBX_ANNULE',
       'PBX_HASH',
       'PBX_TIME',
     ];

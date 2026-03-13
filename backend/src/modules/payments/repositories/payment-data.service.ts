@@ -165,6 +165,26 @@ export class PaymentDataService extends SupabaseBaseService {
         `Creating payment with reference: ${paymentReference}, orderId: ${safeOrderId}`,
       );
 
+      // 0. Déduplication : vérifier si un paiement completed existe déjà
+      if (safeOrderId) {
+        const { data: existing } = await this.supabase
+          .from('ic_postback')
+          .select(
+            'id_ic_postback, orderid, amount, status, statuscode, transactionid, datepayment, paymentid, id_com, currency, paymentmethod, ip, ips, idsite, idste',
+          )
+          .eq('orderid', safeOrderId)
+          .eq('status', 'completed')
+          .limit(1)
+          .maybeSingle();
+
+        if (existing) {
+          this.logger.warn(
+            `Payment already exists for order ${safeOrderId} (${existing.id_ic_postback}), skipping duplicate`,
+          );
+          return this.mapPostbackToPayment(existing);
+        }
+      }
+
       // 1. Enregistrer dans ic_postback pour tracking paiement
       const { data: postback, error: postbackError } = await this.supabase
         .from('ic_postback')

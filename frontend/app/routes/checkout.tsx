@@ -253,7 +253,7 @@ export async function action({ request, context }: ActionFunctionArgs) {
     };
 
     const orderResult = await createCheckoutOrder(request, {
-      customerId: cartData.metadata?.user_id ?? undefined,
+      customerId: cartData.metadata?.user_id || undefined,
       guestEmail: isGuest ? guestEmail : undefined,
       orderLines,
       billingAddress: addressData,

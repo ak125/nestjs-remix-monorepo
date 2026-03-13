@@ -155,6 +155,17 @@ export class OrdersService extends SupabaseBaseService {
       this.logger.log(`Création commande pour client ${orderData.customerId}`);
 
       // Validation
+      if (
+        !orderData.customerId ||
+        orderData.customerId === 'NaN' ||
+        orderData.customerId === 'undefined' ||
+        orderData.customerId === 'null'
+      ) {
+        throw new BadRequestException(
+          'ID client invalide. Veuillez vous connecter ou utiliser le checkout invité.',
+        );
+      }
+
       if (!orderData.orderLines || orderData.orderLines.length === 0) {
         throw new BadRequestException(
           'La commande doit contenir au moins une ligne',
@@ -193,7 +204,7 @@ export class OrdersService extends SupabaseBaseService {
       // IMPORTANT: Table legacy - toutes les colonnes sont TEXT
       const orderToInsert = {
         ord_id: orderNumber, // ✅ CORRECTIF: Générer l'ID obligatoire
-        ord_cst_id: orderData.customerId,
+        ord_cst_id: String(orderData.customerId).trim(),
         ord_date: new Date().toISOString(),
         ord_parent: '0',
         ord_is_pay: '0',
