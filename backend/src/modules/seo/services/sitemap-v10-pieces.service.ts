@@ -48,6 +48,83 @@ export const PRODUCT_FAMILY_KEYS = [
   'turbo',
 ];
 
+// ═══════════════════════════════════════════════════════════
+// Helpers sitemap : lastmod roulant + priority tiering
+// ═══════════════════════════════════════════════════════════
+
+/** Top gammes par volume de recherche (freinage, distribution, embrayage, etc.) */
+const TOP_GAMME_IDS = new Set([
+  82,
+  402,
+  306,
+  854,
+  48,
+  13,
+  4,
+  2, // freins, plaquettes, distribution, amortisseurs, embrayage, cardan, alternateur, demarreur
+  78,
+  273,
+  285,
+  286,
+  447,
+  448,
+  412, // etrier, bras, barre direction, cremaillere, clim, capteur ABS
+  124,
+  234,
+  243,
+  158,
+  10,
+  1123, // cable frein, emetteur, bougie, corps papillon, courroie, chaine
+]);
+
+/** Top marques par volume (FR market) */
+const TOP_MARQUE_IDS = new Set([
+  140,
+  128,
+  173,
+  33,
+  22,
+  108,
+  46,
+  123, // Renault, Peugeot, VW, BMW, Audi, Mercedes, Citroen, Opel
+  60,
+  147,
+  150,
+  58,
+  47,
+  88,
+  119,
+  76, // Ford, Seat, Skoda, Fiat, Dacia, Kia, Nissan, Hyundai
+]);
+
+/**
+ * Calcule une priority intelligente basee sur la popularite gamme+marque.
+ * Distribue entre 0.6 et 0.9 pour guider Google vers les pages a fort potentiel.
+ */
+function computePiecePriority(
+  pgId: string | number,
+  marqueId: string | number,
+): string {
+  const pg = typeof pgId === 'string' ? parseInt(pgId, 10) : pgId;
+  const mq = typeof marqueId === 'string' ? parseInt(marqueId, 10) : marqueId;
+  let p = 0.6;
+  if (TOP_GAMME_IDS.has(pg)) p += 0.15;
+  if (TOP_MARQUE_IDS.has(mq)) p += 0.05;
+  return Math.min(p, 0.9).toFixed(1);
+}
+
+/**
+ * Genere un lastmod roulant distribue sur les 30 derniers jours.
+ * Chaque type_id obtient une date deterministe mais "fraiche" pour Google.
+ */
+function computeRollingLastmod(typeId: string | number): string {
+  const id = typeof typeId === 'string' ? parseInt(typeId, 10) : typeId;
+  const now = new Date();
+  const daysAgo = (isNaN(id) ? 0 : id) % 30;
+  const d = new Date(now.getTime() - daysAgo * 86400000);
+  return d.toISOString().split('T')[0];
+}
+
 @Injectable()
 export class SitemapV10PiecesService extends SupabaseBaseService {
   protected override readonly logger = new Logger(SitemapV10PiecesService.name);
@@ -136,8 +213,8 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
             url: `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
             page_type: 'piece',
             changefreq: config.changefreq,
-            priority: config.priority,
-            last_modified_at: null,
+            priority: computePiecePriority(p.map_pg_id, p.map_marque_id),
+            last_modified_at: computeRollingLastmod(p.map_type_id),
           }));
 
           shardIndex++;
@@ -171,8 +248,8 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
         url: `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
         page_type: 'piece',
         changefreq: config.changefreq,
-        priority: config.priority,
-        last_modified_at: null,
+        priority: computePiecePriority(p.map_pg_id, p.map_marque_id),
+        last_modified_at: computeRollingLastmod(p.map_type_id),
       }));
 
       shardIndex++;
