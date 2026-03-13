@@ -44,6 +44,7 @@ import { RagSafeDistillService } from '../modules/admin/services/rag-safe-distil
 import { R1KeywordPlanGatesService } from '../modules/admin/services/r1-keyword-plan-gates.service';
 import { PipelineChainPollerService } from '../modules/admin/services/pipeline-chain-poller.service';
 import { R8VehicleEnricherService } from '../modules/admin/services/r8-vehicle-enricher.service';
+import { VehicleRagGeneratorService } from '../modules/admin/services/vehicle-rag-generator.service';
 
 // Dependencies for VideoExecutionProcessor
 import { VideoDataService } from '../modules/media-factory/services/video-data.service';
@@ -157,6 +158,7 @@ import { FeatureFlagsModule } from '../config/feature-flags.module';
     R1KeywordPlanGatesService, // 🚦 R1 KP gates (used by R1ContentPipelineService, stateless — safe duplicate)
     PipelineChainPollerService, // 🔗 Pipeline chain poller (keyword-plan → conseil auto-refresh)
     R8VehicleEnricherService, // 🚗 R8 Vehicle enricher (RAG + diversity scoring, 0-LLM, stateless — safe duplicate)
+    VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM, stateless — safe duplicate)
 
     // Services
     // SitemapStreamingService, // DESACTIVE

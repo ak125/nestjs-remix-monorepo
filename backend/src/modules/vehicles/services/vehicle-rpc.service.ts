@@ -244,7 +244,10 @@ export class VehicleRpcService extends SupabaseBaseService {
         'h1, meta_title, meta_description, rendered_json, seo_decision, diversity_score',
       )
       .eq('type_id', String(typeId))
-      .eq('seo_decision', 'INDEX')
+      .in('seo_decision', ['INDEX', 'REVIEW_REQUIRED'])
+      .filter('rendered_json->blocks', 'not.is', null)
+      .order('diversity_score', { ascending: false })
+      .limit(1)
       .maybeSingle();
 
     if (error || !data) return null;

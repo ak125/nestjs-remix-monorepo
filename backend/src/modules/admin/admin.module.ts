@@ -78,6 +78,8 @@ import { PipelineChainPollerService } from './services/pipeline-chain-poller.ser
 import { RagCatchupService } from './services/rag-catchup.service'; // 🔄 RAG catch-up at startup (detect orphan ingestions)
 import { R3ImagePromptService } from './services/r3-image-prompt.service'; // 🎨 R3 Image Prompts (template-based, 0-LLM)
 import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service'; // 🚗 R8 Vehicle page enricher (RAG + diversity scoring)
+import { VehicleRagGeneratorService } from './services/vehicle-rag-generator.service'; // 🚗 Vehicle RAG .md generator (0 LLM)
+import { AdminVehicleRagController } from './controllers/admin-vehicle-rag.controller'; // 🚗 Vehicle RAG generation endpoints
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -141,6 +143,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     AdminR3ImagePromptsController, // 🎨 R3 Image Prompts - /api/admin/r3-image-prompts/*
     AdminFeatureFlagsController, // 🏷️ Feature Flags - /api/admin/feature-flags/*
     AdminR8VehicleController, // 🚗 R8 Vehicle enrichment - /api/admin/r8/enrich/:typeId
+    AdminVehicleRagController, // 🚗 Vehicle RAG generation - /api/admin/vehicle-rag/*
   ],
   providers: [
     ConfigurationService,
@@ -184,6 +187,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     RagCatchupService, // 🔄 RAG catch-up at startup (detect orphan ingestions, flag-gated)
     R3ImagePromptService, // 🎨 R3 Image Prompts (template-based, 0-LLM)
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
+    VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)
   ],
   exports: [
     ConfigurationService,
@@ -204,6 +208,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     KeywordPlanGatesService, // 🚦 Export for keyword-planner agent
     R1KeywordPlanGatesService, // 🚦 Export for R1 pipeline + keyword-planner R1 mode
     R8VehicleEnricherService, // 🚗 Export for content-refresh processor
+    VehicleRagGeneratorService, // 🚗 Export for R8 enricher auto-generate
   ],
 })
 export class AdminModule {}
