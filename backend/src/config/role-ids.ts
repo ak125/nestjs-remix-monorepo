@@ -22,8 +22,9 @@ export enum RoleId {
   R6_GUIDE_ACHAT = 'R6_GUIDE_ACHAT',
   R7_BRAND = 'R7_BRAND',
   R8_VEHICLE = 'R8_VEHICLE',
-  // R9 is NOT an editorial page role — it's a system QA/governance control layer.
-  // No PageType, no PageRole, no frontend route.
+  // DEPRECATED — R9 n'est plus un role canonique R*.
+  // La gouvernance est une couche transverse (G*), pas un role R*.
+  // Garde pour backward compat. Ne pas utiliser dans du nouveau code.
   R9_GOVERNANCE = 'R9_GOVERNANCE',
 }
 

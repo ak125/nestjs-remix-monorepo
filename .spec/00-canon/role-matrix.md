@@ -1,6 +1,6 @@
-# Matrice canonique des roles R0-R9
+# Matrice canonique des roles R0-R8 + Couche de gouvernance G*
 
-> Version figee : 2026-03-13
+> Version figee : 2026-03-13 v3
 
 ## Statut de ce document
 
@@ -13,6 +13,12 @@ Aucun prompt, agent, script, pipeline, assembler, brief ou contract
 ne doit redefinir librement un role hors de cette matrice.
 
 Cette matrice est amont de la Phase 2.
+
+## Regle mere de qualification
+
+Un role canonique est attribue selon la promesse centrale dominante et non selon :
+le nom historique du fichier, le template utilise, l'URL seule,
+la densite du contenu, ou la presence de blocs secondaires.
 
 ## Lois canoniques globales
 
@@ -32,131 +38,190 @@ Une page moins riche mais pure est meilleure qu'une page plus riche mais hybride
 ### Loi 5 — Aucun role aval ne corrige un role amont
 La matrice est respectee dans l'ordre : Phase 1 (securite matiere) → Phase 1.5 (identite canonique) → Phase 1.6 (admissibilite metier) → Phase 2 (generation de role).
 
+## Modele canonique d'un role R*
+
+Ce modele s'applique aux roles metier/surface R0-R8.
+La couche de gouvernance G* a son propre modele (voir section dediee).
+
+Chaque role R* definit obligatoirement :
+role_id, canonical_name, promise_core, central_question,
+intent_dominant, primary_decision_mode, role_scope_level,
+vehicle_dependency_level, commerciality_level, surface_type,
+surface_visibility, admissible_sources, authorized_outputs,
+forbidden_outputs, forbidden_dominant_signals,
+authorized_linking, purity_gates, handoff_targets,
+handoff_conditions, blocking_conditions.
+
 ## Table compacte
 
-| Role | Nom | Promesse centrale | Intent | Dep. vehicule | Nature |
-|------|-----|-------------------|--------|---------------|--------|
-| R0 | Home | orienter globalement | orientation | faible | hub global |
-| R1 | Router gamme | trouver la bonne gamme pour le bon vehicule | navigation compatibilite | forte | navigation |
-| R2 | Product | acheter la bonne reference compatible | transaction | tres forte | listing commercial |
-| R3 | Conseils | intervenir correctement | agir | faible/moyenne | how-to |
-| R4 | Reference | comprendre ce que c'est | comprendre | faible | glossaire |
-| R5 | Diagnostic | orienter un symptome | orienter | faible/moyenne | diagnostic |
-| R6 | Guide d'achat | choisir sans erreur | choisir | moyenne | pre-achat |
-| R7 | Brand | explorer une marque | navigation marque | moyenne | hub marque |
-| R8 | Vehicle | contextualiser un vehicule | contextualiser | tres forte | fiche vehicule |
-| R9 | Gouvernance | controler purete et collision | controle | variable | QA (non editorial) |
+| Role | Nom | Promesse centrale | Intent | Decision mode | Dep. vehicule | Nature | Visibilite | Risque derive |
+|------|-----|-------------------|--------|---------------|---------------|--------|------------|---------------|
+| R0 | Home | orienter globalement | orientation | navigate | faible | hub global | public | hybridation excessive |
+| R1 | Router gamme | trouver la bonne gamme pour le bon vehicule | navigation compatibilite | navigate | forte | navigation | public | glissement vers R2/R6 |
+| R2 | Product | acheter la bonne reference compatible | transaction | buy | tres forte | listing commercial | public | derive editoriale |
+| R3 | Conseils | intervenir correctement | agir | act | faible/moyenne | how-to | public | glissement vers R6/R5 |
+| R4 | Reference | comprendre ce que c'est | comprendre | understand | faible | glossaire | public | glissement vers R3/R5 |
+| R5 | Diagnostic | orienter un symptome | orienter | triage | faible/moyenne | diagnostic | public | glissement vers R3 |
+| R6 | Guide d'achat | choisir sans erreur | choisir | choose | moyenne | pre-achat | public | glissement vers R2/R3/R4 |
+| R7 | Brand | explorer une marque | navigation marque | navigate | moyenne | hub marque | public | glissement vers R8 |
+| R8 | Vehicle | contextualiser un vehicule | contextualiser | contextualize | tres forte | fiche vehicule | public | glissement vers R1/R5 |
+
+La serie R* est ouverte : R9, R10, R11... peuvent etre ajoutes pour de futurs roles metier.
 
 ## Definitions detaillees
 
 ### R0 — HOME / HUB GLOBAL
 
 - **Promesse** : orienter l'utilisateur vers le bon parcours
+- **Scope** : global
 - **Question** : "Par ou commencer selon mon besoin ?"
 - **Est** : porte d'entree, repartiteur de parcours, hub de decouverte
 - **N'est pas** : page gamme, page produit, page symptome, guide d'achat detaille
 - **Sources admissibles** : navigation globale, hubs metier, categories majeures, constructeurs
 - **Sorties autorisees** : hero d'orientation, acces catalogue/marque/diagnostic/blog/recherche
 - **Sorties interdites** : procedure detaillee, diagnostic detaille, transaction fine, definition technique profonde
+- **forbidden_dominant_signals** : `["detailed_procedure", "symptom_tree", "transactional_listing", "deep_glossary", "buying_checklist"]`
 - **Bascule** : besoin gamme → R1, besoin marque → R7, besoin vehicule → R8, besoin symptome → R5, besoin achat guide → R6
+- **handoff_targets** : `[{target: R1, condition: "besoin gamme"}, {target: R7, condition: "besoin marque"}, {target: R8, condition: "besoin vehicule"}, {target: R5, condition: "besoin symptome"}, {target: R6, condition: "besoin guide achat"}]`
 
 ### R1 — ROUTER GAMME / NAVIGATION COMPATIBILITE
 
 - **Promesse** : aider a trouver la bonne gamme pour le bon vehicule
+- **Scope** : gamme
 - **Question** : "Ou trouver la bonne piece pour mon vehicule ?"
 - **Est** : page gamme, orientation vers compatibilite, selection, anti-erreur de filtrage, transition vers R2
 - **N'est pas** : page produit, page achat guide, page how-to, page definition, page diagnostic
 - **Sources admissibles** : gamme canonique, criteres de compatibilite, variantes, familles, taxonomie produit
 - **Sorties autorisees** : hero gamme, selector, compat reminders, variantes, FAQ selection, safe table legere, renvois R3/R4/R5/R6
 - **Sorties interdites** : prix detailles, stock, panier, procedure, symptomes, glossaire profond
+- **forbidden_dominant_signals** : `["detailed_pricing", "basket_cta", "procedure_steps", "symptom_tree", "deep_glossary"]`
 - **Gates de purete** : zero procedure, zero symptom-first, zero definition-first, zero conversion produit directe dominante
 - **Bascule** : besoin transactionnel exact → R2, besoin definition → R4, besoin symptome → R5, besoin comment remplacer → R3, besoin comment choisir → R6
+- **handoff_targets** : `[{target: R2, condition: "besoin transactionnel exact"}, {target: R4, condition: "besoin definition"}, {target: R5, condition: "besoin symptome"}, {target: R3, condition: "besoin comment remplacer"}, {target: R6, condition: "besoin comment choisir"}]`
 
 ### R2 — PRODUCT / LISTING TRANSACTIONNEL
 
 - **Promesse** : permettre de consulter et acheter les references compatibles
+- **Scope** : reference
 - **Question** : "Quelles references puis-je acheter maintenant pour ce vehicule exact ?"
 - **Est** : listing compatible, comparaison produit, prix, disponibilite, conversion
 - **N'est pas** : routeur, guide d'achat editorial, tutoriel, diagnostic, fiche encyclopedique
 - **Sources admissibles** : catalogue, compatibilite exacte, prix, stock, shipping, OEM/OES/equivalences, scoring produit
 - **Sorties autorisees** : cartes produit, prix, stock, CTA panier, micro specs, badges, FAQ achat, reassurance
 - **Sorties interdites** : tutoriel complet, arbre diagnostic, definition pure, guide editorial long, navigation large gamme
+- **forbidden_dominant_signals** : `["procedure_flow", "symptom_tree", "deep_glossary", "editorial_guide", "gamme_navigation"]`
 - **Gates de purete** : presence transactionnelle obligatoire, pas de langage R3/R4/R5 dominant
+- **handoff_targets** : `[{target: R1, condition: "besoin navigation gamme"}, {target: R3, condition: "besoin tutoriel"}, {target: R4, condition: "besoin definition"}, {target: R6, condition: "besoin guide achat"}]`
 
 ### R3 — CONSEILS / HOW-TO / ENTRETIEN / REMPLACEMENT
 
 - **Promesse** : aider a intervenir correctement sur une piece
+- **Scope** : gamme
 - **Question** : "Comment intervenir correctement, en securite, sur cette piece ?"
 - **Est** : how-to, conseil pratique, entretien, remplacement, controle simple, post-intervention
 - **N'est pas** : guide d'achat, definition, diagnostic profond, page produit
 - **Sources admissibles** : procedure validee, securite, outils, etapes, anti-erreurs, controles post-montage, FAQ maintenance
 - **Sorties autorisees** : sections procedurales, checklists, tables de controle, FAQ maintenance, CTA soft vers R1, liens R4/R5/R6
 - **Sorties interdites** : prix/stock/panier, comparatif achat dominant, symptome-first dominant, definition-first dominante
+- **forbidden_dominant_signals** : `["buying_checklist", "symptom_tree", "deep_glossary", "transactional_listing", "quality_tiers"]`
 - **Gates de purete** : si besoin = "choisir quoi acheter" → sortie R3, si besoin = "comprendre ce que c'est" → sortie R3, si besoin = "identifier une panne" → sortie R3
+- **handoff_targets** : `[{target: R6, condition: "besoin principal = choix avant achat"}, {target: R5, condition: "besoin principal = interpretation symptome"}, {target: R4, condition: "besoin principal = comprehension definitionnelle"}]`
 
 ### R4 — REFERENCE / DEFINITION / GLOSSAIRE
 
 - **Promesse** : expliquer ce qu'est un terme ou un organe et eviter les confusions
+- **Scope** : reference
 - **Question** : "Qu'est-ce que c'est exactement ?"
 - **Est** : definition, role mecanique, composition, limites, terminologie, confusions frequentes
 - **N'est pas** : achat guide, how-to, diagnostic, page produit, page vehicule exacte
 - **Sources admissibles** : definitions validees, composition, role, nomenclature, distinctions OEM/OES/IAM, confusions, FAQ encyclopedique
 - **Sorties autorisees** : definition, composition, role, confusions, glossaire, FAQ encyclopedique, renvois R1/R3/R5/R6
 - **Sorties interdites** : prix, stock, tutoriel, arbre de symptomes, checklist achat dominante
+- **forbidden_dominant_signals** : `["procedure_flow", "symptom_orientation", "basket_cta", "buying_checklist", "transactional_listing"]`
 - **Gates de purete** : zero procedure dominante, zero diagnostic dominant, zero transactionnel dominant
+- **handoff_targets** : `[{target: R3, condition: "besoin = comment intervenir"}, {target: R5, condition: "besoin = interpreter un symptome"}, {target: R1, condition: "besoin = trouver la bonne gamme"}, {target: R6, condition: "besoin = choisir avant achat"}]`
 
 ### R5 — DIAGNOSTIC / SYMPTOMES / ORIENTATION PANNE
 
 - **Promesse** : aider a orienter un symptome et prioriser les verifications
+- **Scope** : symptom
 - **Question** : "Que peut signifier ce symptome et que verifier d'abord ?"
 - **Est** : symptome-first, orientation prudente, tri d'hypotheses, quick checks, risque/securite, decision d'escalade
 - **N'est pas** : tutoriel, definition, guide d'achat, page produit, diagnostic atelier individualise complet
 - **Sources admissibles** : symptomes, hypotheses, quick checks, safety gates, niveaux d'urgence, causes plausibles
 - **Sorties autorisees** : symptomes, hypotheses, verifications rapides, actions immediates prudentes, signaux d'arret, renvois R3/R4/R1
 - **Sorties interdites** : depose/repose detaillee, glossaire dominant, choix qualite/budget, conversion transactionnelle
+- **forbidden_dominant_signals** : `["procedure_steps", "glossary_dominant", "quality_tiers", "basket_cta", "buying_checklist"]`
 - **Gates de purete** : zero pas-a-pas dominant, zero definition dominante, zero guide achat dominant
+- **handoff_targets** : `[{target: R3, condition: "besoin = comment intervenir"}, {target: R4, condition: "besoin = comprendre ce que c'est"}, {target: R1, condition: "besoin = trouver la bonne gamme"}]`
 
 ### R6 — GUIDE D'ACHAT
 
 - **Promesse** : aider a choisir la bonne piece sans erreur avant commande
+- **Scope** : gamme
 - **Question** : "Comment choisir et commander la bonne piece sans me tromper ?"
 - **Est** : guide d'achat, aide a la decision, compatibilite pre-achat, niveaux de qualite, pieges d'achat, criteres de comparaison, checklists avant commande
 - **N'est pas** : tutoriel, diagnostic, definition, page produit listing, FAQ support generique
 - **Sources admissibles** : selection.criteria, checklist achat, quality tiers, anti_mistakes, cross_gammes, budgets editoriaux, FAQ achat
 - **Sorties autorisees** : decision blocks, quality tables, compatibility checklist, pitfalls, brands guide, when pro, FAQ achat, CTA vers R1
 - **Sorties interdites** : pas a pas, symptomes/causes, glossaire dominant, panier/stock detaille
+- **forbidden_dominant_signals** : `["procedure_steps", "symptom_tree", "deep_glossary", "transactional_listing", "stock_pricing"]`
 - **Gates de purete** : zero R3 dominant, zero R5 dominant, zero R4 dominant, zero R2 dominant
+- **handoff_targets** : `[{target: R2, condition: "decision prise, pret a acheter"}, {target: R3, condition: "besoin = comment remplacer"}, {target: R5, condition: "besoin = comprendre un symptome"}, {target: R4, condition: "besoin = definition technique"}]`
 
 ### R7 — BRAND / CONSTRUCTEUR / HUB MARQUE
 
 - **Promesse** : aider a naviguer dans l'univers pieces d'une marque
+- **Scope** : brand
 - **Question** : "Comment explorer les pieces et vehicules lies a cette marque ?"
 - **Est** : page constructeur, porte d'entree marque, hub de navigation, regroupement modeles/pieces/recherches
 - **N'est pas** : fiche vehicule, page produit, how-to, guide d'achat, diagnostic
 - **Sources admissibles** : marque, modeles, pieces populaires, top recherches, hubs compatibilite, blocs about brand
 - **Sorties autorisees** : hero marque, top pieces, top vehicules, top recherches, raccourcis, compat guide leger, FAQ marque
 - **Sorties interdites** : procedure, symptomes, listing transactionnel detaille, fiche vehicule profonde
+- **forbidden_dominant_signals** : `["procedure_steps", "symptom_tree", "transactional_listing", "vehicle_deep_sheet", "buying_checklist"]`
+- **handoff_targets** : `[{target: R8, condition: "besoin = fiche vehicule precise"}, {target: R1, condition: "besoin = trouver gamme compatible"}, {target: R2, condition: "besoin = acheter reference"}]`
 
 ### R8 — VEHICLE / FICHE VEHICULE
 
 - **Promesse** : donner la fiche contexte d'un vehicule pour guider entretien, recherche et compatibilite
+- **Scope** : vehicle
 - **Question** : "Quelles sont les caracteristiques utiles de ce vehicule ?"
 - **Est** : identite vehicule, motorisations, periodes, specificites, reperes entretien, points de vigilance, contexte de compatibilite
 - **N'est pas** : produit, guide d'achat, tutoriel detaille, diagnostic complet, hub marque
 - **Sources admissibles** : donnees vehicule, motorisations, periodes, known issues bornes, usure courante, reperes entretien, liaisons gammes
 - **Sorties autorisees** : identite, versions, motorisations, reperes entretien, pieces courantes, liens R1/R3/R5/R6
 - **Sorties interdites** : panier, prix, procedure longue, symptome-first dominant, brand hub
+- **forbidden_dominant_signals** : `["basket_cta", "stock_pricing", "procedure_flow", "symptom_tree", "brand_hub_navigation"]`
+- **handoff_targets** : `[{target: R1, condition: "besoin = trouver gamme"}, {target: R3, condition: "besoin = comment intervenir"}, {target: R5, condition: "besoin = interpreter symptome"}, {target: R7, condition: "besoin = explorer marque"}]`
 
-### R9 — GOUVERNANCE / QA / DIVERSITE / NON-CANNIBALISATION
+## Regle de separation role / gouvernance
 
-- **Promesse** : garantir qu'un contenu est distinct, pur, tracable et publiable
-- **Question** : "Ce contenu peut-il exister sans collision ni derive de role ?"
-- **Nature** : surface systeme / controle — PAS un role editorial public
-- **Est** : controle, review, anti-duplication, anti-cannibalisation, fingerprinting, nearest-neighbor, blocage publication, gouvernance qualite
-- **N'est pas** : role editorial public, page metier principale, surface de contenu final
-- **Sources admissibles** : fingerprints, versioning, neighbors, overlap scores, forbidden vocab, gates, decisions QA
-- **Sorties autorisees** : PASS/REVIEW/BLOCK, score diversite, score purete, exclusions sitemap, file de review, logs QA
-- **Sorties interdites** : contenu public metier principal
+Les roles R* decrivent des surfaces ou usages metier a promesse centrale exclusive.
+La gouvernance n'est pas un role editorial ni un role de surface : elle constitue
+une couche transversale de controle, de QA, de purete, de diversite et de decision
+de publication.
+Les identifiants R* sont reserves aux roles canoniques de contenu, surface ou usage metier.
+La serie R* reste ouverte : R9, R10, R11... peuvent etre ajoutes pour de futurs roles metier.
+
+## Couche de gouvernance transverse (G*)
+
+La gouvernance garantit qu'un contenu est distinct, pur, tracable et publiable.
+Question centrale : "Ce contenu peut-il exister sans collision ni derive de role ?"
+Visibilite : internal — PAS un role editorial public.
+
+| Gate | Nom | Fonction |
+|------|-----|----------|
+| G1 | Purete | Verifier qu'un artefact respecte un seul role R* dominant |
+| G2 | Diversite | Verifier qu'un artefact n'est pas un doublon d'un autre |
+| G3 | Anti-cannibalisation | Verifier qu'un artefact ne cannibalise pas une surface existante |
+| G4 | Publication gate | Decider si un artefact est publiable (PASS/REVIEW/BLOCK) |
+| G5 | Review / escalation | Aiguiller vers review humaine si score insuffisant |
+
+**Sources admissibles** : fingerprints, versioning, neighbors, overlap scores, forbidden vocab, gates, decisions QA.
+**Sorties autorisees** : PASS/REVIEW/BLOCK, score diversite, score purete, exclusions sitemap, file de review, logs QA.
+**Sorties interdites** : contenu public metier principal.
+**forbidden_dominant_signals** : `["editorial_content", "public_page", "transactional_listing", "procedure_steps", "user_facing_navigation"]`
 
 ## Matrice de frontieres fortes
 
@@ -183,7 +248,8 @@ La matrice est respectee dans l'ordre : Phase 1 (securite matiere) → Phase 1.5
 | diagnostic / observable / symptome | R5 |
 | brand / constructeur | R7 |
 | vehicle sheet / fiche vehicule | R8 |
-| diversity / fingerprint / anti duplicate | R9 |
+| diversity / fingerprint / anti duplicate | G* (couche transverse) |
+| R9 gouvernance | G* (R9 n'est plus un role canonique) |
 
 **Regle dure** : le systeme ne doit plus produire de nouvelle ambiguite du type R3_guide_achat, R6_support, R5_conseil.
 
@@ -201,7 +267,18 @@ La matrice est respectee dans l'ordre : Phase 1 (securite matiere) → Phase 1.5
 | R6 Guide achat | R6_GUIDE_ACHAT | R6_guide_achat | OK |
 | R7 Brand | R7_BRAND | — | Ajout 2026-03-11 |
 | R8 Vehicle | R8_VEHICLE | — | Ajout 2026-03 |
-| R9 Gouvernance | R9_GOVERNANCE | — | PAS de PageType (non editorial) |
+| ~~R9 Gouvernance~~ | R9_GOVERNANCE | — | DEPRECIE — remplace par couche G* (voir section dediee) |
+
+## Formulation normative
+
+La matrice R0-R8 est la norme canonique de qualification des roles metier.
+La couche G* est la norme canonique de gouvernance transverse.
+Ensemble, elles gouvernent la classification des surfaces, les frontieres metier,
+les contracts, les gates de purete, la generation, la QA et la prevention
+de cannibalisation.
+Aucun systeme aval ne peut redefinir librement un role ou une gate
+en dehors de ces deux referentiels.
+Le critere principal de qualification est la promesse centrale exclusive du role.
 
 ## Lien avec les phases pipeline
 
