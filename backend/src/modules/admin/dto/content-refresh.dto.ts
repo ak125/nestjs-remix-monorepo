@@ -10,7 +10,7 @@ export const TriggerRefreshDto = z.object({
       z.enum([
         'R1_pieces',
         'R3_conseils',
-        'R3_guide_achat',
+        'R3_guide_howto',
         'R4_reference',
         'R5_diagnostic',
         'R6_guide_achat',
@@ -37,7 +37,7 @@ export const RefreshStatusQueryDto = z.object({
     .enum([
       'R1_pieces',
       'R3_conseils',
-      'R3_guide_achat',
+      'R3_guide_howto',
       'R4_reference',
       'R5_diagnostic',
       'R6_guide_achat',

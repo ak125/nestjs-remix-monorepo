@@ -341,7 +341,7 @@ export class MarketingDataService extends SupabaseBaseService {
     type PageType =
       | 'R1_pieces'
       | 'R3_conseils'
-      | 'R3_guide_achat'
+      | 'R3_guide_howto'
       | 'R4_reference';
 
     const [gammes, pipelineRows] = await Promise.all([
@@ -461,7 +461,7 @@ export class MarketingDataService extends SupabaseBaseService {
     const gammeResults: GammePipelineStatus[] = (gammes.data || []).map((g) => {
       const r1 = pick(g.pg_id, 'R1_pieces');
       const r3c = pick(g.pg_id, 'R3_conseils');
-      const r3g = pick(g.pg_id, 'R3_guide_achat');
+      const r3g = pick(g.pg_id, 'R3_guide_howto');
       const r4 = pick(g.pg_id, 'R4_reference');
       const overall = computeOverall([r1, r3c, r3g, r4]);
 

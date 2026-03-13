@@ -22,6 +22,9 @@ export enum RoleId {
   R6_GUIDE_ACHAT = 'R6_GUIDE_ACHAT',
   R7_BRAND = 'R7_BRAND',
   R8_VEHICLE = 'R8_VEHICLE',
+  // R9 is NOT an editorial page role — it's a system QA/governance control layer.
+  // No PageType, no PageRole, no frontend route.
+  R9_GOVERNANCE = 'R9_GOVERNANCE',
 }
 
 /** All role IDs as an array (useful for iteration / validation) */
@@ -31,7 +34,7 @@ export const ROLE_ID_LIST: RoleId[] = Object.values(RoleId);
 
 const ROLE_TO_PAGE_TYPE: Partial<Record<RoleId, PageType>> = {
   [RoleId.R1_ROUTER]: 'R1_pieces',
-  [RoleId.R3_GUIDE]: 'R3_guide_achat',
+  [RoleId.R3_GUIDE]: 'R3_guide_howto',
   [RoleId.R3_CONSEILS]: 'R3_conseils',
   [RoleId.R4_REFERENCE]: 'R4_reference',
   [RoleId.R5_DIAGNOSTIC]: 'R5_diagnostic',
@@ -41,7 +44,8 @@ const ROLE_TO_PAGE_TYPE: Partial<Record<RoleId, PageType>> = {
 
 const PAGE_TYPE_TO_ROLE: Record<string, RoleId> = {
   R1_pieces: RoleId.R1_ROUTER,
-  R3_guide_achat: RoleId.R3_GUIDE,
+  R3_guide_howto: RoleId.R3_GUIDE,
+  R3_guide_achat: RoleId.R3_GUIDE, // LEGACY — remove after queue drain
   R3_conseils: RoleId.R3_CONSEILS,
   R4_reference: RoleId.R4_REFERENCE,
   R5_diagnostic: RoleId.R5_DIAGNOSTIC,

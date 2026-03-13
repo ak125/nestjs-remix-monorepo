@@ -285,7 +285,7 @@ const REFRESH_STATUS: Record<string, StatusType> = {
 const PAGE_TYPE_LABELS: Record<string, string> = {
   R1_pieces: "R1 Pieces",
   R3_conseils: "R3 Conseils",
-  R3_guide_achat: "R3 Guide",
+  R3_guide_howto: "R3 Guide",
   R4_reference: "R4 Reference",
   R5_diagnostic: "R5 Diagnostic",
 };
@@ -293,7 +293,7 @@ const PAGE_TYPE_LABELS: Record<string, string> = {
 const PAGE_TYPE_OPTIONS = [
   { value: "R1_pieces", label: "R1 Pieces" },
   { value: "R3_conseils", label: "R3 Conseils" },
-  { value: "R3_guide_achat", label: "R3 Guide Achat" },
+  { value: "R3_guide_howto", label: "R3 Guide How-To" },
   { value: "R4_reference", label: "R4 Reference" },
   { value: "R6_guide_achat", label: "R6 Guide Achat" },
 ] as const;
@@ -1957,8 +1957,8 @@ export default function AdminRagPipeline() {
                     <SelectItem value="">Tous</SelectItem>
                     <SelectItem value="R1_pieces">R1 Pieces</SelectItem>
                     <SelectItem value="R3_conseils">R3 Conseils</SelectItem>
-                    <SelectItem value="R3_guide_achat">
-                      R3 Guide Achat
+                    <SelectItem value="R3_guide_howto">
+                      R3 Guide How-To
                     </SelectItem>
                     <SelectItem value="R4_reference">R4 Reference</SelectItem>
                     <SelectItem value="R5_diagnostic">R5 Diagnostic</SelectItem>

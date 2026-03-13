@@ -3,7 +3,7 @@ import type { RoleId } from '../../config/role-ids';
 export type PageType =
   | 'R1_pieces'
   | 'R3_conseils'
-  | 'R3_guide_achat'
+  | 'R3_guide_howto'
   | 'R4_reference'
   | 'R5_diagnostic'
   | 'R6_guide_achat';

@@ -352,7 +352,7 @@ describe('ContentRefreshProcessor — RAG-as-Optional-Overlay', () => {
 
     const result: ContentRefreshResult = await processor.handleContentRefresh(
       makeJob({
-        pageType: 'R3_guide_achat',
+        pageType: 'R3_guide_howto',
         pgAlias: 'disque-de-frein',
       }),
     );
