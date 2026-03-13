@@ -21,7 +21,6 @@
 import {
   defer,
   json,
-  redirect,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -110,6 +109,7 @@ import {
   type HierarchyData,
 } from "../utils/pieces-loader.utils";
 import {
+  detectMalformedSegment,
   generateBuyingGuide,
   generateFAQ,
   parseUrlParam,
@@ -170,6 +170,29 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   if (!rawGamme || !rawMarque || !rawModele || !rawType) {
     throw new Response(`Paramètres manquants`, { status: 400 });
+  }
+
+  // 1b. Guard: détection URLs mal formées AVANT appels API
+  // Économise les API calls pour ~60k URLs historiques (anciens sitemaps, liens externes)
+  const malformedReason = detectMalformedSegment(
+    rawGamme,
+    rawMarque,
+    rawModele,
+    rawType,
+  );
+  if (malformedReason) {
+    logger.log(`🚫 [404] URL mal formée (${malformedReason}): ${url.pathname}`);
+    throw new Response(
+      JSON.stringify({ reason: malformedReason, url: url.pathname }),
+      {
+        status: 404,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Robots-Tag": "noindex, follow",
+          "Cache-Control": "public, max-age=86400",
+        },
+      },
+    );
   }
 
   // 2. Parse les IDs depuis les URLs
@@ -340,9 +363,16 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const canonicalPath = `/pieces/${correctGammeSlug}/${correctBrandSlug}/${correctModelSlug}/${correctTypeSlug}.html`;
 
   // 301 redirect si l'URL courante ne correspond pas a l'URL canonique
+  // Cache long pour réduire le re-crawl Google sur les URLs non-canoniques
   if (url.pathname !== canonicalPath) {
     logger.log(`🔄 [301] URL mismatch: ${url.pathname} → ${canonicalPath}`);
-    return redirect(canonicalPath, 301);
+    return new Response(null, {
+      status: 301,
+      headers: {
+        Location: canonicalPath,
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
+    });
   }
 
   // 🔗 SEO: URLs pré-calculées pour section "Voir aussi" (pas de construction côté client)

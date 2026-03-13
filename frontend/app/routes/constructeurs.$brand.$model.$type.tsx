@@ -53,6 +53,7 @@ import { HtmlContent } from "../components/seo/HtmlContent";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import { isValidImagePath } from "../utils/image-optimizer";
+import { detectMalformedSegment } from "../utils/pieces-route.utils";
 import { stripHtmlForMeta } from "../utils/seo-clean.utils";
 import { normalizeTypeAlias } from "../utils/url-builder.utils";
 
@@ -453,6 +454,23 @@ export async function loader({ params }: LoaderFunctionArgs) {
     });
     throw new Response("URL obsolète - format sans identifiant", {
       status: 410,
+    });
+  }
+
+  // 🛑 SEO: URLs mal formées (null, ID répété, espaces, accents) → 404
+  // Économise l'appel RPC pour ~2k URLs historiques constructeurs
+  const malformedReason = detectMalformedSegment(brand, model, type);
+  if (malformedReason) {
+    logger.log(
+      `🚫 [404] URL constructeur mal formée (${malformedReason}): ${brand}/${model}/${type}`,
+    );
+    throw new Response(JSON.stringify({ reason: malformedReason }), {
+      status: 404,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Robots-Tag": "noindex, follow",
+        "Cache-Control": "public, max-age=86400",
+      },
     });
   }
 

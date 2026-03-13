@@ -285,6 +285,17 @@ function isGarbageUrl(pathname: string): boolean {
     return true;
   }
 
+  // URLs avec null/undefined dans les segments (liens cassés historiques)
+  if (/\bnull\b/i.test(pathname) || /\bundefined\b/i.test(pathname)) {
+    return true;
+  }
+
+  // URLs avec même nombre répété 4+ fois (ex: /23231-23231-23231-23231)
+  const repeatedIdMatch = pathname.match(/(\d{3,})([-/]\1){3,}/);
+  if (repeatedIdMatch) {
+    return true;
+  }
+
   return false;
 }
 
@@ -357,6 +368,23 @@ function resolveKnownPattern(pathname: string): string | null {
   // Trailing .html sur des URLs non-pièces → retirer le .html
   if (pathname.endsWith(".html") && !pathname.startsWith("/pieces/")) {
     return pathname.slice(0, -5);
+  }
+
+  // Blog URLs avec espaces → normaliser en tirets
+  if (
+    pathname.startsWith("/blog-pieces-auto/") &&
+    (pathname.includes("%20") || pathname.includes(" "))
+  ) {
+    try {
+      return decodeURIComponent(pathname).replace(/\s+/g, "-");
+    } catch {
+      return pathname.replace(/%20/g, "-");
+    }
+  }
+
+  // /pieces/catalogue → / (legacy catalogue pages)
+  if (pathname.startsWith("/pieces/catalogue")) {
+    return "/";
   }
 
   // Double slashes → normaliser

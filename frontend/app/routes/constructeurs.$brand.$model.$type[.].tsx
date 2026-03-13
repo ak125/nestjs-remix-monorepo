@@ -4,12 +4,26 @@
 import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { detectMalformedSegment } from "~/utils/pieces-route.utils";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   const { brand, model, type } = params;
 
   if (!brand || !model || !type) {
     throw new Response("Parameters missing", { status: 400 });
+  }
+
+  // Guard: URLs mal formées → 404 direct (pas de redirect inutile)
+  const malformedReason = detectMalformedSegment(brand, model, type);
+  if (malformedReason) {
+    throw new Response(JSON.stringify({ reason: malformedReason }), {
+      status: 404,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Robots-Tag": "noindex, follow",
+        "Cache-Control": "public, max-age=86400",
+      },
+    });
   }
 
   // Redirection permanente (301) vers la version avec .html
