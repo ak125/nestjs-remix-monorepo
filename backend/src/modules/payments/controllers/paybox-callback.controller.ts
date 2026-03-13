@@ -157,7 +157,7 @@ export class PayboxCallbackController {
           `Paiement enregistre - Commande #${params.orderReference} - ${amountInEuros}EUR`,
         );
 
-        // Email confirmation (non bloquant — ne pas bloquer le 200 OK)
+        // Emails (non bloquant — ne pas bloquer le 200 OK)
         try {
           const order =
             await this.paymentDataService.getOrderForPayment(orderId);
@@ -173,6 +173,18 @@ export class PayboxCallbackController {
             this.logger.log(
               `Email confirmation envoye pour commande #${orderId}`,
             );
+
+            // Notification admin (non bloquant)
+            try {
+              await this.mailService.sendAdminOrderNotification(
+                orderData,
+                customer,
+              );
+            } catch (adminErr: unknown) {
+              this.logger.warn(
+                `Admin notification failed (non-blocking): ${adminErr instanceof Error ? adminErr.message : String(adminErr)}`,
+              );
+            }
           } else {
             this.logger.warn(
               `Impossible d'envoyer email confirmation: order=${!!order}, customer=${!!customer}`,
