@@ -1,6 +1,6 @@
 # Matrice canonique des roles R0-R8 + Couche de gouvernance G*
 
-> Version figee : 2026-03-13 v4
+> Version figee : 2026-03-14 v5
 
 ## Statut de ce document
 
@@ -194,6 +194,49 @@ La serie R* est ouverte : R9, R10, R11... peuvent etre ajoutes pour de futurs ro
 - **Sorties interdites** : panier, prix, procedure longue, symptome-first dominant, brand hub
 - **forbidden_dominant_signals** : `["basket_cta", "stock_pricing", "procedure_flow", "symptom_tree", "brand_hub_navigation"]`
 - **handoff_targets** : `[{target: R1, condition: "besoin = trouver gamme"}, {target: R3, condition: "besoin = comment intervenir"}, {target: R5, condition: "besoin = interpreter symptome"}, {target: R7, condition: "besoin = explorer marque"}]`
+
+## Tableau canonique — R0 a R8 entrees / sorties / interdits / G*
+
+| Role | Promesse centrale exclusive | Entrees minimales | Sorties attendues | Interdits majeurs | Garde-fous G* | Bascule prioritaire | Contexte |
+|------|---------------------------|-------------------|-------------------|-------------------|---------------|--------------------|----|
+| R0 Home | orienter rapidement l'utilisateur vers les grandes portes d'entree du systeme | taxonomie principale, acces catalogue, acces marques, acces blog, acces diagnostic, signaux de reassurance, priorites business | page d'accueil de cadrage, navigation primaire, raccourcis de parcours, preuves de confiance, liens vers surfaces pivots | devenir page catalogue detaillee, article profond, page diagnostic, guide d'achat detaille | G1, G3, G4 | R1 / R7 / R8 / R5 / R6 | global |
+| R1 Router gamme | aider a trouver la bonne gamme pour le bon vehicule | gamme identifiee, criteres de compatibilite, logique de selection vehicule, variantes principales, wording de selection | page de routage gamme, orientation vers selection vehicule, acces vers R2, maillage vers R3/R4/R5/R6 | prix/stock pousses comme R2, diagnostic comme R5, definition encyclopedique comme R4, procedure de montage comme R3, guide d'achat complet comme R6 | G1, G3, G4 | R2 / R3 / R4 / R5 / R6 | vehicule/gamme |
+| R2 Product | permettre d'acheter la bonne reference compatible | vehicule ou contexte compatible, donnees produit, prix, stock, specs, equivalences, preuves transactionnelles | page produit ou listing transactionnel, CTA d'achat, prix, stock, compatibilite, attributs produit, cross-sell encadre | devenir routeur R1, faire du how-to R3, faire de la definition R4, faire du diagnostic R5 | G1, G3, G4 | R1 / R3 / R4 / R6 | transaction compatible |
+| R3 Conseils | expliquer comment agir, remplacer, controler ou entretenir correctement | matiere procedurale fiable, etapes, outils, securite, erreurs frequentes, verifications finales, compatibilite minimale | contenu how-to, procedure structuree, checklist, FAQ maintenance, CTA doux vers gamme | definition pure R4, diagnostic oriente causes R5, page achat R6, push commercial R2, dependance forte au vehicule individuel non justifiee | G1, G2, G3, G4 | R4 / R5 / R6 | operation |
+| R4 Reference | definir clairement un terme, une piece, un concept ou une notion technique | definition, role mecanique, composition, distinctions, confusions, limites, vocabulaire normalise | page de reference ou glossaire, contenu intemporel, distinctions semantiques, FAQ de comprehension, liens vers R1/R3/R5 | montage detaille R3, diagnostic R5, achat comparatif R6, transaction R2, dependance a un vehicule specifique | G1, G2, G3, G4 | R3 / R5 | notion |
+| R5 Diagnostic | orienter l'utilisateur face a un symptome ou un signal anormal | symptome observable, signaux, quick checks, causes probables, niveaux de risque, actions prudentes, limites de certitude | page d'orientation diagnostic, hypotheses, signaux, drapeaux de risque, redirection vers R3/R4/R1 selon besoin | procedure detaillee R3, definition pure R4, vente directe R2, guide achat R6, personnalisation forte necessitant un outil | G1, G3, G4, G5 | R3 / R4 / outil | symptome |
+| R6 Guide d'achat | aider a choisir et acheter la bonne piece sans se tromper | criteres de choix, compatibilite, references, niveaux de qualite, pieges d'achat, checklist avant commande, logique de pack | guide d'achat, arbre de choix, tableaux comparatifs, checklist achat, FAQ achat, CTA vers R1 | montage/how-to R3, diagnostic R5, definition pure R4, fiche transactionnelle R2, promesse de support generique R0 | G1, G2, G3, G4 | R2 / R3 / R4 | pre-achat |
+| R7 Brand | orienter et structurer l'entree par constructeur ou marque | entite marque, modeles cles, gammes populaires, acces vehicules, shortcuts de navigation, contenus d'orientation marque | page marque/constructeur, hub navigationnel, acces vers R8, R1 et univers de pieces, raccourcis recherches | devenir home R0, devenir R1 de gamme, devenir article R3, devenir reference R4, devenir page transactionnelle R2 | G1, G3, G4 | R8 / R1 | marque |
+| R8 Vehicle | orienter a partir d'un vehicule precis vers les bonnes familles de pieces et contenus associes | identite vehicule, generation, motorisations, points d'usure, familles de pieces, specificites vehicule, acces catalogue | fiche vehicule, hub vehicule, acces gammes compatibles, acces R1/R2/R3/R4/R5 contextualises | devenir page marque R7, devenir diagnostic personnalise outil, devenir produit R2, devenir procedure detaillee R3, devenir glossaire R4 | G1, G2, G3, G4 | R1 / R2 / R5 / outil | vehicule |
+
+## Lecture canonique par role
+
+**R0** : orienter dans l'ecosysteme.
+**R1** : trouver la bonne gamme pour le bon vehicule.
+**R2** : acheter la bonne reference compatible.
+**R3** : agir correctement sur la piece.
+**R4** : comprendre ce qu'est la chose.
+**R5** : orienter un symptome.
+**R6** : choisir la bonne piece avant achat.
+**R7** : entrer par la marque.
+**R8** : entrer par le vehicule.
+
+## Interdits structurants globaux
+
+1. Un role R* ne porte qu'une promesse centrale exclusive.
+2. Si le besoin principal derive vers une autre promesse, le contenu doit changer de role R*.
+3. Un role R* peut mailler vers d'autres roles, mais ne doit jamais absorber leur fonction dominante.
+4. Plus un contenu est ambigu entre plusieurs roles, plus G1, G3 et G5 deviennent bloquants.
+
+## Garde-fous G* appliques aux roles
+
+| Garde-fou | Fonction sur les roles |
+|-----------|----------------------|
+| G1 — Purete | verifie qu'un role reste dans sa promesse centrale exclusive |
+| G2 — Diversite | evite duplication, similarite excessive, repetition structurelle ou semantique |
+| G3 — Anti-cannibalisation | empeche deux roles de se battre pour la meme intention utilisateur |
+| G4 — Publication Control | autorise, bloque, met en hold, ou degrade publication / indexation |
+| G5 — Review / Escalation | sort les cas ambigus, dangereux ou non tranchables vers revue |
 
 ## Regle de separation role / gouvernance
 

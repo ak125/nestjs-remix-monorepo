@@ -1,6 +1,6 @@
 # Cadre canonique des phases — Pipeline RAG v2
 
-> Version figee : 2026-03-14 v5
+> Version figee : 2026-03-14 v7
 
 ## Principe directeur
 
@@ -44,13 +44,86 @@ Question : "Peut-on rendre cette matiere stable, comparable et exploitable sans 
 
 Entree : matiere canonique.
 Sortie : admissibilite metier.
-Question : "Cette matiere a-t-elle le droit d'alimenter une surface R*, et laquelle ?"
+Question : "Cette matiere a-t-elle le droit d'alimenter un role principal unique R*, et lequel ?"
 
 ### Phase 2
 
 Entree : matiere admissible pour un role R*.
 Sortie : artefact metier.
-Question : "Peut-on produire un contenu metier propre, pur et publiable pour ce role ?"
+Question : "Peut-on produire un artefact metier propre et pur pour ce role ?" (la publication releve de G4)
+
+## Verifications obligatoires par phase
+
+### Phase 1 — Ingestion securisee
+
+#### P1. Provenance
+- la source doit etre identifiable
+- la provenance doit etre attachable a l'artefact
+- l'origine ne doit pas etre ambigue
+
+#### P2. Securite d'ecriture
+- ecriture uniquement dans les zones autorisees
+- aucune ecriture hors perimetre
+- aucun overwrite implicite non controle
+- aucune ecriture non atomique si un fichier existe deja
+
+#### P3. Non-destruction
+- pas d'ecrasement sauvage
+- pas de fusion silencieuse
+- pas de remplacement sans politique explicite
+- pas de collision destructive entre plusieurs sources
+
+#### P4. Sync DB
+- la representation DB doit etre coherente avec le stockage disque / objet
+- les champs de provenance doivent etre presents
+- les mappings minimaux doivent etre persistes
+
+#### P5. Tracabilite minimale
+- `source_url`, `truth_level`, `source_type`
+- `gamme_aliases` ou equivalent si resolu
+- identifiant d'ingestion / job / timestamp
+
+### Phase 1.5 — Normalisation canonique
+
+La phase 1.5 stabilise la structure et l'identite canonique de la matiere.
+
+#### N1. Normalisation des identifiants
+- slugs, aliases, ids metier, cles de mapping, conventions de chemins
+
+#### N2. Normalisation des metadonnees
+- `source_url`, `source_type`, `truth_level`, `verification_status`
+- `doc_family`, `updated_at`, `lifecycle.stage`
+
+#### N3. Normalisation de structure
+- frontmatter / schema minimal coherent
+- hierarchie stable des blocs
+- alignement des noms de champs
+- suppression des variantes parasites de structure
+
+#### N4. Normalisation semantique
+- eviter qu'un meme concept ait 3 noms concurrents
+- eviter qu'un role soit exprime par plusieurs taxonomies incompatibles
+- eviter les collisions entre "guide achat" et "R6", entre "conseils" et "R3", etc.
+
+#### N5. Separation des couches
+- matiere source / matiere enrichie / prompts-agents / contrats-schemas / rendus-sorties / QA-gouvernance
+
+### Phase 1.6 — Admissibilite metier
+
+#### A1. Unicite de promesse centrale
+La matiere doit porter une promesse dominante compatible avec un seul role cible principal.
+
+#### A2. Suffisance minimale
+La matiere doit etre suffisante pour produire ce role sans invention forte ni remplissage artificiel.
+
+#### A3. Compatibilite d'intention
+La matiere doit correspondre a l'intention utilisateur principale du role cible.
+
+#### A4. Non-collision inter-roles
+La matiere ne doit pas etre simultanement mieux expliquee par plusieurs roles concurrents sans arbitrage.
+
+#### A5. Admissibilite operationnelle
+La matiere doit etre exploitable par la phase 2 sans rebasculer en collecte amont.
 
 ## Loi de pipeline
 
@@ -118,14 +191,14 @@ La phase 2 ne demarre que si :
 - le statut final n'est pas BLOCKED
 - `phase2Eligible = true`
 
-## Statuts canoniques par phase
+## Etats de sortie canoniques par phase
 
-| Phase | Statuts |
-|-------|---------|
-| 1 | `passed`, `failed`, `quarantined` |
-| 1.5 | `normalized`, `normalized_with_warnings`, `blocked`, `quarantined`, `review_required` |
-| 1.6 | `admissible`, `admissible_with_limits`, `enrichment_required`, `blocked` |
-| 2 | `draft_generated`, `partial`, `qa_required`, `ready_for_publish`, `blocked` |
+| Phase | Etats |
+|-------|-------|
+| 1 | `INGESTED_SAFE`, `INGESTED_WITH_WARNINGS`, `BLOCKED_WRITE_SAFETY`, `BLOCKED_PROVENANCE`, `BLOCKED_SYNC`, `QUARANTINED` |
+| 1.5 | `NORMALIZED`, `NORMALIZED_WITH_WARNINGS`, `BLOCKED_SCHEMA_DRIFT`, `BLOCKED_TAXONOMY_CONFLICT`, `BLOCKED_SEMANTIC_COLLISION` |
+| 1.6 | `ADMISSIBLE_R0`..`ADMISSIBLE_R8`, `BLOCKED_ROLE_AMBIGUITY`, `BLOCKED_INPUT_INSUFFICIENCY`, `BLOCKED_ROLE_COLLISION`, `ESCALATE_REVIEW` |
+| 2 | `GENERATED_ROLE_PURE`, `GENERATED_WITH_WARNINGS`, `BLOCKED_BY_GUARDRAILS`, `HELD_FOR_REVIEW`, `READY_FOR_PUBLICATION_DECISION` |
 
 ## Formulation canonique
 
@@ -153,6 +226,26 @@ Phase 2 borne la production et transforme seulement ce qui a ete admis.
 5. Tout contenu genere cible un role R*, jamais une couche G*.
 6. Toute decision publish / hold / block releve de G4, pas de la phase elle-meme.
 7. Aucune phase ne peut compenser silencieusement un blocage amont par une logique locale de rattrapage.
+
+## Regles d'implementation canoniques
+
+**Regle A — Aucun saut de phase** : aucune phase aval ne doit compenser une phase amont non validee.
+
+**Regle B — Role unique principal** : toute matiere admise doit cibler un seul role principal.
+
+**Regle C — G* ne produit pas la promesse** : les couches G* controlent, mais ne deviennent jamais la destination metier.
+
+**Regle D — Pas d'ecriture sauvage** : aucune ecriture metier n'est autorisee sans validation Phase 1.
+
+**Regle E — Pas de qualification avant normalisation** : aucune decision de role n'est autorisee avant Phase 1.5.
+
+**Regle F — Pas de generation avant admissibilite** : aucune generation metier n'est autorisee avant Phase 1.6.
+
+**Regle G — Toute publication est une decision G4** : produire n'est pas publier. La publication releve toujours de G4.
+
+**Regle H — Decision tracable** : toute decision de blocage, admissibilite, limitation, hold, review ou publication doit etre attribuable, justifiable, horodatee, persistee et rejouable en audit.
+
+**Regle I — Pas de rattrapage silencieux** : aucune phase ne peut compenser silencieusement une insuffisance ou une ambiguite d'une phase amont par une logique locale de rattrapage.
 
 ## Version courte ultra-canonique
 
