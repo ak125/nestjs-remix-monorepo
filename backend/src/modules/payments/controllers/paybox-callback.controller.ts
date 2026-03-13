@@ -14,6 +14,9 @@ import { PayboxService } from '../services/paybox.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { PayboxCallbackGateService } from '../services/paybox-callback-gate.service';
 import { MailService } from '../../../services/mail.service';
+import { CartDataService } from '../../../database/services/cart-data.service';
+import { CacheService } from '../../../cache/cache.service';
+import * as crypto from 'crypto';
 import { PaymentStatus, PaymentMethod } from '../entities/payment.entity';
 import { normalizeOrderId } from '../utils/normalize-order-id';
 import { PayboxCallbackSchema } from '../dto/paybox-callback.dto';
@@ -31,6 +34,8 @@ export class PayboxCallbackController {
     private readonly paymentDataService: PaymentDataService,
     private readonly callbackGate: PayboxCallbackGateService,
     private readonly mailService: MailService,
+    private readonly cartDataService: CartDataService,
+    private readonly cacheService: CacheService,
   ) {}
 
   /**
@@ -199,6 +204,70 @@ export class PayboxCallbackController {
             `Erreur envoi email confirmation (non bloquant): ${emailMsg}`,
           );
         }
+
+        // Cart cleanup serveur (non-bloquant)
+        try {
+          const customerForCart =
+            await this.paymentDataService.getCustomerForOrder(orderId);
+          if (customerForCart?.cst_id) {
+            await this.cartDataService.clearUserCart(
+              String(customerForCart.cst_id),
+            );
+            this.logger.log(
+              `Cart cleared for customer ${customerForCart.cst_id} after payment`,
+            );
+          }
+        } catch (cartErr: unknown) {
+          this.logger.warn(
+            `Cart cleanup failed (non-blocking): ${cartErr instanceof Error ? cartErr.message : String(cartErr)}`,
+          );
+        }
+
+        // Guest activation email (non-bloquant, idempotent)
+        try {
+          const guestCustomer =
+            await this.paymentDataService.getCustomerForOrder(orderId);
+          if (guestCustomer?.cst_mail) {
+            const activationSentKey = `guest_activation_sent:${orderId}`;
+            const alreadySent = await this.cacheService.get(activationSentKey);
+            const isGuest =
+              await this.paymentDataService.isGuestCustomer(orderId);
+            if (!alreadySent && isGuest) {
+              const activationToken = crypto.randomBytes(32).toString('hex');
+              const hashedToken = crypto
+                .createHash('sha256')
+                .update(activationToken)
+                .digest('hex');
+              await this.cacheService.set(
+                `guest_activation:${hashedToken}`,
+                JSON.stringify({
+                  userId: guestCustomer.cst_id,
+                  email: guestCustomer.cst_mail,
+                }),
+                7 * 24 * 60 * 60,
+              );
+              await this.mailService.sendGuestAccountActivation(
+                guestCustomer.cst_mail,
+                activationToken,
+                orderId,
+              );
+              await this.cacheService.set(
+                activationSentKey,
+                '1',
+                7 * 24 * 60 * 60,
+              );
+              this.logger.log(
+                `Guest activation email sent for order ${orderId}`,
+              );
+            }
+          }
+        } catch (guestErr: unknown) {
+          this.logger.warn(
+            `Guest activation failed (non-blocking): ${guestErr instanceof Error ? guestErr.message : String(guestErr)}`,
+          );
+        }
+
+        // Stock: pas de gestion stock en DB (pièces fournisseurs). Désactivé.
 
         return res.status(HttpStatus.OK).send('OK');
       } else {
