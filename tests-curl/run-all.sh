@@ -23,7 +23,7 @@ fi
 echo ""
 
 # Run each directory
-for DIR in foundation roles refresh qa rag regression; do
+for DIR in foundation roles refresh qa rag decisions gold contra regression; do
   echo "--- $DIR ---"
   for f in "$SCRIPT_DIR/$DIR"/*.sh; do
     [ -f "$f" ] || continue
