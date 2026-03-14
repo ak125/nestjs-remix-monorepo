@@ -1,3 +1,8 @@
+import {
+  FAMILY_REGISTRY,
+  FAMILY_IDS_ORDERED,
+  FAMILY_DOMAIN_GROUPS,
+} from "@repo/database-types";
 import { type LucideIcon, Car, Cog, Shield, Wrench, Zap } from "lucide-react";
 
 // ─── Image proxy paths ───────────────────────────────────
@@ -5,12 +10,10 @@ export const IMG_PROXY_LOGOS =
   "/img/uploads/constructeurs-automobiles/marques-logos";
 export const IMG_PROXY_FAMILIES = "/img/uploads/articles/familles-produits";
 
-// ─── Fallback: 19 product families ───────────────────────
-export const CATS = [
-  {
-    i: "🛢️",
-    pic: "Filtres.webp",
-    n: "Système de filtration",
+// ─── Fallback: 19 product families (keyed par mf_id) ────
+// Les noms/ordre réels viennent de l'API. Ceci est le fallback SSR.
+const CATS_FALLBACK: Record<number, { desc: string; sub: string[] }> = {
+  1: {
     desc: "Filtres huile, air, carburant et habitacle. Remplacement selon préconisations.",
     sub: [
       "Filtre à huile",
@@ -19,10 +22,7 @@ export const CATS = [
       "Filtre d'habitacle",
     ],
   },
-  {
-    i: "🛞",
-    pic: "Freinage.webp",
-    n: "Système de freinage",
+  2: {
     desc: "Plaquettes, disques et étriers pour un freinage fiable et sécurisé.",
     sub: [
       "Plaquette de frein",
@@ -31,10 +31,7 @@ export const CATS = [
       "Témoin d'usure de plaquettes de frein",
     ],
   },
-  {
-    i: "⛓️",
-    pic: "Courroie_galet_poulie.webp",
-    n: "Courroie, galet, poulie et chaîne",
+  3: {
     desc: "Courroies, galets et kits de distribution pour la synchronisation moteur.",
     sub: [
       "Courroie d'accessoire",
@@ -43,10 +40,7 @@ export const CATS = [
       "Kit de distribution",
     ],
   },
-  {
-    i: "🔥",
-    pic: "Allumage_Prechauffage.webp",
-    n: "Allumage / Préchauffage",
+  4: {
     desc: "Bougies, faisceaux et boîtiers pour le démarrage et la combustion moteur.",
     sub: [
       "Bougie de préchauffage",
@@ -55,10 +49,7 @@ export const CATS = [
       "Faisceau d'allumage",
     ],
   },
-  {
-    i: "🔧",
-    pic: "Direction.webp",
-    n: "Direction / Train avant",
+  5: {
     desc: "Rotules, bras et barres de direction pour la tenue de route et la sécurité.",
     sub: [
       "Rotule de direction",
@@ -67,10 +58,7 @@ export const CATS = [
       "Bras de suspension",
     ],
   },
-  {
-    i: "🏎️",
-    pic: "Amortisseur.webp",
-    n: "Amortisseur / Suspension",
+  6: {
     desc: "Amortisseurs, ressorts et butées pour le confort et la tenue de route.",
     sub: [
       "Amortisseur",
@@ -79,17 +67,11 @@ export const CATS = [
       "Ressort de suspension",
     ],
   },
-  {
-    i: "⚙️",
-    pic: "Support.webp",
-    n: "Support moteur",
+  7: {
     desc: "Supports moteur et boîte de vitesses pour absorber vibrations et chocs.",
     sub: ["Support moteur", "Support de boîte de vitesses"],
   },
-  {
-    i: "🔩",
-    pic: "Embrayage.webp",
-    n: "Embrayage",
+  9: {
     desc: "Kits, butées et récepteurs d'embrayage pour un passage de vitesses fluide.",
     sub: [
       "Kit d'embrayage",
@@ -98,10 +80,7 @@ export const CATS = [
       "Récepteur d'embrayage",
     ],
   },
-  {
-    i: "🔗",
-    pic: "Transmission.webp",
-    n: "Transmission",
+  10: {
     desc: "Cardans, soufflets et paliers pour transmettre le mouvement aux roues.",
     sub: [
       "Cardan",
@@ -110,17 +89,11 @@ export const CATS = [
       "Palier d'arbre",
     ],
   },
-  {
-    i: "⚡",
-    pic: "Systeme_electrique.webp",
-    n: "Électrique",
+  11: {
     desc: "Alternateurs, démarreurs et contacteurs pour le circuit électrique du véhicule.",
     sub: ["Alternateur", "Démarreur", "Neiman", "Contacteur démarreur"],
   },
-  {
-    i: "📡",
-    pic: "Capteurs.webp",
-    n: "Capteurs / Sondes",
+  12: {
     desc: "Capteurs pression, niveau et impulsion pour le contrôle électronique moteur.",
     sub: [
       "Pressostat d'huile",
@@ -129,10 +102,7 @@ export const CATS = [
       "Capteur de niveau d'huile",
     ],
   },
-  {
-    i: "⛽",
-    pic: "Alimentation.webp",
-    n: "Alimentation Carburant & Air",
+  13: {
     desc: "Débitmètres, vannes EGR et pompes pour l'alimentation air et carburant.",
     sub: [
       "Débitmètre d'air",
@@ -141,10 +111,7 @@ export const CATS = [
       "Joint d'injecteur",
     ],
   },
-  {
-    i: "🔧",
-    pic: "Moteur.webp",
-    n: "Moteur",
+  14: {
     desc: "Joints de culasse, cache-culbuteurs et bagues d'étanchéité moteur.",
     sub: [
       "Joint de culasse",
@@ -153,10 +120,7 @@ export const CATS = [
       "Vis de culasse",
     ],
   },
-  {
-    i: "🌡️",
-    pic: "Refroidissement.webp",
-    n: "Refroidissement",
+  15: {
     desc: "Pompes à eau, radiateurs et thermostats pour le circuit de refroidissement.",
     sub: [
       "Pompe à eau",
@@ -165,10 +129,7 @@ export const CATS = [
       "Sonde de refroidissement",
     ],
   },
-  {
-    i: "❄️",
-    pic: "Climatisation.webp",
-    n: "Climatisation",
+  16: {
     desc: "Compresseurs, condenseurs et pulseurs pour la climatisation et le chauffage.",
     sub: [
       "Pulseur d'air",
@@ -177,10 +138,7 @@ export const CATS = [
       "Évaporateur",
     ],
   },
-  {
-    i: "💨",
-    pic: "Echappement.webp",
-    n: "Échappement",
+  17: {
     desc: "Catalyseurs, FAP, sondes lambda et joints pour la ligne d'échappement.",
     sub: [
       "Catalyseur",
@@ -189,17 +147,11 @@ export const CATS = [
       "Joint d'échappement",
     ],
   },
-  {
-    i: "💡",
-    pic: "Eclairage.webp",
-    n: "Éclairage / Signalisation",
+  18: {
     desc: "Phares, feux arrière et clignotants pour l'éclairage et la signalisation.",
     sub: ["Feu avant", "Feu arrière", "Feu clignotant", "Phare antibrouillard"],
   },
-  {
-    i: "🧹",
-    pic: "Accessoires.webp",
-    n: "Accessoires",
+  19: {
     desc: "Essuie-glaces, rétroviseurs et lève-vitres pour le confort au quotidien.",
     sub: [
       "Balai d'essuie-glace",
@@ -208,10 +160,7 @@ export const CATS = [
       "Lève-vitre",
     ],
   },
-  {
-    i: "🌀",
-    pic: "Turbo.webp",
-    n: "Turbo / Suralimentation",
+  20: {
     desc: "Turbocompresseurs, gaines et valves pour la suralimentation moteur.",
     sub: [
       "Turbocompresseur",
@@ -220,68 +169,56 @@ export const CATS = [
       "Capteur de pression de turbo",
     ],
   },
-];
+};
 
-// ─── Catalogue domain tabs ───────────────────────────────
+// Noms DB fallback (keyed par mf_id) — en prod ces noms viennent de l'API
+const FAMILY_NAMES: Record<number, string> = {
+  1: "Système de filtration",
+  2: "Système de freinage",
+  3: "Courroie, galet, poulie et chaîne",
+  4: "Allumage / Préchauffage",
+  5: "Direction / Train avant",
+  6: "Amortisseur / Suspension",
+  7: "Support moteur",
+  9: "Embrayage",
+  10: "Transmission",
+  11: "Électrique",
+  12: "Capteurs / Sondes",
+  13: "Alimentation Carburant & Air",
+  14: "Moteur",
+  15: "Refroidissement",
+  16: "Climatisation",
+  17: "Échappement",
+  18: "Éclairage / Signalisation",
+  19: "Accessoires",
+  20: "Turbo / Suralimentation",
+};
+
+export const CATS = FAMILY_IDS_ORDERED.map((id) => {
+  const meta = FAMILY_REGISTRY[id];
+  const fb = CATS_FALLBACK[id] ?? { desc: "", sub: [] };
+  return {
+    mf_id: id,
+    i: meta?.emoji ?? "❓",
+    pic: meta?.pic ?? "",
+    n: FAMILY_NAMES[id] ?? `Famille #${id}`,
+    desc: fb.desc,
+    sub: fb.sub,
+  };
+});
+
+// ─── Catalogue domain tabs (keyed par mf_id) ────────────
+const ICON_MAP: Record<string, LucideIcon> = { Car, Cog, Shield, Wrench, Zap };
+
 export const CATALOG_DOMAINS: {
   label: string;
   icon: LucideIcon;
-  families: string[] | null;
-}[] = [
-  { label: "Tout", icon: Car, families: null },
-  {
-    label: "Moteur",
-    icon: Wrench,
-    families: [
-      "Système de filtration",
-      "Alimentation Carburant & Air",
-      "Système d'alimentation",
-      "Allumage / Préchauffage",
-      "Préchauffage et allumage",
-      "Moteur",
-      "Turbo / Suralimentation",
-      "Turbo",
-      "Refroidissement",
-      "Échappement",
-      "Echappement",
-      "Support moteur",
-    ],
-  },
-  {
-    label: "Freinage & Châssis",
-    icon: Shield,
-    families: [
-      "Système de freinage",
-      "Direction / Train avant",
-      "Direction et liaison au sol",
-      "Amortisseur / Suspension",
-      "Amortisseur et suspension",
-    ],
-  },
-  {
-    label: "Transmission",
-    icon: Cog,
-    families: [
-      "Courroie, galet, poulie et chaîne",
-      "Embrayage",
-      "Transmission",
-    ],
-  },
-  {
-    label: "Électrique & Confort",
-    icon: Zap,
-    families: [
-      "Électrique",
-      "Système électrique",
-      "Capteurs / Sondes",
-      "Capteurs",
-      "Climatisation",
-      "Éclairage / Signalisation",
-      "Eclairage",
-      "Accessoires",
-    ],
-  },
-];
+  familyIds: number[] | null;
+}[] = FAMILY_DOMAIN_GROUPS.map((g) => ({
+  label: g.label,
+  icon: ICON_MAP[g.icon] ?? Car,
+  familyIds: g.familyIds,
+}));
 
 // ─── Fallback: brand list ────────────────────────────────
 export const MARQUES = [
@@ -377,6 +314,7 @@ export const FAQ_DATA = [
 
 // ─── Shared types ────────────────────────────────────────
 export interface CatalogFamily {
+  mf_id: number;
   img?: string;
   i: string;
   n: string;

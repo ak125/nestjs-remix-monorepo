@@ -104,6 +104,7 @@ export class HomepageRpcService extends SupabaseBaseService {
     });
 
     // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rpcPromise = this.callRpc<any>(
       'get_homepage_data_optimized',
       {},
@@ -181,13 +182,11 @@ export class HomepageRpcService extends SupabaseBaseService {
     const [familiesRes, catalogGammesRes] = await Promise.all([
       this.supabase
         .from(TABLES.catalog_family)
-        .select('mf_id, mf_name, mf_pic, mf_description')
-        .eq('mf_display', '1')
-        .order('mf_sort', { ascending: true }),
+        .select('mf_id, mf_name, mf_pic, mf_description, mf_sort')
+        .eq('mf_display', '1'),
       this.supabase
         .from(TABLES.catalog_gamme)
-        .select('mc_pg_id, mc_mf_prime, mc_sort')
-        .order('mc_sort', { ascending: true }),
+        .select('mc_pg_id, mc_mf_prime, mc_sort'),
     ]);
 
     if (familiesRes.error) {
@@ -212,25 +211,27 @@ export class HomepageRpcService extends SupabaseBaseService {
     // Build gamme lookup map (String keys to handle type mismatches from Supabase)
     const gammeMap = new Map((gammes || []).map((g) => [String(g.pg_id), g]));
 
-    // Build families with gammes hierarchy
-    const families = (familiesRes.data || []).map((family) => {
-      const familyGammeLinks = (catalogGammesRes.data || [])
-        .filter((cg) => String(cg.mc_mf_prime) === String(family.mf_id))
-        .sort((a, b) => (a.mc_sort || 0) - (b.mc_sort || 0));
+    // Build families with gammes hierarchy (sort numerically — mf_sort is TEXT in DB)
+    const families = (familiesRes.data || [])
+      .sort((a, b) => Number(a.mf_sort || 0) - Number(b.mf_sort || 0))
+      .map((family) => {
+        const familyGammeLinks = (catalogGammesRes.data || [])
+          .filter((cg) => String(cg.mc_mf_prime) === String(family.mf_id))
+          .sort((a, b) => Number(a.mc_sort || 0) - Number(b.mc_sort || 0));
 
-      const familyGammes = familyGammeLinks
-        .map((cg) => gammeMap.get(String(cg.mc_pg_id)))
-        .filter(Boolean);
+        const familyGammes = familyGammeLinks
+          .map((cg) => gammeMap.get(String(cg.mc_pg_id)))
+          .filter(Boolean);
 
-      return {
-        mf_id: family.mf_id,
-        mf_name: family.mf_name,
-        mf_pic: family.mf_pic,
-        mf_description: family.mf_description,
-        gammes: familyGammes,
-        gammes_count: familyGammes.length,
-      };
-    });
+        return {
+          mf_id: family.mf_id,
+          mf_name: family.mf_name,
+          mf_pic: family.mf_pic,
+          mf_description: family.mf_description,
+          gammes: familyGammes,
+          gammes_count: familyGammes.length,
+        };
+      });
 
     const result = { success: true, catalog: { families } };
 

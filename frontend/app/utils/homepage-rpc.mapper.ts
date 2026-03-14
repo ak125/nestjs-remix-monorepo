@@ -168,6 +168,7 @@ export function mapBelowFoldData(raw: unknown): {
 export function mapFamiliesToCatalog(families: SlimFamily[]): CatalogFamily[] {
   if (families.length > 0) {
     return families.map((f) => ({
+      mf_id: f.mf_id,
       img: f.mf_pic ? `${IMG_PROXY_FAMILIES}/${f.mf_pic}` : undefined,
       i: "\u{1F4E6}",
       n: f.mf_name,

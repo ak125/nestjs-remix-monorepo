@@ -8,8 +8,7 @@ import { getErrorMessage } from '../../common/utils/error.utils';
 // 🏗️ Service principal pour le catalogue - Orchestrateur des données
 
 // import { GammeService } from './services/gamme.service'; // TEMPORAIREMENT DÉSACTIVÉ - dépendance VehicleCacheService
-import { CatalogFamilyService } from './services/catalog-family.service';
-import { GammeUnifiedService } from './services/gamme-unified.service';
+import { CatalogHierarchyService } from './services/catalog-hierarchy.service';
 
 // ========================================
 // 📊 INTERFACES ÉTENDUES
@@ -48,8 +47,7 @@ export class CatalogService
   private readonly CACHE_TTL = 3600000; // 1 heure
 
   constructor(
-    private readonly catalogFamilyService: CatalogFamilyService,
-    private readonly gammeUnifiedService: GammeUnifiedService,
+    private readonly catalogHierarchyService: CatalogHierarchyService,
     rpcGate: RpcGateService,
   ) {
     super();
@@ -81,7 +79,7 @@ export class CatalogService
    */
   async getGamesFamilies() {
     this.logger.log('👨‍👩‍👧‍👦 Récupération familles de gammes via CatalogService');
-    return this.catalogFamilyService.getFamiliesWithGammes();
+    return this.catalogHierarchyService.getFamiliesResponse();
   }
 
   /**
@@ -91,61 +89,7 @@ export class CatalogService
     this.logger.log(
       '👨‍👩‍👧‍👦 Récupération de toutes les familles comme gammes via CatalogService',
     );
-    return this.catalogFamilyService.getFamiliesWithGammes();
-  }
-
-  /**
-   * 🔧 Récupérer les vraies gammes de la table catalog_gamme
-   * Migré vers GammeUnifiedService pour consolidation
-   */
-  async getCatalogGammes() {
-    this.logger.log('🔧 Récupération des gammes via GammeUnifiedService');
-    return this.gammeUnifiedService.getGammesForDisplay();
-  }
-
-  /**
-   * 🔄 Récupérer les gammes combinées (familles + catalog_gamme)
-   * Migré vers GammeUnifiedService pour consolidation
-   */
-  async getCombinedGammes() {
-    this.logger.log(
-      '🔄 Récupération des gammes combinées via GammeUnifiedService',
-    );
-
-    try {
-      // Récupérer les deux sources en parallèle
-      const [familiesGammes, catalogGammes] = await Promise.all([
-        this.catalogFamilyService.getFamiliesWithGammes(),
-        this.gammeUnifiedService.getGammesForDisplay(),
-      ]);
-
-      return {
-        families: familiesGammes || {},
-        catalog_gammes: catalogGammes || {
-          manufacturers: {},
-          stats: { total_gammes: 0, total_manufacturers: 0 },
-        },
-        combined_stats: {
-          total_families: Object.keys(familiesGammes || {}).length,
-          total_catalog_gammes: catalogGammes?.stats?.total_gammes || 0,
-          total_manufacturers: catalogGammes?.stats?.total_manufacturers || 0,
-        },
-      };
-    } catch (error) {
-      this.logger.error('❌ Erreur récupération gammes combinées:', error);
-      return {
-        families: {},
-        catalog_gammes: {
-          manufacturers: {},
-          stats: { total_gammes: 0, total_manufacturers: 0 },
-        },
-        combined_stats: {
-          total_families: 0,
-          total_catalog_gammes: 0,
-          total_manufacturers: 0,
-        },
-      };
-    }
+    return this.catalogHierarchyService.getFamiliesResponse();
   }
 
   /**

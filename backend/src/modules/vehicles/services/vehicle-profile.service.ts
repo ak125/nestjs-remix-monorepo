@@ -16,6 +16,7 @@ import {
   buildBrandLogoUrl,
 } from '../../catalog/utils/image-urls.utils';
 import { VehicleMotorCodesService } from './vehicle-motor-codes.service';
+import { normalizeTypeAlias } from '../../../common/utils/url-builder.utils';
 
 /**
  * Données complètes d'un véhicule
@@ -289,7 +290,7 @@ export class VehicleProfileService extends SupabaseBaseService {
         cylinder_cm3: cylinderCm3,
 
         // URLs via fonctions centralisées (avec fallback marques-concepts)
-        vehicle_url: `/constructeurs/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${typeData.type_alias}-${typeData.type_id}.html`,
+        vehicle_url: `/constructeurs/${marque.marque_alias}-${marque.marque_id}/${modele.modele_alias}-${modele.modele_id}/${normalizeTypeAlias(typeData.type_alias, typeData.type_name)}-${typeData.type_id}.html`,
         image_url: buildModelImageUrl(
           marque.marque_alias,
           modele.modele_pic,

@@ -15,7 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { CatalogService, HomeCatalogData } from './catalog.service';
-import { CatalogFamilyService } from './services/catalog-family.service';
+import { CatalogHierarchyService } from './services/catalog-hierarchy.service';
 import { HomepageRpcService } from './services/homepage-rpc.service';
 
 @ApiTags('Catalog - API Complète')
@@ -26,7 +26,7 @@ export class CatalogController {
 
   constructor(
     private readonly catalogService: CatalogService,
-    private readonly catalogFamilyService: CatalogFamilyService,
+    private readonly catalogHierarchyService: CatalogHierarchyService,
     private readonly homepageRpcService: HomepageRpcService,
   ) {}
 
@@ -80,8 +80,7 @@ export class CatalogController {
     );
 
     try {
-      const result =
-        await this.catalogFamilyService.getCatalogFamiliesPhpLogic();
+      const result = await this.catalogHierarchyService.getFamiliesResponse();
 
       this.logger.log(
         `✅ ${result.totalFamilies} familles récupérées pour le frontend`,
@@ -240,7 +239,7 @@ export class CatalogController {
     if (isNaN(id) || id <= 0) {
       return { success: false, gammes: [], error: 'Invalid familyId' };
     }
-    const gammes = await this.catalogFamilyService.getGammesByFamilyId(id);
+    const gammes = await this.catalogHierarchyService.getGammesByFamilyId(id);
     return {
       success: true,
       gammes: gammes.map((g) => ({
@@ -323,7 +322,7 @@ export class CatalogController {
   })
   async getHomepageFamilies() {
     try {
-      return await this.homepageRpcService.getHomepageFamilies();
+      return await this.catalogHierarchyService.getHierarchy();
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error('❌ Homepage families error:', message);
@@ -531,7 +530,9 @@ export class CatalogController {
 
       // Rechercher la gamme dans les données du catalogue
       const gamme =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         catalogData.mainCategories.find((cat: any) => cat.code === code) ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         catalogData.featuredCategories.find((cat: any) => cat.code === code);
 
       if (!gamme) {
@@ -570,84 +571,5 @@ export class CatalogController {
         data: null,
       };
     }
-  }
-
-  /**
-   * � V3: Récupère le catalogue complet filtré par véhicule avec logique PHP
-   * PIECES_RELATION_TYPE → CROSS_GAMME_CAR → GENERIC_HIERARCHY
-   */
-  /** 
-        success: false, 
-        error: error.message,
-        recommendations: ['Vérifier la connexion à Supabase', 'Vérifier que la table pieces_relation_type existe']
-      };
-    }
-  }
-
-  /**
-   * �🔍 ENDPOINT TEMPORAIRE - Test des tables gammes
-   * GET /api/catalog/test-gamme-tables
-   */
-  @Get('test-gamme-tables')
-  @ApiOperation({
-    summary: '[TEST] Explorer les tables gammes disponibles',
-    description:
-      'Endpoint temporaire pour tester pieces_gamme et catalog_gamme',
-  })
-  async testGammeTables() {
-    this.logger.log('🔍 Test des tables gammes disponibles...');
-
-    const results: any = {
-      timestamp: new Date().toISOString(),
-      tables_tested: [],
-      errors: [],
-    };
-
-    // Test 1: pieces_gamme
-    try {
-      this.logger.log('📋 Test table pieces_gamme...');
-      const piecesResult = await this.catalogService.testTable('pieces_gamme');
-      results.tables_tested.push({
-        table: 'pieces_gamme',
-        status: 'success',
-        count: piecesResult.count,
-        sample_columns: piecesResult.columns,
-        sample_data: piecesResult.sample,
-      });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error('❌ Erreur pieces_gamme:', message);
-      results.errors.push({
-        table: 'pieces_gamme',
-        error: message,
-      });
-    }
-
-    // Test 2: catalog_gamme
-    try {
-      this.logger.log('📋 Test table catalog_gamme...');
-      const catalogResult =
-        await this.catalogService.testTable('catalog_gamme');
-      results.tables_tested.push({
-        table: 'catalog_gamme',
-        status: 'success',
-        count: catalogResult.count,
-        sample_columns: catalogResult.columns,
-        sample_data: catalogResult.sample,
-      });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error('❌ Erreur catalog_gamme:', message);
-      results.errors.push({
-        table: 'catalog_gamme',
-        error: message,
-      });
-    }
-
-    return {
-      success: true,
-      message: 'Test des tables gammes terminé',
-      data: results,
-    };
   }
 }

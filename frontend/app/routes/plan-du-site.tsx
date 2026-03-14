@@ -61,7 +61,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   try {
     const [familiesRes, brandsRes] = await Promise.all([
-      fetch(`${baseUrl}/api/catalog/families`, {
+      fetch(`${baseUrl}/api/catalog/homepage-families`, {
         headers: { "internal-call": "true" },
       }),
       fetch(`${baseUrl}/api/vehicles/brands?limit=200`, {
@@ -72,7 +72,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
     let families: Family[] = [];
     if (familiesRes.ok) {
       const data = await familiesRes.json();
-      families = data.success && data.families ? data.families : [];
+      families =
+        data.catalog?.families ??
+        (data.success && data.families ? data.families : []);
     }
 
     let brands: Brand[] = [];

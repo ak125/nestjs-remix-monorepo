@@ -14,6 +14,7 @@ import {
   type CrossSellingGamme,
   type VehicleData,
 } from "../../types/pieces-route.types";
+import { normalizeTypeAlias } from "../../utils/url-builder.utils";
 
 interface PiecesCrossSellingProps {
   gammes: CrossSellingGamme[];
@@ -80,7 +81,7 @@ export const PiecesCrossSelling = memo(function PiecesCrossSelling({
           {gammes.map((gamme) => {
             // ⚠️ CRITIQUE: Construction URL préservée
             // Format: /pieces/{gamme-id}/{marque-id}/{modele-id}/{type-id}.html
-            const url = `/pieces/${gamme.PG_ALIAS}-${gamme.PG_ID}/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}-${vehicle.marqueId}/${vehicle.modeleAlias || vehicle.modele.toLowerCase().replace(/\s+/g, "-")}-${vehicle.modeleId}/${vehicle.typeAlias || vehicle.type.toLowerCase().replace(/\s+/g, "-")}-${vehicle.typeId}.html`;
+            const url = `/pieces/${gamme.PG_ALIAS}-${gamme.PG_ID}/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}-${vehicle.marqueId}/${vehicle.modeleAlias || vehicle.modele.toLowerCase().replace(/\s+/g, "-")}-${vehicle.modeleId}/${normalizeTypeAlias(vehicle.typeAlias, vehicle.type)}-${vehicle.typeId}.html`;
 
             return (
               <Link
@@ -253,7 +254,7 @@ export const PiecesCrossSellingCompact = memo(
           {limitedGammes.map((gamme) => {
             // ⚠️ CRITIQUE: Construction URL préservée
             // Format: /pieces/{gamme-id}/{marque-id}/{modele-id}/{type-id}.html
-            const url = `/pieces/${gamme.PG_ALIAS}-${gamme.PG_ID}/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}-${vehicle.marqueId}/${vehicle.modeleAlias || vehicle.modele.toLowerCase().replace(/\s+/g, "-")}-${vehicle.modeleId}/${vehicle.typeAlias || vehicle.type.toLowerCase().replace(/\s+/g, "-")}-${vehicle.typeId}.html`;
+            const url = `/pieces/${gamme.PG_ALIAS}-${gamme.PG_ID}/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}-${vehicle.marqueId}/${vehicle.modeleAlias || vehicle.modele.toLowerCase().replace(/\s+/g, "-")}-${vehicle.modeleId}/${normalizeTypeAlias(vehicle.typeAlias, vehicle.type)}-${vehicle.typeId}.html`;
 
             return (
               <Link

@@ -198,25 +198,46 @@ export const PiecesHeader = memo(function PiecesHeader({
                 <div className="relative">
                   <div className="bg-gradient-to-br from-white/[0.18] via-white/[0.12] to-white/[0.06] backdrop-blur-none md:backdrop-blur-2xl rounded-2xl p-2.5 border border-white/30 shadow-[0_12px_48px_rgba(0,0,0,0.15)]">
                     <div className="relative overflow-hidden rounded-xl">
-                      {!imageError &&
-                      vehicle.modelePic &&
-                      isValidImagePath(vehicle.modelePic) ? (
-                        <>
-                          {/* 🚀 LCP FIX: <picture> AVIF/WebP via imgproxy */}
-                          {(() => {
-                            const heroImagePath = `constructeurs-automobiles/marques-modeles/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`;
-                            const imgSet = ImageOptimizer.getPictureImageSet(
-                              heroImagePath,
-                              {
-                                widths: [200, 300, 380],
-                                quality: 85,
-                                sizes:
-                                  "(max-width: 640px) 200px, (max-width: 1024px) 300px, 380px",
-                                width: 380,
-                                height: 192,
-                              },
-                            );
-                            return (
+                      {(() => {
+                        // Chaîne de fallback hero image :
+                        // 1. vehicle.modelePic (photo véhicule)
+                        // 2. gamme.image (vignette gamme pg_pic)
+                        // 3. Image générique par alias gamme
+                        let heroImagePath: string | null = null;
+                        let heroAlt = `${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`;
+                        let objectFit: "cover" | "contain" = "cover";
+
+                        if (
+                          !imageError &&
+                          vehicle.modelePic &&
+                          isValidImagePath(vehicle.modelePic)
+                        ) {
+                          heroImagePath = `constructeurs-automobiles/marques-modeles/${vehicle.marqueAlias || vehicle.marque.toLowerCase()}/${vehicle.modelePic}`;
+                        } else if (
+                          gamme.image &&
+                          isValidImagePath(gamme.image)
+                        ) {
+                          heroImagePath = gamme.image.startsWith("http")
+                            ? null // URL absolue gérée séparément
+                            : `articles/gammes-produits/catalogue/${gamme.image}`;
+                          heroAlt = `${gamme.name} - pièce auto`;
+                          objectFit = "contain";
+                        }
+
+                        if (heroImagePath) {
+                          const imgSet = ImageOptimizer.getPictureImageSet(
+                            heroImagePath,
+                            {
+                              widths: [200, 300, 380],
+                              quality: 85,
+                              sizes:
+                                "(max-width: 640px) 200px, (max-width: 1024px) 300px, 380px",
+                              width: 380,
+                              height: 192,
+                            },
+                          );
+                          return (
+                            <>
                               <picture>
                                 <source
                                   srcSet={imgSet.avifSrcSet}
@@ -230,10 +251,10 @@ export const PiecesHeader = memo(function PiecesHeader({
                                 />
                                 <img
                                   src={imgSet.fallbackSrc}
-                                  alt={`${vehicle.marque} ${vehicle.modele} ${vehicle.typeName || vehicle.type}`}
+                                  alt={heroAlt}
                                   width={380}
                                   height={192}
-                                  className="w-full h-48 object-cover group-hover:scale-[1.05] transition-transform duration-500 ease-out"
+                                  className={`w-full h-48 object-${objectFit} group-hover:scale-[1.05] transition-transform duration-500 ease-out`}
                                   loading="eager"
                                   // @ts-expect-error - fetchpriority is a valid HTML attribute but React types it as fetchPriority
                                   fetchpriority="high"
@@ -241,23 +262,25 @@ export const PiecesHeader = memo(function PiecesHeader({
                                   onError={() => setImageError(true)}
                                 />
                               </picture>
-                            );
-                          })()}
-                          {/* Gradient overlay */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
-                        </>
-                      ) : (
-                        <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center flex-col gap-2">
-                          <Car
-                            className="w-16 h-16 text-gray-400"
-                            strokeWidth={1.5}
-                            aria-label={`Image ${vehicle.marque} ${vehicle.modele} non disponible`}
-                          />
-                          <p className="text-xs text-gray-500 font-medium">
-                            Image non disponible
-                          </p>
-                        </div>
-                      )}
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent"></div>
+                            </>
+                          );
+                        }
+
+                        // Fallback ultime : icône véhicule
+                        return (
+                          <div className="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center flex-col gap-2">
+                            <Car
+                              className="w-16 h-16 text-gray-400"
+                              strokeWidth={1.5}
+                              aria-label={`Image ${vehicle.marque} ${vehicle.modele} non disponible`}
+                            />
+                            <p className="text-xs text-gray-500 font-medium">
+                              {gamme.name}
+                            </p>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
