@@ -171,10 +171,11 @@ export default function CatalogueSection({
       try {
         // Find mf_id: we need to match by name in the original data
         // Since we don't have mf_id in CatalogFamily, fetch via a search endpoint
-        const res = await fetch(`/api/catalog/families`);
+        const res = await fetch(`/api/catalog/homepage-families`);
         if (res.ok) {
           const data = await res.json();
-          const match = (data.families ?? []).find(
+          const families = data.catalog?.families ?? data.families ?? [];
+          const match = families.find(
             (f: any) => f.mf_name === name || f.mf_name_display === name,
           );
           if (match) {
@@ -243,9 +244,9 @@ export default function CatalogueSection({
             <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10 lg:hidden" />
             <TabsList className="w-full justify-start overflow-x-auto hide-scroll rounded-xl bg-slate-100 p-1 flex-nowrap h-auto">
               {CATALOG_DOMAINS.map((domain) => {
-                const count = domain.families
+                const count = domain.familyIds
                   ? displayFamilies.filter((c) =>
-                      domain.families!.some((d) => d === c.n),
+                      domain.familyIds!.includes(c.mf_id),
                     ).length
                   : displayFamilies.length;
                 const DomainIcon = domain.icon;
@@ -296,10 +297,10 @@ export default function CatalogueSection({
 
         {CATALOG_DOMAINS.map((domain) => {
           const domainFiltered =
-            domain.families === null
+            domain.familyIds === null
               ? displayFamilies
               : displayFamilies.filter((cat) =>
-                  domain.families!.some((d) => d === cat.n),
+                  domain.familyIds!.includes(cat.mf_id),
                 );
           const q = catSearch.toLowerCase();
           const filtered =

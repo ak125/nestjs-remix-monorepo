@@ -17,6 +17,7 @@ import {
 } from '../../catalog/utils/image-urls.utils';
 import { CACHE_STRATEGIES } from '../../../config/cache-ttl.config';
 import { getErrorMessage } from '../../../common/utils/error.utils';
+import { normalizeTypeAlias } from '../../../common/utils/url-builder.utils';
 
 /**
  * Interface pour le résultat des bestsellers
@@ -221,7 +222,7 @@ export class BrandBestsellersService extends SupabaseBaseService {
     // Transformer les données de base (avec fallback marques-concepts)
     let vehicles = rawVehicles.map((vehicle) => ({
       ...vehicle,
-      vehicle_url: `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.cgc_type_id}.html`,
+      vehicle_url: `/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${normalizeTypeAlias(vehicle.type_alias, vehicle.type_name)}-${vehicle.cgc_type_id}.html`,
       image_url: buildModelImageUrl(
         vehicle.marque_alias,
         vehicle.modele_pic,

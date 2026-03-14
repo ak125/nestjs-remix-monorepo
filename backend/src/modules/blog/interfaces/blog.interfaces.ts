@@ -57,6 +57,7 @@ export interface BlogArticle {
   primaryGammeSlug?: string;
   relatedArticles?: BlogArticle[]; // Articles croisés (sidebar "On vous propose")
   compatibleVehicles?: Record<string, unknown>[]; // Véhicules compatibles (à implémenter)
+  gammeSort?: number; // Ordre catalogue (catalog_gamme.mc_sort)
   seo_data?: {
     meta_title: string;
     meta_description: string;

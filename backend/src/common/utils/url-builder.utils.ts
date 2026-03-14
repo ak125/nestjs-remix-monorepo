@@ -30,6 +30,38 @@ export function normalizeAlias(alias: string): string {
 }
 
 /**
+ * Normalise un type_alias pour la construction d'URLs.
+ * Gère NULL, undefined, chaîne vide, "null" littéral, et fallback "type".
+ * Utilise type_name (slugifié) comme fallback pour éviter les URLs "28495-28495.html".
+ */
+export function normalizeTypeAlias(
+  alias: string | null | undefined,
+  typeName: string | null | undefined,
+): string {
+  if (!alias || alias.trim() === '' || alias === 'null' || alias === 'type') {
+    if (typeName && typeName.trim() !== '') {
+      return normalizeAlias(typeName);
+    }
+    return 'type';
+  }
+  return alias;
+}
+
+/**
+ * Construit un segment d'URL pour un type véhicule: "{alias}-{id}"
+ * @example buildTypeSlug({ type_alias: null, type_name: "2.0 16V", type_id: 28495 }) => "2-0-16v-28495"
+ * @example buildTypeSlug({ type_alias: "gti", type_id: 28495 }) => "gti-28495"
+ */
+export function buildTypeSlug(type: {
+  type_alias?: string | null;
+  type_name?: string | null;
+  type_id: number | string;
+}): string {
+  const alias = normalizeTypeAlias(type.type_alias, type.type_name);
+  return `${alias}-${type.type_id}`;
+}
+
+/**
  * Construit un slug avec ID
  * Format: {alias}-{id}
  */
@@ -58,10 +90,11 @@ export function buildPieceVehicleUrl(
   marqueId: number,
   modeleAlias: string,
   modeleId: number,
-  typeAlias: string,
+  typeAlias: string | null | undefined,
   typeId: number,
+  typeName?: string | null,
 ): string {
-  return `/pieces/${normalizeAlias(gammeAlias)}-${gammeId}/${normalizeAlias(marqueAlias)}-${marqueId}/${normalizeAlias(modeleAlias)}-${modeleId}/${normalizeAlias(typeAlias)}-${typeId}.html`;
+  return `/pieces/${normalizeAlias(gammeAlias)}-${gammeId}/${normalizeAlias(marqueAlias)}-${marqueId}/${normalizeAlias(modeleAlias)}-${modeleId}/${normalizeTypeAlias(typeAlias, typeName)}-${typeId}.html`;
 }
 
 /**
@@ -107,10 +140,11 @@ export function buildConstructeurTypeUrl(
   marqueId: number,
   modeleAlias: string,
   modeleId: number,
-  typeAlias: string,
+  typeAlias: string | null | undefined,
   typeId: number,
+  typeName?: string | null,
 ): string {
-  return `/constructeurs/${normalizeAlias(marqueAlias)}-${marqueId}/${normalizeAlias(modeleAlias)}-${modeleId}/${normalizeAlias(typeAlias)}-${typeId}.html`;
+  return `/constructeurs/${normalizeAlias(marqueAlias)}-${marqueId}/${normalizeAlias(modeleAlias)}-${modeleId}/${normalizeTypeAlias(typeAlias, typeName)}-${typeId}.html`;
 }
 
 /**

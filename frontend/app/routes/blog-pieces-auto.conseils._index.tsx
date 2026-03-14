@@ -20,6 +20,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { FAMILY_REGISTRY, findFamilyIdByKeyword } from "@repo/database-types";
 import {
   Wrench,
   AlertTriangle,
@@ -73,115 +74,92 @@ interface LoaderData {
   stats: { totalViews: number; totalCategories: number };
 }
 
-// ── Top 2 gammes par famille (liens e-commerce) ─────────
+// ── Top 2 gammes par famille (liens e-commerce, keyed par mf_id) ──
 
-const FAMILY_GAMMES: Record<string, Array<{ slug: string; name: string }>> = {
-  Freinage: [
+const FAMILY_GAMMES: Record<number, Array<{ slug: string; name: string }>> = {
+  2: [
     { slug: "plaquette-de-frein", name: "Plaquettes de frein" },
     { slug: "disque-de-frein", name: "Disques de frein" },
   ],
-  Filtres: [
-    { slug: "filtre-a-huile", name: "Filtre \u00e0 huile" },
-    { slug: "filtre-a-air", name: "Filtre \u00e0 air" },
+  1: [
+    { slug: "filtre-a-huile", name: "Filtre à huile" },
+    { slug: "filtre-a-air", name: "Filtre à air" },
   ],
-  "Courroie, galet, poulie et cha\u00eene": [
-    { slug: "courroie-d-accessoire", name: "Courroie d\u2019accessoire" },
+  3: [
+    { slug: "courroie-d-accessoire", name: "Courroie d'accessoire" },
     { slug: "galet-tendeur-de-courroie-d-accessoire", name: "Galet tendeur" },
   ],
-  "Pr\u00e9chauffage et allumage": [
-    { slug: "bougie-de-prechauffage", name: "Bougie de pr\u00e9chauffage" },
-    {
-      slug: "boitier-de-prechauffage",
-      name: "Bo\u00eetier de pr\u00e9chauffage",
-    },
+  4: [
+    { slug: "bougie-de-prechauffage", name: "Bougie de préchauffage" },
+    { slug: "boitier-de-prechauffage", name: "Boîtier de préchauffage" },
   ],
-  "Direction et liaison au sol": [
+  5: [
     { slug: "rotule-de-direction", name: "Rotule de direction" },
     { slug: "barre-de-direction", name: "Barre de direction" },
   ],
-  "Amortisseur et suspension": [
+  6: [
     { slug: "amortisseur", name: "Amortisseur" },
-    {
-      slug: "kit-de-butee-de-suspension",
-      name: "Kit but\u00e9e de suspension",
-    },
+    { slug: "kit-de-butee-de-suspension", name: "Kit butée de suspension" },
   ],
-  "Support moteur": [
+  7: [
     { slug: "support-moteur", name: "Support moteur" },
-    { slug: "support-de-boite-vitesse", name: "Support bo\u00eete vitesse" },
+    { slug: "support-de-boite-vitesse", name: "Support boîte vitesse" },
   ],
-  Embrayage: [
-    { slug: "kit-d-embrayage", name: "Kit d\u2019embrayage" },
-    { slug: "butee-d-embrayage", name: "But\u00e9e d\u2019embrayage" },
+  9: [
+    { slug: "kit-d-embrayage", name: "Kit d'embrayage" },
+    { slug: "butee-d-embrayage", name: "Butée d'embrayage" },
   ],
-  Transmission: [
+  10: [
     { slug: "cardan", name: "Cardan" },
     { slug: "soufflet-de-cardan", name: "Soufflet de cardan" },
   ],
-  "Syst\u00e8me \u00e9lectrique": [
+  11: [
     { slug: "alternateur", name: "Alternateur" },
-    { slug: "demarreur", name: "D\u00e9marreur" },
+    { slug: "demarreur", name: "Démarreur" },
   ],
-  Capteurs: [
-    { slug: "pressostat-d-huile", name: "Pressostat d\u2019huile" },
+  12: [
+    { slug: "pressostat-d-huile", name: "Pressostat d'huile" },
     { slug: "capteur-impulsion", name: "Capteur impulsion" },
   ],
-  "Syst\u00e8me d'alimentation": [
-    { slug: "debitmetre-d-air", name: "D\u00e9bitm\u00e8tre d\u2019air" },
+  13: [
+    { slug: "debitmetre-d-air", name: "Débitmètre d'air" },
     { slug: "vanne-egr", name: "Vanne EGR" },
   ],
-  Moteur: [
+  14: [
     { slug: "joint-de-culasse", name: "Joint de culasse" },
     { slug: "joint-de-cache-culbuteurs", name: "Joint cache culbuteurs" },
   ],
-  Refroidissement: [
-    { slug: "pompe-a-eau", name: "Pompe \u00e0 eau" },
+  15: [
+    { slug: "pompe-a-eau", name: "Pompe à eau" },
     { slug: "radiateur-de-refroidissement", name: "Radiateur" },
   ],
-  Climatisation: [
-    { slug: "pulseur-d-air-d-habitacle", name: "Pulseur d\u2019air" },
+  16: [
+    { slug: "pulseur-d-air-d-habitacle", name: "Pulseur d'air" },
     { slug: "compresseur-de-climatisation", name: "Compresseur clim" },
   ],
-  Echappement: [
+  17: [
     { slug: "silencieux", name: "Silencieux" },
-    { slug: "tube-d-echappement", name: "Tube d\u2019\u00e9chappement" },
+    { slug: "tube-d-echappement", name: "Tube d'échappement" },
   ],
-  Eclairage: [
+  18: [
     { slug: "feu-avant", name: "Feu avant" },
-    { slug: "feu-arriere", name: "Feu arri\u00e8re" },
+    { slug: "feu-arriere", name: "Feu arrière" },
   ],
-  Accessoires: [
-    { slug: "balais-d-essuie-glace", name: "Balais d\u2019essuie-glace" },
+  19: [
+    { slug: "balais-d-essuie-glace", name: "Balais d'essuie-glace" },
     { slug: "commande-d-essuie-glace", name: "Commande essuie-glace" },
   ],
-  Turbo: [
+  20: [
     { slug: "turbo", name: "Turbo" },
     { slug: "gaine-de-turbo", name: "Gaine de turbo" },
   ],
 };
 
-const FAMILY_ICONS: Record<string, string> = {
-  Freinage: "\ud83d\uded1",
-  "Direction et liaison au sol": "\ud83c\udfaf",
-  Embrayage: "\u2699\ufe0f",
-  "Courroie, galet, poulie et cha\u00eene": "\ud83d\udd17",
-  Moteur: "\ud83c\udfd7\ufe0f",
-  "Syst\u00e8me d'alimentation": "\u26fd",
-  Refroidissement: "\u2744\ufe0f",
-  "Pr\u00e9chauffage et allumage": "\ud83d\udd25",
-  Echappement: "\ud83d\udca8",
-  "Syst\u00e8me \u00e9lectrique": "\u26a1",
-  Filtres: "\ud83d\udd0d",
-  Climatisation: "\ud83c\udf21\ufe0f",
-  Eclairage: "\ud83d\udca1",
-  Transmission: "\ud83d\udd27",
-  "Support moteur": "\ud83c\udfd7\ufe0f",
-  Accessoires: "\ud83d\udee0\ufe0f",
-  "Amortisseur et suspension": "\ud83d\udd35",
-  Turbo: "\ud83d\ude80",
-  Capteurs: "\ud83d\udce1",
-  Autres: "\ud83d\udce6",
-};
+/** Lookup emoji par nom de famille via FAMILY_REGISTRY */
+function getFamilyIcon(name: string): string {
+  const id = findFamilyIdByKeyword(name);
+  return id ? (FAMILY_REGISTRY[id]?.emoji ?? "\ud83d\udce6") : "\ud83d\udce6";
+}
 
 // ── FAQ data ────────────────────────────────────────────
 
@@ -241,7 +219,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           count: family.count as number,
           totalViews: family.totalViews ?? 0,
           articles,
-          gammeLinks: FAMILY_GAMMES[family.familyName as string] || [],
+          gammeLinks: FAMILY_GAMMES[family.familyId as number] || [],
         };
       },
     );
@@ -595,7 +573,7 @@ export default function BlogConseilsIndex() {
             <div className="grid md:grid-cols-2 gap-6 mb-6">
               {featuredCategories.map((group) => {
                 const theme = getFamilyTheme(group.category);
-                const icon = FAMILY_ICONS[group.category] || "\ud83d\udce6";
+                const icon = getFamilyIcon(group.category);
                 const topArticles = group.articles.slice(0, 3);
 
                 return (
@@ -677,8 +655,7 @@ export default function BlogConseilsIndex() {
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {otherCategories.map((group) => {
-                      const icon =
-                        FAMILY_ICONS[group.category] || "\ud83d\udce6";
+                      const icon = getFamilyIcon(group.category);
                       return (
                         <a
                           key={group.categorySlug}
@@ -984,7 +961,7 @@ export default function BlogConseilsIndex() {
           <div className="max-w-6xl mx-auto space-y-20">
             {groupedArticles.map((group) => {
               const theme = getFamilyTheme(group.category);
-              const icon = FAMILY_ICONS[group.category] || "\ud83d\udce6";
+              const icon = getFamilyIcon(group.category);
 
               return (
                 <div

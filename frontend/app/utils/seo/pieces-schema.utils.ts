@@ -147,7 +147,7 @@ function buildItemListSchema(
     numberOfItems: count,
     itemListElement: pieces
       .filter((piece) => piece.image || piece.marque_logo)
-      .slice(0, 8)
+      .slice(0, 20)
       .map((piece, index) => ({
         "@type": "ListItem",
         position: index + 1,
@@ -209,14 +209,19 @@ export type HeroImagePreloadMeta = {
  */
 export function buildHeroImagePreload(
   vehicle: Pick<VehicleData, "modelePic" | "marqueAlias" | "marque">,
+  gamme?: Pick<GammeData, "image" | "alias">,
 ): HeroImagePreloadMeta[] {
-  if (!vehicle.modelePic || vehicle.modelePic === "no.webp") {
+  let imagePath: string;
+
+  if (vehicle.modelePic && vehicle.modelePic !== "no.webp") {
+    const marqueSlug = vehicle.marqueAlias || vehicle.marque.toLowerCase();
+    imagePath = `constructeurs-automobiles/marques-modeles/${marqueSlug}/${vehicle.modelePic}`;
+  } else if (gamme?.image && gamme.image !== "no.webp") {
+    // Fallback tier 2 : image gamme (pg_pic)
+    imagePath = `articles/gammes-produits/catalogue/${gamme.image}`;
+  } else {
     return [];
   }
-
-  const marqueSlug = vehicle.marqueAlias || vehicle.marque.toLowerCase();
-  // 🚀 LCP FIX: Utiliser marques-modeles (pas marques-concepts) pour matcher PiecesHeader.tsx
-  const imagePath = `constructeurs-automobiles/marques-modeles/${marqueSlug}/${vehicle.modelePic}`;
 
   // 🚀 LCP FIX: Utiliser imgproxy pour srcSet identique à PiecesHeader.tsx
   const imageSrcSet = [200, 300, 380]
@@ -284,6 +289,19 @@ export function buildPiecesProductSchema(params: SchemaParams) {
       buildCarSchema(vehicle, canonicalUrl),
       buildProductSchema(params, firstPiece, oemRefsArray, relatedProducts),
       buildItemListSchema(pieces, gamme, vehicle, count, canonicalUrl),
+      {
+        "@type": "CollectionPage",
+        "@id": canonicalUrl,
+        name: `${gamme.name} ${vehicle.marque} ${vehicle.modele}`,
+        url: canonicalUrl,
+        mainEntity: { "@id": `${canonicalUrl}#list` },
+        isPartOf: {
+          "@type": "WebSite",
+          "@id": "https://www.automecanik.com/#website",
+          name: "AutoMecanik",
+          url: "https://www.automecanik.com",
+        },
+      },
     ],
   };
 }

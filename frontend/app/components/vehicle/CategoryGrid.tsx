@@ -4,6 +4,7 @@ import { Badge } from "~/components/ui/badge";
 import { ResponsiveImage } from "~/components/ui/ResponsiveImage";
 import { type VehicleData } from "~/types/vehicle.types";
 import { logger } from "~/utils/logger";
+import { normalizeAlias } from "~/utils/url-builder.utils";
 
 // ========================================
 // 🎯 TYPES TYPESCRIPT STRICTS
@@ -71,9 +72,9 @@ const CategoryCard = memo(function CategoryCard({
         return "#";
       }
 
-      const brandSlug = vehicle.brand.toLowerCase().replace(/\s+/g, "-");
-      const modelSlug = vehicle.model.toLowerCase().replace(/\s+/g, "-");
-      const typeSlug = vehicle.type.toLowerCase().replace(/\s+/g, "-");
+      const brandSlug = normalizeAlias(vehicle.brand);
+      const modelSlug = normalizeAlias(vehicle.model);
+      const typeSlug = normalizeAlias(vehicle.type);
 
       return `/pieces/${subcategory.slug}/${brandSlug}-${vehicle.brandId}/${modelSlug}-${vehicle.modelId}/${typeSlug}-${vehicle.typeId}.html`;
     },
