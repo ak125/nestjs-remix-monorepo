@@ -129,10 +129,17 @@ export class R6GuideService {
       .map((node, i) => ({
         id: `dt-${i}`,
         question: this.sanitizeRagLeaks(node.question),
-        options: (node.options || []).map((opt) => ({
-          label: this.sanitizeRagLeaks(opt),
-          outcome: node.outcome_map?.[opt] || '',
-        })),
+        options: (node.options || []).map((opt) => {
+          const label = typeof opt === 'string' ? opt : opt?.label || '';
+          const outcome =
+            typeof opt === 'string'
+              ? node.outcome_map?.[opt] || ''
+              : opt?.outcome || node.outcome_map?.[label] || '';
+          return {
+            label: this.sanitizeRagLeaks(label),
+            outcome,
+          };
+        }),
       }));
 
     // Quality tiers from selection_criteria
@@ -165,8 +172,13 @@ export class R6GuideService {
       });
 
     // Compatibility axes from new JSONB column — sanitize RAG leaks
-    const rawAxes =
-      (row.sgpg_compatibility_axes as R6CompatibilityAxis[]) || [];
+    const rawAxesField = row.sgpg_compatibility_axes as
+      | R6CompatibilityAxis[]
+      | { axes: R6CompatibilityAxis[] }
+      | null;
+    const rawAxes: R6CompatibilityAxis[] = Array.isArray(rawAxesField)
+      ? rawAxesField
+      : rawAxesField?.axes || [];
     const compatibilityAxes: R6CompatibilityAxis[] = rawAxes.map((ax) => ({
       ...ax,
       axis: this.sanitizeRagLeaks(ax.axis || ''),
@@ -206,8 +218,13 @@ export class R6GuideService {
     const pitfalls: string[] = (row.sgpg_anti_mistakes as string[]) || [];
 
     // When pro from new JSONB column
-    const whenPro: R6WhenProCase[] =
-      (row.sgpg_when_pro as R6WhenProCase[]) || [];
+    const rawWhenPro = row.sgpg_when_pro as
+      | R6WhenProCase[]
+      | { cases: R6WhenProCase[] }
+      | null;
+    const whenPro: R6WhenProCase[] = Array.isArray(rawWhenPro)
+      ? rawWhenPro
+      : rawWhenPro?.cases || [];
 
     // FAQ
     const faq: R6FaqItem[] = (row.sgpg_faq as R6FaqItem[]) || [];
@@ -480,7 +497,7 @@ export class R6GuideService {
    * Removes patterns like "(Source: web-catalog/xxx.md, ...)" and stray "**" bold markers.
    */
   private sanitizeRagLeaks(text: string): string {
-    if (!text) return text;
+    if (!text || typeof text !== 'string') return text ? String(text) : '';
     return text
       .replace(/\s*\(Source:[^)]*\)/g, '')
       .replace(/\*\*/g, '')
