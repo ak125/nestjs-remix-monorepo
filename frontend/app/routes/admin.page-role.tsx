@@ -51,6 +51,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
+import {
+  ROLE_BADGE_COLORS,
+  normalizeLegacyPageRole,
+} from "~/utils/page-role.types";
 
 export const meta: MetaFunction = () => [
   { title: "PageRole Validator | Admin" },
@@ -211,15 +215,9 @@ export default function AdminPageRoleDashboard() {
 
   const getRoleBadgeColor = (role: string | null) => {
     if (!role) return "secondary";
-    const colors: Record<string, string> = {
-      R1: "bg-blue-100 text-blue-800",
-      R2: "bg-green-100 text-green-800",
-      R3: "bg-purple-100 text-purple-800",
-      R4: "bg-amber-100 text-amber-800",
-      R5: "bg-red-100 text-red-800",
-      R6: "bg-gray-100 text-gray-800",
-    };
-    return colors[role] || "secondary";
+    const canonical = normalizeLegacyPageRole(role);
+    if (!canonical) return "secondary";
+    return ROLE_BADGE_COLORS[canonical] || "secondary";
   };
 
   return (

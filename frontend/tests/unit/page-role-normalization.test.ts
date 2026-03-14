@@ -4,6 +4,8 @@ import {
   LEGACY_PAGE_ROLE_MAP,
   normalizeLegacyPageRole,
   isEditorialRole,
+  getRoleCategory,
+  ROLE_BADGE_COLORS,
 } from '~/utils/page-role.types';
 
 describe('normalizeLegacyPageRole', () => {
@@ -73,6 +75,38 @@ describe('isEditorialRole', () => {
 
   it('should return false for RX_CHECKOUT', () => {
     expect(isEditorialRole(PageRole.RX_CHECKOUT)).toBe(false);
+  });
+});
+
+describe('getRoleCategory', () => {
+  it('should return editorial for R3_CONSEILS', () => {
+    expect(getRoleCategory(PageRole.R3_CONSEILS)).toBe('editorial');
+  });
+
+  it('should return editorial for R6_GUIDE_ACHAT', () => {
+    expect(getRoleCategory(PageRole.R6_GUIDE_ACHAT)).toBe('editorial');
+  });
+
+  it('should return support for R6_SUPPORT', () => {
+    expect(getRoleCategory(PageRole.R6_SUPPORT)).toBe('support');
+  });
+
+  it('should return app for RX_CHECKOUT', () => {
+    expect(getRoleCategory(PageRole.RX_CHECKOUT)).toBe('app');
+  });
+});
+
+describe('ROLE_BADGE_COLORS', () => {
+  it('should have a color for every PageRole', () => {
+    for (const role of Object.values(PageRole)) {
+      expect(ROLE_BADGE_COLORS[role]).toBeDefined();
+    }
+  });
+
+  it('should not have R3_BLOG color (deprecated)', () => {
+    // R3_BLOG value is "R3" which should NOT have its own color entry
+    // R3_CONSEILS should be used instead
+    expect(ROLE_BADGE_COLORS['R3_CONSEILS']).toBeDefined();
   });
 });
 

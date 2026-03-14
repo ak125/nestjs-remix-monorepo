@@ -161,6 +161,7 @@ const PAGE_TYPE_LABELS: Record<string, string> = {
   R3_guide_howto: "R3 Guide How-To",
   R4_reference: "R4 Reference",
   R5_diagnostic: "R5 Diagnostic",
+  R6_guide_achat: "R6 Guide Achat",
 };
 
 // ── Helpers ──

@@ -303,3 +303,30 @@ export function normalizeLegacyPageRole(input: string): PageRole | null {
 export function isEditorialRole(role: PageRole): boolean {
   return role !== PageRole.RX_CHECKOUT;
 }
+
+// ── Role Categories ──
+
+export type RoleCategory = "editorial" | "support" | "app";
+
+export function getRoleCategory(role: PageRole): RoleCategory {
+  if (role === PageRole.RX_CHECKOUT) return "app";
+  if (role === PageRole.R6_SUPPORT) return "support";
+  return "editorial";
+}
+
+/** Canonical badge colors for admin UI. Keys are canonical PageRole enum values. */
+export const ROLE_BADGE_COLORS: Record<string, string> = {
+  [PageRole.R0_HOME]: "bg-slate-100 text-slate-800",
+  [PageRole.R1_ROUTER]: "bg-blue-100 text-blue-800",
+  [PageRole.R2_PRODUCT]: "bg-green-100 text-green-800",
+  [PageRole.R3_CONSEILS]: "bg-purple-100 text-purple-800",
+  [PageRole.R4_REFERENCE]: "bg-amber-100 text-amber-800",
+  [PageRole.R5_DIAGNOSTIC]: "bg-red-100 text-red-800",
+  [PageRole.R6_SUPPORT]: "bg-gray-100 text-gray-800",
+  [PageRole.R6_GUIDE_ACHAT]: "bg-teal-100 text-teal-800",
+  [PageRole.R7_BRAND]: "bg-indigo-100 text-indigo-800",
+  [PageRole.R8_VEHICLE]: "bg-orange-100 text-orange-800",
+  [PageRole.RX_CHECKOUT]: "bg-rose-100 text-rose-800",
+  // deprecated — kept for exhaustive coverage
+  [PageRole.R3_BLOG]: "bg-purple-100 text-purple-800",
+};

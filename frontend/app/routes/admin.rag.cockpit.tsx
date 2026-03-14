@@ -279,18 +279,24 @@ const QUALITY_STATUS_LABELS: Record<string, string> = {
 
 const PAGE_TYPE_LABELS: Record<string, string> = {
   R1_pieces: "Transactionnel",
-  R3_guide: "Guide d'achat",
   R3_conseils: "Conseils DIY",
+  R3_guide_howto: "Guide How-To",
   R4_reference: "Reference",
   R5_diagnostic: "Diagnostic",
+  R6_guide_achat: "Guide d'achat",
+  // legacy aliases (DB backward compat)
+  R3_guide: "Guide d'achat",
 };
 
 const PAGE_TYPE_SHORT: Record<string, string> = {
   R1_pieces: "R1",
-  R3_guide: "R3g",
   R3_conseils: "R3c",
+  R3_guide_howto: "R3h",
   R4_reference: "R4",
   R5_diagnostic: "R5",
+  R6_guide_achat: "R6",
+  // legacy alias
+  R3_guide: "R6",
 };
 
 const DIMENSION_LABELS: Record<string, string> = {
