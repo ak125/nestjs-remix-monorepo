@@ -256,7 +256,7 @@ export class DatabaseMonitorService
   /**
    * ⚠️ Gestion des alertes système
    */
-  private async createAlert(
+  async createAlert(
     level: SystemAlert['level'],
     title: string,
     message: string,

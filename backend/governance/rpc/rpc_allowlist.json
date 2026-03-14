@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 156,
+  "total": 162,
   "functions": [
     {"name": "calc_article_bf", "volatility": "IMMUTABLE", "reason": "Pure calculation"},
     {"name": "calc_brand_bf", "volatility": "IMMUTABLE", "reason": "Pure calculation"},
@@ -159,6 +159,12 @@
     {"name": "rm_get_page_complete", "volatility": "VOLATILE", "reason": "Read-only cache (migrated from P2)"},
     {"name": "rm_get_page_complete_v2", "volatility": "VOLATILE", "reason": "Read-only cache (migrated from P2)"},
     {"name": "auth_resolve_user", "volatility": "VOLATILE", "reason": "Auth cross-table lookup (admin+customer)"},
-    {"name": "auth_email_exists", "volatility": "VOLATILE", "reason": "Auth email check cross-table"}
+    {"name": "auth_email_exists", "volatility": "VOLATILE", "reason": "Auth email check cross-table"},
+    {"name": "__gov_m1_table_sizes", "volatility": "VOLATILE", "reason": "DB governance monitoring (Phase 2)"},
+    {"name": "__gov_m2_index_sizes", "volatility": "VOLATILE", "reason": "DB governance monitoring (Phase 2)"},
+    {"name": "__gov_m3_stale_stats", "volatility": "VOLATILE", "reason": "DB governance monitoring (Phase 2)"},
+    {"name": "__gov_m4_dead_tuples", "volatility": "VOLATILE", "reason": "DB governance monitoring (Phase 2)"},
+    {"name": "__gov_m5_seq_scans", "volatility": "VOLATILE", "reason": "DB governance monitoring (Phase 2)"},
+    {"name": "__gov_m6_unused_indexes", "volatility": "VOLATILE", "reason": "DB governance monitoring (Phase 2)"}
   ]
 }

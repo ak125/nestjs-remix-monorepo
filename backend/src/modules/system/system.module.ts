@@ -7,6 +7,7 @@ import {
 import { SystemService } from './services/system.service';
 import { MetricsService } from './services/metrics.service';
 import { DatabaseMonitorService } from './services/database-monitor.service';
+import { DbGovernanceService } from './services/db-governance.service';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from '../../database/database.module';
 
@@ -26,12 +27,14 @@ import { DatabaseModule } from '../../database/database.module';
     SystemService, // Avancé, complet
     MetricsService, // Enterprise metrics
     DatabaseMonitorService, // Database monitoring
+    DbGovernanceService, // DB governance Phase 2 (M1-M6)
   ],
   exports: [
     SystemHealthService,
     SystemService,
     MetricsService,
     DatabaseMonitorService,
+    DbGovernanceService,
   ],
 })
 export class SystemModule {}

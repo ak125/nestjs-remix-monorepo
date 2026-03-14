@@ -97,6 +97,8 @@ import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMoni
 import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineService + GooglebotDetectorService
 import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour RagProxyService (enrichissement buying guide)
 import { AiContentModule } from '../ai-content/ai-content.module';
+import { SystemModule } from '../system/system.module';
+import { AdminDbGovernanceController } from './controllers/admin-db-governance.controller';
 
 @Module({
   imports: [
@@ -107,6 +109,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     WorkerModule, // 📊 Import pour accès à SeoMonitorSchedulerService
     SeoModule, // 🚀 Import pour accès aux services SEO (risk flags, googlebot)
     RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
+    SystemModule, // DB governance Phase 2 (DbGovernanceService)
     ...(process.env.LLM_POLISH_ENABLED === 'true' ? [AiContentModule] : []),
     BullModule.registerQueue({ name: 'content-refresh' }), // 🔄 Queue dédiée ContentRefreshService
   ],
@@ -144,6 +147,7 @@ import { AiContentModule } from '../ai-content/ai-content.module';
     AdminFeatureFlagsController, // 🏷️ Feature Flags - /api/admin/feature-flags/*
     AdminR8VehicleController, // 🚗 R8 Vehicle enrichment - /api/admin/r8/enrich/:typeId
     AdminVehicleRagController, // 🚗 Vehicle RAG generation - /api/admin/vehicle-rag/*
+    AdminDbGovernanceController, // 📊 DB Governance Phase 2 - /api/admin/db-governance/*
   ],
   providers: [
     ConfigurationService,

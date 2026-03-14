@@ -61,6 +61,7 @@ import { SolverService } from '../modules/agentic-engine/services/solver.service
 import { CriticService } from '../modules/agentic-engine/services/critic.service';
 import { ClaudeCliService } from '../modules/agentic-engine/services/claude-cli.service';
 import { FeatureFlagsModule } from '../config/feature-flags.module';
+import { ExecutionPlanResolverService } from '../config/execution-plan-resolver.service';
 import { MailService } from '../services/mail.service';
 
 @Module({
@@ -158,6 +159,7 @@ import { MailService } from '../services/mail.service';
     RagSafeDistillService, // 🔒 RAG Safe Distill (pre-enricher chunk filter, 0-LLM)
     R1KeywordPlanGatesService, // 🚦 R1 KP gates (used by R1ContentPipelineService, stateless — safe duplicate)
     PipelineChainPollerService, // 🔗 Pipeline chain poller (keyword-plan → conseil auto-refresh)
+    ExecutionPlanResolverService, // 📋 P2.1 Execution Registry resolver (flag-gated, stateless — safe duplicate)
     R8VehicleEnricherService, // 🚗 R8 Vehicle enricher (RAG + diversity scoring, 0-LLM, stateless — safe duplicate)
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM, stateless — safe duplicate)
     MailService, // Email service for EmailProcessor
