@@ -93,3 +93,18 @@ export function normalizeRoleId(input: string): RoleId | null {
   // Worker page type
   return PAGE_TYPE_TO_ROLE[input] ?? null;
 }
+
+/**
+ * Asserts the role string is a canonical RoleId, NOT a legacy alias.
+ * Use in output paths to enforce Regle 3 (ambiguite interdite en sortie).
+ * Throws if the string is not a canonical RoleId.
+ */
+export function assertCanonicalRole(role: string): RoleId {
+  const canonical = Object.values(RoleId).find((v) => v === role);
+  if (!canonical) {
+    throw new Error(
+      `Non-canonical role in output: "${role}". Use normalizeRoleId() first.`,
+    );
+  }
+  return canonical;
+}

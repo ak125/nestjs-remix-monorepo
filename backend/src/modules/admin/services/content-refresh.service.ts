@@ -15,9 +15,10 @@ import {
   KEYWORD_PLAN_VALIDATED,
   type KeywordPlanValidatedEvent,
 } from '../events/keyword-plan.events';
-import type {
-  ContentRefreshJobData,
-  ContentRefreshJobDataR5,
+import {
+  PAGE_TYPE_TO_CANONICAL_ROLE,
+  type ContentRefreshJobData,
+  type ContentRefreshJobDataR5,
 } from '../../../workers/types/content-refresh.types';
 import { RagFoundationGateService } from '../../rag-proxy/services/rag-foundation-gate.service';
 
@@ -971,6 +972,11 @@ export class ContentRefreshService extends SupabaseBaseService {
       ...(supplementaryFiles.length > 0 ? { supplementaryFiles } : {}),
       ...(force ? { force } : {}),
     };
+
+    // Canonical role logging (Regle 4 — legacy-canon-map.md v1.1.0)
+    this.logger.log(
+      `Job queued: canonicalRole=${PAGE_TYPE_TO_CANONICAL_ROLE[pageType]}, legacyPageType=${pageType}, pgId=${pgId}, pgAlias=${pgAlias}`,
+    );
 
     const job = await this.contentRefreshQueue.add('content-refresh', jobData, {
       attempts: 2,

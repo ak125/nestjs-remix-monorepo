@@ -199,7 +199,7 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
         }
         if (brief) {
           this.logger.log(
-            `Brief loaded for pgId=${pgId}: role=${brief.page_role}, v=${brief.version}, confidence=${brief.confidence_score}`,
+            `Brief loaded: canonicalRole=R6_GUIDE_ACHAT, legacyInput=${brief.page_role}, pgId=${pgId}, v=${brief.version}, confidence=${brief.confidence_score}`,
           );
         }
       } catch (err) {

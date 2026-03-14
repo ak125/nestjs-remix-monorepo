@@ -291,9 +291,12 @@ export const LEGACY_PAGE_ROLE_MAP: Record<string, PageRole> = {
  * Returns null if unrecognized.
  */
 export function normalizeLegacyPageRole(input: string): PageRole | null {
+  // Legacy map takes priority — enforces canonical output (Rule 1)
+  const legacy = LEGACY_PAGE_ROLE_MAP[input];
+  if (legacy) return legacy;
   const direct = Object.values(PageRole).find((v) => v === input);
   if (direct) return direct;
-  return LEGACY_PAGE_ROLE_MAP[input] ?? null;
+  return null;
 }
 
 /** True for editorial R* roles (R0-R8), false for app roles (RX_CHECKOUT) */
