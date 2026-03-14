@@ -439,3 +439,121 @@ export function pageTypeToRole(pageType: string): PageRole | null {
   };
   return map[pageType] ?? null;
 }
+
+// ── Phase 2 Section Eligibility (P2.2) ──
+
+import type {
+  SectionEligibility,
+  SectionEligibilityEntry,
+} from '../workers/types/content-refresh.types';
+
+/**
+ * Per-section claim limits by role.
+ * Max number of numeric/factual claims allowed in a section for a given role.
+ * Sections not listed have no explicit limit.
+ */
+export const SECTION_CLAIM_LIMITS: Partial<
+  Record<string, Partial<Record<PageRole, number>>>
+> = {
+  intro_role: { R3_guide: 3, R1: 1, R3_conseils: 2, R4: 1 },
+  risk: { R3_guide: 5, R1: 2 },
+  timing: { R3_guide: 3, R3_conseils: 2 },
+  how_to_choose: { R3_guide: 4, R3_conseils: 2 },
+  costs: { R5: 4, R3_conseils: 2 },
+  faq: { R3_guide: 6, R3_conseils: 4, R1: 3, R5: 3 },
+  symptoms: { R5: 5 },
+  composition: { R4: 4 },
+};
+
+/**
+ * Compute section eligibility for a given section × role × evidence context.
+ *
+ * @see .spec/00-canon/phase2-canon.md v1.1.0 — P2.2 Generation structuree
+ */
+export function computeSectionEligibility(
+  sectionKey: string,
+  role: PageRole,
+  evidenceCount: number,
+  hasActiveBrief: boolean,
+): SectionEligibilityEntry {
+  const policy = SECTION_POLICIES[sectionKey];
+
+  // Unknown section
+  if (!policy) {
+    return {
+      sectionKey,
+      eligibility: 'BLOCKED' as SectionEligibility,
+      reason: 'Unknown section key',
+      claimLimit: 0,
+      evidenceCount,
+    };
+  }
+
+  const mode = policy.mode[role];
+  const maxWords = policy.maxWords[role] ?? 0;
+  const claimLimit = SECTION_CLAIM_LIMITS[sectionKey]?.[role] ?? 99;
+
+  // Explicitly forbidden by mode
+  if (mode === 'forbidden') {
+    return {
+      sectionKey,
+      eligibility: 'BLOCKED' as SectionEligibility,
+      reason: `Mode is forbidden for role ${role}`,
+      claimLimit: 0,
+      evidenceCount,
+    };
+  }
+
+  // Zero max words = out of role
+  if (maxWords === 0) {
+    return {
+      sectionKey,
+      eligibility: 'OUT_OF_ROLE' as SectionEligibility,
+      reason: `maxWords=0 for role ${role}`,
+      claimLimit: 0,
+      evidenceCount,
+    };
+  }
+
+  // Evidence required but missing
+  if (policy.evidenceRequired && evidenceCount === 0) {
+    return {
+      sectionKey,
+      eligibility: 'MISSING_EVIDENCE' as SectionEligibility,
+      reason: 'Evidence required but none available',
+      claimLimit,
+      evidenceCount,
+    };
+  }
+
+  // AI requires brief but no brief available
+  if (policy.aiAllowed && policy.aiRequiresBrief && !hasActiveBrief) {
+    return {
+      sectionKey,
+      eligibility: 'ELIGIBLE_WITH_LIMITS' as SectionEligibility,
+      reason: 'AI generation requires brief (missing)',
+      claimLimit,
+      evidenceCount,
+    };
+  }
+
+  // Summary or link_only mode = limited
+  if (mode === 'summary' || mode === 'link_only' || maxWords < 150) {
+    return {
+      sectionKey,
+      eligibility: 'ELIGIBLE_WITH_LIMITS' as SectionEligibility,
+      reason: `Mode=${mode ?? 'default'}, maxWords=${maxWords}`,
+      claimLimit,
+      evidenceCount,
+    };
+  }
+
+  // Full eligibility
+  return {
+    sectionKey,
+    eligibility: 'ELIGIBLE' as SectionEligibility,
+    reason: 'Full eligibility',
+    claimLimit,
+    evidenceCount,
+  };
+}

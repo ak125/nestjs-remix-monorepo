@@ -70,6 +70,28 @@ export class FeatureFlagsService {
     return this.bool('BRIEF_AWARE_ENABLED', false);
   }
 
+  // ── Phase 2 Orchestration flags ──
+
+  get executionRegistryEnabled(): boolean {
+    return this.bool('EXECUTION_REGISTRY_ENABLED', false);
+  }
+
+  get evidenceGradingEnabled(): boolean {
+    return this.bool('EVIDENCE_GRADING_ENABLED', false);
+  }
+
+  get versionComparisonEnabled(): boolean {
+    return this.bool('VERSION_COMPARISON_ENABLED', false);
+  }
+
+  get qaDecisionEnabled(): boolean {
+    return this.bool('QA_DECISION_ENABLED', false);
+  }
+
+  get bestVersionProtectionEnabled(): boolean {
+    return this.bool('BEST_VERSION_PROTECTION_ENABLED', false);
+  }
+
   // ── RAG Safe Distill flag ──
 
   get ragSafeDistillEnabled(): boolean {
@@ -191,6 +213,11 @@ export class FeatureFlagsService {
     'AGENTIC_MAX_CRITIC_LOOPS',
     'AGENTIC_AIRLOCK_CHECK_ENABLED',
     'AGENTIC_DAILY_TOKEN_BUDGET',
+    'EXECUTION_REGISTRY_ENABLED',
+    'EVIDENCE_GRADING_ENABLED',
+    'VERSION_COMPARISON_ENABLED',
+    'QA_DECISION_ENABLED',
+    'BEST_VERSION_PROTECTION_ENABLED',
   ]);
 
   listFlags(): Record<

@@ -378,3 +378,111 @@ export interface PublishDecision {
   isCanary: boolean;
   qaGuardPassed: boolean | null;
 }
+
+// ── Phase 2 Evidence Grading (P2.4) ──
+
+export const EVIDENCE_GRADES = [
+  'strong',
+  'support-only',
+  'weak-support',
+  'forbidden-for-claim',
+] as const;
+export type EvidenceGrade = (typeof EVIDENCE_GRADES)[number];
+
+export interface GradedEvidence extends RagSafeItem {
+  /** Quality grade based on truth_level + purity_score */
+  grade: EvidenceGrade;
+  /** Section keys this evidence maps to */
+  targetSections: string[];
+}
+
+export interface EvidenceGradeMap {
+  [evidenceSourceId: string]: EvidenceGrade;
+}
+
+export interface RagSufficiencyReport {
+  overall: 'PASS' | 'PARTIAL' | 'FAIL';
+  perSection: Record<
+    string,
+    { evidenceCount: number; minRequired: number; sufficient: boolean }
+  >;
+  conflictCount: number;
+}
+
+// ── Phase 2 Section Eligibility (P2.2) ──
+
+export const SECTION_ELIGIBILITIES = [
+  'ELIGIBLE',
+  'ELIGIBLE_WITH_LIMITS',
+  'BLOCKED',
+  'MISSING_EVIDENCE',
+  'OUT_OF_ROLE',
+] as const;
+export type SectionEligibility = (typeof SECTION_ELIGIBILITIES)[number];
+
+export interface SectionEligibilityEntry {
+  sectionKey: string;
+  eligibility: SectionEligibility;
+  reason: string;
+  claimLimit: number;
+  evidenceCount: number;
+}
+
+// ── Phase 2 Version Comparison (P2.5) ──
+
+export const REFRESH_DECISIONS = [
+  'skip',
+  'refresh_partial',
+  'refresh_full',
+  'repair',
+  'hold',
+] as const;
+export type RefreshDecision = (typeof REFRESH_DECISIONS)[number];
+
+export interface VersionSnapshot {
+  contentHash: string;
+  qualityScore: number;
+  subscores: Record<string, number>;
+  generatedAt: string;
+  executionMode: string;
+  roleId: string;
+}
+
+export interface VersionComparisonResult {
+  previousVersion: VersionSnapshot | null;
+  candidateVersion: VersionSnapshot;
+  scoreDelta: number;
+  bestVersionProtected: boolean;
+  refreshDecision: RefreshDecision;
+}
+
+// ── Phase 2 QA Decision (P2.7) ──
+
+export const QA_DECISIONS = ['PASS', 'HOLD', 'BLOCK', 'ESCALATE'] as const;
+export type QaDecision = (typeof QA_DECISIONS)[number];
+
+export const PUBLICATION_DECISIONS = [
+  'HOLD',
+  'BLOCK',
+  'APPROVED',
+  'REVIEW',
+] as const;
+export type PublicationDecision = (typeof PUBLICATION_DECISIONS)[number];
+
+export interface QaReport {
+  qaScore: number;
+  qaDecision: QaDecision;
+  genericityScore: number;
+  claimRiskFlags: string[];
+  blockingFlags: string[];
+  warningFlags: string[];
+  publicationCandidate: boolean;
+  publicationDecision: PublicationDecision;
+  escalationReason: string | null;
+  dimensions: {
+    rolePurity: number;
+    contractCompliance: number;
+    evidenceDepth: number;
+    antiCannibalization: number;
+  };
+}

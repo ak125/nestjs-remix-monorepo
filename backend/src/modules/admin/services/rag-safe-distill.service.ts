@@ -4,7 +4,15 @@ import type { SearchResultDto } from '../../rag-proxy/dto/search.dto';
 import type {
   RagSafePack,
   RagSafeItem,
+  GradedEvidence,
+  EvidenceGradeMap,
+  RagSufficiencyReport,
 } from '../../../workers/types/content-refresh.types';
+import {
+  computeEvidenceGrade,
+  BUCKET_TO_SECTION_MAP,
+  MIN_EVIDENCE_PER_SECTION,
+} from '../../../config/evidence-grading.constants';
 
 // ── Purity thresholds per role (from role_map_defaults.json) ──
 
@@ -236,6 +244,137 @@ export class RagSafeDistillService {
     );
 
     return pack;
+  }
+
+  /**
+   * Distill RAG chunks into a graded evidence pack with sufficiency report.
+   *
+   * Extends distill() with:
+   * - Evidence grading (strong / support-only / weak-support / forbidden-for-claim)
+   * - Section-to-evidence mapping via BUCKET_TO_SECTION_MAP
+   * - Per-section sufficiency check against MIN_EVIDENCE_PER_SECTION
+   *
+   * @see .spec/00-canon/phase2-canon.md v1.1.0 — P2.4 Exploitation RAG avancee
+   */
+  async distillGraded(
+    pgAlias: string,
+    targetRole: string,
+    targetSections: string[],
+  ): Promise<{
+    pack: RagSafePack;
+    gradedItems: GradedEvidence[];
+    evidenceGradeMap: EvidenceGradeMap;
+    sufficiencyReport: RagSufficiencyReport;
+  }> {
+    // 1. Call base distill
+    const pack = await this.distill(pgAlias, targetRole);
+
+    // 2. Grade each citation and map to sections
+    const gradedItems: GradedEvidence[] = [];
+    const evidenceGradeMap: EvidenceGradeMap = {};
+
+    // Re-search to get metadata (truth_level, purity_score) — distill() strips it
+    let metadataBySourceId: Map<
+      string,
+      { truthLevel?: string; purityScore?: number }
+    > = new Map();
+    try {
+      const query = pgAlias
+        .replace(/-/g, ' ')
+        .replace(/ d /g, " d'")
+        .replace(/ l /g, " l'");
+      const searchTargetRole = ROLE_TO_SEARCH_TARGET[targetRole];
+      const searchResponse = await this.ragProxyService.search({
+        query,
+        limit: 20,
+        filters: { truth_levels: ['L1', 'L2'] },
+        ...(searchTargetRole && { routing: { target_role: searchTargetRole } }),
+      });
+      for (const r of searchResponse?.results ?? []) {
+        const id = r.chunk_id ?? r.sourcePath ?? 'unknown';
+        metadataBySourceId.set(id, {
+          truthLevel: r.truth_level,
+          purityScore: r.purity_score,
+        });
+      }
+    } catch {
+      // Metadata unavailable — all items get default grade
+      metadataBySourceId = new Map();
+    }
+
+    // Grade each bucket's items
+    const bucketNames = Object.keys(BUCKET_TO_SECTION_MAP);
+    for (const bucketName of bucketNames) {
+      const items = pack[bucketName as keyof RagSafePack] as
+        | RagSafeItem[]
+        | undefined;
+      if (!items) continue;
+
+      const sections = BUCKET_TO_SECTION_MAP[bucketName] ?? [];
+      const relevantSections = sections.filter((s) =>
+        targetSections.includes(s),
+      );
+
+      for (const item of items) {
+        const meta = metadataBySourceId.get(item.source_id);
+        const grade = computeEvidenceGrade(meta?.truthLevel, meta?.purityScore);
+
+        const graded: GradedEvidence = {
+          ...item,
+          grade,
+          targetSections:
+            relevantSections.length > 0 ? relevantSections : sections,
+        };
+        gradedItems.push(graded);
+        evidenceGradeMap[item.source_id] = grade;
+      }
+    }
+
+    // 3. Build sufficiency report
+    const sectionEvidenceCounts: Record<string, number> = {};
+    for (const section of targetSections) {
+      sectionEvidenceCounts[section] = 0;
+    }
+    for (const graded of gradedItems) {
+      // Only count non-forbidden evidence
+      if (graded.grade === 'forbidden-for-claim') continue;
+      for (const section of graded.targetSections) {
+        if (section in sectionEvidenceCounts) {
+          sectionEvidenceCounts[section]++;
+        }
+      }
+    }
+
+    const perSection: RagSufficiencyReport['perSection'] = {};
+    let failCount = 0;
+    let partialCount = 0;
+
+    for (const section of targetSections) {
+      const count = sectionEvidenceCounts[section] ?? 0;
+      const minRequired = MIN_EVIDENCE_PER_SECTION[section] ?? 0;
+      const sufficient = count >= minRequired;
+      perSection[section] = { evidenceCount: count, minRequired, sufficient };
+      if (!sufficient && minRequired > 0) failCount++;
+      else if (count > 0 && count < 2 && minRequired > 0) partialCount++;
+    }
+
+    const overall: RagSufficiencyReport['overall'] =
+      failCount > 0 ? 'FAIL' : partialCount > 0 ? 'PARTIAL' : 'PASS';
+
+    const sufficiencyReport: RagSufficiencyReport = {
+      overall,
+      perSection,
+      conflictCount: 0, // Future: detect conflicting evidence
+    };
+
+    this.logger.log(
+      `DistillGraded ${pgAlias} (${targetRole}): ${gradedItems.length} items, ` +
+        `${gradedItems.filter((g) => g.grade === 'strong').length} strong, ` +
+        `${gradedItems.filter((g) => g.grade === 'forbidden-for-claim').length} forbidden, ` +
+        `sufficiency=${overall}`,
+    );
+
+    return { pack, gradedItems, evidenceGradeMap, sufficiencyReport };
   }
 
   /**

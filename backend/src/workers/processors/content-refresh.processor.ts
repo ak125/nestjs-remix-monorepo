@@ -21,10 +21,19 @@ import { RagSafeDistillService } from '../../modules/admin/services/rag-safe-dis
 import {
   pageTypeToRole,
   POLICY_VERSION,
+  computeSectionEligibility,
+  SECTION_POLICIES,
 } from '../../config/content-section-policy';
 import { pageTypeToRoleId } from '../../config/role-ids';
 import { QUALITY_SCORE_ADVISORY } from '../../config/buying-guide-quality.constants';
 import { FeatureFlagsService } from '../../config/feature-flags.service';
+import { ExecutionPlanResolverService } from '../../config/execution-plan-resolver.service';
+import type { ExecutionPlan } from '../../config/execution-registry.types';
+import type {
+  SectionEligibilityEntry,
+  EvidenceGradeMap,
+  RagSufficiencyReport,
+} from '../types/content-refresh.types';
 import { AdminJobHealthService } from '../../modules/admin/services/admin-job-health.service';
 import { PipelineChainPollerService } from '../../modules/admin/services/pipeline-chain-poller.service';
 import { R8VehicleEnricherService } from '../../modules/admin/services/r8-vehicle-enricher.service';
@@ -66,6 +75,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly chainPoller: PipelineChainPollerService,
     private readonly ragKnowledgeService: RagKnowledgeService,
     private readonly r8Enricher: R8VehicleEnricherService,
+    private readonly executionPlanResolver: ExecutionPlanResolverService,
     @Optional()
     private readonly foundationGate?: RagFoundationGateService,
   ) {
@@ -271,6 +281,71 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         } catch (err) {
           this.logger.warn(
             `[RAG_SAFE_DISTILL] failed for ${pgAlias}: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
+
+      // ── Phase 2 Orchestration: Resolve ExecutionPlan (P2.1) ──
+      let executionPlan: ExecutionPlan | null = null;
+      if (this.flags.executionRegistryEnabled) {
+        try {
+          const roleId = pageTypeToRoleId(pageType);
+          if (roleId && this.executionPlanResolver.hasEntry(roleId)) {
+            executionPlan = this.executionPlanResolver.resolveExecutionPlan(
+              roleId,
+              force ? 'refresh_full' : 'create',
+              { correlationId },
+            );
+            this.logger.log(
+              `${ctx} [P2.1] ExecutionPlan resolved: role=${roleId} mode=${executionPlan.executionMode} enricher=${executionPlan.registryEntry.enricherServiceKey}`,
+            );
+          }
+        } catch (err) {
+          this.logger.warn(
+            `${ctx} [P2.1] ExecutionPlan resolution failed: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      }
+
+      // ── Phase 2 Evidence Grading (P2.4) + Section Eligibility (P2.2) ──
+      let sectionEligibility: SectionEligibilityEntry[] | null = null;
+      let evidenceGradeMap: EvidenceGradeMap | null = null;
+      let ragSufficiency: RagSufficiencyReport | null = null;
+      if (this.flags.evidenceGradingEnabled && pgAlias) {
+        try {
+          const roleId = pageTypeToRoleId(pageType);
+          const policyRole = pageTypeToRole(pageType);
+          if (roleId && policyRole) {
+            const targetSections = Object.keys(SECTION_POLICIES);
+            const graded = await this.ragSafeDistill.distillGraded(
+              pgAlias,
+              roleId,
+              targetSections,
+            );
+            evidenceGradeMap = graded.evidenceGradeMap;
+            ragSufficiency = graded.sufficiencyReport;
+
+            // Compute section eligibility
+            const hasBrief = !!('pgId' in job.data && job.data.pgId); // simplified
+            sectionEligibility = targetSections.map((sectionKey) => {
+              const evidenceCount =
+                graded.sufficiencyReport.perSection[sectionKey]
+                  ?.evidenceCount ?? 0;
+              return computeSectionEligibility(
+                sectionKey,
+                policyRole,
+                evidenceCount,
+                hasBrief,
+              );
+            });
+            this.logger.log(
+              `${ctx} [P2.4] Evidence graded: ${graded.gradedItems.length} items, sufficiency=${ragSufficiency.overall}, ` +
+                `eligible=${sectionEligibility.filter((s) => s.eligibility === 'ELIGIBLE').length}/${sectionEligibility.length}`,
+            );
+          }
+        } catch (err) {
+          this.logger.warn(
+            `${ctx} [P2.4] Evidence grading failed: ${err instanceof Error ? err.message : String(err)}`,
           );
         }
       }
@@ -818,6 +893,21 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
           content_fingerprint: contentFingerprint,
           // Ingestion recommendations (P1 #7)
           ingestion_recommendations: ingestionRecommendations,
+          // Phase 2 Orchestration + Evidence (P2.1/P2.2/P2.4)
+          execution_plan: executionPlan
+            ? {
+                executionMode: executionPlan.executionMode,
+                writeMode: executionPlan.writeMode,
+                contractVersion: executionPlan.contractVersion,
+                enricherServiceKey:
+                  executionPlan.registryEntry.enricherServiceKey,
+                roleId: executionPlan.registryEntry.roleId,
+                resolvedAt: executionPlan.resolvedAt,
+              }
+            : null,
+          section_eligibility: sectionEligibility,
+          evidence_grade_map: evidenceGradeMap,
+          rag_sufficiency: ragSufficiency,
         })
         .eq('id', refreshLogId);
 
