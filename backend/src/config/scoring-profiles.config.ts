@@ -11,7 +11,12 @@ export const SCORING_VERSION = 'v2.1';
 
 // ── Types ──
 
-export type PageType =
+/**
+ * @internal Scoring-domain page type — NOT the worker PageType from content-refresh.types.
+ * 'R3_guide' here means "guide d'achat" (canonically R6_GUIDE_ACHAT).
+ * Values match DB column __quality_page_scores.page_type (do NOT rename values).
+ */
+export type ScoringPageType =
   | 'R1_pieces'
   | 'R3_guide'
   | 'R3_conseils'
@@ -56,7 +61,7 @@ export interface PenaltyRule {
 }
 
 export interface ScoringProfile {
-  pageType: PageType;
+  pageType: ScoringPageType;
   label: string;
   dimensions: DimensionConfig[];
   hardGates: HardGateRule[];
@@ -67,7 +72,7 @@ export interface ScoringProfile {
 
 // ── Gamme Aggregation Weights ──
 
-export const GAMME_PAGE_WEIGHTS: Record<PageType, number> = {
+export const GAMME_PAGE_WEIGHTS: Record<ScoringPageType, number> = {
   R3_guide: 30,
   R1_pieces: 25,
   R4_reference: 20,
@@ -76,14 +81,14 @@ export const GAMME_PAGE_WEIGHTS: Record<PageType, number> = {
 };
 
 /** Pages required for every gamme. Missing = coverage penalty. */
-export const REQUIRED_PAGE_TYPES: PageType[] = [
+export const REQUIRED_PAGE_TYPES: ScoringPageType[] = [
   'R3_guide',
   'R4_reference',
   'R1_pieces',
 ];
 
 /** Optional pages. Present = bonus, absent = no penalty. */
-export const OPTIONAL_PAGE_TYPES: PageType[] = ['R3_conseils'];
+export const OPTIONAL_PAGE_TYPES: ScoringPageType[] = ['R3_conseils'];
 
 /** Points lost per missing required page type (v1 flat penalty — kept for reference) */
 export const MISSING_PAGE_PENALTY = 5;
@@ -172,7 +177,7 @@ export const TRUST_THRESHOLDS = {
 
 /** Freshness: days since update thresholds per page type */
 export const FRESHNESS_THRESHOLDS: Record<
-  PageType,
+  ScoringPageType,
   { good: number; acceptable: number; stale: number }
 > = {
   R3_guide: { good: 30, acceptable: 90, stale: 180 },
@@ -183,7 +188,7 @@ export const FRESHNESS_THRESHOLDS: Record<
 
 // ── Scoring Profiles ──
 
-export const SCORING_PROFILES: Record<PageType, ScoringProfile> = {
+export const SCORING_PROFILES: Record<ScoringPageType, ScoringProfile> = {
   R3_guide: {
     pageType: 'R3_guide',
     label: "Guide d'achat",
@@ -373,3 +378,19 @@ export const CONFIDENCE_SIGNALS: ConfidenceSignal[] = [
     description: 'RAG truth level L1 ou L2',
   },
 ];
+
+// ── Bridge: ScoringPageType → canonical RoleId ──
+
+import { RoleId } from './role-ids';
+
+const SCORING_PAGE_TYPE_TO_ROLE_ID: Record<ScoringPageType, RoleId> = {
+  R1_pieces: RoleId.R1_ROUTER,
+  R3_guide: RoleId.R6_GUIDE_ACHAT, // "guide d'achat" = R6, NOT R3
+  R3_conseils: RoleId.R3_CONSEILS,
+  R4_reference: RoleId.R4_REFERENCE,
+};
+
+/** Convert a ScoringPageType to canonical RoleId. */
+export function scoringPageTypeToRoleId(pt: ScoringPageType): RoleId {
+  return SCORING_PAGE_TYPE_TO_ROLE_ID[pt];
+}

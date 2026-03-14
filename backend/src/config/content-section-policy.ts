@@ -15,6 +15,11 @@ export type SectionMode = 'full' | 'summary' | 'link_only' | 'forbidden';
 export type ContentSource = 'db' | 'rag' | 'ai' | 'static';
 export type FallbackStrategy = 'empty' | 'static_template' | 'rag_only';
 
+/**
+ * @internal Legacy type — use RoleId from role-ids.ts for new code.
+ * 'R3_guide' here means "guide d'achat" (canonically R6_GUIDE_ACHAT),
+ * NOT "R3 how-to/guide technique". See pageRoleToRoleId() bridge.
+ */
 export type PageRole = 'R1' | 'R3_guide' | 'R3_conseils' | 'R4' | 'R5';
 
 export interface SectionPolicy {
@@ -438,6 +443,36 @@ export function pageTypeToRole(pageType: string): PageRole | null {
     R5_diagnostic: 'R5',
   };
   return map[pageType] ?? null;
+}
+
+// ── Bridge: PageRole ↔ canonical RoleId ──
+
+import { RoleId } from './role-ids';
+
+const PAGE_ROLE_TO_ROLE_ID: Record<PageRole, RoleId> = {
+  R1: RoleId.R1_ROUTER,
+  R3_guide: RoleId.R6_GUIDE_ACHAT, // "guide d'achat" = R6, NOT R3
+  R3_conseils: RoleId.R3_CONSEILS,
+  R4: RoleId.R4_REFERENCE,
+  R5: RoleId.R5_DIAGNOSTIC,
+};
+
+const ROLE_ID_TO_PAGE_ROLE: Partial<Record<RoleId, PageRole>> = {
+  [RoleId.R1_ROUTER]: 'R1',
+  [RoleId.R6_GUIDE_ACHAT]: 'R3_guide',
+  [RoleId.R3_CONSEILS]: 'R3_conseils',
+  [RoleId.R4_REFERENCE]: 'R4',
+  [RoleId.R5_DIAGNOSTIC]: 'R5',
+};
+
+/** Convert a legacy PageRole to canonical RoleId. */
+export function pageRoleToRoleId(role: PageRole): RoleId {
+  return PAGE_ROLE_TO_ROLE_ID[role];
+}
+
+/** Convert a canonical RoleId to legacy PageRole. Returns null for roles without a PageRole equivalent. */
+export function roleIdToPageRole(roleId: RoleId): PageRole | null {
+  return ROLE_ID_TO_PAGE_ROLE[roleId] ?? null;
 }
 
 // ── Phase 2 Section Eligibility (P2.2) ──

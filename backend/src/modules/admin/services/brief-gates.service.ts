@@ -30,8 +30,11 @@ export interface PrePublishGateOutput {
   briefVersion: number | null;
 }
 
-// ── Mapping page type → brief role ──
-
+/**
+ * Maps worker PageType → content-section-policy PageRole (legacy labels).
+ * 'R3_guide' here = "guide d'achat" (canonically R6_GUIDE_ACHAT).
+ * @see content-section-policy.ts pageRoleToRoleId() for canonical bridge.
+ */
 const PAGE_TYPE_TO_BRIEF_ROLE: Record<string, string> = {
   R1_pieces: 'R1',
   R3_guide_howto: 'R3_guide',

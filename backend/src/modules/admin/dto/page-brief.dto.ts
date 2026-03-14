@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+/** Maps to content-section-policy PageRole — legacy labels. 'R3_guide' = guide d'achat (R6_GUIDE_ACHAT). */
 export const PageRoleEnum = z.enum(['R1', 'R3_guide', 'R3_conseils', 'R4']);
 
 export const CreatePageBriefDto = z.object({

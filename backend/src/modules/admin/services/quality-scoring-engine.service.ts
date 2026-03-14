@@ -10,7 +10,7 @@ import {
   FRESHNESS_THRESHOLDS,
   CONFIDENCE_SIGNALS,
   CONTINUOUS_SCORING,
-  type PageType,
+  type ScoringPageType,
   type DimensionName,
   type ScoreStatus,
   type Priority,
@@ -159,11 +159,11 @@ export class QualityScoringEngineService extends SupabaseBaseService {
     let pagesScored = 0;
 
     for (const row of features) {
-      const pageTypes = this.detectPageTypes(row);
+      const pageTypes = this.detectScoringPageTypes(row);
       for (const pt of pageTypes) {
         const profile = SCORING_PROFILES[pt];
         if (!profile) continue;
-        const result = this.scorePageType(row, profile);
+        const result = this.scoreScoringPageType(row, profile);
         await this.upsertPageScore(row.pg_id, pt, result);
         pagesScored++;
       }
@@ -192,11 +192,11 @@ export class QualityScoringEngineService extends SupabaseBaseService {
       this.logger.warn(`No features found for pg_id=${pgId}`);
       return;
     }
-    const pageTypes = this.detectPageTypes(row);
+    const pageTypes = this.detectScoringPageTypes(row);
     for (const pt of pageTypes) {
       const profile = SCORING_PROFILES[pt];
       if (!profile) continue;
-      const result = this.scorePageType(row, profile);
+      const result = this.scoreScoringPageType(row, profile);
       await this.upsertPageScore(row.pg_id, pt, result);
     }
   }
@@ -217,8 +217,8 @@ export class QualityScoringEngineService extends SupabaseBaseService {
 
   // ── Page Type Detection ──
 
-  private detectPageTypes(row: FeatureRow): PageType[] {
-    const types: PageType[] = [];
+  private detectScoringPageTypes(row: FeatureRow): ScoringPageType[] {
+    const types: ScoringPageType[] = [];
     // R1 is always present (every gamme has a pieces_gamme entry)
     types.push('R1_pieces');
     if (row.guide_exists) types.push('R3_guide');
@@ -229,7 +229,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
 
   // ── Core Scoring ──
 
-  private scorePageType(
+  private scoreScoringPageType(
     row: FeatureRow,
     profile: ScoringProfile,
   ): PageScoreResult {
@@ -332,7 +332,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
   private computeDimension(
     dim: DimensionName,
     row: FeatureRow,
-    pageType: PageType,
+    pageType: ScoringPageType,
     reasons: string[],
     _nextActions: string[],
   ): number {
@@ -352,7 +352,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
 
   private scoreContentDepth(
     row: FeatureRow,
-    pageType: PageType,
+    pageType: ScoringPageType,
     reasons: string[],
   ): number {
     switch (pageType) {
@@ -547,7 +547,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
 
   private scoreSeoTechnical(
     row: FeatureRow,
-    pageType: PageType,
+    pageType: ScoringPageType,
     reasons: string[],
   ): number {
     const t = SEO_THRESHOLDS;
@@ -652,7 +652,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
 
   private scoreFreshness(
     row: FeatureRow,
-    pageType: PageType,
+    pageType: ScoringPageType,
     reasons: string[],
   ): number {
     const thresholds = FRESHNESS_THRESHOLDS[pageType];
@@ -758,7 +758,10 @@ export class QualityScoringEngineService extends SupabaseBaseService {
 
   // ── Confidence Score ──
 
-  private computeConfidence(row: FeatureRow, _pageType: PageType): number {
+  private computeConfidence(
+    row: FeatureRow,
+    _pageType: ScoringPageType,
+  ): number {
     let score = 0;
 
     for (const signal of CONFIDENCE_SIGNALS) {
@@ -797,7 +800,10 @@ export class QualityScoringEngineService extends SupabaseBaseService {
 
   // ── Helpers ──
 
-  private countPresentFeatures(row: FeatureRow, pageType: PageType): number {
+  private countPresentFeatures(
+    row: FeatureRow,
+    pageType: ScoringPageType,
+  ): number {
     // Returns % of features that are non-default for this page type
     let present = 0;
     let total = 0;
@@ -854,7 +860,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
 
   private deriveActions(
     row: FeatureRow,
-    pageType: PageType,
+    pageType: ScoringPageType,
     _reasons: string[],
   ): string[] {
     const actions: string[] = [];
@@ -899,7 +905,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
 
   private extractFeatureSnapshot(
     row: FeatureRow,
-    pageType: PageType,
+    pageType: ScoringPageType,
   ): Record<string, unknown> {
     const base: Record<string, unknown> = {
       seo_title_length: row.seo_title_length,
@@ -954,7 +960,7 @@ export class QualityScoringEngineService extends SupabaseBaseService {
 
   private async upsertPageScore(
     pgId: number,
-    pageType: PageType,
+    pageType: ScoringPageType,
     result: PageScoreResult,
   ): Promise<void> {
     const { error } = await this.client.from('__quality_page_scores').upsert(

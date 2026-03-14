@@ -9,7 +9,7 @@ import {
   BUSINESS_VALUE_WEIGHTS,
   COMPOSITE_BLEND,
   PRIORITY_THRESHOLDS,
-  type PageType,
+  type ScoringPageType,
   type Priority,
 } from '../../../config/scoring-profiles.config';
 
@@ -148,7 +148,8 @@ export class GammeAggregatorService extends SupabaseBaseService {
     let weightTotal = 0;
 
     for (const page of pages) {
-      const weight = GAMME_PAGE_WEIGHTS[page.page_type as PageType] || 10;
+      const weight =
+        GAMME_PAGE_WEIGHTS[page.page_type as ScoringPageType] || 10;
       weightedSum += page.quality_score * weight;
       weightTotal += weight;
     }
