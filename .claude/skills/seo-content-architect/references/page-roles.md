@@ -1,207 +1,141 @@
-# Page Roles — Vocabulaire Exclusif (Anti-Cannibalisation)
+# Page Roles — Canon final R0 a R8 + gouvernance G1 a G5
 
-> Source : `backend/src/modules/seo/services/page-role-validator.service.ts`
+## Regle de separation role / gouvernance
 
-Chaque page a un rôle SEO précis. **Le vocabulaire est exclusif à chaque rôle** pour éviter la cannibalisation.
+Les roles `R*` decrivent des **surfaces metier ou usages fonctionnels / editoriaux a promesse centrale exclusive**.
 
----
+La gouvernance ne constitue ni un role editorial, ni une surface metier, ni une destination utilisateur principale.
+Elle forme une couche transverse de controle intervenant pour :
 
-## R1 — Router (Navigation)
+- verifier la purete de role
+- controler la qualite
+- mesurer la diversite
+- prevenir la cannibalisation
+- decider publication / hold / block
+- tracer les ecarts et escalades
 
-**Fonction** : Orienter l'utilisateur vers la sélection véhicule → page produit R2
-**Brief complet** : `references/r1-router-role.md`
-**Max mots** : 150
-**Question core** : "Où trouver la bonne pièce pour MON véhicule ?"
-
-**Répartition** : 70% aide sélection véhicule, 20% compréhension gamme, 10% réassurance
-
-**INTERDIT sur R1** :
-- `bruit`, `usé`, `cassé`, `problème`, `symptôme`, `panne`, `défaillance`, `vibration`, `claquement`
-- `quand`, `pourquoi`, `comment diagnostiquer`, `comment savoir`
-- `causes`, `risques`, `danger`, `conséquences`, `si vous ne changez pas`
-- `définition`, `qu'est-ce que`, `composé de`, `glossaire` (= R4)
-- `démontage`, `remontage`, `étapes de remplacement`, `outils nécessaires` (= R3_CONSEILS)
-- `guide d'achat`, `référence OEM`, `checklist avant de payer` (= R6_GUIDE_ACHAT)
-- `prix`, `€`, `en stock`, `livraison`, `ajouter au panier` (= R2)
-
-**EXCLUSIF R1** (réservé uniquement aux pages R1) :
-- `sélectionnez votre véhicule`, `sélectionner mon véhicule`
-- `véhicules compatibles`, `pièces 100% compatibles`
-- `montages différents selon`, `plusieurs variantes selon`
-- `filtrer par véhicule`, `afficher les références compatibles`
+En consequence, la gouvernance ne doit pas etre numerotee dans la meme serie que les roles `R*`.
 
 ---
 
-## R2 — Product (Transaction)
+## Matrice canonique des roles
 
-**Fonction** : Vendre un produit spécifique
-
-**REQUIS sur R2** (au moins un) :
-- `prix`, `€`, `euro`, `ajouter`, `panier`, `acheter`, `commander`, `en stock`, `livraison`
-
-**INTERDIT sur R2** :
-- `choisir son véhicule`, `choisissez votre véhicule`, `sélectionnez votre marque`
-- `toutes les marques`, `tous les modèles`
-
-**EXCLUSIF R2** (réservé uniquement aux pages R2) :
-- `€`, `prix`, `ajouter au panier`, `commander`, `livraison gratuite`
-- `en stock`, `rupture de stock`, `garantie constructeur`, `réf. constructeur`, `frais de port`
+- `R0_HOME` = page d'accueil
+- `R1_ROUTER` = page gamme / orientation vers la bonne piece pour le bon vehicule
+- `R2_PRODUCT` = surface transactionnelle produit / listing ou selection commercialement exploitable
+- `R3_CONSEILS` = conseils / how-to / entretien / remplacement / verifications generiques
+- `R4_REFERENCE` = reference / definition / fiche encyclopedique technique
+- `R5_DIAGNOSTIC` = orientation symptome / panne / causes probables / triage
+- `R6_GUIDE_ACHAT` = guide d'achat / aide au choix / securisation avant commande
+- `R7_BRAND` = hub constructeur / surface marque
+- `R8_VEHICLE` = hub / fiche vehicule
 
 ---
 
-## R3 — Conseils / R6 — Guide d'achat (Information)
+## Couche canonique de gouvernance transverse
 
-**Sous-types canoniques** (legacy-canon-map.md v1.1.0) :
-- **R6_GUIDE_ACHAT** : parcours d'achat (brief : `references/guide-achat-role.md`) — legacy: R6_GUIDE_ACHAT, R3_guide, R3_BLOG/guide-achat
-- **R3_CONSEILS** : guide de remplacement how-to (brief : `references/conseils-role.md`) — legacy: R3_CONSEILS, R3_BLOG/conseils
-
-**INTERDIT sur R3** :
-- `sélectionnez votre véhicule`, `choisir votre véhicule`, `filtrer par`
-- `trier par`, `affiner la recherche`, `filtres`, `tous les véhicules compatibles`
-
-### R3_CONSEILS — Vocabulaire exclusif
-
-**EXCLUSIF R3_CONSEILS** (réservé uniquement aux pages conseils) :
-- `démontage` / `démonter` / `dépose`
-- `remontage` / `remonter` / `repose`
-- `étapes de remplacement` / `pas à pas`
-- `outils nécessaires` / `outils indispensables`
-- `couple de serrage` (contexte procédural)
-- `ordre de démontage` / `ordre de remontage`
-- `temps d'intervention` / `temps estimé`
-- `niveau de difficulté` (facile / moyen / avancé)
-- `contrôler en même temps`
-- `vérifier après remontage` / `vérification finale`
-- `essai routier` / `essai progressif`
-- `avant de commencer` (contexte procédural)
-
-**INTERDIT sur R3_CONSEILS** (en plus des interdictions R3 générales) :
-- R4 : `définition`, `qu'est-ce que`, `composé de`, `au sens strict`, `glossaire`
-- R5 : `diagnostiquer` (focus principal), `bruit anormal`, `code DTC`, `code OBD`
-- R6_GUIDE_ACHAT : `guide d'achat`, `commander`, `ajouter au panier`
-- R2 : `prix`, `€`, `en stock`, `livraison`, `promotion`
+- `G1` = Purete
+- `G2` = Diversite
+- `G3` = Anti-cannibalisation
+- `G4` = Publication Control
+- `G5` = Review / Escalation
 
 ---
 
-## R4 — Reference (Définition)
+## Regles d'implementation
 
-**Fonction** : Définir un terme technique (intemporel, générique)
-**Brief complet** : `references/r4-reference-role.md`
-
-**REQUIS sur R4** (au moins un) :
-- `définition`, `se compose de`, `rôle mécanique`, `fonction`, `composé de`
-
-**INTERDIT sur R4** :
-- **Commercial** : `prix`, `€`, `euro`, `acheter`, `commander`, `ajouter au panier`, `livraison`, `en stock`, `promotion`, `promo`, `solde`
-- **Véhicules** : `peugeot`, `renault`, `citroen`, `volkswagen`, `audi`, `bmw`, `mercedes`, `ford`, `opel`, `fiat`, `toyota`, `nissan`, `206`, `208`, `308`, `3008`, `clio`, `megane`, `golf`, `polo`, `a3`, `a4`
-- **Sélection** : `sélectionnez votre véhicule`, `filtrer par`, `tous les véhicules compatibles`
-- **Générique AI** : `joue un rôle essentiel`, `assure le bon fonctionnement`, `il est important de noter`
-
-**EXCLUSIF R4** (réservé uniquement aux pages R4) :
-- `définition`, `qu'est-ce que`, `qu'est-ce qu'`, `désigne`
-- `se compose de`, `composé de`, `terme technique`, `vocabulaire auto`
-- `glossaire`, `par définition`, `au sens strict`, `ne pas confondre avec`
-- `rôle mécanique`, `rôle négatif`, `scope et limites`, `règles métier`
-
-**Vocabulaire normalisé R4** (cohérence inter-fiches) :
-
-| Concept | Terme à utiliser | NE PAS utiliser |
-|---------|------------------|-----------------|
-| Référence constructeur | Référence OEM | Ref d'origine, code constructeur |
-| Référence équipementier | Référence OES | Ref première monte |
-| Pièce aftermarket | Pièce IAM | Pièce compatible, pièce adaptable |
-| Table d'équivalence | Cross-reference | Correspondance, matching |
-| Remplacement de ref | Supersession | Succession, évolution |
-| Sélecteur véhicule | Sélecteur véhicule | Configurateur, chercheur de pièce |
-| Compatible | Compatible (véhicule) | Adaptable, montable, universel |
-| Équivalent | Équivalent (= même pièce) | Compatible (≠ même véhicule) |
-
-**6 pièges à documenter dans chaque fiche R4** :
-
-1. Ref ressemblante ±1 digit — refs qui ne diffèrent que d'1 caractère
-2. Position gauche/droite ou avant/arrière — version miroir non interchangeable
-3. Kit vs composant — pièce vendue aussi en kit
-4. Universel vs spécifique — pièce véhicule-spécifique ou quasi-universelle
-5. Supersession connue — ancienne ref couramment recherchée
-6. Code PR discriminant — VW/Audi : code PR change la pièce
+1. Aucun agent, script, brief, contract ou pipeline ne doit traiter `G*` comme un role metier.
+2. Tout contenu genere doit cibler un role `R*`, jamais une couche `G*`.
+3. Toute decision de validation, blocage, score, review ou publication releve de `G*`, jamais d'un role `R*`.
+4. Les collisions entre surfaces se reglent par les controles `G*`, pas par la creation d'un faux role supplementaire.
+5. Une couche `G*` peut bloquer, limiter, scorer, exclure ou escalader un contenu, mais ne constitue jamais sa promesse centrale.
 
 ---
 
-## R5 — Diagnostic (Symptômes)
+## Frontieres rapides
 
-**Fonction** : Aider à identifier un problème
+### R1_ROUTER
+Promesse : aider a trouver la bonne piece pour le bon vehicule.
+Interdits :
+- diagnostic
+- how-to
+- definition encyclopedique
+- guide d'achat
+- transactionnel R2
 
-**REQUIS sur R5** (au moins un) :
-- `symptôme`, `symptômes`, `diagnostic`, `diagnostiquer`, `bruit`, `vibration`
-- `panne`, `problème`, `signe`, `code dtc`, `code obd`
+### R2_PRODUCT
+Promesse : convertir sur une offre / selection produit.
+Interdits :
+- selection vehicule comme promesse centrale R1
+- procedure R3
+- definition R4
+- diagnostic R5
 
-**INTERDIT sur R5** :
-- `prix`, `€`, `euro`, `acheter`, `commander`, `ajouter au panier`, `livraison`, `en stock`, `promotion`
+### R3_CONSEILS
+Promesse : aider a agir correctement sur une operation ou un controle generique.
+Interdits :
+- definition centrale R4
+- arbre de diagnostic R5
+- choix achat R6
+- transactionnel R2
+- dependance forte vehicule/km/historique → TOOL
 
-**EXCLUSIF R5** (réservé uniquement aux pages R5) :
-- `symptôme`, `symptômes`, `bruit anormal`, `vibration anormale`
-- `comment savoir si`
-- `signe de`, `signes de`, `diagnostic`, `diagnostiquer`
-- `panne potentielle`, `usure prématurée`
-- `code dtc`, `code obd`
+### R4_REFERENCE
+Promesse : expliquer ce qu'est un organe / terme / concept technique.
+Interdits :
+- how-to
+- diagnostic
+- transactionnel
+- surface achat
+- angle vehicule specifique fort
 
-**PARTAGÉ R5/R3** (autorisé sur conseils mais contexte différent) :
-- `quand changer`, `quand remplacer` — R5 = conclusion diagnostic réactif, R3_CONSEILS = intervalles proactifs
+### R5_DIAGNOSTIC
+Promesse : aider a orienter un probleme a partir d'un symptome.
+Interdits :
+- procedure detaillee R3
+- definition centrale R4
+- achat R6
+- transactionnel R2
+- personnalisation profonde sans contexte suffisant → TOOL
+
+### R6_GUIDE_ACHAT
+Promesse : securiser une decision d'achat sans erreur.
+Interdits :
+- procedure R3
+- diagnostic R5
+- definition centrale R4
+- transactionnel R2 direct
+- contenu support generique
+
+### R7_BRAND
+Promesse : orienter et structurer l'acces a l'univers d'une marque.
+Interdits :
+- how-to
+- diagnostic
+- definition encyclopedique d'organe
+- transactionnel pur
+
+### R8_VEHICLE
+Promesse : structurer l'acces a un vehicule / ses variantes / ses contextes compatibles.
+Interdits :
+- transactionnel pur
+- guide d'achat central
+- diagnostic central
+- reference encyclopedique centrale
 
 ---
 
-## R6 — Support (Aide)
+## Reroute canonique
 
-**Fonction** : Contenu informatif (FAQ, politiques)
+- si le besoin est surtout procedure → `R3_CONSEILS`
+- si le besoin est surtout definition → `R4_REFERENCE`
+- si le besoin est surtout symptome / panne → `R5_DIAGNOSTIC`
+- si le besoin est surtout choix avant commande → `R6_GUIDE_ACHAT`
+- si le besoin est surtout transaction → `R2_PRODUCT`
+- si le besoin depend fortement du vehicule exact, du kilometrage ou de l'historique → `TOOL`
 
 ---
 
-## Maillage interne inter-rôles
+## Regle finale
 
-Les pages doivent s'inter-lier selon des règles strictes pour éviter la cannibalisation :
-
-| Depuis | Vers | Autorisé | Exemple |
-|--------|------|----------|---------|
-| R4 Référence | R5 Diagnostic | ✅ Oui | « Consulter les symptômes du disque de frein usé » |
-| R4 Référence | R1 Router | ✅ Oui | « Voir toutes les pièces de freinage » |
-| R4 Référence | R3 Blog | ✅ Oui | « Lire le guide : comment choisir son disque de frein » |
-| R4 Référence | R2 Product | ❌ Non | Pas de lien commercial depuis une page référence |
-| R5 Diagnostic | R4 Référence | ✅ Oui | « Comprendre le fonctionnement du disque de frein » |
-| R5 Diagnostic | R2 Product | ❌ Non | Pas de lien commercial depuis une page diagnostic |
-| R1 Router | R4 Référence | ✅ Oui | Lien définition dans la navigation |
-| R2 Product | R4 Référence | ✅ Oui | « En savoir plus sur le disque de frein » |
-
-### Maillage R3_CONSEILS (how-to)
-
-| Depuis | Vers | Autorisé | Exemple |
-|--------|------|----------|---------|
-| R3_CONSEILS | R4 Référence | ✅ Oui | « En savoir plus : disque de frein — définition et rôle » |
-| R3_CONSEILS | R5 Diagnostic | ✅ Oui | « Diagnostic complet : identifier une panne de disque » |
-| R3_CONSEILS | R1/R2 Gamme | ✅ Oui | CTA « Voir les pièces compatibles » |
-| R3_CONSEILS | R6_GUIDE_ACHAT | ✅ Oui | « Consulter notre guide d'achat disques de frein » |
-| R4 Référence | R3_CONSEILS | ✅ Oui | « Guide de remplacement du disque de frein » |
-| R5 Diagnostic | R3_CONSEILS | ✅ Oui | « Comment remplacer le disque de frein » |
-| R6_GUIDE_ACHAT | R3_CONSEILS | ✅ Oui | « Nos conseils de montage disque de frein » |
-| R2 Product | R3_CONSEILS | ✅ Oui | « Conseils de montage pour ce disque » |
-
-**Minimum liens par page conseils** : 8 (dont 1→R4, 1→R5, 1→gamme CTA, 3→pièces associées)
-
-**Maillage systématique** : How-to ↔ Diagnostic ↔ Guide d'achat ↔ FAQ ↔ Page gamme
-
-### Maillage R6_GUIDE_ACHAT (purchase journey)
-
-| Depuis | Vers | Autorisé | Ancre type |
-|--------|------|----------|------------|
-| R6_GUIDE_ACHAT | R1 Router (gamme) | ✅ CTA conversion | « Voir les {pièces} compatibles avec votre véhicule » |
-| R6_GUIDE_ACHAT | R3_CONSEILS | ✅ Lien informatif | « Comment remplacer votre {pièce} » |
-| R6_GUIDE_ACHAT | R4 Référence | ✅ Lien informatif | « Fiche technique {pièce} » |
-| R6_GUIDE_ACHAT | R6_GUIDE_ACHAT (sibling) | ✅ Cross-link famille | « Notre guide {pièce associée} » |
-| R6_GUIDE_ACHAT | R2 Product | ❌ Non | Pas de lien commercial direct — passer par R1 |
-| R1 Router | R6_GUIDE_ACHAT | ✅ Bandeau conseils | « Guide d'achat {pièce} » |
-| R3_CONSEILS | R6_GUIDE_ACHAT | ✅ Oui | « Consulter notre guide d'achat {pièce} » |
-| R4 Référence | R6_GUIDE_ACHAT | ✅ Oui | « Comment bien choisir son {pièce} » |
-
-**Minimum liens par guide-achat** : 6 (dont 1→R1 CTA, 1→R3_CONSEILS, 1→R4, 1→sibling, 2→ancres internes)
-
-**Règle** : Ne jamais lier vers R2 (Product) depuis R4 ou R5. Le contenu informationnel reste non-commercial.
-**Format** : Utiliser des ancres descriptives, jamais « cliquez ici » ou « en savoir plus » seul.
+Mieux vaut bloquer proprement, rerouter proprement ou escalader en `G5` que produire une surface hybride ou fausse.

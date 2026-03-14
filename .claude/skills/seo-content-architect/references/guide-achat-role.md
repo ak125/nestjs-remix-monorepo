@@ -1,312 +1,178 @@
-# Guide Achat — Role de page R6_GUIDE_ACHAT (legacy: R3_BLOG/guide-achat)
+# R6 — GUIDE D'ACHAT : role canonique
 
-> **Le guide achat repond a UNE question : "comment acheter la bonne piece sans se tromper ?"**
-> Il ne parle PAS de : montage, diagnostic, symptomes, entretien, reparation.
-> Ces sujets relevent d'autres roles de page (R5 Diagnostic, R4 Reference).
+## Identite
 
----
-
-## 1. Identite de page
-
-| Champ | Valeur |
-|-------|--------|
-| Role SEO | R6_GUIDE_ACHAT (legacy: R3_BLOG/guide-achat) |
-| URL pattern | `/blog-pieces-auto/guide-achat/{bg_alias}` |
-| Intent principal | Informationnelle + Transactionnelle (TOFU → MOFU) |
-| Schema.org | TechArticle + FAQPage + BreadcrumbList |
-| Conversion goal | Clic vers page gamme (CTA `/pieces/{slug}-{pg_id}.html`) |
-| Tables BDD | `__blog_guide` → `__blog_guide_h2` → `__blog_guide_h3` (IDs TEXT, tri lexicographique) |
-| Rendu frontend | H2 BDD → `<h3>` rendu, H3 BDD → `<h4>` rendu, titre guide → `<h2>` rendu |
+- Role canonique : `R6_GUIDE_ACHAT`
+- Promesse centrale exclusive : **aider a acheter la bonne piece sans erreur**
+- Nature : surface editoriale d'aide au choix
+- Gouvernance : `G1` a `G5`
+- Ce role remplace toute ancienne lecture metier de type `R3_guide_achat`
 
 ---
 
-## 2. Perimetre strict
+## Ce que R6 EST
 
-### INCLUS (parcours d'achat)
+R6 est une surface qui aide a :
 
-- Identifier la bonne piece (compatibilite vehicule)
-- Trouver la bonne reference (OEM, equipementier)
-- Verifier les specifications techniques
-- Choisir le niveau de qualite
-- Commander le bon pack (pieces associees)
-- Checklist anti-erreur avant paiement
-- Verification a reception + procedure retour
-
-### EXCLUS (autres roles de page)
-
-| Sujet | Role de page concerne | Lien autorise |
-|-------|----------------------|---------------|
-| Symptomes / diagnostic | R5 Diagnostic | Lien vers `/conseils/{slug}` |
-| Quand changer / intervalles | R4 Reference | Lien vers page reference |
-| Montage / remplacement | R4 Reference ou R6 Support | Lien si pertinent |
-| Entretien / controle | R4 Reference | — |
-| Risques mecaniques detailles | R5 Diagnostic | — |
+- identifier la bonne piece pour le bon vehicule
+- securiser la reference
+- verifier les specifications critiques
+- choisir le bon niveau de qualite
+- eviter les erreurs d'achat
+- verifier correctement apres reception
 
 ---
 
-## 3. Structure H1
+## Ce que R6 N'EST PAS
 
-**Template** : `{Piece au pluriel} : guide d'achat complet [{annee}]`
+R6 n'est pas :
 
-| Regle | Detail |
-|-------|--------|
-| Keyword primaire | `guide achat {piece}` (SD faible, fort intent mixte) |
-| Max 60 chars | Verifier avant insertion |
-| "choisir" interdit dans le H1 | Reserve a S4 uniquement |
-| Champ BDD | `bg_h1` + `bg_title` (identiques) |
-
-**Exemples** :
-- Disques de frein : guide d'achat complet [2026]
-- Plaquettes de frein : guide d'achat complet [2026]
-- Amortisseurs : guide d'achat complet [2026]
+- une procedure de remplacement → `R3_CONSEILS`
+- une definition encyclopedique → `R4_REFERENCE`
+- une orientation symptome / panne → `R5_DIAGNOSTIC`
+- une surface transactionnelle → `R2_PRODUCT`
+- une FAQ support generique → support / autre surface
 
 ---
 
-## 4. Introduction (bg_content)
+## Double filtre canonique
 
-L'introduction est stockee dans `bg_content` et contient 2 blocs obligatoires :
+### Filtre 1 — intention dominante
 
-### 4a. TL;DR Checklist (en tete)
+- choisir / comparer / verifier avant commande → `R6`
+- remplacer / monter / controler → `R3`
+- comprendre ce que c'est → `R4`
+- identifier une panne → `R5`
+- acheter maintenant / prix / stock → `R2`
 
-5 a 7 points orientes ACHAT. Format HTML liste ordonnee. Vise le snippet Google.
+### Filtre 2 — dependance vehicule
 
-```html
-<strong>En resume — les points cles avant de commander :</strong>
-<ol>
-<li>Identifiez votre vehicule exact (VIN ou immatriculation)</li>
-<li>Verifiez la position : avant/arriere, gauche/droite</li>
-<li>Recuperez la reference OEM ou equipementier</li>
-<li>Controlez les specs : dimensions, type, connectiques</li>
-<li>Choisissez votre niveau de qualite (economique / OEM / premium)</li>
-<li>Commandez le pack complet (pieces associees)</li>
-<li>Verifiez la reference a la reception avant ouverture</li>
-</ol>
-```
-
-### 4b. Intro redactionnelle (2-3 paragraphes)
-
-| Regle | Detail |
-|-------|--------|
-| Seed | `domain.role` (v4) ou `page_contract.intro.role` (legacy) — reformule GEO-first, JAMAIS copie verbatim |
-| Angle | Parcours d'achat — "ce guide vous aide a commander la bonne piece" |
-| Must contain | Termes de `domain.must_be_true` (v4) ou `mechanical_rules.must_be_true` (legacy) dans le contexte achat |
-| Liens internes | Vers les gammes de `domain.cross_gammes[].slug` (v4) ou `page_contract.intro.syncParts` (legacy) |
-| Must NOT contain | Aucun terme de `domain.must_not_contain` (v4) ou `mechanical_rules.must_not_contain_concepts` (legacy) |
-
-### 4c. CTA (dual)
-
-| Champ BDD | Template |
-|-----------|----------|
-| `bg_cta_anchor` | "Trouver {piece} compatible avec votre vehicule" |
-| `bg_cta_link` | `/pieces/{slug}-{pg_id}.html` |
-
-**CTA secondaire (en fin d'article, apres S7/S8)** :
-- Texte : "Besoin d'aide ? Nos experts vous guident gratuitement"
-- Lien glossaire : "Consultez notre glossaire technique" → `/reference-auto`
+- faible a moyenne : admissible en `R6`
+- forte dependance vehicule + km + historique : bascule possible vers `TOOL`
 
 ---
 
-## 5. Template H2 obligatoire (7 sections)
+## Entrees minimales obligatoires
 
-Chaque guide d'achat DOIT contenir ces 7 H2 dans cet ordre. Ils suivent le parcours d'achat naturel.
+Le role R6 ne peut etre produit que si les entrees suivantes existent :
 
-| # | ID pattern | H2 template | Contenu | Source v4 / legacy |
-|---|-----------|-------------|---------|---------------------|
-| **S1** | `{bg_id}00` | Identifier {la bonne piece} pour votre vehicule | Methode VIN → immatriculation → selection manuelle. Point cle : meme voiture = plusieurs variantes → verifier position (avant/arriere), cote (gauche/droite), options (capteur, ABS, clim, boite...) | `selection.criteria` (v4) / `howToChoose` (legacy) |
-| **S2** | `{bg_id}01` | Trouver la bonne reference de {piece} | Ref OEM (etiquette, facture, ancienne piece) + ref equipementier. Croiser les references : si ref + dimensions concordent → achat securise | `selection.criteria` (v4) / `howToChoose` (legacy) — detail ref |
-| **S3** | `{bg_id}02` | Verifier les specifications techniques | Dimensions (diametre, epaisseur, longueur), type (ventile/plein, avec/sans), connectiques (capteur, nombre de broches). **Regle : si 1 critere ne colle pas → ne pas acheter.** Format tableau recommande : Critere / Comment verifier / Piege courant | `selection.criteria` + `selection.checklist` (v4) / RAG markdown + `sgpg_selection_criteria` |
-| **S4** | `{bg_id}03` | Quelle qualite de {piece} choisir ? | 3 niveaux : Economique / Equivalent OEM / Premium. Pour chaque : durabilite, homologation, garantie. Adapter au profil d'usage (urbain, route, intensif) si `sgpg_use_cases` disponible | `selection.cost_range` + `selection.brands` (v4) / Marques RAG + `risk.costRange` (legacy) |
-| **S5** | `{bg_id}04` | Commander le bon pack — eviter les oublis | Pieces associees a commander ensemble (SANS expliquer le montage). Format anti-erreur : Oubli frequent → Consequence → Solution. Ex freinage : commander sans plaquettes → usure prematuree → toujours en kit | `domain.cross_gammes` + `selection.anti_mistakes` (v4) / `intro.syncParts` + `antiMistakes` (legacy) |
-| **S6** | `{bg_id}05` | Checklist avant de payer | 2 blocs : **Verifications obligatoires** (vehicule, position, specs, reference, quantite, retour/garantie) + **Pieges courants** (format "Si... alors..." actionnable). Repetition des anti-erreurs cles de S1-S5 | Synthese S1-S5 |
-| **S7** | `{bg_id}06` | Apres la commande — verifier et agir | Verifier photo/etiquette a reception (ref + dimensions). Garder emballage tant que non valide. Procedure retour/echange si erreur | Generique |
+- `canonical_role = R6_GUIDE_ACHAT`
+- identifiant metier exploitable (`pg_id`, `slug`, etc.)
+- contrat R6 actif
+- evidence pack admissible
+- criteres de selection / compatibilite
+- anti-erreurs / anti-mistakes
+- donnees minimales de structure achat
 
-### FAQ optionnelle (S8)
+Entrees optionnelles :
 
-| # | ID pattern | H2 template | Contenu |
-|---|-----------|-------------|---------|
-| **S8** | `{bg_id}07` | Questions frequentes sur l'achat de {pieces} | 6-10 Q&A orientees ACHAT uniquement. Format accordion `<details>` |
-
-La FAQ est **recommandee** (FAQPage schema) mais pas bloquante. Si le page_contract fournit < 3 FAQ orientees achat, omettre et produire sans.
-
----
-
-## 6. H3 sous chaque H2
-
-| H2 parent | H3 possibles | Source |
-|-----------|-------------|--------|
-| S1 (Identifier) | Par VIN, Par immatriculation, Par selection manuelle | `howToChoose` |
-| S2 (Reference) | Reference constructeur (OEM), Reference equipementier, Croiser les references | `howToChoose` |
-| S3 (Specifications) | Dimensions, Type, Connectiques/options, Criteres de compatibilite (si `sgpg_selection_criteria`) | RAG markdown + `sgpg_selection_criteria` |
-| S4 (Qualite) | Economique, Equivalent origine, Premium/performance, Quel niveau selon votre usage (si `sgpg_use_cases`) | Marques RAG + `sgpg_use_cases` |
-| S5 (Pack) | Aucun H3 — liste anti-erreur : Oubli → Consequence → Solution | `intro.syncParts` + `antiMistakes` |
-| S6 (Checklist) | Aucun H3 — 2 blocs : Verifications obligatoires + Pieges courants | Synthese S1-S5 |
-| S7 (Apres commande) | Aucun H3 — contenu court | — |
-| S8 (FAQ) | Aucun H3 — accordion `<details>` | — |
+- FAQ achat
+- clusters SEO
+- use cases
+- guide marques
+- axes de compatibilite
+- elements de budget admissibles
 
 ---
 
-## 7. Format FAQ (S8)
+## Sections admissibles
 
-```html
-<details>
-<summary><strong>Question orientee achat ?</strong></summary>
-<p>Reponse factuelle.</p>
-</details>
-```
+R6 ne peut generer que des sections orientees achat, par exemple :
 
-| Regle | Detail |
-|-------|--------|
-| Minimum | 6 Q&A si section presente |
-| Maximum | 10 Q&A |
-| Orientation | Questions d'ACHAT uniquement |
-| Schema.org | FAQPage genere automatiquement par le frontend (regex `<details>/<summary>`) |
-
-**Questions types (achat)** :
-- "Faut-il acheter par paire ?"
-- "Quelle difference entre OEM et adaptable ?"
-- "Comment verifier la compatibilite avec mon vehicule ?"
-- "Que faire si la piece recue ne correspond pas ?"
-- "Peut-on melanger les marques (disque + plaquette) ?"
-
-**Questions INTERDITES (hors perimetre)** :
-- "Quand changer ?" → R5 Diagnostic
-- "Quels sont les symptomes ?" → R5 Diagnostic
-- "Comment monter/remplacer ?" → R4 Reference
-- "Quel est l'intervalle d'entretien ?" → R4 Reference
+- identifier la bonne piece
+- trouver la bonne reference
+- verifier les specifications techniques
+- choisir le bon niveau de qualite
+- commander le bon pack
+- checklist avant paiement
+- verifier apres reception
+- FAQ achat uniquement
 
 ---
 
-## 8. Mapping v4 / legacy → sections
+## Interdits absolus
 
-```
-# v4 paths                          → Section          # Legacy fallback
-selection.criteria                   → S1 + S2 + S3     page_contract.howToChoose
-selection.checklist                  → S3               (pas d'equivalent legacy)
-domain.cross_gammes[].slug           → S5 + liens       page_contract.intro.syncParts
-selection.cost_range                 → S4               page_contract.risk.costRange
-selection.anti_mistakes              → S5 + S6          page_contract.antiMistakes
-rendering.faq                        → S8               page_contract.faq
-domain.role                          → bg_content intro  page_contract.intro.role
-rendering.arguments                  → bg_content intro  page_contract.arguments
-seo_cluster.paa_questions            → headings H2       (identique)
-domain.must_be_true                  → validation post    mechanical_rules
-sgpg_selection_criteria (JSONB)      → S3                (identique)
-sgpg_use_cases (JSONB)               → S4                (identique)
-```
+Ne jamais produire dans R6 :
 
-**Champs NON utilises dans guide-achat :**
-
-| Champ v4 | Champ legacy | Raison | Role de page concerne |
-|----------|-------------|--------|----------------------|
-| `diagnostic.symptoms` | `page_contract.symptoms` | Diagnostic, pas achat | R5 Diagnostic |
-| `maintenance.interval` | `page_contract.timing.*` | Intervalle de remplacement, pas achat | R4 Reference |
-| `rendering.risk_consequences` | `page_contract.risk.consequences` | Peut apparaitre en intro (1 phrase) mais pas de H2 dedie | R5 Diagnostic |
+- demontage
+- remontage
+- depose
+- repose
+- couple de serrage
+- etapes de remplacement
+- diagnostic de panne
+- symptomes
+- causes de panne
+- definition encyclopedique comme angle central
+- prix promo
+- livraison gratuite
+- ajouter au panier
+- promesse commerciale R2
 
 ---
 
-## 9. Regles SEO des headings
+## Politique d'evidence
 
-| Regle | Application |
-|-------|------------|
-| "choisir" | Maximum 1 H2 (S4 "Quelle qualite choisir" — PAA exacte Google) |
-| Keyword principal | Present dans H1 + au moins 3 H2 |
-| Diversification | Utiliser PAA + keywords du `seo_cluster` pour varier |
-| Anti-stuffing | Pas de repetition du meme verbe/structure dans 2+ headings consecutifs |
-| Longueur H2 | 40-80 chars (Google tronque au-dela) |
-| Verbe d'action | Privilegier : identifier, verifier, commander, trouver, comparer |
+Sources autorisees :
 
----
+- RAG admissible
+- DB admissible
+- contrat/schema R6
+- brief valide
+- evidence pack resolu
 
-## 10. Liens internes
+Interdits :
 
-| Type | Cible | Ancre | Placement |
-|------|-------|-------|-----------|
-| syncParts | `/pieces/{slug}-{pg_id}.html` | Nom de la piece associee | bg_content + S5 |
-| Cross-guide | `/blog-pieces-auto/guide-achat/{alias}` | "notre guide {piece}" | S5 (pack associe) |
-| Gamme principale | `/pieces/{slug}-{pg_id}.html` | CTA "Trouver {piece} compatible" | bg_cta_link |
-| Diagnostic | `/conseils/{slug}` | "consultez notre guide diagnostic" | bg_content intro (1 lien max) |
+- invention
+- extrapolation technique non prouvee
+- comparaison de qualite non prouvee
+- melange de sources contradictoires sans blocage
 
-**Minimum** : 8 liens internes par guide.
+Si evidence insuffisante :
 
-### Guides similaires (automatique)
-
-Le backend resout automatiquement 4 guides de la **meme famille** via :
-`bg_alias → pieces_gamme → __seo_family_gamme_car_switch (sfgcs_mf_id) → siblings`
-
-18 familles distinctes (Freinage, Eclairage, Embrayage, Filtration, etc.). Si aucune famille trouvee, fallback sur 4 guides recents.
-
-**Impact contenu** : les cross-guides en S5 (pack associe) et les related guides automatiques forment un maillage interne complementaire. S5 = pieces associees (ex: disque + plaquette), related guides = pieces de la meme famille (ex: disque + etrier + flexible).
+- ne pas generer la section
+- ou retourner `HOLD_EVIDENCE_INSUFFICIENT`
 
 ---
 
-## 11. Pre-requis gamme pour generer un guide
+## Politique de reroute
 
-| Champ v4 | Champ legacy (fallback) | Requis | Si absent |
-|----------|------------------------|--------|-----------|
-| Blocs `domain` + `selection` + `rendering` | `page_contract` | OUI | **STOP** — enrichir via `/rag-ops ingest` |
-| `selection.criteria` | `page_contract.howToChoose` | OUI | STOP — impossible de generer S1/S2/S3 |
-| `selection.anti_mistakes` | `page_contract.antiMistakes` | OUI | Flag — S5/S6 seront generiques |
-| `rendering.faq` (≥3) | `page_contract.faq` (≥3) | RECOMMANDE | S8 omise ou generique |
-| `seo_cluster` | `seo_cluster` | RECOMMANDE | Headings non optimises SEO |
-| `domain.must_be_true` | `mechanical_rules.must_be_true` | OUI | WARNING — pas de validation anti-hallucination |
+- procedure / remplacement → `R3_CONSEILS`
+- definition / role mecanique → `R4_REFERENCE`
+- symptome / panne / bruit / voyant → `R5_DIAGNOSTIC`
+- transaction / prix / stock / panier → `R2_PRODUCT`
+- personnalisation forte non editoriale → `TOOL`
 
 ---
 
-## 12. Exemple de reference : disque-de-frein (bg_id=2)
+## Sortie attendue
 
-Guide migre en v2 (2026-02-17). Structure 8 H2 (7 sections + FAQ), 6 H3.
+Une sortie R6 doit etre :
 
-| Section | bg2_id | H2 reel | H3 |
-|---------|--------|---------|-----|
-| S1 Identifier | 200 | Identifier le bon disque de frein pour votre vehicule | — |
-| S2 Reference | 201 | Trouver la bonne reference de disque de frein | — |
-| S3 Specifications | 202 | Verifier les specifications techniques de votre disque de frein | Taille disque (bg3_id=200), Epaisseur (bg3_id=201) |
-| S4 Qualite | 203 | Quelle qualite de disque de frein choisir ? | Marques (bg3_id=202), Entree de gamme 20-35 EUR (203), Milieu 35-60 EUR (204), Haut 60-120 EUR (205) |
-| S5 Pack | 204 | Commander le bon pack — eviter les oublis | — |
-| S6 Checklist | 205 | Checklist avant de payer | — |
-| S7 Apres commande | 206 | Apres la commande — verifier et agir | — |
-| S8 FAQ | 207 | Questions frequentes sur l'achat de disques de frein | — (6 Q&A accordion) |
-
-**RAG source** : `rag://gammes.disque-de-frein` (pg_id=82, truth_level L2, updated_at 2026-02-17)
+- role-pure
+- compatible avec le contrat R6
+- structuree
+- non transactionnelle
+- non procedurale
+- non diagnostique
+- non encyclopedique comme angle principal
 
 ---
 
-## 13. Post-generation workflow (insertion en base)
+## Repo awareness
 
-Apres la generation du contenu par le skill, l'insertion suit ce pipeline :
+Cette surface est consommee ou controlee par :
 
-### Etape 1 — Insertion BDD (via MCP Supabase)
+- `backend/src/modules/admin/services/buying-guide-enricher.service.ts`
+- `backend/src/modules/admin/services/content-refresh.service.ts`
+- `backend/src/config/page-contract-r6.schema.ts`
+- `backend/src/config/r6-keyword-plan.constants.ts`
+- routes frontend guide achat
+- tables et stockage associes au guide d'achat
 
-| Table | Champs cles | ID pattern |
-|-------|-------------|-----------|
-| `__blog_guide` | bg_id (TEXT), bg_title, bg_h1, bg_alias, bg_content, bg_cta_anchor, bg_cta_link | Prochain ID libre (SELECT MAX(bg_id::int)+1) |
-| `__blog_guide_h2` | bg2_id (TEXT), bg2_h2, bg2_content, bg2_bg_id | `{bg_id}{section_number}` (00-07) |
-| `__blog_guide_h3` | bg3_id (TEXT), bg3_h3, bg3_content, bg3_bg2_id | `{bg2_id}{sub_number}` (0-9) |
+---
 
-**Attention** : IDs TEXT, tri lexicographique. Pas d'auto-increment natif.
+## Regle finale
 
-### Etape 2 — Sitemap
-
-Inserer dans `__sitemap_blog` :
-- `map_alias` = `guide-achat/{bg_alias}`
-- `map_date` = date du jour (YYYY-MM-DD)
-- `map_id` = prochain ID libre (SELECT MAX(map_id::int)+1)
-
-### Etape 3 — Verification
-
-```sql
--- Verifier le guide insere
-SELECT bg_id, bg_title, bg_alias FROM __blog_guide WHERE bg_alias = '{alias}';
-
--- Verifier les H2
-SELECT bg2_id, bg2_h2 FROM __blog_guide_h2 WHERE bg2_bg_id = '{bg_id}' ORDER BY bg2_id;
-
--- Verifier le sitemap
-SELECT map_alias FROM __sitemap_blog WHERE map_alias LIKE 'guide-achat/{alias}';
-```
-
-### Etape 4 — Index page
-
-Le loader index (`blog-pieces-auto.guide-achat._index.tsx`) charge `limit=300` guides. Si le total depasse 300, augmenter la limite.
-
-La famille du guide est resolue automatiquement via `pieces_gamme → __seo_family_gamme_car_switch` pour le groupement dans la page index.
+Aucune ancienne etiquette de type `R3_guide_achat` ne doit etre utilisee comme identite metier d'execution.
+Elle peut exister comme compatibilite legacy d'entree, jamais comme canon d'execution.
