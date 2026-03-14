@@ -1,6 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
+import { RagFoundationGateService } from '../../rag-proxy/services/rag-foundation-gate.service';
 import { AiContentService } from '../../ai-content/ai-content.service';
 import { PageBriefService } from './page-brief.service';
 import { ConfigService } from '@nestjs/config';
@@ -89,6 +90,8 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     private readonly yamlParser: EnricherYamlParser,
     @Optional() private readonly aiContentService?: AiContentService,
     @Optional() private readonly pageBriefService?: PageBriefService,
+    @Optional()
+    private readonly foundationGate?: RagFoundationGateService,
   ) {
     super(configService);
   }
@@ -153,7 +156,25 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     if (!meta) {
       throw new Error(`Gamme not found for pgId=${pgId}`);
     }
-    const { gammeName, family } = meta;
+    const { gammeName, family, pgAlias } = meta;
+
+    // F1-GATE: Foundation Write Lock — refuse enrichment if Phase 1 not passed
+    if (!dryRun && pgAlias && this.foundationGate) {
+      const gate = await this.foundationGate.guardWriteForGamme(pgAlias);
+      if (!gate.passed && gate.total > 0) {
+        this.logger.warn(
+          `F1-GATE: skipping R2 enrichment for "${pgAlias}" — ${gate.blockedSources.length}/${gate.total} docs blocked`,
+        );
+        return {
+          pgId,
+          sections: {},
+          averageConfidence: 0,
+          updated: false,
+          sectionsUpdated: 0,
+          skippedSections: ['F1_GATE_BLOCKED'],
+        };
+      }
+    }
 
     this.logger.log(
       `Enriching pgId=${pgId} (${gammeName}, family=${family}) dryRun=${dryRun}`,
@@ -1637,10 +1658,10 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
 
   private async fetchGammeMetadata(
     pgId: string,
-  ): Promise<{ gammeName: string; family: string } | null> {
+  ): Promise<{ gammeName: string; family: string; pgAlias: string } | null> {
     const { data, error } = await this.client
       .from('pieces_gamme')
-      .select('pg_id, pg_name, pg_parent, pg_level')
+      .select('pg_id, pg_name, pg_parent, pg_level, pg_alias')
       .eq('pg_id', pgId)
       .single();
 
@@ -1661,7 +1682,8 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
       }
     }
 
-    return { gammeName, family };
+    const pgAlias = (data.pg_alias as string) || '';
+    return { gammeName, family, pgAlias };
   }
 
   private buildUpdatePayload(

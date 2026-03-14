@@ -28,6 +28,17 @@ import { RagMdMergerService } from './services/rag-md-merger.service';
 import { RagImageManagementService } from './services/rag-image-management.service';
 import { RagVideoManagementService } from './services/rag-video-management.service';
 
+// Phase 1 — Ingestion Foundation services
+import { RagFingerprintService } from './services/rag-fingerprint.service';
+import { RagValidationService } from './services/rag-validation.service';
+import { RagFoundationGateService } from './services/rag-foundation-gate.service';
+
+// Phase 1.5 — Normalization & Identity Resolution
+import { RagNormalizationService } from './services/rag-normalization.service';
+
+// Phase 1.6 — Business Admissibility Gate
+import { RagAdmissibilityGateService } from './services/rag-admissibility-gate.service';
+
 // NOTE: CacheModule is @Global() (registered in app.module.ts) — CacheService
 // is available everywhere without explicit import.
 // EventEmitterModule.forRoot() is also imported globally in app.module.ts.
@@ -35,6 +46,14 @@ import { RagVideoManagementService } from './services/rag-video-management.servi
   imports: [ConfigModule],
   controllers: [RagProxyController],
   providers: [
+    // Phase 1 — Ingestion Foundation (leaf deps, before consumers)
+    RagFingerprintService,
+    RagValidationService,
+    RagFoundationGateService,
+    // Phase 1.5 — Normalization & Identity Resolution
+    RagNormalizationService,
+    // Phase 1.6 — Business Admissibility Gate
+    RagAdmissibilityGateService,
     // Existing services
     FrontmatterValidatorService,
     RagCleanupService,
@@ -77,6 +96,14 @@ import { RagVideoManagementService } from './services/rag-video-management.servi
     RagMdMergerService,
     RagImageManagementService,
     RagVideoManagementService,
+    // Phase 1 — Ingestion Foundation
+    RagFingerprintService,
+    RagValidationService,
+    RagFoundationGateService,
+    // Phase 1.5 — Normalization
+    RagNormalizationService,
+    // Phase 1.6 — Business Admissibility Gate
+    RagAdmissibilityGateService,
   ],
 })
 export class RagProxyModule {}

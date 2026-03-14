@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { readdirSync, statSync, readFileSync } from 'node:fs';
@@ -104,7 +104,9 @@ export class RagGammeDetectionService {
   constructor(
     private readonly configService: ConfigService,
     private readonly eventEmitter: EventEmitter2,
+    @Inject(forwardRef(() => FrontmatterValidatorService))
     private readonly frontmatterValidator: FrontmatterValidatorService,
+    @Inject(forwardRef(() => RagKnowledgeService))
     private readonly ragKnowledgeService: RagKnowledgeService,
   ) {}
 

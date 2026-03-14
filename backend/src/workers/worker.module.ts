@@ -9,7 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 // Processors
 // import { SitemapProcessor } from './processors/sitemap.processor'; // DESACTIVE temporairement
 // import { CacheProcessor } from './processors/cache.processor'; // DESACTIVE - Besoin IORedis Module
-// import { EmailProcessor } from './processors/email.processor'; // DESACTIVE temporairement
+import { EmailProcessor } from './processors/email.processor';
 import { SeoMonitorProcessor } from './processors/seo-monitor.processor';
 import { ContentRefreshProcessor } from './processors/content-refresh.processor';
 import { VideoExecutionProcessor } from './processors/video-execution.processor';
@@ -61,6 +61,7 @@ import { SolverService } from '../modules/agentic-engine/services/solver.service
 import { CriticService } from '../modules/agentic-engine/services/critic.service';
 import { ClaudeCliService } from '../modules/agentic-engine/services/claude-cli.service';
 import { FeatureFlagsModule } from '../config/feature-flags.module';
+import { MailService } from '../services/mail.service';
 
 @Module({
   imports: [
@@ -95,7 +96,7 @@ import { FeatureFlagsModule } from '../config/feature-flags.module';
     BullModule.registerQueue(
       // { name: 'sitemap' }, // DESACTIVE temporairement
       // { name: 'cache' }, // DESACTIVE temporairement
-      // { name: 'email' }, // DESACTIVE temporairement
+      { name: 'email' },
       { name: 'seo-monitor' },
       { name: 'content-refresh' },
       { name: 'video-render' },
@@ -112,7 +113,7 @@ import { FeatureFlagsModule } from '../config/feature-flags.module';
     // Processors
     // SitemapProcessor, // DESACTIVE
     // CacheProcessor, // DESACTIVE
-    // EmailProcessor, // DESACTIVE
+    EmailProcessor,
     SeoMonitorProcessor,
     ContentRefreshProcessor,
     VideoExecutionProcessor,
@@ -159,6 +160,7 @@ import { FeatureFlagsModule } from '../config/feature-flags.module';
     PipelineChainPollerService, // 🔗 Pipeline chain poller (keyword-plan → conseil auto-refresh)
     R8VehicleEnricherService, // 🚗 R8 Vehicle enricher (RAG + diversity scoring, 0-LLM, stateless — safe duplicate)
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM, stateless — safe duplicate)
+    MailService, // Email service for EmailProcessor
 
     // Services
     // SitemapStreamingService, // DESACTIVE

@@ -40,7 +40,7 @@ Aucune couche inferieure ne peut contredire une couche superieure.
 | R5 Diagnostic | stable | double couche surface + moteur |
 | R6 Guide achat | stable avec alias legacy actifs | `R3_guide*` / `R3_buying_guide` encore dans 14 fichiers |
 | R7 Brand | stable | contrat + mapping + agent complets |
-| R8 Vehicle | canon stable, visibilite frontend incomplete | pas de `page-contract-r8.schema.ts` |
+| R8 Vehicle | stable | contrat + RAG generator + agent complets |
 
 ---
 
@@ -384,10 +384,11 @@ Promesse : aider a naviguer dans l'univers pieces d'une marque.
 Promesse : orienter a partir d'un vehicule precis.
 
 ## Contrats / schemas repo
+- `backend/src/config/page-contract-r8.schema.ts`
 - `backend/src/config/r8-keyword-plan.constants.ts`
-- **Contrat schema unifie** : en cours de definition (pas encore de `page-contract-r8.schema.ts`)
 
 ## Services / generation
+- `backend/src/modules/admin/services/vehicle-rag-generator.service.ts`
 - `backend/src/modules/rag-proxy/services/rag-ingestion.service.ts` (ingestion RAG vehicule)
 - `backend/src/modules/rag-proxy/services/rag-knowledge.service.ts` (lecture corpus vehicule)
 
@@ -398,22 +399,22 @@ Promesse : orienter a partir d'un vehicule precis.
 - `.claude/agents/r8-keyword-planner.md`
 
 ## Implementation reelle
-- R8 est present comme fiche vehicule / vehicle content contract
-- generation vehicle RAG existante via pipeline RAG generique
+- R8 est bien present avec contrat schema dedie, generateur RAG dedie et agent
+- generation vehicle RAG via `vehicle-rag-generator.service.ts`
 - constantes de keyword plan dediees
 
 ## Ecart
-- **pas de `page-contract-r8.schema.ts`** — contrat schema unifie manquant
-- moins visible cote frontend public que R1/R2/R4/R6
-- la couche de generation utilise le pipeline RAG generique, pas un service dedie
+- faible
+- visibilite frontend a renforcer (pas de route publique R8 dediee identifiee)
 
 ## Decision canonique
 - **R8 = Vehicle**
 - source principale :
+  - contrat = `page-contract-r8.schema.ts`
   - regles = `r8-keyword-plan.constants.ts`
+  - generateur = `vehicle-rag-generator.service.ts`
   - corpus = `/opt/automecanik/rag/knowledge/vehicles/`
   - agent = `r8-keyword-planner.md`
-- **action requise** : creer `page-contract-r8.schema.ts` pour alignement complet avec R0-R7
 
 ---
 

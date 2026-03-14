@@ -5,12 +5,17 @@ import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { FrontmatterValidatorService } from './frontmatter-validator.service';
+import { RagFingerprintService } from './rag-fingerprint.service';
+import { RagNormalizationService } from './rag-normalization.service';
+import { RagAdmissibilityGateService } from './rag-admissibility-gate.service';
 import type {
   RagDocInput,
   IngestDecision,
   CleanupReport,
 } from '../types/rag-ingest.types';
 import type { TruthLevel } from '../types/rag-ingest.types';
+import type { IngestionReceipt } from '../types/rag-contracts.types';
+import type { Phase1Status } from '../types/rag-state.types';
 
 /**
  * Compatibility matrix: source prefix → allowed categories + truth levels.
@@ -72,6 +77,12 @@ export class RagCleanupService extends SupabaseBaseService {
     configService: ConfigService,
     @Inject(forwardRef(() => FrontmatterValidatorService))
     private readonly frontmatterValidator: FrontmatterValidatorService,
+    @Inject(forwardRef(() => RagFingerprintService))
+    private readonly ragFingerprintService: RagFingerprintService,
+    @Inject(forwardRef(() => RagNormalizationService))
+    private readonly ragNormalizationService: RagNormalizationService,
+    @Inject(forwardRef(() => RagAdmissibilityGateService))
+    private readonly ragAdmissibilityGateService: RagAdmissibilityGateService,
   ) {
     super(configService);
   }
@@ -182,7 +193,8 @@ export class RagCleanupService extends SupabaseBaseService {
     doc: RagDocInput,
     decision: IngestDecision,
   ): Promise<{ id: string }> {
-    const payload = {
+    const now = new Date().toISOString();
+    const payload: Record<string, unknown> = {
       title: doc.title,
       content: doc.content,
       source: decision.parent_source,
@@ -196,8 +208,33 @@ export class RagCleanupService extends SupabaseBaseService {
         decision.decision === 'REJECT_QUARANTINE'
           ? decision.reasons.join('; ')
           : null,
-      updated_at: new Date().toISOString(),
+      updated_at: now,
     };
+
+    // Phase 1: persist fingerprint pack + provenance if available
+    if (decision.fingerprintPack) {
+      payload.normalized_source_key =
+        decision.fingerprintPack.normalizedSourceKey;
+      payload.canonical_source_key =
+        decision.fingerprintPack.canonicalSourceKey;
+      payload.raw_hash = decision.fingerprintPack.rawHash;
+      payload.content_hash = decision.fingerprintPack.contentHash;
+      payload.publication_hash = decision.fingerprintPack.publicationHash;
+    }
+    if (doc.source_url) payload.source_url = doc.source_url;
+    if (doc.gamme_aliases) payload.gamme_aliases = doc.gamme_aliases;
+    if (doc.job_origin) payload.job_origin = doc.job_origin;
+    payload.pipeline_version = '2.0';
+
+    // Phase 1 R4: set phase barrier status
+    const phase1Status: Phase1Status =
+      decision.decision === 'REJECT_QUARANTINE'
+        ? 'quarantined'
+        : decision.decision === 'ACCEPT_UPSERT'
+          ? 'passed'
+          : 'failed';
+    payload.phase1_status = phase1Status;
+    payload.foundation_gate_passed = phase1Status === 'passed';
 
     const { data, error } = await this.supabase
       .from('__rag_knowledge')
@@ -306,18 +343,50 @@ export class RagCleanupService extends SupabaseBaseService {
   async syncFilesToDb(
     filePaths: string[],
     knowledgeBasePath: string,
-  ): Promise<{ synced: number; skipped: number; errors: string[] }> {
-    const result = { synced: 0, skipped: 0, errors: [] as string[] };
+  ): Promise<{
+    synced: number;
+    skipped: number;
+    errors: string[];
+    receipts: IngestionReceipt[];
+  }> {
+    const result = {
+      synced: 0,
+      skipped: 0,
+      errors: [] as string[],
+      receipts: [] as IngestionReceipt[],
+    };
+    const now = new Date().toISOString();
 
     for (const fp of filePaths) {
+      // R1: build receipt progressively with R2 sub-statuses
+      const receipt: IngestionReceipt = {
+        jobId: `sync-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        sourceType: 'markdown',
+        sourceLocator: fp,
+        storagePath: fp,
+        dbRecordId: null,
+        receptionSuccess: false,
+        storageSuccess: false,
+        reconciliationSuccess: false,
+        acceptanceDecision: 'skipped',
+        provenanceStatus: 'missing',
+        writeSafetyStatus: 'skipped',
+        finalStatus: 'failed',
+        phase1Status: 'failed',
+        ingestedAt: now,
+        reasons: [],
+      };
+
       try {
         const absPath = path.isAbsolute(fp)
           ? fp
           : path.join(knowledgeBasePath, fp);
         const content = readFileSync(absPath, 'utf-8');
+        receipt.receptionSuccess = true;
 
         // Parse frontmatter
         const fm = this.frontmatterValidator.parseFrontmatter(content);
+        receipt.storageSuccess = true;
 
         // Strip frontmatter to get body
         const body = content
@@ -325,7 +394,11 @@ export class RagCleanupService extends SupabaseBaseService {
           .trim();
         if (!body) {
           result.skipped++;
+          receipt.acceptanceDecision = 'skipped';
+          receipt.finalStatus = 'skipped';
+          receipt.reasons.push('EMPTY_BODY');
           this.logger.warn(`syncFilesToDb: empty body, skipping ${fp}`);
+          result.receipts.push(receipt);
           continue;
         }
 
@@ -343,8 +416,6 @@ export class RagCleanupService extends SupabaseBaseService {
         };
 
         // Use frontmatter category only if it's in the compatibility matrix
-        // (Python ingest scripts may write categories like "knowledge" that
-        //  don't match our internal matrix for the prefix)
         const matrix = COMPATIBILITY_MATRIX[prefix];
         const fmCategoryValid =
           fm.category && matrix?.categories.includes(fm.category);
@@ -358,13 +429,92 @@ export class RagCleanupService extends SupabaseBaseService {
           category: fmCategoryValid ? fm.category! : defaults.category,
         };
 
+        // Provenance check
+        receipt.provenanceStatus =
+          fm.title && fm.truth_level && fm.domain
+            ? 'valid'
+            : fm.title || fm.truth_level
+              ? 'incomplete'
+              : 'missing';
+
+        // Phase 1: Build fingerprint pack for traceability
+        const fingerprintPack = this.ragFingerprintService.buildFingerprintPack(
+          source,
+          content,
+          body,
+          { pgAlias: fm.pg_alias, slug: fm.slug },
+        );
+        receipt.fingerprintPack = fingerprintPack;
+
+        // Phase 1 G5: Write safety check — never overwrite L1 with lower trust
+        const writeSafety = await this.ragFingerprintService.checkWriteSafety(
+          fingerprintPack.canonicalSourceKey ?? source,
+          doc.truth_level,
+        );
+        receipt.writeSafetyStatus = writeSafety.safe ? 'safe' : 'blocked';
+        if (!writeSafety.safe) {
+          result.skipped++;
+          receipt.acceptanceDecision = 'rejected';
+          receipt.finalStatus = 'rejected';
+          receipt.phase1Status = 'failed';
+          receipt.reasons.push(writeSafety.reason ?? 'WRITE_SAFETY_BLOCKED');
+          this.logger.warn(
+            `syncFilesToDb: WRITE_SAFETY blocked ${source} — ${writeSafety.reason}`,
+          );
+          result.receipts.push(receipt);
+          continue;
+        }
+
         const decision = await this.decideIngest(doc);
 
+        // Attach Phase 1 metadata to decision
+        decision.fingerprintPack = fingerprintPack;
+        decision.writeSafety = writeSafety;
+
         if (decision.decision === 'ACCEPT_UPSERT') {
-          await this.applyIngest(doc, decision);
+          const { id } = await this.applyIngest(doc, decision);
+          receipt.dbRecordId = id;
+          receipt.reconciliationSuccess = true;
+          receipt.acceptanceDecision = 'accepted';
+          receipt.finalStatus = 'accepted';
+          receipt.phase1Status = 'passed';
           result.synced++;
           this.logger.log(`syncFilesToDb: upserted ${source}`);
+
+          // Phase 1.5: normalize after successful Phase 1 ingestion
+          try {
+            await this.ragNormalizationService.normalize(source);
+          } catch (normErr) {
+            const normMsg =
+              normErr instanceof Error ? normErr.message : String(normErr);
+            this.logger.warn(
+              `syncFilesToDb: Phase 1.5 normalization failed for ${source}: ${normMsg}`,
+            );
+          }
+
+          // Phase 1.6: evaluate business admissibility after normalization
+          try {
+            await this.ragAdmissibilityGateService.evaluate(source);
+          } catch (admErr) {
+            const admMsg =
+              admErr instanceof Error ? admErr.message : String(admErr);
+            this.logger.warn(
+              `syncFilesToDb: Phase 1.6 admissibility failed for ${source}: ${admMsg}`,
+            );
+          }
+        } else if (decision.decision === 'REJECT_QUARANTINE') {
+          await this.applyIngest(doc, decision);
+          receipt.reconciliationSuccess = true;
+          receipt.acceptanceDecision = 'quarantined';
+          receipt.finalStatus = 'quarantined';
+          receipt.phase1Status = 'quarantined';
+          result.skipped++;
+          receipt.reasons.push(...decision.reasons);
         } else {
+          receipt.acceptanceDecision = 'skipped';
+          receipt.finalStatus = 'skipped';
+          receipt.phase1Status = 'failed';
+          receipt.reasons.push(...decision.reasons);
           result.skipped++;
           this.logger.log(
             `syncFilesToDb: ${decision.decision} ${source} — ${decision.reasons.join(', ')}`,
@@ -373,12 +523,16 @@ export class RagCleanupService extends SupabaseBaseService {
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         result.errors.push(`${fp}: ${msg}`);
+        receipt.finalStatus = 'failed';
+        receipt.phase1Status = 'failed';
+        receipt.reasons.push(msg);
         this.logger.error(`syncFilesToDb error on ${fp}: ${msg}`);
       }
+      result.receipts.push(receipt);
     }
 
     this.logger.log(
-      `syncFilesToDb complete: ${result.synced} synced, ${result.skipped} skipped, ${result.errors.length} errors`,
+      `syncFilesToDb complete: ${result.synced} synced, ${result.skipped} skipped, ${result.errors.length} errors, ${result.receipts.length} receipts`,
     );
     return result;
   }

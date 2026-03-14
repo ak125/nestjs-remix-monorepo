@@ -606,6 +606,21 @@ export class RagIngestionService implements OnModuleInit, OnModuleDestroy {
               ? `, ${syncResult.errors.length} errors`
               : ''),
         );
+        // Phase 1 R1: log receipt summary
+        if (syncResult.receipts.length > 0) {
+          const passed = syncResult.receipts.filter(
+            (r) => r.phase1Status === 'passed',
+          ).length;
+          const failed = syncResult.receipts.filter(
+            (r) => r.phase1Status === 'failed',
+          ).length;
+          const quarantined = syncResult.receipts.filter(
+            (r) => r.phase1Status === 'quarantined',
+          ).length;
+          job.logLines.push(
+            `Phase1 receipts: ${passed} passed, ${failed} failed, ${quarantined} quarantined`,
+          );
+        }
       } catch (syncErr) {
         dbSyncOk = false;
         const msg =

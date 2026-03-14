@@ -19,6 +19,7 @@ import { UsersFinalService } from '../../modules/users/users-final.service';
 import { AuthService, LoginResult } from '../auth.service';
 import { UserDataConsolidatedService } from '../../modules/users/services/user-data-consolidated.service';
 import { CartDataService } from '../../database/services/cart-data.service';
+import { MailService } from '../../services/mail.service';
 import { LoginResponseDto } from '../dto/login-response.dto';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import RegisterSchema, {
@@ -44,6 +45,7 @@ export class AuthLoginController {
     private readonly authService: AuthService,
     private readonly userDataService: UserDataConsolidatedService,
     private readonly cartDataService: CartDataService,
+    private readonly mailService: MailService,
   ) {}
 
   /**
@@ -99,6 +101,19 @@ export class AuthLoginController {
       await promisifySessionRegenerate(request.session);
       await promisifyLoginNoRegenerate(request, loginResult.user);
       await promisifySessionSave(request.session);
+
+      // Welcome email (non-bloquant)
+      try {
+        await this.mailService.sendWelcomeEmail(
+          userData.email,
+          userData.firstName,
+        );
+      } catch (welcomeErr: unknown) {
+        this.logger.warn(
+          `Welcome email failed (non-blocking): ${welcomeErr instanceof Error ? welcomeErr.message : String(welcomeErr)}`,
+        );
+      }
+
       return {
         success: true,
         message: 'Compte créé avec succès',
@@ -230,6 +245,15 @@ export class AuthLoginController {
       return response.redirect(
         '/login?register=success&message=' +
           encodeURIComponent('Compte créé, veuillez vous connecter'),
+      );
+    }
+
+    // Welcome email (non-bloquant)
+    try {
+      await this.mailService.sendWelcomeEmail(email, firstName);
+    } catch (welcomeErr: unknown) {
+      this.logger.warn(
+        `[REGISTER] Welcome email failed (non-blocking): ${welcomeErr instanceof Error ? welcomeErr.message : String(welcomeErr)}`,
       );
     }
 

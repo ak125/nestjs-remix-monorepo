@@ -1,6 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
+import { RagFoundationGateService } from '../../rag-proxy/services/rag-foundation-gate.service';
 import { AiContentService } from '../../ai-content/ai-content.service';
 import { PageBriefService } from './page-brief.service';
 import { ConfigService } from '@nestjs/config';
@@ -181,6 +182,8 @@ export class ConseilEnricherService extends SupabaseBaseService {
     private readonly ragMdMerger: RagMdMergerService,
     @Optional() private readonly aiContentService?: AiContentService,
     @Optional() private readonly pageBriefService?: PageBriefService,
+    @Optional()
+    private readonly foundationGate?: RagFoundationGateService,
   ) {
     super(configService);
   }
@@ -197,6 +200,24 @@ export class ConseilEnricherService extends SupabaseBaseService {
     force = false,
     sectionsFilter?: string[],
   ): Promise<ConseilEnrichResult> {
+    // F1-GATE: Foundation Write Lock — refuse enrichment if Phase 1 not passed
+    if (this.foundationGate) {
+      const gate = await this.foundationGate.guardWriteForGamme(pgAlias);
+      if (!gate.passed && gate.total > 0) {
+        this.logger.warn(
+          `F1-GATE: skipping R3 enrichment for "${pgAlias}" — ${gate.blockedSources.length}/${gate.total} docs blocked`,
+        );
+        return {
+          status: 'skipped',
+          score: 0,
+          flags: ['F1_GATE_BLOCKED'],
+          sectionsCreated: 0,
+          sectionsUpdated: 0,
+          reason: `F1-GATE: ${gate.blockedSources.length} doc(s) have not passed Phase 1`,
+        };
+      }
+    }
+
     // 1. Load RAG knowledge doc (API first, disk fallback)
     let ragContent: string;
     try {

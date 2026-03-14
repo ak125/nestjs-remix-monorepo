@@ -93,6 +93,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
       status: derivedStatus,
     });
 
+    // Clear server-side cart on successful payment (non-blocking)
+    if (derivedStatus === "SUCCESS") {
+      try {
+        const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+        await fetch(`${backendUrl}/api/cart`, {
+          method: "DELETE",
+          headers: {
+            Cookie: request.headers.get("Cookie") || "",
+          },
+        });
+      } catch {
+        // Non-blocking — cart cleanup also happens in IPN callback
+      }
+    }
+
     return json({
       result: {
         status: derivedStatus,

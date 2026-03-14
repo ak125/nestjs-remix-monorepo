@@ -16,6 +16,8 @@ export const PAGE_ROLES = [
   'R4_REFERENCE',
   'R5_DIAGNOSTIC',
   'R6_BUYING_GUIDE',
+  'R7_BRAND',
+  'R8_VEHICLE',
 ] as const;
 export type PageRole = (typeof PAGE_ROLES)[number];
 

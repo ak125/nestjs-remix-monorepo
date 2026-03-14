@@ -468,11 +468,19 @@ export class RagKnowledgeService {
     pgAlias: string,
     knowledgeRoot = '/opt/automecanik/rag/knowledge',
   ): Promise<string[]> {
+    // F1-GATE: only retrieve docs from the admissible pool
+    // Legacy docs (pipeline_version IS NULL) are always admissible
     const { data, error } = await this.ragCleanupService.client
       .from('__rag_knowledge')
       .select('source')
       .contains('gamme_aliases', [pgAlias])
       .eq('status', 'active')
+      .or('foundation_gate_passed.eq.true,pipeline_version.is.null')
+      .or(
+        'phase15_status.eq.normalized,phase15_status.eq.normalized_with_warnings,phase15_status.is.null',
+      )
+      // Phase 1.6: only retrieve docs that are business-admissible (or legacy)
+      .or('publication_target_ready.eq.true,publication_target_ready.is.null')
       .not('source', 'like', 'gammes/%');
 
     if (error || !data || data.length === 0) return [];
