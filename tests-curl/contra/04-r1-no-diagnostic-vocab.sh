@@ -12,9 +12,9 @@ if [ -z "$SG_CONTENT" ] || [ "$SG_CONTENT" = "" ]; then
   exit 0
 fi
 
-# Vocabulaire interdit R5 dans contenu R1 (exclure les liens cross-rôle href)
-# Les liens vers /diagnostic-auto/ sont légitimes (maillage R1→R5)
-CLEAN_CONTENT=$(echo "$SG_CONTENT" | sed 's|href="[^"]*"||g' | sed 's|/diagnostic-auto/[^ <]*||g')
+# Vocabulaire interdit R5 dans contenu R1
+# Exclure les liens cross-rôle <a>...</a> (maillage R1→R5 légitime)
+CLEAN_CONTENT=$(echo "$SG_CONTENT" | sed 's|<a[^>]*>[^<]*</a>||g')
 DIAG_COUNT=$(echo "$CLEAN_CONTENT" | grep -ci 'symptôme\|symptome\|panne potentielle\|diagnostic de panne\|code OBD\|code DTC\|voyant moteur' 2>/dev/null)
 
 if [ "${DIAG_COUNT:-0}" = "0" ]; then

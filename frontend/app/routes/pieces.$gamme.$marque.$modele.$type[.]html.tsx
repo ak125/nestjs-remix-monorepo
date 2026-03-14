@@ -345,6 +345,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     `🚀 [RM V2] ${rmV2Response.count} products in ${rmV2Response.duration_ms}ms (cache: ${rmV2Response.cacheHit})`,
   );
 
+  // Guard: si la gamme ou le véhicule n'existent pas → 404
+  if (!rmV2Response?.vehicleInfo || !rmV2Response?.gamme) {
+    throw new Response("Gamme non trouvée", { status: 404 });
+  }
+
   // 🎯 Map RM V2 response to LoaderData format
   const loaderData = mapRmV2ToLoaderData(rmV2Response, {
     loadTime: Date.now() - startTime,
