@@ -99,11 +99,19 @@ export function normalizeRoleId(input: string): RoleId | null {
  * Use in output paths to enforce Regle 3 (ambiguite interdite en sortie).
  * Throws if the string is not a canonical RoleId.
  */
+/** Canonical roles that should not appear in new output (deprecated). */
+const DEPRECATED_OUTPUT_ROLES = new Set<RoleId>([RoleId.R9_GOVERNANCE]);
+
 export function assertCanonicalRole(role: string): RoleId {
   const canonical = Object.values(RoleId).find((v) => v === role);
   if (!canonical) {
     throw new Error(
       `Non-canonical role in output: "${role}". Use normalizeRoleId() first.`,
+    );
+  }
+  if (DEPRECATED_OUTPUT_ROLES.has(canonical)) {
+    throw new Error(
+      `Deprecated role in output: "${role}". R9 is no longer a canonical role.`,
     );
   }
   return canonical;

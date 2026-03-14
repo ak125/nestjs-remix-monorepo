@@ -107,6 +107,34 @@ describe('assertCanonicalRole', () => {
       'Non-canonical role in output',
     );
   });
+
+  it('should throw for deprecated R9_GOVERNANCE in output', () => {
+    expect(() => assertCanonicalRole('R9_GOVERNANCE')).toThrow(
+      'Deprecated role in output',
+    );
+  });
+});
+
+describe('anti-regression: no forbidden roles in enum output path', () => {
+  const outputSafeRoles = Object.values(RoleId).filter(
+    (r) => r !== RoleId.R9_GOVERNANCE,
+  );
+
+  it.each(outputSafeRoles)('assertCanonicalRole should accept %s', (role) => {
+    expect(assertCanonicalRole(role)).toBe(role);
+  });
+
+  it('FORBIDDEN_ROLE_IDS should all be rejected by normalizeRoleId', () => {
+    for (const forbidden of FORBIDDEN_ROLE_IDS) {
+      expect(normalizeRoleId(forbidden)).toBeNull();
+    }
+  });
+
+  it('every LEGACY_ROLE_ALIASES target should pass assertCanonicalRole', () => {
+    for (const target of Object.values(LEGACY_ROLE_ALIASES)) {
+      expect(() => assertCanonicalRole(target)).not.toThrow();
+    }
+  });
 });
 
 describe('LEGACY_ROLE_ALIASES', () => {
