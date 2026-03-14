@@ -162,6 +162,38 @@
 
 ---
 
+## Statut maximum par role
+
+| Role | Planner | Generator | Validator | Triplet complet |
+|------|---------|-----------|-----------|-----------------|
+| R0 | — | — | standard | — (surface statique) |
+| R1 | **maximum** | hardened | **maximum** | ✅ triplet maximum |
+| R2 | — | — | standard | — (transactionnel) |
+| R3 | **maximum** | hardened (S4 gate) | **maximum** | ✅ triplet maximum |
+| R4 | standard | hardened | standard | ⚠️ triplet standard |
+| R5 | **maximum** | hardened | **maximum** | ✅ triplet maximum |
+| R6 | **maximum** | hardened (price gate) | **maximum** | ✅ triplet maximum |
+| R7 | standard | hardened | standard | ⚠️ triplet standard |
+| R8 | standard | hardened | standard | ⚠️ triplet standard |
+
+**4 roles au niveau maximum** : R1, R3, R5, R6 (les plus critiques en prod)
+
+---
+
+## Pipeline phases
+
+Voir [`phase-matrix.md`](phase-matrix.md) pour la matrice canonique des phases :
+
+| Phase | Fonction |
+|-------|----------|
+| 1 | Ingestion + Foundation Gate |
+| 1.5 | Normalisation canonique |
+| 1.6 | Admissibilité métier d'usage vers R* |
+| 2 | Synthèse + génération + assemblage |
+| G* | Contrôle transverse (G1-G5) |
+
+---
+
 ## Comptage
 
 | Type | Nombre |
