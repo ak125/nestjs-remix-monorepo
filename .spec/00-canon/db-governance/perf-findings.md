@@ -1,6 +1,6 @@
 # perf-findings.md
 
-> **Version** : 1.0.2
+> **Version** : 1.0.3
 > **Date** : 2026-03-14
 > **Phase** : BASELINE_AUDIT
 > **Complement de** : execution-map.md V1.2.0, schema-governance-matrix.md V1.2.0
@@ -210,8 +210,8 @@ n_dead_tup:       802,000
 
 **Top indexes 0-scan par taille** :
 - `idx____xtr_msg_msg_content` : 14 GB (D2, table `__xtr_msg`)
-- `idx_pieces_relation_criteria_rcp_cri_id` : 1.5 GB (D2)
-- `idx_pieces_relation_type_composite` : 1.4 GB (D2)
+- `idx_pieces_relation_criteria_rcp_cri_id` : 1.5 GB (D1, table `pieces_relation_criteria`)
+- `idx_pieces_relation_type_composite` : 1.4 GB (D1, table `pieces_relation_type`)
 
 **Constat** : 25.6 GB d'espace disque occupe par des indexes jamais utilises depuis le dernier reset des stats. Certains peuvent etre des indexes de maintenance/import (utilises rarement), d'autres sont des orphelins reels. Le statut `idx_scan = 0` est observe sur la **fenetre stats courante uniquement** (depuis le dernier `pg_stat_reset()` ou redemarrage) ; il ne suffit pas a lui seul a autoriser un DROP.
 
@@ -289,7 +289,7 @@ Ce tableau liste les actions **autorisees** par les findings ci-dessus. Chaque a
 | F4 (5884ms) | Investigation index composite sur `pieces_relation_criteria(rcp_cri_id, rcp_type_id)` | P2 | R2 (index creation, reversible) |
 | T1-T3 (vacuum) | Evaluer `VACUUM (ANALYZE)` sur les 3 tables apres l'ANALYZE initial, selon bloat / dead tuples / fenetre d'exploitation | P1 | R0 (maintenance standard) |
 | T4 (25.6GB 0-scan) | Audit individuel des top 20 indexes 0-scan → classification keep/drop | P3 | R1 (read-only audit) |
-| T5 (phantom 104M) | Review des 3 views `v_seo_*` : usage reel, decision keep/drop | P3 | R1 (read-only investigation) |
+| T5 (UNEXPLAINED_DB_ACTIVITY, 104M idx_scan) | Review des 3 views `v_seo_*` : usage reel, decision keep/drop | P3 | R1 (read-only investigation) |
 | T6 (5 vs 7 triggers) | Correction documentaire domain-map.md V1.4.2 → V1.4.3 | P4 | R0 (documentation) |
 | D5 (ANALYZE → F4) | Re-run F4 apres ANALYZE pour mesurer l'amelioration des stats du planner | P1 | R0 (read-only) |
 
@@ -308,6 +308,6 @@ Ce tableau liste les actions **autorisees** par les findings ci-dessus. Chaque a
 | domain-map.md | V1.4.2 | Classification des 283 tables en 15 domaines |
 | schema-governance-matrix.md | V1.2.0 | Matrice objet-par-objet avec tiering et gates |
 | execution-map.md | V1.2.0 | 5 flux critiques + priorites de profiling P1-P8 |
-| **perf-findings.md** | **V1.0.2** | **Ce document — preuves de performance mesurees** |
+| **perf-findings.md** | **V1.0.3** | **Ce document — preuves de performance mesurees** |
 | change-control-plan.md | A creer | Procedures d'execution des actions autorisees |
 | remediation-plan.md | A creer | Sequence de migrations + timeline |
