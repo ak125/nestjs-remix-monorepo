@@ -35,6 +35,7 @@ import {
   Film,
   Zap,
   ImageIcon,
+  DatabaseIcon,
 } from "lucide-react";
 import * as React from "react";
 import { memo } from "react";
@@ -453,6 +454,12 @@ export const AdminSidebar = memo(function AdminSidebar({
           icon: BarChart3,
           description: "Résumé optimisations",
         },
+        {
+          name: "DB Governance",
+          href: "/admin/db-governance",
+          icon: DatabaseIcon,
+          description: "Monitoring DB M1-M6",
+        },
       ],
     },
   ];
@@ -475,6 +482,7 @@ export const AdminSidebar = memo(function AdminSidebar({
     "RAG / Chat IA": location.pathname.startsWith("/admin/rag"),
     Système:
       location.pathname.startsWith("/admin/system") ||
+      location.pathname.startsWith("/admin/db-governance") ||
       location.pathname.startsWith("/admin/debug") ||
       location.pathname.startsWith("/admin/couleurs") ||
       location.pathname.startsWith("/admin/optimization"),

@@ -201,7 +201,7 @@ Usage non confirme en hot path. 25 GB (24% de la DB) pour des donnees historique
 | Taille | **~320 MB** |
 | Tables | 55 |
 | Owner technique | Backend / SeoModule |
-| Decision status | **profile** — 7 triggers, UNEXPLAINED_DB_ACTIVITY sur `__seo_quality_log`, profiling requis |
+| Decision status | **profile** — 5 triggers. `__seo_quality_log` : RESOLVED_C4 (source = extinct trigger, 5 phantom indexes dropped, compteur ne progresse plus) |
 
 ### Tables principales
 
@@ -211,7 +211,7 @@ Usage non confirme en hot path. 25 GB (24% de la DB) pour des donnees historique
 | `__sitemap_p_link` | 89 MB | 473K | U4 | Liens sitemap pieces |
 | `seo_link_impressions` | 25 MB | 104K | — | Tracking impressions |
 | `__seo_gamme_conseil` | 18 MB | 2.2K | U4 | Contenu conseil par gamme |
-| `__seo_keywords` | 11 MB | 4.6K | U4 | Mots-cles SEO (7 triggers!) |
+| `__seo_keywords` | 11 MB | 4.6K | U4 | Mots-cles SEO (5 triggers) |
 | `__seo_keyword_type_mapping` | 11 MB | 0 | — | Mapping KW-type (EMPTY_UNKNOWN — taille residuelle 11 MB) |
 | `__seo_family_gamme_car_switch` | 3 MB | 3.8K | U1 | Switchs famille-gamme-vehicule |
 | `__seo_item_switch` | 2.7 MB | 8K | U1 | Switchs item |
@@ -256,7 +256,7 @@ Usage non confirme en hot path. 25 GB (24% de la DB) pour des donnees historique
 - **EMPTY_UNKNOWN** : `__seo_internal_link`, `__seo_interpolation_alerts`, `__seo_index_history`, `__seo_role_content`, `__seo_quality_log`, `__seo_diagnostic`, `__seo_sitemap_file`, `__seo_crawl_log`, `__sitemap_gamme` — consumer non confirme (C3)
 
 ### Anomalie detectee
-- `__seo_quality_log` : **104M idx_scan pour 0 rows** — UNEXPLAINED_DB_ACTIVITY, source d'acces non identifiee (C3). **Gate** : code search pour identifier les consumers + EXPLAIN des requetes touchant cette table.
+- `__seo_quality_log` : **104M idx_scan pour 0 rows** — RESOLVED_C4 : source identifiee = trigger historique (maintenant eteint). 5 indexes phantom supprimes. Compteur fige, ne progresse plus.
 
 ### Dependances
 - **D1 (Catalog)** : `pieces_gamme` → pages gamme
@@ -714,7 +714,7 @@ Tables vides : `__video_assets`, `__video_variants`, `__video_templates`
 | Criticite | **P1** — Securite de la pipeline |
 |-----------|------|
 | Taille | **~200 KB** |
-| Tables | 6 |
+| Tables | 7 |
 | Owner technique | Backend / SecurityModule |
 | Decision status | **observe_activation** — activation conditionnelle via feature flags |
 
@@ -728,10 +728,11 @@ Tables vides : `__video_assets`, `__video_variants`, `__video_templates`
 | `_killswitch_breakglass` | 0 | Breakglass killswitch |
 | `_killswitch_audit` | 0 | Audit killswitch |
 | `__airlock_bundles` | 0 | Bundles airlock |
+| `__db_governance_snapshots` | 0+ | Snapshots M1-M6 historiques (Phase 2) |
 
 ### Data classification (C2)
 - **Source of truth** : `__quarantine_rules`
-- **Operational** : `__quarantine_items`, `__quarantine_history`, `_killswitch_breakglass`, `_killswitch_audit`, `__airlock_bundles`
+- **Operational** : `__quarantine_items`, `__quarantine_history`, `_killswitch_breakglass`, `_killswitch_audit`, `__airlock_bundles`, `__db_governance_snapshots`
 - **EMPTY_ACTIVE_DESIGN** : la majorite des tables sont vides — systeme de securite en place (code actif dans SecurityModule), activation conditionnelle via feature flags (C3)
 
 ---
@@ -769,7 +770,7 @@ Tables vides : `__video_assets`, `__video_variants`, `__video_templates`
 | Autres (21 tables) | 1 chacun | updated_at ou validation |
 
 ### Trigger le plus charge (C1)
-`__seo_keywords` avec 7 triggers — chaque INSERT/UPDATE declenche 4 fonctions en cascade. Impact performance a confirmer par profiling (C3).
+`__seo_keywords` avec 5 triggers — chaque INSERT/UPDATE declenche 4 fonctions en cascade. Impact performance a confirmer par profiling (C3).
 
 ---
 
@@ -794,8 +795,8 @@ Tables vides : `__video_assets`, `__video_variants`, `__video_templates`
 | # | Anomalie | Impact | Confiance | Domaine | Decision gate |
 |---|---------|--------|-----------|---------|---------------|
 | A1 | **~24 GB d'index a 0 scan** (15.4 GB D2, 8 GB D1) | Gaspillage stockage + ralentissement writes | C1 (mesure) | D1, D2 | Code search consumers + EXPLAIN + verifier fenetre stats |
-| A2 | `__seo_quality_log` : 104M idx_scan, 0 rows | UNEXPLAINED_DB_ACTIVITY | C1 (compteur) / C3 (cause) | D3 | Inspecter vues SQL, fonctions PostgreSQL, triggers indirects, cron/jobs hors backend + `pg_stat_user_indexes` |
-| A3 | `__seo_keywords` : 7 triggers en cascade | Goulot potentiel sur INSERT/UPDATE | C1 (mesure) | D3 | Profiler un INSERT + mesurer latence en preprod |
+| A2 | `__seo_quality_log` : 104M idx_scan, 0 rows | **RESOLVED_C4** — extinct trigger, 5 indexes dropped | C1 → C4 | D3 | Clos. Source = trigger historique eteint. Indexes phantom supprimes. |
+| A3 | `__seo_keywords` : 5 triggers en cascade | Goulot potentiel sur INSERT/UPDATE | C1 (mesure) | D3 | Profiler un INSERT + mesurer latence en preprod |
 | A4 | 3 tables `__cross_gamme_car*` | Duplication potentielle (C3) | C2 (nommage) | D4 | Code search : quelle version est active ? |
 | A5 | D2 Legacy : 25 GB, usage non confirme en hot path | 24% de la DB, utilite non confirmee | C1 (taille) / C3 (usage) | D2 | Code search + verifier obligations retention legale |
 | A6 | RM : low materialization state | Architecture CQRS en place, non exploitee | C1 (taille) / C3 (intention) | D8 | Confirmer si RmModule est actif + endpoints consumers |
@@ -817,7 +818,7 @@ Tables vides : `__video_assets`, `__video_variants`, `__video_templates`
 | QW3 | DROP index D1 a 0 scan | ~8 GB | R1 | Aucun consumer actif (0 scan sur fenetre observee) | Code search + EXPLAIN des 5 requetes critiques U1/U2 + verifier fenetre stats | `DROP INDEX CONCURRENTLY` — un par un, mesurer impact |
 | QW4 | DROP table `__rag_knowledge_backup_20260222` | 1.3 MB | R0 | Backup obsolete (date dans le nom) | Confirmer corpus `__rag_knowledge` complet (367 rows >= 314 rows backup) | `DROP TABLE` apres backup de validation |
 | QW5 | DROP table `__blog_advice_old` | 280 KB | R0 | Obsolete (suffixe `_old`, 0 rows) | Code search `blog_advice_old` = 0 resultats | `DROP TABLE` |
-| QW6 | Investiguer A2 (UNEXPLAINED_DB_ACTIVITY) | Performance | R0 | Source d'acces non identifiee | Code search `seo_quality_log` — identifier la source des 104M idx_scan | Investigation seule, pas d'action destructive |
+| QW6 | ~~Investiguer A2~~ **RESOLVED_C4** | Performance | R0 | Source identifiee = extinct trigger | 5 indexes phantom supprimes, 2 vues phantom supprimees | Clos — aucune action restante |
 
 ---
 
@@ -829,7 +830,7 @@ Tables vides : `__video_assets`, `__video_variants`, `__video_templates`
 |-------|---------|--------|---------------|-----------------|----------|
 | `gamme_seo_audit` | D14 | 0 | EMPTY_UNKNOWN | **EMPTY_ACTIVE_DESIGN** | 4 refs : `gamme-seo-audit.service.ts`, `seo-cockpit.service.ts` — audit trail actif |
 | `vehicule_v1_dominant` | D4 | 0 | EMPTY_UNKNOWN | **EMPTY_STAGING** | SQL test seulement (`vlevel_health_checks.sql`) — pas de consumer applicatif |
-| `__seo_quality_log` | D3 | 0 | EMPTY_UNKNOWN | **UNEXPLAINED_DB_ACTIVITY** | 0 refs code, 104M idx_scan — source inconnue, investigation DB requise |
+| `__seo_quality_log` | D3 | 0 | EMPTY_UNKNOWN | **RESOLVED_C4** | 0 refs code, 104M idx_scan — source = extinct trigger, 5 indexes + 2 vues supprimes |
 | `__agent_runs` | D6 | 5 | Consumer non confirme | **APP_ORPHAN_CONFIRMED** | 0 refs code. `__agentic_runs` = 178 refs — doublon confirme |
 | `messages` | D13 | 0 | EMPTY_UNKNOWN | **APP_ORPHAN_CONFIRMED** | 0 refs `.from('messages')`, type definitions seulement |
 | `sessions` | D11 | 0 | EMPTY_UNKNOWN | **APP_ORPHAN_CONFIRMED** | 0 refs `.from('sessions')`, Redis en prod |
@@ -853,7 +854,7 @@ Tables vides : `__video_assets`, `__video_variants`, `__video_templates`
 |--------|-------|---------------|
 | **EMPTY_ACTIVE_DESIGN** | ~56 | Schema en place, activation non confirmee. Ne pas supprimer. |
 | **EMPTY_STAGING** | 1 | Usage test/validation uniquement. |
-| **UNEXPLAINED_DB_ACTIVITY** | 1 | 0 refs code mais activite DB anormale. Source d'acces non identifiee. |
+| **RESOLVED_C4** | 1 | Anciennement UNEXPLAINED_DB_ACTIVITY. Source identifiee (extinct trigger), indexes/vues phantom supprimes. |
 | **APP_ORPHAN_CONFIRMED** | 8 | 0 refs code backend. Candidats DROP sous gate — retention policy et usages hors-app non verifies. |
 | **ORPHAN** | 1 | Table avec donnees mais 0 consumer. Candidat DROP apres backup. |
 
@@ -865,7 +866,7 @@ Tables vides : `__video_assets`, `__video_variants`, `__video_templates`
 |------|---------|---------------|
 | 1 | D1 — Catalog Core | 73% de la DB, P0, 8 GB index review_for_drop |
 | 2 | D2 — Legacy/XTR | 24% de la DB, 15.4 GB index, review_for_archive |
-| 3 | D3 — SEO & Sitemap | P1, 7 triggers, UNEXPLAINED_DB_ACTIVITY, 55 tables |
+| 3 | D3 — SEO & Sitemap | P1, 5 triggers, RESOLVED_C4, 55 tables |
 | 4 | D4 — Vehicle | P0, duplication cross_gamme_car |
 | 5 | D8 — Read Model | P1, activation state a confirmer |
 | 6 | D13 — Config & System | P1, obsolete_candidates |
