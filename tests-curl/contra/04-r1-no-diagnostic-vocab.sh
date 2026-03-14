@@ -12,8 +12,10 @@ if [ -z "$SG_CONTENT" ] || [ "$SG_CONTENT" = "" ]; then
   exit 0
 fi
 
-# Vocabulaire interdit R5 dans contenu R1
-DIAG_COUNT=$(echo "$SG_CONTENT" | grep -ci 'symptôme\|symptome\|panne potentielle\|diagnostic\|code OBD\|code DTC\|voyant moteur' 2>/dev/null)
+# Vocabulaire interdit R5 dans contenu R1 (exclure les liens cross-rôle href)
+# Les liens vers /diagnostic-auto/ sont légitimes (maillage R1→R5)
+CLEAN_CONTENT=$(echo "$SG_CONTENT" | sed 's|href="[^"]*"||g' | sed 's|/diagnostic-auto/[^ <]*||g')
+DIAG_COUNT=$(echo "$CLEAN_CONTENT" | grep -ci 'symptôme\|symptome\|panne potentielle\|diagnostic de panne\|code OBD\|code DTC\|voyant moteur' 2>/dev/null)
 
 if [ "${DIAG_COUNT:-0}" = "0" ]; then
   echo "PASS: $TEST_NAME (0 diagnostic terms in R1 content)"

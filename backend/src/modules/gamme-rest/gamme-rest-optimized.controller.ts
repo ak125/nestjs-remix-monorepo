@@ -5,6 +5,7 @@ import {
   Query,
   Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { GammePageDataService } from './services/gamme-page-data.service';
 import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
@@ -34,11 +35,18 @@ export class GammeRestOptimizedController {
     try {
       return await this.pageDataService.getCompletePageData(pgId, query);
     } catch (error) {
+      const msg = getErrorMessage(error);
+      if (
+        msg.toLowerCase().includes('not found') ||
+        msg.toLowerCase().includes('no data')
+      ) {
+        throw new NotFoundException(`Gamme ${pgId} not found`);
+      }
       this.logger.error(`Erreur dans getPageData: ${error}`);
       return {
         status: 500,
         error: 'Internal server error',
-        message: getErrorMessage(error),
+        message: msg,
         stack:
           process.env.NODE_ENV === 'development'
             ? getErrorStack(error)

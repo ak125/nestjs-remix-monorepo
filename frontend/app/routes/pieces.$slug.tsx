@@ -208,6 +208,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       clearTimeout(subTimeoutId);
     });
 
+    // Guard: si pas de données hero, la gamme n'existe pas
+    if (!apiData?.hero) {
+      throw new Response("Gamme not found", { status: 404 });
+    }
+
     // Mapper hero → content
     const heroData = apiData.hero;
     const content = heroData
