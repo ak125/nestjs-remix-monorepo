@@ -14,6 +14,7 @@ import * as path from 'path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { SITE_ORIGIN } from '../../../config/app.config';
+import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 import {
   HubGenerationResult,
   HubType,
@@ -61,7 +62,9 @@ export class HubsVehicleService extends SupabaseBaseService {
         for (const g of gammes) {
           if (g.pg_alias) {
             // ✅ FIX: Format .html (pas /) - vérifié 200 OK
-            urls.push(`${this.BASE_URL}/pieces/${g.pg_alias}-${g.pg_id}.html`);
+            urls.push(
+              `${this.BASE_URL}/pieces/${normalizeAlias(g.pg_alias)}-${g.pg_id}.html`,
+            );
           }
         }
         this.logger.log(`   Found ${gammes.length} gamme category pages`);
@@ -210,7 +213,7 @@ ${links}
               // ✅ FIX: Ajouter les IDs à chaque segment (vérifié 200 OK)
               // Format: /constructeurs/{marque}-{id}/{modele}-{id}/{type}-{id}.html
               vehicleUrls.push(
-                `${this.BASE_URL}/constructeurs/${v.map_marque_alias}-${v.map_marque_id}/${v.map_modele_alias}-${v.map_modele_id}/${v.map_type_alias}-${v.map_type_id}.html`,
+                `${this.BASE_URL}/constructeurs/${normalizeAlias(v.map_marque_alias)}-${v.map_marque_id}/${normalizeAlias(v.map_modele_alias)}-${v.map_modele_id}/${normalizeAlias(v.map_type_alias)}-${v.map_type_id}.html`,
               );
             }
           }
@@ -466,7 +469,7 @@ ${indexLinks}
             ) {
               seenModels.add(key);
               urls.push(
-                `${this.BASE_URL}/constructeurs/${m.map_marque_alias}-${m.map_marque_id}/${m.map_modele_alias}-${m.map_modele_id}.html`,
+                `${this.BASE_URL}/constructeurs/${normalizeAlias(m.map_marque_alias)}-${m.map_marque_id}/${normalizeAlias(m.map_modele_alias)}-${m.map_modele_id}.html`,
               );
             }
           }

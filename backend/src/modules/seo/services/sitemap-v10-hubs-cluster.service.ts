@@ -11,6 +11,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 import { SITE_ORIGIN } from '../../../config/app.config';
 import {
   FAMILY_CLUSTERS,
@@ -144,7 +145,7 @@ export class HubsClusterService extends SupabaseBaseService {
           // 3. Construire les URLs au format V10
           const urls = allPieces.map(
             (p) =>
-              `${this.BASE_URL}/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
+              `${this.BASE_URL}/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
           );
 
           if (urls.length > 0) {
@@ -375,7 +376,7 @@ export class HubsClusterService extends SupabaseBaseService {
 
         for (const p of pieces) {
           allUrls.push({
-            url: `${this.BASE_URL}/pieces/${p.map_pg_alias}-${p.map_pg_id}/${p.map_marque_alias}-${p.map_marque_id}/${p.map_modele_alias}-${p.map_modele_id}/${p.map_type_alias}-${p.map_type_id}.html`,
+            url: `${this.BASE_URL}/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
             subcategory: subcategory.name,
             hasItem: p.map_has_item || 0,
           });

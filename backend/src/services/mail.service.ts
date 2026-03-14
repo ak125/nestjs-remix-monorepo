@@ -151,6 +151,51 @@ export class MailService {
     await this.doSend(email, 'Bienvenue sur Automecanik !', html);
   }
 
+  async sendAdminOrderNotification(
+    order: OrderEmailData,
+    customer: CustomerEmailData,
+  ): Promise<void> {
+    const adminEmail = this.configService.get<string>('ADMIN_ORDER_EMAIL');
+    if (!adminEmail) {
+      this.logger.warn(
+        'ADMIN_ORDER_EMAIL not set — skipping admin notification',
+      );
+      return;
+    }
+
+    const amount = parseFloat(String(order.ord_total_ttc || 0)).toFixed(2);
+    const date = new Date(order.ord_date).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    const html = this.wrapLayout(
+      'Nouvelle commande payee',
+      '#10b981',
+      `<p><strong>Commande #${order.ord_id}</strong> payee avec succes.</p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+        <tr><td style="padding:8px;border-bottom:1px solid #e5e7eb;font-weight:600;">Montant</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${amount} EUR</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #e5e7eb;font-weight:600;">Client</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${customer.cst_fname} ${customer.cst_name}</td></tr>
+        <tr><td style="padding:8px;border-bottom:1px solid #e5e7eb;font-weight:600;">Email</td><td style="padding:8px;border-bottom:1px solid #e5e7eb;">${customer.cst_mail}</td></tr>
+        <tr><td style="padding:8px;font-weight:600;">Date</td><td style="padding:8px;">${date}</td></tr>
+      </table>
+      <p style="text-align:center;">
+        <a href="${this.appUrl}/admin/orders" style="background:#10b981;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;">
+          Voir dans l'admin
+        </a>
+      </p>`,
+    );
+
+    await this.doSend(
+      adminEmail,
+      `[COMMANDE] #${order.ord_id} — ${amount}EUR — ${customer.cst_mail}`,
+      html,
+    );
+  }
+
   async sendGuestAccountActivation(
     email: string,
     resetToken: string,
@@ -420,7 +465,7 @@ export class MailService {
       <p>📧 Vous recevrez un email avec le numéro de suivi dès que votre colis sera expédié.</p>
 
       <div style="text-align: center;">
-        <a href="${this.appUrl}/client/orders/${order.ord_id}" class="button">
+        <a href="${this.appUrl}/account/orders/${order.ord_id}" class="button">
           Voir ma commande
         </a>
       </div>
@@ -637,7 +682,7 @@ export class MailService {
       <p>Pour finaliser votre commande et lancer la préparation, veuillez procéder au paiement.</p>
 
       <div style="text-align: center;">
-        <a href="${this.appUrl}/client/orders/${order.ord_id}/payment" class="button">
+        <a href="${this.appUrl}/checkout-payment?orderId=${order.ord_id}" class="button">
           Payer maintenant
         </a>
       </div>
@@ -747,7 +792,7 @@ export class MailService {
       <p>📧 Pour toute question, n'hésitez pas à nous contacter.</p>
 
       <div style="text-align: center;">
-        <a href="${this.appUrl}/client/orders" class="button">
+        <a href="${this.appUrl}/account/orders" class="button">
           Voir mes commandes
         </a>
       </div>

@@ -202,7 +202,7 @@ export const FLAG_PENALTIES: Record<GammeContentQualityFlag, number> = {
 
 export type ContentPageType =
   | 'R1_pieces'
-  | 'R3_guide_achat'
+  | 'R3_guide_howto'
   | 'R3_conseil'
   | 'R4_reference'
   | 'R5_diagnostic'
@@ -213,7 +213,7 @@ export const IMAGE_PENALTIES: Record<
   { MISSING_IMAGE: number; MISSING_ALT_TEXT: number }
 > = {
   R1_pieces: { MISSING_IMAGE: 8, MISSING_ALT_TEXT: 5 }, // TRANSACTION
-  R3_guide_achat: { MISSING_IMAGE: 8, MISSING_ALT_TEXT: 5 }, // GUIDE_ACHAT
+  R3_guide_howto: { MISSING_IMAGE: 8, MISSING_ALT_TEXT: 5 }, // GUIDE_ACHAT
   R3_conseil: { MISSING_IMAGE: 8, MISSING_ALT_TEXT: 5 }, // BLOG_CONSEIL
   R5_diagnostic: { MISSING_IMAGE: 5, MISSING_ALT_TEXT: 3 }, // DIAGNOSTIC
   R6_panne: { MISSING_IMAGE: 5, MISSING_ALT_TEXT: 3 }, // PANNE_SYMPTOME

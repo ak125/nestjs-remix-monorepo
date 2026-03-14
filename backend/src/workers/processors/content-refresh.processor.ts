@@ -1,5 +1,5 @@
 import { Processor, Process, OnQueueFailed, OnQueueError } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
+import { Logger, Optional } from '@nestjs/common';
 import type { Job } from 'bull';
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
@@ -15,6 +15,7 @@ import { BriefGatesService } from '../../modules/admin/services/brief-gates.serv
 import { HardGatesService } from '../../modules/admin/services/hard-gates.service';
 import { ImageGatesService } from '../../modules/admin/services/image-gates.service';
 import { RagKnowledgeService } from '../../modules/rag-proxy/services/rag-knowledge.service';
+import { RagFoundationGateService } from '../../modules/rag-proxy/services/rag-foundation-gate.service';
 import { SectionCompilerService } from '../../modules/admin/services/section-compiler.service';
 import { RagSafeDistillService } from '../../modules/admin/services/rag-safe-distill.service';
 import {
@@ -65,6 +66,8 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly chainPoller: PipelineChainPollerService,
     private readonly ragKnowledgeService: RagKnowledgeService,
     private readonly r8Enricher: R8VehicleEnricherService,
+    @Optional()
+    private readonly foundationGate?: RagFoundationGateService,
   ) {
     super(configService);
   }
@@ -180,6 +183,31 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
       `${ctx} Processing content-refresh: ${diagnosticSlug || pgAlias}, pageType=${pageType}, logId=${refreshLogId}`,
     );
 
+    // F1-GATE: Foundation Write Lock — skip if gamme docs haven't passed Phase 1
+    if (pgAlias && this.foundationGate) {
+      const gateResult = await this.foundationGate.guardWriteForGamme(pgAlias);
+      if (!gateResult.passed && gateResult.total > 0) {
+        this.logger.warn(
+          `${ctx} F1-GATE: skipping content-refresh for "${pgAlias}" — ${gateResult.blockedSources.length}/${gateResult.total} docs blocked`,
+        );
+        await this.client
+          .from('__rag_content_refresh_log')
+          .update({
+            status: 'skipped',
+            error_message: `F1-GATE: ${gateResult.blockedSources.length} doc(s) have not passed Phase 1`,
+            finished_at: new Date().toISOString(),
+          })
+          .eq('id', refreshLogId);
+        if (pgId > 0) this.gammeLocksInProgress.delete(pgId);
+        return {
+          status: 'skipped',
+          qualityScore: 0,
+          qualityFlags: ['F1_GATE_BLOCKED'],
+          errorMessage: `F1-GATE: ${gateResult.blockedSources.length} doc(s) have not passed Phase 1`,
+        };
+      }
+    }
+
     // Per-gamme lock: wait if same pgId is already processing (concurrency > 1 safety)
     if (pgId > 0 && this.gammeLocksInProgress.has(pgId)) {
       this.logger.log(`${ctx} Waiting for lock on pgId=${pgId} (${pgAlias})`);
@@ -263,10 +291,10 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
             qualityFlags = r1Result.gatekeeper.flags ?? [];
             break;
           }
-          // Flag off → fall through to legacy enricher (same as R3_guide_achat)
+          // Flag off → fall through to legacy enricher (same as R3_guide_howto)
         }
         // eslint-disable-next-line no-fallthrough
-        case 'R3_guide_achat': {
+        case 'R3_guide_howto': {
           // Delegate to BuyingGuideEnricherService
           const enrichResults = await this.buyingGuideEnricher.enrich(
             [String(pgId)],
@@ -617,7 +645,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
       // Update dependent tables — skip when RAG absent (no content changed)
       if (finalStatus !== 'skipped') {
-        if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+        if (pageType === 'R1_pieces' || pageType === 'R3_guide_howto') {
           if (finalStatus === 'draft') {
             await this.client
               .from('__seo_gamme_purchase_guide')
@@ -860,7 +888,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
 
     let markersInserted = 0;
 
-    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_howto') {
       const { data: guide } = await this.client
         .from('__seo_gamme_purchase_guide')
         .select('sgpg_id, sgpg_how_to_choose, sgpg_symptoms, sgpg_faq')
@@ -966,7 +994,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     // Check SEO fields (applies to R1, R3_guide, R3_conseils)
     if (
       pageType === 'R1_pieces' ||
-      pageType === 'R3_guide_achat' ||
+      pageType === 'R3_guide_howto' ||
       pageType === 'R3_conseils'
     ) {
       const { data: seo } = await this.client
@@ -986,7 +1014,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     }
 
     // Check H1 override (applies to R1, R3_guide)
-    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_howto') {
       const { data: pg } = await this.client
         .from('__seo_gamme_purchase_guide')
         .select('sgpg_h1_override')
@@ -1031,7 +1059,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     pgAlias: string,
     pageType: string,
   ): Promise<void> {
-    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_howto') {
       await this.client
         .from('__seo_gamme_purchase_guide')
         .update({ sgpg_is_draft: false })
@@ -1707,7 +1735,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         );
     }
 
-    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_howto') {
       if (flags.some((f) => f.startsWith('SKIPPED_')))
         recs.push(
           "Ingerer un guide d'achat complet (symptomes, comparatif, FAQ)",
@@ -1762,7 +1790,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     pgAlias: string,
     pageType: string,
   ): Promise<string> {
-    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_howto') {
       // Read from sg_content_draft (HTML generated by composeSeoContent).
       // This is the same field that writeContentToDb() writes to,
       // ensuring the repair loop can see its own changes.
@@ -1799,7 +1827,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     pageType: string,
     content: string,
   ): Promise<void> {
-    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_howto') {
       // Write to sg_content_draft (the primary SEO content field)
       await this.client
         .from('__seo_gamme')
@@ -2041,7 +2069,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     // Restore SEO fields (R1, R3_guide, R3_conseils)
     if (
       pageType === 'R1_pieces' ||
-      pageType === 'R3_guide_achat' ||
+      pageType === 'R3_guide_howto' ||
       pageType === 'R3_conseils'
     ) {
       const { data: seo } = await this.client
@@ -2074,7 +2102,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     }
 
     // Restore H1 override (R1, R3_guide)
-    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_howto') {
       const { data: pg } = await this.client
         .from('__seo_gamme_purchase_guide')
         .select('sgpg_h1_override')
@@ -2164,7 +2192,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         templateId = 'safe_R1';
         content = this.getSafeTemplateR1(gammeName);
         break;
-      case 'R3_guide_achat':
+      case 'R3_guide_howto':
         templateId = 'safe_R3_guide';
         content = this.getSafeTemplateR3Guide(gammeName, familyLabel);
         break;

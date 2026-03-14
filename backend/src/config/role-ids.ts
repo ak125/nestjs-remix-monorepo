@@ -22,6 +22,10 @@ export enum RoleId {
   R6_GUIDE_ACHAT = 'R6_GUIDE_ACHAT',
   R7_BRAND = 'R7_BRAND',
   R8_VEHICLE = 'R8_VEHICLE',
+  // DEPRECATED — R9 n'est plus un role canonique R*.
+  // La gouvernance est une couche transverse (G*), pas un role R*.
+  // Garde pour backward compat. Ne pas utiliser dans du nouveau code.
+  R9_GOVERNANCE = 'R9_GOVERNANCE',
 }
 
 /** All role IDs as an array (useful for iteration / validation) */
@@ -31,7 +35,7 @@ export const ROLE_ID_LIST: RoleId[] = Object.values(RoleId);
 
 const ROLE_TO_PAGE_TYPE: Partial<Record<RoleId, PageType>> = {
   [RoleId.R1_ROUTER]: 'R1_pieces',
-  [RoleId.R3_GUIDE]: 'R3_guide_achat',
+  [RoleId.R3_GUIDE]: 'R3_guide_howto',
   [RoleId.R3_CONSEILS]: 'R3_conseils',
   [RoleId.R4_REFERENCE]: 'R4_reference',
   [RoleId.R5_DIAGNOSTIC]: 'R5_diagnostic',
@@ -41,7 +45,8 @@ const ROLE_TO_PAGE_TYPE: Partial<Record<RoleId, PageType>> = {
 
 const PAGE_TYPE_TO_ROLE: Record<string, RoleId> = {
   R1_pieces: RoleId.R1_ROUTER,
-  R3_guide_achat: RoleId.R3_GUIDE,
+  R3_guide_howto: RoleId.R3_GUIDE,
+  R3_guide_achat: RoleId.R3_GUIDE, // LEGACY — remove after queue drain
   R3_conseils: RoleId.R3_CONSEILS,
   R4_reference: RoleId.R4_REFERENCE,
   R5_diagnostic: RoleId.R5_DIAGNOSTIC,

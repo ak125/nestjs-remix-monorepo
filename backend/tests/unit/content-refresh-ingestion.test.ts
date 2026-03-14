@@ -57,7 +57,7 @@ describe('ContentRefreshService — onIngestionCompleted', () => {
   let service: any;
   const mockQueueRefreshForGamme = jest
     .fn()
-    .mockResolvedValue(['R1_pieces', 'R3_guide_achat']);
+    .mockResolvedValue(['R1_pieces', 'R3_guide_howto']);
   const mockQueueRefreshForDiagnostic = jest
     .fn()
     .mockResolvedValue('R5_diagnostic');

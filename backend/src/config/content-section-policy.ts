@@ -432,7 +432,7 @@ export function isAiAllowed(sectionKey: string, hasBrief: boolean): boolean {
 export function pageTypeToRole(pageType: string): PageRole | null {
   const map: Record<string, PageRole> = {
     R1_pieces: 'R1',
-    R3_guide_achat: 'R3_guide',
+    R3_guide_howto: 'R3_guide',
     R3_conseils: 'R3_conseils',
     R4_reference: 'R4',
     R5_diagnostic: 'R5',

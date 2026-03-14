@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
@@ -19,6 +19,7 @@ import type {
   ContentRefreshJobData,
   ContentRefreshJobDataR5,
 } from '../../../workers/types/content-refresh.types';
+import { RagFoundationGateService } from '../../rag-proxy/services/rag-foundation-gate.service';
 
 /** Gamme-based page types (R5 is diagnostic-slug-based, handled separately) */
 type GammePageType = ContentRefreshJobData['pageType'];
@@ -30,6 +31,8 @@ export class ContentRefreshService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     @InjectQueue('content-refresh') private readonly contentRefreshQueue: Queue,
+    @Optional()
+    private readonly foundationGate?: RagFoundationGateService,
   ) {
     super(configService);
   }
@@ -157,6 +160,17 @@ export class ContentRefreshService extends SupabaseBaseService {
     force?: boolean,
     filterPageTypes?: GammePageType[],
   ): Promise<GammePageType[]> {
+    // F1-GATE: Foundation Write Lock — refuse queueing if Phase 1 not passed
+    if (this.foundationGate) {
+      const gate = await this.foundationGate.guardWriteForGamme(pgAlias);
+      if (!gate.passed && gate.total > 0) {
+        this.logger.warn(
+          `F1-GATE: refusing to queue refresh for "${pgAlias}" — ${gate.blockedSources.length}/${gate.total} docs blocked`,
+        );
+        return [];
+      }
+    }
+
     // Resolve pg_alias → pg_id
     const { data: gamme } = await this.client
       .from('pieces_gamme')
@@ -408,7 +422,7 @@ export class ContentRefreshService extends SupabaseBaseService {
 
     // For R1/R3 guide achat: set sgpg_is_draft = false
     const pageType = entry.page_type as string;
-    if (pageType === 'R1_pieces' || pageType === 'R3_guide_achat') {
+    if (pageType === 'R1_pieces' || pageType === 'R3_guide_howto') {
       await this.client
         .from('__seo_gamme_purchase_guide')
         .update({ sgpg_is_draft: false })
@@ -863,7 +877,7 @@ export class ContentRefreshService extends SupabaseBaseService {
 
     if ((pgCount ?? 0) > 0) {
       types.push('R1_pieces');
-      types.push('R3_guide_achat');
+      types.push('R3_guide_howto');
     }
 
     // R3 Conseils + R4 Reference: enabled when RAG knowledge file exists

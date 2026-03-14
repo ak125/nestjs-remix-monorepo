@@ -158,7 +158,7 @@ const REFRESH_STATUS: Record<string, StatusType> = {
 const PAGE_TYPE_LABELS: Record<string, string> = {
   R1_pieces: "R1 Pieces",
   R3_conseils: "R3 Conseils",
-  R3_guide_achat: "R3 Guide Achat",
+  R3_guide_howto: "R3 Guide How-To",
   R4_reference: "R4 Reference",
   R5_diagnostic: "R5 Diagnostic",
 };
@@ -717,7 +717,7 @@ export default function AdminContentRefresh() {
                 <SelectItem value="">Tous</SelectItem>
                 <SelectItem value="R1_pieces">R1 Pieces</SelectItem>
                 <SelectItem value="R3_conseils">R3 Conseils</SelectItem>
-                <SelectItem value="R3_guide_achat">R3 Guide Achat</SelectItem>
+                <SelectItem value="R3_guide_howto">R3 Guide How-To</SelectItem>
                 <SelectItem value="R4_reference">R4 Reference</SelectItem>
                 <SelectItem value="R5_diagnostic">R5 Diagnostic</SelectItem>
               </Select>

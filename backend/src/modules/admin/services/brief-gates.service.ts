@@ -34,7 +34,7 @@ export interface PrePublishGateOutput {
 
 const PAGE_TYPE_TO_BRIEF_ROLE: Record<string, string> = {
   R1_pieces: 'R1',
-  R3_guide_achat: 'R3_guide',
+  R3_guide_howto: 'R3_guide',
   R3_conseils: 'R3_conseils',
   R4_reference: 'R4',
 };

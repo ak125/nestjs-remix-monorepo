@@ -102,6 +102,79 @@ export function validateVehicleIds(params: {
 }
 
 /**
+ * Détecte les URLs mal formées (historiques / liens externes) AVANT tout appel API.
+ * Retourne la raison si mal formée, null si OK.
+ *
+ * Patterns détectés :
+ * - ID répété : "23231-23231" (alias = id)
+ * - Alias manquant : "-137004" (commence par -)
+ * - null/undefined littéral : "null-32260"
+ * - Prefix type- fallback : "type-19052"
+ * - Espaces non encodés : "1.3 elx flex-11602"
+ * - Accents : caractères accentués dans les segments
+ */
+export function detectMalformedSegment(...segments: string[]): string | null {
+  for (const seg of segments) {
+    if (!seg) continue;
+
+    // null ou undefined littéral
+    if (/\bnull\b/i.test(seg) || /\bundefined\b/i.test(seg)) {
+      return "null_in_url";
+    }
+
+    // Segment commence par - (alias manquant)
+    if (/^-\d/.test(seg)) {
+      return "missing_alias";
+    }
+
+    // Espaces (non encodés ou encodés %20)
+    if (seg.includes(" ") || seg.includes("%20")) {
+      return "spaces_in_url";
+    }
+
+    // Accents détectés (devrait être normalisé)
+    try {
+      const decoded = decodeURIComponent(seg);
+      const normalized = decoded
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      if (normalized !== decoded) {
+        return "accented_chars";
+      }
+    } catch {
+      // decodeURIComponent peut échouer — ignorer
+    }
+  }
+
+  // Vérifications spécifiques au segment type (dernier segment)
+  const typeSeg = segments[segments.length - 1];
+  if (typeSeg) {
+    // type-{id} fallback
+    if (/^type-\d+$/.test(typeSeg)) {
+      return "type_prefix_fallback";
+    }
+
+    // ID répété : "23231-23231" (alias est juste le même nombre que l'id)
+    const typeMatch = typeSeg.match(/^(\d+)-(\d+)$/);
+    if (typeMatch && typeMatch[1] === typeMatch[2]) {
+      return "repeated_id";
+    }
+
+    // IDs multiples répétés : "23231-23231-23231" (3+ fois le même nombre)
+    const parts = typeSeg.split("-");
+    if (
+      parts.length >= 3 &&
+      parts.every((p) => /^\d+$/.test(p)) &&
+      new Set(parts).size === 1
+    ) {
+      return "repeated_id_multi";
+    }
+  }
+
+  return null;
+}
+
+/**
  * Formatage intelligent des noms de gammes
  */
 export function formatGammeName(gamme: GammeData): string {

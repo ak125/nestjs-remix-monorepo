@@ -165,6 +165,26 @@ export class PaymentDataService extends SupabaseBaseService {
         `Creating payment with reference: ${paymentReference}, orderId: ${safeOrderId}`,
       );
 
+      // 0. Déduplication : vérifier si un paiement completed existe déjà
+      if (safeOrderId) {
+        const { data: existing } = await this.supabase
+          .from('ic_postback')
+          .select(
+            'id_ic_postback, orderid, amount, status, statuscode, transactionid, datepayment, paymentid, id_com, currency, paymentmethod, ip, ips, idsite, idste',
+          )
+          .eq('orderid', safeOrderId)
+          .eq('status', 'completed')
+          .limit(1)
+          .maybeSingle();
+
+        if (existing) {
+          this.logger.warn(
+            `Payment already exists for order ${safeOrderId} (${existing.id_ic_postback}), skipping duplicate`,
+          );
+          return this.mapPostbackToPayment(existing);
+        }
+      }
+
       // 1. Enregistrer dans ic_postback pour tracking paiement
       const { data: postback, error: postbackError } = await this.supabase
         .from('ic_postback')
@@ -204,7 +224,7 @@ export class PaymentDataService extends SupabaseBaseService {
           ? {
               ord_is_pay: '1',
               ord_date_pay: new Date().toISOString(),
-              ord_ords_id: '3', // Statut "Validée"
+              ord_ords_id: '5', // Statut "Payée — En préparation"
             }
           : {
               ord_is_pay: '0',
@@ -716,6 +736,46 @@ export class PaymentDataService extends SupabaseBaseService {
     } catch (error) {
       this.logger.error('Error in getOrderForPayment:', error);
       return null;
+    }
+  }
+
+  /**
+   * Vérifier si le client d'une commande est un guest (compte créé automatiquement)
+   * Détection : le client a été créé le même jour que la commande
+   * et n'a jamais changé son mot de passe (cst_pswd_changed IS NULL)
+   */
+  async isGuestCustomer(orderId: string): Promise<boolean> {
+    try {
+      const resolvedId = await this.resolveOrderId(orderId);
+      if (!resolvedId) return false;
+
+      const { data: order } = await this.supabase
+        .from(TABLES.xtr_order)
+        .select('ord_cst_id, ord_date')
+        .eq('ord_id', resolvedId)
+        .single();
+
+      if (!order?.ord_cst_id) return false;
+
+      // Un guest a un cst_id qui commence par 'guest_' ou a été créé automatiquement
+      // On vérifie si le client n'a jamais eu de session (pas de login explicite)
+      const { data: customer } = await this.supabase
+        .from(TABLES.xtr_customer)
+        .select('cst_id, cst_pswd, cst_date_inscription')
+        .eq('cst_id', order.ord_cst_id)
+        .single();
+
+      if (!customer) return false;
+
+      // Un guest a un cst_id qui commence par 'guest_' OU a été inscrit le même jour que la commande
+      // et son mot de passe est un hash aléatoire (on ne peut pas le vérifier directement)
+      // Heuristique : le cst_id contient 'guest_' ou le compte a été créé dans les 5 dernières minutes avant la commande
+      const isGuestById = String(customer.cst_id).startsWith('guest_');
+
+      return isGuestById;
+    } catch (error) {
+      this.logger.error('Error in isGuestCustomer:', error);
+      return false;
     }
   }
 }

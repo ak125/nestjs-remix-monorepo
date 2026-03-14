@@ -97,9 +97,9 @@ export class PayboxRedirectController {
         currency: 'EUR',
         orderId,
         customerEmail: email,
-        returnUrl: '', // Non utilisé (comme l'ancien PHP)
-        cancelUrl: '', // Non utilisé (comme l'ancien PHP)
-        notifyUrl: '', // Non utilisé - gestion manuelle comme l'ancien PHP
+        returnUrl: '', // Géré par PayboxService (PBX_EFFECTUE/REFUSE/ANNULE)
+        cancelUrl: '', // Géré par PayboxService
+        notifyUrl: '', // Géré par PayboxService (PBX_REPONDRE_A)
         description: `Commande ${orderId}`,
       };
 
