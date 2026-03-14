@@ -208,8 +208,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       clearTimeout(subTimeoutId);
     });
 
-    // Guard: si pas de données hero, la gamme n'existe pas
-    if (!apiData?.hero) {
+    // Guard: si pas de données hero ou gamme sans nom, la gamme n'existe pas
+    if (
+      !apiData?.hero ||
+      (!apiData.hero.pg_name && !apiData.hero.h1 && !apiData.hero.pg_alias)
+    ) {
       throw new Response("Gamme not found", { status: 404 });
     }
 
