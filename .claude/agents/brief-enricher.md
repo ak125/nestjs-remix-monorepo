@@ -142,8 +142,8 @@ Si aucun keyword plan : comportement actuel inchange (backward compatible).
 ### 1e. Lire les regles de role
 
 - `Read .claude/skills/seo-content-architect/references/page-roles.md`
-- Si R3/guide : `Read .claude/skills/seo-content-architect/references/guide-achat-role.md`
-- Si R3/conseils : `Read .claude/skills/seo-content-architect/references/conseils-role.md`
+- Si R6_GUIDE_ACHAT (legacy: R3/guide) : `Read .claude/skills/seo-content-architect/references/guide-achat-role.md`
+- Si R3_CONSEILS (legacy: R3/conseils) : `Read .claude/skills/seo-content-architect/references/conseils-role.md`
 - Si R4 : `Read .claude/skills/seo-content-architect/references/r4-reference-role.md`
 
 ---
@@ -306,8 +306,8 @@ BRIEF ENRICHMENT REPORT v2 — {date}
 
 | Gamme             | Role       | Angles | PAA | Terms | Forbidden | Conf. | Mode    | Status |
 |-------------------|------------|--------|-----|-------|-----------|-------|---------|--------|
-| disque-de-frein   | R3_guide   |      5 |   6 |     8 |         4 |  0.85 | FACTORY | DONE   |
-| amortisseur       | R3_guide   |      4 |   7 |     7 |         5 |  0.70 | FACTORY | DONE   |
+| disque-de-frein   | R6_GUIDE_ACHAT |  5 |   6 |     8 |         4 |  0.85 | FACTORY | DONE   |
+| amortisseur       | R6_GUIDE_ACHAT |  4 |   7 |     7 |         5 |  0.70 | FACTORY | DONE   |
 
 Crees: {N} | Enrichis: {N} | Skipped: {N} | Total forbidden_overlap terms: {N}
 Anti-cannibalisation: {N} gammes avec confusion pairs appliquees
@@ -320,8 +320,8 @@ Anti-cannibalisation: {N} gammes avec confusion pairs appliquees
 | Fichier | Usage |
 |---------|-------|
 | `.claude/skills/seo-content-architect/references/page-roles.md` | Vocabulaire REQUIS/INTERDIT par role |
-| `.claude/skills/seo-content-architect/references/guide-achat-role.md` | Template + gates R3/guide |
-| `.claude/skills/seo-content-architect/references/conseils-role.md` | Template + gates R3/conseils |
+| `.claude/skills/seo-content-architect/references/guide-achat-role.md` | Template + gates R6_GUIDE_ACHAT |
+| `.claude/skills/seo-content-architect/references/conseils-role.md` | Template + gates R3_CONSEILS |
 | `.claude/skills/seo-content-architect/references/r4-reference-role.md` | Template + flags R4 |
 | `/opt/automecanik/rag/knowledge/gammes/{slug}.md` | Knowledge RAG source |
 | `backend/src/modules/admin/dto/page-brief.dto.ts` | Schema Zod (validation reference) |

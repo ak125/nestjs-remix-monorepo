@@ -1,4 +1,4 @@
-import type { RoleId } from '../../config/role-ids';
+import { RoleId } from '../../config/role-ids';
 
 export type PageType =
   | 'R1_pieces'
@@ -8,6 +8,21 @@ export type PageType =
   | 'R5_diagnostic'
   | 'R6_guide_achat'
   | 'R8_vehicle';
+
+// ── Canonical Role Mapping ──
+// See .spec/00-canon/db-governance/legacy-canon-map.md v1.1.0
+// PageType strings are legacy worker labels; CanonicalRole is the R0-R8 truth.
+
+/** Maps worker PageType → canonical RoleId. Kept in sync with role-ids.ts */
+export const PAGE_TYPE_TO_CANONICAL_ROLE: Record<PageType, RoleId> = {
+  R1_pieces: RoleId.R1_ROUTER,
+  R3_conseils: RoleId.R3_CONSEILS,
+  R3_guide_howto: RoleId.R3_GUIDE,
+  R4_reference: RoleId.R4_REFERENCE,
+  R5_diagnostic: RoleId.R5_DIAGNOSTIC,
+  R6_guide_achat: RoleId.R6_GUIDE_ACHAT,
+  R8_vehicle: RoleId.R8_VEHICLE,
+};
 
 /** Job data for gamme-based refresh (R1, R3, R4) */
 export interface ContentRefreshJobData {

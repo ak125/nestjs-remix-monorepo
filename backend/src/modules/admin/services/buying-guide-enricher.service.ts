@@ -184,6 +184,8 @@ export class BuyingGuideEnricherService extends SupabaseBaseService {
     let brief: import('./page-brief.service').PageBrief | null = null;
     if (this.pageBriefService) {
       try {
+        // Legacy: page_role='R3_guide' → canonical role R6_GUIDE_ACHAT
+        // DB still stores the old label; do NOT change query parameter
         brief = await this.pageBriefService.getActiveBrief(
           parseInt(pgId),
           'R3_guide',

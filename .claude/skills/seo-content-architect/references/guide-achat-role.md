@@ -1,4 +1,4 @@
-# Guide Achat — Role de page R3_BLOG/guide-achat
+# Guide Achat — Role de page R6_GUIDE_ACHAT (legacy: R3_BLOG/guide-achat)
 
 > **Le guide achat repond a UNE question : "comment acheter la bonne piece sans se tromper ?"**
 > Il ne parle PAS de : montage, diagnostic, symptomes, entretien, reparation.
@@ -10,7 +10,7 @@
 
 | Champ | Valeur |
 |-------|--------|
-| Role SEO | R3_BLOG (sous-type : guide-achat) |
+| Role SEO | R6_GUIDE_ACHAT (legacy: R3_BLOG/guide-achat) |
 | URL pattern | `/blog-pieces-auto/guide-achat/{bg_alias}` |
 | Intent principal | Informationnelle + Transactionnelle (TOFU → MOFU) |
 | Schema.org | TechArticle + FAQPage + BreadcrumbList |

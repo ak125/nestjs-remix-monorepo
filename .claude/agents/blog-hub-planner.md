@@ -108,8 +108,8 @@ LIMIT 20;
 | Owner | Pattern URL | Role |
 |-------|------------|------|
 | R1 (catalogue) | `/pieces/*`, `/catalogue/*` | Transactionnel : prix, achat, commande |
-| R3 (blog/conseils) | `/blog-pieces-auto/conseils/*` | Informationnel : symptomes, diagnostic, tutoriel, entretien |
-| R3 (guides achat) | `/blog-pieces-auto/guides-achat/*` | Comparatif, selection produit |
+| R3_CONSEILS (blog/conseils) | `/blog-pieces-auto/conseils/*` | Informationnel : symptomes, diagnostic, tutoriel, entretien |
+| R6_GUIDE_ACHAT (guides achat) | `/blog-pieces-auto/guides-achat/*` | Comparatif, selection produit |
 | R4 (glossaire) | `/reference-auto/*` | Definitions techniques, normes, specifications |
 | R5 (diagnostic) | `/blog-pieces-auto/conseils/*` (filtre diagnostic) | Symptomes specifiques, arbres de decision |
 
@@ -186,7 +186,7 @@ Pour chaque cluster :
 | Owner | Perimetre | Signaux declencheurs |
 |-------|-----------|---------------------|
 | **R1** (catalogue) | Prix, achat, commande, stock, livraison | "acheter", "pas cher", "prix", "commander", "livraison" |
-| **R3** (blog/conseils) | Symptomes, diagnostic, tutoriel, entretien, duree de vie | "comment", "pourquoi", "quand changer", "symptome" |
+| **R3_CONSEILS** (blog/conseils) | Symptomes, diagnostic, tutoriel, entretien, duree de vie | "comment", "pourquoi", "quand changer", "symptome" |
 | **R4** (glossaire) | Definition, fonctionnement technique, normes, specs | "c'est quoi", "definition", "norme", "fonctionnement" |
 
 **Regle** : chaque keyword appartient a UN SEUL owner — pas de partage.

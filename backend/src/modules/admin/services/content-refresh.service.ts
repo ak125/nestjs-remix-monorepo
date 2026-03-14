@@ -863,13 +863,27 @@ export class ContentRefreshService extends SupabaseBaseService {
 
   // ── Private helpers ──
 
+  /**
+   * Determine which page types to refresh for a gamme.
+   *
+   * Canonical role mapping (legacy worker label → R*):
+   *   R1_pieces     → R1_ROUTER
+   *   R3_guide_howto→ R3_GUIDE (how-to, NOT guide d'achat)
+   *   R3_conseils   → R3_CONSEILS
+   *   R4_reference  → R4_REFERENCE
+   *   R5_diagnostic → R5_DIAGNOSTIC
+   *   R6_guide_achat→ R6_GUIDE_ACHAT
+   *
+   * Worker labels are kept for BullMQ backward compat.
+   * See .spec/00-canon/db-governance/legacy-canon-map.md v1.1.0
+   */
   private async determinePageTypes(
     pgId: number,
     pgAlias: string,
   ): Promise<GammePageType[]> {
     const types: GammePageType[] = [];
 
-    // R1/R3 Guide Achat: check if purchase guide exists
+    // R1_ROUTER + R3_GUIDE (how-to): check if purchase guide exists
     const { count: pgCount } = await this.client
       .from('__seo_gamme_purchase_guide')
       .select('sgpg_id', { count: 'exact', head: true })
@@ -880,7 +894,7 @@ export class ContentRefreshService extends SupabaseBaseService {
       types.push('R3_guide_howto');
     }
 
-    // R3 Conseils + R4 Reference: enabled when RAG knowledge file exists
+    // R3_CONSEILS + R4_REFERENCE: enabled when RAG knowledge file exists
     // Allows first-time creation of conseil sections from RAG knowledge
     const ragFile = join(
       '/opt/automecanik/rag/knowledge/gammes',

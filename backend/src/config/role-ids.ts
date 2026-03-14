@@ -14,6 +14,7 @@ export enum RoleId {
   R0_HOME = 'R0_HOME',
   R1_ROUTER = 'R1_ROUTER',
   R2_PRODUCT = 'R2_PRODUCT',
+  /** R3 how-to / guide technique (NOT guide d'achat → see R6_GUIDE_ACHAT) */
   R3_GUIDE = 'R3_GUIDE',
   R3_CONSEILS = 'R3_CONSEILS',
   R4_REFERENCE = 'R4_REFERENCE',
@@ -22,9 +23,7 @@ export enum RoleId {
   R6_GUIDE_ACHAT = 'R6_GUIDE_ACHAT',
   R7_BRAND = 'R7_BRAND',
   R8_VEHICLE = 'R8_VEHICLE',
-  // DEPRECATED — R9 n'est plus un role canonique R*.
-  // La gouvernance est une couche transverse (G*), pas un role R*.
-  // Garde pour backward compat. Ne pas utiliser dans du nouveau code.
+  /** @deprecated R9 n'est plus un role canonique R*. La gouvernance est G*, pas R*. */
   R9_GOVERNANCE = 'R9_GOVERNANCE',
 }
 
@@ -61,4 +60,36 @@ export function roleIdToPageType(roleId: RoleId): PageType | null {
 /** Convert a worker PageType string to RoleId. Returns null if unrecognized. */
 export function pageTypeToRoleId(pageType: string): RoleId | null {
   return PAGE_TYPE_TO_ROLE[pageType] ?? null;
+}
+
+// ── Canonical normalization layer ──
+// See .spec/00-canon/db-governance/legacy-canon-map.md v1.1.0
+
+/** Legacy role aliases → canonical RoleId. Used for normalizing old labels. */
+export const LEGACY_ROLE_ALIASES: Record<string, RoleId> = {
+  R3_guide: RoleId.R6_GUIDE_ACHAT,
+  R3_guide_achat: RoleId.R6_GUIDE_ACHAT,
+  R3_BLOG: RoleId.R3_CONSEILS,
+  R1_pieces: RoleId.R1_ROUTER,
+  R4_reference: RoleId.R4_REFERENCE,
+  R4_GLOSSARY: RoleId.R4_REFERENCE,
+  R5_diagnostic: RoleId.R5_DIAGNOSTIC,
+  R6_BUYING_GUIDE: RoleId.R6_GUIDE_ACHAT,
+};
+
+/** Role IDs forbidden in new code — ambiguous without suffix. */
+export const FORBIDDEN_ROLE_IDS = ['R3', 'R6', 'R9'] as const;
+
+/**
+ * Normalize any role string (canonical, legacy, or page_type) to a RoleId.
+ * Returns null if unrecognized.
+ */
+export function normalizeRoleId(input: string): RoleId | null {
+  // Direct match on enum values
+  const asRole = Object.values(RoleId).find((v) => v === input);
+  if (asRole) return asRole;
+  // Legacy alias
+  if (input in LEGACY_ROLE_ALIASES) return LEGACY_ROLE_ALIASES[input];
+  // Worker page type
+  return PAGE_TYPE_TO_ROLE[input] ?? null;
 }

@@ -10,7 +10,7 @@
 
 | Champ | Valeur |
 |-------|--------|
-| Role SEO | R3_BLOG (sous-type : conseils) |
+| Role SEO | R3_CONSEILS (legacy: R3_BLOG/conseils) |
 | URL pattern | `/blog-pieces-auto/conseils/{pg_alias}` |
 | Intent principal | Informationnelle (MOFU — passage a l'action maintenance) |
 | Schema.org | HowTo + TechArticle + FAQPage + BreadcrumbList |

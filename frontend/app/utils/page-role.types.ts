@@ -12,7 +12,9 @@ export enum PageRole {
   R0_HOME = "R0", // Accueil/Découverte
   R1_ROUTER = "R1", // Sélection/Navigation
   R2_PRODUCT = "R2", // Transaction/Achat
-  R3_BLOG = "R3", // Pédagogie/Expert
+  /** @deprecated Use R3_CONSEILS (blog/conseils) or R6_GUIDE_ACHAT (guide d'achat) */
+  R3_BLOG = "R3", // Pédagogie/Expert — LEGACY, see R3_CONSEILS
+  R3_CONSEILS = "R3_CONSEILS", // Conseils/Blog (canonical)
   R4_REFERENCE = "R4", // Référence métier
   R5_DIAGNOSTIC = "R5", // Diagnostic symptômes
   R6_SUPPORT = "R6", // Support/Légal
@@ -105,6 +107,7 @@ export const ROLE_DEFAULT_INTENT: Record<PageRole, PageIntent> = {
   [PageRole.R1_ROUTER]: "selection",
   [PageRole.R2_PRODUCT]: "purchase",
   [PageRole.R3_BLOG]: "education",
+  [PageRole.R3_CONSEILS]: "education",
   [PageRole.R4_REFERENCE]: "definition",
   [PageRole.R5_DIAGNOSTIC]: "diagnosis",
   [PageRole.R6_SUPPORT]: "support",
@@ -122,6 +125,7 @@ export const ROLE_DEFAULT_CONTENT_TYPE: Record<PageRole, ContentType> = {
   [PageRole.R1_ROUTER]: "router",
   [PageRole.R2_PRODUCT]: "product",
   [PageRole.R3_BLOG]: "article",
+  [PageRole.R3_CONSEILS]: "article",
   [PageRole.R4_REFERENCE]: "reference",
   [PageRole.R5_DIAGNOSTIC]: "diagnostic",
   [PageRole.R6_SUPPORT]: "legal",
@@ -139,6 +143,7 @@ export const ROLE_DEFAULT_FUNNEL_STAGE: Record<PageRole, FunnelStage> = {
   [PageRole.R1_ROUTER]: "awareness",
   [PageRole.R2_PRODUCT]: "decision",
   [PageRole.R3_BLOG]: "consideration",
+  [PageRole.R3_CONSEILS]: "consideration",
   [PageRole.R4_REFERENCE]: "consideration",
   [PageRole.R5_DIAGNOSTIC]: "consideration",
   [PageRole.R6_SUPPORT]: "retention",
@@ -156,6 +161,7 @@ export const ROLE_DEFAULT_CONVERSION_GOAL: Record<PageRole, ConversionGoal> = {
   [PageRole.R1_ROUTER]: "navigation",
   [PageRole.R2_PRODUCT]: "purchase",
   [PageRole.R3_BLOG]: "engagement",
+  [PageRole.R3_CONSEILS]: "engagement",
   [PageRole.R4_REFERENCE]: "engagement",
   [PageRole.R5_DIAGNOSTIC]: "engagement",
   [PageRole.R6_SUPPORT]: "lead",
@@ -192,7 +198,8 @@ export const PAGE_ROLE_LABELS: Record<PageRole, string> = {
   [PageRole.R0_HOME]: "Accueil (Découverte)",
   [PageRole.R1_ROUTER]: "Routeur (Sélection)",
   [PageRole.R2_PRODUCT]: "Produit (Transaction)",
-  [PageRole.R3_BLOG]: "Blog/Expert (Pédagogie)",
+  [PageRole.R3_BLOG]: "Blog/Expert (Pédagogie)", // legacy — prefer R3_CONSEILS
+  [PageRole.R3_CONSEILS]: "Conseils (Pédagogie)",
   [PageRole.R4_REFERENCE]: "Référence (Définition)",
   [PageRole.R5_DIAGNOSTIC]: "Diagnostic (Symptômes)",
   [PageRole.R6_SUPPORT]: "Support (Aide)",
@@ -266,4 +273,30 @@ export function mapUserIntentToPageIntent(intent: UserIntent): PageIntent {
     case "do":
       return "support";
   }
+}
+
+// ── Legacy Role Normalization ──
+// See .spec/00-canon/db-governance/legacy-canon-map.md v1.1.0
+
+/** Legacy role strings → canonical PageRole. Used for normalizing old labels in frontend. */
+export const LEGACY_PAGE_ROLE_MAP: Record<string, PageRole> = {
+  R3_BLOG: PageRole.R3_CONSEILS,
+  R3_guide: PageRole.R6_GUIDE_ACHAT,
+  R3_guide_achat: PageRole.R6_GUIDE_ACHAT,
+  R3: PageRole.R3_CONSEILS, // ambiguous bare R3 → default conseils
+};
+
+/**
+ * Normalize a legacy role string to canonical PageRole.
+ * Returns null if unrecognized.
+ */
+export function normalizeLegacyPageRole(input: string): PageRole | null {
+  const direct = Object.values(PageRole).find((v) => v === input);
+  if (direct) return direct;
+  return LEGACY_PAGE_ROLE_MAP[input] ?? null;
+}
+
+/** True for editorial R* roles (R0-R8), false for app roles (RX_CHECKOUT) */
+export function isEditorialRole(role: PageRole): boolean {
+  return role !== PageRole.RX_CHECKOUT;
 }

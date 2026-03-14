@@ -20,8 +20,8 @@ Chaque page a un rôle SEO précis. **Le vocabulaire est exclusif à chaque rôl
 - `quand`, `pourquoi`, `comment diagnostiquer`, `comment savoir`
 - `causes`, `risques`, `danger`, `conséquences`, `si vous ne changez pas`
 - `définition`, `qu'est-ce que`, `composé de`, `glossaire` (= R4)
-- `démontage`, `remontage`, `étapes de remplacement`, `outils nécessaires` (= R3/conseils)
-- `guide d'achat`, `référence OEM`, `checklist avant de payer` (= R3/guide-achat)
+- `démontage`, `remontage`, `étapes de remplacement`, `outils nécessaires` (= R3_CONSEILS)
+- `guide d'achat`, `référence OEM`, `checklist avant de payer` (= R6_GUIDE_ACHAT)
 - `prix`, `€`, `en stock`, `livraison`, `ajouter au panier` (= R2)
 
 **EXCLUSIF R1** (réservé uniquement aux pages R1) :
@@ -49,20 +49,19 @@ Chaque page a un rôle SEO précis. **Le vocabulaire est exclusif à chaque rôl
 
 ---
 
-## R3 — Blog (Information)
+## R3 — Conseils / R6 — Guide d'achat (Information)
 
-**Fonction** : Contenu éditorial, guides
-**Sous-types** :
-- **R3/guide-achat** : parcours d'achat (brief : `references/guide-achat-role.md`)
-- **R3/conseils** : guide de remplacement how-to (brief : `references/conseils-role.md`)
+**Sous-types canoniques** (legacy-canon-map.md v1.1.0) :
+- **R6_GUIDE_ACHAT** : parcours d'achat (brief : `references/guide-achat-role.md`) — legacy: R6_GUIDE_ACHAT, R3_guide, R3_BLOG/guide-achat
+- **R3_CONSEILS** : guide de remplacement how-to (brief : `references/conseils-role.md`) — legacy: R3_CONSEILS, R3_BLOG/conseils
 
 **INTERDIT sur R3** :
 - `sélectionnez votre véhicule`, `choisir votre véhicule`, `filtrer par`
 - `trier par`, `affiner la recherche`, `filtres`, `tous les véhicules compatibles`
 
-### R3/conseils — Vocabulaire exclusif
+### R3_CONSEILS — Vocabulaire exclusif
 
-**EXCLUSIF R3/conseils** (réservé uniquement aux pages conseils) :
+**EXCLUSIF R3_CONSEILS** (réservé uniquement aux pages conseils) :
 - `démontage` / `démonter` / `dépose`
 - `remontage` / `remonter` / `repose`
 - `étapes de remplacement` / `pas à pas`
@@ -76,10 +75,10 @@ Chaque page a un rôle SEO précis. **Le vocabulaire est exclusif à chaque rôl
 - `essai routier` / `essai progressif`
 - `avant de commencer` (contexte procédural)
 
-**INTERDIT sur R3/conseils** (en plus des interdictions R3 générales) :
+**INTERDIT sur R3_CONSEILS** (en plus des interdictions R3 générales) :
 - R4 : `définition`, `qu'est-ce que`, `composé de`, `au sens strict`, `glossaire`
 - R5 : `diagnostiquer` (focus principal), `bruit anormal`, `code DTC`, `code OBD`
-- R3/guide-achat : `guide d'achat`, `commander`, `ajouter au panier`
+- R6_GUIDE_ACHAT : `guide d'achat`, `commander`, `ajouter au panier`
 - R2 : `prix`, `€`, `en stock`, `livraison`, `promotion`
 
 ---
@@ -147,7 +146,7 @@ Chaque page a un rôle SEO précis. **Le vocabulaire est exclusif à chaque rôl
 - `code dtc`, `code obd`
 
 **PARTAGÉ R5/R3** (autorisé sur conseils mais contexte différent) :
-- `quand changer`, `quand remplacer` — R5 = conclusion diagnostic réactif, R3/conseils = intervalles proactifs
+- `quand changer`, `quand remplacer` — R5 = conclusion diagnostic réactif, R3_CONSEILS = intervalles proactifs
 
 ---
 
@@ -172,37 +171,37 @@ Les pages doivent s'inter-lier selon des règles strictes pour éviter la cannib
 | R1 Router | R4 Référence | ✅ Oui | Lien définition dans la navigation |
 | R2 Product | R4 Référence | ✅ Oui | « En savoir plus sur le disque de frein » |
 
-### Maillage R3/conseils (how-to)
+### Maillage R3_CONSEILS (how-to)
 
 | Depuis | Vers | Autorisé | Exemple |
 |--------|------|----------|---------|
-| R3/conseils | R4 Référence | ✅ Oui | « En savoir plus : disque de frein — définition et rôle » |
-| R3/conseils | R5 Diagnostic | ✅ Oui | « Diagnostic complet : identifier une panne de disque » |
-| R3/conseils | R1/R2 Gamme | ✅ Oui | CTA « Voir les pièces compatibles » |
-| R3/conseils | R3/guide-achat | ✅ Oui | « Consulter notre guide d'achat disques de frein » |
-| R4 Référence | R3/conseils | ✅ Oui | « Guide de remplacement du disque de frein » |
-| R5 Diagnostic | R3/conseils | ✅ Oui | « Comment remplacer le disque de frein » |
-| R3/guide-achat | R3/conseils | ✅ Oui | « Nos conseils de montage disque de frein » |
-| R2 Product | R3/conseils | ✅ Oui | « Conseils de montage pour ce disque » |
+| R3_CONSEILS | R4 Référence | ✅ Oui | « En savoir plus : disque de frein — définition et rôle » |
+| R3_CONSEILS | R5 Diagnostic | ✅ Oui | « Diagnostic complet : identifier une panne de disque » |
+| R3_CONSEILS | R1/R2 Gamme | ✅ Oui | CTA « Voir les pièces compatibles » |
+| R3_CONSEILS | R6_GUIDE_ACHAT | ✅ Oui | « Consulter notre guide d'achat disques de frein » |
+| R4 Référence | R3_CONSEILS | ✅ Oui | « Guide de remplacement du disque de frein » |
+| R5 Diagnostic | R3_CONSEILS | ✅ Oui | « Comment remplacer le disque de frein » |
+| R6_GUIDE_ACHAT | R3_CONSEILS | ✅ Oui | « Nos conseils de montage disque de frein » |
+| R2 Product | R3_CONSEILS | ✅ Oui | « Conseils de montage pour ce disque » |
 
 **Minimum liens par page conseils** : 8 (dont 1→R4, 1→R5, 1→gamme CTA, 3→pièces associées)
 
 **Maillage systématique** : How-to ↔ Diagnostic ↔ Guide d'achat ↔ FAQ ↔ Page gamme
 
-### Maillage R3/guide-achat (purchase journey)
+### Maillage R6_GUIDE_ACHAT (purchase journey)
 
 | Depuis | Vers | Autorisé | Ancre type |
 |--------|------|----------|------------|
-| R3/guide-achat | R1 Router (gamme) | ✅ CTA conversion | « Voir les {pièces} compatibles avec votre véhicule » |
-| R3/guide-achat | R3/conseils | ✅ Lien informatif | « Comment remplacer votre {pièce} » |
-| R3/guide-achat | R4 Référence | ✅ Lien informatif | « Fiche technique {pièce} » |
-| R3/guide-achat | R3/guide-achat (sibling) | ✅ Cross-link famille | « Notre guide {pièce associée} » |
-| R3/guide-achat | R2 Product | ❌ Non | Pas de lien commercial direct — passer par R1 |
-| R1 Router | R3/guide-achat | ✅ Bandeau conseils | « Guide d'achat {pièce} » |
-| R3/conseils | R3/guide-achat | ✅ Oui | « Consulter notre guide d'achat {pièce} » |
-| R4 Référence | R3/guide-achat | ✅ Oui | « Comment bien choisir son {pièce} » |
+| R6_GUIDE_ACHAT | R1 Router (gamme) | ✅ CTA conversion | « Voir les {pièces} compatibles avec votre véhicule » |
+| R6_GUIDE_ACHAT | R3_CONSEILS | ✅ Lien informatif | « Comment remplacer votre {pièce} » |
+| R6_GUIDE_ACHAT | R4 Référence | ✅ Lien informatif | « Fiche technique {pièce} » |
+| R6_GUIDE_ACHAT | R6_GUIDE_ACHAT (sibling) | ✅ Cross-link famille | « Notre guide {pièce associée} » |
+| R6_GUIDE_ACHAT | R2 Product | ❌ Non | Pas de lien commercial direct — passer par R1 |
+| R1 Router | R6_GUIDE_ACHAT | ✅ Bandeau conseils | « Guide d'achat {pièce} » |
+| R3_CONSEILS | R6_GUIDE_ACHAT | ✅ Oui | « Consulter notre guide d'achat {pièce} » |
+| R4 Référence | R6_GUIDE_ACHAT | ✅ Oui | « Comment bien choisir son {pièce} » |
 
-**Minimum liens par guide-achat** : 6 (dont 1→R1 CTA, 1→R3/conseils, 1→R4, 1→sibling, 2→ancres internes)
+**Minimum liens par guide-achat** : 6 (dont 1→R1 CTA, 1→R3_CONSEILS, 1→R4, 1→sibling, 2→ancres internes)
 
 **Règle** : Ne jamais lier vers R2 (Product) depuis R4 ou R5. Le contenu informationnel reste non-commercial.
 **Format** : Utiliser des ancres descriptives, jamais « cliquez ici » ou « en savoir plus » seul.
