@@ -137,8 +137,11 @@
 | Knowledge graph | EMPTY_OPTIONAL_FEATURE | 8 | `kg_cases`, `kg_*_history`, `kg_*_log` |
 | Marketing | EMPTY_OPTIONAL_FEATURE | 6 | `__marketing_campaigns/weekly_plans/...` |
 | Video | EMPTY_OPTIONAL_FEATURE | 3 | `__video_assets/variants/templates` |
-| Monitoring | EMPTY_ORPHAN_SUSPECT | 5 | `__lighthouse_*`, `__cron_runs`, `__airlock_bundles` |
-| SEO empty | EMPTY_ORPHAN_SUSPECT | 5 | `__seo_quality_log`, `__seo_diagnostic`, ... |
+| Monitoring | EMPTY_ORPHAN → **DROP_CANDIDATE** | 4 | `__lighthouse_alerts`, `__lighthouse_runs`, `__cron_runs`, `__airlock_bundles` — 0 code + 0 RPCs |
+| SEO empty | ~~ORPHAN~~ → **ACTIVE_DESIGN** | 5 | `__seo_quality_log` (scoring), `__seo_diagnostic` (cockpit), `__seo_crawl_log` (googlebot), `__seo_interpolation_alerts` (RPC purge), `__seo_index_history` (cockpit+sitemap) — consumers confirmes |
+| Quarantine/Pipeline | ~~ORPHAN~~ → **ACTIVE_DESIGN** | 4 | `__quarantine_items` (10+ RPCs), `__quarantine_history` (5+ RPCs), `pipeline_event_log` (2 RPCs), `seo_link_metrics_daily` (1 RPC) |
+| Killswitch | ~~ORPHAN~~ → **ACTIVE_DESIGN** | 2 | `_killswitch_audit` (3 RPCs), `_killswitch_breakglass` (4 RPCs) |
+| Misc orphan | **DROP_CANDIDATE** | 5 | `__seo_sitemap_file`, `__sitemap_gamme`, `vehicule_v1_dominant`, `__agent_metrics`, `ticket_responses` — 0 code + 0 RPCs |
 | Commerce/Support | ~~EMPTY_DROP_CANDIDATE~~ → **EMPTY_OPTIONAL_FEATURE** | 4 | `reviews` (SupportModule), `support_tickets` (SupportModule), `error_logs` (ErrorLogService + SEO), `error_statistics` (types) — **consumers confirmes, KEEP** |
 
 > **Regle** : aucune table classee EMPTY_DROP_CANDIDATE ne peut etre supprimee sans double validation :
@@ -237,7 +240,7 @@
 | **EMPTY_STAGING_REQUIRED** | ~10 | Tables import/staging |
 | **EMPTY_OPTIONAL_FEATURE** | ~15 | Features non activees |
 | **EMPTY_ORPHAN_SUSPECT** | ~10 | A verifier par grep |
-| **EMPTY_DROP_CANDIDATE** | **~4** | ~~8~~ — 4 reclassees OPTIONAL_FEATURE (consumers confirmes) |
+| **EMPTY_DROP_CANDIDATE** | **9** | 4 monitoring + 5 misc orphelines (0 code + 0 RPCs) — a valider puis DROP |
 | ~~**DROP_READY**~~ | **1** | ~~3 dropped V3~~ + `__cross_gamme_car_deprecated` (drop pending) |
 | ~~**DUPLICATE_SCOPE**~~ | **0** | ~~3~~ — tous resolus V5d |
 | **NEAR_EMPTY** | ~8 | 1 row, probablement init/test |
