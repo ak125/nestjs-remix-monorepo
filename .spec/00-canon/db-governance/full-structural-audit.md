@@ -315,8 +315,10 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
     - ✅ `auto_type` : 8 shadow cols (INTEGER), 49K rows backfilled
 4c. ADD FK NOT VALID + VALIDATE (apres V2.2 orphelins resolus) — PARTIAL 2026-03-15
     - ✅ 707 orphelins supprimés (6 tables Cat A)
-    - ⛔ FK impossible : colonnes `*_piece_id` sont TEXT, `pieces.piece_id` est INTEGER
-    - → Nécessite shadow cols INTEGER + backfill + migration code avant FK
+    - ✅ Shadow cols `*_piece_id_i INTEGER` ajoutées + backfillées sur 6 tables (442K+1.8M+3M+4.6M+17.6M+73M)
+    - `pieces_ref_search` : table swap v2 (avec prs_piece_id_i), old gardée. Index kind recréé, autres index pending (timeout 70M+)
+    - ✅ FK NOT VALID ajoutées sur 6 tables (`*_piece_id_i` → `pieces(piece_id)`)
+    - ⏳ VALIDATE CONSTRAINT pending (6 tables, sera long sur les grosses)
 
 ### Vague 5 — Migration code (backend)
 
