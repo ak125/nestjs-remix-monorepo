@@ -41,9 +41,9 @@
 
 ---
 
-## 2. Tables Tier 1 — Catalogue TecDoc (>100 MB) — Etat post-V2
+## 2. Tables Tier 1 — Catalogue MassDoc (>100 MB) — Etat post-V2
 
-| Table | Taille | Rows | PK | FK | ID TEXT | Prix TEXT | SoT | TecDoc Role | Verdict | Gate | Readiness TecDoc |
+| Table | Taille | Rows | PK | FK | ID TEXT | Prix TEXT | SoT | MassDoc Role | Verdict | Gate | Readiness MassDoc |
 |-------|--------|------|----|----|--------|----------|-----|-------------|---------|------|-----------------|
 | pieces_relation_criteria | 33 GB | 157M | ✓ | 0 | 0 | 0 | source | source_catalog | FK_CANDIDATE_B | needs_validation | ready_with_guardrails |
 | pieces_ref_search | 16 GB | 73M | ✓ | 0 | 2 | 0 | derived | derived | FK_CANDIDATE_A | needs_validation | ready_for_v4_after_cleanup |
@@ -60,10 +60,10 @@
 **Legende** :
 - **Verdict** = nature du probleme structurel (PK_STRATEGY_REQUIRED, TYPE_MIGRATION_REQUIRED, FK_CANDIDATE_A/B/C, OK, REFERENCE)
 - **Gate** = statut d'execution immediat (`ready` = action possible, `needs_validation` = audit prealable requis, `blocked` = prerequis non rempli)
-- **Readiness TecDoc** = statut metier vis-a-vis de l'update TecDoc (`ready`, `ready_with_guardrails`, `blocked_by_pk`, `blocked_by_type_debt`, `blocked_by_fk_uncertainty`, `blocked_by_duplicate_risk`, `out_of_scope`)
+- **Readiness MassDoc** = statut metier vis-a-vis de l'update MassDoc (`ready`, `ready_with_guardrails`, `blocked_by_pk`, `blocked_by_type_debt`, `blocked_by_fk_uncertainty`, `blocked_by_duplicate_risk`, `out_of_scope`)
 - **SoT** = `source` (table primaire canonique) / `derived` (projection/recherche, pas source d'integrite) / `reference` (surface dependante, jamais source catalogue) / `legacy` / `unknown`
 
-> `ready_with_guardrails` = exploitable dans le pipeline TecDoc comme surface derivee/projection, jamais comme source canonique catalogue.
+> `ready_with_guardrails` = exploitable dans le pipeline MassDoc comme surface derivee/projection, jamais comme source canonique catalogue.
 
 ### Strategie PK pour tables sans contrainte
 
@@ -77,7 +77,7 @@
 
 ## 3. Tables Tier 2 — Metier (1 MB — 100 MB)
 
-| Table | Taille | Rows | PK | FK | Domaine | TecDoc Role | Verdict | Gate |
+| Table | Taille | Rows | PK | FK | Domaine | MassDoc Role | Verdict | Gate |
 |-------|--------|------|----|----|---------|-------------|---------|------|
 | __sitemap_p_link | 92 MB | 473K | ✓ | 0 | SEO | seo_dep | OK | ready |
 | __cross_gamme_car_new | 41 MB | 175K | ✓ | 0 | Cross | derived | DUPLICATE_SCOPE_VALIDATION_REQUIRED | needs_validation |
@@ -100,7 +100,7 @@
 
 ~60 tables actives. Toutes ont des PK (sauf `rm_rebuild_queue`). Points notables :
 
-| Table | Rows | Probleme | TecDoc Role | Verdict | Gate |
+| Table | Rows | Probleme | MassDoc Role | Verdict | Gate |
 |-------|------|----------|-------------|---------|------|
 | ___xtr_order_line | 2.5K | 20 prix TEXT | non_tecdoc | TYPE_MIGRATION_REQUIRED | needs_validation |
 | ___xtr_order | 1.6K | 8 prix TEXT | non_tecdoc | TYPE_MIGRATION_REQUIRED | needs_validation |
@@ -171,7 +171,7 @@
 
 ## 7. Matrice TEXT critique — Tables prioritaires pour shadow columns
 
-| Table | Taille | IDs TEXT | Prix TEXT | Dates TEXT | TecDoc Role | Priorite |
+| Table | Taille | IDs TEXT | Prix TEXT | Dates TEXT | MassDoc Role | Priorite |
 |-------|--------|---------|----------|-----------|-------------|----------|
 | `pieces_price` | 354 MB | 4 | **11** | 2 | source_catalog | **P0** |
 | `pieces_criteria` | 5.4 GB | **5** | 0 | 1 | source_catalog | P1 |
@@ -251,7 +251,7 @@
 3. **Aucune shadow column** sans mapping de cast deterministe (compter les valeurs non-castables)
 4. **Aucune fusion de table** sans preuve de couverture fonctionnelle (grep + consumers)
 5. **Aucun renommage** de table active sans cartographie complete des consumers (backend + RPCs + vues)
-6. **Aucune decision TecDoc** sans classification source_of_truth confirmee
+6. **Aucune decision MassDoc** sans classification source_of_truth confirmee
 
 ---
 
@@ -270,7 +270,7 @@ Une table peut passer en Vague 4 (corrections structurelles) **seulement si** :
 
 ### Priorite operationnelle V2
 
-Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
+Ordre de traitement (tables bloquantes pour readiness MassDoc en premier) :
 
 1. `pieces_relation_type` — blocked_by_pk, 146M rows, hot path F4
 2. `pieces_media_img` — blocked_by_pk, 4.6M rows
@@ -280,7 +280,7 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
 6. `__cross_gamme_car` / `_new` — duplicate_scope
 7. `___config_old` / `pieces_marque_next` / `golden_set_products` — drop_ready (trivial)
 
-> Une table peut sortir de V2 avec statut `ready_for_v4`, `blocked` (investigation supplementaire), ou `deferred` (hors perimetre TecDoc immediat).
+> Une table peut sortir de V2 avec statut `ready_for_v4`, `blocked` (investigation supplementaire), ou `deferred` (hors perimetre MassDoc immediat).
 
 ---
 
@@ -295,7 +295,7 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
 | 2.3 | Audit colonnes TEXT critiques | 11 tables P0-P2 | SQL cast test (count non-castable) |
 | 2.4 | Audit doublons table/table | `__cross_gamme_car*`, `___meta_tags_ariane*` | Schema comparison + row overlap |
 | 2.5 | Classification source de verite | Tier 1+2 tables | Grep backend + RPC analysis |
-| 2.6 | Verdict readiness TecDoc par table | Tables source_catalog | Synthese 2.1-2.5 |
+| 2.6 | Verdict readiness MassDoc par table | Tables source_catalog | Synthese 2.1-2.5 |
 
 **Livrable** : enrichissement de ce document V1.2.0 avec resultats mesures.
 
@@ -329,7 +329,7 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
 - Migration correcte = modifier le code backend (30+ fichiers) pour lire les shadow cols
 - À faire progressivement, service par service
 
-### Vague 6 — TecDoc Update Readiness — DONE 2026-03-15
+### Vague 6 — MassDoc Update Readiness — DONE 2026-03-15
 
 | Table | V2.6 Avant | Actions V3-V4 | **Classification** |
 |-------|-----------|---------------|-------------------|
@@ -346,7 +346,7 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
 | **__cross_gamme_car** | deferred | — | **DOCUMENTED** (migrate 7087 old_only to _new) |
 
 > **Verdict global : 10/11 tables SAFE ou FIXED. 1 table DOCUMENTED (non-bloquante).**
-> TecDoc update peut procéder sur toutes les tables sauf `__cross_gamme_car` (migration _new pending).
+> MassDoc update peut procéder sur toutes les tables sauf `__cross_gamme_car` (migration _new pending).
 
 ---
 
@@ -466,7 +466,7 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
 | `rcp_type_id → rtp_type_id` | 0 (same type) | **0** (exhaustif) | measured | **FK_READY** |
 | `rtp_piece_id → piece_id` | 0 (INTEGER) | **0** (sample 10K) | sampled | **FK_READY** (confidence medium) |
 
-### V2.6 — Matrice Readiness TecDoc (SYNTHESE)
+### V2.6 — Matrice Readiness MassDoc (SYNTHESE)
 
 | Table | SoT (V2.5) | Doublons (V2.4) | PK (V2.1) | Types (V2.3) | FK (V2.2) | **Readiness V2** |
 |-------|-----------|----------------|-----------|-------------|-----------|-----------------|
