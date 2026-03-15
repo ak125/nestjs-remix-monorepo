@@ -18,9 +18,9 @@
 | Taille totale | **~86 GB** | measured |
 | Tables avec donnees (>0 rows) | **~100** | measured |
 | Tables vides (0 rows) | **~100** | measured |
-| Tables sans PK | **3** (`pieces_relation_type`, `pieces_media_img`, `rm_rebuild_queue`) | measured |
-| Tables avec FK | **~25** (sur ~200) | measured |
-| Tables avec dette type TEXT | **~15** (IDs, prix, dates stockes en TEXT) | measured |
+| Tables sans PK | **0** (~~3~~ — toutes fixees V4a) | measured |
+| Tables avec FK | **~31** (~~25~~ + 6 FK Cat A validees V4c) | measured |
+| Tables avec dette type TEXT | **~12** (~~15~~ — `pieces_price` fixee V4b/V5a, `auto_type` shadow cols exists) | measured |
 
 ### Problemes critiques (P0)
 
@@ -45,16 +45,16 @@
 
 | Table | Taille | Rows | PK | FK | ID TEXT | Prix TEXT | SoT | MassDoc Role | Verdict | Gate | Readiness MassDoc |
 |-------|--------|------|----|----|--------|----------|-----|-------------|---------|------|-----------------|
-| pieces_relation_criteria | 33 GB | 157M | ✓ | 0 | 0 | 0 | source | source_catalog | FK_CANDIDATE_B | needs_validation | ready_with_guardrails |
-| pieces_ref_search | 16 GB | 73M | ✓ | 0 | 2 | 0 | derived | derived | FK_CANDIDATE_A | needs_validation | ready_for_v4_after_cleanup |
+| pieces_relation_criteria | 33 GB | 157M | ✓ | 0 | 0 | 0 | source | source_catalog | OK | ready | ready |
+| pieces_ref_search | 16 GB | 73M | ✓ | **1** | 0 | 0 | derived | derived | ✅ FK DONE | ready | **ready** |
 | ___xtr_msg | 11 GB | 15M | ✓ | 0 | **7** | 0 | legacy | non_tecdoc | TYPE_MIGRATION_REQUIRED | needs_validation | out_of_scope |
-| pieces_relation_type | 9.7 GB | 146M | **✗** | 0 | 0 | 0 | source | source_catalog | **PK_STRATEGY_REQUIRED** | conditional_ready | **conditional_ready_for_v4** |
-| pieces_criteria | 5.4 GB | 17.6M | ✓ | 0 | **5** | 0 | source | source_catalog | TYPE_MIGRATION_REQUIRED + FK_CANDIDATE_A | needs_validation | **ready_for_v4_after_cleanup** |
+| pieces_relation_type | 9.7 GB | 146M | ✓ | 0 | 0 | 0 | source | source_catalog | ✅ PK DONE | ready | **ready** |
+| pieces_criteria | 5.4 GB | 17.6M | ✓ | **1** | **5** | 0 | source | source_catalog | ✅ FK DONE (IDs TEXT deferred) | ready | **ready** |
 | pieces | 1.4 GB | 4M | ✓ | **2** | 0 | 0 | **source** | source_catalog | REFERENCE | ready | **ready** |
-| pieces_media_img | 953 MB | 4.6M | **✗** | 0 | **2** | 0 | source | source_catalog | **PK_STRATEGY_REQUIRED** | ready_after_cleanup | **ready_for_v4_after_cleanup** |
-| pieces_ref_ean | 512 MB | 3M | ✓ | 0 | **1** | 0 | source | source_catalog | FK_CANDIDATE_A | needs_validation | ready_for_v4_after_cleanup |
-| pieces_price | 354 MB | 442K | ✓ | 0 | **4** | **11** | source | source_catalog | **TYPE_MIGRATION_REQUIRED** (P0) | needs_validation | **ready_for_v4_after_cleanup** |
-| pieces_list | 302 MB | 1.8M | ✓ | 0 | **2** | 0 | source | source_catalog | FK_CANDIDATE_A | needs_validation | ready_for_v4_after_cleanup |
+| pieces_media_img | 953 MB | 4.6M | ✓ | **1** | 0 | 0 | source | source_catalog | ✅ PK+FK DONE | ready | **ready** |
+| pieces_ref_ean | 512 MB | 3M | ✓ | **1** | 0 | 0 | source | source_catalog | ✅ FK DONE | ready | **ready** |
+| pieces_price | 354 MB | 442K | ✓ | **1** | 0 | 0 | source | source_catalog | ✅ FK+SHADOW DONE (code V5a) | ready | **ready** |
+| pieces_list | 302 MB | 1.8M | ✓ | **1** | 0 | 0 | source | source_catalog | ✅ FK DONE | ready | **ready** |
 | __seo_page | 114 MB | 322K | ✓ | 1 | 0 | 0 | reference | seo_dep | OK | ready | ready_with_guardrails |
 
 **Legende** :
@@ -65,13 +65,13 @@
 
 > `ready_with_guardrails` = exploitable dans le pipeline MassDoc comme surface derivee/projection, jamais comme source canonique catalogue.
 
-### Strategie PK pour tables sans contrainte
+### Strategie PK — ✅ TOUTES RESOLUES V4a
 
-| Table | Rows | candidate_strategy | Detail |
+| Table | Rows | Strategy appliquee | Status |
 |-------|------|--------------------|--------|
-| `pieces_relation_type` | 146M | composite_pk ou deduplicate_then_composite | Audit unicite V2.1 requis |
-| `pieces_media_img` | 4.6M | surrogate_pk ou deduplicate_then_composite | Audit unicite V2.1 requis |
-| `rm_rebuild_queue` | 0 | trivial_empty_table_pk | Table vide, ajout immediat possible |
+| `pieces_relation_type` | 146M | table swap batch (v2 with composite PK `rtp_type_id, rtp_piece_id`) | ✅ DONE |
+| `pieces_media_img` | 4.6M | dedup 10 CSV headers + composite PK `(pmi_piece_id, pmi_name)` | ✅ DONE |
+| `rm_rebuild_queue` | 0 | trivial PK `(rmrq_gamme_id, rmrq_vehicle_id)` | ✅ DONE |
 
 ---
 
@@ -80,7 +80,7 @@
 | Table | Taille | Rows | PK | FK | Domaine | MassDoc Role | Verdict | Gate |
 |-------|--------|------|----|----|---------|-------------|---------|------|
 | __sitemap_p_link | 92 MB | 473K | ✓ | 0 | SEO | seo_dep | OK | ready |
-| __cross_gamme_car_new | 41 MB | 175K | ✓ | 0 | Cross | derived | DUPLICATE_SCOPE_VALIDATION_REQUIRED | needs_validation |
+| __cross_gamme_car_new | 41 MB | 182K | ✓ | 0 | Cross | derived | ✅ UNIFIED (sole table) | ready |
 | auto_type_number_code | 37 MB | 165K | ✓ | 0 | Vehicle | lookup | OK | ready |
 | auto_type | 37 MB | 49K | ✓ | 0 | Vehicle | source_catalog | TYPE_MIGRATION_REQUIRED | needs_validation |
 | ___xtr_customer | 34 MB | 59K | ✓ | 0 | XTR | non_tecdoc | TYPE_MIGRATION_REQUIRED | needs_validation |
@@ -88,7 +88,7 @@
 | seo_link_impressions | 25 MB | 104K | ✓ | 0 | SEO | non_tecdoc | OK | ready |
 | __seo_gamme_conseil | 18 MB | 2.2K | ✓ | 0 | SEO | seo_dep | OK | ready |
 | pieces_criteria_link | 18 MB | 77K | ✓ | 0 | Catalog | source_catalog | TYPE_MIGRATION_REQUIRED | needs_validation |
-| __cross_gamme_car | 13 MB | 75K | ✓ | 0 | Cross | derived | DUPLICATE_SCOPE_VALIDATION_REQUIRED | needs_validation |
+| __cross_gamme_car_deprecated | 13 MB | 75K | ✓ | 0 | Cross | deprecated | ✅ DEPRECATED (renamed V5d) | drop_ready |
 | __seo_keywords | 11 MB | 4.6K | ✓ | 0 | SEO | seo_dep | OK | ready |
 | __seo_keyword_type_mapping | 11 MB | **0** | ✓ | 1 | SEO | seo_dep | EMPTY_ACTIVE_DESIGN | ready |
 | pieces_gamme | 10 MB | 9.7K | ✓ | 0 | Catalog | source_catalog | TYPE_MIGRATION_REQUIRED | needs_validation |
@@ -104,14 +104,14 @@
 |-------|------|----------|-------------|---------|------|
 | ___xtr_order_line | 2.5K | 20 prix TEXT | non_tecdoc | TYPE_MIGRATION_REQUIRED | needs_validation |
 | ___xtr_order | 1.6K | 8 prix TEXT | non_tecdoc | TYPE_MIGRATION_REQUIRED | needs_validation |
-| ___config_old | 1 | Legacy | non_tecdoc | **DROP_READY** | ready |
+| ~~___config_old~~ | — | ~~Legacy~~ | — | ✅ DROPPED V3 | — |
 | pieces_marque | 992 | 15 TEXT | source_catalog | TYPE_MIGRATION_REQUIRED | needs_validation |
 | pieces_criteria_group | 4.3K | 3 ID TEXT | source_catalog | TYPE_MIGRATION_REQUIRED | needs_validation |
 | auto_modele | 5.7K | 21 TEXT | source_catalog | TYPE_MIGRATION_REQUIRED | needs_validation |
 | ___xtr_invoice* | 1 | 8 prix TEXT | non_tecdoc | TYPE_MIGRATION_REQUIRED | needs_validation |
 | pieces_details | 1 | 5 ID TEXT | source_catalog | NEAR_EMPTY | needs_validation |
 | pieces_ref_oem | 1 | — | source_catalog | NEAR_EMPTY | needs_validation |
-| rm_rebuild_queue | 0 | **no PK** | non_tecdoc | PK_STRATEGY_REQUIRED | blocked |
+| rm_rebuild_queue | 0 | ~~no PK~~ | non_tecdoc | ✅ PK DONE V4a | ready |
 
 ---
 
@@ -153,19 +153,19 @@
 
 | Table | Taille | Rows | Flag | Evidence | Verdict | Gate |
 |-------|--------|------|------|----------|---------|------|
-| `___config_old` | 224 KB | 1 | OLD | measured (remplacee par `___config`) | **DROP_READY** | ready | rollback: recreate from migration |
-| `pieces_marque_next` | 8 KB | 0 | NEXT | measured (vide, 0 consumers) | **DROP_READY** | ready | rollback: recreate from migration |
-| `golden_set_products` | 32 KB | 0 | — | measured (vide, test) | **DROP_READY** | ready | rollback: recreate from migration |
-| `__cross_gamme_car_new` | 41 MB | 175K | NEW | suspected (table active malgre suffixe _new) | **DUPLICATE_SCOPE_VALIDATION_REQUIRED** | needs_validation | — |
-| `__cross_gamme_car` | 13 MB | 75K | — | suspected (doublon partiel de _new ?) | **DUPLICATE_SCOPE_VALIDATION_REQUIRED** | needs_validation | — |
+| ~~`___config_old`~~ | — | — | OLD | ✅ DROPPED V3 (2026-03-15) | — | — |
+| ~~`pieces_marque_next`~~ | — | — | NEXT | ✅ DROPPED V3 (2026-03-15) | — | — |
+| ~~`golden_set_products`~~ | — | — | — | ✅ DROPPED V3 (2026-03-15) | — | — |
+| `__cross_gamme_car_new` | 41 MB | 182K | — | ✅ UNIFIED V5d — sole table, 182611 rows | **OK** | ready |
+| `__cross_gamme_car_deprecated` | 13 MB | 75K | OLD | ✅ DEPRECATED V5d — renamed, 0 consumers | **DROP_READY** | ready |
 | `gate_thresholds` | 96 KB | 17 | — | measured (config active) | KEEP | ready |
 
-### Doublons suspects a investiguer (Vague 2)
+### Doublons suspects — RESOLVED
 
-| Paire | Question | Evidence |
-|-------|----------|----------|
-| `__cross_gamme_car` vs `__cross_gamme_car_new` | SoT ? Merger ? Supprimer l'ancien ? | suspected |
-| `___meta_tags_ariane` vs `__blog_meta_tags_ariane` | 2 tables breadcrumbs, 5 rows chacune | suspected |
+| Paire | Resolution | Date |
+|-------|-----------|------|
+| ~~`__cross_gamme_car` vs `_new`~~ | ✅ 7087 old_only migres, old renamed `_deprecated`, `_new2` dropped | 2026-03-15 |
+| `___meta_tags_ariane` vs `__blog_meta_tags_ariane` | DISJOINT — meme schema, donnees differentes (catalog vs blog). Pas de doublon. | 2026-03-14 |
 
 ---
 
@@ -189,18 +189,18 @@
 
 ## 8. Jointures implicites candidates a formalisation FK
 
-### Categorie A — Naming coherent + usage RPC confirme + cible PK connue
+### Categorie A — ✅ DONE (FK validees V4c, code migre V5a/V5b)
 
-| Table source | Colonne | Evidence |
-|-------------|---------|----------|
-| pieces_media_img | pmi_piece_id | inferred (naming + usage RPC) |
-| pieces_ref_ean | pre_piece_id | inferred |
-| pieces_ref_search | prs_piece_id | inferred |
-| pieces_price | pri_piece_id | inferred |
-| pieces_list | pli_piece_id | inferred |
-| pieces_criteria | pc_piece_id | inferred |
+| Table source | Colonne shadow | FK constraint | Status |
+|-------------|---------------|---------------|--------|
+| pieces_media_img | pmi_piece_id_i | fk_pieces_media_img_piece_i | ✅ VALIDATED |
+| pieces_ref_ean | pre_piece_id_i | fk_pieces_ref_ean_piece_i | ✅ VALIDATED |
+| pieces_ref_search | prs_piece_id_i | fk_pieces_ref_search_piece_i | ✅ VALIDATED |
+| pieces_price | pri_piece_id_i | fk_pieces_price_piece_i | ✅ VALIDATED |
+| pieces_list | pli_piece_id_i | fk_pieces_list_piece_i | ✅ VALIDATED |
+| pieces_criteria | pc_piece_id_i | fk_pieces_criteria_piece_i | ✅ VALIDATED |
 
-> 6 jointures vers `pieces.piece_id`. Naming coherent, usage confirme dans les RPCs.
+> 6 FK vers `pieces(piece_id)` via shadow cols INTEGER. Code backend migre (V5a/V5b). 707 orphelins supprimes prealablement.
 
 ### Categorie B — Naming coherent, validation type/cardinalite manquante
 
@@ -227,10 +227,10 @@
 
 | Verdict | Count | Description |
 |---------|-------|-------------|
-| **OK** | ~80 | Aucune action structurelle |
-| **TYPE_MIGRATION_REQUIRED** | ~15 | Shadow columns (TEXT → type natif) |
-| **PK_STRATEGY_REQUIRED** | 3 | Audit unicite prealable obligatoire |
-| **FK_CANDIDATE_A** | 6 | FK quasi certaines, audit orphelins prealable |
+| **OK / DONE** | **~95** | Aucune action structurelle ou deja fixe (~~80~~ + 9 PK/FK/shadow + 6 resolved) |
+| **TYPE_MIGRATION_REQUIRED** | **~12** | Shadow columns (TEXT → type natif) — `auto_type` code deferred, `___xtr_*` out_of_scope |
+| ~~**PK_STRATEGY_REQUIRED**~~ | **0** | ~~3~~ — toutes fixees V4a |
+| ~~**FK_CANDIDATE_A**~~ | **0** | ~~6~~ — toutes validees V4c |
 | **FK_CANDIDATE_B** | 2 | FK probables, verification types prealable |
 | **FK_CANDIDATE_C** | 1 | FK incertaines, cible a identifier |
 | **EMPTY_ACTIVE_DESIGN** | ~25 | Tables vides, infrastructure deployee |
@@ -238,8 +238,8 @@
 | **EMPTY_OPTIONAL_FEATURE** | ~15 | Features non activees |
 | **EMPTY_ORPHAN_SUSPECT** | ~10 | A verifier par grep |
 | **EMPTY_DROP_CANDIDATE** | ~8 | 0 consumers, 0 rows |
-| **DROP_READY** | 3 | `___config_old`, `pieces_marque_next`, `golden_set_products` |
-| **DUPLICATE_SCOPE_VALIDATION_REQUIRED** | 3 | Doublons a investiguer |
+| ~~**DROP_READY**~~ | **1** | ~~3 dropped V3~~ + `__cross_gamme_car_deprecated` (drop pending) |
+| ~~**DUPLICATE_SCOPE**~~ | **0** | ~~3~~ — tous resolus V5d |
 | **NEAR_EMPTY** | ~8 | 1 row, probablement init/test |
 
 ---
@@ -495,21 +495,19 @@ Ordre de traitement (tables bloquantes pour readiness MassDoc en premier) :
 
 | Table | SoT (V2.5) | Doublons (V2.4) | PK (V2.1) | Types (V2.3) | FK (V2.2) | **Readiness V2** |
 |-------|-----------|----------------|-----------|-------------|-----------|-----------------|
-| **pieces** | source | — | ✓ | OK | ✓ (ref) | **ready_for_v4** |
-| **pieces_relation_type** | source | — | candidate high confidence (sample 5%) | OK (INTEGER) | FK_READY (B) | **conditional_ready_for_v4** (full PK validation pending) |
-| **pieces_media_img** | source | — | dedup 10 rows + key semantics validation | type_debt_non_blocking_for_v4 | FK_READY_AFTER_CLEANUP(77) | **ready_for_v4_after_cleanup** |
-| **pieces_price** | source | — | ✓ | cast_safe (0%) | FK_READY_AFTER_CLEANUP(12) | **ready_for_v4_after_cleanup** |
-| **pieces_criteria** | source | — | ✓ | cast_safe (0%) | FK_READY_AFTER_CLEANUP(309) | **ready_for_v4_after_cleanup** |
-| **pieces_ref_search** | derived | — | ✓ | cast_safe (0%) | FK_READY_AFTER_CLEANUP(219) | **ready_for_v4_after_cleanup** |
-| **pieces_ref_ean** | source | — | ✓ | — | FK_READY_AFTER_CLEANUP(83) | **ready_for_v4_after_cleanup** |
-| **pieces_list** | source | — | ✓ | — | FK_READY_AFTER_CLEANUP(7) | **ready_for_v4_after_cleanup** |
-| **pieces_relation_criteria** | source | — | ✓ | OK | FK_READY (B) | **ready_for_v4** |
-| **auto_type** | source | — | ✓ | cast_safe (0%) | — | **ready_for_v4** |
-| **__cross_gamme_car** | derived (deprecated) | subset partiel couvert a 90.6% par _new | ✓ | TEXT | — | **deferred** (migrate 7087 old_only to _new) |
-| **__cross_gamme_car_new** | derived | candidate_successor (quasi-superset non strict) | ✓ | TEXT | — | **ready_for_v4_after_gap_resolution** |
+| **pieces** | source | — | ✓ | OK | ✓ (ref) | ✅ **ready** |
+| **pieces_relation_type** | source | — | ✅ PK done | OK (INTEGER) | FK_READY (B) | ✅ **ready** |
+| **pieces_media_img** | source | — | ✅ PK done | OK | ✅ FK validated | ✅ **ready** |
+| **pieces_price** | source | — | ✓ | ✅ shadow cols + code V5a | ✅ FK validated | ✅ **ready** |
+| **pieces_criteria** | source | — | ✓ | cast_safe (0%) | ✅ FK validated | ✅ **ready** |
+| **pieces_ref_search** | derived | — | ✓ | cast_safe (0%) | ✅ FK validated | ✅ **ready** |
+| **pieces_ref_ean** | source | — | ✓ | — | ✅ FK validated | ✅ **ready** |
+| **pieces_list** | source | — | ✓ | — | ✅ FK validated | ✅ **ready** |
+| **pieces_relation_criteria** | source | — | ✓ | OK | FK_READY (B) | ✅ **ready** |
+| **auto_type** | source | — | ✓ | ✅ shadow cols (code deferred) | — | ✅ **ready** |
+| **__cross_gamme_car_new** | derived | ✅ unified (182K) | ✓ | TEXT | — | ✅ **ready** |
 
-> **Resultat** : **3 tables ready_for_v4** (pieces, pieces_relation_criteria, auto_type), **6 ready_for_v4_after_cleanup** (FK orphelins), 1 conditional_ready (PK pending), 1 ready_after_cleanup (PK + key semantics), 1 ready_after_gap_resolution, 1 deferred. 0 blocked.
-> **Prerequis Vague 4** : DELETE 707 orphelins Cat A + DELETE 10 header rows `pieces_media_img` + full PK validation `pieces_relation_type` + migrate 7087 old_only `__cross_gamme_car` → `_new`.
+> **Resultat final V1.4.0** : **11/11 tables ready.** Toutes les PK, FK, shadow cols et migrations donnees sont terminees. Code backend migre pour pieces_price (V5a) et piece_id FK (V5b). auto_type code deferred (shadow cols existent en DB).
 
 ---
 
