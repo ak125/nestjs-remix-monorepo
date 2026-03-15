@@ -329,9 +329,24 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
 - Migration correcte = modifier le code backend (30+ fichiers) pour lire les shadow cols
 - À faire progressivement, service par service
 
-### Vague 6 — TecDoc Update Readiness
+### Vague 6 — TecDoc Update Readiness — DONE 2026-03-15
 
-Classification finale `SAFE` / `FIXED` / `DOCUMENTED` + dry-run update.
+| Table | V2.6 Avant | Actions V3-V4 | **Classification** |
+|-------|-----------|---------------|-------------------|
+| **pieces** | ready_for_v4 | — | **SAFE** |
+| **pieces_relation_type** | conditional_ready | PK (table swap 146M) | **FIXED** |
+| **pieces_media_img** | ready_after_cleanup | 10 CSV headers deleted + PK + FK validated | **FIXED** |
+| **pieces_price** | ready_after_cleanup | 12 orphelins deleted + FK validated + 15 shadow cols NUMERIC | **FIXED** |
+| **pieces_criteria** | ready_after_cleanup | 309 orphelins deleted + FK validated | **FIXED** |
+| **pieces_ref_search** | ready_after_cleanup | 219 orphelins deleted + table swap 73M + FK validated | **FIXED** |
+| **pieces_ref_ean** | ready_after_cleanup | 83 orphelins deleted + FK validated | **FIXED** |
+| **pieces_list** | ready_after_cleanup | 7 orphelins deleted + FK validated | **FIXED** |
+| **pieces_relation_criteria** | ready_for_v4 | — | **SAFE** |
+| **auto_type** | ready_for_v4 | 8 shadow cols INTEGER | **FIXED** |
+| **__cross_gamme_car** | deferred | — | **DOCUMENTED** (migrate 7087 old_only to _new) |
+
+> **Verdict global : 10/11 tables SAFE ou FIXED. 1 table DOCUMENTED (non-bloquante).**
+> TecDoc update peut procéder sur toutes les tables sauf `__cross_gamme_car` (migration _new pending).
 
 ---
 
