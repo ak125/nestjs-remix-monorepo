@@ -144,6 +144,14 @@ Cette surface est consommée ou contrôlée par :
 
 ---
 
+## Route legacy SEO
+
+Les pages véhicule sont actuellement servies sous `/blog-pieces-auto/auto/{marque}/{modele}` (namespace legacy blog).
+Il n'existe pas encore de route dédiée `/vehicule/{slug}`.
+Le rôle canonique interne est `R8_VEHICLE`. Cette route legacy est documentée et assumée.
+
+---
+
 ## Règle finale
 
 R8 doit rester une surface d'entrée véhicule.

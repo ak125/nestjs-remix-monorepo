@@ -14,7 +14,7 @@ export enum RoleId {
   R0_HOME = 'R0_HOME',
   R1_ROUTER = 'R1_ROUTER',
   R2_PRODUCT = 'R2_PRODUCT',
-  /** R3 how-to / guide technique (NOT guide d'achat → see R6_GUIDE_ACHAT) */
+  /** @deprecated R3_GUIDE is an orphan role — no route, no contract, no prompts. Use R3_CONSEILS for how-to or R6_GUIDE_ACHAT for buying guides. */
   R3_GUIDE = 'R3_GUIDE',
   R3_CONSEILS = 'R3_CONSEILS',
   R4_REFERENCE = 'R4_REFERENCE',
@@ -44,8 +44,8 @@ const ROLE_TO_PAGE_TYPE: Partial<Record<RoleId, PageType>> = {
 
 const PAGE_TYPE_TO_ROLE: Record<string, RoleId> = {
   R1_pieces: RoleId.R1_ROUTER,
-  R3_guide_howto: RoleId.R3_GUIDE,
-  R3_guide_achat: RoleId.R3_GUIDE, // LEGACY — remove after queue drain
+  R3_guide_howto: RoleId.R3_CONSEILS, // was R3_GUIDE (orphan) — remapped to R3_CONSEILS
+  R3_guide_achat: RoleId.R6_GUIDE_ACHAT, // FIX: was R3_GUIDE — this is buying guide = R6
   R3_conseils: RoleId.R3_CONSEILS,
   R4_reference: RoleId.R4_REFERENCE,
   R5_diagnostic: RoleId.R5_DIAGNOSTIC,
@@ -78,7 +78,7 @@ export const LEGACY_ROLE_ALIASES: Record<string, RoleId> = {
 };
 
 /** Role IDs forbidden in new code — ambiguous without suffix. */
-export const FORBIDDEN_ROLE_IDS = ['R3', 'R6', 'R9'] as const;
+export const FORBIDDEN_ROLE_IDS = ['R3', 'R6', 'R9', 'R3_GUIDE'] as const;
 
 /**
  * Normalize any role string (canonical, legacy, or page_type) to a RoleId.
@@ -100,7 +100,10 @@ export function normalizeRoleId(input: string): RoleId | null {
  * Throws if the string is not a canonical RoleId.
  */
 /** Canonical roles that should not appear in new output (deprecated). */
-const DEPRECATED_OUTPUT_ROLES = new Set<RoleId>([RoleId.R9_GOVERNANCE]);
+const DEPRECATED_OUTPUT_ROLES = new Set<RoleId>([
+  RoleId.R9_GOVERNANCE,
+  RoleId.R3_GUIDE,
+]);
 
 export function assertCanonicalRole(role: string): RoleId {
   const canonical = Object.values(RoleId).find((v) => v === role);

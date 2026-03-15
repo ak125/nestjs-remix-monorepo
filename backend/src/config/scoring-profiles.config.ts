@@ -20,7 +20,10 @@ export type ScoringPageType =
   | 'R1_pieces'
   | 'R3_guide'
   | 'R3_conseils'
-  | 'R4_reference';
+  | 'R4_reference'
+  | 'R5_diagnostic'
+  | 'R7_brand'
+  | 'R8_vehicle';
 
 export type DimensionName =
   | 'content_depth'
@@ -388,6 +391,9 @@ const SCORING_PAGE_TYPE_TO_ROLE_ID: Record<ScoringPageType, RoleId> = {
   R3_guide: RoleId.R6_GUIDE_ACHAT, // "guide d'achat" = R6, NOT R3
   R3_conseils: RoleId.R3_CONSEILS,
   R4_reference: RoleId.R4_REFERENCE,
+  R5_diagnostic: RoleId.R5_DIAGNOSTIC,
+  R7_brand: RoleId.R7_BRAND,
+  R8_vehicle: RoleId.R8_VEHICLE,
 };
 
 /** Convert a ScoringPageType to canonical RoleId. */

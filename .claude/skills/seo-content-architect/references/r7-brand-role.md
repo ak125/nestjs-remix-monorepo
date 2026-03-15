@@ -144,6 +144,16 @@ Cette surface est consommée ou contrôlée par :
 
 ---
 
+## Routes legacy SEO
+
+Deux points d'entrée coexistent :
+- `/constructeurs/{brand}` — route principale R7
+- `/blog-pieces-auto/constructeurs/` — index legacy conservé pour SEO
+
+Le rôle canonique interne est `R7_BRAND` pour les deux. Cette coexistence est documentée et assumée.
+
+---
+
 ## Règle finale
 
 R7 doit rester une surface d'entrée marque.

@@ -172,6 +172,14 @@ Cette surface est consommee ou controlee par :
 
 ---
 
+## Route legacy SEO
+
+La route `/blog-pieces-auto/guide-achat/{alias}` est une URL legacy conservee pour preserver le SEO.
+Le role canonique interne est `R6_GUIDE_ACHAT`, pas `R3_CONSEILS`.
+Cette decision est documentee et assumee — ce n'est pas une collision metier.
+
+---
+
 ## Regle finale
 
 Aucune ancienne etiquette de type `R3_guide_achat` ne doit etre utilisee comme identite metier d'execution.
