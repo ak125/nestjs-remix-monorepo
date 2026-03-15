@@ -1,11 +1,11 @@
-# Phase 3 — Full Structural Audit (300 tables)
+# Phase 3 — Full Structural Audit (265 tables)
 
 > **Version** : 1.5.0
 > **Date** : 2026-03-15
 > **Statut** : **CLOTURE** — Toutes vagues (2-6) terminees. 9 FK, 3 PK, 15 shadow cols, 10 tables droppees. auto_type code DEFERRED (gain nul).
 > **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 > **Methode** : `information_schema` + `pg_constraint` + `pg_stat_user_tables` + grep backend
-> **Perimetre** : toutes les tables du schema `public` (~200 tables reelles + vues materialisees)
+> **Perimetre** : toutes les 265 tables du schema `public` (177 avec donnees, 88 vides)
 > **Conventions** : evidence = measured / inferred / suspected. Aucun verdict d'action sans gate prealable.
 
 ---
@@ -14,10 +14,10 @@
 
 | Metrique | Valeur | Evidence |
 |----------|--------|----------|
-| Tables schema public | **~200** (le total de 300 inclut vues, tables auth/storage/extensions) | measured |
+| Tables schema public | **265** (342 tous schemas incl. auth/storage/extensions + 38 vues) | measured |
 | Taille totale | **~86 GB** | measured |
-| Tables avec donnees (>0 rows) | **~100** | measured |
-| Tables vides (0 rows) | **~100** | measured |
+| Tables avec donnees (>0 rows) | **177** | measured (post-cleanup 2026-03-15) |
+| Tables vides (0 rows) | **88** | measured (post-cleanup — 13 orphelines droppees) |
 | Tables sans PK | **0** (~~3~~ — toutes fixees V4a) | measured |
 | Tables avec FK | **~34** (~~25~~ + 6 Cat A + 3 Cat B/C validees) | measured |
 | Tables avec dette type TEXT | **~12** (~~15~~ — `pieces_price` fixee V4b/V5a, `auto_type` shadow cols exists) | measured |
