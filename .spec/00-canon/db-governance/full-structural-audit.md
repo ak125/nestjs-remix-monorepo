@@ -139,7 +139,7 @@
 | Video | EMPTY_OPTIONAL_FEATURE | 3 | `__video_assets/variants/templates` |
 | Monitoring | EMPTY_ORPHAN_SUSPECT | 5 | `__lighthouse_*`, `__cron_runs`, `__airlock_bundles` |
 | SEO empty | EMPTY_ORPHAN_SUSPECT | 5 | `__seo_quality_log`, `__seo_diagnostic`, ... |
-| Commerce | EMPTY_DROP_CANDIDATE | 4 | `reviews`, `support_tickets`, `error_logs`, `error_statistics` — a confirmer contre backlog produit |
+| Commerce/Support | ~~EMPTY_DROP_CANDIDATE~~ → **EMPTY_OPTIONAL_FEATURE** | 4 | `reviews` (SupportModule), `support_tickets` (SupportModule), `error_logs` (ErrorLogService + SEO), `error_statistics` (types) — **consumers confirmes, KEEP** |
 
 > **Regle** : aucune table classee EMPTY_DROP_CANDIDATE ne peut etre supprimee sans double validation :
 > 1. Absence de consumer technique (grep backend + RPCs + vues)
@@ -237,7 +237,7 @@
 | **EMPTY_STAGING_REQUIRED** | ~10 | Tables import/staging |
 | **EMPTY_OPTIONAL_FEATURE** | ~15 | Features non activees |
 | **EMPTY_ORPHAN_SUSPECT** | ~10 | A verifier par grep |
-| **EMPTY_DROP_CANDIDATE** | ~8 | 0 consumers, 0 rows |
+| **EMPTY_DROP_CANDIDATE** | **~4** | ~~8~~ — 4 reclassees OPTIONAL_FEATURE (consumers confirmes) |
 | ~~**DROP_READY**~~ | **1** | ~~3 dropped V3~~ + `__cross_gamme_car_deprecated` (drop pending) |
 | ~~**DUPLICATE_SCOPE**~~ | **0** | ~~3~~ — tous resolus V5d |
 | **NEAR_EMPTY** | ~8 | 1 row, probablement init/test |
