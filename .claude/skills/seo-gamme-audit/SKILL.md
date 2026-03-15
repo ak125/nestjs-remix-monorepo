@@ -1,15 +1,16 @@
 ---
 name: seo-gamme-audit
 description: "Audit SEO complet d'une gamme : métriques R1-R8, couverture RAG, scores qualité, vocabulaire interdit, maillage, historique, score composite, détail sections R3, actions recommandées + auto-fix. Usage : /seo-gamme-audit <pg_alias ou pg_id> [--batch top20|worst|ready] [--fix]"
-argument-hint: "<pg_alias ou pg_id> [--batch top20|worst|ready] [--fix]"
+argument-hint: "<pg_alias ou pg_id> [--batch top20|worst|ready] [--fix] [--history]"
 ---
 
-# SEO Gamme Audit — Skill v3.0
+# SEO Gamme Audit — Skill v3.3
 
 ## Usage
 - `/seo-gamme-audit filtre-a-huile` — audit complet d'une gamme
 - `/seo-gamme-audit 7` — par pg_id
 - `/seo-gamme-audit filtre-a-huile --fix` — audit + correction automatique des gaps
+- `/seo-gamme-audit filtre-a-huile --history` — historique des scores d'une gamme
 - `/seo-gamme-audit --batch top20` — 20 gammes avec le plus de gaps
 - `/seo-gamme-audit --batch worst` — gammes avec les pires scores
 - `/seo-gamme-audit --batch ready` — gammes prêtes pour publication
@@ -26,6 +27,14 @@ Utiliser l'outil `Read` pour lire les fichiers .md et parser le frontmatter YAML
 ---
 
 ## Mode single gamme
+
+### Optimisation des requêtes
+
+**IMPORTANT** : Pour minimiser les appels MCP, regrouper les étapes en 2-3 requêtes combinées :
+- **Requête A** (R1+R6+maillage+leaks+historique) : JOIN `__seo_gamme` + `__seo_gamme_purchase_guide`, colonnes R1 + R6 + ILIKE maillage + leaks en une seule requête
+- **Requête B** (R3+R4+RAG+R2+corpus+QPS) : UNION ALL de sous-requêtes R3, R4, RAG, R2, corpus moyennes, __quality_page_scores
+- **Requête C** (readiness) : `__rag_readiness`
+- **Fichiers RAG** : lire gamme .md + vérifier diagnostic .md en parallèle
 
 ### Étape 0 — Résoudre la gamme
 ```sql
@@ -89,11 +98,31 @@ FROM __rag_knowledge WHERE status = 'active' AND gamme_aliases @> ARRAY['{pg_ali
 ```
 
 ### Étape 6 — R5 diagnostic (symptômes)
-```sql
-SELECT count(*) as observables
-FROM __seo_observable WHERE pg_id = {pg_id_int};
+La table `__seo_observable` n'existe pas. Utiliser les sources alternatives :
+
+**6a** — Vérifier si le fichier diagnostic RAG existe :
 ```
-Si la table n'existe pas, mettre observables = 0 et noter "R5 table absente".
+Read /opt/automecanik/rag/knowledge/diagnostic/{pg_alias}.md
+```
+Si le fichier existe → `diag_file_exists = true`. Compter les `###` headings dans la section "Symptomes" pour estimer le nombre de symptômes documentés.
+
+**6b** — Compter les symptômes dans le fichier gamme RAG :
+```
+Read /opt/automecanik/rag/knowledge/gammes/{pg_alias}.md
+```
+Parser la section `diagnostic.symptoms[]` du frontmatter. Compter les items avec `id: S*`.
+
+**6c** — Vérifier l'article R3 conseils (contenu réel) :
+```sql
+SELECT ba_id, ba_title, ba_alias, length(ba_content) as content_len
+FROM __blog_advice WHERE ba_pg_id = '{pg_id}' LIMIT 1;
+```
+Si `content_len` = 0 ou NULL → R3 existe mais vide.
+
+**Output R5** :
+- `diag_file_exists` : oui/non
+- `rag_symptoms_count` : nombre de S* dans le fichier gamme
+- `r3_content_len` : longueur du contenu R3 (0 = vide)
 
 ### Étape 7 — R2 product (produits disponibles)
 ```sql
@@ -102,7 +131,7 @@ SELECT count(*) as product_count,
   min(pri_vente_ttc_n) as min_price, max(pri_vente_ttc_n) as max_price
 FROM pieces p
 JOIN pieces_price pp ON pp.pri_piece_id_i = p.piece_id
-WHERE p.piece_gamme_id = {pg_id_int} AND pri_vente_ttc_n > 0;
+WHERE p.piece_ga_id = {pg_id_int} AND pri_vente_ttc_n > 0;
 ```
 
 ### Étape 8 — Maillage inter-rôles (dans sg_content R1)
@@ -143,6 +172,50 @@ FROM __rag_readiness WHERE pg_alias = '{pg_alias}'
 ORDER BY canonical_role;
 ```
 
+### Étape 7b — R7 brand coverage (si table existe)
+Pas de table `__seo_r7_*` actuellement. Reporter "R7 non implémenté" et passer.
+
+### Étape 7c — R8 vehicle pages
+```sql
+SELECT count(*) as r8_pages,
+  count(DISTINCT brand) as r8_brands,
+  count(DISTINCT model) as r8_models
+FROM __seo_r8_pages
+WHERE page_key ILIKE '%{pg_alias}%' OR page_key ILIKE '%{pg_name}%';
+```
+Si 0 → "R8 aucune page véhicule pour cette gamme".
+
+### Étape 14 — Keyword coverage (depuis RAG gamme .md)
+1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`, extraire `seo_cluster.primary_keyword.text`
+2. Vérifier la présence du keyword dans :
+```sql
+SELECT
+  (sg_h1 ILIKE '%{keyword}%')::int as keyword_in_h1,
+  (sg_title ILIKE '%{keyword}%')::int as keyword_in_title,
+  (sg_descrip ILIKE '%{keyword}%')::int as keyword_in_descrip,
+  (sg_content ILIKE '%{keyword}%')::int as keyword_in_content
+FROM __seo_gamme WHERE sg_pg_id = '{pg_id}';
+```
+**Seuils** : keyword doit être dans h1 + title + content (minimum 3/4). Si < 3/4 → ⚠️ WARN.
+
+### Étape 15 — Duplication inter-rôles
+Détecter le texte copié entre surfaces. Comparer les 50 premiers mots de sg_content (R1) avec :
+- `sgpg_intro_role` (R6) — s'il y a >80% de similarité → duplication R1/R6
+- `ba_preview` (R3) — s'il y a >80% de similarité → duplication R1/R3
+
+Méthode simple : extraire les 100 premiers caractères de chaque surface et comparer manuellement.
+```sql
+SELECT
+  left(sg.sg_content, 200) as r1_start,
+  left(sgpg.sgpg_intro_role, 200) as r6_start,
+  left(ba.ba_preview, 200) as r3_start
+FROM __seo_gamme sg
+LEFT JOIN __seo_gamme_purchase_guide sgpg ON sgpg.sgpg_pg_id = sg.sg_pg_id
+LEFT JOIN __blog_advice ba ON ba.ba_pg_id = sg.sg_pg_id
+WHERE sg.sg_pg_id = '{pg_id}';
+```
+Si les débuts sont quasi-identiques → signaler "⚠️ Duplication détectée R1/R{X}".
+
 ---
 
 ## Seuils de qualité
@@ -163,6 +236,7 @@ ORDER BY canonical_role;
 | R4 | def_chars | >800 | 200-800 |
 | R4 | composition | ≥3 | 1-2 |
 | R4 | confusions | ≥3 | 1-2 |
+| R4 | role_meca | >200 | <200 |
 | R4 | regles_metier | ≥3 | 1-2 |
 | R6 | choose_len | >1000 | 200-1000 |
 | R6 | r6_score | ≥70 | 50-69 |
@@ -207,7 +281,33 @@ Pour chaque rôle existant, afficher le détail des métriques vs seuils.
 | R3→R1 (démonter) | oui/non | BLOCK/OK |
 | R2→R1 (panier) | oui/non | BLOCK/OK |
 
-### 6. Comparaison corpus
+### 6. Quality Page Scores (si disponibles)
+| Page type | Score | Gate | Status |
+|-----------|-------|------|--------|
+Afficher les scores de `__quality_page_scores` pour ce pg_id. Si aucun score → "Aucun score QPS — lancer compute-quality-scores".
+
+### 7. R8 vehicle pages
+| Métrique | Valeur |
+|----------|--------|
+| Pages R8 | {count} |
+| Marques | {brands} |
+| Modèles | {models} |
+Si 0 → "Aucune page véhicule R8 pour cette gamme".
+
+### 8. Keyword coverage
+| Cible | h1 | title | descrip | content |
+|-------|-----|-------|---------|---------|
+| {keyword} | ✅/❌ | ✅/❌ | ✅/❌ | ✅/❌ |
+
+Score : {N}/4 — si < 3 → ⚠️ WARN
+
+### 9. Duplication inter-rôles
+| Paire | Détectée | Sévérité |
+|-------|----------|----------|
+| R1/R6 | oui/non | WARN/OK |
+| R1/R3 | oui/non | WARN/OK |
+
+### 10. Comparaison corpus
 | Métrique | Cette gamme | Moyenne corpus | Delta |
 |----------|------------|---------------|-------|
 | R1 chars | X | Y | +/-Z% |
@@ -258,22 +358,34 @@ Générer automatiquement les actions selon les gaps :
 
 ## Mode batch
 
-### `--batch top20` — Gammes avec le plus de gaps
+### Étape 0b — Charger les gammes actives du catalogue
+
+**IMPORTANT** : Les gammes actives sont celles retournées par l'API catalog families (221 gammes), PAS les 9682 entrées de `pieces_gamme`.
+
+```bash
+# Extraire les pg_id actifs
+curl -s http://localhost:3000/api/catalog/families | jq '[.families[].gammes[].pg_id] | unique | join(",")' -r
+```
+
+Stocker la liste de pg_ids pour filtrer toutes les requêtes batch.
+Si l'API n'est pas disponible, utiliser le filtre SQL : `WHERE pg.pg_id IN (SELECT DISTINCT sg_pg_id::int FROM __seo_gamme WHERE sg_content IS NOT NULL)` comme fallback.
+
+### `--batch top20` — Gammes actives avec le plus de gaps
 ```sql
 SELECT pg.pg_alias, pg.pg_id,
   CASE WHEN sg.sg_content IS NOT NULL AND sg.sg_content != '' THEN 1 ELSE 0 END as has_r1,
   (SELECT count(*) FROM __seo_gamme_conseil sgc WHERE sgc.sgc_pg_id = pg.pg_id::text AND sgc.sgc_content IS NOT NULL) as r3_sections,
   CASE WHEN EXISTS (SELECT 1 FROM __seo_reference r WHERE r.pg_id = pg.pg_id) THEN 1 ELSE 0 END as has_r4,
   (SELECT count(*) FROM __rag_knowledge rk WHERE rk.gamme_aliases @> ARRAY[pg.pg_alias] AND rk.status = 'active') as rag_docs,
-  (SELECT count(*) FROM pieces p WHERE p.piece_gamme_id = pg.pg_id) as products
+  (SELECT count(*) FROM pieces p WHERE p.piece_ga_id = pg.pg_id) as products
 FROM pieces_gamme pg
 LEFT JOIN __seo_gamme sg ON sg.sg_pg_id = pg.pg_id::text
-WHERE EXISTS (SELECT 1 FROM pieces p WHERE p.piece_gamme_id = pg.pg_id)
+WHERE pg.pg_id IN ({active_pg_ids})
 ORDER BY rag_docs ASC, has_r1 ASC, r3_sections ASC
 LIMIT 20;
 ```
 
-### `--batch worst` — Gammes avec les pires scores R3
+### `--batch worst` — Gammes actives avec les pires scores R3
 ```sql
 SELECT pg.pg_alias, pg.pg_id,
   min(sgc.sgc_quality_score) as worst_r3_score,
@@ -281,13 +393,13 @@ SELECT pg.pg_alias, pg.pg_id,
   (SELECT count(*) FROM __rag_knowledge rk WHERE rk.gamme_aliases @> ARRAY[pg.pg_alias] AND rk.status = 'active') as rag_docs
 FROM pieces_gamme pg
 JOIN __seo_gamme_conseil sgc ON sgc.sgc_pg_id = pg.pg_id::text
-WHERE sgc.sgc_quality_score IS NOT NULL
+WHERE sgc.sgc_quality_score IS NOT NULL AND pg.pg_id IN ({active_pg_ids})
 GROUP BY pg.pg_alias, pg.pg_id
 ORDER BY worst_r3_score ASC
 LIMIT 20;
 ```
 
-### `--batch ready` — Gammes prêtes pour publication
+### `--batch ready` — Gammes actives prêtes pour publication
 ```sql
 SELECT pg.pg_alias, pg.pg_id,
   length(sg.sg_content) as r1_chars,
@@ -297,7 +409,7 @@ SELECT pg.pg_alias, pg.pg_id,
   (SELECT count(*) FROM __rag_knowledge rk WHERE rk.gamme_aliases @> ARRAY[pg.pg_alias] AND rk.status = 'active') as rag_docs
 FROM pieces_gamme pg
 JOIN __seo_gamme sg ON sg.sg_pg_id = pg.pg_id::text
-WHERE sg.sg_content IS NOT NULL AND length(sg.sg_content) > 500
+WHERE sg.sg_content IS NOT NULL AND length(sg.sg_content) > 500 AND pg.pg_id IN ({active_pg_ids})
 ORDER BY r3_sections DESC, rag_docs DESC
 LIMIT 20;
 ```
@@ -369,31 +481,32 @@ Calculer un score unique par gamme pour classer les gammes entre elles.
 score_composite = R1_score * 0.20 + R3_score * 0.25 + R4_score * 0.15 + R6_score * 0.20 + RAG_score * 0.20
 ```
 
-### Calcul par rôle
+### Calcul par rôle — Préférer __quality_page_scores (QPS)
+
+Vérifier d'abord si des scores QPS existent pour cette gamme :
+```sql
+SELECT page_type, quality_score FROM __quality_page_scores WHERE pg_id = {pg_id};
+```
 
 **R1_score** (sur 100) :
-- (chars > 500) → +30
-- (words >= 80) → +20
-- (sections >= 3) → +20
-- (links >= 3) → +15
-- (h1_len <= 70) → +15
+- Si QPS `R1_pieces` existe → utiliser `quality_score` directement
+- Sinon fallback manuel : (chars > 500) +30, (words >= 80) +20, (sections >= 3) +20, (links >= 3) +15, (h1_len <= 70) +15
 - Si R1 absent → 0
 
 **R3_score** (sur 100) :
-- Si `sgc_quality_score` dispo → utiliser `avg_quality` directement
+- Si QPS `R3_conseils` existe → utiliser `quality_score`
+- Sinon si `sgc_quality_score` dispo → utiliser `avg_quality`
 - Sinon → `(sections / 8) * 50 + min(total_chars / 5000, 1) * 50`
 - Si R3 absent → 0
 
 **R4_score** (sur 100) :
-- (def_chars > 200) → +30
-- (composition >= 3) → +20
-- (confusions >= 3) → +20
-- (regles_metier >= 3) → +20
-- (scope_chars > 0) → +10
+- Si QPS `R4_reference` existe → utiliser `quality_score`
+- Sinon fallback : (def_chars > 200) +30, (composition >= 3) +20, (confusions >= 3) +20, (regles_metier >= 3) +20, (scope_chars > 0) +10
 - Si R4 absent → 0
 
 **R6_score** (sur 100) :
-- Si `gatekeeper_score` dispo → utiliser directement
+- Si QPS `R3_guide` existe → utiliser `quality_score` (note: R6 guide achat = R3_guide dans QPS)
+- Sinon si `gatekeeper_score` dispo → utiliser directement
 - Sinon → `(choose_len > 1000) * 50 + (intro_len > 100) * 25 + (risk_len > 100) * 25`
 - Si R6 absent → 0
 
@@ -441,11 +554,13 @@ WHERE gamme_aliases @> ARRAY['{pg_alias}']
 Reporter le nombre de docs quarantinées.
 
 ### Fix 2 — Sync confusions RAG → __seo_reference
-**Condition** : R4 confusion_items < 3 ET fichier RAG a plus de confusions
-1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`
-2. Parser `domain.confusion_with[]` dans le frontmatter YAML
-3. Comparer avec `confusions_courantes` dans `__seo_reference`
-4. Pour chaque confusion manquante en DB :
+**Condition** : R4 confusion_items < 3
+
+**Étape 1** : Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`, parser `domain.confusion_with[]`.
+**Étape 2** : Comparer avec `confusions_courantes` dans `__seo_reference`.
+**Étape 3** : Si RAG a plus de confusions que DB → array_append les manquantes.
+**Étape 4** : Si après sync on a toujours < 3, utiliser le dictionnaire ci-dessous pour proposer une confusion pertinente par domaine.
+
 ```sql
 UPDATE __seo_reference
 SET confusions_courantes = array_append(confusions_courantes,
@@ -453,6 +568,34 @@ SET confusions_courantes = array_append(confusions_courantes,
 WHERE pg_id = {pg_id}
   AND NOT (confusions_courantes @> ARRAY['{term} : {difference}']);
 ```
+
+**Dictionnaire de confusions candidates par domaine** (à utiliser quand RAG insuffisant) :
+
+| Domaine | Confusion candidate | Différence |
+|---------|-------------------|------------|
+| freinage | disque de frein ≠ disque d'embrayage | Le disque de frein ralentit le véhicule, le disque d'embrayage transmet le couple moteur |
+| freinage | plaquette ≠ garniture de frein à tambour | La plaquette est externe (étrier), la garniture est interne (tambour) |
+| filtration | filtre à huile moteur ≠ filtre à huile boîte | Le filtre moteur filtre l'huile de lubrification, le filtre boîte filtre l'huile de transmission |
+| filtration | filtre à air moteur ≠ filtre d'habitacle | Le filtre moteur filtre l'air admission, le filtre habitacle filtre l'air ventilation |
+| suspension | amortisseur ≠ ressort | L'amortisseur freine les oscillations, le ressort supporte le poids du véhicule |
+| suspension | rotule ≠ silent-bloc | La rotule autorise la rotation, le silent-bloc absorbe les vibrations |
+| distribution | courroie de distribution ≠ courroie d'accessoires | La distribution synchronise le moteur, les accessoires entraînent alternateur/clim/DA |
+| embrayage | disque d'embrayage ≠ volant moteur | Le disque transmet le couple, le volant lisse les à-coups moteur |
+| allumage | bougie d'allumage ≠ bougie de préchauffage | L'allumage enflamme le mélange essence, le préchauffage chauffe la chambre diesel |
+| refroidissement | thermostat ≠ calorstat | Synonymes (le calorstat est l'ancien terme pour thermostat) |
+| direction | crémaillère ≠ boîtier de direction | La crémaillère est à pignon, le boîtier est à vis (véhicules anciens/utilitaires) |
+| échappement | catalyseur ≠ filtre à particules | Le catalyseur traite les gaz (CO, NOx), le FAP retient les particules solides |
+
+### Fix 2bis — Sync confusion vers fichier RAG .md (bidirectionnel)
+**Condition** : une confusion a été ajoutée en DB par Fix 2 mais n'existe pas dans le fichier gamme .md
+1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`
+2. Si la confusion ajoutée en DB n'est pas dans `domain.confusion_with[]` du frontmatter
+3. Ajouter l'entrée dans le fichier .md via `Edit` :
+```yaml
+    - term: {term}
+      difference: {difference}
+```
+Cela garantit la cohérence RAG ↔ DB.
 
 ### Fix 3 — Maillage R1 (liens manquants)
 **Condition** : has_link_rX = 0 ET la surface cible existe
@@ -522,21 +665,34 @@ curl -s -X POST http://localhost:3000/api/internal/buying-guides/compute-quality
 Note : score toutes les gammes. En mode batch, n'exécuter qu'une seule fois.
 
 ### Fix 6 — Sync timing depuis RAG
-**Condition** : sgpg_timing_km IS NULL ET fichier RAG a maintenance.interval
-1. Lire le fichier gamme .md, section `maintenance.interval`
-2. Si `interval.value` existe :
+**Condition** : sgpg_timing_km IS NULL OU sgpg_timing_years IS NULL
+1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`, section `maintenance.interval`
+2. Extraire `interval.value` (ex: "10000-30000 km") → sgpg_timing_km
+3. Extraire les années depuis `interval.note` : chercher le pattern `X an(s)` ou `X-Y ans` dans la note. Exemples :
+   - "Essence 10 000 km ou 1 an" → "1 an"
+   - "Se change à chaque vidange" + intervalle 60000-80000 km → estimer "4-5 ans" (60000÷15000/an)
+   - Si note mentionne "Longlife" → "2-3 ans"
+4. Si aucune info années dans le RAG, estimer : `timing_years = round(timing_km_max / 15000)` ans (base 15000 km/an usage mixte)
 ```sql
 UPDATE __seo_gamme_purchase_guide
-SET sgpg_timing_km = '{interval_value}',
-    sgpg_timing_years = '{interval_years_extracted}'
-WHERE sgpg_pg_id = '{pg_id}' AND sgpg_timing_km IS NULL;
+SET sgpg_timing_km = COALESCE(sgpg_timing_km, '{interval_value}'),
+    sgpg_timing_years = COALESCE(sgpg_timing_years, '{years_estimated}')
+WHERE sgpg_pg_id = '{pg_id}';
 ```
 
 ### Fix 7 — Enrichir role_mecanique court
 **Condition** : role_meca_chars < 200 ET fichier RAG a domain.role + must_be_true
-1. Lire le fichier gamme .md
-2. Combiner `domain.role` + `domain.must_be_true[]` + `domain.related_parts[]`
-3. Générer un texte technique de ~300-500c décrivant le fonctionnement mécanique
+
+1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`
+2. Extraire : `domain.role`, `domain.must_be_true[]`, `domain.related_parts[]`, `domain.norms[]`
+3. Rédiger un texte technique de 400-700c qui inclut :
+   - **Position dans le système** : où la pièce s'insère (ex: "entre la pompe et les organes moteur")
+   - **Principe de fonctionnement** : comment elle agit (friction, filtration, transmission, etc.)
+   - **Paramètres clés** : valeurs numériques si dispo (pression, température, vitesse)
+   - **Variantes** : types principaux (ventilé/plein, spin-on/cartouche, etc.)
+   - **Interaction pièces** : lien avec related_parts (1-2 phrases)
+   - **Norme** : si norms[] existe, mentionner (ex: "conforme ECE R90")
+4. Style : technique, factuel, pas de conseil achat ni de diagnostic
 ```sql
 UPDATE __seo_reference
 SET role_mecanique = '{enriched_role_text}'
@@ -562,6 +718,28 @@ verification_status: verified
 ```
 4. Écrire via l'outil `Write` dans `/opt/automecanik/rag/knowledge/diagnostic/{pg_alias}.md`
 
+### Fix 9 — Enrichir risk_explanation court
+**Condition** : risk_len < 100
+1. Lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`, section `diagnostic.causes[]`
+2. Rédiger une explication de risque de 100-200c basée sur les causes et conséquences
+3. Style : factuel, conséquences techniques, pas alarmiste
+```sql
+UPDATE __seo_gamme_purchase_guide
+SET sgpg_risk_explanation = '{enriched_risk}'
+WHERE sgpg_pg_id = '{pg_id}' AND length(sgpg_risk_explanation) < 100;
+```
+
+### Fix 10 — Force-enrich après corrections
+**Condition** : au moins 1 fix appliqué (fixes_applied > 0)
+Lancer le force-enrich pour régénérer le contenu avec les données corrigées :
+```bash
+curl -s -X POST http://localhost:3000/api/admin/rag/pdf-merge/force-enrich \
+  -b tests-curl/.cookies \
+  -H "Content-Type: application/json" \
+  -d '{"pgAlias":"{pg_alias}"}'
+```
+Note : en mode batch, regrouper les force-enrich à la fin (pas après chaque gamme).
+
 ---
 
 ## Rapport fix (après Étape 13)
@@ -578,6 +756,8 @@ Afficher un tableau récapitulatif des corrections appliquées :
 | 6. Timing sync | ✅/⏭️ | km={val}, years={val} |
 | 7. Role mécanique | ✅/⏭️ | {old_len}c → {new_len}c |
 | 8. Fichier diagnostic | ✅/⏭️ | créé/existant |
+| 9. Risk explanation | ✅/⏭️ | {old_len}c → {new_len}c |
+| 10. Force-enrich | ✅/⏭️ | queued / aucun fix appliqué |
 
 Légende : ✅ = corrigé, ⏭️ = pas nécessaire (déjà conforme)
 
@@ -585,4 +765,59 @@ Puis relancer le calcul du score composite pour montrer l'amélioration :
 ```
 Score avant fix : {old_score}/100
 Score après fix : {new_score}/100 (+{delta})
+```
+
+---
+
+## Étape 16 — Stocker l'audit en DB
+
+Après chaque audit (avec ou sans --fix), sauvegarder le résultat :
+```sql
+INSERT INTO __seo_audit_history (pg_id, pg_alias, audit_date, composite_score, r1_score, r3_score, r4_score, r6_score, rag_score, overall_readiness, fixes_applied, skill_version)
+VALUES ({pg_id}, '{pg_alias}', now(), {composite_score}, {r1_score}, {r3_score}, {r4_score}, {r6_score}, {rag_score}, '{overall_readiness}', {fixes_applied}, 'v3.3')
+ON CONFLICT DO NOTHING;
+```
+
+Si la table n'existe pas, la créer :
+```sql
+CREATE TABLE IF NOT EXISTS __seo_audit_history (
+  id SERIAL PRIMARY KEY,
+  pg_id INTEGER NOT NULL,
+  pg_alias TEXT NOT NULL,
+  audit_date TIMESTAMPTZ DEFAULT now(),
+  composite_score INTEGER,
+  r1_score INTEGER,
+  r3_score INTEGER,
+  r4_score INTEGER,
+  r6_score INTEGER,
+  rag_score INTEGER,
+  overall_readiness TEXT,
+  fixes_applied INTEGER DEFAULT 0,
+  skill_version TEXT DEFAULT 'v3.3'
+);
+```
+
+---
+
+## Mode --history
+
+Si `--history` est passé, afficher l'historique des scores au lieu de l'audit complet :
+```sql
+SELECT audit_date, composite_score, r1_score, r3_score, r4_score, r6_score, rag_score, overall_readiness, fixes_applied, skill_version
+FROM __seo_audit_history
+WHERE pg_alias = '{pg_alias}'
+ORDER BY audit_date DESC
+LIMIT 10;
+```
+
+### Output --history
+```
+## Historique SEO — {pg_name} ({pg_alias})
+
+| Date | Score | R1 | R3 | R4 | R6 | RAG | Readiness | Fixes | Version |
+|------|-------|----|----|----|----|-----|-----------|-------|---------|
+| 2026-03-15 | 95 | 100 | 91 | 100 | 88 | 100 | READY | 0 | v3.3 |
+| 2026-03-14 | 79 | 85 | 91 | 60 | 70 | 75 | NEEDS_WORK | 5 | v3.0 |
+
+Tendance : ↗️ +16 pts sur 1 jour
 ```
