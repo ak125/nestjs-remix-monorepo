@@ -19,7 +19,7 @@
 | Tables avec donnees (>0 rows) | **~100** | measured |
 | Tables vides (0 rows) | **~100** | measured |
 | Tables sans PK | **0** (~~3~~ — toutes fixees V4a) | measured |
-| Tables avec FK | **~31** (~~25~~ + 6 FK Cat A validees V4c) | measured |
+| Tables avec FK | **~34** (~~25~~ + 6 Cat A + 3 Cat B/C validees) | measured |
 | Tables avec dette type TEXT | **~12** (~~15~~ — `pieces_price` fixee V4b/V5a, `auto_type` shadow cols exists) | measured |
 
 ### Problemes critiques (P0)
@@ -45,10 +45,10 @@
 
 | Table | Taille | Rows | PK | FK | ID TEXT | Prix TEXT | SoT | MassDoc Role | Verdict | Gate | Readiness MassDoc |
 |-------|--------|------|----|----|--------|----------|-----|-------------|---------|------|-----------------|
-| pieces_relation_criteria | 33 GB | 157M | ✓ | 0 | 0 | 0 | source | source_catalog | OK | ready | ready |
+| pieces_relation_criteria | 33 GB | 157M | ✓ | **1** | 0 | 0 | source | source_catalog | ✅ FK DONE (rcp_type_id→auto_type) | ready | **ready** |
 | pieces_ref_search | 16 GB | 73M | ✓ | **1** | 0 | 0 | derived | derived | ✅ FK DONE | ready | **ready** |
 | ___xtr_msg | 11 GB | 15M | ✓ | 0 | **7** | 0 | legacy | non_tecdoc | TYPE_MIGRATION_REQUIRED | needs_validation | out_of_scope |
-| pieces_relation_type | 9.7 GB | 146M | ✓ | 0 | 0 | 0 | source | source_catalog | ✅ PK DONE | ready | **ready** |
+| pieces_relation_type | 9.7 GB | 146M | ✓ | **2** | 0 | 0 | source | source_catalog | ✅ PK+FK DONE | ready | **ready** |
 | pieces_criteria | 5.4 GB | 17.6M | ✓ | **1** | **5** | 0 | source | source_catalog | ✅ FK DONE (IDs TEXT deferred) | ready | **ready** |
 | pieces | 1.4 GB | 4M | ✓ | **2** | 0 | 0 | **source** | source_catalog | REFERENCE | ready | **ready** |
 | pieces_media_img | 953 MB | 4.6M | ✓ | **1** | 0 | 0 | source | source_catalog | ✅ PK+FK DONE | ready | **ready** |
@@ -205,22 +205,16 @@
 
 > 6 FK vers `pieces(piece_id)` via shadow cols INTEGER. Code backend migre (V5a/V5b). 707 orphelins supprimes prealablement.
 
-### Categorie B — Naming coherent, validation type/cardinalite manquante
+### Categorie B+C — ✅ DONE (FK ajoutees, validation pg_cron en cours)
 
-| Table source | Colonne | Table cible | Colonne cible | Evidence |
-|-------------|---------|-------------|---------------|----------|
-| pieces_relation_criteria | rcp_type_id | pieces_relation_type | rtp_type_id | inferred (F4 perf-findings.md) |
-| pieces_relation_type | rtp_piece_id | pieces | piece_id | inferred (naming) |
+| Table source | Colonne | Table cible | Colonne cible | FK constraint | Status |
+|-------------|---------|-------------|---------------|---------------|--------|
+| pieces_relation_criteria | rcp_type_id | auto_type | type_id_i | fk_pieces_relation_criteria_type | ✅ NOT VALID (validating via pg_cron) |
+| pieces_relation_type | rtp_piece_id | pieces | piece_id | fk_pieces_relation_type_piece | ✅ NOT VALID (validating via pg_cron) |
+| pieces_relation_type | rtp_type_id | auto_type | type_id_i | fk_pieces_relation_type_type | ✅ NOT VALID (validating via pg_cron) |
 
-> Jointures utilisees dans le hot path RPC. Cibles probables mais types a verifier (TEXT vs INT).
-
-### Categorie C — Cible non confirmee
-
-| Table source | Colonne | Cible supposee | Probleme | Evidence |
-|-------------|---------|---------------|----------|----------|
-| pieces_relation_type | rtp_type_id | ? | Cible non identifiee formellement | suspected |
-
-> Necessite grep backend + analyse RPC pour identifier la table cible.
+> Tous INTEGER→INTEGER, 0 orphelins (sampled). UNIQUE index `idx_auto_type_type_id_i_unique` cree sur auto_type(type_id_i) comme cible FK.
+> Validation en background via pg_cron (146M + 157M rows).
 
 **Rappel** : toute FK ajoutee utilisera le pattern `NOT VALID` + `VALIDATE` en background (zero lock).
 
@@ -234,8 +228,8 @@
 | **TYPE_MIGRATION_REQUIRED** | **~12** | Shadow columns (TEXT → type natif) — `auto_type` code deferred, `___xtr_*` out_of_scope |
 | ~~**PK_STRATEGY_REQUIRED**~~ | **0** | ~~3~~ — toutes fixees V4a |
 | ~~**FK_CANDIDATE_A**~~ | **0** | ~~6~~ — toutes validees V4c |
-| **FK_CANDIDATE_B** | 2 | FK probables, verification types prealable |
-| **FK_CANDIDATE_C** | 1 | FK incertaines, cible a identifier |
+| ~~**FK_CANDIDATE_B**~~ | **0** | ~~2~~ — resolues (rtp_piece_id→pieces, rcp_type_id→auto_type) |
+| ~~**FK_CANDIDATE_C**~~ | **0** | ~~1~~ — resolue (rtp_type_id→auto_type.type_id_i) |
 | **EMPTY_ACTIVE_DESIGN** | ~25 | Tables vides, infrastructure deployee |
 | **EMPTY_STAGING_REQUIRED** | ~10 | Tables import/staging |
 | **EMPTY_OPTIONAL_FEATURE** | ~15 | Features non activees |
