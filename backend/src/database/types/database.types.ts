@@ -3910,6 +3910,7 @@ export type Database = {
       };
       __quality_page_scores: {
         Row: {
+          canonical_role: string | null;
           computed_at: string;
           confidence_score: number;
           features: Json;
@@ -3927,6 +3928,7 @@ export type Database = {
           subscores: Json;
         };
         Insert: {
+          canonical_role?: string | null;
           computed_at?: string;
           confidence_score?: number;
           features?: Json;
@@ -3944,6 +3946,7 @@ export type Database = {
           subscores?: Json;
         };
         Update: {
+          canonical_role?: string | null;
           computed_at?: string;
           confidence_score?: number;
           features?: Json;
@@ -4236,12 +4239,14 @@ export type Database = {
       };
       __rag_knowledge: {
         Row: {
+          business_pool_admissible: boolean | null;
           category: string | null;
           content: string;
           content_tsv: unknown;
           created_at: string | null;
           domain: string | null;
           fingerprint: string | null;
+          foundation_gate_passed: boolean | null;
           gamme_aliases: string[] | null;
           id: string;
           quarantine_reason: string | null;
@@ -4251,14 +4256,17 @@ export type Database = {
           title: string;
           truth_level: string;
           updated_at: string | null;
+          usage_level: string | null;
         };
         Insert: {
+          business_pool_admissible?: boolean | null;
           category?: string | null;
           content: string;
           content_tsv?: unknown;
           created_at?: string | null;
           domain?: string | null;
           fingerprint?: string | null;
+          foundation_gate_passed?: boolean | null;
           gamme_aliases?: string[] | null;
           id?: string;
           quarantine_reason?: string | null;
@@ -4268,14 +4276,17 @@ export type Database = {
           title: string;
           truth_level?: string;
           updated_at?: string | null;
+          usage_level?: string | null;
         };
         Update: {
+          business_pool_admissible?: boolean | null;
           category?: string | null;
           content?: string;
           content_tsv?: unknown;
           created_at?: string | null;
           domain?: string | null;
           fingerprint?: string | null;
+          foundation_gate_passed?: boolean | null;
           gamme_aliases?: string[] | null;
           id?: string;
           quarantine_reason?: string | null;
@@ -4285,6 +4296,55 @@ export type Database = {
           title?: string;
           truth_level?: string;
           updated_at?: string | null;
+          usage_level?: string | null;
+        };
+        Relationships: [];
+      };
+      __rag_readiness: {
+        Row: {
+          blocks_available: Json | null;
+          blocks_missing: Json | null;
+          canonical_role: string;
+          contamination_flags: Json | null;
+          evaluated_at: string | null;
+          freshness_status: string | null;
+          id: number;
+          pg_alias: string;
+          pg_id: number | null;
+          rag_doc_count: number | null;
+          readiness_status: string;
+          role_score: number | null;
+          usage_level: string | null;
+        };
+        Insert: {
+          blocks_available?: Json | null;
+          blocks_missing?: Json | null;
+          canonical_role: string;
+          contamination_flags?: Json | null;
+          evaluated_at?: string | null;
+          freshness_status?: string | null;
+          id?: number;
+          pg_alias: string;
+          pg_id?: number | null;
+          rag_doc_count?: number | null;
+          readiness_status?: string;
+          role_score?: number | null;
+          usage_level?: string | null;
+        };
+        Update: {
+          blocks_available?: Json | null;
+          blocks_missing?: Json | null;
+          canonical_role?: string;
+          contamination_flags?: Json | null;
+          evaluated_at?: string | null;
+          freshness_status?: string | null;
+          id?: number;
+          pg_alias?: string;
+          pg_id?: number | null;
+          rag_doc_count?: number | null;
+          readiness_status?: string;
+          role_score?: number | null;
+          usage_level?: string | null;
         };
         Relationships: [];
       };
@@ -5659,6 +5719,7 @@ export type Database = {
       __seo_page_brief: {
         Row: {
           angles_obligatoires: Json | null;
+          canonical_role: string | null;
           confidence_score: number | null;
           content_type: string | null;
           coverage_score: number | null;
@@ -5691,6 +5752,7 @@ export type Database = {
         };
         Insert: {
           angles_obligatoires?: Json | null;
+          canonical_role?: string | null;
           confidence_score?: number | null;
           content_type?: string | null;
           coverage_score?: number | null;
@@ -5723,6 +5785,7 @@ export type Database = {
         };
         Update: {
           angles_obligatoires?: Json | null;
+          canonical_role?: string | null;
           confidence_score?: number | null;
           content_type?: string | null;
           coverage_score?: number | null;
@@ -8451,12 +8514,17 @@ export type Database = {
           type_display: string | null;
           type_engine: string | null;
           type_fuel: string | null;
-          type_id: string;
+          type_id: number | null;
+          type_id_text: string;
           type_liter: string | null;
-          type_marque_id: string | null;
-          type_modele_id: string | null;
-          type_month_from: string | null;
-          type_month_to: string | null;
+          type_marque_id: number | null;
+          type_marque_id_text: string | null;
+          type_modele_id: number | null;
+          type_modele_id_text: string | null;
+          type_month_from: number | null;
+          type_month_from_text: string | null;
+          type_month_to: number | null;
+          type_month_to_text: string | null;
           type_name: string | null;
           type_name_meta: string | null;
           type_name_url: string | null;
@@ -8464,9 +8532,12 @@ export type Database = {
           type_power_ps: string | null;
           type_relfollow: string | null;
           type_sort: string | null;
-          type_tmf_id: string | null;
-          type_year_from: string | null;
-          type_year_to: string | null;
+          type_tmf_id: number | null;
+          type_tmf_id_text: string | null;
+          type_year_from: number | null;
+          type_year_from_text: string | null;
+          type_year_to: number | null;
+          type_year_to_text: string | null;
         };
         Insert: {
           type_alias?: string | null;
@@ -8474,12 +8545,17 @@ export type Database = {
           type_display?: string | null;
           type_engine?: string | null;
           type_fuel?: string | null;
-          type_id: string;
+          type_id?: number | null;
+          type_id_text: string;
           type_liter?: string | null;
-          type_marque_id?: string | null;
-          type_modele_id?: string | null;
-          type_month_from?: string | null;
-          type_month_to?: string | null;
+          type_marque_id?: number | null;
+          type_marque_id_text?: string | null;
+          type_modele_id?: number | null;
+          type_modele_id_text?: string | null;
+          type_month_from?: number | null;
+          type_month_from_text?: string | null;
+          type_month_to?: number | null;
+          type_month_to_text?: string | null;
           type_name?: string | null;
           type_name_meta?: string | null;
           type_name_url?: string | null;
@@ -8487,9 +8563,12 @@ export type Database = {
           type_power_ps?: string | null;
           type_relfollow?: string | null;
           type_sort?: string | null;
-          type_tmf_id?: string | null;
-          type_year_from?: string | null;
-          type_year_to?: string | null;
+          type_tmf_id?: number | null;
+          type_tmf_id_text?: string | null;
+          type_year_from?: number | null;
+          type_year_from_text?: string | null;
+          type_year_to?: number | null;
+          type_year_to_text?: string | null;
         };
         Update: {
           type_alias?: string | null;
@@ -8497,12 +8576,17 @@ export type Database = {
           type_display?: string | null;
           type_engine?: string | null;
           type_fuel?: string | null;
-          type_id?: string;
+          type_id?: number | null;
+          type_id_text?: string;
           type_liter?: string | null;
-          type_marque_id?: string | null;
-          type_modele_id?: string | null;
-          type_month_from?: string | null;
-          type_month_to?: string | null;
+          type_marque_id?: number | null;
+          type_marque_id_text?: string | null;
+          type_modele_id?: number | null;
+          type_modele_id_text?: string | null;
+          type_month_from?: number | null;
+          type_month_from_text?: string | null;
+          type_month_to?: number | null;
+          type_month_to_text?: string | null;
           type_name?: string | null;
           type_name_meta?: string | null;
           type_name_url?: string | null;
@@ -8510,9 +8594,12 @@ export type Database = {
           type_power_ps?: string | null;
           type_relfollow?: string | null;
           type_sort?: string | null;
-          type_tmf_id?: string | null;
-          type_year_from?: string | null;
-          type_year_to?: string | null;
+          type_tmf_id?: number | null;
+          type_tmf_id_text?: string | null;
+          type_year_from?: number | null;
+          type_year_from_text?: string | null;
+          type_year_to?: number | null;
+          type_year_to_text?: string | null;
         };
         Relationships: [];
       };
@@ -11328,7 +11415,8 @@ export type Database = {
           pc_has_txt: string;
           pc_pg_id: string;
           pc_pg_pid: string;
-          pc_piece_id: string;
+          pc_piece_id: number | null;
+          pc_piece_id_text: string;
           pc_sort: string;
           pc_update_value: string;
         };
@@ -11340,7 +11428,8 @@ export type Database = {
           pc_has_txt: string;
           pc_pg_id: string;
           pc_pg_pid: string;
-          pc_piece_id: string;
+          pc_piece_id?: number | null;
+          pc_piece_id_text: string;
           pc_sort?: string;
           pc_update_value?: string;
         };
@@ -11352,11 +11441,27 @@ export type Database = {
           pc_has_txt?: string;
           pc_pg_id?: string;
           pc_pg_pid?: string;
-          pc_piece_id?: string;
+          pc_piece_id?: number | null;
+          pc_piece_id_text?: string;
           pc_sort?: string;
           pc_update_value?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'fk_pieces_criteria_piece_i';
+            columns: ['pc_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'pieces';
+            referencedColumns: ['piece_id'];
+          },
+          {
+            foreignKeyName: 'fk_pieces_criteria_piece_i';
+            columns: ['pc_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_pieces_seo_safe';
+            referencedColumns: ['piece_id'];
+          },
+        ];
       };
       pieces_criteria_group: {
         Row: {
@@ -11587,25 +11692,43 @@ export type Database = {
         Row: {
           pli_ga_id: string | null;
           pli_piece_component: string;
-          pli_piece_id: string;
+          pli_piece_id: number | null;
+          pli_piece_id_text: string;
           pli_quantity: string;
           pli_sort: string;
         };
         Insert: {
           pli_ga_id?: string | null;
           pli_piece_component: string;
-          pli_piece_id: string;
+          pli_piece_id?: number | null;
+          pli_piece_id_text: string;
           pli_quantity: string;
           pli_sort: string;
         };
         Update: {
           pli_ga_id?: string | null;
           pli_piece_component?: string;
-          pli_piece_id?: string;
+          pli_piece_id?: number | null;
+          pli_piece_id_text?: string;
           pli_quantity?: string;
           pli_sort?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'fk_pieces_list_piece_i';
+            columns: ['pli_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'pieces';
+            referencedColumns: ['piece_id'];
+          },
+          {
+            foreignKeyName: 'fk_pieces_list_piece_i';
+            columns: ['pli_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_pieces_seo_safe';
+            referencedColumns: ['piece_id'];
+          },
+        ];
       };
       pieces_marque: {
         Row: {
@@ -11668,169 +11791,250 @@ export type Database = {
         Row: {
           pmi_display: string | null;
           pmi_folder: string;
-          pmi_name: string | null;
-          pmi_piece_id: string;
+          pmi_name: string;
+          pmi_piece_id: number | null;
+          pmi_piece_id_text: string;
           pmi_pm_id: string;
           pmi_sort: string | null;
         };
         Insert: {
           pmi_display?: string | null;
           pmi_folder: string;
-          pmi_name?: string | null;
-          pmi_piece_id: string;
+          pmi_name: string;
+          pmi_piece_id?: number | null;
+          pmi_piece_id_text: string;
           pmi_pm_id: string;
           pmi_sort?: string | null;
         };
         Update: {
           pmi_display?: string | null;
           pmi_folder?: string;
-          pmi_name?: string | null;
-          pmi_piece_id?: string;
+          pmi_name?: string;
+          pmi_piece_id?: number | null;
+          pmi_piece_id_text?: string;
           pmi_pm_id?: string;
           pmi_sort?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'fk_pieces_media_img_piece_i';
+            columns: ['pmi_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'pieces';
+            referencedColumns: ['piece_id'];
+          },
+          {
+            foreignKeyName: 'fk_pieces_media_img_piece_i';
+            columns: ['pmi_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_pieces_seo_safe';
+            referencedColumns: ['piece_id'];
+          },
+        ];
       };
       pieces_price: {
         Row: {
-          pri_achat_ht: string | null;
+          pri_achat_ht: number | null;
+          pri_achat_ht_text: string | null;
           pri_code_fam_nu: string | null;
           pri_code_metier: string | null;
           pri_code_remise: string | null;
           pri_code_sfam_nu: string | null;
-          pri_consigne_ht: string | null;
-          pri_consigne_ttc: string | null;
+          pri_consigne_ht: number | null;
+          pri_consigne_ht_text: string | null;
+          pri_consigne_ttc: number | null;
+          pri_consigne_ttc_text: string | null;
           pri_date_from: string | null;
+          pri_date_from_text: string | null;
           pri_date_to: string | null;
+          pri_date_to_text: string | null;
           pri_des: string | null;
           pri_dispo: string | null;
           pri_ean: string | null;
-          pri_frais_port_ht: string | null;
-          pri_frais_supp_ht: string | null;
+          pri_frais_port_ht: number | null;
+          pri_frais_port_ht_text: string | null;
+          pri_frais_supp_ht: number | null;
+          pri_frais_supp_ht_text: string | null;
           pri_frs: string | null;
           pri_frs_2: string | null;
           pri_frs_3: string | null;
           pri_frs_4: string | null;
-          pri_gros_ht: string | null;
+          pri_gros_ht: number | null;
+          pri_gros_ht_text: string | null;
           pri_hauteur: string | null;
           pri_insert_type: string | null;
           pri_largeur: string | null;
           pri_longueur: string | null;
-          pri_marge: string | null;
-          pri_piece_id: string;
+          pri_marge: number | null;
+          pri_marge_text: string | null;
+          pri_piece_id: number | null;
+          pri_piece_id_text: string;
           pri_pm_id: string | null;
           pri_poids: string | null;
-          pri_public_ht: string | null;
+          pri_public_ht: number | null;
+          pri_public_ht_text: string | null;
           pri_qte_cond: string | null;
           pri_qte_vente: string | null;
           pri_ref: string | null;
           pri_ref_comp: string | null;
-          pri_remise: string | null;
+          pri_remise: number | null;
           pri_remise_2: string | null;
           pri_remise_3: string | null;
           pri_remise_4: string | null;
-          pri_tva: string | null;
+          pri_remise_text: string | null;
+          pri_tva: number | null;
+          pri_tva_text: string | null;
           pri_type: string;
           pri_udm_dimentions: string | null;
           pri_udm_poids: string | null;
-          pri_vente_ht: string | null;
-          pri_vente_tn_ttc: string | null;
-          pri_vente_ttc: string | null;
+          pri_vente_ht: number | null;
+          pri_vente_ht_text: string | null;
+          pri_vente_tn_ttc: number | null;
+          pri_vente_tn_ttc_text: string | null;
+          pri_vente_ttc: number | null;
+          pri_vente_ttc_text: string | null;
           pri_xls: string | null;
         };
         Insert: {
-          pri_achat_ht?: string | null;
+          pri_achat_ht?: number | null;
+          pri_achat_ht_text?: string | null;
           pri_code_fam_nu?: string | null;
           pri_code_metier?: string | null;
           pri_code_remise?: string | null;
           pri_code_sfam_nu?: string | null;
-          pri_consigne_ht?: string | null;
-          pri_consigne_ttc?: string | null;
+          pri_consigne_ht?: number | null;
+          pri_consigne_ht_text?: string | null;
+          pri_consigne_ttc?: number | null;
+          pri_consigne_ttc_text?: string | null;
           pri_date_from?: string | null;
+          pri_date_from_text?: string | null;
           pri_date_to?: string | null;
+          pri_date_to_text?: string | null;
           pri_des?: string | null;
           pri_dispo?: string | null;
           pri_ean?: string | null;
-          pri_frais_port_ht?: string | null;
-          pri_frais_supp_ht?: string | null;
+          pri_frais_port_ht?: number | null;
+          pri_frais_port_ht_text?: string | null;
+          pri_frais_supp_ht?: number | null;
+          pri_frais_supp_ht_text?: string | null;
           pri_frs?: string | null;
           pri_frs_2?: string | null;
           pri_frs_3?: string | null;
           pri_frs_4?: string | null;
-          pri_gros_ht?: string | null;
+          pri_gros_ht?: number | null;
+          pri_gros_ht_text?: string | null;
           pri_hauteur?: string | null;
           pri_insert_type?: string | null;
           pri_largeur?: string | null;
           pri_longueur?: string | null;
-          pri_marge?: string | null;
-          pri_piece_id: string;
+          pri_marge?: number | null;
+          pri_marge_text?: string | null;
+          pri_piece_id?: number | null;
+          pri_piece_id_text: string;
           pri_pm_id?: string | null;
           pri_poids?: string | null;
-          pri_public_ht?: string | null;
+          pri_public_ht?: number | null;
+          pri_public_ht_text?: string | null;
           pri_qte_cond?: string | null;
           pri_qte_vente?: string | null;
           pri_ref?: string | null;
           pri_ref_comp?: string | null;
-          pri_remise?: string | null;
+          pri_remise?: number | null;
           pri_remise_2?: string | null;
           pri_remise_3?: string | null;
           pri_remise_4?: string | null;
-          pri_tva?: string | null;
+          pri_remise_text?: string | null;
+          pri_tva?: number | null;
+          pri_tva_text?: string | null;
           pri_type: string;
           pri_udm_dimentions?: string | null;
           pri_udm_poids?: string | null;
-          pri_vente_ht?: string | null;
-          pri_vente_tn_ttc?: string | null;
-          pri_vente_ttc?: string | null;
+          pri_vente_ht?: number | null;
+          pri_vente_ht_text?: string | null;
+          pri_vente_tn_ttc?: number | null;
+          pri_vente_tn_ttc_text?: string | null;
+          pri_vente_ttc?: number | null;
+          pri_vente_ttc_text?: string | null;
           pri_xls?: string | null;
         };
         Update: {
-          pri_achat_ht?: string | null;
+          pri_achat_ht?: number | null;
+          pri_achat_ht_text?: string | null;
           pri_code_fam_nu?: string | null;
           pri_code_metier?: string | null;
           pri_code_remise?: string | null;
           pri_code_sfam_nu?: string | null;
-          pri_consigne_ht?: string | null;
-          pri_consigne_ttc?: string | null;
+          pri_consigne_ht?: number | null;
+          pri_consigne_ht_text?: string | null;
+          pri_consigne_ttc?: number | null;
+          pri_consigne_ttc_text?: string | null;
           pri_date_from?: string | null;
+          pri_date_from_text?: string | null;
           pri_date_to?: string | null;
+          pri_date_to_text?: string | null;
           pri_des?: string | null;
           pri_dispo?: string | null;
           pri_ean?: string | null;
-          pri_frais_port_ht?: string | null;
-          pri_frais_supp_ht?: string | null;
+          pri_frais_port_ht?: number | null;
+          pri_frais_port_ht_text?: string | null;
+          pri_frais_supp_ht?: number | null;
+          pri_frais_supp_ht_text?: string | null;
           pri_frs?: string | null;
           pri_frs_2?: string | null;
           pri_frs_3?: string | null;
           pri_frs_4?: string | null;
-          pri_gros_ht?: string | null;
+          pri_gros_ht?: number | null;
+          pri_gros_ht_text?: string | null;
           pri_hauteur?: string | null;
           pri_insert_type?: string | null;
           pri_largeur?: string | null;
           pri_longueur?: string | null;
-          pri_marge?: string | null;
-          pri_piece_id?: string;
+          pri_marge?: number | null;
+          pri_marge_text?: string | null;
+          pri_piece_id?: number | null;
+          pri_piece_id_text?: string;
           pri_pm_id?: string | null;
           pri_poids?: string | null;
-          pri_public_ht?: string | null;
+          pri_public_ht?: number | null;
+          pri_public_ht_text?: string | null;
           pri_qte_cond?: string | null;
           pri_qte_vente?: string | null;
           pri_ref?: string | null;
           pri_ref_comp?: string | null;
-          pri_remise?: string | null;
+          pri_remise?: number | null;
           pri_remise_2?: string | null;
           pri_remise_3?: string | null;
           pri_remise_4?: string | null;
-          pri_tva?: string | null;
+          pri_remise_text?: string | null;
+          pri_tva?: number | null;
+          pri_tva_text?: string | null;
           pri_type?: string;
           pri_udm_dimentions?: string | null;
           pri_udm_poids?: string | null;
-          pri_vente_ht?: string | null;
-          pri_vente_tn_ttc?: string | null;
-          pri_vente_ttc?: string | null;
+          pri_vente_ht?: number | null;
+          pri_vente_ht_text?: string | null;
+          pri_vente_tn_ttc?: number | null;
+          pri_vente_tn_ttc_text?: string | null;
+          pri_vente_ttc?: number | null;
+          pri_vente_ttc_text?: string | null;
           pri_xls?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'fk_pieces_price_piece_i';
+            columns: ['pri_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'pieces';
+            referencedColumns: ['piece_id'];
+          },
+          {
+            foreignKeyName: 'fk_pieces_price_piece_i';
+            columns: ['pri_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_pieces_seo_safe';
+            referencedColumns: ['piece_id'];
+          },
+        ];
       };
       pieces_ref_brand: {
         Row: {
@@ -11868,17 +12072,35 @@ export type Database = {
       pieces_ref_ean: {
         Row: {
           pre_code_ean: string;
-          pre_piece_id: string;
+          pre_piece_id: number | null;
+          pre_piece_id_text: string;
         };
         Insert: {
           pre_code_ean: string;
-          pre_piece_id: string;
+          pre_piece_id?: number | null;
+          pre_piece_id_text: string;
         };
         Update: {
           pre_code_ean?: string;
-          pre_piece_id?: string;
+          pre_piece_id?: number | null;
+          pre_piece_id_text?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'fk_pieces_ref_ean_piece_i';
+            columns: ['pre_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'pieces';
+            referencedColumns: ['piece_id'];
+          },
+          {
+            foreignKeyName: 'fk_pieces_ref_ean_piece_i';
+            columns: ['pre_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_pieces_seo_safe';
+            referencedColumns: ['piece_id'];
+          },
+        ];
       };
       pieces_ref_oem: {
         Row: {
@@ -11907,32 +12129,50 @@ export type Database = {
       pieces_ref_search: {
         Row: {
           prs_kind: string;
-          prs_piece_id: string;
-          prs_piece_prime: string;
-          prs_prb_id: string;
+          prs_piece_id: number | null;
+          prs_piece_id_text: string;
+          prs_piece_prime: string | null;
+          prs_prb_id: string | null;
           prs_ref: string | null;
           prs_search: string;
-          prs_year: string;
+          prs_year: string | null;
         };
         Insert: {
           prs_kind: string;
-          prs_piece_id: string;
-          prs_piece_prime: string;
-          prs_prb_id: string;
+          prs_piece_id?: number | null;
+          prs_piece_id_text: string;
+          prs_piece_prime?: string | null;
+          prs_prb_id?: string | null;
           prs_ref?: string | null;
           prs_search: string;
-          prs_year: string;
+          prs_year?: string | null;
         };
         Update: {
           prs_kind?: string;
-          prs_piece_id?: string;
-          prs_piece_prime?: string;
-          prs_prb_id?: string;
+          prs_piece_id?: number | null;
+          prs_piece_id_text?: string;
+          prs_piece_prime?: string | null;
+          prs_prb_id?: string | null;
           prs_ref?: string | null;
           prs_search?: string;
-          prs_year?: string;
+          prs_year?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'fk_pieces_ref_search_piece_i';
+            columns: ['prs_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'pieces';
+            referencedColumns: ['piece_id'];
+          },
+          {
+            foreignKeyName: 'fk_pieces_ref_search_piece_i';
+            columns: ['prs_piece_id'];
+            isOneToOne: false;
+            referencedRelation: 'v_pieces_seo_safe';
+            referencedColumns: ['piece_id'];
+          },
+        ];
       };
       pieces_relation_criteria: {
         Row: {
@@ -11975,33 +12215,33 @@ export type Database = {
       };
       pieces_relation_type: {
         Row: {
-          rtp_ga_id: number;
+          rtp_ga_id: number | null;
           rtp_inside: string | null;
-          rtp_pg_id: number;
-          rtp_pg_pid: number;
+          rtp_pg_id: number | null;
+          rtp_pg_pid: number | null;
           rtp_piece_id: number;
-          rtp_pm_id: number;
-          rtp_psf_id: number;
+          rtp_pm_id: number | null;
+          rtp_psf_id: number | null;
           rtp_type_id: number;
         };
         Insert: {
-          rtp_ga_id: number;
+          rtp_ga_id?: number | null;
           rtp_inside?: string | null;
-          rtp_pg_id: number;
-          rtp_pg_pid: number;
+          rtp_pg_id?: number | null;
+          rtp_pg_pid?: number | null;
           rtp_piece_id: number;
-          rtp_pm_id: number;
-          rtp_psf_id?: number;
+          rtp_pm_id?: number | null;
+          rtp_psf_id?: number | null;
           rtp_type_id: number;
         };
         Update: {
-          rtp_ga_id?: number;
+          rtp_ga_id?: number | null;
           rtp_inside?: string | null;
-          rtp_pg_id?: number;
-          rtp_pg_pid?: number;
+          rtp_pg_id?: number | null;
+          rtp_pg_pid?: number | null;
           rtp_piece_id?: number;
-          rtp_pm_id?: number;
-          rtp_psf_id?: number;
+          rtp_pm_id?: number | null;
+          rtp_psf_id?: number | null;
           rtp_type_id?: number;
         };
         Relationships: [];

@@ -322,9 +322,13 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
     - ✅ Index `pieces_ref_search` recréés (7/7) via pg_cron background
     - ✅ Index `type_composite` `pieces_relation_type` recréé via pg_cron background
 
-### Vague 5 — Migration code (backend)
+### Vague 5 — Migration code (backend) — DONE 2026-03-15
 
-Dual-write, migration services/RPCs vers colonnes typees. Tests EXPLAIN.
+Column swap en DB (zero code change) : colonnes TEXT renommées `*_text`, shadow cols prennent le nom original.
+- ✅ `pieces_price` : 16 colonnes swappées (13 NUMERIC + 1 TIMESTAMPTZ + 1 DATE + 1 INTEGER)
+- ✅ `auto_type` : 8 colonnes swappées (INTEGER)
+- ✅ 5 tables piece_id swappées (INTEGER) : media_img, list, ref_ean, criteria, ref_search
+- ✅ Types TS régénérés (number au lieu de string)
 
 ### Vague 6 — TecDoc Update Readiness
 
