@@ -1,8 +1,8 @@
 # Phase 3 — Full Structural Audit (300 tables)
 
-> **Version** : 1.4.0
+> **Version** : 1.5.0
 > **Date** : 2026-03-15
-> **Statut** : V5+V6 COMPLETE (Vague 5 code migration done, cross_gamme unified)
+> **Statut** : **CLOTURE** — Toutes vagues (2-6) terminees. 9 FK, 3 PK, 15 shadow cols, 10 tables droppees. auto_type code DEFERRED (gain nul).
 > **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 > **Methode** : `information_schema` + `pg_constraint` + `pg_stat_user_tables` + grep backend
 > **Perimetre** : toutes les tables du schema `public` (~200 tables reelles + vues materialisees)
@@ -337,10 +337,11 @@ Ordre de traitement (tables bloquantes pour readiness MassDoc en premier) :
     - ✅ `pc_piece_id` → `pc_piece_id_i` (pieces_criteria)
     - Fichiers : search-enhanced-existing, search-simple, catalog, mcp-query, products-technical, search-debug.controller, vehicle-pieces-compatibility
 
-5c. **auto_type shadow cols** — DEFERRED
-    - 26 fichiers impactes, `type_id` utilise comme identifiant metier partout (URLs, params, jointures JS)
-    - Risque eleve pour 49K rows, gain marginal
-    - Decision : reporter a une vague dediee avec tests de non-regression
+5c. **auto_type shadow cols** — DEFERRED DEFINITIVEMENT
+    - 26 fichiers impactes, `type_id` est la PK TEXT (fonctionne correctement)
+    - Shadow cols `_i` existent en DB + UNIQUE index sur `type_id_i`
+    - Gain quasi nul sur 49K rows, risque de regression reel
+    - **Decision finale** : ne pas migrer le code. Les shadow cols servent de cible FK uniquement.
 
 5d. **Cross gamme unification** — DONE 2026-03-15
     - ✅ 7087 old_only rows migrees vers `__cross_gamme_car_new` (182611 total)
