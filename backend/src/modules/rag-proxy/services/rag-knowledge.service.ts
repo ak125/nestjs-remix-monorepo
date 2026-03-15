@@ -328,7 +328,7 @@ export class RagKnowledgeService {
     let query = this.ragCleanupService.client
       .from('__rag_knowledge')
       .select(
-        'id, title, source, category, truth_level, status, domain, gamme_aliases, retrievable, fingerprint, updated_at',
+        'id, title, source, category, truth_level, status, domain, gamme_aliases, retrievable, fingerprint, foundation_gate_passed, business_pool_admissible, updated_at',
       )
       .eq('status', 'active')
       .order('updated_at', { ascending: false })
