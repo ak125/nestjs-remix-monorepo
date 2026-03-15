@@ -76,45 +76,91 @@ export class RiskSafetyEngine {
   }
 
   /**
-   * Check if a safety rule is relevant given current hypotheses and symptoms
+   * Cause slugs associated with specific safety rules.
+   * When a rule_slug maps to cause slugs here, the rule is only relevant
+   * if one of those causes appears in the hypotheses with score >= threshold.
+   */
+  private static readonly RULE_CAUSE_MAP: Record<
+    string,
+    { causes: string[]; threshold: number }
+  > = {
+    // Freinage
+    brake_metal_on_metal: { causes: ['brake_pads_worn'], threshold: 30 },
+    brake_disc_damage_risk: { causes: ['brake_pads_worn'], threshold: 30 },
+    brake_fluid_critical: { causes: ['brake_fluid_low'], threshold: 20 },
+    // Distribution
+    timing_belt_snap_risk: {
+      causes: ['courroie_distribution_usee', 'galet_tendeur_defaillant'],
+      threshold: 25,
+    },
+    // Échappement
+    exhaust_fumes_cabin_risk: {
+      causes: ['silencieux_perce', 'joint_collecteur_hs'],
+      threshold: 20,
+    },
+    // Injection
+    fuel_leak_fire_risk: {
+      causes: ['injecteur_encrasse', 'pompe_injection_hs'],
+      threshold: 25,
+    },
+    // Direction
+    steering_loss_risk: {
+      causes: [
+        'cremaillere_usee',
+        'pompe_direction_hs',
+        'rotule_direction_usee',
+      ],
+      threshold: 20,
+    },
+    // Suspension
+    suspension_stability_risk: {
+      causes: ['amortisseur_use', 'rotule_suspension_hs'],
+      threshold: 25,
+    },
+    // Filtration
+    oil_pressure_critical: {
+      causes: ['filtre_huile_colmate'],
+      threshold: 20,
+    },
+  };
+
+  /**
+   * Check if a safety rule is relevant given current hypotheses and symptoms.
+   * Uses RULE_CAUSE_MAP for cause-specific matching, falls back to urgency-based.
    */
   private isRuleRelevant(
     rule: DiagSafetyRule,
     hypotheses: ScoredHypothesis[],
     symptomSlugs: string[],
   ): boolean {
-    // All freinage safety rules are relevant if we're diagnosing braking
-    // For more specific matching, check rule_slug patterns
     const ruleSlug = rule.rule_slug;
 
-    // Metal-on-metal: relevant if brake_pads_worn is top hypothesis
-    if (ruleSlug === 'brake_metal_on_metal') {
-      return hypotheses.some(
-        (h) => h.hypothesis_id === 'brake_pads_worn' && h.total_score >= 30,
-      );
-    }
-
-    // Disc damage risk: relevant if pads are worn
-    if (ruleSlug === 'brake_disc_damage_risk') {
-      return hypotheses.some(
-        (h) => h.hypothesis_id === 'brake_pads_worn' && h.total_score >= 30,
-      );
-    }
-
-    // Long trip warning: relevant for any brake symptom
+    // Symptom-only rules (e.g. "any symptom in this system triggers warning")
     if (ruleSlug === 'brake_long_trip_warning') {
       return symptomSlugs.length > 0;
     }
 
-    // Fluid critical: relevant if fluid is a hypothesis
-    if (ruleSlug === 'brake_fluid_critical') {
+    // Cause-specific matching via RULE_CAUSE_MAP
+    const mapping = RiskSafetyEngine.RULE_CAUSE_MAP[ruleSlug];
+    if (mapping) {
       return hypotheses.some(
-        (h) => h.hypothesis_id === 'brake_fluid_low' && h.total_score >= 20,
+        (h) =>
+          mapping.causes.includes(h.hypothesis_id) &&
+          h.total_score >= mapping.threshold,
       );
     }
 
-    // Default: relevant if urgency matches
-    return rule.urgency === 'haute';
+    // Default: haute urgency rules are relevant if any hypothesis scores >= 30
+    if (rule.urgency === 'haute') {
+      return hypotheses.some((h) => h.total_score >= 30);
+    }
+
+    // Moyenne urgency: relevant if symptoms present
+    if (rule.urgency === 'moyenne') {
+      return symptomSlugs.length > 0;
+    }
+
+    return false;
   }
 
   /**

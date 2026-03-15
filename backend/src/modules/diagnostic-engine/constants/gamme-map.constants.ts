@@ -185,7 +185,13 @@ export const CAUSE_GAMME_MAP: Record<string, GammeMapping[]> = {
     { slug: 'sonde-lambda', label: 'Sonde lambda', pg_id: 3922 },
   ],
   silencieux_perce: [{ slug: 'silencieux', label: 'Silencieux', pg_id: 26 }],
-  joint_collecteur_hs: [], // joint collecteur — pas de gamme standard
+  joint_collecteur_hs: [
+    {
+      slug: 'tuyau-flexible-echappement',
+      label: 'Tuyau flexible échappement',
+      pg_id: 3191,
+    },
+  ],
 
   // ── Filtration ────────────────────────────────────────────
   filtre_huile_colmate: [

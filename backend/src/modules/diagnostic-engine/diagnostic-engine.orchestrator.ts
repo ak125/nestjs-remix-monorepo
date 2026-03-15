@@ -63,9 +63,11 @@ export class DiagnosticEngineOrchestrator {
     // ── 2. Signal Interpretation Engine ─────────────────
     const signal = await this.signalEngine.interpret(input);
     if (!signal.system_confirmed) {
+      const systems = await this.dataService.getActiveSystems();
+      const available = systems.map((s) => s.slug).join(', ');
       return {
         success: false,
-        error: `Système inconnu: ${input.system_scope}. Systèmes disponibles: freinage`,
+        error: `Système inconnu: ${input.system_scope}. Systèmes disponibles: ${available}`,
       };
     }
 
