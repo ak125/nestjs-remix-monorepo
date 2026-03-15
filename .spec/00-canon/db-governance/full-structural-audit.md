@@ -317,8 +317,10 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
     - ✅ 707 orphelins supprimés (6 tables Cat A)
     - ✅ Shadow cols `*_piece_id_i INTEGER` ajoutées + backfillées sur 6 tables (442K+1.8M+3M+4.6M+17.6M+73M)
     - `pieces_ref_search` : table swap v2 (avec prs_piece_id_i), old gardée. Index kind recréé, autres index pending (timeout 70M+)
-    - ✅ FK NOT VALID ajoutées sur 6 tables (`*_piece_id_i` → `pieces(piece_id)`)
-    - ⏳ VALIDATE CONSTRAINT pending (6 tables, sera long sur les grosses)
+    - ✅ FK VALIDATED sur 6 tables (`*_piece_id_i` → `pieces(piece_id)`)
+    - ✅ Tables _old droppées (pieces_relation_type_old, pieces_ref_search_old)
+    - ⏳ Index manquants `pieces_ref_search` : search, prb_id, prb_id_covering, ref_trgm (timeout 70M+)
+    - ⏳ Index `type_composite` sur `pieces_relation_type` (timeout 146M)
 
 ### Vague 5 — Migration code (backend)
 
