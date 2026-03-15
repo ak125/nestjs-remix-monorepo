@@ -81,7 +81,10 @@ export const GAMME_PAGE_WEIGHTS: Record<ScoringPageType, number> = {
   R1_pieces: 25,
   R4_reference: 20,
   R3_conseils: 15,
-  // R5_diagnostic: 10 — deferred (M:N relation)
+  R5_diagnostic: 0,
+  R8_vehicle: 0,
+  R2_product: 0,
+  R7_brand: 0,
 };
 
 /** Pages required for every gamme. Missing = coverage penalty. */
@@ -188,6 +191,10 @@ export const FRESHNESS_THRESHOLDS: Record<
   R4_reference: { good: 60, acceptable: 180, stale: 365 },
   R3_conseils: { good: 30, acceptable: 60, stale: 120 },
   R1_pieces: { good: 14, acceptable: 30, stale: 60 },
+  R5_diagnostic: { good: 60, acceptable: 180, stale: 365 },
+  R8_vehicle: { good: 60, acceptable: 180, stale: 365 },
+  R2_product: { good: 14, acceptable: 30, stale: 60 },
+  R7_brand: { good: 60, acceptable: 180, stale: 365 },
 };
 
 // ── Scoring Profiles ──
@@ -343,6 +350,38 @@ export const SCORING_PROFILES: Record<ScoringPageType, ScoringProfile> = {
         check: 'checkR1NoHero',
       },
     ],
+    minDataThreshold: 10,
+  },
+  R5_diagnostic: {
+    pageType: 'R5_diagnostic',
+    label: 'Diagnostic',
+    dimensions: [],
+    hardGates: [],
+    softPenalties: [],
+    minDataThreshold: 10,
+  },
+  R8_vehicle: {
+    pageType: 'R8_vehicle',
+    label: 'Vehicle Hub',
+    dimensions: [],
+    hardGates: [],
+    softPenalties: [],
+    minDataThreshold: 10,
+  },
+  R2_product: {
+    pageType: 'R2_product',
+    label: 'Product Page',
+    dimensions: [],
+    hardGates: [],
+    softPenalties: [],
+    minDataThreshold: 10,
+  },
+  R7_brand: {
+    pageType: 'R7_brand',
+    label: 'Brand Hub',
+    dimensions: [],
+    hardGates: [],
+    softPenalties: [],
     minDataThreshold: 10,
   },
 };

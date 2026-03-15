@@ -93,15 +93,15 @@ export class SearchDebugController {
         this.searchService['client']
           .from('pieces_price')
           .select('*')
-          .eq('pri_piece_id', id),
+          .eq('pri_piece_id_i', id),
         this.searchService['client']
           .from('pieces_media_img')
           .select('*')
-          .eq('pmi_piece_id', id),
+          .eq('pmi_piece_id_i', id),
         this.searchService['client']
           .from('pieces_ref_search')
           .select('*')
-          .eq('prs_piece_id', id),
+          .eq('prs_piece_id_i', id),
         this.searchService['client']
           .from('pieces_ref_oem')
           .select('*')

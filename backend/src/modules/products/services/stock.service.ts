@@ -84,7 +84,7 @@ export class StockService extends SupabaseBaseService {
       const { data: priceData, error } = await this.client
         .from(TABLES.pieces_price)
         .select('pri_qte_cond, pri_qte_vente')
-        .eq('pri_piece_id', pieceId)
+        .eq('pri_piece_id_i', pieceId)
         .limit(1);
 
       if (error) {
@@ -257,8 +257,8 @@ export class StockService extends SupabaseBaseService {
       // BATCH: Récupérer tous les stocks en une requête
       const { data: priceData, error } = await this.client
         .from(TABLES.pieces_price)
-        .select('pri_piece_id, pri_qte_cond')
-        .in('pri_piece_id', pieceIds);
+        .select('pri_piece_id_i, pri_qte_cond')
+        .in('pri_piece_id_i', pieceIds);
 
       if (error) {
         this.logger.error('Erreur batch stock:', error);
@@ -275,7 +275,7 @@ export class StockService extends SupabaseBaseService {
             stock = Math.floor(parsed);
           }
         }
-        stockMap.set(p.pri_piece_id, stock);
+        stockMap.set(p.pri_piece_id_i, stock);
       });
 
       // Assembler les résultats avec Map lookup
@@ -343,9 +343,9 @@ export class StockService extends SupabaseBaseService {
         .from(TABLES.pieces_price)
         .select(
           `
-          pri_piece_id,
+          pri_piece_id_i,
           pri_qte_cond,
-          pieces:pri_piece_id (
+          pieces:pri_piece_id_i (
             piece_id,
             piece_name,
             piece_ref
@@ -368,7 +368,7 @@ export class StockService extends SupabaseBaseService {
           );
 
           return {
-            productId: item.pri_piece_id,
+            productId: item.pri_piece_id_i,
             productName: item.pieces?.piece_name || 'Produit inconnu',
             currentStock,
             reorderQuantity: Math.ceil(reorderQty),
@@ -487,7 +487,7 @@ export class StockService extends SupabaseBaseService {
         .update({
           pri_qte_cond: quantity.toString(),
         })
-        .eq('pri_piece_id', productId);
+        .eq('pri_piece_id_i', productId);
 
       if (error) {
         this.logger.error('Erreur simulateRestock:', error);

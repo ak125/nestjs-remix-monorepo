@@ -206,7 +206,7 @@ export class VehiclePiecesCompatibilityService extends SupabaseBaseService {
       const { data: refData, error: refError } = await this.client
         .from('pieces_ref_search')
         .select('prs_ref')
-        .in('prs_piece_id', pieceIds) // Plus de slice arbitraire
+        .in('prs_piece_id_i', pieceIds) // Plus de slice arbitraire
         .eq('prs_prb_id', brandData.prb_id)
         .eq('prs_kind', '3') // Type 3 = OEM constructeurs
         .limit(500); // Limite raisonnable, dédoublonnage après

@@ -145,7 +145,7 @@ export class GammeDetailEnricherService extends SupabaseBaseService {
           .limit(20),
         // 7. Vehicules
         this.supabase
-          .from('__cross_gamme_car')
+          .from('__cross_gamme_car_new')
           .select(
             'cgc_id, cgc_marque_id, cgc_modele_id, cgc_type_id, cgc_level',
           )

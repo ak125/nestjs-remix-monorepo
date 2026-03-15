@@ -500,7 +500,7 @@ export class ProductsService extends SupabaseBaseService {
           piece_name,
           piece_ref,
           piece_stock,
-          pieces_price!left(pri_vente_ttc, pri_consigne_ttc),
+          pieces_price!left(pri_vente_ttc_n, pri_consigne_ttc_n),
           pieces_marque!left(pm_id, pm_name)
         `,
         )
@@ -519,11 +519,11 @@ export class ProductsService extends SupabaseBaseService {
           name: piece.piece_name || 'Produit sans nom',
           reference: piece.piece_ref,
           marque_name: piece.pieces_marque?.pm_name,
-          price_ttc: piece.pieces_price?.pri_vente_ttc
-            ? parseFloat(piece.pieces_price.pri_vente_ttc)
+          price_ttc: piece.pieces_price?.pri_vente_ttc_n
+            ? Number(piece.pieces_price.pri_vente_ttc_n)
             : undefined,
-          consigne_ttc: piece.pieces_price?.pri_consigne_ttc
-            ? parseFloat(piece.pieces_price.pri_consigne_ttc)
+          consigne_ttc: piece.pieces_price?.pri_consigne_ttc_n
+            ? Number(piece.pieces_price.pri_consigne_ttc_n)
             : undefined,
           stock: piece.piece_stock,
           image_url: undefined, // TODO: Ajouter images plus tard

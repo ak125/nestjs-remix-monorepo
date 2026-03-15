@@ -61,19 +61,19 @@ interface PiecesGammeRow {
   pg_alias: string | null;
 }
 
-/** Row from pieces_media_img */
+/** Row from pieces_media_img (shadow: pmi_piece_id_i) */
 interface PiecesMediaImgRow {
-  pmi_piece_id: string;
+  pmi_piece_id_i: number;
   pmi_folder: string;
   pmi_name: string;
 }
 
-/** Row from pieces_price */
+/** Row from pieces_price (shadow columns: _i=INTEGER, _n=NUMERIC) */
 interface PriceRow {
-  pri_piece_id: string;
+  pri_piece_id_i: number;
   pri_pm_id: string;
-  pri_vente_ttc: string;
-  pri_consigne_ttc: string;
+  pri_vente_ttc_n: number;
+  pri_consigne_ttc_n: number;
   pri_dispo: string;
 }
 
@@ -302,7 +302,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     // 1) refs dans pieces_ref_search
     const searchRefsResult = await this.client
       .from(TABLES.pieces_ref_search)
-      .select('prs_piece_id, prs_ref, prs_search, prs_kind')
+      .select('prs_piece_id_i, prs_ref, prs_search, prs_kind')
       .in('prs_search', uniqueVariants)
       .limit(1000);
 
@@ -325,7 +325,7 @@ export class SearchSimpleService extends SupabaseBaseService {
       const mainVariant = uniqueVariants[0];
       const fallbackPricesResult = await this.client
         .from(TABLES.pieces_price)
-        .select('pri_piece_id, pri_ref, pri_pm_id, pri_dispo')
+        .select('pri_piece_id_i, pri_ref, pri_pm_id, pri_dispo')
         .ilike('pri_ref', `%${mainVariant}%`)
         .eq('pri_dispo', '1')
         .limit(100); // Limite raisonnable pour la performance
@@ -376,7 +376,7 @@ export class SearchSimpleService extends SupabaseBaseService {
 
       // Récupérer les pièces correspondantes
       const matchedPieceIds = [
-        ...new Set(priceMatches.map((p) => p.pri_piece_id)),
+        ...new Set(priceMatches.map((p) => p.pri_piece_id_i)),
       ];
       const directPiecesResult = await this.client
         .from(TABLES.pieces)
@@ -400,11 +400,11 @@ export class SearchSimpleService extends SupabaseBaseService {
       const pricesResult = await this.client
         .from(TABLES.pieces_price)
         .select(
-          'pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo',
+          'pri_piece_id_i, pri_pm_id, pri_vente_ttc_n, pri_consigne_ttc_n, pri_dispo',
         )
         .in(
-          'pri_piece_id',
-          pieces.map((p) => String(p.piece_id)),
+          'pri_piece_id_i',
+          pieces.map((p) => p.piece_id),
         )
         .eq('pri_dispo', '1');
 
@@ -414,7 +414,7 @@ export class SearchSimpleService extends SupabaseBaseService {
       // Map des prix
       const priceMap = new Map<string, PriceRow>();
       for (const pr of prices) {
-        priceMap.set(`${pr.pri_piece_id}-${pr.pri_pm_id}`, pr);
+        priceMap.set(`${pr.pri_piece_id_i}-${pr.pri_pm_id}`, pr);
       }
 
       // Enrichir avec prs_kind et prix
@@ -429,13 +429,11 @@ export class SearchSimpleService extends SupabaseBaseService {
         return {
           ...p,
           _prsKind,
-          _price: price ? parseFloat(price.pri_vente_ttc || '0') : 0,
-          _deposit: price ? parseFloat(price.pri_consigne_ttc || '0') : 0,
+          _price: price ? Number(price.pri_vente_ttc_n) || 0 : 0,
+          _deposit: price ? Number(price.pri_consigne_ttc_n) || 0 : 0,
           _hasPrice: !!price,
-          _priceVenteTTC: price ? parseFloat(price.pri_vente_ttc || '0') : 0,
-          _priceConsigneTTC: price
-            ? parseFloat(price.pri_consigne_ttc || '0')
-            : 0,
+          _priceVenteTTC: price ? Number(price.pri_vente_ttc_n) || 0 : 0,
+          _priceConsigneTTC: price ? Number(price.pri_consigne_ttc_n) || 0 : 0,
           _isOEM: false,
           _oemRef: null as string | null,
         };
@@ -465,9 +463,9 @@ export class SearchSimpleService extends SupabaseBaseService {
     }
 
     // 2) Récupérer pièces visibles (piece_display=1) + champs utiles
-    pieceIds = [
-      ...new Set(searchRefs.map((r) => parseInt(r.prs_piece_id))),
-    ].filter((v) => Number.isFinite(v));
+    pieceIds = [...new Set(searchRefs.map((r) => r.prs_piece_id_i))].filter(
+      (v) => Number.isFinite(v),
+    );
 
     if (pieceIds.length === 0) {
       return this.processResults(
@@ -509,15 +507,15 @@ export class SearchSimpleService extends SupabaseBaseService {
       );
     }
 
-    // 3) Charger les prix disponibles (pri_dispo='1') — colonnes TEXT
+    // 3) Charger les prix disponibles (pri_dispo='1') — shadow columns (_i/_n)
     const pricesResult = await this.client
       .from(TABLES.pieces_price)
       .select(
-        'pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo',
+        'pri_piece_id_i, pri_pm_id, pri_vente_ttc_n, pri_consigne_ttc_n, pri_dispo',
       )
       .in(
-        'pri_piece_id',
-        pieces.map((p) => String(p.piece_id)),
+        'pri_piece_id_i',
+        pieces.map((p) => p.piece_id),
       )
       .eq('pri_dispo', '1');
 
@@ -527,12 +525,12 @@ export class SearchSimpleService extends SupabaseBaseService {
     // Maps
     const priceMap = new Map<string, PriceRow>();
     for (const pr of prices) {
-      priceMap.set(`${pr.pri_piece_id}-${pr.pri_pm_id}`, pr);
+      priceMap.set(`${pr.pri_piece_id_i}-${pr.pri_pm_id}`, pr);
     }
 
     // Remplir prsKindMap pour le flux normal (déjà déclaré plus haut)
     for (const ref of searchRefs) {
-      const pid = String(ref.prs_piece_id);
+      const pid = String(ref.prs_piece_id_i);
       const current = prsKindMap.get(pid);
       const next = ref.prs_kind ?? '999';
       if (!current || next < current) prsKindMap.set(pid, next);
@@ -549,8 +547,8 @@ export class SearchSimpleService extends SupabaseBaseService {
           prsKindMap.get(String(piece.piece_id)) ?? '999',
           10,
         );
-        const _priceVenteTTC = parseFloat(price.pri_vente_ttc) || 0;
-        const _priceConsigneTTC = parseFloat(price.pri_consigne_ttc) || 0;
+        const _priceVenteTTC = Number(price.pri_vente_ttc_n) || 0;
+        const _priceConsigneTTC = Number(price.pri_consigne_ttc_n) || 0;
 
         return {
           ...piece,
@@ -566,7 +564,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     // attacher une ref OEM pour affichage si dispo
     const oemRefMap = new Map<string, string>();
     for (const r of searchRefs)
-      oemRefMap.set(String(r.prs_piece_id), r.prs_ref);
+      oemRefMap.set(String(r.prs_piece_id_i), r.prs_ref);
     for (const p of enrichedPieces)
       p._oemRef = oemRefMap.get(String(p.piece_id)) ?? null;
 
@@ -689,8 +687,8 @@ export class SearchSimpleService extends SupabaseBaseService {
       pieceIds.length
         ? this.client
             .from(TABLES.pieces_media_img)
-            .select('pmi_piece_id, pmi_folder, pmi_name')
-            .in('pmi_piece_id', pieceIds)
+            .select('pmi_piece_id_i, pmi_folder, pmi_name')
+            .in('pmi_piece_id_i', pieceIds)
             .eq('pmi_display', 1)
         : Promise.resolve({ data: [] as PiecesMediaImgRow[] }),
     ]);
@@ -713,7 +711,7 @@ export class SearchSimpleService extends SupabaseBaseService {
     // 🖼️ Map des images: pmi_piece_id -> URL complète via fonction centralisée
     const imageMap = new Map<number, string>(
       (imagesResult.data || []).map((img) => [
-        parseInt(img.pmi_piece_id, 10),
+        img.pmi_piece_id_i,
         buildRackImageUrl({
           pmi_folder: img.pmi_folder,
           pmi_name: img.pmi_name,
@@ -906,17 +904,17 @@ export class SearchSimpleService extends SupabaseBaseService {
     const { data: prices } = await this.client
       .from(TABLES.pieces_price)
       .select(
-        'pri_piece_id, pri_pm_id, pri_vente_ttc, pri_consigne_ttc, pri_dispo',
+        'pri_piece_id_i, pri_pm_id, pri_vente_ttc_n, pri_consigne_ttc_n, pri_dispo',
       )
       .in(
-        'pri_piece_id',
-        pieces.map((p) => String(p.piece_id)),
+        'pri_piece_id_i',
+        pieces.map((p) => p.piece_id),
       )
       .eq('pri_dispo', '1');
 
     const priceMap = new Map<string, PriceRow>();
     for (const pr of prices || []) {
-      priceMap.set(`${pr.pri_piece_id}-${pr.pri_pm_id}`, pr);
+      priceMap.set(`${pr.pri_piece_id_i}-${pr.pri_pm_id}`, pr);
     }
 
     // 4) Enrichir et filtrer (garder uniquement celles avec prix)
@@ -929,8 +927,8 @@ export class SearchSimpleService extends SupabaseBaseService {
         return {
           ...p,
           _prsKind: 0,
-          _priceVenteTTC: parseFloat(price.pri_vente_ttc || '0'),
-          _priceConsigneTTC: parseFloat(price.pri_consigne_ttc || '0'),
+          _priceVenteTTC: Number(price.pri_vente_ttc_n) || 0,
+          _priceConsigneTTC: Number(price.pri_consigne_ttc_n) || 0,
           _isOEM: false,
           _oemRef: null,
         };

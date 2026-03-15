@@ -106,11 +106,11 @@ export class ProductsTechnicalService extends SupabaseBaseService {
 
       let query = this.client.from(TABLES.pieces_criteria).select(
         `
-          pc_piece_id,
+          pc_piece_id_i,
           pc_cri_id,
           pc_cri_value,
           pc_display,
-          pieces:pieces!pieces_criteria_pc_piece_id_fkey (
+          pieces:pieces!fk_pieces_criteria_piece_i (
             piece_id,
             piece_name,
             piece_ref,
@@ -214,7 +214,8 @@ export class ProductsTechnicalService extends SupabaseBaseService {
       const { data, error } = await this.client
         .from(TABLES.pieces_criteria)
         .insert({
-          pc_piece_id: parseInt(pieceId, 10),
+          pc_piece_id: pieceId,
+          pc_piece_id_i: parseInt(pieceId, 10),
           pc_cri_id: criteria.cri_id,
           pc_cri_value: criteria.cri_value,
           pc_display: criteria.display || '1',
@@ -293,7 +294,7 @@ export class ProductsTechnicalService extends SupabaseBaseService {
       const { data, error } = await this.client
         .from(TABLES.pieces_criteria)
         .select('*')
-        .eq('pc_piece_id', parseInt(pieceId, 10));
+        .eq('pc_piece_id_i', parseInt(pieceId, 10));
 
       if (error) {
         this.logger.error('Erreur getProductCriteria:', error);

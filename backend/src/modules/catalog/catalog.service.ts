@@ -567,8 +567,8 @@ export class CatalogService
       // Récupérer le prix
       const { data: prixData, error: prixError } = await this.supabase
         .from(TABLES.pieces_price)
-        .select('pri_vente_ttc, pri_consigne_ttc, pri_dispo')
-        .eq('pri_piece_id', pieceId)
+        .select('pri_vente_ttc_n, pri_consigne_ttc_n, pri_dispo')
+        .eq('pri_piece_id_i', pieceId)
         .eq('pri_type', 0)
         .single();
 
@@ -592,14 +592,14 @@ export class CatalogService
       const { data: imagesData } = await this.supabase
         .from(TABLES.pieces_media_img)
         .select('pmi_folder, pmi_name')
-        .eq('pmi_piece_id', pieceId)
+        .eq('pmi_piece_id_i', pieceId)
         .order('pmi_sort', { ascending: true });
 
       // Récupérer les critères techniques
       const { data: criteresData } = await this.supabase
         .from(TABLES.pieces_criteria)
         .select('pc_cri_id, pc_cri_value')
-        .eq('pc_piece_id', pieceId)
+        .eq('pc_piece_id_i', pieceId)
         .eq('pc_display', 1)
         .order('pc_sort', { ascending: true });
 
@@ -677,7 +677,7 @@ export class CatalogService
       const { data: refOemData } = await this.supabase
         .from(TABLES.pieces_ref_search)
         .select('prs_ref, prs_prb_id')
-        .eq('prs_piece_id', pieceId)
+        .eq('prs_piece_id_i', pieceId)
         .eq('prs_kind', '3') // Type 3 = références OEM constructeurs (RENAULT, BMW, AUDI...)
         .limit(50);
 
@@ -718,12 +718,8 @@ export class CatalogService
           marque_logo: marqueData?.pm_logo || null,
           qualite: marqueData?.pm_quality || null,
           nb_stars: marqueData?.pm_nb_stars || 0,
-          prix_ttc: prixData?.pri_vente_ttc
-            ? parseFloat(prixData.pri_vente_ttc)
-            : 0,
-          consigne_ttc: prixData?.pri_consigne_ttc
-            ? parseFloat(prixData.pri_consigne_ttc)
-            : 0,
+          prix_ttc: Number(prixData?.pri_vente_ttc_n) || 0,
+          consigne_ttc: Number(prixData?.pri_consigne_ttc_n) || 0,
           dispo: prixData?.pri_dispo === '1' || prixData?.pri_dispo === 1,
           description: pieceData.piece_des,
           image: imagesData?.[0]

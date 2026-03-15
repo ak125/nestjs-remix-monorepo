@@ -117,25 +117,24 @@ export class PricingService extends SupabaseBaseService {
         .from(TABLES.pieces_price)
         .select(
           `
-          pri_piece_id,
-          pri_vente_ttc,
-          pri_consigne_ttc,
-          pri_vente_ht,
-          pri_consigne_ht,
+          pri_piece_id_i,
+          pri_vente_ttc_n,
+          pri_consigne_ttc_n,
+          pri_vente_ht_n,
+          pri_consigne_ht_n,
           pri_dispo,
           pri_type,
           pri_qte_vente,
-          pri_tva,
-          pri_marge,
+          pri_tva_n,
+          pri_marge_n,
           pri_ref,
           pri_des
         `,
         )
-        .eq('pri_piece_id', validPieceId.toString()) // Correction: ID en string
-        .eq('pri_dispo', '1') // Correction: dispo en string '1' vs boolean true
-        .not('pri_vente_ttc', 'is', null)
-        .not('pri_vente_ttc', 'eq', '')
-        .not('pri_vente_ttc', 'eq', '0')
+        .eq('pri_piece_id_i', validPieceId)
+        .eq('pri_dispo', '1')
+        .not('pri_vente_ttc_n', 'is', null)
+        .gt('pri_vente_ttc_n', 0)
         .order('pri_type', { ascending: false })
         .limit(1)
         .single();
@@ -149,9 +148,9 @@ export class PricingService extends SupabaseBaseService {
         return null; // Compatibilité avec original
       }
 
-      // CALCULS avec VRAIES DONNÉES pieces_price (CORRIGÉS vs original)
-      const prixVenteTTC = parseFloat(data.pri_vente_ttc || '0');
-      const consigneTTC = parseFloat(data.pri_consigne_ttc || '0');
+      // CALCULS avec shadow cols NUMERIC (plus de parseFloat)
+      const prixVenteTTC = Number(data.pri_vente_ttc_n) || 0;
+      const consigneTTC = Number(data.pri_consigne_ttc_n) || 0;
       const quantiteVente = parseFloat(data.pri_qte_vente || '1');
 
       // Calculs finaux avec quantités réelles (AMÉLIORATION vs original)
@@ -183,12 +182,10 @@ export class PricingService extends SupabaseBaseService {
           quantity_sale: quantiteVente,
           total_units: validQuantity * quantiteVente,
           price_ht:
-            parseFloat(data.pri_vente_ht || '0') *
-            validQuantity *
-            quantiteVente,
-          vat_rate: parseFloat(data.pri_tva || '20'),
+            (Number(data.pri_vente_ht_n) || 0) * validQuantity * quantiteVente,
+          vat_rate: Number(data.pri_tva_n) || 20,
           margin:
-            parseFloat(data.pri_marge || '0') * validQuantity * quantiteVente,
+            (Number(data.pri_marge_n) || 0) * validQuantity * quantiteVente,
         },
 
         // Métadonnées V5 Ultimate
@@ -303,9 +300,9 @@ export class PricingService extends SupabaseBaseService {
       // Test vraies données
       const { data: testData, error } = await this.client
         .from(TABLES.pieces_price)
-        .select('pri_piece_id, pri_vente_ttc')
+        .select('pri_piece_id_i, pri_vente_ttc_n')
         .eq('pri_dispo', '1')
-        .not('pri_vente_ttc', 'is', null)
+        .not('pri_vente_ttc_n', 'is', null)
         .limit(1);
 
       const hasData = testData && testData.length > 0 && !error;
@@ -435,7 +432,7 @@ export class PricingService extends SupabaseBaseService {
       const { data, error } = await this.client
         .from(TABLES.pieces_price)
         .select('*')
-        .eq('pri_piece_id', pieceId.toString())
+        .eq('pri_piece_id_i', pieceId)
         .limit(5);
 
       return {
@@ -512,14 +509,14 @@ export class PricingService extends SupabaseBaseService {
           const realBrand = brandMap.get(piece.pri_pm_id) || 'Marque inconnue';
 
           results.push({
-            piece_id: piece.pri_piece_id,
+            piece_id: piece.pri_piece_id_i ?? piece.pri_piece_id,
             reference: piece.pri_ref,
             supplier: piece.pri_frs || 'N/A',
             brand: realBrand,
             designation: piece.pri_des || 'N/A',
             stock_status: piece.pri_dispo === '1' ? 'En stock' : 'Hors stock',
-            raw_price_ht: piece.pri_public_ht,
-            raw_price_ttc: piece.pri_vente_ttc,
+            raw_price_ht: piece.pri_public_ht_n ?? piece.pri_public_ht,
+            raw_price_ttc: piece.pri_vente_ttc_n ?? piece.pri_vente_ttc,
             enhanced_pricing: advancedPricings[index]?.pricing || null,
           });
         });

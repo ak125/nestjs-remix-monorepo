@@ -4,12 +4,12 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 
 export interface StockItemWorkingVersion {
-  pri_piece_id: string;
+  pri_piece_id_i: number;
   pri_ref: string;
   pri_des: string;
   pri_dispo: string; // '1' = disponible, '0' = indisponible
-  pri_vente_ttc: string;
-  pri_vente_ht: string;
+  pri_vente_ttc_n: number;
+  pri_vente_ht_n: number;
   pri_qte_vente: string;
   pri_marge: string;
   piece_name?: string; // Optionnel si on fait le JOIN
@@ -55,12 +55,12 @@ export class WorkingStockService extends SupabaseBaseService {
 
       // Construire la requête
       let query = this.client.from(TABLES.pieces_price).select(`
-          pri_piece_id,
+          pri_piece_id_i,
           pri_ref,
           pri_des,
           pri_dispo,
-          pri_vente_ttc,
-          pri_vente_ht,
+          pri_vente_ttc_n,
+          pri_vente_ht_n,
           pri_qte_vente,
           pri_marge
         `);
@@ -77,11 +77,11 @@ export class WorkingStockService extends SupabaseBaseService {
       }
 
       if (filters?.minPrice) {
-        query = query.gte('pri_vente_ttc', filters.minPrice.toString());
+        query = query.gte('pri_vente_ttc_n', filters.minPrice);
       }
 
       if (filters?.maxPrice) {
-        query = query.lte('pri_vente_ttc', filters.maxPrice.toString());
+        query = query.lte('pri_vente_ttc_n', filters.maxPrice);
       }
 
       // Pagination
@@ -169,12 +169,12 @@ export class WorkingStockService extends SupabaseBaseService {
         .from(TABLES.pieces_price)
         .select(
           `
-          pri_piece_id,
+          pri_piece_id_i,
           pri_ref,
           pri_des,
           pri_dispo,
-          pri_vente_ttc,
-          pri_vente_ht,
+          pri_vente_ttc_n,
+          pri_vente_ht_n,
           pri_qte_vente,
           pri_marge
         `,
@@ -214,7 +214,7 @@ export class WorkingStockService extends SupabaseBaseService {
       const { error } = await this.client
         .from(TABLES.pieces_price)
         .update({ pri_dispo: available ? '1' : '0' })
-        .eq('pri_piece_id', pieceId);
+        .eq('pri_piece_id_i', pieceId);
 
       if (error) {
         throw new DatabaseException({
@@ -241,18 +241,18 @@ export class WorkingStockService extends SupabaseBaseService {
         .from(TABLES.pieces_price)
         .select(
           `
-          pri_piece_id,
+          pri_piece_id_i,
           pri_ref,
           pri_des,
           pri_dispo,
-          pri_vente_ttc,
-          pri_vente_ht,
+          pri_vente_ttc_n,
+          pri_vente_ht_n,
           pri_qte_vente,
           pri_marge
         `,
         )
         .eq('pri_dispo', '1')
-        .order('pri_vente_ttc', { ascending: false })
+        .order('pri_vente_ttc_n', { ascending: false })
         .limit(limit);
 
       if (error) {

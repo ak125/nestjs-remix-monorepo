@@ -429,8 +429,8 @@ export class CartDataService extends SupabaseBaseService {
       // REQUÊTE SÉPARÉE POUR LES PRIX (inclut consignes)
       const { data: priceData, error: priceError } = await this.client
         .from(TABLES.pieces_price)
-        .select('pri_vente_ttc, pri_consigne_ttc')
-        .eq('pri_piece_id', productId)
+        .select('pri_vente_ttc_n, pri_consigne_ttc_n')
+        .eq('pri_piece_id_i', productId)
         .limit(1);
 
       // REQUÊTE POUR LA MARQUE SI piece_pm_id existe
@@ -485,10 +485,7 @@ export class CartDataService extends SupabaseBaseService {
 
       let priceTTC = 0;
       if (!priceError && priceData && priceData.length > 0) {
-        const priceStr = priceData[0]?.pri_vente_ttc;
-        if (priceStr && priceStr.trim() !== '') {
-          priceTTC = parseFloat(priceStr) || 0;
-        }
+        priceTTC = Number(priceData[0]?.pri_vente_ttc_n) || 0;
       }
 
       // Si pas de prix dans pieces_price, essayer pieces.piece_price_ttc
@@ -507,10 +504,7 @@ export class CartDataService extends SupabaseBaseService {
       // Extraire la consigne (caution remboursable)
       let consigneTTC = 0;
       if (!priceError && priceData && priceData.length > 0) {
-        const consigneStr = priceData[0]?.pri_consigne_ttc;
-        if (consigneStr && consigneStr.trim() !== '') {
-          consigneTTC = parseFloat(consigneStr) || 0;
-        }
+        consigneTTC = Number(priceData[0]?.pri_consigne_ttc_n) || 0;
       }
 
       // this.logger.log(

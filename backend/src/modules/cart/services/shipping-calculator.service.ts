@@ -197,8 +197,8 @@ export class ShippingCalculatorService
     try {
       const { data, error } = await this.supabase
         .from('pieces_price')
-        .select('pri_piece_id, pri_poids, pri_udm_poids')
-        .in('pri_piece_id', productIds);
+        .select('pri_piece_id_i, pri_poids, pri_udm_poids')
+        .in('pri_piece_id_i', productIds);
 
       if (error) {
         this.logger.warn(
@@ -224,7 +224,7 @@ export class ShippingCalculatorService
             udm === 'KGM' && rawWeight <= this.KGM_THRESHOLD
               ? rawWeight * 1000
               : rawWeight;
-          weightMap.set(row.pri_piece_id, weightG);
+          weightMap.set(String(row.pri_piece_id_i), weightG);
         }
       }
 

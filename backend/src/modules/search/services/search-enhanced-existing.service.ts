@@ -76,7 +76,7 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
         // Recherche par référence équipementier (indexation)
         this.client
           .from(TABLES.pieces_ref_search)
-          .select('prs_piece_id, prs_kind, prs_ref')
+          .select('prs_piece_id_i, prs_kind, prs_ref')
           .or(queryVariants.map((v) => `prs_search.eq.${v}`).join(',')),
         // Recherche par référence OEM constructeur (indexation)
         this.client
@@ -97,8 +97,8 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
 
       if (refSearchResult.data) {
         refSearchResult.data.forEach((r) => {
-          const id = parseInt(r.prs_piece_id);
-          if (!isNaN(id)) {
+          const id = r.prs_piece_id_i;
+          if (id != null) {
             allPieceIds.add(id);
             // prs_kind: 0=match exact, 1=match partiel, etc. (plus bas = plus pertinent)
             const currentScore = pieceRelevanceMap.get(id);
@@ -344,15 +344,15 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
           this.client
             .from(TABLES.pieces_price)
             .select('*')
-            .in('pri_piece_id', pieceIds)
+            .in('pri_piece_id_i', pieceIds)
             .eq('pri_dispo', '1')
             .order('pri_type', { ascending: false }),
 
           // Images des pièces
           this.client
             .from(TABLES.pieces_media_img)
-            .select('pmi_piece_id, pmi_folder, pmi_name')
-            .in('pmi_piece_id', pieceIds)
+            .select('pmi_piece_id_i, pmi_folder, pmi_name')
+            .in('pmi_piece_id_i', pieceIds)
             .eq('pmi_display', 1)
             .limit(pieceIds.length),
 
@@ -380,16 +380,16 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
       // Index pour performance
       const pricesByPiece = new Map();
       prices.forEach((price) => {
-        if (!pricesByPiece.has(price.pri_piece_id)) {
-          pricesByPiece.set(price.pri_piece_id, []);
+        if (!pricesByPiece.has(price.pri_piece_id_i)) {
+          pricesByPiece.set(price.pri_piece_id_i, []);
         }
-        pricesByPiece.get(price.pri_piece_id).push(price);
+        pricesByPiece.get(price.pri_piece_id_i).push(price);
       });
 
       const imagesByPiece = new Map();
       images.forEach((img) => {
         imagesByPiece.set(
-          img.pmi_piece_id,
+          img.pmi_piece_id_i,
           `rack/${img.pmi_folder}/${img.pmi_name}`,
         );
       });
@@ -421,10 +421,10 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
 
         // Calcul du prix total (logique PHP)
         const prixVenteTTC = mainPrice
-          ? parseFloat(mainPrice.pri_vente_ttc) * piece.piece_qty_sale
+          ? (Number(mainPrice.pri_vente_ttc_n) || 0) * piece.piece_qty_sale
           : 0;
         const prixConsigneTTC = mainPrice
-          ? parseFloat(mainPrice.pri_consigne_ttc) * piece.piece_qty_sale
+          ? (Number(mainPrice.pri_consigne_ttc_n) || 0) * piece.piece_qty_sale
           : 0;
 
         // Détermination de la qualité (logique PHP)

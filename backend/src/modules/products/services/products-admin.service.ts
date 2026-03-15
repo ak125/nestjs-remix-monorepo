@@ -310,7 +310,7 @@ export class ProductsAdminService extends SupabaseBaseService {
       const { data: pricesData } = await this.client
         .from(TABLES.pieces_price)
         .select('*')
-        .in('pri_piece_id', pieceIds);
+        .in('pri_piece_id_i', pieceIds);
 
       // Créer des maps pour lookup rapide
       const marquesMap = new Map(
@@ -321,7 +321,7 @@ export class ProductsAdminService extends SupabaseBaseService {
       );
       const pricesMap = new Map();
       pricesData?.forEach((price) => {
-        const pieceId = parseInt(price.pri_piece_id, 10);
+        const pieceId = price.pri_piece_id_i;
         if (!pricesMap.has(pieceId)) {
           pricesMap.set(pieceId, []);
         }
@@ -337,10 +337,10 @@ export class ProductsAdminService extends SupabaseBaseService {
         const priceData =
           prices.find((p) => p.pri_dispo === '1') || prices[0] || {};
 
-        const prixPublicTTC = parseFloat(priceData.pri_vente_ttc || '0');
-        const prixProHT = parseFloat(priceData.pri_vente_ht || '0');
-        const consigneTTC = parseFloat(priceData.pri_consigne_ttc || '0');
-        const marge = parseFloat(priceData.pri_marge || '0');
+        const prixPublicTTC = Number(priceData.pri_vente_ttc_n) || 0;
+        const prixProHT = Number(priceData.pri_vente_ht_n) || 0;
+        const consigneTTC = Number(priceData.pri_consigne_ttc_n) || 0;
+        const marge = Number(priceData.pri_marge_n) || 0;
 
         const margeCalculee =
           marge > 0

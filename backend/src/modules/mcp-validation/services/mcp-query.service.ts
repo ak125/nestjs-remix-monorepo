@@ -209,14 +209,14 @@ export class McpQueryService extends SupabaseBaseService {
           `
           pri_id,
           pri_qte_cond,
-          pri_vente_ht,
-          pri_vente_ttc,
+          pri_vente_ht_n,
+          pri_vente_ttc_n,
           pri_consigne_ht,
-          pri_consigne_ttc,
+          pri_consigne_ttc_n,
           pri_updated_at
         `,
         )
-        .eq('pri_piece_id', pieceId)
+        .eq('pri_piece_id_i', pieceId)
         .eq('pri_active', true)
         .single();
 
@@ -240,10 +240,10 @@ export class McpQueryService extends SupabaseBaseService {
       return {
         available,
         quantity: data.pri_qte_cond || 0,
-        unitPriceHT: data.pri_vente_ht,
-        unitPriceTTC: data.pri_vente_ttc,
+        unitPriceHT: data.pri_vente_ht_n,
+        unitPriceTTC: data.pri_vente_ttc_n,
         consigneHT: data.pri_consigne_ht,
-        consigneTTC: data.pri_consigne_ttc,
+        consigneTTC: data.pri_consigne_ttc_n,
         priceValidUntil: new Date(Date.now() + validityMs).toISOString(),
         verifiedAt: new Date().toISOString(),
       };
@@ -552,7 +552,7 @@ export class McpQueryService extends SupabaseBaseService {
       // Search in pieces_ref_search table
       const { data, error } = await this.supabase
         .from('pieces_ref_search')
-        .select('prs_piece_id, prs_ref, prs_brand_name, prs_type')
+        .select('prs_piece_id_i, prs_ref, prs_brand_name, prs_type')
         .ilike('prs_ref', reference)
         .limit(5);
 
@@ -565,11 +565,11 @@ export class McpQueryService extends SupabaseBaseService {
       }
 
       // Get OEM codes for the piece
-      const pieceId = data[0].prs_piece_id;
+      const pieceId = data[0].prs_piece_id_i;
       const { data: oemData } = await this.supabase
         .from('pieces_ref_search')
         .select('prs_ref')
-        .eq('prs_piece_id', pieceId)
+        .eq('prs_piece_id_i', pieceId)
         .eq('prs_type', 'oem');
 
       return {
@@ -663,11 +663,11 @@ export class McpQueryService extends SupabaseBaseService {
 
     const { data } = await this.supabase
       .from('pieces_ref_search')
-      .select('prs_piece_id')
+      .select('prs_piece_id_i')
       .ilike('prs_ref', ref)
       .limit(1)
       .single();
 
-    return data ? { id: data.prs_piece_id } : null;
+    return data ? { id: data.prs_piece_id_i } : null;
   }
 }
