@@ -28,7 +28,7 @@ export interface EvidenceGradeThreshold {
 }
 
 export const EVIDENCE_GRADE_THRESHOLDS: EvidenceGradeThreshold[] = [
-  { grade: 'strong', maxTruthLevel: 'L1', minPurityScore: 85 },
+  { grade: 'strong', maxTruthLevel: 'L2', minPurityScore: 85 },
   { grade: 'support-only', maxTruthLevel: 'L2', minPurityScore: 70 },
   { grade: 'weak-support', maxTruthLevel: 'L2', minPurityScore: 0 },
   // Anything else (L3, L4, low purity) = forbidden-for-claim
@@ -51,7 +51,7 @@ export function computeEvidenceGrade(
   const rank = TRUTH_LEVEL_RANK[truthLevel ?? 'L4'] ?? 4;
   const purity = purityScore ?? 0;
 
-  if (rank <= 1 && purity >= 85) return 'strong';
+  if (rank <= 2 && purity >= 85) return 'strong';
   if (rank <= 2 && purity >= 70) return 'support-only';
   if (rank <= 2) return 'weak-support';
   return 'forbidden-for-claim';
