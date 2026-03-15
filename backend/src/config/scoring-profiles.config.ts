@@ -18,6 +18,7 @@ export const SCORING_VERSION = 'v2.1';
  */
 export type ScoringPageType =
   | 'R1_pieces'
+  | 'R2_product'
   | 'R3_guide'
   | 'R3_conseils'
   | 'R4_reference'
@@ -388,6 +389,7 @@ import { RoleId } from './role-ids';
 
 const SCORING_PAGE_TYPE_TO_ROLE_ID: Record<ScoringPageType, RoleId> = {
   R1_pieces: RoleId.R1_ROUTER,
+  R2_product: RoleId.R2_PRODUCT,
   R3_guide: RoleId.R6_GUIDE_ACHAT, // "guide d'achat" = R6, NOT R3
   R3_conseils: RoleId.R3_CONSEILS,
   R4_reference: RoleId.R4_REFERENCE,
