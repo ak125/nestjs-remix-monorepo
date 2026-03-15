@@ -319,8 +319,8 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
     - `pieces_ref_search` : table swap v2 (avec prs_piece_id_i), old gardée. Index kind recréé, autres index pending (timeout 70M+)
     - ✅ FK VALIDATED sur 6 tables (`*_piece_id_i` → `pieces(piece_id)`)
     - ✅ Tables _old droppées (pieces_relation_type_old, pieces_ref_search_old)
-    - ⏳ Index manquants `pieces_ref_search` : search, prb_id, prb_id_covering, ref_trgm (timeout 70M+)
-    - ⏳ Index `type_composite` sur `pieces_relation_type` (timeout 146M)
+    - ✅ Index `pieces_ref_search` recréés (7/7) via pg_cron background
+    - ✅ Index `type_composite` `pieces_relation_type` recréé via pg_cron background
 
 ### Vague 5 — Migration code (backend)
 
