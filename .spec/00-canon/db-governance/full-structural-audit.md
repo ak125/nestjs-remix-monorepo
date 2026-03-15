@@ -2,7 +2,7 @@
 
 > **Version** : 1.5.0
 > **Date** : 2026-03-15
-> **Statut** : **CLOTURE** — Toutes vagues (2-6) terminees. 9 FK, 3 PK, 15 shadow cols, 10 tables droppees. auto_type code DEFERRED (gain nul).
+> **Statut** : **CLOTURE** — Toutes vagues (2-6) terminees. 9 FK validees, 3 PK ajoutees, 15 shadow cols, 14 tables droppees (3 legacy + 1 deprecated + 1 backup + 9 orphelines). auto_type code DEFERRED (gain nul).
 > **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 > **Methode** : `information_schema` + `pg_constraint` + `pg_stat_user_tables` + grep backend
 > **Perimetre** : toutes les 265 tables du schema `public` (177 avec donnees, 88 vides)
@@ -41,7 +41,7 @@
 
 ---
 
-## 2. Tables Tier 1 — Catalogue MassDoc (>100 MB) — Etat post-V2
+## 2. Tables Tier 1 — Catalogue MassDoc (>100 MB) — Etat final post-remediation
 
 | Table | Taille | Rows | PK | FK | ID TEXT | Prix TEXT | SoT | MassDoc Role | Verdict | Gate | Readiness MassDoc |
 |-------|--------|------|----|----|--------|----------|-----|-------------|---------|------|-----------------|
@@ -205,16 +205,16 @@
 
 > 6 FK vers `pieces(piece_id)` via shadow cols INTEGER. Code backend migre (V5a/V5b). 707 orphelins supprimes prealablement.
 
-### Categorie B+C — ✅ DONE (FK ajoutees, validation pg_cron en cours)
+### Categorie B+C — ✅ DONE (FK validees 2026-03-15)
 
 | Table source | Colonne | Table cible | Colonne cible | FK constraint | Status |
 |-------------|---------|-------------|---------------|---------------|--------|
-| pieces_relation_criteria | rcp_type_id | auto_type | type_id_i | fk_pieces_relation_criteria_type | ✅ NOT VALID (validating via pg_cron) |
-| pieces_relation_type | rtp_piece_id | pieces | piece_id | fk_pieces_relation_type_piece | ✅ NOT VALID (validating via pg_cron) |
-| pieces_relation_type | rtp_type_id | auto_type | type_id_i | fk_pieces_relation_type_type | ✅ NOT VALID (validating via pg_cron) |
+| pieces_relation_criteria | rcp_type_id | auto_type | type_id_i | fk_pieces_relation_criteria_type | ✅ VALIDATED |
+| pieces_relation_type | rtp_piece_id | pieces | piece_id | fk_pieces_relation_type_piece | ✅ VALIDATED |
+| pieces_relation_type | rtp_type_id | auto_type | type_id_i | fk_pieces_relation_type_type | ✅ VALIDATED |
 
 > Tous INTEGER→INTEGER, 0 orphelins (sampled). UNIQUE index `idx_auto_type_type_id_i_unique` cree sur auto_type(type_id_i) comme cible FK.
-> Validation en background via pg_cron (146M + 157M rows).
+> Validation completee via pg_cron (146M + 157M rows, confirme `convalidated = true`).
 
 **Rappel** : toute FK ajoutee utilisera le pattern `NOT VALID` + `VALIDATE` en background (zero lock).
 
