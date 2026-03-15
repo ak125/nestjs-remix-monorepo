@@ -88,7 +88,7 @@
 | seo_link_impressions | 25 MB | 104K | ✓ | 0 | SEO | non_tecdoc | OK | ready |
 | __seo_gamme_conseil | 18 MB | 2.2K | ✓ | 0 | SEO | seo_dep | OK | ready |
 | pieces_criteria_link | 18 MB | 77K | ✓ | 0 | Catalog | source_catalog | TYPE_MIGRATION_REQUIRED | needs_validation |
-| __cross_gamme_car_deprecated | 13 MB | 75K | ✓ | 0 | Cross | deprecated | ✅ DEPRECATED (renamed V5d) | drop_ready |
+| ~~__cross_gamme_car_deprecated~~ | — | — | — | — | Cross | — | ✅ DROPPED (2026-03-15) | — |
 | __seo_keywords | 11 MB | 4.6K | ✓ | 0 | SEO | seo_dep | OK | ready |
 | __seo_keyword_type_mapping | 11 MB | **0** | ✓ | 1 | SEO | seo_dep | EMPTY_ACTIVE_DESIGN | ready |
 | pieces_gamme | 10 MB | 9.7K | ✓ | 0 | Catalog | source_catalog | TYPE_MIGRATION_REQUIRED | needs_validation |
@@ -98,7 +98,7 @@
 
 ## 4. Tables Tier 3 — Config/Lookup/Small (<1 MB, >0 rows)
 
-~60 tables actives. Toutes ont des PK (sauf `rm_rebuild_queue`). Points notables :
+~60 tables actives. Toutes ont des PK. Points notables :
 
 | Table | Rows | Probleme | MassDoc Role | Verdict | Gate |
 |-------|------|----------|-------------|---------|------|
@@ -119,11 +119,11 @@
 
 | Classification | Count | Critere | Action |
 |---------------|-------|---------|--------|
-| **EMPTY_ACTIVE_DESIGN** | ~25 | Infrastructure deployee, consumers code confirmes | KEEP |
+| **EMPTY_ACTIVE_DESIGN** | **~36** | Infrastructure deployee, consumers code/RPCs confirmes | KEEP |
 | **EMPTY_STAGING_REQUIRED** | ~10 | `stg_*`, `__staging_*`, `import_*` — pipeline import | KEEP |
-| **EMPTY_OPTIONAL_FEATURE** | ~15 | Features pas encore activees (marketing, video, lighthouse) | KEEP, monitor |
-| **EMPTY_ORPHAN_SUSPECT** | ~10 | 0 consumers code, pas de migration recente | Grep backend avant decision |
-| **EMPTY_DROP_CANDIDATE** | ~8 | 0 rows, 0 consumers, 0 FK, aucun usage detecte | A valider puis DROP |
+| **EMPTY_OPTIONAL_FEATURE** | **~19** | Features non activees (marketing, video, commerce/support) | KEEP, monitor |
+| ~~**EMPTY_ORPHAN_SUSPECT**~~ | **0** | ~~10~~ — tous reclasses (ACTIVE_DESIGN ou DROPPED) | ✅ RESOLVED |
+| ~~**EMPTY_DROP_CANDIDATE**~~ | **0** | ~~8~~ — 9 droppees (monitoring + misc), 4 reclassees OPTIONAL | ✅ RESOLVED |
 
 ### Detail par groupe
 
@@ -137,11 +137,11 @@
 | Knowledge graph | EMPTY_OPTIONAL_FEATURE | 8 | `kg_cases`, `kg_*_history`, `kg_*_log` |
 | Marketing | EMPTY_OPTIONAL_FEATURE | 6 | `__marketing_campaigns/weekly_plans/...` |
 | Video | EMPTY_OPTIONAL_FEATURE | 3 | `__video_assets/variants/templates` |
-| Monitoring | EMPTY_ORPHAN → **DROP_CANDIDATE** | 4 | `__lighthouse_alerts`, `__lighthouse_runs`, `__cron_runs`, `__airlock_bundles` — 0 code + 0 RPCs |
+| ~~Monitoring~~ | ~~DROP_CANDIDATE~~ → **DROPPED** | 4 | ~~`__lighthouse_alerts`, `__lighthouse_runs`, `__cron_runs`, `__airlock_bundles`~~ — DROPPED 2026-03-15 |
 | SEO empty | ~~ORPHAN~~ → **ACTIVE_DESIGN** | 5 | `__seo_quality_log` (scoring), `__seo_diagnostic` (cockpit), `__seo_crawl_log` (googlebot), `__seo_interpolation_alerts` (RPC purge), `__seo_index_history` (cockpit+sitemap) — consumers confirmes |
 | Quarantine/Pipeline | ~~ORPHAN~~ → **ACTIVE_DESIGN** | 4 | `__quarantine_items` (10+ RPCs), `__quarantine_history` (5+ RPCs), `pipeline_event_log` (2 RPCs), `seo_link_metrics_daily` (1 RPC) |
 | Killswitch | ~~ORPHAN~~ → **ACTIVE_DESIGN** | 2 | `_killswitch_audit` (3 RPCs), `_killswitch_breakglass` (4 RPCs) |
-| Misc orphan | **DROP_CANDIDATE** | 5 | `__seo_sitemap_file`, `__sitemap_gamme`, `vehicule_v1_dominant`, `__agent_metrics`, `ticket_responses` — 0 code + 0 RPCs |
+| ~~Misc orphan~~ | ~~DROP_CANDIDATE~~ → **DROPPED** | 5 | ~~`__seo_sitemap_file`, `__sitemap_gamme`, `vehicule_v1_dominant`, `__agent_metrics`, `ticket_responses`~~ — DROPPED 2026-03-15 |
 | Commerce/Support | ~~EMPTY_DROP_CANDIDATE~~ → **EMPTY_OPTIONAL_FEATURE** | 4 | `reviews` (SupportModule), `support_tickets` (SupportModule), `error_logs` (ErrorLogService + SEO), `error_statistics` (types) — **consumers confirmes, KEEP** |
 
 > **Regle** : aucune table classee EMPTY_DROP_CANDIDATE ne peut etre supprimee sans double validation :
@@ -160,7 +160,7 @@
 | ~~`pieces_marque_next`~~ | — | — | NEXT | ✅ DROPPED V3 (2026-03-15) | — | — |
 | ~~`golden_set_products`~~ | — | — | — | ✅ DROPPED V3 (2026-03-15) | — | — |
 | `__cross_gamme_car_new` | 41 MB | 182K | — | ✅ UNIFIED V5d — sole table, 182611 rows | **OK** | ready |
-| `__cross_gamme_car_deprecated` | 13 MB | 75K | OLD | ✅ DEPRECATED V5d — renamed, 0 consumers | **DROP_READY** | ready |
+| ~~`__cross_gamme_car_deprecated`~~ | — | — | OLD | ✅ DROPPED (2026-03-15) — data in `_new` (superset) | — | — |
 | `gate_thresholds` | 96 KB | 17 | — | measured (config active) | KEEP | ready |
 
 ### Doublons suspects — RESOLVED
@@ -176,10 +176,10 @@
 
 | Table | Taille | IDs TEXT | Prix TEXT | Dates TEXT | MassDoc Role | Priorite |
 |-------|--------|---------|----------|-----------|-------------|----------|
-| `pieces_price` | 354 MB | 4 | **11** | 2 | source_catalog | **P0** |
+| ~~`pieces_price`~~ | 354 MB | ~~4~~ | ~~**11**~~ | ~~2~~ | source_catalog | ✅ **DONE** V4b+V5a |
 | `pieces_criteria` | 5.4 GB | **5** | 0 | 1 | source_catalog | P1 |
 | `___xtr_msg` | 11 GB | **7** | 0 | 1 | non_tecdoc | P1 |
-| `auto_type` | 37 MB | **4** | 0 | **4** | source_catalog | P1 |
+| `auto_type` | 37 MB | **4** | 0 | **4** | source_catalog | ✅ **DONE** V4b (shadow cols, code deferred) |
 | `___xtr_order_line` | 2.6 MB | 7 | **20** | 1 | non_tecdoc | P2 |
 | `___xtr_order` | 1.8 MB | 7 | **8** | 2 | non_tecdoc | P2 |
 | `___xtr_invoice*` | 304 KB x2 | 10 | **16** | 1 | non_tecdoc | P2 |
@@ -230,12 +230,12 @@
 | ~~**FK_CANDIDATE_A**~~ | **0** | ~~6~~ — toutes validees V4c |
 | ~~**FK_CANDIDATE_B**~~ | **0** | ~~2~~ — resolues (rtp_piece_id→pieces, rcp_type_id→auto_type) |
 | ~~**FK_CANDIDATE_C**~~ | **0** | ~~1~~ — resolue (rtp_type_id→auto_type.type_id_i) |
-| **EMPTY_ACTIVE_DESIGN** | ~25 | Tables vides, infrastructure deployee |
+| **EMPTY_ACTIVE_DESIGN** | **~36** | Tables vides, infrastructure deployee + reclassees (quarantine, killswitch, SEO) |
 | **EMPTY_STAGING_REQUIRED** | ~10 | Tables import/staging |
-| **EMPTY_OPTIONAL_FEATURE** | ~15 | Features non activees |
-| **EMPTY_ORPHAN_SUSPECT** | ~10 | A verifier par grep |
-| **EMPTY_DROP_CANDIDATE** | **9** | 4 monitoring + 5 misc orphelines (0 code + 0 RPCs) — a valider puis DROP |
-| ~~**DROP_READY**~~ | **1** | ~~3 dropped V3~~ + `__cross_gamme_car_deprecated` (drop pending) |
+| **EMPTY_OPTIONAL_FEATURE** | **~19** | Features non activees (marketing, video, commerce/support) |
+| ~~**EMPTY_ORPHAN_SUSPECT**~~ | **0** | ~~10~~ — tous reclasses ou droppees |
+| ~~**EMPTY_DROP_CANDIDATE**~~ | **0** | ~~9~~ — toutes droppees (monitoring + misc) |
+| ~~**DROP_READY**~~ | **0** | ~~3 V3 + 1 deprecated~~ — toutes droppees |
 | ~~**DUPLICATE_SCOPE**~~ | **0** | ~~3~~ — tous resolus V5d |
 | **NEAR_EMPTY** | ~8 | 1 row, probablement init/test |
 
@@ -265,19 +265,17 @@ Une table peut passer en Vague 4 (corrections structurelles) **seulement si** :
 
 > Detail de l'execution dans `phase-3-v2-validation-plan.md`.
 
-### Priorite operationnelle V2
+### Priorite operationnelle V2 — ✅ TOUTES RESOLUES
 
-Ordre de traitement (tables bloquantes pour readiness MassDoc en premier) :
-
-1. `pieces_relation_type` — blocked_by_pk, 146M rows, hot path F4
-2. `pieces_media_img` — blocked_by_pk, 4.6M rows
-3. `pieces_price` — blocked_by_type_debt, 11 prix TEXT (P0)
-4. `pieces_criteria` — blocked_by_type_debt, 5 IDs TEXT
-5. `auto_type` — type_migration, 4 IDs + 4 dates TEXT
-6. `__cross_gamme_car` / `_new` — duplicate_scope
-7. `___config_old` / `pieces_marque_next` / `golden_set_products` — drop_ready (trivial)
-
-> Une table peut sortir de V2 avec statut `ready_for_v4`, `blocked` (investigation supplementaire), ou `deferred` (hors perimetre MassDoc immediat).
+| # | Table | Probleme initial | Resolution | Date |
+|---|-------|-----------------|------------|------|
+| 1 | `pieces_relation_type` | blocked_by_pk (146M) | ✅ PK + 2 FK | 2026-03-15 |
+| 2 | `pieces_media_img` | blocked_by_pk (4.6M) | ✅ PK + FK | 2026-03-15 |
+| 3 | `pieces_price` | type_debt P0 (11 prix TEXT) | ✅ Shadow cols + code V5a + FK | 2026-03-15 |
+| 4 | `pieces_criteria` | type_debt (5 IDs TEXT) | ✅ FK (IDs deferred) | 2026-03-15 |
+| 5 | `auto_type` | type_migration (4 IDs + 4 dates) | ✅ Shadow cols + UNIQUE idx (code deferred) | 2026-03-15 |
+| 6 | `__cross_gamme_car` | duplicate_scope | ✅ Unified + DROPPED | 2026-03-15 |
+| 7 | `___config_old` et al. | drop_ready | ✅ DROPPED V3 | 2026-03-15 |
 
 ---
 
@@ -381,7 +379,7 @@ Ordre de traitement (tables bloquantes pour readiness MassDoc en premier) :
 | Table | Backend consumers | RPC consumers | SoT verdict | Confidence |
 |-------|-------------------|---------------|-------------|------------|
 | `__cross_gamme_car_new` | 2 (blog-article-relation, gamme-detail-enricher) | 6+ RPCs (unified) | **derived** (sole table) | high |
-| `__cross_gamme_car_deprecated` | 0 | 0 | **deprecated** (renamed 2026-03-15) | measured |
+| ~~`__cross_gamme_car_deprecated`~~ | 0 | 0 | **DROPPED** (2026-03-15) | measured |
 | `pieces_ref_search` | 6 services | 4 RPCs | **derived** (search index) | high |
 
 > Aucune des tables n'est source de verite. `__cross_gamme_car` a ete depreciee (renommee `_deprecated` le 2026-03-15). Tout le code et RPCs pointent sur `_new`.
@@ -505,7 +503,7 @@ Ordre de traitement (tables bloquantes pour readiness MassDoc en premier) :
 | **auto_type** | source | — | ✓ | ✅ shadow cols (code deferred) | — | ✅ **ready** |
 | **__cross_gamme_car_new** | derived | ✅ unified (182K) | ✓ | TEXT | — | ✅ **ready** |
 
-> **Resultat final V1.4.0** : **11/11 tables ready.** Toutes les PK, FK, shadow cols et migrations donnees sont terminees. Code backend migre pour pieces_price (V5a) et piece_id FK (V5b). auto_type code deferred (shadow cols existent en DB).
+> **Resultat final V1.5.0** : **11/11 tables ready.** Toutes les PK, FK, shadow cols et migrations donnees sont terminees. Code backend migre pour pieces_price (V5a) et piece_id FK (V5b). auto_type code deferred (shadow cols existent en DB).
 
 ---
 
