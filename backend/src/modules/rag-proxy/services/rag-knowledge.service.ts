@@ -267,6 +267,42 @@ export class RagKnowledgeService {
         verification_status: String(d.verification_status || 'pending'),
       }));
 
+      // Enrich from DB: add gamme_aliases, phase1_status, foundation_gate_passed
+      // RAG service IDs use dots (web.hash-s001), DB source uses slashes (web/hash)
+      try {
+        const { data: dbDocs } = await this.ragCleanupService.client
+          .from('__rag_knowledge')
+          .select(
+            'source, gamme_aliases, status, phase1_status, foundation_gate_passed',
+          )
+          .eq('status', 'active');
+
+        if (dbDocs) {
+          // Build map keyed by normalized source (no extension, no segment suffix)
+          const dbMap = new Map(
+            dbDocs.map((d) => [d.source.replace(/\.md$/, ''), d]),
+          );
+          for (const doc of mapped) {
+            // Normalize RAG service ID: web.hash-s001 → web/hash
+            const normalizedId = doc.id
+              .replace(/\./g, '/')
+              .replace(/-s\d+$/, '');
+            const dbDoc = dbMap.get(normalizedId) || dbMap.get(doc.id);
+            if (dbDoc) {
+              (doc as Record<string, unknown>).gamme_aliases =
+                dbDoc.gamme_aliases;
+              (doc as Record<string, unknown>).status = dbDoc.status;
+              (doc as Record<string, unknown>).phase1_status =
+                dbDoc.phase1_status;
+              (doc as Record<string, unknown>).foundation_gate_passed =
+                dbDoc.foundation_gate_passed;
+            }
+          }
+        }
+      } catch {
+        /* non-critical DB enrichment */
+      }
+
       if (prefix) {
         return mapped.filter((d) => d.id.startsWith(prefix));
       }
@@ -280,6 +316,39 @@ export class RagKnowledgeService {
       );
       throw error;
     }
+  }
+
+  /**
+   * List knowledge docs directly from Supabase DB (authoritative source).
+   * Includes gamme_aliases, phase1_status, foundation_gate_passed.
+   */
+  async listKnowledgeDocsFromDb(
+    prefix?: string,
+  ): Promise<Array<Record<string, unknown>>> {
+    let query = this.ragCleanupService.client
+      .from('__rag_knowledge')
+      .select(
+        'id, title, source, category, truth_level, status, domain, gamme_aliases, retrievable, fingerprint, updated_at',
+      )
+      .eq('status', 'active')
+      .order('updated_at', { ascending: false })
+      .limit(1000);
+
+    if (prefix) {
+      query = query.ilike('source', `${prefix}%`);
+    }
+
+    const { data, error } = await query;
+    if (error) {
+      this.logger.error(
+        `listKnowledgeDocsFromDb FAILED: ${error.message} (code=${error.code}, details=${error.details})`,
+      );
+      return this.listKnowledgeDocsFull(prefix) as Promise<
+        Array<Record<string, unknown>>
+      >;
+    }
+    this.logger.log(`listKnowledgeDocsFromDb OK: ${data?.length || 0} docs`);
+    return data || [];
   }
 
   /**

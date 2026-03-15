@@ -27,6 +27,8 @@ import { RagIngestionService } from './services/rag-ingestion.service';
 import { RagImageManagementService } from './services/rag-image-management.service';
 import { RagVideoManagementService } from './services/rag-video-management.service';
 import { RagGammeDetectionService } from './services/rag-gamme-detection.service';
+import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audit.service';
+import type { Phase2aArtifactType } from './types/rag-phase2a.types';
 import type { RagDocInput, IngestDecision } from './types/rag-ingest.types';
 import {
   ChatRequestSchema,
@@ -66,6 +68,7 @@ export class RagProxyController {
     private readonly ragImageManagementService: RagImageManagementService,
     private readonly ragVideoManagementService: RagVideoManagementService,
     private readonly ragGammeDetectionService: RagGammeDetectionService,
+    private readonly ragPhase2aShadowAuditService: RagPhase2aShadowAuditService,
   ) {}
 
   @Post('chat')
@@ -125,7 +128,7 @@ export class RagProxyController {
   @ApiOperation({ summary: 'List all knowledge documents with metadata' })
   @ApiResponse({ status: 200, description: 'List of documents' })
   async listKnowledgeDocs(@Query('prefix') prefix?: string) {
-    return this.ragProxyService.listKnowledgeDocsFull(prefix);
+    return this.ragProxyService.listKnowledgeDocsFromDb(prefix);
   }
 
   @Get('admin/knowledge/doc/:docId')
@@ -691,5 +694,25 @@ export class RagProxyController {
       knowledgeBasePath,
     );
     return { ...result, filesMatched: files.length };
+  }
+
+  // ── Phase 2A — Legacy Adapted Shadow Audit ──────────────
+
+  @Post('phase2a/audit')
+  @UseGuards(IsAdminGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Run Phase 2A shadow audit (legacy→canonical projection)',
+  })
+  @ApiResponse({ status: 200, description: 'Audit report' })
+  async runPhase2aAudit(
+    @Body()
+    body?: Record<string, unknown>,
+  ) {
+    return this.ragPhase2aShadowAuditService.runAudit(
+      body as
+        | { artifactTypes?: Phase2aArtifactType[]; dryRun?: boolean }
+        | undefined,
+    );
   }
 }

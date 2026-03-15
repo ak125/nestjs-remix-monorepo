@@ -115,7 +115,7 @@ export class R6GuideService {
     const rawTree =
       (row.sgpg_decision_tree as Array<{
         question: string;
-        options: string[];
+        options: Array<string | { label?: string; outcome?: string }>;
         outcome_map: Record<string, string>;
       }>) || [];
     const summaryPickFast: R6DecisionNode[] = rawTree
@@ -129,17 +129,19 @@ export class R6GuideService {
       .map((node, i) => ({
         id: `dt-${i}`,
         question: this.sanitizeRagLeaks(node.question),
-        options: (node.options || []).map((opt) => {
-          const label = typeof opt === 'string' ? opt : opt?.label || '';
-          const outcome =
-            typeof opt === 'string'
-              ? node.outcome_map?.[opt] || ''
-              : opt?.outcome || node.outcome_map?.[label] || '';
-          return {
-            label: this.sanitizeRagLeaks(label),
-            outcome,
-          };
-        }),
+        options: (node.options || []).map(
+          (opt: string | { label?: string; outcome?: string }) => {
+            const label = typeof opt === 'string' ? opt : opt?.label || '';
+            const outcome =
+              typeof opt === 'string'
+                ? node.outcome_map?.[opt] || ''
+                : opt?.outcome || node.outcome_map?.[label] || '';
+            return {
+              label: this.sanitizeRagLeaks(label),
+              outcome,
+            };
+          },
+        ),
       }));
 
     // Quality tiers from selection_criteria
