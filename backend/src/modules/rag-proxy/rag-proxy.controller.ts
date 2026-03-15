@@ -136,7 +136,7 @@ export class RagProxyController {
   @ApiOperation({ summary: 'Get a single knowledge document by ID' })
   @ApiResponse({ status: 200, description: 'Document content and metadata' })
   async getKnowledgeDoc(@Param('docId') docId: string) {
-    return this.ragProxyService.getKnowledgeDoc(docId);
+    return this.ragProxyService.getKnowledgeDocFromDb(docId);
   }
 
   @Get('admin/corpus/stats')

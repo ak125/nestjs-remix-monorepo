@@ -66,6 +66,10 @@ export class RagProxyService {
     return this.knowledgeService.getKnowledgeDoc(docId);
   }
 
+  getKnowledgeDocFromDb(docId: string) {
+    return this.knowledgeService.getKnowledgeDocFromDb(docId);
+  }
+
   listKnowledgeDocs(prefix?: string) {
     return this.knowledgeService.listKnowledgeDocs(prefix);
   }

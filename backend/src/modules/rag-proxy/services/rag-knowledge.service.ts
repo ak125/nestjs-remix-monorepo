@@ -352,6 +352,30 @@ export class RagKnowledgeService {
   }
 
   /**
+   * Get a single knowledge doc directly from Supabase DB by UUID.
+   * Falls back to RAG proxy if not found in DB.
+   */
+  async getKnowledgeDocFromDb(
+    docId: string,
+  ): Promise<Record<string, unknown> | null> {
+    const { data, error } = await this.ragCleanupService.client
+      .from('__rag_knowledge')
+      .select(
+        'id, title, content, source, category, truth_level, status, domain, gamme_aliases, retrievable, fingerprint, updated_at, created_at',
+      )
+      .eq('id', docId)
+      .single();
+
+    if (error || !data) {
+      this.logger.warn(
+        `getKnowledgeDocFromDb: doc ${docId} not found in DB, trying RAG proxy`,
+      );
+      return this.getKnowledgeDoc(docId);
+    }
+    return data;
+  }
+
+  /**
    * Get corpus stats for the admin dashboard.
    */
   async getCorpusStats(): Promise<{
