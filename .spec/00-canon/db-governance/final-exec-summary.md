@@ -1,7 +1,7 @@
 # DB Governance — Executive Summary
 
 > **Date** : 2026-03-14
-> **Version** : 1.4.0
+> **Version** : 1.4.2
 > **Statut** : COMPLETE
 > **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 > **Reference** : change-control-plan.md V1.3.0
@@ -45,6 +45,8 @@
 | `v_seo_quality_stats` | 0 consumers, table source vide |
 
 ### Indexes supprimes (27)
+
+> 25 issus du scope 0-scan audite + 2 complementaires (C4 phantom restants).
 
 | Batch | Indexes | Taille | Tables |
 |-------|---------|--------|--------|
@@ -142,6 +144,7 @@ ANALYZE + VACUUM executes le 2026-03-14. M3/M4 ci-dessous = valeurs post-interve
 | pieces_criteria | 14K | 0.1% |
 
 > pieces_ref_ean et storage.objects resolus (0% dead tuples post-VACUUM).
+> `__sitemap_p_link` (19.3% dead tuples) : a surveiller au prochain snapshot M4. VACUUM si la tendance reste elevee.
 
 ### M6 — Unused indexes (top 5)
 | Index | Taille | idx_scan |
@@ -157,6 +160,8 @@ ANALYZE + VACUUM executes le 2026-03-14. M3/M4 ci-dessous = valeurs post-interve
 |-------|----------|--------|--------|
 | idx_pieces_criteria_cri100_piece_int | 85,439 | 27 MB | ✅ actif |
 | idx_pieces_price_piece_id_int_full | 86,369 | 9.7 MB | ✅ actif |
+
+> `___xtr_msg_pkey` (714 MB, 0 scan) : PK structurelle, non candidate au DROP. Surveillee comme signal d'usage uniquement.
 
 27 indexes Phase 1 confirmes absents (spot-check 14 noms = 0 resultats).
 
@@ -175,7 +180,7 @@ ANALYZE + VACUUM executes le 2026-03-14. M3/M4 ci-dessous = valeurs post-interve
 | Phase 2B secondary RPCs | cloturee (6 RPCs <65ms) |
 | Phase 3 regles anti-regression | documentees (R1-R4) |
 | Phase 4 dashboard admin | deploye |
-| Baseline T0 | capture (2026-03-14) |
+| Baseline T0 | capturee (2026-03-14) |
 
 ---
 

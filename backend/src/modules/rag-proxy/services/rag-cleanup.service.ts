@@ -73,6 +73,11 @@ const DEFAULT_QUOTA = 20;
 export class RagCleanupService extends SupabaseBaseService {
   protected override readonly logger = new Logger(RagCleanupService.name);
 
+  /** Public accessor for the Supabase client (used by RagKnowledgeService). */
+  get client() {
+    return this.supabase;
+  }
+
   constructor(
     configService: ConfigService,
     @Inject(forwardRef(() => FrontmatterValidatorService))

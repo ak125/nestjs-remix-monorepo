@@ -39,6 +39,9 @@ import { RagNormalizationService } from './services/rag-normalization.service';
 // Phase 1.6 — Business Admissibility Gate
 import { RagAdmissibilityGateService } from './services/rag-admissibility-gate.service';
 
+// Phase 2A — Legacy Adapted Shadow Audit
+import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audit.service';
+
 // NOTE: CacheModule is @Global() (registered in app.module.ts) — CacheService
 // is available everywhere without explicit import.
 // EventEmitterModule.forRoot() is also imported globally in app.module.ts.
@@ -54,6 +57,8 @@ import { RagAdmissibilityGateService } from './services/rag-admissibility-gate.s
     RagNormalizationService,
     // Phase 1.6 — Business Admissibility Gate
     RagAdmissibilityGateService,
+    // Phase 2A — Legacy Adapted Shadow Audit
+    RagPhase2aShadowAuditService,
     // Existing services
     FrontmatterValidatorService,
     RagCleanupService,
@@ -104,6 +109,8 @@ import { RagAdmissibilityGateService } from './services/rag-admissibility-gate.s
     RagNormalizationService,
     // Phase 1.6 — Business Admissibility Gate
     RagAdmissibilityGateService,
+    // Phase 2A — Legacy Adapted Shadow Audit
+    RagPhase2aShadowAuditService,
   ],
 })
 export class RagProxyModule {}

@@ -96,9 +96,6 @@ export class PasswordService extends SupabaseBaseService {
         });
       }
 
-      // Invalider toutes les sessions utilisateur
-      await this.invalidateAllUserSessions(userId);
-
       // Envoyer un email de confirmation
       await this.mailService.sendMail({
         to: user.cst_mail,
@@ -277,9 +274,6 @@ export class PasswordService extends SupabaseBaseService {
         }
       }
 
-      // Invalider toutes les sessions
-      await this.invalidateAllUserSessions(resetData.user_id);
-
       // Envoyer email de confirmation
       const userData = resetData.___xtr_customer as {
         cst_id?: string;
@@ -358,35 +352,6 @@ export class PasswordService extends SupabaseBaseService {
     if (password.length < 6) {
       throw new BadRequestException(
         'Le mot de passe doit contenir au moins 6 caractères',
-      );
-    }
-  }
-
-  /**
-   * Invalider toutes les sessions d'un utilisateur
-   */
-  private async invalidateAllUserSessions(userId: string): Promise<void> {
-    try {
-      const { error } = await this.client
-        .from(TABLES.sessions)
-        .update({
-          is_active: false,
-          ended_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId);
-
-      if (error) {
-        this.logger.warn(
-          `Failed to invalidate sessions for user ${userId}:`,
-          error,
-        );
-      } else {
-        this.logger.log(`✅ All sessions invalidated for user: ${userId}`);
-      }
-    } catch (error) {
-      this.logger.warn(
-        `Error invalidating sessions for user ${userId}:`,
-        error,
       );
     }
   }

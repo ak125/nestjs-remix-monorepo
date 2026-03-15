@@ -309,7 +309,7 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
 4a. ADD PK (apres V2.1 unicite confirmee) — PARTIAL 2026-03-15
     - ✅ `rm_rebuild_queue` PK (rmrq_gamme_id, rmrq_vehicle_id)
     - ✅ `pieces_media_img` PK (pmi_piece_id, pmi_name) — 10 headers CSV deleted first
-    - ⏳ `pieces_relation_type` — 146M rows, timeout MCP. Requires Supabase Dashboard (no statement_timeout)
+    - ✅ `pieces_relation_type` — 146M rows, table swap batch (v2 with PK, old renamed `_old`). Index `popular` recréé, `type_composite` pending (timeout)
 4b. ADD shadow columns + batch backfill (apres V2.3 cast valide) — DONE 2026-03-15
     - ✅ `pieces_price` : 15 shadow cols (13 NUMERIC + 1 TIMESTAMPTZ + 1 DATE), 442K rows backfilled
     - ✅ `auto_type` : 8 shadow cols (INTEGER), 49K rows backfilled
