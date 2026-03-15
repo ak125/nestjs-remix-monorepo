@@ -699,12 +699,12 @@ function generateVehicleSchema(
             "@type": "ListItem",
             position: 4,
             name: breadcrumb.model,
+            item: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}.html`,
           },
           {
             "@type": "ListItem",
             position: 5,
             name: `${breadcrumb.type} ${vehicle.type_power_ps} ch`,
-            item: canonicalUrl,
           },
         ],
       },
