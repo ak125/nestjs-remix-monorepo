@@ -1,8 +1,8 @@
 # Phase 3 — Full Structural Audit (300 tables)
 
-> **Version** : 1.3.2
-> **Date** : 2026-03-14
-> **Statut** : V2 COMPLETE
+> **Version** : 1.4.0
+> **Date** : 2026-03-15
+> **Statut** : V5+V6 COMPLETE (Vague 5 code migration done, cross_gamme unified)
 > **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 > **Methode** : `information_schema` + `pg_constraint` + `pg_stat_user_tables` + grep backend
 > **Perimetre** : toutes les tables du schema `public` (~200 tables reelles + vues materialisees)
@@ -26,18 +26,18 @@
 
 | # | Probleme | Tables | Impact | Evidence |
 |---|----------|--------|--------|----------|
-| P0-1 | **PK manquante** | `pieces_relation_type` (9.7 GB, 146M rows), `pieces_media_img` (953 MB, 4.6M rows) | Integrite, dedup impossible | measured |
-| P0-2 | **Prix en TEXT** | `pieces_price` (11 prix), `___xtr_order_line` (20 prix), `___xtr_order` (8 prix) | Casts permanents, comparaisons invalides | measured |
-| P0-3 | **IDs en TEXT** | `___xtr_msg` (7 ID), `pieces_criteria` (5 ID), `auto_type` (4 ID) | Expression indexes requis | measured |
+| P0-1 | ~~**PK manquante**~~ | ~~`pieces_relation_type`, `pieces_media_img`~~ | ✅ FIXED V4a (PK ajoutees) | measured |
+| P0-2 | ~~**Prix en TEXT**~~ | ~~`pieces_price` (11 prix)~~ | ✅ FIXED V4b (shadow cols _n) + V5a (code migre) | measured |
+| P0-3 | **IDs en TEXT** | `___xtr_msg` (7 ID), `auto_type` (4 ID) — code deferred | Shadow cols existent, code V5 partiel | measured |
 | P0-4 | **~100 tables vides** | Voir section 5 | Classification requise | measured |
 
 ### Problemes importants (P1)
 
 | # | Probleme | Tables | Impact | Evidence |
 |---|----------|--------|--------|----------|
-| P1-1 | **0 FK sur catalogue** | Toute la famille `pieces_*` sauf `pieces` (2 FK) | Jointures implicites | measured |
-| P1-2 | **Dates en TEXT** | `auto_type` (4 dates), `pieces_price` (2 dates) | Tri impossible sans cast | measured |
-| P1-3 | **Tables legacy** | `___config_old`, `pieces_marque_next`, `__cross_gamme_car_new` | Nommage ambigu | measured |
+| P1-1 | ~~**0 FK sur catalogue**~~ | ~~6 tables pieces_*~~ | ✅ FIXED V4c (FK validees sur *_piece_id_i) | measured |
+| P1-2 | **Dates en TEXT** | `auto_type` (4 dates) — `pieces_price` ✅ FIXED (shadow cols) | auto_type deferred | measured |
+| P1-3 | ~~**Tables legacy**~~ | ~~`___config_old`, `pieces_marque_next`~~ droppees, `__cross_gamme_car` depreciee | ✅ FIXED V3+V5d | measured |
 
 ---
 
@@ -302,7 +302,7 @@ Ordre de traitement (tables bloquantes pour readiness MassDoc en premier) :
 ### Vague 3 — Nettoyage trivial (0 risque) — DONE 2026-03-15
 
 1. ~~DROP `___config_old`, `pieces_marque_next`, `golden_set_products`~~ — migration `vague3_drop_obsolete_tables` appliquee
-2. Documenter decision `__cross_gamme_car` vs `_new` (apres V2.4)
+2. ~~Documenter decision `__cross_gamme_car` vs `_new`~~ — DONE : 7087 old_only migres, table renommee `_deprecated`, `_new2` droppee
 
 ### Vague 4 — Corrections structurelles non-destructives
 
@@ -322,12 +322,36 @@ Ordre de traitement (tables bloquantes pour readiness MassDoc en premier) :
     - ✅ Index `pieces_ref_search` recréés (7/7) via pg_cron background
     - ✅ Index `type_composite` `pieces_relation_type` recréé via pg_cron background
 
-### Vague 5 — Migration code (backend) — REVERTED 2026-03-15
+### Vague 5 — Migration code (backend) — DONE 2026-03-15 (sauf auto_type)
 
 ~~Column swap en DB~~ : **REVERT** — PK/index suivent le column OID, pas le nom. Le swap cassait les queries (résultats vides → 404 prod).
-- Shadow cols `*_i`/`*_n` existent toujours
-- Migration correcte = modifier le code backend (30+ fichiers) pour lire les shadow cols
-- À faire progressivement, service par service
+
+**Strategie correcte appliquee** : modifier le code backend pour lire les shadow cols directement.
+
+5a. **pieces_price shadow cols** (15 fichiers migres) — DONE 2026-03-15
+    - ✅ `pri_vente_ttc` → `pri_vente_ttc_n`, `pri_consigne_ttc` → `pri_consigne_ttc_n`, etc.
+    - ✅ `pri_piece_id` → `pri_piece_id_i` (INTEGER, plus de `.toString()`)
+    - ✅ `parseFloat()` supprime partout (valeurs NUMERIC natives)
+    - Fichiers : pricing.service, cart-data.service, order-actions.service, search-simple.service, catalog.service, working-stock.service, products.service, products-admin.service, search-enhanced-existing.service, mcp-query.service, shipping-calculator.service, stock.service
+
+5b. **piece_id FK shadow cols** (6 fichiers migres) — DONE 2026-03-15
+    - ✅ `pmi_piece_id` → `pmi_piece_id_i` (pieces_media_img)
+    - ✅ `prs_piece_id` → `prs_piece_id_i` (pieces_ref_search)
+    - ✅ `pc_piece_id` → `pc_piece_id_i` (pieces_criteria)
+    - Fichiers : search-enhanced-existing, search-simple, catalog, mcp-query, products-technical, search-debug.controller, vehicle-pieces-compatibility
+
+5c. **auto_type shadow cols** — DEFERRED
+    - 26 fichiers impactes, `type_id` utilise comme identifiant metier partout (URLs, params, jointures JS)
+    - Risque eleve pour 49K rows, gain marginal
+    - Decision : reporter a une vague dediee avec tests de non-regression
+
+5d. **Cross gamme unification** — DONE 2026-03-15
+    - ✅ 7087 old_only rows migrees vers `__cross_gamme_car_new` (182611 total)
+    - ✅ RPCs `refresh_gamme_aggregates` + `get_substitution_data` recreees sur `_new`
+    - ✅ `gamme-detail-enricher.service.ts` mis a jour
+    - ✅ `__cross_gamme_car` renommee `__cross_gamme_car_deprecated`
+    - ✅ `__cross_gamme_car_new2` droppee
+    - Migration : `20260315_unify_cross_gamme_car_new.sql`
 
 ### Vague 6 — MassDoc Update Readiness — DONE 2026-03-15
 
@@ -343,10 +367,10 @@ Ordre de traitement (tables bloquantes pour readiness MassDoc en premier) :
 | **pieces_list** | ready_after_cleanup | 7 orphelins deleted + FK validated | **FIXED** |
 | **pieces_relation_criteria** | ready_for_v4 | — | **SAFE** |
 | **auto_type** | ready_for_v4 | 8 shadow cols INTEGER | **FIXED** |
-| **__cross_gamme_car** | deferred | — | **DOCUMENTED** (migrate 7087 old_only to _new) |
+| **__cross_gamme_car** | deferred | 7087 rows migrees + table renamed _deprecated | **DONE** |
 
-> **Verdict global : 10/11 tables SAFE ou FIXED. 1 table DOCUMENTED (non-bloquante).**
-> MassDoc update peut procéder sur toutes les tables sauf `__cross_gamme_car` (migration _new pending).
+> **Verdict global : 11/11 tables SAFE, FIXED ou DONE. 0 bloquante.**
+> MassDoc update peut proceder sur toutes les tables.
 
 ---
 
@@ -358,11 +382,11 @@ Ordre de traitement (tables bloquantes pour readiness MassDoc en premier) :
 
 | Table | Backend consumers | RPC consumers | SoT verdict | Confidence |
 |-------|-------------------|---------------|-------------|------------|
-| `__cross_gamme_car_new` | 1 (blog-article-relation) | 3-4 RPCs | **derived** | medium |
-| `__cross_gamme_car` | 1 (gamme-detail-enricher) | 4-5 RPCs | **derived** (deprecated) | high |
+| `__cross_gamme_car_new` | 2 (blog-article-relation, gamme-detail-enricher) | 6+ RPCs (unified) | **derived** (sole table) | high |
+| `__cross_gamme_car_deprecated` | 0 | 0 | **deprecated** (renamed 2026-03-15) | measured |
 | `pieces_ref_search` | 6 services | 4 RPCs | **derived** (search index) | high |
 
-> Aucune des 3 tables n'est source de verite. `__cross_gamme_car` est marquee pour deprecation (migrate to `_new` then DROP).
+> Aucune des tables n'est source de verite. `__cross_gamme_car` a ete depreciee (renommee `_deprecated` le 2026-03-15). Tout le code et RPCs pointent sur `_new`.
 
 ### V2.4 — Doublons (measured)
 
@@ -379,7 +403,8 @@ Ordre de traitement (tables bloquantes pour readiness MassDoc en premier) :
 | New only | 105 540 |
 | **Verdict** | **candidate_successor** — couvre 90.6% de old + 105K lignes additionnelles, mais 7 087 lignes old_only restent a migrer (quasi-superset non strict) |
 
-> Decision : migrer les 7 087 orphelins `old_only` vers `_new`, puis deprecer `__cross_gamme_car`.
+> ~~Decision : migrer les 7 087 orphelins `old_only` vers `_new`, puis deprecer `__cross_gamme_car`.~~
+> **DONE 2026-03-15** : 7087 rows migrees (182611 total dans `_new`), table old renommee `_deprecated`, `_new2` droppee. Migration `20260315_unify_cross_gamme_car_new.sql`.
 
 **Paire 2 : `___meta_tags_ariane` vs `__blog_meta_tags_ariane`**
 
