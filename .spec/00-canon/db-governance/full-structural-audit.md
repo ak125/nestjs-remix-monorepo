@@ -322,13 +322,12 @@ Ordre de traitement (tables bloquantes pour readiness TecDoc en premier) :
     - ✅ Index `pieces_ref_search` recréés (7/7) via pg_cron background
     - ✅ Index `type_composite` `pieces_relation_type` recréé via pg_cron background
 
-### Vague 5 — Migration code (backend) — DONE 2026-03-15
+### Vague 5 — Migration code (backend) — REVERTED 2026-03-15
 
-Column swap en DB (zero code change) : colonnes TEXT renommées `*_text`, shadow cols prennent le nom original.
-- ✅ `pieces_price` : 16 colonnes swappées (13 NUMERIC + 1 TIMESTAMPTZ + 1 DATE + 1 INTEGER)
-- ✅ `auto_type` : 8 colonnes swappées (INTEGER)
-- ✅ 5 tables piece_id swappées (INTEGER) : media_img, list, ref_ean, criteria, ref_search
-- ✅ Types TS régénérés (number au lieu de string)
+~~Column swap en DB~~ : **REVERT** — PK/index suivent le column OID, pas le nom. Le swap cassait les queries (résultats vides → 404 prod).
+- Shadow cols `*_i`/`*_n` existent toujours
+- Migration correcte = modifier le code backend (30+ fichiers) pour lire les shadow cols
+- À faire progressivement, service par service
 
 ### Vague 6 — TecDoc Update Readiness
 
