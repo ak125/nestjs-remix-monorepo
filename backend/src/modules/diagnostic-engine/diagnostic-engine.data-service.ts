@@ -163,22 +163,25 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
 
     if (linksError || !links?.length) return [];
 
-    // Step 3: fetch causes for these links
+    // Step 3: fetch causes for these links, filtered to same system as symptom
     const causeIds = links.map((l) => l.cause_id);
     const { data: causes, error: causesError } = await this.supabase
       .from('__diag_cause')
       .select('*')
       .in('id', causeIds)
+      .eq('system_id', symptom.system_id) // Guard: only same-system causes
       .eq('active', true);
 
     if (causesError || !causes) return links;
 
-    // Join causes onto links
+    // Join causes onto links (skip cross-system causes that were filtered out)
     const causeMap = new Map(causes.map((c) => [c.id, c]));
-    return links.map((link) => ({
-      ...link,
-      cause: causeMap.get(link.cause_id) || undefined,
-    }));
+    return links
+      .filter((link) => causeMap.has(link.cause_id))
+      .map((link) => ({
+        ...link,
+        cause: causeMap.get(link.cause_id) || undefined,
+      }));
   }
 
   /**

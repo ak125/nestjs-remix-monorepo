@@ -1042,9 +1042,12 @@ export class RagGammeDetectionService {
     }> = [];
 
     // 3. For each orphan, match domain keywords against title + source
+    //    Enhanced: also use orphan.domain as a direct TRANSVERSAL_DOMAIN_MAP key
     for (const orphan of mappableOrphans) {
       const src = (orphan.source || '') as string;
       const title = (orphan.title || '') as string;
+      const domain = ((orphan as Record<string, unknown>).domain ||
+        '') as string;
       // Build search text from source path + title
       const { slug: srcSlug } = RagGammeDetectionService.normalizeTitle(src);
       const { slug: titleSlug } =
@@ -1060,6 +1063,17 @@ export class RagGammeDetectionService {
         if (searchText.includes(keyword)) {
           matchedKeywords.push(keyword);
           for (const a of aliases) aliasSet.add(a);
+        }
+      }
+
+      // Fallback: use domain column as direct key in TRANSVERSAL_DOMAIN_MAP
+      if (aliasSet.size === 0 && domain) {
+        const domainKey = domain.toLowerCase().trim();
+        const domainAliases =
+          RagGammeDetectionService.TRANSVERSAL_DOMAIN_MAP[domainKey];
+        if (domainAliases) {
+          matchedKeywords.push(`domain:${domainKey}`);
+          for (const a of domainAliases) aliasSet.add(a);
         }
       }
 

@@ -597,14 +597,20 @@ export class RagKnowledgeService {
 
   /**
    * Get all orphan files (active, no gamme_aliases) from __rag_knowledge.
+   * Returns category + domain for enhanced mapping in mapTransversalOrphans.
    */
   async getOrphans(): Promise<{
-    data: Array<{ source: string; title: string }> | null;
+    data: Array<{
+      source: string;
+      title: string;
+      category: string | null;
+      domain: string | null;
+    }> | null;
     error: string | null;
   }> {
     const { data, error } = await this.ragCleanupService.client
       .from('__rag_knowledge')
-      .select('source, title')
+      .select('source, title, category, domain')
       .eq('status', 'active')
       .or('gamme_aliases.is.null,gamme_aliases.eq.{}');
 
