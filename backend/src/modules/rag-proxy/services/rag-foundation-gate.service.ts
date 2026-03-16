@@ -119,7 +119,7 @@ export class RagFoundationGateService extends SupabaseBaseService {
   ): Promise<{ passed: boolean; blockedSources: string[]; total: number }> {
     const { data: docs } = await this.supabase
       .from('__rag_knowledge')
-      .select('source, phase1_status, foundation_gate_passed')
+      .select('source, foundation_gate_passed')
       .or(`source.like.gammes/${pgAlias}%,source.like.web/${pgAlias}%`)
       .eq('status', 'active');
 
@@ -129,7 +129,7 @@ export class RagFoundationGateService extends SupabaseBaseService {
     }
 
     const blockedSources = docs
-      .filter((d) => d.phase1_status !== 'passed')
+      .filter((d) => !d.foundation_gate_passed)
       .map((d) => d.source);
 
     if (blockedSources.length > 0) {
