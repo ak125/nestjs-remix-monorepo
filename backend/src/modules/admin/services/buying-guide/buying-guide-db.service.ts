@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
 import {
@@ -8,16 +8,43 @@ import {
 } from '../../../../config/buying-guide-quality.constants';
 import type { SectionValidationResult } from './buying-guide.types';
 import { BuyingGuideSectionExtractor } from './buying-guide-section-extractor.service';
+import { FeatureFlagsService } from '../../../../config/feature-flags.service';
+import { WriteGuardCasService } from '../../../../config/write-guard-cas.service';
+import { WriteGuardLedgerService } from '../../../../config/write-guard-ledger.service';
+import { getOwnedFieldsForGroup } from '../../../../config/field-catalog.constants';
+import type { RoleId } from '../../../../config/role-ids';
+
+/** Optional context for P1.5 Write Guard (observe mode first, enforce later) */
+export interface WriteGuardContext {
+  roleId: RoleId;
+  correlationId: string;
+  baseHash?: string;
+}
 
 /**
  * Database operations for buying guide enrichment.
  * Extends SupabaseBaseService for direct DB access.
+ *
+ * P1.5: When WriteGuard is enabled and context is provided,
+ * performs ownership check + CAS + write receipt around the existing merge logic.
+ * The merge logic itself is NEVER modified by the guard.
  */
 @Injectable()
 export class BuyingGuideDbService extends SupabaseBaseService {
   protected override readonly logger = new Logger(BuyingGuideDbService.name);
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    @Optional()
+    @Inject(FeatureFlagsService)
+    private readonly featureFlags?: FeatureFlagsService,
+    @Optional()
+    @Inject(WriteGuardCasService)
+    private readonly casService?: WriteGuardCasService,
+    @Optional()
+    @Inject(WriteGuardLedgerService)
+    private readonly ledger?: WriteGuardLedgerService,
+  ) {
     super(configService);
   }
 
@@ -134,6 +161,7 @@ export class BuyingGuideDbService extends SupabaseBaseService {
   async upsertBuyingGuide(
     pgId: string,
     payload: Record<string, unknown>,
+    context?: WriteGuardContext,
   ): Promise<void> {
     // ── Intelligent merge: enrich, don't replace ──
     // For long text fields, we merge new content INTO existing content
@@ -212,6 +240,91 @@ export class BuyingGuideDbService extends SupabaseBaseService {
       return;
     }
 
+    // ── P1.5 WriteGuard: ownership check + CAS (observe or enforce) ──
+    const guardEnabled =
+      this.featureFlags?.writeGuardEnabled &&
+      this.casService &&
+      this.ledger &&
+      context?.roleId;
+
+    if (guardEnabled && context) {
+      // 1. Ownership check: are all payload fields owned by this role?
+      const violations = this.casService!.checkOwnership(
+        context.roleId,
+        '__seo_gamme_purchase_guide',
+        Object.keys(payload),
+      );
+      if (violations.length > 0) {
+        for (const v of violations) {
+          this.logger.warn(
+            `WriteGuard: ownership_denied — role=${context.roleId} field=${v.field} owner=${v.declaredOwner}`,
+          );
+          await this.ledger!.recordCollision({
+            pgId: parseInt(pgId),
+            tableName: '__seo_gamme_purchase_guide',
+            fieldName: v.field,
+            resourceGroup: 'purchase_guide_main',
+            requestingRole: context.roleId,
+            ownerRole: v.declaredOwner,
+            conflictReason: 'ownership_denied',
+            resolution:
+              this.featureFlags!.writeGuardMode === 'enforce'
+                ? 'held'
+                : 'allowed_observe_mode',
+            correlationId: context.correlationId,
+          });
+        }
+        if (this.featureFlags!.writeGuardMode === 'enforce') {
+          // Strip non-owned fields instead of blocking entire write
+          for (const v of violations) {
+            delete payload[v.field];
+          }
+          if (Object.keys(payload).length === 0) {
+            this.logger.warn(
+              `WriteGuard: all fields stripped for pgId=${pgId}, no update`,
+            );
+            return;
+          }
+        }
+      }
+
+      // 2. CAS scoped: has my owned data changed since I read it?
+      if (context.baseHash) {
+        const casResult = await this.casService!.checkScoped(
+          context.roleId,
+          'purchase_guide_main',
+          parseInt(pgId),
+          context.baseHash,
+        );
+        if (!casResult.allowed) {
+          this.logger.warn(
+            `WriteGuard: stale_base — role=${context.roleId} pgId=${pgId} ` +
+              `base=${context.baseHash.slice(0, 12)} current=${casResult.currentHash.slice(0, 12)}`,
+          );
+          await this.ledger!.recordCollision({
+            pgId: parseInt(pgId),
+            tableName: '__seo_gamme_purchase_guide',
+            resourceGroup: 'purchase_guide_main',
+            requestingRole: context.roleId,
+            conflictReason: 'stale_base',
+            baseHash: context.baseHash,
+            currentHash: casResult.currentHash,
+            resolution:
+              this.featureFlags!.writeGuardMode === 'enforce'
+                ? 'held'
+                : 'allowed_observe_mode',
+            correlationId: context.correlationId,
+          });
+          if (this.featureFlags!.writeGuardMode === 'enforce') {
+            throw new Error(
+              `WriteGuard: write blocked (stale_base) for pgId=${pgId}`,
+            );
+          }
+        }
+      }
+    }
+
+    // ── Existing write (UNCHANGED) ──
     const { error } = await this.client
       .from('__seo_gamme_purchase_guide')
       .update(payload)
@@ -225,6 +338,37 @@ export class BuyingGuideDbService extends SupabaseBaseService {
     }
 
     this.logger.log(`Buying guide updated for pgId=${pgId}`);
+
+    // ── P1.5 WriteGuard: write receipt (post-write reread) ──
+    if (guardEnabled && context) {
+      try {
+        const ownedFields = getOwnedFieldsForGroup(
+          context.roleId,
+          'purchase_guide_main',
+        );
+        const postWriteHash = await this.casService!.readAndHash(
+          'purchase_guide_main',
+          parseInt(pgId),
+          ownedFields,
+        );
+        await this.ledger!.recordWriteReceipt({
+          pgId: parseInt(pgId),
+          tableName: '__seo_gamme_purchase_guide',
+          resourceGroup: 'purchase_guide_main',
+          roleId: context.roleId,
+          correlationId: context.correlationId,
+          baseHash: context.baseHash,
+          newHash: postWriteHash,
+          writeStrategy: 'merge',
+          fields: ownedFields.map((f) => f.field),
+        });
+      } catch (receiptErr) {
+        // Write receipt failure must NOT block the main write
+        this.logger.error(
+          `WriteGuard: receipt failed for pgId=${pgId}: ${(receiptErr as Error).message}`,
+        );
+      }
+    }
   }
 
   /**

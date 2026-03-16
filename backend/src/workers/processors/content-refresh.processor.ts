@@ -194,7 +194,8 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     );
 
     // F1-GATE: Foundation Write Lock — skip if gamme docs haven't passed Phase 1
-    if (pgAlias && this.foundationGate) {
+    // When force=true (admin force-enrich), bypass the gate — admin knows what they're doing
+    if (pgAlias && this.foundationGate && !force) {
       const gateResult = await this.foundationGate.guardWriteForGamme(pgAlias);
       if (!gateResult.passed && gateResult.total > 0) {
         this.logger.warn(

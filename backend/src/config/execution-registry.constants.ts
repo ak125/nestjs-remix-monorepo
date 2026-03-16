@@ -4,11 +4,16 @@
  * Maps each canonical role to its execution configuration:
  * contract, enricher service, agents, prompts, modes, policies.
  *
+ * P1.5: writeScope is auto-derived from FIELD_CATALOG at module load.
+ * Never add ownedFields/ownedTables manually here — they come from
+ * field-catalog.constants.ts via deriveWriteScope().
+ *
  * @see .spec/00-canon/phase2-canon.md v1.1.0 — P2.1 Orchestration
  */
 
 import { RoleId } from './role-ids';
 import type { ExecutionRegistryEntry } from './execution-registry.types';
+import { deriveWriteScope } from './field-catalog.constants';
 
 // ── Version ──
 
@@ -150,6 +155,13 @@ export const EXECUTION_REGISTRY: Record<string, ExecutionRegistryEntry> = {
     requiredUpstreamPhases: [],
   },
 };
+
+// ── P1.5: Auto-derive writeScope from FIELD_CATALOG ──
+// This ensures zero drift between the catalog and the registry.
+
+for (const entry of Object.values(EXECUTION_REGISTRY)) {
+  entry.writeScope = deriveWriteScope(entry.roleId);
+}
 
 // ── Contract Schema Map ──
 

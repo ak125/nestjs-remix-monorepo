@@ -101,7 +101,7 @@ export class BuyingGuideEnricherService {
     pgId: string,
     dryRun: boolean,
     supplementaryFiles: string[] = [],
-    conservativeMode = false,
+    _conservativeMode = false,
   ): Promise<EnrichmentResult | EnrichDryRunResult> {
     // 1. Fetch gamme metadata
     const meta = await this.dbService.fetchGammeMetadata(pgId);
@@ -266,12 +266,11 @@ export class BuyingGuideEnricherService {
 
     await this.dbService.upsertBuyingGuide(pgId, updatePayload);
 
-    // Generate sg_content_draft from enriched sections
-    await this.seoDraft.writeSeoContentDraft(
-      pgId,
-      gammeName,
-      sectionResults,
-      conservativeMode,
+    // Architecture: BuyingGuideEnricher (R6) must NOT write sg_content_draft to __seo_gamme (R1).
+    // R1 content is exclusively managed by R1ContentPipelineService.
+    // sg_content_draft write REMOVED to prevent dual-write conflicts and content regression.
+    this.logger.log(
+      `sg_content_draft SKIPPED for pgId=${pgId} — R1 content managed by R1ContentPipelineService`,
     );
 
     const resultSections: Record<string, SectionResult> = {};
