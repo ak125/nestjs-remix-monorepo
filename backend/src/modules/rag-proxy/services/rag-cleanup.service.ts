@@ -38,7 +38,13 @@ const COMPATIBILITY_MATRIX: Record<
     truthLevels: ['L2'],
   },
   web: {
-    categories: ['catalog/gamme', 'guide'],
+    categories: [
+      'catalog/gamme',
+      'guide',
+      'knowledge',
+      'knowledge/guide',
+      'catalog/vehicle',
+    ],
     truthLevels: ['L2', 'L3'],
   },
   'web-catalog': {
