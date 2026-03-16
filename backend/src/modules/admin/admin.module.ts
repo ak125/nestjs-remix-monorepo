@@ -50,7 +50,14 @@ import { GammeDetailEnricherService } from './services/gamme-detail-enricher.ser
 import { GammeVLevelService } from './services/gamme-vlevel.service';
 import { StockMovementService } from './services/stock-movement.service';
 import { StockReportService } from './services/stock-report.service';
-import { BuyingGuideEnricherService } from './services/buying-guide-enricher.service'; // 📖 RAG enrichment
+import { BuyingGuideEnricherService } from './services/buying-guide-enricher.service'; // 📖 RAG enrichment (orchestrator)
+import {
+  BuyingGuideRagFetcherService,
+  BuyingGuideSectionExtractor,
+  BuyingGuideQualityGatesService,
+  BuyingGuideDbService,
+  BuyingGuideSeoDraftService,
+} from './services/buying-guide'; // 📖 RAG enrichment sub-services
 import { R1ContentPipelineService } from './services/r1-content-pipeline.service'; // 🚀 R1 4-prompt pipeline
 import { ContentRefreshService } from './services/content-refresh.service'; // 🔄 Content Refresh orchestrator
 import { ConseilEnricherService } from './services/conseil-enricher.service'; // 🔄 R3 Conseils enricher
@@ -167,7 +174,12 @@ import { AdminDbGovernanceController } from './controllers/admin-db-governance.c
     GammeVLevelService,
     StockMovementService,
     StockReportService,
-    BuyingGuideEnricherService, // 📖 RAG enrichment service
+    BuyingGuideEnricherService, // 📖 RAG enrichment orchestrator
+    BuyingGuideRagFetcherService, // 📖 RAG content fetching + parsing
+    BuyingGuideSectionExtractor, // 📖 Markdown section extraction
+    BuyingGuideQualityGatesService, // 📖 Quality validation gates
+    BuyingGuideDbService, // 📖 DB operations (anti-regression)
+    BuyingGuideSeoDraftService, // 📖 SEO draft generation
     R1ContentPipelineService, // 🚀 R1 4-prompt content pipeline (flag-gated)
     ContentRefreshService, // 🔄 Content Refresh orchestrator (event listener + queue)
     ConseilEnricherService, // 🔄 R3 Conseils S1-S8 enricher

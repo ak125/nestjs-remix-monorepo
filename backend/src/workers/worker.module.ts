@@ -25,6 +25,13 @@ import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.ser
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
 import { AiContentModule } from '../modules/ai-content/ai-content.module';
 import { BuyingGuideEnricherService } from '../modules/admin/services/buying-guide-enricher.service';
+import {
+  BuyingGuideRagFetcherService,
+  BuyingGuideSectionExtractor,
+  BuyingGuideQualityGatesService,
+  BuyingGuideDbService,
+  BuyingGuideSeoDraftService,
+} from '../modules/admin/services/buying-guide';
 import { R1ContentPipelineService } from '../modules/admin/services/r1-content-pipeline.service';
 import { ConseilEnricherService } from '../modules/admin/services/conseil-enricher.service';
 import { ReferenceService } from '../modules/seo/services/reference.service';
@@ -124,6 +131,11 @@ import { MailService } from '../services/mail.service';
     // WorkerModule does NOT import those modules, so NestJS creates separate instances.
     // Verified stateless (no in-memory cache/state) — safe duplicate. See audit 2026-02-19.
     BuyingGuideEnricherService,
+    BuyingGuideRagFetcherService, // 📖 RAG content fetching + parsing
+    BuyingGuideSectionExtractor, // 📖 Markdown section extraction
+    BuyingGuideQualityGatesService, // 📖 Quality validation gates
+    BuyingGuideDbService, // 📖 DB operations (anti-regression)
+    BuyingGuideSeoDraftService, // 📖 SEO draft generation
     R1ContentPipelineService, // 🚀 R1 4-prompt pipeline (flag-gated, stateless — safe duplicate)
     ConseilEnricherService,
     ReferenceService,
