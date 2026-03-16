@@ -21,6 +21,7 @@
 import {
   defer,
   json,
+  redirect,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -203,10 +204,31 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const _typeData = parseUrlParam(rawType);
 
   // 3. Résolution des IDs via API (🚀 PARALLÉLISÉ pour performance)
-  const [vehicleIds, gammeId] = await Promise.all([
-    resolveVehicleIds(rawMarque, rawModele, rawType),
-    resolveGammeId(rawGamme),
-  ]);
+  let vehicleIds: Awaited<ReturnType<typeof resolveVehicleIds>>;
+  let gammeId: number;
+  try {
+    [vehicleIds, gammeId] = await Promise.all([
+      resolveVehicleIds(rawMarque, rawModele, rawType),
+      resolveGammeId(rawGamme),
+    ]);
+  } catch (resolveErr) {
+    // Si la résolution échoue (API down, params invalides), retourner 404
+    logger.error(
+      `❌ [LOADER] ID resolution failed for ${url.pathname}:`,
+      resolveErr instanceof Error ? resolveErr.message : resolveErr,
+    );
+    throw new Response(
+      JSON.stringify({ reason: "id_resolution_failed", url: url.pathname }),
+      {
+        status: 404,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Robots-Tag": "noindex, follow",
+          "Cache-Control": "public, max-age=60, s-maxage=300",
+        },
+      },
+    );
+  }
 
   // Validation des IDs véhicule - Si invalides, 301 redirect vers page gamme
   // 🛡️ gammeId n'est PAS validé ici - délégué au RM V2 RPC pour permettre gammeId=0 → 404 SEO
@@ -351,153 +373,191 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   // 🎯 Map RM V2 response to LoaderData format
-  const loaderData = mapRmV2ToLoaderData(rmV2Response, {
-    loadTime: Date.now() - startTime,
-  });
+  let loaderData: ReturnType<typeof mapRmV2ToLoaderData>;
+  try {
+    loaderData = mapRmV2ToLoaderData(rmV2Response, {
+      loadTime: Date.now() - startTime,
+    });
+  } catch (mapErr) {
+    logger.error(
+      `❌ [LOADER] mapRmV2ToLoaderData failed for ${url.pathname}:`,
+      mapErr instanceof Error ? mapErr.message : mapErr,
+    );
+    throw new Response("Service temporairement indisponible", {
+      status: 503,
+      headers: {
+        "X-Robots-Tag": "noindex",
+        "Retry-After": "300",
+        "Cache-Control": "no-cache",
+      },
+    });
+  }
 
   // Extract mapped data
   const { vehicle, gamme, pieces: piecesData } = loaderData;
 
-  // 🔄 SEO: Canonical URL calculée depuis les données RM V2 (pas location.pathname)
-  // Corrige les ~1.4k pages "Page en double" dans Google Search Console
-  const correctGammeSlug = `${gamme.alias}-${gamme.id}`;
-  const correctBrandSlug = `${vehicle.marqueAlias || normalizeAlias(vehicle.marque)}-${vehicle.marqueId}`;
-  const correctModelSlug = `${vehicle.modeleAlias || normalizeAlias(vehicle.modele)}-${vehicle.modeleId}`;
-  const correctTypeSlug = buildTypeSlug({
-    type_alias: vehicle.typeAlias,
-    type_name: vehicle.type,
-    type_id: vehicle.typeId,
-  });
-  const canonicalPath = `/pieces/${correctGammeSlug}/${correctBrandSlug}/${correctModelSlug}/${correctTypeSlug}.html`;
+  // 🛡️ try/catch global pour le bloc de construction de la réponse
+  // Protège contre les crashes dans canonical, FAQ, mapping, etc.
+  try {
+    // 🔄 SEO: Canonical URL calculée depuis les données RM V2 (pas location.pathname)
+    // Corrige les ~1.4k pages "Page en double" dans Google Search Console
+    const correctGammeSlug = `${gamme.alias}-${gamme.id}`;
+    const correctBrandSlug = `${vehicle.marqueAlias || normalizeAlias(vehicle.marque)}-${vehicle.marqueId}`;
+    const correctModelSlug = `${vehicle.modeleAlias || normalizeAlias(vehicle.modele)}-${vehicle.modeleId}`;
+    const correctTypeSlug = buildTypeSlug({
+      type_alias: vehicle.typeAlias,
+      type_name: vehicle.type,
+      type_id: vehicle.typeId,
+    });
+    const canonicalPath = `/pieces/${correctGammeSlug}/${correctBrandSlug}/${correctModelSlug}/${correctTypeSlug}.html`;
 
-  // 301 redirect si l'URL courante ne correspond pas à l'URL canonique
-  // Normalisation URI pour éviter les faux positifs (encoding, trailing slash)
-  const currentPath = decodeURIComponent(url.pathname);
-  const targetPath = decodeURIComponent(canonicalPath);
+    // 301 redirect si l'URL courante ne correspond pas à l'URL canonique
+    // Normalisation URI pour éviter les faux positifs (encoding, trailing slash)
+    const currentPath = decodeURIComponent(url.pathname);
+    const targetPath = decodeURIComponent(canonicalPath);
 
-  if (currentPath !== targetPath) {
-    // Anti-boucle : si déjà redirigé (param r=1), servir la page telle quelle
-    if (url.searchParams.get("r") === "1") {
-      logger.warn(
-        `⚠️ [301-LOOP] Anti-boucle activé, page servie sans redirect: ${currentPath}`,
-      );
-    } else {
-      logger.log(`🔄 [301] Canonical mismatch: ${currentPath} → ${targetPath}`);
-      const redirectUrl = new URL(request.url);
-      redirectUrl.pathname = canonicalPath;
-      redirectUrl.searchParams.set("r", "1");
-      return redirect(redirectUrl.toString(), 301);
-    }
-  }
-
-  // 🔗 SEO: URLs pré-calculées pour section "Voir aussi" (pas de construction côté client)
-  const voirAussiLinks = buildVoirAussiLinks(gamme, vehicle);
-
-  // Generated Content (FAQ and buying guide with vehicle context)
-  // FAQ gating : ne garder que les Q/R avec réponse substantielle (>= 20 chars)
-  const faqItems = generateFAQ(vehicle, gamme).filter(
-    (item) => item.answer && item.answer.length >= 20,
-  );
-  const buyingGuide = generateBuyingGuide(vehicle, gamme);
-
-  // LCP: blogData deferred (below-fold, non-bloquant pour TTFB)
-  // Googlebot exécute JS et verra les liens une fois le defer résolu
-  const blogDataPromise = fetchBlogArticleWithRelated(gamme, vehicle).catch(
-    () => ({ article: null, relatedArticles: [] }),
-  );
-
-  // 🚀 LCP OPTIMIZATION V8: Catalogue Famille streamé via defer() (below-fold)
-  // T5: Top 8 liens SSR pour crawl interne, reste deferred
-  const catalogueMameFamillePromise = buildCataloguePromise(
-    gammeId,
-    hierarchyPromise,
-  );
-  // Await hierarchy (already fetched in parallel with RM V2, should be resolved)
-  const catalogueMameFamille = await catalogueMameFamillePromise.catch(
-    () => null,
-  );
-  const catalogueTop8 = catalogueMameFamille?.items?.slice(0, 8) ?? [];
-
-  const loadTime = Date.now() - startTime;
-
-  // 🎯 Filters from RM V2 (already includes counts)
-  const filtersData: FiltersData | null = rmV2Response.filters
-    ? {
-        filters: [],
-        summary: {
-          total_filters: 3, // brands, qualities, sides
-          total_options:
-            (rmV2Response.filters.brands?.length || 0) +
-            (rmV2Response.filters.qualities?.length || 0) +
-            (rmV2Response.filters.sides?.length || 0),
-        },
-        ...rmV2Response.filters,
+    if (currentPath !== targetPath) {
+      // Anti-boucle : si déjà redirigé (param r=1), servir la page telle quelle
+      if (url.searchParams.get("r") === "1") {
+        logger.warn(
+          `⚠️ [301-LOOP] Anti-boucle activé, page servie sans redirect: ${currentPath}`,
+        );
+      } else {
+        logger.log(
+          `🔄 [301] Canonical mismatch: ${currentPath} → ${targetPath}`,
+        );
+        const redirectUrl = new URL(request.url);
+        redirectUrl.pathname = canonicalPath;
+        redirectUrl.searchParams.set("r", "1");
+        return redirect(redirectUrl.toString(), 301);
       }
-    : null;
+    }
 
-  // 🚀 LCP OPTIMIZATION V6: defer() pour streamer données non-critiques
-  // Données critiques (vehicle, pieces, seo) : retournées immédiatement
-  // Données non-critiques (relatedArticles, blogArticle) : streamées après le first paint
-  return defer(
-    {
-      // === DONNÉES CRITIQUES (bloquantes, nécessaires pour LCP) ===
-      canonicalPath,
-      vehicle,
-      gamme,
-      pieces: piecesData,
-      // Map grouped_pieces with null → undefined conversion for filtre_side
-      grouped_pieces: (rmV2Response.grouped_pieces || []).map((g) => ({
-        ...g,
-        filtre_side: g.filtre_side ?? undefined, // Convert null to undefined
-      })),
-      count: rmV2Response.count || piecesData.length,
-      minPrice: loaderData.minPrice,
-      maxPrice: loaderData.maxPrice,
-      filtersData,
-      seoContent: loaderData.seoContent,
-      faqItems,
-      buyingGuide,
-      compatibilityInfo: loaderData.compatibilityInfo,
-      crossSellingGammes: loaderData.crossSellingGammes,
-      oemRefs: loaderData.oemRefs,
-      oemRefsSeo: loaderData.oemRefsSeo,
-      voirAussiLinks, // 🔗 SEO: URLs pré-calculées pour section "Voir aussi"
-      catalogueTop8, // 🕷️ SEO: Top 8 liens catalogue SSR pour crawl interne
-      seo: {
-        title:
-          rmV2Response.seo?.title ||
-          `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
-        h1: rmV2Response.seo?.h1 || loaderData.seoContent.h1,
-        description: stripHtmlForMeta(
-          rmV2Response.seo?.description ||
-            loaderData.seoContent.longDescription,
-        ),
-      },
-      performance: {
-        loadTime,
-        source: "rm-v2",
-        cacheHit: rmV2Response.cacheHit || false,
-        rmDuration: rmV2Response.duration_ms,
-      },
-      dataQuality: rmV2Response.validation?.dataQuality?.quality ?? 0,
+    // 🔗 SEO: URLs pré-calculées pour section "Voir aussi" (pas de construction côté client)
+    const voirAussiLinks = buildVoirAussiLinks(gamme, vehicle);
 
-      // === DONNÉES STREAMÉES (non-bloquantes, chargées en background) ===
-      // LCP: blogData deferred (below-fold, Googlebot exécute JS)
-      blogData: blogDataPromise,
-      // 🚀 LCP V9: seoSwitches deferred (below-fold, fallback anchors in getAnchorText)
-      seoSwitches: seoSwitchesPromise,
-      // Catalogue complet (déjà résolu pour SSR top 8, passé en direct)
-      catalogueMameFamille: catalogueMameFamille
-        ? Promise.resolve(catalogueMameFamille)
-        : Promise.resolve(null),
-    },
-    {
+    // Generated Content (FAQ and buying guide with vehicle context)
+    // FAQ gating : ne garder que les Q/R avec réponse substantielle (>= 20 chars)
+    const faqItems = generateFAQ(vehicle, gamme).filter(
+      (item) => item.answer && item.answer.length >= 20,
+    );
+    const buyingGuide = generateBuyingGuide(vehicle, gamme);
+
+    // LCP: blogData deferred (below-fold, non-bloquant pour TTFB)
+    // Googlebot exécute JS et verra les liens une fois le defer résolu
+    const blogDataPromise = fetchBlogArticleWithRelated(gamme, vehicle).catch(
+      () => ({ article: null, relatedArticles: [] }),
+    );
+
+    // 🚀 LCP OPTIMIZATION V8: Catalogue Famille streamé via defer() (below-fold)
+    // T5: Top 8 liens SSR pour crawl interne, reste deferred
+    const catalogueMameFamillePromise = buildCataloguePromise(
+      gammeId,
+      hierarchyPromise,
+    );
+    // Await hierarchy (already fetched in parallel with RM V2, should be resolved)
+    const catalogueMameFamille = await catalogueMameFamillePromise.catch(
+      () => null,
+    );
+    const catalogueTop8 = catalogueMameFamille?.items?.slice(0, 8) ?? [];
+
+    const loadTime = Date.now() - startTime;
+
+    // 🎯 Filters from RM V2 (already includes counts)
+    const filtersData: FiltersData | null = rmV2Response.filters
+      ? {
+          filters: [],
+          summary: {
+            total_filters: 3, // brands, qualities, sides
+            total_options:
+              (rmV2Response.filters.brands?.length || 0) +
+              (rmV2Response.filters.qualities?.length || 0) +
+              (rmV2Response.filters.sides?.length || 0),
+          },
+          ...rmV2Response.filters,
+        }
+      : null;
+
+    // 🚀 LCP OPTIMIZATION V6: defer() pour streamer données non-critiques
+    // Données critiques (vehicle, pieces, seo) : retournées immédiatement
+    // Données non-critiques (relatedArticles, blogArticle) : streamées après le first paint
+    return defer(
+      {
+        // === DONNÉES CRITIQUES (bloquantes, nécessaires pour LCP) ===
+        canonicalPath,
+        vehicle,
+        gamme,
+        pieces: piecesData,
+        // Map grouped_pieces with null → undefined conversion for filtre_side
+        grouped_pieces: (rmV2Response.grouped_pieces || []).map((g) => ({
+          ...g,
+          filtre_side: g.filtre_side ?? undefined, // Convert null to undefined
+        })),
+        count: rmV2Response.count || piecesData.length,
+        minPrice: loaderData.minPrice,
+        maxPrice: loaderData.maxPrice,
+        filtersData,
+        seoContent: loaderData.seoContent,
+        faqItems,
+        buyingGuide,
+        compatibilityInfo: loaderData.compatibilityInfo,
+        crossSellingGammes: loaderData.crossSellingGammes,
+        oemRefs: loaderData.oemRefs,
+        oemRefsSeo: loaderData.oemRefsSeo,
+        voirAussiLinks, // 🔗 SEO: URLs pré-calculées pour section "Voir aussi"
+        catalogueTop8, // 🕷️ SEO: Top 8 liens catalogue SSR pour crawl interne
+        seo: {
+          title:
+            rmV2Response.seo?.title ||
+            `${gamme.name} ${vehicle.marque} ${vehicle.modele} ${vehicle.type} | Pièces Auto`,
+          h1: rmV2Response.seo?.h1 || loaderData.seoContent.h1,
+          description: stripHtmlForMeta(
+            rmV2Response.seo?.description ||
+              loaderData.seoContent.longDescription,
+          ),
+        },
+        performance: {
+          loadTime,
+          source: "rm-v2",
+          cacheHit: rmV2Response.cacheHit || false,
+          rmDuration: rmV2Response.duration_ms,
+        },
+        dataQuality: rmV2Response.validation?.dataQuality?.quality ?? 0,
+
+        // === DONNÉES STREAMÉES (non-bloquantes, chargées en background) ===
+        // LCP: blogData deferred (below-fold, Googlebot exécute JS)
+        blogData: blogDataPromise,
+        // 🚀 LCP V9: seoSwitches deferred (below-fold, fallback anchors in getAnchorText)
+        seoSwitches: seoSwitchesPromise,
+        // Catalogue complet (déjà résolu pour SSR top 8, passé en direct)
+        catalogueMameFamille: catalogueMameFamille
+          ? Promise.resolve(catalogueMameFamille)
+          : Promise.resolve(null),
+      },
+      {
+        headers: {
+          "Cache-Control":
+            "public, max-age=60, s-maxage=86400, stale-while-revalidate=3600",
+        },
+      },
+    );
+  } catch (renderErr) {
+    // Re-throw Response objects (404, 301, etc.) — they are intentional
+    if (renderErr instanceof Response) throw renderErr;
+
+    logger.error(
+      `💥 [LOADER] Unhandled error building response for ${url.pathname}:`,
+      renderErr instanceof Error ? renderErr.message : renderErr,
+    );
+    throw new Response("Service temporairement indisponible", {
+      status: 503,
       headers: {
-        "Cache-Control":
-          "public, max-age=60, s-maxage=86400, stale-while-revalidate=3600",
+        "X-Robots-Tag": "noindex",
+        "Retry-After": "300",
+        "Cache-Control": "no-cache",
       },
-    },
-  );
+    });
+  }
 }
 
 // ========================================

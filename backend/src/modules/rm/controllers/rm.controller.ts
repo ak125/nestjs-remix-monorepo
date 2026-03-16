@@ -4,6 +4,7 @@ import {
   Query,
   ParseIntPipe,
   DefaultValuePipe,
+  Logger,
 } from '@nestjs/common';
 import {
   OperationFailedException,
@@ -24,6 +25,8 @@ import { RmBuilderService } from '../services/rm-builder.service';
  */
 @Controller('api/rm')
 export class RmController {
+  private readonly logger = new Logger(RmController.name);
+
   constructor(private readonly rmBuilder: RmBuilderService) {}
 
   /**
@@ -260,13 +263,20 @@ export class RmController {
     @Query('type_id', ParseIntPipe) type_id: number,
     @Query('limit', new DefaultValuePipe(12), ParseIntPipe) limit: number,
   ) {
-    const clampedLimit = Math.min(Math.max(limit, 1), 24);
-    const result = await this.rmBuilder.getAlternatives(
-      gamme_id,
-      type_id,
-      clampedLimit,
-    );
-    return { success: true, ...result };
+    try {
+      const clampedLimit = Math.min(Math.max(limit, 1), 24);
+      const result = await this.rmBuilder.getAlternatives(
+        gamme_id,
+        type_id,
+        clampedLimit,
+      );
+      return { success: true, ...result };
+    } catch (err) {
+      this.logger.warn(
+        `Alternatives endpoint error for gamme=${gamme_id} type=${type_id}: ${err instanceof Error ? err.message : err}`,
+      );
+      return { success: true, alternativeGammes: [], alternativeVehicles: [] };
+    }
   }
 
   /**
