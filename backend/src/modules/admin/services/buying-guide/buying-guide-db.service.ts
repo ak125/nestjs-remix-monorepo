@@ -156,9 +156,9 @@ export class BuyingGuideDbService extends SupabaseBaseService {
 
       if (existing) {
         for (const field of fieldsToCheck) {
-          const existingValue = (existing as Record<string, string | null>)[
-            field
-          ];
+          const existingValue = (
+            existing as unknown as Record<string, string | null>
+          )[field];
           const existingLen = existingValue?.length ?? 0;
           const newLen = (payload[field] as string).length;
           if (existingLen > 0 && newLen < existingLen * 0.5) {
