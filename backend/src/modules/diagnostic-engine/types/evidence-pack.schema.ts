@@ -89,6 +89,9 @@ export const RagEvidenceTypeEnum = z.enum([
   'verification_support_evidence',
   'maintenance_support_evidence',
   'pedagogical_support_evidence',
+  'repair_tip',
+  'cost_evidence',
+  'obd_code_evidence',
 ]);
 
 export const RagFactSchema = z.object({
@@ -103,6 +106,7 @@ export type RagFact = z.infer<typeof RagFactSchema>;
 
 export const EvidencePackSchema = z.object({
   evidence_pack: z.object({
+    diagnostic_confidence: z.number().min(0).max(100).optional(),
     factual_inputs_confirmed: z.array(z.string()),
     factual_inputs_missing: z.array(z.string()),
     system_suspects: z.array(z.string()),
@@ -114,6 +118,15 @@ export const EvidencePackSchema = z.object({
     signal_quality: z.enum(['high', 'medium', 'low']).optional(),
     catalog_guard: CatalogGuardSchema,
     maintenance_recommendations: z.array(z.unknown()).optional(),
+    preventive_schedule: z
+      .array(
+        z.object({
+          operation: z.string(),
+          next_at_km: z.string(),
+          status: z.enum(['overdue', 'approaching', 'ok', 'unknown']),
+        }),
+      )
+      .optional(),
     allowed_claims: z.array(z.string()),
     forbidden_claims_runtime: z.array(z.string()),
     // v1: liste plate. v2: fully typed per block (voir roadmap)

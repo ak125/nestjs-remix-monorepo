@@ -25,10 +25,17 @@ export interface MaintenanceRecommendation {
   related_pg_id?: number;
 }
 
+export interface PreventiveScheduleItem {
+  operation: string;
+  next_at_km: string;
+  status: 'overdue' | 'approaching' | 'ok' | 'unknown';
+}
+
 export interface MaintenanceAssessment {
   recommendations: MaintenanceRecommendation[];
   maintenance_links: string[];
   overdue_count: number;
+  preventive_schedule?: PreventiveScheduleItem[];
 }
 
 interface MaintenanceOp {
@@ -123,10 +130,24 @@ export class MaintenanceIntelligenceEngine {
       return `${r.operation_label}${status} — intervalle : ${r.interval_km || r.interval_months}`;
     });
 
+    // ── Preventive schedule (proactive, based on vehicle km) ──
+    const preventiveSchedule: PreventiveScheduleItem[] = vehicle?.mileage_km
+      ? recommendations.map((r) => {
+          const nextKm = r.interval_km ? r.interval_km.replace(/\s/g, '') : '';
+          return {
+            operation: r.operation_label,
+            next_at_km: nextKm || 'selon constructeur',
+            status: r.overdue_status || 'unknown',
+          };
+        })
+      : [];
+
     return {
       recommendations,
       maintenance_links: maintenanceLinks,
       overdue_count: overdueCount,
+      preventive_schedule:
+        preventiveSchedule.length > 0 ? preventiveSchedule : undefined,
     };
   }
 

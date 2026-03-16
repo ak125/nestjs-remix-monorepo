@@ -107,6 +107,14 @@ export class DiagnosticEngineOrchestrator {
       input.usage_context,
     );
 
+    // ── 7b. Enrich catalog gammes with cost ranges ─────
+    const pgIds = catalog.suggested_gammes.map((g) => g.pg_id);
+    const costRanges = await this.dataService.getCostRanges(pgIds);
+    for (const g of catalog.suggested_gammes) {
+      const cost = costRanges.get(g.pg_id);
+      if (cost) (g as unknown as Record<string, unknown>).cost_range = cost;
+    }
+
     // ── 8. RAG Enrichment Engine (graceful degradation) ─
     const ragFacts = await this.ragEngine.enrich(
       input.system_scope,
@@ -219,6 +227,14 @@ export class DiagnosticEngineOrchestrator {
       ),
     ];
 
+    // ── Urgency timeline mapping ───────────────────────
+    const urgencyTimeline: Record<string, string> = {
+      critique: 'Immédiat — ne pas rouler',
+      haute: 'Sous 48h — contrôle professionnel urgent',
+      moyenne: 'Sous 2 semaines — planifier un contrôle',
+      basse: 'Prochaine révision — à surveiller',
+    };
+
     // ── Map hypotheses to contract format ──────────────
     const contractHypotheses = hypotheses.map((h) => ({
       hypothesis_id: h.hypothesis_id,
@@ -227,6 +243,8 @@ export class DiagnosticEngineOrchestrator {
       cause_type: h.cause_type as any,
       relative_score: h.total_score,
       urgency: h.urgency,
+      urgency_timeline:
+        urgencyTimeline[h.urgency] || urgencyTimeline['moyenne'],
       evidence_for: h.evidence_for,
       evidence_against: h.evidence_against,
       verification_method: h.verification_method,
@@ -255,8 +273,27 @@ export class DiagnosticEngineOrchestrator {
       'Achetez des plaquettes maintenant.',
     ];
 
+    // ── Diagnostic confidence score ─────────────────────
+    const signalQualityMultiplier =
+      signal.signal_quality === 'high'
+        ? 1.0
+        : signal.signal_quality === 'medium'
+          ? 0.75
+          : 0.5;
+    const topScore = hypotheses[0]?.total_score || 0;
+    const evidenceCount = confirmed.length;
+    const diagnosticConfidence = Math.min(
+      100,
+      Math.round(
+        topScore *
+          signalQualityMultiplier *
+          (0.7 + 0.3 * Math.min(evidenceCount / 5, 1)),
+      ),
+    );
+
     return {
       evidence_pack: {
+        diagnostic_confidence: diagnosticConfidence,
         factual_inputs_confirmed: confirmed,
         factual_inputs_missing: missing,
         system_suspects: systemSuspects,
@@ -283,6 +320,7 @@ export class DiagnosticEngineOrchestrator {
           suggested_gammes: catalog.suggested_gammes,
         },
         maintenance_recommendations: maintenance.recommendations,
+        preventive_schedule: maintenance.preventive_schedule,
         rag_facts: ragFacts.length > 0 ? ragFacts : undefined,
         allowed_claims: allowedClaims,
         forbidden_claims_runtime: forbiddenClaims,

@@ -187,6 +187,35 @@ export class RagEnrichmentEngine {
       }
     }
 
+    // Repair tips / astuces
+    if (
+      line.includes('astuce') ||
+      line.includes('conseil') ||
+      line.includes('recommand') ||
+      line.includes('privilegier') ||
+      line.includes('toujours remplacer') ||
+      line.includes('kit complet') ||
+      line.includes('par paire')
+    ) {
+      return 'repair_tip';
+    }
+
+    // Cost / price information
+    if (
+      line.includes('€') ||
+      line.includes('eur') ||
+      line.includes('cout') ||
+      line.includes('prix') ||
+      line.includes('tarif')
+    ) {
+      return 'cost_evidence';
+    }
+
+    // OBD / error codes
+    if (/p[0-9]{3,4}/i.test(line) || line.includes('code defaut')) {
+      return 'obd_code_evidence';
+    }
+
     // Symptom nuances
     if (
       line.includes('quand') ||

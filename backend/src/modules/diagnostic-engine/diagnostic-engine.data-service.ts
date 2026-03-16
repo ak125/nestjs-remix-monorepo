@@ -250,6 +250,26 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
   }
 
   /**
+   * Get cost ranges for a list of pg_ids from __seo_gamme_purchase_guide
+   */
+  async getCostRanges(pgIds: number[]): Promise<Map<number, string>> {
+    if (!pgIds.length) return new Map();
+    const { data, error } = await this.supabase
+      .from('__seo_gamme_purchase_guide')
+      .select('sgpg_pg_id, sgpg_risk_cost_range')
+      .in('sgpg_pg_id', pgIds.map(String));
+
+    if (error || !data) return new Map();
+    const map = new Map<number, string>();
+    for (const row of data) {
+      if (row.sgpg_risk_cost_range) {
+        map.set(Number(row.sgpg_pg_id), row.sgpg_risk_cost_range);
+      }
+    }
+    return map;
+  }
+
+  /**
    * Save a diagnostic session
    */
   async saveSession(session: {
