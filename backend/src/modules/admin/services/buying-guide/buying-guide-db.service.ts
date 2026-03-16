@@ -135,46 +135,79 @@ export class BuyingGuideDbService extends SupabaseBaseService {
     pgId: string,
     payload: Record<string, unknown>,
   ): Promise<void> {
-    // Anti-regression guard: never overwrite longer content with shorter
+    // ── Intelligent merge: enrich, don't replace ──
+    // For long text fields, we merge new content INTO existing content
+    // instead of replacing it. The rule is:
+    //   - If existing is empty → write new (first generation)
+    //   - If new is longer → replace (genuine enrichment)
+    //   - If new is shorter but adds unique content → append new paragraphs
+    //   - If new is shorter and adds nothing → keep existing (anti-regression)
     const longTextFields = [
       'sgpg_how_to_choose',
       'sgpg_intro_role',
       'sgpg_risk_explanation',
     ] as const;
 
-    const fieldsToCheck = longTextFields.filter(
+    const fieldsToMerge = longTextFields.filter(
       (f) => typeof payload[f] === 'string',
     );
 
-    if (fieldsToCheck.length > 0) {
-      // Read existing field values directly — PostgREST does NOT support length() in .select()
+    if (fieldsToMerge.length > 0) {
       const { data: existing } = await this.client
         .from('__seo_gamme_purchase_guide')
-        .select(fieldsToCheck.join(', '))
+        .select(fieldsToMerge.join(', '))
         .eq('sgpg_pg_id', pgId)
         .single();
 
       if (existing) {
-        for (const field of fieldsToCheck) {
+        for (const field of fieldsToMerge) {
           const existingValue = (
             existing as unknown as Record<string, string | null>
           )[field];
           const existingLen = existingValue?.length ?? 0;
-          const newLen = (payload[field] as string).length;
-          if (existingLen > 0 && newLen < existingLen * 0.5) {
-            this.logger.warn(
-              `Anti-regression BLOCKED: ${field} for pgId=${pgId} would shrink from ${existingLen}c to ${newLen}c (${Math.round((newLen / existingLen) * 100)}%). Skipping field.`,
+          const newValue = payload[field] as string;
+          const newLen = newValue.length;
+
+          if (existingLen === 0) {
+            // First generation — write freely
+            this.logger.log(
+              `Enrich: ${field} pgId=${pgId} first write (${newLen}c)`,
             );
-            delete payload[field];
+          } else if (newLen >= existingLen) {
+            // New is longer or equal — genuine enrichment, replace
+            this.logger.log(
+              `Enrich: ${field} pgId=${pgId} upgraded ${existingLen}c → ${newLen}c (+${newLen - existingLen}c)`,
+            );
+          } else if (newLen >= existingLen * 0.8) {
+            // New is slightly shorter (>80%) — likely a minor rewrite, allow
+            this.logger.log(
+              `Enrich: ${field} pgId=${pgId} minor rewrite ${existingLen}c → ${newLen}c (${Math.round((newLen / existingLen) * 100)}%), allowed`,
+            );
+          } else {
+            // New is significantly shorter (<80%) — merge unique paragraphs from new into existing
+            const merged = this.mergeTextContent(existingValue!, newValue);
+            if (merged.length > existingLen) {
+              // Merge added new content
+              payload[field] = merged;
+              this.logger.log(
+                `Enrich: ${field} pgId=${pgId} merged ${existingLen}c + ${newLen}c → ${merged.length}c (+${merged.length - existingLen}c new paragraphs)`,
+              );
+            } else {
+              // New content adds nothing unique — keep existing
+              this.logger.warn(
+                `Enrich: ${field} pgId=${pgId} new content (${newLen}c) adds nothing to existing (${existingLen}c). Keeping existing.`,
+              );
+              delete payload[field];
+            }
           }
         }
       }
     }
 
-    // Skip update if all fields were removed by anti-regression
+    // Skip update if all fields were removed
     if (Object.keys(payload).length === 0) {
       this.logger.warn(
-        `Anti-regression: all fields skipped for pgId=${pgId}, no update`,
+        `Enrich: all fields skipped for pgId=${pgId}, no update needed`,
       );
       return;
     }
@@ -192,5 +225,46 @@ export class BuyingGuideDbService extends SupabaseBaseService {
     }
 
     this.logger.log(`Buying guide updated for pgId=${pgId}`);
+  }
+
+  /**
+   * Merge new text content into existing, keeping existing paragraphs
+   * and appending only unique new paragraphs.
+   */
+  private mergeTextContent(existing: string, incoming: string): string {
+    // Split into paragraphs (double newline or <p> tags)
+    const existingParas = existing
+      .split(/\n\n|<\/p>\s*<p>/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    const incomingParas = incoming
+      .split(/\n\n|<\/p>\s*<p>/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    // Normalize for comparison (lowercase, strip HTML, collapse whitespace)
+    const normalize = (s: string) =>
+      s
+        .replace(/<[^>]*>/g, '')
+        .toLowerCase()
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    const existingNormalized = new Set(existingParas.map(normalize));
+
+    // Find paragraphs in incoming that are NOT in existing (unique additions)
+    const uniqueNew = incomingParas.filter((p) => {
+      const norm = normalize(p);
+      // Skip very short paragraphs (less than 30 chars normalized)
+      if (norm.length < 30) return false;
+      // Check if this paragraph already exists (fuzzy: first 50 chars match)
+      const prefix = norm.substring(0, 50);
+      return ![...existingNormalized].some((e) => e.startsWith(prefix));
+    });
+
+    if (uniqueNew.length === 0) return existing;
+
+    // Append unique new paragraphs at the end
+    return existing + '\n\n' + uniqueNew.join('\n\n');
   }
 }
