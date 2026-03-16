@@ -922,18 +922,43 @@ export class ContentRefreshService extends SupabaseBaseService {
     supplementaryFiles: string[] = [],
     force?: boolean,
   ): Promise<boolean> {
-    // Guard: don't interrupt active jobs
+    // Guard: don't interrupt RECENT active jobs (stale jobs are auto-expired)
+    // A job is considered stale if it's been processing/pending for more than 1 hour.
+    // Stale jobs are automatically marked as failed to unblock the pipeline.
+    const STALE_THRESHOLD_MINUTES = 60;
+
     const { data: active } = await this.client
       .from('__rag_content_refresh_log')
-      .select('id')
+      .select('id, status, created_at')
       .eq('pg_alias', pgAlias)
       .eq('page_type', pageType)
       .in('status', ['pending', 'processing'])
       .maybeSingle();
 
     if (active) {
-      this.logger.warn(`Skipping: active job for ${pgAlias}/${pageType}`);
-      return false;
+      const createdAt = new Date(active.created_at as string);
+      const ageMinutes = (Date.now() - createdAt.getTime()) / (1000 * 60);
+
+      if (ageMinutes > STALE_THRESHOLD_MINUTES) {
+        // Auto-expire stale job — don't block the pipeline
+        await this.client
+          .from('__rag_content_refresh_log')
+          .update({
+            status: 'failed',
+            completed_at: new Date().toISOString(),
+            error_message: `auto_expired_stale_${Math.round(ageMinutes)}min`,
+          })
+          .eq('id', active.id);
+        this.logger.warn(
+          `Auto-expired stale job ${active.id} for ${pgAlias}/${pageType} (${Math.round(ageMinutes)}min old)`,
+        );
+        // Continue to create new job
+      } else {
+        this.logger.warn(
+          `Skipping: active job ${active.id} for ${pgAlias}/${pageType} (${Math.round(ageMinutes)}min old, threshold=${STALE_THRESHOLD_MINUTES}min)`,
+        );
+        return false;
+      }
     }
 
     // Upsert tracking row (unique index on pg_alias+page_type)
@@ -987,6 +1012,7 @@ export class ContentRefreshService extends SupabaseBaseService {
       backoff: { type: 'exponential', delay: 30000 },
       removeOnComplete: 50,
       removeOnFail: 50,
+      timeout: 10 * 60 * 1000, // 10 minutes max — prevents stale processing
     });
 
     // Update tracking row with BullMQ job ID
@@ -1059,6 +1085,7 @@ export class ContentRefreshService extends SupabaseBaseService {
       backoff: { type: 'exponential', delay: 30000 },
       removeOnComplete: 50,
       removeOnFail: 50,
+      timeout: 10 * 60 * 1000, // 10 minutes max — prevents stale processing
     });
 
     await this.client
