@@ -161,6 +161,15 @@ export class ContentRefreshService extends SupabaseBaseService {
     force?: boolean,
     filterPageTypes?: GammePageType[],
   ): Promise<GammePageType[]> {
+    // Pipeline kill switch — when disabled, content generation is done via /content-gen skill
+    const pipelineEnabled = process.env.CONTENT_PIPELINE_ENABLED === 'true';
+    if (!pipelineEnabled) {
+      this.logger.log(
+        `Pipeline DISABLED for ${pgAlias} — use /content-gen skill instead`,
+      );
+      return [];
+    }
+
     // F1-GATE: Foundation Write Lock — refuse queueing if Phase 1 not passed
     if (this.foundationGate) {
       const gate = await this.foundationGate.guardWriteForGamme(pgAlias);

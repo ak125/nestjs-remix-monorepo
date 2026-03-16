@@ -171,11 +171,19 @@ export class AdminRagIngestController {
       true,
     );
 
+    const pipelineEnabled = process.env.CONTENT_PIPELINE_ENABLED === 'true';
+
     return {
-      status: 'queued',
+      status: pipelineEnabled ? 'queued' : 'pipeline_disabled',
       pgAlias: dto.pgAlias,
       queuedPageTypes: queuedTypes,
       force: true,
+      ...(pipelineEnabled
+        ? {}
+        : {
+            message:
+              'Content pipeline disabled. Use /content-gen skill instead.',
+          }),
     };
   }
 }
