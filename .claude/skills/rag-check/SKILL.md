@@ -1,29 +1,53 @@
 ---
 name: rag-check
-description: "Vérification couverture RAG par rôle R* pour une gamme. Identifie la matière manquante (procédure, encyclopédie, diagnostic, FAQ) et génère un prompt Chrome pour compléter. Usage : /rag-check <pg_alias> [--fix] [--batch top10]"
-argument-hint: "<pg_alias ou pg_id> [--fix] [--batch top10]"
+description: "Vérification couverture RAG par rôle R* pour une gamme OU un véhicule. Détecte automatiquement le type d'input. Usage : /rag-check <pg_alias|vehicle_slug> [--fix] [--batch top10]"
+argument-hint: "<pg_alias ou vehicle_slug> [--fix] [--batch top10] [--diff]"
 ---
 
-# RAG Check — Skill v1.1
+# RAG Check — Skill v2.0 (gamme + véhicule unifié)
 
 ## Usage
-- `/rag-check filtre-a-huile` — diagnostic couverture RAG par rôle
-- `/rag-check filtre-a-huile --fix` — diagnostiquer + backfill automatique RAG↔DB
+- `/rag-check filtre-a-huile` — diagnostic RAG gamme (R1/R3/R4/R5/R6)
+- `/rag-check renault-clio-3` — diagnostic RAG véhicule (R8)
+- `/rag-check filtre-a-huile --fix` — diagnostiquer + backfill RAG↔DB
+- `/rag-check renault-clio-3 --fix` — diagnostiquer + backfill RAG véhicule
+- `/rag-check --batch top10` — 10 entités avec le plus de gaps RAG
 - `/rag-check filtre-a-huile --diff` — comparer avec le dernier check
-- `/rag-check --batch top10` — 10 gammes avec le plus de gaps RAG
 
 ## Projet Supabase
 `cxpojprgwgubzjyqzmoq`
 
-## Différence avec /kp et /seo-gamme-audit
+## Différence avec /kp et /seo-audit
 
 - `/kp` = **quoi cibler** (keywords SEO, intentions, H1/H2) → fichier SEO
 - `/rag-check` = **avec quoi générer** (matière source technique) → fichier RAG .md
-- `/seo-gamme-audit` = **ce qui est produit** (contenu final, scores, liens) → audit output
+- `/seo-audit` = **ce qui est produit** (contenu final, scores, liens) → audit output
 
 ---
 
 ## Procédure
+
+### Étape 0 — Détection automatique gamme / véhicule
+
+**Ordre de détection** :
+1. Lire `/opt/automecanik/rag/knowledge/gammes/{input}.md` — si existe → **MODE GAMME**
+2. Sinon lire `/opt/automecanik/rag/knowledge/vehicles/{input}.md` — si existe → **MODE VÉHICULE**
+3. Sinon chercher en DB :
+   ```sql
+   SELECT 'gamme' as type, pg_id as id, pg_alias as slug, pg_name as name
+   FROM pieces_gamme WHERE pg_alias = '{input}' OR pg_id::text = '{input}'
+   UNION ALL
+   SELECT 'vehicle' as type, modele_id as id,
+     lower(replace(m.modele_name, ' ', '-')) as slug, m.modele_name as name
+   FROM auto_modele m WHERE lower(replace(m.modele_name, ' ', '-')) ILIKE '%{input}%'
+   LIMIT 1;
+   ```
+4. Si aucun match → erreur "Gamme ou véhicule '{input}' non trouvé"
+
+**Afficher** : `Mode détecté : GAMME (filtre-a-huile)` ou `Mode détecté : VÉHICULE (renault-clio-3)`
+
+Si **MODE GAMME** → suivre la procédure gamme ci-dessous (étapes 1-10 existantes)
+Si **MODE VÉHICULE** → suivre la procédure véhicule (section "Mode véhicule" plus bas)
 
 ### Étape 1 — Résoudre la gamme
 
@@ -373,15 +397,154 @@ Pour chaque gamme, lire le fichier RAG et afficher un tableau compact :
 
 ---
 
+---
+
+## Mode véhicule (R8_VEHICLE)
+
+Si l'étape 0 détecte un véhicule, suivre cette procédure au lieu de la procédure gamme.
+
+### V1 — Lire le fichier RAG véhicule
+
+```
+Read /opt/automecanik/rag/knowledge/vehicles/{vehicle_slug}.md
+```
+
+Parser le frontmatter YAML. Champs attendus :
+- `modele_id`, `marque_id` — identifiants DB
+- `motorisations[]` — liste des moteurs ({moteur, puissance, code})
+- `problemes_connus[]` — symptômes fréquents
+- `pieces_usure[]` — pièces d'usure avec compteurs
+- `specs_techniques` — données techniques (poids, dimensions, etc.)
+- `entretien[]` — intervalles d'entretien par opération
+
+### V2 — Vérifier les données DB véhicule
+
+```sql
+-- Nombre de motorisations en DB
+SELECT count(*) as types_db
+FROM auto_type t
+JOIN auto_modele m ON m.modele_id = t.type_modele_id::int
+WHERE lower(replace(m.modele_name, ' ', '-')) ILIKE '%{vehicle_slug}%';
+
+-- Gammes liées via cross_gamme_car
+SELECT count(DISTINCT cgc_pg_id) as gammes_liees
+FROM __cross_gamme_car_new
+WHERE cgc_type_id IN (
+  SELECT type_id FROM auto_type t
+  JOIN auto_modele m ON m.modele_id = t.type_modele_id::int
+  WHERE lower(replace(m.modele_name, ' ', '-')) ILIKE '%{vehicle_slug}%'
+);
+```
+
+### V3 — Couverture par bloc R8
+
+Vérifier la présence des 12 block types du page contract R8 :
+
+| Bloc | Champ frontmatter | Seuil | Obligatoire |
+|------|------------------|-------|-------------|
+| hero_block | title + marque + modele | non-null | OUI |
+| maintenance_schedule | `entretien[]` | ≥3 opérations | OUI |
+| common_parts | `pieces_usure[]` | ≥5 pièces | OUI |
+| vehicle_specs | `specs_techniques` | ≥3 specs | OUI |
+| known_issues | `problemes_connus[]` | ≥2 problèmes | RECOMMANDÉ |
+| owner_tips | — | ≥2 conseils | OPTIONNEL |
+| cost_overview | coûts entretien | non-null | RECOMMANDÉ |
+| related_vehicles | modèles proches | — | OPTIONNEL |
+| faq_vehicle | FAQ | ≥3 questions | RECOMMANDÉ |
+| seasonal_advice | conseils saisonniers | — | OPTIONNEL |
+| recall_info | rappels constructeur | — | OPTIONNEL |
+| parts_compatibility | gammes liées | ≥10 gammes | OUI (via DB) |
+
+### V4 — Validation croisée RAG ↔ DB
+
+```sql
+-- Motorisations RAG vs DB
+-- Comparer le count de motorisations dans le frontmatter vs auto_type
+```
+
+Si RAG dit 3 motorisations mais DB en a 8 → signaler **DESYNC : 5 motorisations manquantes dans le RAG**.
+
+### V5 — Vérifier couverture gammes liées
+
+Pour les gammes liées au véhicule, vérifier si elles ont du contenu R1/R3/R6 :
+
+```sql
+SELECT pg.pg_alias,
+  CASE WHEN EXISTS (SELECT 1 FROM __seo_gamme sg WHERE sg.sg_pg_id = pg.pg_id::text AND sg.sg_content IS NOT NULL) THEN 1 ELSE 0 END as has_r1,
+  CASE WHEN EXISTS (SELECT 1 FROM __seo_gamme_conseil sgc WHERE sgc.sgc_pg_id = pg.pg_id::text AND sgc.sgc_content IS NOT NULL) THEN 1 ELSE 0 END as has_r3
+FROM __cross_gamme_car_new cgc
+JOIN pieces_gamme pg ON pg.pg_id = cgc.cgc_pg_id
+WHERE cgc.cgc_type_id IN (
+  SELECT type_id FROM auto_type t
+  JOIN auto_modele m ON m.modele_id = t.type_modele_id::int
+  WHERE lower(replace(m.modele_name, ' ', '-')) ILIKE '%{vehicle_slug}%'
+)
+GROUP BY pg.pg_alias, pg.pg_id
+LIMIT 20;
+```
+
+### V6 — Score de couverture véhicule
+
+```
+score = (blocs_ok × 8) + (blocs_partial × 4)
+# sur 100 (12 blocs × ~8 = 96 max, arrondi à 100)
+```
+
+### V7 — Rapport véhicule
+
+```
+## RAG Check — {vehicle_name} (véhicule)
+
+### Couverture R8 par bloc
+
+| Bloc | Données présentes (compte) | Qualité | Status | Ce qui manque |
+|------|---------------------------|---------|--------|--------------|
+| hero_block | ✅ title, marque, modele | HIGH | ✅ OK | — |
+| maintenance_schedule | entretien ✅ (5 opérations) | HIGH | ✅ OK | — |
+| common_parts | pieces_usure ✅ (8 pièces) | HIGH | ✅ OK | — |
+| known_issues | problemes_connus ✅ (3) | MEDIUM | ✅ OK | — |
+| parts_compatibility | gammes liées ✅ (25 via DB) | HIGH | ✅ OK | — |
+
+### Motorisations : RAG {N} / DB {M}
+### Gammes liées avec contenu : {N}/{total} ont R1, {M}/{total} ont R3
+
+### Score couverture : {score}/100
+### Readiness /kp : {readiness}
+
+### Actions recommandées
+{liste auto-générée selon les gaps}
+```
+
+### V8 — Prompt Chrome véhicule (si gaps)
+
+Si des blocs manquent, générer un prompt Chrome ciblé :
+
+```
+Tu es un expert automobile. Pour le véhicule **{marque} {modele}** :
+
+{UNIQUEMENT les sections manquantes parmi :}
+- Intervalles d'entretien par opération (vidange, distribution, freins, etc.)
+- Problèmes connus et rappels constructeur
+- Pièces d'usure fréquentes avec kilométrage
+- Spécifications techniques (poids, dimensions, moteurs)
+- Conseils propriétaire par saison
+- FAQ véhicule (5 questions minimum)
+
+Format : Markdown (.md), frontmatter YAML, nommer `vehicles/{brand}-{model}.md`
+```
+
+---
+
 ## Règles
 
 1. **Ne jamais inventer de matière** — le skill diagnostique et réclame, il ne génère pas
 2. **Séparer SEO et RAG** — le fichier SEO (/kp) et la matière RAG (/rag-check) sont indépendants
-3. **Le prompt Chrome est ciblé par rôle** — ne demander que ce qui manque, pas tout
+3. **Le prompt Chrome est ciblé par rôle/bloc** — ne demander que ce qui manque, pas tout
 4. **Distinguer absent vs vide** — `norms: []` ≠ pas de clé `norms`
 5. **Distinguer structuré vs brut** — compter séparément
 6. **Comparer RAG ↔ DB** — signaler les desyncs
 7. **Score couverture = métrique objective** — pas de jugement subjectif
-8. **BLOCKED = le rôle ne peut pas être généré** — pas "il sera moins bon"
+8. **BLOCKED = le rôle/bloc ne peut pas être généré** — pas "il sera moins bon"
 9. **Stocker chaque check en DB** — pour le mode --diff
 10. **Afficher la readiness /kp** — pour guider l'utilisateur vers la prochaine étape
+11. **Détection auto gamme/véhicule** — l'utilisateur n'a pas besoin de préciser le type

@@ -1,20 +1,21 @@
 ---
 name: seo-gamme-audit
-description: "Audit SEO complet d'une gamme : métriques R1-R8, couverture RAG, scores qualité, vocabulaire interdit, maillage, historique, score composite, détail sections R3, actions recommandées + auto-fix. Usage : /seo-gamme-audit <pg_alias ou pg_id> [--batch top20|worst|ready] [--fix]"
-argument-hint: "<pg_alias ou pg_id> [--batch top20|worst|ready] [--fix] [--history]"
+description: "Audit SEO complet d'une gamme OU d'un véhicule : métriques R1-R8, couverture RAG, scores qualité, vocabulaire interdit, maillage, historique, score composite, actions recommandées + auto-fix. Détecte auto gamme/véhicule. Usage : /seo-gamme-audit <pg_alias|vehicle_slug> [--batch top20|worst|ready] [--fix]"
+argument-hint: "<pg_alias ou vehicle_slug> [--batch top20|worst|ready] [--fix] [--history]"
 ---
 
-# SEO Gamme Audit — Skill v3.3
+# SEO Audit — Skill v4.0 (gamme + véhicule unifié)
 
 ## Usage
-- `/seo-gamme-audit filtre-a-huile` — audit complet d'une gamme
-- `/seo-gamme-audit 7` — par pg_id
+- `/seo-gamme-audit filtre-a-huile` — audit complet d'une gamme (R1/R3/R4/R5/R6)
+- `/seo-gamme-audit renault-clio-3` — audit complet d'un véhicule (R8)
+- `/seo-gamme-audit 7` — par pg_id (gamme)
 - `/seo-gamme-audit filtre-a-huile --fix` — audit + correction automatique des gaps
-- `/seo-gamme-audit filtre-a-huile --history` — historique des scores d'une gamme
-- `/seo-gamme-audit --batch top20` — 20 gammes avec le plus de gaps
-- `/seo-gamme-audit --batch worst` — gammes avec les pires scores
-- `/seo-gamme-audit --batch ready` — gammes prêtes pour publication
-- `/seo-gamme-audit --batch top20 --fix` — audit + fix sur les 20 pires gammes
+- `/seo-gamme-audit filtre-a-huile --history` — historique des scores
+- `/seo-gamme-audit --batch top20` — 20 entités (gammes + véhicules) avec le plus de gaps
+- `/seo-gamme-audit --batch worst` — entités avec les pires scores
+- `/seo-gamme-audit --batch ready` — entités prêtes pour publication
+- `/seo-gamme-audit --batch top20 --fix` — audit + fix sur les 20 pires
 
 ## Exécution DB
 
@@ -23,6 +24,20 @@ argument-hint: "<pg_alias ou pg_id> [--batch top20|worst|ready] [--fix] [--histo
 ## Fichiers RAG
 Les fichiers .md sont dans `/opt/automecanik/rag/knowledge/` (gammes/, diagnostic/, guides/).
 Utiliser l'outil `Read` pour lire les fichiers .md et parser le frontmatter YAML.
+
+---
+
+## Étape 0 — Détection automatique gamme / véhicule
+
+**Même logique que `/rag-check` et `/kp`** :
+1. Lire `/opt/automecanik/rag/knowledge/gammes/{input}.md` — si existe → **MODE GAMME**
+2. Sinon lire `/opt/automecanik/rag/knowledge/vehicles/{input}.md` — si existe → **MODE VÉHICULE**
+3. Sinon chercher en DB (`pieces_gamme` ou `auto_modele`)
+
+**Si MODE GAMME** → suivre "Mode single gamme" ci-dessous
+**Si MODE VÉHICULE** → suivre "Mode single véhicule" (section en bas du fichier)
+
+**Afficher** : `Mode détecté : GAMME` ou `Mode détecté : VÉHICULE`
 
 ---
 

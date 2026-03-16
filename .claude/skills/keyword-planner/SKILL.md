@@ -1,16 +1,18 @@
 ---
 name: kp
-description: "Keyword planner SEO par gamme. Demande le fichier SEO, puis lance les KP pour TOUS les rôles R concernés. Usage : /kp <pg_alias> [--r1|--r3|--r5|--r6|--all] [--batch top10]"
-argument-hint: "<pg_alias> [--r1|--r3|--r5|--r6|--all] [--batch top10]"
+description: "Keyword planner SEO par gamme OU véhicule. Détecte auto le type, demande le fichier SEO, lance les KP pour TOUS les rôles R concernés. Usage : /kp <pg_alias|vehicle_slug> [--r1|--r3|--r5|--r6|--r8|--all] [--batch top10]"
+argument-hint: "<pg_alias ou vehicle_slug> [--r1|--r3|--r5|--r6|--r8|--all] [--batch top10]"
 ---
 
-# Keyword Planner — Skill /kp
+# Keyword Planner — Skill /kp v2.0 (gamme + véhicule unifié)
 
 ## Usage
-- `/kp filtre-a-huile` — KP pour TOUS les rôles R* de cette gamme
+- `/kp filtre-a-huile` — KP gamme : tous les rôles R1/R3/R4/R5/R6
+- `/kp renault-clio-3` — KP véhicule : R8 (+ R2 si applicable)
 - `/kp filtre-a-huile --r3` — force un seul rôle
+- `/kp renault-clio-3 --r8` — force R8 uniquement
 - `/kp filtre-a-huile --all` — explicitement tous les R*
-- `/kp --batch top10` — KP batch sur les 10 gammes prioritaires
+- `/kp --batch top10` — KP batch sur les 10 entités prioritaires
 
 ## Projet Supabase
 `cxpojprgwgubzjyqzmoq`
@@ -19,15 +21,39 @@ argument-hint: "<pg_alias> [--r1|--r3|--r5|--r6|--all] [--batch top10]"
 
 ## Procédure
 
-### Étape 0 — DEMANDER LE FICHIER SEO
+### Étape 0a — Détection automatique gamme / véhicule
 
-**OBLIGATOIRE AVANT TOUTE EXÉCUTION.**
+**Même logique que `/rag-check`** :
+1. Lire `/opt/automecanik/rag/knowledge/gammes/{input}.md` — si existe → **MODE GAMME**
+2. Sinon lire `/opt/automecanik/rag/knowledge/vehicles/{input}.md` — si existe → **MODE VÉHICULE**
+3. Sinon chercher en DB (`pieces_gamme` ou `auto_modele`)
 
-Afficher ce message à l'utilisateur :
+**Si MODE VÉHICULE** :
+- Rôles à traiter : **R8** (obligatoire) + R2 (optionnel si gammes liées)
+- Agent à invoquer : `r8-keyword-planner`
+- Le prompt Chrome SEO sera adapté avec les intentions véhicule :
+  - R8 : compatibilité pièces, entretien véhicule, révision, catalogue pièces par véhicule
+  - R2 : prix pièces par véhicule, offres compatibles
+- Le prompt inclura les sections R8 (12 block types) au lieu des sections gamme (S1-S8)
+
+**Si MODE GAMME** :
+- Rôles à traiter : R1, R3, R4, R5, R6 (comme avant)
+- Suivre la procédure gamme existante
+
+**Afficher** : `Mode détecté : GAMME` ou `Mode détecté : VÉHICULE`
+
+### Étape 0b — PROMPT SEO (info, NON BLOQUANT)
+
+**NE PAS ATTENDRE DE RÉPONSE. Afficher le prompt Chrome comme info puis CONTINUER IMMÉDIATEMENT.**
+
+Afficher ce bloc info (pas de question, pas d'attente) :
 
 ---
 
-> ## Fichier SEO requis pour **{gamme}**
+> ## Prompt SEO disponible pour **{gamme ou véhicule}**
+>
+> Pour améliorer les keywords, tu peux copier le prompt ci-dessous dans Claude (chrome).
+> **En attendant, je continue automatiquement avec le RAG technique.**
 >
 > Pour produire des keyword plans de qualité, j'ai besoin de tes données SEO.
 > Tu peux fournir **un des formats suivants** (du plus complet au plus simple) :
@@ -283,23 +309,21 @@ Générer automatiquement le **prompt de recherche SEO** prêt à copier-coller 
 
 ---
 
-**Après avoir affiché le prompt** :
+**Après avoir affiché le prompt Chrome** :
 
-Dire à l'utilisateur :
+**NE PAS ATTENDRE.** Continuer immédiatement avec le RAG technique.
 
-> Copie ce prompt dans Claude (chrome), colle le résultat ici, et je lance les KP pour tous les rôles.
-> Si tu n'as pas le temps, dis "D" et je continue avec le RAG seul.
+Afficher :
+> 💡 Prompt SEO disponible ci-dessus. Tu peux le copier dans Claude chrome pour obtenir un fichier SEO optimisé.
+> Pour l'instant, je continue avec le RAG. Si tu fournis un fichier SEO plus tard, relance `/kp {alias}` avec le fichier.
+>
+> `seo_source: RAG_ONLY`
 
-**Quand l'utilisateur colle le résultat** :
-- Parser les 5 tableaux (R1, R3, R4, R5, R6)
+**Si l'utilisateur a déjà fourni un fichier SEO dans le message** (détecté par la présence de tableaux markdown avec colonnes Mot-clé/Volume/Intention) :
+- Parser les tableaux
 - Extraire pour chaque rôle : mot-clé principal (H1), variations (H2), longue traîne (body/FAQ)
 - Passer les données à chaque agent KP dans le prompt
-- Signaler dans le rapport : `seo_source: "FICHIER SEO (généré via Claude chrome)"`
-
-**Si l'utilisateur dit "D"** :
-- Continuer avec le RAG technique seul
-- Signaler : `seo_source: "RAG_ONLY — keywords techniques, pas SEO-optimisés"`
-- Recommander : "🔴 Fournir un fichier SEO pour améliorer le ciblage keywords"
+- Signaler : `seo_source: "FICHIER SEO fourni"`
 
 ### Étape 1 — Résoudre la gamme
 
@@ -323,18 +347,18 @@ Parser le frontmatter YAML pour déterminer :
 
 ### Étape 3 — Déterminer les rôles cibles
 
-**Par défaut (sans --rX)** : lancer les KP pour TOUS les rôles pertinents :
+**Par défaut (sans --rX)** : lancer les KP pour TOUS les rôles — les agents décident eux-mêmes HOLD si evidence insuffisante :
 
-| Rôle | Condition pour lancer | Agent |
-|------|----------------------|-------|
-| R1 | Toujours (gamme active) | r1-keyword-planner |
-| R3 | Toujours (how-to universel) | r3-keyword-planner |
-| R4 | Si RAG a `domain.role` + `domain.confusion_with` | r4-keyword-planner |
-| R5 | Si RAG a `diagnostic.symptoms` (≥1 symptôme) | r5-keyword-planner |
-| R6 | Si RAG a `selection.criteria` + `anti_mistakes` | r6-keyword-planner |
+| Rôle | Toujours lancé | Agent |
+|------|---------------|-------|
+| R1 | ✅ OUI | r1-keyword-planner |
+| R3 | ✅ OUI | r3-keyword-planner |
+| R4 | ✅ OUI | r4-keyword-planner |
+| R5 | ✅ OUI | r5-keyword-planner |
+| R6 | ✅ OUI | r6-keyword-planner |
 
 **Si `--rX` fourni** : lancer uniquement ce rôle.
-**Si `--all` fourni** : forcer les 5 rôles même si evidence faible.
+**Les agents KP gèrent eux-mêmes** le HOLD si evidence insuffisante — le skill ne filtre plus.
 
 ### Étape 4 — Invoquer les agents KP (séquentiellement)
 
@@ -404,8 +428,9 @@ LIMIT 10;
 
 ## Règles
 
-1. **Toujours demander le fichier SEO en premier** — c'est la procédure
-2. **Traiter tous les R* par gamme** — pas un seul rôle
-3. **Signaler la source SEO** dans le rapport (RAG_ONLY vs CSV vs URLs)
-4. **Ne jamais inventer de keywords** — uniquement RAG + fichier SEO fourni
+1. **JAMAIS BLOQUER en attendant un fichier SEO** — afficher le prompt Chrome comme info, continuer avec RAG
+2. **Traiter TOUS les R* par gamme** — pas un seul rôle. Les agents décident eux-mêmes HOLD si evidence insuffisante
+3. **Signaler la source SEO** dans le rapport (RAG_ONLY vs FICHIER_SEO)
+4. **Ne jamais inventer de keywords** — uniquement RAG + fichier SEO si fourni
 5. Le skill /kp ne génère jamais de contenu final, il produit des plans de mots-clés
+6. **Zéro intervention manuelle** — le pipeline tourne de bout en bout sans demander

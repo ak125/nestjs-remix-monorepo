@@ -526,7 +526,12 @@ export class RagCleanupService extends SupabaseBaseService {
           );
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
+        const msg =
+          err instanceof Error
+            ? err.message
+            : typeof err === 'object' && err !== null
+              ? JSON.stringify(err)
+              : String(err);
         result.errors.push(`${fp}: ${msg}`);
         receipt.finalStatus = 'failed';
         receipt.phase1Status = 'failed';
