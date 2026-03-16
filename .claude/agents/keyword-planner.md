@@ -132,15 +132,23 @@ Tes sorties sont consommees ou exploitees par :
 - `r1-content-pipeline.service.ts`
 - `conseil-enricher.service.ts`
 - `buying-guide-enricher.service.ts`
+- `diagnostic.service.ts`
 - `rag-safe-distill.service.ts`
 - `section-compiler.service.ts`
-- `page-contract-r1.schema.ts`
-- `page-contract-r3.schema.ts`
-- `page-contract-r4.schema.ts`
-- `page-contract-r5.schema.ts`
-- `page-contract-r6.schema.ts`
-- `page-contract-r7.schema.ts`
-- `page-contract-r8.schema.ts`
+- `page-contract-r1.schema.ts` à `page-contract-r8.schema.ts`
+
+## Target pipeline par role
+
+| Role | target_pipeline | Keyword planner agent | Constants |
+|------|----------------|----------------------|-----------|
+| R1_ROUTER | r1-content-pipeline | r1-content-batch | r1-keyword-plan.constants.ts |
+| R2_PRODUCT | r2-page-plan | r2-keyword-planner | r2-keyword-plan.constants.ts |
+| R3_CONSEILS | conseil-enricher | **r3-keyword-planner** | keyword-plan.constants.ts |
+| R4_REFERENCE | reference-enricher | r4-keyword-planner | r4-keyword-plan.constants.ts |
+| R5_DIAGNOSTIC | diagnostic-service | **r5-keyword-planner** | **r5-keyword-plan.constants.ts** |
+| R6_GUIDE_ACHAT | buying-guide-enricher | r6-keyword-planner | r6-keyword-plan.constants.ts |
+| R7_BRAND | brand-rag-generator | r7-keyword-planner | r7-keyword-plan.constants.ts |
+| R8_VEHICLE | vehicle-rag-generator | r8-keyword-planner | r8-keyword-plan.constants.ts |
 
 Ta sortie doit donc etre :
 

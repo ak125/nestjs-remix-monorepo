@@ -486,3 +486,7 @@ export interface AuditResult {
   /** Gate results from audit (GA1-GA7) */
   gate_report?: Record<string, GateResult>;
 }
+
+// ── R5 Intents — re-exported from dedicated constants file ──
+// R3 intents already defined above (line ~92)
+export { R5_ALLOWED_INTENTS, type R5Intent } from './r5-keyword-plan.constants';
