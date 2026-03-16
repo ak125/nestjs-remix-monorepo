@@ -17,7 +17,7 @@ export type PageType =
 export const PAGE_TYPE_TO_CANONICAL_ROLE: Record<PageType, RoleId> = {
   R1_pieces: RoleId.R1_ROUTER,
   R3_conseils: RoleId.R3_CONSEILS,
-  R3_guide_howto: RoleId.R3_GUIDE,
+  R3_guide_howto: RoleId.R6_GUIDE_ACHAT, // @deprecated legacy — bridge to canonical R6
   R4_reference: RoleId.R4_REFERENCE,
   R5_diagnostic: RoleId.R5_DIAGNOSTIC,
   R6_guide_achat: RoleId.R6_GUIDE_ACHAT,

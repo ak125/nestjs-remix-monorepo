@@ -423,7 +423,11 @@ export class ContentRefreshService extends SupabaseBaseService {
 
     // For R1/R3 guide achat: set sgpg_is_draft = false
     const pageType = entry.page_type as string;
-    if (pageType === 'R1_pieces' || pageType === 'R3_guide_howto') {
+    if (
+      pageType === 'R1_pieces' ||
+      pageType === 'R3_guide_howto' ||
+      pageType === 'R6_guide_achat'
+    ) {
       await this.client
         .from('__seo_gamme_purchase_guide')
         .update({ sgpg_is_draft: false })
@@ -884,7 +888,7 @@ export class ContentRefreshService extends SupabaseBaseService {
   ): Promise<GammePageType[]> {
     const types: GammePageType[] = [];
 
-    // R1_ROUTER + R3_GUIDE (how-to): check if purchase guide exists
+    // R1_ROUTER + R6_GUIDE_ACHAT: check if purchase guide exists
     const { count: pgCount } = await this.client
       .from('__seo_gamme_purchase_guide')
       .select('sgpg_id', { count: 'exact', head: true })
@@ -892,7 +896,7 @@ export class ContentRefreshService extends SupabaseBaseService {
 
     if ((pgCount ?? 0) > 0) {
       types.push('R1_pieces');
-      types.push('R3_guide_howto');
+      types.push('R6_guide_achat'); // canonical — was R3_guide_howto
     }
 
     // R3_CONSEILS + R4_REFERENCE: enabled when RAG knowledge file exists
