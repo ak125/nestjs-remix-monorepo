@@ -17,6 +17,9 @@ export class BuyingGuideSeoDraftService extends SupabaseBaseService {
     BuyingGuideSeoDraftService.name,
   );
 
+  /** LLM polish disabled — skills Claude Code (/content-gen) replace Groq for quality polish */
+  private readonly llmPolishEnabled = false;
+
   constructor(
     configService: ConfigService,
     private readonly textUtils: EnricherTextUtils,
@@ -135,7 +138,7 @@ export class BuyingGuideSeoDraftService extends SupabaseBaseService {
     let draftSource = conservativeMode ? 'pipeline:conservative' : 'pipeline';
     let llmModel: string | null = null;
 
-    if (this.aiContentService && !conservativeMode) {
+    if (this.llmPolishEnabled && this.aiContentService && !conservativeMode) {
       try {
         // Brief-aware template selection (Phase 2)
         const brief = this.flags.briefAwareEnabled
@@ -227,7 +230,7 @@ export class BuyingGuideSeoDraftService extends SupabaseBaseService {
     let finalDescrip = templateDescrip;
     let draftSource = conservativeMode ? 'pipeline:conservative' : 'pipeline';
 
-    if (this.aiContentService && !conservativeMode) {
+    if (this.llmPolishEnabled && this.aiContentService && !conservativeMode) {
       try {
         // Brief-aware template selection (Phase 2)
         const brief = this.flags.briefAwareEnabled
