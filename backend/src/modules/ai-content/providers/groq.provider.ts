@@ -79,6 +79,21 @@ export class GroqProvider implements AIProvider {
         },
       );
 
+      // ── Rate limit handling (429) — fail fast, let template fallback handle it ──
+      // Never wait for retry — the enrichers have template fallback.
+      // Waiting 17 minutes blocks the entire BullMQ pipeline.
+      if (response.status === 429) {
+        const retryAfter = response.headers.get('retry-after') || 'unknown';
+        this.logger.warn(
+          `Groq rate limit hit (429), retry-after=${retryAfter}s. Failing fast → template fallback.`,
+        );
+        throw new ExternalServiceException({
+          message: `Groq rate limit (429). Retry after ${retryAfter}s. Template fallback active.`,
+          code: ErrorCodes.EXTERNAL.SERVICE_ERROR,
+          serviceName: 'groq',
+        });
+      }
+
       if (!response.ok) {
         const error = await response.text();
         throw new ExternalServiceException({
