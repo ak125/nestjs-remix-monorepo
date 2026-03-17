@@ -22,6 +22,27 @@ export const EXECUTION_REGISTRY_VERSION = '1.0.0';
 // ── Registry ──
 
 export const EXECUTION_REGISTRY: Record<string, ExecutionRegistryEntry> = {
+  [RoleId.R2_PRODUCT]: {
+    roleId: RoleId.R2_PRODUCT,
+    pageType: 'R2_product',
+    contractSchemaRef: 'r2-content-contract.schema',
+    enricherServiceKey: 'R2EnricherService',
+    agentFiles: ['r2-keyword-planner.md'],
+    promptChain: [
+      'audit_finder',
+      'keyword_intent',
+      'section_keyword_map',
+      'section_content_gen',
+      'micro_specs',
+      'qa_gatekeeper',
+    ],
+    allowedModes: ['create', 'regenerate', 'refresh_full', 'qa_only'],
+    defaultWriteMode: 'draft_write',
+    stopPolicy: { maxRetries: 1, timeoutMs: 120_000 },
+    escalationPolicy: { onGateFail: 'block', onTimeout: 'hold' },
+    requiredUpstreamPhases: [],
+  },
+
   [RoleId.R1_ROUTER]: {
     roleId: RoleId.R1_ROUTER,
     pageType: 'R1_pieces',

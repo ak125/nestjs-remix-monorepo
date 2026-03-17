@@ -20,6 +20,8 @@ import {
   type EnrichDryRunSection,
   type EnrichDryRunResult,
 } from './buying-guide';
+import type { WriteGuardContext } from './buying-guide/buying-guide-db.service';
+import { RoleId } from '../../../config/role-ids';
 
 // Re-export types for backward compatibility
 export type { EnrichDryRunSection, EnrichDryRunResult } from './buying-guide';
@@ -264,7 +266,16 @@ export class BuyingGuideEnricherService {
       delete updatePayload.sgpg_intro_role;
     }
 
-    await this.dbService.upsertBuyingGuide(pgId, updatePayload);
+    // P1.5 v2.1: pass WriteGuard context for ownership check + CAS + receipt
+    const writeContext: WriteGuardContext | undefined = this.flags
+      .writeGuardEnabled
+      ? {
+          roleId: RoleId.R6_GUIDE_ACHAT,
+          correlationId: `enrich-${pgId}-${Date.now().toString(36)}`,
+        }
+      : undefined;
+
+    await this.dbService.upsertBuyingGuide(pgId, updatePayload, writeContext);
 
     // Architecture: BuyingGuideEnricher (R6) must NOT write sg_content_draft to __seo_gamme (R1).
     // R1 content is exclusively managed by R1ContentPipelineService.

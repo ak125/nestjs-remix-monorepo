@@ -37,6 +37,11 @@ import type {
 import { AdminJobHealthService } from '../../modules/admin/services/admin-job-health.service';
 import { PipelineChainPollerService } from '../../modules/admin/services/pipeline-chain-poller.service';
 import { R8VehicleEnricherService } from '../../modules/admin/services/r8-vehicle-enricher.service';
+import { ProcessorTrackingService } from '../services/processor-tracking.service';
+import { ProcessorLinkMarkersService } from '../services/processor-link-markers.service';
+import { ContentWriteGateService } from '../../config/content-write-gate.service';
+import type { ResourceGroup } from '../../config/execution-registry.types';
+import { RoleId } from '../../config/role-ids';
 import type {
   AnyContentRefreshJobData,
   ContentRefreshResult,
@@ -76,6 +81,10 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     private readonly ragKnowledgeService: RagKnowledgeService,
     private readonly r8Enricher: R8VehicleEnricherService,
     private readonly executionPlanResolver: ExecutionPlanResolverService,
+    private readonly processorTracking: ProcessorTrackingService,
+    private readonly linkMarkersService: ProcessorLinkMarkersService,
+    @Optional()
+    private readonly writeGate?: ContentWriteGateService,
     @Optional()
     private readonly foundationGate?: RagFoundationGateService,
   ) {
@@ -201,14 +210,10 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         this.logger.warn(
           `${ctx} F1-GATE: skipping content-refresh for "${pgAlias}" — ${gateResult.blockedSources.length}/${gateResult.total} docs blocked`,
         );
-        await this.client
-          .from('__rag_content_refresh_log')
-          .update({
-            status: 'skipped',
-            error_message: `F1-GATE: ${gateResult.blockedSources.length} doc(s) have not passed Phase 1`,
-            finished_at: new Date().toISOString(),
-          })
-          .eq('id', refreshLogId);
+        await this.processorTracking.markSkipped(
+          refreshLogId,
+          `F1-GATE: ${gateResult.blockedSources.length} doc(s) have not passed Phase 1`,
+        );
         if (pgId > 0) this.gammeLocksInProgress.delete(pgId);
         return {
           status: 'skipped',
@@ -234,14 +239,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     if (pgId > 0) this.gammeLocksInProgress.add(pgId);
 
     // Mark as processing
-    await this.client
-      .from('__rag_content_refresh_log')
-      .update({
-        status: 'processing',
-        started_at: new Date().toISOString(),
-        correlation_id: correlationId,
-      })
-      .eq('id', refreshLogId);
+    await this.processorTracking.markProcessing(refreshLogId, correlationId);
 
     try {
       let qualityScore: number | null = 0;
@@ -574,7 +572,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         pageType !== 'R4_reference'
       ) {
         try {
-          const markersCount = await this.injectLinkMarkers(
+          const markersCount = await this.linkMarkersService.injectMarkers(
             pgId,
             pgAlias,
             pageType,
@@ -865,57 +863,43 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         );
       }
 
-      // Update tracking log
-      const now = new Date().toISOString();
-      await this.client
-        .from('__rag_content_refresh_log')
-        .update({
-          status: finalStatus,
-          quality_score: ragSkipped ? null : qualityScore,
-          quality_flags: qualityFlags,
-          completed_at: now,
-          error_message:
-            finalStatus === 'failed'
-              ? errorMessage || 'Quality score below threshold'
-              : null,
-          ...(finalStatus === 'auto_published'
-            ? { published_at: now, published_by: 'auto' }
-            : {}),
-          // Brief traceability (Phase 2+3)
-          brief_id: briefId,
-          brief_version: briefVersion,
-          gate_results: gateResults.length > 0 ? gateResults : null,
-          // Auto-repair traceability (Phase 4+5)
-          hard_gate_results: hardGateResults,
-          repair_attempts: repairAttempts,
-          // Evidence pack (B1+B2)
-          evidence_pack: evidencePack,
-          evidence_pack_hash: evidencePack
-            ? createHash('sha256')
-                .update(JSON.stringify(evidencePack))
-                .digest('hex')
+      // Update tracking log (delegated to ProcessorTrackingService)
+      await this.processorTracking.markCompleted(refreshLogId, {
+        status: finalStatus,
+        qualityScore: ragSkipped ? null : qualityScore,
+        qualityFlags,
+        errorMessage:
+          finalStatus === 'failed'
+            ? errorMessage || 'Quality score below threshold'
             : null,
-          // Content fingerprint for similarity tracking
-          content_fingerprint: contentFingerprint,
-          // Ingestion recommendations (P1 #7)
-          ingestion_recommendations: ingestionRecommendations,
-          // Phase 2 Orchestration + Evidence (P2.1/P2.2/P2.4)
-          execution_plan: executionPlan
-            ? {
-                executionMode: executionPlan.executionMode,
-                writeMode: executionPlan.writeMode,
-                contractVersion: executionPlan.contractVersion,
-                enricherServiceKey:
-                  executionPlan.registryEntry.enricherServiceKey,
-                roleId: executionPlan.registryEntry.roleId,
-                resolvedAt: executionPlan.resolvedAt,
-              }
-            : null,
-          section_eligibility: sectionEligibility,
-          evidence_grade_map: evidenceGradeMap,
-          rag_sufficiency: ragSufficiency,
-        })
-        .eq('id', refreshLogId);
+        briefId,
+        briefVersion,
+        gateResults: gateResults.length > 0 ? gateResults : null,
+        hardGateResults,
+        repairAttempts,
+        evidencePack,
+        evidencePackHash: evidencePack
+          ? createHash('sha256')
+              .update(JSON.stringify(evidencePack))
+              .digest('hex')
+          : null,
+        contentFingerprint,
+        ingestionRecommendations,
+        executionPlan: executionPlan
+          ? {
+              executionMode: executionPlan.executionMode,
+              writeMode: executionPlan.writeMode,
+              contractVersion: executionPlan.contractVersion,
+              enricherServiceKey:
+                executionPlan.registryEntry.enricherServiceKey,
+              roleId: executionPlan.registryEntry.roleId,
+              resolvedAt: executionPlan.resolvedAt,
+            }
+          : null,
+        sectionEligibility,
+        evidenceGradeMap,
+        ragSufficiency,
+      });
 
       const jobDurationMs = Date.now() - jobStartTime;
       this.logger.log(
@@ -942,14 +926,7 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
         `${ctx} Content-refresh failed: ${pgAlias}/${pageType} — ${msg}`,
       );
 
-      await this.client
-        .from('__rag_content_refresh_log')
-        .update({
-          status: 'failed',
-          error_message: msg,
-          completed_at: new Date().toISOString(),
-        })
-        .eq('id', refreshLogId);
+      await this.processorTracking.markFailed(refreshLogId, msg);
 
       return {
         status: 'failed',
@@ -1944,12 +1921,49 @@ export class ContentRefreshProcessor extends SupabaseBaseService {
     pageType: string,
     content: string,
   ): Promise<void> {
+    // ── P1.5 v2.1: route through ContentWriteGateService (merge intelligent) ──
+    if (this.writeGate && this.flags.writeGuardEnabled) {
+      const roleId = pageTypeToRoleId(pageType) ?? RoleId.R6_GUIDE_ACHAT;
+      const correlationId = `proc-write-${pgId}-${Date.now().toString(36)}`;
+
+      if (
+        pageType === 'R1_pieces' ||
+        pageType === 'R3_guide_howto' ||
+        pageType === 'R6_guide_achat'
+      ) {
+        const result = await this.writeGate.writeToTarget({
+          roleId,
+          target: 'seo_gamme_main' as ResourceGroup,
+          pkValue: pgId,
+          payload: { sg_content_draft: content },
+          correlationId,
+        });
+        this.logger.log(
+          `writeContentToDb via WriteGate: pgId=${pgId} written=${result.written} ` +
+            `fields=${result.fieldsWritten.join(',')} skipped=${result.fieldsSkipped.join(',')}`,
+        );
+      } else if (pageType === 'R4_reference') {
+        // R4 uses slug as pk, write via gate with r4_reference_main group
+        const result = await this.writeGate.writeToTarget({
+          roleId: RoleId.R4_REFERENCE,
+          target: 'r4_reference_main' as ResourceGroup,
+          pkValue: pgAlias,
+          payload: { content_html: content },
+          correlationId,
+        });
+        this.logger.log(
+          `writeContentToDb via WriteGate (R4): slug=${pgAlias} written=${result.written}`,
+        );
+      }
+      return;
+    }
+
+    // ── Legacy path (WriteGuard disabled) ──
     if (
       pageType === 'R1_pieces' ||
       pageType === 'R3_guide_howto' ||
       pageType === 'R6_guide_achat'
     ) {
-      // Write to sg_content_draft (the primary SEO content field)
       await this.client
         .from('__seo_gamme')
         .update({ sg_content_draft: content })

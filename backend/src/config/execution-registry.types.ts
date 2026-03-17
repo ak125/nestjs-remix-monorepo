@@ -81,8 +81,10 @@ export const RESOURCE_GROUPS = [
   'seo_gamme_main',
   'purchase_guide_main',
   'page_brief_main',
+  'r2_product_main',
   'r3_conseil_section',
   'r4_reference_main',
+  'r5_diagnostic_main',
   'r8_vehicle_main',
 ] as const;
 export type ResourceGroup = (typeof RESOURCE_GROUPS)[number];

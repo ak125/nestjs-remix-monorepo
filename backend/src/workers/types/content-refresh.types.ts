@@ -2,6 +2,7 @@ import { RoleId } from '../../config/role-ids';
 
 export type PageType =
   | 'R1_pieces'
+  | 'R2_product'
   | 'R3_conseils'
   | 'R3_guide_howto'
   | 'R4_reference'
@@ -16,6 +17,7 @@ export type PageType =
 /** Maps worker PageType → canonical RoleId. Kept in sync with role-ids.ts */
 export const PAGE_TYPE_TO_CANONICAL_ROLE: Record<PageType, RoleId> = {
   R1_pieces: RoleId.R1_ROUTER,
+  R2_product: RoleId.R2_PRODUCT,
   R3_conseils: RoleId.R3_CONSEILS,
   R3_guide_howto: RoleId.R6_GUIDE_ACHAT, // @deprecated legacy — bridge to canonical R6
   R4_reference: RoleId.R4_REFERENCE,

@@ -1,6 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { ContentWriteGateService } from '../../../config/content-write-gate.service';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import { RoleId } from '../../../config/role-ids';
+import type { ResourceGroup } from '../../../config/execution-registry.types';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
@@ -157,7 +161,11 @@ export class ReferenceService extends SupabaseBaseService {
   protected override readonly logger = new Logger(ReferenceService.name);
   private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
 
-  constructor(rpcGate: RpcGateService) {
+  constructor(
+    rpcGate: RpcGateService,
+    @Optional() private readonly writeGate?: ContentWriteGateService,
+    @Optional() private readonly featureFlags?: FeatureFlagsService,
+  ) {
     super();
     this.rpcGate = rpcGate;
   }
@@ -531,26 +539,46 @@ export class ReferenceService extends SupabaseBaseService {
 
     if (existing) {
       // 5a. Update existing entry — refresh content but keep is_published
-      const { error } = await this.supabase
-        .from('__seo_reference')
-        .update({
-          role_mecanique: ragData.roleSummary || undefined,
-          confusions_courantes: confusionsCourantes || undefined,
-          symptomes_associes:
-            ragData.symptoms.length > 0 ? ragData.symptoms : undefined,
-          regles_metier:
-            ragData.mustBeTrue.length > 0 ? ragData.mustBeTrue : undefined,
-          composition: composition || undefined,
-          content_html: contentHtml,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', existing.id);
+      const refPayload = {
+        role_mecanique: ragData.roleSummary || undefined,
+        confusions_courantes: confusionsCourantes || undefined,
+        symptomes_associes:
+          ragData.symptoms.length > 0 ? ragData.symptoms : undefined,
+        regles_metier:
+          ragData.mustBeTrue.length > 0 ? ragData.mustBeTrue : undefined,
+        composition: composition || undefined,
+        content_html: contentHtml,
+        updated_at: new Date().toISOString(),
+      };
 
-      if (error) {
-        this.logger.error(
-          `Failed to update reference ${pgAlias}: ${error.message}`,
-        );
-        return { created: false, updated: false, skipped: false };
+      // ── P1.5 v2.1: Route through WriteGate (merge + anti-regression) ──
+      if (this.writeGate && this.featureFlags?.writeGuardEnabled) {
+        const result = await this.writeGate.writeToTarget({
+          roleId: RoleId.R4_REFERENCE,
+          target: 'r4_reference_main' as ResourceGroup,
+          pkValue: existing.id,
+          payload: refPayload,
+          correlationId: `r4-ref-${pgAlias}-${Date.now().toString(36)}`,
+        });
+        if (!result.written) {
+          this.logger.warn(
+            `WriteGate blocked R4 update for ${pgAlias}: ${result.reason}`,
+          );
+          return { created: false, updated: false, skipped: true };
+        }
+      } else {
+        // Legacy path
+        const { error } = await this.supabase
+          .from('__seo_reference')
+          .update(refPayload)
+          .eq('id', existing.id);
+
+        if (error) {
+          this.logger.error(
+            `Failed to update reference ${pgAlias}: ${error.message}`,
+          );
+          return { created: false, updated: false, skipped: false };
+        }
       }
 
       this.logger.log(`Updated R4 reference for: ${pgAlias}`);
@@ -708,37 +736,52 @@ export class ReferenceService extends SupabaseBaseService {
       sgpg_updated_at: new Date().toISOString(),
     };
 
-    // UPSERT: try update first, insert if not found
-    const { data: existing } = await this.supabase
-      .from('__seo_gamme_purchase_guide')
-      .select('sgpg_id')
-      .eq('sgpg_pg_id', String(pgId))
-      .single();
-
-    if (existing) {
-      const { error } = await this.supabase
-        .from('__seo_gamme_purchase_guide')
-        .update(row)
-        .eq('sgpg_id', existing.sgpg_id);
-
-      if (error) {
-        this.logger.error(
-          `Failed to update purchase guide for ${pgAlias}: ${error.message}`,
-        );
-      } else {
-        this.logger.log(`Updated purchase guide (v4) for: ${pgAlias}`);
-      }
+    // ── P1.5 v2.1: Route through WriteGate (merge intelligent, anti-regression) ──
+    if (this.writeGate && this.featureFlags?.writeGuardEnabled) {
+      const result = await this.writeGate.writeToTarget({
+        roleId: RoleId.R4_REFERENCE,
+        target: 'purchase_guide_main' as ResourceGroup,
+        pkValue: pgId,
+        payload: row,
+        correlationId: `r4-pg-${pgAlias}-${Date.now().toString(36)}`,
+      });
+      this.logger.log(
+        `Purchase guide via WriteGate for ${pgAlias}: written=${result.written} ` +
+          `fields=${result.fieldsWritten.length} skipped=${result.fieldsSkipped.length} stripped=${result.fieldsStripped.length}`,
+      );
     } else {
-      const { error } = await this.supabase
+      // Legacy path — UPSERT: try update first, insert if not found
+      const { data: existing } = await this.supabase
         .from('__seo_gamme_purchase_guide')
-        .insert(row);
+        .select('sgpg_id')
+        .eq('sgpg_pg_id', String(pgId))
+        .single();
 
-      if (error) {
-        this.logger.error(
-          `Failed to create purchase guide for ${pgAlias}: ${error.message}`,
-        );
+      if (existing) {
+        const { error } = await this.supabase
+          .from('__seo_gamme_purchase_guide')
+          .update(row)
+          .eq('sgpg_id', existing.sgpg_id);
+
+        if (error) {
+          this.logger.error(
+            `Failed to update purchase guide for ${pgAlias}: ${error.message}`,
+          );
+        } else {
+          this.logger.log(`Updated purchase guide (v4) for: ${pgAlias}`);
+        }
       } else {
-        this.logger.log(`Created purchase guide (v4) for: ${pgAlias}`);
+        const { error } = await this.supabase
+          .from('__seo_gamme_purchase_guide')
+          .insert(row);
+
+        if (error) {
+          this.logger.error(
+            `Failed to create purchase guide for ${pgAlias}: ${error.message}`,
+          );
+        } else {
+          this.logger.log(`Created purchase guide (v4) for: ${pgAlias}`);
+        }
       }
     }
   }

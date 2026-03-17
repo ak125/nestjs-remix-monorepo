@@ -68,6 +68,9 @@ import { SolverService } from '../modules/agentic-engine/services/solver.service
 import { CriticService } from '../modules/agentic-engine/services/critic.service';
 import { ClaudeCliService } from '../modules/agentic-engine/services/claude-cli.service';
 import { FeatureFlagsModule } from '../config/feature-flags.module';
+import { ProcessorTrackingService } from './services/processor-tracking.service';
+import { ProcessorLinkMarkersService } from './services/processor-link-markers.service';
+import { R2EnricherService } from '../modules/admin/services/r2-enricher.service';
 import { ExecutionPlanResolverService } from '../config/execution-plan-resolver.service';
 import { MailService } from '../services/mail.service';
 
@@ -95,6 +98,7 @@ import { MailService } from '../services/mail.service';
           },
           removeOnComplete: 50,
           removeOnFail: 50,
+          timeout: 300_000, // P0: 5 minutes max per job — prevents zombie processing
         },
       }),
       inject: [ConfigService],
@@ -175,6 +179,11 @@ import { MailService } from '../services/mail.service';
     R8VehicleEnricherService, // 🚗 R8 Vehicle enricher (RAG + diversity scoring, 0-LLM, stateless — safe duplicate)
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM, stateless — safe duplicate)
     MailService, // Email service for EmailProcessor
+
+    // P1.5 v2.1 — Processor sub-services (extracted from content-refresh.processor.ts)
+    ProcessorTrackingService, // 📋 Centralized tracking log writes
+    ProcessorLinkMarkersService, // 🔗 Link marker injection (derived content)
+    R2EnricherService, // 🛒 R2 Product enricher (WriteGate-native, 0-LLM, stateless — safe duplicate)
 
     // Services
     // SitemapStreamingService, // DESACTIVE

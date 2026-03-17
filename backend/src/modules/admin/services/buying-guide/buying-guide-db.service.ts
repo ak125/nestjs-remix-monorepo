@@ -174,6 +174,9 @@ export class BuyingGuideDbService extends SupabaseBaseService {
       'sgpg_how_to_choose',
       'sgpg_intro_role',
       'sgpg_risk_explanation',
+      'sgpg_risk_conclusion',
+      'sgpg_decision_tree',
+      'sgpg_use_cases',
     ] as const;
 
     const fieldsToMerge = longTextFields.filter(
@@ -227,6 +230,48 @@ export class BuyingGuideDbService extends SupabaseBaseService {
               );
               delete payload[field];
             }
+          }
+        }
+      }
+    }
+
+    // ── Anti-regression for ARRAY fields ──
+    // If the new array is drastically shorter than existing, keep existing.
+    const arrayFields = [
+      'sgpg_symptoms',
+      'sgpg_anti_mistakes',
+      'sgpg_selection_criteria',
+      'sgpg_faq',
+      'sgpg_risk_consequences',
+    ] as const;
+
+    const arrayFieldsInPayload = arrayFields.filter((f) =>
+      Array.isArray(payload[f]),
+    );
+
+    if (arrayFieldsInPayload.length > 0) {
+      const { data: existingArrays } = await this.client
+        .from('__seo_gamme_purchase_guide')
+        .select(arrayFieldsInPayload.join(', '))
+        .eq('sgpg_pg_id', pgId)
+        .single();
+
+      if (existingArrays) {
+        for (const field of arrayFieldsInPayload) {
+          const existingArr = (
+            existingArrays as unknown as Record<string, unknown[]>
+          )[field];
+          const newArr = payload[field] as unknown[];
+          if (
+            Array.isArray(existingArr) &&
+            existingArr.length > 0 &&
+            newArr.length < existingArr.length * 0.5
+          ) {
+            this.logger.warn(
+              `Enrich: ${field} pgId=${pgId} array regression blocked ` +
+                `(${existingArr.length} → ${newArr.length} items). Keeping existing.`,
+            );
+            delete payload[field];
           }
         }
       }

@@ -1,6 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
+import { ContentWriteGateService } from '../../../config/content-write-gate.service';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import { RoleId } from '../../../config/role-ids';
+import type { ResourceGroup } from '../../../config/execution-registry.types';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
@@ -97,6 +101,8 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly textUtils: EnricherTextUtils,
     private readonly vehicleRagGenerator: VehicleRagGeneratorService,
+    @Optional() private readonly writeGate?: ContentWriteGateService,
+    @Optional() private readonly featureFlags?: FeatureFlagsService,
   ) {
     super(configService);
   }
@@ -969,6 +975,36 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         params.decision === 'INDEX' ? new Date().toISOString() : null,
     };
 
+    // ── P1.5 v2.1: Route through WriteGate when enabled ──
+    // R8 uses upsert (insert or update). WriteGate handles updates via merge.
+    // For new pages (insert), we still need the direct upsert path.
+    if (this.writeGate && this.featureFlags?.writeGuardEnabled) {
+      // Check if page already exists
+      const { data: existingPage } = await this.client
+        .from(R8_TABLES.pages)
+        .select('id')
+        .eq('page_key', row.page_key)
+        .maybeSingle();
+
+      if (existingPage) {
+        // Update existing — route through WriteGate
+        const result = await this.writeGate.writeToTarget({
+          roleId: RoleId.R8_VEHICLE,
+          target: 'r8_vehicle_main' as ResourceGroup,
+          pkValue: existingPage.id,
+          payload: row,
+          correlationId: `r8-${row.page_key}-${Date.now().toString(36)}`,
+        });
+        this.logger.log(
+          `R8 page via WriteGate: ${row.page_key} written=${result.written} ` +
+            `fields=${result.fieldsWritten.length} skipped=${result.fieldsSkipped.length}`,
+        );
+        return existingPage.id;
+      }
+      // New page — fall through to upsert (insert)
+    }
+
+    // Legacy/insert path
     const { data, error } = await this.client
       .from(R8_TABLES.pages)
       .upsert(row, { onConflict: 'page_key' })

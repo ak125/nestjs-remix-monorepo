@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { AiContentService } from '../../ai-content/ai-content.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
+import { RagFoundationGateService } from '../../rag-proxy/services/rag-foundation-gate.service';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { PageBriefService } from './page-brief.service';
 import { EnricherYamlParser } from './enricher-yaml-parser.service';
@@ -62,6 +63,8 @@ export class R1ContentPipelineService extends SupabaseBaseService {
     @Optional() private readonly aiContent: AiContentService,
     @Optional() private readonly pageBriefService: PageBriefService,
     @Optional() private readonly ragSafeDistill: RagSafeDistillService,
+    @Optional()
+    private readonly foundationGate: RagFoundationGateService,
     private readonly ragProxy: RagProxyService,
     private readonly flags: FeatureFlagsService,
     private readonly yamlParser: EnricherYamlParser,
@@ -83,6 +86,21 @@ export class R1ContentPipelineService extends SupabaseBaseService {
     this.logger.log(
       `[R1_PIPELINE] Starting for pgId=${pgId} alias=${pgAlias} gamme=${gammeName}`,
     );
+
+    // ── F1-GATE: skip if RAG foundation not passed ──
+    if (this.foundationGate && pgAlias) {
+      const gate = await this.foundationGate.guardWriteForGamme(pgAlias);
+      if (!gate.passed && gate.total > 0) {
+        this.logger.warn(
+          `[R1_PIPELINE] F1-GATE: skipping R1 for "${pgAlias}" — ` +
+            `${gate.blockedSources?.length ?? 0}/${gate.total} docs blocked`,
+        );
+        return {
+          status: 'skipped',
+          reason: `F1-GATE: ${gate.blockedSources?.length ?? 0} doc(s) not passed Phase 1`,
+        } as any;
+      }
+    }
 
     if (!this.aiContent) {
       this.logger.warn(
