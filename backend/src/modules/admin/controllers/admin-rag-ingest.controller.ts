@@ -14,12 +14,12 @@ import { PdfRagClassifierService } from '../../rag-proxy/services/pdf-rag-classi
 import { RagMdMergerService } from '../../rag-proxy/services/rag-md-merger.service';
 import { RagGammeDetectionService } from '../../rag-proxy/services/rag-gamme-detection.service';
 import { RagCleanupService } from '../../rag-proxy/services/rag-cleanup.service';
-import { ContentRefreshService } from '../services/content-refresh.service';
 
 /**
  * Admin endpoints for the PDF → RAG merge pipeline.
  *
- * Flow: PDF upload → text extraction → LLM classification → merge into .md → trigger pipeline
+ * Flow: PDF upload → text extraction → LLM classification → merge into .md
+ * Content generation is handled by /content-gen skill (not automated pipeline).
  */
 @Controller('api/admin/rag/pdf-merge')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)
@@ -32,7 +32,6 @@ export class AdminRagIngestController {
     private readonly ragMerger: RagMdMergerService,
     private readonly gammeDetection: RagGammeDetectionService,
     private readonly ragCleanupService: RagCleanupService,
-    private readonly contentRefreshService: ContentRefreshService,
   ) {}
 
   /**
@@ -76,7 +75,8 @@ export class AdminRagIngestController {
   }
 
   /**
-   * Apply: extract + classify + merge .md + sync to DB + trigger pipeline.
+   * Apply: extract + classify + merge .md + sync to DB.
+   * Content generation: use /content-gen skill after apply.
    */
   @Post('apply')
   @HttpCode(HttpStatus.OK)
@@ -128,7 +128,7 @@ export class AdminRagIngestController {
       syncResult.errors.push(msg);
     }
 
-    // 4. Emit ingestion completed → triggers BullMQ pipeline
+    // 4. Emit ingestion completed event (for audit trail)
     const ragFilePath = mergeResult.filePath;
     await this.gammeDetection.emitIngestionCompleted(
       `pdf-merge-${Date.now()}`,
@@ -136,13 +136,8 @@ export class AdminRagIngestController {
       { valid: [ragFilePath], quarantined: [] },
     );
 
-    // 5. Also queue manual force refresh to ensure all sections get regenerated
-    const queuedTypes = await this.contentRefreshService.queueRefreshForGamme(
-      dto.pgAlias,
-      `pdf-merge-${Date.now()}`,
-      'pdf_merge_apply',
-      [ragFilePath],
-      true,
+    this.logger.log(
+      `RAG merged for ${dto.pgAlias}. Use /content-gen skill to generate content.`,
     );
 
     return {
@@ -151,39 +146,28 @@ export class AdminRagIngestController {
       extractedChars: extractResult.fullText.length,
       mergedFile: mergeResult.filePath,
       dbSync: syncResult,
-      queuedPageTypes: queuedTypes,
+      message: 'RAG merged. Use /content-gen skill to generate content.',
     };
   }
 
   /**
-   * Force-enrich: queue content refresh for a gamme without PDF extraction.
+   * Force-enrich: no longer queues automated pipeline.
+   * Use /content-gen skill instead.
    */
   @Post('force-enrich')
   @HttpCode(HttpStatus.OK)
   async forceEnrich(
     @Body() dto: { pgAlias: string; sectionsFilter?: string[] },
   ) {
-    const queuedTypes = await this.contentRefreshService.queueRefreshForGamme(
-      dto.pgAlias,
-      `force-enrich-${Date.now()}`,
-      'admin_force',
-      [],
-      true,
+    this.logger.log(
+      `Force-enrich requested for ${dto.pgAlias} — use /content-gen skill instead`,
     );
 
-    const pipelineEnabled = process.env.CONTENT_PIPELINE_ENABLED === 'true';
-
     return {
-      status: pipelineEnabled ? 'queued' : 'pipeline_disabled',
+      status: 'pipeline_removed',
       pgAlias: dto.pgAlias,
-      queuedPageTypes: queuedTypes,
-      force: true,
-      ...(pipelineEnabled
-        ? {}
-        : {
-            message:
-              'Content pipeline disabled. Use /content-gen skill instead.',
-          }),
+      message:
+        'Content refresh pipeline removed. Use /content-gen skill to generate content.',
     };
   }
 }
