@@ -79,6 +79,7 @@ export type ConflictPolicy = (typeof CONFLICT_POLICIES)[number];
 
 export const RESOURCE_GROUPS = [
   'seo_gamme_main',
+  'r1_gamme_slots',
   'purchase_guide_main',
   'page_brief_main',
   'r2_product_main',

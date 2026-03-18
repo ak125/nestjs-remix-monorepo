@@ -281,111 +281,36 @@ export class BuyingGuideDataService extends SupabaseBaseService {
     pgId: string,
   ): Promise<BuyingGuideContractV1 | null> {
     try {
-      const baseSelect = `
-        sgpg_id,
-        sgpg_pg_id,
-        sgpg_intro_title,
-        sgpg_intro_role,
-        sgpg_intro_sync_parts,
-        sgpg_risk_title,
-        sgpg_risk_explanation,
-        sgpg_risk_consequences,
-        sgpg_risk_cost_range,
-        sgpg_risk_conclusion,
-        sgpg_timing_title,
-        sgpg_timing_years,
-        sgpg_timing_km,
-        sgpg_timing_note,
-        sgpg_arg1_title,
-        sgpg_arg1_content,
-        sgpg_arg1_icon,
-        sgpg_arg2_title,
-        sgpg_arg2_content,
-        sgpg_arg2_icon,
-        sgpg_arg3_title,
-        sgpg_arg3_content,
-        sgpg_arg3_icon,
-        sgpg_arg4_title,
-        sgpg_arg4_content,
-        sgpg_arg4_icon,
-        sgpg_how_to_choose,
-        sgpg_symptoms,
-        sgpg_faq,
-        sgpg_anti_mistakes,
-        sgpg_selection_criteria,
-        sgpg_decision_tree,
-        sgpg_use_cases,
-        sgpg_hero_subtitle,
-        sgpg_selector_microcopy,
-        sgpg_micro_seo_block,
-        sgpg_compatibilities_intro,
-        sgpg_equipementiers_line,
-        sgpg_family_cross_sell_intro,
-        sgpg_interest_nuggets,
-        sgpg_h1_override,
-        sgpg_safe_table_rows,
-        sgpg_visual_plan,
-        sgpg_intent_lock
-      `;
-
-      const provenanceSelect = `
-        ${baseSelect},
-        sgpg_source_type,
-        sgpg_source_uri,
-        sgpg_source_ref,
-        sgpg_source_verified,
-        sgpg_source_verified_at,
-        sgpg_source_verified_by
-      `;
-
-      const provenanceQuery = await this.client
-        .from('__seo_gamme_purchase_guide')
-        .select(provenanceSelect)
-        .eq('sgpg_pg_id', pgId)
-        .neq('sgpg_is_draft', true)
-        .single();
-      let data: Record<string, unknown> | null = provenanceQuery.data as Record<
-        string,
-        unknown
-      > | null;
-      let error: { message: string; code?: string } | null =
-        provenanceQuery.error;
-
-      if (
-        error &&
-        (String(error.code || '') === '42703' ||
-          /column .* does not exist/i.test(String(error.message || '')))
-      ) {
-        this.logger.warn(
-          `Colonnes de provenance absentes sur __seo_gamme_purchase_guide, fallback base select (pgId=${pgId})`,
-        );
-
-        const fallbackQuery = await this.client
-          .from('__seo_gamme_purchase_guide')
-          .select(baseSelect)
-          .eq('sgpg_pg_id', pgId)
-          .neq('sgpg_is_draft', true)
-          .single();
-
-        data = fallbackQuery.data;
-        error = fallbackQuery.error;
-      }
+      // Use RPC that LEFT JOINs R1 slots (COALESCE: R1 > sgpg fallback)
+      const { data, error } = await this.client.rpc(
+        'get_buying_guide_with_r1_slots',
+        { p_pg_id: pgId },
+      );
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          // Pas de données pour cette gamme
-          this.logger.debug(`Pas de guide d'achat pour gamme ${pgId}`);
-          return null;
+        // RPC doesn't exist yet or other DB error — fallback to direct query
+        if (
+          String(error.code || '') === '42883' ||
+          /function .* does not exist/i.test(String(error.message || ''))
+        ) {
+          this.logger.warn(
+            `RPC get_buying_guide_with_r1_slots not found, falling back to direct query (pgId=${pgId})`,
+          );
+          return this.getBuyingGuideContractV1Fallback(pgId);
         }
-        throw error;
+        this.logger.debug(`Pas de guide d'achat pour gamme ${pgId}`);
+        return null;
       }
 
       if (!data) {
         return null;
       }
 
+      // RPC returns JSON directly — use as-is
+      const row = data as Record<string, unknown>;
+
       // Transformer les données brutes en structure V2
-      const transformed = this.transformToV2(data);
+      const transformed = this.transformToV2(row);
 
       // Source pro obligatoire: rejeter le contrat si provenance non fiable
       if (
@@ -406,6 +331,54 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       );
       return null;
     }
+  }
+
+  /**
+   * Fallback: direct query on __seo_gamme_purchase_guide (used if RPC not deployed yet).
+   */
+  private async getBuyingGuideContractV1Fallback(
+    pgId: string,
+  ): Promise<BuyingGuideContractV1 | null> {
+    const baseSelect = `
+      sgpg_id, sgpg_pg_id,
+      sgpg_intro_title, sgpg_intro_role, sgpg_intro_sync_parts,
+      sgpg_risk_title, sgpg_risk_explanation, sgpg_risk_consequences,
+      sgpg_risk_cost_range, sgpg_risk_conclusion,
+      sgpg_timing_title, sgpg_timing_years, sgpg_timing_km, sgpg_timing_note,
+      sgpg_arg1_title, sgpg_arg1_content, sgpg_arg1_icon,
+      sgpg_arg2_title, sgpg_arg2_content, sgpg_arg2_icon,
+      sgpg_arg3_title, sgpg_arg3_content, sgpg_arg3_icon,
+      sgpg_arg4_title, sgpg_arg4_content, sgpg_arg4_icon,
+      sgpg_how_to_choose, sgpg_symptoms, sgpg_faq, sgpg_anti_mistakes,
+      sgpg_selection_criteria, sgpg_decision_tree, sgpg_use_cases,
+      sgpg_hero_subtitle, sgpg_selector_microcopy, sgpg_micro_seo_block,
+      sgpg_compatibilities_intro, sgpg_equipementiers_line,
+      sgpg_family_cross_sell_intro, sgpg_interest_nuggets,
+      sgpg_h1_override, sgpg_safe_table_rows, sgpg_visual_plan, sgpg_intent_lock,
+      sgpg_source_type, sgpg_source_uri, sgpg_source_ref, sgpg_source_verified
+    `;
+
+    const { data, error } = await this.client
+      .from('__seo_gamme_purchase_guide')
+      .select(baseSelect)
+      .eq('sgpg_pg_id', pgId)
+      .neq('sgpg_is_draft', true)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') return null;
+      throw error;
+    }
+    if (!data) return null;
+
+    const transformed = this.transformToV2(data);
+    if (
+      ENFORCE_SOURCE_PROVENANCE &&
+      transformed.quality.flags.includes('MISSING_SOURCE_PROVENANCE')
+    ) {
+      return null;
+    }
+    return transformed;
   }
 
   /**
