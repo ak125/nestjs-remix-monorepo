@@ -1,6 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { ContentWriteGateService } from '../../../config/content-write-gate.service';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import { RoleId } from '../../../config/role-ids';
+import type { ResourceGroup } from '../../../config/execution-registry.types';
 import { SITE_ORIGIN } from '../../../config/site.constants';
 import {
   R5_BLOCKING_FLAGS,
@@ -105,7 +109,11 @@ export class DiagnosticService extends SupabaseBaseService {
   private readonly RAG_DIAGNOSTIC_DIR =
     '/opt/automecanik/rag/knowledge/diagnostic';
 
-  constructor(rpcGate: RpcGateService) {
+  constructor(
+    rpcGate: RpcGateService,
+    @Optional() private readonly writeGate?: ContentWriteGateService,
+    @Optional() private readonly featureFlags?: FeatureFlagsService,
+  ) {
     super();
     this.rpcGate = rpcGate;
   }
@@ -1212,21 +1220,48 @@ export class DiagnosticService extends SupabaseBaseService {
     }
 
     // 4. Update the observable
-    const { error: updateError } = await this.supabase
-      .from('__seo_observable')
-      .update(updates)
-      .eq('id', observable.id);
-
-    if (updateError) {
-      this.logger.error(
-        `refreshFromRag: update failed for ${diagnosticSlug}: ${updateError.message}`,
+    // ── P1.5 v2.1: Route through WriteGate (merge + anti-regression) ──
+    if (this.writeGate && this.featureFlags?.writeGuardEnabled) {
+      const result = await this.writeGate.writeToTarget({
+        roleId: RoleId.R5_DIAGNOSTIC,
+        target: 'r5_diagnostic_main' as ResourceGroup,
+        pkValue: observable.id,
+        payload: updates,
+        correlationId: `r5-${diagnosticSlug}-${Date.now().toString(36)}`,
+      });
+      if (!result.written) {
+        this.logger.warn(
+          `WriteGate blocked R5 update for ${diagnosticSlug}: ${result.reason}`,
+        );
+        return {
+          skipped: false,
+          updated: false,
+          confidence: 0,
+          flags: [...flags, 'WRITE_GATE_BLOCKED'],
+        };
+      }
+      this.logger.log(
+        `refreshFromRag: updated via WriteGate for ${diagnosticSlug} — ` +
+          `fields=${result.fieldsWritten.length} skipped=${result.fieldsSkipped.length}`,
       );
-      return {
-        skipped: false,
-        updated: false,
-        confidence: 0,
-        flags: ['UPDATE_FAILED'],
-      };
+    } else {
+      // Legacy path
+      const { error: updateError } = await this.supabase
+        .from('__seo_observable')
+        .update(updates)
+        .eq('id', observable.id);
+
+      if (updateError) {
+        this.logger.error(
+          `refreshFromRag: update failed for ${diagnosticSlug}: ${updateError.message}`,
+        );
+        return {
+          skipped: false,
+          updated: false,
+          confidence: 0,
+          flags: ['UPDATE_FAILED'],
+        };
+      }
     }
 
     const confidence =

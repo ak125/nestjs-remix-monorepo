@@ -15,7 +15,6 @@
  */
 
 import { Module } from '@nestjs/common';
-import { BullModule } from '@nestjs/bull';
 import { DatabaseModule } from '../../database/database.module';
 
 // Controllers - Stock consolidé ✅
@@ -36,7 +35,7 @@ import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 
 // AdminVehicleResolveController supprimé — méthode resolveVehicleTypes jamais implémentée
 import { AdminBuyingGuideController } from './controllers/admin-buying-guide.controller'; // 📖 Buying Guide RAG enrichment
 import { AdminR8VehicleController } from './controllers/admin-r8-vehicle.controller'; // 🚗 R8 Vehicle enrichment
-import { AdminContentRefreshController } from './controllers/admin-content-refresh.controller'; // 🔄 Content Refresh pipeline
+// AdminContentRefreshController SUPPRIME — content-refresh pipeline remplace par skills /content-gen
 import { InternalEnrichController } from './controllers/internal-enrich.controller'; // 🔑 Internal enrichment (API key auth)
 import { AdminPageBriefController } from './controllers/admin-page-brief.controller'; // 📋 Page Briefs SEO
 import { AdminKeywordClustersController } from './controllers/admin-keyword-clusters.controller'; // 🔑 Keyword Clusters & Overlaps (read-only)
@@ -50,9 +49,16 @@ import { GammeDetailEnricherService } from './services/gamme-detail-enricher.ser
 import { GammeVLevelService } from './services/gamme-vlevel.service';
 import { StockMovementService } from './services/stock-movement.service';
 import { StockReportService } from './services/stock-report.service';
-import { BuyingGuideEnricherService } from './services/buying-guide-enricher.service'; // 📖 RAG enrichment
-import { R1ContentPipelineService } from './services/r1-content-pipeline.service'; // 🚀 R1 4-prompt pipeline
-import { ContentRefreshService } from './services/content-refresh.service'; // 🔄 Content Refresh orchestrator
+import { BuyingGuideEnricherService } from './services/buying-guide-enricher.service'; // 📖 RAG enrichment (orchestrator)
+import {
+  BuyingGuideRagFetcherService,
+  BuyingGuideSectionExtractor,
+  BuyingGuideQualityGatesService,
+  BuyingGuideDbService,
+  BuyingGuideSeoDraftService,
+} from './services/buying-guide'; // 📖 RAG enrichment sub-services
+// R1ContentPipelineService SUPPRIME — pipeline Groq remplace par skills /content-gen
+// ContentRefreshService SUPPRIME — pipeline auto remplace par skills /content-gen
 import { ConseilEnricherService } from './services/conseil-enricher.service'; // 🔄 R3 Conseils enricher
 import { PageBriefService } from './services/page-brief.service'; // 📋 Page Briefs CRUD + overlap
 import { BriefGatesService } from './services/brief-gates.service'; // 🚦 Pre-publish gates anti-cannibalisation
@@ -74,8 +80,8 @@ import { AdminConseilController } from './controllers/admin-conseil.controller';
 import { AdminRagIngestController } from './controllers/admin-rag-ingest.controller'; // 📄 PDF → RAG merge pipeline
 import { AdminR3ImagePromptsController } from './controllers/admin-r3-image-prompts.controller'; // 🎨 R3 Image Prompts generation
 import { AdminFeatureFlagsController } from './controllers/admin-feature-flags.controller';
-import { PipelineChainPollerService } from './services/pipeline-chain-poller.service'; // 🔗 Pipeline chain poller (keyword-plan → conseil)
-import { RagCatchupService } from './services/rag-catchup.service'; // 🔄 RAG catch-up at startup (detect orphan ingestions)
+// PipelineChainPollerService SUPPRIME — dependait de content-refresh queue
+// RagCatchupService SUPPRIME — catch-up auto remplace par skills /content-gen
 import { R3ImagePromptService } from './services/r3-image-prompt.service'; // 🎨 R3 Image Prompts (template-based, 0-LLM)
 import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service'; // 🚗 R8 Vehicle page enricher (RAG + diversity scoring)
 import { VehicleRagGeneratorService } from './services/vehicle-rag-generator.service'; // 🚗 Vehicle RAG .md generator (0 LLM)
@@ -96,7 +102,7 @@ import { ProductsModule } from '../products/products.module';
 import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMonitorSchedulerService
 import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineService + GooglebotDetectorService
 import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour RagProxyService (enrichissement buying guide)
-import { AiContentModule } from '../ai-content/ai-content.module';
+// AiContentModule SUPPRIME de AdminModule — plus utilise ici (reste dans SeoModule + MarketingModule)
 import { SystemModule } from '../system/system.module';
 import { AdminDbGovernanceController } from './controllers/admin-db-governance.controller';
 
@@ -110,8 +116,6 @@ import { AdminDbGovernanceController } from './controllers/admin-db-governance.c
     SeoModule, // 🚀 Import pour accès aux services SEO (risk flags, googlebot)
     RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
     SystemModule, // DB governance Phase 2 (DbGovernanceService)
-    ...(process.env.LLM_POLISH_ENABLED === 'true' ? [AiContentModule] : []),
-    BullModule.registerQueue({ name: 'content-refresh' }), // 🔄 Queue dédiée ContentRefreshService
   ],
   controllers: [
     ConfigurationController,
@@ -137,7 +141,6 @@ import { AdminDbGovernanceController } from './controllers/admin-db-governance.c
     // AdminVehicleResolveController supprimé
     AdminBuyingGuideController, // 📖 Buying Guide RAG enrichment - /api/admin/buying-guides/*
     InternalEnrichController, // 🔑 Internal enrichment (API key) - /api/internal/buying-guides/*
-    AdminContentRefreshController, // 🔄 Content Refresh pipeline - /api/admin/content-refresh/*
     AdminPageBriefController, // 📋 Page Briefs SEO - /api/admin/page-briefs/*
     AdminKeywordClustersController, // 🔑 Keyword Clusters & Overlaps - /api/admin/keyword-clusters/*
     AdminHealthController, // 🏥 Health Overview - /api/admin/health/*
@@ -167,9 +170,12 @@ import { AdminDbGovernanceController } from './controllers/admin-db-governance.c
     GammeVLevelService,
     StockMovementService,
     StockReportService,
-    BuyingGuideEnricherService, // 📖 RAG enrichment service
-    R1ContentPipelineService, // 🚀 R1 4-prompt content pipeline (flag-gated)
-    ContentRefreshService, // 🔄 Content Refresh orchestrator (event listener + queue)
+    BuyingGuideEnricherService, // 📖 RAG enrichment orchestrator
+    BuyingGuideRagFetcherService, // 📖 RAG content fetching + parsing
+    BuyingGuideSectionExtractor, // 📖 Markdown section extraction
+    BuyingGuideQualityGatesService, // 📖 Quality validation gates
+    BuyingGuideDbService, // 📖 DB operations (anti-regression)
+    BuyingGuideSeoDraftService, // 📖 SEO draft generation
     ConseilEnricherService, // 🔄 R3 Conseils S1-S8 enricher
     PageBriefService, // 📋 Page Briefs CRUD + overlap detection
     BriefGatesService, // 🚦 Pre-publish gates anti-cannibalisation
@@ -187,8 +193,6 @@ import { AdminDbGovernanceController } from './controllers/admin-db-governance.c
     ConseilPriorityService, // 📊 Priority queue for conseil enrichment
     KeywordPlanGatesService, // 🚦 Keyword plan gates G1-G6 (keyword-planner agent)
     R1KeywordPlanGatesService, // 🚦 R1 Keyword plan gates KA1-KA6 (R1 pipeline + keyword-planner R1 mode)
-    PipelineChainPollerService, // 🔗 Pipeline chain poller (keyword-plan validated → conseil refresh)
-    RagCatchupService, // 🔄 RAG catch-up at startup (detect orphan ingestions, flag-gated)
     R3ImagePromptService, // 🎨 R3 Image Prompts (template-based, 0-LLM)
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)

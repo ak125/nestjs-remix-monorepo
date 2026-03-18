@@ -205,3 +205,18 @@ config/**/*.pdf
 
 # AI-COS dashboard (separate VPS project)
 aicos-dashboard/
+
+# Test cookies (session tokens — never commit)
+tests-curl/.cookies
+
+# ============================================
+# Large files protection (2026-03-16)
+# GitHub rejects >100MB, warns >50MB
+# ============================================
+*.7z
+.spec/reports/*_audit_*.md
+.github/*.xlsx
+.github/*.sql
+.github/*.7z
+.github/*.pdf
+.github/*.CMD

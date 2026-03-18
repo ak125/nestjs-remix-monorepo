@@ -144,30 +144,31 @@ export function detectMalformedSegment(...segments: string[]): string | null {
     } catch {
       // decodeURIComponent peut échouer — ignorer
     }
-  }
-
-  // Vérifications spécifiques au segment type (dernier segment)
-  const typeSeg = segments[segments.length - 1];
-  if (typeSeg) {
-    // type-{id} fallback
-    if (/^type-\d+$/.test(typeSeg)) {
-      return "type_prefix_fallback";
-    }
 
     // ID répété : "23231-23231" (alias est juste le même nombre que l'id)
-    const typeMatch = typeSeg.match(/^(\d+)-(\d+)$/);
-    if (typeMatch && typeMatch[1] === typeMatch[2]) {
+    // Appliqué à TOUS les segments (gamme, marque, modele, type)
+    const idMatch = seg.match(/^(\d+)-(\d+)$/);
+    if (idMatch && idMatch[1] === idMatch[2]) {
       return "repeated_id";
     }
 
     // IDs multiples répétés : "23231-23231-23231" (3+ fois le même nombre)
-    const parts = typeSeg.split("-");
+    const parts = seg.split("-");
     if (
       parts.length >= 3 &&
       parts.every((p) => /^\d+$/.test(p)) &&
       new Set(parts).size === 1
     ) {
       return "repeated_id_multi";
+    }
+  }
+
+  // Vérification spécifique au segment type (dernier segment)
+  const typeSeg = segments[segments.length - 1];
+  if (typeSeg) {
+    // type-{id} fallback
+    if (/^type-\d+$/.test(typeSeg)) {
+      return "type_prefix_fallback";
     }
   }
 

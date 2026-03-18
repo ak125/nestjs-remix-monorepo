@@ -4,11 +4,16 @@
  * Maps each canonical role to its execution configuration:
  * contract, enricher service, agents, prompts, modes, policies.
  *
+ * P1.5: writeScope is auto-derived from FIELD_CATALOG at module load.
+ * Never add ownedFields/ownedTables manually here — they come from
+ * field-catalog.constants.ts via deriveWriteScope().
+ *
  * @see .spec/00-canon/phase2-canon.md v1.1.0 — P2.1 Orchestration
  */
 
 import { RoleId } from './role-ids';
 import type { ExecutionRegistryEntry } from './execution-registry.types';
+import { deriveWriteScope } from './field-catalog.constants';
 
 // ── Version ──
 
@@ -17,6 +22,27 @@ export const EXECUTION_REGISTRY_VERSION = '1.0.0';
 // ── Registry ──
 
 export const EXECUTION_REGISTRY: Record<string, ExecutionRegistryEntry> = {
+  [RoleId.R2_PRODUCT]: {
+    roleId: RoleId.R2_PRODUCT,
+    pageType: 'R2_product',
+    contractSchemaRef: 'r2-content-contract.schema',
+    enricherServiceKey: 'R2EnricherService',
+    agentFiles: ['r2-keyword-planner.md'],
+    promptChain: [
+      'audit_finder',
+      'keyword_intent',
+      'section_keyword_map',
+      'section_content_gen',
+      'micro_specs',
+      'qa_gatekeeper',
+    ],
+    allowedModes: ['create', 'regenerate', 'refresh_full', 'qa_only'],
+    defaultWriteMode: 'draft_write',
+    stopPolicy: { maxRetries: 1, timeoutMs: 120_000 },
+    escalationPolicy: { onGateFail: 'block', onTimeout: 'hold' },
+    requiredUpstreamPhases: [],
+  },
+
   [RoleId.R1_ROUTER]: {
     roleId: RoleId.R1_ROUTER,
     pageType: 'R1_pieces',
@@ -150,6 +176,13 @@ export const EXECUTION_REGISTRY: Record<string, ExecutionRegistryEntry> = {
     requiredUpstreamPhases: [],
   },
 };
+
+// ── P1.5: Auto-derive writeScope from FIELD_CATALOG ──
+// This ensures zero drift between the catalog and the registry.
+
+for (const entry of Object.values(EXECUTION_REGISTRY)) {
+  entry.writeScope = deriveWriteScope(entry.roleId);
+}
 
 // ── Contract Schema Map ──
 

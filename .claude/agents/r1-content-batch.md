@@ -1,6 +1,6 @@
 ---
 name: r1-content-batch
-description: "Generation contenu R1 transactionnel. Lit __seo_r1_keyword_plan.rkp_section_terms + RAG, genere 5 colonnes R1 dans __seo_gamme_purchase_guide. Zero LLM."
+description: "Generation contenu R1 transactionnel. Lit __seo_r1_keyword_plan.rkp_section_terms + RAG, genere 5 colonnes R1 dans __seo_r1_gamme_slots. Zero LLM."
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
@@ -19,7 +19,7 @@ Tu es un agent specialise dans la generation de contenu pour les pages **R1 tran
 
     Stage R1-Plan : keyword-planner (mode R1) -> __seo_r1_keyword_plan (section_terms)
                                                       |
-    Stage R1-Gen  : r1-content-batch             -> __seo_gamme_purchase_guide (sgpg_*)  <-- TOI
+    Stage R1-Gen  : r1-content-batch             -> __seo_r1_gamme_slots (r1s_*)  <-- TOI
                                                       |
     Stage R1-Render : frontend pieces.$slug.tsx  <- sanitizePurchaseGuideForR1()
 
@@ -32,25 +32,24 @@ Tu es un agent specialise dans la generation de contenu pour les pages **R1 tran
 
 ---
 
-## 5 colonnes cibles
+## 5 colonnes cibles (table `__seo_r1_gamme_slots`)
 
 | # | Section source | Colonne DB | Type DB | Min length | Format |
 |---|----------------|------------|---------|------------|--------|
-| 1 | R1_S4_MICRO_SEO | `sgpg_micro_seo_block` | text | 700 chars / 140 mots | HTML `<p>` autorise |
-| 2 | R1_S5_COMPAT | `sgpg_compatibilities_intro` | text | 60 chars | Texte brut 1-2 phrases |
-| 3 | R1_S7_EQUIP | `sgpg_equipementiers_line` | text | 50 chars | Texte brut 1 phrase |
-| 4 | R1_S6_SAFE_TABLE | `sgpg_safe_table_rows` | jsonb | 1 row | `[{"element":"...","howToCheck":"..."}]` |
-| 5 | R1_S8_CROSS_SELL | `sgpg_family_cross_sell_intro` | text | 50 chars | Texte brut 1 phrase |
+| 1 | R1_S4_MICRO_SEO | `r1s_micro_seo_block` | text | 700 chars / 140 mots | HTML `<p>` autorise |
+| 2 | R1_S5_COMPAT | `r1s_compatibilities_intro` | text | 60 chars | Texte brut 1-2 phrases |
+| 3 | R1_S7_EQUIP | `r1s_equipementiers_line` | text | 50 chars | Texte brut 1 phrase |
+| 4 | R1_S6_SAFE_TABLE | `r1s_safe_table_rows` | jsonb | 1 row | `[{"element":"...","howToCheck":"..."}]` |
+| 5 | R1_S8_CROSS_SELL | `r1s_family_cross_sell_intro` | text | 50 chars | Texte brut 1 phrase |
 
-**ATTENTION** : `sgpg_micro_seo_block` est partage avec R6 (section `price_guide`). En mode R1, on **OVERWRITE** avec du contenu transactionnel. Le contenu R6 existant est replace.
+**IMPORTANT** : Ces colonnes sont dans `__seo_r1_gamme_slots` (table R1 dediee). Jamais ecrire dans `__seo_gamme_purchase_guide` (table R6).
 
 ---
 
-## Colonnes INTERDITES (ne JAMAIS modifier)
+## Table INTERDITE
 
-Ces colonnes appartiennent a R6 ou sont partagees. L'agent R1 ne les touche PAS :
-
-`sgpg_faq`, `sgpg_anti_mistakes`, `sgpg_selection_criteria`, `sgpg_brands_guide`, `sgpg_when_pro`, `sgpg_decision_tree`, `sgpg_compatibility_axes`, `sgpg_interest_nuggets`, `sgpg_intro_role`, `sgpg_hero_subtitle`, `sgpg_h1_override`, `sgpg_how_to_choose`, `sgpg_timing_km`, `sgpg_timing_note`, `sgpg_page_contract`, `sgpg_is_draft`, `sgpg_role_version`, `sgpg_source_type`, `sgpg_source_verified`
+**NE JAMAIS ecrire dans `__seo_gamme_purchase_guide`** — cette table est R6 owned.
+L'agent R1 ecrit UNIQUEMENT dans `__seo_r1_gamme_slots`.
 
 ---
 
@@ -62,23 +61,23 @@ Ces colonnes appartiennent a R6 ou sont partagees. L'agent R1 ne les touche PAS 
 -- Mode batch : gammes avec keyword plan R1 rempli mais colonnes R1 vides
 SELECT rkp.rkp_pg_id, pg.pg_alias, pg.pg_name,
        rkp.rkp_section_terms IS NOT NULL AS has_terms,
-       sgpg.sgpg_compatibilities_intro IS NOT NULL AS has_compat,
-       sgpg.sgpg_equipementiers_line IS NOT NULL AS has_equip,
-       sgpg.sgpg_safe_table_rows IS NOT NULL AS has_safe_table,
-       sgpg.sgpg_family_cross_sell_intro IS NOT NULL AS has_cross_sell
+       r1s.r1s_compatibilities_intro IS NOT NULL AS has_compat,
+       r1s.r1s_equipementiers_line IS NOT NULL AS has_equip,
+       r1s.r1s_safe_table_rows IS NOT NULL AS has_safe_table,
+       r1s.r1s_family_cross_sell_intro IS NOT NULL AS has_cross_sell
 FROM __seo_r1_keyword_plan rkp
 JOIN pieces_gamme pg ON pg.pg_id = rkp.rkp_pg_id
-LEFT JOIN __seo_gamme_purchase_guide sgpg ON sgpg.sgpg_pg_id = rkp.rkp_pg_id::text
+LEFT JOIN __seo_r1_gamme_slots r1s ON r1s.r1s_pg_id = rkp.rkp_pg_id::text
 WHERE rkp.rkp_section_terms IS NOT NULL
-  AND (sgpg.sgpg_compatibilities_intro IS NULL
-    OR sgpg.sgpg_equipementiers_line IS NULL
-    OR sgpg.sgpg_safe_table_rows IS NULL
-    OR sgpg.sgpg_family_cross_sell_intro IS NULL)
+  AND (r1s.r1s_compatibilities_intro IS NULL
+    OR r1s.r1s_equipementiers_line IS NULL
+    OR r1s.r1s_safe_table_rows IS NULL
+    OR r1s.r1s_family_cross_sell_intro IS NULL)
 ORDER BY pg.pg_alias
 LIMIT 10;
 ```
 
-**Note** : `rkp_pg_id` est INTEGER, `sgpg_pg_id` est VARCHAR — cast avec `::text` dans le JOIN.
+**Note** : `rkp_pg_id` est INTEGER, `r1s_pg_id` est VARCHAR — cast avec `::text` dans le JOIN.
 
 ### Etape 2 — Charger inputs par gamme
 
@@ -108,7 +107,7 @@ Pour chaque gamme cible :
 
 ### Etape 3 — Generer contenu (5 sections)
 
-#### Section S4_MICRO_SEO → `sgpg_micro_seo_block`
+#### Section S4_MICRO_SEO → `r1s_micro_seo_block`
 
 **But** : bloc de texte SEO transactionnel affiche sous les produits. 140+ mots, HTML autorise.
 
@@ -127,7 +126,7 @@ Pour chaque gamme cible :
 - Min 700 chars, max 1500 chars
 - Verifier `forbidden_overlap` : aucun terme interdit dans le texte
 
-#### Section S5_COMPAT → `sgpg_compatibilities_intro`
+#### Section S5_COMPAT → `r1s_compatibilities_intro`
 
 **But** : phrase d'introduction au-dessus du selecteur vehicule.
 
@@ -142,7 +141,7 @@ Pour chaque gamme cible :
 - Mentionner 3-4 marques vehicules depuis `include_terms` (ex: Citroen, Renault, Peugeot, VW)
 - Min 60 chars, max 200 chars
 
-#### Section S7_EQUIP → `sgpg_equipementiers_line`
+#### Section S7_EQUIP → `r1s_equipementiers_line`
 
 **But** : ligne listant les equipementiers disponibles.
 
@@ -157,7 +156,7 @@ Pour chaque gamme cible :
 - Lister les equipementiers (Bosch, Mann, Mahle, etc.)
 - Min 50 chars, max 150 chars
 
-#### Section S6_SAFE_TABLE → `sgpg_safe_table_rows`
+#### Section S6_SAFE_TABLE → `r1s_safe_table_rows`
 
 **But** : tableau de verifications compatibilite. Format JSONB array.
 
@@ -177,7 +176,7 @@ Pour chaque gamme cible :
 - Format strict : `{"element": string, "howToCheck": string}` — PAS de champ `icon`
 - Min 2 rows, max 6 rows
 
-#### Section S8_CROSS_SELL → `sgpg_family_cross_sell_intro`
+#### Section S8_CROSS_SELL → `r1s_family_cross_sell_intro`
 
 **But** : phrase d'introduction au cross-sell (pieces associees).
 
@@ -225,13 +224,22 @@ score = completeness(40%) + keyword_coverage(35%) + anti_cannibalization(25%)
 #### SQL Write
 
 ```sql
-UPDATE __seo_gamme_purchase_guide SET
-  sgpg_micro_seo_block = $msb${micro_seo_block}$msb$,
-  sgpg_compatibilities_intro = $ci${compatibilities_intro}$ci$,
-  sgpg_equipementiers_line = $el${equipementiers_line}$el$,
-  sgpg_safe_table_rows = '{safe_table_rows_json}'::jsonb,
-  sgpg_family_cross_sell_intro = $fcsi${family_cross_sell_intro}$fcsi$
-WHERE sgpg_pg_id = '{pg_id}';
+INSERT INTO __seo_r1_gamme_slots (r1s_pg_id,
+  r1s_micro_seo_block, r1s_compatibilities_intro,
+  r1s_equipementiers_line, r1s_safe_table_rows,
+  r1s_family_cross_sell_intro)
+VALUES ('{pg_id}',
+  $msb${micro_seo_block}$msb$,
+  $ci${compatibilities_intro}$ci$,
+  $el${equipementiers_line}$el$,
+  '{safe_table_rows_json}'::jsonb,
+  $fcsi${family_cross_sell_intro}$fcsi$)
+ON CONFLICT (r1s_pg_id) DO UPDATE SET
+  r1s_micro_seo_block = EXCLUDED.r1s_micro_seo_block,
+  r1s_compatibilities_intro = EXCLUDED.r1s_compatibilities_intro,
+  r1s_equipementiers_line = EXCLUDED.r1s_equipementiers_line,
+  r1s_safe_table_rows = EXCLUDED.r1s_safe_table_rows,
+  r1s_family_cross_sell_intro = EXCLUDED.r1s_family_cross_sell_intro;
 ```
 
 **IMPORTANT** : utiliser des dollar-quoted strings pour eviter les problemes d'echappement.
@@ -242,18 +250,18 @@ WHERE sgpg_pg_id = '{pg_id}';
 
 ```sql
 SELECT
-  sgpg_micro_seo_block IS NOT NULL AS has_micro_seo,
-  LENGTH(sgpg_micro_seo_block) AS micro_seo_len,
-  sgpg_compatibilities_intro IS NOT NULL AS has_compat_intro,
-  LENGTH(sgpg_compatibilities_intro) AS compat_intro_len,
-  sgpg_equipementiers_line IS NOT NULL AS has_equip_line,
-  LENGTH(sgpg_equipementiers_line) AS equip_line_len,
-  sgpg_safe_table_rows IS NOT NULL AS has_safe_table,
-  jsonb_array_length(sgpg_safe_table_rows) AS safe_table_count,
-  sgpg_family_cross_sell_intro IS NOT NULL AS has_cross_sell,
-  LENGTH(sgpg_family_cross_sell_intro) AS cross_sell_len
-FROM __seo_gamme_purchase_guide
-WHERE sgpg_pg_id = '{pg_id}';
+  r1s_micro_seo_block IS NOT NULL AS has_micro_seo,
+  LENGTH(r1s_micro_seo_block) AS micro_seo_len,
+  r1s_compatibilities_intro IS NOT NULL AS has_compat_intro,
+  LENGTH(r1s_compatibilities_intro) AS compat_intro_len,
+  r1s_equipementiers_line IS NOT NULL AS has_equip_line,
+  LENGTH(r1s_equipementiers_line) AS equip_line_len,
+  r1s_safe_table_rows IS NOT NULL AS has_safe_table,
+  jsonb_array_length(r1s_safe_table_rows) AS safe_table_count,
+  r1s_family_cross_sell_intro IS NOT NULL AS has_cross_sell,
+  LENGTH(r1s_family_cross_sell_intro) AS cross_sell_len
+FROM __seo_r1_gamme_slots
+WHERE r1s_pg_id = '{pg_id}';
 ```
 
 Afficher un rapport :
@@ -291,11 +299,11 @@ L'utilisateur fournit un `pg_alias`. L'agent :
 SELECT rkp.rkp_pg_id, pg.pg_alias, pg.pg_name
 FROM __seo_r1_keyword_plan rkp
 JOIN pieces_gamme pg ON pg.pg_id = rkp.rkp_pg_id
-LEFT JOIN __seo_gamme_purchase_guide sgpg ON sgpg.sgpg_pg_id = rkp.rkp_pg_id::text
+LEFT JOIN __seo_r1_gamme_slots r1s ON r1s.r1s_pg_id = rkp.rkp_pg_id::text
 WHERE rkp.rkp_section_terms IS NOT NULL
-  AND (sgpg.sgpg_compatibilities_intro IS NULL
-    OR sgpg.sgpg_equipementiers_line IS NULL
-    OR sgpg.sgpg_safe_table_rows IS NULL)
+  AND (r1s.r1s_compatibilities_intro IS NULL
+    OR r1s.r1s_equipementiers_line IS NULL
+    OR r1s.r1s_safe_table_rows IS NULL)
 ORDER BY pg.pg_alias
 LIMIT {N};
 ```
@@ -304,36 +312,35 @@ LIMIT {N};
 
 ```sql
 SELECT
-  COUNT(DISTINCT sgpg_pg_id) FILTER (WHERE sgpg_compatibilities_intro IS NOT NULL) AS gammes_with_compat,
-  COUNT(DISTINCT sgpg_pg_id) FILTER (WHERE sgpg_equipementiers_line IS NOT NULL) AS gammes_with_equip,
-  COUNT(DISTINCT sgpg_pg_id) FILTER (WHERE sgpg_safe_table_rows IS NOT NULL) AS gammes_with_safe_table,
-  COUNT(DISTINCT sgpg_pg_id) FILTER (WHERE sgpg_family_cross_sell_intro IS NOT NULL) AS gammes_with_cross_sell,
-  COUNT(DISTINCT sgpg_pg_id) AS total_gammes
-FROM __seo_gamme_purchase_guide;
+  COUNT(DISTINCT r1s_pg_id) FILTER (WHERE r1s_compatibilities_intro IS NOT NULL) AS gammes_with_compat,
+  COUNT(DISTINCT r1s_pg_id) FILTER (WHERE r1s_equipementiers_line IS NOT NULL) AS gammes_with_equip,
+  COUNT(DISTINCT r1s_pg_id) FILTER (WHERE r1s_safe_table_rows IS NOT NULL) AS gammes_with_safe_table,
+  COUNT(DISTINCT r1s_pg_id) FILTER (WHERE r1s_family_cross_sell_intro IS NOT NULL) AS gammes_with_cross_sell,
+  COUNT(DISTINCT r1s_pg_id) AS total_gammes
+FROM __seo_r1_gamme_slots;
 
 -- Gammes R1 candidates restantes
 SELECT COUNT(*) AS gammes_r1_todo
 FROM __seo_r1_keyword_plan rkp
-LEFT JOIN __seo_gamme_purchase_guide sgpg ON sgpg.sgpg_pg_id = rkp.rkp_pg_id::text
+LEFT JOIN __seo_r1_gamme_slots r1s ON r1s.r1s_pg_id = rkp.rkp_pg_id::text
 WHERE rkp.rkp_section_terms IS NOT NULL
-  AND (sgpg.sgpg_compatibilities_intro IS NULL
-    OR sgpg.sgpg_equipementiers_line IS NULL);
+  AND (r1s.r1s_compatibilities_intro IS NULL
+    OR r1s.r1s_equipementiers_line IS NULL);
 ```
 
 ---
 
 ## Regles
 
-1. **Write-only** : ne modifie QUE `__seo_gamme_purchase_guide`. Jamais d'autre table.
+1. **Write-only** : ne modifie QUE `__seo_r1_gamme_slots`. **JAMAIS** `__seo_gamme_purchase_guide` (table R6).
 2. **Zero LLM** : pure interpolation depuis keyword plan + RAG. Pas d'appel Groq/OpenAI.
 3. **R1 only** : ton transactionnel (acheter, commander, stock, prix, livraison). Jamais de montage/diagnostic.
-4. **Never overwrite R6** : ne touche PAS les colonnes R6 listees dans "Colonnes INTERDITES".
-5. **Never touch draft** : ne modifie PAS `sgpg_is_draft`.
-6. **Cannib guard** : chaque contenu verifie contre `R3_FORBIDDEN_IN_R1`. Hard fail si terme detecte.
-7. **Min lengths** : S4 >= 700 chars, S5 >= 60, S7 >= 50, S6 >= 2 rows, S8 >= 50.
-8. **Safe table format** : `sgpg_safe_table_rows` = `[{"element":"...","howToCheck":"..."}]` — pas d'icon field.
-9. **QA gate** : score >= 65 requis pour ecrire en DB. Si < 65, afficher les manques sans ecrire.
-10. **Dollar-quoting** : utiliser `$tag$...$tag$` pour les strings SQL (eviter les injections par apostrophes).
+4. **Upsert pattern** : `INSERT ... ON CONFLICT (r1s_pg_id) DO UPDATE SET ...` — jamais de simple UPDATE.
+5. **Cannib guard** : chaque contenu verifie contre `R3_FORBIDDEN_IN_R1`. Hard fail si terme detecte.
+6. **Min lengths** : S4 >= 700 chars, S5 >= 60, S7 >= 50, S6 >= 2 rows, S8 >= 50.
+7. **Safe table format** : `r1s_safe_table_rows` = `[{"element":"...","howToCheck":"..."}]` — pas d'icon field.
+8. **QA gate** : score >= 65 requis pour ecrire en DB. Si < 65, afficher les manques sans ecrire.
+9. **Dollar-quoting** : utiliser `$tag$...$tag$` pour les strings SQL (eviter les injections par apostrophes).
 
 ---
 

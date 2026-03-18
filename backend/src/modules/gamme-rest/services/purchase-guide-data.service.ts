@@ -1,6 +1,57 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
+/** Raw DB row shape from __seo_r1_gamme_slots */
+interface R1SlotsDbRow {
+  r1s_pg_id: string;
+  r1s_h1_override?: string | null;
+  r1s_hero_subtitle?: string | null;
+  r1s_selector_microcopy?: string[] | null;
+  r1s_micro_seo_block?: string | null;
+  r1s_compatibilities_intro?: string | null;
+  r1s_equipementiers_line?: string | null;
+  r1s_family_cross_sell_intro?: string | null;
+  r1s_interest_nuggets?: unknown;
+  r1s_serp_variants?: unknown;
+  r1s_intent_lock?: unknown;
+  r1s_safe_table_rows?: unknown;
+  r1s_arg1_title?: string | null;
+  r1s_arg1_content?: string | null;
+  r1s_arg1_icon?: string | null;
+  r1s_arg2_title?: string | null;
+  r1s_arg2_content?: string | null;
+  r1s_arg2_icon?: string | null;
+  r1s_arg3_title?: string | null;
+  r1s_arg3_content?: string | null;
+  r1s_arg3_icon?: string | null;
+  r1s_arg4_title?: string | null;
+  r1s_arg4_content?: string | null;
+  r1s_arg4_icon?: string | null;
+  r1s_faq?: unknown;
+  r1s_gatekeeper_score?: number | null;
+  r1s_gatekeeper_flags?: string[] | null;
+  r1s_gatekeeper_checks?: unknown;
+}
+
+/** R1 rendering data returned to frontend */
+export interface R1GammeSlotsData {
+  pgId: string;
+  h1Override?: string | null;
+  heroSubtitle?: string | null;
+  selectorMicrocopy?: string[] | null;
+  microSeoBlock?: string | null;
+  compatibilitiesIntro?: string | null;
+  equipementiersLine?: string | null;
+  familyCrossSellIntro?: string | null;
+  interestNuggets?: unknown;
+  serpVariants?: unknown;
+  intentLock?: unknown;
+  safeTableRows?: unknown;
+  arguments: Array<{ title: string; content: string; icon: string }>;
+  faq?: Array<{ question: string; answer: string }> | null;
+  gatekeeperScore?: number | null;
+}
+
 /** Raw DB row shape from __seo_gamme_purchase_guide */
 interface PurchaseGuideDbRow {
   sgpg_id: number;
@@ -85,6 +136,112 @@ export class PurchaseGuideDataService extends SupabaseBaseService {
   protected override readonly logger = new Logger(
     PurchaseGuideDataService.name,
   );
+
+  /**
+   * Récupère les slots R1 depuis __seo_r1_gamme_slots (table dédiée R1)
+   */
+  async getR1Slots(pgId: string): Promise<R1GammeSlotsData | null> {
+    try {
+      const { data, error } = await this.client
+        .from('__seo_r1_gamme_slots')
+        .select('*')
+        .eq('r1s_pg_id', pgId)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          this.logger.debug(`Pas de R1 slots pour gamme ${pgId}`);
+          return null;
+        }
+        throw error;
+      }
+
+      if (!data) return null;
+
+      const row = data as R1SlotsDbRow;
+      const args: Array<{ title: string; content: string; icon: string }> = [];
+
+      for (const i of [1, 2, 3, 4] as const) {
+        const title = row[`r1s_arg${i}_title` as keyof R1SlotsDbRow] as
+          | string
+          | null;
+        const content = row[`r1s_arg${i}_content` as keyof R1SlotsDbRow] as
+          | string
+          | null;
+        const icon = row[`r1s_arg${i}_icon` as keyof R1SlotsDbRow] as
+          | string
+          | null;
+        if (title && content) {
+          args.push({ title, content, icon: icon || 'check-circle' });
+        }
+      }
+
+      const parseFaq = (
+        val: unknown,
+      ): Array<{ question: string; answer: string }> | null => {
+        if (!val) return null;
+        if (Array.isArray(val)) return val;
+        if (typeof val === 'string') {
+          try {
+            return JSON.parse(val);
+          } catch {
+            return null;
+          }
+        }
+        return null;
+      };
+
+      return {
+        pgId: String(row.r1s_pg_id),
+        h1Override: row.r1s_h1_override || null,
+        heroSubtitle: row.r1s_hero_subtitle || null,
+        selectorMicrocopy: row.r1s_selector_microcopy || null,
+        microSeoBlock: row.r1s_micro_seo_block || null,
+        compatibilitiesIntro: row.r1s_compatibilities_intro || null,
+        equipementiersLine: row.r1s_equipementiers_line || null,
+        familyCrossSellIntro: row.r1s_family_cross_sell_intro || null,
+        interestNuggets: row.r1s_interest_nuggets || null,
+        serpVariants: row.r1s_serp_variants || null,
+        intentLock: row.r1s_intent_lock || null,
+        safeTableRows: row.r1s_safe_table_rows || null,
+        arguments: args,
+        faq: parseFaq(row.r1s_faq),
+        gatekeeperScore: row.r1s_gatekeeper_score || null,
+      };
+    } catch (error) {
+      this.logger.error(`Erreur R1 slots pour gamme ${pgId}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Upsert R1 slots into __seo_r1_gamme_slots.
+   * Used by R1ContentPipelineService, r1-content-batch agent, /content-gen --r1.
+   */
+  async upsertR1Slots(
+    pgId: string,
+    slots: Partial<Omit<R1SlotsDbRow, 'r1s_pg_id'>>,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { error } = await this.client
+        .from('__seo_r1_gamme_slots')
+        .upsert({ r1s_pg_id: pgId, ...slots }, { onConflict: 'r1s_pg_id' });
+
+      if (error) {
+        this.logger.error(
+          `Erreur upsert R1 slots pour gamme ${pgId}: ${error.message}`,
+        );
+        return { success: false, error: error.message };
+      }
+
+      this.logger.log(`R1 slots upserted pour gamme ${pgId}`);
+      return { success: true };
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Erreur upsert R1 slots pour gamme ${pgId}: ${msg}`);
+      return { success: false, error: msg };
+    }
+  }
 
   /**
    * Récupère les données du guide d'achat V2 pour une gamme

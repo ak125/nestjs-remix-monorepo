@@ -178,6 +178,26 @@ export class FeatureFlagsService {
     return this.bool('AGENTIC_AIRLOCK_CHECK_ENABLED', false);
   }
 
+  // ── Write Guard flags (P1.5) ──
+
+  get writeGuardEnabled(): boolean {
+    return this.bool('WRITE_GUARD_ENABLED', true);
+  }
+
+  get writeGuardMode(): 'observe' | 'enforce' {
+    return (
+      (this.resolve('WRITE_GUARD_MODE') as 'observe' | 'enforce') || 'enforce'
+    );
+  }
+
+  get writeGuardCanaryRoles(): string[] {
+    return this.csv('WRITE_GUARD_CANARY_ROLES');
+  }
+
+  get writeGuardCanaryGroups(): string[] {
+    return this.csv('WRITE_GUARD_CANARY_GROUPS');
+  }
+
   // ── Helpers ──
 
   /**
@@ -218,6 +238,10 @@ export class FeatureFlagsService {
     'VERSION_COMPARISON_ENABLED',
     'QA_DECISION_ENABLED',
     'BEST_VERSION_PROTECTION_ENABLED',
+    'WRITE_GUARD_ENABLED',
+    'WRITE_GUARD_MODE',
+    'WRITE_GUARD_CANARY_ROLES',
+    'WRITE_GUARD_CANARY_GROUPS',
   ]);
 
   listFlags(): Record<

@@ -671,29 +671,51 @@ export class RmBuilderService extends SupabaseBaseService {
     }>;
   }> {
     const startTime = performance.now();
+    const emptyResult = { alternativeGammes: [], alternativeVehicles: [] };
 
-    // Parallel queries
-    const [gammesResult, vehiclesResult] = await Promise.all([
-      // Other gammes available for this vehicle
-      this.supabase.rpc('get_alternative_gammes_for_vehicle', {
-        p_type_id: type_id,
-        p_exclude_gamme_id: gamme_id,
-        p_limit: limit,
-      }),
-      // Other vehicles with products for this gamme
-      this.supabase.rpc('get_alternative_vehicles_for_gamme', {
-        p_gamme_id: gamme_id,
-        p_exclude_type_id: type_id,
-        p_limit: Math.min(limit, 6),
-      }),
-    ]);
+    try {
+      // Parallel queries
+      const [gammesResult, vehiclesResult] = await Promise.all([
+        // Other gammes available for this vehicle
+        this.supabase.rpc('get_alternative_gammes_for_vehicle', {
+          p_type_id: type_id,
+          p_exclude_gamme_id: gamme_id,
+          p_limit: limit,
+        }),
+        // Other vehicles with products for this gamme
+        this.supabase.rpc('get_alternative_vehicles_for_gamme', {
+          p_gamme_id: gamme_id,
+          p_exclude_type_id: type_id,
+          p_limit: Math.min(limit, 6),
+        }),
+      ]);
 
-    const duration = Math.round(performance.now() - startTime);
-    this.logger.debug(`Alternatives fetched in ${duration}ms`);
+      const duration = Math.round(performance.now() - startTime);
+      this.logger.debug(`Alternatives fetched in ${duration}ms`);
 
-    return {
-      alternativeGammes: gammesResult.data || [],
-      alternativeVehicles: vehiclesResult.data || [],
-    };
+      if (gammesResult.error) {
+        this.logger.warn(
+          `Alternatives gammes RPC error: ${gammesResult.error.message}`,
+        );
+      }
+      if (vehiclesResult.error) {
+        this.logger.warn(
+          `Alternatives vehicles RPC error: ${vehiclesResult.error.message}`,
+        );
+      }
+
+      return {
+        alternativeGammes: gammesResult.error ? [] : gammesResult.data || [],
+        alternativeVehicles: vehiclesResult.error
+          ? []
+          : vehiclesResult.data || [],
+      };
+    } catch (err) {
+      const duration = Math.round(performance.now() - startTime);
+      this.logger.warn(
+        `Alternatives RPC failed in ${duration}ms: ${err instanceof Error ? err.message : err}`,
+      );
+      return emptyResult;
+    }
   }
 }

@@ -34,16 +34,18 @@ export const ROLE_ID_LIST: RoleId[] = Object.values(RoleId);
 
 const ROLE_TO_PAGE_TYPE: Partial<Record<RoleId, PageType>> = {
   [RoleId.R1_ROUTER]: 'R1_pieces',
+  [RoleId.R2_PRODUCT]: 'R2_product',
   [RoleId.R3_GUIDE]: 'R3_guide_howto',
   [RoleId.R3_CONSEILS]: 'R3_conseils',
   [RoleId.R4_REFERENCE]: 'R4_reference',
   [RoleId.R5_DIAGNOSTIC]: 'R5_diagnostic',
   [RoleId.R6_GUIDE_ACHAT]: 'R6_guide_achat',
-  // R2_PRODUCT and R6_SUPPORT have no PageType equivalent in the worker
+  // R6_SUPPORT has no PageType equivalent in the worker
 };
 
 const PAGE_TYPE_TO_ROLE: Record<string, RoleId> = {
   R1_pieces: RoleId.R1_ROUTER,
+  R2_product: RoleId.R2_PRODUCT,
   R3_guide_howto: RoleId.R3_CONSEILS, // was R3_GUIDE (orphan) — remapped to R3_CONSEILS
   R3_guide_achat: RoleId.R6_GUIDE_ACHAT, // FIX: was R3_GUIDE — this is buying guide = R6
   R3_conseils: RoleId.R3_CONSEILS,

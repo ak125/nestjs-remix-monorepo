@@ -17,6 +17,9 @@ import { EnricherTextUtils } from './enricher-text-utils.service';
 import { EnricherYamlParser } from './enricher-yaml-parser.service';
 import { RagMdMergerService } from '../../rag-proxy/services/rag-md-merger.service';
 import type { RagMergePatch } from '../../rag-proxy/services/pdf-rag-classifier.service';
+import { ContentWriteGateService } from '../../../config/content-write-gate.service';
+import { RoleId } from '../../../config/role-ids';
+import type { ResourceGroup } from '../../../config/execution-registry.types';
 
 // ── Section type constants matching DB values ──
 
@@ -184,9 +187,14 @@ export class ConseilEnricherService extends SupabaseBaseService {
     @Optional() private readonly pageBriefService?: PageBriefService,
     @Optional()
     private readonly foundationGate?: RagFoundationGateService,
+    @Optional()
+    private readonly writeGate?: ContentWriteGateService,
   ) {
     super(configService);
   }
+
+  /** LLM polish disabled — skills Claude Code (/content-gen) replace Groq for quality polish */
+  private readonly llmPolishEnabled = false;
 
   /**
    * Enrich a single gamme's R3 Conseils sections using RAG knowledge.
@@ -2280,7 +2288,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
     let draftSource = conservativeMode ? 'pipeline:conservative' : 'pipeline';
     let llmModel: string | null = null;
 
-    if (this.aiContentService && !conservativeMode) {
+    if (this.llmPolishEnabled && this.aiContentService && !conservativeMode) {
       try {
         // Brief-aware template selection (Phase 2)
         const brief = this.flags.briefAwareEnabled
@@ -2323,24 +2331,45 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     }
 
-    const { error } = await this.client
-      .from('__seo_gamme')
-      .update({
-        sg_descrip_draft: finalDescrip,
-        sg_draft_source: draftSource,
-        sg_draft_updated_at: new Date().toISOString(),
-        sg_draft_llm_model: llmModel,
-      })
-      .eq('sg_pg_id', pgId);
-
-    if (error) {
-      this.logger.warn(
-        `Failed to write sg_descrip_draft for pgId=${pgId}: ${error.message}`,
+    // ── P1.5 v2.1: Route through WriteGate (merge intelligent, anti-regression) ──
+    if (this.writeGate && this.flags.writeGuardEnabled) {
+      const result = await this.writeGate.writeToTarget({
+        roleId: RoleId.R3_CONSEILS,
+        target: 'seo_gamme_main' as ResourceGroup,
+        pkValue: parseInt(pgId, 10),
+        payload: {
+          sg_descrip_draft: finalDescrip,
+          sg_draft_source: draftSource,
+          sg_draft_updated_at: new Date().toISOString(),
+          sg_draft_llm_model: llmModel,
+        },
+        correlationId: `r3-descrip-${pgId}-${Date.now().toString(36)}`,
+      });
+      this.logger.log(
+        `sg_descrip_draft via WriteGate for pgId=${pgId}: written=${result.written} ` +
+          `skipped=${result.fieldsSkipped.join(',')} stripped=${result.fieldsStripped.join(',')}`,
       );
     } else {
-      this.logger.log(
-        `sg_descrip_draft written for pgId=${pgId} (${finalDescrip.length} chars, source=${draftSource})`,
-      );
+      // Legacy path
+      const { error } = await this.client
+        .from('__seo_gamme')
+        .update({
+          sg_descrip_draft: finalDescrip,
+          sg_draft_source: draftSource,
+          sg_draft_updated_at: new Date().toISOString(),
+          sg_draft_llm_model: llmModel,
+        })
+        .eq('sg_pg_id', pgId);
+
+      if (error) {
+        this.logger.warn(
+          `Failed to write sg_descrip_draft for pgId=${pgId}: ${error.message}`,
+        );
+      } else {
+        this.logger.log(
+          `sg_descrip_draft written for pgId=${pgId} (${finalDescrip.length} chars, source=${draftSource})`,
+        );
+      }
     }
   }
 }
