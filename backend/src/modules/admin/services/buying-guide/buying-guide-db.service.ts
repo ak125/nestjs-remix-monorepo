@@ -209,13 +209,8 @@ export class BuyingGuideDbService extends SupabaseBaseService {
             this.logger.log(
               `Enrich: ${field} pgId=${pgId} upgraded ${existingLen}c → ${newLen}c (+${newLen - existingLen}c)`,
             );
-          } else if (newLen >= existingLen * 0.8) {
-            // New is slightly shorter (>80%) — likely a minor rewrite, allow
-            this.logger.log(
-              `Enrich: ${field} pgId=${pgId} minor rewrite ${existingLen}c → ${newLen}c (${Math.round((newLen / existingLen) * 100)}%), allowed`,
-            );
           } else {
-            // New is significantly shorter (<80%) — merge unique paragraphs from new into existing
+            // New is shorter — merge unique paragraphs from new into existing (never shrink)
             const merged = this.mergeTextContent(existingValue!, newValue);
             if (merged.length > existingLen) {
               // Merge added new content
@@ -265,7 +260,7 @@ export class BuyingGuideDbService extends SupabaseBaseService {
           if (
             Array.isArray(existingArr) &&
             existingArr.length > 0 &&
-            newArr.length < existingArr.length * 0.5
+            newArr.length < existingArr.length * 0.9
           ) {
             this.logger.warn(
               `Enrich: ${field} pgId=${pgId} array regression blocked ` +
