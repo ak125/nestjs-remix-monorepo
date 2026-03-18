@@ -166,6 +166,8 @@ export class GuideService {
       }
 
       // 2) Guides auto-générés depuis __seo_gamme_purchase_guide
+      //    R1 fields (arg titles, faq) read via sgpg columns — still present during migration.
+      //    When sgpg R1 columns are dropped, switch to RPC or LEFT JOIN __seo_r1_gamme_slots.
       const { data: purchaseGuides } = await client
         .from('__seo_gamme_purchase_guide')
         .select(
@@ -370,11 +372,23 @@ export class GuideService {
 
       if (!gamme) return null;
 
-      const { data: purchaseGuide } = await client
-        .from('__seo_gamme_purchase_guide')
-        .select('*')
-        .eq('sgpg_pg_id', gamme.pg_id)
-        .single();
+      // Use RPC to get R6+R1 merged data (COALESCE R1 > sgpg fallback)
+      let purchaseGuide: Record<string, unknown> | null = null;
+      const { data: rpcData } = await client.rpc(
+        'get_buying_guide_with_r1_slots',
+        { p_pg_id: String(gamme.pg_id) },
+      );
+      if (rpcData) {
+        purchaseGuide = rpcData as Record<string, unknown>;
+      } else {
+        // Fallback: direct query if RPC not available
+        const { data: fallbackData } = await client
+          .from('__seo_gamme_purchase_guide')
+          .select('*')
+          .eq('sgpg_pg_id', gamme.pg_id)
+          .single();
+        purchaseGuide = fallbackData as Record<string, unknown> | null;
+      }
 
       if (!purchaseGuide) return null;
 

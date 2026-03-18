@@ -61,15 +61,33 @@ export class R6GuideService {
       return null;
     }
 
-    // Step 2 — Fetch purchase guide row (published only)
-    const { data: row, error } = await this.supabaseService.client
-      .from('__seo_gamme_purchase_guide')
-      .select('*')
-      .eq('sgpg_pg_id', gamme.pg_id.toString())
-      .eq('sgpg_is_draft', false)
-      .single();
+    // Step 2 — Fetch purchase guide row (R6 + R1 via LEFT JOIN RPC)
+    // Uses get_buying_guide_with_r1_slots() which COALESCE R1 slots > sgpg fallback
+    const pgIdStr = gamme.pg_id.toString();
+    let row: Record<string, unknown> | null = null;
 
-    if (error || !row) {
+    const { data: rpcData, error: rpcError } =
+      await this.supabaseService.client.rpc('get_buying_guide_with_r1_slots', {
+        p_pg_id: pgIdStr,
+      });
+
+    if (!rpcError && rpcData) {
+      row = rpcData as Record<string, unknown>;
+    } else {
+      // Fallback: direct query if RPC not available
+      const { data: fallbackData, error: fallbackError } =
+        await this.supabaseService.client
+          .from('__seo_gamme_purchase_guide')
+          .select('*')
+          .eq('sgpg_pg_id', pgIdStr)
+          .eq('sgpg_is_draft', false)
+          .single();
+      if (!fallbackError && fallbackData) {
+        row = fallbackData as Record<string, unknown>;
+      }
+    }
+
+    if (!row) {
       this.logger.warn(
         `No published R6 guide for pg_alias="${pg_alias}" (pg_id=${gamme.pg_id})`,
       );
