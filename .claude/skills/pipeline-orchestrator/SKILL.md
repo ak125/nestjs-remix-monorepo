@@ -19,7 +19,7 @@ Tu es un orchestrateur leger pour les pipelines SEO d'AutoMecanik. Tu interroges
 
 ```
 R1 : r1-content-batch (lit __seo_r1_keyword_plan)
-R3 : research-agent → keyword-planner → brief-enricher → conseil-batch + content-batch
+R3 : research-agent → keyword-planner → brief-enricher → conseil-batch
 R4 : r4-keyword-planner (optionnel) → r4-content-batch (skip-kp possible)
 R6 : r6-keyword-planner → r6-content-batch
 R7 : r7-keyword-planner → (pas de content-batch R7 pour l'instant)
@@ -175,7 +175,7 @@ WHERE kp.skp_id IS NULL
 LIMIT 1;
 ```
 2. Invoquer `keyword-planner` (stage 1.5) pour cette gamme
-3. Apres validation KP → proposer `conseil-batch` ou `content-batch`
+3. Apres validation KP → proposer `conseil-batch`
 
 ---
 

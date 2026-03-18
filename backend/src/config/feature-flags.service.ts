@@ -181,12 +181,12 @@ export class FeatureFlagsService {
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
-    return this.bool('WRITE_GUARD_ENABLED', false);
+    return this.bool('WRITE_GUARD_ENABLED', true);
   }
 
   get writeGuardMode(): 'observe' | 'enforce' {
     return (
-      (this.resolve('WRITE_GUARD_MODE') as 'observe' | 'enforce') || 'observe'
+      (this.resolve('WRITE_GUARD_MODE') as 'observe' | 'enforce') || 'enforce'
     );
   }
 
