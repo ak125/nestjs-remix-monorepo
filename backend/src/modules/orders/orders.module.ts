@@ -26,6 +26,10 @@ import { OrderActionsService } from './services/order-actions.service';
 // Service Mail unifie pour notifications
 import { MailService } from '../../services/mail.service';
 
+// Event listeners
+import { OrderAuditListener } from './listeners/order-audit.listener';
+import { OrderEmailListener } from './listeners/order-email.listener';
+
 /**
  * 📦 MODULE ORDERS - Version Consolidée Phase 3
  *
@@ -80,6 +84,8 @@ import { MailService } from '../../services/mail.service';
     TicketsService, // SAV
     OrderActionsService, // Actions backoffice
     MailService, // Notifications email
+    OrderAuditListener, // Event: audit trail → __admin_audit_log
+    OrderEmailListener, // Event: emails shipped/cancelled/refunded
   ],
   exports: [
     // Export des services consolidés

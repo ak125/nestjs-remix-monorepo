@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   DomainNotFoundException,
   BusinessRuleException,
@@ -6,6 +7,7 @@ import {
   ErrorCodes,
 } from '../../../common/exceptions';
 import { NotificationService } from './notification.service';
+import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import {
   getErrorMessage,
   getErrorStack,
@@ -91,23 +93,112 @@ export interface ClaimStats {
   resolutionTypeBreakdown: Record<string, number>;
 }
 
+interface ClaimRow {
+  clm_id: string;
+  clm_customer_id: string;
+  clm_customer_name: string;
+  clm_customer_email: string;
+  clm_customer_phone: string | null;
+  clm_order_id: string | null;
+  clm_product_id: string | null;
+  clm_type: string;
+  clm_priority: string;
+  clm_status: string;
+  clm_title: string;
+  clm_description: string;
+  clm_expected_resolution: string;
+  clm_attachments: string[] | null;
+  clm_assigned_to: string | null;
+  clm_resolution: ClaimResolution | null;
+  clm_timeline: ClaimTimelineEntry[] | null;
+  clm_satisfaction: { rating: number; feedback?: string } | null;
+  clm_created_at: string;
+  clm_updated_at: string;
+  clm_resolved_at: string | null;
+  clm_escalated_at: string | null;
+}
+
 @Injectable()
-export class ClaimService {
-  private readonly logger = new Logger(ClaimService.name);
+export class ClaimService extends SupabaseBaseService {
+  protected override readonly logger = new Logger(ClaimService.name);
 
-  /**
-   * TODO ARCHITECTURE: Map purement in-memory sans persistance Supabase.
-   * RISQUES CRITIQUES:
-   * - Réclamations clients perdues au redémarrage serveur
-   * - Timeline des actions perdues (historique juridique)
-   * - Croissance mémoire non bornée
-   *
-   * ACTION REQUISE: Migrer vers Supabase URGENT avant mise en prod.
-   * Table à créer: __claims (avec JSONB pour timeline)
-   */
-  private claims: Map<string, Claim> = new Map();
+  private readonly TABLE = '__claims';
 
-  constructor(private readonly notificationService: NotificationService) {}
+  constructor(
+    private readonly notificationService: NotificationService,
+    configService?: ConfigService,
+  ) {
+    super(configService);
+  }
+
+  private rowToClaim(row: ClaimRow): Claim {
+    return {
+      id: row.clm_id,
+      customerId: row.clm_customer_id,
+      customerName: row.clm_customer_name,
+      customerEmail: row.clm_customer_email,
+      customerPhone: row.clm_customer_phone ?? undefined,
+      orderId: row.clm_order_id ?? undefined,
+      productId: row.clm_product_id ?? undefined,
+      type: row.clm_type as Claim['type'],
+      priority: row.clm_priority as Claim['priority'],
+      status: row.clm_status as Claim['status'],
+      title: row.clm_title,
+      description: row.clm_description,
+      expectedResolution: row.clm_expected_resolution,
+      attachments: row.clm_attachments ?? undefined,
+      assignedTo: row.clm_assigned_to ?? undefined,
+      resolution: row.clm_resolution ?? undefined,
+      timeline: (row.clm_timeline ?? []).map((entry) => ({
+        ...entry,
+        performedAt: new Date(entry.performedAt),
+      })),
+      createdAt: new Date(row.clm_created_at),
+      updatedAt: new Date(row.clm_updated_at),
+      resolvedAt: row.clm_resolved_at
+        ? new Date(row.clm_resolved_at)
+        : undefined,
+      escalatedAt: row.clm_escalated_at
+        ? new Date(row.clm_escalated_at)
+        : undefined,
+      satisfaction: row.clm_satisfaction ?? undefined,
+    };
+  }
+
+  private claimToRow(claim: Claim): Omit<
+    ClaimRow,
+    'clm_created_at' | 'clm_updated_at'
+  > & {
+    clm_created_at: string;
+    clm_updated_at: string;
+    clm_resolved_at: string | null;
+    clm_escalated_at: string | null;
+  } {
+    return {
+      clm_id: claim.id,
+      clm_customer_id: claim.customerId,
+      clm_customer_name: claim.customerName,
+      clm_customer_email: claim.customerEmail,
+      clm_customer_phone: claim.customerPhone ?? null,
+      clm_order_id: claim.orderId ?? null,
+      clm_product_id: claim.productId ?? null,
+      clm_type: claim.type,
+      clm_priority: claim.priority,
+      clm_status: claim.status,
+      clm_title: claim.title,
+      clm_description: claim.description,
+      clm_expected_resolution: claim.expectedResolution,
+      clm_attachments: claim.attachments ?? null,
+      clm_assigned_to: claim.assignedTo ?? null,
+      clm_resolution: claim.resolution ?? null,
+      clm_timeline: claim.timeline ?? null,
+      clm_satisfaction: claim.satisfaction ?? null,
+      clm_created_at: claim.createdAt.toISOString(),
+      clm_updated_at: claim.updatedAt.toISOString(),
+      clm_resolved_at: claim.resolvedAt?.toISOString() ?? null,
+      clm_escalated_at: claim.escalatedAt?.toISOString() ?? null,
+    };
+  }
 
   async submitClaim(
     claimData: Omit<
@@ -137,7 +228,13 @@ export class ClaimService {
         visibility: 'both',
       });
 
-      this.claims.set(claim.id, claim);
+      const row = this.claimToRow(claim);
+      const { error } = await this.supabase.from(this.TABLE).insert(row);
+
+      if (error) {
+        this.logger.error(`Failed to insert claim: ${error.message}`);
+        throw new Error(`Failed to insert claim: ${error.message}`);
+      }
 
       // Notify staff about new claim
       await this.notificationService.notifyClaimOpened({
@@ -158,7 +255,21 @@ export class ClaimService {
   }
 
   async getClaim(claimId: string): Promise<Claim | null> {
-    return this.claims.get(claimId) || null;
+    const { data, error } = await this.supabase
+      .from(this.TABLE)
+      .select()
+      .eq('clm_id', claimId)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null; // Not found
+      }
+      this.logger.error(`Failed to get claim ${claimId}: ${error.message}`);
+      return null;
+    }
+
+    return this.rowToClaim(data as ClaimRow);
   }
 
   async getAllClaims(filters?: {
@@ -170,33 +281,42 @@ export class ClaimService {
     startDate?: Date;
     endDate?: Date;
   }): Promise<Claim[]> {
-    let claims = Array.from(this.claims.values());
+    let query = this.supabase.from(this.TABLE).select();
 
     if (filters) {
       if (filters.status) {
-        claims = claims.filter((c) => c.status === filters.status);
+        query = query.eq('clm_status', filters.status);
       }
       if (filters.type) {
-        claims = claims.filter((c) => c.type === filters.type);
+        query = query.eq('clm_type', filters.type);
       }
       if (filters.priority) {
-        claims = claims.filter((c) => c.priority === filters.priority);
+        query = query.eq('clm_priority', filters.priority);
       }
       if (filters.assignedTo) {
-        claims = claims.filter((c) => c.assignedTo === filters.assignedTo);
+        query = query.eq('clm_assigned_to', filters.assignedTo);
       }
       if (filters.customerId) {
-        claims = claims.filter((c) => c.customerId === filters.customerId);
+        query = query.eq('clm_customer_id', filters.customerId);
       }
       if (filters.startDate) {
-        claims = claims.filter((c) => c.createdAt >= filters.startDate!);
+        query = query.gte('clm_created_at', filters.startDate.toISOString());
       }
       if (filters.endDate) {
-        claims = claims.filter((c) => c.createdAt <= filters.endDate!);
+        query = query.lte('clm_created_at', filters.endDate.toISOString());
       }
     }
 
-    return claims.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const { data, error } = await query.order('clm_created_at', {
+      ascending: false,
+    });
+
+    if (error) {
+      this.logger.error(`Failed to get claims: ${error.message}`);
+      return [];
+    }
+
+    return (data as ClaimRow[]).map((row) => this.rowToClaim(row));
   }
 
   async updateClaimStatus(
@@ -205,7 +325,7 @@ export class ClaimService {
     staffId: string,
     note?: string,
   ): Promise<Claim> {
-    const claim = this.claims.get(claimId);
+    const claim = await this.getClaim(claimId);
     if (!claim) {
       throw new DomainNotFoundException({
         code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
@@ -231,14 +351,27 @@ export class ClaimService {
       visibility: 'both',
     });
 
-    this.claims.set(claimId, claim);
-    this.logger.log(`Claim ${claimId} status updated to ${status}`);
+    const { error } = await this.supabase
+      .from(this.TABLE)
+      .update({
+        clm_status: claim.status,
+        clm_updated_at: claim.updatedAt.toISOString(),
+        clm_resolved_at: claim.resolvedAt?.toISOString() ?? null,
+        clm_timeline: claim.timeline,
+      })
+      .eq('clm_id', claimId);
 
+    if (error) {
+      this.logger.error(`Failed to update claim status: ${error.message}`);
+      throw new Error(`Failed to update claim status: ${error.message}`);
+    }
+
+    this.logger.log(`Claim ${claimId} status updated to ${status}`);
     return claim;
   }
 
   async assignClaim(claimId: string, staffId: string): Promise<Claim> {
-    const claim = this.claims.get(claimId);
+    const claim = await this.getClaim(claimId);
     if (!claim) {
       throw new DomainNotFoundException({
         code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
@@ -266,9 +399,22 @@ export class ClaimService {
       visibility: 'internal',
     });
 
-    this.claims.set(claimId, claim);
-    this.logger.log(`Claim ${claimId} assigned to ${staffId}`);
+    const { error } = await this.supabase
+      .from(this.TABLE)
+      .update({
+        clm_assigned_to: claim.assignedTo,
+        clm_status: claim.status,
+        clm_updated_at: claim.updatedAt.toISOString(),
+        clm_timeline: claim.timeline,
+      })
+      .eq('clm_id', claimId);
 
+    if (error) {
+      this.logger.error(`Failed to assign claim: ${error.message}`);
+      throw new Error(`Failed to assign claim: ${error.message}`);
+    }
+
+    this.logger.log(`Claim ${claimId} assigned to ${staffId}`);
     return claim;
   }
 
@@ -276,7 +422,7 @@ export class ClaimService {
     claimId: string,
     entry: Omit<ClaimTimelineEntry, 'id' | 'performedAt'>,
   ): Promise<Claim> {
-    const claim = this.claims.get(claimId);
+    const claim = await this.getClaim(claimId);
     if (!claim) {
       throw new DomainNotFoundException({
         code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
@@ -293,9 +439,20 @@ export class ClaimService {
     claim.timeline.push(timelineEntry);
     claim.updatedAt = new Date();
 
-    this.claims.set(claimId, claim);
-    this.logger.log(`Timeline entry added to claim ${claimId}`);
+    const { error } = await this.supabase
+      .from(this.TABLE)
+      .update({
+        clm_timeline: claim.timeline,
+        clm_updated_at: claim.updatedAt.toISOString(),
+      })
+      .eq('clm_id', claimId);
 
+    if (error) {
+      this.logger.error(`Failed to add timeline entry: ${error.message}`);
+      throw new Error(`Failed to add timeline entry: ${error.message}`);
+    }
+
+    this.logger.log(`Timeline entry added to claim ${claimId}`);
     return claim;
   }
 
@@ -304,7 +461,7 @@ export class ClaimService {
     resolution: Omit<ClaimResolution, 'resolvedAt'>,
     resolvedBy: string,
   ): Promise<Claim> {
-    const claim = this.claims.get(claimId);
+    const claim = await this.getClaim(claimId);
     if (!claim) {
       throw new DomainNotFoundException({
         code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
@@ -330,9 +487,23 @@ export class ClaimService {
       visibility: 'both',
     });
 
-    this.claims.set(claimId, claim);
-    this.logger.log(`Claim ${claimId} resolved with ${resolution.type}`);
+    const { error } = await this.supabase
+      .from(this.TABLE)
+      .update({
+        clm_resolution: claim.resolution,
+        clm_status: claim.status,
+        clm_resolved_at: claim.resolvedAt.toISOString(),
+        clm_updated_at: claim.updatedAt.toISOString(),
+        clm_timeline: claim.timeline,
+      })
+      .eq('clm_id', claimId);
 
+    if (error) {
+      this.logger.error(`Failed to resolve claim: ${error.message}`);
+      throw new Error(`Failed to resolve claim: ${error.message}`);
+    }
+
+    this.logger.log(`Claim ${claimId} resolved with ${resolution.type}`);
     return claim;
   }
 
@@ -341,7 +512,7 @@ export class ClaimService {
     escalatedBy: string,
     reason: string,
   ): Promise<Claim> {
-    const claim = this.claims.get(claimId);
+    const claim = await this.getClaim(claimId);
     if (!claim) {
       throw new DomainNotFoundException({
         code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
@@ -363,9 +534,22 @@ export class ClaimService {
       visibility: 'internal',
     });
 
-    this.claims.set(claimId, claim);
-    this.logger.log(`Claim ${claimId} escalated by ${escalatedBy}`);
+    const { error } = await this.supabase
+      .from(this.TABLE)
+      .update({
+        clm_priority: claim.priority,
+        clm_escalated_at: claim.escalatedAt.toISOString(),
+        clm_updated_at: claim.updatedAt.toISOString(),
+        clm_timeline: claim.timeline,
+      })
+      .eq('clm_id', claimId);
 
+    if (error) {
+      this.logger.error(`Failed to escalate claim: ${error.message}`);
+      throw new Error(`Failed to escalate claim: ${error.message}`);
+    }
+
+    this.logger.log(`Claim ${claimId} escalated by ${escalatedBy}`);
     return claim;
   }
 
@@ -374,7 +558,7 @@ export class ClaimService {
     rating: number,
     feedback?: string,
   ): Promise<Claim> {
-    const claim = this.claims.get(claimId);
+    const claim = await this.getClaim(claimId);
     if (!claim) {
       throw new DomainNotFoundException({
         code: ErrorCodes.SUPPORT.CLAIM_NOT_FOUND,
@@ -402,7 +586,20 @@ export class ClaimService {
       visibility: 'both',
     });
 
-    this.claims.set(claimId, claim);
+    const { error } = await this.supabase
+      .from(this.TABLE)
+      .update({
+        clm_satisfaction: claim.satisfaction,
+        clm_updated_at: claim.updatedAt.toISOString(),
+        clm_timeline: claim.timeline,
+      })
+      .eq('clm_id', claimId);
+
+    if (error) {
+      this.logger.error(`Failed to add satisfaction rating: ${error.message}`);
+      throw new Error(`Failed to add satisfaction rating: ${error.message}`);
+    }
+
     this.logger.log(
       `Satisfaction rating added to claim ${claimId}: ${rating}/5`,
     );
@@ -414,13 +611,31 @@ export class ClaimService {
     start: Date;
     end: Date;
   }): Promise<ClaimStats> {
-    let claims = Array.from(this.claims.values());
+    let query = this.supabase.from(this.TABLE).select();
 
     if (period) {
-      claims = claims.filter(
-        (c) => c.createdAt >= period.start && c.createdAt <= period.end,
-      );
+      query = query
+        .gte('clm_created_at', period.start.toISOString())
+        .lte('clm_created_at', period.end.toISOString());
     }
+
+    const { data, error } = await query;
+
+    if (error) {
+      this.logger.error(`Failed to get claim stats: ${error.message}`);
+      return {
+        total: 0,
+        open: 0,
+        resolved: 0,
+        averageResolutionTime: 0,
+        satisfactionRating: 0,
+        typeBreakdown: {},
+        priorityBreakdown: {},
+        resolutionTypeBreakdown: {},
+      };
+    }
+
+    const claims = (data as ClaimRow[]).map((row) => this.rowToClaim(row));
 
     const total = claims.length;
     const open = claims.filter(

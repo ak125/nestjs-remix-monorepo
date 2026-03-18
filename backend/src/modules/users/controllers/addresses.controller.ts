@@ -17,7 +17,7 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AuthGuard } from '@nestjs/passport';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { User } from '../../../common/decorators/user.decorator';
 import { AddressesService } from '../services/addresses.service';
 import {
@@ -40,7 +40,7 @@ import {
  */
 @ApiTags('Addresses')
 @ApiBearerAuth()
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthenticatedGuard)
 @Controller('api/addresses')
 export class AddressesController {
   constructor(private readonly addressesService: AddressesService) {}

@@ -1,6 +1,15 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import {
+  ORDER_EVENTS,
+  type OrderStatusChangedEvent,
+  type OrderShippedEvent,
+  type OrderDeliveredEvent,
+  type OrderCancelledEvent,
+  type OrderLineStatusChangedEvent,
+} from '../events/order.events';
 
 /**
  * 🚀 Service Actions Commandes - Version Moderne
@@ -13,6 +22,10 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 @Injectable()
 export class OrderActionsService extends SupabaseBaseService {
   protected readonly logger = new Logger(OrderActionsService.name);
+
+  constructor(private readonly eventEmitter: EventEmitter2) {
+    super();
+  }
 
   /**
    * ⚡ Action universelle : Changer statut ligne
@@ -99,6 +112,16 @@ export class OrderActionsService extends SupabaseBaseService {
         comment,
         userId,
       });
+
+      this.eventEmitter.emit(ORDER_EVENTS.LINE_STATUS_CHANGED, {
+        orderId,
+        lineId,
+        previousStatus: line.orl_orls_id,
+        newStatus,
+        changedBy: userId,
+        comment,
+        timestamp: new Date().toISOString(),
+      } satisfies OrderLineStatusChangedEvent);
 
       this.logger.log(`✅ Ligne ${lineId} mise à jour`);
       return { success: true, lineId, newStatus };
@@ -401,7 +424,7 @@ export class OrderActionsService extends SupabaseBaseService {
   /**
    * 📦 Récupérer une commande complète
    */
-  async getOrder(orderId: string): Promise<any> {
+  async getOrder(orderId: string): Promise<Record<string, unknown>> {
     const { data, error } = await this.supabase
       .from(TABLES.xtr_order)
       .select('*')
@@ -418,7 +441,7 @@ export class OrderActionsService extends SupabaseBaseService {
   /**
    * 👤 Récupérer client d'une commande
    */
-  async getCustomer(customerId: string): Promise<any> {
+  async getCustomer(customerId: string): Promise<Record<string, unknown>> {
     const { data, error } = await this.supabase
       .from(TABLES.xtr_customer)
       .select('*')
@@ -477,6 +500,15 @@ export class OrderActionsService extends SupabaseBaseService {
         userId,
       );
 
+      this.eventEmitter.emit(ORDER_EVENTS.VALIDATED, {
+        orderId,
+        previousStatus: '2',
+        newStatus: '3',
+        changedBy: userId ? String(userId) : undefined,
+        comment: 'Commande validée par admin',
+        timestamp: new Date().toISOString(),
+      } satisfies OrderStatusChangedEvent);
+
       this.logger.log(`✅ Commande ${orderId} validée (statut 3)`);
       return { success: true, newStatus: '3' };
     } catch (error: unknown) {
@@ -508,26 +540,36 @@ export class OrderActionsService extends SupabaseBaseService {
         );
       }
 
-      // Mettre à jour avec numéro de suivi
+      // Generer URL tracking automatique
+      const trackingUrl = this.buildTrackingUrl(trackingNumber);
+
       const { error } = await this.supabase
         .from(TABLES.xtr_order)
         .update({
-          ord_ords_id: '4', // Expédiée
+          ord_ords_id: '4',
           ord_date_ship: new Date().toISOString(),
           ord_tracking: trackingNumber,
+          ord_tracking_url: trackingUrl,
           ord_updated_at: new Date().toISOString(),
         })
         .eq('ord_id', orderId);
 
       if (error) throw error;
 
-      // Historique
       await this.createOrderStatusHistory(
         orderId,
         '4',
         `Commande expédiée - Suivi: ${trackingNumber}`,
         userId,
       );
+
+      this.eventEmitter.emit(ORDER_EVENTS.SHIPPED, {
+        orderId,
+        customerId: order.ord_cst_id,
+        trackingNumber,
+        changedBy: userId ? String(userId) : undefined,
+        timestamp: new Date().toISOString(),
+      } satisfies OrderShippedEvent);
 
       this.logger.log(`✅ Commande ${orderId} expédiée`);
       return { success: true, newStatus: '4', trackingNumber };
@@ -576,6 +618,13 @@ export class OrderActionsService extends SupabaseBaseService {
         'Commande livrée',
         userId,
       );
+
+      this.eventEmitter.emit(ORDER_EVENTS.DELIVERED, {
+        orderId,
+        customerId: order.ord_cst_id,
+        changedBy: userId ? String(userId) : undefined,
+        timestamp: new Date().toISOString(),
+      } satisfies OrderDeliveredEvent);
 
       this.logger.log(`✅ Commande ${orderId} livrée`);
       return { success: true, newStatus: '5' };
@@ -627,8 +676,13 @@ export class OrderActionsService extends SupabaseBaseService {
         userId,
       );
 
-      // TODO: Remettre stock si produits réservés
-      // TODO: Remboursement si payée
+      this.eventEmitter.emit(ORDER_EVENTS.CANCELLED, {
+        orderId,
+        customerId: order.ord_cst_id,
+        reason,
+        changedBy: userId ? String(userId) : undefined,
+        timestamp: new Date().toISOString(),
+      } satisfies OrderCancelledEvent);
 
       this.logger.log(`✅ Commande ${orderId} annulée`);
       return { success: true, newStatus: '6', reason };
@@ -637,6 +691,16 @@ export class OrderActionsService extends SupabaseBaseService {
       this.logger.error(`❌ Erreur annulation commande:`, message);
       throw error;
     }
+  }
+
+  private buildTrackingUrl(trackingNumber: string): string {
+    const num = trackingNumber.trim();
+    if (/^\d{11,15}$/.test(num))
+      return `https://www.laposte.fr/outils/suivre-vos-envois?code=${num}`;
+    if (num.startsWith('1Z'))
+      return `https://www.ups.com/track?tracknum=${num}`;
+    if (/^\d{14}$/.test(num)) return `https://trace.dpd.fr/fr/trace/${num}`;
+    return `https://www.laposte.fr/outils/suivre-vos-envois?code=${num}`;
   }
 
   /**

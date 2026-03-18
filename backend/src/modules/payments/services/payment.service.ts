@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { CyberplusService } from './cyberplus.service';
 import { PaymentValidationService } from './payment-validation.service';
@@ -15,6 +16,10 @@ import {
   PaymentHelper,
 } from '../entities/payment.entity';
 import { CreatePaymentDto } from '../dto/create-payment.dto';
+import {
+  ORDER_EVENTS,
+  type OrderRefundedEvent,
+} from '../../orders/events/order.events';
 
 // Interfaces temporaires pour la migration
 export interface PaymentStatusDto {
@@ -41,6 +46,7 @@ export class PaymentService {
     private readonly paymentDataService: PaymentDataService,
     private readonly cyberplusService: CyberplusService,
     private readonly validationService: PaymentValidationService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -142,7 +148,7 @@ export class PaymentService {
    */
   async initializePayment(): Promise<{
     transactionId: string;
-    formData: any;
+    formData: Record<string, string>;
     gatewayUrl: string;
   }> {
     // TODO: Implémenter les méthodes manquantes dans PaymentDataService et CyberplusService
@@ -425,43 +431,93 @@ export class PaymentService {
   }
 
   /**
-   * Traiter un remboursement (version simplifiée - TODO: Implémenter updatePayment)
+   * Traiter un remboursement complet:
+   * 1. Valider montant  2. Persister __refunds  3. Update ic_postback  4. Transaction  5. Event
    */
-  async processRefund(paymentId: string, amount?: number): Promise<Payment> {
+  async processRefund(
+    paymentId: string,
+    amount?: number,
+    reason?: string,
+    initiatedBy?: string,
+  ): Promise<{ refundId: string; amount: number; status: string }> {
     try {
       this.logger.log(`Processing refund for payment ${paymentId}`);
 
-      // Récupérer le paiement
       const payment = await this.paymentDataService.findPaymentById(paymentId);
-
-      if (!payment) {
+      if (!payment)
         throw new NotFoundException(`Payment not found: ${paymentId}`);
-      }
-
-      if (payment.status !== PaymentStatus.COMPLETED) {
+      if (payment.status !== PaymentStatus.COMPLETED)
         throw new BadRequestException('Payment not eligible for refund');
-      }
 
       const refundAmount = amount || payment.amount;
+      const availableAmount = payment.amount - (payment.refundedAmount || 0);
+      if (refundAmount > availableAmount)
+        throw new BadRequestException(
+          `Refund amount ${refundAmount} exceeds available ${availableAmount}`,
+        );
 
-      if (refundAmount > payment.amount - (payment.refundedAmount || 0)) {
-        throw new BadRequestException('Refund amount exceeds available amount');
-      }
+      const isFullRefund = refundAmount >= payment.amount;
+      const refundReason = reason || 'Remboursement manuel';
+      const adminId = initiatedBy || 'system';
 
-      // TODO: Implémenter updatePayment dans PaymentDataService
-      // const updatedPayment = await this.paymentDataService.updatePayment(paymentId, {...});
+      // Persister dans __refunds
+      const { data: refund, error: refundError } =
+        await this.paymentDataService.client
+          .from('__refunds')
+          .insert({
+            ref_order_id: payment.orderId || '',
+            ref_payment_ref: payment.paymentReference,
+            ref_amount: refundAmount,
+            ref_reason: refundReason,
+            ref_type: isFullRefund ? 'full' : 'partial',
+            ref_status: 'processed',
+            ref_psp_gateway: payment.method || 'manual',
+            ref_initiated_by: adminId,
+            ref_processed_at: new Date().toISOString(),
+          })
+          .select('ref_id')
+          .single();
 
-      // Pour l'instant, créer seulement la transaction de remboursement
+      if (refundError)
+        throw new BadRequestException(
+          `Refund insert failed: ${refundError.message}`,
+        );
+
+      // Update payment status
+      const newPaymentStatus = isFullRefund ? 'refunded' : 'partially_refunded';
+      await this.paymentDataService.updatePaymentStatus(
+        paymentId,
+        newPaymentStatus,
+      );
+
+      // Transaction
       await this.paymentDataService.createTransaction({
         paymentId,
         type: 'refund',
         amount: refundAmount,
         status: 'success',
-        // metadata: { reason: reason || 'Manual refund' }, // TODO: Ajouter metadata au type Transaction
       });
 
-      this.logger.log(`Refund processed successfully for payment ${paymentId}`);
-      return payment; // Retourner le paiement original pour l'instant
+      // Event
+      if (payment.orderId) {
+        this.eventEmitter.emit(ORDER_EVENTS.REFUNDED, {
+          orderId: payment.orderId,
+          refundId: refund.ref_id,
+          amount: refundAmount,
+          reason: refundReason,
+          initiatedBy: adminId,
+          timestamp: new Date().toISOString(),
+        } satisfies OrderRefundedEvent);
+      }
+
+      this.logger.log(
+        `Refund processed: ${refund.ref_id} — ${refundAmount}€ for payment ${paymentId}`,
+      );
+      return {
+        refundId: refund.ref_id,
+        amount: refundAmount,
+        status: 'processed',
+      };
     } catch (error) {
       this.logger.error(
         `Failed to process refund: ${error instanceof Error ? error.message : 'Unknown error'}`,

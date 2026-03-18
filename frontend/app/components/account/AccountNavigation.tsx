@@ -9,6 +9,7 @@ import {
   Package,
   LogOut,
   ChevronRight,
+  AlertTriangle,
 } from "lucide-react";
 
 import { cn } from "../../lib/utils";
@@ -63,6 +64,12 @@ export function SideNavigation({ user, stats }: SideNavigationProps) {
       icon: Mail,
       badge: stats?.messages.unread,
       description: "Centre de messages",
+    },
+    {
+      title: "SAV / Réclamations",
+      href: "/account/claims",
+      icon: AlertTriangle,
+      description: "Suivi de vos réclamations",
     },
     {
       title: "Sécurité",

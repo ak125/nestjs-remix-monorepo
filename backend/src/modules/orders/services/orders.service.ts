@@ -6,11 +6,13 @@ import {
   Logger,
   ConflictException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { OrderCalculationService } from './order-calculation.service';
 import { OrderStatusService } from './order-status.service';
 import { ShippingService } from '../../shipping/shipping.service';
 import { ShippingCalculatorService } from '../../cart/services/shipping-calculator.service';
+import { ORDER_EVENTS, type OrderCreatedEvent } from '../events/order.events';
 
 /** Postal address for billing or shipping */
 export interface OrderAddress {
@@ -141,6 +143,7 @@ export class OrdersService extends SupabaseBaseService {
     private readonly statusService: OrderStatusService,
     private readonly shippingService: ShippingService,
     private readonly shippingCalculator: ShippingCalculatorService,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     super();
   }
@@ -200,23 +203,56 @@ export class OrdersService extends SupabaseBaseService {
         0, // taxRate = 0 car les prix sont déjà TTC
       );
 
+      // Snapshot adresses au moment de la commande (JSONB)
+      const billingSnapshot = orderData.billingAddress
+        ? {
+            firstName: orderData.billingAddress.firstName || null,
+            lastName: orderData.billingAddress.lastName || null,
+            address: orderData.billingAddress.address || null,
+            addressLine2: orderData.billingAddress.addressLine2 || null,
+            zipCode: orderData.billingAddress.zipCode || null,
+            city: orderData.billingAddress.city || null,
+            country: orderData.billingAddress.country || 'France',
+            phone: orderData.billingAddress.phone || null,
+            snapshotAt: new Date().toISOString(),
+          }
+        : null;
+      const shippingSnapshot = orderData.shippingAddress
+        ? {
+            firstName: orderData.shippingAddress.firstName || null,
+            lastName: orderData.shippingAddress.lastName || null,
+            address: orderData.shippingAddress.address || null,
+            addressLine2: orderData.shippingAddress.addressLine2 || null,
+            zipCode: orderData.shippingAddress.zipCode || null,
+            city: orderData.shippingAddress.city || null,
+            country: orderData.shippingAddress.country || 'France',
+            phone: orderData.shippingAddress.phone || null,
+            snapshotAt: new Date().toISOString(),
+          }
+        : null;
+
       // Créer commande principale avec les vrais noms de colonnes
-      // IMPORTANT: Table legacy - toutes les colonnes sont TEXT
       const orderToInsert = {
-        ord_id: orderNumber, // ✅ CORRECTIF: Générer l'ID obligatoire
+        ord_id: orderNumber,
         ord_cst_id: String(orderData.customerId).trim(),
         ord_date: new Date().toISOString(),
         ord_parent: '0',
         ord_is_pay: '0',
         ord_date_pay: null,
         ord_amount_ttc: String(totals.subtotal.toFixed(2)),
-        ord_deposit_ttc: String(totals.consigne_total.toFixed(2)), // ✅ Phase 5: Consignes
+        ord_deposit_ttc: String(totals.consigne_total.toFixed(2)),
         ord_shipping_fee_ttc: String(shippingCost.toFixed(2)),
         ord_total_ttc: String(totals.total.toFixed(2)),
         ord_info: orderData.customerNote || 'Commande depuis le site',
-        ord_ords_id: '1', // Statut: En attente
-        ord_cba_id: null,
-        ord_cda_id: null,
+        ord_ords_id: '1',
+        ord_cba_id: orderData.billingAddress?.id
+          ? String(orderData.billingAddress.id)
+          : null,
+        ord_cda_id: orderData.shippingAddress?.id
+          ? String(orderData.shippingAddress.id)
+          : null,
+        ord_billing_snapshot: billingSnapshot,
+        ord_shipping_snapshot: shippingSnapshot,
       };
 
       this.logger.log(
@@ -299,10 +335,14 @@ export class OrdersService extends SupabaseBaseService {
 
       this.logger.log(`${orderLines.length} lignes créées pour #${orderId}`);
 
-      // TODO: Créer historique statut initial
-      // Note: ___xtr_order_status est une table de référence, pas d'historique
-      // Il faudra créer une vraie table d'historique si nécessaire
-      // await this.statusService.createStatusHistory(orderId, 1, 'Commande créée');
+      // Emettre event order.created
+      this.eventEmitter.emit(ORDER_EVENTS.CREATED, {
+        orderId,
+        customerId: String(orderData.customerId),
+        totalTtc: totals.total,
+        linesCount: orderLines.length,
+        timestamp: new Date().toISOString(),
+      } satisfies OrderCreatedEvent);
 
       // Retourner commande complète
       return await this.getOrderById(orderId);

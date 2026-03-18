@@ -146,6 +146,36 @@ export class MailService {
     );
   }
 
+  async sendRefundConfirmation(
+    order: OrderEmailData,
+    customer: CustomerEmailData,
+    amount: number,
+    reason: string,
+  ): Promise<void> {
+    const formattedAmount = amount.toFixed(2).replace('.', ',');
+    const body = `
+      <p>Bonjour <strong>${customer.cst_fname} ${customer.cst_name}</strong>,</p>
+      <p>Nous vous confirmons le remboursement de votre commande <strong>#${order.ord_id}</strong>.</p>
+      <div class="info-box" style="border-left-color:#10b981;background:#f0fdf4;">
+        <p style="margin:0 0 12px;font-weight:600;color:#059669;">Remboursement confirme</p>
+        <p style="margin:0 0 8px;color:#065f46;"><strong>Montant :</strong> ${formattedAmount} EUR</p>
+        <p style="margin:0;color:#065f46;"><strong>Raison :</strong> ${reason}</p>
+      </div>
+      <p>Le remboursement sera credite sur votre moyen de paiement sous 5 a 7 jours ouvres.</p>
+      <p>Pour toute question, n'hesitez pas a nous contacter.</p>
+      <div class="cta"><a href="${this.appUrl}/account/orders">Voir mes commandes</a></div>`;
+    const html = this.wrapLayout(
+      'Remboursement Confirme',
+      'linear-gradient(135deg,#10b981 0%,#059669 100%)',
+      body,
+    );
+    await this.doSend(
+      customer.cst_mail,
+      `Remboursement commande ${order.ord_id} - Automecanik`,
+      html,
+    );
+  }
+
   async sendWelcomeEmail(email: string, firstName: string): Promise<void> {
     const html = this.getWelcomeTemplate(firstName);
     await this.doSend(email, 'Bienvenue sur Automecanik !', html);

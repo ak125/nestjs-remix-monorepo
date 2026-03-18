@@ -256,7 +256,10 @@ export async function getOrderDetails(params: {
         order.paymentMethod || order.payment_method || "Carte bancaire",
       paymentStatus: order.paymentStatus || order.payment_status || "Payé",
       transactionId: order.transactionId || order.transaction_id,
-      trackingNumber: order.trackingNumber || order.tracking_number,
+      trackingNumber:
+        order.ord_tracking || order.trackingNumber || order.tracking_number,
+      trackingUrl:
+        order.ord_tracking_url || order.trackingUrl || order.tracking_url,
       deliveryMethod: order.deliveryMethod || order.delivery_method,
       deliveryDate: order.deliveryDate || order.delivery_date,
       hasReview: order.hasReview || false,

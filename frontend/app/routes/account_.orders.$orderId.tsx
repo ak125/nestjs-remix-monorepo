@@ -137,13 +137,16 @@ export default function OrderDetailPage() {
           {order.trackingNumber && (
             <Button asChild variant="outline">
               <a
-                href={`https://tracking.laposte.fr/${order.trackingNumber}`}
+                href={
+                  order.trackingUrl ||
+                  `https://www.laposte.fr/outils/suivre-vos-envois?code=${order.trackingNumber}`
+                }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="gap-2"
               >
                 <Truck className="h-4 w-4" />
-                Suivre le colis
+                Suivre le colis ({order.trackingNumber})
               </a>
             </Button>
           )}
