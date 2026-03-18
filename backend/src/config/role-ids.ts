@@ -87,6 +87,8 @@ export const FORBIDDEN_ROLE_IDS = ['R3', 'R6', 'R9', 'R3_GUIDE'] as const;
  * Returns null if unrecognized.
  */
 export function normalizeRoleId(input: string): RoleId | null {
+  // Reject forbidden/ambiguous role IDs first
+  if ((FORBIDDEN_ROLE_IDS as readonly string[]).includes(input)) return null;
   // Direct match on enum values
   const asRole = Object.values(RoleId).find((v) => v === input);
   if (asRole) return asRole;

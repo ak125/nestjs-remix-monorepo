@@ -20,12 +20,24 @@ jest.mock('fs', () => ({
 
 jest.mock('@nestjs/common', () => ({
   Injectable: () => () => undefined,
+  Optional: () => () => undefined,
+  Inject: () => () => undefined,
+  Global: () => () => undefined,
+  Module: () => () => undefined,
+  forwardRef: (fn: any) => fn,
   Logger: jest.fn().mockImplementation(() => ({
     log: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
     debug: jest.fn(),
   })),
+}));
+
+jest.mock('@nestjs/config', () => ({
+  ConfigService: jest.fn().mockImplementation(() => ({
+    get: jest.fn(),
+  })),
+  ConfigModule: {},
 }));
 
 jest.mock('../../../../database/services/supabase-base.service', () => ({

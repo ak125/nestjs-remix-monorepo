@@ -48,8 +48,8 @@ describe('normalizeRoleId', () => {
   });
 
   describe('worker page types', () => {
-    it('should map R3_guide_howto → R3_GUIDE', () => {
-      expect(normalizeRoleId('R3_guide_howto')).toBe(RoleId.R3_GUIDE);
+    it('should map R3_guide_howto → R3_CONSEILS', () => {
+      expect(normalizeRoleId('R3_guide_howto')).toBe(RoleId.R3_CONSEILS);
     });
 
     it('should map R5_diagnostic → R5_DIAGNOSTIC', () => {
@@ -117,7 +117,7 @@ describe('assertCanonicalRole', () => {
 
 describe('anti-regression: no forbidden roles in enum output path', () => {
   const outputSafeRoles = Object.values(RoleId).filter(
-    (r) => r !== RoleId.R9_GOVERNANCE,
+    (r) => r !== RoleId.R9_GOVERNANCE && r !== RoleId.R3_GUIDE,
   );
 
   it.each(outputSafeRoles)('assertCanonicalRole should accept %s', (role) => {
