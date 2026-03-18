@@ -14,70 +14,68 @@ export const ORDER_EVENTS = {
   LINE_STATUS_CHANGED: 'order.line.status_changed',
 } as const;
 
-export interface OrderCreatedEvent {
+/** Base event with optional correlation ID for request tracing */
+export interface OrderEventBase {
+  timestamp: string;
+  correlationId?: string;
+}
+
+export interface OrderCreatedEvent extends OrderEventBase {
   orderId: string;
   customerId: string;
   totalTtc: number;
   linesCount: number;
-  timestamp: string;
 }
 
-export interface OrderPaidEvent {
+export interface OrderPaidEvent extends OrderEventBase {
   orderId: string;
   customerId: string;
   amount: number;
   paymentRef: string;
   gateway: string;
-  timestamp: string;
 }
 
-export interface OrderStatusChangedEvent {
+export interface OrderStatusChangedEvent extends OrderEventBase {
   orderId: string;
   previousStatus: string;
   newStatus: string;
   changedBy?: string;
   comment?: string;
-  timestamp: string;
 }
 
-export interface OrderShippedEvent {
+export interface OrderShippedEvent extends OrderEventBase {
   orderId: string;
   customerId: string;
   trackingNumber: string;
   changedBy?: string;
-  timestamp: string;
 }
 
-export interface OrderDeliveredEvent {
+export interface OrderDeliveredEvent extends OrderEventBase {
   orderId: string;
   customerId: string;
   changedBy?: string;
-  timestamp: string;
 }
 
-export interface OrderCancelledEvent {
+export interface OrderCancelledEvent extends OrderEventBase {
   orderId: string;
   customerId: string;
   reason: string;
   changedBy?: string;
-  timestamp: string;
 }
 
-export interface OrderRefundedEvent {
+export interface OrderRefundedEvent extends OrderEventBase {
   orderId: string;
   refundId: string;
   amount: number;
   reason: string;
   initiatedBy: string;
-  timestamp: string;
 }
 
-export interface OrderLineStatusChangedEvent {
+export interface OrderLineStatusChangedEvent extends OrderEventBase {
   orderId: number;
   lineId: number;
   previousStatus: number;
   newStatus: number;
   changedBy?: number;
   comment?: string;
-  timestamp: string;
 }

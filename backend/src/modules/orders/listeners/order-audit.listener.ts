@@ -24,8 +24,13 @@ export class OrderAuditListener extends SupabaseBaseService {
     oldValue?: Record<string, unknown>,
     newValue?: Record<string, unknown>,
     metadata?: Record<string, unknown>,
+    correlationId?: string,
   ): Promise<void> {
     try {
+      const mergedMetadata = {
+        ...metadata,
+        ...(correlationId ? { correlationId } : {}),
+      };
       await this.supabase.from('__admin_audit_log').insert({
         aal_action: action,
         aal_entity_type: entityType,
@@ -33,7 +38,8 @@ export class OrderAuditListener extends SupabaseBaseService {
         aal_user_id: userId || null,
         aal_old_value: oldValue || null,
         aal_new_value: newValue || null,
-        aal_metadata: metadata || null,
+        aal_metadata:
+          Object.keys(mergedMetadata).length > 0 ? mergedMetadata : null,
       });
     } catch (error) {
       this.logger.warn(`Audit log failed (non-blocking): ${error}`);
@@ -48,10 +54,9 @@ export class OrderAuditListener extends SupabaseBaseService {
       event.orderId,
       event.customerId,
       undefined,
-      {
-        totalTtc: event.totalTtc,
-        linesCount: event.linesCount,
-      },
+      { totalTtc: event.totalTtc, linesCount: event.linesCount },
+      undefined,
+      event.correlationId,
     );
   }
 
@@ -64,6 +69,8 @@ export class OrderAuditListener extends SupabaseBaseService {
       event.changedBy,
       { status: event.previousStatus },
       { status: event.newStatus },
+      undefined,
+      event.correlationId,
     );
   }
 
@@ -76,12 +83,23 @@ export class OrderAuditListener extends SupabaseBaseService {
       event.changedBy,
       undefined,
       { trackingNumber: event.trackingNumber },
+      undefined,
+      event.correlationId,
     );
   }
 
   @OnEvent(ORDER_EVENTS.DELIVERED)
   async onOrderDelivered(event: OrderDeliveredEvent) {
-    await this.log('order_delivered', 'order', event.orderId, event.changedBy);
+    await this.log(
+      'order_delivered',
+      'order',
+      event.orderId,
+      event.changedBy,
+      undefined,
+      undefined,
+      undefined,
+      event.correlationId,
+    );
   }
 
   @OnEvent(ORDER_EVENTS.CANCELLED)
@@ -93,6 +111,8 @@ export class OrderAuditListener extends SupabaseBaseService {
       event.changedBy,
       undefined,
       { reason: event.reason },
+      undefined,
+      event.correlationId,
     );
   }
 
@@ -104,11 +124,9 @@ export class OrderAuditListener extends SupabaseBaseService {
       event.orderId,
       event.initiatedBy,
       undefined,
-      {
-        refundId: event.refundId,
-        amount: event.amount,
-        reason: event.reason,
-      },
+      { refundId: event.refundId, amount: event.amount, reason: event.reason },
+      undefined,
+      event.correlationId,
     );
   }
 
@@ -122,6 +140,7 @@ export class OrderAuditListener extends SupabaseBaseService {
       { status: event.previousStatus },
       { status: event.newStatus },
       { orderId: event.orderId, comment: event.comment },
+      event.correlationId,
     );
   }
 }
