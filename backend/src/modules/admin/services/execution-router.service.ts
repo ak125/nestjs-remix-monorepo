@@ -16,7 +16,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EXECUTION_REGISTRY } from '../../../config/execution-registry.constants';
 import { RoleId, normalizeRoleId } from '../../../config/role-ids';
-import { PageType } from '../../../workers/types/content-refresh.types';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
@@ -241,7 +240,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
 
     registryRoles.push({
       roleId: RoleId.R7_BRAND,
-      pageType: 'R7_brand' as PageType,
+      pageType: 'R7_brand',
       enricherServiceKey: 'not_implemented',
       available: false,
       allowedModes: [],
