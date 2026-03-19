@@ -162,7 +162,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
       request.targetIds,
       5,
       async (targetId) => {
-        return this.executeWithRetry(
+        return this.executeWithRetryBackoff(
           maxRetries,
           async () => {
             const data = await this.executeWithTimeout(timeoutMs, () =>
@@ -227,7 +227,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
 
     registryRoles.push({
       roleId: RoleId.R7_BRAND,
-      pageType: 'R7_brand',
+      pageType: 'R7_brand' as PageType,
       enricherServiceKey: 'not_implemented',
       available: false,
       allowedModes: [],
@@ -447,12 +447,23 @@ export class ExecutionRouterService extends SupabaseBaseService {
       };
     }
 
+    // Fetch gamme info for basic insert
+    const { data: gammeData } = await this.client
+      .from('pieces_gamme')
+      .select('pg_id, pg_alias, pg_name')
+      .eq('pg_id', targetId)
+      .single();
+
+    if (!gammeData) {
+      return { targetId, status: 'skipped', reason: 'gamme not found' };
+    }
+
     // Insert basic diagnostic entry for this gamme
     const { error } = await this.client.from('__seo_observable').insert({
-      slug: `usure-${gamme.pg_alias}`,
-      label: `Usure ${gamme.pg_name}`,
+      slug: `usure-${gammeData.pg_alias}`,
+      label: `Usure ${gammeData.pg_name}`,
       observable_type: 'symptom',
-      cluster_id: gamme.pg_alias,
+      cluster_id: gammeData.pg_alias,
       related_gammes: [parseInt(targetId, 10)],
       is_published: false,
     });
@@ -464,7 +475,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
     return {
       targetId,
       status: 'enriched',
-      slug: `usure-${gamme.pg_alias}`,
+      slug: `usure-${gammeData.pg_alias}`,
       action: 'created',
     };
   }
@@ -529,7 +540,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
 
   // ── Private: retry wrapper with exponential backoff ──
 
-  private async executeWithRetry<T>(
+  private async executeWithRetryBackoff<T>(
     maxRetries: number,
     fn: () => Promise<T>,
     onFinalError: (err: unknown) => T,
