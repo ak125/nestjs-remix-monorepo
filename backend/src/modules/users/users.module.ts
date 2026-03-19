@@ -15,7 +15,6 @@ import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from '../../database/database.module';
-import { MailService } from '../../services/mail.service';
 import { AuthModule } from '../../auth/auth.module';
 import { MessagesModule } from '../messages/messages.module';
 
@@ -73,9 +72,6 @@ import { UserShipmentService } from './services/user-shipment.service';
     PasswordService, // ✅ Service moderne de gestion des mots de passe
     AddressesService, // ✅ Service moderne de gestion des adresses
     UserShipmentService, // ✅ Service de suivi des expéditions utilisateur
-
-    // Service mail unifie
-    MailService,
   ],
   exports: [
     // ✅ SERVICES PRINCIPAUX CONSOLIDÉS

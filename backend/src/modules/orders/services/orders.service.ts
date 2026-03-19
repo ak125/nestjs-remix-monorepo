@@ -12,6 +12,11 @@ import { OrderCalculationService } from './order-calculation.service';
 import { OrderStatusService } from './order-status.service';
 import { ShippingService } from '../../shipping/shipping.service';
 import { ShippingCalculatorService } from '../../cart/services/shipping-calculator.service';
+import {
+  MailService,
+  OrderEmailData,
+  CustomerEmailData,
+} from '../../../services/mail.service';
 import { ORDER_EVENTS, type OrderCreatedEvent } from '../events/order.events';
 
 /** Postal address for billing or shipping */
@@ -33,6 +38,7 @@ export interface CreateOrderData {
     productId: string;
     productName: string;
     productReference: string;
+    productBrand?: string;
     quantity: number;
     unitPrice: number;
     vatRate?: number;
@@ -144,6 +150,7 @@ export class OrdersService extends SupabaseBaseService {
     private readonly shippingService: ShippingService,
     private readonly shippingCalculator: ShippingCalculatorService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly mailService: MailService,
   ) {
     super();
   }
@@ -304,18 +311,72 @@ export class OrdersService extends SupabaseBaseService {
       const orderId = createdOrder.ord_id;
       this.logger.log(`Commande créée: #${orderId}`);
 
-      // Créer lignes de commande avec les vrais noms de colonnes
-      // IMPORTANT: Tous les champs numériques en TEXT
-      const orderLines = orderData.orderLines.map((line, index) => ({
-        orl_id: `${orderId}-L${String(index + 1).padStart(3, '0')}`, // ✅ CORRECTIF: Générer l'ID de ligne (ex: ORD2510060001-L001)
-        orl_ord_id: String(orderId),
-        orl_pg_name: line.productName,
-        orl_art_price_sell_unit_ttc: String(line.unitPrice.toFixed(2)),
-        orl_art_quantity: String(line.quantity),
-        orl_art_price_sell_ttc: String(
-          (line.quantity * line.unitPrice).toFixed(2),
-        ),
-      }));
+      // Créer lignes de commande — enrichissement DB si ref/marque manquants
+      const orderLines = await Promise.all(
+        orderData.orderLines.map(async (line, index) => {
+          let productName = line.productName;
+          let productRef = line.productReference || null;
+          let productBrand = line.productBrand || null;
+          let productId = line.productId || null;
+          let depositUnit: string | null = null;
+          let depositTotal: string | null = null;
+
+          if (line.consigne_unit && line.consigne_unit > 0) {
+            depositUnit = String(line.consigne_unit.toFixed(2));
+            depositTotal = String(
+              (line.consigne_unit * line.quantity).toFixed(2),
+            );
+          }
+
+          // Re-lookup DB si ref ou marque manquante
+          if (productId && (!productRef || !productBrand)) {
+            try {
+              const pieceId = parseInt(String(productId), 10);
+              if (!isNaN(pieceId)) {
+                const { data: piece } = await this.supabase
+                  .from(TABLES.pieces)
+                  .select('piece_id, piece_name, piece_ref, piece_pm_id')
+                  .eq('piece_id', pieceId)
+                  .single();
+                if (piece) {
+                  productRef = productRef || piece.piece_ref || null;
+                  productName = productName || piece.piece_name || 'Produit';
+                  productId = String(piece.piece_id);
+                  if (!productBrand && piece.piece_pm_id) {
+                    const { data: brand } = await this.supabase
+                      .from(TABLES.pieces_marque)
+                      .select('pm_name')
+                      .eq('pm_id', String(piece.piece_pm_id))
+                      .single();
+                    productBrand = brand?.pm_name || null;
+                  }
+                  this.logger.log(
+                    `Enrichissement produit ${pieceId}: ref=${productRef}, marque=${productBrand}`,
+                  );
+                }
+              }
+            } catch (_e) {
+              this.logger.warn(`Enrichissement produit ${productId} echoue`);
+            }
+          }
+
+          return {
+            orl_id: `${orderId}-L${String(index + 1).padStart(3, '0')}`,
+            orl_ord_id: String(orderId),
+            orl_pg_name: productName,
+            orl_pg_id: productId || null,
+            orl_pm_name: productBrand || null,
+            orl_art_ref: productRef || null,
+            orl_art_quantity: String(line.quantity),
+            orl_art_price_sell_unit_ttc: String(line.unitPrice.toFixed(2)),
+            orl_art_price_sell_ttc: String(
+              (line.quantity * line.unitPrice).toFixed(2),
+            ),
+            orl_art_deposit_unit_ttc: depositUnit,
+            orl_art_deposit_ttc: depositTotal,
+          };
+        }),
+      );
 
       const { error: linesError } = await this.supabase
         .from(TABLES.xtr_order_line)
@@ -343,6 +404,41 @@ export class OrdersService extends SupabaseBaseService {
         linesCount: orderLines.length,
         timestamp: new Date().toISOString(),
       } satisfies OrderCreatedEvent);
+
+      // Envoyer email de confirmation (non-bloquant)
+      try {
+        const { data: customer } = await this.supabase
+          .from(TABLES.xtr_customer)
+          .select('cst_mail, cst_fname, cst_name')
+          .eq('cst_id', String(orderData.customerId))
+          .single();
+        if (customer?.cst_mail) {
+          const emailOrder: OrderEmailData = {
+            ord_id: orderId,
+            ord_total_ttc: totals.total,
+            ord_amount_ttc: totals.subtotal,
+            ord_deposit_ttc: totals.consigne_total,
+            ord_shipping_fee_ttc: shippingCost,
+            ord_date: new Date().toISOString(),
+            lines: orderLines.map((l) => ({
+              orl_pg_name: l.orl_pg_name,
+              orl_art_ref: l.orl_art_ref,
+              orl_pm_name: l.orl_pm_name,
+              orl_art_quantity: l.orl_art_quantity,
+              orl_art_price_sell_unit_ttc: l.orl_art_price_sell_unit_ttc,
+              orl_art_price_sell_ttc: l.orl_art_price_sell_ttc,
+              orl_art_deposit_unit_ttc: l.orl_art_deposit_unit_ttc,
+            })),
+          };
+          await this.mailService.sendOrderConfirmation(
+            emailOrder,
+            customer as CustomerEmailData,
+          );
+          this.logger.log(`Email confirmation envoye a ${customer.cst_mail}`);
+        }
+      } catch (mailError) {
+        this.logger.warn('Email confirmation non envoye:', mailError);
+      }
 
       // Retourner commande complète
       return await this.getOrderById(orderId);

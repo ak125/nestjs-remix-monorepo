@@ -32,7 +32,6 @@ import { SolverService } from '../modules/agentic-engine/services/solver.service
 import { CriticService } from '../modules/agentic-engine/services/critic.service';
 import { ClaudeCliService } from '../modules/agentic-engine/services/claude-cli.service';
 import { FeatureFlagsModule } from '../config/feature-flags.module';
-import { MailService } from '../services/mail.service';
 
 // Job health tracking (used by all processors)
 import { AdminJobHealthService } from '../modules/admin/services/admin-job-health.service';
@@ -109,7 +108,6 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
 
     // Job health tracking (shared by all processors)
     AdminJobHealthService,
-    MailService, // Email service for EmailProcessor
 
     // Services
     // SitemapStreamingService, // DESACTIVE

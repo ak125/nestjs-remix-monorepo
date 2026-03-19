@@ -13,7 +13,6 @@ import { CookieSerializer } from './cookie-serializer';
 import { IsAdminGuard } from './is-admin.guard';
 import { LocalAuthGuard } from './local-auth.guard';
 import { LocalStrategy } from './local.strategy';
-import { MailService } from '../services/mail.service';
 
 @Module({
   imports: [
@@ -42,7 +41,6 @@ import { MailService } from '../services/mail.service';
     LocalAuthGuard,
     CookieSerializer,
     IsAdminGuard,
-    MailService,
   ],
   exports: [AuthService],
 })

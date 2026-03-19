@@ -9,6 +9,7 @@ import { RequestIdMiddleware } from './modules/mcp-validation/middleware/request
 // import { ScheduleModule } from '@nestjs/schedule'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 // import { BullModule } from '@nestjs/bullmq'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
 import { CryptoModule } from './shared/crypto/crypto.module'; // 🔐 NOUVEAU - Module crypto centralisé !
+import { MailModule } from './services/mail.module'; // 📧 Module mail global (MailService disponible partout)
 import { FeatureFlagsModule } from './config/feature-flags.module'; // 🎛️ NOUVEAU - Feature flags centralisés (content pipeline + brief gates)
 import { WriteGuardModule } from './config/write-guard.module'; // 🛡️ P1.5 - Write Ownership & Collision Guard
 import { RpcGateModule } from './security/rpc-gate/rpc-gate.module'; // 🛡️ NOUVEAU - RPC Safety Gate pour gouvernance Supabase !
@@ -147,6 +148,9 @@ import { AgenticEngineModule } from './modules/agentic-engine/agentic-engine.mod
 
     // 🔐 Module crypto centralisé (Global)
     CryptoModule,
+
+    // 📧 Module mail global (MailService dispo partout sans import)
+    MailModule,
 
     // 🛡️ RPC Safety Gate - Gouvernance des appels Supabase RPC
     RpcGateModule,

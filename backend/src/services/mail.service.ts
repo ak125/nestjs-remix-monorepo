@@ -20,10 +20,24 @@ export interface MailOptions {
   context: Record<string, unknown>;
 }
 
+export interface OrderLineEmailData {
+  orl_pg_name: string;
+  orl_art_ref: string | null;
+  orl_pm_name: string | null;
+  orl_art_quantity: string | number;
+  orl_art_price_sell_unit_ttc: string | number;
+  orl_art_price_sell_ttc: string | number;
+  orl_art_deposit_unit_ttc?: string | number | null;
+}
+
 export interface OrderEmailData {
   ord_id: string | number;
   ord_total_ttc: string | number;
+  ord_amount_ttc?: string | number;
+  ord_deposit_ttc?: string | number;
+  ord_shipping_fee_ttc?: string | number;
   ord_date: string;
+  lines?: OrderLineEmailData[];
 }
 
 export interface CustomerEmailData {
