@@ -103,10 +103,11 @@ export class BuyingGuideQualityGatesService {
       const allText = content.join(' ').toLowerCase();
       const hasAction = ACTION_MARKERS.some((m) => allText.includes(m));
       if (!hasAction) {
-        // Not a blocking flag, but logged
-        this.logger.warn(
-          `Section ${sectionKey}: no action markers found in anti-mistakes`,
+        // Advisory only — most RAG content uses nominal phrases without action verbs
+        this.logger.debug(
+          `Section ${sectionKey}: no action markers found in anti-mistakes (advisory)`,
         );
+        flags.push('ANTI_MISTAKES_NO_ACTION');
       }
     }
 

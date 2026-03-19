@@ -16,6 +16,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { EXECUTION_REGISTRY } from '../../../config/execution-registry.constants';
 import { RoleId, normalizeRoleId } from '../../../config/role-ids';
+import { PageType } from '../../../workers/types/content-refresh.types';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
@@ -123,13 +124,26 @@ export class ExecutionRouterService extends SupabaseBaseService {
       );
     }
 
-    // 2. R7_BRAND: not implemented yet
+    // 2. R7_BRAND: not implemented in ExecutionRouter — skip gracefully
     if (roleId === RoleId.R7_BRAND) {
-      return this.errorResult(
-        request,
-        start,
-        'R7_BRAND enricher not implemented. Use /content-gen --r7 or r7-brand-execution agent.',
+      this.logger.warn(
+        'R7_BRAND enricher not available in ExecutionRouter. Use /content-gen --r7 or r7-brand-execution agent.',
       );
+      return {
+        roleId: request.roleId,
+        mode: 'blocked_no_write',
+        dryRun: request.dryRun ?? true,
+        totalTargets: request.targetIds.length,
+        results: request.targetIds.map((id) => ({
+          targetId: id,
+          status: 'skipped' as const,
+          data: {
+            reason:
+              'R7_BRAND enricher not implemented in pipeline. Use /content-gen --r7 or r7-brand-execution agent.',
+          },
+        })),
+        duration: Date.now() - start,
+      };
     }
 
     // 3. Lookup registry entry
@@ -285,9 +299,34 @@ export class ExecutionRouterService extends SupabaseBaseService {
         // Single-target: generate diagnostics for one gamme only
         return this.dispatchR5Single(enricher, targetId, pgAlias, dryRun);
 
-      case RoleId.R8_VEHICLE:
-        // R8 does not support dryRun — always writes (WriteGate protects)
-        return enricher.enrichSingle!(parseInt(targetId, 10));
+      case RoleId.R8_VEHICLE: {
+        // R8 expects a vehicle typeId, not a gamme pgId
+        const typeId = parseInt(targetId, 10);
+        if (isNaN(typeId) || typeId <= 0) {
+          return {
+            targetId,
+            status: 'failed',
+            reason: `Invalid vehicle typeId: "${targetId}". R8_VEHICLE requires a numeric typeId (not a gamme pgId).`,
+          };
+        }
+        // Guard: reject if targetId matches an existing pgId (gamme, not vehicle)
+        if (pgAlias) {
+          return {
+            targetId,
+            status: 'failed',
+            reason: `targetId ${targetId} resolves to gamme "${pgAlias}". R8_VEHICLE requires a vehicle typeId, not a gamme pgId.`,
+          };
+        }
+        if (dryRun) {
+          return {
+            targetId,
+            dryRun: true,
+            typeId,
+            action: 'would enrich vehicle page',
+          };
+        }
+        return enricher.enrichSingle!(typeId);
+      }
 
       default:
         throw new Error(`No dispatch handler for role: ${roleId}`);
@@ -600,6 +639,9 @@ export class ExecutionRouterService extends SupabaseBaseService {
       const successCount = result.results.filter(
         (r) => r.status === 'success',
       ).length;
+      const skippedCount = result.results.filter(
+        (r) => r.status === 'skipped',
+      ).length;
       const failedCount = result.results.filter(
         (r) => r.status === 'failed',
       ).length;
@@ -622,7 +664,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
       });
 
       this.logger.debug(
-        `Execution logged: role=${result.roleId} success=${successCount} failed=${failedCount} duration=${result.duration}ms`,
+        `Execution logged: role=${result.roleId} success=${successCount} skipped=${skippedCount} failed=${failedCount} duration=${result.duration}ms`,
       );
     } catch (err) {
       // Non-blocking — don't fail the execution if logging fails
