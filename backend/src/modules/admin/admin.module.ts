@@ -15,7 +15,6 @@
  */
 
 import { Module } from '@nestjs/common';
-import { BullModule } from '@nestjs/bull';
 import { DatabaseModule } from '../../database/database.module';
 
 // Controllers - Stock consolidé ✅
@@ -118,11 +117,10 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     OrdersModule,
     StaffModule,
     ProductsModule,
-    WorkerModule, // 📊 Import pour accès à SeoMonitorSchedulerService
+    WorkerModule, // 📊 Import pour SeoMonitorSchedulerService + BullMQ queues (pipeline-chain)
     SeoModule, // 🚀 Import pour accès aux services SEO (risk flags, googlebot)
     RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
     SystemModule, // DB governance Phase 2 (DbGovernanceService)
-    BullModule.registerQueue({ name: 'pipeline-chain' }), // 🚀 Queue for AdminPipelineController enqueue
   ],
   controllers: [
     ConfigurationController,

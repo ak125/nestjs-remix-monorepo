@@ -117,6 +117,9 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     // SitemapDeltaService, // DESACTIVE
     SeoMonitorSchedulerService,
   ],
-  exports: [SeoMonitorSchedulerService],
+  exports: [
+    SeoMonitorSchedulerService,
+    BullModule, // 🚀 Export BullModule so AdminModule can inject pipeline-chain queue
+  ],
 })
 export class WorkerModule {}
