@@ -31,7 +31,8 @@ export type GammeContentQualityFlag =
   | 'INVALID_IMAGE_RATIO'
   | 'CONTENT_OVERLAP'
   | 'H1_MUTATION_BLOCKED'
-  | 'R3_BOUNDARY_VIOLATION';
+  | 'R3_BOUNDARY_VIOLATION'
+  | 'ANTI_MISTAKES_NO_ACTION';
 
 // ─────────────────────────────────────────────────────────────
 // Contract versions
@@ -194,6 +195,7 @@ export const FLAG_PENALTIES: Record<GammeContentQualityFlag, number> = {
   CONTENT_OVERLAP: 15, // cross-gamme content cannibalization detected
   H1_MUTATION_BLOCKED: 100, // hard reject: attempted to modify a QA-protected H1
   R3_BOUNDARY_VIOLATION: 15, // R3 diagnostic/tuto terms found in R1-facing fields
+  ANTI_MISTAKES_NO_ACTION: 0, // advisory only — no penalty
 };
 
 // ─────────────────────────────────────────────────────────────

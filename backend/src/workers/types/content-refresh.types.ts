@@ -8,6 +8,7 @@ export type PageType =
   | 'R4_reference'
   | 'R5_diagnostic'
   | 'R6_guide_achat'
+  | 'R7_brand'
   | 'R8_vehicle';
 
 // ── Canonical Role Mapping ──
@@ -23,6 +24,7 @@ export const PAGE_TYPE_TO_CANONICAL_ROLE: Record<PageType, RoleId> = {
   R4_reference: RoleId.R4_REFERENCE,
   R5_diagnostic: RoleId.R5_DIAGNOSTIC,
   R6_guide_achat: RoleId.R6_GUIDE_ACHAT,
+  R7_brand: RoleId.R7_BRAND,
   R8_vehicle: RoleId.R8_VEHICLE,
 };
 
