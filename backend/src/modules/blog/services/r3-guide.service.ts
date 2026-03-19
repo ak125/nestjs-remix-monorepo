@@ -56,18 +56,25 @@ export class R3GuideService {
     );
 
     // Step 2 — Parallel fetch of all supplementary data
-    const [conseil, seoSwitches, relatedArticles, vehicles, adjacent] =
-      await Promise.all([
-        this.seoService.getGammeConseil(gammeData.pg_id),
-        this.seoService.getSeoItemSwitches(gammeData.pg_id),
-        this.dataService.getRelatedArticles(article.legacy_id),
-        this.relationService.getCompatibleVehicles(
-          gammeData.pg_id,
-          1000,
-          pg_alias,
-        ),
-        this.dataService.getAdjacentArticles(article.slug),
-      ]);
+    const [
+      conseil,
+      seoSwitches,
+      relatedArticles,
+      vehicles,
+      adjacent,
+      seoBrief,
+    ] = await Promise.all([
+      this.seoService.getGammeConseil(gammeData.pg_id),
+      this.seoService.getSeoItemSwitches(gammeData.pg_id),
+      this.dataService.getRelatedArticles(article.legacy_id),
+      this.relationService.getCompatibleVehicles(
+        gammeData.pg_id,
+        1000,
+        pg_alias,
+      ),
+      this.dataService.getAdjacentArticles(article.slug),
+      this.seoService.getSeoBrief(gammeData.pg_id),
+    ]);
 
     // Step 3 — Resolve canonical sections (port of frontend resolveCanonicalSections)
     const { s1Sections, bodySections, metaSections, sourceType } =
@@ -100,13 +107,20 @@ export class R3GuideService {
       deriveDifficulty(bodySections);
 
     // Step 5 — Assemble page metadata
+    // Priority chain: pipeline seo_brief > legacy seo_data > h1/excerpt fallback
     const page: R3GuidePage = {
       pg_alias,
       pg_id: gammeData.pg_id,
       title: article.h1 || article.title,
-      metaTitle: article.seo_data?.meta_title || article.h1 || article.title,
+      metaTitle:
+        seoBrief?.meta_title ||
+        article.seo_data?.meta_title ||
+        article.h1 ||
+        article.title,
       metaDescription: this.stripPricingFromHero(
-        article.seo_data?.meta_description || article.excerpt,
+        seoBrief?.meta_description ||
+          article.seo_data?.meta_description ||
+          article.excerpt,
       ),
       excerpt: this.stripPricingFromHero(article.excerpt),
       keywords: article.keywords || [],

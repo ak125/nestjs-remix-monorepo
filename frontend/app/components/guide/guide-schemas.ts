@@ -63,6 +63,7 @@ function parseHowTo(
 
 function parseFAQ(
   conseil: GammeConseil[] | null,
+  canonicalUrl: string,
 ): Record<string, unknown> | null {
   if (!conseil) return null;
 
@@ -89,6 +90,8 @@ function parseFAQ(
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    "@id": `${canonicalUrl}#faq`,
+    url: canonicalUrl,
     mainEntity: pairs.map(({ q, a }) => ({
       "@type": "Question",
       name: q,
@@ -113,6 +116,7 @@ export interface GuideSchemaArticle {
   readingTime?: number;
   viewsCount?: number;
   featuredImage?: string;
+  pg_alias?: string;
 }
 
 export interface GuideSchemaOutput {
@@ -171,6 +175,9 @@ export function buildGuideSchemas(
         userInteractionCount: article.viewsCount,
       },
     }),
+    ...(article.pg_alias && {
+      relatedLink: `https://www.automecanik.com/pieces/${article.pg_alias}`,
+    }),
   };
 
   const breadcrumbSchema = {
@@ -202,7 +209,7 @@ export function buildGuideSchemas(
   return {
     articleSchema,
     howToSchema: parseHowTo(conseil, title, canonicalUrl),
-    faqSchema: parseFAQ(conseil),
+    faqSchema: parseFAQ(conseil, canonicalUrl),
     breadcrumbSchema,
   };
 }

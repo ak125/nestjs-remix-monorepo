@@ -244,6 +244,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
         readingTime: page.readingTime,
         viewsCount: page.viewsCount,
         featuredImage: page.featuredImage ?? undefined,
+        pg_alias: page.pg_alias,
       },
       page.sourceType === "conseil" ? allConseil : null,
       canonicalUrl,

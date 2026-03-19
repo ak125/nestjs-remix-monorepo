@@ -384,6 +384,46 @@ export class BlogSeoService {
   }
 
   /**
+   * 🎯 Récupère le SEO brief (meta_title, meta_description) depuis le pipeline R3.
+   * Source : __seo_r3_keyword_plan.skp_seo_brief (rempli par P10 META).
+   * Retourne null si aucun plan n'existe pour cette gamme.
+   */
+  async getSeoBrief(pgId: number): Promise<{
+    meta_title?: string;
+    meta_description?: string;
+    recommended_anchors?: string[];
+  } | null> {
+    try {
+      const { data, error } = await this.supabaseService.client
+        .from('__seo_r3_keyword_plan')
+        .select('skp_seo_brief, skp_status, skp_quality_score')
+        .eq('skp_pg_id', pgId)
+        .not('skp_seo_brief', 'is', null)
+        .order('skp_quality_score', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error || !data) return null;
+
+      const brief = data.skp_seo_brief as Record<string, unknown> | null;
+      if (!brief?.meta_title && !brief?.meta_description) return null;
+
+      this.logger.log(
+        `🎯 SEO brief trouvé pour pg_id=${pgId} (status=${data.skp_status}, score=${data.skp_quality_score})`,
+      );
+
+      return {
+        meta_title: brief.meta_title as string | undefined,
+        meta_description: brief.meta_description as string | undefined,
+        recommended_anchors: brief.recommended_anchors as string[] | undefined,
+      };
+    } catch (err) {
+      this.logger.warn(`⚠️ getSeoBrief(${pgId}): ${(err as Error).message}`);
+      return null;
+    }
+  }
+
+  /**
    * 📊 Récupère les statistiques des liens injectés dans le blog
    */
   async getInternalLinkStats(): Promise<{
