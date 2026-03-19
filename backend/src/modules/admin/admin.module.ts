@@ -15,6 +15,7 @@
  */
 
 import { Module } from '@nestjs/common';
+import { BullModule } from '@nestjs/bull';
 import { DatabaseModule } from '../../database/database.module';
 
 // Controllers - Stock consolidé ✅
@@ -105,6 +106,10 @@ import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour Rag
 // AiContentModule SUPPRIME de AdminModule — plus utilise ici (reste dans SeoModule + MarketingModule)
 import { SystemModule } from '../system/system.module';
 import { AdminDbGovernanceController } from './controllers/admin-db-governance.controller';
+import { AdminPipelineController } from './controllers/admin-pipeline.controller'; // 🚀 Unified pipeline execution
+import { ExecutionRouterService } from './services/execution-router.service'; // 🚀 Enricher dispatch router
+import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
+import { InternalPipelineController } from './controllers/internal-pipeline.controller'; // 🚀 Internal pipeline (X-Internal-Key auth)
 
 @Module({
   imports: [
@@ -116,6 +121,7 @@ import { AdminDbGovernanceController } from './controllers/admin-db-governance.c
     SeoModule, // 🚀 Import pour accès aux services SEO (risk flags, googlebot)
     RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
     SystemModule, // DB governance Phase 2 (DbGovernanceService)
+    BullModule.registerQueue({ name: 'pipeline-chain' }), // 🚀 Queue for AdminPipelineController enqueue
   ],
   controllers: [
     ConfigurationController,
@@ -151,6 +157,8 @@ import { AdminDbGovernanceController } from './controllers/admin-db-governance.c
     AdminR8VehicleController, // 🚗 R8 Vehicle enrichment - /api/admin/r8/enrich/:typeId
     AdminVehicleRagController, // 🚗 Vehicle RAG generation - /api/admin/vehicle-rag/*
     AdminDbGovernanceController, // 📊 DB Governance Phase 2 - /api/admin/db-governance/*
+    AdminPipelineController, // 🚀 Unified pipeline execution - /api/admin/pipeline/*
+    InternalPipelineController, // 🚀 Internal pipeline (X-Internal-Key) - /api/internal/pipeline/*
   ],
   providers: [
     ConfigurationService,
@@ -196,6 +204,8 @@ import { AdminDbGovernanceController } from './controllers/admin-db-governance.c
     R3ImagePromptService, // 🎨 R3 Image Prompts (template-based, 0-LLM)
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)
+    ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
+    R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)
   ],
   exports: [
     ConfigurationService,

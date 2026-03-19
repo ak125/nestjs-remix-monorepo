@@ -23,6 +23,15 @@ cron_report() {
   local metrics="${4:-{}}"
   local summary="${5:-}"
 
+  # Sanitize: ensure duration_s is a valid number for jq --argjson
+  if ! [[ "$duration_s" =~ ^[0-9]+$ ]]; then
+    duration_s=0
+  fi
+  # Sanitize: ensure metrics is valid JSON for jq --argjson
+  if ! echo "$metrics" | jq empty 2>/dev/null; then
+    metrics='{}'
+  fi
+
   # Skip silently if Supabase not configured
   if [ -z "$_CRON_REPORT_URL" ] || [ -z "$_CRON_REPORT_KEY" ]; then
     return 0

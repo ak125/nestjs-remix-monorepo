@@ -24,6 +24,7 @@ import { RenderAdapterService } from '../modules/media-factory/render/render-ada
 // Dependencies for AgenticProcessor
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
 import { AgenticProcessor } from './processors/agentic.processor';
+import { PipelineChainProcessor } from './processors/pipeline-chain.processor';
 import { AgenticDataService } from '../modules/agentic-engine/services/agentic-data.service';
 import { EvidenceLedgerService } from '../modules/agentic-engine/services/evidence-ledger.service';
 import { RunManagerService } from '../modules/agentic-engine/services/run-manager.service';
@@ -74,6 +75,7 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
       { name: 'seo-monitor' },
       { name: 'video-render' },
       { name: 'agentic-engine' },
+      { name: 'pipeline-chain' },
     ),
 
     // Modules for AgenticProcessor dependencies
@@ -98,6 +100,7 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     // Agentic engine processor + dependencies (Phase 2: Claude CLI plan/solve/critique)
     // NOTE: Stateless services, safe duplicate (same pattern as enricher services above)
     AgenticProcessor,
+    PipelineChainProcessor, // 🚀 Pipeline chain consumer (dispatches to ExecutionRouterService)
     ClaudeCliService,
     AgenticDataService,
     EvidenceLedgerService,
