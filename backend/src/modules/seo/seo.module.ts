@@ -84,6 +84,7 @@ import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces
 import { ReferenceService } from './services/reference.service';
 import { DiagnosticService } from './services/diagnostic.service';
 import { SeoGeneratorService } from './services/seo-generator.service';
+import { SeoTitleEngineService } from './services/seo-title-engine.service';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // CONTROLEURS CORE
@@ -218,6 +219,7 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     ReferenceService,
     DiagnosticService,
     SeoGeneratorService,
+    SeoTitleEngineService,
 
     // Interceptors globaux
     {
@@ -272,6 +274,7 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     ReferenceService,
     DiagnosticService,
     SeoGeneratorService,
+    SeoTitleEngineService,
   ],
 })
 export class SeoModule {

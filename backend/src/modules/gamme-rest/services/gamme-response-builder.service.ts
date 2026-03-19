@@ -9,6 +9,7 @@ import {
 import { GammeRpcService } from './gamme-rpc.service';
 import { BuyingGuideDataService } from './buying-guide-data.service';
 import { ReferenceService } from '../../seo/services/reference.service';
+import { SeoTitleEngineService } from '../../seo/services/seo-title-engine.service';
 import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
 import { stripHtmlForMeta } from '../../../utils/html-entities';
 // ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
@@ -67,6 +68,7 @@ export class GammeResponseBuilderService {
     private readonly rpcService: GammeRpcService,
     private readonly buyingGuideService: BuyingGuideDataService,
     private readonly referenceService: ReferenceService,
+    private readonly seoTitleEngine: SeoTitleEngineService,
   ) {}
 
   /**
@@ -125,27 +127,35 @@ export class GammeResponseBuilderService {
     const motorisationsBlogRaw = (aggregatedData?.motorisations_blog ||
       []) as MotorizationRow[];
 
-    // Traitement SEO
-    // 🧹 PRÉVENTION SEO: stripHtmlForMeta sur description pour éviter HTML dans meta
-    let pageTitle, pageDescription, pageKeywords, pageH1, pageContent;
-    if (seoData) {
-      pageTitle = this.transformer.contentCleaner(seoData.sg_title || '');
-      // 🎯 Meta description: nettoyer HTML pour éviter indexation Google cassée
-      pageDescription = stripHtmlForMeta(seoData.sg_descrip || '');
-      pageKeywords = this.transformer.contentCleaner(seoData.sg_keywords || '');
-      pageH1 = this.transformer.contentCleaner(seoData.sg_h1 || '');
-      pageContent = this.transformer.contentCleaner(seoData.sg_content || '');
-    } else {
-      const defaultSeo = this.transformer.generateDefaultSeo(
-        pgNameSite,
-        pgNameMeta,
-      );
-      pageTitle = defaultSeo.title;
-      pageDescription = defaultSeo.description;
-      pageKeywords = defaultSeo.keywords;
-      pageH1 = defaultSeo.h1;
-      pageContent = defaultSeo.content;
-    }
+    // Traitement SEO — SeoTitleEngine (P1 draft → P2 dynamic → P3 legacy → P4 fallback)
+    const gammeStats = (aggregatedData?.gamme_stats || {}) as {
+      products_total?: number;
+      vehicles_total?: number;
+      top_brands?: Array<{
+        name: string;
+        count: number;
+        top: string;
+        stars: string;
+      }>;
+    };
+    // Extraire les noms de marques depuis top_brands (pré-calculé, trié par notoriété)
+    const brandNames = (gammeStats.top_brands || [])
+      .map((b) => b.name)
+      .filter((n): n is string => !!n);
+    const seoResolved = this.seoTitleEngine.resolve({
+      pgNameSite,
+      pgNameMeta,
+      seoData: seoData as Parameters<
+        typeof this.seoTitleEngine.resolve
+      >[0]['seoData'],
+      gammeStats,
+      brandNames,
+    });
+    const pageTitle = this.transformer.contentCleaner(seoResolved.title);
+    const pageDescription = stripHtmlForMeta(seoResolved.description);
+    const pageKeywords = this.transformer.contentCleaner(seoResolved.keywords);
+    const pageH1 = this.transformer.contentCleaner(seoResolved.h1);
+    const pageContent = this.transformer.contentCleaner(seoResolved.content);
 
     // 🎯 RÈGLE SEO: G1/G2 (pg_level='1') = INDEX, G3 = NOINDEX
     // pg_level='1' = gammes prioritaires (G1) ou importantes (G2)
