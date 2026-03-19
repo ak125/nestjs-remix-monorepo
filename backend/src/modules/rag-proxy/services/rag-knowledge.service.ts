@@ -146,7 +146,17 @@ export class RagKnowledgeService {
       );
 
       if (!response.ok) {
-        throw new Error(`Knowledge doc ${docId} not found: ${response.status}`);
+        // 404 = doc not found (service is healthy) — do NOT count as circuit breaker failure
+        if (response.status === 404) {
+          this.circuitBreaker.cbSuccess();
+          throw new Error(
+            `Knowledge doc ${docId} not found: ${response.status}`,
+          );
+        }
+        // 5xx / other errors = actual service issue
+        throw new Error(
+          `Knowledge doc ${docId} fetch error: ${response.status}`,
+        );
       }
 
       const data = await response.json();
@@ -154,7 +164,11 @@ export class RagKnowledgeService {
       return data;
     } catch (error) {
       if (!(error instanceof HttpException)) {
-        this.circuitBreaker.cbFailure();
+        // Only count as failure if it's NOT a 404 (already handled above)
+        const msg = getErrorMessage(error);
+        if (!msg.includes('not found: 404')) {
+          this.circuitBreaker.cbFailure();
+        }
       }
       this.logger.error(
         `Failed to fetch knowledge doc ${docId}: ${getErrorMessage(error)}`,

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { z } from 'zod';
@@ -602,7 +602,28 @@ export class BuyingGuideRagFetcherService {
   /**
    * Find the guide doc ID for a gamme slug by trying multiple variants.
    */
+  private static readonly RAG_GUIDES_DIR =
+    '/opt/automecanik/rag/knowledge/guides';
+
+  /** Cached list of guide filenames on disk (loaded once). */
+  private guideFilesCache: string[] | null = null;
+
+  private getGuideFiles(): string[] {
+    if (this.guideFilesCache) return this.guideFilesCache;
+    try {
+      this.guideFilesCache = readdirSync(
+        BuyingGuideRagFetcherService.RAG_GUIDES_DIR,
+      )
+        .filter((f) => f.endsWith('.md'))
+        .map((f) => f.replace(/\.md$/, ''));
+    } catch {
+      this.guideFilesCache = [];
+    }
+    return this.guideFilesCache;
+  }
+
   async findGuideDocId(slug: string): Promise<string | null> {
+    // ── Step 1: Build slug variants ──
     const variants: string[] = [
       slug,
       slug.replace(/-de-|-du-|-des-|-d-|-la-|-le-|-les-|-l-/g, '-'),
@@ -635,32 +656,34 @@ export class BuyingGuideRagFetcherService {
       ),
     ];
 
+    // ── Step 2: Disk-first resolution (zero API calls) ──
+    const guideFiles = this.getGuideFiles();
+
+    // Exact match against disk files
     for (const variant of uniqueVariants) {
-      const docId = `guides.choisir-${variant}`;
-      try {
-        await this.ragService.getKnowledgeDoc(docId);
-        this.logger.log(`Found guide doc: ${docId} (variant: ${variant})`);
+      const fileName = `choisir-${variant}`;
+      if (guideFiles.includes(fileName)) {
+        const docId = `guides.${fileName}`;
+        this.logger.log(
+          `Found guide doc on disk: ${docId} (variant: ${variant})`,
+        );
         return docId;
-      } catch {
-        // Not found, try next
       }
     }
 
-    // Fallback: list all guide docs and fuzzy match
-    try {
-      const guideDocs = await this.ragService.listKnowledgeDocs('guides.');
-      const slugWords = slug
-        .replace(/-/g, ' ')
-        .split(' ')
-        .filter((w) => w.length > 2);
+    // Fuzzy match against disk files (word overlap)
+    const slugWords = slug
+      .replace(/-/g, ' ')
+      .split(' ')
+      .filter((w) => w.length > 2);
 
+    if (slugWords.length > 0 && guideFiles.length > 0) {
       let bestMatch: string | null = null;
       let bestScore = 0;
 
-      for (const docId of guideDocs) {
-        if (!docId.startsWith('guides.choisir-')) continue;
-        const docSlug = docId.replace('guides.choisir-', '');
-        const docWords = docSlug.split('-');
+      for (const fileName of guideFiles) {
+        if (!fileName.startsWith('choisir-')) continue;
+        const docWords = fileName.replace('choisir-', '').split('-');
 
         const score = slugWords.filter((w) =>
           docWords.some((dw) => dw.startsWith(w) || w.startsWith(dw)),
@@ -668,22 +691,19 @@ export class BuyingGuideRagFetcherService {
 
         if (score > bestScore) {
           bestScore = score;
-          bestMatch = docId;
+          bestMatch = `guides.${fileName}`;
         }
       }
 
       if (bestMatch && bestScore >= 1) {
         this.logger.log(
-          `Fuzzy matched guide doc: ${bestMatch} (score=${bestScore})`,
+          `Fuzzy matched guide doc on disk: ${bestMatch} (score=${bestScore})`,
         );
         return bestMatch;
       }
-    } catch (error) {
-      this.logger.warn(
-        `Failed to list guide docs for fuzzy match: ${error instanceof Error ? error.message : String(error)}`,
-      );
     }
 
+    // No guide doc exists on disk for this gamme
     return null;
   }
 
