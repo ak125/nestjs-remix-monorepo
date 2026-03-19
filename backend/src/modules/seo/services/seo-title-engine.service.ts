@@ -53,6 +53,18 @@ const TITLE_MAX = 60;
 const DESCRIP_MAX = 155;
 const BRAND_NAME = 'AutoMecanik';
 
+/** Noms courts pour marques composées (évite "FILTER" seul ou "DORIA" seul) */
+const BRAND_SHORT: Record<string, string> = {
+  'MAURICE LECOY': 'LECOY',
+  'MAGNETI MARELLI': 'MAGNETI MARELLI',
+  'HERTH+BUSS JAKOPARTS': 'JAKOPARTS',
+  'AVA QUALITY COOLING': 'AVA',
+  'CALORSTAT BY VERNET': 'CALORSTAT',
+  'PRESTOLITE ELECTRIC': 'PRESTOLITE',
+  'BUDWEG CALIPER': 'BUDWEG',
+  'COOPERS FIAAM': 'FIAAM',
+};
+
 @Injectable()
 export class SeoTitleEngineService {
   /**
@@ -142,12 +154,7 @@ export class SeoTitleEngineService {
 
     // V2b: Gamme + 1 marque raccourcie (noms de gamme très longs)
     if (brandNames && brandNames.length >= 1) {
-      // Raccourcit "MAURICE LECOY" → "LECOY", "MAGNETI MARELLI" → "MARELLI"
-      const parts = brandNames[0].trim().split(/\s+/);
-      const shortName =
-        parts.length > 1 && brandNames[0].length > 10
-          ? parts[parts.length - 1]
-          : brandNames[0];
+      const shortName = BRAND_SHORT[brandNames[0]] || brandNames[0];
       const v2b = `${pgNameMeta} | ${shortName} & + | ${BRAND_NAME}`;
       if (v2b.length <= TITLE_MAX) return v2b;
     }
@@ -235,9 +242,12 @@ export class SeoTitleEngineService {
       parts.push(`Trouvez votre ${pgNameMeta} compatible avec votre véhicule`);
     }
 
-    // Marques OEM
+    // Marques OEM (raccourcies via mapping explicite)
     if (brandNames && brandNames.length >= 2) {
-      const topBrands = brandNames.slice(0, 4).join(', ');
+      const topBrands = brandNames
+        .slice(0, 4)
+        .map((b) => BRAND_SHORT[b] || b)
+        .join(', ');
       parts.push(`Marques : ${topBrands}`);
     }
 

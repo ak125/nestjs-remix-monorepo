@@ -24,6 +24,7 @@ import { R2EnricherService } from '../services/r2-enricher.service';
 import { R8VehicleEnricherService } from '../services/r8-vehicle-enricher.service';
 import { DiagnosticService } from '../../seo/services/diagnostic.service';
 import { R1EnricherService } from '../services/r1-enricher.service';
+import { ReferenceService } from '../../seo/services/reference.service';
 
 // ── Result types ──
 
@@ -59,6 +60,7 @@ interface EnricherLike {
   enrichSingle?: (...args: unknown[]) => Promise<unknown>;
   enrich?: (...args: unknown[]) => Promise<unknown>;
   generateFromTemplates?: () => Promise<unknown>;
+  generateFromGammes?: () => Promise<unknown>;
 }
 
 @Injectable()
@@ -94,6 +96,9 @@ export class ExecutionRouterService extends SupabaseBaseService {
         ...args: unknown[]
       ) => unknown,
       R1EnricherService: R1EnricherService as unknown as new (
+        ...args: unknown[]
+      ) => unknown,
+      ReferenceService: ReferenceService as unknown as new (
         ...args: unknown[]
       ) => unknown,
     };
@@ -223,14 +228,16 @@ export class ExecutionRouterService extends SupabaseBaseService {
       case RoleId.R6_GUIDE_ACHAT:
         return enricher.enrich!([targetId], dryRun);
 
-      case RoleId.R4_REFERENCE:
-        if (typeof enricher.enrichSingle === 'function') {
-          return enricher.enrichSingle(targetId, pgAlias ?? targetId);
+      case RoleId.R4_REFERENCE: {
+        // ReferenceService.generateFromGammes() — batch generates for all gammes
+        const refEnricher = enricher as {
+          generateFromGammes?: () => Promise<unknown>;
+        };
+        if (typeof refEnricher.generateFromGammes === 'function') {
+          return refEnricher.generateFromGammes();
         }
-        if (typeof enricher.generateFromTemplates === 'function') {
-          return enricher.generateFromTemplates();
-        }
-        throw new Error('ReferenceService has no enrich method available');
+        throw new Error('ReferenceService has no generateFromGammes method');
+      }
 
       case RoleId.R5_DIAGNOSTIC:
         if (typeof enricher.generateFromTemplates === 'function') {
