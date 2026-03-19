@@ -440,6 +440,10 @@ export default function CheckoutPage() {
   const submitGuardRef = useRef(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const isLocked = isSubmitting || isRedirecting || submitGuardRef.current;
+  // Idempotency key — genere une fois au render, envoye avec le form pour eviter les commandes dupliquees
+  const [idempotencyKey] = useState(
+    () => `ik-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  );
 
   // Auto-detect if connected user has complete address → skip livraison
   const hasCompleteAddress = !!(
@@ -731,6 +735,7 @@ export default function CheckoutPage() {
         onSubmit={handleCheckoutSubmit}
         className="mx-auto w-full max-w-6xl px-page py-8"
       >
+        <input type="hidden" name="idempotencyKey" value={idempotencyKey} />
         {/* Header */}
         <div className="mb-8">
           <PublicBreadcrumb

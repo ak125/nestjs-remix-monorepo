@@ -78,6 +78,7 @@ export function GuideParts({ section, pgAlias, pgId }: GuidePartsProps) {
         <div className="mt-4 pt-3 border-t border-green-100">
           <Link
             to={`/pieces/${pgAlias}-${pgId}.html`}
+            prefetch="intent"
             className="inline-flex items-center gap-1.5 text-sm text-green-700 hover:text-green-900 font-medium transition-colors"
           >
             Voir toutes les pièces compatibles
