@@ -157,12 +157,18 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
     } as any;
 
     const referenceService = { getByPgId: jest.fn().mockResolvedValue(null) } as any;
+    const seoTitleEngine = {
+      resolve: jest.fn(() => ({
+        title: 'Test Title', description: 'Test Desc', keywords: '', h1: 'H1', content: '',
+      })),
+    } as any;
 
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
       buyingGuideService,
       referenceService,
+      seoTitleEngine,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -202,12 +208,18 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
     } as any;
 
     const referenceService = { getByPgId: jest.fn().mockResolvedValue(null) } as any;
+    const seoTitleEngine = {
+      resolve: jest.fn(() => ({
+        title: 'Test Title', description: 'Test Desc', keywords: '', h1: 'H1', content: '',
+      })),
+    } as any;
 
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
       buyingGuideService,
       referenceService,
+      seoTitleEngine,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -247,12 +259,18 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
     } as any;
 
     const referenceService = { getByPgId: jest.fn().mockResolvedValue(null) } as any;
+    const seoTitleEngine = {
+      resolve: jest.fn(() => ({
+        title: 'Test Title', description: 'Test Desc', keywords: '', h1: 'H1', content: '',
+      })),
+    } as any;
 
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
       buyingGuideService,
       referenceService,
+      seoTitleEngine,
     );
 
     const result = await service.buildRpcV2Response('479');
