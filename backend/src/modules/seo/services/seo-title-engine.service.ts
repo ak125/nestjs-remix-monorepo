@@ -214,7 +214,7 @@ export class SeoTitleEngineService {
     // P4: Fallback R1-compliant (pas de termes transactionnels)
     return {
       description: this.truncate(
-        `Trouvez votre ${ctx.pgNameMeta} compatible avec votre véhicule sur ${BRAND_NAME}. Sélection par marque, modèle et motorisation.`,
+        `Comparez les ${ctx.pgNameMeta} compatibles votre véhicule sur ${BRAND_NAME}. Filtrez par marque, modèle et motorisation.`,
         DESCRIP_MAX,
       ),
       descripSource: 'fallback',
@@ -222,24 +222,23 @@ export class SeoTitleEngineService {
   }
 
   /**
-   * Construit une meta description data-driven.
-   * Inclut : prix min, nb produits, top marques, livraison.
+   * Construit une meta description R1 data-driven.
+   * Pattern : "Comparez {N}+ {Gamme} compatibles votre véhicule. Marques : {OEM}. Filtrez par marque, modèle et motorisation."
    */
   private buildDynamicDescription(ctx: SeoTitleContext): string | null {
     const { pgNameMeta, brandNames, gammeStats } = ctx;
     if (!pgNameMeta) return null;
 
     const productsTotal = gammeStats?.products_total || 0;
-    const vehiclesTotal = gammeStats?.vehicles_total || 0;
     const parts: string[] = [];
 
-    // Phrase d'accroche R1 : compatibilité + volume
+    // Accroche R1 : "Comparez" + volume + compatibilité
     if (productsTotal > 50) {
       parts.push(
-        `Trouvez votre ${pgNameMeta} parmi ${this.formatCount(productsTotal)}+ références`,
+        `Comparez ${this.formatCount(productsTotal)}+ ${pgNameMeta} compatibles votre véhicule`,
       );
     } else {
-      parts.push(`Trouvez votre ${pgNameMeta} compatible avec votre véhicule`);
+      parts.push(`Comparez les ${pgNameMeta} compatibles votre véhicule`);
     }
 
     // Marques OEM (raccourcies via mapping explicite)
@@ -251,13 +250,8 @@ export class SeoTitleEngineService {
       parts.push(`Marques : ${topBrands}`);
     }
 
-    // Véhicules compatibles
-    if (vehiclesTotal > 100) {
-      parts.push(`${this.formatCount(vehiclesTotal)}+ véhicules compatibles`);
-    }
-
-    // CTA R1 : sélection, pas achat
-    parts.push('Sélection par marque, modèle et motorisation');
+    // CTA R1 action-driven
+    parts.push('Filtrez par marque, modèle et motorisation');
 
     const result = parts.join('. ') + '.';
     return result.length <= DESCRIP_MAX
