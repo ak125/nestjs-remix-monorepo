@@ -12,6 +12,7 @@ import {
   Post,
   Get,
   Body,
+  Param,
   UseGuards,
   Logger,
   BadRequestException,
@@ -113,6 +114,36 @@ export class InternalPipelineController {
         roleId,
         targetCount: targetIds.length,
         status: 'queued',
+      },
+    };
+  }
+
+  /**
+   * GET /api/internal/pipeline/status/:jobId
+   */
+  @Get('status/:jobId')
+  async getJobStatus(@Param('jobId') jobId: string) {
+    if (!this.pipelineQueue) {
+      throw new BadRequestException(
+        'BullMQ pipeline-chain queue not available.',
+      );
+    }
+
+    const job = await this.pipelineQueue.getJob(jobId);
+    if (!job) {
+      return { success: false, data: { jobId, state: 'not_found' } };
+    }
+
+    const state = await job.getState();
+    return {
+      success: true,
+      data: {
+        jobId: job.id,
+        state,
+        attemptsMade: job.attemptsMade,
+        data: job.data,
+        result: job.returnvalue,
+        failedReason: job.failedReason,
       },
     };
   }

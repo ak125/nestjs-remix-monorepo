@@ -18,6 +18,7 @@ import {
   Logger,
   BadRequestException,
   Optional,
+  Param,
 } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
@@ -29,6 +30,10 @@ import {
   type ExecutionResult,
 } from '../services/execution-router.service';
 import type { PipelineChainJobData } from '../../../workers/processors/pipeline-chain.processor';
+import {
+  RateLimitModerate,
+  RateLimitStrict,
+} from '../../../common/decorators/rate-limit.decorator';
 
 // ── Request validation ──
 
@@ -63,6 +68,7 @@ export class AdminPipelineController {
    * { "roleId": "R2_PRODUCT", "targetIds": ["4"], "vehicleKey": "renault-clio-iii" }
    */
   @Post('execute')
+  @RateLimitModerate()
   async execute(
     @Body() body: unknown,
   ): Promise<{ success: boolean; data: ExecutionResult }> {
@@ -103,6 +109,7 @@ export class AdminPipelineController {
    * { "roleId": "R3_CONSEILS", "targetIds": ["1303", "415"] }
    */
   @Post('enqueue')
+  @RateLimitStrict()
   async enqueue(@Body() body: unknown) {
     if (!this.pipelineQueue) {
       throw new BadRequestException(
@@ -137,6 +144,41 @@ export class AdminPipelineController {
         targetCount: targetIds.length,
         dryRun: dryRun ?? false,
         status: 'queued',
+      },
+    };
+  }
+
+  /**
+   * GET /api/admin/pipeline/status/:jobId
+   *
+   * Query BullMQ job status by ID (returned by /enqueue).
+   */
+  @Get('status/:jobId')
+  async getJobStatus(@Param('jobId') jobId: string) {
+    if (!this.pipelineQueue) {
+      throw new BadRequestException(
+        'BullMQ pipeline-chain queue not available.',
+      );
+    }
+
+    const job = await this.pipelineQueue.getJob(jobId);
+    if (!job) {
+      return { success: false, data: { jobId, state: 'not_found' } };
+    }
+
+    const state = await job.getState();
+    return {
+      success: true,
+      data: {
+        jobId: job.id,
+        state,
+        attemptsMade: job.attemptsMade,
+        data: job.data,
+        result: job.returnvalue,
+        failedReason: job.failedReason,
+        timestamp: job.timestamp,
+        processedOn: job.processedOn,
+        finishedOn: job.finishedOn,
       },
     };
   }

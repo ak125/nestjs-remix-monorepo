@@ -534,6 +534,39 @@ export class DiagnosticService extends SupabaseBaseService {
   }
 
   /**
+   * Generate diagnostics for a single gamme (public API for ExecutionRouter).
+   * Fetches the gamme by pgId, then delegates to generateDiagnosticsForGammes.
+   */
+  async generateForSingleGamme(
+    pgId: number,
+    pgAlias: string,
+  ): Promise<{ created: number; skipped: number }> {
+    const { data: gamme } = await this.supabase
+      .from('__pg_gammes')
+      .select('id, pg_alias, label')
+      .eq('pg_alias', pgAlias)
+      .single();
+
+    if (!gamme) {
+      // Fallback: try by id
+      const { data: gammeById } = await this.supabase
+        .from('__pg_gammes')
+        .select('id, pg_alias, label')
+        .eq('id', pgId)
+        .single();
+
+      if (!gammeById) {
+        this.logger.warn(`No gamme found for pgId=${pgId} alias=${pgAlias}`);
+        return { created: 0, skipped: 0 };
+      }
+
+      return this.generateDiagnosticsForGammes([gammeById]);
+    }
+
+    return this.generateDiagnosticsForGammes([gamme]);
+  }
+
+  /**
    * Génère les diagnostics pour une liste de gammes
    */
   private async generateDiagnosticsForGammes(

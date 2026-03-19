@@ -154,29 +154,38 @@ export class ExecutionRouterService extends SupabaseBaseService {
 
     const dryRun = request.dryRun ?? true;
 
-    // 5. Dispatch with parallel concurrency (max 5 simultaneous)
+    // 5. Dispatch with parallel concurrency (max 5), timeout + retry per target
+    const timeoutMs = entry.stopPolicy.timeoutMs;
+    const maxRetries = entry.stopPolicy.maxRetries ?? 1;
+
     const results = await this.executeWithConcurrency(
       request.targetIds,
       5,
       async (targetId) => {
-        try {
-          const data = await this.dispatchSingle(
-            roleId,
-            enricher,
-            targetId,
-            dryRun,
-            request.vehicleKey,
-          );
-          return {
-            targetId,
-            status: this.inferStatus(data),
-            data,
-          } as ExecutionTargetResult;
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          this.logger.error(`[${roleId}] target=${targetId} error: ${msg}`);
-          return { targetId, status: 'failed' as const, error: msg };
-        }
+        return this.executeWithRetry(
+          maxRetries,
+          async () => {
+            const data = await this.executeWithTimeout(timeoutMs, () =>
+              this.dispatchSingle(
+                roleId,
+                enricher,
+                targetId,
+                dryRun,
+                request.vehicleKey,
+              ),
+            );
+            return {
+              targetId,
+              status: this.inferStatus(data),
+              data,
+            } as ExecutionTargetResult;
+          },
+          (err) => {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.error(`[${roleId}] target=${targetId} error: ${msg}`);
+            return { targetId, status: 'failed' as const, error: msg };
+          },
+        );
       },
     );
 
@@ -379,7 +388,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
   // ── Private: R5 single-target dispatch ──
 
   private async dispatchR5Single(
-    _enricher: EnricherLike,
+    enricher: EnricherLike,
     targetId: string,
     pgAlias: string | null,
     dryRun: boolean,
@@ -387,7 +396,6 @@ export class ExecutionRouterService extends SupabaseBaseService {
     const slug = pgAlias ?? targetId;
 
     if (dryRun) {
-      // Count existing diagnostics for this gamme
       const { count } = await this.client
         .from('__seo_observable')
         .select('id', { count: 'exact', head: true })
@@ -401,32 +409,41 @@ export class ExecutionRouterService extends SupabaseBaseService {
         action:
           (count ?? 0) > 0
             ? 'skip (diagnostics exist)'
-            : 'would create from templates',
+            : 'would create from templates (RAG-enriched)',
       };
     }
 
-    // Generate diagnostics for this single gamme
-    const { data: gamme } = await this.client
-      .from('pieces_gamme')
-      .select('pg_id, pg_alias, pg_name')
-      .eq('pg_id', targetId)
-      .single();
+    // Use DiagnosticService.generateForSingleGamme for RAG-enriched content
+    const diagService = enricher as unknown as {
+      generateForSingleGamme?: (
+        pgId: number,
+        pgAlias: string,
+      ) => Promise<{ created: number; skipped: number }>;
+    };
 
-    if (!gamme) {
-      return { targetId, status: 'skipped', reason: 'gamme not found' };
+    if (typeof diagService.generateForSingleGamme === 'function') {
+      const result = await diagService.generateForSingleGamme(
+        parseInt(targetId, 10),
+        slug,
+      );
+      return {
+        targetId,
+        status: result.created > 0 ? 'enriched' : 'skipped',
+        ...result,
+      };
     }
 
-    // Check if already exists
+    // Fallback: basic check
     const { count } = await this.client
       .from('__seo_observable')
       .select('id', { count: 'exact', head: true })
-      .like('slug', `%-${gamme.pg_alias}`);
+      .like('slug', `%-${slug}`);
 
     if ((count ?? 0) > 0) {
       return {
         targetId,
         status: 'skipped',
-        reason: `${count} diagnostics already exist for ${gamme.pg_alias}`,
+        reason: `${count} diagnostics already exist for ${slug}`,
       };
     }
 
@@ -485,6 +502,53 @@ export class ExecutionRouterService extends SupabaseBaseService {
       action: hasRag ? 'would enrich from RAG' : 'would skip (no RAG file)',
       status: hasRag ? 'ready' : 'skipped',
     };
+  }
+
+  // ── Private: timeout wrapper ──
+
+  private async executeWithTimeout<T>(
+    timeoutMs: number,
+    fn: () => Promise<T>,
+  ): Promise<T> {
+    return new Promise<T>((resolve, reject) => {
+      const timer = setTimeout(
+        () => reject(new Error(`Timeout after ${timeoutMs}ms`)),
+        timeoutMs,
+      );
+      fn()
+        .then((result) => {
+          clearTimeout(timer);
+          resolve(result);
+        })
+        .catch((err) => {
+          clearTimeout(timer);
+          reject(err);
+        });
+    });
+  }
+
+  // ── Private: retry wrapper with exponential backoff ──
+
+  private async executeWithRetry<T>(
+    maxRetries: number,
+    fn: () => Promise<T>,
+    onFinalError: (err: unknown) => T,
+  ): Promise<T> {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (err) {
+        if (attempt >= maxRetries) {
+          return onFinalError(err);
+        }
+        const delayMs = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+        this.logger.warn(
+          `Retry ${attempt + 1}/${maxRetries} after ${delayMs}ms: ${err instanceof Error ? err.message : err}`,
+        );
+        await new Promise((r) => setTimeout(r, delayMs));
+      }
+    }
+    return onFinalError(new Error('Unreachable'));
   }
 
   // ── Private: parallel execution with concurrency limit ──

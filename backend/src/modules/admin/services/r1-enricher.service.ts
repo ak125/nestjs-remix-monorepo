@@ -107,8 +107,11 @@ export class R1EnricherService extends SupabaseBaseService {
         `Trouvez votre ${gammeName} au meilleur prix`;
       slots.r1s_hero_subtitle = this.textUtils.truncateText(introRole, 200);
 
-      // Micro SEO block
-      const microSeo = sections.get('micro_seo') || sections.get('seo') || '';
+      // Micro SEO block — try markdown section, then synthesize from YAML
+      let microSeo = sections.get('micro_seo') || sections.get('seo') || '';
+      if (!microSeo && fm) {
+        microSeo = this.synthesizeMicroSeo(fm, gammeName, sections);
+      }
       slots.r1s_micro_seo_block = this.textUtils.truncateText(microSeo, 1000);
       if (!microSeo) flags.push('MISSING_MICRO_SEO');
 
@@ -304,6 +307,47 @@ export class R1EnricherService extends SupabaseBaseService {
     if (!fm) return null;
     const match = fm.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'));
     return match ? match[1].trim().replace(/^['"]|['"]$/g, '') : null;
+  }
+
+  private synthesizeMicroSeo(
+    fm: string,
+    gammeName: string,
+    sections: Map<string, string>,
+  ): string {
+    const parts: string[] = [];
+
+    // Extract domain.role from YAML
+    const role = this.extractYamlValue(fm, 'role');
+    if (role) {
+      parts.push(
+        `Le ${gammeName} ${role.charAt(0).toLowerCase()}${role.slice(1)}.`,
+      );
+    }
+
+    // Extract must_be_true keywords
+    const mustBeTrue = this.yamlParser.extractYamlList(fm, 'must_be_true');
+    if (mustBeTrue.length > 0) {
+      parts.push(
+        `Fonctions essentielles : ${mustBeTrue.slice(0, 3).join(', ')}.`,
+      );
+    }
+
+    // Extract selection criteria if available
+    const criteria = this.yamlParser.extractYamlList(fm, 'criteria');
+    if (criteria.length > 0) {
+      parts.push(`Critères de choix : ${criteria.slice(0, 3).join(', ')}.`);
+    }
+
+    // Fallback to role section content
+    if (parts.length === 0) {
+      const roleSection =
+        sections.get('role') || sections.get('fonctionnement') || '';
+      if (roleSection) {
+        parts.push(roleSection.slice(0, 300));
+      }
+    }
+
+    return parts.join(' ');
   }
 
   private extractBuyArgs(
