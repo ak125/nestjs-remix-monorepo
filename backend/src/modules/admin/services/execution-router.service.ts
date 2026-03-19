@@ -23,6 +23,7 @@ import { ConseilEnricherService } from '../services/conseil-enricher.service';
 import { R2EnricherService } from '../services/r2-enricher.service';
 import { R8VehicleEnricherService } from '../services/r8-vehicle-enricher.service';
 import { DiagnosticService } from '../../seo/services/diagnostic.service';
+import { R1EnricherService } from '../services/r1-enricher.service';
 
 // ── Result types ──
 
@@ -90,6 +91,9 @@ export class ExecutionRouterService extends SupabaseBaseService {
         ...args: unknown[]
       ) => unknown,
       DiagnosticService: DiagnosticService as unknown as new (
+        ...args: unknown[]
+      ) => unknown,
+      R1EnricherService: R1EnricherService as unknown as new (
         ...args: unknown[]
       ) => unknown,
     };
@@ -201,6 +205,10 @@ export class ExecutionRouterService extends SupabaseBaseService {
     const pgAlias = await this.resolvePgAlias(targetId);
 
     switch (roleId) {
+      case RoleId.R1_ROUTER:
+        // R1EnricherService.enrichSingle(pgId, pgAlias)
+        return enricher.enrichSingle!(targetId, pgAlias ?? targetId);
+
       case RoleId.R2_PRODUCT:
         return enricher.enrichSingle!(
           targetId,

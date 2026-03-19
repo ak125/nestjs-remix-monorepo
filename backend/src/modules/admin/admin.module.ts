@@ -109,6 +109,7 @@ import { AdminDbGovernanceController } from './controllers/admin-db-governance.c
 import { AdminPipelineController } from './controllers/admin-pipeline.controller'; // 🚀 Unified pipeline execution
 import { ExecutionRouterService } from './services/execution-router.service'; // 🚀 Enricher dispatch router
 import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
+import { R1EnricherService } from './services/r1-enricher.service'; // 🏗️ R1 Router enricher (0-LLM, RAG+KP)
 import { InternalPipelineController } from './controllers/internal-pipeline.controller'; // 🚀 Internal pipeline (X-Internal-Key auth)
 
 @Module({
@@ -206,6 +207,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
     R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)
+    R1EnricherService, // 🏗️ R1 Router enricher (0-LLM, RAG+KP → r1_gamme_slots)
   ],
   exports: [
     ConfigurationService,

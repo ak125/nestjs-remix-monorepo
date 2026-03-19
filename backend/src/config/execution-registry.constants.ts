@@ -47,7 +47,7 @@ export const EXECUTION_REGISTRY: Record<string, ExecutionRegistryEntry> = {
     roleId: RoleId.R1_ROUTER,
     pageType: 'R1_pieces',
     contractSchemaRef: 'page-contract-r1.schema',
-    enricherServiceKey: 'R1ContentPipelineService',
+    enricherServiceKey: 'R1EnricherService',
     agentFiles: ['r1-content-batch.md'],
     promptChain: ['intent_lock', 'serp_pack', 'section_copy', 'gatekeeper'],
     allowedModes: [
