@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { NotificationService } from './notification.service';
+import { MailService } from '../../../services/mail.service';
 
 export interface ContactRequest {
   name: string;
@@ -85,7 +86,10 @@ interface XtrMsgRow {
 export class ContactService extends SupabaseBaseService {
   protected readonly logger = new Logger(ContactService.name);
 
-  constructor(private readonly notificationService: NotificationService) {
+  constructor(
+    private readonly notificationService: NotificationService,
+    private readonly mailService: MailService,
+  ) {
     super();
   }
 
@@ -738,6 +742,25 @@ export class ContactService extends SupabaseBaseService {
         `Nouveau ticket créé: ${data.msg_id} - ${contactData.subject}`,
       );
 
+      // Envoyer email de confirmation au client (non-bloquant)
+      if (contactData.email) {
+        try {
+          await this.mailService.sendMail({
+            to: contactData.email,
+            subject: `Votre demande #${data.msg_id} a bien été reçue - AutoMecanik`,
+            template: 'generic',
+            context: {
+              title: 'Demande reçue',
+              body: `Bonjour ${contactData.name}, votre demande #${data.msg_id} (${contactData.subject}) a bien été reçue. Nous reviendrons vers vous rapidement.`,
+            },
+          });
+        } catch (emailError) {
+          this.logger.warn(
+            `Email confirmation contact non envoye (non-bloquant): ${emailError}`,
+          );
+        }
+      }
+
       return {
         msg_id: data.msg_id,
         msg_cst_id: data.msg_cst_id,
@@ -835,5 +858,25 @@ export class ContactService extends SupabaseBaseService {
     };
     await this.addResponse(satisfaction);
     return this.getTicket(ticketId);
+  }
+
+  private getContactConfirmationHtml(
+    name: string,
+    ticketId: string,
+    subject: string,
+  ): string {
+    return `
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="font-family:sans-serif;color:#1f2937;max-width:600px;margin:0 auto;padding:20px;">
+  <h2 style="color:#2563eb;">Demande reçue</h2>
+  <p>Bonjour <strong>${name}</strong>,</p>
+  <p>Votre demande <strong>#${ticketId}</strong> a bien été enregistrée.</p>
+  <div style="background:#f0f9ff;border-left:4px solid #2563eb;padding:12px 16px;margin:16px 0;">
+    <p style="margin:0;font-weight:600;">Objet : ${subject}</p>
+  </div>
+  <p>Notre équipe vous répondra dans les meilleurs délais (généralement sous 24h ouvrées).</p>
+  <p style="color:#6b7280;font-size:14px;">— L'équipe AutoMecanik</p>
+</body></html>`;
   }
 }
