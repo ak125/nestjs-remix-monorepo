@@ -140,6 +140,18 @@ export class SeoTitleEngineService {
       if (v2.length <= TITLE_MAX) return v2;
     }
 
+    // V2b: Gamme + 1 marque raccourcie (noms de gamme très longs)
+    if (brandNames && brandNames.length >= 1) {
+      // Raccourcit "MAURICE LECOY" → "LECOY", "MAGNETI MARELLI" → "MARELLI"
+      const parts = brandNames[0].trim().split(/\s+/);
+      const shortName =
+        parts.length > 1 && brandNames[0].length > 10
+          ? parts[parts.length - 1]
+          : brandNames[0];
+      const v2b = `${pgNameMeta} | ${shortName} & + | ${BRAND_NAME}`;
+      if (v2b.length <= TITLE_MAX) return v2b;
+    }
+
     // V3: Gamme + nb véhicules compatibles
     if (vehiclesTotal > 100) {
       const count = this.formatCount(vehiclesTotal);
