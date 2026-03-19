@@ -154,31 +154,33 @@ export class ExecutionRouterService extends SupabaseBaseService {
 
     const dryRun = request.dryRun ?? true;
 
-    // 5. Dispatch to the right enricher per role
-    const results: ExecutionTargetResult[] = [];
+    // 5. Dispatch with parallel concurrency (max 5 simultaneous)
+    const results = await this.executeWithConcurrency(
+      request.targetIds,
+      5,
+      async (targetId) => {
+        try {
+          const data = await this.dispatchSingle(
+            roleId,
+            enricher,
+            targetId,
+            dryRun,
+            request.vehicleKey,
+          );
+          return {
+            targetId,
+            status: this.inferStatus(data),
+            data,
+          } as ExecutionTargetResult;
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          this.logger.error(`[${roleId}] target=${targetId} error: ${msg}`);
+          return { targetId, status: 'failed' as const, error: msg };
+        }
+      },
+    );
 
-    for (const targetId of request.targetIds) {
-      try {
-        const data = await this.dispatchSingle(
-          roleId,
-          enricher,
-          targetId,
-          dryRun,
-          request.vehicleKey,
-        );
-        results.push({
-          targetId,
-          status: this.inferStatus(data),
-          data,
-        });
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        this.logger.error(`[${roleId}] target=${targetId} error: ${msg}`);
-        results.push({ targetId, status: 'failed', error: msg });
-      }
-    }
-
-    return {
+    const executionResult: ExecutionResult = {
       roleId,
       mode: entry.defaultWriteMode,
       dryRun,
@@ -186,6 +188,11 @@ export class ExecutionRouterService extends SupabaseBaseService {
       results,
       duration: Date.now() - start,
     };
+
+    // 6. Log execution to __pipeline_chain_queue for history
+    await this.logExecution(request, executionResult);
+
+    return executionResult;
   }
 
   /**
@@ -278,7 +285,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
     }
   }
 
-  // ── Private: R4 single-target dispatch ──
+  // ── Private: R4 single-target dispatch (uses ReferenceService.refreshSingleGamme) ──
 
   private async dispatchR4Single(
     enricher: EnricherLike,
@@ -289,7 +296,6 @@ export class ExecutionRouterService extends SupabaseBaseService {
     const slug = pgAlias ?? targetId;
 
     if (dryRun) {
-      // Preview: check if reference exists
       if (typeof enricher.getBySlug === 'function') {
         const existing = await enricher.getBySlug(slug);
         return {
@@ -297,29 +303,34 @@ export class ExecutionRouterService extends SupabaseBaseService {
           dryRun: true,
           exists: !!existing,
           slug,
-          action: existing ? 'skip (already exists)' : 'would create',
+          action: existing ? 'skip (already exists)' : 'would create from RAG',
         };
       }
       return this.dryRunPreview(RoleId.R4_REFERENCE, targetId, pgAlias);
     }
 
-    // Check if already exists
-    const { count } = await this.client
-      .from('__seo_reference')
-      .select('id', { count: 'exact', head: true })
-      .eq('slug', slug);
+    // Use ReferenceService.refreshSingleGamme for enriched RAG content
+    const refService = enricher as unknown as {
+      refreshSingleGamme?: (alias: string) => Promise<{
+        created: boolean;
+        updated: boolean;
+        skipped: boolean;
+        qualityScore?: number;
+        qualityFlags?: string[];
+      }>;
+    };
 
-    if ((count ?? 0) > 0) {
+    if (typeof refService.refreshSingleGamme === 'function') {
+      const result = await refService.refreshSingleGamme(slug);
       return {
         targetId,
-        status: 'skipped',
-        reason: 'reference already exists',
+        status: result.created || result.updated ? 'enriched' : 'skipped',
+        slug,
+        ...result,
       };
     }
 
-    // Generate for this single gamme by loading its data and inserting
-    // Use generateFromGammes() but note it processes ALL gammes.
-    // For single-target, we insert directly.
+    // Fallback: basic insert
     const { data: gamme } = await this.client
       .from('pieces_gamme')
       .select('pg_id, pg_alias, pg_name')
@@ -328,6 +339,19 @@ export class ExecutionRouterService extends SupabaseBaseService {
 
     if (!gamme) {
       return { targetId, status: 'skipped', reason: 'gamme not found' };
+    }
+
+    const { count } = await this.client
+      .from('__seo_reference')
+      .select('id', { count: 'exact', head: true })
+      .eq('slug', gamme.pg_alias);
+
+    if ((count ?? 0) > 0) {
+      return {
+        targetId,
+        status: 'skipped',
+        reason: 'reference already exists',
+      };
     }
 
     const { error } = await this.client.from('__seo_reference').insert({
@@ -461,6 +485,76 @@ export class ExecutionRouterService extends SupabaseBaseService {
       action: hasRag ? 'would enrich from RAG' : 'would skip (no RAG file)',
       status: hasRag ? 'ready' : 'skipped',
     };
+  }
+
+  // ── Private: parallel execution with concurrency limit ──
+
+  private async executeWithConcurrency<T>(
+    items: string[],
+    concurrency: number,
+    fn: (item: string) => Promise<T>,
+  ): Promise<T[]> {
+    const results: T[] = [];
+    const executing = new Set<Promise<void>>();
+
+    for (const item of items) {
+      const p = fn(item).then((result) => {
+        results.push(result);
+      });
+      const wrapped = p.then(() => {
+        executing.delete(wrapped);
+      });
+      executing.add(wrapped);
+
+      if (executing.size >= concurrency) {
+        await Promise.race(executing);
+      }
+    }
+
+    await Promise.all(executing);
+    return results;
+  }
+
+  // ── Private: log execution to __pipeline_chain_queue ──
+
+  private async logExecution(
+    request: ExecutionRequest,
+    result: ExecutionResult,
+  ): Promise<void> {
+    try {
+      const successCount = result.results.filter(
+        (r) => r.status === 'success',
+      ).length;
+      const failedCount = result.results.filter(
+        (r) => r.status === 'failed',
+      ).length;
+
+      const firstPgId = parseInt(request.targetIds[0], 10);
+      const firstAlias = await this.resolvePgAlias(request.targetIds[0]);
+
+      await this.client.from('__pipeline_chain_queue').insert({
+        pcq_pg_id: isNaN(firstPgId) ? 0 : firstPgId,
+        pcq_pg_alias: firstAlias ?? request.targetIds[0],
+        pcq_page_type: result.roleId,
+        pcq_source: 'execution_router',
+        pcq_status: failedCount === 0 ? 'done' : 'failed',
+        pcq_processed_at: new Date().toISOString(),
+        pcq_error:
+          failedCount > 0
+            ? `${failedCount}/${result.totalTargets} failed`
+            : null,
+        pcq_sections: request.targetIds,
+      });
+
+      this.logger.debug(
+        `Execution logged: role=${result.roleId} success=${successCount} failed=${failedCount} duration=${result.duration}ms`,
+      );
+    } catch (err) {
+      // Non-blocking — don't fail the execution if logging fails
+      this.logger.warn(
+        `Failed to log execution: ${err instanceof Error ? err.message : err}`,
+      );
+    }
   }
 
   // ── Private: resolve enricher from DI ──

@@ -77,7 +77,7 @@ export class PipelineChainProcessor extends SupabaseBaseService {
         const allSuccess = result.results.every((r) => r.status === 'success');
         await this.updateQueueStatus(
           pcqId,
-          allSuccess ? 'completed' : 'failed',
+          allSuccess ? 'done' : 'failed',
           allSuccess
             ? undefined
             : 'Some targets failed — check execution result',
@@ -112,7 +112,7 @@ export class PipelineChainProcessor extends SupabaseBaseService {
       const update: Record<string, unknown> = {
         pcq_status: status,
       };
-      if (status === 'completed' || status === 'failed') {
+      if (status === 'done' || status === 'failed') {
         update.pcq_processed_at = new Date().toISOString();
       }
       if (error) {
