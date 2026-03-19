@@ -10,6 +10,7 @@ import {
   type OrderCancelledEvent,
   type OrderLineStatusChangedEvent,
 } from '../events/order.events';
+import type { OrderRecord, CustomerRecord } from '../types/order.types';
 
 /**
  * 🚀 Service Actions Commandes - Version Moderne
@@ -424,7 +425,7 @@ export class OrderActionsService extends SupabaseBaseService {
   /**
    * 📦 Récupérer une commande complète
    */
-  async getOrder(orderId: string): Promise<Record<string, unknown>> {
+  async getOrder(orderId: string): Promise<OrderRecord> {
     const { data, error } = await this.supabase
       .from(TABLES.xtr_order)
       .select('*')
@@ -435,13 +436,13 @@ export class OrderActionsService extends SupabaseBaseService {
       throw new BadRequestException(`Commande ${orderId} introuvable`);
     }
 
-    return data;
+    return data as OrderRecord;
   }
 
   /**
    * 👤 Récupérer client d'une commande
    */
-  async getCustomer(customerId: string): Promise<Record<string, unknown>> {
+  async getCustomer(customerId: string): Promise<CustomerRecord> {
     const { data, error } = await this.supabase
       .from(TABLES.xtr_customer)
       .select('*')
@@ -452,7 +453,7 @@ export class OrderActionsService extends SupabaseBaseService {
       throw new BadRequestException(`Client ${customerId} introuvable`);
     }
 
-    return data;
+    return data as CustomerRecord;
   }
 
   /**
