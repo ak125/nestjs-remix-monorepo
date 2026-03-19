@@ -12,6 +12,10 @@
 jest.mock('@nestjs/common', () => ({
   Injectable: () => () => undefined,
   Optional: () => () => undefined,
+  Inject: () => () => undefined,
+  Global: () => () => undefined,
+  Module: () => () => undefined,
+  forwardRef: (fn: any) => fn,
   HttpException: class extends Error {
     status: number;
     constructor(msg: string, status: number) {
