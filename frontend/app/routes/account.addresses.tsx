@@ -17,7 +17,7 @@ import { MapPin, Trash2, Home, Building, Star, Loader2 } from "lucide-react";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
-import { requireAuth } from "../auth/unified.server";
+import { requireAuth, type AuthUser } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -58,7 +58,7 @@ type DeliveryAddress = BillingAddress & { label?: string; is_default: boolean };
 type LoaderData = {
   billing: BillingAddress | null;
   delivery: DeliveryAddress[];
-  user: Record<string, unknown>;
+  user: AuthUser;
 };
 type ActionData = { success?: boolean; error?: string };
 

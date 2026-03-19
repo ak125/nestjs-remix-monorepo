@@ -13,7 +13,7 @@ import { ArrowLeft, Clock } from "lucide-react";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
-import { requireAuth } from "../auth/unified.server";
+import { requireAuth, type AuthUser } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -60,7 +60,7 @@ interface ClaimDetail {
   resolvedAt?: string;
 }
 
-type LoaderData = { claim: ClaimDetail; user: Record<string, unknown> };
+type LoaderData = { claim: ClaimDetail; user: AuthUser };
 
 const statusConfig: Record<
   string,

@@ -18,7 +18,7 @@ import { ArrowLeft, Send, Loader2 } from "lucide-react";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
-import { requireAuth } from "../auth/unified.server";
+import { requireAuth, type AuthUser } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { Button } from "../components/ui/button";
 import {
@@ -34,7 +34,7 @@ export const meta: MetaFunction = () => [
   { name: "robots", content: "noindex, nofollow" },
 ];
 
-type LoaderData = { user: Record<string, unknown> };
+type LoaderData = { user: AuthUser };
 type ActionData = { error?: string; fieldErrors?: Record<string, string> };
 
 const claimTypes = [
@@ -80,18 +80,18 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
   const cookie = request.headers.get("Cookie") || "";
-  const userData = user as Record<string, unknown>;
+  const userData = user;
 
   try {
     const res = await fetch(`${baseUrl}/api/support/claims`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Cookie: cookie },
       body: JSON.stringify({
-        customerId: String(userData.id || userData.cst_id),
+        customerId: String(userData.id || userData.cst_id || ""),
         customerName:
-          `${userData.firstName || userData.cst_prenom || ""} ${userData.lastName || userData.cst_nom || ""}`.trim(),
-        customerEmail: String(userData.email || userData.cst_mail || ""),
-        customerPhone: userData.phone || userData.cst_tel || undefined,
+          `${userData.firstName || ""} ${userData.lastName || ""}`.trim(),
+        customerEmail: String(userData.email || ""),
+        customerPhone: undefined,
         type,
         priority: "normal",
         title,

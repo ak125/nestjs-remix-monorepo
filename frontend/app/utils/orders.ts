@@ -46,6 +46,7 @@ export interface Order {
   createdAt: string;
   lines: OrderLine[];
   trackingNumber?: string;
+  trackingUrl?: string;
   paymentStatus?: string;
   paymentMethod?: string;
   transactionId?: string;

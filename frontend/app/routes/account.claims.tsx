@@ -20,7 +20,7 @@ import {
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
-import { requireAuth } from "../auth/unified.server";
+import { requireAuth, type AuthUser } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -43,7 +43,7 @@ interface Claim {
   updatedAt: string;
 }
 
-type LoaderData = { claims: Claim[]; user: Record<string, unknown> };
+type LoaderData = { claims: Claim[]; user: AuthUser };
 
 const statusConfig: Record<
   string,
@@ -77,9 +77,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const baseUrl = process.env.API_BASE_URL || "http://localhost:3000";
   const cookie = request.headers.get("Cookie") || "";
-  const userId =
-    (user as Record<string, unknown>).id ||
-    (user as Record<string, unknown>).cst_id;
+  const userId = user.id || user.cst_id;
 
   try {
     const res = await fetch(
