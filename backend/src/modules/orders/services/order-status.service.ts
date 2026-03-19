@@ -113,13 +113,12 @@ export class OrderStatusService extends SupabaseBaseService {
    * Actions spécifiques pour chaque statut (version simplifiée)
    */
   private async executeStatusActions(
-    _line: any,
+    _line: Record<string, unknown>,
     status: number,
   ): Promise<void> {
-    // Version simplifiée - TODO: Réimplémenter avec Supabase
-    this.logger.log(
-      `Action statut ${status} - TODO: implémenter avec Supabase`,
-    );
+    // Actions specifiques par statut gerees via EventEmitter2 (order.events.ts)
+    // Les listeners OrderAuditListener et OrderEmailListener captent les events
+    this.logger.debug(`Status action ${status} — handled via event system`);
   }
 
   /**
@@ -165,7 +164,7 @@ export class OrderStatusService extends SupabaseBaseService {
 
     // Si toutes les lignes ont le même statut
     const allSameStatus = lines?.every(
-      (l: any) => l.status === lines[0].status,
+      (l: Record<string, unknown>) => l.status === lines[0].status,
     );
 
     if (allSameStatus && lines && lines.length > 0) {
@@ -301,31 +300,28 @@ export class OrderStatusService extends SupabaseBaseService {
   }
 
   /**
-   * Récupérer l'historique des statuts d'une commande (version simplifiée)
-   * TODO: Créer une vraie table d'historique (ex: ___xtr_order_history)
-   * Note: ___xtr_order_status est une table de référence des statuts, pas d'historique
+   * Recuperer l'historique des statuts depuis __admin_audit_log
    */
-  async getOrderStatusHistory(orderId: number): Promise<any[]> {
-    // Temporairement désactivé car ___xtr_order_status n'a pas de colonne order_id
-    // C'est une table de référence (enum) des statuts possibles
-    this.logger.warn(
-      `Historique des statuts non disponible pour commande ${orderId} - table d'historique à créer`,
-    );
-    return [];
+  async getOrderStatusHistory(
+    orderId: number,
+  ): Promise<Record<string, unknown>[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('__admin_audit_log')
+        .select(
+          'aal_action, aal_old_value, aal_new_value, aal_user_id, aal_created_at',
+        )
+        .eq('aal_entity_type', 'order')
+        .eq('aal_entity_id', String(orderId))
+        .order('aal_created_at', { ascending: false });
 
-    /* Code original à réactiver une fois la table d'historique créée
-    const { data, error } = await this.supabase
-      .from('___xtr_order_history')  // Utiliser une vraie table d'historique
-      .select('*')
-      .eq('order_id', orderId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      this.logger.error('Erreur récupération historique:', error);
-      throw error;
+      if (error) {
+        this.logger.warn(`Erreur lecture historique: ${error.message}`);
+        return [];
+      }
+      return data || [];
+    } catch {
+      return [];
     }
-
-    return data || [];
-    */
   }
 }
