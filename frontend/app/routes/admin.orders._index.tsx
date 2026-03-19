@@ -615,11 +615,34 @@ export default function OrdersRoute() {
   // 🎯 HANDLERS AVEC TOASTS ET CONFIRMATIONS
   // ========================================
 
-  const handleViewOrder = (orderId: string) => {
-    const order = data.orders.find((o) => o.ord_id === orderId);
-    if (order) {
-      setSelectedOrder(order);
+  const handleViewOrder = async (orderId: string) => {
+    // Fallback local pendant le fetch
+    const localOrder = data.orders.find((o) => o.ord_id === orderId);
+    if (localOrder) {
+      setSelectedOrder(localOrder);
       setIsDetailsModalOpen(true);
+    }
+
+    // Fetch details complets avec lignes de commande
+    try {
+      const res = await fetch(`/api/legacy-orders/${orderId}`, {
+        credentials: "include",
+      });
+      const json = await res.json();
+      if (json.success && json.data) {
+        const fullOrder = {
+          ...json.data,
+          lines: json.data.orderLines || [],
+          customerName: json.data.customer
+            ? `${json.data.customer.cst_fname || ""} ${json.data.customer.cst_name || ""}`.trim()
+            : localOrder?.customerName,
+          customerEmail:
+            json.data.customer?.cst_mail || localOrder?.customerEmail,
+        };
+        setSelectedOrder(fullOrder);
+      }
+    } catch (_e) {
+      // Garde les donnees locales deja affichees
     }
   };
 

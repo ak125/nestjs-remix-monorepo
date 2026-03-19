@@ -5,6 +5,7 @@ import {
   MapPin,
   Package,
   Phone,
+  ShoppingCart,
   User,
 } from "lucide-react";
 import { memo } from "react";
@@ -148,6 +149,61 @@ export const OrderDetailsModal = memo(function OrderDetailsModal({
             </div>
           </div>
 
+          {/* Order Lines — Produits commandés */}
+          {order.lines && order.lines.length > 0 && (
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-gray-600" />
+                Produits commandés ({order.lines.length})
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-gray-500">
+                      <th className="pb-2 pr-4">Produit</th>
+                      <th className="pb-2 pr-4">Réf</th>
+                      <th className="pb-2 pr-4">Marque</th>
+                      <th className="pb-2 text-right pr-4">Qté</th>
+                      <th className="pb-2 text-right pr-4">Prix unit.</th>
+                      <th className="pb-2 text-right">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {order.lines.map((line) => (
+                      <tr key={line.orl_id} className="border-b last:border-0">
+                        <td className="py-2 pr-4 font-medium">
+                          {line.orl_pg_name || "—"}
+                        </td>
+                        <td className="py-2 pr-4 font-mono text-xs text-gray-600">
+                          {line.orl_art_ref || "—"}
+                        </td>
+                        <td className="py-2 pr-4 text-gray-700">
+                          {line.orl_pm_name || "—"}
+                        </td>
+                        <td className="py-2 text-right pr-4">
+                          {line.orl_art_quantity}
+                        </td>
+                        <td className="py-2 text-right pr-4">
+                          {formatPrice(line.orl_art_price_sell_unit_ttc)}
+                        </td>
+                        <td className="py-2 text-right font-medium">
+                          {formatPrice(line.orl_art_price_sell_ttc)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {order.ord_deposit_ttc &&
+                parseFloat(order.ord_deposit_ttc) > 0 && (
+                  <p className="mt-2 text-sm text-amber-700 bg-amber-50 px-3 py-1.5 rounded">
+                    Consigne (remboursable au retour) :{" "}
+                    {formatPrice(order.ord_deposit_ttc)}
+                  </p>
+                )}
+            </div>
+          )}
+
           {/* Order Info */}
           <div className="border-t pt-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -162,9 +218,35 @@ export const OrderDetailsModal = memo(function OrderDetailsModal({
                   {formatDate(order.ord_date)}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Montant total TTC</span>
-                <span className="font-semibold text-lg text-gray-900">
+              {order.ord_amount_ttc && (
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Sous-total articles</span>
+                  <span className="font-medium text-gray-900">
+                    {formatPrice(order.ord_amount_ttc)}
+                  </span>
+                </div>
+              )}
+              {order.ord_deposit_ttc &&
+                parseFloat(order.ord_deposit_ttc) > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-amber-700">Consignes</span>
+                    <span className="font-medium text-amber-700">
+                      {formatPrice(order.ord_deposit_ttc)}
+                    </span>
+                  </div>
+                )}
+              {order.ord_shipping_fee_ttc &&
+                parseFloat(order.ord_shipping_fee_ttc) > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">Frais de port</span>
+                    <span className="font-medium text-gray-900">
+                      {formatPrice(order.ord_shipping_fee_ttc)}
+                    </span>
+                  </div>
+                )}
+              <div className="flex items-center justify-between border-t pt-2">
+                <span className="text-gray-900 font-semibold">Total TTC</span>
+                <span className="font-bold text-lg text-blue-600">
                   {formatPrice(order.ord_total_ttc)}
                 </span>
               </div>

@@ -3,7 +3,7 @@
  * Extrait de routes/orders._index.tsx
  */
 
-import { type getUserRole, type UserPermissions } from '../utils/permissions';
+import { type getUserRole, type UserPermissions } from "../utils/permissions";
 
 // ========================================
 // 🛒 COMMANDE (Format BDD Supabase)
@@ -28,6 +28,20 @@ export interface StatusDetails {
   ords_color: string;
 }
 
+export interface OrderLine {
+  orl_id: string;
+  orl_ord_id: string;
+  orl_pg_id?: string;
+  orl_pg_name?: string;
+  orl_pm_name?: string;
+  orl_art_ref?: string;
+  orl_art_quantity?: string;
+  orl_art_price_sell_unit_ttc?: string;
+  orl_art_price_sell_ttc?: string;
+  orl_art_deposit_unit_ttc?: string;
+  orl_art_deposit_ttc?: string;
+}
+
 export interface Order {
   ord_id: string;
   ord_cst_id: string;
@@ -48,6 +62,7 @@ export interface Order {
   customerEmail?: string;
   customer?: Customer;
   statusDetails?: StatusDetails;
+  lines?: OrderLine[];
 }
 
 // ========================================
