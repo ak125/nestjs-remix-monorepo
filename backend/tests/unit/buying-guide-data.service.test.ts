@@ -354,7 +354,7 @@ describe('BuyingGuideDataService quality gate', () => {
     // With minimal mock, we just verify the tree is non-empty and has valid structure
     for (const node of buyingGuide.decisionTree) {
       expect(node).toHaveProperty('id');
-      expect(node).toHaveProperty('label');
+      expect(node).toHaveProperty('question');
     }
     const dimensionsNode = buyingGuide.decisionTree.find(
       (node) => node.id === 'critical-dimensions',

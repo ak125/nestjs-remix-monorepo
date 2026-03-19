@@ -183,7 +183,7 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       }),
     );
 
-    expect(result.hero.h1).toBe('H1 par défaut');
+    expect(result.hero.h1).toBe('H1');
     expect(result.gammeBuyingGuide).toEqual(autoGuide);
     expect(result.performance.buying_guide_available).toBe(1);
     expect(result.performance.buying_guide_fallback_used).toBe(1);
