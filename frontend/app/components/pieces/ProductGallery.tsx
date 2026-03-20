@@ -152,7 +152,6 @@ export const ProductGallery = memo(function ProductGallery({
             className="w-full h-full object-contain"
             loading={priority ? "eager" : "lazy"}
             decoding="async"
-            // @ts-expect-error - fetchpriority is valid HTML but React types it as fetchPriority
             fetchpriority={priority ? "high" : "auto"}
             onError={(e) => {
               e.currentTarget.src = "/images/default-piece.svg";
@@ -211,7 +210,6 @@ export const ProductGallery = memo(function ProductGallery({
                 className="w-full h-full object-contain touch-pan-y"
                 loading={priority ? "eager" : "lazy"}
                 decoding="async"
-                // @ts-expect-error - fetchpriority is valid HTML but React types it as fetchPriority
                 fetchpriority={priority ? "high" : "auto"}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}

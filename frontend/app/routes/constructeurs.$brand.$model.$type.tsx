@@ -987,7 +987,7 @@ export default function VehicleDetailPage() {
                     className="w-full h-full object-cover"
                     loading="eager"
                     decoding="async"
-                    fetchPriority="high"
+                    fetchpriority="high"
                     onError={() => setImageError(true)}
                   />
                 ) : (
