@@ -267,51 +267,9 @@ export class OrdersService extends SupabaseBaseService {
         JSON.stringify(orderToInsert, null, 2),
       );
 
-      const { data: createdOrders, error: orderError } = await this.supabase
-        .from(TABLES.xtr_order)
-        .insert(orderToInsert)
-        .select();
+      const orderId = orderNumber;
 
-      this.logger.log('📥 Réponse Supabase data:', createdOrders);
-      this.logger.log('📥 Réponse Supabase error:', orderError);
-
-      const createdOrder = createdOrders?.[0];
-
-      // Vérifier si c'est une vraie erreur (pas juste un objet vide)
-      if (
-        orderError &&
-        (orderError.message || orderError.code || orderError.details)
-      ) {
-        this.logger.error(
-          '❌ Erreur Supabase complète:',
-          JSON.stringify(orderError, null, 2),
-        );
-        this.logger.error('❌ Message:', orderError.message);
-        this.logger.error('❌ Details:', orderError.details);
-        this.logger.error('❌ Hint:', orderError.hint);
-        this.logger.error('❌ Code:', orderError.code);
-        throw new BadRequestException(
-          `Échec création commande: ${orderError.message || orderError.code}`,
-        );
-      }
-
-      // Si pas de données retournées mais pas d'erreur, créer un objet minimal
-      if (!createdOrder) {
-        this.logger.warn(
-          '⚠️ Commande probablement créée mais pas de données retournées (RLS)',
-        );
-        this.logger.log('✅ Retour succès sans données - commande créée');
-        return {
-          success: true,
-          message: 'Commande créée avec succès',
-          ord_id: 'créé', // On ne peut pas récupérer l'ID à cause de RLS
-        };
-      }
-
-      const orderId = createdOrder.ord_id;
-      this.logger.log(`Commande créée: #${orderId}`);
-
-      // Créer lignes de commande — enrichissement DB si ref/marque manquants
+      // Enrichir les lignes de commande (ref/marque) AVANT l'insert atomique
       const orderLines = await Promise.all(
         orderData.orderLines.map(async (line, index) => {
           let productName = line.productName;
@@ -378,23 +336,25 @@ export class OrdersService extends SupabaseBaseService {
         }),
       );
 
-      const { error: linesError } = await this.supabase
-        .from(TABLES.xtr_order_line)
-        .insert(orderLines);
+      // Atomic insert: order + lines in single DB transaction via RPC
+      const { error: rpcError } = await this.supabase.rpc(
+        'create_order_atomic',
+        {
+          p_order: orderToInsert,
+          p_lines: orderLines,
+        },
+      );
 
-      if (linesError) {
-        this.logger.error('Erreur création lignes:', linesError);
-        // Rollback manuel - supprimer la commande
-        await this.supabase
-          .from(TABLES.xtr_order)
-          .delete()
-          .eq('ord_id', orderId);
+      if (rpcError) {
+        this.logger.error('Erreur création atomique:', rpcError);
         throw new BadRequestException(
-          `Échec création lignes: ${linesError.message}`,
+          `Échec création commande: ${rpcError.message}`,
         );
       }
 
-      this.logger.log(`${orderLines.length} lignes créées pour #${orderId}`);
+      this.logger.log(
+        `Commande #${orderId} créée atomiquement (${orderLines.length} lignes)`,
+      );
 
       // Emettre event order.created
       this.eventEmitter.emit(ORDER_EVENTS.CREATED, {
