@@ -15,31 +15,43 @@ export class CookieSerializer extends PassportSerializer {
 
   /**
    * ✅ DESERIALIZE: Récupérer l'utilisateur depuis la BDD avec cache
-   * Cache de 5 secondes pour éviter les boucles infinies
+   * Supporte le nouveau format { userId, authSource } et l'ancien format string (rétrocompat)
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Passport deserializeUser signature
-  async deserializeUser(userId: string, done: (err: any, user?: any) => void) {
+  async deserializeUser(
+    sessionData: string | { userId: string; authSource?: 'admin' | 'customer' },
+    done: (err: any, user?: any) => void,
+  ) {
     try {
+      // Normaliser : ancien format (string) → nouveau format (object)
+      const { userId, authSource } =
+        typeof sessionData === 'string'
+          ? { userId: sessionData, authSource: undefined }
+          : sessionData;
+
+      const cacheKey = `${authSource || 'unknown'}:${userId}`;
+
       // 🔍 Vérifier le cache d'abord
-      const cached = this.userCache.get(userId);
+      const cached = this.userCache.get(cacheKey);
       const now = Date.now();
 
       if (cached && now - cached.timestamp < this.CACHE_TTL) {
-        // ✅ Cache hit: pas de log pour éviter le spam
         return done(null, cached.user);
       }
 
-      // Cache miss ou expiré: requête BDD
-      const user = await this.authService.getUserById(userId);
+      // Cache miss ou expiré: requête BDD avec routage par source
+      const user = authSource
+        ? await this.authService.getUserByIdAndSource(userId, authSource)
+        : await this.authService.getUserById(userId);
 
       if (!user) {
-        this.logger.log(`User not found during deserialization: ${userId}`);
-        this.userCache.delete(userId); // Nettoyer le cache
+        this.logger.log(`User not found during deserialization: ${cacheKey}`);
+        this.userCache.delete(cacheKey);
         return done(null, false);
       }
 
       // 💾 Mettre en cache pour 5 secondes
-      this.userCache.set(userId, { user, timestamp: now });
+      this.userCache.set(cacheKey, { user, timestamp: now });
 
       // 🧹 Nettoyer les entrées expirées (toutes les 100 requêtes)
       if (Math.random() < 0.01) {
@@ -79,7 +91,7 @@ export class CookieSerializer extends PassportSerializer {
       return done(null, false);
     }
 
-    // ✅ Sauvegarder UNIQUEMENT l'ID (pas l'objet complet)
+    // ✅ Sauvegarder l'ID ET la source (admin vs customer) pour routage déterministe
     const userId = user.id || user.cst_id || user.cnfa_id;
 
     if (!userId) {
@@ -89,6 +101,9 @@ export class CookieSerializer extends PassportSerializer {
       return done(null, false);
     }
 
-    done(null, userId);
+    const authSource: 'admin' | 'customer' =
+      user.authSource || (user.isAdmin ? 'admin' : 'customer');
+
+    done(null, { userId, authSource });
   }
 }

@@ -467,32 +467,73 @@ export class AuthService {
   /**
    * Récupérer un utilisateur par ID
    */
-  async getUserById(userId: string): Promise<AuthUser | null> {
+  /**
+   * Récupérer un utilisateur par ID avec routage déterministe par source.
+   * Utilisé par le nouveau cookie-serializer (format { userId, authSource }).
+   */
+  async getUserByIdAndSource(
+    userId: string,
+    authSource: 'admin' | 'customer',
+  ): Promise<AuthUser | null> {
     try {
-      // 1. Chercher dans les customers
+      if (authSource === 'admin') {
+        const admin = await this.userDataService.findAdminById(userId);
+        if (admin) return this.mapAdminToAuthUser(admin);
+        return null;
+      }
+
       const user = await this.userDataService.findById(userId);
       if (user) return this.mapUserToAuthUser(user);
+      return null;
+    } catch (error) {
+      this.logger.error(
+        `Error getting user by ID+source ${authSource}:${userId}:`,
+        error,
+      );
+      return null;
+    }
+  }
 
-      // 2. Fallback: chercher dans les admins
+  /**
+   * Récupérer un utilisateur par ID (rétrocompat anciennes sessions).
+   * Ordre inversé : admin d'abord pour éviter collision d'ID.
+   */
+  async getUserById(userId: string): Promise<AuthUser | null> {
+    try {
+      // 1. Chercher dans les admins d'abord (évite collision ID admin/customer)
       const admin = await this.userDataService.findAdminById(userId);
-      if (admin) {
-        return {
-          id: admin.id,
-          email: admin.email,
-          firstName: admin.firstName,
-          lastName: admin.lastName,
-          isPro: true,
-          isActive: admin.isActive,
-          level: admin.level,
-          isAdmin: admin.level >= 7,
-        };
-      }
+      if (admin) return this.mapAdminToAuthUser(admin);
+
+      // 2. Fallback: chercher dans les customers
+      const user = await this.userDataService.findById(userId);
+      if (user) return this.mapUserToAuthUser(user);
 
       return null;
     } catch (error) {
       this.logger.error(`Error getting user by ID ${userId}:`, error);
       return null;
     }
+  }
+
+  private mapAdminToAuthUser(admin: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    isActive: boolean;
+    level: number;
+  }): AuthUser {
+    return {
+      id: admin.id,
+      email: admin.email,
+      firstName: admin.firstName,
+      lastName: admin.lastName,
+      isPro: true,
+      isActive: admin.isActive,
+      level: admin.level,
+      isAdmin: admin.level >= 7,
+      authSource: 'admin',
+    };
   }
 
   /**
