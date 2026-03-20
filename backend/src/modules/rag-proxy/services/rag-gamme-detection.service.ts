@@ -99,6 +99,18 @@ export class RagGammeDetectionService {
     'bobines-allumage': 'bobine-d-allumage',
     'bougies-allumage': 'bougie-d-allumage',
     'compresseur-climatisation': 'compresseur-de-climatisation',
+    // Batteries
+    battery: 'batterie',
+    batteries: 'batterie',
+    batterie: 'batterie',
+    'bosch-batteries': 'batterie',
+    // Capteurs moteur
+    'crankshaft-sensor': 'capteur-vilebrequin',
+    'camshaft-sensor': 'capteur-d-arbre-a-cames',
+    'throttle-position-sensor': 'capteur-position-papillon',
+    'oil-pressure-sensor': 'capteur-pression-d-huile',
+    'coolant-level-sensor': 'capteur-niveau-de-liquide-de-refroidissement',
+    'oil-temperature-sensor': 'capteur-temperature-d-huile',
   };
 
   constructor(
