@@ -16,7 +16,8 @@ export class IsAdminGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    const isAdmin = user?.isAdmin === true || parseInt(user?.level) >= 7;
+    const isAdmin =
+      user?.isAdmin === true || parseInt(String(user?.level || 0), 10) >= 7;
 
     if (!isAdmin) {
       this.logger.warn(`Admin access denied: ${user?.email || 'anonymous'}`);

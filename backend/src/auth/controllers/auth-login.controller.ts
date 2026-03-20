@@ -34,6 +34,7 @@ import {
   promisifySessionSave,
   promisifySessionDestroy,
 } from '../../utils/promise-helpers';
+import { RateLimitStrict } from '../../common/decorators/rate-limit.decorator';
 
 @ApiTags('auth')
 @Controller()
@@ -53,6 +54,7 @@ export class AuthLoginController {
    * Créer un nouveau compte utilisateur
    */
   @Post('auth/register')
+  @RateLimitStrict()
   @ApiOperation({
     summary: 'Register new user account',
     description:
