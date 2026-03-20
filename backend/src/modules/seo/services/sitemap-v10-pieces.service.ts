@@ -1,10 +1,12 @@
 /**
- * 📦 SERVICE PIÈCES SITEMAP V10 - Streaming batch + génération par famille
+ * SERVICE PIECES SITEMAP V10 - Streaming batch + generation par famille
  *
- * Responsabilités:
- * - Streaming batch processing pour 714k+ URLs (shards de 50k)
- * - Génération par famille thématique (19 familles)
- * - Déduplication inter-familles
+ * Responsabilites:
+ * - Streaming batch processing (shards de 50k, seuil configurable via crawl_budget_experiments)
+ * - Generation par famille thematique (19 familles)
+ * - Deduplication inter-familles
+ *
+ * Seuil min items: configurable via DB (default 20). Ajustable sans redeploy.
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -25,7 +27,7 @@ import {
   type PieceV9,
 } from './sitemap-v10.types';
 
-/** Liste des clés de familles produits (19 familles) */
+/** Liste des cles de familles produits (19 familles) */
 export const PRODUCT_FAMILY_KEYS = [
   'filtres',
   'freinage',
@@ -49,8 +51,11 @@ export const PRODUCT_FAMILY_KEYS = [
 ];
 
 // ═══════════════════════════════════════════════════════════
-// Helpers sitemap : lastmod roulant + priority tiering
+// Helpers sitemap : priority tiering
 // ═══════════════════════════════════════════════════════════
+
+/** Default minimum items threshold when no experiment is active */
+const DEFAULT_MIN_ITEMS_THRESHOLD = 20;
 
 /** Top gammes par volume de recherche (freinage, distribution, embrayage, etc.) */
 const TOP_GAMME_IDS = new Set([
@@ -113,21 +118,12 @@ function computePiecePriority(
   return Math.min(p, 0.9).toFixed(1);
 }
 
-/**
- * Genere un lastmod roulant distribue sur les 30 derniers jours.
- * Chaque type_id obtient une date deterministe mais "fraiche" pour Google.
- */
-function computeRollingLastmod(typeId: string | number): string {
-  const id = typeof typeId === 'string' ? parseInt(typeId, 10) : typeId;
-  const now = new Date();
-  const daysAgo = (isNaN(id) ? 0 : id) % 30;
-  const d = new Date(now.getTime() - daysAgo * 86400000);
-  return d.toISOString().split('T')[0];
-}
-
 @Injectable()
 export class SitemapV10PiecesService extends SupabaseBaseService {
   protected override readonly logger = new Logger(SitemapV10PiecesService.name);
+
+  /** Cached threshold for the current generation run */
+  private minItemsThreshold: number | null = null;
 
   constructor(
     configService: ConfigService,
@@ -140,31 +136,73 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
   }
 
   /**
-   * 📦 Génère les sitemaps pièces avec source V9 (__sitemap_p_link)
-   * 🚀 P7.4 PERF: Streaming batch processing - écrit les fichiers par shard de 50k
-   *    pour réduire peak memory de ~270MB à <50MB
+   * Resolve the minimum items threshold from an active crawl budget experiment.
+   * Falls back to DEFAULT_MIN_ITEMS_THRESHOLD (20) if no experiment is running.
+   * Cached per service instance (reset on next generation run).
+   */
+  private async resolveMinItemsThreshold(): Promise<number> {
+    if (this.minItemsThreshold !== null) return this.minItemsThreshold;
+
+    try {
+      const { data } = await this.supabase
+        .from('crawl_budget_experiments')
+        .select('baseline')
+        .eq('status', 'running')
+        .eq('action', 'reduce')
+        .limit(1)
+        .maybeSingle();
+
+      const threshold =
+        data?.baseline &&
+        typeof data.baseline === 'object' &&
+        'min_items_threshold' in (data.baseline as Record<string, unknown>)
+          ? Number(
+              (data.baseline as Record<string, unknown>).min_items_threshold,
+            )
+          : DEFAULT_MIN_ITEMS_THRESHOLD;
+
+      this.minItemsThreshold =
+        isNaN(threshold) || threshold < 1
+          ? DEFAULT_MIN_ITEMS_THRESHOLD
+          : threshold;
+    } catch {
+      this.minItemsThreshold = DEFAULT_MIN_ITEMS_THRESHOLD;
+    }
+
+    this.logger.log(
+      `  Pieces min items threshold: ${this.minItemsThreshold} (default: ${DEFAULT_MIN_ITEMS_THRESHOLD})`,
+    );
+    return this.minItemsThreshold;
+  }
+
+  /**
+   * Genere les sitemaps pieces avec source V9 (__sitemap_p_link)
+   * Streaming batch processing - ecrit les fichiers par shard de 50k
    */
   async generatePiecesSitemapsFromV9Source(
     bucket: TemperatureBucket,
   ): Promise<{ filePaths: string[]; totalCount: number }> {
-    // Seul le bucket 'stable' génère les URLs pour éviter les doublons
+    // Seul le bucket 'stable' genere les URLs pour eviter les doublons
     if (bucket !== 'stable') {
-      this.logger.log(`⏭️ Skipping ${bucket} bucket (all URLs go to stable)`);
+      this.logger.log(`Skipping ${bucket} bucket (all URLs go to stable)`);
       return { filePaths: [], totalCount: 0 };
     }
+
+    // Reset cached threshold for this generation run
+    this.minItemsThreshold = null;
+    const minItems = await this.resolveMinItemsThreshold();
 
     this.logger.log(
-      `📦 Streaming batch generation from V9 source (50k URLs per shard)...`,
+      `Streaming batch generation from V9 source (threshold: ${minItems}, 50k URLs per shard)...`,
     );
 
-    // 1. Récupérer les gammes INDEX
+    // 1. Recuperer les gammes INDEX
     const indexPgIds = await this.dataService.getIndexGammeIds();
     if (indexPgIds.size === 0) {
-      this.logger.warn('⚠️ Aucune gamme INDEX trouvée');
+      this.logger.warn('Aucune gamme INDEX trouvee');
       return { filePaths: [], totalCount: 0 };
     }
 
-    // 🚀 P7.4: Streaming batch - écrire les fichiers sitemap par shard
     const PAGE_SIZE = 1000;
     const SHARD_SIZE = MAX_URLS_PER_FILE;
     const config = BUCKET_CONFIG[bucket];
@@ -178,7 +216,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
     const filePaths: string[] = [];
 
     this.logger.log(
-      `  🎯 Streaming pieces for ${pgIdsArray.length} gammes INDEX...`,
+      `  Streaming pieces for ${pgIdsArray.length} gammes INDEX...`,
     );
 
     while (hasMore) {
@@ -188,12 +226,12 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
           'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
         )
         .in('map_pg_id', pgIdsArray)
-        .gt('map_has_item', 5)
+        .gt('map_has_item', minItems)
         .range(offset, offset + PAGE_SIZE - 1);
 
       if (error) {
         this.logger.error(
-          `❌ Error fetching pieces at offset ${offset}: ${error.message}`,
+          `Error fetching pieces at offset ${offset}: ${error.message}`,
         );
         break;
       }
@@ -204,7 +242,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
         totalCount += pieces.length;
         hasMore = pieces.length === PAGE_SIZE;
 
-        // 🚀 P7.4: Quand on atteint SHARD_SIZE, écrire le fichier et libérer la mémoire
+        // Quand on atteint SHARD_SIZE, ecrire le fichier et liberer la memoire
         while (currentBatch.length >= SHARD_SIZE) {
           const shardPieces = currentBatch.slice(0, SHARD_SIZE);
           currentBatch = currentBatch.slice(SHARD_SIZE);
@@ -214,7 +252,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
             page_type: 'piece',
             changefreq: config.changefreq,
             priority: computePiecePriority(p.map_pg_id, p.map_marque_id),
-            last_modified_at: computeRollingLastmod(p.map_type_id),
+            last_modified_at: null,
           }));
 
           shardIndex++;
@@ -227,14 +265,14 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
           );
           filePaths.push(filePath);
           this.logger.log(
-            `   ✅ Written ${fileName} (${shardUrls.length.toLocaleString()} URLs) - Memory freed`,
+            `   Written ${fileName} (${shardUrls.length.toLocaleString()} URLs)`,
           );
         }
 
         // Log progress every 100k URLs
         if (totalCount % 100000 < PAGE_SIZE) {
           this.logger.log(
-            `  📊 Progress: ${totalCount.toLocaleString()} URLs processed, ${filePaths.length} files written...`,
+            `  Progress: ${totalCount.toLocaleString()} URLs processed, ${filePaths.length} files written...`,
           );
         }
       } else {
@@ -242,14 +280,14 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       }
     }
 
-    // 🚀 P7.4: Écrire le dernier shard partiel
+    // Ecrire le dernier shard partiel
     if (currentBatch.length > 0) {
       const shardUrls: SitemapUrl[] = currentBatch.map((p) => ({
         url: `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
         page_type: 'piece',
         changefreq: config.changefreq,
         priority: computePiecePriority(p.map_pg_id, p.map_marque_id),
-        last_modified_at: computeRollingLastmod(p.map_type_id),
+        last_modified_at: null,
       }));
 
       shardIndex++;
@@ -265,35 +303,35 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       );
       filePaths.push(filePath);
       this.logger.log(
-        `   ✅ Written ${fileName} (${shardUrls.length.toLocaleString()} URLs) - Final shard`,
+        `   Written ${fileName} (${shardUrls.length.toLocaleString()} URLs) - Final shard`,
       );
     }
 
     if (totalCount === 0) {
-      this.logger.warn('⚠️ No pieces found');
+      this.logger.warn('No pieces found');
       return { filePaths: [], totalCount: 0 };
     }
 
     this.logger.log(
-      `  ✅ ${totalCount.toLocaleString()} URLs pièces INDEX → ${filePaths.length} files (streaming batch)`,
+      `  ${totalCount.toLocaleString()} URLs pieces INDEX (threshold: ${minItems}) -> ${filePaths.length} files`,
     );
 
     return { filePaths, totalCount };
   }
 
   /**
-   * 🔥 Génère le sitemap XML pour une famille thématique
-   * @param familyKey Clé de la famille (ex: 'freinage', 'filtres')
+   * Genere le sitemap XML pour une famille thematique
+   * @param familyKey Cle de la famille (ex: 'freinage', 'filtres')
    */
   async generateByFamily(familyKey: string): Promise<GenerationResult> {
     const startTime = Date.now();
     const _runId = crypto.randomUUID();
 
-    this.logger.log(`📦 Generating sitemap for family: ${familyKey}...`);
+    this.logger.log(`Generating sitemap for family: ${familyKey}...`);
 
     const familyConfig = FAMILY_CLUSTERS[familyKey];
     if (!familyConfig) {
-      this.logger.error(`❌ Unknown family: ${familyKey}`);
+      this.logger.error(`Unknown family: ${familyKey}`);
       return {
         success: false,
         bucket: 'stable' as TemperatureBucket,
@@ -306,12 +344,14 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
     }
 
     try {
-      // 1. Récupérer toutes les gamme names de cette famille
+      const minItems = await this.resolveMinItemsThreshold();
+
+      // 1. Recuperer toutes les gamme names de cette famille
       const allGammeNames = familyConfig.subcategories.flatMap(
         (s) => s.gamme_names,
       );
 
-      // 2. Récupérer les pg_id correspondants depuis pieces_gamme (INDEX uniquement)
+      // 2. Recuperer les pg_id correspondants depuis pieces_gamme (INDEX uniquement)
       const { data: gammes, error: gammeError } = await this.supabase
         .from('pieces_gamme')
         .select('pg_id')
@@ -331,7 +371,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       const pgIds = (gammes || []).map((g) => String(g.pg_id));
 
       if (pgIds.length === 0) {
-        this.logger.warn(`⚠️ No gammes found for family ${familyKey}`);
+        this.logger.warn(`No gammes found for family ${familyKey}`);
         return {
           success: true,
           bucket: 'stable' as TemperatureBucket,
@@ -342,7 +382,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
         };
       }
 
-      // 3. Récupérer TOUTES les pièces depuis __sitemap_p_link (pagination)
+      // 3. Recuperer TOUTES les pieces depuis __sitemap_p_link (pagination)
       const allPieces: PieceV9[] = [];
       const PAGE_SIZE = 1000;
       let offset = 0;
@@ -355,7 +395,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
             'map_pg_alias, map_pg_id, map_marque_alias, map_marque_id, map_modele_alias, map_modele_id, map_type_alias, map_type_id',
           )
           .in('map_pg_id', pgIds)
-          .gt('map_has_item', 5)
+          .gt('map_has_item', minItems)
           .range(offset, offset + PAGE_SIZE - 1);
 
         if (piecesError) {
@@ -377,7 +417,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       }
 
       this.logger.log(
-        `   📊 Found ${allPieces.length.toLocaleString()} URLs for ${familyKey}`,
+        `   Found ${allPieces.length.toLocaleString()} URLs for ${familyKey}`,
       );
 
       // 4. Construire les SitemapUrl
@@ -385,11 +425,11 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
         url: `/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
         page_type: 'product',
         changefreq: 'weekly',
-        priority: '0.6',
+        priority: computePiecePriority(p.map_pg_id, p.map_marque_id),
         last_modified_at: null,
       }));
 
-      // 4.5 Dédupliquer inter-familles
+      // 4.5 Dedupliquer inter-familles
       const processedUrlsCache = this.dataService.getProcessedUrlsCache();
       let uniqueUrls = urls;
       if (processedUrlsCache) {
@@ -403,13 +443,11 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
         });
         const dedupedCount = beforeCount - uniqueUrls.length;
         if (dedupedCount > 0) {
-          this.logger.log(
-            `   🔄 Deduplicated ${dedupedCount} inter-family URLs`,
-          );
+          this.logger.log(`   Deduplicated ${dedupedCount} inter-family URLs`);
         }
       }
 
-      // 5. Écrire le(s) fichier(s) XML avec sharding si >50k URLs
+      // 5. Ecrire le(s) fichier(s) XML avec sharding si >50k URLs
       const filePaths: string[] = [];
       const numShards = Math.ceil(uniqueUrls.length / MAX_URLS_PER_FILE);
 
@@ -432,7 +470,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
         filePaths.push(filePath);
 
         this.logger.log(
-          `   ✓ Generated ${fileName} (${shardUrls.length.toLocaleString()} URLs)`,
+          `   Generated ${fileName} (${shardUrls.length.toLocaleString()} URLs)`,
         );
       }
 
@@ -450,7 +488,7 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(
-        `❌ Failed to generate family ${familyKey}: ${errorMessage}`,
+        `Failed to generate family ${familyKey}: ${errorMessage}`,
       );
 
       return {
