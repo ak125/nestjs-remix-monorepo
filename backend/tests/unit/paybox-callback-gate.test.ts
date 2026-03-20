@@ -9,6 +9,7 @@
  */
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
+import { Logger } from '@nestjs/common';
 import { PayboxCallbackGateService } from '../../src/modules/payments/services/paybox-callback-gate.service';
 import { PaymentDataService } from '../../src/modules/payments/repositories/payment-data.service';
 
@@ -295,5 +296,134 @@ describe('PayboxCallbackGateService', () => {
 
     expect(result.result.checks.signature.ok).toBe(false);
     expect(result.result.checks.signature.reason).toBe('NO_K_SEPARATOR');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TEST 9: Default mode is strict (secure by default)
+  // ═══════════════════════════════════════════════════════════════
+  it('should default to strict mode when PAYBOX_CALLBACK_MODE is not set', async () => {
+    const noModeConfig = {
+      get: jest.fn((key: string, defaultValue?: any) => {
+        const config: Record<string, string> = {
+          PAYBOX_SITE: '5259250',
+          PAYBOX_RANG: '001',
+          PAYBOX_IDENTIFIANT: '822188223',
+          // PAYBOX_CALLBACK_MODE intentionally missing
+        };
+        return config[key] || defaultValue;
+      }),
+    };
+
+    const module = await Test.createTestingModule({
+      providers: [
+        PayboxCallbackGateService,
+        { provide: ConfigService, useValue: noModeConfig },
+        { provide: PaymentDataService, useValue: mockPaymentDataService },
+      ],
+    }).compile();
+
+    const defaultService = module.get<PayboxCallbackGateService>(PayboxCallbackGateService);
+
+    const query = { Mt: '5000', Ref: 'ORD-123', Erreur: '00000', K: 'fakesig' };
+    const rawQuery = 'Mt=5000&Ref=ORD-123&Erreur=00000&K=fakesig';
+
+    mockOrderExists({
+      ord_id: '123',
+      ord_total_ttc: '100.50',
+      ord_is_pay: '0',
+    });
+
+    const result = await defaultService.validateCallback(rawQuery, query, {
+      amount: '5000',
+      orderReference: 'ORD-123',
+      errorCode: '00000',
+      signature: 'fakesig',
+    });
+
+    // Amount mismatch (5000 vs 10050) — strict default must reject
+    expect(result.reject).toBe(true);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TEST 10: Shadow mode does NOT reject (opt-in only)
+  // ═══════════════════════════════════════════════════════════════
+  it('should not reject in shadow mode even with invalid checks', async () => {
+    const shadowConfig = {
+      get: jest.fn((key: string, defaultValue?: any) => {
+        const config: Record<string, string> = {
+          PAYBOX_CALLBACK_MODE: 'shadow',
+          PAYBOX_SITE: '5259250',
+          PAYBOX_RANG: '001',
+          PAYBOX_IDENTIFIANT: '822188223',
+        };
+        return config[key] || defaultValue;
+      }),
+    };
+
+    const module = await Test.createTestingModule({
+      providers: [
+        PayboxCallbackGateService,
+        { provide: ConfigService, useValue: shadowConfig },
+        { provide: PaymentDataService, useValue: mockPaymentDataService },
+      ],
+    }).compile();
+
+    const shadowService = module.get<PayboxCallbackGateService>(PayboxCallbackGateService);
+
+    const query = { Mt: '5000', Ref: 'ORD-123', Erreur: '00000', K: 'fakesig' };
+    const rawQuery = 'Mt=5000&Ref=ORD-123&Erreur=00000&K=fakesig';
+
+    mockOrderExists({
+      ord_id: '123',
+      ord_total_ttc: '100.50',
+      ord_is_pay: '0',
+    });
+
+    const result = await shadowService.validateCallback(rawQuery, query, {
+      amount: '5000',
+      orderReference: 'ORD-123',
+      errorCode: '00000',
+      signature: 'fakesig',
+    });
+
+    // Shadow mode: invalid checks logged but NOT rejected
+    expect(result.result.checks.amountMatch.ok).toBe(false);
+    expect(result.reject).toBe(false);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TEST 11: Startup guard logs error when shadow in production
+  // ═══════════════════════════════════════════════════════════════
+  it('should log security error when shadow mode in production', async () => {
+    const prodShadowConfig = {
+      get: jest.fn((key: string, defaultValue?: any) => {
+        const config: Record<string, string> = {
+          PAYBOX_CALLBACK_MODE: 'shadow',
+          NODE_ENV: 'production',
+          PAYBOX_SITE: '5259250',
+          PAYBOX_RANG: '001',
+          PAYBOX_IDENTIFIANT: '822188223',
+        };
+        return config[key] || defaultValue;
+      }),
+    };
+
+    const errorSpy = jest.spyOn(Logger.prototype, 'error');
+
+    const module = await Test.createTestingModule({
+      providers: [
+        PayboxCallbackGateService,
+        { provide: ConfigService, useValue: prodShadowConfig },
+        { provide: PaymentDataService, useValue: mockPaymentDataService },
+      ],
+    }).compile();
+
+    module.get<PayboxCallbackGateService>(PayboxCallbackGateService);
+
+    expect(errorSpy).toHaveBeenCalledWith(
+      expect.stringContaining('SECURITY WARNING'),
+    );
+
+    errorSpy.mockRestore();
   });
 });

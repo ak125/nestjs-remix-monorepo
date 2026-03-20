@@ -64,7 +64,7 @@ jobs:
             exit 1
           fi
           source .env
-          REQUIRED_VARS="SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY SYSTEMPAY_SITE_ID PAYBOX_SITE PAYBOX_HMAC_KEY SESSION_SECRET"
+          REQUIRED_VARS="SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY SYSTEMPAY_SITE_ID PAYBOX_SITE PAYBOX_HMAC_KEY PAYBOX_CALLBACK_MODE SESSION_SECRET"
           for var in $REQUIRED_VARS; do
             if [ -z "${!var}" ]; then
               echo "❌ FATAL: Missing required env var: $var"

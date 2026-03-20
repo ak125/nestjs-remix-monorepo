@@ -77,9 +77,10 @@ export class PayboxCallbackGateService {
     private readonly configService: ConfigService,
     private readonly paymentDataService: PaymentDataService,
   ) {
+    // Secure by default: strict unless explicitly set to shadow
     this.mode = this.configService.get<CallbackMode>(
       'PAYBOX_CALLBACK_MODE',
-      'shadow',
+      'strict',
     );
 
     // Charger identifiants marchands pour vérification callback
@@ -93,6 +94,16 @@ export class PayboxCallbackGateService {
     this.logger.log(
       `PayboxCallbackGate initialized in ${this.mode.toUpperCase()} mode`,
     );
+
+    // Startup guard: warn loudly if shadow mode in production
+    const nodeEnv = this.configService.get<string>('NODE_ENV', '');
+    if (this.mode === 'shadow' && nodeEnv === 'production') {
+      this.logger.error(
+        'SECURITY WARNING: PayboxCallbackGate running in SHADOW mode in PRODUCTION — ' +
+          'invalid callbacks will be logged but NOT rejected. ' +
+          'Set PAYBOX_CALLBACK_MODE=strict to enforce validation.',
+      );
+    }
   }
 
   /**
