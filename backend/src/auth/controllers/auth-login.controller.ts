@@ -310,7 +310,7 @@ export class AuthLoginController {
     }
 
     const user = loginResult.user;
-    const userLevel = parseInt(String(user?.level)) || 0;
+    const userLevel = parseInt(String(user?.level), 10) || 0;
 
     if (user?.isAdmin && userLevel >= 7) {
       return response.redirect('/admin');
@@ -409,7 +409,7 @@ export class AuthLoginController {
         ? body.redirectTo
         : null;
 
-    const userLevel = parseInt(String(authUser.level)) || 0;
+    const userLevel = parseInt(String(authUser.level), 10) || 0;
     let redirectUrl = safeRedirectTo || '/';
     if (!safeRedirectTo) {
       if (authUser.isAdmin && userLevel >= 7) {
@@ -555,7 +555,7 @@ export class AuthLoginController {
 
       // 6. Redirect based on role (if no explicit redirectTo)
       if (redirectTo === '/') {
-        const userLevel = parseInt(String(authUser.level)) || 0;
+        const userLevel = parseInt(String(authUser.level), 10) || 0;
         if (authUser.isAdmin && userLevel >= 7) {
           redirectTo = '/admin';
         } else if (authUser.isPro) {
@@ -781,7 +781,7 @@ export class AuthLoginController {
     }
 
     const user = request.user;
-    const userLevel = parseInt(String(user?.level)) || 0;
+    const userLevel = parseInt(String(user?.level), 10) || 0;
 
     // Passport 0.7 + connect-redis 5.x: regenerate explicite, login patché, save explicite
     try {

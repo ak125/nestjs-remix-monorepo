@@ -1024,6 +1024,23 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
 
+      - name: 🔍 Validate production env vars
+        run: |
+          PROD_DIR=~/production
+          if [ ! -f "$PROD_DIR/.env" ]; then
+            echo "❌ FATAL: .env file missing at $PROD_DIR/.env"
+            exit 1
+          fi
+          source "$PROD_DIR/.env"
+          REQUIRED_VARS="SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY SYSTEMPAY_SITE_ID PAYBOX_SITE PAYBOX_HMAC_KEY PAYBOX_CALLBACK_MODE SESSION_SECRET"
+          for var in $REQUIRED_VARS; do
+            if [ -z "${!var}" ]; then
+              echo "❌ FATAL: Missing required env var: $var"
+              exit 1
+            fi
+          done
+          echo "✅ All required environment variables present"
+
       - name: 🏷️ Promote preprod → production
         run: |
           docker tag massdoc/nestjs-remix-monorepo:preprod massdoc/nestjs-remix-monorepo:production
