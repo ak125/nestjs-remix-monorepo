@@ -403,6 +403,41 @@ export class PayboxCallbackGateService {
       this.logger.log(`GATE PASS: ${JSON.stringify(logEntry)}`);
     } else {
       this.logger.warn(`GATE FAIL: ${JSON.stringify(logEntry)}`);
+
+      // Persist GATE FAIL to DB for monitoring (non-blocking)
+      this.persistGateFail(result).catch((err) => {
+        this.logger.error(
+          `Failed to persist gate log: ${err instanceof Error ? err.message : String(err)}`,
+        );
+      });
     }
+  }
+
+  /**
+   * Persist GATE FAIL decisions to __paybox_gate_log for monitoring.
+   * Non-blocking: errors are logged but never block the callback response.
+   */
+  private async persistGateFail(
+    result: CallbackValidationResult,
+  ): Promise<void> {
+    await this.paymentDataService['supabase'].from('__paybox_gate_log').insert({
+      correlation_id: result.correlationId,
+      order_id: result.orderId,
+      amount_cents: result.amountCents,
+      mode: result.mode,
+      all_checks_ok: result.allCriticalChecksOk,
+      rejected: this.mode === 'strict',
+      checks: {
+        signature: result.checks.signature.ok,
+        signaturePresent: result.checks.signature.present,
+        signatureReason: result.checks.signature.reason,
+        orderExists: result.checks.orderExists.ok,
+        amountMatch: result.checks.amountMatch.ok,
+        errorCode: result.checks.errorCode.ok,
+        errorCodeValue: result.checks.errorCode.value,
+        merchantId: result.checks.merchantId.ok,
+        idempotent: result.checks.idempotence.alreadyPaid,
+      },
+    });
   }
 }

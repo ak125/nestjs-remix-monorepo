@@ -220,16 +220,6 @@ export class PaymentDataService extends SupabaseBaseService {
       // 2. Si orderId fourni, mettre à jour ___xtr_order selon le statut
       if (safeOrderId) {
         const isCompleted = paymentData.status === 'completed';
-        const orderUpdate: Record<string, any> = isCompleted
-          ? {
-              ord_is_pay: '1',
-              ord_date_pay: new Date().toISOString(),
-              ord_ords_id: '5', // Statut "Payée — En préparation"
-            }
-          : {
-              ord_is_pay: '0',
-              ord_date_pay: null,
-            };
 
         // Résolution robuste : cherche le vrai ord_id en BDD
         const resolvedId = await this.resolveOrderId(safeOrderId);
@@ -243,25 +233,46 @@ export class PaymentDataService extends SupabaseBaseService {
               message: msg,
             });
           }
+        } else if (isCompleted) {
+          // Atomic idempotent update: only marks paid if ord_is_pay = '0'
+          // Eliminates race condition on concurrent callbacks
+          const { data: wasPaid, error: rpcError } = await this.supabase.rpc(
+            'mark_order_paid_atomic',
+            {
+              p_ord_id: resolvedId,
+              p_date_pay: new Date().toISOString(),
+            },
+          );
+
+          if (rpcError) {
+            const msg = `CRITICAL: Failed to update order ${resolvedId}`;
+            this.logger.error(`${msg}: ${rpcError.message}`);
+            throw new DatabaseException({
+              code: ErrorCodes.PAYMENT.UPDATE_FAILED,
+              message: msg,
+              details: rpcError.message,
+            });
+          }
+
+          if (wasPaid) {
+            this.logger.log(
+              `✅ Order ${resolvedId} marked as PAID (atomic, ord_is_pay=1)`,
+            );
+          } else {
+            this.logger.log(
+              `ℹ️ Order ${resolvedId} already paid (idempotent callback)`,
+            );
+          }
         } else {
+          // Non-completed payment (failed/cancelled) — update without atomic constraint
           const { error: orderError } = await this.supabase
             .from(TABLES.xtr_order)
-            .update(orderUpdate)
+            .update({ ord_is_pay: '0', ord_date_pay: null })
             .eq('ord_id', resolvedId);
 
           if (orderError) {
-            const msg = `CRITICAL: Failed to update order ${resolvedId}`;
-            this.logger.error(`${msg}: ${orderError.message}`);
-            if (isCompleted) {
-              throw new DatabaseException({
-                code: ErrorCodes.PAYMENT.UPDATE_FAILED,
-                message: msg,
-                details: orderError.message,
-              });
-            }
-          } else if (isCompleted) {
-            this.logger.log(
-              `✅ Order ${resolvedId} marked as PAID (ord_is_pay=1, ord_ords_id=3)`,
+            this.logger.error(
+              `Failed to update order ${resolvedId} for non-completed payment: ${orderError.message}`,
             );
           }
         }
