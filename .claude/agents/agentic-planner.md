@@ -33,7 +33,7 @@ WHERE id = '{run_id}';
 
 ## Etape 1 — Charger le contexte RAG
 
-Si `goal_type = 'seo_content_refresh'`, extraire l'alias gamme du goal et lire le knowledge :
+Extraire l'alias gamme ou marque du goal et lire le knowledge correspondant :
 
 ```
 Read /opt/automecanik/rag/knowledge/gammes/{alias}.md
@@ -43,19 +43,46 @@ Si le fichier n'existe pas, continuer sans contexte RAG.
 
 ---
 
+## Etape 1b — Identifier les agents disponibles (GOAL_REGISTRY)
+
+Selon le `goal_type` du run, les agents disponibles sont :
+
+| goal_type | Agents | Max branches |
+|-----------|--------|--------------|
+| `keyword_plan` | r1/r3/r4/r5/r6/r7/r8-keyword-planner | 3 |
+| `content_generation` | r1/r4/r6-content-batch, conseil-batch | 3 |
+| `rag_quality_check` | phase1-auditor | 2 |
+| `seo_audit` | research-agent, brief-enricher, blog-hub-planner | 3 |
+| `brand_content` | r7-brand-rag-generator, r7-keyword-planner | 2 |
+| `vehicle_content` | r8-keyword-planner, r8-vehicle-execution | 2 |
+
+**Utilise cette table pour choisir quelles strategies creer.** Chaque branche doit correspondre a un agent existant.
+
+---
+
 ## Etape 2 — Decomposer en strategies
 
 Genere 2-3 strategies paralleles pour atteindre l'objectif. Chaque strategie a :
-- `label` : identifiant snake_case unique
+- `label` : identifiant snake_case unique (doit correspondre a un agent du GOAL_REGISTRY)
 - `description` : 1-2 phrases
 - `steps` : liste d'etapes concretes
 - `expected_outcome` : resultat attendu
+- `agent` : nom de l'agent Claude Code a invoquer (ex: `r3-keyword-planner`)
 
 **Regles** :
-- Max 3 strategies (economie de tokens)
+- Max branches selon le GOAL_REGISTRY (voir table ci-dessus)
 - Chaque strategie doit etre **independante** (pas de dependance entre branches)
 - Si le run a `critic_loops > 0`, lire le `plan.critic_feedback` et **adapter** les strategies
-- Pour `seo_content_refresh` : une strategie analyse (RAG), une optimise (mots-cles), une creative (angle editorial)
+- Chaque branche doit specifier l'agent a invoquer dans `steps[0]`
+
+### Strategies par goal_type :
+
+**keyword_plan** : une branche par role R* pertinent (ex: r3-keyword-planner, r6-keyword-planner)
+**content_generation** : une branche par type de contenu (ex: conseil-batch, r4-content-batch)
+**rag_quality_check** : une branche audit complet, une branche verification structure
+**seo_audit** : research-agent, brief-enricher, blog-hub-planner en parallele
+**brand_content** : r7-brand-rag-generator puis r7-keyword-planner
+**vehicle_content** : r8-keyword-planner puis r8-vehicle-execution
 
 ---
 

@@ -13,6 +13,7 @@ import {
   GATE_VERDICTS,
   GATE_TYPES,
   APPLY_DECISIONS,
+  GOAL_TYPES,
 } from '../constants/agentic.constants';
 
 // ── Run ──
@@ -43,7 +44,7 @@ export type AgenticRun = z.infer<typeof AgenticRunSchema>;
 
 export const CreateRunInputSchema = z.object({
   goal: z.string().min(1).max(2000),
-  goal_type: z.string().min(1).max(100),
+  goal_type: z.enum(GOAL_TYPES),
   triggered_by: z.string().min(1).max(200),
   correlation_id: z.string().max(200).optional(),
   feature_flags: z.record(z.unknown()).optional(),

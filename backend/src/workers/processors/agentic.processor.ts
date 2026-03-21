@@ -318,5 +318,96 @@ export class AgenticProcessor {
     this.logger.log(
       `[APPLY] Run ${runId.slice(0, 8)} — COMPLETED (dry-run), ${totalTokens} tokens total`,
     );
+
+    // ── Chain: trigger next run if chain rules exist ──
+    if (run?.id && run.goal_type && run.goal) {
+      await this.evaluateChainRules(
+        { id: run.id, goal_type: run.goal_type, goal: run.goal },
+        branches,
+        job.queue as Queue,
+      );
+    }
+  }
+
+  // ── CHAIN EVALUATION ──────────────────────────────────
+
+  private async evaluateChainRules(
+    completedRun: { id: string; goal_type: string; goal: string },
+    branches: Array<{ critic_score?: number | null; status?: string }>,
+    queue: Queue,
+  ): Promise<void> {
+    const chainRules = await this.dataService.getChainRules(
+      completedRun.goal_type,
+    );
+
+    if (chainRules.length === 0) return;
+
+    // Best score from completed branches
+    const bestScore = Math.max(
+      0,
+      ...branches
+        .filter((b) => b.status === 'completed' && b.critic_score != null)
+        .map((b) => b.critic_score ?? 0),
+    );
+
+    for (const rule of chainRules) {
+      const minScore =
+        (rule.condition as { min_score?: number })?.min_score ?? 60;
+
+      if (bestScore < minScore) {
+        this.logger.log(
+          `[CHAIN] Skipping ${completedRun.goal_type} → ${rule.to_goal_type}: ` +
+            `score ${bestScore} < min ${minScore}`,
+        );
+        continue;
+      }
+
+      this.logger.log(
+        `[CHAIN] Triggering ${completedRun.goal_type} → ${rule.to_goal_type} ` +
+          `(score ${bestScore} >= ${minScore})`,
+      );
+
+      // Create chained run via RunManager
+      const chainResult = await this.runManager.createRun({
+        goal: `Chained from ${completedRun.goal_type}: ${completedRun.goal}`,
+        goal_type:
+          rule.to_goal_type as import('../../modules/agentic-engine/constants/agentic.constants').GoalType,
+        triggered_by: `chain:${completedRun.id.slice(0, 8)}`,
+        correlation_id: completedRun.id,
+      });
+
+      if (chainResult.success && chainResult.run) {
+        await this.runManager.transitionPhase(chainResult.run.id, 'planning');
+        await queue.add(
+          'agentic-plan',
+          { runId: chainResult.run.id } as AgenticPlanJobData,
+          {
+            attempts: AGENTIC_DEFAULTS.RETRIES.plan.attempts + 1,
+            backoff: {
+              type: 'exponential',
+              delay: AGENTIC_DEFAULTS.RETRIES.plan.delay,
+            },
+            removeOnComplete: 20,
+            removeOnFail: 20,
+          },
+        );
+
+        await this.evidenceLedger.record({
+          runId: completedRun.id,
+          evidenceType: 'computation',
+          content: {
+            action: 'chain_triggered',
+            from_run_id: completedRun.id,
+            to_run_id: chainResult.run.id,
+            to_goal_type: rule.to_goal_type,
+            best_score: bestScore,
+            min_score: minScore,
+            chain_rule_id: rule.id,
+          },
+          source: 'agentic-processor:chain',
+          truthLevel: 'L1',
+        });
+      }
+    }
   }
 }

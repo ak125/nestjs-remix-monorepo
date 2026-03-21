@@ -92,12 +92,23 @@ VALUES ('{run_id}', '{branch_id}', 1, 'llm_solve', 'running', NOW())
 RETURNING id;
 ```
 
-Selon le `goal_type` et la strategie, produire le resultat :
+Selon le `goal_type` et la strategie, produire le resultat.
 
-### Pour `seo_content_refresh` :
-- **comprehensive_analysis** : Analyser le contenu RAG, identifier forces/faiblesses SEO, proposer un plan d'amelioration structure
-- **focused_optimization** : Proposer des optimisations concretes (H1, meta, FAQ, mots-cles manquants) basees sur le RAG
-- **creative_alternative** : Proposer un angle editorial differentiant, structure de page alternative
+### Routing par goal_type
+
+Le `plan.strategies` contient le champ `agent` qui indique quel agent invoquer.
+Utilise les instructions du `strategy_label` et du `plan` pour produire le resultat adapte.
+
+| goal_type | Exemples de strategies |
+|-----------|----------------------|
+| `keyword_plan` | Executer le keyword planner R* specifie dans la strategie |
+| `content_generation` | Generer le contenu R* specifie (batch, conseil, reference) |
+| `rag_quality_check` | Auditer la qualite du corpus RAG (structure, couverture, coherence) |
+| `seo_audit` | Analyser gaps, intent coverage, cannibalisation |
+| `brand_content` | Generer artefacts RAG constructeur ou keyword plan marque |
+| `vehicle_content` | Generer keyword plan vehicule ou contenu hub vehicule |
+
+**IMPORTANT** : Le solver ne fait PAS d'appels a d'autres agents. Il execute LUI-MEME la strategie en lisant le RAG, analysant les donnees, et produisant un resultat structure.
 
 Le resultat doit etre un JSON :
 ```json

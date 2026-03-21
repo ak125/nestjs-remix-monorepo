@@ -354,6 +354,31 @@ export class AgenticDataService extends SupabaseBaseService {
 
   // ── Stats (admin dashboard) ──
 
+  // ── Chain Rules ──
+
+  async getChainRules(fromGoalType: string): Promise<
+    Array<{
+      id: string;
+      to_goal_type: string;
+      condition: { min_score?: number };
+      priority: number;
+      description: string | null;
+    }>
+  > {
+    const { data, error } = await this.supabase
+      .from('__agentic_chain_rules')
+      .select('id, to_goal_type, condition, priority, description')
+      .eq('from_goal_type', fromGoalType)
+      .eq('enabled', true)
+      .order('priority', { ascending: true });
+
+    if (error) {
+      this.logger.error('Failed to get chain rules', error.message);
+      return [];
+    }
+    return data || [];
+  }
+
   async getStats(): Promise<{
     total_runs: number;
     runs_by_phase: Array<{ phase: string; count: number }>;

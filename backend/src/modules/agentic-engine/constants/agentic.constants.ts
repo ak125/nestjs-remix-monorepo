@@ -121,6 +121,112 @@ export const AGENTIC_DEFAULTS = {
   },
 } as const;
 
+// ── Goal Types ──
+
+export const GOAL_TYPES = [
+  'keyword_plan',
+  'content_generation',
+  'rag_quality_check',
+  'seo_audit',
+  'brand_content',
+  'vehicle_content',
+] as const;
+export type GoalType = (typeof GOAL_TYPES)[number];
+
+// ── Goal Registry ──
+
+export interface GoalRegistryEntry {
+  /** Claude Code agents to invoke as branches */
+  agents: string[];
+  /** Target DB tables for output */
+  targetTables: string[];
+  /** RAG knowledge required? */
+  ragRequired: boolean;
+  /** Max parallel branches (override default) */
+  maxBranches: number;
+  /** Can trigger a chained run on completion? */
+  chainable: boolean;
+  /** Human-readable description */
+  description: string;
+}
+
+export const GOAL_REGISTRY: Record<GoalType, GoalRegistryEntry> = {
+  keyword_plan: {
+    agents: [
+      'r1-keyword-planner',
+      'r3-keyword-planner',
+      'r4-keyword-planner',
+      'r5-keyword-planner',
+      'r6-keyword-planner',
+      'r7-keyword-planner',
+      'r8-keyword-planner',
+    ],
+    targetTables: [
+      '__seo_r1_keyword_plan',
+      '__seo_r3_keyword_plan',
+      '__seo_r4_keyword_plan',
+      '__seo_r5_keyword_plan',
+      '__seo_r6_keyword_plan',
+      '__seo_r7_keyword_plan',
+      '__seo_r8_keyword_plan',
+    ],
+    ragRequired: true,
+    maxBranches: 3,
+    chainable: true,
+    description: 'Planification mots-cles SEO par role R*',
+  },
+  content_generation: {
+    agents: [
+      'r1-content-batch',
+      'r4-content-batch',
+      'r6-content-batch',
+      'conseil-batch',
+    ],
+    targetTables: [
+      '__seo_r1_gamme_slots',
+      '__seo_reference',
+      '__seo_gamme_purchase_guide',
+      '__blog_conseils',
+    ],
+    ragRequired: true,
+    maxBranches: 3,
+    chainable: true,
+    description: 'Generation contenu SEO par role R*',
+  },
+  rag_quality_check: {
+    agents: ['phase1-auditor'],
+    targetTables: [],
+    ragRequired: true,
+    maxBranches: 2,
+    chainable: false,
+    description: 'Audit qualite corpus RAG',
+  },
+  seo_audit: {
+    agents: ['research-agent', 'brief-enricher', 'blog-hub-planner'],
+    targetTables: ['__seo_research_brief'],
+    ragRequired: true,
+    maxBranches: 3,
+    chainable: true,
+    description: 'Audit SEO complet — gaps, intent, cannibalisation',
+  },
+  brand_content: {
+    agents: ['r7-brand-rag-generator', 'r7-keyword-planner'],
+    targetTables: ['__seo_r7_keyword_plan'],
+    ragRequired: true,
+    maxBranches: 2,
+    chainable: true,
+    description: 'Contenu hub marque constructeur',
+  },
+  vehicle_content: {
+    agents: ['r8-keyword-planner', 'r8-vehicle-execution'],
+    targetTables: ['__seo_r8_vehicle_plan'],
+    ragRequired: true,
+    maxBranches: 2,
+    chainable: true,
+    description: 'Contenu hub vehicule',
+  },
+} as const;
+
 // ── BullMQ Queue Name ──
 
 export const AGENTIC_QUEUE_NAME = 'agentic-engine' as const;
