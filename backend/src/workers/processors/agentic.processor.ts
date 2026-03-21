@@ -309,9 +309,8 @@ export class AgenticProcessor {
     }
 
     // Prepare apply payload (what would be written, where)
-    const { GOAL_REGISTRY } = await import(
-      '../../modules/agentic-engine/constants/agentic.constants'
-    );
+    const { GOAL_REGISTRY } =
+      await import('../../modules/agentic-engine/constants/agentic.constants');
     const goalEntry =
       GOAL_REGISTRY[run.goal_type as keyof typeof GOAL_REGISTRY];
     const targetTables = goalEntry?.targetTables ?? [];
@@ -403,8 +402,7 @@ export class AgenticProcessor {
       // Create chained run via RunManager
       const chainResult = await this.runManager.createRun({
         goal: `Chained from ${completedRun.goal_type}: ${completedRun.goal}`,
-        goal_type:
-          rule.to_goal_type as GoalType,
+        goal_type: rule.to_goal_type as GoalType,
         triggered_by: `chain:${completedRun.id.slice(0, 8)}`,
         correlation_id: completedRun.id,
       });

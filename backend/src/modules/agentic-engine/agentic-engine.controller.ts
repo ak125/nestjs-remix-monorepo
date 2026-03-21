@@ -20,7 +20,10 @@ import { Queue } from 'bull';
 import { RunManagerService } from './services/run-manager.service';
 import { AgenticDataService } from './services/agentic-data.service';
 import { EvidenceLedgerService } from './services/evidence-ledger.service';
-import { AGENTIC_QUEUE_NAME, type GoalType } from './constants/agentic.constants';
+import {
+  AGENTIC_QUEUE_NAME,
+  type GoalType,
+} from './constants/agentic.constants';
 
 @Controller('api/admin/agentic')
 export class AgenticEngineController {
@@ -186,7 +189,9 @@ export class AgenticEngineController {
 
     if (run.phase !== 'applying') {
       throw new HttpException(
-        { error: `Cannot approve run in phase: ${run.phase}. Must be 'applying'.` },
+        {
+          error: `Cannot approve run in phase: ${run.phase}. Must be 'applying'.`,
+        },
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -237,8 +242,7 @@ export class AgenticEngineController {
 
           const chainResult = await this.runManager.createRun({
             goal: `Chained from ${run.goal_type}: ${run.goal}`,
-            goal_type:
-              rule.to_goal_type as GoalType,
+            goal_type: rule.to_goal_type as GoalType,
             triggered_by: `chain:${id.slice(0, 8)}`,
             correlation_id: id,
           });
@@ -275,10 +279,7 @@ export class AgenticEngineController {
    * Marks the human_approval gate as FAIL, transitions run to failed.
    */
   @Post('runs/:id/reject')
-  async rejectRun(
-    @Param('id') id: string,
-    @Body() body: { reason?: string },
-  ) {
+  async rejectRun(@Param('id') id: string, @Body() body: { reason?: string }) {
     const run = await this.runManager.getRun(id);
     if (!run) {
       throw new HttpException({ error: 'Run not found' }, HttpStatus.NOT_FOUND);
@@ -286,7 +287,9 @@ export class AgenticEngineController {
 
     if (run.phase !== 'applying') {
       throw new HttpException(
-        { error: `Cannot reject run in phase: ${run.phase}. Must be 'applying'.` },
+        {
+          error: `Cannot reject run in phase: ${run.phase}. Must be 'applying'.`,
+        },
         HttpStatus.BAD_REQUEST,
       );
     }
