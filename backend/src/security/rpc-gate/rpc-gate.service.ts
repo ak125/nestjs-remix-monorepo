@@ -13,6 +13,7 @@ import {
   OnModuleDestroy,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
@@ -173,11 +174,15 @@ export class RpcGateService implements OnModuleInit, OnModuleDestroy {
       return { decision: 'ALLOW', reason: 'GATE_DISABLED' };
     }
 
-    // Admin token override
+    // Admin token override (timing-safe comparison to prevent timing attacks)
     if (
       context.adminToken &&
       this.adminToken &&
-      context.adminToken === this.adminToken
+      context.adminToken.length === this.adminToken.length &&
+      crypto.timingSafeEqual(
+        Buffer.from(context.adminToken),
+        Buffer.from(this.adminToken),
+      )
     ) {
       return { decision: 'ALLOW', reason: 'ADMIN_OVERRIDE' };
     }
