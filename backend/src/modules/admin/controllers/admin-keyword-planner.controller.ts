@@ -80,7 +80,9 @@ export class AdminKeywordPlannerController {
       try {
         const { data } = await this.supabase.from(table).select(col);
         kpSets[role] = new Set(
-          (data ?? []).map((r) => Number((r as Record<string, unknown>)[col])),
+          (data ?? []).map((r) =>
+            Number((r as unknown as Record<string, unknown>)[col]),
+          ),
         );
       } catch {
         kpSets[role] = new Set();
