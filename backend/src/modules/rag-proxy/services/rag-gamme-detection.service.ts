@@ -188,6 +188,61 @@ export class RagGammeDetectionService {
    * Score how well a gamme alias matches a title slug.
    * Returns 0 (no match) to 100 (exact match).
    */
+  /**
+   * Detect content that should NEVER be assigned to a gamme.
+   * Consumables, cleaning products, vehicle manuals, brand landing pages.
+   */
+  private static isNonGammeContent(head: string): boolean {
+    const headLower = head.toLowerCase();
+    // Non-gamme content patterns (titles/categories that are NOT replacement parts)
+    const nonGammePatterns = [
+      /nettoyant/i,
+      /liquide\s+de\s+frein/i,
+      /liquide\s+de\s+refroidissement/i,
+      /huile\s+moteur/i,
+      /graisse/i,
+      /lubrifiant/i,
+      /additif/i,
+      /manuel\s+d['']?utilisation/i,
+      /notice/i,
+      /mode\s+d['']?emploi/i,
+      /catalogue\s+general/i,
+      /gamme\s+complete/i,
+      /toute\s+(la\s+)?gamme/i,
+      /nos\s+solutions/i,
+      /our\s+solutions/i,
+      /nos\s+produits/i,
+      /our\s+products/i,
+      /about\s+us/i,
+      /qui\s+sommes/i,
+      /a\s+propos/i,
+      /cookie/i,
+      /privacy\s+policy/i,
+      /mentions?\s+legales/i,
+    ];
+    for (const pattern of nonGammePatterns) {
+      if (pattern.test(headLower)) return true;
+    }
+    // Category explicitly set to non-gamme values
+    const catMatch = head.match(/^category:\s*(.+)$/m);
+    if (catMatch) {
+      const cat = catMatch[1].trim().toLowerCase();
+      if (
+        [
+          'brand',
+          'marque',
+          'consumable',
+          'manual',
+          'legal',
+          'corporate',
+        ].includes(cat)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** Common automotive prefixes that are ambiguous alone (shared by many gammes) */
   private static readonly AMBIGUOUS_PREFIXES = new Set([
     'capteur',
@@ -567,7 +622,15 @@ export class RagGammeDetectionService {
       }
 
       try {
-        const head = readFileSync(fullPath, 'utf-8').slice(0, 500);
+        const head = readFileSync(fullPath, 'utf-8').slice(0, 800);
+
+        // Guard: reject non-gamme content (consumables, manuals, brand pages)
+        if (RagGammeDetectionService.isNonGammeContent(head)) {
+          this.logger.debug(
+            `[resolveGammesFromFiles] Rejected non-gamme content: ${path.basename(fullPath)}`,
+          );
+          continue;
+        }
 
         // Collect all candidates with scores (strategies 2a, 2b, 3, 5)
         const candidates = this.collectCandidates(
@@ -576,8 +639,27 @@ export class RagGammeDetectionService {
           knowledgePath,
         );
 
-        if (candidates.length > 0 && candidates[0].score >= 20) {
+        // Higher threshold for web-ingested content (less trusted than gammes/ files)
+        const isWebContent =
+          fullPath.includes('/web/') || fullPath.includes('/web-catalog/');
+        const minScore = isWebContent ? 50 : 20;
+
+        if (candidates.length > 0 && candidates[0].score >= minScore) {
           const best = candidates[0];
+
+          // Guard: if runner-up is close (within 15 points), the match is ambiguous → skip
+          if (
+            isWebContent &&
+            candidates.length > 1 &&
+            candidates[1].score >= minScore &&
+            best.score - candidates[1].score < 15
+          ) {
+            this.logger.debug(
+              `[resolveGammesFromFiles] Ambiguous: "${best.alias}" (${best.score}) vs "${candidates[1].alias}" (${candidates[1].score}) — skipping ${path.basename(fullPath)}`,
+            );
+            continue;
+          }
+
           this.logger.debug(
             `[resolveGammesFromFiles] Best: "${best.alias}" (score=${best.score}, strategy=${best.strategy}) for ${path.basename(fullPath)}` +
               (candidates.length > 1
@@ -588,37 +670,39 @@ export class RagGammeDetectionService {
           continue;
         }
 
-        // Strategy 6: Weaviate search fallback (async, only when no good candidate)
-        // Skip for catalog pages — their technical content mentions many products
-        const categoryForS6 = head
-          .match(/^category:\s*(.+)$/m)?.[1]
-          ?.trim()
-          .toLowerCase();
-        const snippet = head
-          .replace(/^---[\s\S]*?---/, '')
-          .trim()
-          .slice(0, 200);
-        if (snippet.length > 20 && categoryForS6 !== 'catalog') {
-          try {
-            const searchResult = await this.ragKnowledgeService.search({
-              query: snippet,
-              limit: 3,
-              filters: { truth_levels: ['L1', 'L2'] },
-            });
-            const gammeDoc = searchResult?.results?.find((r) =>
-              (r.sourcePath || '').startsWith('gammes/'),
-            );
-            if (gammeDoc) {
-              const alias = path.basename(gammeDoc.sourcePath || '', '.md');
-              if (knownAliases.includes(alias)) {
-                this.logger.debug(
-                  `[resolveGammesFromFiles] Strategy 6 (Weaviate): "${alias}" for ${path.basename(fullPath)}`,
-                );
-                addResult(alias, fullPath);
+        // Strategy 6: Weaviate search fallback — ONLY for non-web content
+        // Web content is too noisy for semantic fallback (false positives proven)
+        if (!isWebContent) {
+          const categoryForS6 = head
+            .match(/^category:\s*(.+)$/m)?.[1]
+            ?.trim()
+            .toLowerCase();
+          const snippet = head
+            .replace(/^---[\s\S]*?---/, '')
+            .trim()
+            .slice(0, 200);
+          if (snippet.length > 20 && categoryForS6 !== 'catalog') {
+            try {
+              const searchResult = await this.ragKnowledgeService.search({
+                query: snippet,
+                limit: 3,
+                filters: { truth_levels: ['L1', 'L2'] },
+              });
+              const gammeDoc = searchResult?.results?.find((r) =>
+                (r.sourcePath || '').startsWith('gammes/'),
+              );
+              if (gammeDoc) {
+                const alias = path.basename(gammeDoc.sourcePath || '', '.md');
+                if (knownAliases.includes(alias)) {
+                  this.logger.debug(
+                    `[resolveGammesFromFiles] Strategy 6 (Weaviate): "${alias}" for ${path.basename(fullPath)}`,
+                  );
+                  addResult(alias, fullPath);
+                }
               }
+            } catch {
+              /* Weaviate fallback non-bloquant */
             }
-          } catch {
-            /* Weaviate fallback non-bloquant */
           }
         }
       } catch {
@@ -1212,16 +1296,26 @@ export class RagGammeDetectionService {
     setTimeout(() => this.emittedJobIds.delete(jobId), 600_000);
 
     // Prefer explicit file list from validation (no mtime dependency)
+    // IMPORTANT: if dbSyncOk=true, gamme_aliases were already set during syncFilesToDb.
+    // Do NOT re-detect — it causes double-detection with potentially different results.
     const validFiles = validationResult?.valid ?? [];
-    const affectedGammesMap =
-      validFiles.length > 0
-        ? await this.resolveGammesFromFiles(validFiles)
-        : this.detectAffectedGammes();
+    let affectedGammesMap: Map<string, string[]>;
+    if (dbSyncOk && validFiles.length > 0) {
+      // Gamme aliases already detected & persisted by syncFilesToDb.
+      // Re-run detection (same algorithm) to get the map for event emission only.
+      // This is safe because syncFilesToDb already wrote to DB with the same result.
+      affectedGammesMap = await this.resolveGammesFromFiles(validFiles);
+    } else {
+      affectedGammesMap =
+        validFiles.length > 0
+          ? await this.resolveGammesFromFiles(validFiles)
+          : this.detectAffectedGammes();
+    }
     const affectedGammes = Array.from(affectedGammesMap.keys());
     const affectedDiagnostics = this.detectAffectedDiagnostics();
 
-    // Persist gamme→file mapping in __rag_knowledge.gamme_aliases (for DB-based discovery)
-    if (affectedGammes.length > 0) {
+    // Persist gamme→file mapping ONLY if not already done by syncFilesToDb
+    if (affectedGammes.length > 0 && !dbSyncOk) {
       try {
         const persisted = await this.ragKnowledgeService.persistGammeAliases(
           Object.fromEntries(affectedGammesMap),
