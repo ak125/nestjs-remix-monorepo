@@ -315,3 +315,5 @@ WHERE r6kp.r6kp_visual_plan IS NOT NULL
 | `backend/src/config/page-contract-r6.schema.ts` | `R6MediaSlotSchema`, `R6MediaSlotsProposalSchema` |
 | `backend/src/config/media-slots.constants.ts` | `MEDIA_LAYOUT_CONTRACT` (pattern R3) |
 | `.claude/agents/r3-image-prompt.md` | Pattern R3 (4 slots fixes, G7 gate) |
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

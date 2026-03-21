@@ -95,3 +95,5 @@ Retourne uniquement un JSON valide.
 
 # FINAL RULE
 R0 doit rester un hub d'entrée. S'il commence à servir une autre promesse dominante, il doit être bloqué ou rerouté.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

@@ -115,3 +115,5 @@ curl http://localhost:3000/api/admin/r3-image-prompts/export/json?selected_only=
 - `rip_alt_text` : texte alt pour le HTML
 - `rip_selected` : dans le budget G7
 - `rip_status` : pending → approved → exported
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

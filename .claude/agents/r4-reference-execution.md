@@ -61,3 +61,5 @@ Compatible avec :
 
 # FINAL RULE
 R4 doit rester une surface de compréhension technique. Dès que l'objectif principal devient agir, diagnostiquer, acheter ou contextualiser fortement, il faut bloquer ou rerouter.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

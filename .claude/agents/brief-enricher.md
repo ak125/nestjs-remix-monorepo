@@ -326,3 +326,5 @@ Anti-cannibalisation: {N} gammes avec confusion pairs appliquees
 | `/opt/automecanik/rag/knowledge/gammes/{slug}.md` | Knowledge RAG source |
 | `backend/src/modules/admin/dto/page-brief.dto.ts` | Schema Zod (validation reference) |
 | `backend/src/config/buying-guide-quality.constants.ts` | Flags, penalites, generic phrases |
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

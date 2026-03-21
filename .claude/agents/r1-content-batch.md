@@ -352,3 +352,5 @@ WHERE rkp.rkp_section_terms IS NOT NULL
 | `frontend/app/utils/r1-builders.ts` | `R1PurchaseGuideData` interface, `sanitizePurchaseGuideForR1()` |
 | `frontend/app/components/pieces/SafeCompatTable.tsx` | Interface safe_table_rows: `{element, howToCheck}` max 6 rows |
 | `.claude/agents/r6-content-batch.md` | Pattern de reference (format agent, pipeline) |
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

@@ -179,3 +179,5 @@ domain:
   "sections": [...]
 }
 ```
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

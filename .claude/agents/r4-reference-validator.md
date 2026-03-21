@@ -92,3 +92,5 @@ Retourne uniquement un JSON valide.
 
 # FINAL RULE
 Une surface R4 doit expliquer, pas montrer comment faire, quoi acheter ou quoi suspecter comme panne.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

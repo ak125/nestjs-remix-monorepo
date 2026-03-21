@@ -92,3 +92,5 @@ Retourne uniquement un JSON valide.
 
 # FINAL RULE
 Une surface R7 doit rester un hub marque ; dès qu'elle devient véhicule, produit, procédure, définition ou diagnostic, elle doit être reroutée ou bloquée.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

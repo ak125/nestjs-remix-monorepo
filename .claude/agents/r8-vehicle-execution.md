@@ -68,3 +68,5 @@ Compatible avec :
 
 # FINAL RULE
 R8 doit rester une surface d'entrée véhicule. Dès qu'il bascule vers marque, transaction, procédure, définition, diagnostic ou outil expert, il faut rerouter ou bloquer.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

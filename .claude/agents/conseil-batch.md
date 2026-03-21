@@ -369,3 +369,5 @@ Prochains suggérés: {5 aliases}
 | `backend/src/modules/admin/services/conseil-quality-scorer.service.ts` | Score algorithm reference |
 | `backend/src/modules/admin/services/conseil-enricher.service.ts` | Section HTML templates reference |
 | `/opt/automecanik/rag/knowledge/gammes/{slug}.md` | Knowledge files source |
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

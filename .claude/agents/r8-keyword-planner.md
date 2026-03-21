@@ -660,3 +660,5 @@ L'agent doit :
 4. P2 : 8 métriques + 6 fingerprints + hard gates
 5. P3 : decision logic + 6 DB writes (7 tables) + __seo_r8_keyword_plan compat
 6. Retourner : governance decision + diversityScore + reasons/warnings + Markdown sections
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

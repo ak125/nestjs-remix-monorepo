@@ -765,3 +765,5 @@ Apres generation des section_bundles :
 | `backend/src/config/keyword-plan.constants.ts` | Constants R3 (anti-cannib) |
 | `backend/src/config/r1-keyword-plan.constants.ts` | Constants R1 (anti-cannib) |
 | `frontend/app/routes/constructeurs.$brand[.]html.tsx` | Code V5 (limites, gates, sections) |
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

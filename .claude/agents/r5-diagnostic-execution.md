@@ -68,3 +68,5 @@ Compatible avec :
 
 # FINAL RULE
 R5 doit rester prudent, symptomatique et evidence-first. S'il devient procédure, encyclopédie, achat ou outil expert, il faut rerouter ou bloquer.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

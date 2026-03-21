@@ -186,3 +186,5 @@ UPDATE __agentic_runs
 SET branches_completed = branches_completed + 1, updated_at = NOW()
 WHERE id = '{run_id}';
 ```
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

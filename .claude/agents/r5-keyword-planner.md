@@ -198,3 +198,5 @@ ON CONFLICT (rkp_pg_id) DO UPDATE SET
 # Règle finale
 
 Le keyword planner R5 est le seul planner avec un **safety gate**. Les pièces critiques (freinage, direction, distribution) imposent un caution level HIGH minimum. Le plan doit rester prudent, symptomatique et evidence-first. Aucune affirmation de cause certaine.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

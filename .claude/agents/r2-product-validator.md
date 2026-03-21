@@ -93,3 +93,5 @@ Retourne uniquement un JSON valide.
 
 # FINAL RULE
 Une surface R2 peut être éditorialement lisible, mais elle ne doit jamais perdre sa promesse transactionnelle centrale.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

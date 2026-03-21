@@ -233,3 +233,5 @@ Aucune explication hors structure.
 
 # FINAL RULE
 Une surface R5 doit rester prudente, symptomatique et evidence-first. Dès qu'elle devient procédure, encyclopédie, achat ou pseudo-outil expert, elle doit être bloquée, reroutée ou escaladée.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

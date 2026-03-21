@@ -177,3 +177,5 @@ Tableau : Gamme, pg_id, Gap, Sections, QA Score, Overlaps, HowTo, Status.
 | `backend/src/config/r6-keyword-plan.constants.ts` | Constants R6 V2 |
 | `backend/src/config/page-contract-r6.schema.ts` | Zod schema R6 V2 |
 | `/opt/automecanik/rag/knowledge/gammes/{slug}.md` | Knowledge RAG |
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

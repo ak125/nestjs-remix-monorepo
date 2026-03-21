@@ -152,3 +152,5 @@ Afficher un tableau de resultats :
 Et la decision finale :
 - **RE-PLAN** : "Scores trop bas. Re-plan avec feedback : {feedback}"
 - **COMPLETED** : "Branche gagnante : {label} ({score}/100)"
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

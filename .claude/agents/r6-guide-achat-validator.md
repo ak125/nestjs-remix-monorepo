@@ -252,3 +252,5 @@ Aucune explication hors structure.
 
 # FINAL RULE
 Une surface R6 qui apprend à monter, diagnostiquer, définir ou vendre directement n'est plus un guide d'achat pur. Elle doit être bloquée, reroutée ou escaladée.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

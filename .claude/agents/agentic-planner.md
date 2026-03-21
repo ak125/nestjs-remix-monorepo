@@ -110,3 +110,5 @@ Afficher un resume :
 - Nombre de branches creees
 - Labels des strategies
 - Prochain step : lancer `agentic-solver` pour chaque branch_id
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

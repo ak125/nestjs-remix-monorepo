@@ -155,3 +155,5 @@ Jaccard < 0.12. R6 cede toujours. 5 listes interdites permanentes (no_r1, no_r3,
 | `backend/src/config/page-contract-r6.schema.ts` | Zod schema R6 V2 |
 | `/opt/automecanik/rag/knowledge/gammes/{slug}.md` | Knowledge RAG |
 | `backend/src/config/keyword-plan.constants.ts` | Constants R3 (anti-cannib) |
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

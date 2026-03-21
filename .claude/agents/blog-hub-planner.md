@@ -421,3 +421,5 @@ Presenter directement dans la conversation :
 - **Presenter les resultats etape par etape**, attendre validation entre chaque etape majeure
 - Pour **generer les prompts image** (Midjourney/DALL-E) apres le media plan, utiliser `/r3-image-prompt`
 - Les **specs techniques image** (ratio, taille, format) sont dans `media-slots.constants.ts` — ne pas les redefinir
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

@@ -129,3 +129,5 @@ Si lint PASS : UPDATE `__seo_reference` (sections IMPROVED seulement) + UPDATE `
 | `backend/src/config/r4-keyword-plan.constants.ts` | Constants R4 |
 | `backend/src/config/page-contract-r4.schema.ts` | Zod schema R4 |
 | `/opt/automecanik/rag/knowledge/` | Knowledge RAG (L1 + L2) |
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

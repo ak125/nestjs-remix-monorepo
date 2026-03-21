@@ -233,3 +233,5 @@ Aucune explication hors structure.
 
 # FINAL RULE
 Une surface R3 doit aider à agir, pas à définir, diagnostiquer, comparer avant achat ou vendre.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

@@ -219,3 +219,5 @@ Next batch: {5 aliases}
 | `/opt/automecanik/rag/knowledge/gammes/{slug}.md` | Knowledge RAG source |
 | `backend/src/config/buying-guide-quality.constants.ts` | Family markers, terms |
 | `.claude/skills/seo-content-architect/references/page-roles.md` | Roles R1-R6 |
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

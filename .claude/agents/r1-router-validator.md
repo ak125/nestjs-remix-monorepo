@@ -229,3 +229,5 @@ Aucune explication hors structure.
 
 # FINAL RULE
 Une surface R1 doit aider à trouver la bonne porte d'entrée. Dès qu'elle vend, explique, diagnostique ou guide l'achat, elle n'est plus un router pur.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

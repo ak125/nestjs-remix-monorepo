@@ -68,3 +68,5 @@ Compatible avec :
 
 # FINAL RULE
 R7 doit rester un hub marque. Dès qu'il devient véhicule, transaction, procédure, définition ou diagnostic, il faut rerouter ou bloquer.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

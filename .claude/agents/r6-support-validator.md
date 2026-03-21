@@ -83,3 +83,5 @@ Retourne uniquement un JSON valide.
 
 # FINAL RULE
 `R6_SUPPORT` est toléré comme rôle local support/applicatif, jamais comme rôle éditorial canonique cœur.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

@@ -69,3 +69,5 @@ Compatible avec :
 
 # FINAL RULE
 R0 doit rester une porte d'entrée. Dès qu'une autre promesse centrale devient dominante, il faut rerouter ou bloquer.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

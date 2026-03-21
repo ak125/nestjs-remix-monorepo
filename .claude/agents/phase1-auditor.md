@@ -256,3 +256,5 @@ Le Foundation Gate filtre les docs ; il ne choisit pas la verite metier finale.
 
 # FINAL RULE
 Mieux vaut conclure que la Phase 1 stocke correctement mais bloque sainement l'exploitation metier, que pretendre qu'elle fonctionne alors qu'elle laisse passer une ecriture aval depuis un document non admissible.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

@@ -228,3 +228,5 @@ Puis :
 - RAG : `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`
 - Constants : `backend/src/config/keyword-plan.constants.ts`
 - Agent source : `r3-keyword-planner.md` (version single-gamme)
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

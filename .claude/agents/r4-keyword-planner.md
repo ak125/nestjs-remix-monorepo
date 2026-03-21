@@ -498,3 +498,5 @@ r4-keyword-planner (TOI) → __seo_r4_keyword_plan (validated)
                                     ↓
 r4-content-batch           → __seo_reference (9 colonnes)
 ```
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

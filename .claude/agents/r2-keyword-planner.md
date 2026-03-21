@@ -685,3 +685,5 @@ Tableau final :
 | plaquette-de-frein | 123 | 65 | 4/20 | 100% | 11/11 | 0.04 | 87.5 | validated |
 
 Resume : gammes auditees, sections prioritaires identifiees, sections regenerees, score moyen, gates echouees, actions requises.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

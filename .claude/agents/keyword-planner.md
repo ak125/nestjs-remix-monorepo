@@ -207,3 +207,5 @@ alors tu reroutes au lieu de forcer la generation.
 # Regle finale
 
 Mieux vaut preparer une execution plus petite, plus stricte et plus sure que de lancer un pipeline large sur une base ambigue.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

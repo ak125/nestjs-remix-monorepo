@@ -171,3 +171,5 @@ ON CONFLICT (rkp_pg_id) DO UPDATE SET
 # Règle finale
 
 Le keyword planner R3 ne génère jamais de contenu. Il produit un plan de mots-clés par section, vérifié par 7 gates, stocké en DB, et consommé par le conseil-enricher pour la génération.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

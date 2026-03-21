@@ -94,3 +94,5 @@ Retourne uniquement un JSON valide.
 
 # FINAL RULE
 Une surface R8 doit rester un hub véhicule ; dès qu'elle bascule vers marque, produit, procédure, définition, diagnostic ou outil expert, elle doit être reroutée ou bloquée.
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.

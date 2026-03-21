@@ -55,3 +55,5 @@ Voir `_shared/kp-shared-output.md`. Table : `__seo_r1_keyword_plan`.
 - Contrat : page-contract-r1.schema.ts
 - Constants : r1-keyword-plan.constants.ts
 - Contrainte : max 150 mots (gate backend `maxWords: 150`)
+
+Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.
