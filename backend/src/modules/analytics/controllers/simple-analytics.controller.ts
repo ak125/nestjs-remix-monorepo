@@ -8,7 +8,10 @@ import {
   HttpStatus,
   Logger,
   Header,
+  UseGuards,
 } from '@nestjs/common';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import {
   SimpleAnalyticsService,
   AnalyticsConfig,
@@ -192,16 +195,18 @@ export class SimpleAnalyticsController {
   }
 
   /**
-   * Récupère les métriques analytics
+   * Récupère les métriques analytics (admin only)
    */
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @Get('metrics')
   async getMetrics(): Promise<AnalyticsMetrics> {
     return this.analyticsService.getMetrics();
   }
 
   /**
-   * Récupère les métriques pour une période spécifique
+   * Récupère les métriques pour une période spécifique (admin only)
    */
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @Get('metrics/:period')
   async getMetricsForPeriod(): Promise<AnalyticsMetrics> {
     // Pour la version simplifiée, on retourne toujours les mêmes métriques
@@ -210,8 +215,9 @@ export class SimpleAnalyticsController {
   }
 
   /**
-   * Vide le cache analytics
+   * Vide le cache analytics (admin only)
    */
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @Post('cache/clear')
   @HttpCode(HttpStatus.OK)
   async clearCache(): Promise<{ message: string; timestamp: string }> {
@@ -223,8 +229,9 @@ export class SimpleAnalyticsController {
   }
 
   /**
-   * Vide le buffer d'événements
+   * Vide le buffer d'événements (admin only)
    */
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @Post('events/clear')
   @HttpCode(HttpStatus.OK)
   async clearEvents(): Promise<{ message: string; timestamp: string }> {
@@ -236,16 +243,18 @@ export class SimpleAnalyticsController {
   }
 
   /**
-   * Récupère les statistiques du service
+   * Récupère les statistiques du service (admin only)
    */
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @Get('stats')
   async getServiceStats() {
     return this.analyticsService.getServiceStats();
   }
 
   /**
-   * Endpoint pour les rapports batch (compatibilité avec l'existant)
+   * Endpoint pour les rapports batch (admin only)
    */
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
   @Post('report')
   async handleAnalyticsReport(
     @Body()

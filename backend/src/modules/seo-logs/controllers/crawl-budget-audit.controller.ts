@@ -1,4 +1,6 @@
-import { Controller, Get, Query, Logger } from '@nestjs/common';
+import { Controller, Get, Query, Logger, UseGuards } from '@nestjs/common';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { CrawlBudgetAuditService } from '../services/crawl-budget-audit.service';
 
@@ -13,6 +15,7 @@ import { CrawlBudgetAuditService } from '../services/crawl-budget-audit.service'
  * ⚠️ Prend en compte la différence .com (production) vs .fr (dev/test)
  */
 @ApiTags('SEO Logs - Audit Crawl Budget')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 @Controller('seo-logs/crawl-budget/audit')
 export class CrawlBudgetAuditController {
   private readonly logger = new Logger(CrawlBudgetAuditController.name);

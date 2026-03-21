@@ -1,4 +1,6 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -25,6 +27,7 @@ interface CrawlerEntry {
  * Analyse les logs de crawl et génère des métriques SEO
  */
 @ApiTags('SEO Analytics')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 @Controller('seo-logs/kpi')
 export class SeoKpiController {
   /**

@@ -9,7 +9,10 @@ import {
   HttpStatus,
   HttpCode,
   Logger,
+  UseGuards,
 } from '@nestjs/common';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import {
   SimpleDatabaseConfigService,
   DatabaseConfig,
@@ -17,6 +20,7 @@ import {
 } from '../services/simple-database-config.service';
 
 @Controller('api/config/database')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class SimpleDatabaseConfigController {
   private readonly logger = new Logger(SimpleDatabaseConfigController.name);
 

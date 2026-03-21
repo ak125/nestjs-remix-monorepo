@@ -1,4 +1,6 @@
-import { Controller, Get, Post, Query } from '@nestjs/common';
+import { Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -35,6 +37,7 @@ interface AuditReport {
  * Gère la validation du sitemap et la détection d'incohérences SEO
  */
 @ApiTags('SEO Audit')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 @Controller('seo-logs/audit')
 export class SeoAuditController {
   private readonly scriptsPath = path.join(

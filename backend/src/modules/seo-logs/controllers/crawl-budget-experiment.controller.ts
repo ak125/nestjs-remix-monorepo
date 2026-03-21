@@ -8,7 +8,10 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
+import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import {
   CrawlBudgetOrchestratorService,
   SitemapGeneratorService,
@@ -30,6 +33,7 @@ import {
  * Permet de créer des expériences pour mesurer l'impact d'inclure/exclure
  * certaines familles de produits sur l'indexation et le trafic organique.
  */
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 @Controller('seo-logs/crawl-budget')
 export class CrawlBudgetExperimentController {
   constructor(
