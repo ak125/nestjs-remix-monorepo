@@ -48,6 +48,78 @@ export class R6GuideService {
     private readonly internalLinkingService: InternalLinkingService,
   ) {}
 
+  /**
+   * Resolve a non-canonical slug to the canonical pg_alias.
+   * Generates slug variants by inserting/removing French articles
+   * (de, du, la, le, des, d) and checks if a matching gamme exists
+   * with a published R6 V2 guide.
+   * Returns the canonical pg_alias or null if no match.
+   */
+  async resolveCanonicalSlug(slug: string): Promise<string | null> {
+    const variants = this.generateSlugVariants(slug);
+
+    if (variants.length === 0) return null;
+
+    // Check each variant against pieces_gamme
+    for (const variant of variants) {
+      const { data: gamme } = await this.supabaseService.client
+        .from('pieces_gamme')
+        .select('pg_id, pg_alias')
+        .eq('pg_alias', variant)
+        .single();
+
+      if (!gamme) continue;
+
+      // Verify a published R6 V2 guide exists
+      const { data: r6 } = await this.supabaseService.client
+        .from('__seo_gamme_purchase_guide')
+        .select('sgpg_pg_id')
+        .eq('sgpg_pg_id', gamme.pg_id.toString())
+        .eq('sgpg_is_draft', false)
+        .single();
+
+      if (r6) {
+        this.logger.log(
+          `Slug resolution: "${slug}" → canonical "${gamme.pg_alias}" (pg_id=${gamme.pg_id})`,
+        );
+        return gamme.pg_alias;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Generate slug variants by inserting/removing French articles.
+   * "disque-frein" → ["disque-de-frein", "disque-du-frein", ...]
+   * "disque-de-frein" → ["disque-frein"]
+   */
+  private generateSlugVariants(slug: string): string[] {
+    const articles = ['de', 'du', 'la', 'le', 'les', 'des', 'd'];
+    const parts = slug.split('-');
+    const variants: string[] = [];
+
+    // Strategy 1: Remove articles from the slug
+    const stripped = parts.filter((p) => !articles.includes(p));
+    if (stripped.length < parts.length) {
+      variants.push(stripped.join('-'));
+    }
+
+    // Strategy 2: Insert articles between each pair of words
+    for (const article of ['de', 'du', 'd']) {
+      for (let i = 1; i < parts.length; i++) {
+        if (articles.includes(parts[i])) continue; // skip if already an article
+        const withArticle = [...parts.slice(0, i), article, ...parts.slice(i)];
+        const v = withArticle.join('-');
+        if (v !== slug && !variants.includes(v)) {
+          variants.push(v);
+        }
+      }
+    }
+
+    return variants;
+  }
+
   async getR6GuidePayload(pg_alias: string): Promise<R6GuidePayload | null> {
     // Step 1 — Resolve pg_id from pieces_gamme
     const { data: gamme } = await this.supabaseService.client
@@ -88,10 +160,21 @@ export class R6GuideService {
     const page = await this.buildPage(pg_alias, gamme, row, title);
 
     // Step 4 — Build payload based on version
-    if (roleVersion === 'v2') {
-      return this.buildV2Payload(page, row, pg_alias);
+    const payload =
+      roleVersion === 'v2'
+        ? await this.buildV2Payload(page, row, pg_alias)
+        : await this.buildV1Payload(page, row, pg_alias);
+
+    // Step 5 — Cross-link R3 (conditionnel : seulement si R3 existe)
+    const r3Exists = await this.checkR3Exists(pg_alias);
+    if (r3Exists) {
+      payload.crossLinks = {
+        r3Url: `/blog-pieces-auto/conseils/${pg_alias}`,
+        r3Label: `Comment changer ${title.toLowerCase()}`,
+      };
     }
-    return this.buildV1Payload(page, row, pg_alias);
+
+    return payload;
   }
 
   // ══════════════════════════════════════════════════════════
@@ -401,6 +484,27 @@ export class R6GuideService {
   // Private helpers
   // ══════════════════════════════════════════════════════════
 
+  /**
+   * Check if an R3 conseil page exists for the given pg_alias.
+   * Looks in __seo_gamme_slots (conseil pack) for a published entry.
+   */
+  private async checkR3Exists(pg_alias: string): Promise<boolean> {
+    const { data: gamme } = await this.supabaseService.client
+      .from('pieces_gamme')
+      .select('pg_id')
+      .eq('pg_alias', pg_alias)
+      .single();
+
+    if (!gamme) return false;
+
+    const { count } = await this.supabaseService.client
+      .from('__seo_gamme_slots')
+      .select('sgcs_id', { count: 'exact', head: true })
+      .eq('sgcs_pg_id', gamme.pg_id);
+
+    return (count ?? 0) > 0;
+  }
+
   private async buildPage(
     pg_alias: string,
     gamme: { pg_id: number; pg_name: string; pg_pic: string | null },
@@ -430,10 +534,13 @@ export class R6GuideService {
       pg_id: gamme.pg_id,
       title,
       heroSubtitle: (row.sgpg_hero_subtitle as string) || null,
-      metaTitle: `${title} — Guide d'achat | AutoMecanik`,
+      metaTitle:
+        (row.sgpg_meta_title_override as string) ||
+        `Comment Bien Choisir ${title} ? Guide d'Achat ${new Date().getFullYear()} | AutoMecanik`,
       metaDescription: this.stripPricing(
-        (row.sgpg_intro_role as string) ||
-          `Comment bien choisir ${title.toLowerCase()} pour votre véhicule.`,
+        (row.sgpg_meta_description_override as string) ||
+          (row.sgpg_intro_role as string) ||
+          `${title} : critères de choix, marques fiables, fourchette de prix. Guide complet pour bien choisir.`,
       ),
       featuredImage: this.transformService.buildImageUrl(
         gamme.pg_pic && gamme.pg_pic !== 'no'

@@ -405,8 +405,9 @@ export class BrandsController {
       return {
         success: true,
         data: result,
-        _performance: result._performance,
-        _cache: result._cache,
+        _performance:
+          '_performance' in result ? result._performance : undefined,
+        _cache: '_cache' in result ? result._cache : undefined,
       };
     } catch (error) {
       this.logger.error(

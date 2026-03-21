@@ -5,12 +5,14 @@
  * Role SEO : R6_GUIDE_ACHAT (Buying Guide)
  * Intention : Choisir la bonne piece
  *
- * INTERDIT : redirect 301. Toujours 404 noindex si mismatch.
+ * Redirect 301 vers le slug canonical si le backend résout une variante.
+ * 404 noindex si aucun guide trouvé.
  * Dual-mode : V1 legacy rendering OU V2 buying-guide sections.
  */
 
 import {
   json,
+  redirect,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -108,6 +110,15 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     if (r6Response.ok) {
       clearTimeout(timeoutId);
       const result = await r6Response.json();
+
+      // Handle slug redirect (e.g. "disque-frein" → "disque-de-frein")
+      if (result?.redirect) {
+        return redirect(
+          `/blog-pieces-auto/guide-achat/${result.redirect}`,
+          301,
+        );
+      }
+
       const guide = result?.data as R6GuidePayload | null;
 
       if (guide && (!guide.intentType || guide.intentType === "R6")) {
@@ -494,6 +505,23 @@ export default function R6GuidePage() {
                     articleTitle={page.title}
                     articleExcerpt={stripHtmlForMeta(page.metaDescription, 200)}
                   />
+
+                  {/* Cross-link R3 (anti-cannibalization) */}
+                  {guide.crossLinks?.r3Url && (
+                    <div className="mt-8 p-4 rounded-lg border border-amber-200 bg-amber-50/50">
+                      <p className="text-sm text-gray-700">
+                        <span className="font-medium">
+                          Procedure complete :
+                        </span>{" "}
+                        <Link
+                          to={guide.crossLinks.r3Url}
+                          className="text-amber-700 hover:text-amber-900 underline underline-offset-2"
+                        >
+                          {guide.crossLinks.r3Label}
+                        </Link>
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </article>

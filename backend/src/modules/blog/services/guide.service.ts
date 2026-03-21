@@ -339,11 +339,12 @@ export class GuideService {
 
       const client = this.supabaseService.getClient();
 
-      // 1) Chercher dans __blog_guide (guides manuels)
+      // 1) Chercher dans __blog_guide (guides manuels, non deprecated)
       const { data: guide } = await client
         .from(TABLES.blog_guide)
         .select('*')
         .eq('bg_alias', slug)
+        .neq('bg_deprecated', true)
         .single();
 
       if (guide) {

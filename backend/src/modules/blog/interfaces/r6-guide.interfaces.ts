@@ -225,6 +225,12 @@ export interface R6GuidePayload {
   familyCrossSellIntro?: string | null;
   microSeoBlock?: string | null;
 
+  // ── Cross-links (anti-cannibalization R3↔R6) ──────────
+  crossLinks?: {
+    r3Url: string;
+    r3Label: string;
+  };
+
   // ── Source tracking ────────────────────────────────────
   sourceType: string | null;
   sourceVerified: boolean;

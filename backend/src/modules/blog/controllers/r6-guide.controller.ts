@@ -29,6 +29,18 @@ export class R6GuideController {
       const payload = await this.r6GuideService.getR6GuidePayload(pg_alias);
 
       if (!payload) {
+        // Try to resolve to a canonical slug before returning 404
+        const canonicalSlug =
+          await this.r6GuideService.resolveCanonicalSlug(pg_alias);
+
+        if (canonicalSlug) {
+          this.logger.log(`Redirect: "${pg_alias}" → "${canonicalSlug}"`);
+          return {
+            success: false,
+            redirect: canonicalSlug,
+          };
+        }
+
         throw new DomainNotFoundException({
           message: `Guide d'achat "${pg_alias}" non trouvé`,
         });

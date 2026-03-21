@@ -117,7 +117,7 @@ export class BrandRpcService extends SupabaseBaseService {
     if (!data?.success) {
       throw new DatabaseException({
         code: ErrorCodes.VEHICLE.BRAND_RPC_FAILED,
-        message: data?.error || 'Brand RPC returned invalid data',
+        message: String(data?.error || 'Brand RPC returned invalid data'),
       });
     }
 
