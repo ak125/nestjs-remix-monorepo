@@ -53,6 +53,7 @@ describe('AuthService', () => {
   const mockUserService = {
     findByEmailForAuth: jest.fn(),
     findAdminByEmailForAuth: jest.fn(),
+    findAdminById: jest.fn(),
     findById: jest.fn(),
     findByIdForAuth: jest.fn(),
     setPasswordHash: jest.fn(),
