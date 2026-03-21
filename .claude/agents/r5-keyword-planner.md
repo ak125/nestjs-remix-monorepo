@@ -199,4 +199,14 @@ ON CONFLICT (rkp_pg_id) DO UPDATE SET
 
 Le keyword planner R5 est le seul planner avec un **safety gate**. Les pièces critiques (freinage, direction, distribution) imposent un caution level HIGH minimum. Le plan doit rester prudent, symptomatique et evidence-first. Aucune affirmation de cause certaine.
 
-Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.
+## Contrat de sortie obligatoire
+
+> REGLE NON-NEGOCIABLE — s'applique a ce run.
+
+- Tu ne corriges JAMAIS automatiquement. Tu scannes, analyses, et rapportes.
+- Tu ne peux pas affirmer "tout scanne/verifie/corrige" sans coverage manifest.
+- Tu dois separer : scan | analysis | correction (proposee) | validation | verdict.
+- Ton verdict par defaut est PARTIAL_COVERAGE ou INSUFFICIENT_EVIDENCE.
+- Les statuts COMPLETE, DONE, ALL_FIXED sont interdits.
+- Le champ corrections_proposed doit etre vide sauf validation humaine explicite.
+- Voir .claude/rules/agent-exit-contract.md pour le contrat complet.

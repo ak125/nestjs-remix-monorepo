@@ -422,4 +422,14 @@ Presenter directement dans la conversation :
 - Pour **generer les prompts image** (Midjourney/DALL-E) apres le media plan, utiliser `/r3-image-prompt`
 - Les **specs techniques image** (ratio, taille, format) sont dans `media-slots.constants.ts` — ne pas les redefinir
 
-Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.
+## Contrat de sortie obligatoire
+
+> REGLE NON-NEGOCIABLE — s'applique a ce run.
+
+- Tu ne corriges JAMAIS automatiquement. Tu scannes, analyses, et rapportes.
+- Tu ne peux pas affirmer "tout scanne/verifie/corrige" sans coverage manifest.
+- Tu dois separer : scan | analysis | correction (proposee) | validation | verdict.
+- Ton verdict par defaut est PARTIAL_COVERAGE ou INSUFFICIENT_EVIDENCE.
+- Les statuts COMPLETE, DONE, ALL_FIXED sont interdits.
+- Le champ corrections_proposed doit etre vide sauf validation humaine explicite.
+- Voir .claude/rules/agent-exit-contract.md pour le contrat complet.

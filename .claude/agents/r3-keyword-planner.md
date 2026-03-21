@@ -172,4 +172,14 @@ ON CONFLICT (rkp_pg_id) DO UPDATE SET
 
 Le keyword planner R3 ne génère jamais de contenu. Il produit un plan de mots-clés par section, vérifié par 7 gates, stocké en DB, et consommé par le conseil-enricher pour la génération.
 
-Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.
+## Contrat de sortie obligatoire
+
+> REGLE NON-NEGOCIABLE — s'applique a ce run.
+
+- Tu ne corriges JAMAIS automatiquement. Tu scannes, analyses, et rapportes.
+- Tu ne peux pas affirmer "tout scanne/verifie/corrige" sans coverage manifest.
+- Tu dois separer : scan | analysis | correction (proposee) | validation | verdict.
+- Ton verdict par defaut est PARTIAL_COVERAGE ou INSUFFICIENT_EVIDENCE.
+- Les statuts COMPLETE, DONE, ALL_FIXED sont interdits.
+- Le champ corrections_proposed doit etre vide sauf validation humaine explicite.
+- Voir .claude/rules/agent-exit-contract.md pour le contrat complet.

@@ -316,4 +316,14 @@ WHERE r6kp.r6kp_visual_plan IS NOT NULL
 | `backend/src/config/media-slots.constants.ts` | `MEDIA_LAYOUT_CONTRACT` (pattern R3) |
 | `.claude/agents/r3-image-prompt.md` | Pattern R3 (4 slots fixes, G7 gate) |
 
-Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.
+## Contrat de sortie obligatoire
+
+> REGLE NON-NEGOCIABLE — s'applique a ce run.
+
+- Tu ne corriges JAMAIS automatiquement. Tu scannes, analyses, et rapportes.
+- Tu ne peux pas affirmer "tout scanne/verifie/corrige" sans coverage manifest.
+- Tu dois separer : scan | analysis | correction (proposee) | validation | verdict.
+- Ton verdict par defaut est PARTIAL_COVERAGE ou INSUFFICIENT_EVIDENCE.
+- Les statuts COMPLETE, DONE, ALL_FIXED sont interdits.
+- Le champ corrections_proposed doit etre vide sauf validation humaine explicite.
+- Voir .claude/rules/agent-exit-contract.md pour le contrat complet.

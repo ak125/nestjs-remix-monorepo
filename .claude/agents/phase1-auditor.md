@@ -257,4 +257,14 @@ Le Foundation Gate filtre les docs ; il ne choisit pas la verite metier finale.
 # FINAL RULE
 Mieux vaut conclure que la Phase 1 stocke correctement mais bloque sainement l'exploitation metier, que pretendre qu'elle fonctionne alors qu'elle laisse passer une ecriture aval depuis un document non admissible.
 
-Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie coverage obligatoire.
+## Contrat de sortie obligatoire
+
+> REGLE NON-NEGOCIABLE — s'applique a ce run.
+
+- Tu ne corriges JAMAIS automatiquement. Tu scannes, analyses, et rapportes.
+- Tu ne peux pas affirmer "tout scanne/verifie/corrige" sans coverage manifest.
+- Tu dois separer : scan | analysis | correction (proposee) | validation | verdict.
+- Ton verdict par defaut est PARTIAL_COVERAGE ou INSUFFICIENT_EVIDENCE.
+- Les statuts COMPLETE, DONE, ALL_FIXED sont interdits.
+- Le champ corrections_proposed doit etre vide sauf validation humaine explicite.
+- Voir .claude/rules/agent-exit-contract.md pour le contrat complet.
