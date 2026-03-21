@@ -1035,14 +1035,16 @@ export class RagGammeDetectionService {
       return { mapped: 0, skipped: 0, details: [] };
     }
 
-    // 2. Filter to mappable categories (diagnostic, guides, canonical, reference)
+    // 2. Filter to mappable categories (diagnostic, guides, canonical, reference, web, web-catalog)
     const mappableOrphans = orphans.filter((o: { source: string }) => {
       const src = o.source || '';
       return (
         src.startsWith('diagnostic/') ||
         src.startsWith('guides/') ||
         src.startsWith('canonical/') ||
-        src.startsWith('reference/')
+        src.startsWith('reference/') ||
+        src.startsWith('web/') ||
+        src.startsWith('web-catalog/')
       );
     });
 
