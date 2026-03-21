@@ -540,7 +540,7 @@ export default function BrandCatalogPage() {
                           alt={`Logo ${manufacturer.marque_name}`}
                           className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-all duration-700"
                           loading="eager"
-                          fetchpriority="high"
+                          fetchPriority="high"
                           onError={(e) => {
                             e.currentTarget.src = "/images/default-brand.png";
                             e.currentTarget.onerror = null;

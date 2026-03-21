@@ -402,7 +402,7 @@ export default function R3GuidePage() {
                   className="w-full h-64 object-contain drop-shadow-lg"
                   loading="eager"
                   decoding="async"
-                  fetchpriority="high"
+                  fetchPriority="high"
                 />
               </div>
             </CardContent>

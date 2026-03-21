@@ -348,7 +348,7 @@ export default function BlogPiecesAutoMarqueModele() {
                     className="w-full h-auto max-h-56 object-contain mx-auto"
                     loading="eager"
                     decoding="async"
-                    fetchpriority="high"
+                    fetchPriority="high"
                     onError={(e) => {
                       const img = e.currentTarget;
                       // Fallback: image modèle → logo marque → placeholder

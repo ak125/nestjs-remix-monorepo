@@ -119,7 +119,7 @@ export default function GammeHero({
                         height={300}
                         className="w-full h-full object-contain max-h-[200px]"
                         loading="eager"
-                        fetchpriority="high"
+                        fetchPriority="high"
                         onError={(e) => {
                           e.currentTarget.src =
                             "/images/categories/default.svg";

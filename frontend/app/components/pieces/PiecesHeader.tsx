@@ -256,7 +256,7 @@ export const PiecesHeader = memo(function PiecesHeader({
                                   height={192}
                                   className={`w-full h-48 object-${objectFit} group-hover:scale-[1.05] transition-transform duration-500 ease-out`}
                                   loading="eager"
-                                  fetchpriority="high"
+                                  fetchPriority="high"
                                   decoding="async"
                                   onError={() => setImageError(true)}
                                 />

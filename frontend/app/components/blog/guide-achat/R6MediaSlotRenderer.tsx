@@ -68,7 +68,7 @@ export function R6MediaSlotRenderer({
                   src={slot.src || ""}
                   alt={alt}
                   loading={slot.loading || "lazy"}
-                  fetchpriority={
+                  fetchPriority={
                     slot.fetch_priority === "high" ? "high" : undefined
                   }
                   width={slot.width}

@@ -193,7 +193,7 @@ export type HeroImagePreloadMeta = {
   href: string;
   imageSrcSet: string; // ✅ React camelCase (pas imagesrcset)
   imageSizes: string; // ✅ React camelCase (pas imagesizes)
-  fetchpriority: "high";
+  fetchPriority: "high";
   [key: string]: string; // Index signature pour compatibilité Remix meta
 };
 
@@ -249,7 +249,7 @@ export function buildHeroImagePreload(
       href: defaultHref,
       imageSrcSet,
       imageSizes,
-      fetchpriority: "high",
+      fetchPriority: "high",
     },
   ];
 }

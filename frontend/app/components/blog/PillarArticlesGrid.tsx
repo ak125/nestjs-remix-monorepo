@@ -64,7 +64,7 @@ export function PillarArticlesGrid({ articles }: PillarArticlesGridProps) {
                       height={224}
                       loading={index === 0 ? "eager" : "lazy"}
                       decoding={index === 0 ? "sync" : "async"}
-                      fetchpriority={index === 0 ? "high" : undefined}
+                      fetchPriority={index === 0 ? "high" : undefined}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                     />
                     <div className="absolute top-4 left-4">

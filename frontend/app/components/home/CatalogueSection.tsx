@@ -61,7 +61,7 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
               alt={cat.n}
               className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
               loading={isAboveFold ? "eager" : "lazy"}
-              fetchpriority={isAboveFold ? "high" : undefined}
+              fetchPriority={isAboveFold ? "high" : undefined}
               width="400"
               height="300"
             />

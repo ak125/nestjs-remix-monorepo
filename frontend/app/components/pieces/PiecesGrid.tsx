@@ -299,7 +299,7 @@ const PieceCard: React.FC<{ piece: Piece; isFirst?: boolean }> = ({
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading={isFirst ? "eager" : "lazy"}
           decoding="async"
-          {...(isFirst && { fetchpriority: "high" })}
+          {...(isFirst && { fetchPriority: "high" })}
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center">

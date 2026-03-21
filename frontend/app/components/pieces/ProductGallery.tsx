@@ -16,7 +16,7 @@ interface ProductGalleryProps {
   images?: { id: string; url: string; sort: number; alt: string }[];
   mainImage?: string;
   alt: string;
-  /** LCP: mark as priority to use eager loading + fetchpriority="high" */
+  /** LCP: mark as priority to use eager loading + fetchPriority="high" */
   priority?: boolean;
 }
 
@@ -152,7 +152,7 @@ export const ProductGallery = memo(function ProductGallery({
             className="w-full h-full object-contain"
             loading={priority ? "eager" : "lazy"}
             decoding="async"
-            fetchpriority={priority ? "high" : "auto"}
+            fetchPriority={priority ? "high" : "auto"}
             onError={(e) => {
               e.currentTarget.src = "/images/default-piece.svg";
             }}
@@ -210,7 +210,7 @@ export const ProductGallery = memo(function ProductGallery({
                 className="w-full h-full object-contain touch-pan-y"
                 loading={priority ? "eager" : "lazy"}
                 decoding="async"
-                fetchpriority={priority ? "high" : "auto"}
+                fetchPriority={priority ? "high" : "auto"}
                 onTouchStart={handleTouchStart}
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
