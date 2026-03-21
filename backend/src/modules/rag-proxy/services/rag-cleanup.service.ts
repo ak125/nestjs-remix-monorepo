@@ -66,15 +66,24 @@ const COMPATIBILITY_MATRIX: Record<
 
 /** Per-domain active document quotas. */
 const DOMAIN_QUOTAS: Record<string, number> = {
-  freinage: 40,
-  accessoires: 35,
-  moteur: 35,
-  alimentation: 30,
-  eclairage: 25,
-  knowledge: 30,
-  catalog: 20,
+  freinage: 60,
+  accessoires: 50,
+  moteur: 50,
+  alimentation: 40,
+  eclairage: 35,
+  knowledge: 100,
+  catalog: 40,
+  capteurs: 30,
+  direction: 25,
+  distribution: 25,
+  refroidissement: 25,
+  climatisation: 25,
+  embrayage: 20,
+  suspension: 20,
+  echappement: 20,
+  transmission: 20,
 };
-const DEFAULT_QUOTA = 20;
+const DEFAULT_QUOTA = 25;
 
 @Injectable()
 export class RagCleanupService extends SupabaseBaseService {
