@@ -1,8 +1,13 @@
 /**
  * AgenticProcessor — BullMQ Processor for agentic-engine queue
  *
- * Phase 2: Real LLM-powered plan/solve/critique via services.
- * Verify/arbitrate/airlock/apply remain Phase 1 stubs.
+ * Agent-Native: les handlers plan/solve/critique ne font plus d'appels LLM.
+ * Le travail LLM est fait par les agents Claude Code qui ecrivent en DB via MCP.
+ *
+ * Ce processor gere :
+ * - Les transitions d'etat (state machine)
+ * - Le fan-out/fan-in des branches
+ * - Les stubs verify/arbitrate/apply
  *
  * Pattern: same as ContentRefreshProcessor (multi-job named handlers).
  * Stateless — safe duplicate in WorkerModule.
@@ -17,8 +22,6 @@ import {
 import { AgenticDataService } from '../../modules/agentic-engine/services/agentic-data.service';
 import { EvidenceLedgerService } from '../../modules/agentic-engine/services/evidence-ledger.service';
 import { RunManagerService } from '../../modules/agentic-engine/services/run-manager.service';
-import { PlannerService } from '../../modules/agentic-engine/services/planner.service';
-import { SolverService } from '../../modules/agentic-engine/services/solver.service';
 import { CriticService } from '../../modules/agentic-engine/services/critic.service';
 import type {
   AgenticPlanJobData,
@@ -38,181 +41,63 @@ export class AgenticProcessor {
     private readonly dataService: AgenticDataService,
     private readonly evidenceLedger: EvidenceLedgerService,
     private readonly runManager: RunManagerService,
-    private readonly planner: PlannerService,
-    private readonly solver: SolverService,
     private readonly critic: CriticService,
   ) {}
 
-  // ── PLAN ──────────────────────────────────────────────
+  // ── PLAN (Agent-Native: no-op, agent writes directly to DB) ──
 
   @Process({ name: 'agentic-plan', concurrency: 1 })
   async handlePlan(job: Job<AgenticPlanJobData>): Promise<void> {
-    const { runId, correlationId, criticFeedback } = job.data;
-    const startTime = performance.now();
+    const { runId } = job.data;
     this.logger.log(
-      `🧠 [PLAN] Run ${runId.slice(0, 8)} — Planning${criticFeedback ? ' (critic loop)' : ''}...`,
+      `[PLAN] Run ${runId.slice(0, 8)} — Agent-Native mode. ` +
+        `Use Claude Code Agent "agentic-planner" with run_id=${runId}`,
     );
 
-    const run = await this.dataService.getRun(runId);
-    if (!run) {
-      this.logger.error(`❌ [PLAN] Run ${runId.slice(0, 8)} not found`);
-      return;
-    }
-
-    // Use PlannerService for real LLM-based planning
-    const branches = await this.planner.plan(run, criticFeedback);
-
-    if (branches.length === 0) {
-      await this.runManager.failRun(runId, 'Planning produced no branches');
-      return;
-    }
-
-    // Transition to solving
-    await this.runManager.transitionPhase(runId, 'solving', {
-      branches_total: branches.length,
-      branches_completed: 0,
-      plan: {
-        strategies: branches.map((b) => ({ label: b.strategy_label })),
-        critic_feedback: criticFeedback ?? null,
-        llm_generated: true,
-      },
-    });
-
-    // Save checkpoint after planning
-    await this.runManager.saveCheckpoint(runId);
-
-    // Fan-out: enqueue solve jobs for each branch
-    for (const branch of branches) {
-      await (job.queue as Queue).add(
-        'agentic-solve',
-        { runId, branchId: branch.id, correlationId } as AgenticSolveJobData,
-        {
-          attempts: AGENTIC_DEFAULTS.RETRIES.solve.attempts + 1,
-          backoff: {
-            type: 'exponential',
-            delay: AGENTIC_DEFAULTS.RETRIES.solve.delay,
-          },
-          removeOnComplete: 20,
-          removeOnFail: 20,
-        },
-      );
-    }
-
-    const elapsed = (performance.now() - startTime).toFixed(1);
-    this.logger.log(
-      `✅ [PLAN] Run ${runId.slice(0, 8)} — ${branches.length} branches enqueued in ${elapsed}ms`,
-    );
+    // No LLM call — the agentic-planner agent reads the run from DB,
+    // decomposes the goal, and writes branches + evidence directly via MCP.
+    // This job only logs the intent for observability.
   }
 
-  // ── SOLVE ─────────────────────────────────────────────
+  // ── SOLVE (Agent-Native: no-op, agent writes directly to DB) ──
 
   @Process({ name: 'agentic-solve', concurrency: 1 })
   async handleSolve(job: Job<AgenticSolveJobData>): Promise<void> {
     const { runId, branchId } = job.data;
-    const startTime = performance.now();
     this.logger.log(
-      `🔧 [SOLVE] Run ${runId.slice(0, 8)} / Branch ${branchId.slice(0, 8)}...`,
+      `[SOLVE] Run ${runId.slice(0, 8)} / Branch ${branchId.slice(0, 8)} — Agent-Native mode. ` +
+        `Use Claude Code Agent "agentic-solver" with run_id=${runId} branch_id=${branchId}`,
     );
 
-    const run = await this.dataService.getRun(runId);
-    if (!run) {
-      this.logger.error(`❌ [SOLVE] Run ${runId.slice(0, 8)} not found`);
-      return;
-    }
-
-    const branches = await this.dataService.getBranchesByRun(runId);
-    const branch = branches.find((b) => b.id === branchId);
-    if (!branch) {
-      this.logger.error(`❌ [SOLVE] Branch ${branchId.slice(0, 8)} not found`);
-      return;
-    }
-
-    // Use SolverService for real LLM + RAG solving
-    const result = await this.solver.solve(run, branch);
-
-    if (!result.success) {
-      this.logger.warn(
-        `⚠️ [SOLVE] Branch ${branchId.slice(0, 8)} failed: ${result.error}`,
-      );
-    }
-
-    // Fan-in: atomically increment and check if all branches done
-    const counts = await this.dataService.incrementBranchesCompleted(runId);
-    if (counts != null) {
-      if (
-        counts.branches_completed >= counts.branches_total &&
-        counts.branches_total > 0
-      ) {
-        // Check if ANY branch actually succeeded before advancing
-        const allBranches = await this.dataService.getBranchesByRun(runId);
-        const anyCompleted = allBranches.some((b) => b.status === 'completed');
-
-        if (!anyCompleted) {
-          this.logger.error(
-            `❌ [SOLVE] Run ${runId.slice(0, 8)} — All ${counts.branches_total} branches failed, aborting run`,
-          );
-          await this.runManager.failRun(
-            runId,
-            'All branches failed during solving',
-          );
-          return;
-        }
-
-        this.logger.log(
-          `✅ [SOLVE] Run ${runId.slice(0, 8)} — All ${counts.branches_total} branches done (${allBranches.filter((b) => b.status === 'completed').length} completed), enqueueing critique`,
-        );
-
-        await this.runManager.transitionPhase(runId, 'critiquing');
-
-        await (job.queue as Queue).add(
-          'agentic-critique',
-          { runId } as AgenticCritiqueJobData,
-          {
-            attempts: AGENTIC_DEFAULTS.RETRIES.critique.attempts + 1,
-            backoff: {
-              type: 'exponential',
-              delay: AGENTIC_DEFAULTS.RETRIES.critique.delay,
-            },
-            removeOnComplete: 20,
-            removeOnFail: 20,
-          },
-        );
-      }
-    }
-
-    const elapsed = (performance.now() - startTime).toFixed(1);
-    this.logger.log(
-      `${result.success ? '✅' : '⚠️'} [SOLVE] Branch ${branchId.slice(0, 8)} done in ${elapsed}ms`,
-    );
+    // No LLM call — the agentic-solver agent reads the branch from DB,
+    // fetches RAG, executes the strategy, and writes output directly via MCP.
   }
 
-  // ── CRITIQUE ──────────────────────────────────────────
+  // ── CRITIQUE (Agent-Native: reads scores written by agent, handles transitions) ──
 
   @Process({ name: 'agentic-critique', concurrency: 1 })
   async handleCritique(job: Job<AgenticCritiqueJobData>): Promise<void> {
     const { runId } = job.data;
-    const startTime = performance.now();
-    this.logger.log(`🔍 [CRITIQUE] Run ${runId.slice(0, 8)}...`);
+    this.logger.log(
+      `[CRITIQUE] Run ${runId.slice(0, 8)} — Reading scores from DB...`,
+    );
 
     const run = await this.dataService.getRun(runId);
     if (!run) {
-      this.logger.error(`❌ [CRITIQUE] Run ${runId.slice(0, 8)} not found`);
+      this.logger.error(`[CRITIQUE] Run ${runId.slice(0, 8)} not found`);
       return;
     }
 
-    const branches = await this.dataService.getBranchesByRun(runId);
+    // Read critique results written by agentic-critic agent
+    const result = await this.critic.readCritiqueFromDb(runId);
 
-    // Use CriticService for real LLM-based evaluation
-    const result = await this.critic.critique(run, branches);
-
-    // Fail-fast: no branches could be scored
-    if (result.scores.length === 0 && !result.needsReplan) {
+    if (result.scores.length === 0) {
       this.logger.error(
-        `❌ [CRITIQUE] Run ${runId.slice(0, 8)} — No branches could be scored`,
+        `[CRITIQUE] Run ${runId.slice(0, 8)} — No scored branches found in DB`,
       );
       await this.runManager.failRun(
         runId,
-        'No branches could be scored by critic',
+        'No branches could be scored by critic agent',
       );
       return;
     }
@@ -221,10 +106,9 @@ export class AgenticProcessor {
     if (result.needsReplan && this.runManager.canCriticLoop(run)) {
       const criticFeedback = this.critic.buildCriticFeedback(result);
       this.logger.log(
-        `🔄 [CRITIQUE] Run ${runId.slice(0, 8)} — Critic loop ${(run.critic_loops ?? 0) + 1}: ${result.replanReason}`,
+        `[CRITIQUE] Run ${runId.slice(0, 8)} — Critic loop ${(run.critic_loops ?? 0) + 1}: ${result.replanReason}`,
       );
 
-      // Increment critic loop counter and transition back to planning
       await this.runManager.transitionPhase(runId, 'planning', {
         critic_loops: (run.critic_loops ?? 0) + 1,
       });
@@ -261,21 +145,18 @@ export class AgenticProcessor {
       },
     );
 
-    const elapsed = (performance.now() - startTime).toFixed(1);
     this.logger.log(
-      `✅ [CRITIQUE] Run ${runId.slice(0, 8)} — ${result.scores.length} branches scored in ${elapsed}ms`,
+      `[CRITIQUE] Run ${runId.slice(0, 8)} — ${result.scores.length} branches scored, best: ${result.bestBranchId?.slice(0, 8)}`,
     );
   }
 
-  // ── VERIFY (Phase 1 stub) ──────────────────────────────
+  // ── VERIFY (Phase 1 stub) ──
 
   @Process({ name: 'agentic-verify', concurrency: 1 })
   async handleVerify(job: Job<AgenticVerifyJobData>): Promise<void> {
     const { runId } = job.data;
-    const startTime = performance.now();
-    this.logger.log(`🛡️ [VERIFY] Run ${runId.slice(0, 8)}...`);
+    this.logger.log(`[VERIFY] Run ${runId.slice(0, 8)}...`);
 
-    // Phase 1 STUB: All gates pass
     await this.dataService.insertGateResult({
       run_id: runId,
       gate_name: 'schema_valid',
@@ -300,7 +181,6 @@ export class AgenticProcessor {
       truthLevel: 'L1',
     });
 
-    // Advance to arbitrating
     await this.runManager.transitionPhase(runId, 'arbitrating');
     await (job.queue as Queue).add(
       'agentic-arbitrate',
@@ -308,19 +188,15 @@ export class AgenticProcessor {
       { attempts: 1, removeOnComplete: 20, removeOnFail: 20 },
     );
 
-    const elapsed = (performance.now() - startTime).toFixed(1);
-    this.logger.log(
-      `✅ [VERIFY] Run ${runId.slice(0, 8)} — All gates passed in ${elapsed}ms`,
-    );
+    this.logger.log(`[VERIFY] Run ${runId.slice(0, 8)} — All gates passed`);
   }
 
-  // ── ARBITRATE ─────────────────────────────────────────
+  // ── ARBITRATE ──
 
   @Process({ name: 'agentic-arbitrate', concurrency: 1 })
   async handleArbitrate(job: Job<AgenticArbitrateJobData>): Promise<void> {
     const { runId } = job.data;
-    const startTime = performance.now();
-    this.logger.log(`⚖️ [ARBITRATE] Run ${runId.slice(0, 8)}...`);
+    this.logger.log(`[ARBITRATE] Run ${runId.slice(0, 8)}...`);
 
     const branches = await this.dataService.getBranchesByRun(runId);
     const winner = branches
@@ -361,7 +237,7 @@ export class AgenticProcessor {
       );
     } else {
       this.logger.error(
-        `❌ [ARBITRATE] Run ${runId.slice(0, 8)} — No valid branches to select`,
+        `[ARBITRATE] Run ${runId.slice(0, 8)} — No valid branches to select`,
       );
       await this.runManager.failRun(
         runId,
@@ -369,13 +245,12 @@ export class AgenticProcessor {
       );
     }
 
-    const elapsed = (performance.now() - startTime).toFixed(1);
     this.logger.log(
-      `✅ [ARBITRATE] Run ${runId.slice(0, 8)} — Winner: ${winner?.id?.slice(0, 8) || 'none'} (${winner?.strategy_label || '-'}) in ${elapsed}ms`,
+      `[ARBITRATE] Run ${runId.slice(0, 8)} — Winner: ${winner?.id?.slice(0, 8) || 'none'} (${winner?.strategy_label || '-'})`,
     );
   }
 
-  // ── AIRLOCK CHECK (stub — gated off by default) ─────────
+  // ── AIRLOCK CHECK (stub) ──
 
   @Process({ name: 'agentic-airlock-check', concurrency: 1 })
   async handleAirlockCheck(
@@ -383,7 +258,7 @@ export class AgenticProcessor {
   ): Promise<void> {
     const { runId } = job.data;
     this.logger.log(
-      `🔒 [AIRLOCK] Run ${runId.slice(0, 8)} — Stub: airlock check bypassed`,
+      `[AIRLOCK] Run ${runId.slice(0, 8)} — Stub: airlock check bypassed`,
     );
 
     await this.runManager.transitionPhase(runId, 'applying');
@@ -402,21 +277,16 @@ export class AgenticProcessor {
     );
   }
 
-  // ── APPLY (dry-run in Phase 1-2) ─────────────────────────
+  // ── APPLY (dry-run) ──
 
   @Process({ name: 'agentic-apply', concurrency: 1 })
   async handleApply(job: Job<AgenticApplyJobData>): Promise<void> {
     const { runId } = job.data;
-    const startTime = performance.now();
-    this.logger.log(`🚀 [APPLY] Run ${runId.slice(0, 8)}...`);
+    this.logger.log(`[APPLY] Run ${runId.slice(0, 8)}...`);
 
     const run = await this.dataService.getRun(runId);
-
-    // Phase 2: Still dry-run — mark completed without side effects
-    // In Phase 3, this will check AGENTIC_APPLY_ENABLED and execute mutations
-
-    // Accumulate total tokens from all steps
     const branches = await this.dataService.getBranchesByRun(runId);
+
     let totalTokens = 0;
     for (const branch of branches) {
       const steps = await this.dataService.getStepsByBranch(branch.id);
@@ -443,12 +313,10 @@ export class AgenticProcessor {
       truthLevel: 'L1',
     });
 
-    // Save final checkpoint
     await this.runManager.saveCheckpoint(runId);
 
-    const elapsed = (performance.now() - startTime).toFixed(1);
     this.logger.log(
-      `✅ [APPLY] Run ${runId.slice(0, 8)} — COMPLETED (dry-run) in ${elapsed}ms, ${totalTokens} tokens total`,
+      `[APPLY] Run ${runId.slice(0, 8)} — COMPLETED (dry-run), ${totalTokens} tokens total`,
     );
   }
 }

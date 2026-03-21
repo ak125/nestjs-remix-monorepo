@@ -1,8 +1,12 @@
 /**
  * AgenticEngine Module — Moteur agentique AutoMecanik
  *
- * Phase 2: Real LLM-powered planning, solving, critiquing.
- * Pattern: DiagnosticEngineModule (autonomous module, ≤4 deps per service)
+ * Agent-Native: les appels LLM sont faits par les agents Claude Code
+ * (agentic-planner, agentic-solver, agentic-critic) qui ecrivent
+ * directement en DB via MCP Supabase.
+ *
+ * Les services NestJS ne font que la gestion d'etat, l'evidence trail,
+ * et le monitoring via API REST.
  *
  * Tables: __agentic_runs, __agentic_branches, __agentic_steps,
  *         __agentic_evidence, __agentic_checkpoints, __agentic_gate_results
@@ -11,7 +15,6 @@ import { Module, Logger } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { DatabaseModule } from '../../database/database.module';
 import { FeatureFlagsModule } from '../../config/feature-flags.module';
-import { ClaudeCliService } from './services/claude-cli.service';
 import { AgenticEngineController } from './agentic-engine.controller';
 import { AgenticDataService } from './services/agentic-data.service';
 import { EvidenceLedgerService } from './services/evidence-ledger.service';
@@ -31,7 +34,6 @@ import { AGENTIC_QUEUE_NAME } from './constants/agentic.constants';
   ],
   controllers: [AgenticEngineController],
   providers: [
-    ClaudeCliService,
     AgenticDataService,
     EvidenceLedgerService,
     RunManagerService,
@@ -54,7 +56,7 @@ export class AgenticEngineModule {
 
   constructor() {
     this.logger.log(
-      'AgenticEngine Module actif (Phase 2 — LLM plan/solve/critique)',
+      'AgenticEngine Module actif (Agent-Native — plan/solve/critique via Claude Code agents)',
     );
   }
 }

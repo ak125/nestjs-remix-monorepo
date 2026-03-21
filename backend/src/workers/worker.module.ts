@@ -28,10 +28,7 @@ import { PipelineChainProcessor } from './processors/pipeline-chain.processor';
 import { AgenticDataService } from '../modules/agentic-engine/services/agentic-data.service';
 import { EvidenceLedgerService } from '../modules/agentic-engine/services/evidence-ledger.service';
 import { RunManagerService } from '../modules/agentic-engine/services/run-manager.service';
-import { PlannerService } from '../modules/agentic-engine/services/planner.service';
-import { SolverService } from '../modules/agentic-engine/services/solver.service';
 import { CriticService } from '../modules/agentic-engine/services/critic.service';
-import { ClaudeCliService } from '../modules/agentic-engine/services/claude-cli.service';
 import { FeatureFlagsModule } from '../config/feature-flags.module';
 
 // Job health tracking (used by all processors)
@@ -97,16 +94,13 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     VideoGatesService,
     RenderAdapterService,
 
-    // Agentic engine processor + dependencies (Phase 2: Claude CLI plan/solve/critique)
+    // Agentic engine processor + dependencies (Agent-Native — state management only)
     // NOTE: Stateless services, safe duplicate (same pattern as enricher services above)
     AgenticProcessor,
     PipelineChainProcessor, // 🚀 Pipeline chain consumer (dispatches to ExecutionRouterService)
-    ClaudeCliService,
     AgenticDataService,
     EvidenceLedgerService,
     RunManagerService,
-    PlannerService,
-    SolverService,
     CriticService,
 
     // Job health tracking (shared by all processors)
