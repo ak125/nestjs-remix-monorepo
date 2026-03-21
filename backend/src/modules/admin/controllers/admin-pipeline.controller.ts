@@ -30,6 +30,7 @@ import {
   type ExecutionResult,
 } from '../services/execution-router.service';
 import type { PipelineChainJobData } from '../../../workers/processors/pipeline-chain.processor';
+import { RagChangeWatcherService } from '../../../workers/services/rag-change-watcher.service';
 import {
   RateLimitModerate,
   RateLimitStrict,
@@ -54,6 +55,8 @@ export class AdminPipelineController {
     @Optional()
     @InjectQueue('pipeline-chain')
     private readonly pipelineQueue?: Queue<PipelineChainJobData>,
+    @Optional()
+    private readonly ragChangeWatcher?: RagChangeWatcherService,
   ) {}
 
   /**
@@ -179,6 +182,32 @@ export class AdminPipelineController {
         timestamp: job.timestamp,
         processedOn: job.processedOn,
         finishedOn: job.finishedOn,
+      },
+    };
+  }
+
+  /**
+   * POST /api/admin/pipeline/rag-change/poll
+   *
+   * Manually trigger RAG change watcher polling.
+   * Useful for E2E testing: insert a fake event, then call this endpoint.
+   */
+  @Post('rag-change/poll')
+  @RateLimitStrict()
+  async pollRagChanges() {
+    if (!this.ragChangeWatcher) {
+      throw new BadRequestException(
+        'RagChangeWatcherService not available. Ensure WorkerModule is configured.',
+      );
+    }
+
+    const eventsProcessed = await this.ragChangeWatcher.pollAndProcess();
+
+    return {
+      success: true,
+      data: {
+        eventsProcessed,
+        timestamp: new Date().toISOString(),
       },
     };
   }

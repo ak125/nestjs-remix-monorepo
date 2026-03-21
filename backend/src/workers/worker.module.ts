@@ -120,6 +120,7 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
   exports: [
     SeoMonitorSchedulerService,
     ContentMergerService,
+    RagChangeWatcherService,
     BullModule, // 🚀 Export BullModule so AdminModule can inject pipeline-chain queue
   ],
 })
