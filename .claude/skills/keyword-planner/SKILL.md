@@ -360,9 +360,63 @@ Parser le frontmatter YAML pour déterminer :
 **Si `--rX` fourni** : lancer uniquement ce rôle.
 **Les agents KP gèrent eux-mêmes** le HOLD si evidence insuffisante — le skill ne filtre plus.
 
-### Étape 4 — Invoquer les agents KP (séquentiellement)
+### Étape 4 — Lancer via le moteur agentique
 
-Pour chaque rôle déterminé à l'étape 3, invoquer l'agent via `Agent tool` :
+**Le skill /kp passe par le moteur agentique** pour orchestrer les keyword planners.
+Cela donne automatiquement : plan multi-branches → solve parallèle → critique → approve humain.
+
+#### 4a — Créer le run agentique
+
+```bash
+curl -s -X POST http://localhost:3000/api/admin/agentic/runs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "goal": "Keyword plan pour gamme {pg_alias} (pg_id={pg_id})",
+    "goal_type": "keyword_plan",
+    "triggered_by": "skill:kp"
+  }'
+```
+
+Récupérer le `run_id` de la réponse.
+
+#### 4b — Lancer le planner (décompose en branches R*)
+
+Invoquer l'agent planner qui lit le run et crée les branches :
+
+```
+Agent tool, subagent_type: "agentic-planner"
+Prompt: "run_id = {run_id}"
+```
+
+Le planner crée automatiquement 2-3 branches (ex: r3-keyword-planner, r6-keyword-planner, r8-keyword-planner) basées sur le goal_type et le RAG.
+
+#### 4c — Lancer les solvers (un par branche, en parallèle)
+
+Pour chaque branch_id retourné par le planner, lancer un solver **en parallèle** :
+
+```
+Agent tool, subagent_type: "agentic-solver"
+Prompt: "run_id = {run_id}, branch_id = {branch_id}"
+run_in_background: true
+```
+
+#### 4d — Lancer le critic (après tous les solvers)
+
+Quand tous les solvers sont terminés (`branches_completed = branches_total`) :
+
+```
+Agent tool, subagent_type: "agentic-critic"
+Prompt: "run_id = {run_id}"
+```
+
+Le critic score les branches, choisit la meilleure, et le pipeline avance vers verify → arbitrate → apply.
+
+#### 4e — Le run s'arrête en phase `applying` (gate humaine)
+
+Le moteur prépare le payload et attend l'approbation humaine.
+Afficher au user : "Run terminé. Approve avec `POST /api/admin/agentic/runs/{run_id}/approve`"
+
+**Fallback** : si le backend n'est pas démarré (localhost:3000 indisponible), revenir au mode direct : invoquer les agents KP séquentiellement comme avant :
 
 | Rôle | subagent_type |
 |------|---------------|
@@ -373,17 +427,6 @@ Pour chaque rôle déterminé à l'étape 3, invoquer l'agent via `Agent tool` :
 | R6 | r6-keyword-planner |
 | R7 | r7-keyword-planner |
 | R8 | r8-keyword-planner |
-
-Prompt à passer à chaque agent :
-```
-Génère un keyword plan pour la gamme {pg_alias} (pg_id={pg_id}).
-
-Fichier RAG : /opt/automecanik/rag/knowledge/gammes/{pg_alias}.md
-Projet Supabase : cxpojprgwgubzjyqzmoq
-{SEO data fourni par l'utilisateur si dispo}
-
-Exécute le pipeline complet (P0→QA Gate) et écris le résultat dans la table __seo_r{X}_keyword_plan.
-```
 
 ### Étape 5 — Rapport consolidé
 
