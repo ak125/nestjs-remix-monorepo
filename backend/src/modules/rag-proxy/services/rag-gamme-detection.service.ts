@@ -279,6 +279,12 @@ export class RagGammeDetectionService {
     'plaquette',
     'machoire',
     'tambour',
+    'courroie',
+    'feu',
+    'moteur',
+    'volant',
+    'cylindre',
+    'cremailliere',
   ]);
 
   private static scoreAliasMatch(
@@ -304,45 +310,58 @@ export class RagGammeDetectionService {
     }
 
     // Word-level overlap (Jaccard-like)
+    // Use lower threshold (3 chars) to keep short discriminators like "abs", "egr", "fap"
     const titleWords = new Set(
-      titleSlugDePlural.split('-').filter((w) => w.length >= 4),
+      titleSlugDePlural.split('-').filter((w) => w.length >= 3),
     );
-    const aliasWords = alias.split('-').filter((w) => w.length >= 4);
-    if (aliasWords.length === 0 || titleWords.size === 0) return 0;
+    const aliasWordsAll = alias.split('-').filter((w) => w.length >= 3);
+    if (aliasWordsAll.length === 0 || titleWords.size === 0) return 0;
 
     let overlap = 0;
-    for (const aw of aliasWords) {
+    for (const aw of aliasWordsAll) {
       if (titleWords.has(aw)) overlap++;
     }
     if (overlap === 0) return 0;
 
     // Guard: if the only overlapping words are ambiguous prefixes, reject
     // e.g. "capteur" matching "capteur-abs" via the word "capteur" alone
-    if (aliasWords.length > 1) {
-      const nonAmbiguousOverlap = aliasWords.filter(
-        (w) =>
-          titleWords.has(w) &&
-          !RagGammeDetectionService.AMBIGUOUS_PREFIXES.has(w),
-      ).length;
-      // If ALL overlapping words are ambiguous prefixes → not specific enough
-      if (nonAmbiguousOverlap === 0 && overlap < aliasWords.length) {
-        return 0;
-      }
-    }
+    const overlappingWords = aliasWordsAll.filter((w) => titleWords.has(w));
+    const nonAmbiguousOverlap = overlappingWords.filter(
+      (w) => !RagGammeDetectionService.AMBIGUOUS_PREFIXES.has(w),
+    ).length;
 
-    // Require: overlap >= 2, or all alias words match, or single long word (>=8 chars)
-    const hasLongWordMatch = aliasWords.some(
-      (w) => w.length >= 8 && titleWords.has(w),
-    );
-    if (overlap < 2 && overlap < aliasWords.length && !hasLongWordMatch) {
+    // If ALL overlapping words are ambiguous AND alias has more words → not specific enough
+    if (nonAmbiguousOverlap === 0 && overlap < aliasWordsAll.length) {
       return 0;
     }
 
-    // Penalize when title has far fewer words than alias (low specificity)
-    const specificityRatio = titleWords.size / Math.max(aliasWords.length, 1);
-    const overlapRatio = overlap / aliasWords.length;
-    const specifityPenalty = specificityRatio < 0.5 ? 0.5 : 1;
-    return Math.round((20 + overlapRatio * 40) * specifityPenalty); // 10-60
+    // Guard: if alias has N words but only ambiguous prefix matches, require ALL alias words
+    // e.g. alias="capteur-abs" has 2 words, only "capteur" matches → reject
+    if (nonAmbiguousOverlap === 0 && overlap === aliasWordsAll.length) {
+      // All words match but all are ambiguous — only accept if title ≈ alias length
+      const lengthRatio = titleSlug.length / alias.length;
+      if (lengthRatio > 2.0) return 0; // title is much longer → too generic
+    }
+
+    // Require: overlap >= 2, or all alias words match, or single long NON-AMBIGUOUS word (>=8 chars)
+    const hasLongWordMatch = aliasWordsAll.some(
+      (w) =>
+        w.length >= 8 &&
+        titleWords.has(w) &&
+        !RagGammeDetectionService.AMBIGUOUS_PREFIXES.has(w),
+    );
+    if (overlap < 2 && overlap < aliasWordsAll.length && !hasLongWordMatch) {
+      return 0;
+    }
+
+    // Penalize when title has far more words than alias (generic page mentioning many things)
+    const titleWordCount = titleWords.size;
+    const aliasWordCount = aliasWordsAll.length;
+    const specificityRatio = aliasWordCount / Math.max(titleWordCount, 1);
+    const overlapRatio = overlap / aliasWordCount;
+    const specificityPenalty =
+      specificityRatio < 0.3 ? 0.3 : specificityRatio < 0.5 ? 0.6 : 1;
+    return Math.round((20 + overlapRatio * 40) * specificityPenalty); // 6-60
   }
 
   /**
