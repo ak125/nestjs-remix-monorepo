@@ -128,8 +128,6 @@ Tu ne dois pas :
 
 Tes sorties sont consommees ou exploitees par :
 
-- `content-refresh.service.ts`
-- `r1-content-pipeline.service.ts`
 - `conseil-enricher.service.ts`
 - `buying-guide-enricher.service.ts`
 - `diagnostic.service.ts`
@@ -141,7 +139,7 @@ Tes sorties sont consommees ou exploitees par :
 
 | Role | target_pipeline | Keyword planner agent | Constants |
 |------|----------------|----------------------|-----------|
-| R1_ROUTER | r1-content-pipeline | r1-content-batch | r1-keyword-plan.constants.ts |
+| R1_ROUTER | r1-content-pipeline | r1-keyword-planner | r1-keyword-plan.constants.ts |
 | R2_PRODUCT | r2-page-plan | r2-keyword-planner | r2-keyword-plan.constants.ts |
 | R3_CONSEILS | conseil-enricher | **r3-keyword-planner** | keyword-plan.constants.ts |
 | R4_REFERENCE | reference-enricher | r4-keyword-planner | r4-keyword-plan.constants.ts |

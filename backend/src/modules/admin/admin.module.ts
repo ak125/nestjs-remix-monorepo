@@ -40,6 +40,7 @@ import { AdminR7BrandController } from './controllers/admin-r7-brand.controller'
 import { InternalEnrichController } from './controllers/internal-enrich.controller'; // 🔑 Internal enrichment (API key auth)
 import { AdminPageBriefController } from './controllers/admin-page-brief.controller'; // 📋 Page Briefs SEO
 import { AdminKeywordClustersController } from './controllers/admin-keyword-clusters.controller'; // 🔑 Keyword Clusters & Overlaps (read-only)
+import { AdminKeywordPlannerController } from './controllers/admin-keyword-planner.controller'; // 📊 Keyword Planner Coverage
 import { AdminHealthController } from './controllers/admin-health.controller'; // 🏥 Health Overview
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
@@ -150,6 +151,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     InternalEnrichController, // 🔑 Internal enrichment (API key) - /api/internal/buying-guides/*
     AdminPageBriefController, // 📋 Page Briefs SEO - /api/admin/page-briefs/*
     AdminKeywordClustersController, // 🔑 Keyword Clusters & Overlaps - /api/admin/keyword-clusters/*
+    AdminKeywordPlannerController, // 📊 Keyword Planner Coverage - /api/admin/keyword-planner/*
     AdminHealthController, // 🏥 Health Overview - /api/admin/health/*
     AdminConseilController, // 📊 Conseil coverage + backfill - /api/admin/conseil/*
     AdminRagIngestController, // 📄 PDF → RAG merge - /api/admin/rag/pdf-merge/*

@@ -73,6 +73,21 @@ RAG pre-flight : `domain.role` non-vide, `selection.criteria` >= 2, `truth_level
 
 Sources : RAG knowledge, research_brief, R3 keyword plan (anti-cannib), R1 keyword plan (anti-cannib), contenu R6 existant.
 
+**Top vehicules compatibles** (OBLIGATOIRE pour section `compatibility`) :
+```sql
+SELECT am.marque_name, amod.modele_name, COUNT(*) AS cnt
+FROM __cross_gamme_car_new cgc
+JOIN auto_marque am ON am.marque_id::text = cgc.cgc_marque_id
+JOIN auto_modele amod ON amod.modele_id::text = cgc.cgc_modele_id
+WHERE cgc.cgc_pg_id = '{pg_id}'
+GROUP BY am.marque_name, amod.modele_name
+ORDER BY cnt DESC
+LIMIT 6;
+```
+Stocker dans `top_vehicles[]`. Injecter dans `terms_by_section.compatibility.must_include` sous forme :
+`"{gamme_slug} compatible {marque}"`, `"{gamme_slug} {modele}"`.
+Ajouter aussi dans `query_clusters` du cluster `compatibility`.
+
 ### Etape 2 -- Sortie A : intent_map JSON
 
 Contenu : meta, intent (primary + secondary), intent_classification, disambiguation (r6_scope, not_r6, negative_keywords), query_clusters (10 clusters, 1/section), outline (h1 + 10 h2), terms_by_section (must_include/nice_to_have/avoid), forbidden (no_r1/no_r3/no_r5/no_r4/howto_strict), faq_candidates (6-12), decision_quick (4-6), pre_purchase_checklist (8-12), internal_linking, risk_controls (Jaccard R1/R3/R5 < 0.12).

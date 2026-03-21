@@ -171,6 +171,12 @@ export default function AdminRagImages() {
 
   const filtered = useMemo(() => {
     return images.filter((img) => {
+      // Exclude decorative/non-pertinent images unless explicitly selected
+      if (
+        filterType === "all" &&
+        (img.type === "decoratif" || img.usage === "non-pertinent")
+      )
+        return false;
       if (filterGamme === "__sans_gamme__") {
         if (img.gamme !== null) return false;
       } else if (filterGamme !== "all" && img.gamme !== filterGamme) {

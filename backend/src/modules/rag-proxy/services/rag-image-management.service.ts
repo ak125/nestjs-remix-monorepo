@@ -406,7 +406,7 @@ export class RagImageManagementService extends SupabaseBaseService {
 
   /**
    * Scan all .prompt.md with `gamme: null` whose source_url matches the given
-   * URL domain, and enrich them with the detected gamme.
+   * URL exactly (not just domain), and enrich them with the detected gamme.
    * Handles orphaned images from previously failed jobs.
    */
   enrichOrphanedImagesBySourceUrl(sourceUrl: string, gamme: string): number {
@@ -415,13 +415,6 @@ export class RagImageManagementService extends SupabaseBaseService {
       '/opt/automecanik/rag/knowledge';
     const imgDir = path.join(knowledgePath, '_raw', 'web-images');
     let enriched = 0;
-
-    let sourceDomain: string;
-    try {
-      sourceDomain = new URL(sourceUrl).hostname;
-    } catch {
-      return 0;
-    }
 
     let files: string[];
     try {
@@ -435,15 +428,10 @@ export class RagImageManagementService extends SupabaseBaseService {
       try {
         const content = readFileSync(promptPath, 'utf-8');
         if (!content.includes('gamme: null')) continue;
-        // Match source_url domain
+        // Match exact source_url (not just domain)
         const urlMatch = content.match(/source_url:\s*"([^"]+)"/);
         if (!urlMatch) continue;
-        try {
-          const fileDomain = new URL(urlMatch[1]).hostname;
-          if (fileDomain !== sourceDomain) continue;
-        } catch {
-          continue;
-        }
+        if (urlMatch[1] !== sourceUrl) continue;
         const updated = content.replace('gamme: null', `gamme: "${gamme}"`);
         writeFileSync(promptPath, updated, 'utf-8');
         enriched++;

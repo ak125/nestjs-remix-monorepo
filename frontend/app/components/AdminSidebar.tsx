@@ -337,6 +337,12 @@ export const AdminSidebar = memo(function AdminSidebar({
           description: "Clusters SEO & overlaps",
         },
         {
+          name: "Keyword Planner",
+          href: "/admin/keyword-planner",
+          icon: Edit,
+          description: "Prompts KP par gamme R1-R8",
+        },
+        {
           name: "Page Role",
           href: "/admin/page-role",
           icon: ShieldCheck,
@@ -473,6 +479,7 @@ export const AdminSidebar = memo(function AdminSidebar({
       location.pathname.startsWith("/admin/seo") ||
       location.pathname.startsWith("/admin/gammes-seo") ||
       location.pathname.startsWith("/admin/content-refresh") ||
+      location.pathname.startsWith("/admin/keyword-planner") ||
       location.pathname.startsWith("/admin/page-role"),
     Blog:
       location.pathname.startsWith("/admin/blog") ||
