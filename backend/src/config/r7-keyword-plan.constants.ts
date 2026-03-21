@@ -349,3 +349,38 @@ export const R7_HEADING_TEMPLATES = {
   R7_S9_FAQ: 'FAQ — Pièces {brand} et compatibilité',
   R7_S11_ABOUT: 'À propos de {brand}',
 } as const;
+
+// ── Table names R7 ─────────────────────────────────────
+
+export const R7_TABLES = {
+  pages: '__seo_r7_pages',
+  versions: '__seo_r7_page_versions',
+  fingerprints: '__seo_r7_fingerprints',
+  queue: '__seo_r7_regeneration_queue',
+  qa: '__seo_r7_qa_reviews',
+  keywordPlan: '__seo_r7_keyword_plan',
+} as const;
+
+// ── SEO Decision enum R7 ──────────────────────────────
+
+export type R7SeoDecision =
+  | 'PUBLISH'
+  | 'REVIEW_REQUIRED'
+  | 'REGENERATE'
+  | 'REJECT';
+
+// ── Sitemap rules per decision ────────────────────────
+
+export const R7_SITEMAP_RULES: Record<
+  R7SeoDecision,
+  { sitemap: boolean; robots: string; priority: number }
+> = {
+  PUBLISH: { sitemap: true, robots: 'index, follow', priority: 0.8 },
+  REVIEW_REQUIRED: {
+    sitemap: true,
+    robots: 'index, follow',
+    priority: 0.6,
+  },
+  REGENERATE: { sitemap: false, robots: 'noindex, follow', priority: 0 },
+  REJECT: { sitemap: false, robots: 'noindex, nofollow', priority: 0 },
+};

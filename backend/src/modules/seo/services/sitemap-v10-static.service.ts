@@ -350,11 +350,9 @@ export class SitemapV10StaticService extends SupabaseBaseService {
   async generateDiagnosticSitemap(): Promise<string | null> {
     try {
       // 🛡️ RPC Safety Gate
-      const { data: diagnostics, error } = await this.callRpc<any[]>(
-        'get_all_seo_observables_for_sitemap',
-        {},
-        { source: 'cron' },
-      );
+      const { data: diagnostics, error } = await this.callRpc<
+        Record<string, unknown>[]
+      >('get_all_seo_observables_for_sitemap', {}, { source: 'cron' });
 
       if (error) {
         this.logger.error(
@@ -451,6 +449,84 @@ export class SitemapV10StaticService extends SupabaseBaseService {
       return filePath;
     } catch (error) {
       this.logger.error(`❌ Failed to generate reference sitemap: ${error}`);
+      return null;
+    }
+  }
+
+  /**
+   * Génère sitemap-brands.xml (R7 Brand pages)
+   * Source primaire: __seo_r7_pages (PUBLISH), fallback: auto_marque
+   */
+  async generateBrandsSitemap(): Promise<string | null> {
+    try {
+      // 1. Fetch enriched brands from R7 pages
+      const { data: r7Pages, error: r7Error } = await this.supabase
+        .from('__seo_r7_pages')
+        .select('canonical_url, updated_at, seo_decision')
+        .in('seo_decision', ['PUBLISH', 'REVIEW_REQUIRED']);
+
+      // 2. Fetch all active brands as fallback
+      const { data: allBrands, error: brandsError } = await this.supabase
+        .from('auto_marque')
+        .select('marque_id, marque_alias')
+        .eq('marque_display', 1)
+        .eq('marque_relfollow', 1);
+
+      if (brandsError) {
+        this.logger.error(
+          `❌ Error fetching brands for sitemap: ${brandsError.message}`,
+        );
+        return null;
+      }
+
+      const urls: SitemapUrl[] = [];
+
+      // Add R7 enriched pages with priority based on seo_decision
+      const r7Urls = new Set<string>();
+      if (!r7Error && r7Pages) {
+        for (const page of r7Pages) {
+          const priority = page.seo_decision === 'PUBLISH' ? '0.8' : '0.6';
+          urls.push({
+            url: page.canonical_url,
+            page_type: 'brand',
+            changefreq: 'weekly',
+            priority,
+            last_modified_at: page.updated_at,
+          });
+          r7Urls.add(page.canonical_url);
+        }
+      }
+
+      // Add non-enriched brands as fallback (lower priority)
+      if (allBrands) {
+        for (const brand of allBrands) {
+          const brandUrl = `/constructeurs/${brand.marque_alias}-${brand.marque_id}.html`;
+          if (!r7Urls.has(brandUrl)) {
+            urls.push({
+              url: brandUrl,
+              page_type: 'brand',
+              changefreq: 'monthly',
+              priority: '0.5',
+              last_modified_at: null,
+            });
+          }
+        }
+      }
+
+      if (urls.length === 0) {
+        this.logger.warn('⚠️ No brand pages found for sitemap');
+        return null;
+      }
+
+      const filePath = path.join(
+        this.xmlService.OUTPUT_DIR,
+        'sitemap-brands.xml',
+      );
+      await this.xmlService.writeStaticSitemapFile(filePath, urls);
+      this.logger.log(`   ✅ sitemap-brands.xml: ${urls.length} URLs (R7)`);
+      return filePath;
+    } catch (error) {
+      this.logger.error(`❌ Failed to generate brands sitemap: ${error}`);
       return null;
     }
   }

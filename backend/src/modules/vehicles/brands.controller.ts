@@ -448,4 +448,19 @@ export class BrandsController {
     await this.brandRpcService.invalidateCache(marqueId);
     return { status: 200, message: `Cache invalidé pour brand ${marqueId}` };
   }
+
+  /**
+   * GET /api/brands/:id/r7-content
+   * Returns enriched R7 brand content if published.
+   * Used by frontend loader for SEO overlay.
+   */
+  @Get(':id/r7-content')
+  async getR7Content(@Param('id', ParseIntPipe) marqueId: number) {
+    const pageKey = `r7_brand_${marqueId}`;
+    const data = await this.brandRpcService.getR7Content(pageKey);
+    if (!data) {
+      return { success: false, data: null };
+    }
+    return { success: true, data };
+  }
 }

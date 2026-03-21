@@ -518,14 +518,14 @@ class BrandApiService {
     // Titre
     let title =
       seoData?.sm_title ||
-      `Pièces détachées auto ${brandData.marque_name_meta_title} neuves & d'origine`;
+      `Pièces auto ${brandData.marque_name_meta_title} : catalogue compatible tous modèles | AutoMecanik`;
     title = this.processSeoMarkers(title, variables);
     title = this.contentCleaner(title);
 
     // Description
     let description =
       seoData?.sm_descrip ||
-      `Achetez pour votre ${brandData.marque_name_meta} des pièces détachées & accessoires auto de qualité à un prix pas cher de toutes les marques d'équipementiers de pièces automobile.`;
+      `Catalogue pièces détachées ${brandData.marque_name_meta} compatibles : freinage, embrayage, distribution, filtration. Sélectionnez votre modèle et motorisation pour une compatibilité garantie.`;
     description = this.processSeoMarkers(description, variables);
     description = this.contentCleaner(description);
 
@@ -722,7 +722,7 @@ class BrandApiService {
       // Pas de fallback - retourner l'erreur
       return {
         success: false,
-        data: {} as BrandPageResponse['data'],
+        data: {} as BrandPageResponse["data"],
         error: error instanceof Error ? error.message : "Erreur inconnue",
       };
     }
@@ -906,6 +906,38 @@ class BrandApiService {
       size: this.cache.size,
       keys: Array.from(this.cache.keys()),
     };
+  }
+
+  /**
+   * Récupère le contenu R7 enrichi pour une marque (si PUBLISH)
+   */
+  async getR7Content(marqueId: number): Promise<{
+    h1: string;
+    meta_title: string;
+    meta_description: string;
+    rendered_json: {
+      blocks: Array<{
+        id: string;
+        type: string;
+        title: string;
+        renderedText: string;
+      }>;
+    };
+    section_scores: Record<string, number>;
+    diversity_score: number;
+    seo_decision: string;
+  } | null> {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/brands/${marqueId}/r7-content`,
+      );
+      if (!response.ok) return null;
+      const json = await response.json();
+      if (!json.success || !json.data) return null;
+      return json.data;
+    } catch {
+      return null;
+    }
   }
 }
 

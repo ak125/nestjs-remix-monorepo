@@ -1859,6 +1859,17 @@ export default function VehicleDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* 🔗 CTA retour hub marque R7 (maillage R8→R7) */}
+        <div className="mt-8 text-center">
+          <a
+            href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-xl text-gray-700 font-medium transition-colors"
+          >
+            Voir toutes les pièces {breadcrumb.brand}
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
       </div>
 
       {/* Sticky vehicle bar - top */}

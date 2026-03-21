@@ -35,6 +35,7 @@ import { SeoCockpitController } from './controllers/seo-cockpit.controller'; // 
 // AdminVehicleResolveController supprimé — méthode resolveVehicleTypes jamais implémentée
 import { AdminBuyingGuideController } from './controllers/admin-buying-guide.controller'; // 📖 Buying Guide RAG enrichment
 import { AdminR8VehicleController } from './controllers/admin-r8-vehicle.controller'; // 🚗 R8 Vehicle enrichment
+import { AdminR7BrandController } from './controllers/admin-r7-brand.controller'; // 🏭 R7 Brand enrichment
 // AdminContentRefreshController SUPPRIME — content-refresh pipeline remplace par skills /content-gen
 import { InternalEnrichController } from './controllers/internal-enrich.controller'; // 🔑 Internal enrichment (API key auth)
 import { AdminPageBriefController } from './controllers/admin-page-brief.controller'; // 📋 Page Briefs SEO
@@ -84,6 +85,7 @@ import { AdminFeatureFlagsController } from './controllers/admin-feature-flags.c
 // RagCatchupService SUPPRIME — catch-up auto remplace par skills /content-gen
 import { R3ImagePromptService } from './services/r3-image-prompt.service'; // 🎨 R3 Image Prompts (template-based, 0-LLM)
 import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service'; // 🚗 R8 Vehicle page enricher (RAG + diversity scoring)
+import { R7BrandEnricherService } from './services/r7-brand-enricher.service'; // 🏭 R7 Brand page enricher (RAG + diversity scoring)
 import { VehicleRagGeneratorService } from './services/vehicle-rag-generator.service'; // 🚗 Vehicle RAG .md generator (0 LLM)
 import { AdminVehicleRagController } from './controllers/admin-vehicle-rag.controller'; // 🚗 Vehicle RAG generation endpoints
 
@@ -154,6 +156,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     AdminR3ImagePromptsController, // 🎨 R3 Image Prompts - /api/admin/r3-image-prompts/*
     AdminFeatureFlagsController, // 🏷️ Feature Flags - /api/admin/feature-flags/*
     AdminR8VehicleController, // 🚗 R8 Vehicle enrichment - /api/admin/r8/enrich/:typeId
+    AdminR7BrandController, // 🏭 R7 Brand enrichment - /api/admin/r7/enrich/:marqueId
     AdminVehicleRagController, // 🚗 Vehicle RAG generation - /api/admin/vehicle-rag/*
     AdminDbGovernanceController, // 📊 DB Governance Phase 2 - /api/admin/db-governance/*
     AdminPipelineController, // 🚀 Unified pipeline execution - /api/admin/pipeline/*
@@ -202,6 +205,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     R1KeywordPlanGatesService, // 🚦 R1 Keyword plan gates KA1-KA6 (R1 pipeline + keyword-planner R1 mode)
     R3ImagePromptService, // 🎨 R3 Image Prompts (template-based, 0-LLM)
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
+    R7BrandEnricherService, // 🏭 R7 Brand page enricher (RAG + diversity scoring, 0-LLM)
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
     R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)
@@ -226,6 +230,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     KeywordPlanGatesService, // 🚦 Export for keyword-planner agent
     R1KeywordPlanGatesService, // 🚦 Export for R1 pipeline + keyword-planner R1 mode
     R8VehicleEnricherService, // 🚗 Export for content-refresh processor
+    R7BrandEnricherService, // 🏭 Export for R7 brand enrichment
     VehicleRagGeneratorService, // 🚗 Export for R8 enricher auto-generate
   ],
 })

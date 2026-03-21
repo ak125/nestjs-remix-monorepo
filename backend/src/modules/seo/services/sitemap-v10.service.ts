@@ -130,8 +130,13 @@ export class SitemapV10Service extends SupabaseBaseService {
       const reference = await this.staticService.generateReferenceSitemap();
       if (reference) allFilePaths.push(reference);
 
-      // 8. Pièces par température (714k URLs via source V9)
-      this.logger.log('📦 [8/9] Generating sitemap-{bucket}-pieces-*.xml...');
+      // 8. Brands R7
+      this.logger.log('🏭 [8/10] Generating sitemap-brands.xml...');
+      const brands = await this.staticService.generateBrandsSitemap();
+      if (brands) allFilePaths.push(brands);
+
+      // 9. Pièces par température (714k URLs via source V9)
+      this.logger.log('📦 [9/10] Generating sitemap-{bucket}-pieces-*.xml...');
       const buckets: TemperatureBucket[] = ['hot', 'stable', 'cold'];
 
       for (const bucket of buckets) {
@@ -219,9 +224,9 @@ export class SitemapV10Service extends SupabaseBaseService {
     this.logger.log(`   Total Files: ${totalFiles}`);
     this.logger.log(`   Duration: ${totalDurationMs}ms`);
 
-    // 9. Crawl Hubs (non-bloquant)
+    // 10. Crawl Hubs (non-bloquant)
     let hubResult: AllBucketsResult['hubResult'];
-    this.logger.log('🔗 [9/9] Generating crawl hubs...');
+    this.logger.log('🔗 [10/10] Generating crawl hubs...');
     try {
       const hubs = await this.hubsService.generateAllHubsRobust();
       hubResult = {

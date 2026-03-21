@@ -2,8 +2,8 @@
 // Format: /constructeurs/{constructeur}-{id}.html
 // Exemple: /constructeurs/bmw-33.html, /constructeurs/renault-140.html
 //
-// Rôle SEO : R1 - ROUTER
-// Intention : Sélection de véhicule par marque
+// Rôle SEO : R7 - BRAND
+// Intention : Hub marque constructeur
 
 import {
   defer,
@@ -51,7 +51,7 @@ import {
  * Handle export pour propager le rôle SEO au root Layout
  */
 export const handle = {
-  pageRole: createPageRoleMeta(PageRole.R1_ROUTER, {
+  pageRole: createPageRoleMeta(PageRole.R7_BRAND, {
     clusterId: "constructeurs",
   }),
 };
@@ -216,6 +216,80 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
                 },
               ]
             : []),
+          // 5️⃣ FAQPage - Questions fréquentes marque
+          {
+            "@type": "FAQPage",
+            "@id": `${canonicalUrl}#faq`,
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: `Comment trouver la bonne pièce pour ma ${brand.marque_name} ?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: `Sélectionnez votre modèle ${brand.marque_name} et votre motorisation dans notre configurateur. Le système vérifie automatiquement la compatibilité avec votre véhicule.`,
+                },
+              },
+              {
+                "@type": "Question",
+                name: `Les pièces ${brand.marque_name} sont-elles d'origine ?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: `Nous proposons des pièces d'origine constructeur (OEM) et des pièces de qualité équivalente certifiées par les équipementiers (Bosch, Valeo, TRW, etc.) pour ${brand.marque_name}.`,
+                },
+              },
+              {
+                "@type": "Question",
+                name: `Quels modèles ${brand.marque_name} sont couverts ?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: `Notre catalogue couvre l'ensemble des modèles ${brand.marque_name} disponibles sur le marché français, des citadines aux utilitaires, toutes motorisations confondues.`,
+                },
+              },
+              {
+                "@type": "Question",
+                name: `Comment vérifier la compatibilité d'une pièce ${brand.marque_name} ?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: `Chaque fiche produit affiche les véhicules ${brand.marque_name} compatibles. Vous pouvez aussi utiliser notre sélecteur de véhicule pour filtrer uniquement les pièces adaptées à votre motorisation.`,
+                },
+              },
+              {
+                "@type": "Question",
+                name: `Quel délai de livraison pour les pièces ${brand.marque_name} ?`,
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "La livraison standard est de 24 à 48h en France métropolitaine. Les pièces sont expédiées depuis nos entrepôts en Europe.",
+                },
+              },
+            ],
+          },
+          // 6️⃣ HowTo - Guide compatibilité en 3 étapes
+          {
+            "@type": "HowTo",
+            "@id": `${canonicalUrl}#howto`,
+            name: `Trouver la bonne motorisation ${brand.marque_name}`,
+            description: `Guide en 3 étapes pour identifier la pièce compatible avec votre véhicule ${brand.marque_name}.`,
+            step: [
+              {
+                "@type": "HowToStep",
+                position: 1,
+                name: "Sélectionnez votre modèle",
+                text: `Choisissez votre modèle ${brand.marque_name} dans la liste (ex : 308, Clio, Golf...).`,
+              },
+              {
+                "@type": "HowToStep",
+                position: 2,
+                name: "Précisez la motorisation",
+                text: "Indiquez la cylindrée et la puissance (ex : 1.6 HDi 110ch). Cette info se trouve sur votre carte grise (champ D.2).",
+              },
+              {
+                "@type": "HowToStep",
+                position: 3,
+                name: "Vérifiez la compatibilité",
+                text: "Le système affiche uniquement les pièces compatibles avec votre motorisation exacte. Vérifiez la référence OEM si besoin.",
+              },
+            ],
+          },
         ],
       }
     : null;
@@ -281,7 +355,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
       });
     }
 
-    return defer(bestsellersResponse.data);
+    // 🏭 R7 enriched content (optional overlay)
+    const r7Content = await brandApi.getR7Content(marque_id);
+
+    return defer({ ...bestsellersResponse.data, r7Content });
   } catch (error) {
     // Propager les Response HTTP (404, etc.) telles quelles
     if (error instanceof Response) {
@@ -304,6 +381,7 @@ export default function BrandCatalogPage() {
     blog_content,
     related_brands,
     popular_gammes,
+    r7Content,
   } = useLoaderData<typeof loader>();
 
   // Adapter les noms pour le code existant
@@ -312,8 +390,11 @@ export default function BrandCatalogPage() {
   const apiVehicles = popular_vehicles;
 
   // Données de maillage interne
-  const _relatedBrands: RelatedBrand[] = related_brands || [];
+  const relatedBrands: RelatedBrand[] = related_brands || [];
   const popularGammes: PopularGamme[] = popular_gammes || [];
+
+  // R7 enriched blocks (from DB, optional overlay)
+  const r7Blocks = r7Content?.rendered_json?.blocks || [];
 
   // Reconstruction de la description à partir des données disponibles ou fallback
   const brandDescription: BrandDescription = {
@@ -354,6 +435,17 @@ export default function BrandCatalogPage() {
             <li>
               <Link to="/" className="text-blue-600 hover:underline">
                 Accueil
+              </Link>
+            </li>
+            <li>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </li>
+            <li>
+              <Link
+                to="/constructeurs/"
+                className="text-blue-600 hover:underline"
+              >
+                Constructeurs
               </Link>
             </li>
             <li>
@@ -660,6 +752,188 @@ export default function BrandCatalogPage() {
           brandId={manufacturer.marque_id}
           className="bg-white border-b border-gray-100"
         />
+      )}
+
+      {/* 🏭 R7 Enriched Sections */}
+      {r7Blocks.length > 0 && (
+        <>
+          {/* Micro-SEO Block */}
+          {r7Blocks.find((b: any) => b.id === "R7_S2_MICRO_SEO") && (
+            <section className="bg-white py-8 md:py-12 border-b border-gray-100">
+              <div className="container mx-auto px-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+                  {r7Blocks.find((b: any) => b.id === "R7_S2_MICRO_SEO")?.title}
+                </h2>
+                <p className="text-gray-700 text-lg leading-relaxed">
+                  {
+                    r7Blocks.find((b: any) => b.id === "R7_S2_MICRO_SEO")
+                      ?.renderedText
+                  }
+                </p>
+              </div>
+            </section>
+          )}
+
+          {/* Compatibility Guide */}
+          {r7Blocks.find((b: any) => b.id === "R7_S7_COMPATIBILITY") && (
+            <section className="bg-gradient-to-b from-blue-50 to-white py-8 md:py-12 border-b border-gray-100">
+              <div className="container mx-auto px-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+                  {
+                    r7Blocks.find((b: any) => b.id === "R7_S7_COMPATIBILITY")
+                      ?.title
+                  }
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {r7Blocks
+                    .find((b: any) => b.id === "R7_S7_COMPATIBILITY")
+                    ?.renderedText.split("\n")
+                    .filter((line: string) => line.startsWith("**"))
+                    .map((step: string, idx: number) => {
+                      const match = step.match(/\*\*(.+?)\*\*\s*(.+)/);
+                      return (
+                        <div
+                          key={idx}
+                          className="bg-white rounded-xl p-6 shadow-sm border border-gray-200"
+                        >
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                              {idx + 1}
+                            </span>
+                            <h3 className="font-semibold text-gray-900">
+                              {match ? match[1] : `Étape ${idx + 1}`}
+                            </h3>
+                          </div>
+                          <p className="text-gray-600 text-sm">
+                            {match ? match[2] : step.replace(/\*\*/g, "")}
+                          </p>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Safe Table (maintenance intervals) */}
+          {r7Blocks.find((b: any) => b.id === "R7_S8_SAFE_TABLE") && (
+            <section className="bg-white py-8 md:py-12 border-b border-gray-100">
+              <div className="container mx-auto px-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+                  {
+                    r7Blocks.find((b: any) => b.id === "R7_S8_SAFE_TABLE")
+                      ?.title
+                  }
+                </h2>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-4 py-3 font-semibold text-gray-900 border-b">
+                          Pièce
+                        </th>
+                        <th className="px-4 py-3 font-semibold text-gray-900 border-b">
+                          Intervalle recommandé
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {r7Blocks
+                        .find((b: any) => b.id === "R7_S8_SAFE_TABLE")
+                        ?.renderedText.split("\n")
+                        .filter(
+                          (line: string) =>
+                            line.startsWith("|") &&
+                            !line.includes("---") &&
+                            !line.includes("Pièce"),
+                        )
+                        .map((row: string, idx: number) => {
+                          const cells = row
+                            .split("|")
+                            .filter(Boolean)
+                            .map((c: string) => c.trim());
+                          return (
+                            <tr
+                              key={idx}
+                              className={
+                                idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+                              }
+                            >
+                              <td className="px-4 py-3 text-gray-900 border-b">
+                                {cells[0]}
+                              </td>
+                              <td className="px-4 py-3 text-gray-600 border-b">
+                                {cells[1]}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* FAQ Section */}
+          {r7Blocks.find((b: any) => b.id === "R7_S9_FAQ") && (
+            <section className="bg-gray-50 py-8 md:py-12 border-b border-gray-100">
+              <div className="container mx-auto px-4">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+                  {r7Blocks.find((b: any) => b.id === "R7_S9_FAQ")?.title}
+                </h2>
+                <div className="space-y-4 max-w-3xl">
+                  {r7Blocks
+                    .find((b: any) => b.id === "R7_S9_FAQ")
+                    ?.renderedText.split("\n\n")
+                    .filter((block: string) => block.startsWith("**"))
+                    .map((block: string, idx: number) => {
+                      const lines = block.split("\n");
+                      const question = lines[0]?.replace(/\*\*/g, "") || "";
+                      const answer = lines.slice(1).join(" ") || "";
+                      return (
+                        <details
+                          key={idx}
+                          className="bg-white rounded-lg border border-gray-200 overflow-hidden group"
+                        >
+                          <summary className="px-6 py-4 cursor-pointer font-semibold text-gray-900 hover:bg-gray-50 flex items-center justify-between">
+                            <span>{question}</span>
+                            <ChevronRight className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-90" />
+                          </summary>
+                          <div className="px-6 pb-4 text-gray-600">
+                            {answer}
+                          </div>
+                        </details>
+                      );
+                    })}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Related Brands */}
+          {r7Blocks.find((b: any) => b.id === "R7_S10_RELATED") &&
+            relatedBrands.length > 0 && (
+              <section className="bg-white py-8 md:py-12 border-b border-gray-100">
+                <div className="container mx-auto px-4">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                    Autres constructeurs
+                  </h2>
+                  <div className="flex flex-wrap gap-3">
+                    {relatedBrands.slice(0, 8).map((rb) => (
+                      <Link
+                        key={rb.marque_id}
+                        to={`/constructeurs/${rb.marque_alias}-${rb.marque_id}.html`}
+                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors"
+                      >
+                        Pièces {rb.marque_name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+        </>
       )}
 
       {/* 📘 Présentation Constructeur */}

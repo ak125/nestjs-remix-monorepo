@@ -93,7 +93,7 @@ export class BrandRpcService extends SupabaseBaseService {
     });
 
     // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
-    const rpcPromise = this.callRpc<any>(
+    const rpcPromise = this.callRpc<Record<string, unknown>>(
       'get_brand_page_data_optimized',
       { p_marque_id: marqueId },
       { source: 'api' },
@@ -176,5 +176,30 @@ export class BrandRpcService extends SupabaseBaseService {
       `✅ Warm cache terminé: ${success} succès, ${failed} échecs`,
     );
     return { success, failed };
+  }
+
+  /**
+   * 📄 Récupère le contenu R7 enrichi (si PUBLISH)
+   */
+  async getR7Content(pageKey: string): Promise<{
+    h1: string;
+    meta_title: string;
+    meta_description: string;
+    rendered_json: Record<string, unknown>;
+    section_scores: Record<string, number>;
+    diversity_score: number;
+    seo_decision: string;
+  } | null> {
+    const { data, error } = await this.client
+      .from('__seo_r7_pages')
+      .select(
+        'h1, meta_title, meta_description, rendered_json, section_scores, diversity_score, seo_decision',
+      )
+      .eq('page_key', pageKey)
+      .eq('seo_decision', 'PUBLISH')
+      .maybeSingle();
+
+    if (error || !data) return null;
+    return data;
   }
 }
