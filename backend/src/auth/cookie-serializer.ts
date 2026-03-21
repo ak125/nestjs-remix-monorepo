@@ -15,19 +15,37 @@ export class CookieSerializer extends PassportSerializer {
 
   /**
    * ✅ DESERIALIZE: Récupérer l'utilisateur depuis la BDD avec cache
-   * Supporte le nouveau format { userId, authSource } et l'ancien format string (rétrocompat)
+   * Supporte le nouveau format { userId, authSource, sessionVersion } et l'ancien format string (rétrocompat)
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Passport deserializeUser signature
   async deserializeUser(
-    sessionData: string | { userId: string; authSource?: 'admin' | 'customer' },
+    sessionData:
+      | string
+      | {
+          userId: string;
+          authSource?: 'admin' | 'customer';
+          sessionVersion?: number;
+        },
     done: (err: any, user?: any) => void,
   ) {
     try {
       // Normaliser : ancien format (string) → nouveau format (object)
-      const { userId, authSource } =
+      const { userId, authSource, sessionVersion } =
         typeof sessionData === 'string'
-          ? { userId: sessionData, authSource: undefined }
-          : sessionData;
+          ? { userId: sessionData, authSource: undefined, sessionVersion: 0 }
+          : {
+              ...sessionData,
+              sessionVersion: sessionData.sessionVersion || 0,
+            };
+
+      // Check session version — reject if invalidated via "logout everywhere"
+      const currentVersion = await this.authService.getSessionVersion(userId);
+      if (currentVersion > 0 && sessionVersion < currentVersion) {
+        this.logger.log(
+          `Session rejected: version ${sessionVersion} < ${currentVersion} for user ${userId}`,
+        );
+        return done(null, false);
+      }
 
       const cacheKey = `${authSource || 'unknown'}:${userId}`;
 
@@ -104,6 +122,15 @@ export class CookieSerializer extends PassportSerializer {
     const authSource: 'admin' | 'customer' =
       user.authSource || (user.isAdmin ? 'admin' : 'customer');
 
-    done(null, { userId, authSource });
+    // Store current session version to enable "logout everywhere"
+    this.authService
+      .getSessionVersion(userId)
+      .then((version) => {
+        done(null, { userId, authSource, sessionVersion: version });
+      })
+      .catch(() => {
+        // Fallback: store version 0 if Redis unavailable
+        done(null, { userId, authSource, sessionVersion: 0 });
+      });
   }
 }

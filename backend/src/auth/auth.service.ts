@@ -807,8 +807,8 @@ export class AuthService {
         return { success: false, message: 'Erreur lors de la mise à jour' };
       }
 
-      // Invalider les sessions actives pour forcer une reconnexion
-      await this.cacheService.delete(`user:${userId}`);
+      // Invalider TOUTES les sessions pour forcer reconnexion sur tous les appareils
+      await this.invalidateAllSessions(userId);
 
       this.logger.log(`Password changed successfully for user ${userId}`);
       return { success: true, message: 'Mot de passe mis à jour avec succès' };
@@ -930,16 +930,6 @@ export class AuthService {
         this.logger.log(
           `Logout initiated for user ${userId}, session ${sessionId}`,
         );
-
-        // Utiliser le cache Redis existant pour tracker les déconnexions
-        await this.cacheService.set(
-          `logout:${userId}:${sessionId}`,
-          {
-            timestamp: new Date().toISOString(),
-            action: 'logout',
-          },
-          60 * 15, // 15 minutes
-        );
       }
 
       // Nettoyer les sessions en cache
@@ -953,6 +943,47 @@ export class AuthService {
     } catch (error) {
       this.logger.error(`Modern logout error: ${error}`);
       // Ne pas faire échouer le logout pour des erreurs de logging
+    }
+  }
+
+  /**
+   * Invalidate all sessions for a user (logout everywhere).
+   * Increments the session version — all existing sessions with older version
+   * will be rejected at deserialization time.
+   * Use after password change, account compromise, or explicit "logout all devices".
+   */
+  async invalidateAllSessions(userId: string): Promise<void> {
+    try {
+      const versionKey = `session_version:${userId}`;
+      const newVersion = await this.cacheService.atomicIncr(
+        versionKey,
+        86400 * 30,
+      ); // 30 days TTL
+      this.logger.log(
+        `All sessions invalidated for user ${userId} (version=${newVersion})`,
+      );
+
+      // Also clear user cache to force re-fetch
+      await this.cacheService.del(`user:${userId}`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to invalidate all sessions for ${userId}: ${error}`,
+      );
+    }
+  }
+
+  /**
+   * Get current session version for a user.
+   * Returns 0 if no version set (= all sessions valid).
+   */
+  async getSessionVersion(userId: string): Promise<number> {
+    try {
+      const version = await this.cacheService.get<number>(
+        `session_version:${userId}`,
+      );
+      return version || 0;
+    } catch {
+      return 0;
     }
   }
 
