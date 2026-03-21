@@ -8,6 +8,7 @@ import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagFingerprintService } from './rag-fingerprint.service';
 import { RagNormalizationService } from './rag-normalization.service';
 import { RagAdmissibilityGateService } from './rag-admissibility-gate.service';
+import { RagGammeDetectionService } from './rag-gamme-detection.service';
 import type {
   RagDocInput,
   IngestDecision,
@@ -94,6 +95,8 @@ export class RagCleanupService extends SupabaseBaseService {
     private readonly ragNormalizationService: RagNormalizationService,
     @Inject(forwardRef(() => RagAdmissibilityGateService))
     private readonly ragAdmissibilityGateService: RagAdmissibilityGateService,
+    @Inject(forwardRef(() => RagGammeDetectionService))
+    private readonly ragGammeDetectionService: RagGammeDetectionService,
   ) {
     super(configService);
   }
@@ -431,6 +434,21 @@ export class RagCleanupService extends SupabaseBaseService {
         const fmCategoryValid =
           fm.category && matrix?.categories.includes(fm.category);
 
+        // Detect gamme_aliases before DB write (not post-facto)
+        const absPathForDetection = path.isAbsolute(fp)
+          ? fp
+          : path.join(knowledgeBasePath, fp);
+        const detectedGammes =
+          await this.ragGammeDetectionService.resolveGammesFromFiles([
+            absPathForDetection,
+          ]);
+        const gammeAliases: string[] = [];
+        for (const [alias, files] of detectedGammes) {
+          if (files.some((f) => f === absPathForDetection)) {
+            gammeAliases.push(alias);
+          }
+        }
+
         const doc: RagDocInput = {
           title: fm.title || path.basename(source),
           content: body,
@@ -438,6 +456,7 @@ export class RagCleanupService extends SupabaseBaseService {
           truth_level: (fm.truth_level as TruthLevel) || 'L2',
           domain: fm.domain || defaults.domain,
           category: fmCategoryValid ? fm.category! : defaults.category,
+          gamme_aliases: gammeAliases.length > 0 ? gammeAliases : undefined,
         };
 
         // Provenance check
