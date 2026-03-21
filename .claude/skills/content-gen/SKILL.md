@@ -87,11 +87,59 @@ Read .claude/prompts/R{X}_{ROLE}/generator.md
 | `--meta` | Meta descriptions R1+R3+R6 |
 | `--all` | Tous les rôles forcés |
 
-### Étape 4 — Générer le contenu par rôle
+### Étape 4 — Lancer via le moteur agentique
 
-Pour chaque rôle, suivre le prompt canonique `.claude/prompts/R*/generator.md`.
+**Le skill /content-gen passe par le moteur agentique** pour orchestrer la génération.
+Cela donne automatiquement : plan multi-branches → solve parallèle → critique → approve humain.
 
-**RÈGLES DE GÉNÉRATION** :
+#### 4a — Créer le run agentique
+
+```bash
+curl -s -X POST http://localhost:3000/api/admin/agentic/runs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "goal": "Content generation pour gamme {pg_alias} (pg_id={pg_id})",
+    "goal_type": "content_generation",
+    "triggered_by": "skill:content-gen"
+  }'
+```
+
+Récupérer le `run_id` de la réponse.
+
+#### 4b — Lancer le planner
+
+```
+Agent tool, subagent_type: "agentic-planner"
+Prompt: "run_id = {run_id}"
+```
+
+Le planner crée les branches (ex: r1-content-batch, r4-content-batch, r6-content-batch, conseil-batch).
+
+#### 4c — Lancer les solvers (en parallèle)
+
+Pour chaque branch_id, lancer un solver **en parallèle** :
+
+```
+Agent tool, subagent_type: "agentic-solver"
+Prompt: "run_id = {run_id}, branch_id = {branch_id}"
+run_in_background: true
+```
+
+#### 4d — Lancer le critic
+
+```
+Agent tool, subagent_type: "agentic-critic"
+Prompt: "run_id = {run_id}"
+```
+
+#### 4e — Gate humaine
+
+Le run s'arrête en phase `applying`. Afficher :
+"Run terminé. Approve avec `POST /api/admin/agentic/runs/{run_id}/approve`"
+
+**Fallback** : si le backend n'est pas démarré, générer directement le contenu par rôle ci-dessous.
+
+**RÈGLES DE GÉNÉRATION (mode direct ou solver)** :
 
 1. **Utiliser UNIQUEMENT les données du RAG** — ne pas inventer
 2. **Respecter le vocabulaire interdit** du rôle (voir generator.md)

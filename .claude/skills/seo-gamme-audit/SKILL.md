@@ -550,9 +550,29 @@ Calculer automatiquement :
 
 ---
 
-## Étape 13 — Auto-fix (mode --fix uniquement)
+## Étape 13 — Auto-fix via moteur agentique (mode --fix uniquement)
 
 **Pré-requis** : l'argument `--fix` est présent. Sans `--fix`, afficher uniquement le rapport + actions recommandées.
+
+### Mode agentique (recommandé)
+
+Si le backend est démarré (localhost:3000), router les fixes via le moteur agentique :
+
+```bash
+curl -s -X POST http://localhost:3000/api/admin/agentic/runs \
+  -H "Content-Type: application/json" \
+  -d '{
+    "goal": "SEO audit fix pour gamme {pg_alias} (pg_id={pg_id}) — gaps: {liste_gaps}",
+    "goal_type": "seo_audit",
+    "triggered_by": "skill:seo-gamme-audit:fix"
+  }'
+```
+
+Puis lancer planner → solvers → critic → approve (même pattern que `/kp` et `/content-gen`).
+Le moteur crée des branches pour chaque type de fix (research-agent, brief-enricher, etc.).
+Les corrections ne sont appliquées qu'après approbation humaine.
+
+### Mode direct (fallback si backend indisponible)
 
 Toutes les requêtes via `mcp__supabase__execute_sql` avec `project_id: 'cxpojprgwgubzjyqzmoq'`.
 Les fichiers RAG via l'outil `Read` pour lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`.
