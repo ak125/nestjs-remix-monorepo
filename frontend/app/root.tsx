@@ -111,9 +111,17 @@ export const meta: MetaFunction = () => [
   },
 ];
 
+// Bot UA regex — aligned with BotGuard patterns (server-side only)
+const BOT_UA_PATTERN =
+  /bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduck|semrush|ahrefs|mj12|dotbot|blexbot|gptbot|chatgpt|claude|perplexity|bytespider|python|curl|wget|scrapy|phantom|headless|selenium|puppeteer/i;
+
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   // User synchrone (Redis, rapide) — nécessaire pour Navbar SSR
   const user = await getOptionalUser({ context });
+
+  // Bot detection — empêche le chargement de gtag.js pour les bots
+  const userAgent = request.headers.get("user-agent") || "";
+  const isBot = BOT_UA_PATTERN.test(userAgent);
 
   // Cart deferred — ne bloque PAS le rendu SSR (P0 perf: -1-2s FCP)
   const cartPromise = getCart(request).catch((err) => {
@@ -124,6 +132,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   return defer({
     user,
     cart: cartPromise,
+    isBot,
     cspNonce: ((context as Record<string, unknown>)?.cspNonce as string) || "",
   });
 };
@@ -364,6 +373,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
 export function Layout({ children }: { children: React.ReactNode }) {
   const data = useRouteLoaderData<typeof loader>("root");
   const nonce = data?.cspNonce || "";
+  const isBot = data?.isBot ?? false;
 
   return (
     <html lang="fr" className="h-full" suppressHydrationWarning>
@@ -389,11 +399,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <link rel="stylesheet" href={animationsStylesheet} />
         </noscript>
         {/* Google Analytics 4 - Optimisé avec requestIdleCallback + Consent Mode v2 (RGPD) */}
-        <script
-          nonce={nonce}
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{
-            __html: `
+        {/* 🤖 Bot filter: ne pas charger gtag pour les bots (évite pollution GA4) */}
+        {!isBot && (
+          <script
+            nonce={nonce}
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{
+              __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
 
@@ -461,8 +473,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 setTimeout(window.__loadGTM, 3000);
               }
             `,
-          }}
-        />
+            }}
+          />
+        )}
       </head>
       <body className="h-full bg-gray-100" suppressHydrationWarning>
         <NotificationProvider>
