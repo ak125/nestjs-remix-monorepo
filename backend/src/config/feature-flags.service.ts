@@ -148,6 +148,28 @@ export class FeatureFlagsService {
     return this.bool('RAG_CATCHUP_ENABLED', false);
   }
 
+  // ── RAG Change → Content Improvement Pipeline ──
+
+  /** Master switch for RAG change detection pipeline */
+  get ragChangePipelineEnabled(): boolean {
+    return this.bool('RAG_CHANGE_PIPELINE_ENABLED', false);
+  }
+
+  /** Auto-enqueue improvement jobs (false = log only, manual review) */
+  get ragChangeAutoEnqueue(): boolean {
+    return this.bool('RAG_CHANGE_AUTO_ENQUEUE', false);
+  }
+
+  /** Dry run mode for merge operations (preview without DB writes) */
+  get ragMergeDryRun(): boolean {
+    return this.bool('RAG_MERGE_DRY_RUN', true);
+  }
+
+  /** Polling interval for RAG change events (default: 60s) */
+  get ragChangePollIntervalMs(): number {
+    return this.int('RAG_CHANGE_POLL_INTERVAL_MS', 60_000);
+  }
+
   // ── Agentic Engine flags ──
 
   get agenticEngineEnabled(): boolean {
@@ -222,6 +244,9 @@ export class FeatureFlagsService {
     'BRIEF_GATES_OBSERVE_ONLY',
     'PIPELINE_CHAIN_ENABLED',
     'RAG_CATCHUP_ENABLED',
+    'RAG_CHANGE_PIPELINE_ENABLED',
+    'RAG_CHANGE_AUTO_ENQUEUE',
+    'RAG_MERGE_DRY_RUN',
     'CONSEIL_PACK_ENABLED',
     'KEYWORD_DENSITY_GATE_ENABLED',
     'CANARY_AUTO_PUBLISH',

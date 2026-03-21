@@ -33,6 +33,8 @@ export interface PipelineChainJobData {
   vehicleKey?: string;
   /** Source that triggered this job */
   source?: 'db_trigger' | 'api' | 'manual' | 'keyword_plan';
+  /** Merge mode: append_only = never replace, only improve (RAG change pipeline) */
+  mergeMode?: 'append_only';
 }
 
 @Processor('pipeline-chain')
