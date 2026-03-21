@@ -271,6 +271,129 @@ export class AdminKeywordPlannerController {
     return JSON.stringify(val, null, 2);
   }
 
+  /** Format top_brands as readable one-liner: "BOSCH (2333), ATE (9), FTE (47)" */
+  private formatBrands(raw: unknown): string {
+    if (!Array.isArray(raw)) return '[non renseigne]';
+    return (
+      raw
+        .map(
+          (b: { name?: string; count?: number }) =>
+            `${b.name ?? '?'} (${b.count ?? 0})`,
+        )
+        .join(', ') || '[non renseigne]'
+    );
+  }
+
+  /** Dedup selection_criteria: remove v4-* duplicates */
+  private dedupCriteria(raw: unknown): string {
+    if (!Array.isArray(raw)) return '[non renseigne]';
+    const seen = new Set<string>();
+    const clean = raw.filter((item: { key?: string; label?: string }) => {
+      const label = (item.label ?? '')
+        .replace(/\*\*/g, '')
+        .trim()
+        .toLowerCase();
+      if (!label || seen.has(label)) return false;
+      seen.add(label);
+      return true;
+    });
+    return clean.length > 0
+      ? clean
+          .map(
+            (c: { label?: string }) =>
+              `- ${(c.label ?? '').replace(/\*\*/g, '')}`,
+          )
+          .join('\n')
+      : '[non renseigne]';
+  }
+
+  /** Parse value to array (handles JSON strings, arrays, nulls) */
+  private toArray(raw: unknown): unknown[] {
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string' && raw.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        /* ignore */
+      }
+    }
+    return [];
+  }
+
+  /** Dedup any string array or array of objects (case-insensitive) */
+  private dedupArray(raw: unknown): string {
+    const arr = this.toArray(raw);
+    if (arr.length === 0) return '[non renseigne]';
+    const seen = new Set<string>();
+    const lines: string[] = [];
+    for (const item of arr) {
+      const text =
+        typeof item === 'string'
+          ? item.trim()
+          : typeof item === 'object' && item
+            ? String(
+                (item as Record<string, unknown>).label ??
+                  (item as Record<string, unknown>).axis ??
+                  JSON.stringify(item),
+              )
+            : String(item);
+      const key = text.toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      lines.push(`- ${text}`);
+    }
+    return lines.length > 0 ? lines.join('\n') : '[non renseigne]';
+  }
+
+  /** Format symptoms as bullet list */
+  private formatSymptoms(raw: unknown): string {
+    if (!Array.isArray(raw) || raw.length === 0) return '[non renseigne]';
+    return raw
+      .map((s: string | { label?: string }) =>
+        typeof s === 'string' ? `- ${s}` : `- ${s.label ?? ''}`,
+      )
+      .join('\n');
+  }
+
+  /** Fallback: return first non-empty value or placeholder */
+  private fallback(...values: string[]): string {
+    for (const v of values) {
+      if (v && v !== '""' && v !== '[]' && v !== '{}' && v !== 'null') return v;
+    }
+    return '[non renseigne]';
+  }
+
+  /** Data quality score: count filled critical fields out of 7 */
+  private dataQuality(ctx: Record<string, string>): string {
+    const critical = [
+      'intro_role',
+      'symptoms',
+      'selection_criteria',
+      'compatibility_axes',
+      'interest_nuggets',
+      'anti_mistakes',
+      'cost_range',
+    ];
+    const empty = '[non renseigne]';
+    const filled = critical.filter((k) => ctx[k] && ctx[k] !== empty);
+    const missing = critical.filter((k) => !ctx[k] || ctx[k] === empty);
+    const score = filled.length;
+    const level = score >= 6 ? 'RICHE' : score >= 4 ? 'PARTIEL' : 'INSUFFISANT';
+    const lines = [`- Richesse : ${score}/7 champs renseignes (${level})`];
+    if (missing.length > 0)
+      lines.push(`- Champs manquants : ${missing.join(', ')}`);
+    if (level === 'INSUFFISANT')
+      lines.push(
+        '- Action : KP de base uniquement, sections concernees seront generiques',
+      );
+    else if (level === 'PARTIEL')
+      lines.push(
+        '- Action : generer un KP solide, utiliser des termes generiques pour les champs manquants',
+      );
+    return lines.join('\n');
+  }
+
   private buildContext(
     info: Record<string, unknown>,
     guide: Record<string, unknown>,
@@ -278,52 +401,74 @@ export class AdminKeywordPlannerController {
     rag: Record<string, unknown>,
   ): Record<string, string> {
     const g = (k: string) => this.sj(guide[k]);
-    const a = (k: string) => this.sj(agg[k]);
     const r = (...keys: string[]) => this.sj(this.nested(rag, ...keys));
-    return {
+
+    // Build context with smart formatting and fallbacks
+    const ctx: Record<string, string> = {
       gamme_name: String(info.pg_name ?? ''),
       pg_id: String(info.pg_id ?? 0),
       pg_alias: String(info.pg_alias ?? ''),
-      intro_role: g('sgpg_intro_role'),
-      intro_title: g('sgpg_intro_title'),
-      symptoms: g('sgpg_symptoms'),
-      selection_criteria: g('sgpg_selection_criteria'),
-      cost_range: g('sgpg_risk_cost_range') || 'non renseigne',
-      risk_explanation: g('sgpg_risk_explanation'),
-      risk_consequences: g('sgpg_risk_consequences'),
-      faq: g('sgpg_faq'),
-      brands_guide: g('sgpg_brands_guide'),
-      when_pro: g('sgpg_when_pro'),
-      how_to_choose: g('sgpg_how_to_choose'),
-      h1_override: g('sgpg_h1_override'),
-      micro_seo_block: g('sgpg_micro_seo_block'),
-      sync_parts: g('sgpg_intro_sync_parts'),
-      decision_tree: g('sgpg_decision_tree'),
-      use_cases: g('sgpg_use_cases'),
-      anti_mistakes: g('sgpg_anti_mistakes'),
-      compatibility_axes: g('sgpg_compatibility_axes'),
-      interest_nuggets: g('sgpg_interest_nuggets'),
-      products_total: a('products_total'),
-      top_brands: a('top_brands'),
-      demand_level: a('demand_level') || '?',
-      difficulty_level: a('difficulty_level') || '?',
-      priority_score: a('priority_score'),
-      intent_type: a('intent_type') || '?',
-      content_depth: a('content_depth') || '?',
-      vehicle_coverage: a('vehicle_coverage') || '?',
-      rag_domain_role: r('domain', 'role'),
-      rag_must_be_true: r('domain', 'must_be_true'),
-      rag_must_not_contain: r('domain', 'must_not_contain'),
-      rag_confusion_with: r('domain', 'confusion_with'),
-      rag_related_parts: r('domain', 'related_parts'),
-      rag_norms: r('domain', 'norms'),
-      rag_cross_gammes: r('domain', 'cross_gammes'),
-      rag_diagnostic_symptoms: r('diagnostic', 'symptoms'),
-      rag_diagnostic_causes: r('diagnostic', 'causes'),
-      rag_selection_criteria: r('selection', 'criteria'),
-      rag_maintenance: r('maintenance', 'interval'),
+
+      // Guide data — cleaned
+      intro_role: this.fallback(g('sgpg_intro_role'), r('domain', 'role')),
+      intro_title: g('sgpg_intro_title') || '[non renseigne]',
+      symptoms: this.formatSymptoms(guide.sgpg_symptoms),
+      selection_criteria: this.dedupCriteria(guide.sgpg_selection_criteria),
+      cost_range: this.fallback(g('sgpg_risk_cost_range'), '[non renseigne]'),
+      risk_explanation: g('sgpg_risk_explanation') || '[non renseigne]',
+      risk_consequences: g('sgpg_risk_consequences') || '[non renseigne]',
+      faq: g('sgpg_faq') || '[non renseigne]',
+      brands_guide: g('sgpg_brands_guide') || '[non renseigne]',
+      when_pro: g('sgpg_when_pro') || '[non renseigne]',
+      how_to_choose: g('sgpg_how_to_choose') || '[non renseigne]',
+      h1_override: g('sgpg_h1_override') || '[non renseigne]',
+      micro_seo_block: g('sgpg_micro_seo_block') || '',
+      anti_mistakes: g('sgpg_anti_mistakes') || '[non renseigne]',
+
+      // Fallback chain: DB → RAG for pieces liées (deduped)
+      sync_parts: this.dedupArray(
+        this.nested(rag, 'domain', 'related_parts') ||
+          this.nested(rag, 'domain', 'cross_gammes') ||
+          guide.sgpg_intro_sync_parts,
+      ),
+      compatibility_axes: this.dedupArray(
+        guide.sgpg_compatibility_axes ||
+          this.nested(rag, 'selection', 'criteria'),
+      ),
+      interest_nuggets: g('sgpg_interest_nuggets') || '[non renseigne]',
+      decision_tree: g('sgpg_decision_tree') || '[non renseigne]',
+      use_cases: g('sgpg_use_cases') || '[non renseigne]',
+
+      // Aggregates — formatted
+      products_total: String(agg.products_total ?? 0),
+      top_brands: this.formatBrands(agg.top_brands),
+      demand_level: String(agg.demand_level ?? '?'),
+      difficulty_level: String(agg.difficulty_level ?? '?'),
+      priority_score: String(agg.priority_score ?? 0),
+      intent_type: String(agg.intent_type ?? '?'),
+      content_depth: String(agg.content_depth ?? '?'),
+      vehicle_coverage: String(agg.vehicle_coverage ?? '?'),
+
+      // RAG evidence
+      rag_domain_role: r('domain', 'role') || '[non renseigne]',
+      rag_must_be_true: r('domain', 'must_be_true') || '[non renseigne]',
+      rag_must_not_contain:
+        r('domain', 'must_not_contain') || '[non renseigne]',
+      rag_confusion_with: r('domain', 'confusion_with') || '[non renseigne]',
+      rag_related_parts: r('domain', 'related_parts') || '[non renseigne]',
+      rag_norms: r('domain', 'norms') || '[non renseigne]',
+      rag_cross_gammes: r('domain', 'cross_gammes') || '[non renseigne]',
+      rag_diagnostic_symptoms: r('diagnostic', 'symptoms') || '[non renseigne]',
+      rag_diagnostic_causes: r('diagnostic', 'causes') || '[non renseigne]',
+      rag_maintenance: r('maintenance', 'interval') || '[non renseigne]',
+
       existing_kp: 'aucun',
       mode: 'creation',
     };
+
+    // Add quality indicator
+    ctx.data_quality = this.dataQuality(ctx);
+
+    return ctx;
   }
 }
