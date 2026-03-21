@@ -32,16 +32,16 @@ export class AdminKeywordPlannerController {
   async coverage() {
     this.logger.log('GET /api/admin/keyword-planner/coverage');
 
-    // 1. Active gammes (source of truth)
+    // 1. Active gammes (source of truth — sgpg_pg_id is VARCHAR in DB)
     const { data: guideRows } = await this.supabase
       .from('__seo_gamme_purchase_guide')
       .select('sgpg_pg_id');
     const activeIds = (guideRows ?? []).map(
-      (r: { sgpg_pg_id: number }) => r.sgpg_pg_id,
+      (r: { sgpg_pg_id: string | number }) => Number(r.sgpg_pg_id),
     );
     const totalGammes = activeIds.length || 221;
 
-    // 2. Gamme names
+    // 2. Gamme names (pg_id is INTEGER — pass numbers)
     const { data: pgRows } = await this.supabase
       .from('pieces_gamme')
       .select('pg_id, pg_alias, pg_name')
@@ -49,7 +49,7 @@ export class AdminKeywordPlannerController {
     const pgMap = new Map(
       (pgRows ?? []).map(
         (r: { pg_id: number; pg_alias: string; pg_name: string }) => [
-          r.pg_id,
+          Number(r.pg_id),
           r,
         ],
       ),
@@ -80,7 +80,7 @@ export class AdminKeywordPlannerController {
       try {
         const { data } = await this.supabase.from(table).select(col);
         kpSets[role] = new Set(
-          (data ?? []).map((r: Record<string, unknown>) => Number(r[col])),
+          (data ?? []).map((r) => Number((r as Record<string, unknown>)[col])),
         );
       } catch {
         kpSets[role] = new Set();
@@ -104,9 +104,9 @@ export class AdminKeywordPlannerController {
       },
     );
 
-    // 4. Gammes with per-role flags
+    // 4. Gammes with per-role flags (all IDs normalized to number)
     const gammes = activeIds.map((pid: number) => {
-      const pg = pgMap.get(pid);
+      const pg = pgMap.get(Number(pid));
       return {
         pg_id: pid,
         pg_alias: pg?.pg_alias ?? '',
