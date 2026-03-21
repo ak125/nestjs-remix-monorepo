@@ -78,6 +78,7 @@ import { ConseilQualityScorerService } from './services/conseil-quality-scorer.s
 import { ConseilPriorityService } from './services/conseil-priority.service'; // 📊 Conseil priority queue
 import { KeywordPlanGatesService } from './services/keyword-plan-gates.service'; // 🚦 Keyword plan gates G1-G6
 import { R1KeywordPlanGatesService } from './services/r1-keyword-plan-gates.service'; // 🚦 R1 Keyword plan gates KA1-KA6
+import { R1KeywordPlanBatchService } from './services/r1-keyword-plan-batch.service'; // 🔄 R1 KP batch 0-LLM
 import { AdminConseilController } from './controllers/admin-conseil.controller'; // 📊 Conseil coverage + backfill
 import { AdminRagIngestController } from './controllers/admin-rag-ingest.controller'; // 📄 PDF → RAG merge pipeline
 import { AdminR3ImagePromptsController } from './controllers/admin-r3-image-prompts.controller'; // 🎨 R3 Image Prompts generation
@@ -205,6 +206,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     ConseilPriorityService, // 📊 Priority queue for conseil enrichment
     KeywordPlanGatesService, // 🚦 Keyword plan gates G1-G6 (keyword-planner agent)
     R1KeywordPlanGatesService, // 🚦 R1 Keyword plan gates KA1-KA6 (R1 pipeline + keyword-planner R1 mode)
+    R1KeywordPlanBatchService, // 🔄 R1 KP batch 0-LLM generator
     R3ImagePromptService, // 🎨 R3 Image Prompts (template-based, 0-LLM)
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
     R7BrandEnricherService, // 🏭 R7 Brand page enricher (RAG + diversity scoring, 0-LLM)
