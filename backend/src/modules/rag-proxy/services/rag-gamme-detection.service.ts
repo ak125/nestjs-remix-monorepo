@@ -188,6 +188,44 @@ export class RagGammeDetectionService {
    * Score how well a gamme alias matches a title slug.
    * Returns 0 (no match) to 100 (exact match).
    */
+  /** Common automotive prefixes that are ambiguous alone (shared by many gammes) */
+  private static readonly AMBIGUOUS_PREFIXES = new Set([
+    'capteur',
+    'joint',
+    'pompe',
+    'sonde',
+    'support',
+    'filtre',
+    'cable',
+    'bouchon',
+    'bougie',
+    'ampoule',
+    'verin',
+    'valve',
+    'soupape',
+    'galet',
+    'poulie',
+    'bague',
+    'tube',
+    'tuyau',
+    'durite',
+    'commande',
+    'interrupteur',
+    'contacteur',
+    'kit',
+    'arbre',
+    'bras',
+    'rotule',
+    'soufflet',
+    'radiateur',
+    'biellette',
+    'ressort',
+    'disque',
+    'plaquette',
+    'machoire',
+    'tambour',
+  ]);
+
   private static scoreAliasMatch(
     titleSlug: string,
     titleSlugDePlural: string,
@@ -204,6 +242,12 @@ export class RagGammeDetectionService {
       return Math.round(40 + ratio * 50); // 40-90
     }
 
+    // Guard: title shorter than alias → title lacks specificity to determine WHICH variant
+    // e.g. title="capteur" cannot distinguish capteur-abs from capteur-pression-turbo
+    if (titleSlug.length < alias.length * 0.7) {
+      return 0;
+    }
+
     // Word-level overlap (Jaccard-like)
     const titleWords = new Set(
       titleSlugDePlural.split('-').filter((w) => w.length >= 4),
@@ -217,6 +261,20 @@ export class RagGammeDetectionService {
     }
     if (overlap === 0) return 0;
 
+    // Guard: if the only overlapping words are ambiguous prefixes, reject
+    // e.g. "capteur" matching "capteur-abs" via the word "capteur" alone
+    if (aliasWords.length > 1) {
+      const nonAmbiguousOverlap = aliasWords.filter(
+        (w) =>
+          titleWords.has(w) &&
+          !RagGammeDetectionService.AMBIGUOUS_PREFIXES.has(w),
+      ).length;
+      // If ALL overlapping words are ambiguous prefixes → not specific enough
+      if (nonAmbiguousOverlap === 0 && overlap < aliasWords.length) {
+        return 0;
+      }
+    }
+
     // Require: overlap >= 2, or all alias words match, or single long word (>=8 chars)
     const hasLongWordMatch = aliasWords.some(
       (w) => w.length >= 8 && titleWords.has(w),
@@ -225,8 +283,11 @@ export class RagGammeDetectionService {
       return 0;
     }
 
+    // Penalize when title has far fewer words than alias (low specificity)
+    const specificityRatio = titleWords.size / Math.max(aliasWords.length, 1);
     const overlapRatio = overlap / aliasWords.length;
-    return Math.round(20 + overlapRatio * 40); // 20-60
+    const specifityPenalty = specificityRatio < 0.5 ? 0.5 : 1;
+    return Math.round((20 + overlapRatio * 40) * specifityPenalty); // 10-60
   }
 
   /**
