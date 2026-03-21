@@ -536,11 +536,14 @@ export class R6GuideService {
       heroSubtitle: (row.sgpg_hero_subtitle as string) || null,
       metaTitle:
         (row.sgpg_meta_title_override as string) ||
-        `Comment Bien Choisir ${title} ? Guide d'Achat ${new Date().getFullYear()} | AutoMecanik`,
+        `Bien choisir ${gamme.pg_name.toLowerCase()} : guide achat | AutoMecanik`.slice(
+          0,
+          60,
+        ),
       metaDescription: this.stripPricing(
         (row.sgpg_meta_description_override as string) ||
           (row.sgpg_intro_role as string) ||
-          `${title} : critères de choix, marques fiables, fourchette de prix. Guide complet pour bien choisir.`,
+          `${gamme.pg_name} : critères de choix, marques fiables et prix. Guide complet pour bien choisir.`,
       ),
       featuredImage: this.transformService.buildImageUrl(
         gamme.pg_pic && gamme.pg_pic !== 'no'

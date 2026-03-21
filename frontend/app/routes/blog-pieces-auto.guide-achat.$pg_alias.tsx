@@ -127,6 +127,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     }
 
     // 2) Fallback: blog guide endpoint (manual guides from __blog_guide)
+    //    Normalize slug first — prevent duplicates like "disque-frein" vs "disque-de-frein"
     const blogUrl = getInternalApiUrlFromRequest(
       `/api/blog/guides/slug/${pg_alias}`,
       request,
@@ -149,6 +150,12 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         { message: `Guide "${pg_alias}" non disponible` },
         { status: 404 },
       );
+    }
+
+    // Slug normalization — prevent duplicates like "disque-frein" vs "disque-de-frein"
+    const blogSlug = blogGuide.slug;
+    if (blogSlug && blogSlug !== pg_alias) {
+      return redirect(`/blog-pieces-auto/guide-achat/${blogSlug}`, 301);
     }
 
     // Convert BlogArticle → R6GuidePayload (V1 format for rendering)
