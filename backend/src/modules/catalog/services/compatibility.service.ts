@@ -95,44 +95,34 @@ export class CompatibilityService extends SupabaseBaseService {
     typeId: number,
   ): Promise<VehicleInfoResult | undefined> {
     try {
-      const { data, error } = await this.client
-        .from('types_vehicule')
-        .select(
-          `
-          type_id,
-          type_name,
-          modeles_vehicule!inner (
-            mod_id,
-            mod_name,
-            marques_vehicule!inner (
-              mar_id,
-              mar_name
-            )
-          )
-        `,
-        )
+      // Migrated from legacy types_vehicule → auto_type + auto_modele + auto_marque
+      const { data: t, error } = await this.client
+        .from('auto_type')
+        .select('type_id, type_name, type_modele_id, type_marque_id')
         .eq('type_id', typeId)
         .single();
 
-      if (error || !data) {
-        return undefined;
-      }
+      if (error || !t) return undefined;
 
-      const modele = data.modeles_vehicule as unknown as Record<
-        string,
-        unknown
-      >;
-      const marque = modele?.marques_vehicule as
-        | Record<string, unknown>
-        | undefined;
+      const { data: m } = await this.client
+        .from('auto_modele')
+        .select('modele_id, modele_name')
+        .eq('modele_id', t.type_modele_id)
+        .single();
+
+      const { data: b } = await this.client
+        .from('auto_marque')
+        .select('marque_id, marque_name')
+        .eq('marque_id', t.type_marque_id)
+        .single();
 
       return {
-        typeId: data.type_id,
-        typeName: data.type_name,
-        modelId: modele?.mod_id as number,
-        modelName: modele?.mod_name as string,
-        brandId: marque?.mar_id as number,
-        brandName: marque?.mar_name as string,
+        typeId: t.type_id,
+        typeName: t.type_name,
+        modelId: m?.modele_id || 0,
+        modelName: m?.modele_name || '',
+        brandId: b?.marque_id || 0,
+        brandName: b?.marque_name || '',
       };
     } catch {
       return undefined;
@@ -151,61 +141,46 @@ export class CompatibilityService extends SupabaseBaseService {
     this.logger.log(`🔍 [CNIT] Searching for CNIT: ${cleanCnit}`);
 
     try {
-      const { data, error } = await this.client
-        .from('types_vehicule')
-        .select(
-          `
-          type_id,
-          type_name,
-          type_cnit,
-          modeles_vehicule!inner (
-            mod_id,
-            mod_name,
-            marques_vehicule!inner (
-              mar_id,
-              mar_name
-            )
-          )
-        `,
-        )
-        .eq('type_cnit', cleanCnit)
+      // Migrated from legacy types_vehicule → auto_type_number_code + auto_type
+      const { data: cnitRow, error: cnitError } = await this.client
+        .from('auto_type_number_code')
+        .select('tnc_type_id, tnc_cnit')
+        .eq('tnc_cnit', cleanCnit)
         .limit(1)
         .maybeSingle();
 
-      if (error) {
-        this.logger.error(`❌ [CNIT] DB error: ${error.message}`);
-        return { found: false, error: error.message };
+      if (cnitError) {
+        this.logger.error(`❌ [CNIT] DB error: ${cnitError.message}`);
+        return { found: false, error: cnitError.message };
       }
 
-      if (!data) {
+      if (!cnitRow) {
         const duration = Date.now() - startTime;
         this.logger.log(`⚠️ [CNIT] Not found in ${duration}ms`);
         return { found: false };
       }
 
-      const modele = data.modeles_vehicule as unknown as Record<
-        string,
-        unknown
-      >;
-      const marque = modele?.marques_vehicule as
-        | Record<string, unknown>
-        | undefined;
+      const vehicleInfo = await this.getVehicleInfo(
+        Number(cnitRow.tnc_type_id),
+      );
       const duration = Date.now() - startTime;
 
+      if (!vehicleInfo) {
+        this.logger.log(
+          `⚠️ [CNIT] Type ${cnitRow.tnc_type_id} not found in ${duration}ms`,
+        );
+        return { found: false };
+      }
+
       this.logger.log(
-        `✅ [CNIT] Found: ${marque?.mar_name} ${modele?.mod_name} in ${duration}ms`,
+        `✅ [CNIT] Found: ${vehicleInfo.brandName} ${vehicleInfo.modelName} in ${duration}ms`,
       );
 
       return {
         found: true,
         vehicle: {
-          typeId: data.type_id,
-          typeName: data.type_name,
-          modelId: modele?.mod_id as number,
-          modelName: modele?.mod_name as string,
-          brandId: marque?.mar_id as number,
-          brandName: marque?.mar_name as string,
-          cnit: data.type_cnit,
+          ...vehicleInfo,
+          cnit: cnitRow.tnc_cnit,
         },
       };
     } catch (error: unknown) {
@@ -229,61 +204,47 @@ export class CompatibilityService extends SupabaseBaseService {
     this.logger.log(`🔍 [MINE] Searching for Type Mine: ${cleanTypeMine}`);
 
     try {
-      const { data, error } = await this.client
-        .from('types_vehicule')
-        .select(
-          `
-          type_id,
-          type_name,
-          type_mine,
-          modeles_vehicule!inner (
-            mod_id,
-            mod_name,
-            marques_vehicule!inner (
-              mar_id,
-              mar_name
-            )
-          )
-        `,
-        )
-        .eq('type_mine', cleanTypeMine)
+      // Migrated from legacy types_vehicule → auto_type_number_code + auto_type
+      // Type Mine codes are stored as CNIT variants in auto_type_number_code
+      const { data: mineRow, error: mineError } = await this.client
+        .from('auto_type_number_code')
+        .select('tnc_type_id, tnc_cnit')
+        .eq('tnc_cnit', cleanTypeMine)
         .limit(1)
         .maybeSingle();
 
-      if (error) {
-        this.logger.error(`❌ [MINE] DB error: ${error.message}`);
-        return { found: false, error: error.message };
+      if (mineError) {
+        this.logger.error(`❌ [MINE] DB error: ${mineError.message}`);
+        return { found: false, error: mineError.message };
       }
 
-      if (!data) {
+      if (!mineRow) {
         const duration = Date.now() - startTime;
         this.logger.log(`⚠️ [MINE] Not found in ${duration}ms`);
         return { found: false };
       }
 
-      const modele = data.modeles_vehicule as unknown as Record<
-        string,
-        unknown
-      >;
-      const marque = modele?.marques_vehicule as
-        | Record<string, unknown>
-        | undefined;
+      const vehicleInfo = await this.getVehicleInfo(
+        Number(mineRow.tnc_type_id),
+      );
       const duration = Date.now() - startTime;
 
+      if (!vehicleInfo) {
+        this.logger.log(
+          `⚠️ [MINE] Type ${mineRow.tnc_type_id} not found in ${duration}ms`,
+        );
+        return { found: false };
+      }
+
       this.logger.log(
-        `✅ [MINE] Found: ${marque?.mar_name} ${modele?.mod_name} in ${duration}ms`,
+        `✅ [MINE] Found: ${vehicleInfo.brandName} ${vehicleInfo.modelName} in ${duration}ms`,
       );
 
       return {
         found: true,
         vehicle: {
-          typeId: data.type_id,
-          typeName: data.type_name,
-          modelId: modele?.mod_id as number,
-          modelName: modele?.mod_name as string,
-          brandId: marque?.mar_id as number,
-          brandName: marque?.mar_name as string,
-          typeMine: data.type_mine,
+          ...vehicleInfo,
+          typeMine: mineRow.tnc_cnit,
         },
       };
     } catch (error: unknown) {
