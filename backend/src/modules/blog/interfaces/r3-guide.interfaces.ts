@@ -25,6 +25,7 @@ export interface R3GuidePage {
   tags: string[];
   cta_link: string | null;
   cta_anchor: string | null;
+  hasR6Guide: boolean;
 }
 
 export interface R3GuideSectionImage {

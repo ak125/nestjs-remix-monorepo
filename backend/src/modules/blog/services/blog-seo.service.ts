@@ -439,4 +439,20 @@ export class BlogSeoService {
       topFormulas: [],
     };
   }
+
+  /**
+   * Check if a published R6 guide-achat exists for a given pg_id.
+   * Used by R3 pages to inject cross-link CTA toward the R6 guide.
+   */
+  async hasPublishedR6Guide(pgId: number): Promise<boolean> {
+    const client = this.supabaseService.getClient();
+    const { data } = await client
+      .from('__seo_gamme_purchase_guide')
+      .select('sgpg_id')
+      .eq('sgpg_pg_id', pgId)
+      .eq('sgpg_is_draft', false)
+      .limit(1)
+      .maybeSingle();
+    return !!data;
+  }
 }

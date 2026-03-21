@@ -30,12 +30,14 @@ interface ConseilSectionsProps {
   sections: GammeConseil[];
   pgAlias?: string;
   pgId?: number;
+  hasR6Guide?: boolean;
 }
 
 export function ConseilSections({
   sections,
   pgAlias,
   pgId,
+  hasR6Guide,
 }: ConseilSectionsProps) {
   return (
     <>
@@ -146,12 +148,19 @@ export function ConseilSections({
               </CardContent>
               {sectionImage && <div className="px-6 pb-2">{sectionImage}</div>}
               {conseilItem.sectionType === "S3" && pgAlias && pgId && (
-                <div className="px-6 pb-4">
+                <div className="px-6 pb-4 flex flex-col gap-2">
                   <SoftCTA
                     label="Vérifier la compatibilité avec votre véhicule"
                     href={`/pieces/${pgAlias}-${pgId}.html`}
                     variant="inline"
                   />
+                  {hasR6Guide && (
+                    <SoftCTA
+                      label="Consulter notre guide d'achat complet"
+                      href={`/blog-pieces-auto/guide-achat/${pgAlias}`}
+                      variant="inline"
+                    />
+                  )}
                 </div>
               )}
             </Card>

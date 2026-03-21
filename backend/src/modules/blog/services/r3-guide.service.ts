@@ -63,6 +63,7 @@ export class R3GuideService {
       vehicles,
       adjacent,
       seoBrief,
+      hasR6Guide,
     ] = await Promise.all([
       this.seoService.getGammeConseil(gammeData.pg_id),
       this.seoService.getSeoItemSwitches(gammeData.pg_id),
@@ -74,6 +75,7 @@ export class R3GuideService {
       ),
       this.dataService.getAdjacentArticles(article.slug),
       this.seoService.getSeoBrief(gammeData.pg_id),
+      this.seoService.hasPublishedR6Guide(gammeData.pg_id),
     ]);
 
     // Step 3 — Resolve canonical sections (port of frontend resolveCanonicalSections)
@@ -136,6 +138,7 @@ export class R3GuideService {
       tags: article.tags || [],
       cta_link: article.cta_link || null,
       cta_anchor: article.cta_anchor || null,
+      hasR6Guide,
     };
 
     return {

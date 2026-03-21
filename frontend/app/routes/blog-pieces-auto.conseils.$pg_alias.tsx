@@ -491,6 +491,7 @@ export default function R3GuidePage() {
                       sections={bodySections.map(toConseil)}
                       pgAlias={pg_alias}
                       pgId={page.pg_id}
+                      hasR6Guide={page.hasR6Guide}
                     />
                   )}
 
