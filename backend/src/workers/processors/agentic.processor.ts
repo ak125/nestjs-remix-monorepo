@@ -18,6 +18,7 @@ import { Job, Queue } from 'bull';
 import {
   AGENTIC_QUEUE_NAME,
   AGENTIC_DEFAULTS,
+  type GoalType,
 } from '../../modules/agentic-engine/constants/agentic.constants';
 import { AgenticDataService } from '../../modules/agentic-engine/services/agentic-data.service';
 import { EvidenceLedgerService } from '../../modules/agentic-engine/services/evidence-ledger.service';
@@ -277,7 +278,7 @@ export class AgenticProcessor {
     );
   }
 
-  // ── APPLY (dry-run) ──
+  // ── APPLY (gate humaine obligatoire) ──
 
   @Process({ name: 'agentic-apply', concurrency: 1 })
   async handleApply(job: Job<AgenticApplyJobData>): Promise<void> {
@@ -285,8 +286,20 @@ export class AgenticProcessor {
     this.logger.log(`[APPLY] Run ${runId.slice(0, 8)}...`);
 
     const run = await this.dataService.getRun(runId);
-    const branches = await this.dataService.getBranchesByRun(runId);
+    if (!run) {
+      this.logger.error(`[APPLY] Run ${runId.slice(0, 8)} not found`);
+      return;
+    }
 
+    const branches = await this.dataService.getBranchesByRun(runId);
+    const winner = branches.find((b) => b.id === run.winning_branch_id);
+
+    if (!winner || !winner.output) {
+      await this.runManager.failRun(runId, 'No winning branch output to apply');
+      return;
+    }
+
+    // Accumulate total tokens
     let totalTokens = 0;
     for (const branch of branches) {
       const steps = await this.dataService.getStepsByBranch(branch.id);
@@ -295,38 +308,58 @@ export class AgenticProcessor {
       }
     }
 
-    await this.runManager.transitionPhase(runId, 'completed', {
+    // Prepare apply payload (what would be written, where)
+    const { GOAL_REGISTRY } = await import(
+      '../../modules/agentic-engine/constants/agentic.constants'
+    );
+    const goalEntry =
+      GOAL_REGISTRY[run.goal_type as keyof typeof GOAL_REGISTRY];
+    const targetTables = goalEntry?.targetTables ?? [];
+
+    const applyPayload = {
+      winning_branch_id: winner.id,
+      strategy_label: winner.strategy_label,
+      goal_type: run.goal_type,
+      target_tables: targetTables,
+      output_preview: JSON.stringify(winner.output).substring(0, 2000),
       total_tokens_used: totalTokens,
+    };
+
+    // Insert gate: human_approval PENDING
+    await this.dataService.insertGateResult({
+      run_id: runId,
+      gate_name: 'human_approval',
+      gate_type: 'hard',
+      verdict: 'PENDING',
+      reason: `Awaiting human approval to write to: ${targetTables.join(', ') || 'none'}`,
     });
 
+    // Record evidence with the full payload
     await this.evidenceLedger.record({
       runId,
       evidenceType: 'computation',
       content: {
         phase: 'apply',
-        dry_run: true,
-        winning_branch_id: run?.winning_branch_id,
-        total_tokens_used: totalTokens,
-        branches_count: branches.length,
+        awaiting_human_approval: true,
+        apply_payload: applyPayload,
       },
       source: 'agentic-processor:apply',
       truthLevel: 'L1',
     });
 
+    // Update run with token count but keep in 'applying' phase (NOT completed)
+    await this.dataService.updateRunExtra(runId, {
+      total_tokens_used: totalTokens,
+    });
+
     await this.runManager.saveCheckpoint(runId);
 
     this.logger.log(
-      `[APPLY] Run ${runId.slice(0, 8)} — COMPLETED (dry-run), ${totalTokens} tokens total`,
+      `[APPLY] Run ${runId.slice(0, 8)} — AWAITING HUMAN APPROVAL. ` +
+        `Winner: ${winner.strategy_label} (${winner.critic_score}/100). ` +
+        `Target tables: ${targetTables.join(', ') || 'none'}. ` +
+        `Use POST /api/admin/agentic/runs/${runId}/approve to apply.`,
     );
-
-    // ── Chain: trigger next run if chain rules exist ──
-    if (run?.id && run.goal_type && run.goal) {
-      await this.evaluateChainRules(
-        { id: run.id, goal_type: run.goal_type, goal: run.goal },
-        branches,
-        job.queue as Queue,
-      );
-    }
   }
 
   // ── CHAIN EVALUATION ──────────────────────────────────
@@ -371,7 +404,7 @@ export class AgenticProcessor {
       const chainResult = await this.runManager.createRun({
         goal: `Chained from ${completedRun.goal_type}: ${completedRun.goal}`,
         goal_type:
-          rule.to_goal_type as import('../../modules/agentic-engine/constants/agentic.constants').GoalType,
+          rule.to_goal_type as GoalType,
         triggered_by: `chain:${completedRun.id.slice(0, 8)}`,
         correlation_id: completedRun.id,
       });

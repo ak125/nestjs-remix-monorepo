@@ -352,6 +352,43 @@ export class AgenticDataService extends SupabaseBaseService {
     return data || [];
   }
 
+  // ── Run Extra Updates ──
+
+  async updateRunExtra(
+    runId: string,
+    extra: Partial<AgenticRun>,
+  ): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('__agentic_runs')
+      .update({ ...extra, updated_at: new Date().toISOString() })
+      .eq('id', runId);
+
+    if (error) {
+      this.logger.warn(`Failed to update run extra ${runId}`, error.message);
+      return false;
+    }
+    return true;
+  }
+
+  async updateGateVerdict(
+    runId: string,
+    gateName: string,
+    verdict: string,
+    reason: string,
+  ): Promise<boolean> {
+    const { error } = await this.supabase
+      .from('__agentic_gate_results')
+      .update({ verdict, reason })
+      .eq('run_id', runId)
+      .eq('gate_name', gateName);
+
+    if (error) {
+      this.logger.warn(`Failed to update gate ${gateName}`, error.message);
+      return false;
+    }
+    return true;
+  }
+
   // ── Stats (admin dashboard) ──
 
   // ── Chain Rules ──

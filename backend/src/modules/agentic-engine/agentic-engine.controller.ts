@@ -20,7 +20,7 @@ import { Queue } from 'bull';
 import { RunManagerService } from './services/run-manager.service';
 import { AgenticDataService } from './services/agentic-data.service';
 import { EvidenceLedgerService } from './services/evidence-ledger.service';
-import { AGENTIC_QUEUE_NAME } from './constants/agentic.constants';
+import { AGENTIC_QUEUE_NAME, type GoalType } from './constants/agentic.constants';
 
 @Controller('api/admin/agentic')
 export class AgenticEngineController {
@@ -169,6 +169,156 @@ export class AgenticEngineController {
         paused,
       },
     };
+  }
+
+  /**
+   * POST /api/admin/agentic/runs/:id/approve — Approve apply (human gate)
+   *
+   * Marks the human_approval gate as PASS, transitions run to completed,
+   * and evaluates chain rules for follow-up runs.
+   */
+  @Post('runs/:id/approve')
+  async approveRun(@Param('id') id: string) {
+    const run = await this.runManager.getRun(id);
+    if (!run) {
+      throw new HttpException({ error: 'Run not found' }, HttpStatus.NOT_FOUND);
+    }
+
+    if (run.phase !== 'applying') {
+      throw new HttpException(
+        { error: `Cannot approve run in phase: ${run.phase}. Must be 'applying'.` },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    // Update gate verdict
+    await this.dataService.updateGateVerdict(
+      id,
+      'human_approval',
+      'PASS',
+      'Approved by human via API',
+    );
+
+    // Record evidence
+    await this.evidenceLedger.record({
+      runId: id,
+      evidenceType: 'human_input',
+      content: {
+        action: 'human_approved',
+        winning_branch_id: run.winning_branch_id,
+        approved_at: new Date().toISOString(),
+      },
+      source: 'controller:approve',
+      truthLevel: 'L1',
+    });
+
+    // Transition to completed
+    await this.runManager.transitionPhase(id, 'completed', {
+      total_tokens_used: run.total_tokens_used ?? 0,
+    });
+
+    // Evaluate chain rules for follow-up runs
+    if (run.goal_type && run.goal) {
+      const branches = await this.dataService.getBranchesByRun(id);
+      const chainRules = await this.dataService.getChainRules(run.goal_type);
+
+      if (chainRules.length > 0) {
+        const bestScore = Math.max(
+          0,
+          ...branches
+            .filter((b) => b.status === 'completed' && b.critic_score != null)
+            .map((b) => b.critic_score ?? 0),
+        );
+
+        for (const rule of chainRules) {
+          const minScore =
+            (rule.condition as { min_score?: number })?.min_score ?? 60;
+          if (bestScore < minScore) continue;
+
+          const chainResult = await this.runManager.createRun({
+            goal: `Chained from ${run.goal_type}: ${run.goal}`,
+            goal_type:
+              rule.to_goal_type as GoalType,
+            triggered_by: `chain:${id.slice(0, 8)}`,
+            correlation_id: id,
+          });
+
+          if (chainResult.success && chainResult.run) {
+            await this.runManager.transitionPhase(
+              chainResult.run.id,
+              'planning',
+            );
+            await this.agenticQueue.add('agentic-plan', {
+              runId: chainResult.run.id,
+            });
+
+            this.logger.log(
+              `[CHAIN] ${run.goal_type} → ${rule.to_goal_type} (score ${bestScore} >= ${minScore})`,
+            );
+          }
+        }
+      }
+    }
+
+    this.logger.log(`Run ${id.slice(0, 8)} APPROVED and completed`);
+    return {
+      success: true,
+      message: 'Run approved and completed',
+      run_id: id,
+      winning_branch_id: run.winning_branch_id,
+    };
+  }
+
+  /**
+   * POST /api/admin/agentic/runs/:id/reject — Reject apply (human gate)
+   *
+   * Marks the human_approval gate as FAIL, transitions run to failed.
+   */
+  @Post('runs/:id/reject')
+  async rejectRun(
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+  ) {
+    const run = await this.runManager.getRun(id);
+    if (!run) {
+      throw new HttpException({ error: 'Run not found' }, HttpStatus.NOT_FOUND);
+    }
+
+    if (run.phase !== 'applying') {
+      throw new HttpException(
+        { error: `Cannot reject run in phase: ${run.phase}. Must be 'applying'.` },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const reason = body.reason || 'Rejected by human via API';
+
+    // Update gate verdict
+    await this.dataService.updateGateVerdict(
+      id,
+      'human_approval',
+      'FAIL',
+      reason,
+    );
+
+    // Record evidence
+    await this.evidenceLedger.record({
+      runId: id,
+      evidenceType: 'human_input',
+      content: {
+        action: 'human_rejected',
+        reason,
+        rejected_at: new Date().toISOString(),
+      },
+      source: 'controller:reject',
+      truthLevel: 'L1',
+    });
+
+    // Transition to failed
+    await this.runManager.failRun(id, `Human rejected: ${reason}`);
+
+    this.logger.log(`Run ${id.slice(0, 8)} REJECTED: ${reason}`);
+    return { success: true, message: 'Run rejected', run_id: id, reason };
   }
 
   /**

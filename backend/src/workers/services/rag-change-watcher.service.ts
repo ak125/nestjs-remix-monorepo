@@ -27,12 +27,36 @@ const IMPROVABLE_ROLES: RoleId[] = [
   RoleId.R6_GUIDE_ACHAT,
 ];
 
-/** Table → role mapping for checking which R* have published content */
-const ROLE_TABLE_MAP: Record<string, string> = {
-  [RoleId.R1_ROUTER]: '__seo_r1_gamme_slots',
-  [RoleId.R3_CONSEILS]: '__seo_gamme_conseil',
-  [RoleId.R4_REFERENCE]: '__seo_reference',
-  [RoleId.R6_GUIDE_ACHAT]: '__seo_gamme_purchase_guide',
+/** Table → { pgIdColumn, pgIdType } for checking which R* have published content */
+const ROLE_TABLE_MAP: Record<
+  string,
+  { table: string; pgIdCol: string; pgIdType: 'text' | 'int' }
+> = {
+  [RoleId.R1_ROUTER]: {
+    table: '__seo_r1_gamme_slots',
+    pgIdCol: 'r1s_pg_id',
+    pgIdType: 'text',
+  },
+  [RoleId.R3_CONSEILS]: {
+    table: '__seo_gamme_conseil',
+    pgIdCol: 'sgc_pg_id',
+    pgIdType: 'int',
+  },
+  [RoleId.R4_REFERENCE]: {
+    table: '__seo_reference',
+    pgIdCol: 'pg_id',
+    pgIdType: 'text',
+  },
+  [RoleId.R5_DIAGNOSTIC]: {
+    table: '__seo_r5_keyword_plan',
+    pgIdCol: 'r5kp_pg_id',
+    pgIdType: 'int',
+  },
+  [RoleId.R6_GUIDE_ACHAT]: {
+    table: '__seo_gamme_purchase_guide',
+    pgIdCol: 'sgpg_pg_id',
+    pgIdType: 'text',
+  },
 };
 
 interface RagChangeEvent {
@@ -201,16 +225,17 @@ export class RagChangeWatcherService
     const roles: RoleId[] = [];
 
     for (const roleId of IMPROVABLE_ROLES) {
-      const table = ROLE_TABLE_MAP[roleId];
-      if (!table) continue;
+      const mapping = ROLE_TABLE_MAP[roleId];
+      if (!mapping) continue;
 
-      // Determine the pg_id column name for each table
-      const pgIdCol = this.getPgIdColumn(table);
+      const { table, pgIdCol, pgIdType } = mapping;
+      // Cast pgId to match column type (some are TEXT, some INT)
+      const eqValue = pgIdType === 'text' ? String(pgId) : pgId;
 
       const { data } = await this.client
         .from(table)
         .select(pgIdCol)
-        .eq(pgIdCol, pgId)
+        .eq(pgIdCol, eqValue)
         .limit(1)
         .maybeSingle();
 
@@ -220,19 +245,6 @@ export class RagChangeWatcherService
     }
 
     return roles;
-  }
-
-  /**
-   * Table-specific pg_id column names.
-   */
-  private getPgIdColumn(table: string): string {
-    const map: Record<string, string> = {
-      __seo_r1_gamme_slots: 'r1gs_pg_id',
-      __seo_gamme_conseil: 'sgc_pg_id',
-      __seo_reference: 'sr_pg_id',
-      __seo_gamme_purchase_guide: 'sgpg_pg_id',
-    };
-    return map[table] ?? 'pg_id';
   }
 
   private async updateEventStatus(

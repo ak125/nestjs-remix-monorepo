@@ -75,7 +75,7 @@ export type BranchStatus = (typeof BRANCH_STATUSES)[number];
 
 // ── Gate Verdicts ──
 
-export const GATE_VERDICTS = ['PASS', 'WARN', 'FAIL'] as const;
+export const GATE_VERDICTS = ['PASS', 'WARN', 'FAIL', 'PENDING'] as const;
 export type GateVerdict = (typeof GATE_VERDICTS)[number];
 
 export const GATE_TYPES = ['hard', 'soft'] as const;
