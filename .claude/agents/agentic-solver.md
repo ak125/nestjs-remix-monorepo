@@ -80,6 +80,70 @@ VALUES ('{run_id}', '{branch_id}', '{step_id}', 'rag_citation',
 
 ---
 
+## Etape 2.5 — Fetch donnees complementaires (si keyword_plan)
+
+Si `goal_type = 'keyword_plan'`, enrichir le contexte AVANT l'execution LLM.
+
+### Anti-cannibalisation : fetch plan du role adjacent
+
+Pour R1 → fetch R3 :
+```sql
+SELECT skp_section_terms FROM __seo_r3_keyword_plan
+WHERE skp_pg_id = {pg_id} AND skp_status = 'validated' LIMIT 1;
+```
+
+Pour R3 → fetch R1 :
+```sql
+SELECT rkp_section_terms FROM __seo_r1_keyword_plan
+WHERE rkp_pg_id = {pg_id} AND rkp_status IN ('draft','validated') LIMIT 1;
+```
+
+Stocker les `include_terms` du role adjacent comme `forbidden_terms` pour la generation.
+
+### Top vehicules compatibles
+
+```sql
+SELECT am.marque_name, amod.modele_name, COUNT(*) AS cnt
+FROM __cross_gamme_car_new cgc
+JOIN auto_marque am ON am.marque_id::text = cgc.cgc_marque_id
+JOIN auto_modele amod ON amod.modele_id::text = cgc.cgc_modele_id
+WHERE cgc.cgc_pg_id = '{pg_id}'
+GROUP BY am.marque_name, amod.modele_name
+ORDER BY cnt DESC
+LIMIT 6;
+```
+
+Stocker dans `top_vehicles[]` pour injection dans les sections compatibilite.
+
+Creer le step compat :
+
+```sql
+INSERT INTO __agentic_steps (run_id, branch_id, step_index, step_type, status, started_at)
+VALUES ('{run_id}', '{branch_id}', 1, 'compat_fetch', 'running', NOW())
+RETURNING id;
+```
+
+Marquer complete apres execution :
+
+```sql
+UPDATE __agentic_steps SET status = 'completed', completed_at = NOW(),
+  output = '{"vehicles_found": {n}, "adjacent_plan_found": {bool}}'::jsonb
+WHERE id = '{compat_step_id}';
+```
+
+Enregistrer l'evidence :
+
+```sql
+INSERT INTO __agentic_evidence (run_id, branch_id, step_id, evidence_type, content, provenance)
+VALUES ('{run_id}', '{branch_id}', '{compat_step_id}', 'db_fetch',
+  '{"top_vehicles": {vehicles_json}, "forbidden_terms_count": {n}}'::jsonb,
+  '{"source": "agentic-solver:compat", "truth_level": "L1"}'::jsonb);
+```
+
+> Si `goal_type` n'est pas `keyword_plan`, sauter cette etape entierement.
+
+---
+
 ## Etape 3 — Executer la strategie
 
 Extraire la strategie depuis `plan.strategies` correspondant au `strategy_label`.
@@ -88,7 +152,7 @@ Creer le step LLM :
 
 ```sql
 INSERT INTO __agentic_steps (run_id, branch_id, step_index, step_type, status, started_at)
-VALUES ('{run_id}', '{branch_id}', 1, 'llm_solve', 'running', NOW())
+VALUES ('{run_id}', '{branch_id}', 2, 'llm_solve', 'running', NOW())
 RETURNING id;
 ```
 
@@ -146,6 +210,94 @@ SET status = 'completed',
     duration_ms = EXTRACT(EPOCH FROM (NOW() - started_at)) * 1000
 WHERE id = '{branch_id}';
 ```
+
+---
+
+## Etape 4b — Persister dans la table SEO cible (OBLIGATOIRE pour keyword_plan)
+
+> **Le resultat ne doit JAMAIS rester uniquement dans `__agentic_branches.output`.**
+> Voir `.claude/agents/_shared/kp-shared-output.md` pour le contrat complet.
+
+Si `goal_type = 'keyword_plan'`, ecrire le keyword plan dans la table SEO cible.
+
+### Mapping strategy_label → table + prefix
+
+| strategy_label contient | Table | Prefix | Unique constraint |
+|------------------------|-------|--------|-------------------|
+| `r1` | `__seo_r1_keyword_plan` | `rkp_` | `(rkp_pg_id, rkp_version)` |
+| `r3` | `__seo_r3_keyword_plan` | `skp_` | `(skp_pg_id)` |
+| `r5` | `__seo_r5_keyword_plan` | `dkp_` | `(dkp_pg_id)` |
+| `r6` | `__seo_r6_keyword_plan` | `r6kp_` | `(r6kp_pg_id)` |
+| `r7` | `__seo_r7_keyword_plan` | `r7kp_` | `(r7kp_pg_id)` |
+| `r8` | `__seo_r8_keyword_plan` | `r8kp_` | `(r8kp_type_id)` |
+
+### Extraire pg_id du goal
+
+```sql
+SELECT pg_id FROM pieces_gamme WHERE pg_alias = '{alias_from_goal}';
+```
+
+### UPSERT dans la table cible
+
+Construire le JSON structure depuis le resultat de l'etape 3 :
+- `primary_intent` : intention principale (ex: `{"intent": "diagnostic", "confidence": 82}`)
+- `section_terms` : les keywords par section/cluster (ex: `{"S1_symptomes": {"include_terms": [...], "exclude_terms": [...]}}`)
+- `query_clusters` : les clusters semantiques (ex: `[{"label": "surchauffe", "keywords": [...], "volume_estimate": "high"}]`)
+- `heading_plan` : les H2 suggeres (ex: `[{"section": "S1", "h2": "Symptomes d'un thermostat defaillant"}]`)
+
+Exemple pour R3 :
+
+```sql
+INSERT INTO __seo_r3_keyword_plan (
+  skp_pg_id, skp_pg_alias, skp_gamme_name,
+  skp_primary_intent, skp_section_terms, skp_query_clusters,
+  skp_quality_score, skp_status, skp_version,
+  skp_built_by, skp_built_at, skp_pipeline_phase
+) VALUES (
+  {pg_id}, '{pg_alias}', '{gamme_name}',
+  '{primary_intent}'::jsonb, '{section_terms}'::jsonb, '{query_clusters}'::jsonb,
+  {quality_score}, 'draft', 1,
+  'agentic-run-{run_id}', NOW(), 'solver'
+)
+ON CONFLICT (skp_pg_id) DO UPDATE SET
+  skp_section_terms = EXCLUDED.skp_section_terms,
+  skp_query_clusters = EXCLUDED.skp_query_clusters,
+  skp_quality_score = EXCLUDED.skp_quality_score,
+  skp_built_by = EXCLUDED.skp_built_by,
+  skp_built_at = NOW()
+WHERE EXCLUDED.skp_quality_score >= COALESCE(__seo_r3_keyword_plan.skp_quality_score, 0);
+```
+
+Adapter le prefix et les colonnes selon la table cible (voir mapping ci-dessus).
+
+### Creer le step db_write
+
+```sql
+INSERT INTO __agentic_steps (run_id, branch_id, step_index, step_type, status, started_at)
+VALUES ('{run_id}', '{branch_id}', 3, 'db_write', 'running', NOW())
+RETURNING id;
+```
+
+Apres l'UPSERT, marquer complete :
+
+```sql
+UPDATE __agentic_steps SET status = 'completed', completed_at = NOW(),
+  output = '{"table": "__seo_{role}_keyword_plan", "pg_id": {pg_id}, "upsert": true}'::jsonb
+WHERE id = '{db_write_step_id}';
+```
+
+Enregistrer l'evidence :
+
+```sql
+INSERT INTO __agentic_evidence (run_id, branch_id, step_id, evidence_type, content, provenance)
+VALUES ('{run_id}', '{branch_id}', '{db_write_step_id}', 'db_result',
+  '{"table": "__seo_{role}_keyword_plan", "pg_id": {pg_id}, "action": "upsert", "status": "draft"}'::jsonb,
+  '{"source": "agentic-solver:db_write", "truth_level": "L1"}'::jsonb);
+```
+
+> Si `goal_type` n'est pas `keyword_plan`, sauter cette etape.
+
+---
 
 Incrementer le compteur du run :
 
