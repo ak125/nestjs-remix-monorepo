@@ -4,6 +4,7 @@ import { TABLES } from '@repo/database-types';
 import { z } from 'zod';
 import { CacheService } from '../../cache/cache.service';
 import { DatabaseException, ErrorCodes } from '../../common/exceptions';
+import { buildRackImageUrl } from '../../modules/catalog/utils/image-urls.utils';
 
 /**
  * 📊 INTERFACES ET TYPES OPTIMISÉS
@@ -423,16 +424,13 @@ export class CartDataService extends SupabaseBaseService {
     const uniqueIds = [...new Set(productIds)];
 
     try {
-      // 1 seule requête : pieces + LEFT JOIN pieces_price + LEFT JOIN pieces_marque
-      // Supabase JS ne supporte pas les JOINs natifs, on fait 3 requêtes parallèles (batch)
-      // Supabase JS ne supporte pas les JOINs natifs, on fait 2 requêtes parallèles (batch)
-      // puis 1 requête marques après avoir collecté les pm_ids
-      const [piecesResult, pricesResult] = await Promise.all([
+      // 3 requêtes parallèles (pieces + prix + images) puis 1 requête marques après collecte des pm_ids
+      const [piecesResult, pricesResult, imagesResult] = await Promise.all([
         // Batch pieces — seulement les colonnes nécessaires
         this.client
           .from(TABLES.pieces)
           .select(
-            'piece_id, piece_name, piece_ref, piece_des, piece_image, piece_weight_kgm, piece_pm_id, piece_pg_id, piece_price_ttc',
+            'piece_id, piece_name, piece_ref, piece_des, piece_has_img, piece_weight_kgm, piece_pm_id, piece_pg_id',
           )
           .in('piece_id', uniqueIds),
 
@@ -443,6 +441,14 @@ export class CartDataService extends SupabaseBaseService {
             'pri_piece_id_i, pri_vente_ttc_n, pri_consigne_ttc_n, pri_poids, pri_udm_poids',
           )
           .in('pri_piece_id_i', uniqueIds),
+
+        // Batch images — images avec folder valide (triées par pmi_sort)
+        this.client
+          .from(TABLES.pieces_media_img)
+          .select('pmi_piece_id_i, pmi_folder, pmi_name')
+          .in('pmi_piece_id_i', uniqueIds)
+          .neq('pmi_folder', '')
+          .order('pmi_sort', { ascending: true }),
       ]);
 
       if (piecesResult.error) {
@@ -456,6 +462,22 @@ export class CartDataService extends SupabaseBaseService {
         for (const row of pricesResult.data) {
           if (!priceMap.has(row.pri_piece_id_i)) {
             priceMap.set(row.pri_piece_id_i, row);
+          }
+        }
+      }
+
+      // Index images par product_id (prendre la 1ère image triée par sort)
+      const imageMap = new Map<
+        number,
+        { pmi_folder: string; pmi_name: string }
+      >();
+      if (!imagesResult.error && imagesResult.data) {
+        for (const row of imagesResult.data) {
+          if (!imageMap.has(row.pmi_piece_id_i)) {
+            imageMap.set(row.pmi_piece_id_i, {
+              pmi_folder: row.pmi_folder,
+              pmi_name: row.pmi_name,
+            });
           }
         }
       }
@@ -489,10 +511,7 @@ export class CartDataService extends SupabaseBaseService {
       // Assembler la Map de résultats
       for (const piece of piecesResult.data || []) {
         const priceRow = priceMap.get(piece.piece_id);
-        const priceTTC =
-          Number(priceRow?.pri_vente_ttc_n) ||
-          parseFloat(piece.piece_price_ttc) ||
-          0;
+        const priceTTC = Number(priceRow?.pri_vente_ttc_n) || 0;
         const consigneTTC = Number(priceRow?.pri_consigne_ttc_n) || 0;
         const rawWeight = parseFloat(priceRow?.pri_poids) || 0;
         const udm = (priceRow?.pri_udm_poids || '').toUpperCase();
@@ -514,13 +533,15 @@ export class CartDataService extends SupabaseBaseService {
           piece_name: piece.piece_name,
           piece_ref: piece.piece_ref,
           piece_des: piece.piece_des,
-          piece_image: piece.piece_image,
+          piece_image: piece.piece_has_img
+            ? buildRackImageUrl(imageMap.get(piece.piece_id))
+            : null,
           piece_weight_kgm: piece.piece_weight_kgm,
           piece_pg_id: piece.piece_pg_id
             ? parseInt(String(piece.piece_pg_id), 10)
             : null,
           piece_pm_id: piece.piece_pm_id,
-          piece_price_ttc: parseFloat(piece.piece_price_ttc) || 0,
+          piece_price_ttc: priceTTC,
           brand_name: brandName,
           price_ttc: priceTTC,
           consigne_ttc: consigneTTC,
@@ -628,11 +649,6 @@ export class CartDataService extends SupabaseBaseService {
         priceTTC = Number(priceData[0]?.pri_vente_ttc_n) || 0;
       }
 
-      // Si pas de prix dans pieces_price, essayer pieces.piece_price_ttc
-      if (priceTTC === 0 && pieceData.piece_price_ttc) {
-        priceTTC = parseFloat(pieceData.piece_price_ttc) || 0;
-      }
-
       // Prix de test par défaut si toujours 0 (pour les tests E2E)
       if (priceTTC === 0) {
         priceTTC = 99.99; // Prix par défaut pour tests
@@ -647,13 +663,27 @@ export class CartDataService extends SupabaseBaseService {
         consigneTTC = Number(priceData[0]?.pri_consigne_ttc_n) || 0;
       }
 
-      // this.logger.log(
-      //   `✅ Produit complet: ${pieceData.piece_name} - Marque: ${brandName} - Prix: ${priceTTC}€ - Consigne: ${consigneTTC}€`,
-      // );
+      // Récupérer l'image depuis pieces_media_img (1ère image triée par sort)
+      let pieceImage: string | null = null;
+      if (pieceData.piece_has_img) {
+        const { data: imgData } = await this.client
+          .from(TABLES.pieces_media_img)
+          .select('pmi_folder, pmi_name')
+          .eq('pmi_piece_id_i', productId)
+          .neq('pmi_folder', '')
+          .order('pmi_sort', { ascending: true })
+          .limit(1)
+          .single();
+
+        if (imgData) {
+          pieceImage = buildRackImageUrl(imgData);
+        }
+      }
 
       return {
         ...pieceData,
         piece_marque: brandName, // Nom de marque complet
+        piece_image: pieceImage, // URL construite depuis pieces_media_img
         price_ttc: priceTTC,
         consigne_ttc: consigneTTC, // ✅ PHASE 4: Consigne unitaire
         pieces_price: priceData || [],
