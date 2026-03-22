@@ -331,7 +331,7 @@ export class StockManagementService extends SupabaseBaseService {
           is_active: false,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', productId)
+        .eq('piece_id', productId)
         .select()
         .single();
 
@@ -700,7 +700,7 @@ export class StockManagementService extends SupabaseBaseService {
       // Test simple de connectivite a la base
       const { error } = await this.supabase
         .from(TABLES.pieces)
-        .select('id')
+        .select('piece_id')
         .limit(1);
 
       if (error) {

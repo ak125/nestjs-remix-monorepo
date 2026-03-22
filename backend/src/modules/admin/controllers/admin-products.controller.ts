@@ -44,7 +44,7 @@ export class AdminProductsController {
       return {
         success: true,
         stats: {
-          totalProducts: stats.totalProducts,
+          ...stats,
           lastUpdate: new Date(),
         },
       };
@@ -58,6 +58,10 @@ export class AdminProductsController {
         error: 'Erreur lors de la récupération du dashboard',
         stats: {
           totalProducts: 0,
+          activeProducts: 0,
+          totalCategories: 0,
+          totalBrands: 0,
+          lowStockItems: 0,
           lastUpdate: new Date(),
         },
       };

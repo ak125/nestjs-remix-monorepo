@@ -88,9 +88,7 @@ export class AdminHealthService {
   private async checkDatabase(): Promise<DatabaseHealth> {
     const start = Date.now();
     try {
-      // Simple connectivity check using CacheService's Supabase (we reuse the same pattern)
-      // We'll use a lightweight fetch to the Supabase health endpoint
-      const { createClient } = await import('@supabase/supabase-js');
+      // Use Supabase REST health via fetch (lightweight, no client needed)
       const url = process.env.SUPABASE_URL;
       const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
       if (!url || !key) {
@@ -100,16 +98,19 @@ export class AdminHealthService {
           lastCheck: new Date().toISOString(),
         };
       }
-      const client = createClient(url, key, {
-        auth: { persistSession: false, autoRefreshToken: false },
-      });
-      const { error } = await client
-        .from('xtr_customer')
-        .select('cst_id')
-        .limit(1);
+      const res = await fetch(
+        `${url}/rest/v1/pieces_gamme?select=pg_id&limit=1`,
+        {
+          headers: {
+            apikey: key,
+            Authorization: `Bearer ${key}`,
+          },
+          signal: AbortSignal.timeout(5000),
+        },
+      );
 
       return {
-        status: error ? 'down' : 'healthy',
+        status: res.ok ? 'healthy' : 'down',
         responseMs: Date.now() - start,
         lastCheck: new Date().toISOString(),
       };

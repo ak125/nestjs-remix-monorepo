@@ -39,8 +39,8 @@ export class DashboardService extends SupabaseBaseService {
       pagesWithSeo: number;
       sitemapEntries: number;
       completionRate: number;
-      organicTraffic: number;
-      keywordRankings: number;
+      organicTraffic: number | null;
+      keywordRankings: number | null;
     };
   }> {
     const startTime = Date.now();
@@ -99,8 +99,8 @@ export class DashboardService extends SupabaseBaseService {
             avgOrderValue,
             seoStats: {
               ...seoStats,
-              organicTraffic: 125000, // TODO: Connecter Google Analytics
-              keywordRankings: 8500, // TODO: Connecter Search Console
+              organicTraffic: null,
+              keywordRankings: null,
             },
           };
 
@@ -137,12 +137,12 @@ export class DashboardService extends SupabaseBaseService {
         conversionRate: 0,
         avgOrderValue: 0,
         seoStats: {
-          totalPages: 714000,
-          pagesWithSeo: 680000,
-          sitemapEntries: 714336,
-          completionRate: 95.2,
-          organicTraffic: 125000,
-          keywordRankings: 8500,
+          totalPages: 0,
+          pagesWithSeo: 0,
+          sitemapEntries: 0,
+          completionRate: 0,
+          organicTraffic: null,
+          keywordRankings: null,
         },
       };
     }
@@ -195,9 +195,12 @@ export class DashboardService extends SupabaseBaseService {
       const totalPages =
         totalSitemapEntries + totalBlogEntries + totalGammeEntries;
 
-      // Estimation du taux d'optimisation basé sur les données réelles
-      const pagesWithSeo = Math.round(totalPages * 0.952); // 95.2% comme observé
-      const completionRate = 95.2;
+      // pagesWithSeo = pages sitemap (toutes ont des meta SEO generees)
+      const pagesWithSeo = totalSitemapEntries;
+      const completionRate =
+        totalPages > 0
+          ? parseFloat(((pagesWithSeo / totalPages) * 100).toFixed(1))
+          : 0;
 
       const stats = {
         totalPages,
@@ -210,12 +213,11 @@ export class DashboardService extends SupabaseBaseService {
       return stats;
     } catch (error) {
       this.logger.error('❌ Error in getSeoStats:', error);
-      // Fallback avec les valeurs connues de l'infrastructure
       return {
-        totalPages: 714445, // 714,336 + 85 + 131 (sitemap + blog + gamme)
-        pagesWithSeo: 680000,
-        sitemapEntries: 714336,
-        completionRate: 95.2,
+        totalPages: 0,
+        pagesWithSeo: 0,
+        sitemapEntries: 0,
+        completionRate: 0,
       };
     }
   }
@@ -331,15 +333,16 @@ export class DashboardService extends SupabaseBaseService {
   }
 
   /**
-   * 🏭 Statistiques des fournisseurs - Méthode existante préservée
+   * 🏭 Statistiques des fournisseurs - Count actifs depuis pieces_marque (pm_display 1/2/5)
    */
   async getSuppliersStats(): Promise<{ totalSuppliers: number }> {
     try {
-      this.logger.log('Fetching suppliers statistics');
+      this.logger.log('Fetching suppliers statistics from pieces_marque');
 
       const { count: totalSuppliers, error } = await this.supabase
-        .from(TABLES.xtr_supplier_link_pm)
-        .select('*', { count: 'exact', head: true });
+        .from(TABLES.pieces_marque)
+        .select('*', { count: 'exact', head: true })
+        .in('pm_display', ['1', '2', '5']);
 
       if (error) {
         this.logger.error('Error counting suppliers:', error);
