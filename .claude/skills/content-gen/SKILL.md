@@ -55,7 +55,21 @@ Read /opt/automecanik/rag/knowledge/gammes/{pg_alias}.md
 ```
 Parser le frontmatter YAML complet.
 
-**2b** — Keyword plan en DB (si validé) :
+**2b** — Keywords importés depuis Claude Chrome (SOURCE PRIORITAIRE) :
+```sql
+SELECT kw, intent, vol FROM __seo_keyword_results
+WHERE pg_id = {pg_id} AND role = '{role}'
+ORDER BY
+  CASE vol WHEN 'HIGH' THEN 1 WHEN 'MED' THEN 2 ELSE 3 END,
+  kw;
+```
+Ces mots-clés DOIVENT être intégrés dans le contenu généré (H1, H2, body, meta, FAQ).
+Règle d'intégration :
+- KW vol=HIGH → OBLIGATOIRE dans H1 ou H2 + body text
+- KW vol=MED → intégrer dans body text ou FAQ
+- KW vol=LOW → optionnel, utiliser comme variantes naturelles
+
+**2b-fallback** — Si `__seo_keyword_results` est vide pour ce pg_id+role, fallback sur les anciennes tables KP :
 ```sql
 SELECT rkp_section_terms, rkp_intent_map, rkp_quality_score
 FROM __seo_r3_keyword_plan WHERE rkp_pg_id = {pg_id} AND rkp_status = 'validated';
@@ -141,7 +155,7 @@ Le run s'arrête en phase `applying`. Afficher :
 
 **RÈGLES DE GÉNÉRATION (mode direct ou solver)** :
 
-1. **Utiliser UNIQUEMENT les données du RAG** — ne pas inventer
+1. **Utiliser UNIQUEMENT les données du RAG + KW importés** — ne pas inventer
 2. **Respecter le vocabulaire interdit** du rôle (voir generator.md)
 3. **Respecter les seuils de longueur** :
    - R1 : max 150 mots (surface courte)
@@ -150,20 +164,41 @@ Le run s'arrête en phase `applying`. Afficher :
    - R6 : >1000 chars pour how_to_choose
 4. **Format HTML** pour R1 sg_content et R3 sgc_content
 5. **Texte brut** pour R4 (definition, role_mecanique) et R6 (how_to_choose)
-6. **Intégrer les keywords du KP** dans les H2, body, FAQ si disponibles
+6. **INTÉGRATION OBLIGATOIRE DES KW IMPORTÉS** :
+   - Lire `__seo_keyword_results WHERE pg_id={pg_id} AND role='{role}'`
+   - **KW vol=HIGH** → DOIT apparaître dans H1/H2 et dans le body (au moins 1 occurrence naturelle)
+   - **KW vol=MED** → intégrer dans le body, les listes à puces, ou les FAQ
+   - **KW vol=LOW** → utiliser comme variantes naturelles dans le texte (longue traîne)
+   - **PAA** → transformer en questions FAQ si section FAQ présente
+   - Vérifier APRÈS génération que les KW HIGH sont bien présents dans le contenu
+   - Si un KW HIGH est absent → réviser le contenu pour l'inclure naturellement
 
 ---
 
 ## Étape 5 — Génération R1 (page gamme router)
 
-À partir du RAG, générer :
+À partir du RAG + KW importés (`__seo_keyword_results WHERE pg_id={pg_id} AND role='R1'`), générer :
+
+**Processus KW-first** :
+1. Lire les KW R1 de la gamme (triés par vol DESC)
+2. Identifier les 3-5 KW vol=HIGH → les placer dans H1, title, H2
+3. Identifier les KW PAA → les transformer en FAQ si applicable
+4. Les KW navigational (véhicule) ne vont PAS dans le contenu R1 (ils servent aux meta/URL)
+
 - `sg_content` : HTML court (3 sections H2, max 150 mots)
-  - H2 1 : "{Pièce} : les variantes à connaître" (20% budget)
-  - H2 2 : "Pourquoi sélectionner votre véhicule ?" (35% budget)
-  - H2 3 : "Trouvez votre véhicule rapidement" (35% budget)
-- `sg_h1` : "{Pièce au pluriel} — trouvez la référence compatible avec votre véhicule" (max 70c)
-- `sg_title` : "{Pièce} : sélectionnez votre véhicule | AutoMecanik" (max 60c)
-- `sg_descrip` : 120-155 chars, contient nom pièce + "véhicule" + "compatible"
+  - H2 1 : Utiliser un KW HIGH comme ancre (ex: "{Pièce} prix et références")
+  - H2 2 : "Sélectionnez votre véhicule" (35% budget)
+  - H2 3 : Utiliser un KW transactionnel (ex: "Commander votre {pièce}")
+  - Body : intégrer naturellement 3-5 KW MED dans le texte
+- `sg_h1` : Basé sur le KW vol=HIGH le plus fort (max 70c)
+- `sg_title` : Basé sur le KW vol=HIGH + "| AutoMecanik" (max 60c)
+- `sg_descrip` : 120-155 chars, inclure le KW HIGH principal + "livraison" ou "en stock"
+
+**FAQ R1 (PAA→FAQ)** : Si des KW intent=paa existent dans `__seo_keyword_results`, ajouter un bloc FAQ compact après le H2 #3 :
+- Maximum 3 questions (les PAA vol=HIGH et vol=MED uniquement)
+- Format : `<details><summary>Question</summary><p>Réponse courte (1-2 phrases, basée sur RAG)</p></details>`
+- Ne PAS dépasser le budget 150 mots total (FAQ incluse)
+- Exemples de PAA à transformer : "combien coûte un filtre à huile" → `<details><summary>Combien coûte un filtre à huile ?</summary><p>Entre 5 et 30 € selon le type (vissable ou cartouche) et la marque.</p></details>`
 
 **Inclure les liens de maillage** dans sg_content :
 - Lien vers R4 : `<a href="/reference-auto/{alias}">En savoir plus</a>`
@@ -188,7 +223,14 @@ WHERE sg_pg_id = '{pg_id}';
 
 ## Étape 6 — Génération R3 (sections conseil)
 
-À partir du RAG frontmatter, générer 8 sections HTML :
+**KW-first** : Lire `__seo_keyword_results WHERE pg_id={pg_id} AND role='R3'` en premier.
+Répartir les KW par section :
+- KW how_to → S3 (Dépose/repose), S4
+- KW informational/entretien → S2 (Quand intervenir), S5
+- KW cout → S7 (Pièces associées) ou body text
+- KW PAA → S8 (FAQ) — transformer chaque KW PAA en question/réponse
+
+À partir du RAG frontmatter + KW importés, générer 8 sections HTML :
 
 | Section | Source RAG | Budget |
 |---------|-----------|--------|
@@ -306,7 +348,15 @@ Afficher :
 | R6 | choose 14014c | choose 14200c | +186c | ✅ __seo_gamme_purchase_guide |
 
 Vocabulaire interdit : 0 fuites détectées
-Source : RAG + KP (Claude Code generation)
+Source : RAG + KW importés (Claude Code generation)
+
+### Intégration KW
+| Vol | Total KW | Intégrés | Manquants |
+|-----|----------|----------|-----------|
+| HIGH | 5 | 5/5 | — |
+| MED | 12 | 10/12 | "filtre à huile en ligne", "filtre à huile auto" |
+| LOW | 28 | 15/28 | (optionnel) |
+| PAA | 7 | 4/7 → FAQ | "où acheter" non utilisé |
 ```
 
 ---

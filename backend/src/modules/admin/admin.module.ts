@@ -42,6 +42,7 @@ import { AdminPageBriefController } from './controllers/admin-page-brief.control
 import { AdminKeywordClustersController } from './controllers/admin-keyword-clusters.controller'; // 🔑 Keyword Clusters & Overlaps (read-only)
 import { AdminKeywordPlannerController } from './controllers/admin-keyword-planner.controller'; // 📊 Keyword Planner Coverage
 import { AdminHealthController } from './controllers/admin-health.controller'; // 🏥 Health Overview
+import { AdminSupplierStatsController } from './controllers/admin-supplier-stats.controller'; // 🏭 Supplier display stats
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
 import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // 🎯 Audit Gammes SEO
@@ -69,6 +70,7 @@ import { KeywordDensityGateService } from './services/keyword-density-gate.servi
 import { ImageGatesService } from './services/image-gates.service'; // 🚦 P3: image gates (OG, hero policy, alt text)
 import { AdminJobHealthService } from './services/admin-job-health.service'; // 🏥 Job health tracking
 import { AdminHealthService } from './services/admin-health.service'; // 🏥 Health overview aggregator
+import { AdminSupplierStatsService } from './services/admin-supplier-stats.service'; // 🏭 Supplier display stats
 import { EnricherTextUtils } from './services/enricher-text-utils.service'; // 🔧 Shared text utilities
 import { EnricherYamlParser } from './services/enricher-yaml-parser.service'; // 🔧 Shared YAML/frontmatter parsing
 import { QualityScoringEngineService } from './services/quality-scoring-engine.service'; // 📊 Quality scoring engine (multi-page)
@@ -161,6 +163,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     AdminR8VehicleController, // 🚗 R8 Vehicle enrichment - /api/admin/r8/enrich/:typeId
     AdminR7BrandController, // 🏭 R7 Brand enrichment - /api/admin/r7/enrich/:marqueId
     AdminVehicleRagController, // 🚗 Vehicle RAG generation - /api/admin/vehicle-rag/*
+    AdminSupplierStatsController, // 🏭 Supplier display stats - /api/admin/supplier-stats/*
     AdminDbGovernanceController, // 📊 DB Governance Phase 2 - /api/admin/db-governance/*
     AdminPipelineController, // 🚀 Unified pipeline execution - /api/admin/pipeline/*
     InternalPipelineController, // 🚀 Internal pipeline (X-Internal-Key) - /api/internal/pipeline/*
@@ -211,6 +214,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
     R7BrandEnricherService, // 🏭 R7 Brand page enricher (RAG + diversity scoring, 0-LLM)
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)
+    AdminSupplierStatsService, // 🏭 Supplier display breakdown (pm_display stats)
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
     R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)
     R1EnricherService, // 🏗️ R1 Router enricher (0-LLM, RAG+KP → r1_gamme_slots)

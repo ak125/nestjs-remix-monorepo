@@ -18,7 +18,6 @@ import {
   Database,
   Settings,
   Target,
-  Brain,
   Bell,
   TrendingUp,
   AlertTriangle,
@@ -108,21 +107,21 @@ export const loader: LoaderFunction = async ({ request }) => {
 
     let apiErrors: string[] = [];
 
-    // Fetch toutes les APIs en parallèle
+    // Fetch les APIs en parallèle
     const headers = { Cookie: cookieHeader };
-    const [unifiedRes, reportsRes, productsRes] = await Promise.all([
+    const [unifiedRes, productsRes, healthRes] = await Promise.all([
       fetch(`${getInternalApiUrl("")}/api/dashboard/stats`, { headers }).catch(
         () => null,
       ),
-      fetch(`${getInternalApiUrl("")}/api/admin/reports/dashboard`, {
+      fetch(`${getInternalApiUrl("")}/api/admin/products/dashboard`, {
         headers,
       }).catch(() => null),
-      fetch(`${getInternalApiUrl("")}/api/admin/products/dashboard`, {
+      fetch(`${getInternalApiUrl("")}/api/admin/health/overview`, {
         headers,
       }).catch(() => null),
     ]);
 
-    // 1. Dashboard unifié
+    // 1. Dashboard unifié (users, orders, revenue, suppliers, seo, avgOrderValue)
     if (unifiedRes?.ok) {
       const d = await unifiedRes.json();
       if (d.success || d.totalUsers !== undefined) {
@@ -135,6 +134,9 @@ export const loader: LoaderFunction = async ({ request }) => {
           pendingOrders: d.pendingOrders ?? stats.pendingOrders,
           completedOrders: d.completedOrders ?? stats.completedOrders,
           totalSuppliers: d.totalSuppliers ?? stats.totalSuppliers,
+          conversionRate: d.conversionRate ?? stats.conversionRate,
+          avgOrderValue: d.avgOrderValue ?? stats.avgOrderValue,
+          totalProducts: d.totalProducts ?? stats.totalProducts,
           seoStats: d.seoStats ?? stats.seoStats,
         };
       }
@@ -142,32 +144,33 @@ export const loader: LoaderFunction = async ({ request }) => {
       apiErrors.push("Dashboard unifié non disponible");
     }
 
-    // 2. Reports (surcharge les valeurs unified si disponible)
-    if (reportsRes?.ok) {
-      const r = await reportsRes.json();
-      if (r.success) {
-        stats.totalUsers = r.users?.total ?? stats.totalUsers;
-        stats.activeUsers = r.users?.active ?? stats.activeUsers;
-        stats.totalOrders = r.orders?.total ?? stats.totalOrders;
-        stats.completedOrders = r.orders?.completed ?? stats.completedOrders;
-        stats.pendingOrders = r.orders?.pending ?? stats.pendingOrders;
-        stats.totalRevenue = r.orders?.revenue ?? stats.totalRevenue;
-        stats.avgOrderValue = r.orders?.avgOrderValue ?? 0;
-      }
-    } else if (!unifiedRes?.ok) {
-      apiErrors.push("API Reports");
-    }
-
-    // 3. Produits
+    // 2. Produits (totalProducts, activeProducts, totalCategories, totalBrands)
     if (productsRes?.ok) {
       const p = await productsRes.json();
       if (p.success) {
-        stats.totalProducts = p.stats.totalProducts ?? 0;
+        stats.totalProducts = p.stats.totalProducts ?? stats.totalProducts;
         stats.activeProducts = p.stats.activeProducts ?? 0;
         stats.totalCategories = p.stats.totalCategories ?? 0;
       }
     } else {
       apiErrors.push("API Produits");
+    }
+
+    // 3. System health
+    if (healthRes?.ok) {
+      const h = await healthRes.json();
+      if (h.data?.overall || h.overall) {
+        const overview = h.data ?? h;
+        stats.systemHealth = {
+          status: overview.overall ?? "unknown",
+          uptime: overview.uptime ?? null,
+          responseTime: overview.components?.database?.responseMs ?? null,
+          memoryUsage: overview.components?.memory?.percentage ?? null,
+          cpuUsage: null,
+          diskUsage: null,
+          activeConnections: null,
+        };
+      }
     }
 
     // Calculer le taux de conversion côté serveur
@@ -176,9 +179,6 @@ export const loader: LoaderFunction = async ({ request }) => {
         (((stats.completedOrders || 0) / stats.totalOrders) * 100).toFixed(1),
       );
     }
-
-    // NOTE: /api/admin/system/health n'existe pas cote backend.
-    // Sera cree en Phase 3 (GET /api/admin/health/overview).
 
     logger.log("✅ Stats du dashboard chargées:", {
       users: stats.totalUsers,
@@ -244,9 +244,6 @@ export default function AdminDashboard() {
     }
     return value.toLocaleString(locale, options);
   };
-
-  // NOTE: Le polling /api/admin/system/health a ete retire car l'endpoint n'existe pas.
-  // Sera reactive en Phase 3 avec GET /api/admin/health/overview.
 
   return (
     <div className="space-y-8">
@@ -497,8 +494,6 @@ export default function AdminDashboard() {
               { id: "commerce", label: "Commerce", icon: ShoppingCart },
               { id: "design", label: "Design System", icon: Palette },
               { id: "seo", label: "SEO Enterprise", icon: Search },
-              { id: "performance", label: "Performance", icon: Zap },
-              { id: "security", label: "Sécurité", icon: Shield },
               { id: "system", label: "Système", icon: Settings },
             ].map((tab) => (
               <button
@@ -521,47 +516,73 @@ export default function AdminDashboard() {
           {/* Vue d'ensemble */}
           {activeTab === "overview" && (
             <div className="space-y-6">
-              {/* Insights IA — sera connecte a un vrai moteur d'insights en Phase 4 */}
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
-                <div className="flex items-center gap-3">
-                  <div className="bg-muted p-2 rounded-lg">
-                    <Brain className="h-6 w-6 text-purple-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-purple-900">
-                      Insights IA
-                    </h3>
-                    <p className="text-sm text-purple-600">
-                      Sera connecte aux donnees reelles en Phase 4 (Control
-                      Plane)
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Alertes systeme — sera connecte a GET /api/admin/health/overview en Phase 3 */}
-              <div className="bg-warning/5 border border-yellow-200 rounded-xl p-6">
-                <div className="flex items-start gap-3">
-                  <Bell className="h-5 w-5 text-yellow-600 mt-0.5" />
-                  <div className="flex-1">
-                    <h3 className="font-medium text-yellow-800">
-                      Alertes Systeme
-                    </h3>
-                    <div className="mt-3 space-y-2">
-                      {realTimeStats.pendingOrders > 100 && (
+              {/* Alertes systeme */}
+              {realTimeStats.pendingOrders > 100 && (
+                <div className="bg-warning/5 border border-yellow-200 rounded-xl p-6">
+                  <div className="flex items-start gap-3">
+                    <Bell className="h-5 w-5 text-yellow-600 mt-0.5" />
+                    <div className="flex-1">
+                      <h3 className="font-medium text-yellow-800">
+                        Alertes Systeme
+                      </h3>
+                      <div className="mt-3 space-y-2">
                         <p className="text-sm text-yellow-700">
                           {formatNumber(realTimeStats.pendingOrders)} commandes
                           en attente de traitement
                         </p>
-                      )}
-                      <p className="text-sm text-gray-500 italic">
-                        Alertes en temps reel non disponibles — sera connecte en
-                        Phase 3
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Sante systeme */}
+              {realTimeStats.systemHealth && (
+                <div
+                  className={`border rounded-xl p-6 ${
+                    realTimeStats.systemHealth.status === "healthy"
+                      ? "bg-green-50 border-green-200"
+                      : realTimeStats.systemHealth.status === "degraded"
+                        ? "bg-yellow-50 border-yellow-200"
+                        : "bg-red-50 border-red-200"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Activity
+                      className={`h-5 w-5 ${
+                        realTimeStats.systemHealth.status === "healthy"
+                          ? "text-green-600"
+                          : realTimeStats.systemHealth.status === "degraded"
+                            ? "text-yellow-600"
+                            : "text-red-600"
+                      }`}
+                    />
+                    <div>
+                      <h3 className="font-medium">
+                        Systeme :{" "}
+                        {realTimeStats.systemHealth.status.toUpperCase()}
+                      </h3>
+                      {realTimeStats.systemHealth.uptime != null && (
+                        <p className="text-sm text-gray-600">
+                          Uptime :{" "}
+                          {Math.round(realTimeStats.systemHealth.uptime / 3600)}
+                          h
+                          {realTimeStats.systemHealth.memoryUsage != null && (
+                            <>
+                              {" "}
+                              | RAM :{" "}
+                              {realTimeStats.systemHealth.memoryUsage.toFixed(
+                                0,
+                              )}
+                              %
+                            </>
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Métriques Business Avancées */}
               <div className="grid gap-6 md:grid-cols-3">
@@ -738,7 +759,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              {/* Top Performances — sera alimente par les APIs reelles en Phase 2 */}
+              {/* Top Performances */}
               <div className="grid gap-6 md:grid-cols-2">
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
@@ -746,7 +767,7 @@ export default function AdminDashboard() {
                     Top Categories
                   </h3>
                   <p className="text-sm text-gray-500 italic">
-                    Donnees non disponibles — sera connecte aux APIs en Phase 2
+                    Donnees non configurees
                   </p>
                 </div>
 
@@ -756,7 +777,7 @@ export default function AdminDashboard() {
                     Top Fournisseurs
                   </h3>
                   <p className="text-sm text-gray-500 italic">
-                    Donnees non disponibles — sera connecte aux APIs en Phase 2
+                    Donnees non configurees
                   </p>
                 </div>
               </div>
@@ -1527,8 +1548,7 @@ export default function AdminDashboard() {
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h3 className="text-lg font-medium mb-4">Maintenance</h3>
                   <p className="text-sm text-gray-500 italic">
-                    Donnees de maintenance non disponibles — sera connecte en
-                    Phase 3
+                    Donnees non configurees
                   </p>
                 </div>
 
@@ -1966,7 +1986,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <p className="text-sm text-gray-500 italic">
-                Monitoring non connecté — sera disponible en Phase 3
+                Donnees non configurees
               </p>
             )}
           </CardContent>
