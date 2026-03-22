@@ -179,7 +179,50 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       );
     }
 
-    return json({ guide, pg_alias });
+    // Fetch R4 reference for this gamme (non-blocking)
+    let r4Reference: {
+      slug: string;
+      title: string;
+      definition: string;
+      roleMecanique: string | null;
+      canonicalUrl: string | null;
+    } | null = null;
+
+    try {
+      const pgId = guide.page.pg_id;
+      if (pgId) {
+        const byGammeUrl = getInternalApiUrlFromRequest(
+          `/api/seo/reference/by-gamme/${pgId}`,
+          request,
+        );
+        const byGammeRes = await fetch(byGammeUrl);
+        if (byGammeRes.ok) {
+          const { slug: r4Slug } = await byGammeRes.json();
+          if (r4Slug) {
+            const refUrl = getInternalApiUrlFromRequest(
+              `/api/seo/reference/${r4Slug}`,
+              request,
+            );
+            const refRes = await fetch(refUrl);
+            if (refRes.ok) {
+              const refData = await refRes.json();
+              const ref = refData?.data ?? refData;
+              r4Reference = {
+                slug: r4Slug,
+                title: ref.title ?? "",
+                definition: ref.definition ?? "",
+                roleMecanique: ref.roleMecanique ?? ref.role_mecanique ?? null,
+                canonicalUrl: `/reference-auto/${r4Slug}`,
+              };
+            }
+          }
+        }
+      }
+    } catch {
+      // R4 reference is optional — fail silently
+    }
+
+    return json({ guide, pg_alias, r4Reference });
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
@@ -306,7 +349,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 // ── Component ────────────────────────────────────────────
 
 export default function R3GuidePage() {
-  const { guide, pg_alias } = useLoaderData<typeof loader>();
+  const { guide, pg_alias, r4Reference } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const page = guide.page;
 
@@ -575,27 +618,55 @@ export default function R3GuidePage() {
                   />
                 )}
 
-                {/* Glossaire pièces auto */}
-                <Card className="border-indigo-200 bg-indigo-50/50">
-                  <div className="p-4">
-                    <Link
-                      to="/reference-auto"
-                      className="flex items-center gap-3 group"
-                    >
-                      <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
-                        <BookOpen className="w-4 h-4 text-indigo-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
-                          Glossaire pièces auto
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          138 définitions techniques
-                        </p>
-                      </div>
-                    </Link>
-                  </div>
-                </Card>
+                {/* Fiche technique R4 (spécifique) ou Glossaire (fallback) */}
+                {r4Reference ? (
+                  <Card className="border-indigo-200 bg-indigo-50/50">
+                    <div className="p-4">
+                      <Link
+                        to={`/reference-auto/${r4Reference.slug}`}
+                        className="flex items-start gap-3 group"
+                      >
+                        <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
+                          <BookOpen className="w-4 h-4 text-indigo-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                            {r4Reference.title}
+                          </p>
+                          {r4Reference.roleMecanique && (
+                            <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
+                              {r4Reference.roleMecanique}
+                            </p>
+                          )}
+                          <p className="text-xs text-indigo-600 mt-1 font-medium">
+                            Voir la fiche technique
+                          </p>
+                        </div>
+                      </Link>
+                    </div>
+                  </Card>
+                ) : (
+                  <Card className="border-indigo-200 bg-indigo-50/50">
+                    <div className="p-4">
+                      <Link
+                        to="/reference-auto"
+                        className="flex items-center gap-3 group"
+                      >
+                        <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
+                          <BookOpen className="w-4 h-4 text-indigo-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                            Glossaire pieces auto
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            138 definitions techniques
+                          </p>
+                        </div>
+                      </Link>
+                    </div>
+                  </Card>
+                )}
 
                 {/* Articles Croisés */}
                 {guide.related.length > 0 && (

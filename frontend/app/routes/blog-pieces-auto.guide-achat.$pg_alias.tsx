@@ -87,6 +87,51 @@ export const handle = {
   }),
 };
 
+// ── R4 Reference Fetch (non-blocking) ────────────────────
+
+type R4Ref = {
+  slug: string;
+  title: string;
+  definition: string;
+  roleMecanique: string | null;
+  canonicalUrl: string | null;
+};
+
+async function fetchR4Reference(
+  pgId: number,
+  request: Request,
+): Promise<R4Ref | null> {
+  try {
+    if (!pgId) return null;
+    const byGammeUrl = getInternalApiUrlFromRequest(
+      `/api/seo/reference/by-gamme/${pgId}`,
+      request,
+    );
+    const byGammeRes = await fetch(byGammeUrl);
+    if (!byGammeRes.ok) return null;
+    const { slug } = await byGammeRes.json();
+    if (!slug) return null;
+
+    const refUrl = getInternalApiUrlFromRequest(
+      `/api/seo/reference/${slug}`,
+      request,
+    );
+    const refRes = await fetch(refUrl);
+    if (!refRes.ok) return null;
+    const refData = await refRes.json();
+    const ref = refData?.data ?? refData;
+    return {
+      slug,
+      title: ref.title ?? "",
+      definition: ref.definition ?? "",
+      roleMecanique: ref.roleMecanique ?? ref.role_mecanique ?? null,
+      canonicalUrl: `/reference-auto/${slug}`,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ── Loader (NO 301 — always 404 noindex on failure) ─────
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
@@ -122,7 +167,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       const guide = result?.data as R6GuidePayload | null;
 
       if (guide && (!guide.intentType || guide.intentType === "R6")) {
-        return json({ guide, pg_alias });
+        const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
+        return json({ guide, pg_alias, r4Reference });
       }
     }
 
@@ -192,7 +238,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       sourceVerified: true,
     };
 
-    return json({ guide, pg_alias });
+    const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
+    return json({ guide, pg_alias, r4Reference });
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
@@ -427,7 +474,7 @@ function buildTocSections(guide: R6GuidePayload) {
 // ── Component ───────────────────────────────────────────
 
 export default function R6GuidePage() {
-  const { guide, pg_alias } = useLoaderData<typeof loader>();
+  const { guide, pg_alias, r4Reference } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const page = guide.page;
 
@@ -552,26 +599,55 @@ export default function R6GuidePage() {
                   </div>
                 </Card>
 
-                <Card className="border-indigo-200 bg-indigo-50/50">
-                  <div className="p-4">
-                    <Link
-                      to="/reference-auto"
-                      className="flex items-center gap-3 group"
-                    >
-                      <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
-                        <BookOpen className="w-4 h-4 text-indigo-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
-                          Glossaire pieces auto
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          138 definitions techniques
-                        </p>
-                      </div>
-                    </Link>
-                  </div>
-                </Card>
+                {/* Fiche technique R4 (specifique) ou Glossaire (fallback) */}
+                {r4Reference ? (
+                  <Card className="border-indigo-200 bg-indigo-50/50">
+                    <div className="p-4">
+                      <Link
+                        to={`/reference-auto/${r4Reference.slug}`}
+                        className="flex items-start gap-3 group"
+                      >
+                        <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
+                          <BookOpen className="w-4 h-4 text-indigo-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                            {r4Reference.title}
+                          </p>
+                          {r4Reference.roleMecanique && (
+                            <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
+                              {r4Reference.roleMecanique}
+                            </p>
+                          )}
+                          <p className="text-xs text-indigo-600 mt-1 font-medium">
+                            Voir la fiche technique
+                          </p>
+                        </div>
+                      </Link>
+                    </div>
+                  </Card>
+                ) : (
+                  <Card className="border-indigo-200 bg-indigo-50/50">
+                    <div className="p-4">
+                      <Link
+                        to="/reference-auto"
+                        className="flex items-center gap-3 group"
+                      >
+                        <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
+                          <BookOpen className="w-4 h-4 text-indigo-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                            Glossaire pieces auto
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            138 definitions techniques
+                          </p>
+                        </div>
+                      </Link>
+                    </div>
+                  </Card>
+                )}
               </div>
             </aside>
           </div>
