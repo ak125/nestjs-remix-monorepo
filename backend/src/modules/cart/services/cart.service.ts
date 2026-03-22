@@ -70,9 +70,12 @@ export class CartService {
       }
 
       // 2. Calculer le total du panier
-      const subtotal = cart.items.reduce((sum: number, item: any) => {
-        return sum + item.price * item.quantity;
-      }, 0);
+      const subtotal = (cart.items as any[]).reduce(
+        (sum: number, item: any) => {
+          return sum + item.price * item.quantity;
+        },
+        0,
+      );
 
       // 3. Préparer le résumé du panier pour PromoService
       const cartSummary = {

@@ -93,10 +93,12 @@ export const meta: MetaFunction = () => [
 ];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const vehicle = await getVehicleFromCookie(request.headers.get("Cookie"));
-
   try {
-    const cartData = await getCart(request);
+    // Paralléliser getCart + vehicle cookie (indépendants)
+    const [cartData, vehicle] = await Promise.all([
+      getCart(request),
+      getVehicleFromCookie(request.headers.get("Cookie")),
+    ]);
 
     // Shadow validation Zod (log sans bloquer)
     const { cartSchema } = await import("~/schemas/cart.schemas");
@@ -128,7 +130,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
     const crossSellTypeId = cartTypeId || vehicle?.type_id;
 
-    // Cross-sell : fetch en parallele (non-bloquant)
+    // Cross-sell : fetch non-bloquant (ne retarde pas le rendu si lent)
     let crossSellGammes: CrossSellGamme[] = [];
     const firstPgId = cartData.items.find((i) => i.pg_id)?.pg_id;
     if (crossSellTypeId && firstPgId) {
@@ -136,7 +138,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
         const res = await fetch(
           `${backendUrl}/api/cross-selling/v5/${crossSellTypeId}/${firstPgId}`,
-          { headers: { "User-Agent": "RemixCartLoader/1.0" } },
+          {
+            headers: { "User-Agent": "RemixCartLoader/1.0" },
+            signal: AbortSignal.timeout(2000), // Timeout 2s — cross-sell is nice-to-have
+          },
         );
         if (res.ok) {
           const data = (await res.json()) as {
@@ -150,7 +155,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     }
 
     // Vehicle display: use cookie if cart type_id matches, or if no cart type_id (backwards compat)
-    // Only hide vehicle if cart has type_ids but they don't match the cookie
     const effectiveVehicle =
       cartTypeId && vehicle && cartTypeId !== vehicle.type_id ? null : vehicle;
 
@@ -162,6 +166,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       error: null,
     });
   } catch {
+    const vehicle = await getVehicleFromCookie(
+      request.headers.get("Cookie"),
+    ).catch(() => null);
     return json({
       cart: {
         items: [],

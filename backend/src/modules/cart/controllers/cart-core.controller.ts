@@ -72,13 +72,9 @@ export class CartCoreController {
       const cartData =
         await this.cartDataService.getCartWithMetadata(userIdForCart);
 
-      // Calcul frais de port basé sur le poids réel (Colissimo 2026)
-      const cartItems = (cartData.items || []).map((item) => ({
-        productId: item.product_id,
-        quantity: item.quantity,
-      }));
-      const totalWeightG =
-        await this.shippingCalculator.getCartItemsWeight(cartItems);
+      // Poids déjà pré-calculé dans getCartWithMetadata (enrichCartItemsBatch)
+      // Pas de 2e requête DB — on réutilise stats.totalWeightG
+      const totalWeightG = cartData.stats.totalWeightG || 0;
       const shippingCost = this.shippingCalculator.calculateByWeight(
         totalWeightG,
         cartData.stats.subtotal,

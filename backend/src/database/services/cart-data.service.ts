@@ -125,120 +125,108 @@ export class CartDataService extends SupabaseBaseService {
    */
   async getCartWithMetadata(sessionId: string) {
     try {
-      // this.logger.log(`🛒 Récupération panier Redis: ${sessionId}`);
-
-      // Récupérer items du panier depuis Redis
-      const cartItems = await this.getCartFromRedis(sessionId);
-
-      // LOG DE DEBUG pour voir ce qui est stocké
-      // this.logger.log(
-      //   `📦 Items bruts depuis Redis (${cartItems.length} items):`,
-      //   JSON.stringify(cartItems, null, 2),
-      // );
+      // 1. Récupérer items Redis + promo + shipping en parallèle (3 Redis GET simultanés)
+      const [cartItems, appliedPromo, appliedShipping] = await Promise.all([
+        this.getCartFromRedis(sessionId),
+        this.getAppliedPromo(sessionId),
+        this.getAppliedShipping(sessionId),
+      ]);
 
       if (cartItems.length === 0) {
-        this.logger.warn(`⚠️ Panier vide pour session ${sessionId}`);
+        const emptyStats = {
+          itemCount: 0,
+          totalQuantity: 0,
+          subtotal: 0,
+          consigne_total: 0,
+          total: 0,
+          hasPromo: false,
+          promoDiscount: 0,
+          promoCode: undefined as string | undefined,
+          hasShipping: false,
+          shippingCost: 0,
+          shippingMethod: undefined as string | undefined,
+          totalWeightG: 0,
+        };
+        return {
+          metadata: {
+            user_id: sessionId,
+            subtotal: 0,
+            total: 0,
+            promo_code: undefined as string | undefined,
+            promo_discount: 0,
+          },
+          items: [] as any[],
+          stats: emptyStats,
+          appliedPromo,
+        };
       }
 
-      // Enrichir avec les données produits depuis les tables existantes
-      const enrichedItems = await Promise.all(
-        cartItems.map(async (item) => {
-          try {
-            const product = await this.getProductWithAllData(
-              parseInt(item.product_id),
-            );
+      // 2. Batch enrichment : 3 requêtes DB parallèles au lieu de 3N séquentielles
+      const productIds = cartItems.map((item) => parseInt(item.product_id));
+      const productMap = await this.enrichCartItemsBatch(productIds);
 
-            // Si le produit n'existe pas, utiliser les données stockées dans l'item
-            if (!product) {
-              this.logger.warn(
-                `⚠️ Produit ${item.product_id} introuvable, utilisation des données du panier`,
-              );
-              const fallbackBrand =
-                item.product_brand && item.product_brand !== 'MARQUE INCONNUE'
-                  ? item.product_brand
-                  : 'Non spécifiée';
+      // 3. Mapper les items enrichis
+      const enrichedItems = cartItems.map((item) => {
+        const productId = parseInt(item.product_id);
+        const product = productMap.get(productId);
 
-              return {
-                ...item,
-                product_brand: fallbackBrand,
-                consigne_unit: 0,
-                has_consigne: false,
-                consigne_total: 0,
-              };
-            }
+        if (!product) {
+          const fallbackBrand =
+            item.product_brand && item.product_brand !== 'MARQUE INCONNUE'
+              ? item.product_brand
+              : 'Non spécifiée';
+          return {
+            ...item,
+            product_brand: fallbackBrand,
+            consigne_unit: 0,
+            has_consigne: false,
+            consigne_total: 0,
+            weight_g: 0,
+          };
+        }
 
-            // S'assurer que la marque est bien transmise
-            const brandName =
-              product.piece_marque && product.piece_marque !== 'MARQUE INCONNUE'
-                ? product.piece_marque
-                : 'Non spécifiée';
+        const brandName =
+          product.brand_name && product.brand_name !== 'MARQUE INCONNUE'
+            ? product.brand_name
+            : 'Non spécifiée';
 
-            // ✅ PHASE 4: Extraire la consigne depuis product
-            const consigneUnit =
-              (product as unknown as Record<string, number>).consigne_ttc || 0;
-            const hasConsigne = consigneUnit > 0;
+        const consigneUnit = product.consigne_ttc || 0;
+        const hasConsigne = consigneUnit > 0;
 
-            return {
-              ...item,
-              product_name: product.piece_name || item.product_name,
-              product_sku: product.piece_ref || item.product_sku,
-              product_brand: brandName, // Toujours définir la marque
-              product_description:
-                product.piece_des || item.product_description,
-              product_image:
-                product.piece_image || item.product_image || undefined,
-              weight: product.piece_weight_kgm || item.weight,
-              // Prix depuis produit si pas défini dans l'item
-              price: item.price || product.price_ttc || 0,
-              // Gamme ID pour cross-sell
-              pg_id: (product as Record<string, unknown>).piece_pg_id
-                ? parseInt(
-                    String((product as Record<string, unknown>).piece_pg_id),
-                    10,
-                  )
-                : undefined,
-              // ✅ PHASE 4: Consignes
-              consigne_unit: consigneUnit,
-              has_consigne: hasConsigne,
-              consigne_total: consigneUnit * item.quantity,
-            };
-          } catch (error) {
-            this.logger.warn(
-              `⚠️ Impossible d'enrichir l'item ${item.product_id}:`,
-              error,
-            );
-            // Utiliser les données stockées dans l'item si disponibles
-            const fallbackBrand =
-              item.product_brand && item.product_brand !== 'MARQUE INCONNUE'
-                ? item.product_brand
-                : 'Non spécifiée';
+        return {
+          ...item,
+          product_name: product.piece_name || item.product_name,
+          product_sku: product.piece_ref || item.product_sku,
+          product_brand: brandName,
+          product_description: product.piece_des || item.product_description,
+          product_image: product.piece_image || item.product_image || undefined,
+          weight: product.piece_weight_kgm || item.weight,
+          price: item.price || product.price_ttc || 0,
+          pg_id: product.piece_pg_id || undefined,
+          consigne_unit: consigneUnit,
+          has_consigne: hasConsigne,
+          consigne_total: consigneUnit * item.quantity,
+          // Poids en grammes pré-calculé (élimine la double requête du ShippingCalculator)
+          weight_g: product.weight_g || 0,
+        };
+      });
 
-            return {
-              ...item,
-              product_brand: fallbackBrand,
-              consigne_unit: 0,
-              has_consigne: false,
-              consigne_total: 0,
-            };
-          }
-        }),
-      );
-
-      // Récupérer le code promo appliqué s'il existe
-      const appliedPromo = await this.getAppliedPromo(sessionId);
-
-      // Récupérer la méthode de livraison appliquée
-      const appliedShipping = await this.getAppliedShipping(sessionId);
-
-      // ✅ PHASE 4: Calculer le total des consignes
+      // 4. Calculs statistiques
       const consigneTotal = enrichedItems.reduce(
-        (sum, item) =>
-          sum +
-          ((item as unknown as Record<string, number>).consigne_total || 0),
+        (sum, item) => sum + (item.consigne_total || 0),
         0,
       );
 
-      // Calculer statistiques comme l'ancien système PHP
+      // Fallback 1000g/article si poids inconnu (cohérent avec ShippingCalculatorService)
+      const DEFAULT_ITEM_WEIGHT_G = 1000;
+      const totalWeightG = enrichedItems.reduce(
+        (sum, item) =>
+          sum +
+          (item.weight_g > 0 ? item.weight_g : DEFAULT_ITEM_WEIGHT_G) *
+            item.quantity,
+        0,
+      );
+
       const stats = {
         itemCount: enrichedItems.length,
         totalQuantity: enrichedItems.reduce(
@@ -249,17 +237,18 @@ export class CartDataService extends SupabaseBaseService {
           (sum, item) => sum + item.price * item.quantity,
           0,
         ),
-        consigne_total: consigneTotal, // ✅ PHASE 4: Total consignes
-        total: 0, // Calculé avec consignes, réductions et frais de port
+        consigne_total: consigneTotal,
+        total: 0,
         hasPromo: !!appliedPromo,
         promoDiscount: appliedPromo?.discount_amount || 0,
         promoCode: appliedPromo?.code,
         hasShipping: !!appliedShipping,
         shippingCost: appliedShipping?.cost || 0,
         shippingMethod: appliedShipping?.method_name,
+        // Poids total pré-calculé pour le controller (évite re-fetch)
+        totalWeightG,
       };
 
-      // Appliquer la réduction promo, ajouter les consignes et les frais de port
       stats.total =
         stats.subtotal +
         consigneTotal -
@@ -402,7 +391,158 @@ export class CartDataService extends SupabaseBaseService {
     }
   }
   /**
+   * 🚀 Enrichir N produits en 1 seule requête DB (batch JOIN)
+   * Remplace N × getProductWithAllData (qui faisait 3N requêtes séquentielles)
+   *
+   * Retourne une Map<productId, enrichedData> pour lookup O(1)
+   */
+  async enrichCartItemsBatch(productIds: number[]): Promise<
+    Map<
+      number,
+      {
+        piece_name: string;
+        piece_ref: string;
+        piece_des: string;
+        piece_image: string | null;
+        piece_weight_kgm: number;
+        piece_pg_id: number | null;
+        piece_pm_id: number | null;
+        piece_price_ttc: number;
+        brand_name: string;
+        price_ttc: number;
+        consigne_ttc: number;
+        weight_g: number;
+        weight_udm: string;
+      }
+    >
+  > {
+    const result = new Map<number, any>();
+    if (productIds.length === 0) return result;
+
+    // Dédupliquer les IDs
+    const uniqueIds = [...new Set(productIds)];
+
+    try {
+      // 1 seule requête : pieces + LEFT JOIN pieces_price + LEFT JOIN pieces_marque
+      // Supabase JS ne supporte pas les JOINs natifs, on fait 3 requêtes parallèles (batch)
+      // Supabase JS ne supporte pas les JOINs natifs, on fait 2 requêtes parallèles (batch)
+      // puis 1 requête marques après avoir collecté les pm_ids
+      const [piecesResult, pricesResult] = await Promise.all([
+        // Batch pieces — seulement les colonnes nécessaires
+        this.client
+          .from(TABLES.pieces)
+          .select(
+            'piece_id, piece_name, piece_ref, piece_des, piece_image, piece_weight_kgm, piece_pm_id, piece_pg_id, piece_price_ttc',
+          )
+          .in('piece_id', uniqueIds),
+
+        // Batch prices + poids (élimine la double requête du ShippingCalculator)
+        this.client
+          .from(TABLES.pieces_price)
+          .select(
+            'pri_piece_id_i, pri_vente_ttc_n, pri_consigne_ttc_n, pri_poids, pri_udm_poids',
+          )
+          .in('pri_piece_id_i', uniqueIds),
+      ]);
+
+      if (piecesResult.error) {
+        this.logger.error(`Batch pieces error: ${piecesResult.error.message}`);
+        return result;
+      }
+
+      // Index prices par product_id (prendre le premier prix trouvé par produit)
+      const priceMap = new Map<number, (typeof pricesResult.data)[0]>();
+      if (!pricesResult.error && pricesResult.data) {
+        for (const row of pricesResult.data) {
+          if (!priceMap.has(row.pri_piece_id_i)) {
+            priceMap.set(row.pri_piece_id_i, row);
+          }
+        }
+      }
+
+      // Collecter les pm_ids uniques pour batch les marques
+      const pmIds = new Set<string>();
+      for (const piece of piecesResult.data || []) {
+        if (piece.piece_pm_id) {
+          pmIds.add(piece.piece_pm_id.toString());
+        }
+      }
+
+      // Batch marques en 1 requête
+      const brandMap = new Map<string, string>();
+      if (pmIds.size > 0) {
+        const { data: brandData, error: brandError } = await this.client
+          .from(TABLES.pieces_marque)
+          .select('pm_id, pm_name, pm_alias')
+          .in('pm_id', [...pmIds]);
+
+        if (!brandError && brandData) {
+          for (const brand of brandData) {
+            brandMap.set(
+              brand.pm_id?.toString(),
+              brand.pm_name || brand.pm_alias || `ID-${brand.pm_id}`,
+            );
+          }
+        }
+      }
+
+      // Assembler la Map de résultats
+      for (const piece of piecesResult.data || []) {
+        const priceRow = priceMap.get(piece.piece_id);
+        const priceTTC =
+          Number(priceRow?.pri_vente_ttc_n) ||
+          parseFloat(piece.piece_price_ttc) ||
+          0;
+        const consigneTTC = Number(priceRow?.pri_consigne_ttc_n) || 0;
+        const rawWeight = parseFloat(priceRow?.pri_poids) || 0;
+        const udm = (priceRow?.pri_udm_poids || '').toUpperCase();
+        // Heuristique KGM/GRM cohérente avec ShippingCalculatorService
+        const KGM_THRESHOLD = 100;
+        const weightG =
+          rawWeight > 0
+            ? udm === 'KGM' && rawWeight <= KGM_THRESHOLD
+              ? rawWeight * 1000
+              : rawWeight
+            : 0;
+
+        const brandName =
+          piece.piece_pm_id && brandMap.has(piece.piece_pm_id.toString())
+            ? brandMap.get(piece.piece_pm_id.toString())!
+            : 'MARQUE INCONNUE';
+
+        result.set(piece.piece_id, {
+          piece_name: piece.piece_name,
+          piece_ref: piece.piece_ref,
+          piece_des: piece.piece_des,
+          piece_image: piece.piece_image,
+          piece_weight_kgm: piece.piece_weight_kgm,
+          piece_pg_id: piece.piece_pg_id
+            ? parseInt(String(piece.piece_pg_id), 10)
+            : null,
+          piece_pm_id: piece.piece_pm_id,
+          piece_price_ttc: parseFloat(piece.piece_price_ttc) || 0,
+          brand_name: brandName,
+          price_ttc: priceTTC,
+          consigne_ttc: consigneTTC,
+          weight_g: weightG,
+          weight_udm: udm,
+        });
+      }
+
+      this.logger.debug(
+        `Batch enrichment: ${uniqueIds.length} produits → ${result.size} trouvés (3 queries parallèles)`,
+      );
+
+      return result;
+    } catch (error) {
+      this.logger.error(`Erreur enrichCartItemsBatch:`, error);
+      return result;
+    }
+  }
+
+  /**
    * 🔍 Récupérer un produit avec TOUTES ses données (marque, prix, etc.)
+   * @deprecated Utiliser enrichCartItemsBatch pour les opérations batch (panier)
    */
   async getProductWithAllData(productId: number) {
     try {
@@ -583,7 +723,7 @@ export class CartDataService extends SupabaseBaseService {
       const items = cart.items;
 
       // Calculs comme l'ancien système PHP
-      const subtotal = items.reduce(
+      const subtotal = (items as any[]).reduce(
         (sum: number, item: any) => sum + item.price * item.quantity,
         0,
       );
