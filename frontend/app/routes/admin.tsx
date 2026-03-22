@@ -49,11 +49,12 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   if (!user) throw redirect("/login");
   if (!user.level || user.level < 5) throw redirect("/unauthorized");
 
-  // Charger les stats sidebar en parallèle
+  // Charger toutes les stats admin en parallele (sidebar + dashboard index)
   const cookieHeader = request.headers.get("Cookie") || "";
   const headers = { Cookie: cookieHeader };
 
-  let stats = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let stats: Record<string, any> = {
     totalUsers: 0,
     totalOrders: 0,
     totalRevenue: 0,
@@ -63,46 +64,101 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
     totalSuppliers: 0,
     totalStock: 0,
     totalProducts: 0,
+    activeProducts: 0,
     totalCategories: 0,
     totalBrands: 0,
+    conversionRate: 0,
+    avgOrderValue: 0,
+    seoStats: null,
+    systemHealth: null,
+    performance: null,
+    security: null,
   };
 
+  let apiErrors: string[] = [];
+
   try {
-    const [dashboardResponse, productsStatsResponse] = await Promise.all([
-      fetch(`${getInternalApiUrl("")}/api/dashboard/stats`, { headers }),
-      fetch(`${getInternalApiUrl("")}/api/admin/products/stats/detailed`, {
-        headers: { ...headers, "Content-Type": "application/json" },
-      }),
+    const [dashboardRes, productsRes, healthRes] = await Promise.all([
+      fetch(`${getInternalApiUrl("")}/api/dashboard/stats`, { headers }).catch(
+        () => null,
+      ),
+      fetch(`${getInternalApiUrl("")}/api/admin/products/dashboard`, {
+        headers,
+      }).catch(() => null),
+      fetch(`${getInternalApiUrl("")}/api/admin/health/overview`, {
+        headers,
+      }).catch(() => null),
     ]);
 
-    if (dashboardResponse.ok) {
-      const dashboardData = await dashboardResponse.json();
-      stats = {
-        ...stats,
-        totalUsers: dashboardData.totalUsers ?? 0,
-        totalOrders: dashboardData.totalOrders ?? 0,
-        totalRevenue: dashboardData.totalRevenue ?? 0,
-        activeUsers: dashboardData.activeUsers ?? 0,
-        pendingOrders: dashboardData.pendingOrders ?? 0,
-        completedOrders: dashboardData.completedOrders ?? 0,
-        totalSuppliers: dashboardData.totalSuppliers ?? 0,
-        totalStock: dashboardData.totalStock ?? 0,
-      };
+    // 1. Dashboard unifie
+    if (dashboardRes?.ok) {
+      const d = await dashboardRes.json();
+      if (d.success || d.totalUsers !== undefined) {
+        stats = {
+          ...stats,
+          totalUsers: d.totalUsers ?? 0,
+          totalOrders: d.totalOrders ?? 0,
+          totalRevenue: d.totalRevenue ?? 0,
+          activeUsers: d.activeUsers ?? 0,
+          pendingOrders: d.pendingOrders ?? 0,
+          completedOrders: d.completedOrders ?? 0,
+          totalSuppliers: d.totalSuppliers ?? 0,
+          totalStock: d.totalStock ?? 0,
+          totalProducts: d.totalProducts ?? 0,
+          conversionRate: d.conversionRate ?? 0,
+          avgOrderValue: d.avgOrderValue ?? 0,
+          seoStats: d.seoStats ?? null,
+        };
+      }
+    } else {
+      apiErrors.push("Dashboard unifie non disponible");
     }
 
-    if (productsStatsResponse.ok) {
-      const productsData = await productsStatsResponse.json();
-      if (productsData.success) {
-        stats.totalProducts = productsData.stats.totalProducts ?? 0;
-        stats.totalCategories = productsData.stats.totalCategories ?? 0;
-        stats.totalBrands = productsData.stats.totalBrands ?? 0;
+    // 2. Produits
+    if (productsRes?.ok) {
+      const p = await productsRes.json();
+      if (p.success) {
+        stats.totalProducts = p.stats.totalProducts ?? stats.totalProducts;
+        stats.activeProducts = p.stats.activeProducts ?? 0;
+        stats.totalCategories = p.stats.totalCategories ?? 0;
+        stats.totalBrands = p.stats.totalBrands ?? 0;
+      }
+    } else {
+      apiErrors.push("API Produits");
+    }
+
+    // 3. System health
+    if (healthRes?.ok) {
+      const h = await healthRes.json();
+      const overview = h.data ?? h;
+      if (overview.overall) {
+        stats.systemHealth = {
+          status: overview.overall,
+          uptime: overview.uptime ?? null,
+          responseTime: overview.components?.database?.responseMs ?? null,
+          memoryUsage: overview.components?.memory?.percentage ?? null,
+          cpuUsage: null,
+          diskUsage: null,
+          activeConnections: null,
+        };
       }
     }
+
+    // Conversion rate
+    if ((stats.totalOrders as number) > 0) {
+      stats.conversionRate = Number(
+        (
+          (((stats.completedOrders as number) || 0) /
+            (stats.totalOrders as number)) *
+          100
+        ).toFixed(1),
+      );
+    }
   } catch (error) {
-    logger.error("Erreur lors du chargement des stats sidebar:", error);
+    logger.error("Erreur lors du chargement des stats admin:", error);
   }
 
-  return { user, stats };
+  return { user, stats, apiErrors: apiErrors.length > 0 ? apiErrors : null };
 }
 
 export default function AdminLayout() {
@@ -110,7 +166,7 @@ export default function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      <AdminSidebar stats={stats} />
+      <AdminSidebar stats={stats as any} />
 
       {/* Main content */}
       <div className="flex-1 lg:ml-0">
