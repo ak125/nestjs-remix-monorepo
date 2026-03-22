@@ -1192,10 +1192,17 @@ export class ConseilEnricherService extends SupabaseBaseService {
     if (s2dSubstantial) return null;
 
     try {
-      const { data, error } = await this.client.rpc(
-        'get_observable_symptoms_for_gamme',
-        { p_pg_id: parseInt(pgId, 10) },
-      );
+      const { data, error } = await this.callRpc<
+        Array<{
+          symptom: string;
+          cause: string;
+          action: string;
+          risk_level: string;
+          dtc_codes: string[] | null;
+        }>
+      >('get_observable_symptoms_for_gamme', {
+        p_pg_id: parseInt(pgId, 10),
+      });
 
       if (error || !data || data.length < 2) return null;
 
