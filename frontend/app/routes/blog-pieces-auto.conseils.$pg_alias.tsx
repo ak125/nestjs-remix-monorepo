@@ -7,12 +7,14 @@
  */
 
 import {
+  defer,
   json,
   type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
 import {
+  Await,
   Link,
   useLoaderData,
   useNavigate,
@@ -61,6 +63,7 @@ import {
 import { trackArticleView, trackReadingTime } from "~/utils/analytics";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
+import { getOgImageUrl } from "~/utils/og-image.utils";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { buildCanonicalUrl } from "~/utils/seo/canonical";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";
@@ -179,50 +182,69 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       );
     }
 
-    // Fetch R4 reference for this gamme (non-blocking)
-    let r4Reference: {
+    // Fetch R4 reference as a deferred promise (non-blocking for TTFB)
+    const r4ReferencePromise = (async (): Promise<{
       slug: string;
       title: string;
       definition: string;
       roleMecanique: string | null;
       canonicalUrl: string | null;
-    } | null = null;
+    } | null> => {
+      try {
+        const pgId = guide.page.pg_id;
+        if (!pgId) return null;
 
-    try {
-      const pgId = guide.page.pg_id;
-      if (pgId) {
+        const r4Controller = new AbortController();
+        const r4Timeout = setTimeout(() => r4Controller.abort(), 2000);
+
         const byGammeUrl = getInternalApiUrlFromRequest(
           `/api/seo/reference/by-gamme/${pgId}`,
           request,
         );
-        const byGammeRes = await fetch(byGammeUrl);
-        if (byGammeRes.ok) {
-          const { slug: r4Slug } = await byGammeRes.json();
-          if (r4Slug) {
-            const refUrl = getInternalApiUrlFromRequest(
-              `/api/seo/reference/${r4Slug}`,
-              request,
-            );
-            const refRes = await fetch(refUrl);
-            if (refRes.ok) {
-              const refData = await refRes.json();
-              const ref = refData?.data ?? refData;
-              r4Reference = {
-                slug: r4Slug,
-                title: ref.title ?? "",
-                definition: ref.definition ?? "",
-                roleMecanique: ref.roleMecanique ?? ref.role_mecanique ?? null,
-                canonicalUrl: `/reference-auto/${r4Slug}`,
-              };
-            }
-          }
+        const byGammeRes = await fetch(byGammeUrl, {
+          signal: r4Controller.signal,
+        });
+        if (!byGammeRes.ok) {
+          clearTimeout(r4Timeout);
+          return null;
         }
-      }
-    } catch {
-      // R4 reference is optional — fail silently
-    }
 
-    return json({ guide, pg_alias, r4Reference });
+        const { slug: r4Slug } = await byGammeRes.json();
+        if (!r4Slug) {
+          clearTimeout(r4Timeout);
+          return null;
+        }
+
+        const refUrl = getInternalApiUrlFromRequest(
+          `/api/seo/reference/${r4Slug}`,
+          request,
+        );
+        const refRes = await fetch(refUrl, { signal: r4Controller.signal });
+        clearTimeout(r4Timeout);
+        if (!refRes.ok) return null;
+
+        const refData = await refRes.json();
+        const ref = refData?.data ?? refData;
+        return {
+          slug: r4Slug,
+          title: ref.title ?? "",
+          definition: ref.definition ?? "",
+          roleMecanique: ref.roleMecanique ?? ref.role_mecanique ?? null,
+          canonicalUrl: `/reference-auto/${r4Slug}`,
+        };
+      } catch {
+        return null; // R4 reference is optional — fail silently
+      }
+    })();
+
+    return defer(
+      { guide, pg_alias, r4Reference: r4ReferencePromise },
+      {
+        headers: {
+          "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+        },
+      },
+    );
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Response) throw error;
@@ -308,7 +330,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
     { property: "og:url", content: canonicalUrl },
     {
       property: "og:image",
-      content: "https://www.automecanik.com/images/og/blog-conseil.webp",
+      content: getOgImageUrl(data.guide.page.featuredImage, "blog-conseil"),
     },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
@@ -345,6 +367,27 @@ export const meta: MetaFunction<typeof loader> = ({ data, location }) => {
 
   return result;
 };
+
+// ── R4 Fallback (glossaire générique) ──────────────────────
+function R4FallbackCard() {
+  return (
+    <Card className="border-indigo-200 bg-indigo-50/50">
+      <div className="p-4">
+        <Link to="/reference-auto" className="flex items-center gap-3 group">
+          <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
+            <BookOpen className="w-4 h-4 text-indigo-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+              Glossaire pieces auto
+            </p>
+            <p className="text-xs text-gray-500">138 definitions techniques</p>
+          </div>
+        </Link>
+      </div>
+    </Card>
+  );
+}
 
 // ── Component ────────────────────────────────────────────
 
@@ -618,55 +661,60 @@ export default function R3GuidePage() {
                   />
                 )}
 
-                {/* Fiche technique R4 (spécifique) ou Glossaire (fallback) */}
-                {r4Reference ? (
-                  <Card className="border-indigo-200 bg-indigo-50/50">
-                    <div className="p-4">
-                      <Link
-                        to={`/reference-auto/${r4Reference.slug}`}
-                        className="flex items-start gap-3 group"
-                      >
-                        <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
-                          <BookOpen className="w-4 h-4 text-indigo-600" />
+                {/* Fiche technique R4 (spécifique) ou Glossaire (fallback) — streamed via defer */}
+                <Suspense
+                  fallback={
+                    <Card className="border-indigo-200 bg-indigo-50/50">
+                      <div className="p-4 animate-pulse">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-indigo-100 rounded-lg" />
+                          <div className="flex-1 space-y-1">
+                            <div className="h-4 bg-indigo-100 rounded w-3/4" />
+                            <div className="h-3 bg-indigo-50 rounded w-1/2" />
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
-                            {r4Reference.title}
-                          </p>
-                          {r4Reference.roleMecanique && (
-                            <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
-                              {r4Reference.roleMecanique}
-                            </p>
-                          )}
-                          <p className="text-xs text-indigo-600 mt-1 font-medium">
-                            Voir la fiche technique
-                          </p>
-                        </div>
-                      </Link>
-                    </div>
-                  </Card>
-                ) : (
-                  <Card className="border-indigo-200 bg-indigo-50/50">
-                    <div className="p-4">
-                      <Link
-                        to="/reference-auto"
-                        className="flex items-center gap-3 group"
-                      >
-                        <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
-                          <BookOpen className="w-4 h-4 text-indigo-600" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
-                            Glossaire pieces auto
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            138 definitions techniques
-                          </p>
-                        </div>
-                      </Link>
-                    </div>
-                  </Card>
-                )}
+                      </div>
+                    </Card>
+                  }
+                >
+                  <Await
+                    resolve={r4Reference}
+                    errorElement={<R4FallbackCard />}
+                  >
+                    {(resolvedR4) =>
+                      resolvedR4 ? (
+                        <Card className="border-indigo-200 bg-indigo-50/50">
+                          <div className="p-4">
+                            <Link
+                              to={`/reference-auto/${resolvedR4.slug}`}
+                              className="flex items-start gap-3 group"
+                            >
+                              <div className="p-2 bg-indigo-100 rounded-lg shrink-0">
+                                <BookOpen className="w-4 h-4 text-indigo-600" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                  {resolvedR4.title}
+                                </p>
+                                {resolvedR4.roleMecanique && (
+                                  <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">
+                                    {resolvedR4.roleMecanique}
+                                  </p>
+                                )}
+                                <p className="text-xs text-indigo-600 mt-1 font-medium">
+                                  Voir la fiche technique
+                                </p>
+                              </div>
+                            </Link>
+                          </div>
+                        </Card>
+                      ) : (
+                        <R4FallbackCard />
+                      )
+                    }
+                  </Await>
+                </Suspense>
+                {/* END R4 deferred block — was previously blocking TTFB by 200-400ms */}
 
                 {/* Articles Croisés */}
                 {guide.related.length > 0 && (

@@ -158,9 +158,14 @@ export function buildGuideSchemas(
         url: "https://www.automecanik.com/logo-navbar.webp",
       },
     },
-    image:
-      article.featuredImage ||
-      "https://www.automecanik.com/images/og/blog-conseil.webp",
+    image: {
+      "@type": "ImageObject",
+      url:
+        article.featuredImage ||
+        "https://www.automecanik.com/images/og/blog-conseil.webp",
+      width: 1200,
+      height: 630,
+    },
     articleSection: "Conseils Auto",
     keywords: article.keywords.join(", "),
     ...(article.readingTime && { timeRequired: `PT${article.readingTime}M` }),

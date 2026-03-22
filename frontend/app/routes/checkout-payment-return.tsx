@@ -180,10 +180,11 @@ export default function PaymentReturnPage() {
 
   // GA4: track purchase once per transaction (sessionStorage guard)
   useEffect(() => {
-    if (result?.status === "SUCCESS" && result.transactionId) {
-      const key = `purchase_tracked_${result.transactionId}`;
+    const txId = result?.transactionId || result?.orderId;
+    if (result?.status === "SUCCESS" && txId) {
+      const key = `purchase_tracked_${txId}`;
       if (!sessionStorage.getItem(key)) {
-        trackPurchase(result.transactionId, result.amount);
+        trackPurchase(txId, result.amount);
         sessionStorage.setItem(key, "1");
       }
     }
