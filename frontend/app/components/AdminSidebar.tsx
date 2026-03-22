@@ -58,6 +58,9 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
     completedOrders: number;
     totalSuppliers: number;
     totalStock?: number;
+    totalProducts?: number;
+    totalCategories?: number;
+    totalBrands?: number;
     seoStats?: {
       totalPages: number;
       pagesWithSeo: number;
@@ -106,45 +109,41 @@ export const AdminSidebar = memo(function AdminSidebar({
     },
     {
       name: "Stock",
-      href: "/commercial/stock",
+      href: "/admin/stock",
       icon: Package,
       description: "Gestion des stocks",
-      badge: stats
-        ? { count: stats.totalStock || 409687, color: "bg-emerald-500" }
-        : { count: 409687, color: "bg-emerald-500" },
+      badge: stats?.totalStock
+        ? { count: stats.totalStock, color: "bg-emerald-500" }
+        : null,
       notification: false,
     },
     {
       name: "Produits",
-      href: "/products/admin",
+      href: "/admin/products",
       icon: Store,
       description: "Gestion catalogue produits",
-      badge: { count: "4.0M+", color: "bg-primary" },
+      badge: stats?.totalProducts
+        ? {
+            count:
+              stats.totalProducts >= 1_000_000
+                ? `${(stats.totalProducts / 1_000_000).toFixed(1)}M+`
+                : stats.totalProducts.toLocaleString("fr-FR"),
+            color: "bg-primary",
+          }
+        : null,
       notification: false,
       subItems: [
         {
           name: "Dashboard Produits",
-          href: "/products/admin",
+          href: "/admin/products",
           icon: BarChart3,
-          description: "4M+ produits automobile",
+          description: "Catalogue produits",
         },
         {
-          name: "Catalogue",
-          href: "/products/catalog",
-          icon: Search,
-          description: "4,036,045 produits",
-        },
-        {
-          name: "Marques",
-          href: "/products/brands",
+          name: "Gammes SEO",
+          href: "/admin/gammes-seo",
           icon: Tag,
-          description: "Gestion constructeurs",
-        },
-        {
-          name: "Gammes",
-          href: "/products/ranges",
-          icon: FileText,
-          description: "9,266 catégories",
+          description: "Gammes & catégories",
         },
       ],
     },
@@ -153,7 +152,7 @@ export const AdminSidebar = memo(function AdminSidebar({
       href: "/admin/blog",
       icon: BookOpen,
       description: "Gestion du blog",
-      badge: { count: 86, color: "bg-primary" },
+      badge: null,
       notification: false,
       subItems: [
         {
@@ -170,7 +169,7 @@ export const AdminSidebar = memo(function AdminSidebar({
         },
         {
           name: "Performances",
-          href: "/admin/performances",
+          href: "/admin/blog-analytics",
           icon: BarChart3,
           description: "Analytics et optimisations",
         },
@@ -226,7 +225,7 @@ export const AdminSidebar = memo(function AdminSidebar({
     },
     {
       name: "Dashboard Commercial",
-      href: "/dashboard",
+      href: "/commercial",
       icon: Store,
       description: "Interface commerciale",
       badge: { count: "PRO", color: "bg-primary" },
@@ -234,20 +233,20 @@ export const AdminSidebar = memo(function AdminSidebar({
     },
     {
       name: "Expéditions",
-      href: "/commercial/shipping",
+      href: "/admin/orders",
       icon: Send,
       description: "Gestion des expéditions",
-      badge: { count: 10, color: "bg-purple-600" },
-      notification: true,
+      badge: null,
+      notification: false,
     },
     {
       name: "Fournisseurs",
       href: "/admin/suppliers",
       icon: Truck,
       description: "Gestion des fournisseurs",
-      badge: stats
+      badge: stats?.totalSuppliers
         ? { count: stats.totalSuppliers, color: "bg-indigo-500" }
-        : { count: 70, color: "bg-indigo-500" },
+        : null,
       notification: false,
     },
     {
@@ -255,15 +254,15 @@ export const AdminSidebar = memo(function AdminSidebar({
       href: "/admin/payments",
       icon: CreditCard,
       description: "Gestion des paiements",
-      badge: { count: 50, color: "bg-warning" },
-      notification: true,
+      badge: null,
+      notification: false,
     },
     {
       name: "Staff",
       href: "/admin/staff",
       icon: Shield,
       description: "Gestion du personnel",
-      badge: { count: 4, color: "bg-purple-500" },
+      badge: null,
       notification: false,
     },
     {
@@ -271,15 +270,12 @@ export const AdminSidebar = memo(function AdminSidebar({
       href: "/admin/seo",
       icon: Search,
       description: "Optimisation référencement",
-      badge: stats?.seoStats
+      badge: stats?.seoStats?.completionRate
         ? {
-            count: `${(stats.seoStats.completionRate || 95.2).toFixed(1)}%`,
+            count: `${stats.seoStats.completionRate.toFixed(1)}%`,
             color: "bg-success",
           }
-        : {
-            count: "95.2%",
-            color: "bg-success",
-          },
+        : null,
       notification: false,
       subItems: [
         {
@@ -292,7 +288,9 @@ export const AdminSidebar = memo(function AdminSidebar({
           name: "Analytics SEO",
           href: "/admin/seo",
           icon: TrendingUp,
-          description: `${stats?.seoStats?.sitemapEntries?.toLocaleString() || "714K+"} pages indexées`,
+          description: stats?.seoStats?.sitemapEntries
+            ? `${stats.seoStats.sitemapEntries.toLocaleString("fr-FR")} pages indexées`
+            : "Pages indexées",
         },
         {
           name: "Maillage Interne",
@@ -322,7 +320,9 @@ export const AdminSidebar = memo(function AdminSidebar({
           name: "Métadonnées",
           href: "/admin/seo?tab=batch-update",
           icon: Tag,
-          description: `${stats?.seoStats?.pagesWithSeo?.toLocaleString() || "680K+"} optimisées`,
+          description: stats?.seoStats?.pagesWithSeo
+            ? `${stats.seoStats.pagesWithSeo.toLocaleString("fr-FR")} optimisées`
+            : "Métadonnées SEO",
         },
         {
           name: "Content Refresh",
@@ -419,7 +419,7 @@ export const AdminSidebar = memo(function AdminSidebar({
       href: "/admin/reports",
       icon: BarChart3,
       description: "Analyses et rapports",
-      badge: { count: 2, color: "bg-orange-500" },
+      badge: null,
       notification: false,
     },
     {
@@ -484,7 +484,7 @@ export const AdminSidebar = memo(function AdminSidebar({
     Blog:
       location.pathname.startsWith("/admin/blog") ||
       location.pathname.startsWith("/admin/articles") ||
-      location.pathname.startsWith("/admin/performances"),
+      location.pathname.startsWith("/admin/blog-analytics"),
     Marketing: location.pathname.startsWith("/admin/marketing"),
     "RAG / Chat IA": location.pathname.startsWith("/admin/rag"),
     Système:

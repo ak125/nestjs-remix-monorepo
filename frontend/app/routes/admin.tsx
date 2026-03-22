@@ -1,6 +1,7 @@
 /**
  * Layout Admin - Layout principal pour toutes les pages d'administration
- * Intègre la navigation et la structure basée sur l'analyse legacy
+ * Masque le header/footer public via handle exports (root.tsx AppShell)
+ * Auth unifiée : context → fallback request
  */
 
 import {
@@ -20,20 +21,26 @@ import { logger } from "~/utils/logger";
 import { getOptionalUser, getAuthUser } from "../auth/unified.server";
 import { AdminSidebar } from "../components/AdminSidebar";
 
+// Masquer le header, footer et bottom nav publics pour toutes les pages admin
+export const handle = {
+  hideGlobalNavbar: true,
+  hideGlobalFooter: true,
+  hideBottomNav: true,
+};
+
 export const meta: MetaFunction = () => {
   return [
-    { title: "Administration - AutoParts Legacy System" },
+    { title: "Administration - AutoMecanik" },
     {
       name: "description",
-      content:
-        "Interface d'administration complète basée sur le système PHP legacy migré",
+      content: "Interface d'administration AutoMecanik",
     },
     { name: "robots", content: "noindex, nofollow" },
   ];
 };
 
 export async function loader({ request, context }: LoaderFunctionArgs) {
-  // Essayer d'abord avec context, puis avec request si context vide
+  // Auth unifiée : context d'abord, puis fallback request (JWT)
   let user = context?.user ? await getOptionalUser({ context }) : null;
   if (!user) {
     user = await getAuthUser(request);
@@ -42,7 +49,10 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   if (!user) throw redirect("/login");
   if (!user.level || user.level < 5) throw redirect("/unauthorized");
 
-  // Charger les statistiques pour la sidebar
+  // Charger les stats sidebar en parallèle
+  const cookieHeader = request.headers.get("Cookie") || "";
+  const headers = { Cookie: cookieHeader };
+
   let stats = {
     totalUsers: 0,
     totalOrders: 0,
@@ -58,21 +68,17 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   };
 
   try {
-    const cookieHeader = request.headers.get("Cookie") || "";
-
-    const dashboardResponse = await fetch(
-      `${getInternalApiUrl("")}/api/dashboard/stats`,
-      { headers: { Cookie: cookieHeader } },
-    );
-
-    const productsStatsResponse = await fetch(
-      `${getInternalApiUrl("")}/api/admin/products/stats/detailed`,
-      { headers: { Cookie: cookieHeader, "Content-Type": "application/json" } },
-    );
+    const [dashboardResponse, productsStatsResponse] = await Promise.all([
+      fetch(`${getInternalApiUrl("")}/api/dashboard/stats`, { headers }),
+      fetch(`${getInternalApiUrl("")}/api/admin/products/stats/detailed`, {
+        headers: { ...headers, "Content-Type": "application/json" },
+      }),
+    ]);
 
     if (dashboardResponse.ok) {
       const dashboardData = await dashboardResponse.json();
       stats = {
+        ...stats,
         totalUsers: dashboardData.totalUsers ?? 0,
         totalOrders: dashboardData.totalOrders ?? 0,
         totalRevenue: dashboardData.totalRevenue ?? 0,
@@ -81,9 +87,6 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
         completedOrders: dashboardData.completedOrders ?? 0,
         totalSuppliers: dashboardData.totalSuppliers ?? 0,
         totalStock: dashboardData.totalStock ?? 0,
-        totalProducts: 0,
-        totalCategories: 0,
-        totalBrands: 0,
       };
     }
 

@@ -47,17 +47,10 @@ import {
   CardTitle,
 } from "../components/ui/card";
 
-export const meta: MetaFunction = () => {
-  return [
-    { title: "Dashboard - Administration" },
-    {
-      name: "description",
-      content:
-        "Tableau de bord d'administration avec statistiques en temps réel",
-    },
-    { name: "robots", content: "noindex, nofollow" },
-  ];
-};
+export const meta: MetaFunction = () => [
+  { title: "Dashboard - Administration" },
+  { name: "robots", content: "noindex, nofollow" },
+];
 
 export const loader: LoaderFunction = async ({ request }) => {
   try {
@@ -115,88 +108,74 @@ export const loader: LoaderFunction = async ({ request }) => {
 
     let apiErrors: string[] = [];
 
-    // Essayer l'API Dashboard unifiée en premier (meilleure approche)
-    try {
-      const unifiedResponse = await fetch(
-        `${getInternalApiUrl("")}/api/dashboard/stats`,
-        { headers: { Cookie: cookieHeader } },
-      );
-      if (unifiedResponse.ok) {
-        const unifiedData = await unifiedResponse.json();
-        logger.log("✅ API Dashboard unifiée disponible");
-        // Merger les données unifiées avec les stats par défaut
-        if (unifiedData.success || unifiedData.totalUsers !== undefined) {
-          stats = {
-            ...stats,
-            totalUsers: unifiedData.totalUsers ?? stats.totalUsers,
-            totalOrders: unifiedData.totalOrders ?? stats.totalOrders,
-            totalRevenue: unifiedData.totalRevenue ?? stats.totalRevenue,
-            activeUsers: unifiedData.activeUsers ?? stats.activeUsers,
-            pendingOrders: unifiedData.pendingOrders ?? stats.pendingOrders,
-            completedOrders:
-              unifiedData.completedOrders ?? stats.completedOrders,
-            totalSuppliers: unifiedData.totalSuppliers ?? stats.totalSuppliers,
-            seoStats: unifiedData.seoStats ?? stats.seoStats,
-          };
-        }
-      } else {
-        apiErrors.push("Dashboard unifié non disponible");
+    // Fetch toutes les APIs en parallèle
+    const headers = { Cookie: cookieHeader };
+    const [unifiedRes, reportsRes, productsRes] = await Promise.all([
+      fetch(`${getInternalApiUrl("")}/api/dashboard/stats`, { headers }).catch(
+        () => null,
+      ),
+      fetch(`${getInternalApiUrl("")}/api/admin/reports/dashboard`, {
+        headers,
+      }).catch(() => null),
+      fetch(`${getInternalApiUrl("")}/api/admin/products/dashboard`, {
+        headers,
+      }).catch(() => null),
+    ]);
+
+    // 1. Dashboard unifié
+    if (unifiedRes?.ok) {
+      const d = await unifiedRes.json();
+      if (d.success || d.totalUsers !== undefined) {
+        stats = {
+          ...stats,
+          totalUsers: d.totalUsers ?? stats.totalUsers,
+          totalOrders: d.totalOrders ?? stats.totalOrders,
+          totalRevenue: d.totalRevenue ?? stats.totalRevenue,
+          activeUsers: d.activeUsers ?? stats.activeUsers,
+          pendingOrders: d.pendingOrders ?? stats.pendingOrders,
+          completedOrders: d.completedOrders ?? stats.completedOrders,
+          totalSuppliers: d.totalSuppliers ?? stats.totalSuppliers,
+          seoStats: d.seoStats ?? stats.seoStats,
+        };
       }
-    } catch (error) {
-      logger.log(
-        "📊 API Dashboard unifiée non disponible, fallback vers APIs individuelles",
-      );
-      apiErrors.push("API Dashboard unifiée");
+    } else {
+      apiErrors.push("Dashboard unifié non disponible");
     }
 
-    // Fallback : Récupérer les vraies données utilisateurs et commandes individuellement
-    try {
-      const reportsResponse = await fetch(
-        `${getInternalApiUrl("")}/api/admin/reports/dashboard`,
-        { headers: { Cookie: cookieHeader } },
-      );
-      if (reportsResponse.ok) {
-        const reportsData = await reportsResponse.json();
-        if (reportsData.success) {
-          stats.totalUsers = reportsData.users?.total ?? 0;
-          stats.activeUsers = reportsData.users?.active ?? 0;
-          stats.totalOrders = reportsData.orders?.total ?? 0;
-          stats.completedOrders = reportsData.orders?.completed ?? 0;
-          stats.pendingOrders = reportsData.orders?.pending ?? 0;
-          stats.totalRevenue = reportsData.orders?.revenue ?? 0;
-          stats.conversionRate = reportsData.performance?.conversionRate ?? 0;
-          stats.avgOrderValue = reportsData.orders?.avgOrderValue ?? 0;
-        }
+    // 2. Reports (surcharge les valeurs unified si disponible)
+    if (reportsRes?.ok) {
+      const r = await reportsRes.json();
+      if (r.success) {
+        stats.totalUsers = r.users?.total ?? stats.totalUsers;
+        stats.activeUsers = r.users?.active ?? stats.activeUsers;
+        stats.totalOrders = r.orders?.total ?? stats.totalOrders;
+        stats.completedOrders = r.orders?.completed ?? stats.completedOrders;
+        stats.pendingOrders = r.orders?.pending ?? stats.pendingOrders;
+        stats.totalRevenue = r.orders?.revenue ?? stats.totalRevenue;
+        stats.avgOrderValue = r.orders?.avgOrderValue ?? 0;
       }
-    } catch (error) {
-      logger.log("📊 API reports non disponible");
+    } else if (!unifiedRes?.ok) {
       apiErrors.push("API Reports");
     }
 
-    // Récupérer les statistiques produits
-    try {
-      const productsResponse = await fetch(
-        `${getInternalApiUrl("")}/api/admin/products/dashboard`,
-        { headers: { Cookie: cookieHeader } },
-      );
-      if (productsResponse.ok) {
-        const productsData = await productsResponse.json();
-        if (productsData.success) {
-          stats.totalProducts = productsData.stats.totalProducts ?? 0;
-          stats.activeProducts = productsData.stats.activeProducts ?? 0;
-          stats.totalCategories = productsData.stats.totalCategories ?? 0;
-        }
-      } else {
-        apiErrors.push("API Produits");
+    // 3. Produits
+    if (productsRes?.ok) {
+      const p = await productsRes.json();
+      if (p.success) {
+        stats.totalProducts = p.stats.totalProducts ?? 0;
+        stats.activeProducts = p.stats.activeProducts ?? 0;
+        stats.totalCategories = p.stats.totalCategories ?? 0;
       }
-    } catch (error) {
-      logger.log("📦 API produits non disponible");
+    } else {
       apiErrors.push("API Produits");
     }
 
-    // NOTE: /api/seo/analytics n'existe pas cote backend.
-    // Les stats SEO reelles sont disponibles via /api/admin/seo-cockpit/dashboard.
-    // Ce call sera remplace en Phase 2 par le contrat standard.
+    // Calculer le taux de conversion côté serveur
+    if (stats.totalOrders > 0) {
+      stats.conversionRate = Number(
+        (((stats.completedOrders || 0) / stats.totalOrders) * 100).toFixed(1),
+      );
+    }
 
     // NOTE: /api/admin/system/health n'existe pas cote backend.
     // Sera cree en Phase 3 (GET /api/admin/health/overview).
@@ -281,21 +260,21 @@ export default function AdminDashboard() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
             🎯 Tableau de Bord Administration
-            <Badge
-              variant={
-                realTimeStats.systemHealth?.status === "healthy"
-                  ? "success"
-                  : realTimeStats.systemHealth?.status === "degraded"
-                    ? "warning"
-                    : realTimeStats.systemHealth?.status === "down"
-                      ? "error"
-                      : "default"
-              }
-              size="sm"
-              icon={<Activity className="h-4 w-4" />}
-            >
-              {realTimeStats.systemHealth?.status?.toUpperCase() ?? "UNKNOWN"}
-            </Badge>
+            {realTimeStats.systemHealth?.status && (
+              <Badge
+                variant={
+                  realTimeStats.systemHealth.status === "healthy"
+                    ? "success"
+                    : realTimeStats.systemHealth.status === "degraded"
+                      ? "warning"
+                      : "error"
+                }
+                size="sm"
+                icon={<Activity className="h-4 w-4" />}
+              >
+                {realTimeStats.systemHealth.status.toUpperCase()}
+              </Badge>
+            )}
           </h1>
           <p className="text-gray-600 mt-2">
             Interface d'administration complète • Données en temps réel •
@@ -1623,7 +1602,7 @@ export default function AdminDashboard() {
           </Link>
 
           <Link
-            to="/orders"
+            to="/admin/orders"
             className="block p-4 rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all group"
           >
             <div className="flex items-center gap-3">
@@ -1958,32 +1937,38 @@ export default function AdminDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Uptime</span>
-                <span className="font-bold text-green-600">
-                  {realTimeStats.systemHealth?.uptime || 0}%
-                </span>
+            {realTimeStats.systemHealth ? (
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Uptime</span>
+                  <span className="font-bold text-green-600">
+                    {realTimeStats.systemHealth.uptime ?? "\u2014"}%
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Temps de réponse</span>
+                  <span className="font-bold">
+                    {realTimeStats.systemHealth.responseTime ?? "\u2014"}ms
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Connexions actives</span>
+                  <span className="font-bold text-blue-600">
+                    {realTimeStats.systemHealth.activeConnections ?? "\u2014"}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Cache efficace</span>
+                  <span className="font-bold text-purple-600">
+                    {realTimeStats.performance?.cacheHitRate ?? "\u2014"}%
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Temps de réponse</span>
-                <span className="font-bold">
-                  {realTimeStats.systemHealth?.responseTime || 0}ms
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Connexions actives</span>
-                <span className="font-bold text-blue-600">
-                  {realTimeStats.systemHealth?.activeConnections || 0}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Cache efficace</span>
-                <span className="font-bold text-purple-600">
-                  {realTimeStats.performance?.cacheHitRate || 0}%
-                </span>
-              </div>
-            </div>
+            ) : (
+              <p className="text-sm text-gray-500 italic">
+                Monitoring non connecté — sera disponible en Phase 3
+              </p>
+            )}
           </CardContent>
         </Card>
 
