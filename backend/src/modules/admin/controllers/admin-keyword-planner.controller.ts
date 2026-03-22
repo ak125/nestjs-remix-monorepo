@@ -346,14 +346,16 @@ export class AdminKeywordPlannerController {
     return lines.length > 0 ? lines.join('\n') : '[non renseigne]';
   }
 
-  /** Format symptoms as bullet list */
+  /** Format symptoms as bullet list (skip empty entries) */
   private formatSymptoms(raw: unknown): string {
     if (!Array.isArray(raw) || raw.length === 0) return '[non renseigne]';
-    return raw
+    const lines = raw
       .map((s: string | { label?: string }) =>
-        typeof s === 'string' ? `- ${s}` : `- ${s.label ?? ''}`,
+        typeof s === 'string' ? s.trim() : (s.label ?? '').trim(),
       )
-      .join('\n');
+      .filter((s: string) => s.length > 0)
+      .map((s: string) => `- ${s}`);
+    return lines.length > 0 ? lines.join('\n') : '[non renseigne]';
   }
 
   /** Fallback: return first non-empty value or placeholder */
