@@ -249,6 +249,19 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const API_URL = process.env.VITE_API_URL || "http://127.0.0.1:3000";
 
   try {
+    // R5→R3 consolidation: redirect sub-pages to R3 conseil#diagnostic-rapide
+    const redirectRes = await fetch(
+      `${API_URL}/api/seo/diagnostic/redirect/${slug}`,
+      { headers: { Accept: "application/json" } },
+    );
+    if (redirectRes.ok) {
+      const target = await redirectRes.json();
+      if (target?.redirect_to) {
+        return redirect(target.redirect_to, 301);
+      }
+    }
+
+    // Fallback: serve R5 page if no redirect target (shouldn't happen for published observables)
     const response = await fetch(`${API_URL}/api/seo/diagnostic/${slug}`, {
       headers: { Accept: "application/json" },
     });

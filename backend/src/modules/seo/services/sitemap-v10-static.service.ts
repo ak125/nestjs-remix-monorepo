@@ -366,33 +366,16 @@ export class SitemapV10StaticService extends SupabaseBaseService {
         return null;
       }
 
-      const urls: SitemapUrl[] = diagnostics.map(
-        (d: {
-          slug: string;
-          updated_at: string;
-          risk_level: string;
-          safety_gate: string;
-        }) => {
-          let priority = '0.7';
-          if (d.risk_level === 'critique') {
-            priority = '0.9';
-          } else if (d.risk_level === 'securite') {
-            priority = '0.8';
-          }
-
-          if (d.safety_gate === 'stop_immediate') {
-            priority = '1.0';
-          }
-
-          return {
-            url: `/diagnostic-auto/${d.slug}`,
-            page_type: 'diagnostic',
-            changefreq: 'weekly',
-            priority,
-            last_modified_at: d.updated_at,
-          };
+      // R5 consolidation: only include hub, sub-pages redirect to R3
+      const urls: SitemapUrl[] = [
+        {
+          url: '/diagnostic-auto',
+          page_type: 'diagnostic',
+          changefreq: 'weekly',
+          priority: '0.8',
+          last_modified_at: new Date().toISOString(),
         },
-      );
+      ];
 
       const filePath = path.join(
         this.xmlService.OUTPUT_DIR,

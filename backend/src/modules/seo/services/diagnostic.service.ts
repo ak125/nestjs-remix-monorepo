@@ -148,6 +148,21 @@ export class DiagnosticService extends SupabaseBaseService {
   }
 
   /**
+   * Returns the 301 redirect target for an R5 sub-page.
+   * Single gamme → R3 conseil page, multi/none → hub.
+   */
+  async getRedirectTarget(
+    slug: string,
+  ): Promise<{ redirect_to: string; pg_alias: string } | null> {
+    const { data, error } = await this.callRpc<
+      Array<{ redirect_to: string; pg_alias: string }>
+    >('get_r5_redirect_target', { p_slug: slug }, { source: 'api' });
+
+    if (error || !data || data.length === 0) return null;
+    return data[0];
+  }
+
+  /**
    * Recupere les diagnostics featured (populaires)
    * @param limit - Nombre max de resultats (defaut: 10)
    * @returns Liste des diagnostics populaires

@@ -268,6 +268,18 @@ export class DiagnosticController {
   // ============================================
 
   /**
+   * Returns 301 redirect target for R5 sub-pages → R3 conseil.
+   * GET /api/seo/diagnostic/redirect/:slug
+   */
+  @Get('redirect/:slug')
+  @Header('Cache-Control', 'public, max-age=86400')
+  async getRedirectTarget(
+    @Param('slug') slug: string,
+  ): Promise<{ redirect_to: string; pg_alias: string } | null> {
+    return this.diagnosticService.getRedirectTarget(slug);
+  }
+
+  /**
    * Recupere un diagnostic par son slug
    * GET /api/seo/diagnostic/:slug
    *

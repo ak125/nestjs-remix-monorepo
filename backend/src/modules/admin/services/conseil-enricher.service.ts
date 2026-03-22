@@ -585,6 +585,21 @@ export class ConseilEnricherService extends SupabaseBaseService {
       hasSupplementary || force,
     );
 
+    // 4a. Observable fallback for S2_DIAG — if RAG didn't produce one
+    const hasS2Diag = actions.some(
+      (a) => a.type === SECTION_TYPES.S2_DIAG && a.action !== 'skip',
+    );
+    if (!hasS2Diag) {
+      const observableFallback = await this.buildS2DiagFromObservable(
+        pgId,
+        pgAlias,
+        existing,
+      );
+      if (observableFallback) {
+        actions.push(observableFallback);
+      }
+    }
+
     // 4b. Apply sections filter if provided (only regenerate targeted sections)
     const filteredActions = sectionsFilter?.length
       ? actions.map((a) =>
@@ -1154,6 +1169,89 @@ export class ConseilEnricherService extends SupabaseBaseService {
       }
     }
     return map;
+  }
+
+  // ── Observable fallback for S2_DIAG ──
+
+  /**
+   * Builds an S2_DIAG section action from __seo_observable data when RAG
+   * didn't provide enough symptoms/quick_checks for the standard path.
+   * Uses RPC get_observable_symptoms_for_gamme(p_pg_id).
+   */
+  private async buildS2DiagFromObservable(
+    pgId: string,
+    pgAlias: string,
+    existing: Map<string, { sgc_id: string; sgc_content: string }>,
+  ): Promise<SectionAction | null> {
+    const existingS2D = existing.get(SECTION_TYPES.S2_DIAG);
+    const s2dSubstantial =
+      existingS2D &&
+      (existingS2D.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
+
+    // Don't overwrite a substantial existing S2_DIAG
+    if (s2dSubstantial) return null;
+
+    try {
+      const { data, error } = await this.client.rpc(
+        'get_observable_symptoms_for_gamme',
+        { p_pg_id: parseInt(pgId, 10) },
+      );
+
+      if (error || !data || data.length < 2) return null;
+
+      const gammeName = pgAlias.replace(/-/g, ' ');
+      const rows = (
+        data as Array<{
+          symptom: string;
+          cause: string;
+          action: string;
+          risk_level: string;
+          dtc_codes: string[] | null;
+        }>
+      ).slice(0, 8);
+
+      // Build 3-column table: Symptôme / Cause probable / Action
+      const tableRows = rows.map((r) => {
+        // Extract first sentence only for conciseness
+        const symptomShort =
+          r.symptom.split('.')[0]?.trim() || r.symptom.slice(0, 120);
+        const causeShort =
+          r.cause.split('\n')[0]?.trim() || r.cause.slice(0, 120);
+        return `<tr><td>${escapeHtml(symptomShort)}</td><td>${escapeHtml(causeShort)}</td><td>${escapeHtml(r.action)}</td></tr>`;
+      });
+
+      // Collect DTC codes if any
+      const allDtc = rows
+        .flatMap((r) => r.dtc_codes ?? [])
+        .filter((c, i, a) => a.indexOf(c) === i)
+        .slice(0, 6);
+      const dtcFooter =
+        allDtc.length > 0
+          ? `<p class="text-xs text-muted-foreground mt-2">Codes OBD associés : ${allDtc.join(', ')}</p>`
+          : '';
+
+      const tableHtml =
+        `<table><thead><tr><th>Symptôme</th><th>Cause probable</th><th>Action</th></tr></thead>` +
+        `<tbody>${tableRows.join('')}</tbody></table>${dtcFooter}`;
+
+      this.logger.log(
+        `S2_DIAG observable fallback for ${pgAlias}: ${rows.length} rows from __seo_observable`,
+      );
+
+      return {
+        type: SECTION_TYPES.S2_DIAG,
+        action: existingS2D ? 'update' : 'create',
+        title: `Diagnostic rapide des ${gammeName} :`,
+        content: tableHtml,
+        order: SECTION_ORDERS.S2_DIAG,
+        ragField: 'observable_fallback',
+      };
+    } catch (err) {
+      this.logger.warn(
+        `S2_DIAG observable fallback failed for ${pgAlias}: ${err}`,
+      );
+      return null;
+    }
   }
 
   // ── Plan actions ──
