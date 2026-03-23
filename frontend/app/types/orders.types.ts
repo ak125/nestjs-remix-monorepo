@@ -95,6 +95,7 @@ export interface OrderFilters {
   search: string;
   orderStatus: string;
   paymentStatus: string;
+  paymentMethod: string;
   dateRange: string;
 }
 

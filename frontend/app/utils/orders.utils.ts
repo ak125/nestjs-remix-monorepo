@@ -246,10 +246,11 @@ export function filterOrders(
   orderStatus: string,
   paymentStatus: string,
   dateRange: string,
+  paymentMethod?: string,
 ): Order[] {
   let filtered = [...orders];
 
-  // Recherche par ID, nom client, email
+  // Recherche par ID, nom client, email, téléphone
   if (search) {
     const searchLower = search.toLowerCase();
     filtered = filtered.filter(
@@ -257,8 +258,24 @@ export function filterOrders(
         order.ord_id.toLowerCase().includes(searchLower) ||
         order.customerName?.toLowerCase().includes(searchLower) ||
         order.customerEmail?.toLowerCase().includes(searchLower) ||
-        order.customer?.cst_mail?.toLowerCase().includes(searchLower),
+        order.customer?.cst_mail?.toLowerCase().includes(searchLower) ||
+        order.customer?.cst_tel?.toLowerCase().includes(searchLower) ||
+        order.customer?.cst_gsm?.toLowerCase().includes(searchLower),
     );
+  }
+
+  // Filtre méthode de paiement (CB vs PayPal)
+  if (paymentMethod && paymentMethod !== "all") {
+    filtered = filtered.filter((order) => {
+      const method = order.postback?.paymentmethod?.toUpperCase() || "";
+      if (paymentMethod === "cb") {
+        return method !== "PAYPAL" && method !== "";
+      }
+      if (paymentMethod === "paypal") {
+        return method === "PAYPAL";
+      }
+      return true;
+    });
   }
 
   // Filtre statut commande

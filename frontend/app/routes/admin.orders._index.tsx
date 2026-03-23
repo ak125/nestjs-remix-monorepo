@@ -412,6 +412,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const search = url.searchParams.get("search") || "";
     const orderStatus = url.searchParams.get("orderStatus") || "";
     const paymentStatus = url.searchParams.get("paymentStatus") || "";
+    const paymentMethod = url.searchParams.get("paymentMethod") || "";
     const dateRange = url.searchParams.get("dateRange") || "";
 
     // Construire les query params pour l'API backend
@@ -497,7 +498,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     return json<LoaderData>({
       orders,
       stats,
-      filters: { search, orderStatus, paymentStatus, dateRange },
+      filters: { search, orderStatus, paymentStatus, paymentMethod, dateRange },
       total: totalFromApi,
       currentPage: page,
       totalPages,
@@ -520,6 +521,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
         search: "",
         orderStatus: "",
         paymentStatus: "",
+        paymentMethod: "",
         dateRange: "",
       },
       error: error instanceof Error ? error.message : "Unknown error",
@@ -552,6 +554,7 @@ export default function OrdersRoute() {
     search: data.filters.search || "",
     orderStatus: data.filters.orderStatus || "all",
     paymentStatus: data.filters.paymentStatus || "all",
+    paymentMethod: data.filters.paymentMethod || "all",
     dateRange: data.filters.dateRange || "all",
   };
 

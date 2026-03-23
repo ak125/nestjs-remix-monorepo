@@ -3,20 +3,20 @@
  * Extrait de routes/orders._index.tsx
  */
 
-import { useMemo, useState } from 'react';
-import { type Order, type OrderFilters } from '../types/orders.types';
-import { filterOrders, sortOrders } from '../utils/orders.utils';
+import { useMemo, useState } from "react";
+import { type Order, type OrderFilters } from "../types/orders.types";
+import { filterOrders, sortOrders } from "../utils/orders.utils";
 
 export interface UseOrdersFiltersReturn {
   // État
   activeFilters: OrderFilters;
   sortBy: string;
   selectedOrders: string[];
-  
+
   // Données calculées
   filteredOrders: Order[];
   totalFiltered: number;
-  
+
   // Actions
   setActiveFilters: (filters: Partial<OrderFilters>) => void;
   setSortBy: (sort: string) => void;
@@ -27,10 +27,11 @@ export interface UseOrdersFiltersReturn {
 }
 
 const DEFAULT_FILTERS: OrderFilters = {
-  search: '',
-  orderStatus: 'all',
-  paymentStatus: 'all',
-  dateRange: 'all',
+  search: "",
+  orderStatus: "all",
+  paymentStatus: "all",
+  paymentMethod: "all",
+  dateRange: "all",
 };
 
 /**
@@ -39,7 +40,7 @@ const DEFAULT_FILTERS: OrderFilters = {
 export function useOrdersFilters(orders: Order[]): UseOrdersFiltersReturn {
   // État des filtres
   const [activeFilters, setFilters] = useState<OrderFilters>(DEFAULT_FILTERS);
-  const [sortBy, setSortByState] = useState<string>('date-desc');
+  const [sortBy, setSortByState] = useState<string>("date-desc");
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
 
   // Commandes filtrées et triées
@@ -49,15 +50,16 @@ export function useOrdersFilters(orders: Order[]): UseOrdersFiltersReturn {
       activeFilters.search,
       activeFilters.orderStatus,
       activeFilters.paymentStatus,
-      activeFilters.dateRange
+      activeFilters.dateRange,
+      activeFilters.paymentMethod,
     );
-    
+
     return sortOrders(filtered, sortBy);
   }, [orders, activeFilters, sortBy]);
 
   // Actions
   const setActiveFilters = (updates: Partial<OrderFilters>) => {
-    setFilters(prev => ({ ...prev, ...updates }));
+    setFilters((prev) => ({ ...prev, ...updates }));
   };
 
   const setSortBy = (sort: string) => {
@@ -65,15 +67,15 @@ export function useOrdersFilters(orders: Order[]): UseOrdersFiltersReturn {
   };
 
   const toggleOrderSelection = (orderId: string) => {
-    setSelectedOrders(prev =>
+    setSelectedOrders((prev) =>
       prev.includes(orderId)
-        ? prev.filter(id => id !== orderId)
-        : [...prev, orderId]
+        ? prev.filter((id) => id !== orderId)
+        : [...prev, orderId],
     );
   };
 
   const selectAllOrders = () => {
-    setSelectedOrders(filteredOrders.map(order => order.ord_id));
+    setSelectedOrders(filteredOrders.map((order) => order.ord_id));
   };
 
   const clearSelection = () => {
@@ -82,7 +84,7 @@ export function useOrdersFilters(orders: Order[]): UseOrdersFiltersReturn {
 
   const resetAllFilters = () => {
     setFilters(DEFAULT_FILTERS);
-    setSortByState('date-desc');
+    setSortByState("date-desc");
     setSelectedOrders([]);
   };
 
@@ -91,11 +93,11 @@ export function useOrdersFilters(orders: Order[]): UseOrdersFiltersReturn {
     activeFilters,
     sortBy,
     selectedOrders,
-    
+
     // Données calculées
     filteredOrders,
     totalFiltered: filteredOrders.length,
-    
+
     // Actions
     setActiveFilters,
     setSortBy,

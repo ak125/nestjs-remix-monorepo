@@ -2,9 +2,7 @@ import { Link, useLocation } from "@remix-run/react";
 import {
   Home,
   ShoppingCart,
-  Package,
   Truck,
-  Users,
   BarChart3,
   Menu,
   X,
@@ -62,26 +60,14 @@ export const CommercialSidebar = memo(function CommercialSidebar({
           : undefined,
     },
     {
-      name: "Stock",
-      href: "/commercial/stock",
-      icon: Package,
-      description: "Gestion du stock",
-    },
-    {
       name: "Expédition",
       href: "/commercial/shipping",
       icon: Truck,
       description: "Suivi des expéditions",
     },
     {
-      name: "Clients",
-      href: "/commercial/customers",
-      icon: Users,
-      description: "Base clients",
-    },
-    {
-      name: "Analyses",
-      href: "/commercial/analytics",
+      name: "Rapports",
+      href: "/commercial/reports",
       icon: BarChart3,
       description: "Rapports et analyses",
     },
@@ -173,11 +159,13 @@ export const CommercialSidebar = memo(function CommercialSidebar({
                 </div>
                 <div className="bg-purple-50 p-2 rounded">
                   <div className="flex items-center space-x-1">
-                    <Users className="h-3 w-3 text-purple-600" />
-                    <span className="text-purple-900 font-medium">Clients</span>
+                    <BarChart3 className="h-3 w-3 text-purple-600" />
+                    <span className="text-purple-900 font-medium">
+                      Terminées
+                    </span>
                   </div>
                   <div className="text-purple-700 font-bold">
-                    {(stats.totalUsers / 1000).toFixed(0)}k
+                    {stats.completedOrders?.toLocaleString() || 0}
                   </div>
                 </div>
               </div>

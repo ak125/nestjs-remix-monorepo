@@ -17,6 +17,7 @@ export const OrdersFilters = memo(function OrdersFilters({
     filters.search !== "" ||
     filters.orderStatus !== "all" ||
     filters.paymentStatus !== "all" ||
+    filters.paymentMethod !== "all" ||
     filters.dateRange !== "all";
 
   return (
@@ -28,7 +29,7 @@ export const OrdersFilters = memo(function OrdersFilters({
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
-              placeholder="Rechercher par ID, client, email..."
+              placeholder="Rechercher par ID, client, email, téléphone..."
               value={filters.search}
               onChange={(e) => onFilterChange({ search: e.target.value })}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -59,6 +60,17 @@ export const OrdersFilters = memo(function OrdersFilters({
           <option value="all">Tous les paiements</option>
           <option value="1">Payée</option>
           <option value="0">Impayée</option>
+        </select>
+
+        {/* Méthode de paiement */}
+        <select
+          value={filters.paymentMethod}
+          onChange={(e) => onFilterChange({ paymentMethod: e.target.value })}
+          className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+        >
+          <option value="all">Toutes les méthodes</option>
+          <option value="cb">Carte bancaire</option>
+          <option value="paypal">PayPal</option>
         </select>
 
         {/* Période */}

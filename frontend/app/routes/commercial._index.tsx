@@ -1,6 +1,5 @@
 /**
- * 📊 TABLEAU DE BORD COMMERCIAL
- *
+ * TABLEAU DE BORD COMMERCIAL
  * Dashboard principal pour l'interface commerciale
  * Route: /commercial
  */
@@ -12,13 +11,7 @@ import {
   redirect,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import {
-  Package,
-  AlertCircle,
-  ShoppingCart,
-  Truck,
-  DollarSign,
-} from "lucide-react";
+import { ShoppingCart, Truck, CheckCircle, TrendingUp } from "lucide-react";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
@@ -36,119 +29,78 @@ import { PublicBreadcrumb } from "../components/ui/PublicBreadcrumb";
 export const meta: MetaFunction = () =>
   createNoIndexMeta("Tableau de Bord - Commercial");
 
-// Types pour les données du dashboard
 interface DashboardData {
   orders: {
-    todayCount: number;
-    preparingCount: number;
+    totalOrders: number;
+    pendingOrders: number;
+    completedOrders: number;
     monthRevenue: number;
-    data: Array<{
+    recentOrders: Array<{
       id: string;
-      orderNumber: string;
-      customerName: string;
+      orderNumber?: string;
+      customerName?: string;
+      customerId?: string;
       status: string;
-      totalAmount: number;
-      createdAt: string;
-    }>;
-  };
-  stock: {
-    lowStockCount: number;
-    lowStockItems: Array<{
-      id: string;
-      name: string;
-      currentStock: number;
-      minStock: number;
-    }>;
-  };
-  suppliers: {
-    data: Array<{
-      id: string;
-      name: string;
-      status: string;
+      total: number;
+      date: string;
+      isPaid: boolean;
     }>;
   };
 }
 
 export async function loader({ context }: LoaderFunctionArgs) {
-  // Vérifier l'authentification
   const user = await requireUser({ context });
 
-  // Vérifier le niveau d'accès commercial (niveau 3+)
   if (!user.level || user.level < 3) {
     throw redirect("/unauthorized");
   }
 
   try {
-    // Récupérer les données depuis l'API Dashboard unifiée
     const API_BASE = getInternalApiUrl("");
-    logger.log("🔗 API_BASE:", API_BASE);
 
-    const [dashboardResponse, suppliersResponse, recentOrdersResponse] =
-      await Promise.all([
-        fetch(`${API_BASE}/api/dashboard/stats`, {
-          headers: { "internal-call": "true" },
-        }),
-        fetch(`${API_BASE}/api/suppliers`, {
-          headers: { "internal-call": "true" },
-        }),
-        fetch(`${API_BASE}/api/dashboard/orders/recent`, {
-          headers: { "internal-call": "true" },
-        }),
-      ]);
-
-    logger.log("📊 Response status:", {
-      dashboard: dashboardResponse.status,
-      suppliers: suppliersResponse.status,
-      orders: recentOrdersResponse.status,
-    });
+    const [dashboardResponse, recentOrdersResponse] = await Promise.all([
+      fetch(`${API_BASE}/api/dashboard/stats`, {
+        headers: { "internal-call": "true" },
+      }),
+      fetch(`${API_BASE}/api/dashboard/orders/recent`, {
+        headers: { "internal-call": "true" },
+      }),
+    ]);
 
     let dashboardData: DashboardData = {
       orders: {
-        todayCount: 0,
-        preparingCount: 0,
+        totalOrders: 0,
+        pendingOrders: 0,
+        completedOrders: 0,
         monthRevenue: 0,
-        data: [],
-      },
-      stock: {
-        lowStockCount: 0,
-        lowStockItems: [],
-      },
-      suppliers: {
-        data: [],
+        recentOrders: [],
       },
     };
 
-    // Traiter les données du dashboard
     if (dashboardResponse.ok) {
       const stats = await dashboardResponse.json();
 
-      // Récupérer les commandes récentes
-      let recentOrders = [];
+      let recentOrders: any[] = [];
       if (recentOrdersResponse.ok) {
         const recentData = await recentOrdersResponse.json();
         recentOrders = recentData.orders || [];
       }
 
       dashboardData.orders = {
-        todayCount: Math.floor(stats.totalOrders * 0.02), // Estimation 2% par jour
-        preparingCount: stats.pendingOrders || 0,
+        totalOrders: stats.totalOrders || 0,
+        pendingOrders: stats.pendingOrders || 0,
+        completedOrders: stats.completedOrders || 0,
         monthRevenue: stats.totalRevenue || 0,
-        data: recentOrders.slice(0, 5), // 5 commandes récentes
-      };
-    }
-
-    // Traiter les données des fournisseurs
-    if (suppliersResponse.ok) {
-      const suppliersData = await suppliersResponse.json();
-      dashboardData.suppliers = {
-        data: (suppliersData.suppliers || [])
-          .slice(0, 5)
-          .map((supplier: any) => ({
-            id: supplier.id,
-            name: supplier.name,
-            status:
-              supplier.statistics?.totalArticles > 0 ? "active" : "inactive",
-          })),
+        recentOrders: recentOrders.slice(0, 8).map((o: any) => ({
+          id: o.id || o.ord_id,
+          orderNumber: o.orderNumber || o.ord_id,
+          customerName: o.customerName || "Client",
+          customerId: o.customerId || o.ord_cst_id,
+          status: o.status || "en_cours",
+          total: o.total || parseFloat(o.ord_total_ttc || "0"),
+          date: o.date || o.ord_date,
+          isPaid: o.isPaid || o.ord_is_pay === "1",
+        })),
       };
     }
 
@@ -161,14 +113,17 @@ export async function loader({ context }: LoaderFunctionArgs) {
       },
     });
   } catch (error) {
-    logger.error("❌ Erreur dashboard commercial:", error);
+    logger.error("Erreur dashboard commercial:", error);
 
-    // Données de fallback
     return json({
       dashboardData: {
-        orders: { todayCount: 0, preparingCount: 0, monthRevenue: 0, data: [] },
-        stock: { lowStockCount: 0, lowStockItems: [] },
-        suppliers: { data: [] },
+        orders: {
+          totalOrders: 0,
+          pendingOrders: 0,
+          completedOrders: 0,
+          monthRevenue: 0,
+          recentOrders: [],
+        },
       },
       user: {
         name: `${user.firstName} ${user.lastName}`,
@@ -179,16 +134,16 @@ export async function loader({ context }: LoaderFunctionArgs) {
   }
 }
 
-// Fonction helper pour les variants de badge
 function getStatusVariant(
   status: string | null | undefined,
 ): "default" | "secondary" | "destructive" | "outline" {
   if (!status) return "default";
-
   switch (status) {
     case "confirme":
+    case "payee":
       return "default";
     case "en_preparation":
+    case "en_cours":
       return "secondary";
     case "expedie":
       return "outline";
@@ -200,38 +155,41 @@ function getStatusVariant(
 }
 
 export default function CommercialDashboard() {
-  const { dashboardData } = useLoaderData<typeof loader>();
-  const { orders, stock, suppliers } = dashboardData;
+  const { dashboardData, user } = useLoaderData<typeof loader>();
+  const { orders } = dashboardData;
 
   const stats = [
     {
-      title: "Commandes du jour",
-      value: orders.todayCount.toString(),
+      title: "Total commandes",
+      value: orders.totalOrders.toLocaleString("fr-FR"),
       icon: ShoppingCart,
       color: "text-blue-600",
       bgColor: "bg-primary/15",
       link: "/commercial/orders",
     },
     {
-      title: "En préparation",
-      value: orders.preparingCount.toString(),
-      icon: Package,
+      title: "En attente",
+      value: orders.pendingOrders.toString(),
+      icon: Truck,
       color: "text-orange-600",
       bgColor: "bg-orange-100",
-      link: "/commercial/orders?status=preparing",
+      link: "/commercial/orders?orderStatus=1",
     },
     {
-      title: "Expéditions",
-      value: orders.preparingCount.toString(),
-      icon: Truck,
+      title: "Terminées",
+      value: orders.completedOrders.toString(),
+      icon: CheckCircle,
       color: "text-green-600",
       bgColor: "bg-success/15",
-      link: "/commercial/shipping",
+      link: "/commercial/orders?orderStatus=5",
     },
     {
-      title: "Chiffre du mois",
-      value: `${(orders.monthRevenue / 1000).toFixed(1)}k€`,
-      icon: DollarSign,
+      title: "Chiffre d'affaires",
+      value:
+        orders.monthRevenue > 1000
+          ? `${(orders.monthRevenue / 1000).toFixed(1)}k\u20AC`
+          : `${orders.monthRevenue.toFixed(0)}\u20AC`,
+      icon: TrendingUp,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
       link: "/commercial/reports",
@@ -241,36 +199,29 @@ export default function CommercialDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Breadcrumb */}
         <PublicBreadcrumb items={[{ label: "Commercial" }]} />
 
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Tableau de bord Commercial
+              Tableau de bord
             </h1>
             <p className="text-gray-600 mt-1">
-              Gérez vos commandes, stock et fournisseurs
+              Bienvenue {user.name} — Gérez vos commandes et expéditions
             </p>
           </div>
           <div className="flex space-x-3">
-            <Link to="/commercial/shipping">
-              <Button className="bg-success hover:bg-success/90">
-                <Truck className="mr-2 h-4 w-4" />
-                Expéditions
-              </Button>
-            </Link>
-            <Link to="/commercial/orders/new">
+            <Link to="/commercial/orders">
               <Button className="bg-primary hover:bg-primary/90">
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                Nouvelle commande
+                Commandes
               </Button>
             </Link>
-            <Link to="/admin/suppliers">
+            <Link to="/commercial/shipping">
               <Button variant="outline">
                 <Truck className="mr-2 h-4 w-4" />
-                Fournisseurs
+                Expéditions
               </Button>
             </Link>
           </div>
@@ -299,199 +250,75 @@ export default function CommercialDashboard() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Commandes récentes */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <ShoppingCart className="mr-2 h-5 w-5 text-blue-600" />
-                Commandes récentes
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {orders.data?.map((order: any) => (
+        {/* Commandes récentes */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <ShoppingCart className="mr-2 h-5 w-5 text-blue-600" />
+              Commandes récentes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {orders.recentOrders.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                Aucune commande récente
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {orders.recentOrders.map((order) => (
                   <Link
                     key={order.id}
                     to={`/commercial/orders/${order.id}`}
-                    className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors border"
                   >
                     <div className="flex items-center space-x-4">
                       <div>
-                        <div className="font-medium text-gray-900">
-                          Commande #{order.id}
+                        <div className="font-medium text-gray-900 text-sm">
+                          #{order.orderNumber || order.id}
                         </div>
-                        <div className="text-sm text-gray-500">
-                          Client #{order.customerId || "N/A"}
+                        <div className="text-xs text-gray-500">
+                          {order.customerName || `Client #${order.customerId}`}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-4">
                       <Badge variant={getStatusVariant(order.status)}>
-                        {order.status?.replace("_", " ") || "En attente"}
+                        {order.status?.replace(/_/g, " ") || "En attente"}
                       </Badge>
+                      <div className="flex items-center gap-2">
+                        {order.isPaid ? (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">
+                            Payée
+                          </span>
+                        ) : (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                            Impayée
+                          </span>
+                        )}
+                      </div>
                       <div className="text-right">
-                        <div className="font-medium text-gray-900">
-                          {(order.total || 0).toLocaleString("fr-FR")}€
+                        <div className="font-medium text-gray-900 text-sm">
+                          {(order.total || 0).toLocaleString("fr-FR", {
+                            minimumFractionDigits: 2,
+                          })}
+                          {"\u20AC"}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-xs text-gray-500">
                           {order.date
                             ? new Date(order.date).toLocaleDateString("fr-FR")
-                            : "N/A"}
+                            : ""}
                         </div>
                       </div>
                     </div>
                   </Link>
                 ))}
               </div>
-
-              <div className="mt-4">
-                <Link to="/orders">
-                  <Button variant="outline" className="w-full">
-                    Voir toutes les commandes
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Alertes de stock */}
-          <Card className="border-orange-200">
-            <CardHeader className="bg-orange-50">
-              <CardTitle className="flex items-center text-orange-700">
-                <AlertCircle className="mr-2 h-5 w-5" />
-                Alertes de stock ({stock.lowStockCount})
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="space-y-3">
-                {stock.lowStockItems?.map((item: any) => (
-                  <Link
-                    key={item.id}
-                    to={`/commercial/stock/${item.id}`}
-                    className="flex items-center justify-between p-3 hover:bg-orange-50 rounded-lg"
-                  >
-                    <div className="flex items-center space-x-3">
-                      <div className="w-2 h-2 rounded-full bg-destructive/60"></div>
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {item.name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Stock actuel: {item.currentStock} (min:{" "}
-                          {item.minStock})
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-red-600 font-medium text-sm">
-                      Stock bas
-                    </div>
-                  </Link>
-                ))}
-              </div>
-
-              <div className="mt-4">
-                <Link to="/commercial/stock?lowStock=true">
-                  <Button
-                    variant="outline"
-                    className="w-full text-orange-700 border-orange-300"
-                  >
-                    Gérer les alertes de stock
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Section fournisseurs */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Truck className="mr-2 h-5 w-5 text-green-600" />
-              Fournisseurs actifs
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {suppliers.data?.slice(0, 6).map((supplier: any) => (
-                <Link
-                  key={supplier.id}
-                  to={`/admin/suppliers/${supplier.id}`}
-                  className="flex items-center p-3 hover:bg-gray-50 rounded-lg border transition-colors"
-                >
-                  <div className="mr-3">
-                    <Truck className="h-6 w-6 text-gray-400" />
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-900">
-                      {supplier.name}
-                    </div>
-                    <div className="text-sm text-green-600">Actif</div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            )}
 
             <div className="mt-4">
-              <Link to="/admin/suppliers">
+              <Link to="/commercial/orders">
                 <Button variant="outline" className="w-full">
-                  Voir tous les fournisseurs
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Section produits */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Package className="mr-2 h-5 w-5 text-purple-600" />
-              Catalogue produits
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Link
-                to="/commercial/products/catalog"
-                className="flex items-center p-4 hover:bg-gray-50 rounded-lg border transition-colors group"
-              >
-                <div className="mr-4">
-                  <Package className="h-8 w-8 text-blue-600" />
-                </div>
-                <div>
-                  <div className="font-medium text-gray-900 group-hover:text-blue-600">
-                    Parcourir le catalogue
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Milliers de pièces auto
-                  </div>
-                </div>
-              </Link>
-
-              <Link
-                to="/commercial/products"
-                className="flex items-center p-4 hover:bg-gray-50 rounded-lg border transition-colors group"
-              >
-                <div className="mr-4">
-                  <AlertCircle className="h-8 w-8 text-orange-600" />
-                </div>
-                <div>
-                  <div className="font-medium text-gray-900 group-hover:text-orange-600">
-                    Gérer les produits
-                  </div>
-                  <div className="text-sm text-gray-500">
-                    Dashboard produits
-                  </div>
-                </div>
-              </Link>
-            </div>
-
-            <div className="mt-4">
-              <Link to="/commercial/products">
-                <Button variant="outline" className="w-full">
-                  Accéder à la gestion produits
+                  Voir toutes les commandes
                 </Button>
               </Link>
             </div>
