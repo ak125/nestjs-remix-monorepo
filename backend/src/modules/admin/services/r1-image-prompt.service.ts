@@ -197,6 +197,35 @@ export class R1ImagePromptService extends SupabaseBaseService {
     return data ?? [];
   }
 
+  /**
+   * Mark all prompts for a gamme as stale (RAG context changed).
+   * Called by RagChangeWatcherService when RAG files change.
+   */
+  async markStaleByGamme(pgAlias: string): Promise<number> {
+    const { data } = await this.supabase
+      .from('__seo_r1_image_prompts')
+      .update({ rip_stale: true, rip_updated_at: new Date().toISOString() })
+      .eq('rip_pg_alias', pgAlias)
+      .eq('rip_stale', false)
+      .select('rip_id');
+
+    const count = data?.length ?? 0;
+    if (count > 0) {
+      this.logger.log(`[R1-IMG] Marked ${count} prompts stale for ${pgAlias}`);
+    }
+    return count;
+  }
+
+  /**
+   * Clear stale flag (after regeneration).
+   */
+  async clearStale(pgAlias: string): Promise<void> {
+    await this.supabase
+      .from('__seo_r1_image_prompts')
+      .update({ rip_stale: false, rip_updated_at: new Date().toISOString() })
+      .eq('rip_pg_alias', pgAlias);
+  }
+
   async approvePrompt(id: number) {
     const { error } = await this.supabase
       .from('__seo_r1_image_prompts')
