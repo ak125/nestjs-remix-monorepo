@@ -42,7 +42,7 @@ import { AdminPageBriefController } from './controllers/admin-page-brief.control
 import { AdminKeywordClustersController } from './controllers/admin-keyword-clusters.controller'; // 🔑 Keyword Clusters & Overlaps (read-only)
 import { AdminKeywordPlannerController } from './controllers/admin-keyword-planner.controller'; // 📊 Keyword Planner Coverage
 import { AdminHealthController } from './controllers/admin-health.controller'; // 🏥 Health Overview
-import { AdminSupplierStatsController } from './controllers/admin-supplier-stats.controller'; // 🏭 Supplier display stats
+// AdminSupplierStatsController — not ready for prod, removed from module
 import { AdminGammesSeoService } from './services/admin-gammes-seo.service'; // 🎯 Service Gammes SEO
 import { GammeSeoThresholdsService } from './services/gamme-seo-thresholds.service'; // 🎯 Seuils Gammes SEO
 import { GammeSeoAuditService } from './services/gamme-seo-audit.service'; // 🎯 Audit Gammes SEO
@@ -70,7 +70,7 @@ import { KeywordDensityGateService } from './services/keyword-density-gate.servi
 import { ImageGatesService } from './services/image-gates.service'; // 🚦 P3: image gates (OG, hero policy, alt text)
 import { AdminJobHealthService } from './services/admin-job-health.service'; // 🏥 Job health tracking
 import { AdminHealthService } from './services/admin-health.service'; // 🏥 Health overview aggregator
-import { AdminSupplierStatsService } from './services/admin-supplier-stats.service'; // 🏭 Supplier display stats
+// AdminSupplierStatsService — not ready for prod, removed from module
 import { EnricherTextUtils } from './services/enricher-text-utils.service'; // 🔧 Shared text utilities
 import { EnricherYamlParser } from './services/enricher-yaml-parser.service'; // 🔧 Shared YAML/frontmatter parsing
 import { QualityScoringEngineService } from './services/quality-scoring-engine.service'; // 📊 Quality scoring engine (multi-page)
@@ -84,10 +84,12 @@ import { R1KeywordPlanBatchService } from './services/r1-keyword-plan-batch.serv
 import { AdminConseilController } from './controllers/admin-conseil.controller'; // 📊 Conseil coverage + backfill
 import { AdminRagIngestController } from './controllers/admin-rag-ingest.controller'; // 📄 PDF → RAG merge pipeline
 import { AdminR3ImagePromptsController } from './controllers/admin-r3-image-prompts.controller'; // 🎨 R3 Image Prompts generation
+import { AdminR1ImagePromptsController } from './controllers/admin-r1-image-prompts.controller'; // 🎨 R1 Image Prompts generation
 import { AdminFeatureFlagsController } from './controllers/admin-feature-flags.controller';
 // PipelineChainPollerService SUPPRIME — dependait de content-refresh queue
 // RagCatchupService SUPPRIME — catch-up auto remplace par skills /content-gen
 import { R3ImagePromptService } from './services/r3-image-prompt.service'; // 🎨 R3 Image Prompts (template-based, 0-LLM)
+import { R1ImagePromptService } from './services/r1-image-prompt.service'; // 🎨 R1 Image Prompts (template-based, 0-LLM)
 import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service'; // 🚗 R8 Vehicle page enricher (RAG + diversity scoring)
 import { R7BrandEnricherService } from './services/r7-brand-enricher.service'; // 🏭 R7 Brand page enricher (RAG + diversity scoring)
 import { VehicleRagGeneratorService } from './services/vehicle-rag-generator.service'; // 🚗 Vehicle RAG .md generator (0 LLM)
@@ -159,11 +161,12 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     AdminConseilController, // 📊 Conseil coverage + backfill - /api/admin/conseil/*
     AdminRagIngestController, // 📄 PDF → RAG merge - /api/admin/rag/pdf-merge/*
     AdminR3ImagePromptsController, // 🎨 R3 Image Prompts - /api/admin/r3-image-prompts/*
+    AdminR1ImagePromptsController, // 🎨 R1 Image Prompts - /api/admin/r1-image-prompts/*
     AdminFeatureFlagsController, // 🏷️ Feature Flags - /api/admin/feature-flags/*
     AdminR8VehicleController, // 🚗 R8 Vehicle enrichment - /api/admin/r8/enrich/:typeId
     AdminR7BrandController, // 🏭 R7 Brand enrichment - /api/admin/r7/enrich/:marqueId
     AdminVehicleRagController, // 🚗 Vehicle RAG generation - /api/admin/vehicle-rag/*
-    AdminSupplierStatsController, // 🏭 Supplier display stats - /api/admin/supplier-stats/*
+    // AdminSupplierStatsController — not ready for prod
     AdminDbGovernanceController, // 📊 DB Governance Phase 2 - /api/admin/db-governance/*
     AdminPipelineController, // 🚀 Unified pipeline execution - /api/admin/pipeline/*
     InternalPipelineController, // 🚀 Internal pipeline (X-Internal-Key) - /api/internal/pipeline/*
@@ -211,10 +214,11 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     R1KeywordPlanGatesService, // 🚦 R1 Keyword plan gates KA1-KA6 (R1 pipeline + keyword-planner R1 mode)
     R1KeywordPlanBatchService, // 🔄 R1 KP batch 0-LLM generator
     R3ImagePromptService, // 🎨 R3 Image Prompts (template-based, 0-LLM)
+    R1ImagePromptService, // 🎨 R1 Image Prompts (template-based, 0-LLM)
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
     R7BrandEnricherService, // 🏭 R7 Brand page enricher (RAG + diversity scoring, 0-LLM)
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)
-    AdminSupplierStatsService, // 🏭 Supplier display breakdown (pm_display stats)
+    // AdminSupplierStatsService — not ready for prod
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
     R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)
     R1EnricherService, // 🏗️ R1 Router enricher (0-LLM, RAG+KP → r1_gamme_slots)
