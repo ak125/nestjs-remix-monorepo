@@ -38,6 +38,9 @@ interface R1Prompt {
   rip_status: string;
   rip_selected: boolean;
   rip_priority_rank: number;
+  rip_rag_fields_used: string[];
+  rip_rag_richness_score: number;
+  rip_stale: boolean;
 }
 
 const SLOT_META: Record<
@@ -120,11 +123,13 @@ function SlotCard({
   prompt,
   onUpload,
   onForceSelect,
+  onRegenerate,
   uploading,
 }: {
   prompt: R1Prompt;
   onUpload: (ripId: number, file: File) => void;
   onForceSelect: (ripId: number) => void;
+  onRegenerate: (pgAlias: string) => void;
   uploading: number | null;
 }) {
   const meta = SLOT_META[prompt.rip_slot_id] || SLOT_META.HERO;
@@ -202,6 +207,28 @@ function SlotCard({
           </p>
         </details>
 
+        {/* RAG context + Stale indicator */}
+        <div className="flex flex-wrap gap-1.5">
+          {prompt.rip_stale && (
+            <Badge variant="destructive" className="text-[10px]">
+              Stale — RAG changé
+            </Badge>
+          )}
+          {prompt.rip_rag_fields_used?.length > 0 && (
+            <Badge
+              variant="outline"
+              className="text-[10px] text-blue-600 border-blue-300"
+            >
+              RAG: {prompt.rip_rag_fields_used.join(", ")}
+            </Badge>
+          )}
+          {prompt.rip_rag_richness_score > 0 && (
+            <Badge variant="outline" className="text-[10px]">
+              Score: {prompt.rip_rag_richness_score}
+            </Badge>
+          )}
+        </div>
+
         {/* Actions */}
         <div className="flex gap-2 pt-1">
           <input
@@ -239,6 +266,16 @@ function SlotCard({
             >
               <Check className="h-3 w-3 mr-1" />
               Activer
+            </Button>
+          )}
+          {prompt.rip_stale && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1 border-amber-400 text-amber-700 hover:bg-amber-50"
+              onClick={() => onRegenerate(prompt.rip_pg_alias)}
+            >
+              Régénérer
             </Button>
           )}
         </div>
@@ -332,6 +369,17 @@ export default function AdminR1Images() {
     [localPrompts],
   );
 
+  const handleRegenerate = useCallback(async (pgAlias: string) => {
+    const res = await fetch(
+      `/api/admin/r1-image-prompts/generate/${encodeURIComponent(pgAlias)}`,
+      { method: "POST" },
+    );
+    if (res.ok) {
+      // Reload page to get fresh prompts
+      window.location.reload();
+    }
+  }, []);
+
   const slotOrder = ["HERO", "TYPES", "PRICE", "LOCATION", "OG"];
   const sortedPrompts = [...localPrompts].sort(
     (a, b) =>
@@ -413,6 +461,7 @@ export default function AdminR1Images() {
               prompt={prompt}
               onUpload={handleUpload}
               onForceSelect={handleForceSelect}
+              onRegenerate={handleRegenerate}
               uploading={uploading}
             />
           ))}
