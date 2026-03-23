@@ -19,6 +19,7 @@ import {
   type GammePageBuyingGuide,
   type GammePageSeoSwitch,
 } from "~/types/gamme-page-contract.types";
+import { type R1ImageItem } from "~/types/r1-images.types";
 import { logger } from "~/utils/logger";
 
 const API_URL = process.env.API_URL || "http://localhost:3000";
@@ -74,13 +75,7 @@ export interface GammeApiResponse {
     roleMecanique: string | null;
     canonicalUrl: string | null;
   } | null;
-  r1Images?: Array<{
-    slot: string;
-    path: string;
-    alt: string;
-    caption: string | null;
-    aspect: string;
-  }>;
+  r1Images?: R1ImageItem[];
 }
 
 interface FetchOptions {

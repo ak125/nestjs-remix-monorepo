@@ -181,6 +181,7 @@ export class GammeResponseBuilderService {
     }
 
     // ── R1 Images: sélection déterministe (selected+approved > approved > rien) ──
+    // Shape: see frontend/app/types/r1-images.types.ts (R1ImageItem)
     let r1HeroImageUrl: string | null = null;
     const r1Images: Array<{
       slot: string;
