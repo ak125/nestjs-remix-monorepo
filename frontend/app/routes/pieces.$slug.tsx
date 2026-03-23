@@ -42,6 +42,7 @@ import {
 } from "~/components/gamme";
 import { Footer } from "~/components/home";
 
+import { R1RelatedBlocks } from "~/components/pieces/R1RelatedBlocks";
 import { R1SlotImage } from "~/components/pieces/R1SlotImage";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import {
@@ -377,6 +378,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         substitution: pageData.substitution,
         reference: pageData.reference,
         r1Images: apiData.r1Images ?? [],
+        relatedResources: apiData.relatedResources ?? null,
         canonicalPath,
         gammeId: parseInt(gammeId, 10),
         motorisationsSchema,
@@ -564,6 +566,19 @@ type PiecesPageSyncData = Omit<
   };
   r1Sources?: R1SourceMap;
   r1Images?: R1ImageItem[];
+  relatedResources?: {
+    blocks: Array<{
+      kind: string;
+      heading: string;
+      items: Array<{
+        kind: string;
+        title: string;
+        href: string;
+        reason: string;
+        score: number;
+      }>;
+    }>;
+  } | null;
 };
 
 // Loader payload complet: sync + deferred Promises
@@ -720,6 +735,14 @@ export default function PiecesDetailPage() {
         selectedVehicle={selectedVehicle}
       />
 
+      {r1Img("TYPES") && (
+        <div className="px-4 sm:px-6 mt-4">
+          <div className="max-w-2xl mx-auto">
+            <R1SlotImage {...r1Img("TYPES")!} />
+          </div>
+        </div>
+      )}
+
       <GammeQuickNav />
 
       <GammeDiagnosticCTA />
@@ -739,19 +762,8 @@ export default function PiecesDetailPage() {
         h2Override={data.sectionPack?.sections.buyArgs.h2Override}
       />
 
-      {/* TYPES : après contenu éditorial (section S4), conditionné à microSeoBlock */}
-      {r1Img("TYPES") &&
-        data.sectionPack?.sections.buyArgs.data.microSeoBlock && (
-          <div className="px-4 sm:px-6 mt-6">
-            <div className="max-w-2xl mx-auto">
-              <R1SlotImage {...r1Img("TYPES")!} />
-            </div>
-          </div>
-        )}
-
-      {/* PRICE : après TYPES, conditionné à buy arguments */}
-      {r1Img("PRICE") && data.sectionPack?.sections.buyArgs.data.arguments && (
-        <div className="px-4 sm:px-6 mt-6">
+      {r1Img("PRICE") && (
+        <div className="px-4 sm:px-6 mt-4">
           <div className="max-w-2xl mx-auto">
             <R1SlotImage {...r1Img("PRICE")!} />
           </div>
@@ -879,6 +891,10 @@ export default function PiecesDetailPage() {
         gammeName={data.content?.pg_name || "Pièces auto"}
         pgAlias={data.content?.pg_alias}
       />
+
+      {data.relatedResources?.blocks && (
+        <R1RelatedBlocks blocks={data.relatedResources.blocks} />
+      )}
 
       <Footer />
     </div>

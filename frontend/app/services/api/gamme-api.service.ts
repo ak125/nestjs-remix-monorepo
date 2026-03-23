@@ -76,6 +76,19 @@ export interface GammeApiResponse {
     canonicalUrl: string | null;
   } | null;
   r1Images?: R1ImageItem[];
+  relatedResources?: {
+    blocks: Array<{
+      kind: string;
+      heading: string;
+      items: Array<{
+        kind: string;
+        title: string;
+        href: string;
+        reason: string;
+        score: number;
+      }>;
+    }>;
+  };
 }
 
 interface FetchOptions {

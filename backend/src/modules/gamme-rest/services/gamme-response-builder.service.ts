@@ -23,6 +23,7 @@ import {
   normalizeR1Images,
   type NormalizeResult,
 } from '../utils/r1-image-normalizer';
+import { R1RelatedResourcesService } from './r1-related-resources.service';
 
 interface MotorizationRow {
   type_id: number;
@@ -75,6 +76,7 @@ export class GammeResponseBuilderService {
     private readonly buyingGuideService: BuyingGuideDataService,
     private readonly referenceService: ReferenceService,
     private readonly seoTitleEngine: SeoTitleEngineService,
+    private readonly relatedResources: R1RelatedResourcesService,
   ) {}
 
   /**
@@ -208,6 +210,32 @@ export class GammeResponseBuilderService {
       r1Images = normalized.images;
     } catch (e) {
       this.logger.warn(`[R1-IMG] query failed pg_id=${pgIdNum}: ${e}`);
+    }
+
+    // ── R1 Related Resources: maillage contextuel ──
+    let relatedResources: {
+      blocks: Array<{
+        kind: string;
+        heading: string;
+        items: Array<{
+          kind: string;
+          title: string;
+          href: string;
+          reason: string;
+          score: number;
+        }>;
+      }>;
+    } = { blocks: [] };
+    try {
+      relatedResources = await this.relatedResources.buildRelatedBlocks(
+        pgIdNum,
+        pgAlias,
+        pgNameSite,
+      );
+    } catch (e) {
+      this.logger.warn(
+        `[R1-LINKS] related blocks failed pg_id=${pgIdNum}: ${e}`,
+      );
     }
 
     // 🎯 RÈGLE SEO: G1/G2 (pg_level='1') = INDEX, G3 = NOINDEX
@@ -793,6 +821,8 @@ export class GammeResponseBuilderService {
         famille_info: familleInfo || null,
       },
       r1Images,
+      relatedResources:
+        relatedResources.blocks.length > 0 ? relatedResources : undefined,
       motorisations:
         motorisations.length > 0
           ? {

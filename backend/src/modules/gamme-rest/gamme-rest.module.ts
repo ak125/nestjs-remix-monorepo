@@ -11,6 +11,7 @@ import {
   GammePageDataService,
   BuyingGuideDataService,
 } from './services';
+import { R1RelatedResourcesService } from './services/r1-related-resources.service';
 
 /**
  * 🚀 Module Gamme REST - Architecture modulaire
@@ -31,6 +32,7 @@ import {
     GammeResponseBuilderService,
     GammePageDataService,
     BuyingGuideDataService,
+    R1RelatedResourcesService,
   ],
 })
 export class GammeRestModule {}
