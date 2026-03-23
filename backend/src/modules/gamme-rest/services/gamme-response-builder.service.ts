@@ -19,6 +19,10 @@ import {
   buildProxyImageUrl,
   IMAGE_CONFIG,
 } from '../../catalog/utils/image-urls.utils';
+import {
+  normalizeR1Images,
+  type NormalizeResult,
+} from '../utils/r1-image-normalizer';
 
 interface MotorizationRow {
   type_id: number;
@@ -180,16 +184,10 @@ export class GammeResponseBuilderService {
       }
     }
 
-    // ── R1 Images: sélection déterministe (selected+approved > approved > rien) ──
+    // ── R1 Images: sélection déterministe via normalizer ──
     // Shape: see frontend/app/types/r1-images.types.ts (R1ImageItem)
     let r1HeroImageUrl: string | null = null;
-    const r1Images: Array<{
-      slot: string;
-      path: string;
-      alt: string;
-      caption: string | null;
-      aspect: string;
-    }> = [];
+    let r1Images: NormalizeResult['images'] = [];
     try {
       const sbClient = this.buyingGuideService.getSupabaseClient();
       const { data: allApproved } = await sbClient
@@ -202,43 +200,12 @@ export class GammeResponseBuilderService {
         .not('rip_image_url', 'is', null)
         .order('rip_updated_at', { ascending: false });
 
-      if (allApproved && allApproved.length > 0) {
-        // Sélection déterministe : selected=true d'abord, puis plus récent
-        const sorted = [...allApproved].sort((a, b) => {
-          if (a.rip_selected !== b.rip_selected) return a.rip_selected ? -1 : 1;
-          return (
-            new Date(b.rip_updated_at).getTime() -
-            new Date(a.rip_updated_at).getTime()
-          );
-        });
-
-        // Une seule image par slot (premier candidat = meilleur)
-        const slotMap = new Map<string, (typeof sorted)[0]>();
-        for (const img of sorted) {
-          if (!slotMap.has(img.rip_slot_id)) {
-            slotMap.set(img.rip_slot_id, img);
-          }
-        }
-
-        for (const img of slotMap.values()) {
-          const uploadPath = img.rip_image_url.match(/\/uploads\/(.+)$/)?.[1];
-          if (!uploadPath) continue;
-
-          if (
-            ['HERO', 'HERO_PRODUCT', 'HERO_EDITORIAL'].includes(img.rip_slot_id)
-          ) {
-            r1HeroImageUrl = uploadPath;
-          }
-
-          r1Images.push({
-            slot: img.rip_slot_id,
-            path: uploadPath,
-            alt: img.rip_alt_text ?? '',
-            caption: img.rip_caption ?? null,
-            aspect: img.rip_aspect_ratio ?? '4:3',
-          });
-        }
-      }
+      const normalized = normalizeR1Images(allApproved ?? [], {
+        pgId: pgIdNum,
+        logger: this.logger,
+      });
+      r1HeroImageUrl = normalized.heroImagePath;
+      r1Images = normalized.images;
     } catch (e) {
       this.logger.warn(`[R1-IMG] query failed pg_id=${pgIdNum}: ${e}`);
     }
