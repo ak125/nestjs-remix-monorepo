@@ -167,23 +167,13 @@ automecanik.com, www.automecanik.com {
         }
     }
     
-    # ===== BOT PROTECTION LAYER 2 =====
-    # Backup geo-block si Cloudflare bypass (CF-IPCountry header)
-    @blocked_country header CF-IPCountry CN
-    handle @blocked_country {
-        respond "Access Denied" 403
-    }
-
-    # Bloquer acces direct (bypass Cloudflare = pas de CF-IPCountry)
-    # localhost/loopback autorisé pour health checks CI/CD (self-hosted runner)
-    @direct_access {
-        not header CF-IPCountry *
-        not remote_ip 127.0.0.1 ::1 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16 173.245.48.0/20 103.21.244.0/22 103.22.200.0/22 103.31.4.0/22 141.101.64.0/18 108.162.192.0/18 190.93.240.0/20 188.114.96.0/20 197.234.240.0/22 198.41.128.0/17 162.158.0.0/15 104.16.0.0/13 104.24.0.0/14 172.64.0.0/13 131.0.72.0/22
-        not path /health
-    }
-    handle @direct_access {
-        respond "Direct access not allowed" 403
-    }
+    # ===== PROTECTION ORIGINE =====
+    # Geo-blocking et bot protection sont geres par :
+    #   1. Firewall OS (ufw) — seules les IPs Cloudflare atteignent le port 443
+    #   2. Cloudflare WAF — geo-block, rate limiting, bot management
+    #   3. NestJS BotGuard — scoring comportemental (Googlebot whiteliste)
+    # Caddy ne filtre PAS les acces — son role est reverse proxy + cache + headers
+    # Voir commit d800991a pour l'historique de l'ancien bloc @direct_access (supprime car bloquait Googlebot)
 
     # ===== CACHE INTELLIGENT POUR PAGES PUBLIQUES =====
     @public_cached {
