@@ -8,19 +8,22 @@ export default function SectionHeader({
   linkText,
   linkHref,
   dark = false,
+  trailing,
 }: {
   title: string;
   sub?: string;
   linkText?: string;
   linkHref?: string;
   dark?: boolean;
+  /** Optional element rendered on the right (badge, icon, count) */
+  trailing?: React.ReactNode;
 }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-5 sm:mb-6">
       <div>
         <h2
           className={cn(
-            "text-xl sm:text-2xl md:text-3xl font-bold tracking-tight",
+            "text-lg sm:text-xl md:text-2xl font-bold tracking-tight font-heading",
             dark ? "text-white" : "text-slate-900",
           )}
         >
@@ -29,7 +32,7 @@ export default function SectionHeader({
         {sub && (
           <p
             className={cn(
-              "text-sm mt-1",
+              "text-sm mt-1 font-body",
               dark ? "text-white/60" : "text-slate-500",
             )}
           >
@@ -37,6 +40,7 @@ export default function SectionHeader({
           </p>
         )}
       </div>
+      {trailing}
       {linkText && linkHref && (
         <Link
           to={linkHref}

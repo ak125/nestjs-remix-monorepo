@@ -631,7 +631,7 @@ export default function PiecesDetailPage() {
     ];
 
   return (
-    <div className="min-h-screen bg-[#f5f7fa] font-v9-body">
+    <div className="min-h-screen bg-[#f5f7fa] font-body">
       <a
         href="#hero-v9"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:bg-blue-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg"
@@ -720,6 +720,7 @@ export default function PiecesDetailPage() {
           data.famille?.mf_name,
         )}
         pgAlias={data.content?.pg_alias}
+        h2Override={data.sectionPack?.sections.buyArgs.h2Override}
       />
 
       {/* Motorisations compatibles — deferred */}
@@ -741,6 +742,7 @@ export default function PiecesDetailPage() {
                 data.sectionPack?.sections.motorisations.data
                   .compatibilitiesIntro ?? undefined
               }
+              h2Override={data.sectionPack?.sections.motorisations.h2Override}
             />
           )}
         </Await>
@@ -752,17 +754,19 @@ export default function PiecesDetailPage() {
           label: row.element,
           desc: row.howToCheck,
         }))}
+        h2Override={data.sectionPack?.sections.safeTable.h2Override}
       />
 
       <GammeErrors
         errors={data.sectionPack?.sections.compatErrors.data}
         gammeName={data.content?.pg_name}
+        h2Override={data.sectionPack?.sections.compatErrors.h2Override}
       />
 
       {/* Équipementiers — deferred */}
       <Suspense
         fallback={
-          <div className="py-10 bg-[#0d1b2a]">
+          <div className="py-10 bg-navy">
             <div className="max-w-[1280px] mx-auto px-5">
               <div className="h-48 bg-white/5 animate-pulse rounded-2xl" />
             </div>
@@ -787,6 +791,7 @@ export default function PiecesDetailPage() {
                 data.sectionPack?.sections.equipementiers.data
                   .equipementiersLine ?? undefined
               }
+              h2Override={data.sectionPack?.sections.equipementiers.h2Override}
             />
           )}
         </Await>
@@ -815,6 +820,7 @@ export default function PiecesDetailPage() {
                 data.sectionPack?.sections.catalogue.data
                   .familyCrossSellIntro ?? undefined
               }
+              h2Override={data.sectionPack?.sections.catalogue.h2Override}
             />
           )}
         </Await>
@@ -822,6 +828,7 @@ export default function PiecesDetailPage() {
 
       <GammeFaq
         items={data.sectionPack?.sections.faq.data ?? R1_SELECTOR_FAQ}
+        h2Override={data.sectionPack?.sections.faq.h2Override}
       />
 
       <GammeGuideCTA

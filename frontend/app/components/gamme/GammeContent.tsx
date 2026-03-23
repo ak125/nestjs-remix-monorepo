@@ -9,6 +9,7 @@ import {
   Settings,
   Shield,
 } from "lucide-react";
+import { Section, SectionHeader } from "~/components/layout";
 
 interface BuyArgument {
   title?: string;
@@ -24,8 +25,10 @@ interface GammeContentProps {
   pgAlias?: string;
   arguments?: BuyArgument[] | null;
   familyKey?: string;
+  h2Override?: string | null;
 }
 
+// Fallback — displayed when pipeline doesn't provide buy arguments
 const HOW_TO_STEPS = [
   { title: "Identifiez votre véhicule", desc: "Marque, modèle et année" },
   {
@@ -39,6 +42,7 @@ const HOW_TO_STEPS = [
   { title: "Commandez", desc: "Livraison rapide, retour simple" },
 ];
 
+// Fallback — displayed when pipeline doesn't provide tips
 const FAMILY_TIPS: Record<string, { type: "info" | "warning"; text: string }> =
   {
     freinage: {
@@ -92,11 +96,21 @@ export default function GammeContent({
   pgAlias,
   arguments: buyArgs,
   familyKey,
+  h2Override,
 }: GammeContentProps) {
-  const displayContent =
+  const rawContent =
     content ||
     microSeoBlock ||
     `Trouvez votre ${gammeName.toLowerCase()} compatible parmi nos références OEM et équipementiers de qualité.`;
+
+  // Detect if sg_content has its own H2 headings (editorial content from content-gen)
+  const contentHasH2 = /<h2[\s>]/i.test(rawContent);
+
+  // If editorial content has H2s → render as-is (no wrapper H2, no downgrade)
+  // If short content without H2 → add wrapper H2 + downgrade any stray h2 to h3
+  const displayContent = contentHasH2
+    ? rawContent
+    : rawContent.replace(/<h2(\s|>)/gi, "<h3$1").replace(/<\/h2>/gi, "</h3>");
 
   const defaultTips: Array<{ type: "info" | "warning"; text: string }> =
     tips || [FAMILY_TIPS[familyKey || "generic"] || FAMILY_TIPS.generic];
@@ -133,132 +147,135 @@ export default function GammeContent({
   ];
 
   return (
-    <section className="py-7 lg:py-10 bg-white">
-      <div className="px-5 lg:px-8 max-w-[1280px] mx-auto">
-        <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-          {/* Main content */}
-          <div className="lg:col-span-2">
-            <h2 className="text-[20px] lg:text-[24px] font-bold text-slate-900 tracking-tight font-v9-heading mb-3">
-              Bien choisir votre {gammeName.toLowerCase()}
-            </h2>
+    <Section variant="white">
+      <div className="lg:grid lg:grid-cols-3 lg:gap-8">
+        {/* Main content */}
+        <div className="lg:col-span-2">
+          {/* If editorial content has its own H2s, skip the wrapper heading */}
+          {!contentHasH2 && (
+            <SectionHeader
+              title={
+                h2Override || `Bien choisir votre ${gammeName.toLowerCase()}`
+              }
+            />
+          )}
 
-            <div className="text-[13px] lg:text-[14px] text-slate-600 leading-relaxed font-normal font-v9-body space-y-2.5 mb-4">
-              <div dangerouslySetInnerHTML={{ __html: displayContent }} />
-            </div>
-
-            <div className="space-y-2.5">
-              {defaultTips.map((tip, i) => (
-                <div
-                  key={i}
-                  className={`flex items-start gap-2.5 p-3.5 rounded-xl ${
-                    tip.type === "info"
-                      ? "bg-blue-50 border border-blue-100"
-                      : "bg-amber-50 border border-amber-100"
-                  }`}
-                >
-                  {tip.type === "info" ? (
-                    <Info
-                      size={15}
-                      className="text-blue-500 mt-0.5 flex-shrink-0"
-                    />
-                  ) : (
-                    <AlertTriangle
-                      size={15}
-                      className="text-amber-500 mt-0.5 flex-shrink-0"
-                    />
-                  )}
-                  <p
-                    className={`text-[12px] lg:text-[13px] leading-relaxed ${
-                      tip.type === "info" ? "text-blue-800" : "text-amber-800"
-                    }`}
-                    dangerouslySetInnerHTML={{ __html: tip.text }}
-                  />
-                </div>
-              ))}
-            </div>
+          <div className="gamme-editorial text-[13px] lg:text-[14px] text-slate-600 leading-relaxed font-normal font-body space-y-2.5 mb-4">
+            <div dangerouslySetInnerHTML={{ __html: displayContent }} />
           </div>
 
-          {/* Sidebar */}
-          <div className="mt-6 lg:mt-0 space-y-4">
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
-              <h3 className="text-[15px] font-bold text-slate-900 font-v9-heading mb-4">
-                {sidebarSteps
-                  ? "Pourquoi nous choisir"
-                  : "Choisir en 15 secondes"}
-              </h3>
+          <div className="space-y-2.5">
+            {defaultTips.map((tip, i) => (
+              <div
+                key={i}
+                className={`flex items-start gap-2.5 p-3.5 rounded-xl ${
+                  tip.type === "info"
+                    ? "bg-blue-50 border border-blue-100"
+                    : "bg-amber-50 border border-amber-100"
+                }`}
+              >
+                {tip.type === "info" ? (
+                  <Info
+                    size={15}
+                    className="text-blue-500 mt-0.5 flex-shrink-0"
+                  />
+                ) : (
+                  <AlertTriangle
+                    size={15}
+                    className="text-amber-500 mt-0.5 flex-shrink-0"
+                  />
+                )}
+                <p
+                  className={`text-[12px] lg:text-[13px] leading-relaxed ${
+                    tip.type === "info" ? "text-blue-800" : "text-amber-800"
+                  }`}
+                  dangerouslySetInnerHTML={{ __html: tip.text }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="mt-6 lg:mt-0 space-y-4">
+          <div className="bg-slate-50 border border-slate-200 rounded-[22px] p-5 shadow-[0_6px_18px_rgba(15,23,42,0.05)]">
+            <h3 className="text-[15px] font-bold text-slate-900 font-heading mb-4">
               {sidebarSteps
-                ? sidebarSteps.map((arg, i) => {
-                    const Icon = getArgIcon(arg.icon, i);
-                    return (
-                      <div
-                        key={arg.title || i}
-                        className="flex items-start gap-3 mb-3 last:mb-0"
-                      >
-                        <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
-                          <Icon size={13} className="text-white" />
-                        </div>
-                        <div>
-                          <div className="text-[12px] font-semibold text-slate-800">
-                            {arg.title}
-                          </div>
-                          {arg.content && (
-                            <div className="text-[11px] text-slate-500 font-normal">
-                              {arg.content}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                : HOW_TO_STEPS.map((step, i) => (
+                ? "Pourquoi nous choisir"
+                : "Choisir en 15 secondes"}
+            </h3>
+            {sidebarSteps
+              ? sidebarSteps.map((arg, i) => {
+                  const Icon = getArgIcon(arg.icon, i);
+                  return (
                     <div
-                      key={step.title}
+                      key={arg.title || i}
                       className="flex items-start gap-3 mb-3 last:mb-0"
                     >
-                      <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0 text-[11px] font-bold text-white">
-                        {i + 1}
+                      <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+                        <Icon size={13} className="text-white" />
                       </div>
                       <div>
                         <div className="text-[12px] font-semibold text-slate-800">
-                          {step.title}
+                          {arg.title}
                         </div>
-                        <div className="text-[11px] text-slate-500 font-normal">
-                          {step.desc}
-                        </div>
+                        {arg.content && arg.content !== arg.title && (
+                          <div className="text-[11px] text-slate-500 font-normal">
+                            {arg.content}
+                          </div>
+                        )}
                       </div>
                     </div>
-                  ))}
-            </div>
-
-            {resourceCards.map((c) => {
-              const Icon = c.icon;
-              const colorParts = c.color.split(" ");
-              return (
-                <Link
-                  key={c.title}
-                  to={c.href}
-                  className={`flex items-center gap-3 p-4 bg-white border ${colorParts[2]} rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all group`}
-                >
+                  );
+                })
+              : HOW_TO_STEPS.map((step, i) => (
                   <div
-                    className={`w-10 h-10 rounded-xl ${colorParts[1]} flex items-center justify-center group-hover:scale-105 transition-transform`}
+                    key={step.title}
+                    className="flex items-start gap-3 mb-3 last:mb-0"
                   >
-                    <Icon size={18} className={colorParts[0]} />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-[13px] font-semibold text-slate-800">
-                      {c.title}
+                    <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0 text-[11px] font-bold text-white">
+                      {i + 1}
                     </div>
-                    <div className="text-[11px] text-slate-400 font-normal">
-                      {c.desc}
+                    <div>
+                      <div className="text-[12px] font-semibold text-slate-800">
+                        {step.title}
+                      </div>
+                      <div className="text-[11px] text-slate-500 font-normal">
+                        {step.desc}
+                      </div>
                     </div>
                   </div>
-                  <ChevronRight size={14} className="text-slate-300" />
-                </Link>
-              );
-            })}
+                ))}
           </div>
+
+          {resourceCards.map((c) => {
+            const Icon = c.icon;
+            const colorParts = c.color.split(" ");
+            return (
+              <Link
+                key={c.title}
+                to={c.href}
+                className={`flex items-center gap-3 p-4 bg-white border ${colorParts[2]} rounded-[18px] shadow-[0_6px_18px_rgba(15,23,42,0.05)] hover:shadow-lg hover:-translate-y-0.5 transition-all group`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-xl ${colorParts[1]} flex items-center justify-center group-hover:scale-105 transition-transform`}
+                >
+                  <Icon size={18} className={colorParts[0]} />
+                </div>
+                <div className="flex-1">
+                  <div className="text-[13px] font-semibold text-slate-800">
+                    {c.title}
+                  </div>
+                  <div className="text-[11px] text-slate-400 font-normal">
+                    {c.desc}
+                  </div>
+                </div>
+                <ChevronRight size={14} className="text-slate-300" />
+              </Link>
+            );
+          })}
         </div>
       </div>
-    </section>
+    </Section>
   );
 }

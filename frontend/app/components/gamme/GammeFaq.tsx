@@ -1,5 +1,6 @@
 import { Calendar, Filter, HelpCircle, Plus, Settings } from "lucide-react";
 import { useState } from "react";
+import { Reveal, Section, SectionHeader } from "~/components/layout";
 
 interface FaqItem {
   question: string;
@@ -8,33 +9,31 @@ interface FaqItem {
 
 interface GammeFaqProps {
   items: FaqItem[];
+  h2Override?: string | null;
 }
 
 const ICON_MAP = [Filter, Settings, Calendar, HelpCircle, Filter];
 
-export default function GammeFaq({ items }: GammeFaqProps) {
+export default function GammeFaq({ items, h2Override }: GammeFaqProps) {
   const [open, setOpen] = useState<number | null>(null);
 
   if (items.length === 0) return null;
 
   return (
-    <section id="faq" className="py-7 lg:py-10 bg-slate-50 scroll-mt-16">
-      <div className="px-5 lg:px-8 max-w-[1280px] mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[20px] lg:text-[24px] font-bold text-slate-900 tracking-tight font-v9-heading">
-            Questions fréquentes
-          </h2>
-          <HelpCircle size={18} className="text-slate-400" />
-        </div>
+    <Section variant="slate" id="faq" className="scroll-mt-16">
+      <SectionHeader
+        title={h2Override || "Questions fréquentes"}
+        trailing={<HelpCircle size={18} className="text-slate-400" />}
+      />
 
-        <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:gap-3">
-          {items.map((f, i) => {
-            const Icon = ICON_MAP[i % ICON_MAP.length];
-            const isOpen = open === i;
-            return (
+      <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:gap-3">
+        {items.map((f, i) => {
+          const Icon = ICON_MAP[i % ICON_MAP.length];
+          const isOpen = open === i;
+          return (
+            <Reveal key={i} delay={i * 60}>
               <div
-                key={i}
-                className={`bg-white border rounded-2xl overflow-hidden transition-all duration-200 ${
+                className={`bg-white border rounded-[24px] overflow-hidden shadow-[0_6px_18px_rgba(15,23,42,0.05)] transition-all duration-200 ${
                   isOpen
                     ? "border-blue-200 shadow-lg shadow-blue-500/[0.05]"
                     : "border-slate-200 hover:border-slate-300"
@@ -54,7 +53,7 @@ export default function GammeFaq({ items }: GammeFaqProps) {
                   >
                     <Icon size={15} />
                   </div>
-                  <span className="flex-1 leading-snug font-v9-body">
+                  <span className="flex-1 leading-snug font-body">
                     {f.question}
                   </span>
                   <Plus
@@ -65,15 +64,15 @@ export default function GammeFaq({ items }: GammeFaqProps) {
                   />
                 </button>
                 {isOpen && (
-                  <div className="px-4 pb-4 pl-[60px] text-[13px] text-slate-600 leading-relaxed animate-v9-fade-in font-normal font-v9-body">
+                  <div className="px-4 pb-4 pl-[60px] text-[13px] text-slate-600 leading-relaxed animate-subtle-fade-in font-normal font-body">
                     {f.answer}
                   </div>
                 )}
               </div>
-            );
-          })}
-        </div>
+            </Reveal>
+          );
+        })}
       </div>
-    </section>
+    </Section>
   );
 }

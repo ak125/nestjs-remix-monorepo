@@ -91,6 +91,7 @@ interface PurchaseGuideRow {
   sgpg_safe_table_rows?: Array<Record<string, unknown>> | string | null;
   sgpg_visual_plan?: Record<string, unknown> | string | null;
   sgpg_intent_lock?: Record<string, unknown> | string | null;
+  sgpg_h2_overrides?: Record<string, string> | string | null;
   [key: string]: unknown;
 }
 
@@ -187,6 +188,8 @@ export interface BuyingGuideContractV1 {
     banAbsoluteClaims?: string[];
     banPricePush?: string[];
   } | null;
+  // H2 overrides per section (DB-driven SEO headings)
+  h2Overrides?: Record<string, string> | null;
 }
 /** @deprecated utiliser BuyingGuideContractV1 */
 export type GammeContentContractV1 = BuyingGuideContractV1;
@@ -1483,6 +1486,7 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       familyCrossSellIntro: raw.sgpg_family_cross_sell_intro?.trim() || null,
       interestNuggets: this.parseJsonbObject(raw.sgpg_interest_nuggets),
       h1Override: raw.sgpg_h1_override?.trim() || null,
+      h2Overrides: this.parseH2Overrides(raw.sgpg_h2_overrides),
       safeTableRows: this.parseSafeTableRows(raw.sgpg_safe_table_rows),
       visualPlan: this.parseVisualPlan(raw.sgpg_visual_plan),
       contentContract: this.parseContentContract(raw.sgpg_intent_lock),
@@ -1511,6 +1515,38 @@ export class BuyingGuideDataService extends SupabaseBaseService {
       }
     }
     return null;
+  }
+
+  private parseH2Overrides(
+    val: Record<string, string> | string | null | undefined,
+  ): Record<string, string> | null {
+    if (!val) return null;
+    const ALLOWED_KEYS = new Set([
+      'content',
+      'motorizations',
+      'equipementiers',
+      'famille',
+      'checklist',
+      'faq',
+    ]);
+    let obj: Record<string, unknown>;
+    if (typeof val === 'string') {
+      try {
+        obj = JSON.parse(val);
+      } catch {
+        return null;
+      }
+    } else {
+      obj = val;
+    }
+    if (typeof obj !== 'object' || obj === null) return null;
+    const result: Record<string, string> = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (ALLOWED_KEYS.has(k) && typeof v === 'string' && v.trim()) {
+        result[k] = v.trim();
+      }
+    }
+    return Object.keys(result).length > 0 ? result : null;
   }
 
   private parseSafeTableRows(

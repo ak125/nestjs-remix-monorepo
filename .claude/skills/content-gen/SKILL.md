@@ -158,7 +158,7 @@ Le run s'arrête en phase `applying`. Afficher :
 1. **Utiliser UNIQUEMENT les données du RAG + KW importés** — ne pas inventer
 2. **Respecter le vocabulaire interdit** du rôle (voir generator.md)
 3. **Respecter les seuils de longueur** :
-   - R1 : max 150 mots (surface courte)
+   - R1 : 250-400 mots (contenu riche, 4-5 H2, intégration KW)
    - R3 : 50-400 mots par section, 8 sections
    - R4 : 200-2000 chars pour la définition, 100-600 pour chaque champ
    - R6 : >1000 chars pour how_to_choose
@@ -177,47 +177,207 @@ Le run s'arrête en phase `applying`. Afficher :
 
 ## Étape 5 — Génération R1 (page gamme router)
 
-À partir du RAG + KW importés (`__seo_keyword_results WHERE pg_id={pg_id} AND role='R1'`), générer :
+**R1 = 2 prompts séparés, 1 étape de chargement commune :**
 
-**Processus KW-first** :
-1. Lire les KW R1 de la gamme (triés par vol DESC)
-2. Identifier les 3-5 KW vol=HIGH → les placer dans H1, title, H2
-3. Identifier les KW PAA → les transformer en FAQ si applicable
-4. Les KW navigational (véhicule) ne vont PAS dans le contenu R1 (ils servent aux meta/URL)
+### 5.0 — Chargement données (commun aux 2 prompts)
 
-- `sg_content` : HTML court (3 sections H2, max 150 mots)
-  - H2 1 : Utiliser un KW HIGH comme ancre (ex: "{Pièce} prix et références")
-  - H2 2 : "Sélectionnez votre véhicule" (35% budget)
-  - H2 3 : Utiliser un KW transactionnel (ex: "Commander votre {pièce}")
-  - Body : intégrer naturellement 3-5 KW MED dans le texte
-- `sg_h1` : Basé sur le KW vol=HIGH le plus fort (max 70c)
-- `sg_title` : Basé sur le KW vol=HIGH + "| AutoMecanik" (max 60c)
-- `sg_descrip` : 120-155 chars, inclure le KW HIGH principal + "livraison" ou "en stock"
+Charger UNE SEULE FOIS et réutiliser dans 5a + 5b :
 
-**FAQ R1 (PAA→FAQ)** : Si des KW intent=paa existent dans `__seo_keyword_results`, ajouter un bloc FAQ compact après le H2 #3 :
-- Maximum 3 questions (les PAA vol=HIGH et vol=MED uniquement)
-- Format : `<details><summary>Question</summary><p>Réponse courte (1-2 phrases, basée sur RAG)</p></details>`
-- Ne PAS dépasser le budget 150 mots total (FAQ incluse)
-- Exemples de PAA à transformer : "combien coûte un filtre à huile" → `<details><summary>Combien coûte un filtre à huile ?</summary><p>Entre 5 et 30 € selon le type (vissable ou cartouche) et la marque.</p></details>`
+```python
+# 1. KW importés
+kw = SQL("SELECT kw, intent, vol FROM __seo_keyword_results WHERE pg_id={pg_id} AND role='R1' ORDER BY CASE vol WHEN 'HIGH' THEN 1 WHEN 'MED' THEN 2 ELSE 3 END")
+kw_high = [k for k in kw if k.vol == 'HIGH']
+kw_med  = [k for k in kw if k.vol == 'MED']
+kw_paa  = [k for k in kw if k.intent == 'paa']
 
-**Inclure les liens de maillage** dans sg_content :
-- Lien vers R4 : `<a href="/reference-auto/{alias}">En savoir plus</a>`
-- Lien vers R3 : `<a href="/blog-pieces-auto/{alias}">Conseils</a>`
-- Lien vers R6 : `<a href="/blog-pieces-auto/guide-achat/{alias}">Guide d'achat</a>`
+# 2. RAG gamme
+rag = parse_yaml("/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md")
 
-**Écriture** (TOUJOURS en mode draft — jamais écrire les champs live directement) :
+# 3. DB aggregates
+agg = SQL("SELECT products_total, top_brands FROM gamme_aggregates WHERE ga_pg_id={pg_id}")
+
+# 4. Contenu existant (pour garde anti-régression)
+existing = SQL("SELECT length(sg_content) as chars, sg_h1 FROM __seo_gamme WHERE sg_pg_id='{pg_id}'")
+```
+
+**⛔ GATE : si `len(kw) == 0` :**
+- Afficher : "⚠️ Aucun KW importé pour R1. Le contenu sera générique. Importez d'abord via /admin/keyword-planner."
+- Continuer avec les données RAG uniquement (pas de blocage dur)
+- Marquer `kw_driven = false` (pour le rapport)
+
+### 5a — Contenu éditorial (sg_content) — PROMPT: `.claude/prompts/R1_ROUTER/editorial.md`
+
+Lire le prompt editorial.md et suivre ses instructions. En résumé :
+
+1. Utiliser les données chargées en 5.0
+2. Générer **1500-2000 mots HTML** avec **6-8 H2** enrichis KW
+3. Intégrer TOUS les KW vol=HIGH dans H2 + body
+4. Transformer les KW intent=paa en FAQ `<details><summary>`
+5. Maillage interne R3 + R4 + R6 + gammes liées
+
+Cibles de longueur :
+- **Minimum** : 10 000 chars / 1500 mots / 6 H2
+- **Optimal** : 15 000 chars / 2000 mots / 8 H2
+- **Maximum** : 20 000 chars (au-delà, risque de dilution)
+
+### 5b — Meta tags
+
+- `sg_h1` : KW vol=HIGH le plus fort (max 70c)
+- `sg_title_draft` : KW vol=HIGH + "| AutoMecanik" (max 60c)
+- `sg_descrip_draft` : 120-155 chars, KW HIGH principal + "livraison" ou "en stock"
+
+### 5c — H2 Overrides
+
+Extraire les H2 du sg_content généré et écrire dans `sgpg_h2_overrides` :
+```sql
+UPDATE __seo_gamme_purchase_guide SET sgpg_h2_overrides = $h2${
+  "content": "[Premier H2 du sg_content]",
+  "motorizations": "[Gamme] compatible avec votre véhicule",
+  "equipementiers": "Marques [gamme] : [top 3]",
+  "checklist": "Vérifications avant achat de [gamme]",
+  "faq": "[H2 FAQ du sg_content]"
+}$h2$ WHERE sgpg_pg_id = '{pg_id}';
+```
+Règles H2 : nom gamme obligatoire, KW HIGH dans "content", max 60 chars.
+Si 0 KW → ne PAS générer de h2Overrides (fallbacks hardcodés s'appliquent).
+
+### 5d — Écriture avec garde anti-régression
+
+**⛔ GUARD ANTI-RÉGRESSION (BLOQUANT) :**
+```python
+new_length = len(generated_content)
+existing_length = existing.chars  # chargé en 5.0
+
+if existing_length > 0 and new_length < existing_length:
+    print(f"⛔ GUARD: Contenu existant ({existing_length}c) > généré ({new_length}c). Écriture BLOQUÉE.")
+    # NE PAS écrire. Demander confirmation humaine.
+    return
+```
+
+**Si garde OK → écrire directement dans sg_content (champ live) :**
 ```sql
 UPDATE __seo_gamme SET
-  sg_content_draft = $content$...$content$,
-  sg_h1 = '...',
-  sg_title_draft = '...',
-  sg_descrip_draft = '...',
+  sg_content = $content$[HTML 1500-2000 mots]$content$,
+  sg_h1 = '[H1 enrichi KW]',
+  sg_title_draft = '[title draft]',
+  sg_descrip_draft = '[description draft]',
   sg_draft_source = 'content-gen-skill',
   sg_draft_updated_at = now()
 WHERE sg_pg_id = '{pg_id}';
 ```
-> **INTERDIT** : ne JAMAIS écrire `sg_content`, `sg_title`, `sg_descrip` (champs live).
-> Utiliser uniquement les champs `*_draft`. La promotion draft→live est un processus séparé.
+
+> **Note** : `sg_content` est écrit directement (live) car le editorial.md produit du contenu
+> validé et la garde anti-régression protège contre les régressions.
+> `sg_title_draft` et `sg_descrip_draft` restent en draft (promotion séparée via SeoTitleEngine).
+
+### 5e — Validation KW post-écriture
+
+Après écriture, vérifier AUTOMATIQUEMENT l'intégration des KW :
+
+```python
+content_lower = generated_content.lower()
+missing_high = [k.kw for k in kw_high if not fuzzy_match(k.kw, content_lower)]
+missing_med  = [k.kw for k in kw_med if not fuzzy_match(k.kw, content_lower)]
+
+if len(missing_high) > 0:
+    print(f"⚠️ {len(missing_high)} KW HIGH manquants : {missing_high}")
+    print("→ Réviser le contenu pour les inclure naturellement.")
+    # NE PAS bloquer, mais AVERTIR
+
+integration_score = round(
+    (len(kw_high) - len(missing_high)) / max(len(kw_high), 1) * 50 +
+    (len(kw_med) - len(missing_med)) / max(len(kw_med), 1) * 35 +
+    15  # LOW = bonus fixe
+)
+print(f"Score intégration KW : {integration_score}/100")
+```
+
+### 5f — Invalidation cache
+
+**OBLIGATOIRE** après toute écriture dans `__seo_gamme` ou `__seo_gamme_purchase_guide` :
+```
+POST http://localhost:3000/api/admin/cache/invalidate?pg_id={pg_id}
+```
+Fallback si endpoint non disponible : `redis-cli DEL gamme:rpc:v2:{pg_id}`
+
+Sans cette étape, l'ancien contenu est servi pendant 1h (TTL cache).
+
+### 5g — Maillage bidirectionnel
+
+**Source de vérité** : table `__seo_gamme_links` (1199 liens, 236 gammes).
+
+Après écriture du sg_content pour gamme A :
+
+**1. Liens sortants (A → cibles)** :
+```sql
+SELECT l.target_pg_id, l.anchor_text, l.context, l.relation,
+       pg.pg_alias, pg.pg_name
+FROM __seo_gamme_links l
+JOIN pieces_gamme pg ON pg.pg_id = l.target_pg_id
+WHERE l.source_pg_id = {pg_id}
+ORDER BY l.relation, pg.pg_name;
+```
+
+Pour chaque lien cible :
+- Vérifier si `sg_content` contient déjà un `<a href="/pieces/{target_alias}-{target_id}.html">`
+- Si absent → l'ajouter naturellement dans le body (pas en append brut)
+- Format : `<a href="/pieces/{alias}-{id}.html">{anchor_text}</a>` dans une phrase contextuelle
+
+**2. Liens entrants (sources → A, bidirectionnel)** :
+```sql
+SELECT l.source_pg_id, l.anchor_text, l.context,
+       pg.pg_alias, pg.pg_name,
+       sg.sg_content
+FROM __seo_gamme_links l
+JOIN pieces_gamme pg ON pg.pg_id = l.source_pg_id
+JOIN __seo_gamme sg ON sg.sg_pg_id = l.source_pg_id::text
+WHERE l.target_pg_id = {pg_id} AND l.bidirectional = true;
+```
+
+Pour chaque gamme source :
+- Vérifier si `source.sg_content` contient déjà un lien vers gamme A (`/pieces/{pg_alias}-{pg_id}.html`)
+- Si absent ET source.sg_content n'est pas vide :
+  ```sql
+  UPDATE __seo_gamme SET
+    sg_content = sg_content || $link$
+  <p class="mt-3 text-sm text-slate-500">{context} — <a href="/pieces/{pg_alias}-{pg_id}.html" class="text-blue-600 hover:underline">{anchor_text}</a></p>
+  $link$
+  WHERE sg_pg_id = '{source_pg_id}';
+  ```
+- Invalider le cache Redis de la gamme source : `redis-cli DEL gamme:rpc:v2:{source_pg_id}`
+
+**Règles maillage :**
+- **Append only** — ne jamais modifier le contenu existant, ajouter à la fin
+- **Max 3 liens entrants ajoutés** par exécution — pas de sur-optimisation
+- **Deduplicate** — si le lien href existe déjà dans sg_content, NE PAS l'ajouter
+- **Ancre naturelle** — utiliser le `anchor_text` de la table, pas "cliquez ici"
+- **Contexte** — utiliser le `context` de la table pour la phrase d'intro du lien
+- **Garde anti-régression** — append = length augmente toujours (OK)
+
+---
+
+## Mode batch
+
+Pour traiter plusieurs gammes :
+
+```
+/content-gen --batch top20 --r1
+```
+
+Logique :
+1. Charger les 20 gammes avec le plus de KW importés (`SELECT pg_id, COUNT(*) FROM __seo_keyword_results WHERE role='R1' GROUP BY pg_id ORDER BY count DESC LIMIT 20`)
+2. Pour chaque gamme, exécuter les étapes 5.0 → 5f séquentiellement
+3. Afficher un rapport batch en fin :
+
+```
+## Batch R1 — 20 gammes
+| Gamme | Avant | Après | Score KW | Statut |
+|-------|-------|-------|----------|--------|
+| filtre-a-huile | 6195c | 15200c | 89/100 | ✅ |
+| disque-de-frein | 1200c | 14800c | 92/100 | ✅ |
+| ... | ... | ... | ... | ... |
+| TOTAL | 45k | 295k | 87 avg | 18/20 OK |
+```
 
 ---
 
@@ -371,6 +531,12 @@ FROM __seo_gamme WHERE sg_pg_id = '{pg_id}';
 ```
 
 Si le draft n'a pas changé → signaler "⚠️ Écriture échouée — vérifier les RLS"
+
+**Invalidation cache Redis** (OBLIGATOIRE après écriture) :
+```bash
+redis-cli DEL gamme:rpc:v2:{pg_id}
+```
+Sans cette étape, l'ancien contenu est servi pendant 1h (TTL cache). Toujours invalider après écriture de `sg_content`, `sg_h1`, `sg_title`, `sg_descrip` ou `sgpg_h2_overrides`.
 
 ---
 

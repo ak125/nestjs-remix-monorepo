@@ -155,7 +155,8 @@ export class GammeResponseBuilderService {
     const pageDescription = stripHtmlForMeta(seoResolved.description);
     const pageKeywords = this.transformer.contentCleaner(seoResolved.keywords);
     const pageH1 = this.transformer.contentCleaner(seoResolved.h1);
-    const pageContent = this.transformer.contentCleaner(seoResolved.content);
+    // sg_content contains intentional HTML (H2, ul, li, details) — do NOT strip tags
+    const pageContent = seoResolved.content || '';
 
     // 🎯 RÈGLE SEO: G1/G2 (pg_level='1') = INDEX, G3 = NOINDEX
     // pg_level='1' = gammes prioritaires (G1) ou importantes (G2)
@@ -174,8 +175,22 @@ export class GammeResponseBuilderService {
     const informations = this.transformer.processInformations(informationsRaw);
     const catalogueFiltres =
       this.transformer.processCatalogueFamille(catalogueFamilleRaw);
-    const equipementiers =
+    // Equipementiers: prefer top_brands (real data) over __seo_equip_gamme (manual/stale)
+    let equipementiers =
       this.transformer.processEquipementiers(equipementiersRaw);
+
+    // If top_brands has more brands than __seo_equip_gamme, use top_brands instead
+    const topBrands = gammeStats.top_brands || [];
+    if (topBrands.length > equipementiers.length) {
+      equipementiers = topBrands
+        .filter((b) => b.name && b.count > 0)
+        .slice(0, 6)
+        .map((b) => ({
+          title: b.name,
+          description: `${b.count} références disponibles — équipementier ${b.top === '1' ? 'première monte (OE)' : 'qualité équivalente OE'}`,
+          image: null as string | null,
+        }));
+    }
 
     // ✅ Utilise fonctions centralisées depuis image-urls.utils.ts
 
@@ -547,6 +562,7 @@ export class GammeResponseBuilderService {
           symptoms: buyingGuideContract.symptoms,
           faq: buyingGuideContract.faq,
           h1Override: buyingGuideContract.h1Override || null,
+          h2Overrides: buyingGuideContract.h2Overrides || null,
           heroSubtitle: buyingGuideContract.heroSubtitle || null,
           selectorMicrocopy: buyingGuideContract.selectorMicrocopy || null,
           microSeoBlock: buyingGuideContract.microSeoBlock || null,
@@ -593,6 +609,7 @@ export class GammeResponseBuilderService {
             symptoms: gammeBuyingGuide.symptoms || [],
             faq: gammeBuyingGuide.faq || [],
             h1Override: null as string | null,
+            h2Overrides: null as Record<string, string> | null,
             heroSubtitle: null as string | null,
             selectorMicrocopy: null as string[] | null,
             microSeoBlock: null as string | null,

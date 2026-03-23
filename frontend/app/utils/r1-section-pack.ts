@@ -24,6 +24,7 @@ import { type R1Source } from "~/utils/r1-source-tracker";
 export interface R1SectionData<T> {
   data: T;
   source: R1Source;
+  h2Override?: string | null;
 }
 
 interface SafeRow {
@@ -95,6 +96,7 @@ export function buildR1SectionPack(opts: {
   } = opts;
 
   const familyKey = inferFamilyKey(gammeName, familleName);
+  const h2 = pgd?.h2Overrides ?? {};
 
   // ── Hero ──
   const heroHasPipeline =
@@ -189,13 +191,16 @@ export function buildR1SectionPack(opts: {
     sections: {
       hero,
       kpiCoverage,
-      buyArgs,
-      faq,
-      safeTable,
-      compatErrors,
-      motorisations,
-      equipementiers,
-      catalogue,
+      buyArgs: { ...buyArgs, h2Override: h2.content ?? null },
+      faq: { ...faq, h2Override: h2.faq ?? null },
+      safeTable: { ...safeTable, h2Override: h2.checklist ?? null },
+      compatErrors: { ...compatErrors, h2Override: null },
+      motorisations: { ...motorisations, h2Override: h2.motorizations ?? null },
+      equipementiers: {
+        ...equipementiers,
+        h2Override: h2.equipementiers ?? null,
+      },
+      catalogue: { ...catalogue, h2Override: h2.famille ?? null },
       selectorMicrocopy,
     },
   };

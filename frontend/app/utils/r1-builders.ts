@@ -37,6 +37,7 @@ interface MotorSchemaItem {
 export interface R1PurchaseGuideData {
   arguments?: Array<{ title?: string; content?: string; icon?: string }>;
   h1Override?: string | null;
+  h2Overrides?: Record<string, string> | null;
   heroSubtitle?: string | null;
   compatErrors?: string[] | null;
   faq?: Array<{ question: string; answer: string }> | null;
@@ -56,6 +57,7 @@ export function sanitizePurchaseGuideForR1(
   return {
     arguments: raw.arguments,
     h1Override: raw.h1Override,
+    h2Overrides: raw.h2Overrides ?? null,
     heroSubtitle: raw.heroSubtitle,
     compatErrors: raw.antiMistakes,
     faq: raw.faq,

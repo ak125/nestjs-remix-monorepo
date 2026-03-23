@@ -877,43 +877,10 @@ export default function KeywordPlannerPage() {
                     (importResult.imported ?? 0) > 0 && (
                       <div className="mt-3 pt-3 border-t border-green-200">
                         <div className="flex items-center gap-3">
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className="gap-2 bg-purple-600 hover:bg-purple-700"
-                            onClick={() => {
-                              const roles =
-                                importResult.gammes?.flatMap((g) => g.roles) ??
-                                [];
-                              const uniqueRoles = [...new Set(roles)];
-                              const pgId = importResult.gammes?.[0]?.pg_id;
-                              const alias =
-                                importResult.gammes?.[0]?.pg_alias ?? "";
-                              if (pgId) {
-                                contentFetcher.submit(
-                                  {
-                                    _action: "generate_content",
-                                    pg_id: String(pgId),
-                                    pg_alias: alias,
-                                    roles: uniqueRoles.join(","),
-                                  },
-                                  { method: "post" },
-                                );
-                              }
-                            }}
-                            disabled={contentFetcher.state !== "idle"}
-                          >
-                            {contentFetcher.state !== "idle" ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Zap className="h-4 w-4" />
-                            )}
-                            Generer le contenu
-                          </Button>
-                          <span className="text-xs text-muted-foreground">
-                            Utilise les {importResult.imported} KW pour
-                            optimiser H1, H2, meta et body
-                          </span>
+                          <ContentGenButton
+                            gammes={importResult.gammes}
+                            imported={importResult.imported ?? 0}
+                          />
                         </div>
                         {contentResult && (
                           <div
@@ -1438,6 +1405,40 @@ function RoleDot({ ok, label }: { ok: boolean; label: string }) {
   );
 }
 
+function ContentGenButton({
+  gammes,
+  imported,
+}: {
+  gammes?: Array<{
+    pg_id: number;
+    pg_alias: string;
+    roles: string[];
+    count: number;
+  }>;
+  imported: number;
+}) {
+  const alias = gammes?.[0]?.pg_alias ?? "";
+  const roles = [...new Set(gammes?.flatMap((g) => g.roles) ?? [])];
+  const roleFlags = roles.map((r) => `--${r.toLowerCase()}`).join(" ");
+  const command = `/content-gen ${alias} ${roleFlags}`;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg">
+          <Zap className="h-4 w-4 text-purple-600" />
+          <code className="text-sm font-mono font-bold text-purple-800">
+            {command}
+          </code>
+        </div>
+        <span className="text-xs text-muted-foreground">
+          {imported} KW — lancez dans Claude Code
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function RagDot({ status, count }: { status: string; count: number }) {
   if (status === "ingested") {
     return (
@@ -1486,6 +1487,9 @@ interface AuditData {
   title: string;
   missing_high: string[];
   missing_med: string[];
+  outgoing_present?: number;
+  outgoing_total?: number;
+  incoming_total?: number;
   message?: string;
   error?: string;
 }
@@ -1702,6 +1706,43 @@ function GammeAuditRow({ g }: { g: GammeRow }) {
                       <span className="font-bold">Title:</span> {audit.title}
                     </div>
                   </div>
+
+                  {/* Maillage links */}
+                  {audit.maillage && (
+                    <div className="flex items-center gap-4 text-[10px] pt-1 border-t border-muted">
+                      <span className="font-semibold text-muted-foreground uppercase">
+                        Liens internes :
+                      </span>
+                      <span
+                        className={
+                          audit.maillage.r3 ? "text-green-600" : "text-red-500"
+                        }
+                      >
+                        R3 {audit.maillage.r3 ? "✓" : "✕"}
+                      </span>
+                      <span
+                        className={
+                          audit.maillage.r4 ? "text-green-600" : "text-red-500"
+                        }
+                      >
+                        R4 {audit.maillage.r4 ? "✓" : "✕"}
+                      </span>
+                      <span
+                        className={
+                          audit.maillage.r6 ? "text-green-600" : "text-red-500"
+                        }
+                      >
+                        R6 {audit.maillage.r6 ? "✓" : "✕"}
+                      </span>
+                      <span className="text-muted-foreground">
+                        | {audit.outgoing_present ?? 0}/
+                        {audit.outgoing_total ?? 0} sortants
+                      </span>
+                      <span className="text-muted-foreground">
+                        | {audit.incoming_total ?? 0} entrants
+                      </span>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-xs text-muted-foreground">

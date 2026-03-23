@@ -1,4 +1,5 @@
 import { ArrowRight, CheckCircle } from "lucide-react";
+import { Reveal, Section, SectionHeader } from "~/components/layout";
 import { Badge } from "~/components/ui/badge";
 
 interface EquipementierItem {
@@ -10,41 +11,36 @@ interface EquipementierItem {
 interface GammeEquipementiersProps {
   items: EquipementierItem[];
   intro?: string;
+  h2Override?: string | null;
 }
 
 export default function GammeEquipementiers({
   items,
   intro,
+  h2Override,
 }: GammeEquipementiersProps) {
   if (items.length === 0) return null;
 
   return (
-    <section id="equip" className="py-7 lg:py-10 bg-[#0d1b2a] scroll-mt-16">
-      <div className="px-5 lg:px-8 max-w-[1280px] mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[20px] lg:text-[24px] font-bold text-white tracking-tight font-v9-heading">
-            Équipementiers OE
-          </h2>
+    <Section variant="navy-gradient" id="equip" className="scroll-mt-16" glow>
+      <SectionHeader
+        title={h2Override || "Équipementiers OE"}
+        sub={intro}
+        dark
+        trailing={
           <Badge
             variant="outline"
             className="text-[11px] font-bold text-white/50 bg-white/[0.08] border-white/10"
           >
             {items.length} marques
           </Badge>
-        </div>
+        }
+      />
 
-        {intro && (
-          <p className="text-[13px] text-blue-200/50 font-normal leading-relaxed font-v9-body mb-4">
-            {intro}
-          </p>
-        )}
-
-        <div className="flex flex-col gap-3 lg:grid lg:grid-cols-3 lg:gap-4">
-          {items.map((e) => (
-            <div
-              key={e.name}
-              className="bg-white/[0.05] border border-white/[0.08] rounded-2xl p-4 hover:bg-white/[0.08] hover:border-white/[0.15] transition-all group"
-            >
+      <div className="flex flex-col gap-3 lg:grid lg:grid-cols-3 xl:grid-cols-4 lg:gap-4">
+        {items.map((e, i) => (
+          <Reveal key={e.name} delay={i * 60}>
+            <div className="bg-white/[0.05] border border-white/[0.08] rounded-[22px] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm hover:bg-white/[0.08] hover:border-white/[0.15] transition-all group">
               <div className="flex items-center gap-3 mb-2.5">
                 <div className="w-11 h-11 lg:w-12 lg:h-12 rounded-xl bg-white/[0.08] flex items-center justify-center flex-shrink-0 group-hover:text-white group-hover:bg-white/[0.12] transition-all overflow-hidden">
                   {e.logo ? (
@@ -55,7 +51,7 @@ export default function GammeEquipementiers({
                       loading="lazy"
                     />
                   ) : (
-                    <span className="text-[14px] font-extrabold text-white/60 font-v9-heading">
+                    <span className="text-[14px] font-extrabold text-white/60 font-heading">
                       {e.name.slice(0, 2)}
                     </span>
                   )}
@@ -78,9 +74,9 @@ export default function GammeEquipementiers({
                 </p>
               )}
             </div>
-          ))}
-        </div>
+          </Reveal>
+        ))}
       </div>
-    </section>
+    </Section>
   );
 }

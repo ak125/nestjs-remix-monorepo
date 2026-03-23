@@ -2,14 +2,17 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Logger,
   Optional,
   Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import type { Cache } from 'cache-manager';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
@@ -38,6 +41,7 @@ export class AdminKeywordPlannerController {
   constructor(
     private readonly configService: ConfigService,
     @Optional() private readonly r1BatchService?: R1KeywordPlanBatchService,
+    @Optional() @Inject(CACHE_MANAGER) private readonly cacheManager?: Cache,
   ) {
     const url = this.configService.get<string>('SUPABASE_URL');
     const key = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
@@ -577,7 +581,7 @@ export class AdminKeywordPlannerController {
       highScore.pct * 0.5 + medScore.pct * 0.35 + lowScore.pct * 0.15,
     );
 
-    return {
+    const auditResult: Record<string, unknown> = {
       pg_id: pgId,
       total_kw: kwRows.length,
       score: globalScore,
@@ -593,7 +597,144 @@ export class AdminKeywordPlannerController {
       missing_med: results
         .filter((r) => r.vol === 'MED' && !r.found && !r.skipped)
         .map((r) => r.kw),
+      outgoing_present: (() => {
+        const contentLower = (seo.sg_content ?? '').toLowerCase();
+        let count = 0;
+        try {
+          // Count links in sg_content that point to /pieces/
+          const matches = contentLower.match(/href="\/pieces\//g);
+          count = matches?.length ?? 0;
+        } catch {
+          /* */
+        }
+        return count;
+      })(),
+      outgoing_total: 0,
+      incoming_total: 0,
       details: results,
+    };
+
+    // Fetch link counts from __seo_gamme_links
+    try {
+      const { count: outCount } = await this.supabase
+        .from('__seo_gamme_links')
+        .select('id', { count: 'exact', head: true })
+        .eq('source_pg_id', pgId);
+      const { count: inCount } = await this.supabase
+        .from('__seo_gamme_links')
+        .select('id', { count: 'exact', head: true })
+        .eq('target_pg_id', pgId);
+      auditResult.outgoing_total = outCount ?? 0;
+      auditResult.incoming_total = inCount ?? 0;
+    } catch {
+      /* table may not exist */
+    }
+
+    return auditResult;
+  }
+
+  /**
+   * POST /api/admin/cache/invalidate?pg_id=7
+   * Invalidate Redis RPC cache for a gamme after content update.
+   */
+  @Post('cache-invalidate')
+  async cacheInvalidate(@Query('pg_id') pgIdStr: string) {
+    const pgId = Number(pgIdStr);
+    if (!pgId) return { error: 'pg_id requis' };
+
+    const keys = [`gamme:rpc:v2:${pgId}`, `gamme:rpc:v2:stale:${pgId}`];
+    let deleted = 0;
+    for (const key of keys) {
+      try {
+        await this.cacheManager?.del(key);
+        deleted++;
+      } catch {
+        /* key may not exist */
+      }
+    }
+    this.logger.log(`Cache invalidated for pg_id=${pgId} (${deleted} keys)`);
+    return { pg_id: pgId, keys_deleted: deleted, message: 'Cache invalidé' };
+  }
+
+  /**
+   * GET /api/admin/keyword-planner/maillage?pg_id=7
+   * Returns outgoing + incoming links for a gamme.
+   */
+  @Get('maillage')
+  async maillage(@Query('pg_id') pgIdStr: string) {
+    const pgId = Number(pgIdStr);
+    if (!pgId) return { error: 'pg_id requis' };
+
+    // Outgoing links
+    const { data: outgoing } = await this.supabase
+      .from('__seo_gamme_links')
+      .select('target_pg_id, relation, anchor_text, context, source_origin')
+      .eq('source_pg_id', pgId);
+
+    // Incoming links
+    const { data: incoming } = await this.supabase
+      .from('__seo_gamme_links')
+      .select('source_pg_id, relation, anchor_text, context, source_origin')
+      .eq('target_pg_id', pgId);
+
+    // Get sg_content to check which links are already present
+    const { data: seoRows } = await this.supabase
+      .from('__seo_gamme')
+      .select('sg_content')
+      .eq('sg_pg_id', String(pgId));
+    const content = (seoRows?.[0]?.sg_content ?? '').toLowerCase();
+
+    // Resolve pg names
+    const allPgIds = [
+      ...(outgoing ?? []).map((r) => r.target_pg_id),
+      ...(incoming ?? []).map((r) => r.source_pg_id),
+    ];
+    const { data: pgRows } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id, pg_alias, pg_name')
+      .in('pg_id', allPgIds);
+    const pgMap = new Map(
+      (pgRows ?? []).map(
+        (r: { pg_id: number; pg_alias: string; pg_name: string }) => [
+          r.pg_id,
+          r,
+        ],
+      ),
+    );
+
+    const outLinks = (outgoing ?? []).map((r) => {
+      const pg = pgMap.get(r.target_pg_id);
+      const href = `/pieces/${pg?.pg_alias}-${r.target_pg_id}.html`;
+      return {
+        pg_id: r.target_pg_id,
+        pg_name: pg?.pg_name ?? `#${r.target_pg_id}`,
+        pg_alias: pg?.pg_alias ?? '',
+        relation: r.relation,
+        anchor_text: r.anchor_text,
+        context: r.context,
+        present_in_content: content.includes(href.toLowerCase()),
+      };
+    });
+
+    const inLinks = (incoming ?? []).map((r) => {
+      const pg = pgMap.get(r.source_pg_id);
+      return {
+        pg_id: r.source_pg_id,
+        pg_name: pg?.pg_name ?? `#${r.source_pg_id}`,
+        pg_alias: pg?.pg_alias ?? '',
+        relation: r.relation,
+        anchor_text: r.anchor_text,
+        present_in_source: false, // Would need to query each source's sg_content
+      };
+    });
+
+    return {
+      pg_id: pgId,
+      outgoing: outLinks,
+      incoming: inLinks,
+      outgoing_present: outLinks.filter((l) => l.present_in_content).length,
+      outgoing_total: outLinks.length,
+      incoming_total: inLinks.length,
     };
   }
 

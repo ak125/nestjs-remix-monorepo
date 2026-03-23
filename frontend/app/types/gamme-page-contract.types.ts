@@ -141,6 +141,7 @@ export interface GammePagePurchaseGuideData {
   timing: { title: string; years: string; km: string; note: string };
   arguments: Array<{ title: string; content: string; icon: string }>;
   h1Override?: string | null;
+  h2Overrides?: Record<string, string> | null;
   howToChoose?: string | null;
   symptoms?: string[] | null;
   antiMistakes?: string[] | null;
@@ -510,6 +511,7 @@ export const PurchaseGuideDataSchema = z
       z.object({ title: z.string(), content: z.string(), icon: z.string() }),
     ),
     h1Override: z.string().nullable().optional(),
+    h2Overrides: z.record(z.string()).nullable().optional(),
     howToChoose: z.string().nullable().optional(),
     symptoms: z.array(z.string()).nullable().optional(),
     antiMistakes: z.array(z.string()).nullable().optional(),

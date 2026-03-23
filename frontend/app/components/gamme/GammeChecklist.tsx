@@ -9,6 +9,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
+import { Reveal, Section, SectionHeader } from "~/components/layout";
 
 interface CheckItem {
   label: string;
@@ -19,6 +20,7 @@ interface CheckItem {
 interface GammeChecklistProps {
   items?: CheckItem[];
   gammeName?: string;
+  h2Override?: string | null;
 }
 
 /** Assign an icon based on keywords in the label. */
@@ -41,6 +43,7 @@ function inferIcon(label: string): typeof Car {
 export default function GammeChecklist({
   items,
   gammeName: _gammeName,
+  h2Override,
 }: GammeChecklistProps) {
   const checks = items && items.length > 0 ? items : [];
   const [checked, setChecked] = useState<number[]>([]);
@@ -53,12 +56,10 @@ export default function GammeChecklist({
   const total = checks.length;
 
   return (
-    <section className="py-7 lg:py-10 bg-white">
-      <div className="px-5 lg:px-8 max-w-[1280px] mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-[20px] lg:text-[24px] font-bold text-slate-900 tracking-tight font-v9-heading">
-            Checklist
-          </h2>
+    <Section variant="white">
+      <SectionHeader
+        title={h2Override || "Checklist"}
+        trailing={
           <span
             className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg ${
               checked.length === total
@@ -68,33 +69,35 @@ export default function GammeChecklist({
           >
             {checked.length}/{total}
           </span>
-        </div>
+        }
+      />
 
-        {/* Progress bar */}
-        <div className="h-1.5 bg-slate-100 rounded-full mb-5">
-          <div
-            className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${(checked.length / total) * 100}%` }}
-          />
-        </div>
+      {/* Progress bar */}
+      <div className="h-1.5 bg-slate-100 rounded-full mb-5">
+        <div
+          className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${(checked.length / total) * 100}%` }}
+        />
+      </div>
 
-        <div className="grid grid-cols-2 xl:grid-cols-5 gap-2.5">
-          {checks.map((s, i) => {
-            const ok = checked.includes(i);
-            const Icon = s.icon || inferIcon(s.label);
-            return (
+      <div className="grid grid-cols-2 xl:grid-cols-5 gap-2.5">
+        {checks.map((s, i) => {
+          const ok = checked.includes(i);
+          const Icon = s.icon || inferIcon(s.label);
+          return (
+            <Reveal key={s.label} delay={i * 60}>
               <button
                 key={s.label}
                 type="button"
                 onClick={() => toggle(i)}
-                className={`border rounded-xl p-3.5 text-left transition-all duration-200 relative ${
+                className={`border rounded-[18px] p-3.5 text-left transition-all duration-200 relative shadow-[0_6px_18px_rgba(15,23,42,0.05)] ${
                   ok
                     ? "bg-emerald-50 border-emerald-300 shadow-md shadow-emerald-100 -translate-y-0.5 ring-2 ring-emerald-200"
                     : "bg-slate-50/50 border-slate-200 hover:border-blue-200 hover:bg-white hover:shadow-sm hover:-translate-y-0.5"
                 }`}
               >
                 {ok ? (
-                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm animate-v9-fade-in">
+                  <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center shadow-sm animate-subtle-fade-in">
                     <CheckCircle size={11} className="text-white" />
                   </div>
                 ) : (
@@ -129,19 +132,19 @@ export default function GammeChecklist({
                   </div>
                 </div>
               </button>
-            );
-          })}
-        </div>
-
-        {checked.length === total && (
-          <div className="mt-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 animate-v9-fade-in">
-            <CheckCircle size={16} className="text-emerald-500 flex-shrink-0" />
-            <span className="text-[12px] font-semibold text-emerald-700">
-              Tout validé — commandez en confiance.
-            </span>
-          </div>
-        )}
+            </Reveal>
+          );
+        })}
       </div>
-    </section>
+
+      {checked.length === total && (
+        <div className="mt-4 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 animate-subtle-fade-in">
+          <CheckCircle size={16} className="text-emerald-500 flex-shrink-0" />
+          <span className="text-[12px] font-semibold text-emerald-700">
+            Tout validé — commandez en confiance.
+          </span>
+        </div>
+      )}
+    </Section>
   );
 }
