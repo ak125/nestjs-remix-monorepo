@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import {
   GammeDataTransformerService,
   ConseilRow,
@@ -63,6 +63,8 @@ interface GammeRpcPageData {
  */
 @Injectable()
 export class GammeResponseBuilderService {
+  private readonly logger = new Logger(GammeResponseBuilderService.name);
+
   constructor(
     private readonly transformer: GammeDataTransformerService,
     private readonly rpcService: GammeRpcService,
@@ -156,7 +158,89 @@ export class GammeResponseBuilderService {
     const pageKeywords = this.transformer.contentCleaner(seoResolved.keywords);
     const pageH1 = this.transformer.contentCleaner(seoResolved.h1);
     // sg_content contains intentional HTML (H2, ul, li, details) — do NOT strip tags
-    const pageContent = seoResolved.content || '';
+    let pageContent = seoResolved.content || '';
+
+    // 🖼️ Inject approved R1 editorial images into sg_content
+    // If pageContent is empty, load it directly from __seo_gamme
+    if (!pageContent || pageContent.length < 500) {
+      try {
+        const sbClient = this.buyingGuideService.getSupabaseClient();
+        const { data: seoRow } = await sbClient
+          .from('__seo_gamme')
+          .select('sg_content')
+          .eq('sg_pg_id', String(pgIdNum))
+          .single();
+        if (seoRow?.sg_content) {
+          pageContent = seoRow.sg_content;
+        }
+      } catch (e) {
+        this.logger.error(
+          `[R1-IMG] seo_gamme load failed pg_id=${pgIdNum}: ${e}`,
+        );
+      }
+    }
+
+    // ── R1 Images: sélection déterministe (selected+approved > approved > rien) ──
+    let r1HeroImageUrl: string | null = null;
+    const r1Images: Array<{
+      slot: string;
+      path: string;
+      alt: string;
+      caption: string | null;
+      aspect: string;
+    }> = [];
+    try {
+      const sbClient = this.buyingGuideService.getSupabaseClient();
+      const { data: allApproved } = await sbClient
+        .from('__seo_r1_image_prompts')
+        .select(
+          'rip_slot_id, rip_image_url, rip_alt_text, rip_caption, rip_aspect_ratio, rip_selected, rip_updated_at',
+        )
+        .eq('rip_pg_id', pgIdNum)
+        .eq('rip_status', 'approved')
+        .not('rip_image_url', 'is', null)
+        .order('rip_updated_at', { ascending: false });
+
+      if (allApproved && allApproved.length > 0) {
+        // Sélection déterministe : selected=true d'abord, puis plus récent
+        const sorted = [...allApproved].sort((a, b) => {
+          if (a.rip_selected !== b.rip_selected) return a.rip_selected ? -1 : 1;
+          return (
+            new Date(b.rip_updated_at).getTime() -
+            new Date(a.rip_updated_at).getTime()
+          );
+        });
+
+        // Une seule image par slot (premier candidat = meilleur)
+        const slotMap = new Map<string, (typeof sorted)[0]>();
+        for (const img of sorted) {
+          if (!slotMap.has(img.rip_slot_id)) {
+            slotMap.set(img.rip_slot_id, img);
+          }
+        }
+
+        for (const img of slotMap.values()) {
+          const uploadPath = img.rip_image_url.match(/\/uploads\/(.+)$/)?.[1];
+          if (!uploadPath) continue;
+
+          if (
+            ['HERO', 'HERO_PRODUCT', 'HERO_EDITORIAL'].includes(img.rip_slot_id)
+          ) {
+            r1HeroImageUrl = uploadPath;
+          }
+
+          r1Images.push({
+            slot: img.rip_slot_id,
+            path: uploadPath,
+            alt: img.rip_alt_text ?? '',
+            caption: img.rip_caption ?? null,
+            aspect: img.rip_aspect_ratio ?? '4:3',
+          });
+        }
+      }
+    } catch (e) {
+      this.logger.warn(`[R1-IMG] query failed pg_id=${pgIdNum}: ${e}`);
+    }
 
     // 🎯 RÈGLE SEO: G1/G2 (pg_level='1') = INDEX, G3 = NOINDEX
     // pg_level='1' = gammes prioritaires (G1) ou importantes (G2)
@@ -734,10 +818,13 @@ export class GammeResponseBuilderService {
         content: pageContent,
         pg_name: pgNameSite,
         pg_alias: pgAlias,
-        image: imageUrl,
+        image: r1HeroImageUrl
+          ? buildProxyImageUrl(IMAGE_CONFIG.BUCKETS.UPLOADS, r1HeroImageUrl)
+          : imageUrl,
         wall: wallUrl,
         famille_info: familleInfo || null,
       },
+      r1Images,
       motorisations:
         motorisations.length > 0
           ? {
@@ -854,4 +941,10 @@ export class GammeResponseBuilderService {
       },
     };
   }
+
+  /**
+   * Inject approved R1 editorial images into sg_content HTML.
+   * Matches slot to H2 by keyword, inserts <figure> after the H2.
+   */
+  // injectR1Images removed — images are now structured data in r1Images[]
 }

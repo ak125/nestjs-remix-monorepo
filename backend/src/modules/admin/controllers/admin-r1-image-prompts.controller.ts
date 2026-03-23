@@ -7,7 +7,11 @@ import {
   Body,
   UseGuards,
   Logger,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { R1ImagePromptService } from '../services/r1-image-prompt.service';
@@ -55,7 +59,9 @@ export class AdminR1ImagePromptsController {
   @Post('generate/:pgAlias')
   async generateSingle(@Param('pgAlias') pgAlias: string) {
     this.logger.log(`Generate R1 images for ${pgAlias}`);
-    const result = await this.imagePromptService.generateBatch([pgAlias], {});
+    const result = await this.imagePromptService.generateBatch([pgAlias], {
+      force: true,
+    });
     return result.items[0] ?? { pgAlias, status: 'failed', reason: 'Unknown' };
   }
 
@@ -84,8 +90,39 @@ export class AdminR1ImagePromptsController {
   @Patch(':id/set-image-url')
   async setImageUrl(
     @Param('id') id: string,
-    @Body() body: { imageUrl: string },
+    @Body() body: { imageUrl: string; forceSelect?: boolean },
   ) {
-    return this.imagePromptService.setImageUrl(Number(id), body.imageUrl);
+    return this.imagePromptService.setImageUrl(Number(id), body.imageUrl, {
+      forceSelect: body.forceSelect,
+    });
+  }
+
+  /**
+   * POST /api/admin/r1-image-prompts/:id/upload
+   * Upload image file → Supabase Storage → set URL on prompt
+   * - Slot vide → visible immédiatement
+   * - Slot occupé → approved mais pas selected (sauf forceSelect=true)
+   */
+  @Post(':id/upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadImage(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: { forceSelect?: string },
+  ) {
+    if (!file) throw new BadRequestException('No file provided');
+
+    const ripId = Number(id);
+    const forceSelect =
+      body?.forceSelect === 'true' || body?.forceSelect === '1';
+    const result = await this.imagePromptService.uploadAndSetImage(
+      ripId,
+      file,
+      { forceSelect },
+    );
+    if (!result.success) {
+      throw new BadRequestException(result.error);
+    }
+    return result;
   }
 }

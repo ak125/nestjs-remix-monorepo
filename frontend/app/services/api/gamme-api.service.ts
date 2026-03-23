@@ -74,6 +74,13 @@ export interface GammeApiResponse {
     roleMecanique: string | null;
     canonicalUrl: string | null;
   } | null;
+  r1Images?: Array<{
+    slot: string;
+    path: string;
+    alt: string;
+    caption: string | null;
+    aspect: string;
+  }>;
 }
 
 interface FetchOptions {

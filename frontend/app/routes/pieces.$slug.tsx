@@ -42,6 +42,7 @@ import {
 } from "~/components/gamme";
 import { Footer } from "~/components/home";
 
+import { R1SlotImage } from "~/components/pieces/R1SlotImage";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import {
   type GammePageDataV1,
@@ -374,6 +375,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         r1Sources,
         substitution: pageData.substitution,
         reference: pageData.reference,
+        r1Images: (apiData.r1Images ?? []) as Array<{
+          slot: string;
+          path: string;
+          alt: string;
+          caption: string | null;
+          aspect: string;
+        }>,
         canonicalPath,
         gammeId: parseInt(gammeId, 10),
         motorisationsSchema,
@@ -460,8 +468,13 @@ export const meta: MetaFunction<typeof loader> = ({
   // Description
   result.push({ name: "description", content: description });
 
-  // OG image — derive from pg_pic if available, fallback to transaction asset
-  const ogImage = getOgImageUrl(data.content?.pg_pic, "transaction");
+  // OG image — slot OG > slot HERO > pg_pic > fallback transaction
+  const r1OgSlot = (data.r1Images ?? []).find((i) => i.slot === "OG");
+  const r1HeroSlot = (data.r1Images ?? []).find((i) => i.slot === "HERO");
+  const ogSourcePath = r1OgSlot?.path ?? r1HeroSlot?.path ?? null;
+  const ogImage = ogSourcePath
+    ? getOgImageUrl(`/img/uploads/${ogSourcePath}`, null)
+    : getOgImageUrl(data.content?.pg_pic, "transaction");
 
   // Open Graph
   result.push({ property: "og:title", content: title });
@@ -471,7 +484,10 @@ export const meta: MetaFunction<typeof loader> = ({
   result.push({ property: "og:image", content: ogImage });
   result.push({ property: "og:image:width", content: "1200" });
   result.push({ property: "og:image:height", content: "630" });
-  result.push({ property: "og:image:alt", content: title });
+  result.push({
+    property: "og:image:alt",
+    content: r1OgSlot?.alt ?? r1HeroSlot?.alt ?? title,
+  });
   result.push({ property: "og:site_name", content: "Automecanik" });
   result.push({ property: "og:locale", content: "fr_FR" });
 
@@ -552,6 +568,13 @@ type PiecesPageSyncData = Omit<
     topMotorCodes: string[];
   };
   r1Sources?: R1SourceMap;
+  r1Images?: Array<{
+    slot: string;
+    path: string;
+    alt: string;
+    caption: string | null;
+    aspect: string;
+  }>;
 };
 
 // Loader payload complet: sync + deferred Promises
@@ -569,6 +592,10 @@ export default function PiecesDetailPage() {
   >() as unknown as PiecesPageLoaderData;
   const navigation = useNavigation();
   const navigate = useNavigate();
+
+  // Helper: extraire une image R1 par slot
+  const r1Img = (slot: string) =>
+    (data.r1Images ?? []).find((i) => i.slot === slot);
 
   // Afficher un indicateur de chargement si les données sont en cours de chargement
   const isLoading = navigation.state === "loading";
@@ -631,7 +658,7 @@ export default function PiecesDetailPage() {
     ];
 
   return (
-    <div className="min-h-screen bg-[#f5f7fa] font-body">
+    <div className="min-h-screen bg-neutral-50 font-body">
       <a
         href="#hero-v9"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-4 focus:left-4 focus:bg-blue-500 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg"
@@ -723,6 +750,25 @@ export default function PiecesDetailPage() {
         h2Override={data.sectionPack?.sections.buyArgs.h2Override}
       />
 
+      {/* TYPES : après contenu éditorial (section S4), conditionné à microSeoBlock */}
+      {r1Img("TYPES") &&
+        data.sectionPack?.sections.buyArgs.data.microSeoBlock && (
+          <div className="px-4 sm:px-6 mt-6">
+            <div className="max-w-2xl mx-auto">
+              <R1SlotImage {...r1Img("TYPES")!} />
+            </div>
+          </div>
+        )}
+
+      {/* PRICE : après TYPES, conditionné à buy arguments */}
+      {r1Img("PRICE") && data.sectionPack?.sections.buyArgs.data.arguments && (
+        <div className="px-4 sm:px-6 mt-6">
+          <div className="max-w-2xl mx-auto">
+            <R1SlotImage {...r1Img("PRICE")!} />
+          </div>
+        </div>
+      )}
+
       {/* Motorisations compatibles — deferred */}
       <Suspense
         fallback={
@@ -747,6 +793,15 @@ export default function PiecesDetailPage() {
           )}
         </Await>
       </Suspense>
+
+      {/* LOCATION : après motorisations (section S5 compat) */}
+      {r1Img("LOCATION") && (
+        <div className="px-4 sm:px-6 mt-6">
+          <div className="max-w-2xl mx-auto">
+            <R1SlotImage {...r1Img("LOCATION")!} />
+          </div>
+        </div>
+      )}
 
       <GammeChecklist
         gammeName={data.content?.pg_name}

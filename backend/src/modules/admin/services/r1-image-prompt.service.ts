@@ -5,6 +5,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
+// Negative prompts par intention visuelle
+const NEG_PHOTO =
+  'cartoon, illustration, clipart, sketch, diagram, infographic, low quality, watermark, blurry, text overlay, human hands, visible logo, brand name, 3D render';
+const NEG_SCHEMA =
+  'photograph, photo, photorealistic, product catalog, studio lighting, depth of field, bokeh, cartoon, low quality, watermark, blurry, human hands, visible logo, brand name';
+
 const SLOTS = [
   {
     id: 'HERO',
@@ -12,6 +18,7 @@ const SLOTS = [
     aspect: '16:9',
     width: 1200,
     cost: 0,
+    neg: NEG_PHOTO,
     prompt: (n: string) =>
       `Photo produit sur fond neutre. ${n} neuf, plusieurs variantes côte à côte si elles existent. Pièce automobile. Éclairage studio, détail des points de fixation et connectique. Format 16:9.`,
     alt: (n: string) => `${n} — photo produit`,
@@ -23,8 +30,9 @@ const SLOTS = [
     aspect: '4:3',
     width: 800,
     cost: 1,
+    neg: NEG_SCHEMA,
     prompt: (n: string) =>
-      `Schéma technique comparatif, fond blanc, style flat design. Les différents types de ${n} avec flèches sur les différences physiques. Légendes et cotes dimensionnelles. Format 4:3.`,
+      `Schéma technique comparatif, fond blanc, style flat design vectoriel. Les différents types de ${n} avec flèches sur les différences physiques. Légendes et cotes dimensionnelles. Rendu net sans ombre. Format 4:3.`,
     alt: (n: string) => `Types de ${n.toLowerCase()} — schéma comparatif`,
     caption: (n: string) =>
       `Comment distinguer les types de ${n.toLowerCase()}`,
@@ -35,8 +43,9 @@ const SLOTS = [
     aspect: '4:3',
     width: 800,
     cost: 1,
+    neg: NEG_SCHEMA,
     prompt: (n: string) =>
-      `Infographie prix, design minimaliste, fond blanc. Fourchettes de prix du ${n} par niveau de gamme (éco, standard, premium). Barres horizontales, code couleur vert/bleu/orange. Format 4:3.`,
+      `Infographie prix, design minimaliste flat, fond blanc. Fourchettes de prix du ${n} par niveau de gamme (éco, standard, premium). Barres horizontales, code couleur vert/bleu/orange. Sans ombre, rendu vectoriel. Format 4:3.`,
     alt: (n: string) => `Prix ${n.toLowerCase()} — fourchettes par gamme`,
     caption: (n: string) => `Fourchettes de prix ${n.toLowerCase()}`,
   },
@@ -46,8 +55,9 @@ const SLOTS = [
     aspect: '4:3',
     width: 800,
     cost: 1,
+    neg: NEG_SCHEMA,
     prompt: (n: string) =>
-      `Vue éclatée technique, illustration automobile, fond blanc. ${n} à son emplacement sur le moteur ou le véhicule. Pièces adjacentes visibles avec flèches légendées et numéros de repère. Format 4:3.`,
+      `Vue éclatée technique, dessin technique automobile, fond blanc. ${n} à son emplacement sur le moteur ou le véhicule. Pièces adjacentes visibles avec flèches légendées et numéros de repère. Trait fin, rendu schématique. Format 4:3.`,
     alt: (n: string) => `Emplacement du ${n.toLowerCase()} sur le véhicule`,
     caption: (n: string) =>
       `Où se trouve le ${n.toLowerCase()} sur le véhicule`,
@@ -58,15 +68,13 @@ const SLOTS = [
     aspect: '1200:630',
     width: 1200,
     cost: 0,
+    neg: NEG_PHOTO,
     prompt: (n: string) =>
       `Image partage social 1200x630. Fond sombre dégradé automobile. ${n} neuf centré, éclairage dramatique latéral. Pas de texte. Format 1200:630.`,
     alt: (n: string) => `${n} — AutoMecanik`,
     caption: () => null as string | null,
   },
 ] as const;
-
-const NEG =
-  'cartoon, low quality, watermark, blurry, text overlay, human hands, visible logo, brand name, 3D render';
 
 @Injectable()
 export class R1ImagePromptService extends SupabaseBaseService {
@@ -78,17 +86,32 @@ export class R1ImagePromptService extends SupabaseBaseService {
     pgName: string,
     options?: { force?: boolean },
   ) {
-    if (!options?.force) {
-      const { data: existing } = await this.supabase
-        .from('__seo_r1_image_prompts')
-        .select('rip_slot_id')
-        .eq('rip_pg_id', pgId);
-      if (existing && existing.length >= SLOTS.length) {
-        return { pgAlias, status: 'skipped' as const, slots: [] };
-      }
+    // Charger les slots existants pour protéger ceux qui ont déjà une image
+    const { data: existing } = await this.supabase
+      .from('__seo_r1_image_prompts')
+      .select('rip_slot_id, rip_image_url, rip_status')
+      .eq('rip_pg_id', pgId);
+
+    const existingMap = new Map(
+      (existing ?? []).map((e) => [e.rip_slot_id, e]),
+    );
+
+    // Skip si tous les slots existent et pas de force
+    if (!options?.force && existing && existing.length >= SLOTS.length) {
+      return { pgAlias, status: 'skipped' as const, slots: [] };
     }
 
-    const rows = SLOTS.map((slot, i) => ({
+    // Ne jamais écraser un slot qui a une image uploadée
+    const slotsToWrite = SLOTS.filter((slot) => {
+      const ex = existingMap.get(slot.id);
+      return !ex?.rip_image_url;
+    });
+
+    if (slotsToWrite.length === 0) {
+      return { pgAlias, status: 'skipped' as const, slots: [] };
+    }
+
+    const rows = slotsToWrite.map((slot, i) => ({
       rip_pg_id: pgId,
       rip_pg_alias: pgAlias,
       rip_gamme_name: pgName,
@@ -99,7 +122,7 @@ export class R1ImagePromptService extends SupabaseBaseService {
       rip_min_width: slot.width,
       rip_prompt_text: slot.prompt(pgName),
       rip_alt_text: slot.alt(pgName),
-      rip_neg_prompt: NEG,
+      rip_neg_prompt: slot.neg,
       rip_caption: slot.caption(pgName),
       rip_budget_cost: slot.cost,
       rip_selected: true,
@@ -189,16 +212,117 @@ export class R1ImagePromptService extends SupabaseBaseService {
     return { success: !error, error: error?.message };
   }
 
-  async setImageUrl(id: number, imageUrl: string) {
+  /**
+   * Set image URL on a prompt.
+   * - Auto-approve always
+   * - Auto-select only if no other approved+selected image with URL exists on same slot
+   * - forceSelect=true → atomic swap (deselect old, select new)
+   */
+  async setImageUrl(
+    id: number,
+    imageUrl: string,
+    options?: { forceSelect?: boolean },
+  ) {
+    const { data: prompt } = await this.supabase
+      .from('__seo_r1_image_prompts')
+      .select('rip_pg_id, rip_slot_id')
+      .eq('rip_id', id)
+      .single();
+
+    if (!prompt) return { success: false, error: 'Prompt not found' };
+
+    // Check if another image is already active on this slot
+    const { data: activeOnSlot } = await this.supabase
+      .from('__seo_r1_image_prompts')
+      .select('rip_id')
+      .eq('rip_pg_id', prompt.rip_pg_id)
+      .eq('rip_slot_id', prompt.rip_slot_id)
+      .eq('rip_selected', true)
+      .eq('rip_status', 'approved')
+      .not('rip_image_url', 'is', null)
+      .neq('rip_id', id)
+      .limit(1);
+
+    const slotOccupied = (activeOnSlot?.length ?? 0) > 0;
+    const shouldSelect = !slotOccupied || options?.forceSelect;
+
+    if (shouldSelect && slotOccupied) {
+      // Atomic swap: deselect the existing active image first
+      await this.supabase
+        .from('__seo_r1_image_prompts')
+        .update({
+          rip_selected: false,
+          rip_updated_at: new Date().toISOString(),
+        })
+        .eq('rip_pg_id', prompt.rip_pg_id)
+        .eq('rip_slot_id', prompt.rip_slot_id)
+        .neq('rip_id', id);
+    }
+
     const { error } = await this.supabase
       .from('__seo_r1_image_prompts')
       .update({
         rip_image_url: imageUrl,
         rip_status: 'approved',
+        rip_selected: shouldSelect,
         rip_updated_at: new Date().toISOString(),
       })
       .eq('rip_id', id);
-    return { success: !error, error: error?.message };
+
+    return { success: !error, error: error?.message, selected: shouldSelect };
+  }
+
+  /**
+   * Upload image file + set URL.
+   * - Slot vide → approved + selected=true (visible immédiatement)
+   * - Slot occupé → approved + selected=false (pas d'écrasement silencieux)
+   * - forceSelect=true → swap atomique
+   */
+  async uploadAndSetImage(
+    ripId: number,
+    file: Express.Multer.File,
+    options?: { forceSelect?: boolean },
+  ) {
+    const { data: prompt } = await this.supabase
+      .from('__seo_r1_image_prompts')
+      .select('rip_pg_alias, rip_slot_id, rip_pg_id')
+      .eq('rip_id', ripId)
+      .single();
+
+    if (!prompt) return { success: false, error: 'Prompt not found' };
+
+    // Storage path: {alias}.webp for HERO, {alias}-{n}.webp for others
+    const slotSuffix: Record<string, string> = {
+      HERO: '',
+      TYPES: '-2',
+      PRICE: '-3',
+      LOCATION: '-4',
+      OG: '-og',
+    };
+    const suffix =
+      slotSuffix[prompt.rip_slot_id] ?? `-${prompt.rip_slot_id.toLowerCase()}`;
+    const path = `articles/gammes-produits/r1/${prompt.rip_pg_alias}${suffix}.webp`;
+
+    // Upload to Supabase Storage
+    const { error: uploadError } = await this.supabase.storage
+      .from('uploads')
+      .upload(path, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true,
+      });
+
+    if (uploadError) return { success: false, error: uploadError.message };
+
+    // Get public URL
+    const { data: urlData } = this.supabase.storage
+      .from('uploads')
+      .getPublicUrl(path);
+
+    const imageUrl = urlData.publicUrl;
+
+    // Delegate to setImageUrl (handles slot occupancy + forceSelect)
+    const result = await this.setImageUrl(ripId, imageUrl, options);
+    return { ...result, imageUrl };
   }
 
   private summarize(items: Array<{ status: string }>) {
