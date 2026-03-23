@@ -1,84 +1,57 @@
 /**
  * R1ImagePromptService — Génère les prompts image pour les 5 emplacements
- * de chaque page gamme R1. Template + nom de gamme, c'est tout.
+ * de chaque page gamme R1. Utilise des builders par slot + RAG contexte.
  */
 import { Injectable, Logger } from '@nestjs/common';
+import { existsSync, readFileSync } from 'fs';
+import { join } from 'path';
+import * as yaml from 'js-yaml';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import {
+  SLOT_BUILDERS,
+  SLOT_META,
+  SLOT_IDS,
+  type RagData,
+} from './r1-image-prompt-builders';
 
-// Negative prompts par intention visuelle
-const NEG_PHOTO =
-  'cartoon, illustration, clipart, sketch, diagram, infographic, low quality, watermark, blurry, text overlay, human hands, visible logo, brand name, 3D render';
-const NEG_SCHEMA =
-  'photograph, photo, photorealistic, product catalog, studio lighting, depth of field, bokeh, cartoon, low quality, watermark, blurry, human hands, visible logo, brand name';
-
-const SLOTS = [
-  {
-    id: 'HERO',
-    section: 'R1_S1_HERO',
-    aspect: '16:9',
-    width: 1200,
-    cost: 0,
-    neg: NEG_PHOTO,
-    prompt: (n: string) =>
-      `Photo produit sur fond neutre. ${n} neuf, plusieurs variantes côte à côte si elles existent. Pièce automobile. Éclairage studio, détail des points de fixation et connectique. Format 16:9.`,
-    alt: (n: string) => `${n} — photo produit`,
-    caption: (n: string) => `${n} — vue détaillée`,
-  },
-  {
-    id: 'TYPES',
-    section: 'R1_S4_MICRO_SEO',
-    aspect: '4:3',
-    width: 800,
-    cost: 1,
-    neg: NEG_SCHEMA,
-    prompt: (n: string) =>
-      `Schéma technique comparatif, fond blanc, style flat design vectoriel. Les différents types de ${n} avec flèches sur les différences physiques. Légendes et cotes dimensionnelles. Rendu net sans ombre. Format 4:3.`,
-    alt: (n: string) => `Types de ${n.toLowerCase()} — schéma comparatif`,
-    caption: (n: string) =>
-      `Comment distinguer les types de ${n.toLowerCase()}`,
-  },
-  {
-    id: 'PRICE',
-    section: 'R1_S4_MICRO_SEO',
-    aspect: '4:3',
-    width: 800,
-    cost: 1,
-    neg: NEG_SCHEMA,
-    prompt: (n: string) =>
-      `Infographie prix, design minimaliste flat, fond blanc. Fourchettes de prix du ${n} par niveau de gamme (éco, standard, premium). Barres horizontales, code couleur vert/bleu/orange. Sans ombre, rendu vectoriel. Format 4:3.`,
-    alt: (n: string) => `Prix ${n.toLowerCase()} — fourchettes par gamme`,
-    caption: (n: string) => `Fourchettes de prix ${n.toLowerCase()}`,
-  },
-  {
-    id: 'LOCATION',
-    section: 'R1_S5_COMPAT',
-    aspect: '4:3',
-    width: 800,
-    cost: 1,
-    neg: NEG_SCHEMA,
-    prompt: (n: string) =>
-      `Vue éclatée technique, dessin technique automobile, fond blanc. ${n} à son emplacement sur le moteur ou le véhicule. Pièces adjacentes visibles avec flèches légendées et numéros de repère. Trait fin, rendu schématique. Format 4:3.`,
-    alt: (n: string) => `Emplacement du ${n.toLowerCase()} sur le véhicule`,
-    caption: (n: string) =>
-      `Où se trouve le ${n.toLowerCase()} sur le véhicule`,
-  },
-  {
-    id: 'OG',
-    section: 'META',
-    aspect: '1200:630',
-    width: 1200,
-    cost: 0,
-    neg: NEG_PHOTO,
-    prompt: (n: string) =>
-      `Image partage social 1200x630. Fond sombre dégradé automobile. ${n} neuf centré, éclairage dramatique latéral. Pas de texte. Format 1200:630.`,
-    alt: (n: string) => `${n} — AutoMecanik`,
-    caption: () => null as string | null,
-  },
-] as const;
+const RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
 
 @Injectable()
 export class R1ImagePromptService extends SupabaseBaseService {
   protected readonly logger = new Logger(R1ImagePromptService.name);
+
+  // ── RAG reading (same pattern as R3) ──
+
+  private readRagFromDisk(pgAlias: string): string | null {
+    const filePath = join(RAG_GAMMES_DIR, `${pgAlias}.md`);
+    try {
+      if (!existsSync(filePath)) return null;
+      return readFileSync(filePath, 'utf-8');
+    } catch {
+      return null;
+    }
+  }
+
+  private parseRagData(content: string): RagData {
+    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
+    if (!fmMatch) return {};
+    try {
+      const parsed = yaml.load(fmMatch[1]) as Record<string, unknown>;
+      return {
+        category: parsed.category as string | undefined,
+        domain: parsed.domain as RagData['domain'],
+        diagnostic: parsed.diagnostic as RagData['diagnostic'],
+        maintenance: parsed.maintenance as RagData['maintenance'],
+        selection: parsed.selection as RagData['selection'],
+        installation: parsed.installation as RagData['installation'],
+      };
+    } catch {
+      this.logger.warn(`[R1-IMG] Failed to parse RAG YAML frontmatter`);
+      return {};
+    }
+  }
+
+  // ── Generation ──
 
   async generateForGamme(
     pgId: number,
@@ -97,13 +70,13 @@ export class R1ImagePromptService extends SupabaseBaseService {
     );
 
     // Skip si tous les slots existent et pas de force
-    if (!options?.force && existing && existing.length >= SLOTS.length) {
+    if (!options?.force && existing && existing.length >= SLOT_IDS.length) {
       return { pgAlias, status: 'skipped' as const, slots: [] };
     }
 
     // Ne jamais écraser un slot qui a une image uploadée
-    const slotsToWrite = SLOTS.filter((slot) => {
-      const ex = existingMap.get(slot.id);
+    const slotsToWrite = SLOT_IDS.filter((slotId) => {
+      const ex = existingMap.get(slotId);
       return !ex?.rip_image_url;
     });
 
@@ -111,26 +84,40 @@ export class R1ImagePromptService extends SupabaseBaseService {
       return { pgAlias, status: 'skipped' as const, slots: [] };
     }
 
-    const rows = slotsToWrite.map((slot, i) => ({
-      rip_pg_id: pgId,
-      rip_pg_alias: pgAlias,
-      rip_gamme_name: pgName,
-      rip_slot_id: slot.id,
-      rip_section_id: slot.section,
-      rip_topic: slot.id.toLowerCase(),
-      rip_aspect_ratio: slot.aspect,
-      rip_min_width: slot.width,
-      rip_prompt_text: slot.prompt(pgName),
-      rip_alt_text: slot.alt(pgName),
-      rip_neg_prompt: slot.neg,
-      rip_caption: slot.caption(pgName),
-      rip_budget_cost: slot.cost,
-      rip_selected: true,
-      rip_priority_rank: i + 1,
-      rip_rag_fields_used: [] as string[],
-      rip_rag_richness_score: 0,
-      rip_status: 'pending',
-    }));
+    // Lire le RAG (contexte gamme)
+    const rawRag = this.readRagFromDisk(pgAlias);
+    const ragData = rawRag ? this.parseRagData(rawRag) : null;
+    if (ragData && Object.keys(ragData).length > 0) {
+      this.logger.log(`[R1-IMG] RAG loaded for ${pgAlias}`);
+    }
+
+    // Construire les prompts via builders enrichis
+    const rows = slotsToWrite.map((slotId, i) => {
+      const builder = SLOT_BUILDERS[slotId];
+      const meta = SLOT_META[slotId];
+      const result = builder(pgName, ragData);
+
+      return {
+        rip_pg_id: pgId,
+        rip_pg_alias: pgAlias,
+        rip_gamme_name: pgName,
+        rip_slot_id: slotId,
+        rip_section_id: meta.section,
+        rip_topic: slotId.toLowerCase(),
+        rip_aspect_ratio: meta.aspect,
+        rip_min_width: meta.width,
+        rip_prompt_text: result.prompt,
+        rip_alt_text: result.alt,
+        rip_neg_prompt: result.neg,
+        rip_caption: result.caption,
+        rip_budget_cost: meta.cost,
+        rip_selected: true,
+        rip_priority_rank: i + 1,
+        rip_rag_fields_used: result.ragFieldsUsed,
+        rip_rag_richness_score: result.richnessScore,
+        rip_status: 'pending',
+      };
+    });
 
     const { error } = await this.supabase
       .from('__seo_r1_image_prompts')
@@ -146,10 +133,19 @@ export class R1ImagePromptService extends SupabaseBaseService {
       };
     }
 
+    const totalRichness = rows.reduce(
+      (sum, r) => sum + r.rip_rag_richness_score,
+      0,
+    );
+    this.logger.log(
+      `[R1-IMG] Generated ${rows.length} slots for ${pgAlias} (RAG richness: ${totalRichness})`,
+    );
+
     return {
       pgAlias,
       status: 'generated' as const,
-      slots: SLOTS.map((s) => s.id),
+      slots: rows.map((r) => r.rip_slot_id),
+      ragRichness: totalRichness,
     };
   }
 
