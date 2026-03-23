@@ -128,7 +128,7 @@ export const Navbar = memo(function Navbar() {
       {/* ===== NAVBAR ===== */}
       <nav
         ref={navRef}
-        className={`sticky top-0 z-50 bg-v9-navy text-white transition-all duration-300 ${
+        className={`sticky top-0 z-50 bg-navy text-white transition-all duration-300 ${
           isScrolled ? "shadow-lg shadow-black/20" : "shadow-md shadow-black/10"
         }`}
         aria-label="Navigation principale"
@@ -154,7 +154,7 @@ export const Navbar = memo(function Navbar() {
               className="no-style no-visited min-h-[44px] flex items-center"
               aria-label="Retour à l'accueil"
             >
-              <span className="font-v9-heading font-extrabold text-base tracking-tight select-none">
+              <span className="font-heading font-extrabold text-base tracking-tight select-none">
                 <span className="text-white">AUTO</span>
                 <span className="text-cta">MECANIK</span>
               </span>
@@ -210,7 +210,7 @@ export const Navbar = memo(function Navbar() {
             aria-label="Retour à l'accueil"
           >
             <span
-              className={`font-v9-heading font-extrabold tracking-tight select-none transition-all duration-300 ${
+              className={`font-heading font-extrabold tracking-tight select-none transition-all duration-300 ${
                 isCompact ? "text-base" : "text-lg"
               }`}
             >
@@ -359,10 +359,10 @@ export const Navbar = memo(function Navbar() {
       <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
         <SheetContent
           side="left"
-          className="bg-v9-navy border-white/10 text-white p-0 w-[85vw] sm:max-w-sm"
+          className="bg-navy border-white/10 text-white p-0 w-[85vw] sm:max-w-sm"
         >
           <SheetHeader className="p-4 border-b border-white/10">
-            <SheetTitle className="text-white font-v9-heading font-extrabold tracking-tight text-left">
+            <SheetTitle className="text-white font-heading font-extrabold tracking-tight text-left">
               <span className="text-white">AUTO</span>
               <span className="text-cta">MECANIK</span>
             </SheetTitle>
@@ -409,6 +409,16 @@ export const Navbar = memo(function Navbar() {
 
             {user ? (
               <>
+                {user.level && user.level >= 3 && (
+                  <Link
+                    to="/commercial"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-cta hover:text-cta-light hover:bg-white/[0.06] transition-colors"
+                  >
+                    <Package className="w-4 h-4" />
+                    Espace Commercial
+                  </Link>
+                )}
                 <Link
                   to="/account/dashboard"
                   onClick={() => setIsMenuOpen(false)}
@@ -466,7 +476,7 @@ export const Navbar = memo(function Navbar() {
       <CartSidebarSimple isOpen={isCartOpen} onClose={closeCart} />
 
       {/* ===== TRUST STRIP (all viewports) ===== */}
-      <div className="bg-gradient-to-b from-v9-navy to-v9-navy-light border-b border-white/[0.06]">
+      <div className="bg-gradient-to-b from-navy to-navy-light border-b border-white/[0.06]">
         <div className="flex items-center justify-center gap-3 lg:gap-6 py-2.5 lg:py-2 px-4 lg:px-8 text-xs font-semibold overflow-x-auto scrollbar-hide">
           <span className="flex items-center gap-1.5 text-emerald-300 whitespace-nowrap">
             <Truck className="w-3 h-3" />

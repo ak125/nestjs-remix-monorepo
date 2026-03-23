@@ -6,7 +6,6 @@
 import { type Order, type OrdersStats } from "../types/orders.types";
 import { formatDate, formatDateTime } from "./date";
 import { formatPrice, formatPriceNumber } from "./format";
-import { getOrderStatusLabel } from "./orders";
 
 // ========================================
 // 💰 FORMATAGE MONTANTS
@@ -47,34 +46,42 @@ export function parseOrderId(formattedId: string): string {
 // ========================================
 
 /**
+ * Labels des statuts reels en DB (___xtr_order_status)
+ */
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  "1": {
+    label: "En cours de traitement",
+    color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  },
+  "2": { label: "Annulee", color: "bg-red-100 text-red-800 border-red-200" },
+  "3": {
+    label: "Attente frais de port",
+    color: "bg-orange-100 text-orange-800 border-orange-200",
+  },
+  "4": {
+    label: "Frais de port recu",
+    color: "bg-blue-100 text-blue-800 border-blue-200",
+  },
+  "5": {
+    label: "Payee — En preparation",
+    color: "bg-green-100 text-green-800 border-green-200",
+  },
+};
+
+/**
  * Retourne la couleur de badge selon le statut de commande
  */
 export function getStatusBadgeColor(statusId: string): string {
-  switch (statusId) {
-    case "1": // En attente
-      return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    case "2": // Validée
-      return "bg-blue-100 text-blue-800 border-blue-200";
-    case "3": // En préparation
-      return "bg-purple-100 text-purple-800 border-purple-200";
-    case "4": // Prête
-      return "bg-indigo-100 text-indigo-800 border-indigo-200";
-    case "5": // Expédiée
-      return "bg-green-100 text-green-800 border-green-200";
-    case "6": // Livrée
-      return "bg-emerald-100 text-emerald-800 border-emerald-200";
-    case "7": // Annulée
-      return "bg-red-100 text-red-800 border-red-200";
-    default:
-      return "bg-gray-100 text-gray-800 border-gray-200";
-  }
+  return (
+    STATUS_MAP[statusId]?.color || "bg-gray-100 text-gray-800 border-gray-200"
+  );
 }
 
 /**
- * Retourne le label du statut de commande (wrapper string → number)
+ * Retourne le label du statut de commande
  */
 export function getStatusLabel(statusId: string): string {
-  return getOrderStatusLabel(Number(statusId));
+  return STATUS_MAP[statusId]?.label || "Statut inconnu";
 }
 
 /**
@@ -91,6 +98,84 @@ export function getPaymentBadgeColor(isPaid: string): string {
  */
 export function getPaymentLabel(isPaid: string): string {
   return isPaid === "1" ? "Payée" : "Impayée";
+}
+
+/**
+ * Normalise la methode de paiement brute en label + type lisible
+ */
+export function getPaymentMethodInfo(raw?: string | null): {
+  label: string;
+  type: "paypal" | "cb" | "other";
+  icon: string;
+  color: string;
+} {
+  if (!raw)
+    return {
+      label: "Inconnu",
+      type: "other",
+      icon: "CreditCard",
+      color: "bg-gray-100 text-gray-700",
+    };
+
+  const normalized = raw.toUpperCase().trim();
+
+  if (normalized === "PAYPAL") {
+    return {
+      label: "PayPal",
+      type: "paypal",
+      icon: "Wallet",
+      color: "bg-blue-50 text-blue-700 border-blue-200",
+    };
+  }
+
+  // Toutes les variantes CB
+  const cbVariants = [
+    "CB",
+    "VISA",
+    "MASTERCARD",
+    "MASTER CARD",
+    "MAESTRO",
+    "E-CARTEBLEUE",
+    "E_CARD",
+    "E-CARTE BLEUE",
+    "CREDIT_CARD",
+    "CARD",
+    "CB2AFIC130",
+  ];
+  if (cbVariants.includes(normalized)) {
+    const subLabel =
+      normalized === "VISA"
+        ? "Visa"
+        : normalized === "MASTERCARD" || normalized === "MASTER CARD"
+          ? "Mastercard"
+          : normalized === "MAESTRO"
+            ? "Maestro"
+            : normalized.includes("CARTE") || normalized === "E_CARD"
+              ? "e-Carte Bleue"
+              : "CB";
+    return {
+      label: `Carte bancaire (${subLabel})`,
+      type: "cb",
+      icon: "CreditCard",
+      color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    };
+  }
+
+  if (normalized === "CYBERPLUS") {
+    return {
+      label: "CyberPlus (CB)",
+      type: "cb",
+      icon: "CreditCard",
+      color: "bg-emerald-50 text-emerald-700 border-emerald-200",
+    };
+  }
+
+  return {
+    label: raw,
+    type: "other",
+    icon: "CreditCard",
+    color: "bg-gray-100 text-gray-700",
+  };
 }
 
 // ========================================

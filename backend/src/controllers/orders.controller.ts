@@ -21,7 +21,10 @@ export class OrdersController {
     @Query('limit') limit: string = '20',
     @Query('status') status?: string,
     @Query('userId') userId?: string,
-    @Query('excludePending') excludePending?: string, // ✨ Nouveau: exclure "En attente"
+    @Query('excludePending') excludePending?: string,
+    @Query('search') search?: string,
+    @Query('paymentStatus') paymentStatus?: string,
+    @Query('orderStatus') orderStatus?: string,
   ) {
     try {
       this.logger.log(
@@ -31,6 +34,9 @@ export class OrdersController {
           status,
           userId,
           excludePending,
+          search,
+          paymentStatus,
+          orderStatus,
         })}`,
       );
 
@@ -39,7 +45,10 @@ export class OrdersController {
         offset: (parseInt(page) - 1) * parseInt(limit),
         status,
         userId,
-        excludePending: excludePending !== 'false', // Par défaut true, sauf si explicitement false
+        excludePending: excludePending !== 'false',
+        search,
+        paymentStatus,
+        orderStatus,
       });
 
       // Récupérer le total de commandes (ajusté selon les filtres)
@@ -47,6 +56,9 @@ export class OrdersController {
         status,
         userId,
         excludePending: excludePending !== 'false',
+        search,
+        paymentStatus,
+        orderStatus,
       });
 
       return {

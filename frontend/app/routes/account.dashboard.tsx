@@ -236,7 +236,7 @@ export default function UnifiedAccountDashboard() {
   return (
     <>
       {/* Mobile Layout (< md) */}
-      <div className="md:hidden font-v9-body bg-[var(--v9-navy)]">
+      <div className="md:hidden font-body bg-[var(--navy)]">
         <AccountDashboard user={user} stats={stats} />
       </div>
 
@@ -280,6 +280,31 @@ export default function UnifiedAccountDashboard() {
                 </div>
               )}
             </div>
+
+            {/* Bandeau Espace Commercial */}
+            {user.level && user.level >= 3 && (
+              <a
+                href="/commercial"
+                className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl hover:from-indigo-100 hover:to-purple-100 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center shadow-md">
+                    <ShoppingBag className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-indigo-800">
+                      Espace Commercial
+                    </p>
+                    <p className="text-sm text-indigo-600">
+                      Gerer les commandes, expeditions et clients
+                    </p>
+                  </div>
+                </div>
+                <span className="text-indigo-500 group-hover:translate-x-1 transition-transform">
+                  &rarr;
+                </span>
+              </a>
+            )}
 
             {/* Stats Cards */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

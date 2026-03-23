@@ -80,13 +80,11 @@ export const OrderEditForm = memo(function OrderEditForm({
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 disabled={isSubmitting}
               >
-                <option value="1">En attente</option>
-                <option value="2">Validée</option>
-                <option value="3">En préparation</option>
-                <option value="4">Prête</option>
-                <option value="5">Expédiée</option>
-                <option value="6">Livrée</option>
-                <option value="7">Annulée</option>
+                <option value="1">En cours de traitement</option>
+                <option value="2">Annulee</option>
+                <option value="3">Attente frais de port</option>
+                <option value="4">Frais de port recu</option>
+                <option value="5">Payee — En preparation</option>
               </select>
             </div>
 

@@ -287,6 +287,30 @@ export class OrderActionsController {
   }
 
   /**
+   * POST /api/admin/orders/:orderId/confirm-payment
+   * Confirmer paiement manuellement (admin)
+   */
+  @Post(':orderId/confirm-payment')
+  async confirmPayment(@Param('orderId') orderId: string) {
+    try {
+      this.logger.log(`💰 Confirmation paiement manuel commande ${orderId}`);
+
+      await this.orderActionsService.confirmPaymentManual(orderId);
+
+      this.logger.log(`✅ Paiement commande ${orderId} confirme manuellement`);
+
+      return {
+        success: true,
+        message: 'Paiement confirme manuellement',
+      };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Echec confirmation paiement ${orderId}:`, message);
+      throw error;
+    }
+  }
+
+  /**
    * POST /api/admin/orders/:orderId/payment-reminder
    * Envoyer rappel de paiement
    */

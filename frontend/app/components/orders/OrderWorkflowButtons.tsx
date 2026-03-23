@@ -1,11 +1,9 @@
-import { useFetcher } from "@remix-run/react";
 import {
   Check,
-  CheckCircle,
   Circle,
   Clock,
+  CreditCard,
   Package,
-  PlayCircle,
   Truck,
   XCircle,
 } from "lucide-react";
@@ -26,110 +24,54 @@ interface WorkflowStep {
   icon: React.ComponentType<{ className?: string }>;
   bgColor: string;
   textColor: string;
-  action?: string;
-  permission?: keyof UserPermissions;
 }
 
+/**
+ * Statuts reels de la DB ___xtr_order_status
+ */
 const WORKFLOW_STEPS: WorkflowStep[] = [
   {
     id: "1",
-    name: "En attente",
+    name: "En cours",
     icon: Clock,
-    bgColor: "bg-gray-100",
-    textColor: "text-gray-700",
-  },
-  {
-    id: "2",
-    name: "Validée",
-    icon: CheckCircle,
-    bgColor: "bg-primary/15",
-    textColor: "text-blue-700",
-    action: "validate",
-    permission: "canValidate",
+    bgColor: "bg-yellow-100",
+    textColor: "text-yellow-700",
   },
   {
     id: "3",
-    name: "Préparation",
-    icon: PlayCircle,
-    bgColor: "bg-purple-100",
-    textColor: "text-purple-700",
-    action: "startProcessing",
-    permission: "canValidate",
+    name: "Attente frais port",
+    icon: Package,
+    bgColor: "bg-orange-100",
+    textColor: "text-orange-700",
   },
   {
     id: "4",
-    name: "Prête",
-    icon: Package,
-    bgColor: "bg-warning/15",
-    textColor: "text-yellow-700",
-    action: "markReady",
-    permission: "canShip",
+    name: "Frais port recu",
+    icon: Truck,
+    bgColor: "bg-blue-100",
+    textColor: "text-blue-700",
   },
   {
     id: "5",
-    name: "Expédiée",
-    icon: Truck,
-    bgColor: "bg-indigo-100",
-    textColor: "text-indigo-700",
-    action: "ship",
-    permission: "canShip",
-  },
-  {
-    id: "6",
-    name: "Livrée",
-    icon: Check,
-    bgColor: "bg-success/15",
+    name: "Payee",
+    icon: CreditCard,
+    bgColor: "bg-green-100",
     textColor: "text-green-700",
-    action: "deliver",
-    permission: "canDeliver",
   },
 ];
 
 export const OrderWorkflowButtons = memo(function OrderWorkflowButtons({
   order,
-  permissions,
-  onStatusChange,
 }: OrderWorkflowButtonsProps) {
-  const fetcher = useFetcher();
-
-  const handleStepClick = (step: WorkflowStep) => {
-    if (!step.action) return;
-
-    // Vérifier permission
-    if (step.permission && !permissions[step.permission]) {
-      return;
-    }
-
-    // Vérifier si c'est l'étape suivante
-    const currentStepIndex = WORKFLOW_STEPS.findIndex(
-      (s) => s.id === order.ord_ords_id,
-    );
-    const targetStepIndex = WORKFLOW_STEPS.findIndex((s) => s.id === step.id);
-
-    if (targetStepIndex !== currentStepIndex + 1) {
-      return;
-    }
-
-    if (confirm(`Passer la commande à l'état "${step.name}" ?`)) {
-      fetcher.submit(
-        { intent: step.action, orderId: order.ord_id },
-        { method: "post" },
-      );
-      onStatusChange?.(step.id);
-    }
-  };
-
-  const isProcessing = fetcher.state !== "idle";
-
-  // Si commande annulée
-  if (order.ord_ords_id === "7") {
+  // Commande annulee
+  if (order.ord_ords_id === "2") {
     return (
       <Alert
-        className="flex items-center gap-2 px-4 py-3    rounded-lg"
+        className="flex items-center gap-2 px-4 py-3 rounded-lg"
         variant="error"
       >
         <XCircle className="w-5 h-5 text-red-600" />
-        <span className="font-medium text-red-700">Commande annulée</span>
+        <span className="font-medium text-red-700">Commande annulee</span>
       </Alert>
     );
   }
@@ -143,26 +85,18 @@ export const OrderWorkflowButtons = memo(function OrderWorkflowButtons({
           );
           const isCurrent = step.id === order.ord_ords_id;
           const isPast = index < currentStepIndex;
-          const isNext = index === currentStepIndex + 1;
-          const hasPermission =
-            !step.permission || permissions[step.permission];
-          const isClickable = isNext && hasPermission && !isProcessing;
 
           const Icon = step.icon;
 
           return (
             <div key={step.id} className="flex items-center">
-              <button
-                onClick={() => handleStepClick(step)}
-                disabled={!isClickable}
+              <div
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
                   isCurrent
                     ? `${step.bgColor} ${step.textColor} ring-2 ring-offset-2 ring-current font-semibold`
                     : isPast
                       ? "bg-success/10 text-success"
-                      : isClickable
-                        ? `${step.bgColor} ${step.textColor} hover:ring-2 hover:ring-offset-1 hover:ring-current cursor-pointer`
-                        : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-400"
                 }`}
               >
                 {isPast ? (
@@ -173,7 +107,7 @@ export const OrderWorkflowButtons = memo(function OrderWorkflowButtons({
                   <Circle className="w-5 h-5" />
                 )}
                 <span className="text-sm whitespace-nowrap">{step.name}</span>
-              </button>
+              </div>
 
               {index < WORKFLOW_STEPS.length - 1 && (
                 <div

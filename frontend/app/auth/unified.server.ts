@@ -45,6 +45,12 @@ const authenticatedUserSchema = z.object({
   id: z.coerce.string(),
   email: z.string(),
   name: z.string().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
+  level: z.number().optional(),
+  isAdmin: z.boolean().optional(),
+  isPro: z.boolean().optional(),
+  isActive: z.boolean().optional(),
 });
 
 /**

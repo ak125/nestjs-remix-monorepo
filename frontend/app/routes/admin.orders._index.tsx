@@ -22,8 +22,13 @@ import {
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
-import { useState } from "react";
+import {
+  useActionData,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from "@remix-run/react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 import { Alert } from "~/components/ui/alert";
@@ -40,7 +45,7 @@ import { OrdersTable } from "../components/orders/OrdersTable";
 import { OrderWorkflowButtons } from "../components/orders/OrderWorkflowButtons";
 import { Button } from "../components/ui/button";
 import { Separator } from "../components/ui/separator";
-import { useOrdersFilters } from "../hooks/use-orders-filters";
+
 import {
   type ActionData,
   type LoaderData,
@@ -97,7 +102,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
           );
         }
         const markPaidResponse = await fetch(
-          `http://127.0.0.1:3000/api/orders/${orderId}/mark-paid`,
+          `http://127.0.0.1:3000/api/admin/orders/${orderId}/confirm-payment`,
           {
             method: "POST",
             headers: { Cookie: cookie },
@@ -124,7 +129,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
           );
         }
         const validateResponse = await fetch(
-          `http://127.0.0.1:3000/api/orders/${orderId}/validate`,
+          `http://127.0.0.1:3000/api/admin/orders/${orderId}/validate`,
           {
             method: "POST",
             headers: { Cookie: cookie },
@@ -151,7 +156,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
           );
         }
         const processingResponse = await fetch(
-          `http://127.0.0.1:3000/api/orders/${orderId}/status`,
+          `http://127.0.0.1:3000/api/orders/admin/${orderId}/status`,
           {
             method: "PATCH",
             headers: {
@@ -182,7 +187,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
           );
         }
         const readyResponse = await fetch(
-          `http://127.0.0.1:3000/api/orders/${orderId}/status`,
+          `http://127.0.0.1:3000/api/orders/admin/${orderId}/status`,
           {
             method: "PATCH",
             headers: {
@@ -213,7 +218,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
           );
         }
         const shipResponse = await fetch(
-          `http://127.0.0.1:3000/api/orders/${orderId}/ship`,
+          `http://127.0.0.1:3000/api/admin/orders/${orderId}/ship`,
           {
             method: "POST",
             headers: { Cookie: cookie },
@@ -240,7 +245,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
           );
         }
         const deliverResponse = await fetch(
-          `http://127.0.0.1:3000/api/orders/${orderId}/deliver`,
+          `http://127.0.0.1:3000/api/admin/orders/${orderId}/deliver`,
           {
             method: "POST",
             headers: { Cookie: cookie },
@@ -267,7 +272,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
           );
         }
         const cancelResponse = await fetch(
-          `http://127.0.0.1:3000/api/orders/${orderId}/cancel`,
+          `http://127.0.0.1:3000/api/admin/orders/${orderId}/cancel`,
           {
             method: "POST",
             headers: { Cookie: cookie },
@@ -294,9 +299,9 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
           );
         }
         const deleteResponse = await fetch(
-          `http://127.0.0.1:3000/api/orders/${orderId}`,
+          `http://127.0.0.1:3000/api/admin/orders/${orderId}/cancel`,
           {
-            method: "DELETE",
+            method: "POST",
             headers: { Cookie: cookie },
           },
         );
@@ -326,7 +331,7 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
         const orderInfo = formData.get("orderInfo");
 
         const updateResponse = await fetch(
-          `http://127.0.0.1:3000/api/orders/${orderId}`,
+          `http://127.0.0.1:3000/api/orders/admin/${orderId}/status`,
           {
             method: "PATCH",
             headers: {
@@ -403,18 +408,29 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "25");
 
-    // Récupérer filtres
+    // Recuperer filtres depuis URL
     const search = url.searchParams.get("search") || "";
     const orderStatus = url.searchParams.get("orderStatus") || "";
-    const paymentStatus = url.searchParams.get("paymentStatus") || "1"; // Par défaut: payées
+    const paymentStatus = url.searchParams.get("paymentStatus") || "";
     const dateRange = url.searchParams.get("dateRange") || "";
 
-    // Charger commandes depuis API
+    // Construire les query params pour l'API backend
+    const apiParams = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      excludePending: "false",
+    });
+
+    if (search) apiParams.set("search", search);
+    if (orderStatus) apiParams.set("orderStatus", orderStatus);
+    if (paymentStatus) apiParams.set("paymentStatus", paymentStatus);
+
+    const cookie = request.headers.get("Cookie") || "";
+
+    // Charger commandes depuis API (pagination serveur)
     const ordersResponse = await fetch(
-      "http://127.0.0.1:3000/api/legacy-orders?limit=10000",
-      {
-        headers: { Cookie: request.headers.get("Cookie") || "" },
-      },
+      `http://127.0.0.1:3000/api/legacy-orders?${apiParams.toString()}`,
+      { headers: { Cookie: cookie } },
     );
 
     if (!ordersResponse.ok) {
@@ -422,10 +438,11 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     }
 
     const ordersData = await ordersResponse.json();
-    let orders = ordersData?.data || [];
+    const rawOrders = ordersData?.data || [];
+    const totalFromApi = ordersData?.pagination?.total || rawOrders.length;
 
     // Enrichir avec noms clients
-    orders = orders.map((order: Order) => ({
+    const orders = rawOrders.map((order: Order) => ({
       ...order,
       customerName: order.customer
         ? `${order.customer.cst_fname || ""} ${order.customer.cst_name || ""}`.trim() ||
@@ -434,126 +451,54 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
       customerEmail: order.customer?.cst_mail || "",
     }));
 
-    // Appliquer filtres
-    let filteredOrders = orders;
-
-    // Recherche
-    if (search) {
-      const s = search.toLowerCase();
-      filteredOrders = filteredOrders.filter(
-        (o: Order) =>
-          o.customerName?.toLowerCase().includes(s) ||
-          o.customerEmail?.toLowerCase().includes(s) ||
-          o.ord_id.toString().includes(search),
-      );
-    }
-
-    // Statut commande
-    if (orderStatus) {
-      filteredOrders = filteredOrders.filter(
-        (o: Order) => o.ord_ords_id === orderStatus,
-      );
-    }
-
-    // Statut paiement
-    if (paymentStatus) {
-      filteredOrders = filteredOrders.filter((o: Order) => {
-        if (paymentStatus === "1") {
-          return o.ord_is_pay === "1" && o.ord_ords_id !== "1";
-        }
-        if (paymentStatus === "0") {
-          return o.ord_is_pay === "0" || o.ord_ords_id === "1";
-        }
-        return o.ord_is_pay === paymentStatus;
-      });
-    }
-
-    // Période
-    if (dateRange) {
-      const now = new Date();
-      let startDate: Date;
-
-      switch (dateRange) {
-        case "today":
-          startDate = new Date(now.setHours(0, 0, 0, 0));
-          break;
-        case "week":
-          startDate = new Date(now.setDate(now.getDate() - now.getDay()));
-          break;
-        case "month":
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-          break;
-        case "year":
-          startDate = new Date(now.getFullYear(), 0, 1);
-          break;
-        default:
-          startDate = new Date(0);
-      }
-
-      filteredOrders = filteredOrders.filter(
-        (o: Order) => new Date(o.ord_date) >= startDate,
-      );
-    }
-
-    // Calculer statistiques
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const totalRevenue = filteredOrders.reduce(
+    // Stats basiques (calculees sur la page courante - approximatif)
+    const totalRevenue = orders.reduce(
       (sum: number, o: Order) => sum + parseFloat(o.ord_total_ttc || "0"),
       0,
     );
 
-    const monthRevenue = filteredOrders
-      .filter((o: Order) => new Date(o.ord_date) >= startOfMonth)
-      .reduce(
-        (sum: number, o: Order) => sum + parseFloat(o.ord_total_ttc || "0"),
-        0,
-      );
-
-    const unpaidAmount = filteredOrders
-      .filter((o: Order) => o.ord_is_pay === "0")
-      .reduce(
-        (sum: number, o: Order) => sum + parseFloat(o.ord_total_ttc || "0"),
-        0,
-      );
-
-    const pendingOrders = filteredOrders.filter(
-      (o: Order) => o.ord_ords_id === "1",
-    ).length;
-    const averageBasket =
-      filteredOrders.length > 0 ? totalRevenue / filteredOrders.length : 0;
-
     const stats = {
-      totalOrders: filteredOrders.length,
+      totalOrders: totalFromApi,
       totalRevenue,
-      monthRevenue,
-      averageBasket,
-      unpaidAmount,
-      pendingOrders,
+      monthRevenue: 0,
+      averageBasket: orders.length > 0 ? totalRevenue / orders.length : 0,
+      unpaidAmount: 0,
+      pendingOrders: 0,
     };
 
-    // Tri par date décroissante
-    const sortedOrders = filteredOrders.sort(
-      (a: Order, b: Order) =>
-        new Date(b.ord_date || 0).getTime() -
-        new Date(a.ord_date || 0).getTime(),
-    );
+    // Charger stats globales separement
+    try {
+      const statsResponse = await fetch(
+        "http://127.0.0.1:3000/api/legacy-orders/stats",
+        { headers: { Cookie: cookie } },
+      );
+      if (statsResponse.ok) {
+        const statsData = await statsResponse.json();
+        if (statsData?.data) {
+          stats.totalRevenue =
+            statsData.data.totalRevenue || stats.totalRevenue;
+          stats.monthRevenue = statsData.data.monthRevenue || 0;
+          stats.unpaidAmount = statsData.data.unpaidAmount || 0;
+          stats.pendingOrders = statsData.data.pendingOrders || 0;
+          stats.averageBasket =
+            statsData.data.averageBasket || stats.averageBasket;
+        }
+      }
+    } catch {
+      // Stats secondaires, pas bloquant
+    }
 
-    // Pagination
-    const totalPages = Math.ceil(sortedOrders.length / limit);
-    const startIndex = (page - 1) * limit;
-    const paginatedOrders = sortedOrders.slice(startIndex, startIndex + limit);
+    const totalPages = Math.ceil(totalFromApi / limit);
 
     logger.log(
-      `📄 Page ${page}/${totalPages} - ${paginatedOrders.length}/${filteredOrders.length} orders`,
+      `Page ${page}/${totalPages} - ${orders.length}/${totalFromApi} orders`,
     );
 
     return json<LoaderData>({
-      orders: paginatedOrders,
+      orders,
       stats,
       filters: { search, orderStatus, paymentStatus, dateRange },
-      total: filteredOrders.length,
+      total: totalFromApi,
       currentPage: page,
       totalPages,
       permissions,
@@ -599,9 +544,39 @@ export default function OrdersRoute() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isEditFormOpen, setIsEditFormOpen] = useState(false);
 
-  // Hook personnalisé pour gérer les filtres
-  const { filteredOrders, activeFilters, setActiveFilters, resetAllFilters } =
-    useOrdersFilters(data.orders);
+  // Filtres via URL search params (server-side)
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const activeFilters = {
+    search: data.filters.search || "",
+    orderStatus: data.filters.orderStatus || "all",
+    paymentStatus: data.filters.paymentStatus || "all",
+    dateRange: data.filters.dateRange || "all",
+  };
+
+  const setActiveFilters = useCallback(
+    (updates: Partial<typeof activeFilters>) => {
+      const params = new URLSearchParams(searchParams);
+      params.set("page", "1"); // Reset to page 1 on filter change
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value && value !== "all" && value !== "") {
+          params.set(key, value);
+        } else {
+          params.delete(key);
+        }
+      });
+      navigate(`?${params.toString()}`, { replace: true });
+    },
+    [searchParams, navigate],
+  );
+
+  const resetAllFilters = useCallback(() => {
+    navigate("/admin/orders", { replace: true });
+  }, [navigate]);
+
+  // Les commandes sont deja filtrees cote serveur
+  const filteredOrders = data.orders;
 
   // États supplémentaires pour les modals d'action
   const [isLoading, setIsLoading] = useState(false);
@@ -662,10 +637,13 @@ export default function OrdersRoute() {
         onClick: async () => {
           setIsLoading(true);
 
-          const promise = fetch(`/api/orders/${orderId}/mark-paid`, {
-            method: "POST",
-            credentials: "include",
-          }).then(async (response) => {
+          const promise = fetch(
+            `/api/admin/orders/${orderId}/confirm-payment`,
+            {
+              method: "POST",
+              credentials: "include",
+            },
+          ).then(async (response) => {
             if (!response.ok) {
               const error = await response.json();
               throw new Error(error.message || "Enregistrement échoué");
@@ -708,7 +686,7 @@ export default function OrdersRoute() {
           onClick: async () => {
             setIsLoading(true);
 
-            const promise = fetch(`/api/orders/${orderId}/validate`, {
+            const promise = fetch(`/api/admin/orders/${orderId}/validate`, {
               method: "POST",
               credentials: "include",
             }).then(async (response) => {
@@ -753,7 +731,7 @@ export default function OrdersRoute() {
 
     setIsLoading(true);
 
-    const promise = fetch(`/api/orders/${actionOrderId}/ship`, {
+    const promise = fetch(`/api/admin/orders/${actionOrderId}/ship`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -794,7 +772,7 @@ export default function OrdersRoute() {
 
     setIsLoading(true);
 
-    const promise = fetch(`/api/orders/${actionOrderId}/cancel`, {
+    const promise = fetch(`/api/admin/orders/${actionOrderId}/cancel`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -845,7 +823,7 @@ export default function OrdersRoute() {
         onClick: async () => {
           setIsLoading(true);
 
-          const promise = fetch(`/api/orders/${orderId}/status`, {
+          const promise = fetch(`/api/orders/admin/${orderId}/status`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -891,7 +869,7 @@ export default function OrdersRoute() {
         onClick: async () => {
           setIsLoading(true);
 
-          const promise = fetch(`/api/orders/${orderId}/status`, {
+          const promise = fetch(`/api/orders/admin/${orderId}/status`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             credentials: "include",
@@ -937,7 +915,7 @@ export default function OrdersRoute() {
         onClick: async () => {
           setIsLoading(true);
 
-          const promise = fetch(`/api/orders/${orderId}/deliver`, {
+          const promise = fetch(`/api/admin/orders/${orderId}/deliver`, {
             method: "POST",
             credentials: "include",
           }).then(async (response) => {
@@ -974,9 +952,9 @@ export default function OrdersRoute() {
   };
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(searchParams);
     params.set("page", page.toString());
-    window.location.href = `?${params.toString()}`;
+    navigate(`?${params.toString()}`);
   };
 
   const handleCloseDetailsModal = () => {

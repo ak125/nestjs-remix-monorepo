@@ -536,8 +536,11 @@ export class OrdersService extends SupabaseBaseService {
       offset?: number;
       status?: string;
       userId?: string;
-      includeUnpaid?: boolean; // Nouveau paramètre
-      excludePending?: boolean; // ✨ Nouveau: exclure statut "En attente" (ord_ords_id = 1)
+      includeUnpaid?: boolean;
+      excludePending?: boolean;
+      search?: string;
+      paymentStatus?: string;
+      orderStatus?: string;
     } = {},
   ): Promise<Record<string, unknown>[]> {
     try {
@@ -548,6 +551,9 @@ export class OrdersService extends SupabaseBaseService {
         userId,
         includeUnpaid = false,
         excludePending = true,
+        search,
+        paymentStatus,
+        orderStatus,
       } = options;
 
       // 1. Récupérer les commandes
@@ -583,6 +589,21 @@ export class OrdersService extends SupabaseBaseService {
         query = query.eq('ord_is_pay', '1');
       } else if (status === 'pending') {
         query = query.eq('ord_is_pay', '0');
+      }
+
+      // Filtre statut paiement explicite
+      if (paymentStatus === '1' || paymentStatus === '0') {
+        query = query.eq('ord_is_pay', paymentStatus);
+      }
+
+      // Filtre statut commande explicite
+      if (orderStatus && orderStatus !== 'all') {
+        query = query.eq('ord_ords_id', orderStatus);
+      }
+
+      // Recherche textuelle (ord_id)
+      if (search && search.trim()) {
+        query = query.ilike('ord_id', `%${search.trim()}%`);
       }
 
       // Pagination
@@ -825,6 +846,15 @@ export class OrdersService extends SupabaseBaseService {
         }));
       }
 
+      // 8. Récupérer les informations de paiement depuis ic_postback
+      const { data: postback } = await this.supabase
+        .from('ic_postback')
+        .select(
+          'status, statuscode, transactionid, paymentid, paymentmethod, datepayment, amount',
+        )
+        .eq('orderid', orderId)
+        .maybeSingle();
+
       this.logger.debug(
         `✅ Commande ${orderId} complète récupérée (${enrichedOrderLines.length} lignes)`,
       );
@@ -837,6 +867,7 @@ export class OrdersService extends SupabaseBaseService {
         deliveryAddress: deliveryAddress || null, // Toutes les colonnes cda_*
         orderLines: enrichedOrderLines, // Toutes les colonnes orl_* + lineStatus
         statusDetails: orderStatus || null, // Toutes les colonnes ords_*
+        postback: postback || null, // Informations paiement Paybox
       };
     } catch (error) {
       this.logger.error(`❌ Failed to get complete order ${orderId}:`, error);
@@ -901,12 +932,22 @@ export class OrdersService extends SupabaseBaseService {
       status?: string;
       userId?: string;
       excludePending?: boolean;
+      search?: string;
+      paymentStatus?: string;
+      orderStatus?: string;
     } = {},
   ): Promise<number> {
-    const { status, userId, excludePending = true } = options;
+    const {
+      status,
+      userId,
+      excludePending = true,
+      search,
+      paymentStatus,
+      orderStatus,
+    } = options;
 
     // Clé de cache dynamique basée sur les filtres
-    const cacheKey = `total_orders_count_${status || 'all'}_${userId || 'all'}_${excludePending}`;
+    const cacheKey = `total_orders_count_${status || 'all'}_${userId || 'all'}_${excludePending}_${search || ''}_${paymentStatus || ''}_${orderStatus || ''}`;
 
     // Essayer d'abord le cache (TTL: 2 minutes)
     const cached = await this.cacheService?.get<number>(cacheKey);
@@ -942,6 +983,18 @@ export class OrdersService extends SupabaseBaseService {
 
       if (userId) {
         query = query.eq('ord_cst_id', userId);
+      }
+
+      if (paymentStatus === '1' || paymentStatus === '0') {
+        query = query.eq('ord_is_pay', paymentStatus);
+      }
+
+      if (orderStatus && orderStatus !== 'all') {
+        query = query.eq('ord_ords_id', orderStatus);
+      }
+
+      if (search && search.trim()) {
+        query = query.ilike('ord_id', `%${search.trim()}%`);
       }
 
       const { count, error } = await query;

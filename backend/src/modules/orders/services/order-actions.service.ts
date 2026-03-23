@@ -637,6 +637,40 @@ export class OrderActionsService extends SupabaseBaseService {
   }
 
   /**
+   * 💰 Confirmer paiement manuellement (admin)
+   */
+  async confirmPaymentManual(orderId: string): Promise<{ success: boolean }> {
+    try {
+      this.logger.log(`💰 Confirmation paiement manuel: ${orderId}`);
+
+      const order = await this.getOrder(orderId);
+
+      if (order.ord_is_pay === '1') {
+        throw new BadRequestException('Commande deja payee');
+      }
+
+      const { error } = await this.supabase
+        .from(TABLES.xtr_order)
+        .update({
+          ord_is_pay: '1',
+          ord_date_pay: new Date().toISOString(),
+          ord_ords_id: '5', // Payee — En preparation
+          ord_updated_at: new Date().toISOString(),
+        })
+        .eq('ord_id', orderId);
+
+      if (error) throw error;
+
+      this.logger.log(`✅ Paiement confirme manuellement: ${orderId}`);
+      return { success: true };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Erreur confirmation paiement:`, message);
+      throw error;
+    }
+  }
+
+  /**
    * ❌ Annuler commande (→ statut 6)
    */
   async cancelOrder(

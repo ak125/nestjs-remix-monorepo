@@ -193,6 +193,31 @@ export const UserDropdownMenu = memo(function UserDropdownMenu({
           </DropdownMenuItem>
         </DropdownMenuGroup>
 
+        {/* Lien Espace Commercial (level 3+) */}
+        {user.level && user.level >= 3 && (
+          <>
+            <DropdownMenuSeparator className="my-2" />
+            <DropdownMenuItem asChild>
+              <Link
+                to="/commercial"
+                className="flex items-center gap-3 cursor-pointer px-3 py-2.5 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition-all group border border-indigo-200"
+              >
+                <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md">
+                  <Package className="h-4 w-4 text-white" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold text-sm text-indigo-700">
+                    Espace Commercial
+                  </span>
+                  <span className="text-xs text-indigo-600">
+                    Commandes & expeditions
+                  </span>
+                </div>
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
+
         {/* Lien Admin premium si applicable */}
         {isAdmin && (
           <>

@@ -63,6 +63,15 @@ export interface Order {
   customer?: Customer;
   statusDetails?: StatusDetails;
   lines?: OrderLine[];
+  postback?: {
+    status?: string;
+    statuscode?: string;
+    transactionid?: string;
+    paymentid?: string;
+    paymentmethod?: string;
+    datepayment?: string;
+    amount?: string;
+  } | null;
 }
 
 // ========================================
