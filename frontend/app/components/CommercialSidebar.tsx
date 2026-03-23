@@ -4,6 +4,8 @@ import {
   ShoppingCart,
   Truck,
   BarChart3,
+  Car,
+  RotateCcw,
   Menu,
   X,
   LogOut,
@@ -16,7 +18,6 @@ import { memo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "./ui/button";
 
-// Fonction utilitaire pour combiner les classes CSS
 function cn(...classes: (string | undefined | false | null)[]): string {
   return classes.filter(Boolean).join(" ");
 }
@@ -60,10 +61,22 @@ export const CommercialSidebar = memo(function CommercialSidebar({
           : undefined,
     },
     {
-      name: "Expédition",
+      name: "Exp\u00E9dition",
       href: "/commercial/shipping",
       icon: Truck,
-      description: "Suivi des expéditions",
+      description: "Suivi des exp\u00E9ditions",
+    },
+    {
+      name: "V\u00E9hicules",
+      href: "/commercial/vehicles",
+      icon: Car,
+      description: "Recherche compatibilit\u00E9",
+    },
+    {
+      name: "Retours",
+      href: "/commercial/returns",
+      icon: RotateCcw,
+      description: "Gestion des retours",
     },
     {
       name: "Rapports",
@@ -114,7 +127,7 @@ export const CommercialSidebar = memo(function CommercialSidebar({
         <div className="flex h-full flex-col">
           {/* Header */}
           <div className="flex h-16 items-center border-b border-gray-200 px-4">
-            <Link to="/" className="flex items-center space-x-2">
+            <Link to="/commercial" className="flex items-center space-x-2">
               <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
                 <span className="text-white text-sm font-bold">C</span>
               </div>
@@ -143,7 +156,7 @@ export const CommercialSidebar = memo(function CommercialSidebar({
                     <span className="text-green-900 font-medium">CA</span>
                   </div>
                   <div className="text-green-700 font-bold">
-                    {(stats.totalRevenue / 1000).toFixed(0)}k€
+                    {(stats.totalRevenue / 1000).toFixed(0)}k\u20AC
                   </div>
                 </div>
                 <div className="bg-orange-50 p-2 rounded">
@@ -157,14 +170,14 @@ export const CommercialSidebar = memo(function CommercialSidebar({
                     {stats.pendingOrders}
                   </div>
                 </div>
-                <div className="bg-purple-50 p-2 rounded">
+                <div className="bg-green-50 p-2 rounded">
                   <div className="flex items-center space-x-1">
-                    <BarChart3 className="h-3 w-3 text-purple-600" />
-                    <span className="text-purple-900 font-medium">
-                      Terminées
+                    <Truck className="h-3 w-3 text-green-600" />
+                    <span className="text-green-900 font-medium">
+                      Termin\u00E9es
                     </span>
                   </div>
-                  <div className="text-purple-700 font-bold">
+                  <div className="text-green-700 font-bold">
                     {stats.completedOrders?.toLocaleString() || 0}
                   </div>
                 </div>
@@ -226,7 +239,7 @@ export const CommercialSidebar = memo(function CommercialSidebar({
                 className="w-full justify-start text-gray-700 hover:text-gray-900"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                Déconnexion
+                D\u00E9connexion
               </Button>
             </form>
           </div>
