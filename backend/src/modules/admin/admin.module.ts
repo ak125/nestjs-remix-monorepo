@@ -84,12 +84,12 @@ import { R1KeywordPlanBatchService } from './services/r1-keyword-plan-batch.serv
 import { AdminConseilController } from './controllers/admin-conseil.controller'; // 📊 Conseil coverage + backfill
 import { AdminRagIngestController } from './controllers/admin-rag-ingest.controller'; // 📄 PDF → RAG merge pipeline
 import { AdminR3ImagePromptsController } from './controllers/admin-r3-image-prompts.controller'; // 🎨 R3 Image Prompts generation
-// AdminR1ImagePromptsController — not ready for prod, removed from module
+import { AdminR1ImagePromptsController } from './controllers/admin-r1-image-prompts.controller'; // 🎨 R1 Image Briefs (brief-driven, 0-LLM)
 import { AdminFeatureFlagsController } from './controllers/admin-feature-flags.controller';
 // PipelineChainPollerService SUPPRIME — dependait de content-refresh queue
 // RagCatchupService SUPPRIME — catch-up auto remplace par skills /content-gen
 import { R3ImagePromptService } from './services/r3-image-prompt.service'; // 🎨 R3 Image Prompts (template-based, 0-LLM)
-// R1ImagePromptService — not ready for prod, removed from module
+import { R1ImagePromptService } from './services/r1-image-prompt.service'; // 🎨 R1 Image Brief generator (brief-driven, 0-LLM)
 import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service'; // 🚗 R8 Vehicle page enricher (RAG + diversity scoring)
 import { R7BrandEnricherService } from './services/r7-brand-enricher.service'; // 🏭 R7 Brand page enricher (RAG + diversity scoring)
 import { VehicleRagGeneratorService } from './services/vehicle-rag-generator.service'; // 🚗 Vehicle RAG .md generator (0 LLM)
@@ -161,7 +161,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     AdminConseilController, // 📊 Conseil coverage + backfill - /api/admin/conseil/*
     AdminRagIngestController, // 📄 PDF → RAG merge - /api/admin/rag/pdf-merge/*
     AdminR3ImagePromptsController, // 🎨 R3 Image Prompts - /api/admin/r3-image-prompts/*
-    // AdminR1ImagePromptsController — not ready for prod
+    AdminR1ImagePromptsController, // 🎨 R1 Image Briefs - /api/admin/r1-image-prompts/*
     AdminFeatureFlagsController, // 🏷️ Feature Flags - /api/admin/feature-flags/*
     AdminR8VehicleController, // 🚗 R8 Vehicle enrichment - /api/admin/r8/enrich/:typeId
     AdminR7BrandController, // 🏭 R7 Brand enrichment - /api/admin/r7/enrich/:marqueId
@@ -214,7 +214,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     R1KeywordPlanGatesService, // 🚦 R1 Keyword plan gates KA1-KA6 (R1 pipeline + keyword-planner R1 mode)
     R1KeywordPlanBatchService, // 🔄 R1 KP batch 0-LLM generator
     R3ImagePromptService, // 🎨 R3 Image Prompts (template-based, 0-LLM)
-    // R1ImagePromptService — not ready for prod
+    R1ImagePromptService, // 🎨 R1 Image Brief generator
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
     R7BrandEnricherService, // 🏭 R7 Brand page enricher (RAG + diversity scoring, 0-LLM)
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)
