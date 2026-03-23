@@ -23,3 +23,24 @@ export interface R1ImageItem {
 
 /** Map slot → image unique, retournée par l'API */
 export type R1ImagesBySlot = Partial<Record<R1ImageSlot, R1ImageItem>>;
+
+/** Intention visuelle d'un slot image */
+export type R1ImageIntent =
+  | "hero"
+  | "explanatory"
+  | "reassurance"
+  | "location"
+  | "social";
+
+/**
+ * Métadonnées enrichies — côté admin/génération uniquement.
+ * Étend R1ImageItem sans casser le contrat frontend (R1ImagesBySlot reste inchangé).
+ */
+export interface R1MediaAsset extends R1ImageItem {
+  intent: R1ImageIntent;
+  sectionAnchor?: "hero" | "types" | "price" | "location";
+  socialEligible: boolean;
+  ragFieldsUsed: string[];
+  richnessScore: number;
+  stale?: boolean;
+}
