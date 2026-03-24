@@ -66,6 +66,8 @@ export function R1RelatedBlocks({ blocks }: R1RelatedBlocksProps) {
                         to={item.href}
                         className="group block"
                         prefetch="intent"
+                        data-track={`related-${block.kind}`}
+                        data-track-label={item.title}
                       >
                         <span className="text-sm font-medium text-blue-700 group-hover:text-blue-900 group-hover:underline">
                           {item.title}
