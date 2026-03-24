@@ -23,7 +23,12 @@ CREATE TABLE IF NOT EXISTS __rag_pipeline_incidents (
   rpi_type text NOT NULL,
   rpi_reason text NOT NULL,
   rpi_metrics jsonb NOT NULL DEFAULT '{}'::jsonb,
-  rpi_phase text NOT NULL DEFAULT 'C'
+  rpi_phase text NOT NULL DEFAULT 'C',
+  rpi_threshold_name text,
+  rpi_threshold_value numeric,
+  rpi_current_value numeric,
+  rpi_resolved_at timestamptz,
+  rpi_resolved_by text
 );
 
 COMMENT ON TABLE __rag_pipeline_incidents IS 'Circuit breaker incident log for RAG merge pipeline';

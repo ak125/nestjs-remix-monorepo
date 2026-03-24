@@ -119,6 +119,51 @@ export class AdminRagPipelineStatusController extends SupabaseBaseService {
           .gte('rce_created_at', cutoff24h),
       ]);
 
+    // Top 10 gammes most enqueued in 24h
+    const { data: top10Raw } = await this.client
+      .from('__pipeline_chain_queue')
+      .select('pcq_pg_alias, pcq_status')
+      .gte('pcq_created_at', cutoff24h);
+
+    const gammeCountMap = new Map<string, { done: number; failed: number }>();
+    for (const row of (top10Raw ?? []) as {
+      pcq_pg_alias: string;
+      pcq_status: string;
+    }[]) {
+      const alias = row.pcq_pg_alias;
+      const entry = gammeCountMap.get(alias) ?? { done: 0, failed: 0 };
+      if (row.pcq_status === 'done') entry.done++;
+      else if (row.pcq_status === 'failed') entry.failed++;
+      gammeCountMap.set(alias, entry);
+    }
+    const topGammes = [...gammeCountMap.entries()]
+      .map(([alias, counts]) => ({
+        alias,
+        total: counts.done + counts.failed,
+        ...counts,
+      }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+
+    // Last 5 pcq_error (non-null, recent)
+    const { data: recentErrors } = await this.client
+      .from('__pipeline_chain_queue')
+      .select('pcq_id, pcq_pg_alias, pcq_page_type, pcq_error, pcq_created_at')
+      .eq('pcq_status', 'failed')
+      .not('pcq_error', 'is', null)
+      .order('pcq_created_at', { ascending: false })
+      .limit(5);
+
+    // Open incidents (no resolved_at)
+    const { data: openIncidents } = await this.client
+      .from('__rag_pipeline_incidents')
+      .select(
+        'rpi_id, rpi_type, rpi_reason, rpi_created_at, rpi_threshold_name, rpi_current_value',
+      )
+      .is('rpi_resolved_at', null)
+      .order('rpi_created_at', { ascending: false })
+      .limit(5);
+
     return {
       phaseEffective: finalPhase,
       phasePersisted,
@@ -137,6 +182,15 @@ export class AdminRagPipelineStatusController extends SupabaseBaseService {
         skipped_24h: eventSkipped24hRes.count ?? 0,
       },
       circuitBreaker: breakerState,
+      topGammes_24h: topGammes,
+      recentErrors: (recentErrors ?? []).map((r: any) => ({
+        id: r.pcq_id,
+        gamme: r.pcq_pg_alias,
+        role: r.pcq_page_type,
+        error: r.pcq_error,
+        at: r.pcq_created_at,
+      })),
+      openIncidents: openIncidents ?? [],
     };
   }
 

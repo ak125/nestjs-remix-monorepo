@@ -224,6 +224,21 @@ export class RagChangeWatcherService
         }
 
         if (this.flags.ragChangeAutoEnqueue) {
+          // Anti-duplication: skip if a pending/processing job already exists for same gamme+role
+          const { count: existingJobs } = await this.client
+            .from('__pipeline_chain_queue')
+            .select('pcq_id', { count: 'exact', head: true })
+            .eq('pcq_pg_alias', gamme.pg_alias)
+            .eq('pcq_page_type', roleId)
+            .in('pcq_status', ['pending', 'processing']);
+
+          if ((existingJobs ?? 0) > 0) {
+            this.logger.debug(
+              `Anti-dedup: skipping ${roleId} for ${gamme.pg_alias} — ${existingJobs} job(s) already pending/processing`,
+            );
+            continue;
+          }
+
           // Enqueue improvement job
           await this.pipelineQueue.add('execute', {
             roleId,
@@ -388,13 +403,51 @@ export class RagChangeWatcherService
 
     this.logger.error(`[CIRCUIT-BREAKER] RAG merge auto-disabled: ${reason}`);
 
+    // Parse threshold info from reason string for structured logging
+    const thresholdInfo = this.parseBreakerReason(reason);
+
     // Log incident to dedicated table (non-blocking)
-    this.logBreakerIncident(reason).catch((err) =>
+    this.logBreakerIncident(reason, thresholdInfo).catch((err) =>
       this.logger.warn(`Failed to log breaker incident: ${err}`),
     );
   }
 
-  private async logBreakerIncident(reason: string): Promise<void> {
+  private parseBreakerReason(reason: string): {
+    name: string;
+    threshold: number;
+    current: number;
+  } {
+    if (reason.startsWith('failed_ratio')) {
+      const match = reason.match(/([\d.]+)%/);
+      return {
+        name: 'failed_ratio',
+        threshold: 0.02,
+        current: match ? parseFloat(match[1]) / 100 : 0,
+      };
+    }
+    if (reason.startsWith('pending_queue')) {
+      const match = reason.match(/(\d+) pending/);
+      return {
+        name: 'pending_queue',
+        threshold: 50,
+        current: match ? parseInt(match[1], 10) : 0,
+      };
+    }
+    if (reason.startsWith('hotspot')) {
+      const match = reason.match(/: (\d+)\)/);
+      return {
+        name: 'hotspot',
+        threshold: 20,
+        current: match ? parseInt(match[1], 10) : 0,
+      };
+    }
+    return { name: 'unknown', threshold: 0, current: 0 };
+  }
+
+  private async logBreakerIncident(
+    reason: string,
+    thresholdInfo: { name: string; threshold: number; current: number },
+  ): Promise<void> {
     // Collect metrics snapshot
     const { count: pending } = await this.client
       .from('__pipeline_chain_queue')
@@ -422,6 +475,9 @@ export class RagChangeWatcherService
         done_24h: done24h ?? 0,
       },
       rpi_phase: 'C',
+      rpi_threshold_name: thresholdInfo.name,
+      rpi_threshold_value: thresholdInfo.threshold,
+      rpi_current_value: thresholdInfo.current,
     });
   }
 }

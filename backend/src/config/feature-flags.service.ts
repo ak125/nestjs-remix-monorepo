@@ -200,6 +200,12 @@ export class FeatureFlagsService {
     return this.bool('AGENTIC_AIRLOCK_CHECK_ENABLED', false);
   }
 
+  // ── Abandoned Cart Email flags ──
+
+  get abandonedCartEmailEnabled(): boolean {
+    return this.bool('ABANDONED_CART_EMAIL_ENABLED', false);
+  }
+
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
@@ -264,6 +270,7 @@ export class FeatureFlagsService {
     'VERSION_COMPARISON_ENABLED',
     'QA_DECISION_ENABLED',
     'BEST_VERSION_PROTECTION_ENABLED',
+    'ABANDONED_CART_EMAIL_ENABLED',
     'WRITE_GUARD_ENABLED',
     'WRITE_GUARD_MODE',
     'WRITE_GUARD_CANARY_ROLES',
