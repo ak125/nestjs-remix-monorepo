@@ -4,19 +4,20 @@
  */
 
 import { Processor, Process } from '@nestjs/bull';
-import { Logger } from '@nestjs/common';
+import { Inject, Logger, Optional } from '@nestjs/common';
 import { Job } from 'bull';
 import {
   MailService,
   OrderEmailData,
   MailOptions,
 } from '../../services/mail.service';
+import { AbandonedCartService } from '../../modules/cart/services/abandoned-cart.service';
 
 interface EmailJobData {
   to: string;
   subject: string;
   template: string;
-  data: Record<string, any>;
+  data: Record<string, unknown>;
 }
 
 interface OrderEmailJobData {
@@ -39,7 +40,12 @@ interface GuestActivationJobData {
 export class EmailProcessor {
   private readonly logger = new Logger(EmailProcessor.name);
 
-  constructor(private readonly mailService: MailService) {}
+  constructor(
+    private readonly mailService: MailService,
+    @Optional()
+    @Inject(AbandonedCartService)
+    private readonly abandonedCartService?: AbandonedCartService,
+  ) {}
 
   /**
    * Envoyer email générique
@@ -143,7 +149,7 @@ export class EmailProcessor {
    * Envoyer email de rapport quotidien
    */
   @Process('daily-report')
-  async handleDailyReport(job: Job<any>) {
+  async handleDailyReport(job: Job<Record<string, unknown>>) {
     this.logger.log(`📊 Sending daily report (Job #${job.id})`);
 
     try {
@@ -156,6 +162,58 @@ export class EmailProcessor {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`❌ Daily report failed: ${message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Scanner les paniers abandonnes (repeatable job, toutes les 15min)
+   */
+  @Process('abandoned-cart-scan')
+  async handleAbandonedCartScan(job: Job) {
+    this.logger.log(`🛒 Abandoned cart scan (Job #${job.id})`);
+
+    if (!this.abandonedCartService) {
+      this.logger.warn('AbandonedCartService not available — skipping scan');
+      return { success: false, reason: 'service_unavailable' };
+    }
+
+    try {
+      const result = await this.abandonedCartService.scanAndEnqueue();
+      this.logger.log(
+        `🛒 Scan complete: ${result.detected} detected, ${result.enqueued} enqueued`,
+      );
+      return { success: true, ...result };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Abandoned cart scan failed: ${message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Envoyer un email de relance panier abandonne
+   */
+  @Process('abandoned-cart-email')
+  async handleAbandonedCartEmail(
+    job: Job<{ id: string; step: '1h' | '24h' | '72h' }>,
+  ) {
+    const { id, step } = job.data;
+    this.logger.log(
+      `🛒 Sending abandoned cart email (Job #${job.id}): record=${id} step=${step}`,
+    );
+
+    if (!this.abandonedCartService) {
+      this.logger.warn('AbandonedCartService not available — skipping email');
+      return { success: false, reason: 'service_unavailable' };
+    }
+
+    try {
+      const sent = await this.abandonedCartService.sendSequenceEmail(id, step);
+      return { success: sent, id, step };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Abandoned cart email failed: ${message}`);
       throw error;
     }
   }

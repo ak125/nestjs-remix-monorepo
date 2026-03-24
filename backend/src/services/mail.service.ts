@@ -250,6 +250,106 @@ export class MailService {
   }
 
   // ============================================================
+  // RELANCE PANIER ABANDONNE
+  // ============================================================
+
+  async sendAbandonedCartEmail(params: {
+    to: string;
+    firstName: string;
+    subject: string;
+    items: Array<{
+      product_name?: string;
+      product_brand?: string;
+      product_image?: string;
+      quantity?: number;
+      price?: number;
+    }>;
+    subtotal: number;
+    recoveryUrl: string;
+    unsubscribeUrl: string;
+    trackingPixelUrl: string;
+    step: '1h' | '24h' | '72h';
+  }): Promise<void> {
+    const {
+      to,
+      firstName,
+      subject,
+      items,
+      subtotal,
+      recoveryUrl,
+      unsubscribeUrl,
+      trackingPixelUrl,
+      step,
+    } = params;
+
+    const itemRows = items
+      .map((item) => {
+        const name = item.product_name || 'Article';
+        const brand = item.product_brand || '';
+        const qty = item.quantity || 1;
+        const price = (item.price || 0).toFixed(2).replace('.', ',');
+        const imgHtml = item.product_image
+          ? `<img src="${item.product_image}" alt="${name}" style="width:50px;height:50px;object-fit:contain;border-radius:4px;" />`
+          : `<div style="width:50px;height:50px;background:#f3f4f6;border-radius:4px;"></div>`;
+        return `<tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">${imgHtml}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;">
+            <strong>${name}</strong>${brand ? `<br/><span style="color:#6b7280;font-size:13px;">${brand}</span>` : ''}
+          </td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:center;">${qty}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right;white-space:nowrap;">${price} EUR</td>
+        </tr>`;
+      })
+      .join('');
+
+    const formattedSubtotal = subtotal.toFixed(2).replace('.', ',');
+
+    const urgencyText: Record<string, string> = {
+      '1h': 'Votre panier vous attend ! Finalisez votre commande en quelques clics.',
+      '24h': 'Les stocks sont limites. Ne manquez pas vos pieces auto.',
+      '72h': 'Dernier rappel : votre panier sera bientot supprime.',
+    };
+
+    const body = `
+      <p>Bonjour <strong>${firstName}</strong>,</p>
+      <p>${urgencyText[step]}</p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0;">
+        <thead>
+          <tr style="background:#f9fafb;">
+            <th style="padding:8px;text-align:left;border-bottom:2px solid #e5e7eb;width:60px;"></th>
+            <th style="padding:8px;text-align:left;border-bottom:2px solid #e5e7eb;">Article</th>
+            <th style="padding:8px;text-align:center;border-bottom:2px solid #e5e7eb;">Qte</th>
+            <th style="padding:8px;text-align:right;border-bottom:2px solid #e5e7eb;">Prix</th>
+          </tr>
+        </thead>
+        <tbody>${itemRows}</tbody>
+        <tfoot>
+          <tr>
+            <td colspan="3" style="padding:12px 8px;text-align:right;font-weight:600;">Sous-total :</td>
+            <td style="padding:12px 8px;text-align:right;font-weight:600;font-size:16px;">${formattedSubtotal} EUR</td>
+          </tr>
+        </tfoot>
+      </table>
+      <p style="text-align:center;margin:24px 0;">
+        <a href="${recoveryUrl}"
+           style="display:inline-block;background:#f59e0b;color:#fff;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:bold;font-size:16px;">
+          Retrouver mon panier
+        </a>
+      </p>
+      <p style="color:#9ca3af;font-size:12px;text-align:center;margin-top:24px;">
+        Vous recevez cet email car vous avez un panier en attente sur Automecanik.<br/>
+        <a href="${unsubscribeUrl}" style="color:#9ca3af;">Ne plus recevoir ces rappels</a>
+      </p>
+      <img src="${trackingPixelUrl}" width="1" height="1" alt="" style="display:none;" />`;
+
+    const html = this.wrapLayout('Votre panier vous attend', '#f59e0b', body);
+    await this.doSendWithHeaders(to, subject, html, {
+      'List-Unsubscribe': `<${unsubscribeUrl}>`,
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+    });
+  }
+
+  // ============================================================
   // DIAGNOSTIC
   // ============================================================
 
@@ -290,6 +390,32 @@ export class MailService {
         to,
         subject,
         html,
+      });
+      this.logger.log(`Email sent to ${to}: ${subject}`);
+    } catch (error) {
+      this.logger.error(`Failed to send email to ${to}:`, error);
+      throw error;
+    }
+  }
+
+  private async doSendWithHeaders(
+    to: string,
+    subject: string,
+    html: string,
+    headers: Record<string, string>,
+  ): Promise<void> {
+    if (!this.isConfigured || !this.transporter) {
+      this.logger.warn(`[DRY-RUN] Email to ${to}: ${subject}`);
+      return;
+    }
+
+    try {
+      await this.transporter.sendMail({
+        from: this.fromEmail,
+        to,
+        subject,
+        html,
+        headers,
       });
       this.logger.log(`Email sent to ${to}: ${subject}`);
     } catch (error) {

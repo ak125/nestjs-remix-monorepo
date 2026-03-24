@@ -2,7 +2,7 @@
  * MODULE WORKER BULLMQ
  */
 
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
@@ -32,6 +32,7 @@ import { EvidenceLedgerService } from '../modules/agentic-engine/services/eviden
 import { RunManagerService } from '../modules/agentic-engine/services/run-manager.service';
 import { CriticService } from '../modules/agentic-engine/services/critic.service';
 import { FeatureFlagsModule } from '../config/feature-flags.module';
+import { CartModule } from '../modules/cart/cart.module';
 
 // Job health tracking (used by all processors)
 import { AdminJobHealthService } from '../modules/admin/services/admin-job-health.service';
@@ -76,6 +77,9 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
       { name: 'agentic-engine' },
       { name: 'pipeline-chain' },
     ),
+
+    // Cart module for AbandonedCartService (used by EmailProcessor)
+    forwardRef(() => CartModule),
 
     // Modules for AgenticProcessor dependencies
     RagProxyModule,

@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CacheService } from '../../../cache/cache.service';
 
 /**
@@ -27,7 +28,10 @@ export class CartAnalyticsService {
   private readonly ABANDONED_AFTER_MINUTES = 60; // Considéré abandonné après 60min
   private readonly ANALYTICS_TTL = 30 * 24 * 60 * 60; // 30 jours
 
-  constructor(private readonly cacheService: CacheService) {
+  constructor(
+    private readonly cacheService: CacheService,
+    private readonly eventEmitter: EventEmitter2,
+  ) {
     this.logger.log('📊 CartAnalyticsService initialized');
   }
 
@@ -58,6 +62,12 @@ export class CartAnalyticsService {
       );
 
       this.logger.log(`📝 Panier créé tracké: ${sessionId}`);
+
+      // Emit event for abandoned cart detection (decoupled via EventEmitter)
+      const userId = parseInt(sessionId, 10);
+      if (!isNaN(userId) && userId > 0) {
+        this.eventEmitter.emit('cart.activity', { userId, sessionId });
+      }
     } catch (error) {
       this.logger.error('Erreur trackCartCreated:', error);
     }
