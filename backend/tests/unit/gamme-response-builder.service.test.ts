@@ -163,12 +163,14 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       })),
     } as any;
 
+    const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
       buyingGuideService,
       referenceService,
       seoTitleEngine,
+      relatedResources,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -214,12 +216,14 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       })),
     } as any;
 
+    const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
       buyingGuideService,
       referenceService,
       seoTitleEngine,
+      relatedResources,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -265,12 +269,14 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       })),
     } as any;
 
+    const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
       buyingGuideService,
       referenceService,
       seoTitleEngine,
+      relatedResources,
     );
 
     const result = await service.buildRpcV2Response('479');
