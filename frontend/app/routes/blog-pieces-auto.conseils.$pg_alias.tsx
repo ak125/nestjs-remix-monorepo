@@ -548,7 +548,7 @@ export default function R3GuidePage() {
                           </p>
                         </div>
                         <Link
-                          to={`/pieces/${pg_alias}`}
+                          to={`/pieces/${pg_alias}-${page.pg_id}.html`}
                           className="inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
                         >
                           <Tag className="h-4 w-4" />
@@ -613,7 +613,7 @@ export default function R3GuidePage() {
                         <p className="text-sm text-gray-700">
                           Trouvez votre{" "}
                           <Link
-                            to={`/pieces/${pg_alias}`}
+                            to={`/pieces/${pg_alias}-${page.pg_id}.html`}
                             className="font-medium text-emerald-600 hover:text-emerald-800 underline"
                           >
                             {page.title?.toLowerCase() || "piece"} au meilleur
