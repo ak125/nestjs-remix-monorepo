@@ -43,7 +43,6 @@ import {
 import { Footer } from "~/components/home";
 
 import { R1RelatedBlocks } from "~/components/pieces/R1RelatedBlocks";
-import { R1SlotImage } from "~/components/pieces/R1SlotImage";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import {
   type GammePageDataV1,
@@ -586,9 +585,6 @@ export default function PiecesDetailPage() {
   const navigation = useNavigation();
   const navigate = useNavigate();
 
-  // Helper: extraire une image R1 par slot (accès O(1))
-  const r1Img = (slot: string) => data.r1Images?.[slot];
-
   // Afficher un indicateur de chargement si les données sont en cours de chargement
   const isLoading = navigation.state === "loading";
 
@@ -600,6 +596,20 @@ export default function PiecesDetailPage() {
   useEffect(() => {
     setSelectedVehicle(getVehicleClient());
   }, []);
+
+  // GA4: track view_item_list when R1 page loads
+  useEffect(() => {
+    if (data.content?.pg_name && data.gammeId) {
+      import("~/utils/analytics").then(({ trackViewItemList }) => {
+        trackViewItemList(
+          `gamme-${data.gammeId}`,
+          data.content?.pg_name || "",
+          [],
+        );
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.gammeId]);
 
   useEffect(() => {
     if (isLoading) {
@@ -723,14 +733,6 @@ export default function PiecesDetailPage() {
         selectedVehicle={selectedVehicle}
       />
 
-      {r1Img("TYPES") && (
-        <div className="px-4 sm:px-6 mt-4">
-          <div className="max-w-2xl mx-auto">
-            <R1SlotImage {...r1Img("TYPES")!} />
-          </div>
-        </div>
-      )}
-
       <GammeQuickNav />
 
       <GammeDiagnosticCTA />
@@ -748,15 +750,8 @@ export default function PiecesDetailPage() {
         )}
         pgAlias={data.content?.pg_alias}
         h2Override={data.sectionPack?.sections.buyArgs.h2Override}
+        r1Images={data.r1Images}
       />
-
-      {r1Img("PRICE") && (
-        <div className="px-4 sm:px-6 mt-4">
-          <div className="max-w-2xl mx-auto">
-            <R1SlotImage {...r1Img("PRICE")!} />
-          </div>
-        </div>
-      )}
 
       {/* Motorisations compatibles — deferred */}
       <Suspense
@@ -782,15 +777,6 @@ export default function PiecesDetailPage() {
           )}
         </Await>
       </Suspense>
-
-      {/* LOCATION : après motorisations (section S5 compat) */}
-      {r1Img("LOCATION") && (
-        <div className="px-4 sm:px-6 mt-6">
-          <div className="max-w-2xl mx-auto">
-            <R1SlotImage {...r1Img("LOCATION")!} />
-          </div>
-        </div>
-      )}
 
       <GammeChecklist
         gammeName={data.content?.pg_name}
