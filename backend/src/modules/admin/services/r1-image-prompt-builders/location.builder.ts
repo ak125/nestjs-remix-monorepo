@@ -1,9 +1,22 @@
-import { type RagData, type BuilderResult, NEG_SCHEMA } from './types';
+import { type BuilderResult, NEG_PHOTO } from './types';
+import type { RagData } from './types';
 
 /**
- * LOCATION — Vue technique positionnée.
- * Pédagogie emplacement, contexte montage.
- * RAG : location_on_vehicle{}, installation.tools[], installation.steps[], installation.difficulty
+ * LOCATION — Photo réaliste de la pièce en contexte véhicule.
+ *
+ * IMPORTANT : Les vues éclatées techniques avec légendes textuelles
+ * sont mal générées par l'IA. Ce builder génère une photo réaliste
+ * du compartiment moteur/véhicule avec la pièce mise en évidence.
+ *
+ * [A] technique / contextuelle
+ * [B] compartiment moteur ou zone véhicule réelle
+ * [C] pièce identifiable par contraste/luminosité dans son environnement
+ * [D] éclairage naturel atelier ou compartiment moteur
+ * [E] vue plongeante ou latérale selon l'accès
+ * [F] no text, no arrows, no labels, no disassembled parts
+ * [G] localisation, compréhension, repérage de la pièce
+ *
+ * RAG : location_on_vehicle{}, installation.*, key_visual_features
  */
 export function buildLocationPrompt(
   pgName: string,
@@ -12,55 +25,71 @@ export function buildLocationPrompt(
   const fieldsUsed: string[] = [];
   let score = 0;
   const n = pgName.toLowerCase();
+  // Note: LOCATION uses realistic workshop lighting, not family ambiance
 
-  // Priorité 1 : location_on_vehicle (v4 racine)
-  let locationHint = '';
+  // Localisation précise depuis le RAG
+  let locationDesc = 'dans le compartiment moteur';
   const loc = rag?.location_on_vehicle;
   if (loc?.area) {
-    locationHint = ` Situé : ${loc.area}.`;
-    if (loc.access) locationHint += ` Accès : ${loc.access}.`;
-    if (loc.adjacent_parts && loc.adjacent_parts.length > 0) {
-      locationHint += ` Pièces adjacentes : ${loc.adjacent_parts.slice(0, 3).join(', ')}.`;
-    }
-    fieldsUsed.push('location_on_vehicle');
+    locationDesc = `au niveau du ${loc.area}`;
+    fieldsUsed.push('location_on_vehicle.area');
     score += 2;
   }
 
-  // Fallback : installation context
-  let contextHint = '';
+  // Angle de vue déduit de l'accès
+  let viewAngle = 'vue plongeante dans le compartiment moteur';
+  if (loc?.access) {
+    if (loc.access.includes('dessous')) {
+      viewAngle = 'vue depuis le dessous du véhicule, sur pont';
+    } else if (loc.access.includes('dessus') || loc.access.includes('capot')) {
+      viewAngle = 'vue plongeante capot ouvert';
+    } else if (loc.access.includes('latéral') || loc.access.includes('côté')) {
+      viewAngle = 'vue latérale du compartiment moteur';
+    }
+    fieldsUsed.push('location_on_vehicle.access');
+    score++;
+  }
+
+  // Pièces adjacentes
+  let adjacentHint = '';
+  if (loc?.adjacent_parts && loc.adjacent_parts.length > 0) {
+    adjacentHint = ` Pièces voisines visibles : ${loc.adjacent_parts.slice(0, 3).join(', ')}.`;
+    fieldsUsed.push('location_on_vehicle.adjacent_parts');
+    score++;
+  }
+
+  // Fallback installation si pas de location
   if (!loc?.area) {
     const steps = rag?.installation?.steps ?? [];
     if (steps.length > 0) {
-      const first = steps[0].length > 60 ? steps[0].slice(0, 60) : steps[0];
-      contextHint = ` Contexte montage : ${first.toLowerCase()}.`;
       fieldsUsed.push('installation.steps');
+      score++;
+    }
+    const tools = rag?.installation?.tools ?? [];
+    if (tools.length > 0) {
+      fieldsUsed.push('installation.tools');
       score++;
     }
   }
 
-  let toolsHint = '';
-  const tools = rag?.installation?.tools ?? [];
-  if (tools.length > 0) {
-    toolsHint = ` Outils visibles : ${tools.slice(0, 3).join(', ')}.`;
-    fieldsUsed.push('installation.tools');
-    score++;
-  }
-
-  let difficultyHint = '';
-  if (
-    rag?.installation?.difficulty &&
-    rag.installation.difficulty !== 'simple'
-  ) {
-    difficultyHint = ` Niveau : ${rag.installation.difficulty}.`;
-    fieldsUsed.push('installation.difficulty');
-    score++;
-  }
-
-  const prompt = `Vue éclatée technique, dessin technique automobile, fond blanc. ${pgName} à son emplacement sur le moteur ou le véhicule.${locationHint} Pièces adjacentes visibles avec flèches légendées et numéros de repère. Trait fin, rendu schématique.${contextHint}${toolsHint}${difficultyHint} Format 4:3.`;
+  const prompt = [
+    `Photo réaliste automobile, ${viewAngle}.`,
+    `Le ${pgName} est visible ${locationDesc}, légèrement mis en évidence par un contraste lumineux plus fort sur la pièce.`,
+    `Environnement réaliste : moteur, durites, câbles, autres composants visibles autour.${adjacentHint}`,
+    `Éclairage : lumière d'atelier réaliste, LED blanche, quelques ombres naturelles dans le compartiment moteur.`,
+    `La pièce se distingue clairement de son environnement sans être détourée ni flottante.`,
+    `Ultra réaliste, haute résolution, pas de texte, pas de flèches, pas de numéros de repère.`,
+    `Intention : l'utilisateur comprend immédiatement où se trouve le ${n} sur son véhicule.`,
+    `Format 4:3.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return {
     prompt,
-    neg: NEG_SCHEMA,
+    neg:
+      NEG_PHOTO +
+      ', text, arrows, labels, numbers, exploded view, disassembled, floating part, white background, isolated part',
     alt: `Emplacement du ${n} sur le véhicule`,
     caption: `Où se trouve le ${n} sur le véhicule`,
     ragFieldsUsed: fieldsUsed,

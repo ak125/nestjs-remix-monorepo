@@ -1,9 +1,22 @@
-import { type RagData, type BuilderResult, NEG_PHOTO } from './types';
+import {
+  type RagData,
+  type BuilderResult,
+  NEG_PHOTO,
+  resolveAmbiance,
+} from './types';
 
 /**
- * HERO — Photo produit contextualisée.
- * Cadrage page, confiance, OEM / équipementier.
- * RAG : domain.role + selection.criteria[0..2]
+ * HERO — Photo produit OEM premium contextualisée.
+ *
+ * [A] catalogue / hero
+ * [B] fond adapté par famille (huile dorée / métal froid / etc.)
+ * [C] pièce neuve, angle 3/4, détails techniques visibles
+ * [D] studio professionnel, température adaptée à la famille
+ * [E] centré, profondeur de champ faible, espace négatif pour le header
+ * [F] no text, no logo, no wrong parts
+ * [G] confiance, qualité OEM, expertise automobile
+ *
+ * RAG : domain.role, selection.criteria[0..2], completeness_profile/category
  */
 export function buildHeroPrompt(
   pgName: string,
@@ -11,6 +24,14 @@ export function buildHeroPrompt(
 ): BuilderResult {
   const fieldsUsed: string[] = [];
   let score = 0;
+  const amb = resolveAmbiance(rag);
+
+  if (rag?.completeness_profile || rag?.category) {
+    fieldsUsed.push(
+      rag?.completeness_profile ? 'completeness_profile' : 'category',
+    );
+    score++;
+  }
 
   let roleHint = '';
   if (rag?.domain?.role) {
@@ -18,25 +39,44 @@ export function buildHeroPrompt(
       rag.domain.role.length > 80
         ? rag.domain.role.slice(0, 80)
         : rag.domain.role;
-    roleHint = ` Pièce servant à ${role.toLowerCase()}.`;
+    roleHint = ` Fonction : ${role.toLowerCase()}.`;
     fieldsUsed.push('domain.role');
     score++;
   }
 
-  let criteriaHint = '';
-  const criteria = rag?.selection?.criteria?.slice(0, 2) ?? [];
-  if (criteria.length > 0) {
-    criteriaHint = ` Montrant ${criteria.join(' et ').toLowerCase()}.`;
-    fieldsUsed.push('selection.criteria');
+  let detailsHint = '';
+  if (rag?.key_visual_features?.identifying_shapes?.length) {
+    detailsHint = ` Détails visibles : ${rag.key_visual_features.identifying_shapes.slice(0, 2).join(', ')}.`;
+    fieldsUsed.push('key_visual_features');
     score++;
+  } else {
+    const criteria = rag?.selection?.criteria?.slice(0, 2) ?? [];
+    if (criteria.length > 0) {
+      detailsHint = ` Montrant : ${criteria.join(', ').toLowerCase()}.`;
+      fieldsUsed.push('selection.criteria');
+      score++;
+    }
   }
 
-  const prompt = `Photo produit sur fond neutre. ${pgName} neuf, éclairage studio professionnel. Pièce automobile haute résolution, détail des points de fixation et connectique.${roleHint}${criteriaHint} Format 16:9.`;
+  const prompt = [
+    `Photo produit automobile premium, ultra réaliste, haute résolution.`,
+    `${pgName} neuf, angle trois-quarts, légère rotation pour montrer le volume.`,
+    `Fond : ${amb.background}.`,
+    `Éclairage : ${amb.lighting}.`,
+    `Profondeur de champ faible, mise au point sur la pièce, arrière-plan doux.`,
+    `${amb.technicalDetails} clairement visibles.`,
+    `${detailsHint}${roleHint}`,
+    `Intention : ${amb.intention}.`,
+    `Espace négatif en haut pour overlay texte.`,
+    `Format 16:9.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return {
     prompt,
     neg: NEG_PHOTO,
-    alt: `${pgName} — photo produit`,
+    alt: `${pgName} — pièce automobile neuve`,
     caption: `${pgName} — vue détaillée`,
     ragFieldsUsed: fieldsUsed,
     richnessScore: score,

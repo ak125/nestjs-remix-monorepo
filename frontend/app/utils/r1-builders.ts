@@ -143,7 +143,9 @@ export function buildGammeJsonLd(params: {
     fallbackFaq,
   } = params;
 
-  const faqItems = mergeR1Faq(faq, fallbackFaq);
+  const faqItems = mergeR1Faq(faq, fallbackFaq).filter(
+    (f) => f.question?.trim() && f.answer?.trim(),
+  );
   const cappedFaq = validateFaqItems(faqItems);
 
   return {
@@ -182,24 +184,25 @@ export function buildGammeJsonLd(params: {
             {
               "@type": "ListItem",
               position: 3,
-              name: pgName,
+              name: pgName || "Pièce auto",
               item: canonicalUrl,
             },
           ],
         },
       },
-      // 2️⃣ ItemList — seulement si des items existent (évite Rich Results FAIL)
-      ...((motorisationsSchema?.length || 0) > 0
+      // 2️⃣ ItemList — seulement si des items valides existent (évite Rich Results FAIL)
+      ...((motorisationsSchema?.length ?? 0) > 0 &&
+      motorisationsSchema![0]?.marque_name
         ? [
             {
               "@type": "ItemList",
               "@id": `${canonicalUrl}#list`,
-              name: `${pgName} - Véhicules compatibles`,
+              name: `${pgName || "Pièce auto"} - Véhicules compatibles`,
               numberOfItems: motorisationsSchema!.length,
               itemListElement: motorisationsSchema!.map((item, index) => ({
                 "@type": "ListItem",
                 position: index + 1,
-                name: `${pgName} ${item.marque_name} ${item.modele_name} ${item.type_name}`,
+                name: `${pgName || "Pièce"} ${item.marque_name || ""} ${item.modele_name || ""} ${item.type_name || ""}`.trim(),
                 url: item.link
                   ? buildCanonicalUrl({
                       baseUrl: item.link,
@@ -215,14 +218,16 @@ export function buildGammeJsonLd(params: {
         ? [
             {
               "@type": "FAQPage",
-              mainEntity: cappedFaq.map((item) => ({
-                "@type": "Question",
-                name: item.question,
-                acceptedAnswer: {
-                  "@type": "Answer",
-                  text: item.answer,
-                },
-              })),
+              mainEntity: cappedFaq
+                .filter((item) => item.question?.trim() && item.answer?.trim())
+                .map((item) => ({
+                  "@type": "Question",
+                  name: item.question.trim(),
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: item.answer.trim(),
+                  },
+                })),
             },
           ]
         : []),

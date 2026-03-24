@@ -1,9 +1,26 @@
-import { type RagData, type BuilderResult, NEG_SCHEMA } from './types';
+import {
+  type RagData,
+  type BuilderResult,
+  NEG_PHOTO,
+  resolveAmbiance,
+} from './types';
 
 /**
- * PRICE — Infographie prix contextualisée.
- * Réassurance valeur, rapport qualité / choix.
- * RAG : selection.cost_range{min, max}, selection.criteria[]
+ * PRICE — Comparatif qualité/gamme (photos réalistes, PAS infographie).
+ *
+ * IMPORTANT : Les générateurs d'images IA ne savent PAS faire des infographies
+ * avec texte/chiffres lisibles. Ce builder génère donc un comparatif visuel
+ * de pièces par niveau de qualité (budget → premium → OEM).
+ *
+ * [A] comparatif qualité
+ * [B] fond neutre gradué (du plus clair à gauche au plus sombre à droite)
+ * [C] 3 pièces du même type, qualité croissante gauche→droite
+ * [D] éclairage studio progressif, plus dramatique vers le premium
+ * [E] alignement horizontal, 3 pièces, progression visuelle
+ * [F] no text, no prices, no labels
+ * [G] perception de valeur, montée en gamme, choix éclairé
+ *
+ * RAG : selection.quality_tiers[], selection.cost_range, selection.criteria[]
  */
 export function buildPricePrompt(
   pgName: string,
@@ -12,49 +29,54 @@ export function buildPricePrompt(
   const fieldsUsed: string[] = [];
   let score = 0;
   const n = pgName.toLowerCase();
+  const amb = resolveAmbiance(rag);
 
-  let rangeHint = '';
+  // Quality tiers pour guider la progression visuelle
+  let qualityDesc = 'budget, standard, premium';
+  const tiers = rag?.selection?.quality_tiers ?? [];
+  if (tiers.length > 0) {
+    qualityDesc = tiers.map((t) => t.tier.toLowerCase()).join(', ');
+    fieldsUsed.push('selection.quality_tiers');
+    score += 2;
+  }
+
+  // Cost range tracked for scoring
   const range = rag?.selection?.cost_range;
   if (range?.min != null && range?.max != null) {
-    rangeHint = ` Fourchette réelle : ${range.min}€ à ${range.max}€.`;
     fieldsUsed.push('selection.cost_range');
     score++;
   }
 
-  // Priorité 1 : quality_tiers explicites
-  // Priorité 2 : cost_range.note (contient souvent les tiers en texte)
-  // Fallback : selection.criteria
-  let tiersHint = 'éco, standard, premium';
-  const tiers = rag?.selection?.quality_tiers ?? [];
-  if (tiers.length > 0) {
-    tiersHint = tiers
-      .map((t) => `${t.tier}${t.price_range ? ` (${t.price_range})` : ''}`)
-      .join(', ');
-    fieldsUsed.push('selection.quality_tiers');
-    score += 2;
-  } else if (range?.note) {
-    tiersHint = range.note.length > 80 ? range.note.slice(0, 80) : range.note;
-    fieldsUsed.push('selection.cost_range.note');
+  // Visual features pour différencier les qualités
+  let visualDiff = '';
+  if (rag?.key_visual_features?.identifying_materials?.length) {
+    visualDiff = ` Matériaux visiblement différents : ${rag.key_visual_features.identifying_materials.slice(0, 2).join(' vs ')}.`;
+    fieldsUsed.push('key_visual_features');
     score++;
-  } else {
-    const criteria = rag?.selection?.criteria ?? [];
-    if (criteria.length >= 2) {
-      tiersHint = criteria
-        .slice(0, 3)
-        .map((c) => c.toLowerCase())
-        .join(', ');
-      fieldsUsed.push('selection.criteria');
-      score++;
-    }
   }
 
-  const prompt = `Infographie prix, design minimaliste flat, fond blanc. Fourchettes de prix du ${n} par niveau de gamme (${tiersHint}). Barres horizontales, code couleur vert/bleu/orange. Sans ombre, rendu vectoriel.${rangeHint} Format 4:3.`;
+  const tierCount = Math.min(Math.max(tiers.length, 3), 3);
+
+  const prompt = [
+    `Photo comparative de ${tierCount} ${n} de qualité croissante, alignés de gauche à droite.`,
+    `Fond : dégradé subtil du gris clair (gauche, entrée de gamme) vers ${amb.accentTone} (droite, premium).`,
+    `À gauche : pièce basique, finition standard. Au centre : pièce qualité intermédiaire. À droite : pièce premium, finition impeccable, détails soignés.`,
+    `Même angle, même échelle, progression visible de la qualité de fabrication.${visualDiff}`,
+    `Éclairage : ${amb.lighting}. Plus contrasté et dramatique sur la pièce premium à droite.`,
+    `Ultra réaliste, haute résolution, pas de texte, pas de prix, pas de labels.`,
+    `Intention : montrer visuellement la différence de qualité entre ${qualityDesc}.`,
+    `Format 4:3.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return {
     prompt,
-    neg: NEG_SCHEMA,
-    alt: `Prix ${n} — fourchettes par gamme`,
-    caption: `Fourchettes de prix ${n}`,
+    neg:
+      NEG_PHOTO +
+      ', text, numbers, prices, currency, labels, infographic, chart, bar chart, graph',
+    alt: `${pgName} — comparatif qualité par gamme`,
+    caption: `Différences de qualité ${n}`,
     ragFieldsUsed: fieldsUsed,
     richnessScore: score,
   };

@@ -1,9 +1,17 @@
-import { type RagData, type BuilderResult, NEG_SCHEMA } from './types';
+import { type RagData, type BuilderResult, NEG_PHOTO } from './types';
 
 /**
- * TYPES — Schéma comparatif des variantes.
- * Clarification pédagogique, différences physiques.
- * RAG : selection.criteria[], domain.confusion_with[]
+ * TYPES — Comparatif réaliste des variantes.
+ *
+ * [A] comparatif / catalogue
+ * [B] fond blanc pur ou gris très clair, surface propre
+ * [C] variantes côte à côte, même échelle, même angle
+ * [D] éclairage studio flat uniforme, pas d'ombres dures
+ * [E] alignement horizontal, espacement régulier, même taille
+ * [F] no text labels, no arrows, no dimensions (IA ne sait pas)
+ * [G] clarté, compréhension immédiate des différences visuelles
+ *
+ * RAG : variants[], key_visual_features, selection.criteria[], domain.confusion_with[]
  */
 export function buildTypesPrompt(
   pgName: string,
@@ -12,49 +20,68 @@ export function buildTypesPrompt(
   const fieldsUsed: string[] = [];
   let score = 0;
   const n = pgName.toLowerCase();
+  // Note: TYPES always uses white background, not family ambiance
 
-  let variantsHint = '';
+  // Variantes explicites du RAG
+  let variantsDesc = '';
   const variants = rag?.variants ?? [];
   if (variants.length > 0) {
-    const names = variants
-      .slice(0, 3)
-      .map((v) => v.name)
-      .join(', ');
-    const diffs = variants
-      .flatMap((v) => v.visual_differences ?? [])
-      .slice(0, 3)
-      .join(', ');
-    variantsHint = ` Types principaux : ${names}.${diffs ? ` Différences visuelles : ${diffs}.` : ''}`;
+    const items = variants.slice(0, 3).map((v) => {
+      const shapes = v.visual_differences?.slice(0, 2).join(', ') ?? '';
+      return shapes ? `${v.name} (${shapes})` : v.name;
+    });
+    variantsDesc = ` Montrer côte à côte : ${items.join(' — ')}.`;
     fieldsUsed.push('variants');
     score += 2;
   } else {
     const criteria = rag?.selection?.criteria ?? [];
     if (criteria.length > 0) {
-      const top = criteria
+      variantsDesc = ` Variantes distinguées par : ${criteria
         .slice(0, 3)
         .map((c) => c.toLowerCase())
-        .join(', ');
-      variantsHint = ` Variantes distinguées par : ${top}.`;
+        .join(', ')}.`;
       fieldsUsed.push('selection.criteria');
       score++;
     }
   }
 
+  // Key visual features pour guider l'IA sur les formes
+  let visualHint = '';
+  if (rag?.key_visual_features?.identifying_shapes?.length) {
+    visualHint = ` Formes distinctives : ${rag.key_visual_features.identifying_shapes.slice(0, 3).join(', ')}.`;
+    fieldsUsed.push('key_visual_features');
+    score++;
+  }
+
+  // Confusion pour contexte
   let confusionHint = '';
   const confusions = rag?.domain?.confusion_with ?? [];
   if (confusions.length > 0) {
-    const names = confusions.slice(0, 2).map((c) => c.term.replace(/-/g, ' '));
-    confusionHint = ` Ne pas confondre avec : ${names.join(', ')}.`;
+    confusionHint = ` Ne montrer que des ${n}, pas de ${confusions[0].term.replace(/-/g, ' ')}.`;
     fieldsUsed.push('domain.confusion_with');
     score++;
   }
 
-  const prompt = `Schéma technique comparatif, fond blanc, style flat design vectoriel. Les différents types de ${n} avec flèches sur les différences physiques. Légendes et cotes dimensionnelles. Rendu net sans ombre.${variantsHint}${confusionHint} Format 4:3.`;
+  const variantCount = Math.min(Math.max(variants.length, 2), 3);
+
+  const prompt = [
+    `Photo catalogue comparative, ${variantCount} variantes de ${n} alignées côte à côte sur fond blanc pur.`,
+    `Chaque variante à la même échelle, même angle trois-quarts, espacement régulier.`,
+    `Ultra réaliste, éclairage studio flat uniforme, pas d'ombres portées dures.`,
+    `${variantsDesc}${visualHint}${confusionHint}`,
+    `Haute résolution, chaque pièce nettement distincte visuellement.`,
+    `Pas de texte, pas de flèches, pas de légendes — uniquement les pièces.`,
+    `Format 4:3.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return {
     prompt,
-    neg: NEG_SCHEMA,
-    alt: `Types de ${n} — schéma comparatif`,
+    neg:
+      NEG_PHOTO +
+      ', text, labels, arrows, annotations, dimensions, numbers, letters',
+    alt: `Types de ${n} — comparatif visuel`,
     caption: `Comment distinguer les types de ${n}`,
     ragFieldsUsed: fieldsUsed,
     richnessScore: score,

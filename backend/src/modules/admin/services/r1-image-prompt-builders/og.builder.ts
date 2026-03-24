@@ -1,9 +1,22 @@
-import { type RagData, type BuilderResult, NEG_PHOTO } from './types';
+import {
+  type RagData,
+  type BuilderResult,
+  NEG_SOCIAL,
+  resolveAmbiance,
+} from './types';
 
 /**
- * OG — Social preview.
- * Branding léger, lisibilité mobile, ratio social dédié.
- * RAG : domain.role, category
+ * OG — Social preview optimisé (1200x630).
+ *
+ * [A] social / preview
+ * [B] fond sombre dégradé adapté à la famille (pas uniforme)
+ * [C] pièce neuve centrée, angle accrocheur
+ * [D] éclairage dramatique latéral, halo subtil
+ * [E] centré avec espace négatif pour preview text overlay (réseaux sociaux)
+ * [F] no text, no logo, no watermark, no clutter
+ * [G] accroche visuelle, CTR social, branding qualité
+ *
+ * RAG : domain.role, completeness_profile/category, key_visual_features
  */
 export function buildOgPrompt(
   pgName: string,
@@ -11,11 +24,12 @@ export function buildOgPrompt(
 ): BuilderResult {
   const fieldsUsed: string[] = [];
   let score = 0;
+  const amb = resolveAmbiance(rag);
 
-  let categoryHint = '';
-  if (rag?.category) {
-    categoryHint = `, ambiance ${rag.category.toLowerCase()}`;
-    fieldsUsed.push('category');
+  if (rag?.completeness_profile || rag?.category) {
+    fieldsUsed.push(
+      rag?.completeness_profile ? 'completeness_profile' : 'category',
+    );
     score++;
   }
 
@@ -25,16 +39,36 @@ export function buildOgPrompt(
       rag.domain.role.length > 50
         ? rag.domain.role.slice(0, 50)
         : rag.domain.role;
-    roleHint = `. Fonction : ${short.toLowerCase()}.`;
+    roleHint = ` Fonction : ${short.toLowerCase()}.`;
     fieldsUsed.push('domain.role');
     score++;
   }
 
-  const prompt = `Image partage social 1200x630. Fond sombre dégradé automobile${categoryHint}. ${pgName} neuf centré, éclairage dramatique latéral. Pas de texte${roleHint} Format 1200:630.`;
+  // Visual features pour un rendu plus précis de la pièce
+  let visualHint = '';
+  if (rag?.key_visual_features?.identifying_shapes?.length) {
+    visualHint = ` Forme caractéristique : ${rag.key_visual_features.identifying_shapes[0]}.`;
+    fieldsUsed.push('key_visual_features');
+    score++;
+  }
+
+  const prompt = [
+    `Photo produit automobile pour partage social, ratio 1200x630.`,
+    `Fond : dégradé sombre, ${amb.accentTone} vers noir, ambiance ${amb.intention.split(',')[0]}.`,
+    `${pgName} neuf centré, légèrement en dessous du centre vertical (rule of thirds).`,
+    `Éclairage dramatique latéral gauche, rim light subtil à droite, halo ${amb.accentTone} derrière la pièce.`,
+    `${visualHint}${roleHint}`,
+    `Ultra réaliste, haute résolution, profondeur de champ très faible.`,
+    `Espace négatif en haut et sur les côtés pour les overlays des réseaux sociaux.`,
+    `Pas de texte, pas de logo, pas de watermark.`,
+    `Format 1200:630.`,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return {
     prompt,
-    neg: NEG_PHOTO,
+    neg: NEG_SOCIAL,
     alt: `${pgName} — AutoMecanik`,
     caption: null,
     ragFieldsUsed: fieldsUsed,
