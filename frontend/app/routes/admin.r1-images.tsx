@@ -17,31 +17,14 @@ import { useState, useRef, useCallback } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { type R1PromptRow } from "~/types/admin-r1.types";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () => createNoIndexMeta("R1 Images - Admin");
 
-interface R1Prompt {
-  rip_id: number;
-  rip_pg_id: number;
-  rip_pg_alias: string;
-  rip_gamme_name: string;
-  rip_slot_id: string;
-  rip_section_id: string;
-  rip_prompt_text: string;
-  rip_neg_prompt: string;
-  rip_alt_text: string;
-  rip_caption: string | null;
-  rip_aspect_ratio: string;
-  rip_image_url: string | null;
-  rip_status: string;
-  rip_selected: boolean;
-  rip_priority_rank: number;
-  rip_rag_fields_used: string[];
-  rip_rag_richness_score: number;
-  rip_stale: boolean;
-}
+// Use centralized R1PromptRow from admin-r1.types.ts
+type R1Prompt = R1PromptRow;
 
 const SLOT_META: Record<
   string,

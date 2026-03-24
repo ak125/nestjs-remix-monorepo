@@ -73,6 +73,7 @@ import { AdminHealthService } from './services/admin-health.service'; // 🏥 He
 // AdminSupplierStatsService — not ready for prod, removed from module
 import { EnricherTextUtils } from './services/enricher-text-utils.service'; // 🔧 Shared text utilities
 import { EnricherYamlParser } from './services/enricher-yaml-parser.service'; // 🔧 Shared YAML/frontmatter parsing
+import { RagGammeReaderService } from './services/rag-gamme-reader.service'; // 🔧 Centralized RAG gamme reading
 import { QualityScoringEngineService } from './services/quality-scoring-engine.service'; // 📊 Quality scoring engine (multi-page)
 import { GammeAggregatorService } from './services/gamme-aggregator.service'; // 📊 Gamme-level score aggregation
 import { RagSafeDistillService } from './services/rag-safe-distill.service'; // 🔒 RAG Safe Distill (pre-enricher filter)
@@ -205,6 +206,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     AdminHealthService, // 🏥 Health overview aggregator
     EnricherTextUtils, // 🔧 Shared text utilities (anonymize, stripHtml, restoreAccents, etc.)
     EnricherYamlParser, // 🔧 Shared YAML/frontmatter parsing (extractYamlList, extractYamlFaq, etc.)
+    RagGammeReaderService, // 🔧 Centralized RAG gamme disk reading + parsing
     QualityScoringEngineService, // 📊 Quality scoring engine (multi-page, 4 dimensions)
     GammeAggregatorService, // 📊 Gamme-level weighted score aggregation
     RagSafeDistillService, // 🔒 RAG Safe Distill (pre-enricher chunk filter, 0-LLM)
@@ -244,6 +246,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     R8VehicleEnricherService, // 🚗 Export for content-refresh processor
     R7BrandEnricherService, // 🏭 Export for R7 brand enrichment
     VehicleRagGeneratorService, // 🚗 Export for R8 enricher auto-generate
+    RagGammeReaderService, // 🔧 Export for gamme-rest (r1-related-resources)
   ],
 })
 export class AdminModule {}

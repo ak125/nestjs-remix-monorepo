@@ -2,33 +2,9 @@
  * Types partagés entre les 5 builders R1 image prompt.
  */
 
-export interface RagData {
-  category?: string;
-  domain?: {
-    role?: string;
-    confusion_with?: Array<{ term: string; difference: string }>;
-    related_parts?: string[];
-  };
-  selection?: {
-    criteria?: string[];
-    cost_range?: { min: number; max: number; currency?: string };
-    brands?: { premium?: string[]; standard?: string[] };
-  };
-  diagnostic?: {
-    symptoms?: Array<{ id: string; label: string; severity: string }>;
-  };
-  maintenance?: {
-    wear_signs?: string[];
-    interval?: string;
-  };
-  installation?: {
-    difficulty?: string;
-    tools?: string[];
-    steps?: string[];
-    time?: string;
-    prerequisite?: string;
-  };
-}
+// RagData centralisé — source unique dans rag-data.types.ts
+import { type RagData } from '../rag-data.types';
+export { type RagData } from '../rag-data.types';
 
 export interface BuilderResult {
   prompt: string;

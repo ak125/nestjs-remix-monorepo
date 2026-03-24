@@ -8,10 +8,7 @@
  * - Blocs vides non retournés
  * - Le frontend consomme, n'arbitre rien
  */
-import { Injectable, Logger } from '@nestjs/common';
-import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
-import * as yaml from 'js-yaml';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import {
   type R1RelatedBlock,
@@ -20,13 +17,14 @@ import {
   MAX_BLOCKS,
   MAX_LINKS_PER_BLOCK,
 } from '../types/r1-related-links.types';
-import { type RagData } from '../../admin/services/r1-image-prompt-builders/types';
-
-const RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+import { type RagData } from '../../admin/services/rag-data.types';
+import { RagGammeReaderService } from '../../admin/services/rag-gamme-reader.service';
 
 @Injectable()
 export class R1RelatedResourcesService extends SupabaseBaseService {
   protected readonly logger = new Logger(R1RelatedResourcesService.name);
+
+  @Inject() private readonly ragReader: RagGammeReaderService;
 
   async buildRelatedBlocks(
     pgId: number,
@@ -35,7 +33,7 @@ export class R1RelatedResourcesService extends SupabaseBaseService {
     _options?: { referenceSlug?: string | null },
   ): Promise<R1RelatedBlocksPayload> {
     // Lire le RAG
-    const ragData = this.readAndParseRag(pgAlias);
+    const ragData = this.ragReader.readAndParse(pgAlias);
 
     // Construire les blocs candidats en parallèle
     const [confusionBlock, guideBlock, relatedBlock] = await Promise.all([
@@ -190,26 +188,5 @@ export class R1RelatedResourcesService extends SupabaseBaseService {
     };
   }
 
-  // ── RAG reader ──
-
-  private readAndParseRag(pgAlias: string): RagData | null {
-    const filePath = join(RAG_GAMMES_DIR, `${pgAlias}.md`);
-    try {
-      if (!existsSync(filePath)) return null;
-      const content = readFileSync(filePath, 'utf-8');
-      const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-      if (!fmMatch) return null;
-      const parsed = yaml.load(fmMatch[1]) as Record<string, unknown>;
-      return {
-        category: parsed.category as string | undefined,
-        domain: parsed.domain as RagData['domain'],
-        selection: parsed.selection as RagData['selection'],
-        installation: parsed.installation as RagData['installation'],
-        maintenance: parsed.maintenance as RagData['maintenance'],
-        diagnostic: parsed.diagnostic as RagData['diagnostic'],
-      };
-    } catch {
-      return null;
-    }
-  }
+  // RAG lecture centralisée via RagGammeReaderService (injecté)
 }

@@ -2,54 +2,16 @@
  * R1ImagePromptService — Génère les prompts image pour les 5 emplacements
  * de chaque page gamme R1. Utilise des builders par slot + RAG contexte.
  */
-import { Injectable, Logger } from '@nestjs/common';
-import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
-import * as yaml from 'js-yaml';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import {
-  SLOT_BUILDERS,
-  SLOT_META,
-  SLOT_IDS,
-  type RagData,
-} from './r1-image-prompt-builders';
-
-const RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+import { SLOT_BUILDERS, SLOT_META, SLOT_IDS } from './r1-image-prompt-builders';
+import { RagGammeReaderService } from './rag-gamme-reader.service';
 
 @Injectable()
 export class R1ImagePromptService extends SupabaseBaseService {
   protected readonly logger = new Logger(R1ImagePromptService.name);
 
-  // ── RAG reading (same pattern as R3) ──
-
-  private readRagFromDisk(pgAlias: string): string | null {
-    const filePath = join(RAG_GAMMES_DIR, `${pgAlias}.md`);
-    try {
-      if (!existsSync(filePath)) return null;
-      return readFileSync(filePath, 'utf-8');
-    } catch {
-      return null;
-    }
-  }
-
-  private parseRagData(content: string): RagData {
-    const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
-    if (!fmMatch) return {};
-    try {
-      const parsed = yaml.load(fmMatch[1]) as Record<string, unknown>;
-      return {
-        category: parsed.category as string | undefined,
-        domain: parsed.domain as RagData['domain'],
-        diagnostic: parsed.diagnostic as RagData['diagnostic'],
-        maintenance: parsed.maintenance as RagData['maintenance'],
-        selection: parsed.selection as RagData['selection'],
-        installation: parsed.installation as RagData['installation'],
-      };
-    } catch {
-      this.logger.warn(`[R1-IMG] Failed to parse RAG YAML frontmatter`);
-      return {};
-    }
-  }
+  @Inject() private readonly ragReader: RagGammeReaderService;
 
   // ── Generation ──
 
@@ -85,9 +47,9 @@ export class R1ImagePromptService extends SupabaseBaseService {
     }
 
     // Lire le RAG (contexte gamme)
-    const rawRag = this.readRagFromDisk(pgAlias);
-    const ragData = rawRag ? this.parseRagData(rawRag) : null;
-    if (ragData && Object.keys(ragData).length > 0) {
+    // Lire le RAG via service centralisé
+    const ragData = this.ragReader.readAndParse(pgAlias);
+    if (ragData) {
       this.logger.log(`[R1-IMG] RAG loaded for ${pgAlias}`);
     }
 

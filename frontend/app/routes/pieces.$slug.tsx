@@ -50,6 +50,7 @@ import {
   GAMME_PAGE_CONTRACT_VERSION,
 } from "~/types/gamme-page-contract.types";
 import { type R1ImageItem } from "~/types/r1-images.types";
+import { type R1RelatedBlocksPayload } from "~/types/r1-related.types";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -566,19 +567,7 @@ type PiecesPageSyncData = Omit<
   };
   r1Sources?: R1SourceMap;
   r1Images?: R1ImageItem[];
-  relatedResources?: {
-    blocks: Array<{
-      kind: string;
-      heading: string;
-      items: Array<{
-        kind: string;
-        title: string;
-        href: string;
-        reason: string;
-        score: number;
-      }>;
-    }>;
-  } | null;
+  relatedResources?: R1RelatedBlocksPayload | null;
 };
 
 // Loader payload complet: sync + deferred Promises

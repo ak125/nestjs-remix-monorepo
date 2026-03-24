@@ -4,6 +4,7 @@ import { GammeRestRpcV2Controller } from './gamme-rest-rpc-v2.controller';
 import { CatalogModule } from '../catalog/catalog.module';
 import { DatabaseModule } from '../../database/database.module';
 import { SeoModule } from '../seo/seo.module';
+import { AdminModule } from '../admin/admin.module';
 import {
   GammeDataTransformerService,
   GammeRpcService,
@@ -21,7 +22,7 @@ import { R1RelatedResourcesService } from './services/r1-related-resources.servi
  * - Services réutilisables pour transformation de données
  */
 @Module({
-  imports: [CatalogModule, DatabaseModule, SeoModule],
+  imports: [CatalogModule, DatabaseModule, SeoModule, AdminModule],
   controllers: [
     GammeRestOptimizedController, // Fallback automatique
     GammeRestRpcV2Controller, // RPC V2 ultra-optimisé

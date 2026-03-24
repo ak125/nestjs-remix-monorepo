@@ -19,11 +19,16 @@ import { useState, useCallback, useEffect } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { type R1PromptRow } from "~/types/admin-r1.types";
+import { type R1RelatedBlock as RelatedBlock } from "~/types/r1-related.types";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>
   createNoIndexMeta("R1 QA Console - Admin");
+
+// Use centralized types
+type R1Prompt = R1PromptRow;
 
 // 10 gammes audit
 const AUDIT_GAMMES = [
@@ -42,25 +47,6 @@ const AUDIT_GAMMES = [
   { pgId: 1260, alias: "pompe-a-eau", name: "Pompe à eau" },
   { pgId: 1145, alias: "vanne-egr", name: "Vanne EGR" },
 ];
-
-interface R1Prompt {
-  rip_id: number;
-  rip_slot_id: string;
-  rip_image_url: string | null;
-  rip_status: string;
-  rip_selected: boolean;
-  rip_rag_fields_used: string[];
-  rip_rag_richness_score: number;
-  rip_stale: boolean;
-  rip_prompt_text: string;
-  rip_alt_text: string;
-}
-
-interface RelatedBlock {
-  kind: string;
-  heading: string;
-  items: Array<{ title: string; href: string; reason: string }>;
-}
 
 interface GammeQAData {
   alias: string;

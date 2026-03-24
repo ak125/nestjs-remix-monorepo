@@ -20,6 +20,7 @@ import {
   type GammePageSeoSwitch,
 } from "~/types/gamme-page-contract.types";
 import { type R1ImageItem } from "~/types/r1-images.types";
+import { type R1RelatedBlocksPayload } from "~/types/r1-related.types";
 import { logger } from "~/utils/logger";
 
 const API_URL = process.env.API_URL || "http://localhost:3000";
@@ -76,19 +77,7 @@ export interface GammeApiResponse {
     canonicalUrl: string | null;
   } | null;
   r1Images?: R1ImageItem[];
-  relatedResources?: {
-    blocks: Array<{
-      kind: string;
-      heading: string;
-      items: Array<{
-        kind: string;
-        title: string;
-        href: string;
-        reason: string;
-        score: number;
-      }>;
-    }>;
-  };
+  relatedResources?: R1RelatedBlocksPayload;
 }
 
 interface FetchOptions {
