@@ -657,7 +657,8 @@ export class ExecutionRouterService extends SupabaseBaseService {
         pcq_processed_at: new Date().toISOString(),
         pcq_error:
           failedCount > 0
-            ? `${failedCount}/${result.totalTargets} failed`
+            ? (this.extractDetailedError(result) ??
+              `${failedCount}/${result.totalTargets} failed`)
             : null,
         pcq_sections: request.targetIds,
       });
@@ -671,6 +672,27 @@ export class ExecutionRouterService extends SupabaseBaseService {
         `Failed to log execution: ${err instanceof Error ? err.message : err}`,
       );
     }
+  }
+
+  // ── Private: extract detailed error from execution result ──
+
+  private extractDetailedError(result: ExecutionResult): string | null {
+    const firstFailed = result.results.find((r) => r.status === 'failed');
+    if (!firstFailed) return null;
+
+    // Priority 1: explicit error message (from thrown errors caught by retry handler)
+    if (firstFailed.error) {
+      return `${firstFailed.error}`.substring(0, 500);
+    }
+
+    // Priority 2: reason from returned data (e.g. QUALITY_BELOW_THRESHOLD)
+    if (firstFailed.data && typeof firstFailed.data === 'object') {
+      const d = firstFailed.data as Record<string, unknown>;
+      if (d.reason) return `${d.reason}`.substring(0, 500);
+      if (d.error) return `${d.error}`.substring(0, 500);
+    }
+
+    return null;
   }
 
   // ── Private: resolve enricher from DI ──
