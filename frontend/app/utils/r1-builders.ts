@@ -183,7 +183,7 @@ export function buildGammeJsonLd(params: {
               "@type": "ListItem",
               position: 3,
               name: pgName,
-              // Dernier breadcrumb : pas de propriété 'item' (spec Google)
+              item: canonicalUrl,
             },
           ],
         },
