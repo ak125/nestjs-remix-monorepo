@@ -1778,12 +1778,15 @@ export class ConseilEnricherService extends SupabaseBaseService {
   ): { score: number; flags: string[] } {
     const flags: string[] = [];
 
-    // MISSING_PROCEDURE: current run must produce or update S4
-    // (stale S4 from a prior run should not suppress this flag)
+    // MISSING_PROCEDURE: flag if no S4 in current actions AND no substantial S4 exists in DB
     const hasS4InActions = actions.some(
       (a) => a.type === SECTION_TYPES.S4_DEPOSE && a.action !== 'skip',
     );
-    if (!hasS4InActions) {
+    const existingS4 = existing.get(SECTION_TYPES.S4_DEPOSE);
+    const s4Substantial =
+      existingS4 &&
+      (existingS4.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
+    if (!hasS4InActions && !s4Substantial) {
       flags.push('MISSING_PROCEDURE');
     }
 
