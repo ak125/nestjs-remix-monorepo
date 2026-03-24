@@ -379,13 +379,10 @@ export class OrdersService extends SupabaseBaseService {
       );
 
       // Atomic insert: order + lines in single DB transaction via RPC
-      const { error: rpcError } = await this.supabase.rpc(
-        'create_order_atomic',
-        {
-          p_order: orderToInsert,
-          p_lines: orderLines,
-        },
-      );
+      const { error: rpcError } = await this.callRpc('create_order_atomic', {
+        p_order: orderToInsert,
+        p_lines: orderLines,
+      });
 
       if (rpcError) {
         this.logger.error('Erreur création atomique:', rpcError);
