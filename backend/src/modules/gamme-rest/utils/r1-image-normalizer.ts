@@ -6,9 +6,9 @@
  *  2. approved + image_url (sans selected) → fallback
  *  3. Plus récent gagne si même priorité
  *
- * Retourne une seule image par slot + heroImagePath séparé.
+ * Retourne un map slot→image + heroImagePath séparé.
  *
- * Shape de sortie : see frontend/app/types/r1-images.types.ts (R1ImageItem)
+ * Shape de sortie : Record<slot, R1ImageItem> — see frontend/app/types/r1-images.types.ts
  */
 
 const HERO_SLOT_IDS = ['HERO', 'HERO_PRODUCT', 'HERO_EDITORIAL'];
@@ -33,7 +33,8 @@ export interface NormalizedR1Image {
 
 export interface NormalizeResult {
   heroImagePath: string | null;
-  images: NormalizedR1Image[];
+  /** Map slot → image unique (contrat R1ImagesBySlot) */
+  images: Record<string, NormalizedR1Image>;
 }
 
 export function normalizeR1Images(
@@ -41,7 +42,7 @@ export function normalizeR1Images(
   options?: { pgId?: number; logger?: { warn: (msg: string) => void } },
 ): NormalizeResult {
   if (!rows || rows.length === 0) {
-    return { heroImagePath: null, images: [] };
+    return { heroImagePath: null, images: {} };
   }
 
   const pgId = options?.pgId;
@@ -80,7 +81,7 @@ export function normalizeR1Images(
   }
 
   let heroImagePath: string | null = null;
-  const images: NormalizedR1Image[] = [];
+  const images: Record<string, NormalizedR1Image> = {};
 
   for (const img of slotMap.values()) {
     const uploadPath = img.rip_image_url.match(/\/uploads\/(.+)$/)?.[1];
@@ -90,17 +91,17 @@ export function normalizeR1Images(
       heroImagePath = uploadPath;
     }
 
-    images.push({
+    images[img.rip_slot_id] = {
       slot: img.rip_slot_id,
       path: uploadPath,
       alt: img.rip_alt_text ?? '',
       caption: img.rip_caption ?? null,
       aspect: img.rip_aspect_ratio ?? '4:3',
-    });
+    };
   }
 
   // P1.7 — Observabilité : DB rows non exploitables
-  if (log && rows.length > 0 && images.length === 0) {
+  if (log && rows.length > 0 && Object.keys(images).length === 0) {
     log.warn(`[R1-IMG] pg_id=${pgId}: ${rows.length} DB rows, 0 exploitable`);
   }
 

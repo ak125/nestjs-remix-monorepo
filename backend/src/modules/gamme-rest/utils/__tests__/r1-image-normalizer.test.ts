@@ -30,15 +30,15 @@ describe('normalizeR1Images', () => {
       }),
     ];
     const result = normalizeR1Images(rows);
-    expect(result.images).toHaveLength(1);
-    expect(result.images[0].alt).toBe('winner');
+    expect(Object.keys(result.images)).toHaveLength(1);
+    expect(result.images['TYPES']?.alt).toBe('winner');
   });
 
   it('2. fallback: approved without selected is still returned', () => {
     const rows = [makeRow({ rip_slot_id: 'PRICE', rip_selected: false })];
     const result = normalizeR1Images(rows);
-    expect(result.images).toHaveLength(1);
-    expect(result.images[0].slot).toBe('PRICE');
+    expect(Object.keys(result.images)).toHaveLength(1);
+    expect(result.images['PRICE']?.slot).toBe('PRICE');
   });
 
   it('3. URL without /uploads/ path is ignored', () => {
@@ -50,7 +50,7 @@ describe('normalizeR1Images', () => {
       }),
     ];
     const result = normalizeR1Images(rows);
-    expect(result.images).toHaveLength(0);
+    expect(Object.keys(result.images)).toHaveLength(0);
   });
 
   it('4. one image per slot — 3 HERO candidates → 1 returned', () => {
@@ -72,9 +72,12 @@ describe('normalizeR1Images', () => {
       }),
     ];
     const result = normalizeR1Images(rows);
-    const heroes = result.images.filter((i) => i.slot === 'HERO');
-    expect(heroes).toHaveLength(1);
-    expect(heroes[0].alt).toBe('best');
+    expect(result.images['HERO']).toBeDefined();
+    expect(result.images['HERO']?.alt).toBe('best');
+    // Only 1 HERO key possible in a map
+    expect(Object.keys(result.images).filter((k) => k === 'HERO')).toHaveLength(
+      1,
+    );
   });
 
   it('5. HERO sets heroImagePath', () => {
@@ -87,14 +90,14 @@ describe('normalizeR1Images', () => {
     const rows = [makeRow({ rip_slot_id: 'OG', rip_selected: true })];
     const result = normalizeR1Images(rows);
     expect(result.heroImagePath).toBeNull();
-    expect(result.images).toHaveLength(1);
-    expect(result.images[0].slot).toBe('OG');
+    expect(Object.keys(result.images)).toHaveLength(1);
+    expect(result.images['OG']?.slot).toBe('OG');
   });
 
-  it('7. empty array returns empty result', () => {
+  it('7. empty array returns empty map', () => {
     const result = normalizeR1Images([]);
     expect(result.heroImagePath).toBeNull();
-    expect(result.images).toEqual([]);
+    expect(result.images).toEqual({});
   });
 
   it('8. most recent wins when same priority (both non-selected)', () => {
@@ -113,7 +116,14 @@ describe('normalizeR1Images', () => {
       }),
     ];
     const result = normalizeR1Images(rows);
-    expect(result.images).toHaveLength(1);
-    expect(result.images[0].alt).toBe('newer');
+    expect(Object.keys(result.images)).toHaveLength(1);
+    expect(result.images['LOCATION']?.alt).toBe('newer');
+  });
+
+  it('9. r1Images is never an array (contrat P1)', () => {
+    const rows = [makeRow({ rip_slot_id: 'HERO', rip_selected: true })];
+    const result = normalizeR1Images(rows);
+    expect(Array.isArray(result.images)).toBe(false);
+    expect(typeof result.images).toBe('object');
   });
 });

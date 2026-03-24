@@ -19,7 +19,7 @@ import {
   type GammePageBuyingGuide,
   type GammePageSeoSwitch,
 } from "~/types/gamme-page-contract.types";
-import { type R1ImageItem } from "~/types/r1-images.types";
+import { type R1ImagesBySlot } from "~/types/r1-images.types";
 import { type R1RelatedBlocksPayload } from "~/types/r1-related.types";
 import { logger } from "~/utils/logger";
 
@@ -76,7 +76,7 @@ export interface GammeApiResponse {
     roleMecanique: string | null;
     canonicalUrl: string | null;
   } | null;
-  r1Images?: R1ImageItem[];
+  r1Images?: R1ImagesBySlot;
   relatedResources?: R1RelatedBlocksPayload;
 }
 

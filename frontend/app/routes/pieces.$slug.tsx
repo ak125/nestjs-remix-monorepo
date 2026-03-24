@@ -49,7 +49,7 @@ import {
   type GammePageDataV1,
   GAMME_PAGE_CONTRACT_VERSION,
 } from "~/types/gamme-page-contract.types";
-import { type R1ImageItem } from "~/types/r1-images.types";
+import { type R1ImagesBySlot } from "~/types/r1-images.types";
 import { type R1RelatedBlocksPayload } from "~/types/r1-related.types";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
@@ -378,7 +378,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         r1Sources,
         substitution: pageData.substitution,
         reference: pageData.reference,
-        r1Images: apiData.r1Images ?? [],
+        r1Images: apiData.r1Images ?? {},
         relatedResources: apiData.relatedResources ?? null,
         canonicalPath,
         gammeId: parseInt(gammeId, 10),
@@ -467,8 +467,8 @@ export const meta: MetaFunction<typeof loader> = ({
   result.push({ name: "description", content: description });
 
   // OG image — slot OG > slot HERO > pg_pic > fallback transaction
-  const r1OgSlot = (data.r1Images ?? []).find((i) => i.slot === "OG");
-  const r1HeroSlot = (data.r1Images ?? []).find((i) => i.slot === "HERO");
+  const r1OgSlot = data.r1Images?.OG;
+  const r1HeroSlot = data.r1Images?.HERO;
   const ogSourcePath = r1OgSlot?.path ?? r1HeroSlot?.path ?? null;
   const ogImage = ogSourcePath
     ? getOgImageUrl(`/img/uploads/${ogSourcePath}`, null)
@@ -566,7 +566,7 @@ type PiecesPageSyncData = Omit<
     topMotorCodes: string[];
   };
   r1Sources?: R1SourceMap;
-  r1Images?: R1ImageItem[];
+  r1Images?: R1ImagesBySlot;
   relatedResources?: R1RelatedBlocksPayload | null;
 };
 
@@ -586,9 +586,8 @@ export default function PiecesDetailPage() {
   const navigation = useNavigation();
   const navigate = useNavigate();
 
-  // Helper: extraire une image R1 par slot
-  const r1Img = (slot: string) =>
-    (data.r1Images ?? []).find((i) => i.slot === slot);
+  // Helper: extraire une image R1 par slot (accès O(1))
+  const r1Img = (slot: string) => data.r1Images?.[slot];
 
   // Afficher un indicateur de chargement si les données sont en cours de chargement
   const isLoading = navigation.state === "loading";

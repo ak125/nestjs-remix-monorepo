@@ -189,7 +189,7 @@ export class GammeResponseBuilderService {
     // ── R1 Images: sélection déterministe via normalizer ──
     // Shape: see frontend/app/types/r1-images.types.ts (R1ImageItem)
     let r1HeroImageUrl: string | null = null;
-    let r1Images: NormalizeResult['images'] = [];
+    let r1Images: NormalizeResult['images'] = {};
     try {
       const sbClient = this.buyingGuideService.getSupabaseClient();
       const { data: allApproved } = await sbClient
@@ -944,5 +944,5 @@ export class GammeResponseBuilderService {
    * Inject approved R1 editorial images into sg_content HTML.
    * Matches slot to H2 by keyword, inserts <figure> after the H2.
    */
-  // injectR1Images removed — images are now structured data in r1Images[]
+  // injectR1Images removed — images are now structured data in r1Images map
 }
