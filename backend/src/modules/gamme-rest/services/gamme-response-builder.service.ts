@@ -820,7 +820,7 @@ export class GammeResponseBuilderService {
         wall: wallUrl,
         famille_info: familleInfo || null,
       },
-      r1Images,
+      r1Images: Object.keys(r1Images).length > 0 ? r1Images : undefined,
       relatedResources:
         relatedResources.blocks.length > 0 ? relatedResources : undefined,
       motorisations:

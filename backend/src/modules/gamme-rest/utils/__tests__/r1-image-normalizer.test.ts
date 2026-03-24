@@ -126,4 +126,24 @@ describe('normalizeR1Images', () => {
     expect(Array.isArray(result.images)).toBe(false);
     expect(typeof result.images).toBe('object');
   });
+
+  it('10. unknown slot is skipped with warning', () => {
+    const rows = [makeRow({ rip_slot_id: 'UNKNOWN_SLOT', rip_selected: true })];
+    const warnings: string[] = [];
+    const result = normalizeR1Images(rows, {
+      pgId: 1,
+      logger: { warn: (msg) => warnings.push(msg) },
+    });
+    expect(Object.keys(result.images)).toHaveLength(0);
+    expect(warnings.length).toBeGreaterThan(0);
+    expect(warnings[0]).toContain('[R1-IMG]');
+    expect(warnings[0]).toContain('unknown slot');
+  });
+
+  it('11. HERO_PRODUCT resolves to HERO slot', () => {
+    const rows = [makeRow({ rip_slot_id: 'HERO_PRODUCT', rip_selected: true })];
+    const result = normalizeR1Images(rows);
+    expect(result.images['HERO']).toBeDefined();
+    expect(result.heroImagePath).toBe('articles/test.webp');
+  });
 });

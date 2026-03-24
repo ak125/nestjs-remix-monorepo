@@ -6,12 +6,31 @@
  *  2. approved + image_url (sans selected) → fallback
  *  3. Plus récent gagne si même priorité
  *
- * Retourne un map slot→image + heroImagePath séparé.
+ * Retourne un map strict slot→image + heroImagePath séparé.
+ * Seuls les 5 slots canoniques sont acceptés — les inconnus sont skippés.
  *
- * Shape de sortie : Record<slot, R1ImageItem> — see frontend/app/types/r1-images.types.ts
+ * Shape de sortie : Partial<Record<R1ImageSlot, NormalizedR1Image>>
  */
 
+/** Les 5 slots canoniques d'une page R1 — contrat P1 (miroir frontend/app/types/r1-images.types.ts) */
+export const R1_IMAGE_SLOTS = [
+  'HERO',
+  'TYPES',
+  'PRICE',
+  'LOCATION',
+  'OG',
+] as const;
+export type R1ImageSlot = (typeof R1_IMAGE_SLOTS)[number];
+
 const HERO_SLOT_IDS = ['HERO', 'HERO_PRODUCT', 'HERO_EDITORIAL'];
+
+/** Résout un slot DB vers un slot canonique (ou null si inconnu) */
+function resolveSlot(dbSlot: string): R1ImageSlot | null {
+  if (HERO_SLOT_IDS.includes(dbSlot)) return 'HERO';
+  if ((R1_IMAGE_SLOTS as readonly string[]).includes(dbSlot))
+    return dbSlot as R1ImageSlot;
+  return null;
+}
 
 export interface RawR1ImageRow {
   rip_slot_id: string;
@@ -24,7 +43,7 @@ export interface RawR1ImageRow {
 }
 
 export interface NormalizedR1Image {
-  slot: string;
+  slot: R1ImageSlot;
   path: string;
   alt: string;
   caption: string | null;
@@ -33,8 +52,8 @@ export interface NormalizedR1Image {
 
 export interface NormalizeResult {
   heroImagePath: string | null;
-  /** Map slot → image unique (contrat R1ImagesBySlot) */
-  images: Record<string, NormalizedR1Image>;
+  /** Map slot → image unique (contrat strict R1ImagesBySlot) */
+  images: Partial<Record<R1ImageSlot, NormalizedR1Image>>;
 }
 
 export function normalizeR1Images(
@@ -81,18 +100,29 @@ export function normalizeR1Images(
   }
 
   let heroImagePath: string | null = null;
-  const images: Record<string, NormalizedR1Image> = {};
+  const images: Partial<Record<R1ImageSlot, NormalizedR1Image>> = {};
 
   for (const img of slotMap.values()) {
     const uploadPath = img.rip_image_url.match(/\/uploads\/(.+)$/)?.[1];
     if (!uploadPath) continue;
 
+    // Résoudre le slot DB vers un slot canonique
+    const canonicalSlot = resolveSlot(img.rip_slot_id);
+    if (!canonicalSlot) {
+      if (log) {
+        log.warn(
+          `[R1-IMG] pg_id=${pgId} slot=${img.rip_slot_id}: unknown slot skipped`,
+        );
+      }
+      continue;
+    }
+
     if (HERO_SLOT_IDS.includes(img.rip_slot_id)) {
       heroImagePath = uploadPath;
     }
 
-    images[img.rip_slot_id] = {
-      slot: img.rip_slot_id,
+    images[canonicalSlot] = {
+      slot: canonicalSlot,
       path: uploadPath,
       alt: img.rip_alt_text ?? '',
       caption: img.rip_caption ?? null,

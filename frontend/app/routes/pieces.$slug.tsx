@@ -378,7 +378,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         r1Sources,
         substitution: pageData.substitution,
         reference: pageData.reference,
-        r1Images: apiData.r1Images ?? {},
+        r1Images: apiData.r1Images,
         relatedResources: apiData.relatedResources ?? null,
         canonicalPath,
         gammeId: parseInt(gammeId, 10),
