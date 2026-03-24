@@ -45,10 +45,10 @@ const navItems = [
   },
   {
     label: "Gammes SEO",
-    href: "/admin/seo-hub/gammes",
+    href: "/admin/gammes-seo",
     icon: Package,
-    description: "230 gammes, G-Level",
-    badge: "230",
+    description: "243 gammes, G-Level",
+    badge: "243",
   },
   {
     label: "Contenu",

@@ -519,7 +519,7 @@ export default function SeoHubDashboard() {
               Déclencher Monitoring
             </Button>
             <Button variant="outline" asChild>
-              <a href="/admin/seo-hub/gammes">
+              <a href="/admin/gammes-seo">
                 <Package className="h-4 w-4 mr-2" />
                 Gérer Gammes SEO
               </a>

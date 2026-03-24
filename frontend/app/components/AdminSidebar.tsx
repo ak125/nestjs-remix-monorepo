@@ -348,6 +348,18 @@ export const AdminSidebar = memo(function AdminSidebar({
           icon: ShieldCheck,
           description: "Validateur rôles SEO",
         },
+        {
+          name: "R1 Images",
+          href: "/admin/r1-images",
+          icon: ImageIcon,
+          description: "Pilotage images par gamme",
+        },
+        {
+          name: "R1 QA Audit",
+          href: "/admin/r1-qa",
+          icon: ShieldCheck,
+          description: "Audit qualité R1",
+        },
       ],
     },
     {
