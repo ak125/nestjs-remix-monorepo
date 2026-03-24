@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { TABLES } from '@repo/database-types';
 import {
   Injectable,
@@ -43,13 +44,18 @@ export interface CreateOrderData {
     unitPrice: number;
     vatRate?: number;
     discount?: number;
-    consigne_unit?: number; // Phase 5: Consigne unitaire
-    has_consigne?: boolean; // Phase 5: Produit avec consigne
+    consigne_unit?: number;
+    has_consigne?: boolean;
   }>;
   billingAddress: OrderAddress;
   shippingAddress: OrderAddress;
   customerNote?: string;
   shippingMethod?: string;
+  idempotencyKey?: string;
+  guestEmail?: string;
+  shippingFee?: number;
+  couponCode?: string;
+  gaClientId?: string;
 }
 
 export interface UpdateOrderData {
@@ -57,6 +63,37 @@ export interface UpdateOrderData {
   shippingAddress?: OrderAddress;
   customerNote?: string;
   status?: number;
+}
+
+/**
+ * Calcule un fingerprint canonique serveur pour une commande.
+ * Montants en centimes entiers, lignes triées, SHA256 complet.
+ */
+export function computeOrderFingerprint(data: CreateOrderData): string {
+  const payload = JSON.stringify({
+    customerId: data.customerId || null,
+    guestEmail: data.guestEmail || null,
+    lines: (data.orderLines || [])
+      .map(
+        (i) =>
+          `${i.productId}:${i.quantity}:${Math.round((i.unitPrice || 0) * 100)}`,
+      )
+      .sort()
+      .join(','),
+    total: Math.round(
+      (data.orderLines || []).reduce(
+        (sum, i) => sum + i.quantity * i.unitPrice,
+        0,
+      ) * 100,
+    ),
+    shipping: data.shippingMethod || null,
+    shippingFee: Math.round((data.shippingFee || 0) * 100),
+    zipCode: data.shippingAddress?.zipCode || null,
+    country: data.shippingAddress?.country || 'FR',
+    currency: 'EUR',
+    coupon: data.couponCode || null,
+  });
+  return createHash('sha256').update(payload).digest('hex');
 }
 
 export interface OrderFilters {
@@ -153,6 +190,11 @@ export class OrdersService extends SupabaseBaseService {
     private readonly mailService: MailService,
   ) {
     super();
+  }
+
+  /** Expose le client Supabase pour le controller (idempotence) */
+  getSupabaseClient() {
+    return this.supabase;
   }
 
   /**

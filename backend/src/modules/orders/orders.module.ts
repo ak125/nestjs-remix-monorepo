@@ -22,6 +22,7 @@ import { OrderStatusService } from './services/order-status.service';
 import { OrderArchiveService } from './services/order-archive.service';
 import { TicketsService } from './services/tickets.service';
 import { OrderActionsService } from './services/order-actions.service';
+import { OrderCleanupService } from './services/order-cleanup.service';
 
 // Event listeners
 import { OrderAuditListener } from './listeners/order-audit.listener';
@@ -80,6 +81,7 @@ import { OrderEmailListener } from './listeners/order-email.listener';
     OrderArchiveService, // Archivage
     TicketsService, // SAV
     OrderActionsService, // Actions backoffice
+    OrderCleanupService, // Cron: cleanup orphelins idempotency + resume tokens
     OrderAuditListener, // Event: audit trail → __admin_audit_log
     OrderEmailListener, // Event: emails shipped/cancelled/refunded
   ],

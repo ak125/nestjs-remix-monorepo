@@ -19,6 +19,7 @@ import {
   useRevalidator,
   useLocation,
   useMatches,
+  useNavigation,
 } from "@remix-run/react";
 
 import { ChevronUp } from "lucide-react";
@@ -27,6 +28,7 @@ import {
   lazy,
   Suspense,
   useEffect,
+  useRef,
   type ErrorInfo,
   type ReactNode,
 } from "react";
@@ -60,8 +62,7 @@ export const links: LinksFunction = () => [
   // 🚀 LCP: Preload CSS critique
   { rel: "preload", href: stylesheet, as: "style" },
 
-  // 🚀 V9 fonts: Outfit (headings) + DM Sans (body) — above-fold critical
-  // Inter + Montserrat: font-display:swap in @font-face, no preload needed
+  // Fonts: Outfit (headings) + DM Sans (body) — above-fold critical
   {
     rel: "preload",
     href: "/fonts/outfit-latin.woff2",
@@ -100,7 +101,7 @@ export const meta: MetaFunction = () => [
     content:
       "Catalogue de pièces détachées auto pour toutes marques et modèles. Livraison rapide. Qualité garantie.",
   },
-  { name: "theme-color", content: "#0d1b2a" },
+  { name: "theme-color", content: "#0F1E38" },
   { property: "og:image", content: "https://www.automecanik.com/logo-og.webp" },
   { property: "og:image:width", content: "1200" },
   { property: "og:image:height", content: "630" },
@@ -230,24 +231,34 @@ function AppShell({ children }: { children: React.ReactNode }) {
   const gtmConversionGoal = pageRoleAttrs?.["data-conversion-goal"];
   const gtmVehicleContext = pageRoleAttrs?.["data-vehicle-context"];
 
-  // 📊 Google Analytics - Tracking des navigations SPA (optimisé avec requestIdleCallback)
+  // 📊 Google Analytics - Tracking SPA (dedup + navigation.state idle)
+  const prevUrlRef = useRef("");
+  const navigation = useNavigation();
+
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Attendre que la navigation soit stabilisée (pas de redirect en cours)
+    if (navigation.state !== "idle") return;
+
+    const currentUrl = location.pathname + location.search;
+    // Dedup : ne pas re-fire si même URL (évite inflation /login et redirects)
+    if (currentUrl === prevUrlRef.current) return;
+    prevUrlRef.current = currentUrl;
 
     const trackPageView = () => {
-      // Exclure les pages admin du tracking GA4 (évite pollution analytics)
+      // Exclure les pages admin du tracking GA4
       if (location.pathname.startsWith("/admin")) return;
 
       if (typeof window.gtag === "function") {
-        window.gtag("config", "G-ZVG6K5R740", {
-          page_path: location.pathname + location.search,
+        window.gtag("event", "page_view", {
+          page_path: currentUrl,
           page_title: document.title,
           page_location: window.location.href,
         });
       }
     };
 
-    // Utiliser requestIdleCallback pour ne pas bloquer l'INP
+    // requestIdleCallback pour ne pas bloquer l'INP
     if ("requestIdleCallback" in window) {
       (
         window as Window & {
@@ -258,10 +269,9 @@ function AppShell({ children }: { children: React.ReactNode }) {
         }
       ).requestIdleCallback(trackPageView, { timeout: 1000 });
     } else {
-      // Fallback pour Safari
       setTimeout(trackPageView, 0);
     }
-  }, [location.pathname, location.search]);
+  }, [location.pathname, location.search, navigation.state]);
 
   // 📊 Phase 9: DataLayer GTM - Push pageRole attributes
   // IMPORTANT: Dépendre de primitives (gtm*) au lieu de l'objet pageRoleAttrs
@@ -355,7 +365,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       <button
         onClick={scrollToTop}
         type="button"
-        className={`fixed bottom-40 right-4 md:bottom-24 md:right-8 z-[9999] w-12 h-12 rounded-full shadow-2xl flex items-center justify-center bg-[#e8590c] hover:bg-[#d9480f] text-white transition-all duration-300 hover:scale-110 ${showScrollTop ? "opacity-100 scale-100" : "opacity-0 scale-50 pointer-events-none"}`}
+        className={`fixed bottom-40 right-4 md:bottom-24 md:right-8 z-[9999] w-12 h-12 rounded-full shadow-2xl flex items-center justify-center bg-cta hover:bg-cta-hover text-white transition-all duration-300 hover:scale-110 ${showScrollTop ? "opacity-100 scale-100" : "opacity-0 scale-50 pointer-events-none"}`}
         aria-label="Retour en haut"
       >
         <ChevronUp className="w-6 h-6" />
@@ -437,7 +447,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     gtag('config', 'G-ZVG6K5R740', {
                       page_title: document.title,
                       page_location: window.location.href,
-                      send_page_view: true
+                      send_page_view: false
                     });
                     // Accorder le consentement analytics après chargement
                     window.__grantAnalyticsConsent();

@@ -190,12 +190,24 @@ export const getAuthUser = async (
 
 export const requireUser = async ({
   context,
+  request,
 }: {
   context: AppLoadContext;
+  request?: Request;
 }): Promise<AuthUser> => {
   const user = await getOptionalUser({ context });
   if (!user) {
-    logger.log("❌ [Unified Auth] requireUser: Pas d'utilisateur connecté");
+    // Logs corrélés pour diagnostic boucle auth
+    const fromUrl = request?.url || "unknown";
+    const referer = request?.headers?.get("referer") || "none";
+    const hasCookie =
+      request?.headers?.get("cookie")?.includes("connect.sid") || false;
+    logger.warn("[Unified Auth] redirect to login", {
+      from: fromUrl,
+      referer,
+      hasCookie,
+      cause: hasCookie ? "session_expired_or_invalid" : "no_session",
+    });
     throw redirect("/login");
   }
   return user;

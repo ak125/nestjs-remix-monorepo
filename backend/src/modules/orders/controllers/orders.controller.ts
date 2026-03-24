@@ -34,6 +34,7 @@ import {
   Req,
   BadRequestException,
   NotFoundException,
+  ConflictException,
 } from '@nestjs/common';
 import { Request as ExpressRequest } from 'express';
 import * as crypto from 'crypto';
@@ -55,6 +56,7 @@ import {
   OrdersService,
   CreateOrderData,
   OrderFilters,
+  computeOrderFingerprint,
 } from '../services/orders.service';
 import {
   promisifyLoginNoRegenerate,
@@ -105,6 +107,118 @@ export class OrdersController {
     private readonly mailService: MailService,
     private readonly cacheService: CacheService,
   ) {}
+
+  /**
+   * Vérifie l'idempotency key : insert + gestion conflit PK.
+   * Retourne { existing: orderId } si la clé existe déjà avec même fingerprint.
+   * Lève ConflictException si processing ou fingerprint différent.
+   * Retourne null si la clé est nouvelle et prête.
+   */
+  private async checkIdempotency(
+    idempotencyKey: string,
+    fingerprint: string,
+  ): Promise<{ existing: string } | null> {
+    const supabase = this.ordersService.getSupabaseClient();
+
+    // Tenter l'insert — la contrainte PK protège contre la concurrence
+    const { error: insertError } = await supabase
+      .from('order_idempotency')
+      .insert({
+        idempotency_key: idempotencyKey,
+        order_id: null,
+        fingerprint,
+        status: 'processing',
+      });
+
+    if (insertError?.code === '23505') {
+      // Conflit PK = clé déjà utilisée → lire l'existant
+      const { data: existing } = await supabase
+        .from('order_idempotency')
+        .select('order_id, status, fingerprint')
+        .eq('idempotency_key', idempotencyKey)
+        .single();
+
+      // Vérifier que le fingerprint correspond (v4 CRITIQUE)
+      if (existing && existing.fingerprint !== fingerprint) {
+        this.logger.warn('Idempotency key reused with different payload', {
+          key: idempotencyKey.slice(0, 8),
+          existingFp: existing.fingerprint.slice(0, 8),
+          newFp: fingerprint.slice(0, 8),
+        });
+        throw new ConflictException(
+          'Idempotency key already used with different order payload',
+        );
+      }
+
+      if (existing?.status === 'completed' && existing.order_id) {
+        this.logger.log('idempotency', {
+          key: idempotencyKey.slice(0, 8),
+          status: 'conflict_same',
+          orderId: existing.order_id,
+        });
+        return { existing: existing.order_id };
+      }
+      if (existing?.status === 'processing') {
+        throw new ConflictException(
+          'Commande en cours de traitement, réessayez dans quelques secondes',
+        );
+      }
+      // status === 'failed' → supprimer et recréer
+      await supabase
+        .from('order_idempotency')
+        .delete()
+        .eq('idempotency_key', idempotencyKey)
+        .eq('status', 'failed');
+      await supabase.from('order_idempotency').insert({
+        idempotency_key: idempotencyKey,
+        order_id: null,
+        fingerprint,
+        status: 'processing',
+      });
+    } else if (insertError) {
+      throw insertError;
+    }
+
+    this.logger.log('idempotency', {
+      key: idempotencyKey.slice(0, 8),
+      fingerprint: fingerprint.slice(0, 8),
+      status: 'insert',
+    });
+    return null;
+  }
+
+  /**
+   * Marque la clé d'idempotence comme completed ou failed.
+   */
+  private async finalizeIdempotency(
+    idempotencyKey: string,
+    orderId: string | null,
+    status: 'completed' | 'failed',
+  ): Promise<void> {
+    const supabase = this.ordersService.getSupabaseClient();
+    await supabase
+      .from('order_idempotency')
+      .update({
+        order_id: orderId,
+        status,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('idempotency_key', idempotencyKey);
+  }
+
+  /**
+   * Génère un token de reprise paiement stocké en DB.
+   */
+  private async generateResumeToken(orderId: string): Promise<string> {
+    const supabase = this.ordersService.getSupabaseClient();
+    const token = crypto.randomBytes(24).toString('hex');
+    await supabase.from('order_resume_tokens').insert({
+      order_id: orderId,
+      token,
+      expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+    });
+    return token;
+  }
 
   // ═══════════════════════════════════════════════════════════════════════
   // 🔵 SECTION 1: ROUTES CLIENT (Authentification requise)
@@ -228,24 +342,61 @@ export class OrdersController {
     @Body() orderData: CreateOrderData,
     @Req() req: AuthenticatedRequest,
   ) {
+    const { idempotencyKey, gaClientId } = orderData;
     try {
       const userId = getUserId(req);
-
       if (!userId) {
         throw new BadRequestException('Utilisateur non authentifié');
       }
 
       this.logger.log(`Creating order for user ${userId}`);
 
-      // S'assurer que le customerId correspond à l'utilisateur connecté
-      const dataWithUserId = {
-        ...orderData,
-        customerId: userId,
-      };
+      const dataWithUserId = { ...orderData, customerId: userId };
 
-      return await this.ordersService.createOrder(dataWithUserId);
+      // Idempotence : vérifier si la clé existe déjà
+      if (idempotencyKey) {
+        const fp = computeOrderFingerprint(dataWithUserId);
+        const existing = await this.checkIdempotency(idempotencyKey, fp);
+        if (existing) {
+          const resumeToken = await this.generateResumeToken(existing.existing);
+          return { ord_id: existing.existing, resumeToken };
+        }
+      }
+
+      const order = await this.ordersService.createOrder(dataWithUserId);
+      const orderId =
+        (order as Record<string, unknown>)?.ord_id ||
+        ((order as Record<string, unknown>)?.data as Record<string, unknown>)
+          ?.ord_id;
+
+      // Finaliser idempotence + ga_client_id + resume token
+      if (idempotencyKey && orderId) {
+        await this.finalizeIdempotency(
+          idempotencyKey,
+          orderId as string,
+          'completed',
+        );
+      }
+      if (gaClientId && orderId) {
+        const sb = this.ordersService.getSupabaseClient();
+        await sb
+          .from('___xtr_order')
+          .update({ ga_client_id: gaClientId })
+          .eq('ord_id', orderId);
+      }
+      let resumeToken: string | undefined;
+      if (orderId) {
+        resumeToken = await this.generateResumeToken(orderId as string);
+      }
+
+      return { ...(order as object), resumeToken };
     } catch (error) {
       this.logger.error('Error creating order:', error);
+      if (idempotencyKey) {
+        await this.finalizeIdempotency(idempotencyKey, null, 'failed').catch(
+          () => {},
+        );
+      }
       throw error;
     }
   }
@@ -266,6 +417,7 @@ export class OrdersController {
     @Body() body: CreateOrderData & { guestEmail?: string },
     @Req() req: AuthenticatedRequest,
   ) {
+    const { idempotencyKey, gaClientId } = body;
     try {
       // Si déjà authentifié, déléguer au flow normal
       const existingUserId = getUserId(req);
@@ -283,6 +435,20 @@ export class OrdersController {
       }
 
       this.logger.log(`Guest checkout for email: ${guestEmail}`);
+
+      // Idempotence guest : vérifier AVANT création de compte
+      if (idempotencyKey) {
+        const fp = computeOrderFingerprint({
+          ...orderData,
+          customerId: guestEmail,
+          guestEmail,
+        } as CreateOrderData);
+        const existing = await this.checkIdempotency(idempotencyKey, fp);
+        if (existing) {
+          const resumeToken = await this.generateResumeToken(existing.existing);
+          return { ord_id: existing.existing, resumeToken };
+        }
+      }
 
       // Vérifier si l'email existe déjà — si oui, réutiliser le compte existant
       const existingUser = await this.authService.checkIfUserExists({
@@ -373,9 +539,45 @@ export class OrdersController {
         );
       }
 
-      return order;
+      // Extraire orderId du résultat
+      const orderRec = order as Record<string, unknown>;
+      const orderPayload = orderRec?.data as
+        | Record<string, unknown>
+        | undefined;
+      const finalOrderId = (orderPayload?.ord_id || orderRec?.ord_id) as
+        | string
+        | null;
+
+      // Finaliser idempotence
+      if (idempotencyKey && finalOrderId) {
+        await this.finalizeIdempotency(
+          idempotencyKey,
+          finalOrderId,
+          'completed',
+        );
+      }
+      // Stocker ga_client_id
+      if (gaClientId && finalOrderId) {
+        const sb = this.ordersService.getSupabaseClient();
+        await sb
+          .from('___xtr_order')
+          .update({ ga_client_id: gaClientId })
+          .eq('ord_id', finalOrderId);
+      }
+      // Générer resume token
+      let resumeToken: string | undefined;
+      if (finalOrderId) {
+        resumeToken = await this.generateResumeToken(finalOrderId);
+      }
+
+      return { ...(order as object), resumeToken };
     } catch (error) {
       this.logger.error('Error in guest checkout:', error);
+      if (idempotencyKey) {
+        await this.finalizeIdempotency(idempotencyKey, null, 'failed').catch(
+          () => {},
+        );
+      }
       throw error;
     }
   }
@@ -478,6 +680,68 @@ export class OrdersController {
       this.logger.error('Error getting user stats:', error);
       throw error;
     }
+  }
+
+  /**
+   * Valider un resume token et retourner les infos de la commande.
+   * Route publique (pas d'auth) — le token fait office de preuve.
+   * GET /api/orders/resume-token/:token
+   */
+  @Get('resume-token/:token')
+  @ApiOperation({ summary: 'Valider un resume token de reprise paiement' })
+  @ApiParam({ name: 'token', description: 'Token de reprise' })
+  @ApiResponse({ status: 200, description: 'Token valide' })
+  @ApiResponse({ status: 404, description: 'Token invalide' })
+  @ApiResponse({ status: 410, description: 'Token expiré ou déjà utilisé' })
+  async validateResumeToken(@Param('token') token: string) {
+    const supabase = this.ordersService.getSupabaseClient();
+
+    const { data: tokenData, error } = await supabase
+      .from('order_resume_tokens')
+      .select('order_id, expires_at, used_at')
+      .eq('token', token)
+      .single();
+
+    if (error || !tokenData) {
+      throw new NotFoundException('Token invalide');
+    }
+
+    if (tokenData.used_at) {
+      return { statusCode: 410, message: 'Token déjà utilisé' };
+    }
+
+    if (new Date(tokenData.expires_at) < new Date()) {
+      return { statusCode: 410, message: 'Token expiré' };
+    }
+
+    // Récupérer les infos de la commande
+    const { data: order } = await supabase
+      .from('___xtr_order')
+      .select('ord_id, ord_total_ttc, ord_is_pay, ord_ords_id, ord_cst_id')
+      .eq('ord_id', tokenData.order_id)
+      .single();
+
+    if (!order) {
+      throw new NotFoundException('Commande introuvable');
+    }
+
+    // Récupérer l'email du client
+    const { data: customer } = await supabase
+      .from('___customer')
+      .select('cst_mail')
+      .eq('cst_id', order.ord_cst_id)
+      .single();
+
+    // Marquer used_at seulement quand on redirige (pas sur check)
+    // Le frontend gère la distinction via ?check=1
+
+    return {
+      orderId: order.ord_id,
+      totalTTC: parseFloat(order.ord_total_ttc || '0'),
+      isPaid: order.ord_is_pay,
+      orderStatus: order.ord_ords_id,
+      customerEmail: customer?.cst_mail || '',
+    };
   }
 
   // ═══════════════════════════════════════════════════════════════════════

@@ -39,10 +39,12 @@ export interface CreateCheckoutOrderPayload {
   customerNote: string;
   shippingMethod: string;
   paymentMethod?: string;
+  idempotencyKey?: string;
+  gaClientId?: string;
 }
 
 export type CreateOrderResult =
-  | { success: true; orderId: string }
+  | { success: true; orderId: string; resumeToken?: string }
   | {
       success: false;
       error: string;
@@ -152,7 +154,8 @@ export async function createCheckoutOrder(
       };
     }
 
-    return { success: true, orderId };
+    const resumeToken = order.resumeToken || order.resume_token;
+    return { success: true, orderId, resumeToken };
   } catch (error) {
     logger.error("[Checkout] Order creation error:", error);
     return {
