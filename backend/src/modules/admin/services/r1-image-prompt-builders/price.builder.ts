@@ -21,15 +21,31 @@ export function buildPricePrompt(
     score++;
   }
 
+  // Priorité 1 : quality_tiers explicites
+  // Priorité 2 : cost_range.note (contient souvent les tiers en texte)
+  // Fallback : selection.criteria
   let tiersHint = 'éco, standard, premium';
-  const criteria = rag?.selection?.criteria ?? [];
-  if (criteria.length >= 2) {
-    tiersHint = criteria
-      .slice(0, 3)
-      .map((c) => c.toLowerCase())
+  const tiers = rag?.selection?.quality_tiers ?? [];
+  if (tiers.length > 0) {
+    tiersHint = tiers
+      .map((t) => `${t.tier}${t.price_range ? ` (${t.price_range})` : ''}`)
       .join(', ');
-    fieldsUsed.push('selection.criteria');
+    fieldsUsed.push('selection.quality_tiers');
+    score += 2;
+  } else if (range?.note) {
+    tiersHint = range.note.length > 80 ? range.note.slice(0, 80) : range.note;
+    fieldsUsed.push('selection.cost_range.note');
     score++;
+  } else {
+    const criteria = rag?.selection?.criteria ?? [];
+    if (criteria.length >= 2) {
+      tiersHint = criteria
+        .slice(0, 3)
+        .map((c) => c.toLowerCase())
+        .join(', ');
+      fieldsUsed.push('selection.criteria');
+      score++;
+    }
   }
 
   const prompt = `Infographie prix, design minimaliste flat, fond blanc. Fourchettes de prix du ${n} par niveau de gamme (${tiersHint}). Barres horizontales, code couleur vert/bleu/orange. Sans ombre, rendu vectoriel.${rangeHint} Format 4:3.`;

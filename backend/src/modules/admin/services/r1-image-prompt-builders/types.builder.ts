@@ -14,15 +14,30 @@ export function buildTypesPrompt(
   const n = pgName.toLowerCase();
 
   let variantsHint = '';
-  const criteria = rag?.selection?.criteria ?? [];
-  if (criteria.length > 0) {
-    const top = criteria
+  const variants = rag?.variants ?? [];
+  if (variants.length > 0) {
+    const names = variants
       .slice(0, 3)
-      .map((c) => c.toLowerCase())
+      .map((v) => v.name)
       .join(', ');
-    variantsHint = ` Variantes distinguées par : ${top}.`;
-    fieldsUsed.push('selection.criteria');
-    score++;
+    const diffs = variants
+      .flatMap((v) => v.visual_differences ?? [])
+      .slice(0, 3)
+      .join(', ');
+    variantsHint = ` Types principaux : ${names}.${diffs ? ` Différences visuelles : ${diffs}.` : ''}`;
+    fieldsUsed.push('variants');
+    score += 2;
+  } else {
+    const criteria = rag?.selection?.criteria ?? [];
+    if (criteria.length > 0) {
+      const top = criteria
+        .slice(0, 3)
+        .map((c) => c.toLowerCase())
+        .join(', ');
+      variantsHint = ` Variantes distinguées par : ${top}.`;
+      fieldsUsed.push('selection.criteria');
+      score++;
+    }
   }
 
   let confusionHint = '';
