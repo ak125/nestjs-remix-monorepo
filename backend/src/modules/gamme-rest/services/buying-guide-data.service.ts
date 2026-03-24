@@ -277,6 +277,11 @@ type BuyingGuideContractWithoutQuality = Omit<BuyingGuideContractV1, 'quality'>;
 export class BuyingGuideDataService extends SupabaseBaseService {
   protected override readonly logger = new Logger(BuyingGuideDataService.name);
 
+  /** Expose Supabase client for cross-service queries (image injection, etc.) */
+  getSupabaseClient() {
+    return this.supabase;
+  }
+
   /**
    * Récupère les données du guide d'achat V2 pour une gamme
    */
