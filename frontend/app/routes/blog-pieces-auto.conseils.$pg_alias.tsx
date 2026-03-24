@@ -534,7 +534,31 @@ export default function R3GuidePage() {
                     <SummarySnippet conseil={conseilForSnippet} />
                   )}
 
-                  {/* CTA Principal — masqué en mode conseil */}
+                  {/* CTA Catalogue R1 — maillage conseil → transaction */}
+                  {sourceType === "conseil" && pg_alias && (
+                    <div className="my-6 rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-5">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <div className="flex-1">
+                          <p className="font-semibold text-gray-900 text-lg">
+                            Besoin de cette piece ?
+                          </p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Comparez les prix et trouvez la piece compatible
+                            avec votre vehicule.
+                          </p>
+                        </div>
+                        <Link
+                          to={`/pieces/${pg_alias}`}
+                          className="inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
+                        >
+                          <Tag className="h-4 w-4" />
+                          Voir les {page.title?.toLowerCase() || "pieces"}
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* CTA Principal — mode article uniquement */}
                   {sourceType !== "conseil" &&
                     page.cta_link &&
                     page.cta_anchor && (
@@ -579,6 +603,26 @@ export default function R3GuidePage() {
                       pgId={page.pg_id}
                       hasR6Guide={page.hasR6Guide}
                     />
+                  )}
+
+                  {/* CTA catalogue bas de page — après lecture complète */}
+                  {sourceType === "conseil" && pg_alias && (
+                    <div className="my-6 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
+                      <div className="flex items-center gap-3">
+                        <Tag className="w-5 h-5 text-emerald-600 flex-shrink-0" />
+                        <p className="text-sm text-gray-700">
+                          Trouvez votre{" "}
+                          <Link
+                            to={`/pieces/${pg_alias}`}
+                            className="font-medium text-emerald-600 hover:text-emerald-800 underline"
+                          >
+                            {page.title?.toLowerCase() || "piece"} au meilleur
+                            prix
+                          </Link>{" "}
+                          parmi nos fournisseurs.
+                        </p>
+                      </div>
+                    </div>
                   )}
 
                   {/* Sources / responsabilité */}

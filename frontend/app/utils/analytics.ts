@@ -217,6 +217,27 @@ function formatGA4Product(item: ProductItem, index: number = 0) {
 }
 
 /**
+ * 📋 E-commerce: Vue d'une liste de produits (gamme/catégorie)
+ */
+export function trackViewItemList(
+  listId: string,
+  listName: string,
+  items: ProductItem[],
+) {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", "view_item_list", {
+      item_list_id: listId,
+      item_list_name: listName,
+      items: items.slice(0, 10).map((item, index) => ({
+        ...formatGA4Product(item),
+        index,
+      })),
+    });
+  }
+  logger.log("📊 Analytics: view_item_list", { listId, count: items.length });
+}
+
+/**
  * 👁️ E-commerce: Vue d'un produit
  */
 export function trackViewItem(product: ProductItem) {
