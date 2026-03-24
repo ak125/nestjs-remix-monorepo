@@ -1,0 +1,22 @@
+{
+  "r1Images": [],
+  "relatedResources": {
+    "blocks": [
+      {
+        "kind": "buying-guide",
+        "heading": "Bien choisir votre plaquette de frein",
+        "items": [
+          {
+            "kind": "buying-guide",
+            "title": "Guide d'achat Plaquette de frein",
+            "href": "/blog-pieces-auto/guide-achat/plaquette-de-frein",
+            "reason": "Guide complet pour bien choisir",
+            "score": 0.95
+          }
+        ]
+      }
+    ]
+  },
+  "hero_image": "/img/uploads/articles/gammes-produits/catalogue/plaquette-de-frein.webp",
+  "meta_title": "Plaquette de frein | BOSCH, BREMBO, ATE | AutoMecanik"
+}

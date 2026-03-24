@@ -1,0 +1,22 @@
+{
+  "r1Images": [],
+  "relatedResources": {
+    "blocks": [
+      {
+        "kind": "buying-guide",
+        "heading": "Bien choisir votre kit d'embrayage",
+        "items": [
+          {
+            "kind": "buying-guide",
+            "title": "Guide d'achat Kit d'embrayage",
+            "href": "/blog-pieces-auto/guide-achat/kit-d-embrayage",
+            "reason": "Guide complet pour bien choisir",
+            "score": 0.95
+          }
+        ]
+      }
+    ]
+  },
+  "hero_image": "/img/uploads/articles/gammes-produits/catalogue/kit-d-embrayage.webp",
+  "meta_title": "Kit d'embrayage | SACHS, LUK, VALEO | AutoMecanik"
+}

@@ -1,0 +1,84 @@
+{
+  "r1Images": [
+    {
+      "slot": "HERO",
+      "path": "articles/gammes-produits/r1/filtre-a-huile.webp",
+      "alt": "Filtre à huile — photo produit",
+      "caption": "Filtre à huile — vue détaillée",
+      "aspect": "16:9"
+    },
+    {
+      "slot": "TYPES",
+      "path": "articles/gammes-produits/r1/filtre-a-huile-2.webp",
+      "alt": "Types de filtre à huile — schéma comparatif",
+      "caption": "Comment distinguer les types de filtre à huile",
+      "aspect": "4:3"
+    }
+  ],
+  "relatedResources": {
+    "blocks": [
+      {
+        "kind": "avoid-confusion",
+        "heading": "À ne pas confondre avec filtre à huile",
+        "items": [
+          {
+            "kind": "avoid-confusion",
+            "title": "Filtre à air",
+            "href": "/pieces/filtre-a-air-8.html",
+            "reason": "Filtre à huile = filtre l'huile moteur, Filtre à air = filtre l'air admission",
+            "score": 1
+          },
+          {
+            "kind": "avoid-confusion",
+            "title": "Filtre à carburant",
+            "href": "/pieces/filtre-a-carburant-9.html",
+            "reason": "Filtre à huile = huile moteur, Filtre à carburant = essence/diesel",
+            "score": 1
+          }
+        ]
+      },
+      {
+        "kind": "buying-guide",
+        "heading": "Bien choisir votre filtre à huile",
+        "items": [
+          {
+            "kind": "buying-guide",
+            "title": "Guide d'achat Filtre à huile",
+            "href": "/blog-pieces-auto/guide-achat/filtre-a-huile",
+            "reason": "Guide complet pour bien choisir",
+            "score": 0.95
+          }
+        ]
+      },
+      {
+        "kind": "compatible-parts",
+        "heading": "Pièces souvent associées",
+        "items": [
+          {
+            "kind": "compatible-parts",
+            "title": "Bouchon de vidange",
+            "href": "/pieces/bouchon-de-vidange-593.html",
+            "reason": "Souvent remplacé en même temps",
+            "score": 0.6
+          },
+          {
+            "kind": "compatible-parts",
+            "title": "Filtre à air",
+            "href": "/pieces/filtre-a-air-8.html",
+            "reason": "Souvent remplacé en même temps",
+            "score": 0.6
+          },
+          {
+            "kind": "compatible-parts",
+            "title": "Filtre à carburant",
+            "href": "/pieces/filtre-a-carburant-9.html",
+            "reason": "Souvent remplacé en même temps",
+            "score": 0.6
+          }
+        ]
+      }
+    ]
+  },
+  "hero_image": "/img/uploads/articles/gammes-produits/r1/filtre-a-huile.webp",
+  "meta_title": "Filtre à huile | Trouvez la référence compatible | AutoMeca…"
+}
