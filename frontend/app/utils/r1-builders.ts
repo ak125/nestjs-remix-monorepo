@@ -155,7 +155,9 @@ export function buildGammeJsonLd(params: {
         "@id": canonicalUrl,
         name: pgName,
         url: canonicalUrl,
-        mainEntity: { "@id": `${canonicalUrl}#list` },
+        ...((motorisationsSchema?.length || 0) > 0 && {
+          mainEntity: { "@id": `${canonicalUrl}#list` },
+        }),
         about: {
           "@type": "ProductGroup",
           name: pgName,
@@ -186,21 +188,28 @@ export function buildGammeJsonLd(params: {
           ],
         },
       },
-      // 2️⃣ ItemList
-      {
-        "@type": "ItemList",
-        "@id": `${canonicalUrl}#list`,
-        name: `${pgName} - Véhicules compatibles`,
-        numberOfItems: motorisationsSchema?.length || 0,
-        itemListElement: (motorisationsSchema || []).map((item, index) => ({
-          "@type": "ListItem",
-          position: index + 1,
-          name: `${pgName} ${item.marque_name} ${item.modele_name} ${item.type_name}`,
-          url: item.link
-            ? buildCanonicalUrl({ baseUrl: item.link, includeHost: true })
-            : canonicalUrl,
-        })),
-      },
+      // 2️⃣ ItemList — seulement si des items existent (évite Rich Results FAIL)
+      ...((motorisationsSchema?.length || 0) > 0
+        ? [
+            {
+              "@type": "ItemList",
+              "@id": `${canonicalUrl}#list`,
+              name: `${pgName} - Véhicules compatibles`,
+              numberOfItems: motorisationsSchema!.length,
+              itemListElement: motorisationsSchema!.map((item, index) => ({
+                "@type": "ListItem",
+                position: index + 1,
+                name: `${pgName} ${item.marque_name} ${item.modele_name} ${item.type_name}`,
+                url: item.link
+                  ? buildCanonicalUrl({
+                      baseUrl: item.link,
+                      includeHost: true,
+                    })
+                  : canonicalUrl,
+              })),
+            },
+          ]
+        : []),
       // 3️⃣ FAQPage
       ...(cappedFaq.length > 0
         ? [
