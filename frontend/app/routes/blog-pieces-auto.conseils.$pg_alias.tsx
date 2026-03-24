@@ -535,7 +535,7 @@ export default function R3GuidePage() {
                   )}
 
                   {/* CTA Catalogue R1 — maillage conseil → transaction */}
-                  {sourceType === "conseil" && pg_alias && (
+                  {sourceType === "conseil" && page.cta_link && (
                     <div className="my-6 rounded-xl border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-5">
                       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                         <div className="flex-1">
@@ -548,7 +548,7 @@ export default function R3GuidePage() {
                           </p>
                         </div>
                         <Link
-                          to={`/pieces/${pg_alias}-${page.pg_id}.html`}
+                          to={page.cta_link}
                           className="inline-flex items-center gap-2 px-5 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap"
                         >
                           <Tag className="h-4 w-4" />
@@ -606,14 +606,14 @@ export default function R3GuidePage() {
                   )}
 
                   {/* CTA catalogue bas de page — après lecture complète */}
-                  {sourceType === "conseil" && pg_alias && (
+                  {sourceType === "conseil" && page.cta_link && (
                     <div className="my-6 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4">
                       <div className="flex items-center gap-3">
                         <Tag className="w-5 h-5 text-emerald-600 flex-shrink-0" />
                         <p className="text-sm text-gray-700">
                           Trouvez votre{" "}
                           <Link
-                            to={`/pieces/${pg_alias}-${page.pg_id}.html`}
+                            to={page.cta_link}
                             className="font-medium text-emerald-600 hover:text-emerald-800 underline"
                           >
                             {page.title?.toLowerCase() || "piece"} au meilleur

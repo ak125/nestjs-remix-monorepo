@@ -159,9 +159,9 @@ export function buildGammeJsonLd(params: {
           mainEntity: { "@id": `${canonicalUrl}#list` },
         }),
         about: {
-          "@type": "ProductGroup",
+          "@type": "Thing",
           name: pgName,
-          productGroupID: `gamme-${gammeId}`,
+          identifier: `gamme-${gammeId}`,
         },
         ...(pgPic && { image: pgPic }),
         breadcrumb: {
@@ -183,7 +183,7 @@ export function buildGammeJsonLd(params: {
               "@type": "ListItem",
               position: 3,
               name: pgName,
-              item: canonicalUrl,
+              // Dernier breadcrumb : pas de propriété 'item' (spec Google)
             },
           ],
         },
