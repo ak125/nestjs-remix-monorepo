@@ -10,6 +10,8 @@ import {
   Shield,
 } from "lucide-react";
 import { Section, SectionHeader } from "~/components/layout";
+import { R1SlotImage } from "~/components/pieces/R1SlotImage";
+import { type R1ImagesBySlot } from "~/types/r1-images.types";
 
 interface BuyArgument {
   title?: string;
@@ -26,6 +28,8 @@ interface GammeContentProps {
   arguments?: BuyArgument[] | null;
   familyKey?: string;
   h2Override?: string | null;
+  /** Images R1 à injecter dans le contenu éditorial, au bon endroit */
+  r1Images?: R1ImagesBySlot;
 }
 
 // Fallback — displayed when pipeline doesn't provide buy arguments
@@ -88,6 +92,60 @@ function getArgIcon(iconName?: string, index?: number): typeof CheckCircle {
   return fallbacks[(index ?? 0) % fallbacks.length];
 }
 
+/**
+ * Mapping slot R1 → mots-clés dans les H2 éditoriaux.
+ * Si un H2 contient un de ces termes, l'image du slot est injectée juste après la section.
+ */
+const SLOT_H2_KEYWORDS: Array<{
+  slot: keyof NonNullable<R1ImagesBySlot>;
+  keywords: RegExp;
+}> = [
+  // TYPES : matcher "types de ..." en début, pas "types de montage et références" (trop générique)
+  {
+    slot: "TYPES",
+    keywords:
+      /^types\s+de\s|variante|catégorie|categorie|vissable.+cartouche|cartouche.+vissable/i,
+  },
+  { slot: "PRICE", keywords: /prix|tarif|fourchette|coût|cout|budget/i },
+  {
+    slot: "LOCATION",
+    keywords: /emplacement|localiser|repérer|situé|où se trouve/i,
+  },
+];
+
+/**
+ * Découpe le HTML éditorial aux H2 et injecte les images R1 après la section correspondante.
+ * Retourne un tableau de fragments {html, slotAfter?} à rendre séquentiellement.
+ */
+function splitContentWithImages(
+  html: string,
+  r1Images?: R1ImagesBySlot,
+): Array<{ html: string; slotAfter?: keyof NonNullable<R1ImagesBySlot> }> {
+  if (!r1Images || Object.keys(r1Images).length === 0) {
+    return [{ html }];
+  }
+
+  // Split aux <h2 — garde le délimiteur dans le fragment suivant
+  const parts = html.split(/(?=<h2[\s>])/i);
+  if (parts.length <= 1) return [{ html }];
+
+  const usedSlots = new Set<string>();
+  return parts.map((part) => {
+    // Extraire le texte du H2 pour matcher
+    const h2Match = part.match(/<h2[^>]*>(.*?)<\/h2>/i);
+    if (!h2Match) return { html: part };
+
+    const h2Text = h2Match[1].replace(/<[^>]+>/g, ""); // strip inner tags
+    for (const { slot, keywords } of SLOT_H2_KEYWORDS) {
+      if (!usedSlots.has(slot) && keywords.test(h2Text) && r1Images[slot]) {
+        usedSlots.add(slot);
+        return { html: part, slotAfter: slot };
+      }
+    }
+    return { html: part };
+  });
+}
+
 export default function GammeContent({
   gammeName,
   content,
@@ -97,6 +155,7 @@ export default function GammeContent({
   arguments: buyArgs,
   familyKey,
   h2Override,
+  r1Images,
 }: GammeContentProps) {
   const rawContent =
     content ||
@@ -111,6 +170,11 @@ export default function GammeContent({
   const displayContent = contentHasH2
     ? rawContent
     : rawContent.replace(/<h2(\s|>)/gi, "<h3$1").replace(/<\/h2>/gi, "</h3>");
+
+  // Split content at H2 boundaries and determine where to inject images
+  const contentFragments = contentHasH2
+    ? splitContentWithImages(displayContent, r1Images)
+    : [{ html: displayContent }];
 
   const defaultTips: Array<{ type: "info" | "warning"; text: string }> =
     tips || [FAMILY_TIPS[familyKey || "generic"] || FAMILY_TIPS.generic];
@@ -161,7 +225,16 @@ export default function GammeContent({
           )}
 
           <div className="gamme-editorial text-[13px] lg:text-[14px] text-slate-600 leading-relaxed font-normal font-body space-y-2.5 mb-4">
-            <div dangerouslySetInnerHTML={{ __html: displayContent }} />
+            {contentFragments.map((frag, i) => (
+              <div key={i}>
+                <div dangerouslySetInnerHTML={{ __html: frag.html }} />
+                {frag.slotAfter && r1Images?.[frag.slotAfter] && (
+                  <div className="my-6 max-w-2xl">
+                    <R1SlotImage {...r1Images[frag.slotAfter]!} />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
 
           <div className="space-y-2.5">
