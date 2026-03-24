@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 import { type CartItem as CartItemType } from "~/schemas/cart.schemas";
+import { trackRemoveFromCart } from "~/utils/analytics";
 import { formatPrice, MAX_CART_QUANTITY } from "./cart-utils";
 
 export function CartItemRow({ item }: { item: CartItemType }) {
@@ -79,6 +80,15 @@ export function CartItemRow({ item }: { item: CartItemType }) {
   );
 
   const handleRemove = useCallback(() => {
+    // GA4: track remove_from_cart AVANT la suppression effective
+    trackRemoveFromCart(
+      {
+        id: String(item.product_id),
+        name: item.product_name || "",
+        price: Number(item.price ?? 0),
+      },
+      currentQuantity,
+    );
     removeFetcher.submit(
       {
         intent: "remove",
@@ -86,7 +96,13 @@ export function CartItemRow({ item }: { item: CartItemType }) {
       },
       { method: "post" },
     );
-  }, [item.product_id, removeFetcher]);
+  }, [
+    item.product_id,
+    item.product_name,
+    item.price,
+    currentQuantity,
+    removeFetcher,
+  ]);
 
   // Price calculation: prefer explicit fields, fallback to price as unit
   const unitPrice = Number(item.unit_price ?? item.price ?? 0);

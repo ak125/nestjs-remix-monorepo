@@ -28,6 +28,11 @@ export class PaymentDataService extends SupabaseBaseService {
     super(configService);
   }
 
+  /** Expose le client Supabase pour le Paybox callback (GA4 Measurement Protocol) */
+  getSupabaseClient() {
+    return this.supabase;
+  }
+
   /**
    * Mapper un enregistrement ic_postback vers l'entité Payment
    */

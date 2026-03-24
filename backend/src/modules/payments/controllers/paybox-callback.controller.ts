@@ -269,6 +269,77 @@ export class PayboxCallbackController {
 
         // Stock: pas de gestion stock en DB (pièces fournisseurs). Désactivé.
 
+        // GA4 Measurement Protocol — purchase server-side (atomique)
+        try {
+          const supabase = this.paymentDataService.getSupabaseClient();
+
+          // Guard atomique : UPDATE WHERE payment_confirmed = false
+          const { data: confirmResult } = await supabase
+            .from('___xtr_order')
+            .update({ payment_confirmed: true })
+            .eq('ord_id', orderId)
+            .eq('payment_confirmed', false)
+            .select('ord_id, ord_total_ttc, ga_client_id');
+
+          // N'envoyer purchase QUE si 1 ligne modifiée (pas de doublon)
+          if (confirmResult && confirmResult.length === 1) {
+            const confirmedOrder = confirmResult[0];
+            const gaClientId = confirmedOrder.ga_client_id;
+            const gaSecret = process.env.GA4_MEASUREMENT_SECRET;
+
+            if (gaClientId && gaSecret) {
+              // Récupérer les lignes de commande pour les items GA4
+              const { data: lines } = await supabase
+                .from('___xtr_order_line')
+                .select(
+                  'orl_pg_id, orl_pg_name, orl_art_price_sell_unit_ttc, orl_art_quantity',
+                )
+                .eq('orl_ord_id', orderId);
+
+              const items = (lines || []).map((l: Record<string, string>) => ({
+                item_id: l.orl_pg_id,
+                item_name: l.orl_pg_name,
+                price: parseFloat(l.orl_art_price_sell_unit_ttc || '0'),
+                quantity: parseInt(l.orl_art_quantity || '1'),
+              }));
+
+              await fetch(
+                `https://www.google-analytics.com/mp/collect?measurement_id=G-ZVG6K5R740&api_secret=${gaSecret}`,
+                {
+                  method: 'POST',
+                  body: JSON.stringify({
+                    client_id: gaClientId,
+                    events: [
+                      {
+                        name: 'purchase',
+                        params: {
+                          transaction_id: orderId,
+                          value: parseFloat(
+                            confirmedOrder.ord_total_ttc || '0',
+                          ),
+                          currency: 'EUR',
+                          items,
+                        },
+                      },
+                    ],
+                  }),
+                },
+              );
+              this.logger.log(
+                `GA4 purchase event sent via Measurement Protocol for ${orderId}`,
+              );
+            } else {
+              this.logger.warn(
+                `GA4 purchase skipped: missing ga_client_id or GA4_MEASUREMENT_SECRET for ${orderId}`,
+              );
+            }
+          }
+        } catch (ga4Err: unknown) {
+          this.logger.warn(
+            `GA4 purchase event failed (non-blocking): ${ga4Err instanceof Error ? ga4Err.message : String(ga4Err)}`,
+          );
+        }
+
         return res.status(HttpStatus.OK).send('OK');
       } else {
         this.logger.warn(`Paiement echoue - Code erreur: ${params.errorCode}`);

@@ -252,6 +252,9 @@ export async function action({ request, context }: ActionFunctionArgs) {
       country,
     };
 
+    const idempotencyKey = formData.get("idempotencyKey") as string | null;
+    const gaClientId = formData.get("gaClientId") as string | null;
+
     const orderResult = await createCheckoutOrder(request, {
       customerId: cartData.metadata?.user_id || undefined,
       guestEmail: isGuest ? guestEmail : undefined,
@@ -261,6 +264,8 @@ export async function action({ request, context }: ActionFunctionArgs) {
       customerNote: "",
       shippingMethod: "standard",
       paymentMethod,
+      idempotencyKey: idempotencyKey || undefined,
+      gaClientId: gaClientId || undefined,
     });
 
     logger.log("[Checkout] Order result:", {
@@ -354,7 +359,10 @@ export async function action({ request, context }: ActionFunctionArgs) {
       customerEmail,
     );
 
-    return json({ ok: true, redirectUrl, orderId });
+    const resumeToken = orderResult.success
+      ? orderResult.resumeToken
+      : undefined;
+    return json({ ok: true, redirectUrl, orderId, resumeToken });
   } catch (error) {
     logger.error("[Checkout] Action error:", error);
     return json(
@@ -515,6 +523,11 @@ export default function CheckoutPage() {
     }
   }, [user, guestEmail, shippingAddress]);
 
+  // Redirect state: idle → processing → slow → retry
+  const [redirectPhase, setRedirectPhase] = useState<
+    "idle" | "processing" | "slow" | "retry"
+  >("idle");
+
   // Redirect to Paybox when action returns ok + redirectUrl
   useEffect(() => {
     if (
@@ -524,8 +537,38 @@ export default function CheckoutPage() {
       "redirectUrl" in actionData
     ) {
       setIsRedirecting(true);
+      setRedirectPhase("processing");
       clearCheckoutState();
+
+      // Store pending order for resume capability
+      const orderId = (actionData as Record<string, unknown>).orderId as string;
+      const resumeToken = (actionData as Record<string, unknown>)
+        .resumeToken as string;
+      if (orderId) {
+        try {
+          sessionStorage.setItem(
+            "pendingOrder",
+            JSON.stringify({
+              orderId,
+              resumeToken,
+              createdAt: Date.now(),
+            }),
+          );
+        } catch {
+          /* sessionStorage may be unavailable */
+        }
+      }
+
+      // Progressive timeout states
+      const slowTimer = setTimeout(() => setRedirectPhase("slow"), 8000);
+      const retryTimer = setTimeout(() => setRedirectPhase("retry"), 20000);
+
       window.location.href = actionData.redirectUrl as string;
+
+      return () => {
+        clearTimeout(slowTimer);
+        clearTimeout(retryTimer);
+      };
     }
     if (
       actionData &&
@@ -534,6 +577,7 @@ export default function CheckoutPage() {
       "error" in actionData
     ) {
       setIsRedirecting(false);
+      setRedirectPhase("idle");
       submitGuardRef.current = false;
       // EMAIL_CONFLICT: switch to livraison for inline login (no toast needed)
       if ("code" in actionData && actionData.code === "EMAIL_CONFLICT") {
@@ -544,6 +588,29 @@ export default function CheckoutPage() {
       }
     }
   }, [actionData]);
+
+  // On mount: check for pending order in sessionStorage
+  useEffect(() => {
+    try {
+      const pending = sessionStorage.getItem("pendingOrder");
+      if (pending) {
+        const { orderId, resumeToken, createdAt } = JSON.parse(pending);
+        const ageMs = Date.now() - createdAt;
+        if (ageMs < 2 * 60 * 60 * 1000 && orderId) {
+          // < 2h: show pending order banner
+          setPendingOrderInfo({ orderId, resumeToken });
+        } else {
+          sessionStorage.removeItem("pendingOrder");
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+  const [pendingOrderInfo, setPendingOrderInfo] = useState<{
+    orderId: string;
+    resumeToken?: string;
+  } | null>(null);
 
   // GA4: track begin checkout
   useEffect(() => {
@@ -659,6 +726,15 @@ export default function CheckoutPage() {
     fd.set("paymentMethod", selectedPaymentMethod);
     fd.set("phone", shippingAddress.phone);
     fd.set("acceptTerms", "on");
+    // GA4 client_id pour Measurement Protocol purchase côté serveur
+    try {
+      const gaCookie = document.cookie
+        .split("; ")
+        .find((c) => c.startsWith("_ga="));
+      if (gaCookie) fd.set("gaClientId", gaCookie.split("=")[1]);
+    } catch {
+      /* ignore */
+    }
     submit(fd, { method: "post" });
   };
 
@@ -729,6 +805,42 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50">
+      {/* Banner: commande en attente de paiement */}
+      {pendingOrderInfo && !isRedirecting && (
+        <div className="mx-auto max-w-6xl px-page pt-4">
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-amber-800">
+                Commande en attente de paiement : {pendingOrderInfo.orderId}
+              </p>
+              <p className="text-xs text-amber-600 mt-1">
+                Vous pouvez reprendre le paiement ou passer une nouvelle
+                commande.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              {pendingOrderInfo.resumeToken && (
+                <a
+                  href={`/checkout/resume?token=${pendingOrderInfo.resumeToken}`}
+                  className="px-3 py-2 bg-amber-600 text-white text-sm rounded-lg hover:bg-amber-700 transition-colors"
+                >
+                  Reprendre le paiement
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  sessionStorage.removeItem("pendingOrder");
+                  setPendingOrderInfo(null);
+                }}
+                className="px-3 py-2 bg-white text-amber-700 text-sm border border-amber-300 rounded-lg hover:bg-amber-50 transition-colors"
+              >
+                Nouvelle commande
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Form
         method="post"
         id="checkout-form"
@@ -1072,33 +1184,57 @@ export default function CheckoutPage() {
         </div>
       </Form>
 
-      {/* Redirecting overlay (point 5) */}
+      {/* Redirecting overlay with progressive states */}
       {isRedirecting && (
         <div className="fixed inset-0 z-50 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <svg
-              className="animate-spin h-10 w-10 text-cta"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
+          <div className="flex flex-col items-center gap-4 max-w-sm text-center px-4">
+            {redirectPhase !== "retry" && (
+              <svg
+                className="animate-spin h-10 w-10 text-cta"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            )}
             <p className="text-lg font-semibold text-slate-900">
-              Redirection vers le paiement securise...
+              {redirectPhase === "processing" &&
+                "Votre commande est creee. Redirection vers le paiement securise..."}
+              {redirectPhase === "slow" &&
+                "La redirection prend plus de temps que prevu. Merci de patienter..."}
+              {redirectPhase === "retry" && "La redirection n'a pas abouti."}
             </p>
-            <p className="text-sm text-slate-500">Ne fermez pas cette page</p>
+            {redirectPhase === "retry" && pendingOrderInfo?.resumeToken && (
+              <div className="flex flex-col gap-2 w-full mt-2">
+                <a
+                  href={`/checkout/resume?token=${pendingOrderInfo.resumeToken}`}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-cta text-white rounded-lg font-medium hover:bg-cta/90 transition-colors"
+                >
+                  Reprendre le paiement
+                </a>
+                <a
+                  href={`/checkout/resume?token=${pendingOrderInfo.resumeToken}&check=1`}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-3 bg-white text-slate-700 border rounded-lg font-medium hover:bg-slate-50 transition-colors"
+                >
+                  Verifier l&apos;etat de la commande
+                </a>
+              </div>
+            )}
+            {redirectPhase !== "retry" && (
+              <p className="text-sm text-slate-500">Ne fermez pas cette page</p>
+            )}
           </div>
         </div>
       )}
