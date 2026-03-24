@@ -68,6 +68,13 @@ interface RagChangeEvent {
   rce_status: string;
 }
 
+/** Circuit breaker state (in-memory, volatile) */
+export interface BreakerState {
+  active: boolean;
+  lastTrigger: string | null;
+  lastReason: string | null;
+}
+
 @Injectable()
 export class RagChangeWatcherService
   extends SupabaseBaseService
@@ -75,6 +82,11 @@ export class RagChangeWatcherService
 {
   protected override readonly logger = new Logger(RagChangeWatcherService.name);
   private intervalHandle: ReturnType<typeof setInterval> | null = null;
+  private readonly breakerState: BreakerState = {
+    active: false,
+    lastTrigger: null,
+    lastReason: null,
+  };
 
   constructor(
     configService: ConfigService,
@@ -83,6 +95,11 @@ export class RagChangeWatcherService
     private readonly pipelineQueue: Queue<PipelineChainJobData>,
   ) {
     super(configService);
+  }
+
+  /** Expose breaker state for dashboard endpoint */
+  getBrekerState(): BreakerState {
+    return { ...this.breakerState };
   }
 
   onModuleInit() {
@@ -99,9 +116,9 @@ export class RagChangeWatcherService
     );
 
     this.intervalHandle = setInterval(() => {
-      this.pollAndProcess().catch((err) =>
-        this.logger.error(`Poll error: ${err.message}`),
-      );
+      this.checkCircuitBreaker()
+        .then(() => this.pollAndProcess())
+        .catch((err) => this.logger.error(`Poll error: ${err.message}`));
     }, intervalMs);
   }
 
@@ -182,8 +199,29 @@ export class RagChangeWatcherService
       // Find which R* roles have content for this gamme
       const roles = await this.findPublishedRoles(gamme.pg_id);
 
+      // Scope filter: skip roles/gammes not in whitelist
+      const allowedRoles = this.flags.ragMergeAllowedRoles;
+      const allowedGammes = this.flags.ragMergeAllowedGammes;
+
       for (const roleId of roles) {
         impactedRoles.push(roleId);
+
+        // Scope filter — skip if not in whitelist (empty = allow all)
+        if (allowedRoles.length > 0 && !allowedRoles.includes(roleId)) {
+          this.logger.debug(
+            `Scope filter: skipping ${roleId} for ${gamme.pg_alias} (not in RAG_MERGE_ALLOWED_ROLES)`,
+          );
+          continue;
+        }
+        if (
+          allowedGammes.length > 0 &&
+          !allowedGammes.includes(gamme.pg_alias)
+        ) {
+          this.logger.debug(
+            `Scope filter: skipping ${roleId} for ${gamme.pg_alias} (not in RAG_MERGE_ALLOWED_GAMMES)`,
+          );
+          continue;
+        }
 
         if (this.flags.ragChangeAutoEnqueue) {
           // Enqueue improvement job
@@ -192,6 +230,7 @@ export class RagChangeWatcherService
             targetIds: [String(gamme.pg_id)],
             dryRun: this.flags.ragMergeDryRun,
             source: 'db_trigger',
+            mergeMode: 'append_only',
           } satisfies PipelineChainJobData);
 
           jobsEnqueued++;
@@ -263,5 +302,126 @@ export class RagChangeWatcherService
       .from('__rag_change_events')
       .update(update)
       .eq('rce_id', id);
+  }
+
+  // ── Circuit Breaker ──
+
+  /**
+   * Check pipeline health metrics and trigger breaker if thresholds exceeded.
+   * Uses runtime override (volatile) — does NOT modify .env or persisted config.
+   */
+  private async checkCircuitBreaker(): Promise<void> {
+    // Only check when merge is actually active (not dry-run)
+    if (this.flags.ragMergeDryRun) return;
+
+    try {
+      const reason = await this.evaluateBreakerConditions();
+      if (reason) {
+        this.triggerBreaker(reason);
+      }
+    } catch (err) {
+      this.logger.warn(
+        `Circuit breaker check failed: ${err instanceof Error ? err.message : err}`,
+      );
+    }
+  }
+
+  private async evaluateBreakerConditions(): Promise<string | null> {
+    // 1. Failed ratio > 2% in last 24h
+    const { data: queueStats } = await this.client
+      .from('__pipeline_chain_queue')
+      .select('pcq_status')
+      .gte('pcq_created_at', new Date(Date.now() - 86_400_000).toISOString());
+
+    if (queueStats && queueStats.length > 0) {
+      const total = queueStats.length;
+      const failed = queueStats.filter(
+        (r: { pcq_status: string }) => r.pcq_status === 'failed',
+      ).length;
+      const ratio = failed / total;
+      if (ratio > 0.02 && total >= 10) {
+        return `failed_ratio > 2% (${(ratio * 100).toFixed(1)}%, ${failed}/${total} in 24h)`;
+      }
+    }
+
+    // 2. Pending queue > 50
+    const { count: pendingCount } = await this.client
+      .from('__pipeline_chain_queue')
+      .select('pcq_id', { count: 'exact', head: true })
+      .eq('pcq_status', 'pending');
+
+    if ((pendingCount ?? 0) > 50) {
+      return `pending_queue > 50 (${pendingCount} pending)`;
+    }
+
+    // 3. Hotspot: any gamme with > 20 enqueues in 24h
+    const { data: hotspots } = await this.client
+      .from('__pipeline_chain_queue')
+      .select('pcq_pg_alias')
+      .gte('pcq_created_at', new Date(Date.now() - 86_400_000).toISOString());
+
+    if (hotspots) {
+      const counts = new Map<string, number>();
+      for (const row of hotspots as { pcq_pg_alias: string }[]) {
+        const alias = row.pcq_pg_alias;
+        counts.set(alias, (counts.get(alias) ?? 0) + 1);
+      }
+      for (const [alias, count] of counts) {
+        if (count > 20) {
+          return `hotspot > 20 enqueues/24h (${alias}: ${count})`;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private triggerBreaker(reason: string): void {
+    if (this.breakerState.active) return; // Already triggered
+
+    this.breakerState.active = true;
+    this.breakerState.lastTrigger = new Date().toISOString();
+    this.breakerState.lastReason = reason;
+
+    // Runtime override — volatile, lost on restart
+    this.flags.setOverride('RAG_MERGE_DRY_RUN', 'true');
+
+    this.logger.error(`[CIRCUIT-BREAKER] RAG merge auto-disabled: ${reason}`);
+
+    // Log incident to dedicated table (non-blocking)
+    this.logBreakerIncident(reason).catch((err) =>
+      this.logger.warn(`Failed to log breaker incident: ${err}`),
+    );
+  }
+
+  private async logBreakerIncident(reason: string): Promise<void> {
+    // Collect metrics snapshot
+    const { count: pending } = await this.client
+      .from('__pipeline_chain_queue')
+      .select('pcq_id', { count: 'exact', head: true })
+      .eq('pcq_status', 'pending');
+
+    const { count: failed24h } = await this.client
+      .from('__pipeline_chain_queue')
+      .select('pcq_id', { count: 'exact', head: true })
+      .eq('pcq_status', 'failed')
+      .gte('pcq_created_at', new Date(Date.now() - 86_400_000).toISOString());
+
+    const { count: done24h } = await this.client
+      .from('__pipeline_chain_queue')
+      .select('pcq_id', { count: 'exact', head: true })
+      .eq('pcq_status', 'done')
+      .gte('pcq_created_at', new Date(Date.now() - 86_400_000).toISOString());
+
+    await this.client.from('__rag_pipeline_incidents').insert({
+      rpi_type: 'BREAKER_TRIGGERED',
+      rpi_reason: reason,
+      rpi_metrics: {
+        pending: pending ?? 0,
+        failed_24h: failed24h ?? 0,
+        done_24h: done24h ?? 0,
+      },
+      rpi_phase: 'C',
+    });
   }
 }

@@ -15,6 +15,7 @@ import { ModuleRef } from '@nestjs/core';
 import { Job } from 'bull';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { FeatureFlagsService } from '../../config/feature-flags.service';
 import {
   ExecutionRouterService,
   type ExecutionResult,
@@ -44,6 +45,7 @@ export class PipelineChainProcessor extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly moduleRef: ModuleRef,
+    private readonly flags: FeatureFlagsService,
   ) {
     super(configService);
   }
@@ -55,6 +57,20 @@ export class PipelineChainProcessor extends SupabaseBaseService {
     this.logger.log(
       `[pipeline-chain] Processing job ${job.id}: role=${roleId} targets=${targetIds.length} source=${source ?? 'unknown'}`,
     );
+
+    // Defense-in-depth: scope filter before execution (catches jobs enqueued before scope change)
+    if (source === 'db_trigger') {
+      const allowedRoles = this.flags.ragMergeAllowedRoles;
+      if (allowedRoles.length > 0 && !allowedRoles.includes(roleId)) {
+        this.logger.log(
+          `[pipeline-chain] Scope filter (processor): skipping job ${job.id} — role ${roleId} not in RAG_MERGE_ALLOWED_ROLES`,
+        );
+        if (pcqId) {
+          await this.updateQueueStatus(pcqId, 'skipped', 'scope_filtered_role');
+        }
+        return { skipped: true, reason: 'scope_filtered_role' };
+      }
+    }
 
     // Update __pipeline_chain_queue status if we have a pcqId
     if (pcqId) {
@@ -77,12 +93,17 @@ export class PipelineChainProcessor extends SupabaseBaseService {
       // Update queue status
       if (pcqId) {
         const allSuccess = result.results.every((r) => r.status === 'success');
+        // Store detailed error from first failed target (not just count)
+        const firstFailed = result.results.find((r) => r.status === 'failed');
+        const errorDetail = firstFailed?.error
+          ? `${firstFailed.error}`.substring(0, 500)
+          : undefined;
         await this.updateQueueStatus(
           pcqId,
           allSuccess ? 'done' : 'failed',
           allSuccess
             ? undefined
-            : 'Some targets failed — check execution result',
+            : (errorDetail ?? 'Some targets failed — check execution result'),
         );
       }
 

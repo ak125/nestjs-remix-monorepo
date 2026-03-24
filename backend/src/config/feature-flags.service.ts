@@ -132,16 +132,6 @@ export class FeatureFlagsService {
     return this.int('CONSEIL_BATCH_SIZE', 10);
   }
 
-  // ── Pipeline chain flags ──
-
-  get pipelineChainEnabled(): boolean {
-    return this.bool('PIPELINE_CHAIN_ENABLED', false);
-  }
-
-  get pipelineChainPollIntervalMs(): number {
-    return this.int('PIPELINE_CHAIN_POLL_INTERVAL_MS', 60_000);
-  }
-
   // ── RAG catch-up flag ──
 
   get ragCatchupEnabled(): boolean {
@@ -168,6 +158,16 @@ export class FeatureFlagsService {
   /** Polling interval for RAG change events (default: 60s) */
   get ragChangePollIntervalMs(): number {
     return this.int('RAG_CHANGE_POLL_INTERVAL_MS', 60_000);
+  }
+
+  /** CSV of allowed roles for RAG merge (empty = all IMPROVABLE_ROLES) */
+  get ragMergeAllowedRoles(): string[] {
+    return this.csv('RAG_MERGE_ALLOWED_ROLES');
+  }
+
+  /** CSV of allowed gamme aliases for RAG merge (empty = all gammes) */
+  get ragMergeAllowedGammes(): string[] {
+    return this.csv('RAG_MERGE_ALLOWED_GAMMES');
   }
 
   // ── Agentic Engine flags ──
@@ -242,11 +242,12 @@ export class FeatureFlagsService {
     'R1_CONTENT_PIPELINE_ENABLED',
     'BRIEF_GATES_ENABLED',
     'BRIEF_GATES_OBSERVE_ONLY',
-    'PIPELINE_CHAIN_ENABLED',
     'RAG_CATCHUP_ENABLED',
     'RAG_CHANGE_PIPELINE_ENABLED',
     'RAG_CHANGE_AUTO_ENQUEUE',
     'RAG_MERGE_DRY_RUN',
+    'RAG_MERGE_ALLOWED_ROLES',
+    'RAG_MERGE_ALLOWED_GAMMES',
     'CONSEIL_PACK_ENABLED',
     'KEYWORD_DENSITY_GATE_ENABLED',
     'CANARY_AUTO_PUBLISH',

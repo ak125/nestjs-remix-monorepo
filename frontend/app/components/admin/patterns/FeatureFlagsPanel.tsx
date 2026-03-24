@@ -16,7 +16,6 @@ interface FlagEntry {
 
 const BOOL_FLAGS = [
   { key: "R1_CONTENT_PIPELINE_ENABLED", label: "R1 Pipeline" },
-  { key: "PIPELINE_CHAIN_ENABLED", label: "Pipeline Chain" },
   { key: "EVIDENCE_PACK_ENABLED", label: "Evidence Pack" },
   { key: "HARD_GATES_ENABLED", label: "Hard Gates" },
   { key: "AUTO_REPAIR_ENABLED", label: "Auto Repair" },

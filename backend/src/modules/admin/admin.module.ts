@@ -115,6 +115,7 @@ import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour Rag
 import { SystemModule } from '../system/system.module';
 import { AdminDbGovernanceController } from './controllers/admin-db-governance.controller';
 import { AdminPipelineController } from './controllers/admin-pipeline.controller'; // 🚀 Unified pipeline execution
+import { AdminRagPipelineStatusController } from './controllers/admin-rag-pipeline-status.controller';
 import { ExecutionRouterService } from './services/execution-router.service'; // 🚀 Enricher dispatch router
 import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
 import { R1EnricherService } from './services/r1-enricher.service'; // 🏗️ R1 Router enricher (0-LLM, RAG+KP)
@@ -170,6 +171,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     // AdminSupplierStatsController — not ready for prod
     AdminDbGovernanceController, // 📊 DB Governance Phase 2 - /api/admin/db-governance/*
     AdminPipelineController, // 🚀 Unified pipeline execution - /api/admin/pipeline/*
+    AdminRagPipelineStatusController, // 📊 RAG pipeline dashboard - /api/admin/rag-pipeline/status
     InternalPipelineController, // 🚀 Internal pipeline (X-Internal-Key) - /api/internal/pipeline/*
   ],
   providers: [
