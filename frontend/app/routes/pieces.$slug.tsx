@@ -693,6 +693,8 @@ export default function PiecesDetailPage() {
           `Trouvez votre ${data.content?.pg_name?.toLowerCase() || "pièce"} compatible en quelques secondes`
         }
         pgPic={data.content?.pg_pic}
+        r1HeroPath={data.r1Images?.HERO?.path}
+        r1HeroAlt={data.r1Images?.HERO?.alt}
         breadcrumbs={breadcrumbs.map((b) => ({
           label: b.label,
           href: b.current ? undefined : b.href,

@@ -22,6 +22,9 @@ interface GammeHeroProps {
   familleTag?: string;
   subtitle?: string;
   pgPic?: string;
+  /** Image R1 HERO (prioritaire sur pgPic si présente) */
+  r1HeroPath?: string;
+  r1HeroAlt?: string;
   breadcrumbs: Array<{ label: string; href?: string }>;
   kpis: { motorisationsCount: number; modelsCount: number; equipCount: number };
   onVehicleSelect?: (vehicle: any) => void;
@@ -36,6 +39,8 @@ const TAB_ITEMS = [
 export default function GammeHero({
   gammeName,
   pgPic,
+  r1HeroPath,
+  r1HeroAlt,
   breadcrumbs,
   kpis: _kpis,
   onVehicleSelect,
@@ -77,9 +82,11 @@ export default function GammeHero({
           {/* Product image */}
           <div className="lg:w-[280px] lg:flex-shrink-0 flex">
             <div className="mx-0 mb-4 lg:mb-0 w-full max-h-[280px] bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/[0.12] rounded-2xl overflow-hidden flex items-center justify-center backdrop-blur-sm">
-              {pgPic ? (
+              {r1HeroPath || pgPic ? (
                 (() => {
-                  const imgPath = pgPic.replace(/^\/img\//, "");
+                  const imgPath = r1HeroPath
+                    ? `uploads/${r1HeroPath}`
+                    : pgPic!.replace(/^\/img\//, "");
                   const pictureSet = ImageOptimizer.getPictureImageSet(
                     imgPath,
                     {
@@ -104,7 +111,7 @@ export default function GammeHero({
                       />
                       <img
                         src={pictureSet.fallbackSrc}
-                        alt={gammeName}
+                        alt={r1HeroAlt || gammeName}
                         width={360}
                         height={360}
                         className="block w-full h-full object-cover"
