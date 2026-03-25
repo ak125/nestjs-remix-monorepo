@@ -31,7 +31,6 @@ import {
   GammeHero,
   GammeQuickNav,
   GammeDiagnosticCTA,
-  GammeContent,
   GammeMotorizations,
   GammeChecklist,
   GammeErrors,
@@ -52,6 +51,10 @@ import {
 } from "~/types/gamme-page-contract.types";
 import { type R1ImagesBySlot } from "~/types/r1-images.types";
 import { type R1RelatedBlocksPayload } from "~/types/r1-related.types";
+import {
+  extractEditorialBlocks,
+  mergeFaqBlocks,
+} from "~/utils/editorial-parser";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -64,7 +67,6 @@ import {
   sanitizePurchaseGuideForR1,
   type R1PurchaseGuideData,
 } from "~/utils/r1-builders";
-import { inferFamilyKey } from "~/utils/r1-family-defaults";
 import {
   buildR1SectionPack,
   type R1SectionPack,
@@ -587,7 +589,17 @@ export default function PiecesDetailPage() {
   const navigation = useNavigation();
   const navigate = useNavigate();
 
-  // R1 images: TYPES/PRICE/LOCATION rendered as dedicated sections before editorial content
+  // Nom de la gamme en minuscule pour les titres
+  const n = (data.content?.pg_name || "pièce").toLowerCase();
+
+  // Extraire les blocs éditoriaux par section narrative (6 H2)
+  const editorialBlocks = extractEditorialBlocks(data.content?.content || "");
+
+  // FAQ unique fusionnée (éditorial + fallback statique)
+  const mergedFaq = mergeFaqBlocks(
+    editorialBlocks.faqSection,
+    data.sectionPack?.sections.faq.data ?? R1_SELECTOR_FAQ,
+  );
 
   // Afficher un indicateur de chargement si les données sont en cours de chargement
   const isLoading = navigation.state === "loading";
@@ -746,9 +758,13 @@ export default function PiecesDetailPage() {
         {/* Resource cards — orientation vers les sections clés */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { label: "Compatibilité vérifiée", anchor: "#equip", icon: "🔍" },
-            { label: "Priorité sécurité", anchor: "#checklist", icon: "🛡️" },
-            { label: "Décision rapide", anchor: "#content", icon: "⚡" },
+            {
+              label: "Compatibilité vérifiée",
+              anchor: "#reference",
+              icon: "🔍",
+            },
+            { label: "Priorité sécurité", anchor: "#bien-choisir", icon: "🛡️" },
+            { label: "Décision rapide", anchor: "#qualite-prix", icon: "⚡" },
             {
               label: "Guide d'achat",
               href: data.content?.pg_alias
@@ -785,186 +801,276 @@ export default function PiecesDetailPage() {
 
       <GammeDiagnosticCTA />
 
-      {/* R1 Images — sections dédiées avec H2 propres */}
-      {data.r1Images && Object.keys(data.r1Images).length > 0 && (
-        <section className="py-8 px-4 sm:px-6 bg-slate-50">
-          <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-            {data.r1Images.TYPES && (
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 mb-3">
-                  Types de {(data.content?.pg_name || "pièce").toLowerCase()}
-                </h2>
-                <R1SlotImage
-                  path={data.r1Images.TYPES.path}
-                  alt={data.r1Images.TYPES.alt}
-                  caption={data.r1Images.TYPES.caption}
-                  aspect={data.r1Images.TYPES.aspect}
-                  className="rounded-2xl"
-                />
-              </div>
-            )}
-            {data.r1Images.PRICE && (
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 mb-3">
-                  Qualité et prix
-                </h2>
-                <R1SlotImage
-                  path={data.r1Images.PRICE.path}
-                  alt={data.r1Images.PRICE.alt}
-                  caption={data.r1Images.PRICE.caption}
-                  aspect={data.r1Images.PRICE.aspect}
-                  className="rounded-2xl"
-                />
-              </div>
-            )}
-            {data.r1Images.LOCATION && (
-              <div>
-                <h2 className="text-lg font-bold text-slate-900 mb-3">
-                  Emplacement véhicule
-                </h2>
-                <R1SlotImage
-                  path={data.r1Images.LOCATION.path}
-                  alt={data.r1Images.LOCATION.alt}
-                  caption={data.r1Images.LOCATION.caption}
-                  aspect={data.r1Images.LOCATION.aspect}
-                  className="rounded-2xl"
-                />
-              </div>
-            )}
-          </div>
-        </section>
-      )}
+      {/* ═══════════════════════════════════════════════════════
+           H2 #1 — Bien choisir votre {gamme}
+           Types, critères, vérifications, erreurs à éviter
+           ═══════════════════════════════════════════════════════ */}
+      <section id="bien-choisir" className="py-10 px-4 sm:px-6 bg-white">
+        <div className="max-w-[1280px] mx-auto">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Bien choisir votre {n}
+          </h2>
 
-      {/* Contenu éditorial — pur, sans images ni sidebar */}
-      <GammeContent
-        gammeName={data.content?.pg_name || "Pièces auto"}
-        content={data.content?.content}
-        microSeoBlock={
-          data.sectionPack?.sections.buyArgs.data.microSeoBlock ?? undefined
-        }
-        familyKey={inferFamilyKey(
-          data.content?.pg_name || "",
-          data.famille?.mf_name,
-        )}
-        h2Override={data.sectionPack?.sections.buyArgs.h2Override}
-      />
-
-      {/* Équipementiers — remonté pour plus de visibilité */}
-      <Suspense
-        fallback={
-          <div className="py-10 bg-navy">
-            <div className="max-w-[1280px] mx-auto px-5">
-              <div className="h-48 bg-white/5 animate-pulse rounded-2xl" />
+          {/* Image TYPES + contenu éditorial "types" */}
+          {data.r1Images?.TYPES && (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                Types de {n}
+              </h3>
+              <R1SlotImage
+                path={data.r1Images.TYPES.path}
+                alt={data.r1Images.TYPES.alt}
+                caption={data.r1Images.TYPES.caption}
+                aspect={data.r1Images.TYPES.aspect}
+                className="rounded-2xl mb-4"
+              />
             </div>
-          </div>
-        }
-      >
-        <Await resolve={data.equipementiers}>
-          {(equipementiers) => (
-            <GammeEquipementiers
-              items={(equipementiers?.items || []).map(
-                (e: {
-                  title: string;
-                  description?: string;
-                  image?: string;
-                }) => ({
-                  name: e.title,
-                  description: e.description,
-                  logo: e.image,
-                }),
+          )}
+
+          {/* Contenu éditorial "choix" redistribué */}
+          {editorialBlocks.chooseSection.length > 0 && (
+            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 mb-8">
+              {editorialBlocks.chooseSection.map((block, i) => (
+                <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
+              ))}
+            </div>
+          )}
+
+          {/* Vérifications avant achat */}
+          <GammeChecklist
+            gammeName={data.content?.pg_name}
+            items={data.sectionPack?.sections.safeTable.data?.map((row) => ({
+              label: row.element,
+              desc: row.howToCheck,
+            }))}
+            h2Override=" "
+          />
+
+          {/* Erreurs à éviter */}
+          <GammeErrors
+            errors={data.sectionPack?.sections.compatErrors.data}
+            gammeName={data.content?.pg_name}
+            h2Override=" "
+          />
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
+           H2 #2 — Qualité, prix et marques
+           Image PRICE, marques, fiche technique
+           ═══════════════════════════════════════════════════════ */}
+      <section id="qualite-prix" className="py-10 px-4 sm:px-6 bg-slate-50">
+        <div className="max-w-[1280px] mx-auto">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Qualité, prix et marques
+          </h2>
+
+          {/* Image PRICE */}
+          {data.r1Images?.PRICE && (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                Niveaux de qualité
+              </h3>
+              <R1SlotImage
+                path={data.r1Images.PRICE.path}
+                alt={data.r1Images.PRICE.alt}
+                caption={data.r1Images.PRICE.caption}
+                aspect={data.r1Images.PRICE.aspect}
+                className="rounded-2xl mb-4"
+              />
+            </div>
+          )}
+
+          {/* Contenu éditorial "prix/marques" redistribué */}
+          {editorialBlocks.priceSection.length > 0 && (
+            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 mb-8">
+              {editorialBlocks.priceSection.map((block, i) => (
+                <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
+              ))}
+            </div>
+          )}
+
+          {/* Équipementiers */}
+          <Suspense
+            fallback={
+              <div className="h-48 bg-white/50 animate-pulse rounded-2xl" />
+            }
+          >
+            <Await resolve={data.equipementiers}>
+              {(equipementiers) => (
+                <GammeEquipementiers
+                  items={(equipementiers?.items || []).map(
+                    (e: {
+                      title: string;
+                      description?: string;
+                      image?: string;
+                    }) => ({
+                      name: e.title,
+                      description: e.description,
+                      logo: e.image,
+                    }),
+                  )}
+                  intro={
+                    data.sectionPack?.sections.equipementiers.data
+                      .equipementiersLine ?? undefined
+                  }
+                  h2Override=" "
+                />
               )}
-              intro={
-                data.sectionPack?.sections.equipementiers.data
-                  .equipementiersLine ?? undefined
-              }
-              h2Override={data.sectionPack?.sections.equipementiers.h2Override}
-            />
-          )}
-        </Await>
-      </Suspense>
+            </Await>
+          </Suspense>
+        </div>
+      </section>
 
-      {/* Motorisations compatibles — deferred */}
-      <Suspense
-        fallback={
-          <div className="py-10 px-5">
-            <div className="max-w-[1280px] mx-auto">
-              <div className="h-96 bg-slate-100 animate-pulse rounded-2xl" />
+      {/* ═══════════════════════════════════════════════════════
+           H2 #3 — Où se trouve et quand remplacer
+           Image LOCATION, rôle, symptômes, entretien
+           ═══════════════════════════════════════════════════════ */}
+      <section id="emplacement" className="py-10 px-4 sm:px-6 bg-white">
+        <div className="max-w-[1280px] mx-auto">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Où se trouve le {n} et quand le remplacer
+          </h2>
+
+          {/* Image LOCATION */}
+          {data.r1Images?.LOCATION && (
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                Emplacement sur le véhicule
+              </h3>
+              <R1SlotImage
+                path={data.r1Images.LOCATION.path}
+                alt={data.r1Images.LOCATION.alt}
+                caption={data.r1Images.LOCATION.caption}
+                aspect={data.r1Images.LOCATION.aspect}
+                className="rounded-2xl mb-4"
+              />
             </div>
-          </div>
-        }
-      >
-        <Await resolve={data.motorisations}>
-          {(motorisations) => (
-            <GammeMotorizations
-              items={motorisations?.items || []}
-              totalCount={data.performance?.motorisations_count}
-              intro={
-                data.sectionPack?.sections.motorisations.data
-                  .compatibilitiesIntro ?? undefined
-              }
-              h2Override={data.sectionPack?.sections.motorisations.h2Override}
-            />
           )}
-        </Await>
-      </Suspense>
 
-      <GammeChecklist
-        gammeName={data.content?.pg_name}
-        items={data.sectionPack?.sections.safeTable.data?.map((row) => ({
-          label: row.element,
-          desc: row.howToCheck,
-        }))}
-        h2Override={data.sectionPack?.sections.safeTable.h2Override}
-      />
-
-      <GammeErrors
-        errors={data.sectionPack?.sections.compatErrors.data}
-        gammeName={data.content?.pg_name}
-        h2Override={data.sectionPack?.sections.compatErrors.h2Override}
-      />
-
-      {/* Catalogue même famille — deferred */}
-      <Suspense
-        fallback={
-          <div className="py-10 px-5">
-            <div className="max-w-[1280px] mx-auto">
-              <div className="h-48 bg-slate-100 animate-pulse rounded-2xl" />
+          {/* Contenu éditorial "emplacement/rôle/entretien" */}
+          {editorialBlocks.locationSection.length > 0 && (
+            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 mb-8">
+              {editorialBlocks.locationSection.map((block, i) => (
+                <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
+              ))}
             </div>
-          </div>
-        }
-      >
-        <Await resolve={data.catalogueMameFamille}>
-          {(catalogueMameFamille) => (
-            <GammeFamilleGrid
-              familleName={data.famille?.mf_name || "Pièces"}
-              items={(catalogueMameFamille?.items || []).map((c) => ({
-                name: c.name,
-                link: c.link,
-                img: c.image || undefined,
-              }))}
-              intro={
-                data.sectionPack?.sections.catalogue.data
-                  .familyCrossSellIntro ?? undefined
-              }
-              h2Override={data.sectionPack?.sections.catalogue.h2Override}
-            />
           )}
-        </Await>
-      </Suspense>
 
-      <GammeFaq
-        items={data.sectionPack?.sections.faq.data ?? R1_SELECTOR_FAQ}
-        h2Override={data.sectionPack?.sections.faq.h2Override}
-      />
+          {/* Contenu non classifié → ici plutôt que perdu */}
+          {editorialBlocks.unmatched.length > 0 && (
+            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3">
+              {editorialBlocks.unmatched.map((block, i) => (
+                <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
 
-      <GammeGuideCTA
-        gammeName={data.content?.pg_name || "Pièces auto"}
-        pgAlias={data.content?.pg_alias}
-      />
+      {/* ═══════════════════════════════════════════════════════
+           H2 #4 — Trouver la bonne référence
+           Compatibilités, motorisations, commande
+           ═══════════════════════════════════════════════════════ */}
+      <section id="reference" className="py-10 px-4 sm:px-6 bg-slate-50">
+        <div className="max-w-[1280px] mx-auto">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Trouver la bonne référence pour votre véhicule
+          </h2>
 
-      {data.relatedResources?.blocks && (
-        <R1RelatedBlocks blocks={data.relatedResources.blocks} />
-      )}
+          {/* Contenu éditorial "référence/commande" */}
+          {editorialBlocks.referenceSection.length > 0 && (
+            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 mb-8">
+              {editorialBlocks.referenceSection.map((block, i) => (
+                <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
+              ))}
+            </div>
+          )}
+
+          {/* Motorisations compatibles */}
+          <Suspense
+            fallback={
+              <div className="h-96 bg-white/50 animate-pulse rounded-2xl" />
+            }
+          >
+            <Await resolve={data.motorisations}>
+              {(motorisations) => (
+                <GammeMotorizations
+                  items={motorisations?.items || []}
+                  totalCount={data.performance?.motorisations_count}
+                  intro={
+                    data.sectionPack?.sections.motorisations.data
+                      .compatibilitiesIntro ?? undefined
+                  }
+                  h2Override=" "
+                />
+              )}
+            </Await>
+          </Suspense>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
+           H2 #5 — Questions fréquentes (UNE SEULE)
+           ═══════════════════════════════════════════════════════ */}
+      <section id="faq" className="py-10 px-4 sm:px-6 bg-white">
+        <div className="max-w-[1280px] mx-auto">
+          <GammeFaq
+            items={mergedFaq}
+            h2Override={data.sectionPack?.sections.faq.h2Override}
+          />
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════════
+           H2 #6 — Aller plus loin
+           Maillage, famille, guide CTA
+           ═══════════════════════════════════════════════════════ */}
+      <section id="aller-plus-loin" className="py-10 px-4 sm:px-6 bg-slate-50">
+        <div className="max-w-[1280px] mx-auto">
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">
+            Aller plus loin
+          </h2>
+
+          {/* Catalogue même famille */}
+          <Suspense
+            fallback={
+              <div className="h-48 bg-white/50 animate-pulse rounded-2xl" />
+            }
+          >
+            <Await resolve={data.catalogueMameFamille}>
+              {(catalogueMameFamille) => (
+                <GammeFamilleGrid
+                  familleName={data.famille?.mf_name || "Pièces"}
+                  items={(catalogueMameFamille?.items || []).map((c) => ({
+                    name: c.name,
+                    link: c.link,
+                    img: c.image || undefined,
+                  }))}
+                  intro={
+                    data.sectionPack?.sections.catalogue.data
+                      .familyCrossSellIntro ?? undefined
+                  }
+                  h2Override=" "
+                />
+              )}
+            </Await>
+          </Suspense>
+
+          {/* Guide CTA */}
+          <div id="guide-link">
+            <GammeGuideCTA
+              gammeName={data.content?.pg_name || "Pièces auto"}
+              pgAlias={data.content?.pg_alias}
+            />
+          </div>
+
+          {/* Maillage contextuel */}
+          {data.relatedResources?.blocks && (
+            <R1RelatedBlocks blocks={data.relatedResources.blocks} />
+          )}
+        </div>
+      </section>
 
       <Footer />
     </div>

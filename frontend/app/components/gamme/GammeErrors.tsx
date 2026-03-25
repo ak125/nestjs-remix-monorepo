@@ -27,9 +27,11 @@ export default function GammeErrors({
         <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-lg bg-red-50 flex items-center justify-center">
           <AlertTriangle size={17} className="text-red-500" />
         </div>
-        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 tracking-tight font-heading">
-          {h2Override || "Erreurs à éviter"}
-        </h2>
+        {(!h2Override || h2Override.trim()) && (
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-slate-900 tracking-tight font-heading">
+            {h2Override || "Erreurs à éviter"}
+          </h2>
+        )}
       </div>
 
       <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-2 lg:gap-3">

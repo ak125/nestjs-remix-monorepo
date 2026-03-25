@@ -18,6 +18,9 @@ export default function SectionHeader({
   /** Optional element rendered on the right (badge, icon, count) */
   trailing?: React.ReactNode;
 }) {
+  // Ne rien rendre si le titre est vide ou espace (utilisé pour masquer le H2 quand le parent fournit le sien)
+  if (!title || !title.trim()) return null;
+
   return (
     <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 mb-5 sm:mb-6">
       <div>
