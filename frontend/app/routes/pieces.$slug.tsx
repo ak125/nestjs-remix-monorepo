@@ -815,32 +815,30 @@ export default function PiecesDetailPage() {
             Bien choisir votre {n}
           </h2>
 
-          {/* Image TYPES + contenu éditorial "types" */}
-          {data.r1Images?.TYPES && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-slate-800 mb-3">
-                Types de {n}
-              </h3>
-              <R1SlotImage
-                path={data.r1Images.TYPES.path}
-                alt={data.r1Images.TYPES.alt}
-                caption={data.r1Images.TYPES.caption}
-                aspect={data.r1Images.TYPES.aspect}
-                className="rounded-2xl mb-4 max-w-lg"
-                widths={[320, 512]}
-                sizes="(max-width: 640px) 100vw, 512px"
-              />
-            </div>
-          )}
-
-          {/* Contenu éditorial "choix" redistribué */}
-          {editorialBlocks.chooseSection.length > 0 && (
-            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 mb-8">
-              {editorialBlocks.chooseSection.map((block, i) => (
-                <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
-              ))}
-            </div>
-          )}
+          {/* Image TYPES + contenu éditorial côte à côte */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {data.r1Images?.TYPES && (
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                  Types de {n}
+                </h3>
+                <R1SlotImage
+                  path={data.r1Images.TYPES.path}
+                  alt={data.r1Images.TYPES.alt}
+                  caption={data.r1Images.TYPES.caption}
+                  aspect={data.r1Images.TYPES.aspect}
+                  className="rounded-2xl"
+                />
+              </div>
+            )}
+            {editorialBlocks.chooseSection.length > 0 && (
+              <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3">
+                {editorialBlocks.chooseSection.map((block, i) => (
+                  <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Vérifications avant achat */}
           <GammeChecklist
@@ -871,32 +869,30 @@ export default function PiecesDetailPage() {
             Qualité, prix et marques
           </h2>
 
-          {/* Image PRICE */}
-          {data.r1Images?.PRICE && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-slate-800 mb-3">
-                Niveaux de qualité
-              </h3>
-              <R1SlotImage
-                path={data.r1Images.PRICE.path}
-                alt={data.r1Images.PRICE.alt}
-                caption={data.r1Images.PRICE.caption}
-                aspect={data.r1Images.PRICE.aspect}
-                className="rounded-2xl mb-4 max-w-lg"
-                widths={[320, 512]}
-                sizes="(max-width: 640px) 100vw, 512px"
-              />
-            </div>
-          )}
-
-          {/* Contenu éditorial "prix/marques" redistribué */}
-          {editorialBlocks.priceSection.length > 0 && (
-            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 mb-8">
-              {editorialBlocks.priceSection.map((block, i) => (
-                <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
-              ))}
-            </div>
-          )}
+          {/* Image PRICE + contenu éditorial côte à côte */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {data.r1Images?.PRICE && (
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                  Niveaux de qualité
+                </h3>
+                <R1SlotImage
+                  path={data.r1Images.PRICE.path}
+                  alt={data.r1Images.PRICE.alt}
+                  caption={data.r1Images.PRICE.caption}
+                  aspect={data.r1Images.PRICE.aspect}
+                  className="rounded-2xl"
+                />
+              </div>
+            )}
+            {editorialBlocks.priceSection.length > 0 && (
+              <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3">
+                {editorialBlocks.priceSection.map((block, i) => (
+                  <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Équipementiers */}
           <Suspense
@@ -940,41 +936,34 @@ export default function PiecesDetailPage() {
             Où se trouve le {n} et quand le remplacer
           </h2>
 
-          {/* Image LOCATION */}
-          {data.r1Images?.LOCATION && (
-            <div className="mb-8">
-              <h3 className="text-lg font-semibold text-slate-800 mb-3">
-                Emplacement sur le véhicule
-              </h3>
-              <R1SlotImage
-                path={data.r1Images.LOCATION.path}
-                alt={data.r1Images.LOCATION.alt}
-                caption={data.r1Images.LOCATION.caption}
-                aspect={data.r1Images.LOCATION.aspect}
-                className="rounded-2xl mb-4 max-w-lg"
-                widths={[320, 512]}
-                sizes="(max-width: 640px) 100vw, 512px"
-              />
-            </div>
-          )}
-
-          {/* Contenu éditorial "emplacement/rôle/entretien" */}
-          {editorialBlocks.locationSection.length > 0 && (
-            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3 mb-8">
+          {/* Image LOCATION + contenu éditorial côte à côte */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            {data.r1Images?.LOCATION && (
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                  Emplacement sur le véhicule
+                </h3>
+                <R1SlotImage
+                  path={data.r1Images.LOCATION.path}
+                  alt={data.r1Images.LOCATION.alt}
+                  caption={data.r1Images.LOCATION.caption}
+                  aspect={data.r1Images.LOCATION.aspect}
+                  className="rounded-2xl"
+                />
+              </div>
+            )}
+            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3">
               {editorialBlocks.locationSection.map((block, i) => (
                 <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
               ))}
-            </div>
-          )}
-
-          {/* Contenu non classifié → ici plutôt que perdu */}
-          {editorialBlocks.unmatched.length > 0 && (
-            <div className="gamme-editorial text-sm text-slate-600 leading-relaxed space-y-3">
               {editorialBlocks.unmatched.map((block, i) => (
-                <div key={i} dangerouslySetInnerHTML={{ __html: block }} />
+                <div
+                  key={`u-${i}`}
+                  dangerouslySetInnerHTML={{ __html: block }}
+                />
               ))}
             </div>
-          )}
+          </div>
         </div>
       </section>
 
