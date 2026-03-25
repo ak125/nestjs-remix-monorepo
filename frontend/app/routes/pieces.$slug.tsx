@@ -43,6 +43,8 @@ import {
 import { Footer } from "~/components/home";
 
 import { R1RelatedBlocks } from "~/components/pieces/R1RelatedBlocks";
+import { R1SlotImage } from "~/components/pieces/R1SlotImage";
+import { R1TrustStrip } from "~/components/pieces/R1TrustStrip";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import {
   type GammePageDataV1,
@@ -585,7 +587,7 @@ export default function PiecesDetailPage() {
   const navigation = useNavigation();
   const navigate = useNavigate();
 
-  // R1 images: TYPES/PRICE/LOCATION injected by GammeContent.splitContentWithImages()
+  // R1 images: TYPES/PRICE/LOCATION rendered as dedicated sections before editorial content
 
   // Afficher un indicateur de chargement si les données sont en cours de chargement
   const isLoading = navigation.state === "loading";
@@ -737,28 +739,112 @@ export default function PiecesDetailPage() {
         selectedVehicle={selectedVehicle}
       />
 
-      {/* R1 Images: TYPES/PRICE/LOCATION sont injectés par GammeContent
-           dans le contenu éditorial via splitContentWithImages() */}
+      {/* R1 Trust Strip — réassurance horizontale */}
+      <div className="py-4 px-4 sm:px-6 max-w-[1280px] mx-auto">
+        <R1TrustStrip />
+      </div>
 
       <GammeQuickNav />
 
       <GammeDiagnosticCTA />
 
+      {/* R1 Images — sections dédiées avec H2 propres */}
+      {data.r1Images && Object.keys(data.r1Images).length > 0 && (
+        <section className="py-8 px-4 sm:px-6 bg-slate-50">
+          <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+            {data.r1Images.TYPES && (
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 mb-3">
+                  Types de {(data.content?.pg_name || "pièce").toLowerCase()}
+                </h2>
+                <R1SlotImage
+                  path={data.r1Images.TYPES.path}
+                  alt={data.r1Images.TYPES.alt}
+                  caption={data.r1Images.TYPES.caption}
+                  aspect={data.r1Images.TYPES.aspect}
+                  className="rounded-2xl"
+                />
+              </div>
+            )}
+            {data.r1Images.PRICE && (
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 mb-3">
+                  Qualité et prix
+                </h2>
+                <R1SlotImage
+                  path={data.r1Images.PRICE.path}
+                  alt={data.r1Images.PRICE.alt}
+                  caption={data.r1Images.PRICE.caption}
+                  aspect={data.r1Images.PRICE.aspect}
+                  className="rounded-2xl"
+                />
+              </div>
+            )}
+            {data.r1Images.LOCATION && (
+              <div>
+                <h2 className="text-lg font-bold text-slate-900 mb-3">
+                  Emplacement véhicule
+                </h2>
+                <R1SlotImage
+                  path={data.r1Images.LOCATION.path}
+                  alt={data.r1Images.LOCATION.alt}
+                  caption={data.r1Images.LOCATION.caption}
+                  aspect={data.r1Images.LOCATION.aspect}
+                  className="rounded-2xl"
+                />
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Contenu éditorial — pur, sans images ni sidebar */}
       <GammeContent
         gammeName={data.content?.pg_name || "Pièces auto"}
         content={data.content?.content}
         microSeoBlock={
           data.sectionPack?.sections.buyArgs.data.microSeoBlock ?? undefined
         }
-        arguments={data.sectionPack?.sections.buyArgs.data.arguments}
         familyKey={inferFamilyKey(
           data.content?.pg_name || "",
           data.famille?.mf_name,
         )}
-        pgAlias={data.content?.pg_alias}
         h2Override={data.sectionPack?.sections.buyArgs.h2Override}
-        r1Images={data.r1Images}
       />
+
+      {/* Équipementiers — remonté pour plus de visibilité */}
+      <Suspense
+        fallback={
+          <div className="py-10 bg-navy">
+            <div className="max-w-[1280px] mx-auto px-5">
+              <div className="h-48 bg-white/5 animate-pulse rounded-2xl" />
+            </div>
+          </div>
+        }
+      >
+        <Await resolve={data.equipementiers}>
+          {(equipementiers) => (
+            <GammeEquipementiers
+              items={(equipementiers?.items || []).map(
+                (e: {
+                  title: string;
+                  description?: string;
+                  image?: string;
+                }) => ({
+                  name: e.title,
+                  description: e.description,
+                  logo: e.image,
+                }),
+              )}
+              intro={
+                data.sectionPack?.sections.equipementiers.data
+                  .equipementiersLine ?? undefined
+              }
+              h2Override={data.sectionPack?.sections.equipementiers.h2Override}
+            />
+          )}
+        </Await>
+      </Suspense>
 
       {/* Motorisations compatibles — deferred */}
       <Suspense
@@ -799,40 +885,6 @@ export default function PiecesDetailPage() {
         gammeName={data.content?.pg_name}
         h2Override={data.sectionPack?.sections.compatErrors.h2Override}
       />
-
-      {/* Équipementiers — deferred */}
-      <Suspense
-        fallback={
-          <div className="py-10 bg-navy">
-            <div className="max-w-[1280px] mx-auto px-5">
-              <div className="h-48 bg-white/5 animate-pulse rounded-2xl" />
-            </div>
-          </div>
-        }
-      >
-        <Await resolve={data.equipementiers}>
-          {(equipementiers) => (
-            <GammeEquipementiers
-              items={(equipementiers?.items || []).map(
-                (e: {
-                  title: string;
-                  description?: string;
-                  image?: string;
-                }) => ({
-                  name: e.title,
-                  description: e.description,
-                  logo: e.image,
-                }),
-              )}
-              intro={
-                data.sectionPack?.sections.equipementiers.data
-                  .equipementiersLine ?? undefined
-              }
-              h2Override={data.sectionPack?.sections.equipementiers.h2Override}
-            />
-          )}
-        </Await>
-      </Suspense>
 
       {/* Catalogue même famille — deferred */}
       <Suspense
