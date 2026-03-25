@@ -586,6 +586,9 @@ export default function PiecesDetailPage() {
   const navigation = useNavigation();
   const navigate = useNavigate();
 
+  // Helper: extraire une image R1 par slot (accès O(1))
+  const r1Img = (slot: string) => data.r1Images?.[slot];
+
   // Afficher un indicateur de chargement si les données sont en cours de chargement
   const isLoading = navigation.state === "loading";
 
