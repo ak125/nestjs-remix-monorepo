@@ -42,7 +42,7 @@ export default function BrandsGrid({
                   height={64}
                 />
               ) : (
-                <span className="text-base sm:text-lg font-bold text-navy font-v9-heading">
+                <span className="text-base sm:text-lg font-bold text-navy font-heading">
                   {b.name.slice(0, 2).toUpperCase()}
                 </span>
               )}

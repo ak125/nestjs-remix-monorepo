@@ -186,26 +186,6 @@ function BrandsGridSkeleton() {
   );
 }
 
-function _BlogCarouselSkeleton() {
-  return (
-    <div className="py-8 px-4">
-      <div className="h-8 w-48 bg-slate-200 rounded animate-pulse mx-auto mb-6" />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className="rounded-2xl border border-slate-200 bg-white p-4"
-          >
-            <div className="h-40 bg-slate-100 rounded-xl animate-pulse mb-3" />
-            <div className="h-4 w-3/4 bg-slate-100 rounded animate-pulse mb-2" />
-            <div className="h-3 w-1/2 bg-slate-100 rounded animate-pulse" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ─── Page Component ──────────────────────────────────────
 export default function Homepage() {
   const loaderData = useLoaderData<typeof loader>();
@@ -214,7 +194,7 @@ export default function Homepage() {
   const catalogFamilies = mapFamiliesToCatalog(loaderData.families);
 
   return (
-    <div className="min-h-screen bg-[#f5f7fa] font-v9-body pb-20 lg:pb-0">
+    <div className="min-h-screen bg-neutral-50 font-body pb-20 lg:pb-0">
       <HomepageJsonLd />
       <HeroSection />
       <QuickAccessGrid />

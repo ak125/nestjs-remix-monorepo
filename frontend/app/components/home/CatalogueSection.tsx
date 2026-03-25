@@ -1,13 +1,11 @@
 import { Link } from "@remix-run/react";
-import { Loader2, Search, X } from "lucide-react";
-import { memo, useCallback, useState } from "react";
+import { ChevronDown, ChevronUp, Loader2, Search, X } from "lucide-react";
+import { memo, useCallback, useMemo, useState } from "react";
 import {
   CATALOG_DOMAINS,
   type CatalogFamily,
 } from "~/components/home/constants";
 import { Reveal, Section, SectionHeader } from "~/components/layout";
-import { Badge } from "~/components/ui/badge";
-import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
@@ -40,87 +38,100 @@ const CatalogFamilyCard = memo(function CatalogFamilyCard({
   className,
   isLoading,
 }: CatalogCardProps) {
-  const displayedGammes = isOpen ? cat.gammes : cat.gammes.slice(0, 3);
+  const displayedGammes = isOpen ? cat.gammes : cat.gammes.slice(0, 4);
   const pop = isPopular(cat.n);
   const totalGammes = cat.gammes_count ?? cat.gammes.length;
-  const hasMore = totalGammes > 3;
+  const hasMore = totalGammes > 4;
 
-  // Phase 4 perf: skip Reveal animation delay on above-fold cards (index < 4)
   const isAboveFold = index < 4;
   const revealDelay = isAboveFold ? 0 : Math.min(index * 40, 400);
 
   return (
     <Reveal key={cat.n} delay={revealDelay} className={className}>
-      <Card className="group transition-all duration-200 rounded-[26px] lg:rounded-2xl shadow-[0_14px_34px_rgba(15,23,42,0.08)] lg:shadow-none overflow-hidden hover:shadow-xl hover:-translate-y-1">
+      <div className="group flex flex-col h-full rounded-2xl border border-slate-200/80 bg-white overflow-hidden transition-all duration-200 hover:shadow-[0_8px_30px_rgba(15,23,42,0.10)] hover:-translate-y-0.5">
+        {/* Image header — compact, focused */}
         <div
-          className={`relative aspect-[4/3] lg:h-40 lg:aspect-auto xl:h-48 overflow-hidden bg-gradient-to-br ${cat.color}`}
+          className={`relative h-36 sm:h-40 overflow-hidden bg-gradient-to-br ${cat.color}`}
         >
           {cat.img ? (
             <img
               src={cat.img}
-              alt={cat.n}
-              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+              alt={`Pièces ${cat.n} — catalogue AutoMecanik`}
+              className="w-full h-full object-contain p-3 transition-transform duration-300 group-hover:scale-105"
               loading={isAboveFold ? "eager" : "lazy"}
               fetchPriority={isAboveFold ? "high" : undefined}
               width="400"
               height="300"
             />
           ) : (
-            <span className="absolute inset-0 flex items-center justify-center text-7xl opacity-60">
+            <span className="absolute inset-0 flex items-center justify-center text-6xl opacity-50">
               {cat.i}
             </span>
           )}
           {pop && (
-            <span className="absolute top-3 right-3 text-xs font-bold text-white bg-cta/90 px-2 py-0.5 rounded-md shadow-sm z-10">
-              TOP
+            <span className="absolute top-2.5 right-2.5 text-[10px] font-bold uppercase tracking-wide text-white bg-cta/90 px-2 py-0.5 rounded-md shadow-sm z-10">
+              Populaire
             </span>
           )}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent group-hover:from-black/80 transition-colors duration-300">
-            <h3 className="text-white font-bold text-[15px] sm:text-lg leading-tight tracking-[-0.03em] lg:tracking-normal line-clamp-2 font-v9-heading">
-              {cat.n}
-            </h3>
-          </div>
+          {/* Gamme count chip */}
+          <span className="absolute bottom-2.5 right-2.5 text-[11px] font-semibold text-white/90 bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded-md z-10">
+            {totalGammes} gammes
+          </span>
         </div>
-        <CardContent className="pt-4 pb-4">
+
+        {/* Content */}
+        <div className="flex flex-col flex-1 px-4 pt-3.5 pb-4">
+          {/* Family name */}
+          <h3 className="text-[15px] font-bold text-slate-900 leading-snug tracking-[-0.01em] font-heading mb-1.5 line-clamp-2">
+            {cat.n}
+          </h3>
+
+          {/* Description — 1 line max */}
           {cat.desc && (
-            <p className="text-sm text-slate-500 mb-3 line-clamp-2 font-v9-body">
+            <p className="text-[12px] text-slate-400 mb-3 line-clamp-1 leading-relaxed">
               {cat.desc}
             </p>
           )}
-          <div className="flex flex-wrap gap-1.5">
+
+          {/* Gamme links — clean list */}
+          <div className="flex flex-col gap-1 mt-auto">
             {displayedGammes.map((g) => (
               <Link
                 key={g.name}
                 to={g.link}
-                className="inline-flex items-center min-h-[44px]"
+                className="flex items-center gap-2 px-2.5 py-2 -mx-1 rounded-lg text-[13px] text-slate-600 font-medium hover:bg-slate-50 hover:text-cta transition-colors group/link"
               >
-                <Badge
-                  variant="secondary"
-                  className="px-2.5 py-1.5 bg-white rounded-lg text-xs text-slate-600 font-medium hover:bg-orange-50 hover:text-cta transition-colors border border-slate-100 hover:border-cta/20 cursor-pointer"
-                >
-                  {g.name}
-                </Badge>
+                <span className="w-1 h-1 rounded-full bg-slate-300 group-hover/link:bg-cta shrink-0" />
+                <span className="truncate">{g.name}</span>
               </Link>
             ))}
+
+            {/* Expand / collapse */}
             {hasMore && (
               <button
                 type="button"
                 onClick={() => onToggle(cat.n)}
                 disabled={isLoading}
-                className="px-2.5 py-1.5 rounded-lg text-xs font-medium text-cta hover:bg-orange-50 transition-colors border border-cta/20 cursor-pointer min-h-[44px] inline-flex items-center gap-1 disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 mt-1 px-3 py-2 rounded-lg text-[12px] font-semibold text-cta bg-orange-50/80 hover:bg-orange-100 transition-colors disabled:opacity-50"
               >
                 {isLoading ? (
-                  <Loader2 className="w-3 h-3 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : isOpen ? (
-                  "Voir moins"
+                  <>
+                    <ChevronUp className="w-3.5 h-3.5" />
+                    Voir moins
+                  </>
                 ) : (
-                  `+${totalGammes - 3} gammes`
+                  <>
+                    <ChevronDown className="w-3.5 h-3.5" />+{totalGammes - 4}{" "}
+                    autres gammes
+                  </>
                 )}
               </button>
             )}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </Reveal>
   );
 });
@@ -133,7 +144,7 @@ export default function CatalogueSection({
   const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
   const [catSearch, setCatSearch] = useState("");
   const [showAllFamilies, setShowAllFamilies] = useState(false);
-  const [showAllDesktop, setShowAllDesktop] = useState(false);
+  const [_activeTab, setActiveTab] = useState("Tout");
   const [loadingFamily, setLoadingFamily] = useState<string | null>(null);
   // Expanded gammes fetched from API (keyed by family name)
   const [expandedGammes, setExpandedGammes] = useState<
@@ -163,47 +174,26 @@ export default function CatalogueSection({
         return;
       }
 
-      // Need to fetch remaining gammes from API
-      // Extract familyId from the family data — we need to look it up
-      // The families array comes from mapFamiliesToCatalog which doesn't include mf_id
-      // We'll use the gamme link pattern: /pieces/{alias}-{pg_id}.html
+      // Fetch remaining gammes — mf_id already available in CatalogFamily
       setLoadingFamily(name);
       try {
-        // Find mf_id: we need to match by name in the original data
-        // Since we don't have mf_id in CatalogFamily, fetch via a search endpoint
-        const res = await fetch(`/api/catalog/homepage-families`);
-        if (res.ok) {
-          const data = await res.json();
-          const families = data.catalog?.families ?? data.families ?? [];
-          const match = families.find(
-            (f: any) => f.mf_name === name || f.mf_name_display === name,
-          );
-          if (match) {
-            const gammesRes = await fetch(
-              `/api/catalog/family-gammes/${match.mf_id}`,
+        const gammesRes = await fetch(
+          `/api/catalog/family-gammes/${family.mf_id}`,
+        );
+        if (gammesRes.ok) {
+          const gammesData = await gammesRes.json();
+          if (gammesData.success && gammesData.gammes) {
+            const mappedGammes = gammesData.gammes.map(
+              (g: { pg_id: number; pg_alias: string; pg_name: string }) => ({
+                name: g.pg_name,
+                link: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
+              }),
             );
-            if (gammesRes.ok) {
-              const gammesData = await gammesRes.json();
-              if (gammesData.success && gammesData.gammes) {
-                const mappedGammes = gammesData.gammes.map(
-                  (g: {
-                    pg_id: number;
-                    pg_alias: string;
-                    pg_name: string;
-                  }) => ({
-                    name: g.pg_name,
-                    link: `/pieces/${g.pg_alias}-${g.pg_id}.html`,
-                  }),
-                );
-                setExpandedGammes((prev) =>
-                  new Map(prev).set(name, mappedGammes),
-                );
-              }
-            }
+            setExpandedGammes((prev) => new Map(prev).set(name, mappedGammes));
           }
         }
       } catch {
-        // Silently fail — user sees the 3 initial gammes
+        // Silently fail — user sees the initial gammes
       } finally {
         setLoadingFamily(null);
         setExpandedCats((prev) => new Set(prev).add(name));
@@ -213,13 +203,14 @@ export default function CatalogueSection({
   );
 
   // Build display families: merge SSR gammes with dynamically-loaded gammes
-  const displayFamilies = families.map((cat) => {
-    const extra = expandedGammes.get(cat.n);
-    if (extra) {
-      return { ...cat, gammes: extra };
-    }
-    return cat;
-  });
+  const displayFamilies = useMemo(
+    () =>
+      families.map((cat) => {
+        const extra = expandedGammes.get(cat.n);
+        return extra ? { ...cat, gammes: extra } : cat;
+      }),
+    [families, expandedGammes],
+  );
 
   return (
     <Section variant="white" spacing="md" id="catalogue">
@@ -232,9 +223,9 @@ export default function CatalogueSection({
         defaultValue="Tout"
         className="w-full"
         aria-label="Catalogue par domaine technique"
-        onValueChange={() => {
+        onValueChange={(val) => {
           setShowAllFamilies(false);
-          setShowAllDesktop(false);
+          setActiveTab(val);
         }}
       >
         {/* Barre unifiée : filtres + recherche */}
@@ -286,7 +277,7 @@ export default function CatalogueSection({
               <button
                 type="button"
                 onClick={() => setCatSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors"
                 aria-label="Effacer la recherche"
               >
                 <X size={14} />
@@ -329,48 +320,41 @@ export default function CatalogueSection({
               ) : (
                 <>
                   <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
-                    {filtered.map((cat, i) => (
-                      <CatalogFamilyCard
-                        key={cat.n}
-                        cat={cat}
-                        index={i}
-                        isOpen={expandedCats.has(cat.n)}
-                        onToggle={toggleCat}
-                        isLoading={loadingFamily === cat.n}
-                        className={
-                          !showAllFamilies && i >= 4
-                            ? !showAllDesktop && i >= 6
-                              ? "hidden"
-                              : "hidden lg:block"
-                            : !showAllDesktop && i >= 6
-                              ? "lg:hidden"
-                              : undefined
-                        }
-                      />
-                    ))}
+                    {filtered.map((cat, i) => {
+                      // Domain tabs (≤8 families): show all. "Tout" (19): paginate.
+                      const isDomainTab = domain.familyIds !== null;
+                      const hiddenClass = isDomainTab
+                        ? undefined
+                        : !showAllFamilies && i >= 8
+                          ? "hidden"
+                          : undefined;
+
+                      return (
+                        <CatalogFamilyCard
+                          key={cat.n}
+                          cat={cat}
+                          index={i}
+                          isOpen={expandedCats.has(cat.n)}
+                          onToggle={toggleCat}
+                          isLoading={loadingFamily === cat.n}
+                          className={hiddenClass}
+                        />
+                      );
+                    })}
                   </div>
-                  {!showAllFamilies && filtered.length > 4 && (
-                    <div className="flex justify-center mt-5 lg:hidden">
-                      <button
-                        type="button"
-                        onClick={() => setShowAllFamilies(true)}
-                        className="px-6 py-3 rounded-full bg-orange-500 text-white text-sm font-semibold shadow-[0_14px_34px_rgba(15,23,42,0.08)] hover:bg-orange-600 transition-colors tracking-[-0.03em]"
-                      >
-                        Voir toutes les familles ({filtered.length})
-                      </button>
-                    </div>
-                  )}
-                  {!showAllDesktop && filtered.length > 6 && (
-                    <div className="hidden lg:flex justify-center mt-5">
-                      <button
-                        type="button"
-                        onClick={() => setShowAllDesktop(true)}
-                        className="px-6 py-3 rounded-full border border-slate-200 bg-white text-slate-700 text-sm font-semibold shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-colors tracking-[-0.03em]"
-                      >
-                        Voir les {filtered.length - 6} familles restantes
-                      </button>
-                    </div>
-                  )}
+                  {domain.familyIds === null &&
+                    !showAllFamilies &&
+                    filtered.length > 8 && (
+                      <div className="flex justify-center mt-5">
+                        <button
+                          type="button"
+                          onClick={() => setShowAllFamilies(true)}
+                          className="px-6 py-3 rounded-full border border-slate-200 bg-white text-slate-700 text-sm font-semibold shadow-sm hover:bg-slate-50 hover:border-slate-300 transition-colors tracking-[-0.03em]"
+                        >
+                          Voir les {filtered.length - 8} familles restantes
+                        </button>
+                      </div>
+                    )}
                 </>
               )}
             </TabsContent>

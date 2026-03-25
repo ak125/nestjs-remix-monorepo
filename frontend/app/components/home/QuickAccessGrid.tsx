@@ -7,24 +7,51 @@ import {
   ScanLine,
   Search,
 } from "lucide-react";
+import { useCallback } from "react";
 
-const SHORTCUTS = [
+/** Scroll to an element with offset for sticky header */
+function scrollToId(id: string) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const y = el.getBoundingClientRect().top + window.scrollY - 80;
+  window.scrollTo({ top: y, behavior: "smooth" });
+}
+
+/** Dispatch hero tab switch event (listened by HeroSection) */
+function switchHeroTab(tab: number) {
+  window.dispatchEvent(new CustomEvent("hero-tab-switch", { detail: { tab } }));
+}
+
+interface Shortcut {
+  icon: typeof Car;
+  title: string;
+  desc: string;
+  /** Route path for <Link> navigation */
+  href?: string;
+  /** Anchor ID for in-page scroll */
+  scrollTo?: string;
+  /** Hero tab index to activate on scroll */
+  heroTab?: number;
+}
+
+const SHORTCUTS: Shortcut[] = [
   {
     icon: Car,
     title: "Par véhicule",
-    href: "#hero-v9",
+    scrollTo: "hero-v9",
+    heroTab: 0,
     desc: "Marque, modèle, motorisation",
   },
   {
     icon: Grid3x3,
     title: "Par famille",
-    href: "#catalogue",
+    scrollTo: "catalogue",
     desc: "19 familles techniques",
   },
   {
     icon: Building2,
     title: "Par constructeur",
-    href: "#marques",
+    scrollTo: "marques",
     desc: "36 marques auto",
   },
   {
@@ -36,7 +63,8 @@ const SHORTCUTS = [
   {
     icon: Search,
     title: "Par référence",
-    href: "#hero-v9",
+    scrollTo: "hero-v9",
+    heroTab: 2,
     desc: "OE, marque ou pièce",
   },
   {
@@ -50,12 +78,13 @@ const SHORTCUTS = [
 function ShortcutItem({
   s,
   compact,
+  onScrollAction,
 }: {
-  s: (typeof SHORTCUTS)[number];
+  s: Shortcut;
   compact?: boolean;
+  onScrollAction: (s: Shortcut) => void;
 }) {
   const Icon = s.icon;
-  const isRoute = s.href.startsWith("/");
 
   const inner = compact ? (
     <>
@@ -81,10 +110,11 @@ function ShortcutItem({
   );
 
   const cls = compact
-    ? "flex flex-shrink-0 items-center gap-2.5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 transition-colors hover:border-cta/30 hover:bg-orange-50 active:scale-[0.98]"
-    : "group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 transition-all hover:border-cta/30 hover:bg-orange-50/50 hover:shadow-sm";
+    ? "flex flex-shrink-0 items-center gap-2.5 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 transition-colors hover:border-cta/30 hover:bg-orange-50 active:scale-[0.98] cursor-pointer"
+    : "group flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 transition-all hover:border-cta/30 hover:bg-orange-50/50 hover:shadow-sm cursor-pointer";
 
-  if (isRoute) {
+  // Route link → <Link>
+  if (s.href) {
     return (
       <Link to={s.href} className={cls}>
         {inner}
@@ -92,14 +122,24 @@ function ShortcutItem({
     );
   }
 
+  // In-page scroll action → <button>
   return (
-    <a href={s.href} className={cls}>
+    <button type="button" onClick={() => onScrollAction(s)} className={cls}>
       {inner}
-    </a>
+    </button>
   );
 }
 
 export default function QuickAccessGrid() {
+  const handleScrollAction = useCallback((s: Shortcut) => {
+    if (s.scrollTo) {
+      scrollToId(s.scrollTo);
+    }
+    if (s.heroTab !== undefined) {
+      switchHeroTab(s.heroTab);
+    }
+  }, []);
+
   return (
     <section className="bg-white border-b border-slate-100">
       <div className="mx-auto max-w-[1280px] px-5 py-4 lg:px-8 lg:py-5">
@@ -108,14 +148,23 @@ export default function QuickAccessGrid() {
         {/* Mobile: scroll horizontal */}
         <div className="flex gap-2.5 overflow-x-auto hide-scroll -mx-5 px-5 lg:hidden">
           {SHORTCUTS.map((s) => (
-            <ShortcutItem key={s.title} s={s} compact />
+            <ShortcutItem
+              key={s.title}
+              s={s}
+              compact
+              onScrollAction={handleScrollAction}
+            />
           ))}
         </div>
 
-        {/* Desktop: 5 columns */}
+        {/* Desktop: 6 columns */}
         <div className="hidden lg:grid lg:grid-cols-6 lg:gap-3">
           {SHORTCUTS.map((s) => (
-            <ShortcutItem key={s.title} s={s} />
+            <ShortcutItem
+              key={s.title}
+              s={s}
+              onScrollAction={handleScrollAction}
+            />
           ))}
         </div>
       </div>

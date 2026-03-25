@@ -28,10 +28,10 @@ function FaqCards({ items }: { items: Array<{ q: string; a: string }> }) {
                 <FaqIcon size={22} className="text-slate-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-[1rem] font-semibold text-slate-800 leading-snug tracking-[-0.02em] font-v9-heading">
+                <h3 className="text-[1rem] font-semibold text-slate-800 leading-snug tracking-[-0.02em] font-heading">
                   {faq.q}
                 </h3>
-                <p className="text-sm text-slate-500 mt-1 line-clamp-2 leading-relaxed font-v9-body">
+                <p className="text-sm text-slate-500 mt-1 line-clamp-2 leading-relaxed font-body">
                   {faq.a}
                 </p>
               </div>
@@ -52,10 +52,10 @@ export default function FaqSection({
     <section className="py-7 lg:py-10 bg-slate-50">
       <div className="px-5 lg:px-8 max-w-[1280px] mx-auto">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-[1.5rem] lg:text-[2rem] font-extrabold text-slate-900 tracking-[-0.03em] font-v9-heading">
+          <h2 className="text-lg sm:text-xl lg:text-[2rem] font-extrabold text-slate-900 tracking-[-0.03em] font-heading">
             Questions fréquentes
           </h2>
-          <div className="h-10 w-10 rounded-full border border-slate-200 bg-white flex items-center justify-center shadow-sm">
+          <div className="h-11 w-11 rounded-full border border-slate-200 bg-white flex items-center justify-center shadow-sm">
             <HelpCircle size={18} className="text-slate-400" />
           </div>
         </div>

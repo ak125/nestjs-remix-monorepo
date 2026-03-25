@@ -49,13 +49,13 @@ function FeaturedCard({ b }: { b: BlogArticle }) {
           </span>
         </div>
         <CardContent className="p-5">
-          <h3 className="text-[1.5rem] font-extrabold text-slate-900 leading-[1.15] tracking-[-0.03em] mb-2 line-clamp-2 group-hover:text-blue-700 transition-colors font-v9-heading">
+          <h3 className="text-lg sm:text-xl lg:text-[1.5rem] font-extrabold text-slate-900 leading-[1.15] tracking-[-0.03em] mb-2 line-clamp-2 group-hover:text-blue-700 transition-colors font-heading">
             {b.t}
           </h3>
           <p className="text-[14px] text-slate-500 line-clamp-2 leading-relaxed mb-4">
             {b.d}
           </p>
-          <span className="inline-flex items-center gap-2 rounded-full bg-[#2563EB] px-5 py-3 text-white text-[14px] font-semibold group-hover:gap-3 transition-all">
+          <span className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-3 text-white text-[14px] font-semibold group-hover:gap-3 transition-all">
             Lire l&apos;article <ArrowRight size={14} />
           </span>
         </CardContent>
@@ -92,7 +92,7 @@ function CompactCard({ b }: { b: BlogArticle }) {
           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-0.5">
             {b.tag}
           </span>
-          <h3 className="text-[14px] font-semibold text-slate-800 leading-snug line-clamp-2 group-hover:text-blue-700 transition-colors font-v9-heading">
+          <h3 className="text-[14px] font-semibold text-slate-800 leading-snug line-clamp-2 group-hover:text-blue-700 transition-colors font-heading">
             {b.t}
           </h3>
         </CardContent>
@@ -136,7 +136,7 @@ function DesktopCard({ b }: { b: BlogArticle }) {
           </span>
         </div>
         <CardContent className="p-5">
-          <div className="text-[14px] font-semibold text-slate-800 leading-snug mb-1.5 line-clamp-2 group-hover:text-blue-700 transition-colors font-v9-heading">
+          <div className="text-[14px] font-semibold text-slate-800 leading-snug mb-1.5 line-clamp-2 group-hover:text-blue-700 transition-colors font-heading">
             {b.t}
           </div>
           <div className="text-[12px] text-slate-500 line-clamp-2 leading-relaxed">
@@ -165,7 +165,7 @@ export default function BlogCarousel({
     <section className="py-7 lg:py-10 bg-white">
       <div className="max-w-[1280px] mx-auto">
         <div className="flex items-center justify-between px-5 lg:px-8 mb-4">
-          <h2 className="text-[20px] lg:text-[24px] font-bold text-slate-900 tracking-tight font-v9-heading">
+          <h2 className="text-[20px] lg:text-[24px] font-bold text-slate-900 tracking-tight font-heading">
             Blog & Guides
           </h2>
           <Link

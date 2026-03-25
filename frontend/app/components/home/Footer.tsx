@@ -33,17 +33,17 @@ const SOCIAL_LINKS = [
 
 export default function Footer() {
   return (
-    <footer className="bg-v9-navy text-white pb-20 lg:pb-0">
+    <footer className="bg-navy text-white pb-20 lg:pb-0">
       {/* ── Desktop: 4-col grid ── */}
       <div className="hidden md:block py-12">
         <div className="max-w-[1280px] mx-auto px-5 lg:px-8">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+          <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4 lg:gap-8 mb-8">
             {/* Col 1 — À propos */}
             <div>
-              <h3 className="text-[16px] font-extrabold font-v9-heading mb-4 text-white">
+              <h3 className="text-[16px] font-extrabold font-heading mb-4 text-white">
                 À propos
               </h3>
-              <p className="text-[13px] text-white/50 mb-4 leading-relaxed">
+              <p className="text-[13px] text-white/60 mb-4 leading-relaxed">
                 Votre spécialiste de pièces détachées automobiles neuves et
                 d&apos;origine. Plus de 500 000 références pour toutes les
                 marques et modèles.
@@ -66,7 +66,7 @@ export default function Footer() {
 
             {/* Col 2 — Liens utiles */}
             <div>
-              <h3 className="text-[16px] font-extrabold font-v9-heading mb-4 text-white">
+              <h3 className="text-[16px] font-extrabold font-heading mb-4 text-white">
                 Liens utiles
               </h3>
               <ul className="space-y-1">
@@ -74,7 +74,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       to={link.href}
-                      className="no-style no-visited inline-flex items-center min-h-[44px] text-[13px] text-white/50 hover:text-white transition-colors"
+                      className="no-style no-visited inline-flex items-center min-h-[44px] text-[13px] text-white/60 hover:text-white transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -85,7 +85,7 @@ export default function Footer() {
 
             {/* Col 3 — Informations légales */}
             <div>
-              <h3 className="text-[16px] font-extrabold font-v9-heading mb-4 text-white">
+              <h3 className="text-[16px] font-extrabold font-heading mb-4 text-white">
                 Informations légales
               </h3>
               <ul className="space-y-1">
@@ -93,7 +93,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       to={link.href}
-                      className="no-style no-visited inline-flex items-center min-h-[44px] text-[13px] text-white/50 hover:text-white transition-colors"
+                      className="no-style no-visited inline-flex items-center min-h-[44px] text-[13px] text-white/60 hover:text-white transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -104,13 +104,13 @@ export default function Footer() {
 
             {/* Col 4 — Contact */}
             <div>
-              <h3 className="text-[16px] font-extrabold font-v9-heading mb-4 text-white">
+              <h3 className="text-[16px] font-extrabold font-heading mb-4 text-white">
                 Contact
               </h3>
               <ul className="space-y-3">
                 <li className="flex items-start gap-2.5">
                   <MapPin size={16} className="text-cta flex-shrink-0 mt-0.5" />
-                  <span className="text-[13px] text-white/50">
+                  <span className="text-[13px] text-white/60">
                     184 avenue Aristide Briand
                     <br />
                     93320 Les Pavillons-sous-Bois
@@ -120,7 +120,7 @@ export default function Footer() {
                   <Phone size={16} className="text-cta flex-shrink-0" />
                   <a
                     href={`tel:${SITE_CONFIG.contact.phone.raw}`}
-                    className="text-[13px] text-white/50 hover:text-white transition-colors"
+                    className="text-[13px] text-white/60 hover:text-white transition-colors"
                   >
                     {SITE_CONFIG.contact.phone.display}
                   </a>
@@ -129,7 +129,7 @@ export default function Footer() {
                   <Mail size={16} className="text-cta flex-shrink-0" />
                   <a
                     href={`mailto:${SITE_CONFIG.contact.email}`}
-                    className="text-[13px] text-white/50 hover:text-white transition-colors"
+                    className="text-[13px] text-white/60 hover:text-white transition-colors"
                   >
                     {SITE_CONFIG.contact.email}
                   </a>
@@ -181,7 +181,7 @@ export default function Footer() {
       <div className="md:hidden px-5 py-8">
         {/* Brand + socials */}
         <div className="text-center mb-6">
-          <div className="text-[18px] font-extrabold font-v9-heading tracking-[-0.02em]">
+          <div className="text-[18px] font-extrabold font-heading tracking-[-0.02em]">
             AutoMecanik
           </div>
           <p className="text-[12px] text-white/40 mt-1">
@@ -214,7 +214,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="no-style no-visited inline-flex items-center min-h-[44px] text-xs text-white/45 hover:text-white transition-colors"
+                    className="no-style no-visited inline-flex items-center min-h-[44px] text-xs text-white/55 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -231,7 +231,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     to={link.href}
-                    className="no-style no-visited inline-flex items-center min-h-[44px] text-xs text-white/45 hover:text-white transition-colors"
+                    className="no-style no-visited inline-flex items-center min-h-[44px] text-xs text-white/55 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -245,14 +245,14 @@ export default function Footer() {
         <div className="py-4 border-t border-white/[0.06]">
           <a
             href={`tel:${SITE_CONFIG.contact.phone.raw}`}
-            className="flex items-center gap-2 min-h-[44px] text-xs text-white/45 hover:text-white transition-colors"
+            className="flex items-center gap-2 min-h-[44px] text-xs text-white/55 hover:text-white transition-colors"
           >
             <Phone size={14} className="text-cta" />
             {SITE_CONFIG.contact.phone.display}
           </a>
           <a
             href={`mailto:${SITE_CONFIG.contact.email}`}
-            className="flex items-center gap-2 min-h-[44px] text-xs text-white/45 hover:text-white transition-colors"
+            className="flex items-center gap-2 min-h-[44px] text-xs text-white/55 hover:text-white transition-colors"
           >
             <Mail size={14} className="text-cta" />
             {SITE_CONFIG.contact.email}

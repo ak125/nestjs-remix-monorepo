@@ -84,7 +84,7 @@ function ResourceCardItem({
         </p>
       </div>
 
-      <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-500 lg:mt-5 lg:text-[#2563eb]" />
+      <ArrowRight className="h-4 w-4 shrink-0 text-slate-300 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-slate-500 lg:mt-5 lg:text-blue-600" />
     </Link>
   );
 }
@@ -101,7 +101,7 @@ export default function HomeResourcesAndVideoSection() {
           <div className="space-y-1">
             <h2
               id="resources-video-title"
-              className="text-[20px] lg:text-[32px] font-black leading-none tracking-[-0.03em] text-slate-950"
+              className="text-lg sm:text-xl lg:text-[32px] font-black leading-none tracking-[-0.03em] text-slate-950"
             >
               Besoin d'aide pour choisir ou vérifier ?
             </h2>
@@ -120,27 +120,24 @@ export default function HomeResourcesAndVideoSection() {
           <div className="p-5 sm:p-6">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-start gap-4">
-                <button
-                  type="button"
-                  aria-label="Lire la présentation AutoMecanik"
+                <div
+                  aria-hidden="true"
                   className={cn(
-                    "group flex h-20 w-20 shrink-0 items-center justify-center rounded-full",
-                    "bg-white/10 ring-1 ring-white/10 backdrop-blur-md transition-all duration-200",
-                    "hover:bg-white/14 hover:ring-white/20 active:scale-[0.98]",
+                    "flex h-20 w-20 shrink-0 items-center justify-center rounded-full",
+                    "bg-white/10 ring-1 ring-white/10 backdrop-blur-md",
                   )}
                 >
-                  <div className="absolute inset-0 rounded-full bg-white/10 blur-xl" />
                   <span className="relative flex h-14 w-14 items-center justify-center rounded-full bg-white/8">
                     <Play className="ml-1 h-7 w-7 fill-white text-white" />
                   </span>
-                </button>
+                </div>
 
                 <div className="max-w-[520px]">
                   <p className="mb-2 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.14em] text-white/70">
                     Présentation
                   </p>
 
-                  <h3 className="text-[30px] font-black leading-[1.02] tracking-[-0.03em] text-white">
+                  <h3 className="text-xl sm:text-2xl lg:text-[30px] font-black leading-[1.02] tracking-[-0.03em] text-white">
                     Pourquoi choisir
                     <br />
                     AutoMecanik&nbsp;?
