@@ -18,6 +18,8 @@ interface EquipementiersSectionProps {
   isDarkMode?: boolean;
   /** Nombre max d'équipementiers affichés (SEO: éviter dilution) */
   maxItems?: number;
+  /** Masquer le H2 interne (le parent fournit le sien) */
+  hideTitle?: boolean;
 }
 
 /**
@@ -38,6 +40,7 @@ function getEquipementierUrl(pmName: string): string {
 const EquipementiersSection = memo(function EquipementiersSection({
   equipementiers,
   maxItems,
+  hideTitle = false,
 }: EquipementiersSectionProps) {
   if (!equipementiers?.items || equipementiers.items.length === 0) {
     return null;
@@ -49,14 +52,16 @@ const EquipementiersSection = memo(function EquipementiersSection({
 
   return (
     <section className="bg-white rounded-xl shadow-lg mb-8 overflow-hidden">
-      <div className="bg-gradient-to-r from-orange-600 to-orange-700 p-6">
-        <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-          🏭 {equipementiers.title}
-          <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
-            {equipementiers.items.length} marques
-          </span>
-        </h2>
-      </div>
+      {!hideTitle && (
+        <div className="bg-gradient-to-r from-orange-600 to-orange-700 p-6">
+          <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+            🏭 {equipementiers.title}
+            <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium">
+              {equipementiers.items.length} marques
+            </span>
+          </h2>
+        </div>
+      )}
 
       <div className="p-6">
         <p className="text-gray-700 mb-6 text-sm leading-relaxed bg-gray-50 p-4 rounded-lg border border-gray-100">

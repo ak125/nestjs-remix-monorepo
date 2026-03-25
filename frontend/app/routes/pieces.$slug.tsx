@@ -390,7 +390,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
         // === DEFERRED (real Promises → Remix streaming via Suspense) — ~100-250KB ===
         motorisations: Promise.resolve(pageData.motorisations ?? null),
-        equipementiers: Promise.resolve(pageData.equipementiers ?? null),
+        // apiData direct — pageData.equipementiers est dégradé par le Zod parser
+        equipementiers: Promise.resolve(apiData.equipementiers ?? null),
         catalogueMameFamille: Promise.resolve(
           pageData.catalogueMameFamille ?? null,
         ),
@@ -929,7 +930,11 @@ export default function PiecesDetailPage() {
                   ),
                 };
                 return (
-                  <EquipementiersSection equipementiers={mapped} maxItems={8} />
+                  <EquipementiersSection
+                    equipementiers={mapped}
+                    maxItems={8}
+                    hideTitle
+                  />
                 );
               }}
             </Await>
