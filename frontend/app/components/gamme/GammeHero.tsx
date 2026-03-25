@@ -1,15 +1,11 @@
 import { Link, useNavigate } from "@remix-run/react";
 import {
-  Award,
   BookOpen,
   Car,
   ChevronRight,
   Filter,
   Gauge,
-  Phone,
   Search,
-  Shield,
-  Truck,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
@@ -322,54 +318,7 @@ export default function GammeHero({
         </div>
       </div>
 
-      {/* Trust strip */}
-      <div className="max-w-7xl mx-auto px-page pb-5 lg:pb-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
-          {[
-            {
-              icon: Truck,
-              title: "Livraison 24-48h",
-              desc: "Expédition le jour même avant 15h",
-              color: "text-emerald-300",
-            },
-            {
-              icon: Shield,
-              title: "Retours 30 jours",
-              desc: "Satisfait ou remboursé",
-              color: "text-amber-300",
-            },
-            {
-              icon: Award,
-              title: "Garantie constructeur",
-              desc: "Pièces certifiées OE",
-              color: "text-purple-300",
-            },
-            {
-              icon: Phone,
-              title: "Assistance technique",
-              desc: "Un expert vous aide",
-              color: "text-blue-300",
-            },
-          ].map((t) => (
-            <div
-              key={t.title}
-              className="flex items-center gap-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl px-3.5 py-3"
-            >
-              <div className="w-9 h-9 rounded-xl bg-white/[0.06] flex items-center justify-center flex-shrink-0">
-                <t.icon size={16} className={t.color} />
-              </div>
-              <div>
-                <div className="text-[12px] font-semibold text-white/80">
-                  {t.title}
-                </div>
-                <div className="text-[10px] text-white/35 font-normal">
-                  {t.desc}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Trust strip supprimé — R1TrustStrip est affiché après le hero */}
     </section>
   );
 }
