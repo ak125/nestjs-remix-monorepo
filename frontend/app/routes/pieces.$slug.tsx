@@ -43,7 +43,6 @@ import EquipementiersSection from "~/components/pieces/EquipementiersSection";
 import MotorisationsSection from "~/components/pieces/MotorisationsSection";
 import { R1RelatedBlocks } from "~/components/pieces/R1RelatedBlocks";
 import { R1SlotImage } from "~/components/pieces/R1SlotImage";
-import { R1TrustStrip } from "~/components/pieces/R1TrustStrip";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import {
   type GammePageDataV1,
@@ -758,68 +757,58 @@ export default function PiecesDetailPage() {
         selectedVehicle={selectedVehicle}
       />
 
-      {/* Hero secondaire — Réassurance + orientation rapide */}
-      <div className="py-5 px-4 sm:px-6 max-w-[1280px] mx-auto space-y-4">
-        <R1TrustStrip />
+      {/* Hero secondaire — Réassurance compacte + liens utiles (1 seul bloc, pas de redondance) */}
+      <div className="py-4 px-4 sm:px-6 bg-slate-50 border-b border-slate-100">
+        <div className="max-w-[1280px] mx-auto flex flex-wrap items-center justify-between gap-3">
+          {/* Trust badges — texte compact inline */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              Compatibilité vérifiée
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              Livraison 24-48h
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              Retours 30 jours
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+              Paiement sécurisé
+            </span>
+          </div>
 
-        {/* Resource cards — 3 liens utiles vers contenus complémentaires */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <a
-            href={
-              data.content?.pg_alias
-                ? `/blog-pieces-auto/guide-achat/${data.content.pg_alias}`
-                : "/blog-pieces-auto"
-            }
-            className="flex items-center gap-3 p-4 bg-white border border-blue-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all"
-          >
-            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-              <span className="text-lg">📖</span>
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-slate-800">
-                Guide d&apos;achat
-              </div>
-              <div className="text-xs text-slate-500">
-                Critères, budget, marques
-              </div>
-            </div>
-          </a>
-          <a
-            href={
-              data.content?.pg_alias
-                ? `/blog-pieces-auto/conseils/${data.content.pg_alias}`
-                : "/blog-pieces-auto"
-            }
-            className="flex items-center gap-3 p-4 bg-white border border-emerald-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all"
-          >
-            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-              <span className="text-lg">🔧</span>
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-slate-800">
-                Conseils entretien
-              </div>
-              <div className="text-xs text-slate-500">
-                Quand et comment remplacer
-              </div>
-            </div>
-          </a>
-          <a
-            href="/reference-auto"
-            className="flex items-center gap-3 p-4 bg-white border border-purple-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all"
-          >
-            <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
-              <span className="text-lg">📋</span>
-            </div>
-            <div>
-              <div className="text-sm font-semibold text-slate-800">
-                Fiche technique
-              </div>
-              <div className="text-xs text-slate-500">
-                Normes OE, spécifications
-              </div>
-            </div>
-          </a>
+          {/* Liens utiles — compact inline */}
+          <div className="flex items-center gap-4 text-xs font-medium">
+            <a
+              href={
+                data.content?.pg_alias
+                  ? `/blog-pieces-auto/guide-achat/${data.content.pg_alias}`
+                  : "/blog-pieces-auto"
+              }
+              className="text-blue-600 hover:text-blue-800 transition-colors"
+            >
+              Guide d&apos;achat
+            </a>
+            <a
+              href={
+                data.content?.pg_alias
+                  ? `/blog-pieces-auto/conseils/${data.content.pg_alias}`
+                  : "/blog-pieces-auto"
+              }
+              className="text-emerald-600 hover:text-emerald-800 transition-colors"
+            >
+              Conseils entretien
+            </a>
+            <a
+              href="/reference-auto"
+              className="text-purple-600 hover:text-purple-800 transition-colors"
+            >
+              Fiche technique
+            </a>
+          </div>
         </div>
       </div>
 
