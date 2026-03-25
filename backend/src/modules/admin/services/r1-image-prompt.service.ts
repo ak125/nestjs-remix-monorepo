@@ -36,11 +36,14 @@ export class R1ImagePromptService extends SupabaseBaseService {
       return { pgAlias, status: 'skipped' as const, slots: [] };
     }
 
-    // Ne jamais écraser un slot qui a une image uploadée
-    const slotsToWrite = SLOT_IDS.filter((slotId) => {
-      const ex = existingMap.get(slotId);
-      return !ex?.rip_image_url;
-    });
+    // En mode force : régénérer TOUS les prompts (même ceux avec image)
+    // En mode normal : ne pas toucher les slots qui ont déjà une image uploadée
+    const slotsToWrite = options?.force
+      ? [...SLOT_IDS]
+      : SLOT_IDS.filter((slotId) => {
+          const ex = existingMap.get(slotId);
+          return !ex?.rip_image_url;
+        });
 
     if (slotsToWrite.length === 0) {
       return { pgAlias, status: 'skipped' as const, slots: [] };
@@ -58,6 +61,7 @@ export class R1ImagePromptService extends SupabaseBaseService {
       const builder = SLOT_BUILDERS[slotId];
       const meta = SLOT_META[slotId];
       const result = builder(pgName, ragData);
+      const hasExistingImage = existingMap.get(slotId)?.rip_image_url;
 
       return {
         rip_pg_id: pgId,
@@ -77,7 +81,10 @@ export class R1ImagePromptService extends SupabaseBaseService {
         rip_priority_rank: meta.rank,
         rip_rag_fields_used: result.ragFieldsUsed,
         rip_rag_richness_score: result.richnessScore,
-        rip_status: 'pending',
+        // En mode force avec image existante : garder le statut approved + marquer stale
+        rip_status: hasExistingImage ? 'approved' : 'pending',
+        rip_stale: hasExistingImage ? true : false,
+        rip_updated_at: new Date().toISOString(),
       };
     });
 
