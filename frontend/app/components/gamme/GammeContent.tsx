@@ -210,144 +210,159 @@ export default function GammeContent({
     },
   ];
 
+  const n = gammeName.toLowerCase();
+
   return (
     <Section variant="white">
-      <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-        {/* Main content */}
-        <div className="lg:col-span-2">
-          {/* If editorial content has its own H2s, skip the wrapper heading */}
-          {!contentHasH2 && (
-            <SectionHeader
-              title={
-                h2Override || `Bien choisir votre ${gammeName.toLowerCase()}`
-              }
-            />
-          )}
-
-          <div className="gamme-editorial text-[13px] lg:text-[14px] text-slate-600 leading-relaxed font-normal font-body space-y-2.5 mb-4">
-            {contentFragments.map((frag, i) => (
-              <div key={i}>
-                <div dangerouslySetInnerHTML={{ __html: frag.html }} />
-                {frag.slotAfter && r1Images?.[frag.slotAfter] && (
-                  <div className="my-6 max-w-2xl">
-                    <R1SlotImage {...r1Images[frag.slotAfter]!} />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className="space-y-2.5">
-            {defaultTips.map((tip, i) => (
-              <div
-                key={i}
-                className={`flex items-start gap-2.5 p-3.5 rounded-xl ${
-                  tip.type === "info"
-                    ? "bg-blue-50 border border-blue-100"
-                    : "bg-amber-50 border border-amber-100"
-                }`}
-              >
-                {tip.type === "info" ? (
-                  <Info
-                    size={15}
-                    className="text-blue-500 mt-0.5 flex-shrink-0"
-                  />
-                ) : (
-                  <AlertTriangle
-                    size={15}
-                    className="text-amber-500 mt-0.5 flex-shrink-0"
-                  />
-                )}
-                <p
-                  className={`text-[12px] lg:text-[13px] leading-relaxed ${
-                    tip.type === "info" ? "text-blue-800" : "text-amber-800"
-                  }`}
-                  dangerouslySetInnerHTML={{ __html: tip.text }}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Sidebar */}
-        <div className="mt-6 lg:mt-0 space-y-4">
-          <div className="bg-slate-50 border border-slate-200 rounded-[22px] p-5 shadow-[0_6px_18px_rgba(15,23,42,0.05)]">
-            <h3 className="text-[15px] font-bold text-slate-900 font-heading mb-4">
-              {sidebarSteps
-                ? "Pourquoi nous choisir"
-                : "Choisir en 15 secondes"}
-            </h3>
-            {sidebarSteps
-              ? sidebarSteps.map((arg, i) => {
-                  const Icon = getArgIcon(arg.icon, i);
-                  return (
-                    <div
-                      key={arg.title || i}
-                      className="flex items-start gap-3 mb-3 last:mb-0"
-                    >
-                      <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
-                        <Icon size={13} className="text-white" />
-                      </div>
-                      <div>
-                        <div className="text-[12px] font-semibold text-slate-800">
-                          {arg.title}
-                        </div>
-                        {arg.content && arg.content !== arg.title && (
-                          <div className="text-[11px] text-slate-500 font-normal">
-                            {arg.content}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })
-              : HOW_TO_STEPS.map((step, i) => (
+      {/* ── Bloc 1 : Pourquoi nous choisir + Resource cards — pleine largeur ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Pourquoi nous choisir */}
+        <div className="bg-slate-50 border border-slate-200 rounded-[22px] p-5 shadow-[0_6px_18px_rgba(15,23,42,0.05)]">
+          <h3 className="text-[15px] font-bold text-slate-900 font-heading mb-4">
+            {sidebarSteps ? "Pourquoi nous choisir" : "Choisir en 15 secondes"}
+          </h3>
+          {sidebarSteps
+            ? sidebarSteps.map((arg, i) => {
+                const Icon = getArgIcon(arg.icon, i);
+                return (
                   <div
-                    key={step.title}
+                    key={arg.title || i}
                     className="flex items-start gap-3 mb-3 last:mb-0"
                   >
-                    <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0 text-[11px] font-bold text-white">
-                      {i + 1}
+                    <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0">
+                      <Icon size={13} className="text-white" />
                     </div>
                     <div>
                       <div className="text-[12px] font-semibold text-slate-800">
-                        {step.title}
+                        {arg.title}
                       </div>
-                      <div className="text-[11px] text-slate-500 font-normal">
-                        {step.desc}
-                      </div>
+                      {arg.content && arg.content !== arg.title && (
+                        <div className="text-[11px] text-slate-500 font-normal">
+                          {arg.content}
+                        </div>
+                      )}
                     </div>
                   </div>
-                ))}
-          </div>
-
-          {resourceCards.map((c) => {
-            const Icon = c.icon;
-            const colorParts = c.color.split(" ");
-            return (
-              <Link
-                key={c.title}
-                to={c.href}
-                className={`flex items-center gap-3 p-4 bg-white border ${colorParts[2]} rounded-[18px] shadow-[0_6px_18px_rgba(15,23,42,0.05)] hover:shadow-lg hover:-translate-y-0.5 transition-all group`}
-              >
+                );
+              })
+            : HOW_TO_STEPS.map((step, i) => (
                 <div
-                  className={`w-10 h-10 rounded-xl ${colorParts[1]} flex items-center justify-center group-hover:scale-105 transition-transform`}
+                  key={step.title}
+                  className="flex items-start gap-3 mb-3 last:mb-0"
                 >
-                  <Icon size={18} className={colorParts[0]} />
-                </div>
-                <div className="flex-1">
-                  <div className="text-[13px] font-semibold text-slate-800">
-                    {c.title}
+                  <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0 text-[11px] font-bold text-white">
+                    {i + 1}
                   </div>
-                  <div className="text-[11px] text-slate-400 font-normal">
-                    {c.desc}
+                  <div>
+                    <div className="text-[12px] font-semibold text-slate-800">
+                      {step.title}
+                    </div>
+                    <div className="text-[11px] text-slate-500 font-normal">
+                      {step.desc}
+                    </div>
                   </div>
                 </div>
-                <ChevronRight size={14} className="text-slate-300" />
-              </Link>
-            );
-          })}
+              ))}
         </div>
+
+        {/* Resource cards */}
+        {resourceCards.map((c) => {
+          const Icon = c.icon;
+          const colorParts = c.color.split(" ");
+          return (
+            <Link
+              key={c.title}
+              to={c.href}
+              className={`flex items-center gap-3 p-4 bg-white border ${colorParts[2]} rounded-[18px] shadow-[0_6px_18px_rgba(15,23,42,0.05)] hover:shadow-lg hover:-translate-y-0.5 transition-all group`}
+            >
+              <div
+                className={`w-10 h-10 rounded-xl ${colorParts[1]} flex items-center justify-center group-hover:scale-105 transition-transform`}
+              >
+                <Icon size={18} className={colorParts[0]} />
+              </div>
+              <div className="flex-1">
+                <div className="text-[13px] font-semibold text-slate-800">
+                  {c.title}
+                </div>
+                <div className="text-[11px] text-slate-400 font-normal">
+                  {c.desc}
+                </div>
+              </div>
+              <ChevronRight size={14} className="text-slate-300" />
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* ── Bloc 2 : Images R1 — TYPES, PRICE, LOCATION ── */}
+      {r1Images && Object.keys(r1Images).length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          {r1Images.TYPES && (
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 mb-3">
+                Types de {n}
+              </h2>
+              <R1SlotImage {...r1Images.TYPES} className="rounded-2xl" />
+            </div>
+          )}
+          {r1Images.PRICE && (
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 mb-3">
+                Qualité et prix
+              </h2>
+              <R1SlotImage {...r1Images.PRICE} className="rounded-2xl" />
+            </div>
+          )}
+          {r1Images.LOCATION && (
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 mb-3">
+                Emplacement véhicule
+              </h2>
+              <R1SlotImage {...r1Images.LOCATION} className="rounded-2xl" />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Bloc 3 : Contenu éditorial — pleine largeur ── */}
+      {!contentHasH2 && (
+        <SectionHeader title={h2Override || `Bien choisir votre ${n}`} />
+      )}
+
+      <div className="gamme-editorial text-[13px] lg:text-[14px] text-slate-600 leading-relaxed font-normal font-body space-y-2.5 mb-4">
+        {contentFragments.map((frag, i) => (
+          <div key={i}>
+            <div dangerouslySetInnerHTML={{ __html: frag.html }} />
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-2.5">
+        {defaultTips.map((tip, i) => (
+          <div
+            key={i}
+            className={`flex items-start gap-2.5 p-3.5 rounded-xl ${
+              tip.type === "info"
+                ? "bg-blue-50 border border-blue-100"
+                : "bg-amber-50 border border-amber-100"
+            }`}
+          >
+            {tip.type === "info" ? (
+              <Info size={15} className="text-blue-500 mt-0.5 flex-shrink-0" />
+            ) : (
+              <AlertTriangle
+                size={15}
+                className="text-amber-500 mt-0.5 flex-shrink-0"
+              />
+            )}
+            <p
+              className={`text-[12px] lg:text-[13px] leading-relaxed ${
+                tip.type === "info" ? "text-blue-800" : "text-amber-800"
+              }`}
+              dangerouslySetInnerHTML={{ __html: tip.text }}
+            />
+          </div>
+        ))}
       </div>
     </Section>
   );
