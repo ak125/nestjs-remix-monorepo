@@ -43,7 +43,6 @@ import {
 import { Footer } from "~/components/home";
 
 import { R1RelatedBlocks } from "~/components/pieces/R1RelatedBlocks";
-import { R1SlotImage } from "~/components/pieces/R1SlotImage";
 import { fetchGammePageData } from "~/services/api/gamme-api.service";
 import {
   type GammePageDataV1,
@@ -586,8 +585,7 @@ export default function PiecesDetailPage() {
   const navigation = useNavigation();
   const navigate = useNavigate();
 
-  // Helper: extraire une image R1 par slot (accès O(1))
-  const r1Img = (slot: string) => data.r1Images?.[slot];
+  // R1 images: TYPES/PRICE/LOCATION injected by GammeContent.splitContentWithImages()
 
   // Afficher un indicateur de chargement si les données sont en cours de chargement
   const isLoading = navigation.state === "loading";
@@ -739,31 +737,8 @@ export default function PiecesDetailPage() {
         selectedVehicle={selectedVehicle}
       />
 
-      {/* R1 Images — blocs visuels après le hero */}
-      {r1Img("TYPES") && (
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-4">
-            Types de {(data.content?.pg_name || "pièces").toLowerCase()}
-          </h2>
-          <R1SlotImage {...r1Img("TYPES")!} className="rounded-2xl" />
-        </section>
-      )}
-      {r1Img("PRICE") && (
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-4">
-            Comparatif qualité et prix
-          </h2>
-          <R1SlotImage {...r1Img("PRICE")!} className="rounded-2xl" />
-        </section>
-      )}
-      {r1Img("LOCATION") && (
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 mt-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-4">
-            Emplacement sur le véhicule
-          </h2>
-          <R1SlotImage {...r1Img("LOCATION")!} className="rounded-2xl" />
-        </section>
-      )}
+      {/* R1 Images: TYPES/PRICE/LOCATION sont injectés par GammeContent
+           dans le contenu éditorial via splitContentWithImages() */}
 
       <GammeQuickNav />
 
