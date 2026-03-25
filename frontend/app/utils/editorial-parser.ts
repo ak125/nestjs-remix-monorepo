@@ -43,13 +43,13 @@ const SECTION_PATTERNS: Array<{
   {
     section: "priceSection",
     keywords:
-      /prix|tarif|fourchette|co[uû]t|budget|\bmarques?\b.*(?:filtre|frein|huile|bosch|mann)|[eé]quipement|qualit[eé]|gamme\s+(?:éco|standard|premium)/i,
+      /\bprix\b(?!.*types)|tarif|fourchette|co[uû]t|budget|\bmarques?\s+de\b|[eé]quipement|qualit[eé]|gamme\s+(?:éco|standard|premium)/i,
   },
   // Bien choisir — types (au sens variantes), critères, sélection
   {
     section: "chooseSection",
     keywords:
-      /^types?\s+de\s|variante|vissable|cartouche|centrifuge|critère|choix|choisir|bien\s+choisir/i,
+      /^types?\s+de\s|variante|vissable|cartouche|centrifuge|critère|choix|choisir|bien\s+choisir|diff[eé]rence|diesel.+essence|essence.+diesel/i,
   },
   // Référence, commande, compatibilité
   {
@@ -101,8 +101,14 @@ export function extractEditorialBlocks(html: string): EditorialBlocks {
     // Extraire le texte du H2 pour classifier
     const h2Match = trimmed.match(/<h2[^>]*>(.*?)<\/h2>/i);
     if (!h2Match) {
-      // Pas de H2 dans ce fragment (ex: texte avant le premier H2)
-      result.chooseSection.push(trimmed);
+      // Texte avant le premier H2 → locationSection (contexte général rôle/intro)
+      // Seulement si suffisamment long, sinon unmatched
+      const textLen = trimmed.replace(/<[^>]+>/g, "").trim().length;
+      if (textLen > 200) {
+        result.locationSection.push(trimmed);
+      } else if (textLen > 0) {
+        result.unmatched.push(trimmed);
+      }
       continue;
     }
 
