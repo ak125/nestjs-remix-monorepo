@@ -9,7 +9,7 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import { useFetcher, useLoaderData, useRevalidator } from "@remix-run/react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -23,7 +23,9 @@ import {
   Upload,
   Zap,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { GammeActionBar } from "~/components/admin/GammeActionBar";
 import {
   DashboardShell,
   KpiGrid,
@@ -423,6 +425,71 @@ export default function KeywordPlannerPage() {
       ? contentFetcher.data
       : null;
 
+  // ── Centralized handlers (shared between ActionBar and row actions) ──
+  const revalidator = useRevalidator();
+  const [isGenContent, setIsGenContent] = useState(false);
+  const [isGenImages, setIsGenImages] = useState(false);
+  const [activePgId, setActivePgId] = useState<number | null>(null);
+
+  // Résoudre la gamme sélectionnée (pas de lookup dans GammeActionBar)
+  const selectedGamme = useMemo(
+    () => gammes.find((g) => g.pg_id === Number(selectedPgId)) ?? null,
+    [gammes, selectedPgId],
+  );
+
+  function buildGammeUrl(alias: string, pgId: number): string {
+    return `/pieces/${alias}-${pgId}.html`;
+  }
+
+  function handleGenerateContent(pgId: number, alias: string) {
+    if (isGenContent) return;
+    setIsGenContent(true);
+    setActivePgId(pgId);
+    contentFetcher.submit(
+      {
+        _action: "generate_content",
+        pg_id: String(pgId),
+        pg_alias: alias,
+        roles: "R1",
+      },
+      { method: "post" },
+    );
+  }
+
+  async function handleGenerateImages(pgId: number, alias: string) {
+    if (isGenImages) return;
+    setIsGenImages(true);
+    setActivePgId(pgId);
+    try {
+      const resp = await fetch(
+        `/api/admin/r1-image-prompts/generate/${alias}`,
+        { method: "POST", credentials: "include" },
+      );
+      if (resp.ok) {
+        const data = await resp.json();
+        toast.success(
+          `${data.generated ?? 0} prompts image générés (pg_id=${activePgId})`,
+        );
+        revalidator.revalidate();
+      } else {
+        toast.error(`Erreur ${resp.status}`);
+      }
+    } catch {
+      toast.error("Erreur réseau");
+    } finally {
+      setIsGenImages(false);
+      setActivePgId(null);
+    }
+  }
+
+  // Reset content generation state when fetcher completes
+  useEffect(() => {
+    if (contentFetcher.state === "idle" && isGenContent) {
+      setIsGenContent(false);
+      setActivePgId(null);
+    }
+  }, [contentFetcher.state, isGenContent]);
+
   function handleGenerate() {
     if (!selectedPgId) return;
     genFetcher.submit(
@@ -544,6 +611,29 @@ export default function KeywordPlannerPage() {
         )}
       </KpiGrid>
 
+      {/* ── GAMME ACTION BAR — toujours visible sous le sélecteur ── */}
+      <div className="mt-6">
+        <GammeActionBar
+          gamme={selectedGamme}
+          onGenerateContent={() =>
+            selectedGamme &&
+            handleGenerateContent(selectedGamme.pg_id, selectedGamme.pg_alias)
+          }
+          onGenerateImages={() =>
+            selectedGamme &&
+            handleGenerateImages(selectedGamme.pg_id, selectedGamme.pg_alias)
+          }
+          gammeUrl={
+            selectedGamme
+              ? buildGammeUrl(selectedGamme.pg_alias, selectedGamme.pg_id)
+              : null
+          }
+          isGeneratingContent={isGenContent}
+          isGeneratingImages={isGenImages}
+          contentResult={contentResult}
+        />
+      </div>
+
       {/* ── STEP 1 : Generer ── */}
       <Card className="mt-6">
         <CardHeader className="pb-3">
@@ -657,6 +747,9 @@ export default function KeywordPlannerPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* ── IMAGE PROMPTS ── */}
+      <ImagePromptsSection selectedPgId={selectedPgId} gammes={gammes} />
 
       {/* ── STEP 2 : Importer ── */}
       <Card className="mt-4">
@@ -1382,6 +1475,276 @@ function FamilyOverview({ gammes }: { gammes: GammeRow[] }) {
             </div>
           );
         })}
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Image Prompts Section ──
+
+interface ImagePrompt {
+  rip_id: number;
+  rip_slot_id: string;
+  rip_prompt_text: string;
+  rip_alt_text: string;
+  rip_caption: string | null;
+  rip_status: string;
+  rip_image_url: string | null;
+  rip_aspect_ratio: string;
+}
+
+const SLOT_LABELS: Record<string, string> = {
+  HERO: "Hero (haut de page)",
+  TYPES: "Schéma comparatif types",
+  PRICE: "Infographie prix",
+  LOCATION: "Vue éclatée véhicule",
+  OG: "Image partage social",
+};
+
+function ImagePromptsSection({
+  selectedPgId,
+  gammes,
+}: {
+  selectedPgId: string;
+  gammes: GammeRow[];
+}) {
+  const [prompts, setPrompts] = useState<ImagePrompt[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [copiedSlot, setCopiedSlot] = useState<string | null>(null);
+
+  const gamme = gammes.find((g) => g.pg_id === Number(selectedPgId));
+
+  async function loadPrompts() {
+    if (!gamme) return;
+    setLoading(true);
+    setMessage(null);
+    try {
+      const resp = await fetch(
+        `/api/admin/r1-image-prompts/${gamme.pg_alias}`,
+        { credentials: "include" },
+      );
+      if (resp.ok) {
+        const data = await resp.json();
+        setPrompts(data);
+        if (data.length === 0) setMessage("Aucun prompt — cliquer Générer");
+      } else {
+        setMessage(`Erreur ${resp.status}`);
+      }
+    } catch (e) {
+      setMessage(String(e));
+    }
+    setLoading(false);
+  }
+
+  async function generatePrompts() {
+    if (!gamme) return;
+    setGenerating(true);
+    setMessage(null);
+    try {
+      const resp = await fetch(
+        `/api/admin/r1-image-prompts/generate/${gamme.pg_alias}`,
+        { method: "POST", credentials: "include" },
+      );
+      if (resp.ok) {
+        await loadPrompts();
+      } else {
+        setMessage(`Erreur génération ${resp.status}`);
+      }
+    } catch (e) {
+      setMessage(String(e));
+    }
+    setGenerating(false);
+  }
+
+  async function generateAll() {
+    setGenerating(true);
+    setMessage(null);
+    try {
+      const resp = await fetch(`/api/admin/r1-image-prompts/generate-all`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ force: false }),
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        setMessage(
+          `${data.generated} générés, ${data.skipped} existants, ${data.failed} erreurs`,
+        );
+      } else {
+        setMessage(`Erreur ${resp.status}`);
+      }
+    } catch (e) {
+      setMessage(String(e));
+    }
+    setGenerating(false);
+  }
+
+  async function handleUpload(ripId: number, file: File) {
+    setMessage(`Upload ${file.name}...`);
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const resp = await fetch(`/api/admin/r1-image-prompts/${ripId}/upload`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      if (resp.ok) {
+        setMessage("Image uploadée et associée");
+        await loadPrompts();
+      } else {
+        const data = await resp.json().catch(() => ({}));
+        setMessage(`Erreur upload: ${data.message ?? resp.status}`);
+      }
+    } catch (e) {
+      setMessage(`Erreur: ${e}`);
+    }
+  }
+
+  async function copyPrompt(text: string, slotId: string) {
+    await navigator.clipboard.writeText(text);
+    setCopiedSlot(slotId);
+    setTimeout(() => setCopiedSlot(null), 2000);
+  }
+
+  return (
+    <Card className="mt-4">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-orange-600 text-white text-xs font-bold">
+            IMG
+          </span>
+          Image Prompts R1
+        </CardTitle>
+        <CardDescription>
+          Prompts image pour chaque emplacement de la page gamme. Copier dans
+          Midjourney / DALL-E / ComfyUI.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            size="sm"
+            onClick={loadPrompts}
+            disabled={!gamme || loading}
+            variant="outline"
+          >
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+            ) : (
+              <Database className="h-4 w-4 mr-1" />
+            )}
+            {gamme
+              ? `Charger — ${gamme.pg_name}`
+              : "Sélectionner une gamme ci-dessus"}
+          </Button>
+          <Button
+            size="sm"
+            onClick={generatePrompts}
+            disabled={!gamme || generating}
+          >
+            {generating ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+            ) : (
+              <Sparkles className="h-4 w-4 mr-1" />
+            )}
+            Générer cette gamme
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={generateAll}
+            disabled={generating}
+          >
+            {generating ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-1" />
+            ) : (
+              <Zap className="h-4 w-4 mr-1" />
+            )}
+            Générer toutes les gammes
+          </Button>
+        </div>
+
+        {message && <p className="text-sm text-orange-600">{message}</p>}
+
+        {prompts.length > 0 && (
+          <div className="space-y-3">
+            {prompts.map((p) => (
+              <div key={p.rip_id} className="border rounded-lg p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={
+                        p.rip_status === "approved" ? "default" : "secondary"
+                      }
+                    >
+                      {p.rip_slot_id}
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      {SLOT_LABELS[p.rip_slot_id] ?? p.rip_slot_id}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {p.rip_aspect_ratio}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {p.rip_image_url && (
+                      <Badge variant="default" className="bg-green-600">
+                        Image OK
+                      </Badge>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        copyPrompt(p.rip_prompt_text, p.rip_slot_id)
+                      }
+                    >
+                      {copiedSlot === p.rip_slot_id ? (
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <ClipboardCopy className="h-4 w-4" />
+                      )}
+                    </Button>
+                    <label className="cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden" // eslint-disable-line no-restricted-syntax -- file input intentionally hidden
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          handleUpload(p.rip_id, file);
+                          e.target.value = "";
+                        }}
+                      />
+                      <span className="inline-flex items-center justify-center h-8 px-2 rounded-md text-sm hover:bg-accent">
+                        <Upload className="h-4 w-4" />
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                {p.rip_image_url && (
+                  <img
+                    src={p.rip_image_url}
+                    alt={p.rip_alt_text}
+                    className="rounded-lg max-h-40 object-contain"
+                  />
+                )}
+                <p className="text-sm bg-muted/50 rounded p-2 font-mono leading-relaxed">
+                  {p.rip_prompt_text}
+                </p>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <span>Alt: {p.rip_alt_text}</span>
+                  {p.rip_caption && <span>Caption: {p.rip_caption}</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
