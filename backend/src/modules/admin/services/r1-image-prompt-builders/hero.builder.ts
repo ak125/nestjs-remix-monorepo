@@ -58,6 +58,15 @@ export function buildHeroPrompt(
     }
   }
 
+  // Texte intégré dans l'image
+  const titleText = pgName.toUpperCase();
+  let baselineText = '';
+  if (rag?.domain?.role) {
+    // Extraire une baseline courte (max 50 chars)
+    const words = rag.domain.role.split(' ').slice(0, 6).join(' ');
+    baselineText = words.length > 50 ? words.slice(0, 47) + '...' : words;
+  }
+
   const prompt = [
     `Photo produit automobile premium, ultra réaliste, haute résolution.`,
     `${pgName} neuf, angle trois-quarts, légère rotation pour montrer le volume.`,
@@ -67,7 +76,7 @@ export function buildHeroPrompt(
     `${amb.technicalDetails} clairement visibles.`,
     `${detailsHint}${roleHint}`,
     `Intention : ${amb.intention}.`,
-    `Espace négatif en haut pour overlay texte.`,
+    `TEXTE DANS L'IMAGE : En bas centré, "${titleText}" en typographie blanche majuscule, moderne, sans serif, taille grande et lisible.${baselineText ? ` Sous le titre : "${baselineText}" en plus petit, même police, blanc légèrement transparent.` : ''}`,
     `Format 16:9.`,
   ]
     .filter(Boolean)

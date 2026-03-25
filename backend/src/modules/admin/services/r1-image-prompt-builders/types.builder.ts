@@ -64,13 +64,23 @@ export function buildTypesPrompt(
 
   const variantCount = Math.min(Math.max(variants.length, 2), 3);
 
+  // Labels texte sous chaque variante
+  let labelsInstruction = '';
+  if (variants.length > 0) {
+    const labels = variants.slice(0, 3).map((v) => {
+      // Extraire un nom court (premier mot significatif ou alias court)
+      const shortName = v.aliases?.[0] ?? v.name.split('(')[0].trim();
+      return `"${shortName}"`;
+    });
+    labelsInstruction = ` TEXTE DANS L'IMAGE : Sous chaque variante, son nom en texte blanc petit sur bandeau semi-transparent noir : ${labels.join(' / ')}. Police sans serif, moderne, même style pour chaque label.`;
+  }
+
   const prompt = [
     `Photo catalogue comparative, ${variantCount} variantes de ${n} alignées côte à côte sur fond blanc pur.`,
     `Chaque variante à la même échelle, même angle trois-quarts, espacement régulier.`,
     `Ultra réaliste, éclairage studio flat uniforme, pas d'ombres portées dures.`,
     `${variantsDesc}${visualHint}${confusionHint}`,
-    `Haute résolution, chaque pièce nettement distincte visuellement.`,
-    `Pas de texte, pas de flèches, pas de légendes — uniquement les pièces.`,
+    `Haute résolution, chaque pièce nettement distincte visuellement.${labelsInstruction}`,
     `Format 4:3.`,
   ]
     .filter(Boolean)

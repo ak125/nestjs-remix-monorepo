@@ -72,13 +72,24 @@ export function buildLocationPrompt(
     }
   }
 
+  // Label texte avec flèche
+  let adjacentLabels = '';
+  if (loc?.adjacent_parts && loc.adjacent_parts.length > 0) {
+    const labels = loc.adjacent_parts
+      .slice(0, 2)
+      .map((p) => `"${p}"`)
+      .join(', ');
+    adjacentLabels = ` Pièces adjacentes étiquetées en texte gris clair plus petit : ${labels}.`;
+  }
+
   const prompt = [
     `Photo réaliste automobile, ${viewAngle}.`,
     `Le ${pgName} est visible ${locationDesc}, légèrement mis en évidence par un contraste lumineux plus fort sur la pièce.`,
     `Environnement réaliste : moteur, durites, câbles, autres composants visibles autour.${adjacentHint}`,
     `Éclairage : lumière d'atelier réaliste, LED blanche, quelques ombres naturelles dans le compartiment moteur.`,
     `La pièce se distingue clairement de son environnement sans être détourée ni flottante.`,
-    `Ultra réaliste, haute résolution, pas de texte, pas de flèches, pas de numéros de repère.`,
+    `Ultra réaliste, haute résolution.`,
+    `TEXTE DANS L'IMAGE : Une flèche blanche fine pointe vers le ${n}. À côté de la flèche : "${pgName}" en texte blanc petit sur fond semi-transparent noir, police sans serif moderne.${adjacentLabels}`,
     `Intention : l'utilisateur comprend immédiatement où se trouve le ${n} sur son véhicule.`,
     `Format 4:3.`,
   ]

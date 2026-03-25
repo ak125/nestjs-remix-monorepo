@@ -25,13 +25,13 @@ export type SlotBuilder = (
 // ── Negative prompts par intention visuelle ──
 
 export const NEG_PHOTO =
-  'cartoon, illustration, clipart, sketch, diagram, infographic, low quality, watermark, blurry, text overlay, human hands holding part, visible logo, brand name text, 3D render, CGI, anime, painting, collage, multiple unrelated objects';
+  'cartoon, illustration, clipart, sketch, diagram, infographic, low quality, watermark, blurry, human hands holding part, visible logo, brand name text, 3D render, CGI, anime, painting, collage, multiple unrelated objects';
 
 export const NEG_SCHEMA =
   'photograph, photo, photorealistic, product catalog shot, studio lighting, depth of field, bokeh, cartoon, low quality, watermark, blurry, human hands, visible logo, brand name text, anime, painting';
 
 export const NEG_SOCIAL =
-  'cartoon, clipart, sketch, low quality, watermark, blurry, text overlay, brand name text, cluttered background, multiple products, collage, anime';
+  'cartoon, clipart, sketch, low quality, watermark, blurry, brand name text, cluttered background, multiple products, collage, anime';
 
 // ── Ambiance visuelle par famille de pièce ──
 

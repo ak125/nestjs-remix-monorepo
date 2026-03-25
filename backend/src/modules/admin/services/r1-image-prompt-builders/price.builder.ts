@@ -57,13 +57,25 @@ export function buildPricePrompt(
 
   const tierCount = Math.min(Math.max(tiers.length, 3), 3);
 
+  // Labels texte sous chaque pièce avec tier + prix
+  let priceLabels = '';
+  if (tiers.length > 0) {
+    const labels = tiers.slice(0, 3).map((t) => {
+      const price = t.price_range ? ` — ${t.price_range}` : '';
+      return `"${t.tier}${price}"`;
+    });
+    priceLabels = ` TEXTE DANS L'IMAGE : Sous chaque pièce, un label avec le niveau de gamme et la fourchette de prix : ${labels.join(' / ')}. Police sans serif, couleur adaptée (gris clair pour éco, blanc pour standard, doré pour premium). Taille petite mais lisible.`;
+  } else {
+    priceLabels = ` TEXTE DANS L'IMAGE : Sous chaque pièce : "Éco" / "Standard" / "Premium" en texte blanc petit, police sans serif moderne.`;
+  }
+
   const prompt = [
     `Photo comparative de ${tierCount} ${n} de qualité croissante, alignés de gauche à droite.`,
     `Fond : dégradé subtil du gris clair (gauche, entrée de gamme) vers ${amb.accentTone} (droite, premium).`,
     `À gauche : pièce basique, finition standard. Au centre : pièce qualité intermédiaire. À droite : pièce premium, finition impeccable, détails soignés.`,
     `Même angle, même échelle, progression visible de la qualité de fabrication.${visualDiff}`,
     `Éclairage : ${amb.lighting}. Plus contrasté et dramatique sur la pièce premium à droite.`,
-    `Ultra réaliste, haute résolution, pas de texte, pas de prix, pas de labels.`,
+    `Ultra réaliste, haute résolution.${priceLabels}`,
     `Intention : montrer visuellement la différence de qualité entre ${qualityDesc}.`,
     `Format 4:3.`,
   ]

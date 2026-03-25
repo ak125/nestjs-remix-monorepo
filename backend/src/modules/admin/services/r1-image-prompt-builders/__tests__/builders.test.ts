@@ -88,7 +88,7 @@ const RICH_RAG: RagData = {
 
 describe('R1 Image Prompt Builders', () => {
   describe('buildHeroPrompt', () => {
-    it('enriches with ambiance, role and visual features from RAG', () => {
+    it('enriches with ambiance, role, visual features and text from RAG', () => {
       const result = buildHeroPrompt('Filtre à huile', RICH_RAG);
       // Ambiance filtration
       expect(result.prompt).toContain('fluide doré');
@@ -96,6 +96,9 @@ describe('R1 Image Prompt Builders', () => {
       expect(result.prompt).toContain('filtre les impuretés');
       // Key visual features
       expect(result.prompt).toContain('cylindre métallique');
+      // Text in image
+      expect(result.prompt).toContain('FILTRE À HUILE');
+      expect(result.prompt).toContain('TEXTE DANS');
       expect(result.ragFieldsUsed).toContain('domain.role');
       expect(result.ragFieldsUsed).toContain('key_visual_features');
       expect(result.richnessScore).toBeGreaterThanOrEqual(3);
@@ -112,11 +115,13 @@ describe('R1 Image Prompt Builders', () => {
   });
 
   describe('buildTypesPrompt', () => {
-    it('uses variants and visual features for realistic comparison', () => {
+    it('uses variants with labels and visual features for comparison', () => {
       const result = buildTypesPrompt('Filtre à huile', RICH_RAG);
       // Variants
       expect(result.prompt).toContain('spin-on');
       expect(result.prompt).toContain('cartouche');
+      // Labels
+      expect(result.prompt).toContain('TEXTE DANS');
       // Confusion guard
       expect(result.prompt).toContain('filtre a air');
       expect(result.ragFieldsUsed).toContain('variants');
@@ -133,28 +138,31 @@ describe('R1 Image Prompt Builders', () => {
   });
 
   describe('buildPricePrompt', () => {
-    it('uses quality_tiers for visual progression', () => {
+    it('uses quality_tiers with price labels for visual progression', () => {
       const result = buildPricePrompt('Filtre à huile', RICH_RAG);
-      expect(result.prompt).toContain('oem');
-      expect(result.prompt).toContain('premium');
-      expect(result.prompt).toContain('standard');
-      expect(result.prompt).not.toContain('infographie');
+      expect(result.prompt).toContain('OEM');
+      expect(result.prompt).toContain('Premium');
+      expect(result.prompt).toContain('15-40€');
+      expect(result.prompt).toContain('TEXTE DANS');
       expect(result.ragFieldsUsed).toContain('selection.quality_tiers');
       expect(result.richnessScore).toBeGreaterThanOrEqual(2);
     });
 
-    it('uses default tiers without RAG', () => {
+    it('uses default tiers with generic labels without RAG', () => {
       const result = buildPricePrompt('Filtre à huile', null);
       expect(result.prompt).toContain('budget, standard, premium');
-      expect(result.prompt).toContain('pas de texte');
+      expect(result.prompt).toContain('TEXTE DANS');
+      expect(result.prompt).toContain('"Éco"');
     });
   });
 
   describe('buildLocationPrompt', () => {
-    it('uses location_on_vehicle for realistic context', () => {
+    it('uses location_on_vehicle with arrow label for realistic context', () => {
       const result = buildLocationPrompt('Filtre à huile', RICH_RAG);
       expect(result.prompt).toContain('bloc moteur');
       expect(result.prompt).toContain("carter d'huile");
+      expect(result.prompt).toContain('flèche');
+      expect(result.prompt).toContain('TEXTE DANS');
       expect(result.ragFieldsUsed).toContain('location_on_vehicle.area');
       expect(result.ragFieldsUsed).toContain(
         'location_on_vehicle.adjacent_parts',
@@ -171,14 +179,19 @@ describe('R1 Image Prompt Builders', () => {
   });
 
   describe('buildOgPrompt', () => {
-    it('uses ambiance and role for social preview', () => {
+    it('uses ambiance, role and text accroche for social preview', () => {
       const result = buildOgPrompt('Filtre à huile', RICH_RAG);
       // Family ambiance
       expect(result.prompt).toContain('doré ambré');
       // Role
       expect(result.prompt).toContain('filtre les impuretés');
+      // Text with price accroche
+      expect(result.prompt).toContain('FILTRE À HUILE');
+      expect(result.prompt).toContain('Dès 5€');
+      expect(result.prompt).toContain('TEXTE DANS');
       expect(result.ragFieldsUsed).toContain('completeness_profile');
       expect(result.ragFieldsUsed).toContain('domain.role');
+      expect(result.ragFieldsUsed).toContain('selection.cost_range');
     });
 
     it('OG prompt differs from HERO prompt', () => {

@@ -52,6 +52,16 @@ export function buildOgPrompt(
     score++;
   }
 
+  // Texte intégré : nom + accroche conversion
+  const titleText = pgName.toUpperCase();
+  let accroche = 'Pièces auto en stock';
+  const minPrice = rag?.selection?.cost_range?.min;
+  if (minPrice != null) {
+    accroche = `Dès ${minPrice}€ — Livraison 24h`;
+    fieldsUsed.push('selection.cost_range');
+    score++;
+  }
+
   const prompt = [
     `Photo produit automobile pour partage social, ratio 1200x630.`,
     `Fond : dégradé sombre, ${amb.accentTone} vers noir, ambiance ${amb.intention.split(',')[0]}.`,
@@ -59,8 +69,7 @@ export function buildOgPrompt(
     `Éclairage dramatique latéral gauche, rim light subtil à droite, halo ${amb.accentTone} derrière la pièce.`,
     `${visualHint}${roleHint}`,
     `Ultra réaliste, haute résolution, profondeur de champ très faible.`,
-    `Espace négatif en haut et sur les côtés pour les overlays des réseaux sociaux.`,
-    `Pas de texte, pas de logo, pas de watermark.`,
+    `TEXTE DANS L'IMAGE : En bas centré, "${titleText}" en typographie blanche majuscule grande, moderne, sans serif. Dessous : "${accroche}" en plus petit, blanc légèrement transparent. Pas de logo, pas de watermark.`,
     `Format 1200:630.`,
   ]
     .filter(Boolean)
