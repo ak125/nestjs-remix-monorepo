@@ -755,45 +755,49 @@ export default function PiecesDetailPage() {
       <div className="py-5 px-4 sm:px-6 max-w-[1280px] mx-auto space-y-4">
         <R1TrustStrip />
 
-        {/* Resource cards — orientation vers les sections clés */}
+        {/* Resource cards — réassurance + liens utiles (pas d'ancres internes) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          {[
-            {
-              label: "Compatibilité vérifiée",
-              anchor: "#reference",
-              icon: "🔍",
-            },
-            { label: "Priorité sécurité", anchor: "#bien-choisir", icon: "🛡️" },
-            { label: "Décision rapide", anchor: "#qualite-prix", icon: "⚡" },
-            {
-              label: "Guide d'achat",
-              href: data.content?.pg_alias
+          <div className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl text-sm font-medium text-slate-700">
+            <span className="text-base">🔍</span>
+            <span className="leading-tight">Compatibilité vérifiée</span>
+          </div>
+          <div className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl text-sm font-medium text-slate-700">
+            <span className="text-base">🛡️</span>
+            <span className="leading-tight">Priorité sécurité</span>
+          </div>
+          <div className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl text-sm font-medium text-slate-700">
+            <span className="text-base">⚡</span>
+            <span className="leading-tight">Décision rapide</span>
+          </div>
+          <a
+            href={
+              data.content?.pg_alias
                 ? `/blog-pieces-auto/guide-achat/${data.content.pg_alias}`
-                : "/blog-pieces-auto",
-              icon: "📖",
-            },
-            {
-              label: "Conseils entretien",
-              href: data.content?.pg_alias
+                : "/blog-pieces-auto"
+            }
+            className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all text-sm font-medium text-slate-700"
+          >
+            <span className="text-base">📖</span>
+            <span className="leading-tight">Guide d&apos;achat</span>
+          </a>
+          <a
+            href={
+              data.content?.pg_alias
                 ? `/blog-pieces-auto/conseils/${data.content.pg_alias}`
-                : "/blog-pieces-auto",
-              icon: "🔧",
-            },
-            {
-              label: "Fiche technique",
-              href: "/reference-auto",
-              icon: "📋",
-            },
-          ].map((card) => (
-            <a
-              key={card.label}
-              href={card.href || card.anchor}
-              className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all text-sm font-medium text-slate-700"
-            >
-              <span className="text-base">{card.icon}</span>
-              <span className="leading-tight">{card.label}</span>
-            </a>
-          ))}
+                : "/blog-pieces-auto"
+            }
+            className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all text-sm font-medium text-slate-700"
+          >
+            <span className="text-base">🔧</span>
+            <span className="leading-tight">Conseils entretien</span>
+          </a>
+          <a
+            href="/reference-auto"
+            className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all text-sm font-medium text-slate-700"
+          >
+            <span className="text-base">📋</span>
+            <span className="leading-tight">Fiche technique</span>
+          </a>
         </div>
       </div>
 
