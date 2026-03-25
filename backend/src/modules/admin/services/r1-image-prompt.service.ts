@@ -54,7 +54,7 @@ export class R1ImagePromptService extends SupabaseBaseService {
     }
 
     // Construire les prompts via builders enrichis
-    const rows = slotsToWrite.map((slotId, i) => {
+    const rows = slotsToWrite.map((slotId) => {
       const builder = SLOT_BUILDERS[slotId];
       const meta = SLOT_META[slotId];
       const result = builder(pgName, ragData);
@@ -74,7 +74,7 @@ export class R1ImagePromptService extends SupabaseBaseService {
         rip_caption: result.caption,
         rip_budget_cost: meta.cost,
         rip_selected: true,
-        rip_priority_rank: i + 1,
+        rip_priority_rank: meta.rank,
         rip_rag_fields_used: result.ragFieldsUsed,
         rip_rag_richness_score: result.richnessScore,
         rip_status: 'pending',
