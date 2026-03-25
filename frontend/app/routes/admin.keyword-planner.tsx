@@ -16,8 +16,11 @@ import {
   ChevronRight,
   ClipboardCopy,
   Database,
+  ExternalLink,
   FileUp,
+  ImageIcon,
   Loader2,
+  MoreVertical,
   Sparkles,
   Target,
   Upload,
@@ -42,6 +45,12 @@ import {
 } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
 import { Combobox } from "~/components/ui/combobox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -681,14 +690,15 @@ export default function KeywordPlannerPage() {
             <Button
               onClick={handleGenerate}
               disabled={!selectedPgId || isGenerating}
-              className="h-10 gap-2 px-6"
+              size="lg"
+              className="gap-2 px-8 bg-blue-600 hover:bg-blue-700 text-white"
             >
               {isGenerating ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <Sparkles className="h-4 w-4" />
               )}
-              Generer
+              Générer prompt
             </Button>
           </div>
 
@@ -1020,7 +1030,15 @@ export default function KeywordPlannerPage() {
         </CardContent>
       </Card>
       {/* ── FAMILLES — Vue par systeme avec recommandations ── */}
-      <FamilyOverview gammes={gammes} />
+      <FamilyOverview
+        gammes={gammes}
+        onGenContent={handleGenerateContent}
+        onGenImages={handleGenerateImages}
+        buildUrl={buildGammeUrl}
+        isGenContent={isGenContent}
+        isGenImages={isGenImages}
+        activePgId={activePgId}
+      />
     </DashboardShell>
   );
 }
@@ -1047,7 +1065,23 @@ interface FamilyStats {
   }>;
 }
 
-function FamilyOverview({ gammes }: { gammes: GammeRow[] }) {
+function FamilyOverview({
+  gammes,
+  onGenContent,
+  onGenImages,
+  buildUrl,
+  isGenContent,
+  isGenImages,
+  activePgId,
+}: {
+  gammes: GammeRow[];
+  onGenContent: (pgId: number, alias: string) => void;
+  onGenImages: (pgId: number, alias: string) => void;
+  buildUrl: (alias: string, pgId: number) => string;
+  isGenContent: boolean;
+  isGenImages: boolean;
+  activePgId: number | null;
+}) {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [ragFilter, setRagFilter] = useState("all");
 
@@ -1462,11 +1496,20 @@ function FamilyOverview({ gammes }: { gammes: GammeRow[] }) {
                         <TableHead className="py-1.5 px-2 text-right w-10 text-violet-600">
                           KW
                         </TableHead>
+                        <TableHead className="py-1.5 px-1 text-center w-8" />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {f.gammes.map((g) => (
-                        <GammeAuditRow key={g.pg_id} g={g} />
+                        <GammeAuditRow
+                          key={g.pg_id}
+                          g={g}
+                          onGenContent={onGenContent}
+                          onGenImages={onGenImages}
+                          buildUrl={buildUrl}
+                          isGenContent={isGenContent && activePgId === g.pg_id}
+                          isGenImages={isGenImages && activePgId === g.pg_id}
+                        />
                       ))}
                     </TableBody>
                   </Table>
@@ -1857,7 +1900,21 @@ interface AuditData {
   error?: string;
 }
 
-function GammeAuditRow({ g }: { g: GammeRow }) {
+function GammeAuditRow({
+  g,
+  onGenContent,
+  onGenImages,
+  buildUrl,
+  isGenContent,
+  isGenImages,
+}: {
+  g: GammeRow;
+  onGenContent: (pgId: number, alias: string) => void;
+  onGenImages: (pgId: number, alias: string) => void;
+  buildUrl: (alias: string, pgId: number) => string;
+  isGenContent: boolean;
+  isGenImages: boolean;
+}) {
   const [expanded, setExpanded] = useState(false);
   const [audit, setAudit] = useState<AuditData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -1944,12 +2001,50 @@ function GammeAuditRow({ g }: { g: GammeRow }) {
             <span className="text-muted-foreground/40">—</span>
           )}
         </TableCell>
+        <TableCell
+          className="py-1 px-1 text-center w-8"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center h-6 w-6 rounded hover:bg-slate-100"
+              >
+                <MoreVertical className="h-3 w-3 text-slate-400" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => onGenContent(g.pg_id, g.pg_alias)}
+                disabled={isGenContent}
+              >
+                <Sparkles className="h-3 w-3 mr-2" /> Générer contenu
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => onGenImages(g.pg_id, g.pg_alias)}
+                disabled={isGenImages}
+              >
+                <ImageIcon className="h-3 w-3 mr-2" /> Générer images
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <a
+                  href={buildUrl(g.pg_alias, g.pg_id)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="h-3 w-3 mr-2" /> Voir la page
+                </a>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TableCell>
       </TableRow>
 
       {/* Expanded audit panel */}
       {expanded && (
         <TableRow>
-          <TableCell colSpan={8} className="p-0">
+          <TableCell colSpan={9} className="p-0">
             <div className="bg-muted/20 border-t px-4 py-3">
               {g.kw_count === 0 ? (
                 <p className="text-xs text-muted-foreground">
