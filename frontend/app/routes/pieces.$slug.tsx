@@ -826,7 +826,9 @@ export default function PiecesDetailPage() {
                 alt={data.r1Images.TYPES.alt}
                 caption={data.r1Images.TYPES.caption}
                 aspect={data.r1Images.TYPES.aspect}
-                className="rounded-2xl mb-4"
+                className="rounded-2xl mb-4 max-w-lg"
+                widths={[320, 512]}
+                sizes="(max-width: 640px) 100vw, 512px"
               />
             </div>
           )}
@@ -880,7 +882,9 @@ export default function PiecesDetailPage() {
                 alt={data.r1Images.PRICE.alt}
                 caption={data.r1Images.PRICE.caption}
                 aspect={data.r1Images.PRICE.aspect}
-                className="rounded-2xl mb-4"
+                className="rounded-2xl mb-4 max-w-lg"
+                widths={[320, 512]}
+                sizes="(max-width: 640px) 100vw, 512px"
               />
             </div>
           )}
@@ -947,7 +951,9 @@ export default function PiecesDetailPage() {
                 alt={data.r1Images.LOCATION.alt}
                 caption={data.r1Images.LOCATION.caption}
                 aspect={data.r1Images.LOCATION.aspect}
-                className="rounded-2xl mb-4"
+                className="rounded-2xl mb-4 max-w-lg"
+                widths={[320, 512]}
+                sizes="(max-width: 640px) 100vw, 512px"
               />
             </div>
           )}
