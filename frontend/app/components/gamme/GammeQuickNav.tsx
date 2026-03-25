@@ -27,13 +27,18 @@ export default function GammeQuickNav() {
           {SECTIONS.map((s) => {
             const Icon = s.icon;
             return (
-              <a
+              <button
                 key={s.id}
-                href={`#${s.id}`}
-                className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 rounded-[18px] text-[12px] font-semibold text-slate-600 whitespace-nowrap shadow-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 hover:-translate-y-0.5 transition-all"
+                type="button"
+                onClick={() => {
+                  document
+                    .getElementById(s.id)
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 rounded-[18px] text-[12px] font-semibold text-slate-600 whitespace-nowrap shadow-sm hover:border-blue-200 hover:text-blue-600 hover:bg-blue-50 hover:-translate-y-0.5 transition-all cursor-pointer"
               >
                 <Icon size={13} /> {s.label}
-              </a>
+              </button>
             );
           })}
         </div>

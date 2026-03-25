@@ -383,6 +383,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         reference: pageData.reference,
         r1Images: apiData.r1Images,
         relatedResources: apiData.relatedResources ?? null,
+        // Sync pour EquipementiersSection (évite Suspense/Await qui ne rend pas)
+        equipementiersSync: apiData.equipementiers ?? null,
         canonicalPath,
         gammeId: parseInt(gammeId, 10),
         motorisationsSchema,
@@ -572,6 +574,10 @@ type PiecesPageSyncData = Omit<
   r1Sources?: R1SourceMap;
   r1Images?: R1ImagesBySlot;
   relatedResources?: R1RelatedBlocksPayload | null;
+  equipementiersSync?: {
+    title?: string;
+    items?: Array<{ title: string; description?: string; image?: string }>;
+  } | null;
 };
 
 // Loader payload complet: sync + deferred Promises
@@ -756,30 +762,27 @@ export default function PiecesDetailPage() {
       <div className="py-5 px-4 sm:px-6 max-w-[1280px] mx-auto space-y-4">
         <R1TrustStrip />
 
-        {/* Resource cards — réassurance + liens utiles (pas d'ancres internes) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <div className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl text-sm font-medium text-slate-700">
-            <span className="text-base">🔍</span>
-            <span className="leading-tight">Compatibilité vérifiée</span>
-          </div>
-          <div className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl text-sm font-medium text-slate-700">
-            <span className="text-base">🛡️</span>
-            <span className="leading-tight">Priorité sécurité</span>
-          </div>
-          <div className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl text-sm font-medium text-slate-700">
-            <span className="text-base">⚡</span>
-            <span className="leading-tight">Décision rapide</span>
-          </div>
+        {/* Resource cards — 3 liens utiles vers contenus complémentaires */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <a
             href={
               data.content?.pg_alias
                 ? `/blog-pieces-auto/guide-achat/${data.content.pg_alias}`
                 : "/blog-pieces-auto"
             }
-            className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all text-sm font-medium text-slate-700"
+            className="flex items-center gap-3 p-4 bg-white border border-blue-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all"
           >
-            <span className="text-base">📖</span>
-            <span className="leading-tight">Guide d&apos;achat</span>
+            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <span className="text-lg">📖</span>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-800">
+                Guide d&apos;achat
+              </div>
+              <div className="text-xs text-slate-500">
+                Critères, budget, marques
+              </div>
+            </div>
           </a>
           <a
             href={
@@ -787,17 +790,35 @@ export default function PiecesDetailPage() {
                 ? `/blog-pieces-auto/conseils/${data.content.pg_alias}`
                 : "/blog-pieces-auto"
             }
-            className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all text-sm font-medium text-slate-700"
+            className="flex items-center gap-3 p-4 bg-white border border-emerald-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all"
           >
-            <span className="text-base">🔧</span>
-            <span className="leading-tight">Conseils entretien</span>
+            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+              <span className="text-lg">🔧</span>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-800">
+                Conseils entretien
+              </div>
+              <div className="text-xs text-slate-500">
+                Quand et comment remplacer
+              </div>
+            </div>
           </a>
           <a
             href="/reference-auto"
-            className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all text-sm font-medium text-slate-700"
+            className="flex items-center gap-3 p-4 bg-white border border-purple-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all"
           >
-            <span className="text-base">📋</span>
-            <span className="leading-tight">Fiche technique</span>
+            <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
+              <span className="text-lg">📋</span>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-800">
+                Fiche technique
+              </div>
+              <div className="text-xs text-slate-500">
+                Normes OE, spécifications
+              </div>
+            </div>
           </a>
         </div>
       </div>
@@ -899,19 +920,13 @@ export default function PiecesDetailPage() {
             )}
           </div>
 
-          {/* Équipementiers — composant premium avec logos et liens */}
-          <Suspense
-            fallback={
-              <div className="h-48 bg-white/50 animate-pulse rounded-2xl" />
-            }
-          >
-            <Await resolve={data.equipementiers}>
-              {(equipementiers) => {
-                if (!equipementiers?.items) return null;
-                // Map API format → EquipementiersSection format
-                const mapped = {
-                  title: equipementiers.title || "Équipementiers",
-                  items: equipementiers.items.map(
+          {/* Équipementiers — rendu sync (pas Suspense, données déjà résolues) */}
+          {data.equipementiersSync?.items &&
+            data.equipementiersSync.items.length > 0 && (
+              <EquipementiersSection
+                equipementiers={{
+                  title: data.equipementiersSync.title || "Équipementiers",
+                  items: data.equipementiersSync.items.map(
                     (
                       e: {
                         title: string;
@@ -928,17 +943,11 @@ export default function PiecesDetailPage() {
                       description: e.description || "",
                     }),
                   ),
-                };
-                return (
-                  <EquipementiersSection
-                    equipementiers={mapped}
-                    maxItems={8}
-                    hideTitle
-                  />
-                );
-              }}
-            </Await>
-          </Suspense>
+                }}
+                maxItems={8}
+                hideTitle
+              />
+            )}
         </div>
       </section>
 

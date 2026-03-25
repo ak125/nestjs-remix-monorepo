@@ -28,30 +28,30 @@ const SECTION_PATTERNS: Array<{
   section: keyof EditorialBlocks;
   keywords: RegExp;
 }> = [
-  // FAQ — doit être testé en premier (sinon capturé par d'autres)
+  // FAQ — doit être testé en premier
   {
     section: "faqSection",
     keywords: /questions?\s+fr[eé]quentes?|faq|foire\s+aux/i,
   },
-  // Bien choisir — types, critères, montage, sélection
-  {
-    section: "chooseSection",
-    keywords:
-      /types?\s+de\s|variante|vissable|cartouche|centrifuge|critère|choix|choisir|montage|s[eé]lection|bien\s+choisir/i,
-  },
-  // Qualité, prix, marques — prix, marque, équipementier, qualité, budget
-  {
-    section: "priceSection",
-    keywords:
-      /prix|tarif|fourchette|co[uû]t|budget|marque|[eé]quipement|qualit[eé]|gamme\s+(éco|standard|premium)/i,
-  },
-  // Emplacement, rôle, remplacement — rôle, emplacement, remplacer, entretien, symptôme
+  // Emplacement, rôle, remplacement — AVANT chooseSection car "rôle" est un signal fort
   {
     section: "locationSection",
     keywords:
-      /r[oô]le|emplacement|o[uù]\s+se\s+trouve|remplacer|remplacement|entretien|vidange|symptôme|usure|dur[eé]e\s+de\s+vie/i,
+      /\br[oô]le\b|emplacement|o[uù]\s+se\s+trouve|remplacer|remplacement|entretien|vidange|symptôme|usure|dur[eé]e\s+de\s+vie/i,
   },
-  // Référence, commande, compatibilité — référence, compatible, commander, stock, livraison
+  // Qualité, prix, marques
+  {
+    section: "priceSection",
+    keywords:
+      /prix|tarif|fourchette|co[uû]t|budget|\bmarques?\b.*(?:filtre|frein|huile|bosch|mann)|[eé]quipement|qualit[eé]|gamme\s+(?:éco|standard|premium)/i,
+  },
+  // Bien choisir — types (au sens variantes), critères, sélection
+  {
+    section: "chooseSection",
+    keywords:
+      /^types?\s+de\s|variante|vissable|cartouche|centrifuge|critère|choix|choisir|bien\s+choisir/i,
+  },
+  // Référence, commande, compatibilité
   {
     section: "referenceSection",
     keywords:
