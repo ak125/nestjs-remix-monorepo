@@ -36,8 +36,8 @@ export function buildOgPrompt(
   let roleHint = '';
   if (rag?.domain?.role) {
     const short =
-      rag.domain.role.length > 50
-        ? rag.domain.role.slice(0, 50)
+      rag.domain.role.length > 80
+        ? rag.domain.role.slice(0, 80)
         : rag.domain.role;
     roleHint = ` Fonction : ${short.toLowerCase()}.`;
     fieldsUsed.push('domain.role');
