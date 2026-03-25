@@ -1,11 +1,19 @@
-import { Award, BookOpen, Car, HelpCircle, Package } from "lucide-react";
+import {
+  Award,
+  BookOpen,
+  Car,
+  HelpCircle,
+  MapPin,
+  ShieldCheck,
+} from "lucide-react";
 
 const SECTIONS = [
-  { id: "compat", label: "Compatibilités", icon: Car },
-  { id: "equip", label: "Équipementiers", icon: Award },
-  { id: "family", label: "Même famille", icon: Package },
+  { id: "bien-choisir", label: "Bien choisir", icon: ShieldCheck },
+  { id: "qualite-prix", label: "Prix & Marques", icon: Award },
+  { id: "emplacement", label: "Emplacement", icon: MapPin },
+  { id: "reference", label: "Compatibilité", icon: Car },
   { id: "faq", label: "FAQ", icon: HelpCircle },
-  { id: "guide-link", label: "Guide", icon: BookOpen },
+  { id: "aller-plus-loin", label: "Voir aussi", icon: BookOpen },
 ];
 
 export default function GammeQuickNav() {
