@@ -739,9 +739,46 @@ export default function PiecesDetailPage() {
         selectedVehicle={selectedVehicle}
       />
 
-      {/* R1 Trust Strip — réassurance horizontale */}
-      <div className="py-4 px-4 sm:px-6 max-w-[1280px] mx-auto">
+      {/* Hero secondaire — Réassurance + orientation rapide */}
+      <div className="py-5 px-4 sm:px-6 max-w-[1280px] mx-auto space-y-4">
         <R1TrustStrip />
+
+        {/* Resource cards — orientation vers les sections clés */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[
+            { label: "Compatibilité vérifiée", anchor: "#equip", icon: "🔍" },
+            { label: "Priorité sécurité", anchor: "#checklist", icon: "🛡️" },
+            { label: "Décision rapide", anchor: "#content", icon: "⚡" },
+            {
+              label: "Guide d'achat",
+              href: data.content?.pg_alias
+                ? `/blog-pieces-auto/guide-achat/${data.content.pg_alias}`
+                : "/blog-pieces-auto",
+              icon: "📖",
+            },
+            {
+              label: "Conseils entretien",
+              href: data.content?.pg_alias
+                ? `/blog-pieces-auto/conseils/${data.content.pg_alias}`
+                : "/blog-pieces-auto",
+              icon: "🔧",
+            },
+            {
+              label: "Fiche technique",
+              href: "/reference-auto",
+              icon: "📋",
+            },
+          ].map((card) => (
+            <a
+              key={card.label}
+              href={card.href || card.anchor}
+              className="flex items-center gap-2 p-3 bg-white border border-gray-100 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all text-sm font-medium text-slate-700"
+            >
+              <span className="text-base">{card.icon}</span>
+              <span className="leading-tight">{card.label}</span>
+            </a>
+          ))}
+        </div>
       </div>
 
       <GammeQuickNav />
