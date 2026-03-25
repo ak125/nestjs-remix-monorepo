@@ -31,6 +31,8 @@ interface CatalogueSectionProps {
   intro?: string | null;
   /** R1 = routing only (ancres neutres, descriptions filtrées) */
   variant?: "default" | "R1";
+  /** Masquer le H2 interne (le parent fournit le sien) */
+  hideTitle?: boolean;
 }
 
 // ── Badge urgence par keyword gamme ──
@@ -99,6 +101,7 @@ const CatalogueSection = memo(function CatalogueSection({
   maxItems = 15,
   intro,
   variant = "default",
+  hideTitle = false,
 }: CatalogueSectionProps) {
   const isR1 = variant === "R1";
   // Use array instead of Set to avoid React hydration issues
@@ -163,12 +166,14 @@ const CatalogueSection = memo(function CatalogueSection({
   return (
     <section className="bg-white rounded-xl shadow-lg mb-6 md:mb-8 overflow-hidden">
       <div className="bg-gradient-to-r from-semantic-action to-semantic-action/90 p-4 md:p-6">
-        <h2 className="text-xl md:text-2xl font-bold text-white flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-          <span>📦 {catalogueMameFamille.title}</span>
-          <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium w-fit">
-            {uniqueItems.length} produits
-          </span>
-        </h2>
+        {!hideTitle && (
+          <h2 className="text-xl md:text-2xl font-bold text-white flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <span>📦 {catalogueMameFamille.title}</span>
+            <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium w-fit">
+              {uniqueItems.length} produits
+            </span>
+          </h2>
+        )}
         {intro &&
           !intro.trimStart().startsWith("{") &&
           !intro.trimStart().startsWith("[") && (

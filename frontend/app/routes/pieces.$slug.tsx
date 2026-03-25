@@ -31,16 +31,16 @@ import {
   GammeHero,
   GammeQuickNav,
   GammeDiagnosticCTA,
-  GammeMotorizations,
   GammeChecklist,
   GammeErrors,
-  GammeEquipementiers,
-  GammeFamilleGrid,
   GammeGuideCTA,
   GammeFaq,
 } from "~/components/gamme";
 import { Footer } from "~/components/home";
 
+import CatalogueSection from "~/components/pieces/CatalogueSection";
+import EquipementiersSection from "~/components/pieces/EquipementiersSection";
+import MotorisationsSection from "~/components/pieces/MotorisationsSection";
 import { R1RelatedBlocks } from "~/components/pieces/R1RelatedBlocks";
 import { R1SlotImage } from "~/components/pieces/R1SlotImage";
 import { R1TrustStrip } from "~/components/pieces/R1TrustStrip";
@@ -898,33 +898,40 @@ export default function PiecesDetailPage() {
             )}
           </div>
 
-          {/* Équipementiers */}
+          {/* Équipementiers — composant premium avec logos et liens */}
           <Suspense
             fallback={
               <div className="h-48 bg-white/50 animate-pulse rounded-2xl" />
             }
           >
             <Await resolve={data.equipementiers}>
-              {(equipementiers) => (
-                <GammeEquipementiers
-                  items={(equipementiers?.items || []).map(
-                    (e: {
-                      title: string;
-                      description?: string;
-                      image?: string;
-                    }) => ({
-                      name: e.title,
-                      description: e.description,
-                      logo: e.image,
+              {(equipementiers) => {
+                if (!equipementiers?.items) return null;
+                // Map API format → EquipementiersSection format
+                const mapped = {
+                  title: equipementiers.title || "Équipementiers",
+                  items: equipementiers.items.map(
+                    (
+                      e: {
+                        title: string;
+                        description?: string;
+                        image?: string;
+                      },
+                      i: number,
+                    ) => ({
+                      pm_id: i,
+                      pm_name: e.title,
+                      pm_logo: e.image || "",
+                      title: e.title,
+                      image: e.image || "",
+                      description: e.description || "",
                     }),
-                  )}
-                  intro={
-                    data.sectionPack?.sections.equipementiers.data
-                      .equipementiersLine ?? undefined
-                  }
-                  h2Override=" "
-                />
-              )}
+                  ),
+                };
+                return (
+                  <EquipementiersSection equipementiers={mapped} maxItems={8} />
+                );
+              }}
             </Await>
           </Suspense>
         </div>
@@ -1004,7 +1011,7 @@ export default function PiecesDetailPage() {
             </div>
           )}
 
-          {/* Motorisations compatibles */}
+          {/* Motorisations — composant premium avec search, logos, advice */}
           <Suspense
             fallback={
               <div className="h-96 bg-white/50 animate-pulse rounded-2xl" />
@@ -1012,14 +1019,16 @@ export default function PiecesDetailPage() {
           >
             <Await resolve={data.motorisations}>
               {(motorisations) => (
-                <GammeMotorizations
-                  items={motorisations?.items || []}
+                <MotorisationsSection
+                  motorisations={motorisations ?? undefined}
                   totalCount={data.performance?.motorisations_count}
-                  intro={
+                  hideTitle
+                  compatibilitiesIntro={
                     data.sectionPack?.sections.motorisations.data
                       .compatibilitiesIntro ?? undefined
                   }
-                  h2Override=" "
+                  familleName={data.famille?.mf_name}
+                  variant="R1"
                 />
               )}
             </Await>
@@ -1049,7 +1058,7 @@ export default function PiecesDetailPage() {
             Aller plus loin
           </h2>
 
-          {/* Catalogue même famille */}
+          {/* Catalogue même famille — composant premium avec badges urgence et SEO switches */}
           <Suspense
             fallback={
               <div className="h-48 bg-white/50 animate-pulse rounded-2xl" />
@@ -1057,18 +1066,15 @@ export default function PiecesDetailPage() {
           >
             <Await resolve={data.catalogueMameFamille}>
               {(catalogueMameFamille) => (
-                <GammeFamilleGrid
-                  familleName={data.famille?.mf_name || "Pièces"}
-                  items={(catalogueMameFamille?.items || []).map((c) => ({
-                    name: c.name,
-                    link: c.link,
-                    img: c.image || undefined,
-                  }))}
+                <CatalogueSection
+                  catalogueMameFamille={catalogueMameFamille ?? undefined}
                   intro={
                     data.sectionPack?.sections.catalogue.data
                       .familyCrossSellIntro ?? undefined
                   }
-                  h2Override=" "
+                  variant="R1"
+                  maxItems={12}
+                  hideTitle
                 />
               )}
             </Await>

@@ -37,6 +37,8 @@ interface MotorisationsSectionProps {
   compatibilitiesIntro?: string;
   /** R1 = routing only (pas de diagnostic/entretien dans les cartes) */
   variant?: "default" | "R1";
+  /** Masquer le H2 interne (le parent fournit le sien) */
+  hideTitle?: boolean;
 }
 
 // Limite d'affichage par défaut (SEO: éviter dilution)
@@ -49,6 +51,7 @@ const MotorisationsSection = memo(function MotorisationsSection({
   totalCount,
   compatibilitiesIntro,
   variant = "default",
+  hideTitle = false,
 }: MotorisationsSectionProps) {
   const isR1 = variant === "R1";
   const [showAllVehicles, setShowAllVehicles] = useState(false);
@@ -101,9 +104,11 @@ const MotorisationsSection = memo(function MotorisationsSection({
             </div>
 
             <div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
-                {isR1 ? "Choisissez votre motorisation" : motorisations.title}
-              </h2>
+              {!hideTitle && (
+                <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
+                  {isR1 ? "Choisissez votre motorisation" : motorisations.title}
+                </h2>
+              )}
               <p className="text-white/80 text-sm mt-1">
                 {compatibilitiesIntro ||
                   `Trouvez les ${pluralizePieceName(familleName.toLowerCase())} adaptées à votre véhicule`}
