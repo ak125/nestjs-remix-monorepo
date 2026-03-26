@@ -255,9 +255,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
       { headers: { Accept: "application/json" } },
     );
     if (redirectRes.ok) {
-      const target = await redirectRes.json();
-      if (target?.redirect_to) {
-        return redirect(target.redirect_to, 301);
+      const text = await redirectRes.text();
+      if (text) {
+        const target = JSON.parse(text);
+        if (target?.redirect_to) {
+          return redirect(target.redirect_to, 301);
+        }
       }
     }
 

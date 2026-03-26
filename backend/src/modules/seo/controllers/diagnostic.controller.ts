@@ -7,11 +7,11 @@ import {
   Param,
   Query,
   Body,
-  NotFoundException,
   Logger,
   Header,
   UseGuards,
 } from '@nestjs/common';
+import { DomainNotFoundException } from '../../../common/exceptions';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import {
   DiagnosticService,
@@ -275,8 +275,9 @@ export class DiagnosticController {
   @Header('Cache-Control', 'public, max-age=86400')
   async getRedirectTarget(
     @Param('slug') slug: string,
-  ): Promise<{ redirect_to: string; pg_alias: string } | null> {
-    return this.diagnosticService.getRedirectTarget(slug);
+  ): Promise<{ redirect_to: string | null; pg_alias: string | null }> {
+    const result = await this.diagnosticService.getRedirectTarget(slug);
+    return result ?? { redirect_to: null, pg_alias: null };
   }
 
   /**
@@ -304,7 +305,12 @@ export class DiagnosticController {
     const diagnostic = await this.diagnosticService.getBySlug(slug);
 
     if (!diagnostic) {
-      throw new NotFoundException(`Diagnostic non trouve: ${slug}`);
+      throw new DomainNotFoundException({
+        message: `Diagnostic non trouvé: ${slug}`,
+        code: 'DIAGNOSTIC.NOT_FOUND',
+        details: `Aucun diagnostic publié pour le slug "${slug}"`,
+        context: { slug, route: 'R5_DIAGNOSTIC' },
+      });
     }
 
     // Generer schema_org si absent
