@@ -1293,8 +1293,8 @@ export class AdminKeywordPlannerController {
 
     const pgName = gamme.pg_name as string;
 
-    // Générer le contenu depuis le RAG
-    const result = this.r1ContentFromRag.generate(pg_alias, pgName);
+    // Générer le contenu depuis le RAG (virtual merge: .md + docs DB)
+    const result = await this.r1ContentFromRag.generate(pg_alias, pgName);
 
     if (result.charCount === 0) {
       return {

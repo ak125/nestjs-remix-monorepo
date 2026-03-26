@@ -32,14 +32,17 @@ export class R1ContentFromRagService {
 
   constructor(private readonly ragReader: RagGammeReaderService) {}
 
-  generate(
+  async generate(
     pgAlias: string,
     pgName: string,
     _options?: {
       kw?: Array<{ kw: string; intent: string; vol: string }>;
     },
-  ): ContentFromRagResult {
-    const rag = this.ragReader.readAndParse(pgAlias);
+  ): Promise<ContentFromRagResult> {
+    // Virtual merge : fichier .md + docs DB (exploite les 5-12 docs ingérés)
+    const mergeResult =
+      await this.ragReader.readAndParseWithDbKnowledge(pgAlias);
+    const rag = mergeResult?.ragData ?? this.ragReader.readAndParse(pgAlias);
     if (!rag) {
       return {
         html: '',
