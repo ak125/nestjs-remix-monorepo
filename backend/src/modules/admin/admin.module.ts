@@ -90,6 +90,7 @@ import { AdminFeatureFlagsController } from './controllers/admin-feature-flags.c
 // PipelineChainPollerService SUPPRIME — dependait de content-refresh queue
 // RagCatchupService SUPPRIME — catch-up auto remplace par skills /content-gen
 import { R3ImagePromptService } from './services/r3-image-prompt.service'; // 🎨 R3 Image Prompts (template-based, 0-LLM)
+import { R1ContentFromRagService } from './services/r1-content-from-rag.service'; // 📝 R1 Content from RAG (0-LLM, template)
 import { R1ImagePromptService } from './services/r1-image-prompt.service'; // 🎨 R1 Image Brief generator (brief-driven, 0-LLM)
 import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service'; // 🚗 R8 Vehicle page enricher (RAG + diversity scoring)
 import { R7BrandEnricherService } from './services/r7-brand-enricher.service'; // 🏭 R7 Brand page enricher (RAG + diversity scoring)
@@ -218,6 +219,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     R1KeywordPlanGatesService, // 🚦 R1 Keyword plan gates KA1-KA6 (R1 pipeline + keyword-planner R1 mode)
     R1KeywordPlanBatchService, // 🔄 R1 KP batch 0-LLM generator
     R3ImagePromptService, // 🎨 R3 Image Prompts (template-based, 0-LLM)
+    R1ContentFromRagService, // 📝 R1 Content from RAG (0-LLM)
     R1ImagePromptService, // 🎨 R1 Image Brief generator
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
     R7BrandEnricherService, // 🏭 R7 Brand page enricher (RAG + diversity scoring, 0-LLM)

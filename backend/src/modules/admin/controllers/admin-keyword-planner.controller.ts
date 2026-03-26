@@ -18,6 +18,7 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { R1ContentFromRagService } from '../services/r1-content-from-rag.service';
 import { R1KeywordPlanBatchService } from '../services/r1-keyword-plan-batch.service';
 
 interface CoverageRow {
@@ -41,6 +42,7 @@ export class AdminKeywordPlannerController {
   constructor(
     private readonly configService: ConfigService,
     @Optional() private readonly r1BatchService?: R1KeywordPlanBatchService,
+    @Optional() private readonly r1ContentFromRag?: R1ContentFromRagService,
     @Optional() @Inject(CACHE_MANAGER) private readonly cacheManager?: Cache,
   ) {
     const url = this.configService.get<string>('SUPABASE_URL');
@@ -1258,6 +1260,119 @@ export class AdminKeywordPlannerController {
       minR3Score: body.minR3Score,
       dryRun: body.dryRun,
     });
+  }
+
+  /**
+   * POST /api/admin/keyword-planner/generate-from-rag
+   * Génère le contenu éditorial R1 (sg_content) directement depuis le RAG enrichi.
+   * 0-LLM, template-based, écrit en DB + invalide le cache.
+   */
+  @Post('generate-from-rag')
+  async generateFromRag(
+    @Body() body: { pg_id: number; pg_alias: string; dry_run?: boolean },
+  ) {
+    if (!this.r1ContentFromRag) {
+      return { error: 'R1ContentFromRagService not available' };
+    }
+
+    const { pg_id, pg_alias, dry_run = false } = body;
+    this.logger.log(
+      `POST generate-from-rag pg_id=${pg_id} alias=${pg_alias} dryRun=${dry_run}`,
+    );
+
+    // Récupérer le nom de la gamme
+    const { data: gamme } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_name')
+      .eq('pg_id', pg_id)
+      .single();
+
+    if (!gamme) {
+      return { error: 'Gamme not found', pg_id };
+    }
+
+    const pgName = gamme.pg_name as string;
+
+    // Générer le contenu depuis le RAG
+    const result = this.r1ContentFromRag.generate(pg_alias, pgName);
+
+    if (result.charCount === 0) {
+      return {
+        error: 'No RAG data available for this gamme',
+        pg_alias,
+        quality: 'minimal',
+      };
+    }
+
+    if (dry_run) {
+      return {
+        status: 'dry_run',
+        pg_alias,
+        pgName,
+        charCount: result.charCount,
+        h2Count: result.h2Count,
+        quality: result.quality,
+        ragFieldsUsed: result.ragFieldsUsed,
+        preview: result.html.slice(0, 500),
+      };
+    }
+
+    // Vérifier le contenu existant (anti-régression : ne pas rétrécir)
+    const { data: existing } = await this.supabase
+      .from('__seo_gamme')
+      .select('sg_content')
+      .eq('sg_pg_id', String(pg_id))
+      .single();
+
+    const existingLen = existing?.sg_content?.length ?? 0;
+    if (existingLen > result.charCount && existingLen > 3000) {
+      return {
+        error: `Anti-regression: existing content (${existingLen} chars) > generated (${result.charCount} chars). Use --force to override.`,
+        pg_alias,
+        existingLen,
+        generatedLen: result.charCount,
+      };
+    }
+
+    // Écrire en DB
+    const { error: writeError } = await this.supabase
+      .from('__seo_gamme')
+      .upsert(
+        {
+          sg_pg_id: String(pg_id),
+          sg_content: result.html,
+          sg_updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'sg_pg_id' },
+      );
+
+    if (writeError) {
+      return { error: `DB write failed: ${writeError.message}`, pg_alias };
+    }
+
+    // Invalider le cache Redis
+    try {
+      if (this.cacheManager) {
+        await this.cacheManager.del(`gamme:resp:v2:${pg_id}`);
+        await this.cacheManager.del(`gamme:rpc:v2:${pg_id}`);
+      }
+    } catch {
+      this.logger.warn(`Cache invalidation failed for pg_id=${pg_id}`);
+    }
+
+    this.logger.log(
+      `[R1-CONTENT] Written ${result.charCount} chars for ${pg_alias} (quality=${result.quality})`,
+    );
+
+    return {
+      status: 'written',
+      pg_alias,
+      pgName,
+      charCount: result.charCount,
+      h2Count: result.h2Count,
+      quality: result.quality,
+      ragFieldsUsed: result.ragFieldsUsed,
+    };
   }
 
   // ── Private helpers ──

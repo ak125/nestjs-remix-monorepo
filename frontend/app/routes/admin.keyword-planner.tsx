@@ -26,7 +26,7 @@ import {
   Upload,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { GammeActionBar } from "~/components/admin/GammeActionBar";
 import {
@@ -450,19 +450,32 @@ export default function KeywordPlannerPage() {
     return `/pieces/${alias}-${pgId}.html`;
   }
 
-  function handleGenerateContent(pgId: number, alias: string) {
+  async function handleGenerateContent(pgId: number, alias: string) {
     if (isGenContent) return;
     setIsGenContent(true);
     setActivePgId(pgId);
-    contentFetcher.submit(
-      {
-        _action: "generate_content",
-        pg_id: String(pgId),
-        pg_alias: alias,
-        roles: "R1",
-      },
-      { method: "post" },
-    );
+    try {
+      const resp = await fetch("/api/admin/keyword-planner/generate-from-rag", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pg_id: pgId, pg_alias: alias }),
+      });
+      const data = await resp.json();
+      if (data.status === "written") {
+        toast.success(
+          `Contenu généré : ${data.charCount} chars, ${data.h2Count} H2 (${data.quality})`,
+        );
+        revalidator.revalidate();
+      } else if (data.error) {
+        toast.error(data.error);
+      }
+    } catch {
+      toast.error("Erreur réseau");
+    } finally {
+      setIsGenContent(false);
+      setActivePgId(null);
+    }
   }
 
   async function handleGenerateImages(pgId: number, alias: string) {
@@ -490,14 +503,6 @@ export default function KeywordPlannerPage() {
       setActivePgId(null);
     }
   }
-
-  // Reset content generation state when fetcher completes
-  useEffect(() => {
-    if (contentFetcher.state === "idle" && isGenContent) {
-      setIsGenContent(false);
-      setActivePgId(null);
-    }
-  }, [contentFetcher.state, isGenContent]);
 
   function handleGenerate() {
     if (!selectedPgId) return;
