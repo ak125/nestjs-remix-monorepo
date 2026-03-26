@@ -18,6 +18,8 @@ export interface RagData {
   };
   domain?: {
     role?: string;
+    must_be_true?: string[];
+    must_not_contain?: string[];
     confusion_with?: Array<{ term: string; difference: string }>;
     related_parts?: string[];
     norms?: string[];
@@ -92,5 +94,12 @@ export interface RagData {
     primary_keyword?: { text?: string; volume?: number };
     keyword_variants?: Array<{ keyword: string; volume?: number }>;
     paa_questions?: string[];
+  };
+
+  /** Rendering — FAQ, arguments, qualité (consommé par content-gen) */
+  rendering?: {
+    faq?: Array<{ question: string; answer: string }>;
+    arguments?: Array<{ title: string; content: string; icon?: string }>;
+    quality?: { score: number; source: string };
   };
 }
