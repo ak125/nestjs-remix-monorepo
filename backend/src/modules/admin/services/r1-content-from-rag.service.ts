@@ -87,8 +87,16 @@ export class R1ContentFromRagService {
     if (faqSection) sections.push(faqSection);
 
     const html = sections.join('\n');
-    const h2Count = (html.match(/<h2/g) || []).length;
-    const charCount = html.length;
+    // Nettoyage : supprimer les artefacts source/attribution qui pourraient fuiter
+    const cleanHtml = html
+      .replace(/<!-- .*? -->/g, '') // commentaires HTML
+      .replace(/\(Source:\s*[^)]+\)/gi, '') // attributions (Source: ...)
+      .replace(/\[source:\s*[^\]]+\]/gi, '') // [source: ...]
+      .replace(/\n{3,}/g, '\n\n') // espaces multiples
+      .trim();
+
+    const h2Count = (cleanHtml.match(/<h2/g) || []).length;
+    const charCount = cleanHtml.length;
 
     const quality =
       charCount > 5000 && h2Count >= 5
@@ -101,7 +109,13 @@ export class R1ContentFromRagService {
       `[R1-CONTENT] ${pgAlias}: ${charCount} chars, ${h2Count} H2, quality=${quality}, fields=${fieldsUsed.length}`,
     );
 
-    return { html, charCount, h2Count, ragFieldsUsed: fieldsUsed, quality };
+    return {
+      html: cleanHtml,
+      charCount,
+      h2Count,
+      ragFieldsUsed: fieldsUsed,
+      quality,
+    };
   }
 
   private buildRoleSection(
