@@ -405,4 +405,21 @@ export class VehiclesController {
     await this.vehicleRpcService.invalidateCache(typeIdNum);
     return { status: 200, message: `Cache invalidé pour vehicle ${typeIdNum}` };
   }
+
+  /**
+   * GET /api/vehicles/types/:typeId/resolve-remap
+   * 🔄 Résout un ancien type_id TecDoc vers la nouvelle URL massdoc
+   * Uniquement pour type_id >= 100000. Cache Redis 24h.
+   */
+  @Get('types/:typeId/resolve-remap')
+  async resolveTypeRemap(@Param('typeId') typeId: string) {
+    const typeIdNum = parseInt(typeId, 10);
+    if (typeIdNum < 100000) return { found: false };
+
+    const result =
+      await this.vehicleRpcService.resolveRemappedTypeId(typeIdNum);
+    if (!result) return { found: false };
+
+    return { found: true, ...result };
+  }
 }

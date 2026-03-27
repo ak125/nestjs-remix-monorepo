@@ -274,4 +274,47 @@ export class VehicleRpcService extends SupabaseBaseService {
 
     this.logger.log(`🗑️ Cache invalidé pour vehicle ${typeId}`);
   }
+
+  /**
+   * 🔄 Résout un ancien type_id TecDoc (>= 100K) vers le nouveau massdoc
+   * Retourne l'URL canonique ou null si pas de mapping
+   */
+  async resolveRemappedTypeId(
+    oldTypeId: number,
+  ): Promise<{ newId: number; canonicalUrl: string } | null> {
+    if (oldTypeId < 100000) return null;
+
+    // Cache Redis 24h (mapping immuable)
+    const cacheKey = `remap:type:${oldTypeId}`;
+    const cached = await this.cacheService.get<{
+      newId: number;
+      canonicalUrl: string;
+    }>(cacheKey);
+    if (cached) return cached;
+
+    const { data, error } = await this.callRpc<any[]>(
+      'resolve_type_id_remap',
+      { p_old_id: oldTypeId },
+      { source: 'api' },
+    );
+
+    if (error || !data || data.length === 0) return null;
+
+    const row = data[0];
+    const typeAlias =
+      row.type_alias && row.type_alias !== 'null' && row.type_alias !== 'type'
+        ? row.type_alias
+        : row.type_name
+            ?.normalize('NFKD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '') || 'type';
+
+    const canonicalUrl = `/constructeurs/${row.marque_alias}-${row.marque_id}/${row.modele_alias}-${row.modele_id}/${typeAlias}-${row.new_id}.html`;
+    const result = { newId: row.new_id, canonicalUrl };
+
+    await this.cacheService.set(cacheKey, result, 86400);
+    return result;
+  }
 }

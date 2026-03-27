@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 162,
+  "total": 163,
   "functions": [
     {"name": "calc_article_bf", "volatility": "IMMUTABLE", "reason": "Pure calculation"},
     {"name": "calc_brand_bf", "volatility": "IMMUTABLE", "reason": "Pure calculation"},
@@ -149,6 +149,7 @@
     {"name": "get_homepage_data_optimized", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
     {"name": "get_brand_page_data_optimized", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
     {"name": "get_vehicle_page_data_optimized", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
+    {"name": "resolve_type_id_remap", "volatility": "STABLE", "reason": "Read-only PK lookup for 301 redirect (TecDoc remap)"},
     {"name": "get_gamme_page_data_optimized", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
     {"name": "get_brand_bestsellers_optimized", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},
     {"name": "get_pieces_for_type_gamme", "volatility": "VOLATILE", "reason": "Read-only optimization (migrated from P2)"},

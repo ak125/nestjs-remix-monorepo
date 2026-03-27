@@ -401,6 +401,11 @@ function transformRpcToLoaderData(
     pageRobots = "noindex, nofollow";
   }
 
+  // Nouveaux véhicules TecDoc (60000-83456) : noindex jusqu'à validation SEO
+  if (type_id >= 60000 && type_id <= 83456) {
+    pageRobots = "noindex, nofollow";
+  }
+
   // Blog content - RPC returns simple bsm_* fields, but ModelContentV1Data expects full structure
   // For now, set to null. To get full model content, a separate API call would be needed.
   const modelContentV1: ModelContentV1Data | null = null;
@@ -502,6 +507,30 @@ export async function loader({ params }: LoaderFunctionArgs) {
   const type_id = parseInt(typeParts[typeParts.length - 1]) || 0;
 
   const baseUrl = getInternalApiUrl("");
+
+  // ── Redirect 301 : ancien type_id TecDoc (>= 100K) → nouveau massdoc ──
+  if (type_id >= 100000) {
+    try {
+      const remapRes = await fetch(
+        `${baseUrl}/api/vehicles/types/${type_id}/resolve-remap`,
+        {
+          headers: { "internal-call": "true" },
+          signal: AbortSignal.timeout(3000),
+        },
+      );
+      if (remapRes.ok) {
+        const remap = await remapRes.json();
+        if (remap.found) {
+          logger.log(
+            `🔄 [REMAP 301] type_id ${type_id} → ${remap.canonicalUrl}`,
+          );
+          return redirect(remap.canonicalUrl, 301);
+        }
+      }
+    } catch {
+      // Fallback : continue vers le flux normal → 410 naturel
+    }
+  }
 
   // ========================================
   // 🚀 APPEL RPC OPTIMISÉ (1 seul appel au lieu de 4)
