@@ -95,6 +95,21 @@ automecanik.com, www.automecanik.com {
         }
     }
 
+    # ===== IMAGES GAMMES R1 (URL friendly → imgproxy WebP) =====
+    # /images/gammes/{alias}.webp → imgproxy → Supabase Storage
+    # Exemple: /images/gammes/filtre-a-huile.webp (HERO)
+    #          /images/gammes/filtre-a-huile-2.webp (TYPES)
+    @gamme_images path_regexp gamme_img ^/images/gammes/(.+\.webp)$
+    handle @gamme_images {
+        header Cache-Control "public, max-age=31536000, immutable"
+        header Vary "Accept"
+        rewrite * /rs:fit:800/q:85/plain/https://cxpojprgwgubzjyqzmoq.supabase.co/storage/v1/object/public/uploads/articles/gammes-produits/r1/{re.gamme_img.1}@webp
+        reverse_proxy imgproxy:8080 {
+            header_up Host imgproxy
+            header_down -Server
+        }
+    }
+
     # ===== REDIRECTIONS LEGACY IMAGES (SEO 301) =====
     # URLs historiques stockées en base → imgproxy (WebP optimisé)
     # Préserve le PageRank via 301 permanent + images optimisées
@@ -201,7 +216,8 @@ automecanik.com, www.automecanik.com {
         @search path /search
         header @search Cache-Control "public, max-age=30, stale-while-revalidate=60"
         
-        header Cache-Control "public, max-age=120, stale-while-revalidate=240"
+        # Default: set only if no conditional matcher above already set Cache-Control
+        header ?Cache-Control "public, max-age=120, stale-while-revalidate=240"
         header Vary "Accept-Encoding"
         
         reverse_proxy monorepo_prod:3000 {

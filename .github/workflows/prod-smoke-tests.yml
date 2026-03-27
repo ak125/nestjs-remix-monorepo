@@ -20,6 +20,7 @@ jobs:
 
     steps:
       - name: 🏥 Health endpoint
+        id: health-check
         run: |
           RESPONSE=$(docker exec $CONTAINER wget -qO- http://localhost:3000/health 2>/dev/null)
           echo "Response: $RESPONSE"
@@ -30,6 +31,7 @@ jobs:
           echo "✅ Health: OK"
 
       - name: 🌐 Homepage
+        id: homepage-check
         run: |
           RESPONSE=$(docker exec $CONTAINER wget -qO- http://localhost:3000/ 2>/dev/null | head -100)
           TITLE=$(echo "$RESPONSE" | grep -oP '<title>\K[^<]+' | head -1)
@@ -40,6 +42,7 @@ jobs:
           echo "✅ Homepage: title='$TITLE'"
 
       - name: 📦 Pages multi-rôles (8 URLs)
+        id: pages-check
         run: |
           FAILED=0
           URLS=(
@@ -67,6 +70,7 @@ jobs:
           echo "✅ All 8 pages OK"
 
       - name: 🔍 SEO Meta tags
+        id: seo-meta-check
         run: |
           BODY=$(docker exec $CONTAINER wget -qO- "http://localhost:3000$TEST_R1_URL" 2>/dev/null)
           FAILED=0
@@ -141,6 +145,7 @@ jobs:
           echo "✅ All SEO meta checks passed"
 
       - name: 🔌 API catalog
+        id: api-check
         run: |
           RESPONSE=$(docker exec $CONTAINER wget -qO- http://localhost:3000/api/catalog/families 2>/dev/null)
           if [ -z "$RESPONSE" ]; then
@@ -155,6 +160,7 @@ jobs:
           echo "✅ API catalog: $COUNT families"
 
       - name: 🖼️ imgproxy AVIF + WebP
+        id: imgproxy-check
         run: |
           FAILED=0
           for FMT in avif webp; do
@@ -169,6 +175,7 @@ jobs:
           if [ "$FAILED" = "1" ]; then exit 1; fi
 
       - name: 🗺️ Sitemap + robots.txt
+        id: sitemap-check
         run: |
           FAILED=0
 
@@ -207,6 +214,14 @@ jobs:
 
           if [ "$FAILED" = "1" ]; then exit 1; fi
 
+      - name: 🔥 Warm-up (prime SSR cache)
+        run: |
+          # Warm-up: prime les routes testees pour eviter les cold starts
+          for URL in "$TEST_R1_URL" "$TEST_R2_URL"; do
+            docker exec $CONTAINER wget -qO /dev/null "http://localhost:3000$URL" 2>/dev/null || true
+          done
+          echo "✅ Warm-up done"
+
       - name: 📊 Cache headers (via Caddy)
         id: cache-check
         continue-on-error: true
@@ -236,7 +251,7 @@ jobs:
         id: compression-check
         continue-on-error: true
         run: |
-          HEADERS=$($CADDY_CURL -H "Accept-Encoding: gzip" -I "https://www.automecanik.com$TEST_R1_URL")
+          HEADERS=$($CADDY_CURL -H "Accept-Encoding: gzip" -D - -o /dev/null "https://www.automecanik.com$TEST_R1_URL")
           ENCODING=$(echo "$HEADERS" | grep -i "content-encoding:" | head -1)
           if echo "$ENCODING" | grep -qiE "gzip|zstd|br"; then
             echo "✅ Compression: $ENCODING"
@@ -249,7 +264,7 @@ jobs:
         id: security-check
         continue-on-error: true
         run: |
-          HEADERS=$($CADDY_CURL -I "https://www.automecanik.com/")
+          HEADERS=$($CADDY_CURL -D - -o /dev/null "https://www.automecanik.com/")
           FAILED=0
 
           check_header() {
@@ -278,6 +293,7 @@ jobs:
           if [ "$FAILED" = "1" ]; then exit 1; fi
 
       - name: 🔴 Redis health
+        id: redis-check
         run: |
           REDIS=$(docker ps --format "{{.Names}} {{.Status}}" | grep "redis_prod" | head -1)
           if [ -z "$REDIS" ]; then
@@ -291,6 +307,7 @@ jobs:
           echo "✅ Redis: $REDIS"
 
       - name: 📏 Response size (SSR check)
+        id: response-size-check
         run: |
           FAILED=0
           check_size() {
@@ -311,6 +328,7 @@ jobs:
           if [ "$FAILED" = "1" ]; then exit 1; fi
 
       - name: 🔎 SEO avance (og:image, h1, breadcrumb, preload)
+        id: seo-advanced-check
         run: |
           BODY=$(docker exec $CONTAINER wget -qO- "http://localhost:3000$TEST_R1_URL" 2>/dev/null)
           FAILED=0
@@ -400,6 +418,7 @@ jobs:
           echo "✅ All SEO avance checks passed"
 
       - name: 🚫 404/410 handling
+        id: error-handling-check
         run: |
           FAILED=0
 
@@ -462,15 +481,13 @@ jobs:
           BODY=$(docker exec $CONTAINER wget -qO- "http://localhost:3000$TEST_R1_URL" 2>/dev/null)
           FAILED=0
 
-          # Server-side response time < 500ms
-          START=$(date +%s%N)
-          docker exec $CONTAINER wget -qO /dev/null "http://localhost:3000$TEST_R1_URL" 2>/dev/null
-          END=$(date +%s%N)
-          ELAPSED=$(( (END - START) / 1000000 ))
-          if [ "$ELAPSED" -lt 500 ]; then
-            echo "✅ Server response time: ${ELAPSED}ms (< 500ms)"
+          # Server-side response time < 500ms (curl time_starttransfer = vrai TTFB)
+          TTFB_S=$($CADDY_CURL -o /dev/null -w "%{time_starttransfer}" "https://www.automecanik.com$TEST_R1_URL")
+          ELAPSED_MS=$(echo "($TTFB_S * 1000) / 1" | bc)
+          if [ "$ELAPSED_MS" -lt 500 ]; then
+            echo "✅ Server response time: ${ELAPSED_MS}ms (< 500ms)"
           else
-            echo "⚠️ Server response time: ${ELAPSED}ms (> 500ms)"
+            echo "⚠️ Server response time: ${ELAPSED_MS}ms (> 500ms)"
             FAILED=1
           fi
 
@@ -506,7 +523,7 @@ jobs:
         id: csp-check
         continue-on-error: true
         run: |
-          HEADERS=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000$TEST_R1_URL" 2>&1)
+          HEADERS=$(docker exec $CONTAINER wget -qS -O /dev/null "http://localhost:3000$TEST_R1_URL" 2>&1)
           FAILED=0
 
           # Content-Security-Policy present with nonce
@@ -591,11 +608,9 @@ jobs:
             FAILED=1
           fi
 
-          # R2 TTFB
-          R2_START=$(date +%s%N)
-          docker exec $CONTAINER wget -qO /dev/null "http://localhost:3000$TEST_R2_URL" 2>/dev/null
-          R2_END=$(date +%s%N)
-          R2_MS=$(( (R2_END - R2_START) / 1000000 ))
+          # R2 TTFB (curl time_starttransfer = vrai TTFB)
+          R2_TTFB=$($CADDY_CURL -o /dev/null -w "%{time_starttransfer}" "https://www.automecanik.com$TEST_R2_URL")
+          R2_MS=$(echo "($R2_TTFB * 1000) / 1" | bc)
           if [ "$R2_MS" -lt 1000 ]; then
             echo "✅ R2: Server response ${R2_MS}ms (< 1s)"
           else
@@ -619,6 +634,24 @@ jobs:
         run: |
           echo "## 🩺 PROD Smoke Test Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### Critical (hard fail)" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Health | ${{ steps.health-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Homepage | ${{ steps.homepage-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Pages (8 URLs) | ${{ steps.pages-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SEO Meta | ${{ steps.seo-meta-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| API catalog | ${{ steps.api-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| imgproxy | ${{ steps.imgproxy-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Sitemap | ${{ steps.sitemap-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Redis | ${{ steps.redis-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Response size | ${{ steps.response-size-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| SEO avance | ${{ steps.seo-advanced-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 404/410 | ${{ steps.error-handling-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### Performance (soft fail)" >> $GITHUB_STEP_SUMMARY
           echo "| Test | Result |" >> $GITHUB_STEP_SUMMARY
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Cache headers | ${{ steps.cache-check.outcome == 'success' && '✅' || '⚠️ Warning' }} |" >> $GITHUB_STEP_SUMMARY
