@@ -198,18 +198,23 @@ function generateCSS(tokens) {
 
   css += '}\n';
   
-  // 🎨 SHADCN/UI COMPATIBILITY
-  // Ajout automatique des variables shadcn après les tokens principaux
+  // 🎨 SHADCN/UI COMPATIBILITY — auto-generated from design-tokens.json
+  const primaryHSL = hexToHSL(tokens.colors.primary['500']);
+  const primaryIsDark = calculateLuminance(tokens.colors.primary['500']) <= 0.179;
+  const primaryFgHSL = primaryIsDark ? '0 0% 100%' : '0 0% 0%';
+  // Light primary variant for dark mode (use primary-200)
+  const primaryLightHSL = hexToHSL(tokens.colors.primary['200']);
+
   css += `
 /* ========================================
    SHADCN/UI COMPATIBILITY
-   Ces variables permettent aux composants shadcn
-   de continuer à fonctionner sans modification
+   Auto-généré depuis design-tokens.json
+   primary.500 = ${tokens.colors.primary['500']} → HSL ${primaryHSL}
    ======================================== */
 :root {
   /* Layout */
-  --background: 0 0% 100%;             /* Blanc */
-  --foreground: 222.2 84% 4.9%;        /* Texte principal */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
 
   /* Card */
   --card: 0 0% 100%;
@@ -219,9 +224,9 @@ function generateCSS(tokens) {
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
 
-  /* Primary (référence nos tokens) */
-  --primary: 9 100% 59%;               /* Équivalent HSL de #FF3B30 */
-  --primary-foreground: 0 0% 0%;       /* Texte sur primary */
+  /* Primary — auto-calculated from primary.500 */
+  --primary: ${primaryHSL};
+  --primary-foreground: ${primaryFgHSL};
 
   /* Secondary */
   --secondary: 210 40% 96.1%;
@@ -242,7 +247,7 @@ function generateCSS(tokens) {
   /* Border & Input */
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --ring: 9 100% 59%;                  /* Focus ring = primary */
+  --ring: ${primaryHSL};
 
   /* Charts */
   --chart-1: 12 76% 61%;
@@ -251,7 +256,7 @@ function generateCSS(tokens) {
   --chart-4: 43 74% 66%;
   --chart-5: 27 87% 67%;
 
-  /* Radius (référence notre token) */
+  /* Radius */
   --radius: var(--radius-lg);
 }
 
@@ -259,44 +264,35 @@ function generateCSS(tokens) {
    DARK MODE
    ======================================== */
 .dark {
-  /* Layout */
   --background: 222.2 84% 4.9%;
   --foreground: 210 40% 98%;
 
-  /* Card */
   --card: 222.2 84% 4.9%;
   --card-foreground: 210 40% 98%;
 
-  /* Popover */
   --popover: 222.2 84% 4.9%;
   --popover-foreground: 210 40% 98%;
 
-  /* Primary */
-  --primary: 210 40% 98%;
+  /* Primary — light variant for dark backgrounds */
+  --primary: ${primaryLightHSL};
   --primary-foreground: 222.2 47.4% 11.2%;
 
-  /* Secondary */
   --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 40% 98%;
 
-  /* Muted */
   --muted: 217.2 32.6% 17.5%;
   --muted-foreground: 215 20.2% 65.1%;
 
-  /* Accent */
   --accent: 217.2 32.6% 17.5%;
   --accent-foreground: 210 40% 98%;
 
-  /* Destructive */
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
 
-  /* Border & Input */
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
+  --ring: ${primaryLightHSL};
 
-  /* Charts */
   --chart-1: 220 70% 50%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;
@@ -336,12 +332,12 @@ function calculateLuminance(hex) {
   const r = ((rgb >> 16) & 0xff) / 255;
   const g = ((rgb >> 8) & 0xff) / 255;
   const b = (rgb & 0xff) / 255;
-  
+
   // Linearize RGB (sRGB → Linear RGB)
-  const [rs, gs, bs] = [r, g, b].map(c => 
+  const [rs, gs, bs] = [r, g, b].map(c =>
     c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
   );
-  
+
   // Calculate relative luminance (WCAG formula)
   return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
 }
@@ -352,6 +348,29 @@ function getContrastColor(hex) {
   // WCAG AA requires 4.5:1 contrast ratio for normal text
   // Threshold ~0.179 ensures sufficient contrast
   return luminance > 0.179 ? '#000000' : '#ffffff';
+}
+
+// 🎨 HEX → HSL conversion (pour shadcn/ui)
+function hexToHSL(hex) {
+  const rgb = parseInt(hex.replace('#', ''), 16);
+  const r = ((rgb >> 16) & 0xff) / 255;
+  const g = ((rgb >> 8) & 0xff) / 255;
+  const b = (rgb & 0xff) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+
+  if (max === min) return `0 0% ${Math.round(l * 100)}%`;
+
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h;
+  if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+  else if (max === g) h = ((b - r) / d + 2) / 6;
+  else h = ((r - g) / d + 4) / 6;
+
+  return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
 }
 
 // 🎨 Génération CSS Utilities Sémantiques

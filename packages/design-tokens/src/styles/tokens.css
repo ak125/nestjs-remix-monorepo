@@ -7,27 +7,27 @@
 :root {
 
   /* Colors */
-  --color-primary-50: #ffe5e5;
+  --color-primary-50: #E8EDF5;
   --color-primary-50-contrast: #000000;
-  --color-primary-100: #ffcccc;
+  --color-primary-100: #C5D0E6;
   --color-primary-100-contrast: #000000;
-  --color-primary-200: #ff9999;
+  --color-primary-200: #9BAFD4;
   --color-primary-200-contrast: #000000;
-  --color-primary-300: #ff6666;
+  --color-primary-300: #708EC1;
   --color-primary-300-contrast: #000000;
-  --color-primary-400: #ff4d4d;
-  --color-primary-400-contrast: #000000;
-  --color-primary-500: #FF3B30;
-  --color-primary-500-contrast: #000000;
-  --color-primary-600: #e63629;
-  --color-primary-600-contrast: #000000;
-  --color-primary-700: #cc2f24;
+  --color-primary-400: #4F74B3;
+  --color-primary-400-contrast: #ffffff;
+  --color-primary-500: #0F1E38;
+  --color-primary-500-contrast: #ffffff;
+  --color-primary-600: #0D1A32;
+  --color-primary-600-contrast: #ffffff;
+  --color-primary-700: #0B162B;
   --color-primary-700-contrast: #ffffff;
-  --color-primary-800: #b3291f;
+  --color-primary-800: #091225;
   --color-primary-800-contrast: #ffffff;
-  --color-primary-900: #99221a;
+  --color-primary-900: #070E1E;
   --color-primary-900-contrast: #ffffff;
-  --color-primary-950: #7f1b15;
+  --color-primary-950: #050A17;
   --color-primary-950-contrast: #ffffff;
   --color-secondary-50: #e6f0f7;
   --color-secondary-50-contrast: #000000;
@@ -95,8 +95,8 @@
   --color-neutral-white-contrast: #000000;
   --color-neutral-black: #000000;
   --color-neutral-black-contrast: #ffffff;
-  --color-semantic-action: #D63027;
-  --color-semantic-action-contrast: #ffffff;
+  --color-semantic-action: #F97316;
+  --color-semantic-action-contrast: #000000;
   --color-semantic-actionContrast: #FFFFFF;
   --color-semantic-actionContrast-contrast: #000000;
   --color-semantic-info: #0F4C81;
@@ -185,10 +185,10 @@
   --breakpoint-2xl: 1536px;
 
   /* Typography */
-  --font-heading: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display', 'Montserrat', sans-serif;
-  --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Inter', sans-serif;
+  --font-heading: 'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-data: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Inter', sans-serif;
+  --font-sans: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
   --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
   --font-size-xs: 0.75rem;
@@ -266,13 +266,13 @@
 
 /* ========================================
    SHADCN/UI COMPATIBILITY
-   Ces variables permettent aux composants shadcn
-   de continuer à fonctionner sans modification
+   Auto-généré depuis design-tokens.json
+   primary.500 = #0F1E38 → HSL 218 58% 14%
    ======================================== */
 :root {
   /* Layout */
-  --background: 0 0% 100%;             /* Blanc */
-  --foreground: 222.2 84% 4.9%;        /* Texte principal */
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
 
   /* Card */
   --card: 0 0% 100%;
@@ -282,9 +282,9 @@
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
 
-  /* Primary (référence nos tokens) */
-  --primary: 9 100% 59%;               /* Équivalent HSL de #FF3B30 */
-  --primary-foreground: 0 0% 0%;       /* Texte sur primary */
+  /* Primary — auto-calculated from primary.500 */
+  --primary: 218 58% 14%;
+  --primary-foreground: 0 0% 100%;
 
   /* Secondary */
   --secondary: 210 40% 96.1%;
@@ -305,7 +305,7 @@
   /* Border & Input */
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
-  --ring: 9 100% 59%;                  /* Focus ring = primary */
+  --ring: 218 58% 14%;
 
   /* Charts */
   --chart-1: 12 76% 61%;
@@ -314,7 +314,7 @@
   --chart-4: 43 74% 66%;
   --chart-5: 27 87% 67%;
 
-  /* Radius (référence notre token) */
+  /* Radius */
   --radius: var(--radius-lg);
 }
 
@@ -322,44 +322,35 @@
    DARK MODE
    ======================================== */
 .dark {
-  /* Layout */
   --background: 222.2 84% 4.9%;
   --foreground: 210 40% 98%;
 
-  /* Card */
   --card: 222.2 84% 4.9%;
   --card-foreground: 210 40% 98%;
 
-  /* Popover */
   --popover: 222.2 84% 4.9%;
   --popover-foreground: 210 40% 98%;
 
-  /* Primary */
-  --primary: 210 40% 98%;
+  /* Primary — light variant for dark backgrounds */
+  --primary: 219 40% 72%;
   --primary-foreground: 222.2 47.4% 11.2%;
 
-  /* Secondary */
   --secondary: 217.2 32.6% 17.5%;
   --secondary-foreground: 210 40% 98%;
 
-  /* Muted */
   --muted: 217.2 32.6% 17.5%;
   --muted-foreground: 215 20.2% 65.1%;
 
-  /* Accent */
   --accent: 217.2 32.6% 17.5%;
   --accent-foreground: 210 40% 98%;
 
-  /* Destructive */
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
 
-  /* Border & Input */
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
-  --ring: 212.7 26.8% 83.9%;
+  --ring: 219 40% 72%;
 
-  /* Charts */
   --chart-1: 220 70% 50%;
   --chart-2: 160 60% 45%;
   --chart-3: 30 80% 55%;

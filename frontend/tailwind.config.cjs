@@ -12,7 +12,7 @@ module.exports = {
         primary: {
           ...tokens.colors.primary,
           DEFAULT: tokens.colors.primary['500'],
-          foreground: '#000000'
+          foreground: '#ffffff'
         },
         secondary: {
           ...tokens.colors.secondary,
@@ -21,50 +21,44 @@ module.exports = {
         },
 
         // ─── Semantic UI Colors ───────────────────────────
-        // Used across all pages — single source of truth
-        // Replaces hardcoded hex values (#e8590c, #0d1b3e, etc.)
 
-        // CTA / Action orange (replaces #e8590c everywhere)
+        // CTA / Action orange
         cta: {
-          DEFAULT: '#e8590c',
-          hover: '#d9480f',
-          light: '#fb923c',
-          lighter: '#f76707',
-          dark: '#c2410c',
-          50: '#fff7ed',
-          100: '#ffedd5',
-          200: '#fed7aa',
-          300: '#fdba74',
-          400: '#fb923c',
-          500: '#e8590c',
-          600: '#d9480f',
-          700: '#c2410c',
-          800: '#9a3412',
-          900: '#7c2d12',
+          DEFAULT: '#F97316',
+          hover: '#EA580C',
+          light: '#FB923C',
+          lighter: '#FDBA74',
+          dark: '#C2410C',
+          50: '#FFF7ED',
+          100: '#FFEDD5',
+          200: '#FED7AA',
+          300: '#FDBA74',
+          400: '#FB923C',
+          500: '#F97316',
+          600: '#EA580C',
+          700: '#C2410C',
+          800: '#9A3412',
+          900: '#7C2D12',
         },
 
-        // Navy / Dark backgrounds (replaces #0d1b3e, #0f2347, #162d5a)
+        // Navy / Dark backgrounds
         navy: {
-          DEFAULT: '#0d1b3e',
-          light: '#162d5a',
-          mid: '#0f2347',
-          'mid-light': '#122a50',
+          DEFAULT: '#0F1E38',
+          light: '#162D5A',
+          mid: '#122750',
+          'mid-light': '#153060',
           dark: '#091430',
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          200: '#c7d2fe',
-          300: '#a5b4fc',
-          400: '#818cf8',
-          500: '#162d5a',
-          600: '#0f2347',
-          700: '#0d1b3e',
+          50: '#E8EDF5',
+          100: '#C5D0E6',
+          200: '#9BAFD4',
+          300: '#708EC1',
+          400: '#4F74B3',
+          500: '#162D5A',
+          600: '#122750',
+          700: '#0F1E38',
           800: '#091430',
-          900: '#050d1f',
+          900: '#050D1F',
         },
-
-        // V9 Navy (charte graphique V9 — différent du navy legacy)
-        'v9-navy': '#0d1b2a',
-        'v9-navy-light': '#132d4a',
 
         khmerCurry: tokens.colors.accent.khmerCurry,
         persianIndigo: tokens.colors.accent.persianIndigo,
@@ -143,14 +137,12 @@ module.exports = {
         ...tokens.spacingFluid
       },
       fontFamily: {
-        heading: tokens.typography.fontFamily.heading.split(', '),
-        body: tokens.typography.fontFamily.body.split(', '),
+        heading: ['Outfit', 'system-ui', 'sans-serif'],
+        body: ['DM Sans', 'system-ui', 'sans-serif'],
         data: tokens.typography.fontFamily.data.split(', '),
-        sans: tokens.typography.fontFamily.sans.split(', '),
+        sans: ['DM Sans', 'system-ui', 'sans-serif'],
         serif: tokens.typography.fontFamily.serif.split(', '),
         mono: tokens.typography.fontFamily.mono.split(', '),
-        'v9-heading': ['Outfit', 'system-ui', 'sans-serif'],
-        'v9-body': ['DM Sans', 'system-ui', 'sans-serif']
       },
       fontSize: {
         ...tokens.typography.fontSize
@@ -171,23 +163,19 @@ module.exports = {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' }
         },
-        'float': {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-20px)' }
-        },
         'reveal-up': {
           from: { opacity: '0', transform: 'translateY(20px)' },
           to: { opacity: '1', transform: 'translateY(0)' }
         },
-        'v9-fade-in': {
+        'subtle-fade-in': {
           from: { opacity: '0', transform: 'translateY(6px)' },
           to: { opacity: '1', transform: 'translateY(0)' }
         },
-        'v9-float': {
+        'subtle-float': {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-2px)' }
         },
-        'v9-shimmer': {
+        'shimmer': {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' }
         },
@@ -204,11 +192,10 @@ module.exports = {
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'float': 'float 6s ease-in-out infinite',
         'reveal-up': 'reveal-up 0.6s ease both',
-        'v9-fade-in': 'v9-fade-in 0.25s ease-out',
-        'v9-float': 'v9-float 3s ease-in-out infinite',
-        'v9-shimmer': 'v9-shimmer 2s ease-in-out infinite',
+        'subtle-fade-in': 'subtle-fade-in 0.25s ease-out',
+        'subtle-float': 'subtle-float 3s ease-in-out infinite',
+        'shimmer': 'shimmer 2s ease-in-out infinite',
         'checkmark': 'checkmark 0.3s ease-in-out',
         'fadeIn': 'fadeIn 0.3s ease-in'
       },

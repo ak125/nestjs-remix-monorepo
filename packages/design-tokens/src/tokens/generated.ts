@@ -7,17 +7,17 @@
 export const designTokens = {
   "colors": {
     "primary": {
-      "50": "#ffe5e5",
-      "100": "#ffcccc",
-      "200": "#ff9999",
-      "300": "#ff6666",
-      "400": "#ff4d4d",
-      "500": "#FF3B30",
-      "600": "#e63629",
-      "700": "#cc2f24",
-      "800": "#b3291f",
-      "900": "#99221a",
-      "950": "#7f1b15"
+      "50": "#E8EDF5",
+      "100": "#C5D0E6",
+      "200": "#9BAFD4",
+      "300": "#708EC1",
+      "400": "#4F74B3",
+      "500": "#0F1E38",
+      "600": "#0D1A32",
+      "700": "#0B162B",
+      "800": "#091225",
+      "900": "#070E1E",
+      "950": "#050A17"
     },
     "secondary": {
       "50": "#e6f0f7",
@@ -59,7 +59,7 @@ export const designTokens = {
       "black": "#000000"
     },
     "semantic": {
-      "action": "#D63027",
+      "action": "#F97316",
       "actionContrast": "#FFFFFF",
       "info": "#0F4C81",
       "infoContrast": "#FFFFFF",
@@ -143,10 +143,10 @@ export const designTokens = {
   },
   "typography": {
     "fontFamily": {
-      "heading": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable Display', 'Montserrat', sans-serif",
-      "body": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Inter', sans-serif",
+      "heading": "'Outfit', system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+      "body": "'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
       "data": "ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace",
-      "sans": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI Variable', 'Inter', sans-serif",
+      "sans": "'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
       "serif": "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif",
       "mono": "ui-monospace, 'SF Mono', 'Cascadia Code', 'Roboto Mono', Consolas, monospace"
     },

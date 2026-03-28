@@ -302,7 +302,7 @@ export function ColorDemo() {
             <tbody>
               <tr className="border-b hover:bg-gray-50">
                 <td className="py-3 px-4 font-semibold">Action</td>
-                <td className="py-3 px-4 font-mono text-sm">#D63027</td>
+                <td className="py-3 px-4 font-mono text-sm">#F97316</td>
                 <td className="py-3 px-4 font-mono text-sm">#FFFFFF</td>
                 <td className="py-3 px-4">4.87:1</td>
                 <td className="py-3 px-4">

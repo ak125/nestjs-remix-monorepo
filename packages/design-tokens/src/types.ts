@@ -19,7 +19,7 @@
  * ```
  */
 export type SemanticColor =
-  | 'action'      // CTA principaux (rouge #D63027)
+  | 'action'      // CTA principaux (orange #F97316)
   | 'info'        // Navigation, liens (bleu #0F4C81)
   | 'success'     // Validations (vert #1E8449)
   | 'warning'     // Avertissements (orange #D68910)
@@ -101,10 +101,10 @@ export type SpacingFluid =
  * ```
  */
 export type FontFamily =
-  | 'heading'  // Montserrat (titres)
-  | 'body'     // Inter (texte standard)
+  | 'heading'  // Outfit (titres)
+  | 'body'     // DM Sans (texte standard)
   | 'data'     // Roboto Mono (données techniques)
-  | 'sans'     // Inter (fallback)
+  | 'sans'     // DM Sans (fallback)
   | 'serif'    // Georgia (texte élégant)
   | 'mono';    // Roboto Mono (code)
 
