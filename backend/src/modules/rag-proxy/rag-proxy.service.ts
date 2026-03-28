@@ -86,6 +86,10 @@ export class RagProxyService {
     return this.knowledgeService.getCorpusStats();
   }
 
+  getGammeCoverage() {
+    return this.knowledgeService.getGammeCoverage();
+  }
+
   listIngestionJobs() {
     return this.knowledgeService.listIngestionJobs();
   }

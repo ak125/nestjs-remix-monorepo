@@ -138,6 +138,12 @@ export class FeatureFlagsService {
     return this.bool('RAG_CATCHUP_ENABLED', false);
   }
 
+  // ── RAG Virtual Merge (Bridge — DB docs into .md at read-time) ──
+
+  get ragVirtualMergeEnabled(): boolean {
+    return this.bool('RAG_VIRTUAL_MERGE_ENABLED', false);
+  }
+
   // ── RAG Change → Content Improvement Pipeline ──
 
   /** Master switch for RAG change detection pipeline */
@@ -275,6 +281,7 @@ export class FeatureFlagsService {
     'WRITE_GUARD_MODE',
     'WRITE_GUARD_CANARY_ROLES',
     'WRITE_GUARD_CANARY_GROUPS',
+    'RAG_VIRTUAL_MERGE_ENABLED',
   ]);
 
   listFlags(): Record<

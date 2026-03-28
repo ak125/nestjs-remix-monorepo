@@ -441,6 +441,103 @@ export class RagKnowledgeService {
   }
 
   /**
+   * Get gamme coverage: all active gammes with their RAG doc count.
+   * Crosses 3 sources: DB gamme_aliases, DB source field, and disk files.
+   */
+  async getGammeCoverage(): Promise<
+    Array<{
+      pg_id: number;
+      pg_alias: string;
+      pg_name: string;
+      pg_top: string | null;
+      pg_g_level: string | null;
+      rag_doc_count: number;
+      has_disk_file: boolean;
+      has_db_source: boolean;
+    }>
+  > {
+    const fs = await import('fs');
+    // Source 1: gamme_aliases on active docs
+    const { data: ragRows } = await this.ragCleanupService.client
+      .from('__rag_knowledge')
+      .select('gamme_aliases, source')
+      .eq('status', 'active');
+
+    const aliasCount: Record<string, number> = {};
+    const dbSourceSet = new Set<string>();
+
+    for (const row of ragRows ?? []) {
+      // Count by gamme_aliases
+      const aliases = row.gamme_aliases as string[] | null;
+      if (aliases) {
+        for (const alias of aliases) {
+          aliasCount[alias] = (aliasCount[alias] || 0) + 1;
+        }
+      }
+      // Source 2: docs with source 'gammes/xxx.md'
+      const src = row.source as string;
+      if (src?.startsWith('gammes/')) {
+        const alias = src.replace('gammes/', '').replace('.md', '');
+        dbSourceSet.add(alias);
+        aliasCount[alias] = (aliasCount[alias] || 0) + 1;
+      }
+    }
+
+    // Source 3: .md files on disk
+    const gammeDir = '/opt/automecanik/rag/knowledge/gammes';
+    const diskFiles = new Set<string>();
+    try {
+      const files = fs.readdirSync(gammeDir);
+      for (const f of files) {
+        if (f.endsWith('.md')) {
+          diskFiles.add(f.replace('.md', ''));
+        }
+      }
+    } catch {
+      this.logger.warn('getGammeCoverage: cannot read gamme dir on disk');
+    }
+
+    // Dashboard gammes (source of truth)
+    const { data: dashboardRows } = await this.ragCleanupService.client
+      .from('v_gamme_seo_dashboard')
+      .select('pg_alias');
+
+    const dashboardAliases = new Set(
+      (dashboardRows ?? []).map((r) => r.pg_alias as string).filter(Boolean),
+    );
+
+    // Gamme details
+    const { data: gammes } = await this.ragCleanupService.client
+      .from('pieces_gamme')
+      .select('pg_id, pg_alias, pg_name, pg_top, pg_g_level')
+      .neq('pg_alias', '')
+      .not('pg_alias', 'is', null);
+
+    const results = (gammes ?? [])
+      .filter((g) => dashboardAliases.has(g.pg_alias as string))
+      .map((g) => {
+        const alias = g.pg_alias as string;
+        return {
+          pg_id: g.pg_id as number,
+          pg_alias: alias,
+          pg_name: (g.pg_name as string) || '',
+          pg_top: g.pg_top as string | null,
+          pg_g_level: g.pg_g_level as string | null,
+          rag_doc_count: aliasCount[alias] || 0,
+          has_disk_file: diskFiles.has(alias),
+          has_db_source: dbSourceSet.has(alias),
+        };
+      })
+      .sort(
+        (a, b) =>
+          a.rag_doc_count - b.rag_doc_count ||
+          a.pg_name.localeCompare(b.pg_name, 'fr'),
+      );
+
+    return results;
+  }
+
+  /**
    * List ingestion jobs from RAG service.
    */
   async listIngestionJobs(): Promise<
@@ -566,6 +663,59 @@ export class RagKnowledgeService {
       }
     }
     return updated;
+  }
+
+  /**
+   * Get DB knowledge docs for a gamme (content included).
+   * Used by Virtual Merge bridge to enrich .md at read-time.
+   * Same F1-GATE filters as getSupplementaryFilesForGamme().
+   */
+  async getDbKnowledgeForGamme(
+    pgAlias: string,
+    limit = 20,
+  ): Promise<
+    Array<{
+      id: string;
+      title: string;
+      content: string;
+      source: string;
+      truth_level: string;
+      category: string | null;
+      updated_at: string;
+    }>
+  > {
+    const { data, error } = await this.ragCleanupService.client
+      .from('__rag_knowledge')
+      .select('id, title, content, source, truth_level, category, updated_at')
+      .contains('gamme_aliases', [pgAlias])
+      .eq('status', 'active')
+      .or('foundation_gate_passed.eq.true,pipeline_version.is.null')
+      .or(
+        'phase15_status.eq.normalized,phase15_status.eq.normalized_with_warnings,phase15_status.is.null',
+      )
+      .or('publication_target_ready.eq.true,publication_target_ready.is.null')
+      .not('source', 'like', 'gammes/%')
+      .order('truth_level', { ascending: true })
+      .order('updated_at', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      this.logger.warn(
+        `getDbKnowledgeForGamme(${pgAlias}) FAILED: ${error.message}`,
+      );
+      return [];
+    }
+    return (
+      (data as Array<{
+        id: string;
+        title: string;
+        content: string;
+        source: string;
+        truth_level: string;
+        category: string | null;
+        updated_at: string;
+      }>) || []
+    );
   }
 
   /**

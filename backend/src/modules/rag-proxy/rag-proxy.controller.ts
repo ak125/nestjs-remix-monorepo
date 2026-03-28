@@ -20,6 +20,8 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
+import { createHash } from 'crypto';
+import { execSync } from 'child_process';
 import { RagProxyService } from './rag-proxy.service';
 import { RagCleanupService } from './services/rag-cleanup.service';
 import { RagWebIngestDbService } from './services/rag-web-ingest-db.service';
@@ -50,6 +52,10 @@ import {
   WebIngestRequestSchema,
   WebIngestRequestDto,
 } from './dto/web-ingest.dto';
+import {
+  ManualIngestRequestSchema,
+  ManualIngestRequestDto,
+} from './dto/manual-ingest.dto';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { AuthenticatedGuard } from '../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../auth/is-admin.guard';
@@ -137,6 +143,27 @@ export class RagProxyController {
   @ApiResponse({ status: 200, description: 'Document content and metadata' })
   async getKnowledgeDoc(@Param('docId') docId: string) {
     return this.ragProxyService.getKnowledgeDocFromDb(docId);
+  }
+
+  @Get('admin/gamme-coverage')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'Get RAG document coverage per active gamme' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of gammes with RAG doc count',
+  })
+  async getGammeCoverage() {
+    return this.ragProxyService.getGammeCoverage();
+  }
+
+  @Get('admin/gamme-slugs')
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @ApiOperation({ summary: 'List all valid gamme slugs (for autocomplete)' })
+  @ApiResponse({ status: 200, description: 'Array of slug strings' })
+  async getGammeSlugs() {
+    return this.ragGammeDetectionService.getKnownGammeAliases(
+      '/opt/automecanik/rag/knowledge',
+    );
   }
 
   @Get('admin/corpus/stats')
@@ -280,6 +307,113 @@ export class RagProxyController {
       url: existing.url,
       truthLevel: existing.truth_level,
     });
+  }
+
+  @Post('admin/ingest/manual')
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @UsePipes(new ZodValidationPipe(ManualIngestRequestSchema))
+  @ApiOperation({
+    summary:
+      'Manual RAG ingest — paste content directly (bypasses web scraper)',
+  })
+  @ApiResponse({ status: 201, description: 'Document ingested' })
+  @ApiResponse({ status: 400, description: 'Validation error' })
+  @ApiResponse({ status: 409, description: 'Duplicate content' })
+  async ingestManual(@Body() request: ManualIngestRequestDto) {
+    // #2: Validate gamme aliases exist as .md files
+    const knownSlugs = this.ragGammeDetectionService.getKnownGammeAliases(
+      '/opt/automecanik/rag/knowledge',
+    );
+    const unknownAliases = request.gamme_aliases.filter(
+      (a) => !knownSlugs.includes(a),
+    );
+    if (unknownAliases.length > 0) {
+      // Suggest closest matches
+      const suggestions = unknownAliases.map((alias) => {
+        const close = knownSlugs
+          .filter((s) => s.includes(alias) || alias.includes(s))
+          .slice(0, 3);
+        return `"${alias}" → ${close.length ? close.join(', ') : 'aucune suggestion'}`;
+      });
+      throw new BadRequestException(
+        `Gamme alias inconnu(s) : ${suggestions.join(' ; ')}. Utilisez les slugs exacts des fichiers .md.`,
+      );
+    }
+
+    const sourceHash = createHash('sha256')
+      .update(request.content.slice(0, 500))
+      .digest('hex')
+      .slice(0, 12);
+    const source = `manual/${sourceHash}`;
+
+    // Include source_url in content attribution (not in DB — column doesn't exist)
+    const contentWithAttribution = request.source_url
+      ? `${request.content}\n\n(Source: ${request.source_url})`
+      : request.content;
+
+    const doc: RagDocInput = {
+      title: request.title,
+      content: contentWithAttribution,
+      source,
+      truth_level: request.truth_level,
+      domain: request.domain || '',
+      category: request.category,
+      gamme_aliases: request.gamme_aliases,
+      job_origin: 'manual-ingest',
+    };
+
+    try {
+      // Run through the full ingestion pipeline (dedup, F1-GATE, etc.)
+      const decision: IngestDecision =
+        await this.ragCleanupService.decideIngest(doc);
+
+      if (
+        decision.decision === 'REJECT_QUARANTINE' ||
+        decision.decision === 'ARCHIVE_AS_DUPLICATE'
+      ) {
+        throw new ConflictException({
+          decision: decision.decision,
+          reasons: decision.reasons,
+        });
+      }
+
+      const result = await this.ragCleanupService.applyIngest(doc, decision);
+
+      // #1: Auto-materialize into .md files
+      let materializeStatus = 'skipped';
+      try {
+        for (const alias of request.gamme_aliases) {
+          execSync(
+            `python3 /opt/automecanik/app/scripts/seo/materialize-db-to-md.py ${alias} --apply --no-backup`,
+            { timeout: 30_000, encoding: 'utf-8' },
+          );
+        }
+        materializeStatus = 'done';
+      } catch (matErr) {
+        materializeStatus = `failed: ${matErr instanceof Error ? matErr.message.slice(0, 100) : 'unknown'}`;
+      }
+
+      return {
+        id: result.id,
+        source,
+        decision: decision.decision,
+        gamme_aliases: request.gamme_aliases,
+        content_length: request.content.length,
+        materialize: materializeStatus,
+        message: `Document ingere (${decision.decision}). Materialisation .md: ${materializeStatus}.`,
+      };
+    } catch (err) {
+      if (err instanceof ConflictException) throw err;
+      if (err instanceof BadRequestException) throw err;
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null
+            ? JSON.stringify(err)
+            : String(err);
+      throw new BadRequestException(`Ingest failed: ${msg}`);
+    }
   }
 
   /** List quarantined files with reason metadata. */
