@@ -197,8 +197,9 @@ ${confusionText}`;
     }
 
     let tiersText = '';
-    if (tiers.length > 0) {
-      tiersText = tiers
+    const validTiers = tiers.filter((t) => t.tier && t.description);
+    if (validTiers.length > 0) {
+      tiersText = validTiers
         .map(
           (t) =>
             `<li><strong>${t.tier}</strong>${t.price_range ? ` (${t.price_range})` : ''} — ${t.description}</li>`,
