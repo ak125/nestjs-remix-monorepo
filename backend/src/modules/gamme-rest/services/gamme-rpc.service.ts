@@ -305,6 +305,24 @@ export class GammeRpcService extends SupabaseBaseService {
   }
 
   /**
+   * Récupère les pg_ids actifs depuis catalog_gamme
+   */
+  async getCatalogPgIds(): Promise<string[]> {
+    const { data, error } = await this.supabase
+      .from('catalog_gamme')
+      .select('mc_pg_id');
+
+    if (error || !data?.length) {
+      this.logger.warn(
+        `⚠️ getCatalogPgIds: ${error?.message || 'no gammes found'}`,
+      );
+      return [];
+    }
+
+    return [...new Set(data.map((g) => String(g.mc_pg_id)))];
+  }
+
+  /**
    * Récupère les codes CNIT / Type Mine pour une liste de type_ids
    * Utilisé par le response builder pour la section "Fiche technique"
    */

@@ -111,31 +111,20 @@ export class GammeRestRpcV2Controller {
    */
   @Post('cache/warm')
   async warmCache(@Body() body: { pgIds?: string[] }) {
-    // Gammes les plus populaires (à personnaliser selon analytics)
-    const defaultPopularGammes = [
-      '4',
-      '2',
-      '103',
-      '104',
-      '105',
-      '144',
-      '145',
-      '156',
-      '158',
-      '174',
-      '176',
-      '178',
-      '216',
-      '217',
-      '222',
-      '223',
-      '251',
-      '252',
-      '270',
-      '410',
-    ];
+    const pgIds =
+      body.pgIds?.length > 0
+        ? body.pgIds
+        : await this.rpcService.getCatalogPgIds();
 
-    const pgIds = body.pgIds || defaultPopularGammes;
+    if (!pgIds.length) {
+      return {
+        status: 200,
+        message: 'Aucune gamme à réchauffer',
+        success: 0,
+        failed: 0,
+        total: 0,
+      };
+    }
 
     this.logger.log(`Warm cache pour ${pgIds.length} gammes...`);
     const result = await this.rpcService.warmCache(pgIds);
