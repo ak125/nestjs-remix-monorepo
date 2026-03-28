@@ -176,6 +176,11 @@ export class FeatureFlagsService {
     return this.csv('RAG_MERGE_ALLOWED_GAMMES');
   }
 
+  /** Dedup window in minutes — skip enqueue if same gamme+role job exists within this window (default: 60) */
+  get ragDedupWindowMinutes(): number {
+    return this.int('RAG_DEDUP_WINDOW_MINUTES', 60);
+  }
+
   // ── Agentic Engine flags ──
 
   get agenticEngineEnabled(): boolean {
@@ -260,6 +265,7 @@ export class FeatureFlagsService {
     'RAG_MERGE_DRY_RUN',
     'RAG_MERGE_ALLOWED_ROLES',
     'RAG_MERGE_ALLOWED_GAMMES',
+    'RAG_DEDUP_WINDOW_MINUTES',
     'CONSEIL_PACK_ENABLED',
     'KEYWORD_DENSITY_GATE_ENABLED',
     'CANARY_AUTO_PUBLISH',

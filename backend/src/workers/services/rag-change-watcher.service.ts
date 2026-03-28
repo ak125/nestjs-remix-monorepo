@@ -224,17 +224,21 @@ export class RagChangeWatcherService
         }
 
         if (this.flags.ragChangeAutoEnqueue) {
-          // Anti-duplication: skip if a pending/processing job already exists for same gamme+role
+          // Anti-duplication: skip if same gamme+role job was enqueued within the dedup window (any status)
+          const dedupWindowMs = this.flags.ragDedupWindowMinutes * 60_000;
           const { count: existingJobs } = await this.client
             .from('__pipeline_chain_queue')
             .select('pcq_id', { count: 'exact', head: true })
             .eq('pcq_pg_alias', gamme.pg_alias)
             .eq('pcq_page_type', roleId)
-            .in('pcq_status', ['pending', 'processing']);
+            .gte(
+              'pcq_created_at',
+              new Date(Date.now() - dedupWindowMs).toISOString(),
+            );
 
           if ((existingJobs ?? 0) > 0) {
             this.logger.debug(
-              `Anti-dedup: skipping ${roleId} for ${gamme.pg_alias} — ${existingJobs} job(s) already pending/processing`,
+              `Anti-dedup: skipping ${roleId} for ${gamme.pg_alias} — ${existingJobs} job(s) within last ${this.flags.ragDedupWindowMinutes}min`,
             );
             continue;
           }
