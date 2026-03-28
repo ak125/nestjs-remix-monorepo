@@ -195,8 +195,8 @@ jobs:
 
           # Test Supabase connectivity (catches disabled/invalid keys)
           echo "🔌 Testing Supabase RPC connectivity..."
-          SUPABASE_TEST=$($EXEC wget -qO- 'http://localhost:3000/api/rm/page-v2?gamme_id=402&vehicle_id=100413&limit=1' 2>/dev/null || echo "FAIL")
-          if echo "$SUPABASE_TEST" | grep -q '"success":true'; then
+          SUPABASE_TEST=$($EXEC wget -qO- 'http://localhost:3000/api/gamme-rest/4/page-data-rpc-v2' 2>/dev/null || echo "FAIL")
+          if echo "$SUPABASE_TEST" | grep -q '"motorisations"'; then
             echo "✅ Supabase RPC -> OK"
           else
             echo "❌ Supabase RPC -> FAILED (check SUPABASE_SERVICE_ROLE_KEY)"
