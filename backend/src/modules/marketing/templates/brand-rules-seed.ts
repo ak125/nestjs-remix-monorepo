@@ -271,8 +271,8 @@ export const BRAND_RULES_SEED: BrandRuleSeed[] = [
     channel: null,
     rule_key: 'brand_colors',
     rule_value: {
-      primary_red: '#FF3B30',
-      navy_blue: '#0F4C81',
+      primary_navy: '#0F1E38',
+      cta_orange: '#F97316',
       green: '#1FDC93',
       white: '#FFFFFF',
       black: '#1A1A1A',
@@ -285,8 +285,8 @@ export const BRAND_RULES_SEED: BrandRuleSeed[] = [
     channel: null,
     rule_key: 'typography',
     rule_value: {
-      headings: 'Montserrat Bold',
-      body: 'Inter Regular',
+      headings: 'Outfit Bold',
+      body: 'DM Sans Regular',
     },
     severity: 'info',
   },

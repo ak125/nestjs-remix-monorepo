@@ -198,11 +198,11 @@ export class WeeklyPlanGeneratorService {
   private getVisualDirection(pillar: ContentPillar): string {
     switch (pillar) {
       case 'catalogue':
-        return 'Photo produit sur fond bleu #0F4C81, badge prix en rouge #FF3B30';
+        return 'Photo produit sur fond navy #0F1E38, badge prix en orange #F97316';
       case 'conseil':
         return 'Carrousel educatif slides, icones techniques, palette bleu/blanc';
       case 'confiance':
-        return 'Chiffres en grand (Montserrat Bold), fond sombre, accent vert #1FDC93';
+        return 'Chiffres en grand (Outfit Bold), fond sombre, accent vert #1FDC93';
       case 'promo':
         return 'Fond rouge vif, texte blanc, CTA vert, urgence visuelle';
     }

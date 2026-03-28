@@ -39,8 +39,8 @@ export interface SocialPromptTemplate {
 
 const BRAND_SYSTEM = `Marque : Automecanik (e-commerce pieces auto, France).
 Site : automecanik.com | +500 000 references.
-Charte : rouge #FF3B30 (CTA), bleu #0F4C81 (fonds), vert #1FDC93 (promos).
-Typo : Montserrat Bold (titres) + Inter Regular (corps).`;
+Charte : orange #F97316 (CTA), navy #0F1E38 (fonds), vert #1FDC93 (promos).
+Typo : Outfit Bold (titres) + DM Sans Regular (corps).`;
 
 const CLAIMS_RULES = `CLAIMS POLICY (STRICTE) :
 - Prix : UNIQUEMENT si price_source fourni (valeur + table + date < 24h)
