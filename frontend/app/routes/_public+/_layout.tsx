@@ -19,11 +19,11 @@ export default function AuthLayout() {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       {/* Header navy — aligné sur la charte homepage */}
-      <header className="border-b border-white/[0.08] bg-v9-navy">
+      <header className="border-b border-white/[0.08] bg-navy">
         <div className="max-w-[1280px] mx-auto px-5 lg:px-8 h-16 flex items-center justify-between">
           <Link
             to="/"
-            className="font-v9-heading font-extrabold text-base tracking-tight select-none hover:opacity-80 transition-opacity"
+            className="font-heading font-extrabold text-base tracking-tight select-none hover:opacity-80 transition-opacity"
           >
             <span className="text-white">AUTO</span>
             <span className="text-cta">MECANIK</span>
@@ -63,7 +63,7 @@ export default function AuthLayout() {
       </main>
 
       {/* Footer navy — aligné sur la charte homepage */}
-      <footer className="border-t border-white/[0.08] bg-v9-navy py-4">
+      <footer className="border-t border-white/[0.08] bg-navy py-4">
         <div className="max-w-[1280px] mx-auto px-5 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-white/50">
           <span>&copy; {new Date().getFullYear()} AutoMecanik</span>
           <div className="flex items-center gap-3">

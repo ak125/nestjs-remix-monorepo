@@ -11,6 +11,7 @@ import {
   Globe,
   FlaskConical,
   Eye,
+  ClipboardPaste,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
@@ -24,6 +25,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Select, SelectItem } from "~/components/ui/select";
+import { Textarea } from "~/components/ui/textarea";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
@@ -204,6 +206,66 @@ export default function AdminRagIngest() {
   const [webTruthLevel, setWebTruthLevel] = useState("L3");
   const [webSubmitting, setWebSubmitting] = useState(false);
   const [webResult, setWebResult] = useState<IngestResult | null>(null);
+
+  // Manual ingest state
+  const [manualTitle, setManualTitle] = useState("");
+  const [manualContent, setManualContent] = useState("");
+  const [manualGammes, setManualGammes] = useState("");
+  const [manualSourceUrl, setManualSourceUrl] = useState("");
+  const [manualTruthLevel, setManualTruthLevel] = useState("L2");
+  const [manualCategory, setManualCategory] = useState("knowledge");
+  const [manualSubmitting, setManualSubmitting] = useState(false);
+  const [manualResult, setManualResult] = useState<{
+    success?: boolean;
+    id?: string;
+    content_length?: number;
+    gamme_aliases?: string[];
+    error?: string;
+  } | null>(null);
+
+  // Gamme slugs autocomplete
+  const [gammeSlugs, setGammeSlugs] = useState<string[]>([]);
+  const [gammeQuery, setGammeQuery] = useState("");
+  const [showGammeSuggestions, setShowGammeSuggestions] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/rag/admin/gamme-slugs")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((slugs: string[]) => setGammeSlugs(slugs))
+      .catch(() => {});
+  }, []);
+
+  const gammeFilteredSuggestions =
+    gammeQuery.length >= 2
+      ? gammeSlugs
+          .filter((s) => s.includes(gammeQuery.toLowerCase()))
+          .slice(0, 8)
+      : [];
+
+  function handleGammeInputChange(value: string) {
+    setManualGammes(value);
+    // Take the last segment after comma for filtering
+    const parts = value.split(",");
+    const lastPart = (parts[parts.length - 1] || "").trim();
+    setGammeQuery(lastPart);
+    setShowGammeSuggestions(lastPart.length >= 2);
+  }
+
+  function handleGammeSuggestionClick(slug: string) {
+    const parts = manualGammes
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    // Replace the last incomplete part with the selected slug
+    if (parts.length > 0 && !gammeSlugs.includes(parts[parts.length - 1])) {
+      parts[parts.length - 1] = slug;
+    } else {
+      parts.push(slug);
+    }
+    setManualGammes(parts.join(", "));
+    setShowGammeSuggestions(false);
+    setGammeQuery("");
+  }
 
   // PDF → RAG Merge state
   const [mergePdfPath, setMergePdfPath] = useState("");
@@ -410,6 +472,64 @@ export default function AdminRagIngest() {
     } finally {
       setWebSubmitting(false);
       refreshFetcher.load("/admin/rag/ingest");
+    }
+  }
+
+  async function handleManualSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!manualTitle.trim() || !manualContent.trim() || !manualGammes.trim()) {
+      setManualResult({ error: "Titre, contenu et gamme(s) sont requis" });
+      return;
+    }
+    if (manualContent.trim().length < 50) {
+      setManualResult({
+        error: "Le contenu doit faire au moins 50 caracteres",
+      });
+      return;
+    }
+    setManualSubmitting(true);
+    setManualResult(null);
+    try {
+      const gammeAliases = manualGammes
+        .split(",")
+        .map((g) => g.trim())
+        .filter(Boolean);
+      const res = await fetch("/api/rag/admin/ingest/manual", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: manualTitle.trim(),
+          content: manualContent.trim(),
+          gamme_aliases: gammeAliases,
+          source_url: manualSourceUrl.trim() || undefined,
+          truth_level: manualTruthLevel,
+          category: manualCategory,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setManualResult({
+          error: `Erreur ${res.status}: ${data.message || JSON.stringify(data)}`,
+        });
+      } else {
+        setManualResult({
+          success: true,
+          id: data.id,
+          content_length: data.content_length,
+          gamme_aliases: data.gamme_aliases,
+        });
+        // Reset form
+        setManualTitle("");
+        setManualContent("");
+        setManualGammes("");
+        setManualSourceUrl("");
+      }
+    } catch (err) {
+      setManualResult({
+        error: `Erreur: ${err instanceof Error ? err.message : String(err)}`,
+      });
+    } finally {
+      setManualSubmitting(false);
     }
   }
 
@@ -664,6 +784,198 @@ export default function AdminRagIngest() {
             </Button>
           </form>
           <ResultBanner result={webResult} type="URL" />
+        </CardContent>
+      </Card>
+
+      {/* Manual ingest form */}
+      <Card className="border-green-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <ClipboardPaste className="h-4 w-4 text-green-600" />
+            Ingest manuel (copier-coller)
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Collez directement le contenu utile d&apos;une page web. Contourne
+            le scraper web qui capture souvent des menus/footers au lieu du vrai
+            contenu.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleManualSubmit} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1">
+                <label
+                  htmlFor="manualTitle"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Titre du document
+                </label>
+                <Input
+                  id="manualTitle"
+                  placeholder="Comment entretenir les supports moteur"
+                  value={manualTitle}
+                  onChange={(e) => setManualTitle(e.target.value)}
+                  disabled={manualSubmitting}
+                />
+              </div>
+              <div className="relative space-y-1">
+                <label
+                  htmlFor="manualGammes"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Gamme(s) cibles{" "}
+                  <span className="text-xs text-muted-foreground">
+                    (slugs, virgule) &mdash; {gammeSlugs.length} gammes
+                  </span>
+                </label>
+                <Input
+                  id="manualGammes"
+                  placeholder="support-moteur, silent-bloc"
+                  value={manualGammes}
+                  onChange={(e) => handleGammeInputChange(e.target.value)}
+                  onFocus={() =>
+                    gammeQuery.length >= 2 && setShowGammeSuggestions(true)
+                  }
+                  onBlur={() =>
+                    setTimeout(() => setShowGammeSuggestions(false), 200)
+                  }
+                  disabled={manualSubmitting}
+                  autoComplete="off"
+                />
+                {showGammeSuggestions &&
+                  gammeFilteredSuggestions.length > 0 && (
+                    <div className="absolute z-50 mt-1 w-full rounded-md border bg-white shadow-lg max-h-48 overflow-y-auto">
+                      {gammeFilteredSuggestions.map((slug) => (
+                        <button
+                          key={slug}
+                          type="button"
+                          className="w-full px-3 py-1.5 text-left text-sm hover:bg-blue-50 font-mono"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleGammeSuggestionClick(slug);
+                          }}
+                        >
+                          {slug}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label
+                htmlFor="manualContent"
+                className="text-sm font-medium text-foreground"
+              >
+                Contenu{" "}
+                <span className="text-xs text-muted-foreground">
+                  (min 50 caracteres)
+                </span>
+              </label>
+              <Textarea
+                id="manualContent"
+                placeholder="Collez ici le contenu utile de la page..."
+                value={manualContent}
+                onChange={(e) => setManualContent(e.target.value)}
+                disabled={manualSubmitting}
+                rows={8}
+                className="font-mono text-xs"
+              />
+              {manualContent.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  {manualContent.length.toLocaleString()} caracteres
+                </p>
+              )}
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-1">
+                <label
+                  htmlFor="manualSourceUrl"
+                  className="text-sm font-medium text-foreground"
+                >
+                  URL source{" "}
+                  <span className="text-xs text-muted-foreground">
+                    (optionnel)
+                  </span>
+                </label>
+                <Input
+                  id="manualSourceUrl"
+                  type="url"
+                  placeholder="https://delphiautoparts.com/..."
+                  value={manualSourceUrl}
+                  onChange={(e) => setManualSourceUrl(e.target.value)}
+                  disabled={manualSubmitting}
+                />
+              </div>
+              <div className="space-y-1">
+                <label
+                  htmlFor="manualTruthLevel"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Niveau de confiance
+                </label>
+                <Select
+                  value={manualTruthLevel}
+                  onValueChange={setManualTruthLevel}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                  disabled={manualSubmitting}
+                  name="manualTruthLevel"
+                >
+                  <SelectItem value="L1">L1 &mdash; Officiel</SelectItem>
+                  <SelectItem value="L2">L2 &mdash; Technique</SelectItem>
+                  <SelectItem value="L3">L3 &mdash; Generique</SelectItem>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <label
+                  htmlFor="manualCategory"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Categorie
+                </label>
+                <Select
+                  value={manualCategory}
+                  onValueChange={setManualCategory}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                  disabled={manualSubmitting}
+                  name="manualCategory"
+                >
+                  <SelectItem value="knowledge">Knowledge</SelectItem>
+                  <SelectItem value="knowledge/guide">Guide</SelectItem>
+                  <SelectItem value="diagnostic">Diagnostic</SelectItem>
+                  <SelectItem value="maintenance">Entretien</SelectItem>
+                  <SelectItem value="selection">Selection</SelectItem>
+                  <SelectItem value="faq">FAQ</SelectItem>
+                </Select>
+              </div>
+            </div>
+            <Button
+              type="submit"
+              disabled={manualSubmitting}
+              className="gap-1.5"
+            >
+              {manualSubmitting ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <ClipboardPaste className="h-4 w-4" />
+              )}
+              {manualSubmitting
+                ? "Ingestion en cours..."
+                : "Ingerer le contenu"}
+            </Button>
+          </form>
+          {manualResult?.error && (
+            <div className="mt-3 rounded-md bg-red-50 border border-red-200 p-3 text-sm text-red-800">
+              {manualResult.error}
+            </div>
+          )}
+          {manualResult?.success && (
+            <div className="mt-3 rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-800">
+              Document ingere ({manualResult.content_length?.toLocaleString()}{" "}
+              chars) pour {manualResult.gamme_aliases?.join(", ")}. Visible
+              immediatement par les builders via virtual merge.
+            </div>
+          )}
         </CardContent>
       </Card>
 

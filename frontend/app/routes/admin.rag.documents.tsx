@@ -17,6 +17,8 @@ import {
   ShieldCheck,
   BookOpen,
   AlertTriangle,
+  Layers,
+  PackageOpen,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -37,6 +39,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Select, SelectItem } from "~/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
@@ -54,21 +57,43 @@ interface KnowledgeDoc {
   verification_status: string;
 }
 
+interface GammeCoverage {
+  [key: string]: unknown;
+  pg_id: number;
+  pg_alias: string;
+  pg_name: string;
+  pg_top: string | null;
+  pg_g_level: string | null;
+  rag_doc_count: number;
+  has_disk_file: boolean;
+  has_db_source: boolean;
+}
+
 export async function loader({ request }: LoaderFunctionArgs) {
   const cookie = request.headers.get("Cookie") || "";
   const url = new URL(request.url);
   const prefix = url.searchParams.get("prefix") || "";
 
-  const apiUrl = getInternalApiUrlFromRequest(
+  const docsUrl = getInternalApiUrlFromRequest(
     `/api/rag/admin/knowledge${prefix ? `?prefix=${encodeURIComponent(prefix)}` : ""}`,
     request,
   );
+  const coverageUrl = getInternalApiUrlFromRequest(
+    "/api/rag/admin/gamme-coverage",
+    request,
+  );
 
-  const response = await fetch(apiUrl, { headers: { Cookie: cookie } });
+  const [docsRes, coverageRes] = await Promise.all([
+    fetch(docsUrl, { headers: { Cookie: cookie } }),
+    fetch(coverageUrl, { headers: { Cookie: cookie } }),
+  ]);
 
-  const documents: KnowledgeDoc[] = response.ok ? await response.json() : [];
+  const documents: KnowledgeDoc[] = docsRes.ok ? await docsRes.json() : [];
+  const coverage: GammeCoverage[] = coverageRes.ok
+    ? await coverageRes.json()
+    : [];
 
-  return json({ documents });
+  return json({ documents, coverage });
 }
 
 const TRUTH_STATUS: Record<string, StatusType> = {
@@ -78,7 +103,7 @@ const TRUTH_STATUS: Record<string, StatusType> = {
   L4: "FAIL",
 };
 
-const columns: DataColumn<KnowledgeDoc>[] = [
+const docColumns: DataColumn<KnowledgeDoc>[] = [
   {
     key: "title",
     header: "Titre",
@@ -146,8 +171,81 @@ const columns: DataColumn<KnowledgeDoc>[] = [
   },
 ];
 
+const coverageColumns: DataColumn<GammeCoverage>[] = [
+  {
+    key: "pg_name",
+    header: "Gamme",
+    mobilePriority: 1,
+    sortable: true,
+    render: (value, row) => (
+      <div>
+        <span className="font-medium text-foreground">{String(value)}</span>
+        <div className="text-xs text-muted-foreground">{row.pg_alias}</div>
+      </div>
+    ),
+  },
+  {
+    key: "pg_g_level",
+    header: "Niveau",
+    mobilePriority: 4,
+    sortable: true,
+    render: (value) =>
+      value ? (
+        <Badge variant="outline">{String(value)}</Badge>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
+  },
+  {
+    key: "has_disk_file",
+    header: "Fichier .md",
+    mobilePriority: 3,
+    sortable: true,
+    render: (value) =>
+      value ? (
+        <Badge variant="secondary">oui</Badge>
+      ) : (
+        <Badge variant="destructive">absent</Badge>
+      ),
+  },
+  {
+    key: "has_db_source",
+    header: "Ingesté DB",
+    mobilePriority: 2,
+    sortable: true,
+    render: (value) =>
+      value ? (
+        <Badge variant="secondary">oui</Badge>
+      ) : (
+        <Badge variant="destructive">non</Badge>
+      ),
+  },
+  {
+    key: "rag_doc_count",
+    header: "Docs RAG",
+    mobilePriority: 2,
+    sortable: true,
+    render: (value) => {
+      const count = Number(value);
+      return count === 0 ? (
+        <Badge variant="destructive">0 doc</Badge>
+      ) : (
+        <Badge variant="secondary">
+          {count} doc{count > 1 ? "s" : ""}
+        </Badge>
+      );
+    },
+  },
+  {
+    key: "pg_id",
+    header: "",
+    align: "right" as const,
+    render: () => <ChevronRight className="h-4 w-4 text-muted-foreground" />,
+  },
+];
+
 export default function AdminRagDocuments() {
-  const { documents } = useLoaderData<typeof loader>();
+  const { documents, coverage } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get("q") || "");
@@ -156,6 +254,14 @@ export default function AdminRagDocuments() {
   const [filterType, setFilterType] = useState("");
   const [sortKey, setSortKey] = useState<keyof KnowledgeDoc | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  // Coverage tab state
+  const [covSearch, setCovSearch] = useState("");
+  const [covOnlyMissing, setCovOnlyMissing] = useState(false);
+  const [covSortKey, setCovSortKey] = useState<keyof GammeCoverage | null>(
+    null,
+  );
+  const [covSortDir, setCovSortDir] = useState<"asc" | "desc">("asc");
 
   const families = useMemo(
     () =>
@@ -180,6 +286,18 @@ export default function AdminRagDocuments() {
     }
     return { l1, l2, quarantine };
   }, [documents]);
+
+  const covCounts = useMemo(() => {
+    const total = coverage.length;
+    const withDocs = coverage.filter((g) => g.rag_doc_count > 0).length;
+    const withoutDocs = total - withDocs;
+    const withDisk = coverage.filter((g) => g.has_disk_file).length;
+    const withDbSource = coverage.filter((g) => g.has_db_source).length;
+    const noDiskNoDb = coverage.filter(
+      (g) => !g.has_disk_file && !g.has_db_source && g.rag_doc_count === 0,
+    ).length;
+    return { total, withDocs, withoutDocs, withDisk, withDbSource, noDiskNoDb };
+  }, [coverage]);
 
   const activeFilterCount =
     (filterLevel ? 1 : 0) +
@@ -223,6 +341,34 @@ export default function AdminRagDocuments() {
     sortDir,
   ]);
 
+  const filteredCoverage = useMemo(() => {
+    const result = coverage.filter((g) => {
+      if (covOnlyMissing && g.rag_doc_count > 0) return false;
+      if (covSearch) {
+        const q = covSearch.toLowerCase();
+        return (
+          g.pg_name.toLowerCase().includes(q) ||
+          g.pg_alias.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+
+    if (covSortKey) {
+      result.sort((a, b) => {
+        const aVal = a[covSortKey];
+        const bVal = b[covSortKey];
+        if (typeof aVal === "number" && typeof bVal === "number") {
+          return covSortDir === "asc" ? aVal - bVal : bVal - aVal;
+        }
+        const cmp = String(aVal ?? "").localeCompare(String(bVal ?? ""), "fr");
+        return covSortDir === "asc" ? cmp : -cmp;
+      });
+    }
+
+    return result;
+  }, [coverage, covSearch, covOnlyMissing, covSortKey, covSortDir]);
+
   const handleSort = useCallback(
     (key: keyof KnowledgeDoc) => {
       if (sortKey === key) {
@@ -235,6 +381,18 @@ export default function AdminRagDocuments() {
     [sortKey],
   );
 
+  const handleCovSort = useCallback(
+    (key: keyof GammeCoverage) => {
+      if (covSortKey === key) {
+        setCovSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      } else {
+        setCovSortKey(key);
+        setCovSortDir("asc");
+      }
+    },
+    [covSortKey],
+  );
+
   const handleReset = () => {
     setSearch("");
     setFilterLevel("");
@@ -244,8 +402,8 @@ export default function AdminRagDocuments() {
 
   return (
     <DashboardShell
-      title="Documents"
-      description={`${filtered.length} document(s) sur ${documents.length}`}
+      title="Documents RAG"
+      description="Corpus documentaire et couverture gammes"
       breadcrumb={
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Link to="/admin" className="hover:text-foreground">
@@ -267,130 +425,242 @@ export default function AdminRagDocuments() {
           </Link>
         </Button>
       }
-      kpis={
-        <KpiGrid columns={4}>
-          <KpiCard
-            title="Documents"
-            value={documents.length}
-            icon={FileText}
-            variant="info"
-          />
-          <KpiCard
-            title="L1 Constructeur"
-            value={counts.l1}
-            icon={ShieldCheck}
-            variant="success"
-          />
-          <KpiCard
-            title="L2 Technique"
-            value={counts.l2}
-            icon={BookOpen}
-            variant="info"
-          />
-          <KpiCard
-            title="Quarantaine"
-            value={counts.quarantine}
-            icon={AlertTriangle}
-            variant="warning"
-          />
-        </KpiGrid>
-      }
-      filters={
-        <FilterBar activeCount={activeFilterCount} onReset={handleReset}>
-          <FilterGroup label="Recherche">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Titre, ID ou catégorie…"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          </FilterGroup>
-          <FilterGroup label="Niveau de vérité">
-            <Select
-              value={filterLevel}
-              onValueChange={setFilterLevel}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <SelectItem value="">Tous niveaux</SelectItem>
-              <SelectItem value="L1">L1 — Constructeur</SelectItem>
-              <SelectItem value="L2">L2 — Technique vérifiée</SelectItem>
-              <SelectItem value="L3">L3 — Communautaire</SelectItem>
-              <SelectItem value="L4">L4 — Non vérifiée</SelectItem>
-            </Select>
-          </FilterGroup>
-          <FilterGroup label="Famille">
-            <Select
-              value={filterFamily}
-              onValueChange={setFilterFamily}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <SelectItem value="">Toutes familles</SelectItem>
-              {families.map((f) => (
-                <SelectItem key={f} value={f}>
-                  {f}
-                </SelectItem>
-              ))}
-            </Select>
-          </FilterGroup>
-          <FilterGroup label="Type source">
-            <Select
-              value={filterType}
-              onValueChange={setFilterType}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <SelectItem value="">Tous types</SelectItem>
-              {sourceTypes.map((t) => (
-                <SelectItem key={t} value={t}>
-                  {t}
-                </SelectItem>
-              ))}
-            </Select>
-          </FilterGroup>
-        </FilterBar>
-      }
     >
-      {filtered.length === 0 ? (
-        <div className="rounded-lg border bg-card p-12 text-center">
-          <FileText className="mx-auto h-12 w-12 text-muted-foreground/30" />
-          <h3 className="mt-4 text-lg font-medium text-foreground">
-            Aucun document trouvé
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {documents.length === 0
-              ? "Le corpus RAG est vide. Lancez une ingestion pour commencer."
-              : "Essayez de modifier vos filtres de recherche."}
-          </p>
-          {documents.length === 0 && (
-            <Button variant="outline" size="sm" className="mt-4" asChild>
-              <Link to="/admin/rag/ingest">
-                <Upload className="mr-1.5 h-3.5 w-3.5" />
-                Ingestion PDF
-              </Link>
-            </Button>
-          )}
-        </div>
-      ) : (
-        <ResponsiveDataTable<KnowledgeDoc>
-          data={filtered}
-          columns={columns}
-          statusColumn={{
-            key: "truth_level",
-            mapping: TRUTH_STATUS,
-          }}
-          getRowKey={(row) => row.id}
-          emptyMessage="Aucun document trouvé"
-          onRowClick={(row) =>
-            navigate(`/admin/rag/documents/${encodeURIComponent(row.id)}`)
-          }
-          sortBy={sortKey ?? undefined}
-          sortDirection={sortDir}
-          onSort={handleSort}
-          pageSize={50}
-        />
-      )}
+      <Tabs defaultValue="documents" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="documents" className="gap-1.5">
+            <FileText className="h-4 w-4" />
+            Documents ({documents.length})
+          </TabsTrigger>
+          <TabsTrigger value="coverage" className="gap-1.5">
+            <Layers className="h-4 w-4" />
+            Couverture gammes
+            {covCounts.withoutDocs > 0 && (
+              <Badge variant="destructive" className="ml-1 px-1.5 text-[10px]">
+                {covCounts.withoutDocs}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ─── Tab 1 : Documents ─── */}
+        <TabsContent value="documents">
+          <KpiGrid columns={4}>
+            <KpiCard
+              title="Documents"
+              value={documents.length}
+              icon={FileText}
+              variant="info"
+            />
+            <KpiCard
+              title="L1 Constructeur"
+              value={counts.l1}
+              icon={ShieldCheck}
+              variant="success"
+            />
+            <KpiCard
+              title="L2 Technique"
+              value={counts.l2}
+              icon={BookOpen}
+              variant="info"
+            />
+            <KpiCard
+              title="Quarantaine"
+              value={counts.quarantine}
+              icon={AlertTriangle}
+              variant="warning"
+            />
+          </KpiGrid>
+
+          <div className="mt-4">
+            <FilterBar activeCount={activeFilterCount} onReset={handleReset}>
+              <FilterGroup label="Recherche">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Titre, ID ou catégorie…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </FilterGroup>
+              <FilterGroup label="Niveau de vérité">
+                <Select
+                  value={filterLevel}
+                  onValueChange={setFilterLevel}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <SelectItem value="">Tous niveaux</SelectItem>
+                  <SelectItem value="L1">L1 — Constructeur</SelectItem>
+                  <SelectItem value="L2">L2 — Technique vérifiée</SelectItem>
+                  <SelectItem value="L3">L3 — Communautaire</SelectItem>
+                  <SelectItem value="L4">L4 — Non vérifiée</SelectItem>
+                </Select>
+              </FilterGroup>
+              <FilterGroup label="Famille">
+                <Select
+                  value={filterFamily}
+                  onValueChange={setFilterFamily}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <SelectItem value="">Toutes familles</SelectItem>
+                  {families.map((f) => (
+                    <SelectItem key={f} value={f}>
+                      {f}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </FilterGroup>
+              <FilterGroup label="Type source">
+                <Select
+                  value={filterType}
+                  onValueChange={setFilterType}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <SelectItem value="">Tous types</SelectItem>
+                  {sourceTypes.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </Select>
+              </FilterGroup>
+            </FilterBar>
+          </div>
+
+          <div className="mt-4">
+            {filtered.length === 0 ? (
+              <div className="rounded-lg border bg-card p-12 text-center">
+                <FileText className="mx-auto h-12 w-12 text-muted-foreground/30" />
+                <h3 className="mt-4 text-lg font-medium text-foreground">
+                  Aucun document trouvé
+                </h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {documents.length === 0
+                    ? "Le corpus RAG est vide. Lancez une ingestion pour commencer."
+                    : "Essayez de modifier vos filtres de recherche."}
+                </p>
+                {documents.length === 0 && (
+                  <Button variant="outline" size="sm" className="mt-4" asChild>
+                    <Link to="/admin/rag/ingest">
+                      <Upload className="mr-1.5 h-3.5 w-3.5" />
+                      Ingestion PDF
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <ResponsiveDataTable<KnowledgeDoc>
+                data={filtered}
+                columns={docColumns}
+                statusColumn={{
+                  key: "truth_level",
+                  mapping: TRUTH_STATUS,
+                }}
+                getRowKey={(row) => row.id}
+                emptyMessage="Aucun document trouvé"
+                onRowClick={(row) =>
+                  navigate(`/admin/rag/documents/${encodeURIComponent(row.id)}`)
+                }
+                sortBy={sortKey ?? undefined}
+                sortDirection={sortDir}
+                onSort={handleSort}
+                pageSize={50}
+              />
+            )}
+          </div>
+        </TabsContent>
+
+        {/* ─── Tab 2 : Couverture gammes ─── */}
+        <TabsContent value="coverage">
+          <KpiGrid columns={4}>
+            <KpiCard
+              title="Gammes actives"
+              value={covCounts.total}
+              icon={Layers}
+              variant="info"
+            />
+            <KpiCard
+              title="Fichier .md disque"
+              value={covCounts.withDisk}
+              icon={FileText}
+              variant="info"
+            />
+            <KpiCard
+              title="Ingesté en DB"
+              value={covCounts.withDbSource}
+              icon={ShieldCheck}
+              variant={
+                covCounts.withDbSource < covCounts.total ? "warning" : "success"
+              }
+            />
+            <KpiCard
+              title="Sans doc (0 source)"
+              value={covCounts.noDiskNoDb}
+              icon={PackageOpen}
+              variant={covCounts.noDiskNoDb > 0 ? "warning" : "success"}
+            />
+          </KpiGrid>
+
+          <div className="mt-4">
+            <FilterBar
+              activeCount={(covSearch ? 1 : 0) + (covOnlyMissing ? 1 : 0)}
+              onReset={() => {
+                setCovSearch("");
+                setCovOnlyMissing(false);
+              }}
+            >
+              <FilterGroup label="Recherche">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Nom ou alias de gamme…"
+                    value={covSearch}
+                    onChange={(e) => setCovSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+              </FilterGroup>
+              <FilterGroup label="Couverture">
+                <Button
+                  variant={covOnlyMissing ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setCovOnlyMissing(!covOnlyMissing)}
+                >
+                  <PackageOpen className="mr-1.5 h-3.5 w-3.5" />
+                  Sans doc uniquement
+                </Button>
+              </FilterGroup>
+            </FilterBar>
+          </div>
+
+          <div className="mt-4">
+            {filteredCoverage.length === 0 ? (
+              <div className="rounded-lg border bg-card p-12 text-center">
+                <Layers className="mx-auto h-12 w-12 text-muted-foreground/30" />
+                <h3 className="mt-4 text-lg font-medium text-foreground">
+                  {covOnlyMissing
+                    ? "Toutes les gammes ont de la documentation"
+                    : "Aucune gamme trouvée"}
+                </h3>
+              </div>
+            ) : (
+              <ResponsiveDataTable<GammeCoverage>
+                data={filteredCoverage}
+                columns={coverageColumns}
+                getRowKey={(row) => String(row.pg_id)}
+                emptyMessage="Aucune gamme trouvée"
+                onRowClick={(row) => navigate(`/admin/gammes-seo/${row.pg_id}`)}
+                sortBy={covSortKey ?? undefined}
+                sortDirection={covSortDir}
+                onSort={handleCovSort}
+                pageSize={50}
+              />
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </DashboardShell>
   );
 }

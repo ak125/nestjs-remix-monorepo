@@ -232,8 +232,8 @@ export const Navbar = memo(function Navbar() {
             </Link>
 
             <Link
-              to="/#toutes-les-marques"
-              onClick={(e) => scrollToSection(e, "toutes-les-marques")}
+              to="/#marques"
+              onClick={(e) => scrollToSection(e, "marques")}
               className="no-style no-visited relative group px-3.5 py-2 text-[13px] font-medium text-white/50 hover:text-white transition-all rounded-lg hover:bg-white/[0.06] flex items-center gap-1.5"
             >
               Marques &amp; Constructeurs
@@ -378,7 +378,7 @@ export const Navbar = memo(function Navbar() {
               Catalogue pièces auto
             </Link>
             <Link
-              to="/#toutes-les-marques"
+              to="/#marques"
               onClick={() => setIsMenuOpen(false)}
               className="no-style no-visited flex items-center gap-3 px-4 py-3 text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.06] transition-colors"
             >

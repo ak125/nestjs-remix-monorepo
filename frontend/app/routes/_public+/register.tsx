@@ -188,7 +188,7 @@ function BenefitsPanel() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold text-slate-900 font-v9-heading tracking-tight">
+        <h2 className="text-lg font-semibold text-slate-900 font-heading tracking-tight">
           Pourquoi créer un compte ?
         </h2>
       </div>
@@ -198,7 +198,7 @@ function BenefitsPanel() {
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-orange-50 ring-1 ring-orange-100">
               <b.icon className="w-5 h-5 text-cta" />
             </span>
-            <span className="text-sm text-slate-600 font-v9-body pt-2">
+            <span className="text-sm text-slate-600 font-body pt-2">
               {b.text}
             </span>
           </li>
@@ -242,7 +242,7 @@ function ReassuranceCTA() {
       {items.map((item) => (
         <span
           key={item}
-          className="flex items-center gap-1.5 text-xs text-slate-500 font-v9-body"
+          className="flex items-center gap-1.5 text-xs text-slate-500 font-body"
         >
           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
           {item}
@@ -530,12 +530,12 @@ export default function RegisterPage() {
   return (
     <>
       {/* Hero sombre — aligné charte homepage */}
-      <section className="bg-gradient-to-b from-v9-navy to-v9-navy-light">
+      <section className="bg-gradient-to-b from-navy to-navy-light">
         <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-8 pb-16 lg:pt-12 lg:pb-20 text-center">
-          <h1 className="text-[28px] lg:text-[42px] font-extrabold leading-[1.1] tracking-tight text-white font-v9-heading">
+          <h1 className="text-[28px] lg:text-[42px] font-extrabold leading-[1.1] tracking-tight text-white font-heading">
             {heroTitle}
           </h1>
-          <p className="text-[14px] lg:text-[16px] text-white/60 font-v9-body max-w-xl mx-auto mt-3">
+          <p className="text-[14px] lg:text-[16px] text-white/60 font-body max-w-xl mx-auto mt-3">
             {heroSubtitle}
           </p>
           <div className="flex flex-wrap justify-center gap-3 mt-6">
@@ -561,7 +561,7 @@ export default function RegisterPage() {
           {/* Erreur serveur */}
           {error && (
             <div className="max-w-2xl mx-auto mb-6">
-              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 font-v9-body">
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 font-body">
                 {decodeURIComponent(error)}
               </div>
             </div>
@@ -581,7 +581,7 @@ export default function RegisterPage() {
                   <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest mb-2.5">
                     Avec votre compte
                   </p>
-                  <div className="grid grid-cols-2 gap-2.5 text-xs text-slate-600 font-v9-body">
+                  <div className="grid grid-cols-2 gap-2.5 text-xs text-slate-600 font-body">
                     <span className="flex items-center gap-1.5">
                       <ClipboardList className="w-3.5 h-3.5 text-cta" />
                       Suivi commandes
@@ -602,7 +602,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="mb-6">
-                  <h2 className="text-xl font-v9-heading font-bold tracking-tight text-slate-900">
+                  <h2 className="text-xl font-heading font-bold tracking-tight text-slate-900">
                     Créez votre espace en quelques instants
                   </h2>
                 </div>
@@ -1128,7 +1128,7 @@ export default function RegisterPage() {
                   </div>
 
                   {/* Mention légale (renforcée par checkbox CGV) */}
-                  <p className="text-center text-[11px] text-slate-400 font-v9-body pt-2">
+                  <p className="text-center text-[11px] text-slate-400 font-body pt-2">
                     Vos données sont protégées conformément à nos{" "}
                     <Link to="/cgv" className="underline hover:text-slate-600">
                       conditions d'utilisation

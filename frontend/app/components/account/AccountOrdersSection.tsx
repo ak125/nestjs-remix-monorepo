@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { formatPrice } from "~/utils/format";
-import type { OrderStatus, RecentOrder } from "./account.types";
+import { type OrderStatus, type RecentOrder } from "./account.types";
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
@@ -71,7 +71,7 @@ export function AccountOrdersSection({
             <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center">
               <Package size={16} className="text-amber-600" />
             </div>
-            <h2 className="text-[18px] font-bold text-slate-900 tracking-tight font-v9-heading">
+            <h2 className="text-[18px] font-bold text-slate-900 tracking-tight font-heading">
               Mes commandes
             </h2>
           </div>
@@ -127,7 +127,7 @@ export function AccountOrdersSection({
                 {isOpen && (
                   <div
                     id={`order-panel-${o.id}`}
-                    className="px-4 pb-4 pt-0 animate-v9-fade-in"
+                    className="px-4 pb-4 pt-0 animate-subtle-fade-in"
                   >
                     <div className="border-t border-slate-100 pt-3 flex gap-2">
                       <Button

@@ -12,13 +12,13 @@
  * • Focus sur l'action d'achat
  *
  * Design System intégré :
- * • Primary #FF3B30 → CTA "Ajouter au panier"
+ * • CTA #F97316 → CTA "Ajouter au panier"
  * • Success #27AE60 → Badge "En stock"
  * • Error #C0392B → Badge "Rupture"
  * • Warning #F39C12 → Badge "Stock faible"
  * • Roboto Mono → Référence OEM
- * • Montserrat Bold → Nom produit
- * • Inter Regular → Description
+ * • Outfit Bold → Nom produit
+ * • DM Sans Regular → Description
  * • Espacement 8px grid
  */
 
@@ -290,7 +290,7 @@ export const ProductCard = memo(function ProductCard({
         </div>
 
         {/* 
-          Nom Produit (Montserrat Bold)
+          Nom Produit (Outfit Bold)
           • font-heading → Impact visuel
           • text-lg/xl → Hiérarchie claire
           • line-clamp-2 → Max 2 lignes

@@ -15,7 +15,7 @@ export default function DiagnosticBanner() {
   const navigate = useNavigate();
 
   return (
-    <section className="bg-gradient-to-r from-v9-navy to-v9-navy-light">
+    <section className="bg-gradient-to-r from-navy to-navy-light">
       <div className="mx-auto max-w-[1280px] px-5 py-8 lg:px-8 lg:py-10">
         <div className="flex flex-col items-center gap-5 lg:flex-row lg:gap-6">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-cta/15">
@@ -23,10 +23,10 @@ export default function DiagnosticBanner() {
           </div>
 
           <div className="flex-1 text-center lg:text-left">
-            <h2 className="text-[20px] font-bold tracking-[-0.03em] text-white font-v9-heading">
+            <h2 className="text-[20px] font-bold tracking-[-0.03em] text-white font-heading">
               Vous ne savez pas quelle pièce changer ?
             </h2>
-            <p className="mt-1.5 text-[14px] text-white/60 font-v9-body">
+            <p className="mt-1.5 text-[14px] text-white/60 font-body">
               Décrivez vos symptômes pour identifier les causes et pièces
               concernées. Gratuit, 2 min.
             </p>

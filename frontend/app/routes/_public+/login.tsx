@@ -169,12 +169,12 @@ export default function LoginPage() {
   return (
     <>
       {/* Hero sombre — aligné charte homepage */}
-      <section className="bg-gradient-to-b from-v9-navy to-v9-navy-light">
+      <section className="bg-gradient-to-b from-navy to-navy-light">
         <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-8 pb-16 lg:pt-12 lg:pb-20 text-center">
-          <h1 className="text-[28px] lg:text-[42px] font-extrabold leading-[1.1] tracking-tight text-white font-v9-heading">
+          <h1 className="text-[28px] lg:text-[42px] font-extrabold leading-[1.1] tracking-tight text-white font-heading">
             Connectez-vous à votre espace
           </h1>
-          <p className="text-[14px] lg:text-[16px] text-white/60 font-v9-body max-w-xl mx-auto mt-3">
+          <p className="text-[14px] lg:text-[16px] text-white/60 font-body max-w-xl mx-auto mt-3">
             Retrouvez vos commandes, vos véhicules et vos pièces compatibles.
           </p>
           <div className="flex flex-wrap justify-center gap-3 mt-6">
@@ -197,7 +197,7 @@ export default function LoginPage() {
         <div className="max-w-md mx-auto px-5 lg:px-8">
           {/* Success message après inscription */}
           {searchParams.get("register") === "success" && (
-            <div className="mb-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800 font-v9-body flex items-center gap-2">
+            <div className="mb-4 rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-800 font-body flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               Compte créé avec succès !
             </div>
@@ -206,7 +206,7 @@ export default function LoginPage() {
           {/* Error/Message display */}
           {(error || message) && (
             <div
-              className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 font-v9-body flex items-center gap-2"
+              className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800 font-body flex items-center gap-2"
               role="alert"
               aria-live="assertive"
             >
@@ -361,7 +361,7 @@ export default function LoginPage() {
                 </Button>
 
                 <div className="text-center pt-2">
-                  <p className="text-sm text-slate-600 font-v9-body">
+                  <p className="text-sm text-slate-600 font-body">
                     Pas encore de compte ?{" "}
                     <Link
                       to="/register"
@@ -376,7 +376,7 @@ export default function LoginPage() {
           </div>
 
           {/* Mention légale */}
-          <p className="text-center text-xs text-slate-400 font-v9-body mt-6">
+          <p className="text-center text-xs text-slate-400 font-body mt-6">
             En vous connectant, vous acceptez nos{" "}
             <Link to="/cgv" className="underline hover:text-slate-600">
               conditions d'utilisation

@@ -8,7 +8,7 @@ import {
   Search,
   Truck,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -32,6 +32,18 @@ export default function HeroSection() {
   const [mineCode, setMineCode] = useState("");
   const [refQuery, setRefQuery] = useState("");
 
+  // Listen for tab-switch events from QuickAccessGrid
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const tab = (e as CustomEvent).detail?.tab;
+      if (typeof tab === "number" && tab >= 0 && tab <= 2) {
+        setActiveTab(tab);
+      }
+    };
+    window.addEventListener("hero-tab-switch", handler);
+    return () => window.removeEventListener("hero-tab-switch", handler);
+  }, []);
+
   return (
     <>
       <a
@@ -43,15 +55,15 @@ export default function HeroSection() {
 
       <section
         id="hero-v9"
-        className="bg-gradient-to-b from-v9-navy to-v9-navy-light"
+        className="bg-gradient-to-b from-navy to-navy-light"
       >
         <div className="mx-auto max-w-[1280px] px-5 pt-6 pb-8 lg:px-8 lg:pt-10 lg:pb-14">
           {/* TITRE */}
-          <h1 className="text-[28px] font-extrabold leading-[1.1] tracking-tight text-white font-v9-heading lg:text-center lg:text-[42px]">
+          <h1 className="text-[28px] font-extrabold leading-[1.1] tracking-tight text-white font-heading lg:text-center lg:text-[42px]">
             Trouvez la pièce compatible{" "}
             <span className="text-cta-light">avec votre véhicule</span>
           </h1>
-          <p className="text-[14px] lg:text-[16px] text-white/60 mt-2 lg:mt-3 lg:text-center font-v9-body">
+          <p className="text-[14px] lg:text-[16px] text-white/60 mt-2 lg:mt-3 lg:text-center font-body">
             Recherche par véhicule, référence OE, Type Mine ou immatriculation.
           </p>
           {/* ====== SELECTOR ====== */}

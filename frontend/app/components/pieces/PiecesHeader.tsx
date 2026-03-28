@@ -219,7 +219,9 @@ export const PiecesHeader = memo(function PiecesHeader({
                         ) {
                           heroImagePath = gamme.image.startsWith("http")
                             ? null // URL absolue gérée séparément
-                            : `articles/gammes-produits/catalogue/${gamme.image}`;
+                            : gamme.image.includes("/")
+                              ? gamme.image.replace(/^\/img\/uploads\//, "")
+                              : `articles/gammes-produits/catalogue/${gamme.image}`;
                           heroAlt = `${gamme.name} - pièce auto`;
                           objectFit = "contain";
                         }

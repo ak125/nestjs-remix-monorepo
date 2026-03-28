@@ -119,7 +119,7 @@ const mainPages = [
     desc: "Toutes les familles de pièces",
   },
   {
-    to: "/#toutes-les-marques",
+    to: "/#marques",
     label: "Marques automobiles",
     desc: "Trouver par constructeur",
   },

@@ -14,10 +14,10 @@
 |----------|--------|
 | Tables tecdoc_raw | 52 / 122 |
 | t400 (linkages raw) | 138.8M lignes (110 DLNR) |
-| source_linkages | 93.6M lignes (112 DLNR) |
+| source_linkages | ~262M lignes (93.6M + 168M GENARTNR v3) |
 | Pieces year=2025 total | 119,702 |
-| Pieces actives (display=true) | **77,933** (65%) |
-| Pieces inactives | 41,769 (35%) |
+| Pieces actives (display=true) | **84,525** (70.6%) |
+| Pieces inactives | 35,177 (29.4%) |
 | — dont avec linkage (vehicule cache) | ~6,500 (marques inactives) |
 | — dont sans linkage | ~35,269 (non recuperables PKW) |
 | Modeles crees (is_new=1) | 7,088 (5,346 actifs) |
@@ -31,7 +31,7 @@
 | Couverture criteres (echantillon 44K) | 84% |
 | Couverture images (echantillon 44K) | **51%** ⚠️ |
 | Couverture search refs (echantillon 44K) | 66% |
-| VALEO (DLNR=21) | **0 actives / 6,079 creees** — articles sans t400+GENARTNR |
+| VALEO (DLNR=21) | **2,538 actives / 6,079 creees** — enrichi+active 2026-03-28 |
 
 ### Vagues executees
 
@@ -115,19 +115,44 @@
 ### P2 — Combler le gap images (51% couverture)
 
 **Probleme** : 49% des pieces actives n'ont pas d'image dans pieces_media_img.
-**Causes possibles** :
-- t232 n'a pas d'images pour certains DLNR/ARTNR
-- Le JOIN scope exclut des pieces qui avaient des images avant GENARTNR
-- graphics_registry incomplet (t231 non projete pour certains DLNR)
 
-**Diagnostic (2026-03-25)** : Verifie — t232=0 pour ces articles. Le fournisseur TecDoc n'a PAS publie d'image. Ce n'est PAS un bug de projection. Solution hors TecDoc : scraping sites fournisseurs ou bases d'images alternatives.
+**Diagnostic (2026-03-27)** : Les images sont RECUPERABLES via heritage GENARTNR cross-DLNR. Un article sans t232 direct partage un GENARTNR avec d'autres articles d'autres DLNR qui ONT des images.
+- Prouve : FTE 2120119 (GENARTNR=234) → BILDNR=483200344 via DLNR=4832
+- Ce n'est PAS une limitation source TecDoc
 
-### P3 — VALEO 0% (6,079 pieces sans linkage)
+**Action** : REPORTE. Mecanisme valide (30,536/30,584 recuperables via meme gamme) mais bloqueur : les images TecDoc portent souvent la marque fournisseur → copier image BOSCH sur fiche VALEO = concurrent visible. A reprendre quand solution image neutre identifiee.
 
-**Probleme** : VALEO pm_display='1' mais 0 pieces actives. Ces articles n'ont ni t400 direct ni GENARTNR exploitable.
-**Statut** : Limitation connue de la donnee TecDoc pour ces ARTNR specifiques.
-**Diagnostic (2026-03-25)** : Verifie — articles sans t400 direct ET GENARTNR non exploitable. Limitation donnee source TecDoc, pas un bug pipeline.
-**Action** : Classifier comme `not_recoverable_no_tecdoc_linkage` et sortir du flux principal.
+### P3 — VALEO : TERMINE ✅ (2026-03-28)
+
+**Resultat** : **2,538 pieces VALEO activees** sur 6,079 creees. Pipeline complet :
+1. GENARTNR v3 chunked → 50.7M source_linkages DLNR=21
+2. Projection prt avec remap KTYPNR→massdoc → 5,368 pieces avec linkage
+3. Enrichissement piece_name depuis pieces_gamme → 5,753 nommees
+4. Recalcul piece_has_img depuis pieces_media_img → 2,718 avec image
+5. Activation (nom + image + vehicule visible) → **2,226 activees**
+
+Pieces restantes (3,853 inactives) : 3,361 sans image + 326 sans nom + 711 sans vehicule.
+
+### P3b — 8,582 pieces 2023 activables hors gamme_aggregates (BLOQUE VOLONTAIREMENT)
+
+**Contexte** : La CMD 5 (activation 2023 avec prix) avait active 23,872 pieces, dont 15,282 dans des gammes hors `gamme_aggregates`. Rollback execute le 2026-03-28 car ces gammes ne sont pas dans le perimetre commercial actif.
+
+**8,582 pieces restantes** (apres rollback + filtre strict) sont dans des gammes comme :
+kit-d-accessoires-etrier-de-frein (973), gaine-de-chauffage (923), tuyau-ventilation-carter (408), bague-etancheite-moyeu (240), tuyau-carburant (228), conduite-huile-compresseur (209), segments-pistons (207), coussinets-vilebrequin (190), coussinets-bielle (188)...
+
+**Conditions d'activation** : ces pieces ne doivent etre activees QUE si leur gamme est ajoutee dans `gamme_aggregates`.
+
+**SQL pour activer (quand les gammes seront actives)** :
+```sql
+-- NE PAS EXECUTER SANS VALIDATION — gammes a ajouter dans gamme_aggregates d'abord
+UPDATE pieces p SET piece_display = true
+WHERE p.piece_year = 2023 AND p.piece_display = false
+  AND p.piece_name IS NOT NULL AND p.piece_name != ''
+  AND p.piece_has_img = true
+  AND EXISTS (SELECT 1 FROM pieces_price pp WHERE pp.pri_piece_id_i = p.piece_id)
+  AND EXISTS (SELECT 1 FROM pieces_relation_type rt WHERE rt.rtp_piece_id = p.piece_id)
+  AND EXISTS (SELECT 1 FROM gamme_aggregates ga WHERE ga.ga_pg_id = p.piece_pg_id);
+```
 
 ### P4 — Classification persistante (~35K non recuperables)
 
@@ -149,7 +174,7 @@
 | Categorie | Volume | % | Statut |
 |-----------|--------|---|--------|
 | Total pieces year=2025 | 119,702 | 100% | — |
-| Actives | **77,933** | **65%** | ✅ Visible sur le site |
+| Actives | **84,525** | **70.6%** | ✅ Visible sur le site |
 | Inactives avec linkage (marques inactives) | ~6,500 | 5% | Hors scope (marques display!=1) |
 | Inactives sans linkage | ~35,269 | 30% | Non recuperables PKW |
 | GENARTNR execute | +7,744 | — | ✅ TERMINE |

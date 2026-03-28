@@ -266,6 +266,17 @@
     @apply px-4 py-3 text-[13px] text-slate-600 mb-0;
   }
 
+  /* R1 Editorial images (injected server-side from __seo_r1_image_prompts) */
+  .gamme-editorial .r1-editorial-img {
+    @apply my-6;
+  }
+  .gamme-editorial .r1-editorial-img img {
+    @apply rounded-xl w-full;
+  }
+  .gamme-editorial .r1-editorial-img figcaption {
+    @apply text-xs text-slate-400 mt-1.5 text-center;
+  }
+
   /* Liens constructeurs/marques/véhicules */
   .brand-link,
   .model-link,

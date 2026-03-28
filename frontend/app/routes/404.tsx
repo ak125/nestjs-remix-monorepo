@@ -40,7 +40,7 @@ export default function NotFound() {
   const { requestedPath } = useLoaderData<typeof loader>();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-v9-navy to-v9-navy-light flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-b from-navy to-navy-light flex items-center justify-center px-4">
       <div className="max-w-lg w-full text-center">
         {/* Icône 404 */}
         <div className="mb-8">

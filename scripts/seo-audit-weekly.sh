@@ -68,7 +68,7 @@ curl -s "$SITEMAP_URL" -o "$SITEMAP_FILE"
 
 if [ ! -s "$SITEMAP_FILE" ]; then
   echo -e "${RED}âŒ ERREUR: Impossible de tÃ©lÃ©charger le sitemap${NC}"
-  ((TOTAL_ERRORS++))
+  ((TOTAL_ERRORS++)) || true
 else
   # DÃ©tecter si c'est un sitemap index ou un sitemap standard
   if grep -q "<sitemapindex" "$SITEMAP_FILE"; then
@@ -89,14 +89,14 @@ else
       
       if [ "$HTTP_CODE" != "200" ]; then
         echo -e "${RED}âŒ Erreur HTTP $HTTP_CODE pour $CHILD_SITEMAP${NC}"
-        ((CHILD_ERRORS++))
+        ((CHILD_ERRORS++)) || true
         continue
       fi
       
       # VÃ©rifier que ce n'est pas une page d'erreur HTML
       if grep -q "<html" "$CHILD_FILE" || grep -q "404 Not Found" "$CHILD_FILE"; then
         echo -e "${YELLOW}âš ï¸  Page d'erreur reÃ§ue pour $CHILD_SITEMAP${NC}"
-        ((CHILD_ERRORS++))
+        ((CHILD_ERRORS++)) || true
         continue
       fi
       
@@ -109,7 +109,7 @@ else
     
     if [ $CHILD_ERRORS -gt 0 ]; then
       echo -e "${YELLOW}âš ï¸  Sitemap Index traitÃ© avec $CHILD_ERRORS erreurs: $TOTAL_URLS URLs extraites${NC}"
-      ((TOTAL_WARNINGS++))
+      ((TOTAL_WARNINGS++)) || true
     else
       echo -e "${GREEN}âœ… Sitemap Index traitÃ©: $TOTAL_URLS URLs extraites${NC}"
     fi
@@ -126,11 +126,11 @@ else
         echo -e "${GREEN}âœ… Sitemap valide selon XSD${NC}"
       else
         echo -e "${YELLOW}âš ï¸  Validation XSD Ã©chouÃ©e (voir $OUTPUT_DIR/xsd-validation.log)${NC}"
-        ((TOTAL_WARNINGS++))
+        ((TOTAL_WARNINGS++)) || true
       fi
     else
       echo -e "${YELLOW}âš ï¸  xmllint non disponible, validation XSD ignorÃ©e${NC}"
-      ((TOTAL_WARNINGS++))
+      ((TOTAL_WARNINGS++)) || true
     fi
     
     # Extraire les URLs
@@ -165,8 +165,8 @@ while IFS= read -r url; do
   if [ -n "$RESPONSE" ]; then
     echo "$url" >> "$NOINDEX_FILE"
     echo -e "${RED}âŒ NOINDEX trouvÃ©: $url${NC}"
-    ((NOINDEX_COUNT++))
-    ((TOTAL_ERRORS++))
+    ((NOINDEX_COUNT++)) || true
+    ((TOTAL_ERRORS++)) || true
   fi
 done < "$OUTPUT_DIR/sample-urls.txt"
 
@@ -202,7 +202,7 @@ if command -v curl &> /dev/null && [ -n "$LOKI_URL" ]; then
     echo "$LOKI_RESPONSE" | jq -r '.data.result[] | "\(.metric.status) \(.metric.path) (\(.value[1]) hits)"' > "$ERROR_URLS_FILE"
     echo -e "${RED}âŒ $ERROR_COUNT URLs avec erreurs HTTP dÃ©tectÃ©es:${NC}"
     head -10 "$ERROR_URLS_FILE"
-    ((TOTAL_ERRORS += ERROR_COUNT))
+    ((TOTAL_ERRORS += ERROR_COUNT)) || true
   else
     echo -e "${GREEN}âœ… Aucune erreur HTTP dÃ©tectÃ©e dans les logs (7j)${NC}"
   fi
@@ -217,8 +217,8 @@ else
     if [ "$HTTP_CODE" -ge 400 ]; then
       echo "$HTTP_CODE $url" >> "$ERROR_URLS_FILE"
       echo -e "${RED}âŒ $HTTP_CODE: $url${NC}"
-      ((ERROR_COUNT++))
-      ((TOTAL_ERRORS++))
+      ((ERROR_COUNT++)) || true
+      ((TOTAL_ERRORS++)) || true
     fi
   done < "$OUTPUT_DIR/sample-urls.txt"
   
@@ -262,8 +262,8 @@ while IFS= read -r url; do
     if [ -z "$REVERSE_CHECK" ]; then
       echo "$url -> $TARGET_URL ($TARGET_LANG) NON RÃ‰CIPROQUE" >> "$HREFLANG_ERRORS_FILE"
       echo -e "${YELLOW}âš ï¸  Hreflang non rÃ©ciproque: $url -> $TARGET_URL${NC}"
-      ((HREFLANG_ERROR_COUNT++))
-      ((TOTAL_WARNINGS++))
+      ((HREFLANG_ERROR_COUNT++)) || true
+      ((TOTAL_WARNINGS++)) || true
     fi
   done <<< "$HREFLANG_LINKS"
   
@@ -304,8 +304,8 @@ while IFS= read -r url; do
   if [ "$NORMALIZED_URL" != "$NORMALIZED_CANONICAL" ]; then
     echo "$url -> $CANONICAL (DIVERGENT)" >> "$CANONICAL_ERRORS_FILE"
     echo -e "${YELLOW}âš ï¸  Canonical divergent: $url -> $CANONICAL${NC}"
-    ((CANONICAL_ERROR_COUNT++))
-    ((TOTAL_WARNINGS++))
+    ((CANONICAL_ERROR_COUNT++)) || true
+    ((TOTAL_WARNINGS++)) || true
   fi
 done < "$OUTPUT_DIR/sample-urls.txt"
 

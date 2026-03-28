@@ -13,7 +13,7 @@
  *
  * Design System intégré :
  * • Secondary #0F4C81 → Backgrounds filtres
- * • Primary #FF3B30 → Bouton appliquer, tags actifs
+ * • CTA #F97316 → Bouton appliquer, tags actifs
  * • Success #27AE60 → Badge "En stock uniquement"
  * • Neutral → Inputs, bordures
  * • Espacement 8px grid

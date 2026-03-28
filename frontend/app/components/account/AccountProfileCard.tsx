@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
 import { Award, Bell, Package, Pencil, Settings } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
-import type { AccountUser, AccountStats } from "./account.types";
+import { type AccountUser, type AccountStats } from "./account.types";
 
 function getInitials(firstName?: string, lastName?: string, email?: string) {
   if (firstName && lastName)
@@ -39,16 +39,16 @@ export function AccountProfileCard({ user, stats }: AccountProfileCardProps) {
   const yearsSince = getYearsSince(user.createdAt);
 
   return (
-    <section className="bg-gradient-to-b from-[var(--v9-navy)] to-[var(--v9-navy-light)]">
+    <section className="bg-gradient-to-b from-[var(--navy)] to-[var(--navy-light)]">
       <div className="px-5 pt-5 pb-6">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20 flex-shrink-0">
-            <span className="text-[24px] font-extrabold text-white font-v9-heading">
+            <span className="text-[24px] font-extrabold text-white font-heading">
               {initials}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[18px] font-bold text-white font-v9-heading tracking-tight">
+            <div className="text-[18px] font-bold text-white font-heading tracking-tight">
               {user.firstName || user.email.split("@")[0]}
             </div>
             <div className="text-[12px] text-blue-200/50 mt-0.5 truncate">
@@ -61,8 +61,7 @@ export function AccountProfileCard({ user, stats }: AccountProfileCardProps) {
                   className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border-emerald-400/20 px-2 py-0.5"
                 >
                   <Award size={9} className="mr-1" />
-                  Client depuis{" "}
-                  {yearsSince > 1 ? `${yearsSince} ans` : "1 an"}
+                  Client depuis {yearsSince > 1 ? `${yearsSince} ans` : "1 an"}
                 </Badge>
               )}
               {user.isPro && (
@@ -102,7 +101,7 @@ export function AccountProfileCard({ user, stats }: AccountProfileCardProps) {
                 className="bg-white/[0.06] border border-white/[0.08] rounded-xl py-3 text-center"
               >
                 <Icon size={16} className="text-white/30 mx-auto mb-1" />
-                <div className="text-[16px] font-extrabold text-white font-v9-heading">
+                <div className="text-[16px] font-extrabold text-white font-heading">
                   {s.n}
                 </div>
                 <div className="text-[10px] text-blue-200/40">{s.l}</div>

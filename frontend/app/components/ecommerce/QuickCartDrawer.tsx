@@ -2,7 +2,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  * 🛒 QUICK CART DRAWER - Panier Latéral Rapide
  * ═══════════════════════════════════════════════════════════════════════════
- * 
+ *
  * Panier latéral slide-in optimisé e-commerce auto avec :
  * • Ajout instantané sans rechargement
  * • Résumé temps réel (prix, livraison, compatibilité)
@@ -10,16 +10,20 @@
  * • Modification quantités rapide
  * • Suppression produits
  * • CTA "Commander" direct
- * 
+ *
  * Design System intégré :
  * • Couleurs : Primary (CTA), Success (compatible), Error (incompatible), Neutral
- * • Typographie : Montserrat (headings), Inter (body), Roboto Mono (prix)
+ * • Typographie : Outfit (headings), DM Sans (body), Roboto Mono (prix)
  * • Espacement : 8px grid
  */
 
-import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import { calculateDeliveryETA, formatDeliveryText, type DeliveryMode } from '../../utils/delivery-eta';
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import {
+  calculateDeliveryETA,
+  formatDeliveryText,
+  type DeliveryMode,
+} from "../../utils/delivery-eta";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 🎯 TYPES
@@ -34,7 +38,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   isCompatible: boolean;
-  stockStatus: 'in-stock' | 'low-stock' | 'out-of-stock';
+  stockStatus: "in-stock" | "low-stock" | "out-of-stock";
 }
 
 export interface DeliveryOption {
@@ -75,11 +79,21 @@ export function QuickCartDrawer({
   onRemoveItem,
   onCheckout,
   deliveryOptions = [
-    { id: 'standard', name: 'Standard', price: 4.90, estimatedDays: '3-5 jours' },
-    { id: 'express', name: 'Express', price: 9.90, estimatedDays: '1-2 jours' },
-    { id: 'pickup', name: 'Retrait en magasin', price: 0, estimatedDays: 'Immédiat' },
+    {
+      id: "standard",
+      name: "Standard",
+      price: 4.9,
+      estimatedDays: "3-5 jours",
+    },
+    { id: "express", name: "Express", price: 9.9, estimatedDays: "1-2 jours" },
+    {
+      id: "pickup",
+      name: "Retrait en magasin",
+      price: 0,
+      estimatedDays: "Immédiat",
+    },
   ],
-  selectedDeliveryId = 'standard',
+  selectedDeliveryId = "standard",
   onSelectDelivery,
   savedVehicle,
 }: QuickCartDrawerProps) {
@@ -97,13 +111,13 @@ export function QuickCartDrawer({
   useEffect(() => {
     if (isOpen) {
       setAnimating(true);
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     }
 
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = "";
     };
   }, [isOpen]);
 
@@ -111,28 +125,48 @@ export function QuickCartDrawer({
   // 💰 CALCULS
   // ───────────────────────────────────────────────────────────────────────────
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  
+  const subtotal = items.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+
   // 🚚 Seuil de livraison gratuite
   const FREE_SHIPPING_THRESHOLD = 50;
   const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD;
-  const amountUntilFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal);
-  const freeShippingProgress = Math.min(100, (subtotal / FREE_SHIPPING_THRESHOLD) * 100);
-  
-  const selectedDelivery = deliveryOptions.find((d) => d.id === selectedDeliveryId);
-  const deliveryPrice = isFreeShipping && selectedDeliveryId !== 'express' ? 0 : (selectedDelivery?.price || 0);
-  
+  const amountUntilFreeShipping = Math.max(
+    0,
+    FREE_SHIPPING_THRESHOLD - subtotal,
+  );
+  const freeShippingProgress = Math.min(
+    100,
+    (subtotal / FREE_SHIPPING_THRESHOLD) * 100,
+  );
+
+  const selectedDelivery = deliveryOptions.find(
+    (d) => d.id === selectedDeliveryId,
+  );
+  const deliveryPrice =
+    isFreeShipping && selectedDeliveryId !== "express"
+      ? 0
+      : selectedDelivery?.price || 0;
+
   const total = subtotal + deliveryPrice;
-  
+
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-  
+
   const hasIncompatibleItems = items.some((item) => !item.isCompatible);
   const incompatibleCount = items.filter((item) => !item.isCompatible).length;
 
   // 📦 ETA Livraison calculée
   const stockStatuses = items.map((item) => item.stockStatus);
-  const eta = calculateDeliveryETA(stockStatuses, selectedDeliveryId as DeliveryMode);
-  const deliveryText = formatDeliveryText(eta.estimatedDays, selectedDeliveryId as DeliveryMode);
+  const eta = calculateDeliveryETA(
+    stockStatuses,
+    selectedDeliveryId as DeliveryMode,
+  );
+  const deliveryText = formatDeliveryText(
+    eta.estimatedDays,
+    selectedDeliveryId as DeliveryMode,
+  );
 
   // ───────────────────────────────────────────────────────────────────────────
   // 🎬 HANDLERS
@@ -178,7 +212,7 @@ export function QuickCartDrawer({
       <div
         className={`
           fixed inset-0 bg-black/50 z-50 transition-opacity duration-300
-          ${isOpen && animating ? 'opacity-100' : 'opacity-0 pointer-events-none'}
+          ${isOpen && animating ? "opacity-100" : "opacity-0 pointer-events-none"}
         `}
         onClick={handleBackdropClick}
         aria-hidden="true"
@@ -190,7 +224,7 @@ export function QuickCartDrawer({
           fixed top-0 right-0 h-full w-full md:w-[480px] bg-white shadow-2xl z-50
           transition-transform duration-300 ease-out
           flex flex-col
-          ${isOpen && animating ? 'translate-x-0' : 'translate-x-full'}
+          ${isOpen && animating ? "translate-x-0" : "translate-x-full"}
         `}
         role="dialog"
         aria-modal="true"
@@ -199,21 +233,34 @@ export function QuickCartDrawer({
         {/* Header */}
         <div className="bg-neutral-900 text-white px-md py-md flex items-center justify-between">
           <div>
-            <h2 id="cart-drawer-title" className="font-heading text-xl font-bold">
+            <h2
+              id="cart-drawer-title"
+              className="font-heading text-xl font-bold"
+            >
               Mon Panier
             </h2>
             <p className="font-sans text-sm text-neutral-300 mt-xs">
-              {itemCount} {itemCount > 1 ? 'articles' : 'article'}
+              {itemCount} {itemCount > 1 ? "articles" : "article"}
             </p>
           </div>
-          
+
           <button
             onClick={handleClose}
             className="p-sm hover:bg-neutral-800 rounded-lg transition-colors"
             aria-label="Fermer le panier"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -222,8 +269,9 @@ export function QuickCartDrawer({
         {savedVehicle && (
           <div className="bg-success-50 border-b border-success-200 px-md py-sm">
             <p className="font-sans text-xs text-success-800">
-              <strong className="font-heading">✓ Véhicule:</strong>{' '}
-              {savedVehicle.brand} {savedVehicle.model} {savedVehicle.engine} ({savedVehicle.year})
+              <strong className="font-heading">✓ Véhicule:</strong>{" "}
+              {savedVehicle.brand} {savedVehicle.model} {savedVehicle.engine} (
+              {savedVehicle.year})
             </p>
           </div>
         )}
@@ -232,8 +280,12 @@ export function QuickCartDrawer({
         {hasIncompatibleItems && (
           <div className="bg-error-50 border-b border-error-200 px-md py-sm">
             <p className="font-sans text-xs text-error-800">
-              <strong className="font-heading">⚠ Attention:</strong>{' '}
-              {incompatibleCount} {incompatibleCount > 1 ? 'articles incompatibles' : 'article incompatible'} avec votre véhicule
+              <strong className="font-heading">⚠ Attention:</strong>{" "}
+              {incompatibleCount}{" "}
+              {incompatibleCount > 1
+                ? "articles incompatibles"
+                : "article incompatible"}{" "}
+              avec votre véhicule
             </p>
           </div>
         )}
@@ -257,7 +309,7 @@ export function QuickCartDrawer({
                   key={item.id}
                   className={`
                     bg-neutral-50 rounded-lg p-sm border-2 transition-colors
-                    ${item.isCompatible ? 'border-success-200' : 'border-error-200'}
+                    ${item.isCompatible ? "border-success-200" : "border-error-200"}
                   `}
                 >
                   <div className="flex gap-sm">
@@ -275,7 +327,7 @@ export function QuickCartDrawer({
                         <h3 className="font-heading text-sm font-bold text-neutral-900 line-clamp-2">
                           {item.name}
                         </h3>
-                        
+
                         {item.isCompatible ? (
                           <span className="px-xs py-xs bg-success-500 text-white text-xs font-heading font-semibold rounded whitespace-nowrap">
                             ✓ OK
@@ -297,27 +349,32 @@ export function QuickCartDrawer({
                         {/* Quantité */}
                         <div className="flex items-center gap-xs">
                           <button
-                            onClick={() => handleDecrement(item.id, item.quantity)}
+                            onClick={() =>
+                              handleDecrement(item.id, item.quantity)
+                            }
                             disabled={item.quantity <= 1}
                             className={`
                               w-7 h-7 flex items-center justify-center rounded-lg font-bold
                               transition-colors
-                              ${item.quantity <= 1
-                                ? 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
-                                : 'bg-neutral-300 text-neutral-900 hover:bg-neutral-400'
+                              ${
+                                item.quantity <= 1
+                                  ? "bg-neutral-200 text-neutral-400 cursor-not-allowed"
+                                  : "bg-neutral-300 text-neutral-900 hover:bg-neutral-400"
                               }
                             `}
                             aria-label="Diminuer quantité"
                           >
                             −
                           </button>
-                          
+
                           <span className="font-mono text-sm font-bold text-neutral-900 w-8 text-center">
                             {item.quantity}
                           </span>
-                          
+
                           <button
-                            onClick={() => handleIncrement(item.id, item.quantity)}
+                            onClick={() =>
+                              handleIncrement(item.id, item.quantity)
+                            }
                             className="w-7 h-7 flex items-center justify-center bg-neutral-300 text-neutral-900 rounded-lg font-bold hover:bg-neutral-400 transition-colors"
                             aria-label="Augmenter quantité"
                           >
@@ -368,8 +425,8 @@ export function QuickCartDrawer({
                 </div>
               </div>
             )}
-            
-            {isFreeShipping && selectedDeliveryId === 'standard' && (
+
+            {isFreeShipping && selectedDeliveryId === "standard" && (
               <div className="bg-success-50 border-2 border-success-500 rounded-lg p-sm">
                 <p className="font-heading text-sm font-bold text-success-700 text-center">
                   ✅ Livraison gratuite débloquée !
@@ -388,9 +445,10 @@ export function QuickCartDrawer({
                     key={option.id}
                     className={`
                       flex items-center justify-between p-sm rounded-lg cursor-pointer transition-colors
-                      ${selectedDeliveryId === option.id
-                        ? 'bg-secondary-50 border-2 border-secondary-500'
-                        : 'bg-neutral-50 border-2 border-transparent hover:border-neutral-300'
+                      ${
+                        selectedDeliveryId === option.id
+                          ? "bg-secondary-50 border-2 border-secondary-500"
+                          : "bg-neutral-50 border-2 border-transparent hover:border-neutral-300"
                       }
                     `}
                   >
@@ -423,7 +481,9 @@ export function QuickCartDrawer({
                       </div>
                     </div>
                     <p className="font-mono text-sm font-bold text-neutral-900">
-                      {option.price === 0 ? 'Gratuit' : `${option.price.toFixed(2)} €`}
+                      {option.price === 0
+                        ? "Gratuit"
+                        : `${option.price.toFixed(2)} €`}
                     </p>
                   </label>
                 ))}
@@ -434,7 +494,9 @@ export function QuickCartDrawer({
             <div className="space-y-xs">
               {/* Sous-total */}
               <div className="flex items-center justify-between font-sans text-sm">
-                <span className="text-neutral-600">Sous-total ({itemCount} articles)</span>
+                <span className="text-neutral-600">
+                  Sous-total ({itemCount} articles)
+                </span>
                 <span className="font-mono font-bold text-neutral-900">
                   {subtotal.toFixed(2)} €
                 </span>
@@ -444,13 +506,17 @@ export function QuickCartDrawer({
               <div className="flex items-center justify-between font-sans text-sm">
                 <span className="text-neutral-600">Livraison</span>
                 <span className="font-mono font-bold text-neutral-900">
-                  {deliveryPrice === 0 ? 'Gratuit' : `${deliveryPrice.toFixed(2)} €`}
+                  {deliveryPrice === 0
+                    ? "Gratuit"
+                    : `${deliveryPrice.toFixed(2)} €`}
                 </span>
               </div>
 
               {/* Total */}
               <div className="flex items-center justify-between pt-sm border-t border-neutral-300">
-                <span className="font-heading text-lg font-bold text-neutral-900">Total</span>
+                <span className="font-heading text-lg font-bold text-neutral-900">
+                  Total
+                </span>
                 <span className="font-mono text-2xl font-bold text-primary-500">
                   {total.toFixed(2)} €
                 </span>

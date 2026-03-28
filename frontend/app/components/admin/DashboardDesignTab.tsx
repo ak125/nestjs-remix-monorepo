@@ -225,18 +225,18 @@ export function DashboardDesignTab() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[
             {
-              name: "Primary (CTA)",
+              name: "Primary (Navy)",
               color: "bg-primary-500",
-              hex: "#e8590c",
+              hex: "#0F1E38",
               token: "primary-500",
-              usage: "Boutons d'action, CTA",
+              usage: "Navigation, liens, UI structurelle",
             },
             {
-              name: "Secondary (Navigation)",
-              color: "bg-secondary-500",
-              hex: "#0d1b3e",
-              token: "secondary-500",
-              usage: "Liens, navigation",
+              name: "CTA (Orange)",
+              color: "bg-cta",
+              hex: "#F97316",
+              token: "cta",
+              usage: "Boutons d'action, CTA, conversion",
             },
             {
               name: "Success",
@@ -369,7 +369,7 @@ export function DashboardDesignTab() {
         <div className="space-y-4">
           <div className="p-4 bg-gray-50 rounded-lg">
             <p className="text-xs text-gray-600 mb-2">
-              Headings - Montserrat (font-heading)
+              Headings - Outfit (font-heading)
             </p>
             <h1 className="font-heading font-bold text-3xl">
               Titre Principal H1

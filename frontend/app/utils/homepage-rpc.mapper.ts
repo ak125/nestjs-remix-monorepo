@@ -68,7 +68,7 @@ export function mapHomepageRpcToLoaderData(
   const families: SlimFamily[] = (data.catalog?.families ?? []).map((f) => {
     const allGammes = f.gammes ?? [];
     return {
-      mf_id: f.mf_id,
+      mf_id: Number(f.mf_id),
       mf_name: f.mf_name,
       mf_pic: f.mf_pic,
       mf_description: f.mf_description,
@@ -115,7 +115,7 @@ export function mapFamiliesFromSplit(raw: unknown): SlimFamily[] {
   return families.map((f: any) => {
     const allGammes = f.gammes ?? [];
     return {
-      mf_id: f.mf_id,
+      mf_id: Number(f.mf_id),
       mf_name: f.mf_name,
       mf_pic: f.mf_pic,
       mf_description: f.mf_description,

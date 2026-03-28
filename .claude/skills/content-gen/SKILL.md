@@ -354,6 +354,31 @@ Pour chaque gamme source :
 - **Contexte** — utiliser le `context` de la table pour la phrase d'intro du lien
 - **Garde anti-régression** — append = length augmente toujours (OK)
 
+### 5h — Image prompts R1
+
+Après maillage, générer les prompts image R1 si pas déjà existants :
+
+```bash
+curl -s -X POST http://localhost:3000/api/admin/r1-image-prompts/generate/{pg_alias} \
+  -b cookies.txt
+```
+
+5 slots : HERO_EDITORIAL, TYPES_SCHEMA, PRICE_CHART, MOUNTING_DIAGRAM, OG_IMAGE.
+G7-R1 gate : max 3 in-article sélectionnés (top richness score).
+Si prompts déjà existants et `--force` non set → skip.
+
+Les images sont rendues automatiquement dans le sg_content par le response builder
+quand `rip_status = 'approved'` et `rip_image_url` est rempli.
+
+Workflow image complet :
+1. content-gen génère les prompts (step 5h)
+2. Admin approuve les prompts (PATCH /approve)
+3. Images générées avec Midjourney/DALL-E/ComfyUI
+4. Upload vers Supabase storage (`uploads/articles/gammes-produits/r1-editorial/{pg_alias}/`)
+5. Set URL (PATCH /set-image-url)
+6. Response builder injecte les `<figure>` dans sg_content
+7. Invalider cache Redis
+
 ---
 
 ## Mode batch

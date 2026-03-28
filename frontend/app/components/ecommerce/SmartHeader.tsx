@@ -11,7 +11,7 @@
  *
  * Design System intégré :
  * • Couleurs : Secondary (navigation), Primary (CTA)
- * • Typographie : Montserrat (headings), Inter (body), Roboto Mono (data)
+ * • Typographie : Outfit (headings), DM Sans (body), Roboto Mono (data)
  * • Espacement : 8px grid (sm, md, lg, xl)
  */
 
@@ -201,7 +201,7 @@ export function SmartHeader({
               CTA "Mon Véhicule" (Primary)
               ═════════════════════════════════════════════════════════════
               • bg-primary-500 → CTA Action
-              • font-heading → Montserrat (robustesse)
+              • font-heading → Outfit (robustesse)
               • p-sm → Padding compact pour header
               • Affiche véhicule mémorisé si présent
             */}

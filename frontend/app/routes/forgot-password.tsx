@@ -71,7 +71,7 @@ export default function ForgotPassword() {
   const error = searchParams.get("error");
 
   return (
-    <div className="flex items-center justify-center min-h-[70vh] bg-gradient-to-b from-v9-navy to-v9-navy-light px-4 py-12">
+    <div className="flex items-center justify-center min-h-[70vh] bg-gradient-to-b from-navy to-navy-light px-4 py-12">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader>
           <CardTitle>Mot de passe oublié</CardTitle>
