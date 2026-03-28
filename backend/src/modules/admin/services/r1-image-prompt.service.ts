@@ -49,11 +49,15 @@ export class R1ImagePromptService extends SupabaseBaseService {
       return { pgAlias, status: 'skipped' as const, slots: [] };
     }
 
-    // Lire le RAG (contexte gamme)
-    // Lire le RAG via service centralisé
-    const ragData = this.ragReader.readAndParse(pgAlias);
+    // Lire le RAG via service centralise (virtual merge si flag ON)
+    const mergeResult =
+      await this.ragReader.readAndParseWithDbKnowledge(pgAlias);
+    const ragData = mergeResult?.ragData ?? null;
     if (ragData) {
-      this.logger.log(`[R1-IMG] RAG loaded for ${pgAlias}`);
+      const dbCount = mergeResult?.provenance?.dbDocsAccepted ?? 0;
+      this.logger.log(
+        `[R1-IMG] RAG loaded for ${pgAlias}${dbCount > 0 ? ` (+${dbCount} DB docs)` : ''}`,
+      );
     }
 
     // Construire les prompts via builders enrichis

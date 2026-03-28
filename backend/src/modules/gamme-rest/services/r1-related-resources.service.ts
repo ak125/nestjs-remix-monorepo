@@ -32,8 +32,10 @@ export class R1RelatedResourcesService extends SupabaseBaseService {
     pgName: string,
     _options?: { referenceSlug?: string | null },
   ): Promise<R1RelatedBlocksPayload> {
-    // Lire le RAG
-    const ragData = this.ragReader.readAndParse(pgAlias);
+    // Lire le RAG (virtual merge si flag ON)
+    const mergeResult =
+      await this.ragReader.readAndParseWithDbKnowledge(pgAlias);
+    const ragData = mergeResult?.ragData ?? null;
 
     // Construire les blocs candidats en parallèle
     const [confusionBlock, guideBlock, relatedBlock] = await Promise.all([

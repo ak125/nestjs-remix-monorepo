@@ -37,6 +37,7 @@ import type {
 @Processor('video-render')
 export class VideoExecutionProcessor extends SupabaseBaseService {
   protected override readonly logger = new Logger(VideoExecutionProcessor.name);
+  private lastQueueErrorLog = 0;
 
   constructor(
     configService: ConfigService,
@@ -88,7 +89,11 @@ export class VideoExecutionProcessor extends SupabaseBaseService {
 
   @OnQueueError()
   handleQueueError(error: Error): void {
-    this.logger.error(`[VEP] Queue error: ${error.message}`);
+    const now = Date.now();
+    if (now - this.lastQueueErrorLog > 60_000) {
+      this.logger.error(`[VEP] Queue error: ${error.message}`);
+      this.lastQueueErrorLog = now;
+    }
   }
 
   @Process({

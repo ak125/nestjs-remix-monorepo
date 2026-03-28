@@ -44,6 +44,7 @@ interface MonitoringResult {
 @Processor('seo-monitor')
 export class SeoMonitorProcessor extends SupabaseBaseService {
   protected override readonly logger = new Logger(SeoMonitorProcessor.name);
+  private lastQueueErrorLog = 0;
 
   constructor(
     configService: ConfigService,
@@ -391,7 +392,11 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
    */
   @OnQueueError()
   handleError(error: Error) {
-    this.logger.error('❌ Erreur queue seo-monitor:', error.message);
+    const now = Date.now();
+    if (now - this.lastQueueErrorLog > 60_000) {
+      this.logger.error(`❌ Erreur queue seo-monitor: ${error.message}`);
+      this.lastQueueErrorLog = now;
+    }
   }
 
   /**
