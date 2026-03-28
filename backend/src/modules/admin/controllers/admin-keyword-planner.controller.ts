@@ -1375,6 +1375,201 @@ export class AdminKeywordPlannerController {
     };
   }
 
+  /**
+   * POST /api/admin/keyword-planner/batch-generate-from-rag
+   * Batch : génère le contenu R1 pour les top N gammes.
+   * Mode dry_run par défaut (preview sans écriture).
+   */
+  @Post('batch-generate-from-rag')
+  async batchGenerateFromRag(
+    @Body()
+    body: {
+      limit?: number;
+      dry_run?: boolean;
+      min_quality?: 'minimal' | 'standard' | 'rich';
+      offset?: number;
+    },
+  ) {
+    if (!this.r1ContentFromRag) {
+      return { error: 'R1ContentFromRagService not available' };
+    }
+
+    const limit = Math.min(body.limit ?? 10, 50);
+    const dryRun = body.dry_run ?? true;
+    const minQuality = body.min_quality ?? 'standard';
+    const offset = body.offset ?? 0;
+
+    this.logger.log(
+      `POST batch-generate-from-rag limit=${limit} dryRun=${dryRun} minQuality=${minQuality} offset=${offset}`,
+    );
+
+    // Récupérer les gammes triées par produits (top N)
+    const { data: gammes, error: fetchErr } = await this.supabase
+      .from('gamme_aggregates')
+      .select('ga_pg_id, products_total')
+      .order('products_total', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (fetchErr || !gammes) {
+      return { error: `Failed to fetch gammes: ${fetchErr?.message}` };
+    }
+
+    // Résoudre les alias
+    const pgIds = gammes.map((g) => g.ga_pg_id);
+    const { data: pgRows } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id, pg_alias, pg_name')
+      .in('pg_id', pgIds)
+      .eq('pg_display', '1');
+
+    if (!pgRows) return { error: 'Failed to resolve gamme aliases' };
+
+    const pgMap = new Map(pgRows.map((r) => [r.pg_id, r]));
+
+    const results: Array<{
+      pg_id: number;
+      pg_alias: string;
+      pg_name: string;
+      charCount: number;
+      h2Count: number;
+      quality: string;
+      fields: number;
+      status:
+        | 'written'
+        | 'skipped_quality'
+        | 'skipped_regression'
+        | 'dry_run'
+        | 'error';
+      reason?: string;
+    }> = [];
+
+    for (const agg of gammes) {
+      const pg = pgMap.get(agg.ga_pg_id);
+      if (!pg) continue;
+
+      const pgId = pg.pg_id as number;
+      const pgAlias = pg.pg_alias as string;
+      const pgName = pg.pg_name as string;
+
+      try {
+        const gen = await this.r1ContentFromRag.generate(pgAlias, pgName);
+
+        // Quality gate
+        const qualityRank = { minimal: 0, standard: 1, rich: 2 };
+        if ((qualityRank[gen.quality] ?? 0) < (qualityRank[minQuality] ?? 1)) {
+          results.push({
+            pg_id: pgId,
+            pg_alias: pgAlias,
+            pg_name: pgName,
+            charCount: gen.charCount,
+            h2Count: gen.h2Count,
+            quality: gen.quality,
+            fields: gen.ragFieldsUsed.length,
+            status: 'skipped_quality',
+            reason: `quality=${gen.quality} < min=${minQuality}`,
+          });
+          continue;
+        }
+
+        if (dryRun) {
+          results.push({
+            pg_id: pgId,
+            pg_alias: pgAlias,
+            pg_name: pgName,
+            charCount: gen.charCount,
+            h2Count: gen.h2Count,
+            quality: gen.quality,
+            fields: gen.ragFieldsUsed.length,
+            status: 'dry_run',
+          });
+          continue;
+        }
+
+        // Anti-regression check
+        const { data: existing } = await this.supabase
+          .from('__seo_gamme')
+          .select('sg_content')
+          .eq('sg_pg_id', String(pgId))
+          .single();
+
+        const existingLen = existing?.sg_content?.length ?? 0;
+        if (existingLen > gen.charCount && existingLen > 3000) {
+          results.push({
+            pg_id: pgId,
+            pg_alias: pgAlias,
+            pg_name: pgName,
+            charCount: gen.charCount,
+            h2Count: gen.h2Count,
+            quality: gen.quality,
+            fields: gen.ragFieldsUsed.length,
+            status: 'skipped_regression',
+            reason: `existing=${existingLen} > generated=${gen.charCount}`,
+          });
+          continue;
+        }
+
+        // Write
+        await this.supabase.from('__seo_gamme').upsert(
+          {
+            sg_pg_id: String(pgId),
+            sg_content: gen.html,
+            sg_updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'sg_pg_id' },
+        );
+
+        // Cache invalidation
+        try {
+          if (this.cacheManager) {
+            await this.cacheManager.del(`gamme:resp:v2:${pgId}`);
+          }
+        } catch {
+          /* silent */
+        }
+
+        results.push({
+          pg_id: pgId,
+          pg_alias: pgAlias,
+          pg_name: pgName,
+          charCount: gen.charCount,
+          h2Count: gen.h2Count,
+          quality: gen.quality,
+          fields: gen.ragFieldsUsed.length,
+          status: 'written',
+        });
+      } catch (err) {
+        results.push({
+          pg_id: pgId,
+          pg_alias: pgAlias,
+          pg_name: pgName,
+          charCount: 0,
+          h2Count: 0,
+          quality: 'minimal',
+          fields: 0,
+          status: 'error',
+          reason: String(err),
+        });
+      }
+    }
+
+    const summary = {
+      total: results.length,
+      written: results.filter((r) => r.status === 'written').length,
+      dry_run: results.filter((r) => r.status === 'dry_run').length,
+      skipped_quality: results.filter((r) => r.status === 'skipped_quality')
+        .length,
+      skipped_regression: results.filter(
+        (r) => r.status === 'skipped_regression',
+      ).length,
+      errors: results.filter((r) => r.status === 'error').length,
+      avg_chars: Math.round(
+        results.reduce((s, r) => s + r.charCount, 0) / (results.length || 1),
+      ),
+    };
+
+    return { summary, results };
+  }
+
   // ── Private helpers ──
 
   private loadRag(slug: string): Record<string, unknown> {
