@@ -281,7 +281,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   } catch (error) {
     if (error instanceof Response) throw error;
     logger.error("[diagnostic-auto.$slug] Loader error:", error);
-    throw new Response("Erreur de chargement", { status: 500 });
+    throw new Response("Diagnostic non trouvé", { status: 404 });
   }
 }
 
