@@ -171,10 +171,9 @@ export class SuppliersService extends SupabaseBaseService {
     try {
       let query = this.supabase
         .from(TABLES.xtr_supplier)
-        .select(
-          'spl_id, spl_name, spl_alias, spl_display, spl_sort, email, phone, address1, city, discount_rate, delivery_delay, is_active',
-          { count: 'exact' },
-        );
+        .select('spl_id, spl_name, spl_alias, spl_display, spl_sort', {
+          count: 'exact',
+        });
 
       // Appliquer le filtre de recherche sur les colonnes réelles
       if (search) {
@@ -568,18 +567,9 @@ export class SuppliersService extends SupabaseBaseService {
       alias: data.spl_alias,
       display: data.spl_display,
       sort: data.spl_sort,
-      // Garder une structure cohérente pour l'API
       companyName: data.spl_name,
       code: data.spl_alias,
       isActive: data.spl_display === '1',
-      // Ajouter les propriétés manquantes
-      email: data.email,
-      phone: data.phone,
-      address1: data.address1,
-      city: data.city,
-      discount_rate: data.discount_rate,
-      delivery_delay: data.delivery_delay,
-      is_active: data.is_active,
     };
   }
 
@@ -619,11 +609,7 @@ export class SuppliersService extends SupabaseBaseService {
         purchaseOrder.subtotal += lineTotal;
       });
 
-      // Appliquer la remise si configurée
-      if (supplier.discount_rate && supplier.discount_rate > 0) {
-        purchaseOrder.discount =
-          purchaseOrder.subtotal * (supplier.discount_rate / 100);
-      }
+      // Remise non disponible (colonne discount_rate absente de ___xtr_supplier)
 
       purchaseOrder.total = purchaseOrder.subtotal - purchaseOrder.discount;
 
