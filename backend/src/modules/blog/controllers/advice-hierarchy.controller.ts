@@ -88,8 +88,8 @@ export class AdviceHierarchyController {
         ),
       ];
 
-      // Optimisation: Exécuter les 2 requêtes en parallèle
-      const [catalogResult, familiesResult] = await Promise.all([
+      // Optimisation: Exécuter les 3 requêtes en parallèle
+      const [catalogResult, familiesResult, gammesResult] = await Promise.all([
         this.supabaseService.client
           .from('catalog_gamme')
           .select('mc_pg_id, mc_mf_prime, mc_sort')
@@ -97,6 +97,14 @@ export class AdviceHierarchyController {
         this.supabaseService.client
           .from('catalog_family')
           .select('mf_id, mf_name, mf_sort'),
+        // Gammes metadata pour les liens (pg_alias, pg_name)
+        this.supabaseService.client
+          .from('pieces_gamme')
+          .select('pg_id, pg_alias, pg_name')
+          .in(
+            'pg_id',
+            pgIds.map(Number).filter((n) => !isNaN(n)),
+          ),
       ]);
 
       if (catalogResult.error) {
@@ -108,6 +116,25 @@ export class AdviceHierarchyController {
           'Erreur catalog_family:',
           familiesResult.error.message,
         );
+      }
+
+      if (gammesResult.error) {
+        this.logger.error('Erreur pieces_gamme:', gammesResult.error.message);
+      }
+
+      // 3a. Map pg_id → gamme metadata (pg_alias, pg_name)
+      const gammeMetaMap = new Map<
+        string,
+        { pgId: number; pgAlias: string; pgName: string }
+      >();
+      if (gammesResult.data) {
+        for (const g of gammesResult.data) {
+          gammeMetaMap.set(g.pg_id.toString(), {
+            pgId: g.pg_id,
+            pgAlias: g.pg_alias,
+            pgName: g.pg_name,
+          });
+        }
       }
 
       // 3. Créer des Maps pour accès O(1) — tri numérique (mf_sort est TEXT en DB)
@@ -133,6 +160,36 @@ export class AdviceHierarchyController {
             pgToFamily.set(mapping.mc_pg_id.toString(), {
               ...family,
               gammeSort: Number(mapping.mc_sort || 999),
+            });
+          }
+        }
+      }
+
+      // 4. Construire les top gammeLinks par famille (triées par mc_sort, max 2)
+      const familyGammeLinks = new Map<
+        number,
+        Array<{ slug: string; name: string; pgId: number }>
+      >();
+      if (catalogResult.data) {
+        // Trier par mc_sort pour garder les gammes les plus pertinentes
+        const sorted = [...catalogResult.data].sort(
+          (a, b) => Number(a.mc_sort || 999) - Number(b.mc_sort || 999),
+        );
+        for (const mapping of sorted) {
+          const familyId = mapping.mc_mf_prime;
+          const meta = gammeMetaMap.get(mapping.mc_pg_id.toString());
+          if (!meta || !meta.pgAlias) continue;
+
+          if (!familyGammeLinks.has(familyId)) {
+            familyGammeLinks.set(familyId, []);
+          }
+          const links = familyGammeLinks.get(familyId)!;
+          // Max 2 gammes par famille, pas de doublons
+          if (links.length < 2 && !links.some((l) => l.pgId === meta.pgId)) {
+            links.push({
+              slug: meta.pgAlias,
+              name: meta.pgName,
+              pgId: meta.pgId,
             });
           }
         }
@@ -197,6 +254,8 @@ export class AdviceHierarchyController {
             (sum, a) => sum + (a.viewsCount || 0),
             0,
           ),
+          // Top 2 gammes par famille avec slug + pgId (pour liens R1 ou R3)
+          gammeLinks: familyGammeLinks.get(group.familyId) || [],
         }))
         .sort((a, b) => a.familySort - b.familySort);
 

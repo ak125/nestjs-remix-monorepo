@@ -64,7 +64,7 @@ interface CategoryGroup {
   count: number;
   totalViews: number;
   articles: BlogArticle[];
-  gammeLinks: Array<{ slug: string; name: string }>;
+  gammeLinks: Array<{ slug: string; name: string; pgId: number }>;
 }
 
 interface LoaderData {
@@ -74,86 +74,7 @@ interface LoaderData {
   stats: { totalViews: number; totalCategories: number };
 }
 
-// ── Top 2 gammes par famille (liens e-commerce, keyed par mf_id) ──
-
-const FAMILY_GAMMES: Record<number, Array<{ slug: string; name: string }>> = {
-  2: [
-    { slug: "plaquette-de-frein", name: "Plaquettes de frein" },
-    { slug: "disque-de-frein", name: "Disques de frein" },
-  ],
-  1: [
-    { slug: "filtre-a-huile", name: "Filtre à huile" },
-    { slug: "filtre-a-air", name: "Filtre à air" },
-  ],
-  3: [
-    { slug: "courroie-d-accessoire", name: "Courroie d'accessoire" },
-    { slug: "galet-tendeur-de-courroie-d-accessoire", name: "Galet tendeur" },
-  ],
-  4: [
-    { slug: "bougie-de-prechauffage", name: "Bougie de préchauffage" },
-    { slug: "boitier-de-prechauffage", name: "Boîtier de préchauffage" },
-  ],
-  5: [
-    { slug: "rotule-de-direction", name: "Rotule de direction" },
-    { slug: "barre-de-direction", name: "Barre de direction" },
-  ],
-  6: [
-    { slug: "amortisseur", name: "Amortisseur" },
-    { slug: "kit-de-butee-de-suspension", name: "Kit butée de suspension" },
-  ],
-  7: [
-    { slug: "support-moteur", name: "Support moteur" },
-    { slug: "support-de-boite-vitesse", name: "Support boîte vitesse" },
-  ],
-  9: [
-    { slug: "kit-d-embrayage", name: "Kit d'embrayage" },
-    { slug: "butee-d-embrayage", name: "Butée d'embrayage" },
-  ],
-  10: [
-    { slug: "cardan", name: "Cardan" },
-    { slug: "soufflet-de-cardan", name: "Soufflet de cardan" },
-  ],
-  11: [
-    { slug: "alternateur", name: "Alternateur" },
-    { slug: "demarreur", name: "Démarreur" },
-  ],
-  12: [
-    { slug: "pressostat-d-huile", name: "Pressostat d'huile" },
-    { slug: "capteur-impulsion", name: "Capteur impulsion" },
-  ],
-  13: [
-    { slug: "debitmetre-d-air", name: "Débitmètre d'air" },
-    { slug: "vanne-egr", name: "Vanne EGR" },
-  ],
-  14: [
-    { slug: "joint-de-culasse", name: "Joint de culasse" },
-    { slug: "joint-de-cache-culbuteurs", name: "Joint cache culbuteurs" },
-  ],
-  15: [
-    { slug: "pompe-a-eau", name: "Pompe à eau" },
-    { slug: "radiateur-de-refroidissement", name: "Radiateur" },
-  ],
-  16: [
-    { slug: "pulseur-d-air-d-habitacle", name: "Pulseur d'air" },
-    { slug: "compresseur-de-climatisation", name: "Compresseur clim" },
-  ],
-  17: [
-    { slug: "silencieux", name: "Silencieux" },
-    { slug: "tube-d-echappement", name: "Tube d'échappement" },
-  ],
-  18: [
-    { slug: "feu-avant", name: "Feu avant" },
-    { slug: "feu-arriere", name: "Feu arrière" },
-  ],
-  19: [
-    { slug: "balais-d-essuie-glace", name: "Balais d'essuie-glace" },
-    { slug: "commande-d-essuie-glace", name: "Commande essuie-glace" },
-  ],
-  20: [
-    { slug: "turbo", name: "Turbo" },
-    { slug: "gaine-de-turbo", name: "Gaine de turbo" },
-  ],
-};
+// gammeLinks sont maintenant servies par le backend (advice-hierarchy API)
 
 /** Lookup emoji par nom de famille via FAMILY_REGISTRY */
 function getFamilyIcon(name: string): string {
@@ -219,7 +140,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           count: family.count as number,
           totalViews: family.totalViews ?? 0,
           articles,
-          gammeLinks: FAMILY_GAMMES[family.familyId as number] || [],
+          gammeLinks:
+            (family.gammeLinks as Array<{
+              slug: string;
+              name: string;
+              pgId: number;
+            }>) || [],
         };
       },
     );
@@ -626,7 +552,7 @@ export default function BlogConseilsIndex() {
                         {group.gammeLinks.map((gamme) => (
                           <Link
                             key={gamme.slug}
-                            to={`/pieces/${gamme.slug}`}
+                            to={`/blog-pieces-auto/conseils/${gamme.slug}`}
                             className="text-xs font-medium text-primary hover:underline"
                           >
                             {gamme.name}
@@ -994,7 +920,7 @@ export default function BlogConseilsIndex() {
                         {group.gammeLinks.map((gamme) => (
                           <Link
                             key={gamme.slug}
-                            to={`/pieces/${gamme.slug}`}
+                            to={`/blog-pieces-auto/conseils/${gamme.slug}`}
                             className="text-xs font-medium bg-white/80 rounded-full px-3 py-1 text-primary hover:bg-white border border-gray-200 transition-colors"
                           >
                             {gamme.name}

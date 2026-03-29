@@ -19,12 +19,15 @@ interface ArticleCardEnhancedProps {
   article: BlogArticle;
   showGammeLink?: boolean;
   compact?: boolean;
+  /** Explicit href for the gamme link — caller decides R1 vs R3 target */
+  gammeHref?: string;
 }
 
 export function ArticleCardEnhanced({
   article,
   showGammeLink = true,
   compact = false,
+  gammeHref,
 }: ArticleCardEnhancedProps) {
   const url = getArticleUrl(article);
   const imageUrl = getArticleImageUrl(article.featuredImage);
@@ -115,12 +118,15 @@ export function ArticleCardEnhanced({
         <div className="mt-auto flex items-center justify-between pt-3 text-xs text-gray-500">
           <span>{formatDate(article)}</span>
 
-          {showGammeLink && article.primaryGammeSlug && (
+          {showGammeLink && (gammeHref || article.primaryGammeSlug) && (
             <Link
-              to={`/pieces/${article.primaryGammeSlug}`}
+              to={
+                gammeHref ||
+                `/blog-pieces-auto/conseils/${article.primaryGammeSlug}`
+              }
               className="flex items-center gap-1 font-medium text-primary hover:underline"
             >
-              Voir pi&egrave;ces
+              Voir conseils
               <ArrowRight className="h-3 w-3" />
             </Link>
           )}
