@@ -31,8 +31,9 @@ export class HomepageRpcService extends SupabaseBaseService {
   private readonly FAMILIES_CACHE_TTL_SECONDS = 1800;
   // Timeout RPC
   private readonly RPC_TIMEOUT_MS = 2000;
-  // Singleflight: partage la promise RPC entre requêtes concurrentes
+  // Singleflight: partage la promise entre requêtes concurrentes
   private inflightPromise: Promise<unknown> | null = null;
+  private belowFoldInflight: Promise<unknown> | null = null;
 
   constructor(
     private readonly cacheService: CacheService,
@@ -247,21 +248,137 @@ export class HomepageRpcService extends SupabaseBaseService {
   }
 
   /**
-   * ⚡ Below-fold data only (brands, equipementiers, blog)
-   * Uses the full RPC (cached) but returns only below-fold portion
+   * ⚡ Below-fold data (brands, equipementiers, blog)
+   * Direct parallel Supabase queries — replaces monolithic RPC (~50ms vs ~2000ms)
    */
   async getHomepageBelowFold() {
-    const data = (await this.getHomepageDataOptimized()) as Record<
-      string,
-      unknown
-    >;
-    const { _performance, _cache, _catalog, _success, _stats, ...belowFold } =
-      data as Record<string, unknown>;
-    return {
-      brands: belowFold.brands ?? [],
-      equipementiers: belowFold.equipementiers ?? [],
-      blog_articles: belowFold.blog_articles ?? [],
+    const startTime = performance.now();
+    const cacheKey = 'homepage:below-fold:v2';
+
+    // 1. Check cache
+    const cached =
+      await this.cacheService.get<Record<string, unknown>>(cacheKey);
+    if (cached) {
+      this.logger.debug(
+        `🎯 CACHE HIT below-fold en ${(performance.now() - startTime).toFixed(1)}ms`,
+      );
+      return cached;
+    }
+
+    // 2. Singleflight
+    if (this.belowFoldInflight) {
+      this.logger.debug('⏳ In-flight join below-fold');
+      return this.belowFoldInflight;
+    }
+
+    this.logger.debug('❌ CACHE MISS below-fold, requêtes Supabase...');
+
+    this.belowFoldInflight = this.fetchBelowFoldDirect(startTime).finally(
+      () => {
+        this.belowFoldInflight = null;
+      },
+    );
+
+    return this.belowFoldInflight;
+  }
+
+  /**
+   * 3 requêtes parallèles directes — pas de RPC plpgsql
+   */
+  private async fetchBelowFoldDirect(startTime: number) {
+    const [brandsRes, equipRes, blogRes] = await Promise.all([
+      // Brands: auto_marque (active, sorted alphabetically)
+      this.supabase
+        .from('auto_marque')
+        .select('marque_id, marque_name, marque_alias, marque_logo, marque_top')
+        .eq('marque_display', 1)
+        .order('marque_name')
+        .limit(100),
+
+      // Equipementiers: pieces_marque (active, deduplicated by name)
+      this.supabase
+        .from('pieces_marque')
+        .select('pm_id, pm_name, pm_logo, pm_alias')
+        .eq('pm_display', '1')
+        .order('pm_name'),
+
+      // Blog articles: top 6 by visits
+      this.supabase
+        .from('__blog_advice')
+        .select(
+          'ba_id, ba_title, ba_descrip, ba_alias, ba_preview, ba_visit, ba_create, ba_pg_id',
+        )
+        .order('ba_visit', { ascending: false, nullsFirst: false })
+        .order('ba_create', { ascending: false, nullsFirst: false })
+        .limit(6),
+    ]);
+
+    // Deduplicate equipementiers by name + apply priority sort
+    const equipPriorityMap: Record<string, number> = {
+      BOSCH: 1,
+      VALEO: 2,
+      'MANN FILTER': 3,
+      'MANN-FILTER': 3,
+      SKF: 4,
+      LUK: 5,
+      SACHS: 6,
+      BREMBO: 7,
+      NGK: 8,
+      CONTINENTAL: 9,
+      HELLA: 10,
+      DENSO: 11,
+      GATES: 12,
+      'FEBI BILSTEIN': 13,
+      TRW: 14,
+      DAYCO: 15,
     };
+    const seenNames = new Set<string>();
+    const equipementiers = (equipRes.data || [])
+      .filter((e) => {
+        if (seenNames.has(e.pm_name)) return false;
+        seenNames.add(e.pm_name);
+        return true;
+      })
+      .sort((a, b) => {
+        const pa = equipPriorityMap[a.pm_name] ?? 999;
+        const pb = equipPriorityMap[b.pm_name] ?? 999;
+        if (pa !== pb) return pa - pb;
+        return a.pm_name.localeCompare(b.pm_name);
+      })
+      .slice(0, 50);
+
+    // Resolve blog article gamme names
+    const blogArticles = blogRes.data || [];
+    let blogWithGammes = blogArticles;
+    const pgIds = blogArticles.map((a) => a.ba_pg_id).filter(Boolean);
+    if (pgIds.length > 0) {
+      const { data: gammes } = await this.supabase
+        .from('pieces_gamme')
+        .select('pg_id, pg_alias, pg_name')
+        .in('pg_id', pgIds);
+      const gammeMap = new Map((gammes || []).map((g) => [String(g.pg_id), g]));
+      blogWithGammes = blogArticles.map((a) => ({
+        ...a,
+        pg_alias: gammeMap.get(String(a.ba_pg_id))?.pg_alias ?? null,
+        pg_name: gammeMap.get(String(a.ba_pg_id))?.pg_name ?? null,
+      }));
+    }
+
+    const result = {
+      brands: brandsRes.data || [],
+      equipementiers,
+      blog_articles: blogWithGammes,
+    };
+
+    // Cache async
+    this.cacheService
+      .set('homepage:below-fold:v2', result, this.CACHE_TTL_SECONDS)
+      .catch((err) => this.logger.error('Erreur cache below-fold:', err));
+
+    this.logger.log(
+      `✅ Below-fold direct en ${(performance.now() - startTime).toFixed(1)}ms`,
+    );
+    return result;
   }
 
   /**
@@ -272,8 +389,11 @@ export class HomepageRpcService extends SupabaseBaseService {
     await Promise.all([
       this.cacheService.del(cacheKey),
       this.cacheService.del('homepage:families:v1'),
+      this.cacheService.del('homepage:below-fold:v2'),
     ]);
-    this.logger.log('🗑️ Cache invalidé pour homepage (RPC + families)');
+    this.logger.log(
+      '🗑️ Cache invalidé pour homepage (RPC + families + below-fold)',
+    );
   }
 
   /**
@@ -282,12 +402,14 @@ export class HomepageRpcService extends SupabaseBaseService {
   async warmCache(): Promise<{ success: boolean; time: number }> {
     const startTime = performance.now();
     try {
-      await this.getHomepageDataOptimized();
+      await this.getHomepageBelowFold();
       const time = performance.now() - startTime;
-      this.logger.log(`🔥 Warm cache homepage terminé en ${time.toFixed(1)}ms`);
+      this.logger.log(
+        `🔥 Warm cache below-fold terminé en ${time.toFixed(1)}ms`,
+      );
       return { success: true, time };
     } catch (error) {
-      this.logger.error('❌ Warm cache homepage failed:', error);
+      this.logger.error('❌ Warm cache below-fold failed:', error);
       return { success: false, time: performance.now() - startTime };
     }
   }
