@@ -49,6 +49,7 @@ automecanik.com, www.automecanik.com {
         # Cache 1 an (Cloudflare edge + navigateur)
         header Cache-Control "public, max-age=31536000, immutable"
         header Vary "Accept"
+        header X-Robots-Tag "noindex, nofollow"
 
         # Strip /imgproxy prefix avant envoi à imgproxy
         uri strip_prefix /imgproxy

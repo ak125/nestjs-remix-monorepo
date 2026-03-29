@@ -46,7 +46,6 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /checkout/
 Disallow: /cart/
-Disallow: /imgproxy/
 Disallow: /img/
 
 # ⏱️ Crawl-delay
