@@ -722,11 +722,14 @@ export class CatalogService
           consigne_ttc: Number(prixData?.pri_consigne_ttc_n) || 0,
           dispo: prixData?.pri_dispo === '1' || prixData?.pri_dispo === 1,
           description: pieceData.piece_des,
-          image: imagesData?.[0]
-            ? `${imagesData[0].pmi_folder}/${imagesData[0].pmi_name}`
-            : '',
+          image:
+            imagesData?.[0]?.pmi_folder && imagesData[0]?.pmi_name
+              ? `${imagesData[0].pmi_folder}/${imagesData[0].pmi_name}`
+              : '',
           images:
-            imagesData?.map((img) => `${img.pmi_folder}/${img.pmi_name}`) || [],
+            imagesData
+              ?.filter((img) => img.pmi_folder && img.pmi_name)
+              .map((img) => `${img.pmi_folder}/${img.pmi_name}`) || [],
           weight: pieceData.piece_weight_kgm,
           hasOem: pieceData.piece_has_oem,
           criteresTechniques,

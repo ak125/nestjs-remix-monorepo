@@ -133,9 +133,10 @@ export class ImageOptimizer {
     } = options;
 
     // Nettoyer le chemin de l'image
-    const cleanPath = imagePath.startsWith("/")
-      ? imagePath.slice(1)
-      : imagePath;
+    // Fix: supprimer double slashes (pmi_folder vide → rack-images//file)
+    const cleanPath = (
+      imagePath.startsWith("/") ? imagePath.slice(1) : imagePath
+    ).replace(/\/\/+/g, "/");
 
     // Détecter dynamiquement le bucket
     let bucket: string = DEFAULT_BUCKET;
@@ -500,6 +501,7 @@ export function getOptimizedRackImageUrl(
   filename: string,
   width: number = 800,
 ): string {
+  if (!folder || !filename) return "/images/placeholder.webp";
   const path = `rack-images/${folder}/${filename}`;
   return ImageOptimizer.getOptimizedUrl(path, { width, quality: 85 });
 }
@@ -511,6 +513,9 @@ export function getResponsiveRackImageSet(
   folder: string,
   filename: string,
 ): ResponsiveImageSet {
+  if (!folder || !filename) {
+    return ImageOptimizer.getResponsiveImageSet("rack-images/placeholder.webp");
+  }
   const path = `rack-images/${folder}/${filename}`;
   return ImageOptimizer.getResponsiveImageSet(path);
 }

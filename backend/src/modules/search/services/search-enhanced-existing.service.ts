@@ -388,10 +388,12 @@ export class SearchEnhancedExistingService extends SupabaseBaseService {
 
       const imagesByPiece = new Map();
       images.forEach((img) => {
-        imagesByPiece.set(
-          img.pmi_piece_id_i,
-          `rack/${img.pmi_folder}/${img.pmi_name}`,
-        );
+        if (img.pmi_folder && img.pmi_name) {
+          imagesByPiece.set(
+            img.pmi_piece_id_i,
+            `rack/${img.pmi_folder}/${img.pmi_name}`,
+          );
+        }
       });
 
       const marquesById = new Map<number, any>();
