@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useCartSidebarListener } from "~/hooks/useCartSidebar";
 import { useOptionalUser, useRootCart } from "~/hooks/useRootData";
 import { SITE_CONFIG } from "../config/site";
 import { CartSidebarSimple } from "./navbar/CartSidebarSimple";
@@ -39,7 +40,9 @@ export const Navbar = memo(function Navbar() {
   const cartData = useRootCart();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const toggleCart = useCallback(() => setIsCartOpen((prev) => !prev), []);
+  const openCart = useCallback(() => setIsCartOpen(true), []);
   const closeCart = useCallback(() => setIsCartOpen(false), []);
+  useCartSidebarListener(openCart);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const summary = useMemo(
