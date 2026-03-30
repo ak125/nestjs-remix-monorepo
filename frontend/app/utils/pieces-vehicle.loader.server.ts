@@ -94,33 +94,6 @@ export async function piecesVehicleLoader({
   const _modeleData = parseUrlParam(rawModele);
   const _typeData = parseUrlParam(rawType);
 
-  // 2b. 301 redirect: ancien pg_id TecDoc (>= 1475) → nouveau massdoc séquentiel
-  if (gammeData.id >= 1475) {
-    try {
-      const remapRes = await fetch(
-        `http://127.0.0.1:3000/api/gamme-rest/${gammeData.id}/resolve-remap`,
-        {
-          headers: { "internal-call": "true" },
-          signal: AbortSignal.timeout(3000),
-        },
-      );
-      if (remapRes.ok) {
-        const remap = await remapRes.json();
-        if (remap.found && remap.canonicalUrl) {
-          // Rebuild the full R2 URL with the new gamme slug
-          const newGammeSlug = remap.canonicalUrl
-            .replace("/pieces/", "")
-            .replace(".html", "");
-          const newUrl = `/pieces/${newGammeSlug}/${rawMarque}/${rawModele}/${rawType}`;
-          logger.log(`[REMAP 301] R2 pg_id ${gammeData.id} → ${newUrl}`);
-          return redirect(newUrl, 301);
-        }
-      }
-    } catch {
-      // Fallback: continue → natural 404 if gamme doesn't exist
-    }
-  }
-
   // 3. Resolution des IDs via API (PARALLELISE pour performance)
   let vehicleIds: Awaited<ReturnType<typeof resolveVehicleIds>>;
   let gammeId: number;

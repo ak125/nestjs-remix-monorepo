@@ -151,23 +151,4 @@ export class GammeRestRpcV2Controller {
       message: `Cache invalidé pour gamme ${pgId}`,
     };
   }
-
-  /**
-   * Resolve old TecDoc pg_id (>= 1475) to new massdoc ID for 301 redirects.
-   * Endpoint: GET /api/gamme-rest/:pgId/resolve-remap
-   */
-  @Get(':pgId/resolve-remap')
-  async resolveRemappedPgId(@Param('pgId') pgId: string) {
-    const pgIdNum = parseInt(pgId, 10);
-    if (isNaN(pgIdNum) || pgIdNum < 1475) {
-      return { found: false };
-    }
-
-    const result = await this.rpcService.resolveRemappedPgId(pgIdNum);
-    if (!result) {
-      return { found: false };
-    }
-
-    return { found: true, ...result };
-  }
 }

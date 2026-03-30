@@ -380,40 +380,4 @@ export class GammeRpcService extends SupabaseBaseService {
         : '';
     return { fragment1, fragment2 };
   }
-
-  /**
-   * Resolve old TecDoc pg_id (>= 1475) to new massdoc ID for 301 redirects.
-   * Pattern: same as vehicle-rpc.service.ts resolveRemappedTypeId()
-   * Mapping is immutable → cache 24h.
-   */
-  async resolveRemappedPgId(
-    oldPgId: number,
-  ): Promise<{ newId: number; canonicalUrl: string } | null> {
-    if (oldPgId < 1475) return null;
-
-    const cacheKey = `remap:pg:${oldPgId}`;
-    const cached = await this.cacheService.get<{
-      newId: number;
-      canonicalUrl: string;
-    }>(cacheKey);
-    if (cached) return cached;
-
-    const { data, error } = await this.supabase.rpc('resolve_pg_id_remap', {
-      p_old_id: oldPgId,
-    });
-
-    if (error || !data || (Array.isArray(data) && data.length === 0)) {
-      return null;
-    }
-
-    const row = Array.isArray(data) ? data[0] : data;
-    if (!row?.new_id) return null;
-
-    const alias = row.pg_alias && row.pg_alias !== '' ? row.pg_alias : 'gamme';
-    const canonicalUrl = `/pieces/${alias}-${row.new_id}.html`;
-    const result = { newId: row.new_id, canonicalUrl };
-
-    await this.cacheService.set(cacheKey, result, 86400); // 24h
-    return result;
-  }
 }

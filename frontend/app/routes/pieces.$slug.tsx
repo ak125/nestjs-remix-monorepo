@@ -172,30 +172,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   const gammeId = match[1];
 
-  // 301 redirect: ancien pg_id TecDoc (>= 1475) → nouveau massdoc séquentiel
-  const gammeIdNum = parseInt(gammeId, 10);
-  if (gammeIdNum >= 1475) {
-    try {
-      const baseUrl = getInternalApiUrl("");
-      const remapRes = await fetch(
-        `${baseUrl}/api/gamme-rest/${gammeId}/resolve-remap`,
-        {
-          headers: { "internal-call": "true" },
-          signal: AbortSignal.timeout(3000),
-        },
-      );
-      if (remapRes.ok) {
-        const remap = await remapRes.json();
-        if (remap.found) {
-          logger.log(`[REMAP 301] pg_id ${gammeId} → ${remap.canonicalUrl}`);
-          return redirect(remap.canonicalUrl, 301);
-        }
-      }
-    } catch {
-      // Fallback: continue → natural 404 if gamme doesn't exist
-    }
-  }
-
   // 🛑 404 — gamme_id=0 n'existe pas en base (parseUrlParam fallback)
   if (gammeId === "0") {
     throw new Response(null, {
