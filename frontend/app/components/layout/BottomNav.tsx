@@ -1,5 +1,6 @@
 import { Link, useLocation } from "@remix-run/react";
 import { Home, Package, ShoppingCart, Stethoscope, User } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 import { openCartSidebar } from "~/hooks/useCartSidebar";
 import { useRootCart } from "~/hooks/useRootData";
@@ -36,13 +37,31 @@ function ActiveIndicator() {
 }
 
 export default function BottomNav() {
+  const navRef = useRef<HTMLElement>(null);
   const location = useLocation();
   const cartData = useRootCart();
   const itemCount = cartData?.summary?.total_items || 0;
   const isCartActive = location.pathname.startsWith("/cart");
 
+  // Expose la hauteur réelle via CSS variable (même pattern que --navbar-height dans Navbar)
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        document.documentElement.style.setProperty(
+          "--bottom-nav-height",
+          `${Math.round(entry.contentRect.height)}px`,
+        );
+      }
+    });
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <nav
+      ref={navRef}
       aria-label="Navigation mobile"
       className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 shadow-lg shadow-black/5 flex lg:hidden"
       style={{ paddingBottom: "max(6px, env(safe-area-inset-bottom))" }}

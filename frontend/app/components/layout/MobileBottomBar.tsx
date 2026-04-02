@@ -46,10 +46,10 @@ export const MobileBottomBar = memo(function MobileBottomBar({
     <div
       className={cn(
         // Base: fixed bottom, full width, only on mobile
-        "fixed bottom-0 left-0 right-0 z-[45]",
+        "fixed left-0 right-0 z-[45]",
         "md:hidden",
         // Padding with safe area
-        "px-4 py-3 pb-safe",
+        "px-4 py-3",
         // Background
         variant === "solid" && "bg-white",
         variant === "blur" && "bg-white/95 backdrop-blur-sm",
@@ -59,6 +59,10 @@ export const MobileBottomBar = memo(function MobileBottomBar({
         "shadow-[0_-2px_10px_rgba(0,0,0,0.1)]",
         className,
       )}
+      // Positionnement dynamique : se place au-dessus du BottomNav via CSS variable
+      // --bottom-nav-height est défini par BottomNav via ResizeObserver (même pattern que --navbar-height)
+      // Fallback 0px pour les pages sans BottomNav (ex: /cart)
+      style={{ bottom: "var(--bottom-nav-height, 0px)" }}
       role="toolbar"
       aria-label="Actions"
     >
@@ -80,10 +84,9 @@ export const MobileBottomBarSpacer = memo(function MobileBottomBarSpacer({
 }) {
   return (
     <div
-      className={cn(
-        "h-20 md:hidden", // ~80px to account for bar + safe area
-        className,
-      )}
+      className={cn("md:hidden", className)}
+      // Hauteur dynamique : BottomNav + ~64px pour la MobileBottomBar elle-même
+      style={{ height: "calc(var(--bottom-nav-height, 0px) + 4rem)" }}
       aria-hidden="true"
     />
   );

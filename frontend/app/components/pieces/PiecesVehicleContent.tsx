@@ -4,6 +4,7 @@
  */
 
 import { Await, Link, useLoaderData, useLocation } from "@remix-run/react";
+import { ShoppingCart } from "lucide-react";
 import {
   lazy,
   Suspense,
@@ -37,6 +38,8 @@ import { FAQSection } from "~/components/seo/FAQSection";
 import { FrictionReducerGroup } from "~/components/trust/FrictionReducer";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { usePiecesFilters } from "~/hooks/use-pieces-filters";
+import { openCartSidebar } from "~/hooks/useCartSidebar";
+import { useRootCart } from "~/hooks/useRootData";
 import { useSeoLinkTracking } from "~/hooks/useSeoLinkTracking";
 import { isValidPosition } from "~/utils/pieces-filters.utils";
 import { buildPiecesBreadcrumbs } from "~/utils/url-builder.utils";
@@ -56,6 +59,8 @@ export function PiecesVehicleContent() {
   const location = useLocation();
   const { trackClick, trackImpression } = useSeoLinkTracking();
   const [showFilters, setShowFilters] = useState(false);
+  const cartData = useRootCart();
+  const cartCount = cartData?.summary?.total_items || 0;
 
   // Hook custom pour la logique de filtrage (gere son propre etat)
   const {
@@ -502,12 +507,28 @@ export function PiecesVehicleContent() {
       {/* Bouton retour en haut */}
       <ScrollToTop />
 
-      {/* Mobile bottom bar : bouton Filtrer */}
+      {/* Mobile bottom bar : Panier + Filtrer */}
       <MobileBottomBarSpacer />
       <MobileBottomBar>
+        {/* Bouton Panier — accès direct sans scroller jusqu'au navbar */}
         <button
+          type="button"
+          onClick={openCartSidebar}
+          className="relative py-3 px-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold flex items-center gap-2 transition-colors"
+        >
+          <ShoppingCart className="w-5 h-5" />
+          Panier
+          {cartCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-5 bg-white text-orange-500 text-xs font-bold rounded-full flex items-center justify-center px-1">
+              {cartCount > 99 ? "99+" : cartCount}
+            </span>
+          )}
+        </button>
+        {/* Bouton Filtrer */}
+        <button
+          type="button"
           onClick={() => setShowFilters(!showFilters)}
-          className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"
+          className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
         >
           <svg
             className="w-5 h-5"

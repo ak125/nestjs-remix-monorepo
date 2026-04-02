@@ -19,7 +19,7 @@ import { memo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { useRootCart } from "~/hooks/useRootData";
 import { cn } from "../../lib/utils";
-import { Sheet, SheetContent, SheetClose } from "../ui/sheet";
+import { Sheet, SheetContent, SheetClose, SheetTitle } from "../ui/sheet";
 
 const FREE_SHIPPING_THRESHOLD = 150;
 
@@ -56,6 +56,7 @@ export const CartSidebarSimple = memo(function CartSidebarSimple({
         side="right"
         className="w-full sm:w-[400px] p-0 flex flex-col"
       >
+        <SheetTitle className="sr-only">Panier</SheetTitle>
         {/* Header compact & dynamique */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm">
           <div className="flex items-center gap-2">
