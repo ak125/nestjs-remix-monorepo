@@ -52,7 +52,7 @@ export const NoProductsAlternatives = memo(function NoProductsAlternatives({
   const gammeUrl = `/pieces/${data.gammeAlias}-${data.gammeId}.html`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-[100dvh] bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="container mx-auto px-4 py-8 md:py-12">
         <div className="max-w-5xl mx-auto">
           {/* Header */}

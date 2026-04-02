@@ -48,8 +48,8 @@ export const MobileBottomBar = memo(function MobileBottomBar({
         // Base: fixed bottom, full width, only on mobile
         "fixed left-0 right-0 z-[45]",
         "md:hidden",
-        // Padding with safe area
-        "px-4 py-3",
+        // Padding with safe area (pb-safe pour iPhone home indicator quand bottom=0)
+        "px-4 py-3 pb-safe",
         // Background
         variant === "solid" && "bg-white",
         variant === "blur" && "bg-white/95 backdrop-blur-sm",

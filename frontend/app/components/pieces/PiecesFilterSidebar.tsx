@@ -86,7 +86,7 @@ export const PiecesFilterSidebar = memo(function PiecesFilterSidebar({
         }));
 
   return (
-    <div className="w-72 h-[calc(100vh-8rem)] flex flex-col">
+    <div className="w-72 h-[calc(100dvh-8rem)] flex flex-col">
       {/* Card principale des filtres - Glassmorphism premium */}
       <div className="bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl shadow-slate-900/10 border border-slate-200/80 overflow-hidden flex flex-col flex-1 min-h-0">
         {/* Header avec gradient premium dark */}
