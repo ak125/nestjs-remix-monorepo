@@ -726,6 +726,7 @@ export default function CheckoutPage() {
     fd.set("paymentMethod", selectedPaymentMethod);
     fd.set("phone", shippingAddress.phone);
     fd.set("acceptTerms", "on");
+    fd.set("idempotencyKey", idempotencyKey);
     // GA4 client_id pour Measurement Protocol purchase côté serveur
     try {
       const gaCookie = document.cookie
