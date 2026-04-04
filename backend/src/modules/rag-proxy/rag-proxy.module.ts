@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { SupabaseStorageService } from '../upload/services/supabase-storage.service';
 import { RagProxyController } from './rag-proxy.controller';
 import { RagProxyService } from './rag-proxy.service';
+import { RagPipelineService } from './rag-pipeline.service';
 
 // Existing extracted services
 import { FrontmatterValidatorService } from './services/frontmatter-validator.service';
@@ -82,6 +83,8 @@ import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audi
     RagVideoManagementService,
     // Facade (depends on all above)
     RagProxyService,
+    // Pipeline orchestration (async jobs: audit / enrich / reindex)
+    RagPipelineService,
   ],
   exports: [
     // Backward compat — external modules inject RagProxyService
