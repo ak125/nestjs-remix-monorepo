@@ -30,7 +30,7 @@ import {
   mapBrandsWithFallback,
   mapBlogArticles,
 } from "~/utils/homepage-rpc.mapper";
-import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
+import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
@@ -106,7 +106,7 @@ export const meta: MetaFunction = () => [
 export async function loader({ request }: LoaderFunctionArgs) {
   // Below-fold + FAQ: fire immediately, NOT awaited (real streaming)
   const belowFoldPromise = fetch(
-    getInternalApiUrlFromRequest("/api/catalog/homepage-below-fold", request),
+    getInternalApiUrl("/api/catalog/homepage-below-fold"),
   )
     .then((res) => (res.ok ? res.json() : null))
     .then((data) => {
@@ -120,10 +120,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }));
 
   const faqPromise = fetch(
-    getInternalApiUrlFromRequest(
-      "/api/support/faq?status=published&limit=5",
-      request,
-    ),
+    getInternalApiUrl("/api/support/faq?status=published&limit=5"),
   )
     .then((res) => (res.ok ? res.json() : null))
     .then(
@@ -139,7 +136,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   // Above-fold: AWAIT families only (lightweight, fast)
   try {
     const familiesRes = await fetch(
-      getInternalApiUrlFromRequest("/api/catalog/homepage-families", request),
+      getInternalApiUrl("/api/catalog/homepage-families"),
     );
 
     const familiesRaw = familiesRes.ok ? await familiesRes.json() : null;

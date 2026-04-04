@@ -4,7 +4,7 @@
  * For each gamme with keywords:
  *   1. Loads ALL keywords (no V-Level filter)
  *   2. Classifies search intent (regex-based)
- *   3. Segments keywords by page role (R1, R3/guide, R3/conseils, R4, R5)
+ *   3. Segments keywords by page role (R1, R3/guide, R3/conseils, R4, R5, R6)
  *   4. Generates forbidden_overlap per role (from page-roles.md vocabulary)
  *   5. Builds a SeoCluster object
  *   6. Optionally writes seo_cluster YAML into gamme .md files
@@ -71,7 +71,7 @@ export type SearchIntent =
   | 'diagnostique'
   | 'navigationnelle';
 
-export type PageRole = 'R1' | 'R3_guide' | 'R3_conseils' | 'R4' | 'R5';
+export type PageRole = 'R1' | 'R3_guide' | 'R3_conseils' | 'R4' | 'R5' | 'R6';
 
 interface ClassifiedKeyword extends KeywordRow {
   intent: SearchIntent;
@@ -163,6 +163,7 @@ const ROLE_INTENT_AFFINITY: Record<PageRole, SearchIntent[]> = {
   R3_conseils: ['diagnostique', 'informationnelle'],
   R4: ['navigationnelle', 'informationnelle'],
   R5: ['diagnostique'],
+  R6: ['informationnelle'],
 };
 
 // More specific patterns for role assignment (overrides general intent)
@@ -174,6 +175,7 @@ const ROLE_KEYWORD_PATTERNS: Record<PageRole, RegExp> = {
     /(?:^|\s)(quand changer|quand remplacer|entretien|remplacement|duree de vie|frequence|comment remplacer|comment changer|epaisseur mini|usure)/i,
   R4: /(?:^|\s)(definition|c'est quoi|qu'est|role |fonction |compose|glossaire)/i,
   R5: /(?:^|\s)(symptome|bruit|vibration|voyant|panne|probleme|claquement|sifflement|diagnostic)/i,
+  R6: /(?:^|\s)(versus|(?<!\w)vs(?!\w)|avis|review|reviews|test[eé]|tests?\b|oem|adaptable|equivalen|alternatif|top\s*\d+|classement|ranking|rapport\s+qualite|prix.?performance|purflux|mann[\s-]?filter|bosch|mahle|hengst|knecht|filtron|champion|wix|donaldson|fleetguard|meyle|febi[\s-]?bilstein|brembo|trw|ate\b|valeo|luk\b|sachs|nk\b|blue\s*print|japanparts|ashika|nipparts|herth|topran|swag|mapco|ridex|stark|metzger|optimal|skf\b|snr\b|ina\b|fag\b|gates\b|dayco|contitech|corteco|elring|ajusa|glaser|goetze|kolbenschmidt|nural|glyco)/i,
 };
 
 /**
@@ -184,6 +186,7 @@ const ROLE_KEYWORD_PATTERNS: Record<PageRole, RegExp> = {
  *   R3/conseils: "quand changer {gamme}" (maintenance/replacement)
  *   R4: "{gamme} definition" (encyclopedic)
  *   R5: "symptome {gamme} use" (diagnostic)
+ *   R6: "meilleur {gamme} avis" (investigation commerciale)
  */
 function generateSyntheticKeywords(
   gammeName: string,
@@ -232,6 +235,15 @@ function generateSyntheticKeywords(
         `${gammeName} hs`,
       ],
     },
+    R6: {
+      primary: `meilleur ${gammeName} avis`,
+      secondary: [
+        `comparatif ${gammeName}`,
+        `${gammeName} oem ou adaptable`,
+        `quel ${gammeName} choisir avis`,
+        `top ${gammeName}`,
+      ],
+    },
   };
 }
 
@@ -245,6 +257,7 @@ function segmentByRole(
     R3_conseils: [],
     R4: [],
     R5: [],
+    R6: [],
   };
 
   for (const kw of keywords) {
@@ -434,6 +447,31 @@ const FORBIDDEN_OVERLAP: Record<PageRole, string[]> = {
     'composé de',
     'glossaire',
     'sélectionnez votre véhicule',
+  ],
+  R6: [
+    // INTERDIT sur R6 (guide d'achat / investigation commerciale)
+    'sélectionnez votre véhicule',
+    'filtrer par',
+    'tous les véhicules compatibles',
+    'démontage',
+    'remontage',
+    'étapes de remplacement',
+    'couple de serrage',
+    'symptôme',
+    'bruit anormal',
+    'panne',
+    'diagnostic',
+    'code DTC',
+    'code OBD',
+    'définition',
+    "qu'est-ce que",
+    'composé de',
+    'glossaire',
+    'ajouter au panier',
+    'commander',
+    'en stock',
+    'livraison',
+    'promotion',
   ],
 };
 
@@ -692,14 +730,15 @@ async function populateBriefKeywords(
   const clusterId = clusterRow?.id || null;
 
   // Map PageRole to brief page_role values
-  // R5 is excluded — __seo_page_brief check constraint only allows R1, R3_guide, R3_conseils, R4
-  const BRIEF_ROLES: PageRole[] = ['R1', 'R3_guide', 'R3_conseils', 'R4'];
+  // R5 is excluded — __seo_page_brief check constraint allows R1, R3_guide, R3_conseils, R4, R6
+  const BRIEF_ROLES: PageRole[] = ['R1', 'R3_guide', 'R3_conseils', 'R4', 'R6'];
 
   const roleMapping: Record<string, string> = {
     R1: 'R1',
     R3_guide: 'R3_guide',
     R3_conseils: 'R3_conseils',
     R4: 'R4',
+    R6: 'R6',
   };
 
   // Primary intent per role
@@ -708,6 +747,7 @@ async function populateBriefKeywords(
     R3_guide: 'choisir la bonne piece',
     R3_conseils: 'savoir quand et comment remplacer',
     R4: 'comprendre le role et la definition',
+    R6: 'comparer et choisir la meilleure reference',
   };
 
   for (const role of BRIEF_ROLES) {
