@@ -301,15 +301,55 @@ VALUE_RE = re.compile(r'(\d+[\.,]?\d*)\s*(bars?|Nm|ohms?|kΩ|MΩ|°C|mm|µm|micr
 TYPE_RE = re.compile(r'(ventilé|plein|perforé|rainuré|composite|bi-matière|organique|semi-métallique|céramique|hydraulique|pneumatique|électrique|inductif|Hall|piézo|mono.?tube|bi.?tube|Low.?Met|NAO|trapézoïdal|poly.?V)', re.IGNORECASE)
 
 # OEM domains — fournisseurs OEM/Tier-1 validés
-OEM_DOMAINS = {'bremboparts.com','delphiautoparts.com','ate-freinage.fr','textar.com',
-               'hutchinson.com','denso-am.eu','filtron.eu','wixfilters.com',
-               'ferodo.com','boschwiperblades.com','mann-filter.com','gpa26.com',
-               'profauto.fr','fram.com',
-               # Tier-1 additionnels (94+22+19+9+6 fichiers dans le corpus)
-               'boschaftermarket.com','valeoservice.fr','sofima-aftermarket.com',
-               'aftermarket.zf.com','hella.com',
-               # Wikipedia FR — source technique encyclopédique, corpus phase F
-               'fr.wikipedia.org'}
+# Source : am_2022_suppliers (sup_display=1) + fournisseurs actifs ___xtr_supplier
+OEM_DOMAINS = {
+    # ── Freinage ─────────────────────────────────────────────────────────────
+    'bremboparts.com', 'ate-freinage.fr', 'textar.com', 'ferodo.com',
+    'boschaftermarket.com',
+    # ── Filtration / injection ────────────────────────────────────────────────
+    'mann-filter.com', 'filtron.eu', 'wixfilters.com', 'fram.com',
+    'mahle.com', 'mahle-aftermarket.com',
+    # ── Électrique / allumage / capteurs ─────────────────────────────────────
+    'boschwiperblades.com', 'denso-am.eu', 'hella.com',
+    'ngk.com',                              # bougies, sondes lambda
+    'continental-aftermarket.com',          # VDO, capteurs
+    'meatdoria.com',                        # sondes, capteurs
+    'topran.de',                            # capteurs, boitiers
+    # ── Transmission / distribution / courroies ───────────────────────────────
+    'hutchinson.com', 'gates.com', 'dayco.com', 'contitech.de',
+    # ── Suspension / direction ────────────────────────────────────────────────
+    'meyle.com',                            # rotules, triangles, direction
+    'moog-suspension-parts.com',            # rotules, biellettes
+    'lemfoerder.de',                        # direction, suspension
+    # ── Amortisseurs / ressorts ───────────────────────────────────────────────
+    'sachs.de',                             # amortisseurs, embrayage
+    'monroe.com',                           # amortisseurs, ressorts
+    'kyb-europe.com',                       # amortisseurs
+    'bilstein.com',                         # amortisseurs haute perf
+    # ── Joints / étanchéité ───────────────────────────────────────────────────
+    'victorreinz.com',                      # joints culasse, carter
+    'elring.com',                           # joints
+    'corteco.com',                          # joints d'étanchéité
+    'swag-online.com',                      # joints, visserie
+    # ── Roulements / étanchéité mécanique ────────────────────────────────────
+    'skf.com',                              # roulements, joints
+    # ── Refroidissement ──────────────────────────────────────────────────────
+    'nissens.com',                          # condenseurs, radiateurs
+    'nrf.eu',                               # refroidissement
+    # ── Pompes / carburant ───────────────────────────────────────────────────
+    'airtex.eu',                            # pompes à carburant, à eau
+    # ── Embrayage ────────────────────────────────────────────────────────────
+    'aisin-europe.com',                     # embrayage, freinage
+    # ── Vérins de carrosserie ─────────────────────────────────────────────────
+    'stabilus.com',                         # vérins capot/coffre
+    # ── Généralistes Tier-1 ───────────────────────────────────────────────────
+    'febi.com',                             # joints, suspension, boitiers
+    'valeo.com', 'valeoservice.fr',         # éclairage, embrayage, essuie-glaces
+    'sofima-aftermarket.com', 'aftermarket.zf.com',
+    'delphiautoparts.com', 'gpa26.com', 'profauto.fr',
+    # ── Source encyclopédique ─────────────────────────────────────────────────
+    'fr.wikipedia.org',
+}
 
 # === EXCLUSIONS DE TYPES PAR GAMME ===
 # Évite les faux positifs cross-gamme (ex: types de disque dans une page plaquette)
