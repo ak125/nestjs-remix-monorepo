@@ -1,23 +1,27 @@
 /**
- * useCartSidebar — Event-based cart sidebar trigger
+ * useCartSidebar — Singleton pour ouvrir/fermer le cart sidebar
  *
- * Permet a BottomNav (ou tout composant) d'ouvrir le cart sidebar
- * gere par Navbar, sans couplage direct.
- * Meme pattern que "cart:updated" (root.tsx).
+ * Remplace le mécanisme CustomEvent (fragile en prod).
+ * Navbar enregistre son setState via registerCartSidebarSetter().
+ * N'importe quel composant appelle openCartSidebar() directement.
+ * Appel synchrone → aucun risque de timing, SSR-safe.
  */
-import { useEffect } from "react";
 
-const CART_SIDEBAR_EVENT = "cart:toggle-sidebar";
+let _setIsCartOpen: ((v: boolean) => void) | null = null;
 
-/** Dispatch depuis n'importe quel composant (ex: BottomNav) */
-export function openCartSidebar() {
-  window.dispatchEvent(new CustomEvent(CART_SIDEBAR_EVENT));
+/** Enregistrer le setState du Navbar (appelé au mount, nettoyé au unmount) */
+export function registerCartSidebarSetter(
+  fn: ((v: boolean) => void) | null,
+): void {
+  _setIsCartOpen = fn;
 }
 
-/** Ecouter dans Navbar pour ouvrir/fermer le sidebar */
-export function useCartSidebarListener(callback: () => void) {
-  useEffect(() => {
-    window.addEventListener(CART_SIDEBAR_EVENT, callback);
-    return () => window.removeEventListener(CART_SIDEBAR_EVENT, callback);
-  }, [callback]);
+/** Ouvrir le cart sidebar depuis n'importe quel composant */
+export function openCartSidebar(): void {
+  _setIsCartOpen?.(true);
+}
+
+/** Fermer le cart sidebar */
+export function closeCartSidebar(): void {
+  _setIsCartOpen?.(false);
 }

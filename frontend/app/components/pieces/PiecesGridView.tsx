@@ -13,6 +13,7 @@ import { Truck } from "lucide-react";
 import React, { useState, useRef, useMemo, useCallback, memo } from "react";
 import { toast } from "sonner";
 
+import { openCartSidebar } from "~/hooks/useCartSidebar";
 import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";
@@ -363,7 +364,7 @@ const PieceCard = memo(function PieceCard({
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                <span className="hidden sm:inline">Ajouter</span>
+                <span>Ajouter</span>
               </>
             ) : (
               <svg
@@ -440,10 +441,10 @@ export function PiecesGridView({
         const success = await addToCart(pieceId, 1, typeId);
         if (success) {
           toast.success(`${piece?.name || "Article"} ajouté au panier`);
+          openCartSidebar();
         } else {
           toast.error("Erreur lors de l'ajout au panier");
         }
-        await new Promise((resolve) => setTimeout(resolve, 500));
       } catch (error) {
         logger.error("❌ Erreur ajout panier:", error);
         toast.error("Erreur lors de l'ajout au panier");
