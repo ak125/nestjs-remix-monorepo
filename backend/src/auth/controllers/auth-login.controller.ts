@@ -437,7 +437,7 @@ export class AuthLoginController {
     description:
       'Initiates Google OAuth2 redirect flow. Redirects user to Google for authentication.',
   })
-  googleRedirect(
+  async googleRedirect(
     @Query('redirectTo') redirectTo: string | undefined,
     @Req() request: Express.Request,
     @Res() response: Response,
