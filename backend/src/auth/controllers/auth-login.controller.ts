@@ -449,7 +449,18 @@ export class AuthLoginController {
       expressReq.headers['x-forwarded-host'] || expressReq.headers.host;
     const redirectUri = `${protocol}://${host}/auth/callback`;
 
-    const authUrl = this.authService.getGoogleAuthUrl(redirectUri, redirectTo);
+    const { url: authUrl, nonce } = this.authService.getGoogleAuthUrl(
+      redirectUri,
+      redirectTo,
+    );
+
+    // Stocker le nonce en session pour vérification CSRF au callback
+    (request as Request).session.googleNonce = nonce;
+    await new Promise<void>((resolve, reject) =>
+      (request as Request).session.save((err) =>
+        err ? reject(err) : resolve(),
+      ),
+    );
 
     this.logger.log(
       `[GOOGLE-OAUTH] Redirecting to Google, callback: ${redirectUri}`,
@@ -488,11 +499,24 @@ export class AuthLoginController {
       );
     }
 
-    // Decode state to get redirectTo
+    // Decode state to get redirectTo + verify CSRF nonce
     let redirectTo = '/';
     if (state) {
       try {
         const decoded = JSON.parse(Buffer.from(state, 'base64url').toString());
+        // Vérification nonce CSRF : doit correspondre à la session
+        const sessionNonce = (request as Request).session?.googleNonce;
+        if (!sessionNonce || !decoded.nonce || decoded.nonce !== sessionNonce) {
+          this.logger.warn(
+            '[GOOGLE-OAUTH] CSRF nonce mismatch — rejecting callback',
+          );
+          return response.redirect(
+            '/login?error=' +
+              encodeURIComponent('Erreur de sécurité, veuillez réessayer'),
+          );
+        }
+        // Nonce valide : supprimer de la session (usage unique)
+        delete (request as Request).session.googleNonce;
         if (
           decoded.redirectTo &&
           typeof decoded.redirectTo === 'string' &&

@@ -294,7 +294,10 @@ export class AuthService {
   /**
    * Construit l'URL d'autorisation Google OAuth2 (redirect flow)
    */
-  getGoogleAuthUrl(redirectUri: string, redirectTo?: string): string {
+  getGoogleAuthUrl(
+    redirectUri: string,
+    redirectTo?: string,
+  ): { url: string; nonce: string } {
     if (!this.googleClientId) {
       throw new BadRequestException(
         'Google Sign-In is not configured on this server',
@@ -317,7 +320,10 @@ export class AuthService {
       prompt: 'select_account',
     });
 
-    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
+    return {
+      url: `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`,
+      nonce,
+    };
   }
 
   /**

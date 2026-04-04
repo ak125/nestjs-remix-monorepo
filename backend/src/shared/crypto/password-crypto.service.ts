@@ -70,7 +70,7 @@ export class PasswordCryptoService {
           .createHash('md5')
           .update(plainPassword)
           .digest('hex');
-        const isValid = md5Hash === hashedPassword;
+        const isValid = this.secureCompare(md5Hash, hashedPassword);
         return { isValid, format: 'md5' };
       }
 
@@ -83,7 +83,7 @@ export class PasswordCryptoService {
           .createHash('sha1')
           .update(plainPassword)
           .digest('hex');
-        const isValid = sha1Hash === hashedPassword;
+        const isValid = this.secureCompare(sha1Hash, hashedPassword);
         return { isValid, format: 'sha1' };
       }
 
