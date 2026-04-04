@@ -843,7 +843,7 @@ export class RagProxyController {
 
   @Post('admin/pipeline/launch')
   @HttpCode(HttpStatus.ACCEPTED)
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @UseGuards(InternalApiKeyGuard)
   @UsePipes(new ZodValidationPipe(PipelineLaunchSchema))
   @ApiOperation({
     summary: 'Launch a pipeline step (audit / enrich / reindex)',
@@ -864,7 +864,7 @@ export class RagProxyController {
   }
 
   @Get('admin/pipeline/status')
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @UseGuards(InternalApiKeyGuard)
   @ApiOperation({
     summary: 'Global pipeline status: lock + last runs + corpus metrics',
   })
@@ -874,7 +874,7 @@ export class RagProxyController {
   }
 
   @Get('admin/pipeline/runs/:runId')
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @UseGuards(InternalApiKeyGuard)
   @ApiOperation({ summary: 'Get a specific pipeline run state' })
   @ApiResponse({ status: 200, description: 'Pipeline run' })
   @ApiResponse({ status: 404, description: 'Run not found' })
@@ -883,7 +883,7 @@ export class RagProxyController {
   }
 
   @Get('admin/pipeline/runs/:runId/logs')
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @UseGuards(InternalApiKeyGuard)
   @ApiOperation({ summary: 'Get pipeline run logs (snapshot, not streamed)' })
   @ApiResponse({ status: 200, description: 'Log lines snapshot' })
   @ApiResponse({ status: 404, description: 'Run not found' })
@@ -899,7 +899,7 @@ export class RagProxyController {
 
   @Post('admin/pipeline/runs/:runId/cancel')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(AuthenticatedGuard, IsAdminGuard)
+  @UseGuards(InternalApiKeyGuard)
   @ApiOperation({ summary: 'Cancel a running or queued pipeline run' })
   @ApiResponse({ status: 200, description: 'Run cancelled' })
   @ApiResponse({
