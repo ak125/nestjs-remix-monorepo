@@ -180,6 +180,7 @@ export function CheckoutLivraisonSection({
       phone: shippingAddress.phone || "",
     });
     if (errors) {
+      setIsEditingAddress(true); // ouvre le formulaire pour afficher les erreurs (mode récap sans champs)
       setLocalErrors(errors);
       // Scroll to first error field
       const firstField = [
@@ -195,7 +196,7 @@ export function CheckoutLivraisonSection({
           const el = document.querySelector(`[name="${firstField}"]`);
           el?.scrollIntoView({ behavior: "smooth", block: "center" });
           (el as HTMLInputElement)?.focus();
-        }, 100);
+        }, 350);
       }
       return;
     }
