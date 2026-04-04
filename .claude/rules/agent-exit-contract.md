@@ -41,15 +41,6 @@ remaining_unknowns (OBLIGATOIRE) / final_status (statut autorise)
 - "Tout corrige" → "N recommandations proposees, en attente de validation humaine"
 - "100% couvert" → "Couverture estimee a N% sur le perimetre X"
 
-## Decision Dossiers (workflow A/B/C)
+## Decision Dossiers
 
-Doivent inclure Section 13 (Coverage Manifest) et Section 14 (Exit Conditions). Verdict `PASS` uniquement si toutes conditions section 14 cochees.
-
-## Prompt de garde-fou (injection obligatoire dans tout agent)
-
-```
-CONTRAT DE SORTIE : Tu ne corriges JAMAIS auto. Tu scannes, analyses, rapportes.
-Pas d'overclaim sans coverage manifest. Separer scan|analysis|correction|validation|verdict.
-Verdict defaut = PARTIAL_COVERAGE. Statuts COMPLETE/DONE/ALL_FIXED interdits.
-Ref: .claude/rules/agent-exit-contract.md
-```
+Inclure Section 13 (Coverage Manifest) + Section 14 (Exit Conditions). Verdict `PASS` si toutes conditions section 14 cochees.

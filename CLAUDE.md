@@ -59,10 +59,8 @@ Ne committer QUE les fichiers de la session en cours. Verifier `git status` + `g
 
 1. Redis requis pour sessions
 2. Port 3000 partage backend/frontend
-3. Payment : HMAC SHA512 (Paybox), SHA256 (SystemPay), `timingSafeEqual` obligatoire
-4. Supabase : service role key backend, anon key frontend
-5. Turbo cache stale : `npm run clean-turbo-cache`
-6. Memory limit : `--max-old-space-size=4096`
+3. Turbo cache stale : `npm run clean-turbo-cache`
+4. Memory limit : `--max-old-space-size=4096`
 
 ## Governance & Security
 
@@ -75,6 +73,3 @@ Ne committer QUE les fichiers de la session en cours. Verifier `git status` + `g
 
 Module `rm/` importe `@monorepo/shared-types` non lie en Docker → crash prod 15min. Lecon : verifier imports resolus dans Docker avant push.
 
-## Key Files
-
-`backend/src/main.ts`, `backend/src/app.module.ts`, `frontend/app/root.tsx`, `frontend/app/routes/_index.tsx`, `turbo.json`, `docker-compose.prod.yml`
