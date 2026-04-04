@@ -41,15 +41,17 @@ Le **Business Squad** comprend **17 agents** avec un budget total de **€262K**
                                          │
     ┌─────────────────┬──────────────────┼──────────────────┬─────────────────┐
     │                 │                  │                  │                 │
-┌───┴─────────┐  ┌────┴────────┐   ┌────┴────────┐   ┌────┴────────┐   ┌────┴────────┐
-│ SEO Squad   │  │ Marketing   │   │ E-Commerce  │   │ Intelligence│   │ Customer    │
-│ [NOUVEAU]   │  │ Squad [NEW] │   │             │   │             │   │             │
-├─────────────┤  ├─────────────┤   ├─────────────┤   ├─────────────┤   ├─────────────┤
-│ IA-SEO      │  │ IA-Marketing│   │ Growth IA   │   │ VoC Miner   │   │ IA-CRM      │
-│ Master      │  │ Director    │   │ IA-Merch    │   │ Analytics   │   │ IA-Sales    │
-│ SEO Sentinel│  │ Content Bot │   │ Pricing Intel│  │ Agent       │   │             │
-│ Schema Bot  │  │ Social Media│   │             │   │             │   │             │
-└─────────────┘  └─────────────┘   └─────────────┘   └─────────────┘   └─────────────┘
+┌──────────────────┐  ┌────┴────────┐   ┌────┴────────┐   ┌────┴────────┐   ┌────┴────────┐
+│ SEO Squad        │  │ Marketing   │   │ E-Commerce  │   │ Intelligence│   │ Customer    │
+│ [v3.9.0+ADR-013] │  │ Squad [NEW] │   │             │   │             │   │             │
+├──────────────────┤  ├─────────────┤   ├─────────────┤   ├─────────────┤   ├─────────────┤
+│ IA-SEO Master    │  │ IA-Marketing│   │ Growth IA   │   │ VoC Miner   │   │ IA-CRM      │
+│ ├─ KP Lead (7)   │  │ Director    │   │ IA-Merch    │   │ Analytics   │   │ IA-Sales    │
+│ ├─ Content Lead(11)│ │ Content Bot │   │ Pricing Intel│  │ Agent       │   │             │
+│ ├─ QA Lead (7)   │  │ Social Media│   │             │   │             │   │             │
+│ └─ Exec Lead (6) │  │             │   │             │   │             │   │             │
+│ SEO Sentinel     │  │             │   │             │   │             │   │             │
+└──────────────────┘  └─────────────┘   └─────────────┘   └─────────────┘   └─────────────┘
 
      ⚠️ RÈGLE CARDINALE: SEO et Marketing NE SE MÉLANGENT JAMAIS
      En cas de conflit: Escalade IA-CEO → HUMAIN décide
@@ -607,7 +609,16 @@ L'**IA-SEO Master** est le **Lead du SEO Squad**, responsable de la **Structure 
 
 ### Coordination
 
-- **SEO Sentinel** : Agent exécution sous IA-SEO Master
+**4 sous-leads (ADR-013, Level 2.5)** — span of control ~30 → 4 :
+
+| Sous-lead | Agents | Périmètre |
+|-----------|--------|-----------|
+| **KP Lead** (`agent.seo.kp.lead`) | 7 | keyword-planner (r1/r4/r6), research-agent, brief-enricher, seo-keyword-expert, serp-analyzer |
+| **Content Lead** (`agent.seo.content.lead`) | 11 | content-batch (r1/r4/r6), conseil-batch, image-prompt (r3/r6), seo-content-architect, content-refresh, video-execution |
+| **QA Lead** (`agent.seo.qa.lead`) | 7 | seo-monitor-*, seo-audit-scheduler, interpolation-monitor, qa.seo-tech, SEO Sentinel |
+| **Exec Lead** (`agent.seo.exec.lead`) | 6 | seo-vlevel, seo-sitemap, seo-canonical, sitemap-delta, pipeline-chain-poller, a9_seo |
+
+**Autres coordinateurs** :
 - **Schema Bot** : Structured data
 - **IA-Marketing Director** : Escalade conflits → HUMAIN
 
