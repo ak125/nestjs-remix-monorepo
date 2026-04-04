@@ -425,6 +425,27 @@ export class RagProxyController {
     }
   }
 
+  /**
+   * Machine-to-machine ingest — même logique que admin/ingest/manual
+   * mais auth via X-Internal-Key (pas de session admin requise).
+   * Utilisé par les scripts RAG automatisés (Phase F).
+   */
+  @Post('internal/ingest/manual')
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(InternalApiKeyGuard)
+  @UsePipes(new ZodValidationPipe(ManualIngestRequestSchema))
+  @ApiOperation({
+    summary: 'Machine-to-machine RAG ingest (OEM scripts, Phase F)',
+  })
+  @ApiResponse({ status: 201, description: 'Document ingested' })
+  @ApiResponse({ status: 400, description: 'Validation error' })
+  @ApiResponse({ status: 409, description: 'Duplicate content' })
+  async ingestManualInternal(
+    @Body() request: ManualIngestRequestDto,
+  ): Promise<object> {
+    return this.ingestManual(request);
+  }
+
   /** List quarantined files with reason metadata. */
   @Get('admin/quarantine')
   @UseGuards(AuthenticatedGuard, IsAdminGuard)
