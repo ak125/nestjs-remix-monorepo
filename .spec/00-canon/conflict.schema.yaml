@@ -1,0 +1,135 @@
+# Schema _conflicts[] — Pipeline RAG Enrichissement
+# Ref: docs/pipeline-rag-enrichissement.md (ai-cos-system), D4
+#
+# Ce schema definit la structure de chaque entree dans le champ _conflicts[]
+# du frontmatter des fichiers gamme .md.
+#
+# Chaque conflit est cree pendant l'enrichissement (Etape 2) quand deux sources
+# fournissent des valeurs divergentes pour le meme champ.
+
+conflict_entry:
+  type: object
+  required:
+    - block
+    - field
+    - conflict_type
+    - run_id
+    - existing_value
+    - new_value
+    - existing_sources
+    - new_sources
+    - resolution_status
+    - human_review_required
+    - created_at
+  properties:
+
+    block:
+      type: string
+      description: Bloc du frontmatter concerne
+      enum: [domain, selection, diagnostic, maintenance, installation, rendering]
+
+    field:
+      type: string
+      description: Chemin du champ en notation dot (ex. interval.value, symptoms[0].label)
+
+    conflict_type:
+      type: string
+      description: |
+        minor_variation — formulation differente, meme sens metier. Ne bloque PAS L1.
+        technical_conflict — valeur technique divergente. BLOQUE L1.
+        safety_conflict — contradiction sur procedure/securite. BLOQUE L1 + priorite revue.
+      enum:
+        - minor_variation
+        - technical_conflict
+        - safety_conflict
+
+    run_id:
+      type: string
+      format: uuid
+      description: UUID v4 du run qui a detecte le conflit (E4b)
+
+    existing_value:
+      type: string
+      description: Valeur actuellement dans le fichier gamme
+
+    new_value:
+      type: string
+      description: Valeur trouvee par le pipeline d'enrichissement
+
+    existing_sources:
+      type: array
+      items:
+        $ref: '#/source_ref'
+      description: Sources de la valeur existante
+
+    new_sources:
+      type: array
+      items:
+        $ref: '#/source_ref'
+      description: Sources de la nouvelle valeur
+
+    resolution_status:
+      type: string
+      enum:
+        - open        # Non resolu, en attente de revue
+        - resolved    # Resolu par un humain
+        - dismissed   # Ecarte (faux positif ou minor_variation normalisee)
+
+    human_review_required:
+      type: boolean
+      description: |
+        true si technical_conflict ou safety_conflict.
+        false uniquement pour minor_variation.
+
+    created_at:
+      type: string
+      format: date
+      description: Date de detection (YYYY-MM-DD)
+
+    resolved_by:
+      type: [string, 'null']
+      description: Identifiant du reviewer humain (null si non resolu)
+
+    resolution:
+      type: [string, 'null']
+      description: Decision prise par le reviewer
+      enum:
+        - accept_existing   # Conserver la valeur actuelle
+        - accept_new        # Remplacer par la nouvelle valeur
+        - merge             # Combiner les deux valeurs
+        - rewrite           # Reecriture manuelle (ni l'un ni l'autre)
+        - null              # Non resolu
+
+    resolved_at:
+      type: [string, 'null']
+      format: date
+      description: Date de resolution (null si non resolu)
+
+source_ref:
+  type: object
+  required:
+    - url
+    - tier
+  properties:
+    url:
+      type: string
+      format: uri
+      description: URL de la source
+    tier:
+      type: string
+      enum: [A, B, C]
+      description: |
+        A = constructeur/norme (Valeo, Bosch, ISO)
+        B = revendeur/guide expert (Oscaro, Mister Auto)
+        C = generaliste (Wikipedia, blogs, forums)
+
+# ── Regles metier (D4) ──
+#
+# - minor_variation ne bloque pas L1, peut etre resolu par normalisation
+# - technical_conflict bloque L1 tant que resolution_status != resolved
+# - safety_conflict bloque L1 + _review_required: true + priorite revue humaine
+#
+# ── Owner de revue (E6) ──
+#
+# - technical_conflict → Tech Lead ou Expert Metier
+# - safety_conflict → Tech Lead (obligatoire, pas delegable)
