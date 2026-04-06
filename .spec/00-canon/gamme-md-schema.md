@@ -421,6 +421,8 @@ Chaque section est **absente** si le bloc source n'est pas present ou est vide.
 
 ## Lifecycle stages
 
+### Stages de creation (historique)
+
 ```
 auto_generated → v4_converted → skill_enriched → expert_reviewed → published
 ```
@@ -432,3 +434,47 @@ auto_generated → v4_converted → skill_enriched → expert_reviewed → publi
 | `skill_enriched` | Contenu genere par skill | `/seo-content-architect` |
 | `expert_reviewed` | Valide par admin | Manuel |
 | `published` | Publie en production | Pipeline auto-publish |
+
+### Stages v5 — Pipeline enrichissement RAG
+
+> Ref: `docs/pipeline-rag-enrichissement.md` (ai-cos-system)
+
+```
+v5_ssot ──────────→ v5_audited ────────→ v5_enriched ───────→ v5_qa_passed ──────→ v5_indexed
+                        ↓                     ↓                    ↓
+                    v5_blocked            v5_blocked           v5_pending_review
+                                         v5_pending_review
+```
+
+| Stage | cycle_terminal | reopenable | indexable | enrichissable | promouvable L1 | revue humaine |
+|-------|----------------|------------|-----------|---------------|----------------|---------------|
+| `v5_ssot` | non | — | oui | oui | non | non |
+| `v5_audited` | non | — | oui | oui | non | non |
+| `v5_enriched` | non | — | non | oui | non | non |
+| `v5_qa_passed` | non | — | oui | oui | **oui** | non |
+| `v5_indexed` | **oui** | **oui** (→ v5_ssot) | oui | oui (nouveau cycle) | non | non |
+| `v5_blocked` | non | non | non | non | non | **oui** |
+| `v5_pending_review` | non | non | non | limite | non | **oui** |
+
+### Contraintes truth_level × lifecycle.stage
+
+| truth_level | stages autorises |
+|-------------|-----------------|
+| L2 | `v5_ssot`, `v5_audited`, `v5_enriched`, `v5_qa_passed`, `v5_blocked`, `v5_pending_review` |
+| L1 | `v5_qa_passed`, `v5_indexed` uniquement |
+
+**Regle canonique** : La promotion L2 → L1 n'est autorisee qu'au moment de la transition `v5_enriched → v5_qa_passed`, exclusivement via le mode `qa_write`.
+
+### Champs lifecycle supplementaires (pipeline enrichissement)
+
+```yaml
+lifecycle:
+  # ── Champs existants ──
+  stage: string
+  last_enriched_by: string
+  last_enriched_at: date
+
+  # ── Ajouts pipeline enrichissement ──
+  last_enriched_run_id: string|null   # UUID v4 du dernier run
+  v5_migrated_at: date|null           # date migration v5
+```

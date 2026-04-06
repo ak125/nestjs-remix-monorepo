@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "enrichment-report.schema.json",
+  "title": "Enrichment Report",
+  "description": "Schema for the enrichment_report.json artifact produced by each pipeline run. Ref: docs/pipeline-rag-enrichissement.md (ai-cos-system)",
+  "type": "object",
+  "required": [
+    "run_id",
+    "alias",
+    "run_date",
+    "execution_mode",
+    "state_before",
+    "state_after",
+    "truth_level_before",
+    "truth_level_after",
+    "blocks",
+    "conflicts",
+    "pending_manual_sources",
+    "seo_regression_checks",
+    "validators_invoked",
+    "validator_verdicts",
+    "decision",
+    "reason"
+  ],
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID v4 unique per execution, propagated to _archive, _conflicts, QA logs, and lifecycle.last_enriched_run_id"
+    },
+    "alias": {
+      "type": "string",
+      "description": "Gamme slug (pg_alias)"
+    },
+    "run_date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date (YYYY-MM-DD)"
+    },
+    "execution_mode": {
+      "type": "string",
+      "enum": ["audit_only", "enrich_dry_run", "enrich_write", "qa_only", "qa_write", "index_ready_check"]
+    },
+    "state_before": {
+      "$ref": "#/$defs/lifecycle_stage"
+    },
+    "state_after": {
+      "$ref": "#/$defs/lifecycle_stage"
+    },
+    "truth_level_before": {
+      "$ref": "#/$defs/truth_level"
+    },
+    "truth_level_after": {
+      "$ref": "#/$defs/truth_level"
+    },
+    "blocks": {
+      "type": "object",
+      "description": "Per-block results. Keys: domain, selection, maintenance, diagnostic, installation",
+      "properties": {
+        "domain": { "$ref": "#/$defs/block_result" },
+        "selection": { "$ref": "#/$defs/block_result" },
+        "maintenance": { "$ref": "#/$defs/block_result" },
+        "diagnostic": { "$ref": "#/$defs/block_result" },
+        "installation": { "$ref": "#/$defs/block_result" }
+      },
+      "additionalProperties": false
+    },
+    "conflicts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/conflict_summary" },
+      "description": "Conflicts detected during this run"
+    },
+    "pending_manual_sources": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Fields requiring manual Tier A sourcing (format: block.field)"
+    },
+    "seo_regression_checks": {
+      "type": "object",
+      "required": ["passed", "failed", "details"],
+      "properties": {
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["check_id", "status"],
+            "properties": {
+              "check_id": { "type": "integer", "minimum": 1, "maximum": 8 },
+              "status": { "type": "string", "enum": ["pass", "fail"] },
+              "detail": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "validators_invoked": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["R0", "R1", "R3", "R4", "R5", "R6", "R7", "R8"]
+      }
+    },
+    "validator_verdicts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["PASS", "PARTIAL", "FAIL", "SKIPPED"]
+      }
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["PROMOTE_L1", "KEEP_L2", "BLOCKED", "PENDING_REVIEW"],
+      "description": "Final pipeline decision for this gamme"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Human-readable explanation of the decision"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "lifecycle_stage": {
+      "type": "string",
+      "enum": [
+        "v5_ssot",
+        "v5_audited",
+        "v5_enriched",
+        "v5_qa_passed",
+        "v5_indexed",
+        "v5_blocked",
+        "v5_pending_review"
+      ]
+    },
+    "truth_level": {
+      "type": "string",
+      "enum": ["L1", "L2"]
+    },
+    "block_result": {
+      "type": "object",
+      "required": ["action", "qa_score", "evidence_score", "structural_complete"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": ["unchanged", "modified", "added", "removed"]
+        },
+        "qa_score": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "evidence_score": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "structural_complete": {
+          "type": ["boolean", "null"],
+          "description": "Whether the block meets D5 minimal schema requirements"
+        }
+      },
+      "additionalProperties": false
+    },
+    "conflict_summary": {
+      "type": "object",
+      "required": ["block", "field", "conflict_type"],
+      "properties": {
+        "block": { "type": "string" },
+        "field": { "type": "string" },
+        "conflict_type": {
+          "type": "string",
+          "enum": ["minor_variation", "technical_conflict", "safety_conflict"]
+        }
+      },
+      "description": "Summary of conflict — full detail in gamme _conflicts[]. See conflict.schema.yaml"
+    }
+  }
+}
