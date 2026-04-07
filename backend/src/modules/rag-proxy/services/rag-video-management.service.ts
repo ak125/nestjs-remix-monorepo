@@ -5,6 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import {
   readdirSync,
   statSync,
@@ -47,9 +48,7 @@ export class RagVideoManagementService {
   constructor(private readonly configService: ConfigService) {}
 
   private get videoDir(): string {
-    const knowledgePath =
-      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     return path.join(knowledgePath, '_raw', 'videos');
   }
 

@@ -9,6 +9,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
 // ── Result ──
@@ -87,8 +88,8 @@ export class VehicleRagGeneratorService extends SupabaseBaseService {
     VehicleRagGeneratorService.name,
   );
 
-  private readonly RAG_VEHICLES_DIR = '/opt/automecanik/rag/knowledge/vehicles';
-  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+  private readonly RAG_VEHICLES_DIR = `${RAG_KNOWLEDGE_PATH}/vehicles`;
+  private readonly RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
   constructor(configService: ConfigService) {
     super(configService);
@@ -723,9 +724,8 @@ export class VehicleRagGeneratorService extends SupabaseBaseService {
     return lines.join('\n');
   }
 
-  private readonly RAG_WEB_DIR = '/opt/automecanik/rag/knowledge/web';
-  private readonly RAG_WEB_CATALOG_DIR =
-    '/opt/automecanik/rag/knowledge/web-catalog';
+  private readonly RAG_WEB_DIR = `${RAG_KNOWLEDGE_PATH}/web`;
+  private readonly RAG_WEB_CATALOG_DIR = `${RAG_KNOWLEDGE_PATH}/web-catalog`;
 
   /**
    * Search for web-ingested docs matching the vehicle model.

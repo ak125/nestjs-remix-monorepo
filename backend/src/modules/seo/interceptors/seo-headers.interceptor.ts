@@ -11,8 +11,8 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { Request, Response } from 'express';
-import { SeoHeadersService } from '../services/seo-headers.service';
-import { RobotsTxtService } from '../services/robots-txt.service';
+import { SeoHeadersService } from '../infrastructure/seo-headers.service';
+import { RobotsTxtService } from '../infrastructure/robots-txt.service';
 import { SITE_ORIGIN } from '../../../config/app.config';
 
 @Injectable()

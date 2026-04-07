@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { readdirSync, statSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import {
   RAG_INGESTION_COMPLETED,
   type RagIngestionCompletedEvent,
@@ -611,9 +612,7 @@ export class RagGammeDetectionService {
   public async resolveGammesFromFiles(
     filePaths: string[],
   ): Promise<Map<string, string[]>> {
-    const knowledgePath =
-      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const results = new Map<string, string[]>();
 
     const addResult = (alias: string, filePath: string): void => {
@@ -742,9 +741,7 @@ export class RagGammeDetectionService {
    * @deprecated Fallback: scan filesystem with mtime window. Prefer resolveGammesFromFiles().
    */
   public detectAffectedGammes(): Map<string, string[]> {
-    const knowledgePath =
-      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const cutoff = Date.now() - 30 * 60 * 1000;
     const results = new Map<string, string[]>();
 
@@ -840,9 +837,7 @@ export class RagGammeDetectionService {
    * cluster_id matches a modified RAG diagnostic file.
    */
   public detectAffectedDiagnostics(): string[] {
-    const knowledgePath =
-      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const diagDir = path.join(knowledgePath, 'diagnostic');
     const cutoff = Date.now() - 30 * 60 * 1000;
     const results: string[] = [];
@@ -889,9 +884,7 @@ export class RagGammeDetectionService {
       strategy: string;
     }>;
   }> {
-    const knowledgePath =
-      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
 
     // Clear caches to pick up any new gamme files
     this.clearCaches();

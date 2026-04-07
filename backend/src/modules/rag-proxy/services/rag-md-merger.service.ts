@@ -2,6 +2,7 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { existsSync, readFileSync, writeFileSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import type { RagMergePatch } from './pdf-rag-classifier.service';
 
 export interface MergeResult {
@@ -28,7 +29,7 @@ const MIN_MERGE_CONFIDENCE = 30;
 @Injectable()
 export class RagMdMergerService {
   private readonly logger = new Logger(RagMdMergerService.name);
-  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+  private readonly RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
   /**
    * Apply a merge-patch to an existing RAG .md file.

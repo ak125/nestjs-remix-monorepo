@@ -1,6 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { R2PagePlanService } from '../services/r2-page-plan.service';
-import { R2ValidatorService } from '../services/r2-validator.service';
+import { R2ValidatorService } from '../validation/r2-validator.service';
 import { buildR2Meta } from '../../../config/r2-meta-builder.utils';
 import type {
   R2Range,

@@ -7,7 +7,7 @@
  */
 
 import { Controller, Get, Header } from '@nestjs/common';
-import { RobotsTxtService } from '../services/robots-txt.service';
+import { RobotsTxtService } from '../infrastructure/robots-txt.service';
 
 @Controller()
 export class RobotsTxtController {

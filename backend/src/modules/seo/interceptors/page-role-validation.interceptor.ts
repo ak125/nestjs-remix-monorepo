@@ -20,7 +20,7 @@ import { Request } from 'express';
 import {
   PageRoleValidatorService,
   PageValidationResult,
-} from '../services/page-role-validator.service';
+} from '../validation/page-role-validator.service';
 import { getPageRoleFromUrl, PAGE_ROLE_META } from '../types/page-role.types';
 
 /**

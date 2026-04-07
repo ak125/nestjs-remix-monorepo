@@ -13,6 +13,7 @@ import {
   existsSync,
 } from 'node:fs';
 import path from 'node:path';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { SupabaseStorageService } from '../../upload/services/supabase-storage.service';
 
@@ -283,9 +284,7 @@ export class RagImageManagementService extends SupabaseBaseService {
     style: string | null;
     priority: string | null;
   }> {
-    const knowledgePath =
-      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const imgDir = path.join(knowledgePath, '_raw', 'web-images');
 
     try {
@@ -351,9 +350,7 @@ export class RagImageManagementService extends SupabaseBaseService {
       );
     }
 
-    const knowledgePath =
-      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const imgDir = path.join(knowledgePath, '_raw', 'web-images');
 
     const imgFile = readdirSync(imgDir).find(
@@ -383,9 +380,7 @@ export class RagImageManagementService extends SupabaseBaseService {
    * replace `gamme: null` with the detected gamme alias.
    */
   enrichNewImagePrompts(hashes: string[], gamme: string): number {
-    const knowledgePath =
-      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const imgDir = path.join(knowledgePath, '_raw', 'web-images');
     let enriched = 0;
     for (const hash of hashes) {
@@ -410,9 +405,7 @@ export class RagImageManagementService extends SupabaseBaseService {
    * Handles orphaned images from previously failed jobs.
    */
   enrichOrphanedImagesBySourceUrl(sourceUrl: string, gamme: string): number {
-    const knowledgePath =
-      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const imgDir = path.join(knowledgePath, '_raw', 'web-images');
     let enriched = 0;
 
@@ -451,9 +444,7 @@ export class RagImageManagementService extends SupabaseBaseService {
     fromGamme: string,
     toGamme: string,
   ): { updated: number; skipped: string[] } {
-    const knowledgePath =
-      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const imgDir = path.join(knowledgePath, '_raw', 'web-images');
     let updated = 0;
     const skipped: string[] = [];

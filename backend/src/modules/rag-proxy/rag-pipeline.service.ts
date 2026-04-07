@@ -19,6 +19,7 @@ import {
 } from 'fs';
 import path from 'path';
 import { randomUUID } from 'crypto';
+import { RAG_KNOWLEDGE_PATH } from '../../config/rag.config';
 import { CacheService } from '../../cache/cache.service';
 import { getErrorMessage } from '../../common/utils/error.utils';
 import type {
@@ -116,10 +117,7 @@ export class RagPipelineService implements OnModuleInit, OnModuleDestroy {
       'RAG_REINDEX_SCRIPT',
       '/opt/automecanik/rag/scripts/reindex.py',
     );
-    this.knowledgePath = this.configService.get<string>(
-      'RAG_KNOWLEDGE_PATH',
-      '/opt/automecanik/rag/knowledge',
-    );
+    this.knowledgePath = RAG_KNOWLEDGE_PATH;
     this.artifactsDir = this.configService.get<string>(
       'RAG_PIPELINE_ARTIFACTS_DIR',
       '/opt/automecanik/app/backend/data/pipeline-runs',

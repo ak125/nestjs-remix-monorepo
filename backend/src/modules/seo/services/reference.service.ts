@@ -9,6 +9,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { SITE_ORIGIN } from '../../../config/app.config';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 // ── V4 Schema Types ──
 
@@ -159,7 +160,7 @@ export interface SeoReferenceListItem {
 @Injectable()
 export class ReferenceService extends SupabaseBaseService {
   protected override readonly logger = new Logger(ReferenceService.name);
-  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+  private readonly RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
   constructor(
     rpcGate: RpcGateService,

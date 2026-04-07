@@ -14,6 +14,7 @@ import { PdfRagClassifierService } from '../../rag-proxy/services/pdf-rag-classi
 import { RagMdMergerService } from '../../rag-proxy/services/rag-md-merger.service';
 import { RagGammeDetectionService } from '../../rag-proxy/services/rag-gamme-detection.service';
 import { RagCleanupService } from '../../rag-proxy/services/rag-cleanup.service';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 /**
  * Admin endpoints for the PDF → RAG merge pipeline.
@@ -107,8 +108,7 @@ export class AdminRagIngestController {
     const mergeResult = this.ragMerger.merge(dto.pgAlias, patch);
 
     // 3b. Sync merged .md to __rag_knowledge DB (non-blocking — merge already succeeded)
-    const knowledgeBasePath =
-      process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+    const knowledgeBasePath = RAG_KNOWLEDGE_PATH;
     let syncResult: { synced: number; skipped: number; errors: string[] } = {
       synced: 0,
       skipped: 0,

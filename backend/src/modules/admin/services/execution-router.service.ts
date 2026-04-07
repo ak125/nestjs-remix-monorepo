@@ -23,9 +23,10 @@ import { BuyingGuideEnricherService } from '../services/buying-guide-enricher.se
 import { ConseilEnricherService } from '../services/conseil-enricher.service';
 import { R2EnricherService } from '../services/r2-enricher.service';
 import { R8VehicleEnricherService } from '../services/r8-vehicle-enricher.service';
-import { DiagnosticService } from '../../seo/services/diagnostic.service';
+import { DiagnosticService } from '../../seo/validation/diagnostic.service';
 import { R1EnricherService } from '../services/r1-enricher.service';
 import { ReferenceService } from '../../seo/services/reference.service';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 // ── Result types ──
 
@@ -529,7 +530,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
     const { existsSync } = await import('node:fs');
     const { join } = await import('node:path');
     const ragPath = join(
-      '/opt/automecanik/rag/knowledge/gammes',
+      `${RAG_KNOWLEDGE_PATH}/gammes`,
       `${pgAlias ?? targetId}.md`,
     );
     const hasRag = existsSync(ragPath);

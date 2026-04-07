@@ -18,7 +18,7 @@ import {
   SeoDiagnostic,
   SeoDiagnosticListItem,
   DiagnosticQualityResult,
-} from '../services/diagnostic.service';
+} from '../validation/diagnostic.service';
 
 /**
  * Controleur API pour les pages Diagnostic (R5)

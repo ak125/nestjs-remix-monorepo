@@ -58,12 +58,17 @@ import {
   ManualIngestRequestDto,
 } from './dto/manual-ingest.dto';
 import { PipelineLaunchSchema, PipelineLaunchDto } from './dto/pipeline.dto';
+import {
+  WebhookIngestionCompleteSchema,
+  WebhookIngestionCompleteDto,
+} from './dto/webhook-ingest.dto';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
 import { AuthenticatedGuard } from '../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../auth/is-admin.guard';
 import { InternalApiKeyGuard } from '../../auth/internal-api-key.guard';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+import { RAG_KNOWLEDGE_PATH } from '../../config/rag.config';
 
 @ApiTags('RAG')
 @Controller('api/rag')
@@ -165,7 +170,7 @@ export class RagProxyController {
   @ApiResponse({ status: 200, description: 'Array of slug strings' })
   async getGammeSlugs() {
     return this.ragGammeDetectionService.getKnownGammeAliases(
-      '/opt/automecanik/rag/knowledge',
+      RAG_KNOWLEDGE_PATH,
     );
   }
 
@@ -325,9 +330,8 @@ export class RagProxyController {
   @ApiResponse({ status: 409, description: 'Duplicate content' })
   async ingestManual(@Body() request: ManualIngestRequestDto) {
     // #2: Validate gamme aliases exist as .md files
-    const knownSlugs = this.ragGammeDetectionService.getKnownGammeAliases(
-      '/opt/automecanik/rag/knowledge',
-    );
+    const knownSlugs =
+      this.ragGammeDetectionService.getKnownGammeAliases(RAG_KNOWLEDGE_PATH);
     const unknownAliases = request.gamme_aliases.filter(
       (a) => !knownSlugs.includes(a),
     );
@@ -576,8 +580,7 @@ export class RagProxyController {
       throw new BadRequestException('Invalid image hash format');
     }
 
-    const knowledgePath =
-      process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const imagePath = path.join(knowledgePath, '_raw', 'web-images', hash);
 
     if (!existsSync(imagePath)) {
@@ -657,6 +660,7 @@ export class RagProxyController {
   @Post('webhook/ingestion-complete')
   @HttpCode(HttpStatus.OK)
   @UseGuards(InternalApiKeyGuard)
+  @UsePipes(new ZodValidationPipe(WebhookIngestionCompleteSchema))
   @ApiOperation({
     summary: 'Webhook called by RAG container after ingestion completes',
   })
@@ -665,26 +669,7 @@ export class RagProxyController {
     description: 'Gammes detected and content-refresh queued',
   })
   @ApiResponse({ status: 403, description: 'Invalid X-Internal-Key' })
-  async webhookIngestionComplete(
-    @Body()
-    body: {
-      job_id: string;
-      source: 'pdf' | 'web';
-      status: 'done' | 'failed';
-      files_created?: string[];
-    },
-  ) {
-    if (!body.job_id || !body.source || !body.status) {
-      throw new BadRequestException(
-        'Missing required fields: job_id, source, status',
-      );
-    }
-    if (!['pdf', 'web'].includes(body.source)) {
-      throw new BadRequestException('source must be "pdf" or "web"');
-    }
-    if (!['done', 'failed'].includes(body.status)) {
-      throw new BadRequestException('status must be "done" or "failed"');
-    }
+  async webhookIngestionComplete(@Body() body: WebhookIngestionCompleteDto) {
     return this.ragProxyService.handleWebhookCompletion(body);
   }
 
@@ -809,8 +794,7 @@ export class RagProxyController {
       );
     }
 
-    const knowledgeBasePath =
-      process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+    const knowledgeBasePath = RAG_KNOWLEDGE_PATH;
 
     const { readdirSync } = await import('node:fs');
     const { join, resolve } = await import('node:path');

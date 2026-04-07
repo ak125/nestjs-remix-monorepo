@@ -10,6 +10,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { GENERIC_PHRASES as SHARED_GENERIC_PHRASES } from '../../../config/buying-guide-quality.constants';
 import { SECTION_RAG_FIELD_MAP } from '../../../config/keyword-plan.constants';
 import type { EvidenceEntry } from '../../../workers/types/content-refresh.types';
@@ -174,7 +175,7 @@ interface SupplementaryClassification {
 @Injectable()
 export class ConseilEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(ConseilEnricherService.name);
-  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+  private readonly RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
   constructor(
     configService: ConfigService,
@@ -332,7 +333,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
     // 2c. Merge supplementary RAG content into contract
     let supplementaryEnriched = false;
-    const knowledgeRoot = '/opt/automecanik/rag/knowledge';
+    const knowledgeRoot = RAG_KNOWLEDGE_PATH;
     if (supplementaryFiles.length > 0) {
       const classified = this.loadAndClassifySupplementary(supplementaryFiles);
       supplementaryEnriched = this.mergeSupplementaryIntoContract(

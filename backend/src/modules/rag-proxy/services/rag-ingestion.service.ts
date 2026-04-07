@@ -10,6 +10,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { promises as fs, readdirSync } from 'node:fs';
 import path from 'node:path';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import {
   PdfIngestSingleRequestDto,
   PdfIngestRunResponseDto,
@@ -437,8 +438,7 @@ export class RagIngestionService implements OnModuleInit, OnModuleDestroy {
     if (!/^[a-z0-9_-]+$/i.test(containerName)) {
       throw new Error(`Invalid container name: ${containerName}`);
     }
-    const knowledgeHostPath =
-      process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+    const knowledgeHostPath = RAG_KNOWLEDGE_PATH;
     const containerTmpPath = `/tmp/web-import/${job.jobId}`;
     const safeUrl = job.url.replace(/'/g, "'\\''");
 
@@ -716,8 +716,7 @@ export class RagIngestionService implements OnModuleInit, OnModuleDestroy {
           this.activePollTimers.delete(timer);
 
           // Validate frontmatter on recently modified knowledge files (like web flow)
-          const knowledgePath =
-            process.env.RAG_KNOWLEDGE_PATH || '/opt/automecanik/rag/knowledge';
+          const knowledgePath = RAG_KNOWLEDGE_PATH;
           let validationResult:
             | {
                 valid: string[];
@@ -858,9 +857,7 @@ export class RagIngestionService implements OnModuleInit, OnModuleDestroy {
     }>;
     count: number;
   }> {
-    const knowledgePath =
-      this.configService.get('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const quarantineDir = path.join(knowledgePath, '_quarantine');
 
     const {
@@ -907,9 +904,7 @@ export class RagIngestionService implements OnModuleInit, OnModuleDestroy {
   async retryQuarantinedFile(
     filename: string,
   ): Promise<{ success: boolean; message: string }> {
-    const knowledgePath =
-      this.configService.get('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const quarantineDir = path.join(knowledgePath, '_quarantine');
 
     const {

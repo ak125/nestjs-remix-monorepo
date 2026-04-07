@@ -22,6 +22,7 @@ import {
 import { R3_FORBIDDEN_IN_R1 } from '../../../config/r1-keyword-plan.constants';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 export interface BatchR1Result {
   pgId: number;
@@ -45,7 +46,7 @@ export class R1KeywordPlanBatchService extends SupabaseBaseService {
     R1KeywordPlanBatchService.name,
   );
 
-  private readonly RAG_DIR = '/opt/automecanik/rag/knowledge/gammes';
+  private readonly RAG_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
   constructor(
     configService: ConfigService,

@@ -21,6 +21,7 @@ import {
 } from '../../../config/r5-diagnostic.constants';
 import * as fs from 'fs';
 import * as path from 'path';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 /**
  * Interface pour un diagnostic SEO (R5) - format complet
@@ -106,8 +107,7 @@ export interface DiagnosticQualityResult {
 @Injectable()
 export class DiagnosticService extends SupabaseBaseService {
   protected override readonly logger = new Logger(DiagnosticService.name);
-  private readonly RAG_DIAGNOSTIC_DIR =
-    '/opt/automecanik/rag/knowledge/diagnostic';
+  private readonly RAG_DIAGNOSTIC_DIR = `${RAG_KNOWLEDGE_PATH}/diagnostic`;
 
   constructor(
     rpcGate: RpcGateService,

@@ -10,6 +10,7 @@ import { BuyingGuideSectionExtractor } from './buying-guide-section-extractor.se
 import { BuyingGuideQualityGatesService } from './buying-guide-quality-gates.service';
 import { ClaimExtractor } from './claim-extractor.util';
 import { UseCaseSchema } from '../../dto/buying-guide-enrich.dto';
+import { RAG_KNOWLEDGE_PATH } from '../../../../config/rag.config';
 import type { SectionValidationResult } from './buying-guide.types';
 import type {
   EvidenceEntry,
@@ -31,7 +32,7 @@ import {
 @Injectable()
 export class BuyingGuideRagFetcherService {
   private readonly logger = new Logger(BuyingGuideRagFetcherService.name);
-  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+  private readonly RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
   constructor(
     private readonly ragService: RagProxyService,
@@ -602,8 +603,7 @@ export class BuyingGuideRagFetcherService {
   /**
    * Find the guide doc ID for a gamme slug by trying multiple variants.
    */
-  private static readonly RAG_GUIDES_DIR =
-    '/opt/automecanik/rag/knowledge/guides';
+  private static readonly RAG_GUIDES_DIR = `${RAG_KNOWLEDGE_PATH}/guides`;
 
   /** Cached list of guide filenames on disk (loaded once). */
   private guideFilesCache: string[] | null = null;

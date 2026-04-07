@@ -1,6 +1,7 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { RagFingerprintService } from './rag-fingerprint.service';
 import { RagFoundationGateService } from './rag-foundation-gate.service';
@@ -370,9 +371,7 @@ export class RagNormalizationService extends SupabaseBaseService {
     // Use gamme detection if no aliases yet
     if (gammeAliases.length === 0) {
       try {
-        const knowledgePath =
-          this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-          '/opt/automecanik/rag/knowledge';
+        const knowledgePath = RAG_KNOWLEDGE_PATH;
         const fullPath = `${knowledgePath}/${source}${source.endsWith('.md') ? '' : '.md'}`;
         const detected =
           await this.gammeDetectionService.resolveGammesFromFiles([fullPath]);
