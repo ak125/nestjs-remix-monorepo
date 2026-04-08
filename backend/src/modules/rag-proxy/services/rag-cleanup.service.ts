@@ -4,6 +4,7 @@ import { createHash } from 'crypto';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { isSourceTypeBusinessAdmissible } from '../../../config/document-storage-policies';
 import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagFingerprintService } from './rag-fingerprint.service';
 import { RagNormalizationService } from './rag-normalization.service';
@@ -75,6 +76,48 @@ const COMPATIBILITY_MATRIX: Record<
   canon: {
     categories: ['definition', 'diagnostic'],
     truthLevels: ['L1'],
+  },
+};
+
+/**
+ * Maps (source prefix, category) → canonical source_type from document-storage-policies.
+ * Used by resolveBusinessAdmissible() to determine default admissibility.
+ * Unmapped combinations default to false (safe).
+ */
+const SOURCE_PREFIX_TO_POLICY_TYPE: Record<string, Record<string, string>> = {
+  gammes: {
+    'catalog/gamme': 'gamme_reference',
+    gamme: 'gamme_reference',
+  },
+  guides: {
+    guide: 'guide_validated',
+    'knowledge/guide': 'guide_validated',
+    'guide/guide': 'guide_validated',
+  },
+  diagnostic: {
+    diagnostic: 'diagnostic_reference',
+    'diagnostic/diagnostic': 'diagnostic_reference',
+  },
+  faq: { 'knowledge/faq': 'faq_validated' },
+  manual: {
+    'knowledge/reference': 'oem_primary',
+    'knowledge/canonical': 'canonical_validated',
+    knowledge: 'internal_validated',
+    'knowledge/guide': 'internal_validated',
+    diagnostic: 'diagnostic_reference',
+    'diagnostic/diagnostic': 'diagnostic_reference',
+    maintenance: 'guide_validated',
+    selection: 'supplier_structured',
+    faq: 'faq_validated',
+  },
+  canonical: { 'knowledge/canonical': 'canonical_validated' },
+  policies: { 'knowledge/policy': 'policy_rule' },
+  vehicle: { 'catalog/vehicle': 'vehicle_reference' },
+  vehicles: { 'catalog/vehicle': 'vehicle_reference' },
+  reference: { definition: 'internal_validated' },
+  canon: {
+    definition: 'canonical_validated',
+    diagnostic: 'canonical_validated',
   },
 };
 
@@ -220,6 +263,24 @@ export class RagCleanupService extends SupabaseBaseService {
     };
   }
 
+  // ── Business admissibility ─────────────────────────────────────
+
+  /**
+   * Resolve business_pool_admissible from (prefix, category, truth_level).
+   * Safe default: false.
+   */
+  private resolveBusinessAdmissible(
+    doc: RagDocInput,
+    decision: IngestDecision,
+  ): boolean {
+    if (decision.proposed.status !== 'active') return false;
+    if (doc.truth_level === 'L3' || doc.truth_level === 'L4') return false;
+    const prefix = this.getSourcePrefix(doc.source);
+    const sourceType = SOURCE_PREFIX_TO_POLICY_TYPE[prefix]?.[doc.category];
+    if (!sourceType) return false;
+    return isSourceTypeBusinessAdmissible(sourceType);
+  }
+
   // ── Apply ─────────────────────────────────────────────────────
 
   /**
@@ -272,6 +333,10 @@ export class RagCleanupService extends SupabaseBaseService {
           : 'failed';
     payload.phase1_status = phase1Status;
     payload.foundation_gate_passed = phase1Status === 'passed';
+    payload.business_pool_admissible = this.resolveBusinessAdmissible(
+      doc,
+      decision,
+    );
 
     const { data, error } = await this.supabase
       .from('__rag_knowledge')
