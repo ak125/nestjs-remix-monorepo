@@ -162,10 +162,12 @@ export function mergeFaqBlocks(
 
   // Dédupliquer : ne pas ajouter une question statique si une similaire existe déjà
   const editorialTexts = new Set(
-    editorialQuestions.map((q) => q.question.toLowerCase().slice(0, 30)),
+    editorialQuestions.map((q) =>
+      (q.question || "").toLowerCase().slice(0, 30),
+    ),
   );
   const uniqueStatic = staticFaq.filter(
-    (q) => !editorialTexts.has(q.question.toLowerCase().slice(0, 30)),
+    (q) => !editorialTexts.has((q.question || "").toLowerCase().slice(0, 30)),
   );
 
   return [...editorialQuestions, ...uniqueStatic];

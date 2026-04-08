@@ -228,7 +228,7 @@ function addGammeLinksToText(
     if (!gammeUrl) continue;
     if (linkedGammes.has(gamme.name)) continue;
 
-    const name = gamme.name.toLowerCase();
+    const name = (gamme.name || "").toLowerCase();
     const patterns = [
       name,
       name + "s",

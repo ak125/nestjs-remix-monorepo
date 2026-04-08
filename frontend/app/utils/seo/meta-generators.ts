@@ -1,6 +1,6 @@
 /**
  * 🏷️ Meta Tags Generators
- * 
+ *
  * Templates de meta tags optimisés pour le CTR par type de page.
  * Utilise des variables dynamiques et des formules éprouvées.
  */
@@ -13,7 +13,7 @@ export interface MetaTagsResult {
 
 /**
  * 📦 Génère les meta tags pour une page gamme de produits
- * 
+ *
  * @example
  * generateGammeMeta({
  *   name: 'Plaquettes de frein',
@@ -67,11 +67,11 @@ export function generateGammeMeta(options: GammeMetaOptions): MetaTagsResult {
       : null,
     // Avec marque produit
     brand
-      ? `${name} ${brand} | Prix Discount -${onSale ? '30' : '20'}% | Stock Disponible`
+      ? `${name} ${brand} | Prix Discount -${onSale ? "30" : "20"}% | Stock Disponible`
       : null,
     // Avec prix
     minPrice && maxPrice
-      ? `${name} dès ${minPrice.toFixed(2)}€ | ${count ? `${count}+ ` : ''}Pièces Auto`
+      ? `${name} dès ${minPrice.toFixed(2)}€ | ${count ? `${count}+ ` : ""}Pièces Auto`
       : null,
     // Générique optimisé
     `${name} Pas Cher | Qualité OEM | Livraison 24-48h`,
@@ -83,18 +83,18 @@ export function generateGammeMeta(options: GammeMetaOptions): MetaTagsResult {
   const descTemplates = [
     // Avec véhicule
     vehicleBrand && vehicleModel
-      ? `${name} pour ${vehicleBrand} ${vehicleModel}. ${count ? `${count}+ références` : 'Large choix'}, qualité garantie. ${inStock ? '✓ En stock' : ''} ${onSale ? '✓ Promo' : ''} ✓ Livraison rapide.`
+      ? `${name} pour ${vehicleBrand} ${vehicleModel}. ${count ? `${count}+ références` : "Large choix"}, qualité garantie. ${inStock ? "✓ En stock" : ""} ${onSale ? "✓ Promo" : ""} ✓ Livraison rapide.`
       : null,
     // Avec marque
     brand
-      ? `${name} ${brand} au meilleur prix. ${count ? `${count} produits` : 'Grand choix'} en stock. Qualité OEM, garantie 1 an. Livraison 24-48h.`
+      ? `${name} ${brand} au meilleur prix. ${count ? `${count} produits` : "Grand choix"} en stock. Qualité OEM, garantie 1 an. Livraison 24-48h.`
       : null,
     // Avec prix
     minPrice && maxPrice
-      ? `${name} de ${minPrice.toFixed(2)}€ à ${maxPrice.toFixed(2)}€. ${count ? `${count}+ références` : 'Large sélection'} en stock. Paiement sécurisé, livraison express.`
+      ? `${name} de ${minPrice.toFixed(2)}€ à ${maxPrice.toFixed(2)}€. ${count ? `${count}+ références` : "Large sélection"} en stock. Paiement sécurisé, livraison express.`
       : null,
     // Générique
-    `${name} de qualité professionnelle au meilleur prix. ${count ? `${count}+ produits` : 'Large choix'} en stock. Garantie 1 an, livraison 24-48h partout en France.`,
+    `${name} de qualité professionnelle au meilleur prix. ${count ? `${count}+ produits` : "Large choix"} en stock. Garantie 1 an, livraison 24-48h partout en France.`,
   ].filter(Boolean);
 
   const description = descTemplates[0] || `${name} - Automecanik`;
@@ -105,7 +105,9 @@ export function generateGammeMeta(options: GammeMetaOptions): MetaTagsResult {
     `${name.toLowerCase()} pas cher`,
     `${name.toLowerCase()} discount`,
     vehicleBrand ? `${name.toLowerCase()} ${vehicleBrand.toLowerCase()}` : null,
-    vehicleModel ? `${name.toLowerCase()} ${vehicleBrand?.toLowerCase()} ${vehicleModel.toLowerCase()}` : null,
+    vehicleModel
+      ? `${name.toLowerCase()} ${vehicleBrand?.toLowerCase()} ${vehicleModel.toLowerCase()}`
+      : null,
     brand ? `${name.toLowerCase()} ${brand.toLowerCase()}` : null,
     `achat ${name.toLowerCase()}`,
     `prix ${name.toLowerCase()}`,
@@ -120,7 +122,7 @@ export function generateGammeMeta(options: GammeMetaOptions): MetaTagsResult {
 
 /**
  * 🔧 Génère les meta tags pour une page pièce spécifique
- * 
+ *
  * @example
  * generatePieceMeta({
  *   name: 'Plaquettes de frein avant',
@@ -170,8 +172,10 @@ export function generatePieceMeta(options: PieceMetaOptions): MetaTagsResult {
     warranty = 1,
   } = options;
 
-  const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
-  const priceStr = price.toFixed(2).replace('.', ',');
+  const discount = originalPrice
+    ? Math.round(((originalPrice - price) / originalPrice) * 100)
+    : 0;
+  const priceStr = price.toFixed(2).replace(".", ",");
 
   // Titre optimisé (max 60 caractères)
   const titleTemplates = [
@@ -181,7 +185,7 @@ export function generatePieceMeta(options: PieceMetaOptions): MetaTagsResult {
       : null,
     // Avec marque pièce
     brand
-      ? `${name} ${brand} ${vehicleBrand} ${vehicleModel} ${discount > 0 ? `-${discount}%` : ''}`
+      ? `${name} ${brand} ${vehicleBrand} ${vehicleModel} ${discount > 0 ? `-${discount}%` : ""}`
       : null,
     // Avec réduction
     discount > 10
@@ -197,26 +201,29 @@ export function generatePieceMeta(options: PieceMetaOptions): MetaTagsResult {
   const descTemplates = [
     // Avec tout
     brand && vehicleMotor
-      ? `${name} ${brand} pour ${vehicleBrand} ${vehicleModel} ${vehicleMotor}. ${inStock ? '✓ En stock' : 'Délai court'}, ${priceStr}€ ${discount > 0 ? `(-${discount}%)` : ''}. Garantie ${warranty} ans.`
+      ? `${name} ${brand} pour ${vehicleBrand} ${vehicleModel} ${vehicleMotor}. ${inStock ? "✓ En stock" : "Délai court"}, ${priceStr}€ ${discount > 0 ? `(-${discount}%)` : ""}. Garantie ${warranty} ans.`
       : null,
     // Sans motorisation
     brand
-      ? `${name} ${brand} compatible ${vehicleBrand} ${vehicleModel}. Prix: ${priceStr}€ ${discount > 0 ? `(économie ${discount}%)` : ''}. ${inStock ? 'Stock immédiat' : 'Livraison rapide'}, garantie ${warranty} ans.`
+      ? `${name} ${brand} compatible ${vehicleBrand} ${vehicleModel}. Prix: ${priceStr}€ ${discount > 0 ? `(économie ${discount}%)` : ""}. ${inStock ? "Stock immédiat" : "Livraison rapide"}, garantie ${warranty} ans.`
       : null,
     // Standard
-    `${name} pour ${vehicleBrand} ${vehicleModel}. Qualité OEM, ${priceStr}€. ${inStock ? '✓ Disponible' : '✓ Commande'}, livraison 24-48h. Garantie ${warranty} ans.`,
+    `${name} pour ${vehicleBrand} ${vehicleModel}. Qualité OEM, ${priceStr}€. ${inStock ? "✓ Disponible" : "✓ Commande"}, livraison 24-48h. Garantie ${warranty} ans.`,
   ].filter(Boolean);
 
-  const description = descTemplates[0] || `${name} pour ${vehicleBrand} ${vehicleModel}`;
+  const description =
+    descTemplates[0] || `${name} pour ${vehicleBrand} ${vehicleModel}`;
 
   // Keywords
   const keywords = [
-    `${name.toLowerCase()} ${vehicleBrand.toLowerCase()} ${vehicleModel.toLowerCase()}`,
-    vehicleMotor ? `${name.toLowerCase()} ${vehicleBrand.toLowerCase()} ${vehicleModel.toLowerCase()} ${vehicleMotor.toLowerCase()}` : null,
-    brand ? `${name.toLowerCase()} ${brand.toLowerCase()}` : null,
+    `${name?.toLowerCase() || ""} ${vehicleBrand?.toLowerCase() || ""} ${vehicleModel?.toLowerCase() || ""}`.trim(),
+    vehicleMotor
+      ? `${name?.toLowerCase() || ""} ${vehicleBrand?.toLowerCase() || ""} ${vehicleModel?.toLowerCase() || ""} ${vehicleMotor.toLowerCase()}`
+      : null,
+    brand ? `${name?.toLowerCase() || ""} ${brand.toLowerCase()}` : null,
     reference ? reference.toLowerCase() : null,
-    `prix ${name.toLowerCase()} ${vehicleBrand.toLowerCase()}`,
-    `acheter ${name.toLowerCase()} ${vehicleBrand.toLowerCase()}`,
+    `prix ${name?.toLowerCase() || ""} ${vehicleBrand?.toLowerCase() || ""}`.trim(),
+    `acheter ${name?.toLowerCase() || ""} ${vehicleBrand?.toLowerCase() || ""}`.trim(),
   ].filter(Boolean) as string[];
 
   return {
@@ -228,7 +235,7 @@ export function generatePieceMeta(options: PieceMetaOptions): MetaTagsResult {
 
 /**
  * 🚗 Génère les meta tags pour une page marque/modèle
- * 
+ *
  * @example
  * generateMarqueMeta({
  *   brand: 'Renault',
@@ -256,23 +263,24 @@ export interface MarqueMetaOptions {
 }
 
 export function generateMarqueMeta(options: MarqueMetaOptions): MetaTagsResult {
-  const { brand, model, motor, gamme, productsCount, minPrice, period } = options;
+  const { brand, model, motor, gamme, productsCount, minPrice, period } =
+    options;
 
   // Construire le nom complet du véhicule
-  const vehicleName = [brand, model, motor].filter(Boolean).join(' ');
+  const vehicleName = [brand, model, motor].filter(Boolean).join(" ");
 
   // Titre
   const titleTemplates = [
     // Gamme spécifique
     gamme && model
-      ? `${gamme} ${brand} ${model} ${motor || ''} | ${productsCount || 'Pièces'}`
+      ? `${gamme} ${brand} ${model} ${motor || ""} | ${productsCount || "Pièces"}`
       : null,
     // Modèle seul
     model
-      ? `Pièces Auto ${brand} ${model} ${motor || ''} | Catalogue Complet`
+      ? `Pièces Auto ${brand} ${model} ${motor || ""} | Catalogue Complet`
       : null,
     // Marque seule
-    `Pièces Détachées ${brand} | ${productsCount ? `${productsCount}+ ` : ''}Références`,
+    `Pièces Détachées ${brand} | ${productsCount ? `${productsCount}+ ` : ""}Références`,
   ].filter(Boolean);
 
   const title = titleTemplates[0] || `Pièces ${brand}`;
@@ -281,25 +289,31 @@ export function generateMarqueMeta(options: MarqueMetaOptions): MetaTagsResult {
   const descTemplates = [
     // Avec gamme et modèle
     gamme && model
-      ? `${gamme} pour ${vehicleName}${period ? ` (${period})` : ''}. ${productsCount ? `${productsCount} produits` : 'Large choix'} ${minPrice ? `dès ${minPrice.toFixed(2)}€` : ''}. Qualité OEM, livraison rapide.`
+      ? `${gamme} pour ${vehicleName}${period ? ` (${period})` : ""}. ${productsCount ? `${productsCount} produits` : "Large choix"} ${minPrice ? `dès ${minPrice.toFixed(2)}€` : ""}. Qualité OEM, livraison rapide.`
       : null,
     // Modèle seul
     model
-      ? `Catalogue complet de pièces auto pour ${vehicleName}. ${productsCount ? `${productsCount}+ références` : 'Toutes les pièces'} en stock. Prix compétitifs, garantie constructeur.`
+      ? `Catalogue complet de pièces auto pour ${vehicleName}. ${productsCount ? `${productsCount}+ références` : "Toutes les pièces"} en stock. Prix compétitifs, garantie constructeur.`
       : null,
     // Marque seule
-    `Pièces détachées ${brand} au meilleur prix. ${productsCount ? `${productsCount}+ produits` : 'Large gamme'} disponibles. Qualité OEM, livraison 24-48h partout en France.`,
+    `Pièces détachées ${brand} au meilleur prix. ${productsCount ? `${productsCount}+ produits` : "Large gamme"} disponibles. Qualité OEM, livraison 24-48h partout en France.`,
   ].filter(Boolean);
 
   const description = descTemplates[0] || `Pièces auto ${brand}`;
 
   // Keywords
   const keywords = [
-    gamme ? `${gamme.toLowerCase()} ${brand.toLowerCase()}` : `pièces ${brand.toLowerCase()}`,
-    model ? `${gamme?.toLowerCase() || 'pièces'} ${brand.toLowerCase()} ${model.toLowerCase()}` : null,
-    motor ? `${brand.toLowerCase()} ${model?.toLowerCase()} ${motor.toLowerCase()}` : null,
-    `catalogue ${brand.toLowerCase()}`,
-    `prix pièces ${brand.toLowerCase()}`,
+    gamme
+      ? `${gamme.toLowerCase()} ${brand?.toLowerCase() || ""}`
+      : `pièces ${brand?.toLowerCase() || ""}`,
+    model
+      ? `${gamme?.toLowerCase() || "pièces"} ${brand?.toLowerCase() || ""} ${model.toLowerCase()}`
+      : null,
+    motor
+      ? `${brand?.toLowerCase() || ""} ${model?.toLowerCase() || ""} ${motor.toLowerCase()}`
+      : null,
+    `catalogue ${brand?.toLowerCase() || ""}`,
+    `prix pièces ${brand?.toLowerCase() || ""}`,
   ].filter(Boolean) as string[];
 
   return {
@@ -325,12 +339,12 @@ export function generateSearchMeta(options: SearchMetaOptions): MetaTagsResult {
   const filtersSummary = hasFilters
     ? Object.entries(filters)
         .map(([k, v]) => `${k}: ${v}`)
-        .join(', ')
-    : '';
+        .join(", ")
+    : "";
 
-  const title = `Recherche "${query}" | ${resultsCount} résultat${resultsCount > 1 ? 's' : ''}`;
+  const title = `Recherche "${query}" | ${resultsCount} résultat${resultsCount > 1 ? "s" : ""}`;
 
-  const description = `${resultsCount} pièce${resultsCount > 1 ? 's' : ''} trouvée${resultsCount > 1 ? 's' : ''} pour "${query}"${hasFilters ? ` (${filtersSummary})` : ''}. Qualité garantie, livraison rapide.`;
+  const description = `${resultsCount} pièce${resultsCount > 1 ? "s" : ""} trouvée${resultsCount > 1 ? "s" : ""} pour "${query}"${hasFilters ? ` (${filtersSummary})` : ""}. Qualité garantie, livraison rapide.`;
 
   return {
     title: truncateTitle(title),
@@ -344,15 +358,18 @@ export function generateSearchMeta(options: SearchMetaOptions): MetaTagsResult {
  */
 function truncateTitle(title: string, maxLength: number = 60): string {
   if (title.length <= maxLength) return title;
-  return title.substring(0, maxLength - 3) + '...';
+  return title.substring(0, maxLength - 3) + "...";
 }
 
 /**
  * ✂️ Tronque la description à 155 caractères max
  */
-function truncateDescription(description: string, maxLength: number = 155): string {
+function truncateDescription(
+  description: string,
+  maxLength: number = 155,
+): string {
   if (description.length <= maxLength) return description;
-  return description.substring(0, maxLength - 3) + '...';
+  return description.substring(0, maxLength - 3) + "...";
 }
 
 /**
@@ -360,15 +377,15 @@ function truncateDescription(description: string, maxLength: number = 155): stri
  */
 export function generateDefaultMeta(): MetaTagsResult {
   return {
-    title: 'Pièces Auto Pas Cher | Automecanik - Qualité OEM Garantie',
+    title: "Pièces Auto Pas Cher | Automecanik - Qualité OEM Garantie",
     description:
-      'Pièces détachées auto de qualité OEM au meilleur prix. Large catalogue en stock, livraison 24-48h, garantie 1 an. Paiement sécurisé.',
+      "Pièces détachées auto de qualité OEM au meilleur prix. Large catalogue en stock, livraison 24-48h, garantie 1 an. Paiement sécurisé.",
     keywords: [
-      'pièces auto',
-      'pièces détachées',
-      'auto pas cher',
-      'qualité oem',
-      'livraison rapide',
+      "pièces auto",
+      "pièces détachées",
+      "auto pas cher",
+      "qualité oem",
+      "livraison rapide",
     ],
   };
 }
@@ -379,7 +396,9 @@ export function generateDefaultMeta(): MetaTagsResult {
 export function formatMetaForRemix(meta: MetaTagsResult) {
   return [
     { title: meta.title },
-    { name: 'description', content: meta.description },
-    ...(meta.keywords ? [{ name: 'keywords', content: meta.keywords.join(', ') }] : []),
+    { name: "description", content: meta.description },
+    ...(meta.keywords
+      ? [{ name: "keywords", content: meta.keywords.join(", ") }]
+      : []),
   ];
 }

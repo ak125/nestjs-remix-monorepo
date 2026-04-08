@@ -217,7 +217,7 @@ function generateSectionContent(
   vehicleName: string,
   gammeName: string,
 ): string {
-  const lowerSection = section.toLowerCase();
+  const lowerSection = (section || "").toLowerCase();
 
   if (lowerSection.includes("pourquoi") || lowerSection.includes("important")) {
     return `Les ${gammeName.toLowerCase()} de qualité sont essentiels pour garantir les performances et la sécurité de votre ${vehicleName}. Choisir des pièces adaptées assure une durabilité optimale et prévient les pannes prématurées.`;
