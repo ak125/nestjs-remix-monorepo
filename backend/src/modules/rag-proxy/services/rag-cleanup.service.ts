@@ -206,8 +206,12 @@ export class RagCleanupService extends SupabaseBaseService {
 
   // ── Decision pipeline (gatekeeper) ────────────────────────────
 
+  /** Minimum content length to pass thin content gate. */
+  private static readonly THIN_CONTENT_THRESHOLD = 500;
+
   /**
-   * 4-gate ingestion pipeline:
+   * 5-gate ingestion pipeline:
+   *  0. Thin content gate (<500 chars)
    *  1. Compatibility matrix validation
    *  2. Domain quota check
    *  3. Exact fingerprint dedup
@@ -216,6 +220,20 @@ export class RagCleanupService extends SupabaseBaseService {
   async decideIngest(doc: RagDocInput): Promise<IngestDecision> {
     const fingerprint = this.computeFingerprint(doc.content);
     const parentSource = this.extractSectionGroup(doc.source) ?? doc.source;
+
+    // Gate 0: thin content gate
+    const trimmedLength = doc.content.trim().length;
+    if (trimmedLength < RagCleanupService.THIN_CONTENT_THRESHOLD) {
+      return {
+        decision: 'REJECT_QUARANTINE',
+        reasons: [
+          `auto_thin_gate_lt500: ${trimmedLength} chars < ${RagCleanupService.THIN_CONTENT_THRESHOLD}`,
+        ],
+        fingerprint,
+        parent_source: parentSource,
+        proposed: { status: 'quarantine', retrievable: false },
+      };
+    }
 
     // Gate 1: compatibility matrix
     const compat = this.validateCompatibility(doc);

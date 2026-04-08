@@ -17,8 +17,8 @@ import type {
 export class RagValidationService {
   private readonly logger = new Logger(RagValidationService.name);
 
-  /** Minimum content length to pass blocking gate. */
-  private static readonly MIN_CONTENT_LENGTH = 50;
+  /** Minimum content length to pass blocking gate (aligned with THIN_CONTENT_THRESHOLD). */
+  private static readonly MIN_CONTENT_LENGTH = 500;
 
   /** Minimum quality score to pass degrading gate. */
   private static readonly MIN_QUALITY_SCORE = 0.3;
