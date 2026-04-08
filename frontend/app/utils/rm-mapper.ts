@@ -150,7 +150,10 @@ function mapGammeInfo(rmV2: RmPageV2Response): GammeData {
 function mapSeoContent(rmV2: RmPageV2Response): SEOEnrichedContent {
   const seo = rmV2.seo;
   // Extract h2 sections from grouped_pieces titles
-  const h2Sections = rmV2.grouped_pieces?.map((g) => g.title_h2) || [];
+  const h2Sections =
+    rmV2.grouped_pieces
+      ?.map((g) => g.title_h2)
+      .filter((t): t is string => t != null && t !== "") || [];
 
   return {
     h1: seo.h1 || "",
