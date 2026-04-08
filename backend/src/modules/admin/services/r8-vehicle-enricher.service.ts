@@ -8,6 +8,7 @@ import type { ResourceGroup } from '../../../config/execution-registry.types';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import { VehicleRagGeneratorService } from './vehicle-rag-generator.service';
@@ -94,8 +95,8 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(
     R8VehicleEnricherService.name,
   );
-  private readonly RAG_VEHICLES_DIR = '/opt/automecanik/rag/knowledge/vehicles';
-  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+  private readonly RAG_VEHICLES_DIR = `${RAG_KNOWLEDGE_PATH}/vehicles`;
+  private readonly RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
   constructor(
     configService: ConfigService,

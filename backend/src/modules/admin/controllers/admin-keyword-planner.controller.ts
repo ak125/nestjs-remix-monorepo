@@ -16,6 +16,7 @@ import type { Cache } from 'cache-manager';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
 import { IsAdminGuard } from '../../../auth/is-admin.guard';
 import { R1ContentFromRagService } from '../services/r1-content-from-rag.service';
@@ -30,7 +31,7 @@ interface CoverageRow {
 }
 
 const TEMPLATES_DIR = '/opt/automecanik/rag/scripts/tools/kp_templates';
-const RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+const RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 const ALL_ROLES = ['R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8'];
 
 @Controller('api/admin/keyword-planner')

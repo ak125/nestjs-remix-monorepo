@@ -8,13 +8,14 @@ const matter = require('gray-matter');
 
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 import { SITE_ORIGIN } from '../../../config/app.config';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 // Import du service de validation qualité
 import {
   QualityValidatorService,
   type VLevel,
   type ValidationResult,
-} from './quality-validator.service';
+} from '../validation/quality-validator.service';
 
 // Import du service AI Content pour enrichissement LLM
 import { AiContentService } from '../../ai-content/ai-content.service';
@@ -145,7 +146,7 @@ export class SeoGeneratorService {
     }
 
     this.supabase = createClient(supabaseUrl, supabaseKey);
-    this.ragBasePath = '/opt/automecanik/rag/knowledge';
+    this.ragBasePath = RAG_KNOWLEDGE_PATH;
   }
 
   /**

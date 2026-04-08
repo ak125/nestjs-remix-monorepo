@@ -93,7 +93,74 @@ jest.mock('@nestjs/platform-express', () => ({
 }));
 
 import { RagProxyController } from '../../src/modules/rag-proxy/rag-proxy.controller';
-const { BadRequestException } = jest.requireActual('@nestjs/common');
+import { WebhookIngestionCompleteSchema } from '../../src/modules/rag-proxy/dto/webhook-ingest.dto';
+
+// ── Zod schema validation tests (replaces manual if-checks) ──
+
+describe('WebhookIngestionCompleteSchema — validation', () => {
+  it('should reject when job_id is missing', () => {
+    const result = WebhookIngestionCompleteSchema.safeParse({
+      source: 'web',
+      status: 'done',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('should reject when source is missing', () => {
+    const result = WebhookIngestionCompleteSchema.safeParse({
+      job_id: 'test',
+      status: 'done',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('should reject when status is missing', () => {
+    const result = WebhookIngestionCompleteSchema.safeParse({
+      job_id: 'test',
+      source: 'web',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('should reject when source is invalid', () => {
+    const result = WebhookIngestionCompleteSchema.safeParse({
+      job_id: 'test',
+      source: 'invalid',
+      status: 'done',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('should reject when status is invalid', () => {
+    const result = WebhookIngestionCompleteSchema.safeParse({
+      job_id: 'test',
+      source: 'web',
+      status: 'invalid',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('should accept valid payload', () => {
+    const result = WebhookIngestionCompleteSchema.safeParse({
+      job_id: 'test-001',
+      source: 'web',
+      status: 'done',
+      files_created: ['gammes/disque-de-frein.md'],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it('should default files_created to empty array', () => {
+    const result = WebhookIngestionCompleteSchema.parse({
+      job_id: 'test',
+      source: 'pdf',
+      status: 'done',
+    });
+    expect(result.files_created).toEqual([]);
+  });
+});
+
+// ── Controller delegation tests ──
 
 describe('RagProxyController — webhook endpoint', () => {
   let controller: any;
@@ -121,53 +188,6 @@ describe('RagProxyController — webhook endpoint', () => {
     status: 'done' as const,
     files_created: ['gammes/disque-de-frein.md'],
   };
-
-  it('should reject when job_id is missing (BadRequestException)', async () => {
-    await expect(
-      controller.webhookIngestionComplete({
-        source: 'web',
-        status: 'done',
-      }),
-    ).rejects.toThrow(/Missing required fields/);
-  });
-
-  it('should reject when source is missing (BadRequestException)', async () => {
-    await expect(
-      controller.webhookIngestionComplete({
-        job_id: 'test',
-        status: 'done',
-      }),
-    ).rejects.toThrow(/Missing required fields/);
-  });
-
-  it('should reject when status is missing (BadRequestException)', async () => {
-    await expect(
-      controller.webhookIngestionComplete({
-        job_id: 'test',
-        source: 'web',
-      }),
-    ).rejects.toThrow(/Missing required fields/);
-  });
-
-  it('should reject when source is invalid (BadRequestException)', async () => {
-    await expect(
-      controller.webhookIngestionComplete({
-        job_id: 'test',
-        source: 'invalid',
-        status: 'done',
-      }),
-    ).rejects.toThrow(/source must be/);
-  });
-
-  it('should reject when status is invalid (BadRequestException)', async () => {
-    await expect(
-      controller.webhookIngestionComplete({
-        job_id: 'test',
-        source: 'web',
-        status: 'invalid',
-      }),
-    ).rejects.toThrow(/status must be/);
-  });
 
   it('should accept valid payload and call handleWebhookCompletion', async () => {
     await controller.webhookIngestionComplete(validPayload);

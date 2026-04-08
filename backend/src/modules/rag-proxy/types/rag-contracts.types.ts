@@ -295,3 +295,15 @@ export const IdempotenceDecisionSchema = z.object({
 });
 
 export type IdempotenceDecision = z.infer<typeof IdempotenceDecisionSchema>;
+
+// ── Webhook Completion Response ─────────────────────────────────
+
+export const WebhookCompletionResponseSchema = z.object({
+  gammes_detected: z.array(z.string()),
+  diagnostics_detected: z.array(z.string()),
+  event_emitted: z.boolean(),
+});
+
+export type WebhookCompletionResponse = z.infer<
+  typeof WebhookCompletionResponseSchema
+>;

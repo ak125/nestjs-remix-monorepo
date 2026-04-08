@@ -15,7 +15,7 @@ import { Request } from 'express';
 import { ErrorService } from '../modules/errors/services/error.service';
 import { RedirectService } from '../modules/errors/services/redirect.service';
 import { ErrorLogService } from '../modules/errors/services/error-log.service';
-import { UrlCompatibilityService } from '../modules/seo/services/url-compatibility.service';
+import { UrlCompatibilityService } from '../modules/seo/validation/url-compatibility.service';
 
 @Controller('api/errors')
 export class ErrorsApiController {

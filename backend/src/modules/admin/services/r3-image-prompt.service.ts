@@ -8,10 +8,11 @@ import {
   MEDIA_LAYOUT_CONTRACT,
   type MediaSlotImageContract,
 } from '../../../config/media-slots.constants';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 // ── Constants ──
 
-const RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+const RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
 const SLOT_SECTION_MAP: Record<string, { sectionId: string; topic: string }> = {
   HERO_IMAGE: { sectionId: 'HERO', topic: 'hero_piece' },

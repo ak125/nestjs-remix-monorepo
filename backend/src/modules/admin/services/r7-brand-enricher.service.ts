@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import {
@@ -57,8 +58,7 @@ interface R7Block {
 @Injectable()
 export class R7BrandEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(R7BrandEnricherService.name);
-  private readonly RAG_BRANDS_DIR =
-    '/opt/automecanik/rag/knowledge/constructeurs';
+  private readonly RAG_BRANDS_DIR = `${RAG_KNOWLEDGE_PATH}/constructeurs`;
 
   constructor(
     configService: ConfigService,

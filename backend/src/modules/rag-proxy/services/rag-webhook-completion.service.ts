@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
 import path from 'node:path';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import {
   RAG_INGESTION_COMPLETED,
   type RagIngestionCompletedEvent,
@@ -73,9 +74,7 @@ export class RagWebhookCompletionService {
     }
 
     // Resolve relative paths to absolute paths
-    const knowledgePath =
-      this.configService.get<string>('RAG_KNOWLEDGE_PATH') ||
-      '/opt/automecanik/rag/knowledge';
+    const knowledgePath = RAG_KNOWLEDGE_PATH;
     const absolutePaths = (dto.files_created ?? []).map((f) =>
       path.isAbsolute(f) ? f : path.join(knowledgePath, f),
     );

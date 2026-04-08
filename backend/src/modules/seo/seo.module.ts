@@ -30,24 +30,24 @@ import { SeoService } from './seo.service';
 import { DynamicSeoV4UltimateService } from './dynamic-seo-v4-ultimate.service';
 import { SeoV4SwitchEngineService } from './services/seo-v4-switch-engine.service';
 import { SeoV4MonitoringService } from './services/seo-v4-monitoring.service';
-import { HreflangService } from './services/hreflang.service';
+import { HreflangService } from './infrastructure/hreflang.service';
 import { ProductImageService } from './services/product-image.service';
-import { RobotsTxtService } from './services/robots-txt.service';
-import { SeoHeadersService } from './services/seo-headers.service';
-import { UrlCompatibilityService } from './services/url-compatibility.service';
+import { RobotsTxtService } from './infrastructure/robots-txt.service';
+import { SeoHeadersService } from './infrastructure/seo-headers.service';
+import { UrlCompatibilityService } from './validation/url-compatibility.service';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SERVICES VALIDATION (ex seo-validation)
 // ═══════════════════════════════════════════════════════════════════════════
-import { PageRoleValidatorService } from './services/page-role-validator.service';
-import { QualityValidatorService } from './services/quality-validator.service';
+import { PageRoleValidatorService } from './validation/page-role-validator.service';
+import { QualityValidatorService } from './validation/quality-validator.service';
 import { PurchaseGuideValidatorService } from './validation/purchase-guide-validator.service';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SERVICES LINKING (ex seo-linking)
 // ═══════════════════════════════════════════════════════════════════════════
 import { InternalLinkingService } from './internal-linking.service';
-import { SeoLinkTrackingService } from './seo-link-tracking.service';
+import { SeoLinkTrackingService } from './infrastructure/seo-link-tracking.service';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SERVICES MONITORING (ex seo-monitoring)
@@ -82,7 +82,7 @@ import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces
 // SERVICES CONTENT (ex seo-content)
 // ═══════════════════════════════════════════════════════════════════════════
 import { ReferenceService } from './services/reference.service';
-import { DiagnosticService } from './services/diagnostic.service';
+import { DiagnosticService } from './validation/diagnostic.service';
 import { SeoGeneratorService } from './services/seo-generator.service';
 import { SeoTitleEngineService } from './services/seo-title-engine.service';
 

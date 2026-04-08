@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { SearchRequestDto, SearchResponseDto } from '../dto/search.dto';
 import { getErrorMessage } from '../../../common/utils/error.utils';
 import { ExternalServiceException } from '../../../common/exceptions';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { RagCircuitBreakerService } from './rag-circuit-breaker.service';
 import { RagCleanupService } from './rag-cleanup.service';
 
@@ -484,7 +485,7 @@ export class RagKnowledgeService {
     }
 
     // Source 3: .md files on disk
-    const gammeDir = '/opt/automecanik/rag/knowledge/gammes';
+    const gammeDir = `${RAG_KNOWLEDGE_PATH}/gammes`;
     const diskFiles = new Set<string>();
     try {
       const files = fs.readdirSync(gammeDir);
@@ -637,7 +638,7 @@ export class RagKnowledgeService {
    */
   async persistGammeAliases(
     affectedGammesMap: Record<string, string[]>,
-    knowledgeRoot = '/opt/automecanik/rag/knowledge',
+    knowledgeRoot = RAG_KNOWLEDGE_PATH,
   ): Promise<number> {
     let updated = 0;
     for (const [pgAlias, filePaths] of Object.entries(affectedGammesMap)) {
@@ -723,7 +724,7 @@ export class RagKnowledgeService {
    */
   async getSupplementaryFilesForGamme(
     pgAlias: string,
-    knowledgeRoot = '/opt/automecanik/rag/knowledge',
+    knowledgeRoot = RAG_KNOWLEDGE_PATH,
   ): Promise<string[]> {
     // F1-GATE: only retrieve docs from the admissible pool
     // Legacy docs (pipeline_version IS NULL) are always admissible

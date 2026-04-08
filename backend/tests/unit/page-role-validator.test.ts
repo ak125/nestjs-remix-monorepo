@@ -6,7 +6,7 @@
  *
  * @see backend/src/modules/seo/services/page-role-validator.service.ts
  */
-import { PageRoleValidatorService } from '../../src/modules/seo/services/page-role-validator.service';
+import { PageRoleValidatorService } from '../../src/modules/seo/validation/page-role-validator.service';
 import { PageRole } from '../../src/modules/seo/types/page-role.types';
 
 describe('PageRole Content Validation', () => {

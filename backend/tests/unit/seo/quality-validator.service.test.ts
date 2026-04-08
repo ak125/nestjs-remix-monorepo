@@ -14,7 +14,7 @@ import {
   VLevel,
   PageRole,
   ValidationIssue,
-} from '../../../src/modules/seo/services/quality-validator.service';
+} from '../../../src/modules/seo/validation/quality-validator.service';
 
 describe('QualityValidatorService', () => {
   let validator: QualityValidatorService;

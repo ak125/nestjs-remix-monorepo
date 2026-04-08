@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 /**
  * Merge-patch structure for enriching an existing RAG .md file.
@@ -39,7 +40,7 @@ export interface RagMergePatch {
 @Injectable()
 export class PdfRagClassifierService {
   private readonly logger = new Logger(PdfRagClassifierService.name);
-  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+  private readonly RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
   private readonly GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
   constructor(private readonly config: ConfigService) {}

@@ -19,6 +19,7 @@ import { RoleId } from '../../../config/role-ids';
 import type { ResourceGroup } from '../../../config/execution-registry.types';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import { EnricherYamlParser } from './enricher-yaml-parser.service';
 
@@ -35,7 +36,7 @@ export interface R1EnrichResult {
 export class R1EnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(R1EnricherService.name);
 
-  private readonly RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+  private readonly RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
   constructor(
     configService: ConfigService,

@@ -33,7 +33,7 @@ import {
   LinkImpressionEvent,
   LinkMetrics,
   LinkPerformanceReport,
-} from './seo-link-tracking.service';
+} from './infrastructure/seo-link-tracking.service';
 
 // DTO pour les requêtes
 class TrackClickDto {

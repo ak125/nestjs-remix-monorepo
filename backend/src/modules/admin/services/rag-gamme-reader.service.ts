@@ -25,8 +25,9 @@ import { EnricherYamlParser } from './enricher-yaml-parser.service';
 import { type RagData } from './rag-data.types';
 import { RagKnowledgeService } from '../../rag-proxy/services/rag-knowledge.service';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
+import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
-const RAG_GAMMES_DIR = '/opt/automecanik/rag/knowledge/gammes';
+const RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
 const MAX_DOCS_PER_GAMME = 20;
 const MAX_CHARS_TOTAL = 15_000;
