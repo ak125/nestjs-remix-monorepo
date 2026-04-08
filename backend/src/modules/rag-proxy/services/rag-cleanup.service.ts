@@ -54,6 +54,11 @@ const COMPATIBILITY_MATRIX: Record<
     truthLevels: ['L2', 'L3'],
   },
   faq: { categories: ['knowledge/faq'], truthLevels: ['L1', 'L2'] },
+  faqs: { categories: ['knowledge/faq', 'faq'], truthLevels: ['L1', 'L2'] },
+  maintenance: {
+    categories: ['maintenance', 'knowledge/guide'],
+    truthLevels: ['L1', 'L2'],
+  },
   manual: {
     categories: [
       'knowledge',
@@ -99,6 +104,11 @@ const SOURCE_PREFIX_TO_POLICY_TYPE: Record<string, Record<string, string>> = {
     'diagnostic/diagnostic': 'diagnostic_reference',
   },
   faq: { 'knowledge/faq': 'faq_validated' },
+  faqs: { 'knowledge/faq': 'faq_validated', faq: 'faq_validated' },
+  maintenance: {
+    maintenance: 'guide_validated',
+    'knowledge/guide': 'guide_validated',
+  },
   manual: {
     'knowledge/reference': 'oem_primary',
     'knowledge/canonical': 'canonical_validated',
@@ -427,6 +437,8 @@ export class RagCleanupService extends SupabaseBaseService {
     guides: { category: 'guide', domain: 'knowledge' },
     diagnostic: { category: 'diagnostic', domain: 'knowledge' },
     faq: { category: 'knowledge/faq', domain: 'knowledge' },
+    faqs: { category: 'knowledge/faq', domain: 'knowledge' },
+    maintenance: { category: 'maintenance', domain: 'knowledge' },
     canonical: { category: 'knowledge/canonical', domain: 'knowledge' },
     reference: { category: 'definition', domain: 'knowledge' },
     policies: { category: 'knowledge/policy', domain: 'knowledge' },
