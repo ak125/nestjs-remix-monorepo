@@ -132,11 +132,6 @@ describe('RagWebhookCompletionService — handleWebhookCompletion', () => {
   });
 
   it('should resolve relative file paths to absolute using RAG_KNOWLEDGE_PATH', async () => {
-    service.configService.get = jest.fn((key: string) => {
-      if (key === 'RAG_KNOWLEDGE_PATH') return '/test/knowledge';
-      return undefined;
-    });
-
     await service.handleWebhookCompletion({
       job_id: 'test-path',
       source: 'web',
@@ -145,7 +140,7 @@ describe('RagWebhookCompletionService — handleWebhookCompletion', () => {
     });
 
     expect(mockResolveGammesFromFiles).toHaveBeenCalledWith([
-      '/test/knowledge/gammes/disque-de-frein.md',
+      '/opt/automecanik/rag/knowledge/gammes/disque-de-frein.md',
     ]);
   });
 
