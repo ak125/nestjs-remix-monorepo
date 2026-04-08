@@ -3,6 +3,11 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { CacheService } from '../../../cache/cache.service';
 import {
+  SeoTemplateService,
+  type SeoContext,
+  type SeoTemplates,
+} from '../../catalog/services/seo-template.service';
+import {
   RmProduct,
   RmListing,
   ProductsResponse,
@@ -37,6 +42,7 @@ export class RmBuilderService extends SupabaseBaseService {
 
   constructor(
     private readonly cacheService: CacheService,
+    private readonly seoTemplateService: SeoTemplateService,
     rpcGate: RpcGateService,
   ) {
     super();
@@ -575,15 +581,64 @@ export class RmBuilderService extends SupabaseBaseService {
 
       // RPC returns JSONB directly
       const result = data as RmPageCompleteV2Response;
-
-      // Override duration with actual timing
-      result.duration_ms = duration_ms;
       result.cacheHit = false;
 
       if (result.success) {
+        // v2.2.0: Process SEO templates via NestJS (replaces PL/pgSQL)
+        const raw = data as unknown as Record<string, unknown>;
+        const seoTemplates = raw.seo_raw as SeoTemplates | null;
+        const seoCtx = raw.seo_context as Record<string, string> | null;
+
+        if (seoTemplates && seoCtx) {
+          try {
+            const ctx: SeoContext = {
+              type_id: Number(seoCtx.type_id),
+              pg_id: Number(seoCtx.pg_id),
+              mf_id: Number(seoCtx.mf_id),
+              marque_name: seoCtx.marque_name || '',
+              marque_alias: seoCtx.marque_alias || '',
+              modele_name: seoCtx.modele_name || '',
+              modele_alias: seoCtx.modele_alias || '',
+              type_name: seoCtx.type_name || '',
+              type_alias: seoCtx.type_alias || '',
+              gamme_name: result.gamme?.pg_name || '',
+              gamme_alias: result.gamme?.pg_alias || '',
+              min_price: result.minPrice ?? undefined,
+              count: result.count,
+              power_ps: seoCtx.type_power_ps || '',
+            };
+
+            const processed = await this.seoTemplateService.processTemplates(
+              seoTemplates,
+              ctx,
+            );
+            result.seo = {
+              h1: processed.h1,
+              title: processed.title,
+              description: processed.description,
+              content: processed.content,
+              preview: processed.preview,
+            };
+          } catch (seoErr) {
+            this.logger.warn(
+              `SEO processing failed, fallback to raw: ${seoErr}`,
+            );
+            if (seoTemplates) {
+              result.seo = { ...seoTemplates };
+            }
+          }
+        }
+
+        // Clean internal fields before caching
+        delete (raw as Record<string, unknown>).seo_raw;
+        delete (raw as Record<string, unknown>).seo_context;
+
+        // Measure total duration including SEO processing
+        result.duration_ms = Math.round(performance.now() - startTime);
+
         this.logger.debug(
           `Page v2 complete: ${result.count} products, ${result.grouped_pieces?.length || 0} groups, ` +
-            `${result.oemRefs?.length || 0} OEM refs in ${duration_ms}ms`,
+            `${result.oemRefs?.length || 0} OEM refs in ${result.duration_ms}ms`,
         );
 
         // 2. Store in cache (TTL: 1h)
@@ -595,6 +650,8 @@ export class RmBuilderService extends SupabaseBaseService {
             // Cache error - continue without caching
           }
         }
+      } else {
+        result.duration_ms = duration_ms;
       }
 
       return result;

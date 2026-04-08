@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
+import { CatalogModule } from '../catalog/catalog.module';
 import { RmBuilderService } from './services/rm-builder.service';
 import { RmController } from './controllers/rm.controller';
 
@@ -39,7 +40,7 @@ import { RmController } from './controllers/rm.controller';
  * - rm_health
  */
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, CatalogModule],
   providers: [RmBuilderService],
   controllers: [RmController],
   exports: [RmBuilderService],
