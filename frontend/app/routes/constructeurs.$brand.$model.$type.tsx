@@ -589,7 +589,9 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
   if (!rpcResult.success || !rpcResult.data?.vehicle) {
     logger.error("❌ [RPC] Données invalides:", rpcResult);
-    throw new Response("Véhicule supprimé du catalogue", { status: 410 });
+    // 503 et non 410 : le véhicule peut exister mais le service a échoué.
+    // 410 causerait une désindexation Google permanente.
+    throw new Response("Service temporairement indisponible", { status: 503 });
   }
 
   logger.log(

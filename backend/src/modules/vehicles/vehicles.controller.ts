@@ -7,7 +7,9 @@ import {
   Body,
   Res,
   Logger,
+  ServiceUnavailableException,
 } from '@nestjs/common';
+import { DomainNotFoundException } from '../../common/exceptions';
 import { Response } from 'express';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';
@@ -365,17 +367,19 @@ export class VehiclesController {
         _performance: result._performance,
       };
     } catch (error) {
+      // Véhicule introuvable → laisser propager en 404
+      if (error instanceof DomainNotFoundException) {
+        throw error;
+      }
+
+      // Timeout ou erreur transitoire → 503 (Google réessaye)
       this.logger.error(
         `❌ RPC Error for type ${typeIdNum}:`,
         error instanceof Error ? error.message : error,
       );
-
-      // Pas de fallback - erreur 500
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Erreur inconnue',
-        type_id: typeIdNum,
-      };
+      throw new ServiceUnavailableException(
+        `Service temporairement indisponible pour le véhicule ${typeIdNum}`,
+      );
     }
   }
 
