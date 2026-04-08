@@ -121,6 +121,7 @@ import { ExecutionRouterService } from './services/execution-router.service'; //
 import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
 import { R1EnricherService } from './services/r1-enricher.service'; // 🏗️ R1 Router enricher (0-LLM, RAG+KP)
 import { InternalPipelineController } from './controllers/internal-pipeline.controller'; // 🚀 Internal pipeline (X-Internal-Key auth)
+import { InternalSeoAuditController } from './controllers/internal-seo-audit.controller'; // 📊 Internal SEO audit (X-Internal-Key auth)
 
 @Module({
   imports: [
@@ -174,6 +175,7 @@ import { InternalPipelineController } from './controllers/internal-pipeline.cont
     AdminPipelineController, // 🚀 Unified pipeline execution - /api/admin/pipeline/*
     AdminRagPipelineStatusController, // 📊 RAG pipeline dashboard - /api/admin/rag-pipeline/status
     InternalPipelineController, // 🚀 Internal pipeline (X-Internal-Key) - /api/internal/pipeline/*
+    InternalSeoAuditController, // 📊 Internal SEO audit (X-Internal-Key) - /api/internal/seo/audit/*
   ],
   providers: [
     ConfigurationService,
