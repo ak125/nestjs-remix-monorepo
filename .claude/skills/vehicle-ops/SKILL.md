@@ -2,7 +2,7 @@
 name: vehicle-ops
 description: "Vehicle operations: lookup, V-Level classification, compatibility RPC, cache, data quality. Anti-patterns DB (no FK, TEXT columns, type_display string)."
 argument-hint: "[diagnose|vlevel|cache|quality] [gamme-id or type-id]"
-allowed-tools: Read, Grep, Glob, Bash, mcp__supabase__execute_sql
+allowed-tools: Read, Grep, Glob, Bash, mcp__claude_ai_Supabase__execute_sql
 version: "1.0"
 ---
 

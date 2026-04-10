@@ -790,7 +790,7 @@ Générer des **requêtes MCP prêtes à exécuter** (pas de signalement passif)
 ```
 ⚠️ Corrections BDD — requêtes MCP prêtes à exécuter :
 
-mcp__supabase__execute_sql:
+mcp__claude_ai_Supabase__execute_sql:
   project_id: cxpojprgwgubzjyqzmoq
   query: UPDATE pieces_gamme SET label = 'Disque de frein' WHERE label = 'Disque de Freins';
 

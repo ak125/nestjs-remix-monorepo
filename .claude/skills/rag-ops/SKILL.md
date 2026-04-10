@@ -2,7 +2,7 @@
 name: rag-ops
 description: "RAG operations: diagnose, ingest, monitor, test, optimize. Circuit breaker, intent routing, corpus management."
 argument-hint: "[diagnose|ingest|monitor|test|audit]"
-allowed-tools: Read, Grep, Glob, Bash, Write, mcp__supabase__execute_sql
+allowed-tools: Read, Grep, Glob, Bash, Write, mcp__claude_ai_Supabase__execute_sql
 version: "1.2"
 ---
 
@@ -597,8 +597,8 @@ Le workflow Diagnose et l'audit `--score` produisent un rapport structure :
    - Toujours specifier explicitement dans la requete
 
 6. **JAMAIS utiliser `psql` via Bash pour interroger Supabase**
-   - Toujours MCP: `mcp__supabase__execute_sql` (project: `cxpojprgwgubzjyqzmoq`)
-   - Pour DDL: `mcp__supabase__apply_migration`
+   - Toujours MCP: `mcp__claude_ai_Supabase__execute_sql` (project: `cxpojprgwgubzjyqzmoq`)
+   - Pour DDL: `mcp__claude_ai_Supabase__apply_migration`
 
 7. **JAMAIS modifier `content_tsv` manuellement**
    - Genere automatiquement par trigger: `to_tsvector('french', content)`

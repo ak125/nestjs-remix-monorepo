@@ -3,7 +3,7 @@ name: pipeline-orchestrator
 description: "Orchestrateur SEO pipelines. Interroge la DB, detecte l'etat de chaque pipeline (R1/R3/R4/R6/R7), propose le prochain agent a invoquer."
 argument-hint: "[status|next|run R4|run R3|run R6|run R7]"
 disable-model-invocation: false
-allowed-tools: mcp__supabase__execute_sql, Read, Glob, Grep
+allowed-tools: mcp__claude_ai_Supabase__execute_sql, Read, Glob, Grep
 version: "1.0"
 ---
 

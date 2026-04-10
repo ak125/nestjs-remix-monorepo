@@ -19,7 +19,7 @@ argument-hint: "<pg_alias ou vehicle_slug> [--batch top20|worst|ready] [--fix] [
 
 ## Exécution DB
 
-**TOUTES les requêtes SQL doivent être exécutées via `mcp__supabase__execute_sql`** avec `project_id: cxpojprgwgubzjyqzmoq`. Ne JAMAIS utiliser psql, pg_dump ou connexion directe.
+**TOUTES les requêtes SQL doivent être exécutées via `mcp__claude_ai_Supabase__execute_sql`** avec `project_id: cxpojprgwgubzjyqzmoq`. Ne JAMAIS utiliser psql, pg_dump ou connexion directe.
 
 ## Fichiers RAG
 Les fichiers .md sont dans `/opt/automecanik/rag/knowledge/` (gammes/, diagnostic/, guides/).
@@ -574,7 +574,7 @@ Les corrections ne sont appliquées qu'après approbation humaine.
 
 ### Mode direct (fallback si backend indisponible)
 
-Toutes les requêtes via `mcp__supabase__execute_sql` avec `project_id: 'cxpojprgwgubzjyqzmoq'`.
+Toutes les requêtes via `mcp__claude_ai_Supabase__execute_sql` avec `project_id: 'cxpojprgwgubzjyqzmoq'`.
 Les fichiers RAG via l'outil `Read` pour lire `/opt/automecanik/rag/knowledge/gammes/{pg_alias}.md`.
 
 ### Fix 1 — Quarantine thin docs RAG

@@ -1,6 +1,6 @@
 # SQL Templates — MCP Supabase
 
-Requetes pretes a executer via `mcp__supabase__execute_sql` (project: `cxpojprgwgubzjyqzmoq`).
+Requetes pretes a executer via `mcp__claude_ai_Supabase__execute_sql` (project: `cxpojprgwgubzjyqzmoq`).
 
 > **REGLE :** JAMAIS `psql` via Bash. Toujours MCP Supabase.
 

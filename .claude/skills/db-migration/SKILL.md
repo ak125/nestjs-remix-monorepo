@@ -52,7 +52,7 @@ Supabase migration patterns, RLS audit, schema validation. Guides safe DDL opera
 ### Phase 3 — Execute
 
 1. Executer les queries de validation BEFORE
-2. Appliquer la migration via `mcp__supabase__apply_migration`
+2. Appliquer la migration via `mcp__claude_ai_Supabase__apply_migration`
 3. Verifier le succes dans `mcp__supabase__list_migrations`
 4. Executer les queries de validation AFTER
 
@@ -160,7 +160,7 @@ SELECT polname, polcmd, polroles FROM pg_policy WHERE polrelid = 'my_table'::reg
 
 ## Pre-Migration Checklist
 
-1. **Test SQL** in dev environment first (use `mcp__supabase__execute_sql`)
+1. **Test SQL** in dev environment first (use `mcp__claude_ai_Supabase__execute_sql`)
 2. **Verify no breaking changes** to existing RPC functions
 3. **Check RLS impact** on existing queries
 4. **Verify key access patterns** — service_role (backend) vs anon (frontend)
@@ -196,8 +196,8 @@ COMMENT ON TABLE my_table IS 'Description of table purpose';
 
 | Tool | Use |
 |------|-----|
-| `mcp__supabase__apply_migration` | DDL operations (CREATE, ALTER, DROP) |
-| `mcp__supabase__execute_sql` | DML/queries (SELECT, INSERT, UPDATE) |
+| `mcp__claude_ai_Supabase__apply_migration` | DDL operations (CREATE, ALTER, DROP) |
+| `mcp__claude_ai_Supabase__execute_sql` | DML/queries (SELECT, INSERT, UPDATE) |
 | `mcp__supabase__list_tables` | Verify schema after changes |
 | `mcp__supabase__get_advisors` | Security + performance check |
 | `mcp__supabase__list_migrations` | Check existing migrations |
