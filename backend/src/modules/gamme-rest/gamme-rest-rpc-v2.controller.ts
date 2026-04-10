@@ -6,6 +6,8 @@ import {
   Body,
   Injectable,
   Logger,
+  HttpException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { GammeResponseBuilderService } from './services';
 import { GammeRpcService } from './services/gamme-rpc.service';
@@ -79,6 +81,12 @@ export class GammeRestRpcV2Controller {
       );
       return result;
     } catch (error) {
+      // Propager les HttpExceptions (404, 422, etc.) — NestJS les sérialise correctement
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Erreurs transient (timeout, connection) → HTTP 503
       const rpcError = error as SupabaseRpcError;
       this.logger.error(
         `Erreur dans getPageDataRpcV2: ${JSON.stringify({
@@ -88,20 +96,12 @@ export class GammeRestRpcV2Controller {
           code: rpcError.code,
         })}`,
       );
-      this.logger.log(
-        `RPC V2 returned error: ${rpcError.message || 'Erreur serveur'}`,
-      );
-
-      // Retourner une erreur 503 pour que le client sache que c'est temporaire
-      return {
-        status: 503,
-        error: 'Service temporairement indisponible',
-        message:
-          'Timeout de connexion à la base de données. Veuillez réessayer.',
+      throw new ServiceUnavailableException({
+        message: 'Service temporairement indisponible',
         code: rpcError.code,
         retryable:
           rpcError.code === 'ETIMEDOUT' || rpcError.code === 'ECONNRESET',
-      };
+      });
     }
   }
 

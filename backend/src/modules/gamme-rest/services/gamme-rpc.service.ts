@@ -183,6 +183,16 @@ export class GammeRpcService extends SupabaseBaseService {
       });
     }
 
+    // Gamme hors catalogue : pg_level=0 ou NULL + pas d'alias = inactive (4386 gammes)
+    const pgLevel = (pageInfo as Record<string, unknown>).pg_level;
+    const pgAlias = (pageInfo as Record<string, unknown>).pg_alias;
+    if ((!pgLevel || pgLevel === '0') && (!pgAlias || pgAlias === '')) {
+      throw new DomainNotFoundException({
+        code: ErrorCodes.CATALOG.GAMME_NOT_FOUND,
+        message: `Gamme ${pgId} hors catalogue`,
+      });
+    }
+
     return {
       aggregatedData,
       pageData: pageInfo as Record<string, unknown>,

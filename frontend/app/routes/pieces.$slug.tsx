@@ -229,7 +229,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
           h1: heroData.h1,
           content: heroData.content,
           pg_name: heroData.pg_name || heroData.famille_info?.mf_name || "",
-          pg_alias: heroData.pg_alias || "",
+          pg_alias: heroData.pg_alias || normalizeAlias(heroData.pg_name || ""),
           pg_pic: toProxyImageUrl(heroData.image) ?? "",
           pg_wall: toProxyImageUrl(heroData.wall) ?? "",
         }

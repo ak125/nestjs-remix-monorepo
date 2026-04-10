@@ -131,6 +131,9 @@ export async function fetchGammePageData(
         }
 
         logger.warn(`⚠️ RPC V2 returned error:`, data.error);
+      } else if (rpcResponse.status === 404) {
+        // Gamme hors catalogue — propager 404, pas de fallback classique
+        throw new Response("Gamme not found", { status: 404 });
       } else {
         logger.warn(`⚠️ RPC V2 HTTP ${rpcResponse.status}`);
       }
