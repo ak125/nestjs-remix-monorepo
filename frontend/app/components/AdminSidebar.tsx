@@ -32,7 +32,6 @@ import {
   Activity,
   ShieldCheck,
   FilePen,
-  Film,
   Zap,
   ImageIcon,
   DatabaseIcon,
@@ -215,14 +214,7 @@ export const AdminSidebar = memo(function AdminSidebar({
         },
       ],
     },
-    {
-      name: "Video",
-      href: "/admin/video-hub",
-      icon: Film,
-      description: "Productions video",
-      badge: { count: "P1", color: "bg-rose-600" },
-      notification: false,
-    },
+    // Video hub — SUPPRIMÉ 2026-04-10 (MediaFactory supprimé)
     {
       name: "Dashboard Commercial",
       href: "/commercial",

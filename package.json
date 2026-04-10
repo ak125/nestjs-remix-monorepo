@@ -93,7 +93,8 @@
   "overrides": {
     "path-to-regexp": "3.3.0",
     "zod": "^3.25.76",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "handlebars": "4.7.9"
   },
   "lint-staged": {
     "frontend/app/**/*.{ts,tsx}": [

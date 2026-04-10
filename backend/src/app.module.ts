@@ -58,7 +58,7 @@ import { AiContentModule } from './modules/ai-content/ai-content.module';
 import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module';
 import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Dockerfile: shared-types copié (2026-02-02)
 import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 NOUVEAU - Module marketing avec backlinks, content roadmap et KPIs !
-import { MediaFactoryModule } from './modules/media-factory/media-factory.module'; // 🎬 NOUVEAU - Module video governance (P1) !
+// MediaFactoryModule — SUPPRIMÉ 2026-04-10 (prototype P1, axios vuln critique, 0 usage prod)
 import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-engine.module'; // 🔧 NOUVEAU - Moteur diagnostic mecanique MVP !
 
 /**
@@ -194,7 +194,7 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
     // CatalogModuleSimple, // 🔧 TEMPORAIREMENT DÉSACTIVÉ - Version simplifiée pour test pièces !
     GammeRestModule, // 🎯 ACTIVÉ - API REST simple pour gammes avec vraies tables !
     MarketingModule, // 📊 ACTIVÉ - Module marketing avec backlinks, content roadmap et KPIs !
-    MediaFactoryModule, // 🎬 ACTIVÉ - Video governance (gates, productions, assets) !
+    // MediaFactoryModule — SUPPRIMÉ 2026-04-10
     DiagnosticEngineModule, // 🔧 ACTIVÉ - Moteur diagnostic mecanique MVP (Slice 1) !
     // AgenticEngineModule — ARCHIVÉ 2026-04-02 (tables → _archive schema, remplacé par Paperclip)
 

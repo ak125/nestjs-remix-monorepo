@@ -145,6 +145,9 @@ export class GammeRestRpcV2Controller {
   @Post(':pgId/cache/invalidate')
   async invalidateCache(@Param('pgId') pgId: string) {
     await this.rpcService.invalidateCache(pgId);
+    // Purger aussi le cache response-level (2e couche)
+    const responseCacheKey = `${this.RESPONSE_CACHE_PREFIX}${pgId}`;
+    await this.cacheService.del(responseCacheKey);
 
     return {
       status: 200,

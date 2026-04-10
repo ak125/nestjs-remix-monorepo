@@ -11,15 +11,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 // import { CacheProcessor } from './processors/cache.processor'; // DESACTIVE - Besoin IORedis Module
 import { EmailProcessor } from './processors/email.processor';
 import { SeoMonitorProcessor } from './processors/seo-monitor.processor';
-import { VideoExecutionProcessor } from './processors/video-execution.processor';
+// VideoExecutionProcessor — SUPPRIMÉ 2026-04-10 (MediaFactory supprimé)
 
 // Services Workers
 import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.service';
-
-// Dependencies for VideoExecutionProcessor
-import { VideoDataService } from '../modules/media-factory/services/video-data.service';
-import { VideoGatesService } from '../modules/media-factory/services/video-gates.service';
-import { RenderAdapterService } from '../modules/media-factory/render/render-adapter.service';
 
 // Dependencies for AgenticProcessor
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
@@ -73,7 +68,7 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
       // { name: 'cache' }, // DESACTIVE temporairement
       { name: 'email' },
       { name: 'seo-monitor' },
-      { name: 'video-render' },
+      // { name: 'video-render' }, // SUPPRIMÉ 2026-04-10
       { name: 'agentic-engine' },
       { name: 'pipeline-chain' },
     ),
@@ -92,13 +87,7 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     // CacheProcessor, // DESACTIVE
     EmailProcessor,
     SeoMonitorProcessor,
-    VideoExecutionProcessor,
-
-    // Video execution dependencies
-    // NOTE: Stateless services, safe duplicate (same pattern as enricher services above)
-    VideoDataService,
-    VideoGatesService,
-    RenderAdapterService,
+    // VideoExecutionProcessor — SUPPRIMÉ 2026-04-10
 
     // Agentic engine processor + dependencies (Agent-Native — state management only)
     // NOTE: Stateless services, safe duplicate (same pattern as enricher services above)
