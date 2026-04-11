@@ -256,3 +256,126 @@ Utiliser `/rag-ops diagnose` pour le scoring santé complet /5.
 ## Note — Phase 3 (R5 Diagnostic)
 
 Le code Phase 3 est non commité côté repo. Cette analyse est **non vérifiable depuis le contexte agent** — à traiter manuellement par l'équipe technique.
+
+---
+
+## Pipeline Enrichissement v2.1
+
+> **Source de verite** : `docs/pipeline-rag-enrichissement.md` (repo ai-cos-system).
+> Cette section est une adaptation runtime derivee de la spec canonique. Toute evolution future passe d'abord par la spec puis est propagee ici.
+>
+> **Regle de priorite** : en cas de conflit entre les sections precedentes (audit/monitoring) et cette section, la section v2.1 prevaut pour les taches d'enrichissement.
+
+### References de travail
+
+Fichiers montes dans le workspace sous `refs/` :
+
+- `refs/docs/pipeline-rag-enrichissement.md` — spec complete (symlink → ai-cos-system)
+- `refs/spec/enrichment-report.schema.json` — schema JSON du report (valider chaque report contre ce schema)
+- `refs/spec/conflict.schema.yaml` — schema _conflicts[]
+- `refs/spec/gamme-md-schema.md` — schema gamme v5.0 + lifecycle.stage
+- Gammes : `/opt/automecanik/rag/knowledge/gammes/*.md` (241 fichiers, 237 en v5.0)
+
+### Workflow (4 etapes)
+
+```
+Etape 1 — Audit (audit_only)
+    /rag-check --batch top10 → identifier gammes faibles
+    /rag-check <alias> → scoring multi-criteres par bloc
+
+Etape 2 — Enrichissement (enrich_dry_run / enrich_write)
+    WebSearch/WebFetch pour sources Tier A/B/C
+    Merge non destructif par champ (D3)
+    Anti-hallucination : source_url + confidence obligatoires
+
+Etape 3 — Validation QA (qa_only / qa_write)
+    Scoring qa_score + evidence_score par bloc
+    Gate anti-regression SEO (8 checks)
+    Validators R3 + R4 + R6 par defaut
+
+Etape 4 — Promotion et indexation
+    L2 → L1 uniquement via qa_write si tous criteres remplis
+```
+
+### State machine — lifecycle.stage
+
+```
+v5_ssot → v5_audited → v5_enriched → v5_qa_passed → v5_indexed
+              ↓              ↓              ↓
+          v5_blocked     v5_blocked     v5_pending_review
+                         v5_pending_review
+```
+
+**Transitions interdites** : tout saut d'etape, v5_blocked → v5_indexed, v5_ssot → v5_qa_passed.
+
+**Promotion L1** : uniquement au moment de la transition v5_enriched → v5_qa_passed, via mode `qa_write`, si D1+D2 satisfaits.
+
+### Modes d'execution (E4)
+
+| Mode | Fichiers modifies | Promotion autorisee |
+|------|-------------------|---------------------|
+| `audit_only` | Non | Non |
+| `enrich_dry_run` | Non | Non |
+| `enrich_write` | Oui (gamme .md) | Non |
+| `qa_only` | Non | Non |
+| `qa_write` | Oui (stage update) | **Oui** |
+| `index_ready_check` | Non | Non |
+
+Tout mode `*_write` produit un backup dans `_archive/` AVANT ecriture.
+Tout mode `*_write` produit d'abord un `*_dry_run` implicite.
+
+### Scoring (D2)
+
+Deux scores distincts par bloc :
+- `qa_score` : structure, clarte, non-duplication, adequation template
+- `evidence_score` : tier source, corroboration, source_url, confidence
+
+**Seuils promotion L1** (initiaux, ajustables) :
+
+| Type de bloc | qa_score min | evidence_score min |
+|-------------|-------------|-------------------|
+| Critique (domain, selection, maintenance) | >= 75 | >= 70 |
+| Non-critique (diagnostic, installation) | >= 65 | >= 55 |
+
+### Schema minimal par bloc (D5)
+
+| Bloc | Champs minimaux |
+|------|----------------|
+| domain | role (>80 chars), confusion_with (>= 2) |
+| selection | criteria (>= 3), anti_mistakes (>= 2) |
+| maintenance | interval (non-null), wear_signs (>= 2) |
+| diagnostic | symptoms (>= 3 avec severity), causes (>= 2) |
+| installation | steps (>= 3) OU precautions (si expert) |
+
+### Merge non destructif (D3)
+
+- **Champ scalaire** : jamais ecraser si `confidence: verified`
+- **Liste identifiee** (symptom avec id, confusion_with par term) : merge par identifiant, jamais supprimer verified
+- **Liste simple** (anti_mistakes) : remplacement controle avec comparaison fiabilite
+- **Objet imbrique** (cost_range) : merge champ par champ
+- **Sources** : ajouter les nouvelles, jamais supprimer les existantes
+
+### Hierarchie sources (D7)
+
+| Tier | Usage |
+|------|-------|
+| A (constructeurs, normes) | Requis pour donnees techniques normatives, securite |
+| B (revendeurs, guides experts) | Suffisant pour symptomes, criteres choix, procedures generales |
+| C (Wikipedia, blogs) | L2 uniquement — FAQ, termes courants |
+
+**Tier C seul = jamais pour donnee technique.** Tier A requis pour normes, securite, valeurs reglementaires.
+**Fallback** : si Tier A inaccessible, marquer `requires_manual_source: true` (sauf securite/normes → bloque L1).
+
+### Gate anti-regression SEO (D8)
+
+8 checks avant promotion : META.title intact, META.description intact, FAQ non degradee, pas de duplication Hn, conservation termes pivots (>= 80%), intent_targets inchange, mappings DB intacts.
+
+### Format de sortie — enrichment_report.json (D9)
+
+Chaque run produit un `enrichment_report.json` conforme au schema `.spec/00-canon/enrichment-report.schema.json`.
+
+Champs requis : `run_id` (UUID v4), `alias`, `run_date`, `execution_mode`, `state_before`, `state_after`, `truth_level_before`, `truth_level_after`, `blocks` (par bloc: action, qa_score, evidence_score, structural_complete), `conflicts`, `pending_manual_sources`, `seo_regression_checks`, `validators_invoked`, `validator_verdicts`, `decision` (PROMOTE_L1|KEEP_L2|BLOCKED|PENDING_REVIEW), `reason`.
+
+### Seuil stop global (D10)
+
+Si >20% du lot en v5_blocked ou v5_pending_review → suspendre. Stratifier les lots par densite de sources (courante/niche/specialiste).
