@@ -120,6 +120,9 @@ import { AdminRagPipelineStatusController } from './controllers/admin-rag-pipeli
 import { ExecutionRouterService } from './services/execution-router.service'; // 🚀 Enricher dispatch router
 import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
 import { R1EnricherService } from './services/r1-enricher.service'; // 🏗️ R1 Router enricher (0-LLM, RAG+KP)
+import { ContentQualityGateService } from './services/content-quality-gate.service'; // 🚦 Cross-role quality gates
+import { R4ContentEnricherService } from './services/r4-content-enricher.service'; // 🏗️ R4 Reference enricher (LLM + lint)
+import { R4LintGatesService } from './services/r4-lint-gates.service'; // 🚦 R4 content lint gates LG1-LG8
 import { InternalPipelineController } from './controllers/internal-pipeline.controller'; // 🚀 Internal pipeline (X-Internal-Key auth)
 import { InternalSeoAuditController } from './controllers/internal-seo-audit.controller'; // 📊 Internal SEO audit (X-Internal-Key auth)
 
@@ -230,6 +233,9 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
     R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)
     R1EnricherService, // 🏗️ R1 Router enricher (0-LLM, RAG+KP → r1_gamme_slots)
+    ContentQualityGateService, // 🚦 Cross-role quality gates (R1/R3/R4/R6 min lengths + vocab)
+    R4ContentEnricherService, // 🏗️ R4 Reference enricher (LLM-powered, lint gates)
+    R4LintGatesService, // 🚦 R4 content lint gates LG1-LG8
   ],
   exports: [
     ConfigurationService,

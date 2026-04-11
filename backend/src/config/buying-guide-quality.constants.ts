@@ -55,6 +55,49 @@ export const MIN_R1_WORDS = 100;
 export const MAX_R1_WORDS = 150;
 
 // ─────────────────────────────────────────────────────────────
+// Cross-role content quality gates (R1/R3/R4/R6)
+// Added 2026-04-11 — enforce min content lengths across all pipelines
+// ─────────────────────────────────────────────────────────────
+
+/** R3 section minimum content length (chars). Sections below this are considered stubs. */
+export const MIN_R3_SECTION_LENGTH = 300;
+
+/** R6 how_to_choose minimum content length (chars). Must be a proper buying guide. */
+export const MIN_R6_HTC_LENGTH = 1000;
+
+/** R6 intro_role minimum content length (chars). */
+export const MIN_R6_INTRO_LENGTH = 80;
+
+/** R6 risk_explanation minimum content length (chars). */
+export const MIN_R6_RISK_LENGTH = 80;
+
+/** R1 sg_content minimum length (chars). */
+export const MIN_R1_CONTENT_LENGTH = 500;
+
+/** R4 definition minimum length (chars). */
+export const MIN_R4_DEFINITION_LENGTH = 200;
+
+/** Vocabulary terms forbidden in ALL editorial content (R1-R6). */
+export const FORBIDDEN_VOCAB_GLOBAL: readonly string[] = [
+  'universel',
+  'tous modèles',
+  'compatible tout véhicule',
+  'livraison',
+  'promo',
+  'ajouter au panier',
+  'acheter maintenant',
+] as const;
+
+/**
+ * Vocabulary terms that are FALSE POSITIVES in R3 editorial context.
+ * These appear legitimately in FAQ ("OE ou adaptable ?") or anti-mistake
+ * sections ("ne pas utiliser de pièce universelle") and should NOT be flagged.
+ */
+export const VOCAB_FALSE_POSITIVES_R3: readonly string[] = [
+  'adaptable', // legitimate in "OE vs adaptable" comparisons
+] as const;
+
+// ─────────────────────────────────────────────────────────────
 // Section minimum thresholds
 // ─────────────────────────────────────────────────────────────
 

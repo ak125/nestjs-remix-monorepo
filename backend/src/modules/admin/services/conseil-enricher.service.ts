@@ -11,7 +11,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
-import { GENERIC_PHRASES as SHARED_GENERIC_PHRASES } from '../../../config/buying-guide-quality.constants';
+import {
+  GENERIC_PHRASES as SHARED_GENERIC_PHRASES,
+  MIN_R3_SECTION_LENGTH,
+} from '../../../config/buying-guide-quality.constants';
 import { SECTION_RAG_FIELD_MAP } from '../../../config/keyword-plan.constants';
 import type { EvidenceEntry } from '../../../workers/types/content-refresh.types';
 import { EnricherTextUtils } from './enricher-text-utils.service';
@@ -1880,7 +1883,20 @@ export class ConseilEnricherService extends SupabaseBaseService {
     >,
     supplementaryRefs: string[] = [],
   ): Promise<{ created: number; updated: number }> {
-    const writeActions = actions.filter((a) => a.action !== 'skip');
+    const writeActions = actions.filter((a) => {
+      if (a.action === 'skip') return false;
+      // Quality gate: reject sections below minimum length (except META/S_GARAGE)
+      if (
+        !['META', 'S_GARAGE'].includes(a.type) &&
+        a.content.length < MIN_R3_SECTION_LENGTH
+      ) {
+        this.logger.warn(
+          `QUALITY_GATE: R3 ${a.type} for pgId=${pgId} rejected (${a.content.length}c < ${MIN_R3_SECTION_LENGTH}c minimum)`,
+        );
+        return false;
+      }
+      return true;
+    });
     if (writeActions.length === 0) return { created: 0, updated: 0 };
 
     const upsertRows = writeActions.map((action) => {

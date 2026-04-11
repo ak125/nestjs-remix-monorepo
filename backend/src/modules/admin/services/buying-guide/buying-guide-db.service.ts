@@ -134,6 +134,16 @@ export class BuyingGuideDbService extends SupabaseBaseService {
           payload.sgpg_faq = result.content;
           break;
         case 'how_to_choose':
+          // Quality gate: reject how_to_choose below 1000 chars
+          if (
+            typeof result.content === 'string' &&
+            result.content.length < 1000
+          ) {
+            this.logger.warn(
+              `QUALITY_GATE: R6 how_to_choose rejected (${result.content.length}c < 1000c minimum)`,
+            );
+            break; // skip writing this field
+          }
           payload.sgpg_how_to_choose = result.content;
           break;
         case 'use_cases':
