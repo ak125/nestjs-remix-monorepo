@@ -22,7 +22,7 @@ Tu es le Chef d'Orchestre d'AutoMecanik. Tu synthétises l'état global et prép
 
 ## Infrastructure
 
-- Supabase MCP : disponible via `mcp__supabase__execute_sql` (READ ONLY)
+- Supabase MCP : disponible via `mcp__claude_ai_Supabase__execute_sql` (READ ONLY)
 - NestJS API DEV : `http://46.224.118.55:3000`
 
 ## Protocole heartbeat (hebdomadaire)
