@@ -18,7 +18,6 @@ import os
 import re
 import sys
 import time
-import json
 import hashlib
 import argparse
 import textwrap
@@ -140,7 +139,7 @@ GAMME_WIKI_QUERIES = {
     "capteur-de-pression-turbo":        ["capteur pression suralimentation turbo"],
     "debitmetre-d-air":                 ["débitmètre air massique MAF"],
     "sonde-lambda":                     ["sonde lambda capteur oxygène"],
-    "sonde-de-temperature-des-gaz":     ["capteur température gaz échappement"],
+    "sonde-de-temperature-des-gaz":     ["capteur température gaz échappement", "sonde température gaz échappement"],
     "capteur-de-pression-d-huile":      ["capteur pression huile moteur"],
     "capteur-de-temperature-d-air":     ["capteur température air admission"],
     # Moteur (joints, pistons)
@@ -171,7 +170,6 @@ GAMME_WIKI_QUERIES = {
     "pot-catalytique":                  ["catalyseur pot catalytique automobile"],
     "filtre-a-particules":              ["filtre à particules diesel FAP DPF"],
     "silencieux-d-echappement":         ["silencieux échappement automobile"],
-    "sonde-de-temperature-des-gaz":    ["sonde température gaz échappement"],
     # Transmission
     "roulement-de-roue":                ["roulement de roue automobile"],
     "moyeu-de-roue":                    ["moyeu de roue automobile"],
@@ -195,7 +193,7 @@ GAMME_WIKI_QUERIES = {
     "capteur-de-pluie":                 ["capteur de pluie essuie-glace automatique"],
 }
 
-# Pages OEM statiques vérifiées (retournent du contenu HTML réel)
+# Pages OEM statiques vérifiées (retournent du contenu HTML réel, FR uniquement)
 CATEGORY_OEM_URLS = {
     "freinage": [
         "https://www.bremboparts.com/europe/fr/support/",
@@ -206,9 +204,38 @@ CATEGORY_OEM_URLS = {
     ],
     "suspension": [
         "https://www.monroe.com/fr-fr/",
+        "https://www.bilstein.com/fr/",
+        "https://www.kyb-europe.com/fr/",
+        "https://www.sachs.de/",
+        "https://www.meyle.com/fr/",
+        "https://aftermarket.zf.com/fr/",
     ],
     "distribution": [
         "https://www.gates.com/fr/fr.html",
+    ],
+    "direction": [
+        "https://aftermarket.zf.com/fr/",
+        "https://www.meyle.com/fr/",
+    ],
+    "refroidissement": [
+        "https://www.valeo.com/fr/",
+        "https://www.mahle-aftermarket.com/",
+    ],
+    "echappement": [
+        "https://www.bosal.com/fr/",
+    ],
+    "climatisation": [
+        "https://www.valeo.com/fr/",
+    ],
+    "electrique": [
+        "https://www.boschaftermarket.com/fr/",
+    ],
+    "capteurs": [
+        "https://www.continental-aftermarket.com/fr/",
+        "https://www.meyle.com/fr/",
+    ],
+    "gestion-moteur": [
+        "https://www.bosch-mobility.com/fr/",
     ],
 }
 
@@ -223,7 +250,8 @@ def detect_needs_enrichment() -> list[dict]:
     for f in sorted(os.listdir(GAMMES_DIR)):
         if not f.endswith('.md'):
             continue
-        content = open(f'{GAMMES_DIR}/{f}').read()
+        with open(f'{GAMMES_DIR}/{f}', encoding='utf-8') as fh:
+            content = fh.read()
         has_types = bool(re.search(r'types_variants:\s*\n(\s+- type:)', content))
         has_mats = bool(re.search(r'materials:\s*\n(\s+- materiau:)', content))
         has_norms = bool(re.search(r'norme_ece_r90|norme_dot', content))
@@ -240,18 +268,22 @@ def detect_needs_enrichment() -> list[dict]:
     return sorted(gammes, key=lambda g: (priority_order.get(g['priority'], 9), -g['avg_basket']))
 
 
-def already_downloaded(slug: str) -> int:
-    count = 0
+def build_download_index() -> dict[str, int]:
+    """Build slug → file count index in a single pass (O(n) instead of O(n×m))."""
+    index = {}
     for f in os.listdir(WEB_DIR):
         if not f.endswith('.md'):
             continue
         try:
-            header = open(f'{WEB_DIR}/{f}').read(600)
-            if f'slug_gamme: {slug}' in header:
-                count += 1
-        except Exception:
+            with open(f'{WEB_DIR}/{f}', encoding='utf-8') as fh:
+                header = fh.read(600)
+            m = re.search(r'slug_gamme:\s*(\S+)', header)
+            if m:
+                slug = m.group(1)
+                index[slug] = index.get(slug, 0) + 1
+        except OSError:
             pass
-    return count
+    return index
 
 
 def wiki_search(query: str) -> tuple[str, str] | None:
@@ -269,18 +301,22 @@ def wiki_search(query: str) -> tuple[str, str] | None:
             return None
         # Vérifier pertinence : au moins 1 mot-clé de la query dans le titre
         query_words = set(w.lower() for w in query.split() if len(w) > 3)
+        auto_keywords = {'automobile', 'moteur', 'véhicule', 'voiture', 'frein',
+                         'suspension', 'direction', 'embrayage', 'transmission',
+                         'injection', 'turbo', 'échappement', 'climatisation'}
         for res in results:
             title = res["title"]
             title_lower = title.lower()
             if any(w in title_lower for w in query_words):
                 safe = title.replace(" ", "_")
                 return f"{WIKI_BASE}{safe}", title
-        # Fallback : prendre le premier résultat si query courte (≤ 2 mots)
-        if len(query.split()) <= 2:
-            title = results[0]["title"]
-            safe = title.replace(" ", "_")
-            return f"{WIKI_BASE}{safe}", title
-    except Exception:
+        # Fallback : premier résultat SI titre contient un mot-clé automobile
+        for res in results:
+            title_lower = res["title"].lower()
+            if any(w in title_lower for w in auto_keywords):
+                safe = res["title"].replace(" ", "_")
+                return f"{WIKI_BASE}{safe}", res["title"]
+    except (requests.RequestException, KeyError, ValueError):
         pass
     return None
 
@@ -290,6 +326,7 @@ def fetch_url(url: str) -> str | None:
         try:
             r = requests.get(url, headers=HEADERS, timeout=TIMEOUT, allow_redirects=True)
             if r.status_code == 200 and 'text/html' in r.headers.get('Content-Type', ''):
+                r.encoding = r.apparent_encoding
                 return r.text
             if r.status_code in (403, 404, 429, 503):
                 return None
@@ -448,7 +485,7 @@ def process_gamme(gamme: dict, dry_run: bool) -> int:
 
     # --- Source 2 : OEM statique (si dispo pour la catégorie) ---
     oem_urls = CATEGORY_OEM_URLS.get(cat, [])
-    for url in oem_urls[:1]:  # max 1 OEM par gamme
+    for url in oem_urls[:2]:  # max 2 OEM par gamme
         if dry_run:
             print(f"  ↓  [DRY-RUN] OEM : {url}")
             break
@@ -479,6 +516,7 @@ def process_gamme(gamme: dict, dry_run: bool) -> int:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--force', action='store_true', help='Ignore existing files, re-download')
     parser.add_argument('--limit', type=int, default=0)
     parser.add_argument('--category', type=str)
     parser.add_argument('--gamme', type=str)
@@ -502,11 +540,12 @@ def main():
         print("[MODE DRY-RUN]\n")
 
     total_created = 0
+    dl_index = build_download_index()
 
     for i, gamme in enumerate(gammes, 1):
         slug = gamme['slug']
-        n = already_downloaded(slug)
-        if n > 0:
+        n = dl_index.get(slug, 0)
+        if n > 0 and not args.force:
             print(f"[{i}/{len(gammes)}] {slug} — ⏭️  {n} fichier(s) déjà présent(s)")
             continue
 

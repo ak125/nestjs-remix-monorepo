@@ -295,10 +295,10 @@ GAMME_KEYWORDS = {
 }
 
 # === PATTERNS D'EXTRACTION TECHNIQUE ===
-NORM_RE = re.compile(r'(ECE\s*R\s*\d+|SAE\s*J\s*\d+|FMVSS[^,]*|ISO\s*\d+|DIN\s*\d+|DOT\s*[345]\.[01]?)', re.IGNORECASE)
-MATERIAL_RE = re.compile(r'(fonte\s+(?:grise|GG\s*\d+|GJL[^,]*)|acier\s+inox(?:ydable)?|aluminium(?:\s+forgé)?|HNBR|EPDM|kevlar|aramide|céramique|carbone-céramique|silicone|caoutchouc\s+nitrile|FPM|Viton|polyamide\s*(?:renforcé)?|cordié?rite|platine|titane|zircone|graphite)', re.IGNORECASE)
+NORM_RE = re.compile(r'(ECE\s*R\s*\d+|SAE\s*J\s*\d+|FMVSS\s*\d+[A-Z]?|ISO\s*\d+|DIN\s*\d+|DOT\s*[345]\.[01]?)', re.IGNORECASE)
+MATERIAL_RE = re.compile(r'(fonte\s+(?:grise|GG\s*\d+|GJL\s*\d+)|acier\s+inox(?:ydable)?|aluminium(?:\s+forgé)?|HNBR|EPDM|kevlar|aramide|céramique|carbone-céramique|silicone|caoutchouc\s+nitrile|FPM|Viton|polyamide\s*(?:renforcé)?|cordié?rite|platine|titane|zircone|graphite)', re.IGNORECASE)
 VALUE_RE = re.compile(r'(\d+[\.,]?\d*)\s*(bars?|Nm|ohms?|kΩ|MΩ|°C|mm|µm|microns?|%|kW|A|V|Hz|kg|litres?|km)', re.IGNORECASE)
-TYPE_RE = re.compile(r'(ventilé|plein|perforé|rainuré|composite|bi-matière|organique|semi-métallique|céramique|hydraulique|pneumatique|électrique|inductif|Hall|piézo|mono.?tube|bi.?tube|Low.?Met|NAO|trapézoïdal|poly.?V)', re.IGNORECASE)
+TYPE_RE = re.compile(r'(ventilé|plein|perforé|rainuré|composite|bi-matière|organique|semi-métallique|céramique|hydraulique|pneumatique|électrique|inductif|Hall|piézo|mono.?tube|bi.?tube|Low-?Met|NAO|trapézoïdal|poly.?V)', re.IGNORECASE)
 
 # OEM domains — fournisseurs OEM/Tier-1 validés
 # Source : am_2022_suppliers (sup_display=1) + fournisseurs actifs ___xtr_supplier
@@ -358,7 +358,7 @@ GAMME_TYPE_EXCLUSIONS = {
     "plaquette-de-frein":     {"ventilé", "plein", "perforé", "rainuré", "hydraulique", "pneumatique", "électrique"},
     "machoires-de-frein":     {"ventilé", "plein", "perforé", "rainuré", "hydraulique", "pneumatique", "électrique"},
     # Disques : exclure les types qui décrivent les plaquettes/systèmes
-    "disque-de-frein":        {"pneumatique", "électrique", "hydraulique", "NAO", "Low.?Met"},
+    "disque-de-frein":        {"pneumatique", "électrique", "hydraulique", "NAO", "Low-?Met"},
     "tambour-de-frein":       {"ventilé", "perforé", "rainuré", "NAO"},
     # Filtres : exclure les types mécaniques
     "filtre-a-air":           {"ventilé", "perforé", "hydraulique", "pneumatique"},
@@ -563,7 +563,11 @@ def inject_into_gamme(gamme_path, block):
         content = content.replace('conseil_v5:', block + 'conseil_v5:')
     else:
         first = content.index('---')
-        second = content.index('---', first + 3)
+        try:
+            second = content.index('---', first + 3)
+        except ValueError:
+            print(f"     ⚠️  Frontmatter malformé, skip")
+            return
         content = content[:second] + block + content[second:]
 
     # Update lifecycle
@@ -634,10 +638,6 @@ def main():
 
         files_data = mapping[slug]
         block = build_enrichment_block(slug, files_data)
-
-        if not block:
-            skip_no_data += 1
-            continue
 
         sources = set(fd['domain'] for fd in files_data)
         n_rich = sum(1 for fd in files_data if fd['tech_data']['richness'] > 3)

@@ -24,7 +24,8 @@ API_BASE     = "http://localhost:3000"
 INGEST_URL   = f"{API_BASE}/api/rag/internal/ingest/manual"
 INTERNAL_KEY = os.environ.get('INTERNAL_API_KEY', '')
 
-RETRYABLE = {429, 500, 502, 503, "timeout"}
+RETRYABLE_CODES = {429, 500, 502, 503}
+RETRYABLE_ERRORS = {"timeout", "connection"}
 
 
 def parse_frontmatter(filepath: str) -> dict:
@@ -130,19 +131,22 @@ def call_api(payload: dict) -> dict:
         method='POST'
     )
     try:
-        res = urllib.request.urlopen(req, timeout=30)
-        body = json.loads(res.read())
-        return body if body else {"ok": True}
+        with urllib.request.urlopen(req, timeout=30) as res:
+            body = json.loads(res.read())
+            return body if body else {"ok": True}
     except urllib.error.HTTPError as e:
         return {"error": e.code, "detail": e.read().decode()[:300]}
-    except Exception as e:
-        return {"error": "timeout", "detail": str(e)}
+    except urllib.error.URLError as e:
+        return {"error": "connection", "detail": str(e.reason)}
+    except TimeoutError:
+        return {"error": "timeout", "detail": "request timed out"}
 
 
 def ingest_with_retry(payload: dict) -> dict:
     for attempt in range(3):
         result = call_api(payload)
-        if result.get("error") not in RETRYABLE:
+        error = result.get("error")
+        if error not in RETRYABLE_CODES and error not in RETRYABLE_ERRORS:
             return result
         time.sleep(5 * (attempt + 1))
     return result
@@ -154,20 +158,23 @@ def main():
     parser.add_argument("--gamme", type=str)
     args = parser.parse_args()
 
-    gammes = sorted(
-        f[:-3] for f in os.listdir(GAMMES_DIR)
-        if f.endswith(".md") and
-        open(os.path.join(GAMMES_DIR, f)).read().find("_validation_status: oem_verified") != -1
-    )
+    if not args.dry_run and not INTERNAL_KEY:
+        print("ERREUR : INTERNAL_API_KEY non défini dans l'environnement")
+        sys.exit(1)
+
+    gammes = []
+    for f in sorted(os.listdir(GAMMES_DIR)):
+        if not f.endswith(".md"):
+            continue
+        fp = os.path.join(GAMMES_DIR, f)
+        with open(fp, encoding='utf-8') as fh:
+            if "_validation_status: oem_verified" in fh.read():
+                gammes.append(f[:-3])
 
     if args.gamme:
         gammes = [g for g in gammes if g == args.gamme]
 
     print(f"{len(gammes)} gammes oem_verified à ingérer")
-
-    if not args.dry_run and not INTERNAL_KEY:
-        print("ERREUR : INTERNAL_API_KEY non défini dans l'environnement")
-        sys.exit(1)
 
     ok = already = skip = err = 0
 
