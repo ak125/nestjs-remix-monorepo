@@ -47,10 +47,18 @@ export class ProductsService extends SupabaseBaseService {
    */
   async findAll(filters?: SearchProductDto) {
     try {
+      const limit = filters?.limit || 50;
+      const page = filters?.page || 0;
+      const offset = page * limit;
+
       let query = this.client
         .from(TABLES.pieces)
-        .select('*')
-        .limit(filters?.limit || 50);
+        .select(
+          'piece_id, piece_name, piece_ref, piece_ref_brut, piece_des, piece_display, piece_has_img, piece_has_oem, piece_gamme_id, piece_marque_id, piece_stock',
+          { count: 'exact' },
+        )
+        .eq('piece_display', true)
+        .limit(limit);
 
       if (filters?.search) {
         query = query.or(
@@ -66,10 +74,9 @@ export class ProductsService extends SupabaseBaseService {
         query = query.eq('piece_marque_id', filters.brandId);
       }
 
-      const offset = (filters?.page || 0) * (filters?.limit || 50);
-      const { data, error } = await query
+      const { data, error, count } = await query
         .order('piece_name', { ascending: true })
-        .range(offset, offset + (filters?.limit || 50) - 1);
+        .range(offset, offset + limit - 1);
 
       if (error) {
         this.logger.error('Erreur findAll:', error);
@@ -78,9 +85,9 @@ export class ProductsService extends SupabaseBaseService {
 
       return {
         data: data || [],
-        total: data?.length || 0,
-        page: filters?.page || 0,
-        limit: filters?.limit || 50,
+        total: count || 0,
+        page,
+        limit,
       };
     } catch (error) {
       this.logger.error('Erreur dans findAll:', error);

@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { OperationFailedException } from '../../../common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { CacheInterceptor } from '@nestjs/cache-manager';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from '../products.service';
 import { StockService } from '../services/stock.service';
 import {
@@ -44,6 +44,7 @@ export class ProductsCoreController {
    * Récupérer toutes les pièces avec filtres
    */
   @Get('pieces')
+  @CacheTTL(300)
   async getPieces(@Query() filters: SearchProductDto) {
     return this.productsService.findAll(filters);
   }
@@ -52,6 +53,7 @@ export class ProductsCoreController {
    * Récupérer les vraies pièces avec pagination
    */
   @Get('pieces-catalog')
+  @CacheTTL(300)
   async getPiecesCatalog(
     @Query('search') search?: string,
     @Query('page') page?: string,
@@ -69,6 +71,7 @@ export class ProductsCoreController {
    * Récupérer toutes les pièces (endpoint principal)
    */
   @Get()
+  @CacheTTL(300)
   async findAll(@Query() filters: SearchProductDto) {
     return this.productsService.findAll(filters);
   }
