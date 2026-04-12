@@ -458,6 +458,7 @@ export function PiecesGridView({
 
   // ⚡ Handler mémorisé pour ouvrir détail
   const handleOpenDetail = useCallback((id: number) => {
+    if (!id && id !== 0) return;
     setSelectedPieceId(id);
   }, []);
 
@@ -551,13 +552,6 @@ export function PiecesGridView({
   return (
     <>
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        <PieceDetailModal
-          pieceId={selectedPieceId}
-          vehicleMarque={vehicleMarque}
-          typeId={typeId}
-          onClose={handleCloseModal}
-        />
-
         {pieces.map((piece, index) => (
           <PieceCard
             key={piece.id}
@@ -571,6 +565,12 @@ export function PiecesGridView({
           />
         ))}
       </div>
+      <PieceDetailModal
+        pieceId={selectedPieceId}
+        vehicleMarque={vehicleMarque}
+        typeId={typeId}
+        onClose={handleCloseModal}
+      />
     </>
   );
 }

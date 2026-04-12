@@ -3,6 +3,7 @@ import { SupabaseBaseService } from '../../database/services/supabase-base.servi
 import { DatabaseException, ErrorCodes } from '../../common/exceptions';
 import { TABLES } from '@repo/database-types';
 import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
+import { CacheService } from '../../cache/cache.service';
 import { getErrorMessage } from '../../common/utils/error.utils';
 // 📁 backend/src/modules/catalog/catalog.service.ts
 // 🏗️ Service principal pour le catalogue - Orchestrateur des données
@@ -46,8 +47,12 @@ export class CatalogService
   private catalogCache: Map<string, unknown> = new Map();
   private readonly CACHE_TTL = 3600000; // 1 heure
 
+  // TTL cache piece detail : 1h (donnees produits changent rarement)
+  private readonly PIECE_DETAIL_CACHE_TTL = 3600;
+
   constructor(
     private readonly catalogHierarchyService: CatalogHierarchyService,
+    private readonly cacheService: CacheService,
     rpcGate: RpcGateService,
   ) {
     super();
@@ -533,211 +538,68 @@ export class CatalogService
    * Récupérer les détails d'une pièce avec prix, marque et images
    */
   async getPieceById(pieceId: number) {
+    const startTime = performance.now();
+    const cacheKey = `catalog:piece-detail:${pieceId}`;
+
+    // 1. Try Redis cache first
     try {
-      // Récupérer la pièce avec toutes les informations nécessaires
-      const { data: pieceData, error: pieceError } = await this.supabase
-        .from(TABLES.pieces)
-        .select(
-          `
-          piece_id,
-          piece_ref,
-          piece_ref_clean,
-          piece_name,
-          piece_des,
-          piece_name_comp,
-          piece_name_side,
-          piece_weight_kgm,
-          piece_has_oem,
-          piece_has_img,
-          piece_year,
-          piece_qty_sale,
-          piece_qty_pack,
-          piece_pm_id,
-          piece_pg_id
-        `,
-        )
-        .eq('piece_id', pieceId)
-        .eq('piece_display', true)
-        .single();
-
-      if (pieceError || !pieceData) {
-        throw pieceError || new Error('Pièce non trouvée');
+      const cached = await this.cacheService.get<{
+        success: boolean;
+        data: Record<string, unknown>;
+      }>(cacheKey);
+      if (cached?.success && cached.data) {
+        const duration = Math.round(performance.now() - startTime);
+        this.logger.debug(`Cache HIT ${cacheKey} in ${duration}ms`);
+        return cached;
       }
+    } catch {
+      // Cache error — fallback to RPC
+    }
 
-      // Récupérer le prix
-      const { data: prixData, error: prixError } = await this.supabase
-        .from(TABLES.pieces_price)
-        .select('pri_vente_ttc_n, pri_consigne_ttc_n, pri_dispo')
-        .eq('pri_piece_id_i', pieceId)
-        .eq('pri_type', 0)
-        .single();
+    try {
+      // 2. RPC call — get_piece_detail fait tout en 1 round-trip DB
+      // (piece + prix + marque + images + criteres + OEM refs avec index TEXT)
+      const { data, error } = await this.supabase.rpc('get_piece_detail', {
+        p_piece_id: pieceId,
+      });
 
-      this.logger.log(`📊 Prix récupéré pour piece ${pieceId}:`, prixData);
-      if (prixError) this.logger.warn(`⚠️ Erreur prix:`, prixError);
+      const duration = Math.round(performance.now() - startTime);
 
-      // Récupérer la marque
-      const { data: marqueData, error: marqueError } = await this.supabase
-        .from(TABLES.pieces_marque)
-        .select('pm_name, pm_logo, pm_quality, pm_nb_stars')
-        .eq('pm_id', pieceData.piece_pm_id)
-        .single();
-
-      this.logger.log(
-        `🏷️ Marque récupérée pour pm_id ${pieceData.piece_pm_id}:`,
-        marqueData,
-      );
-      if (marqueError) this.logger.warn(`⚠️ Erreur marque:`, marqueError);
-
-      // Récupérer les images
-      const { data: imagesData } = await this.supabase
-        .from(TABLES.pieces_media_img)
-        .select('pmi_folder, pmi_name')
-        .eq('pmi_piece_id_i', pieceId)
-        .order('pmi_sort', { ascending: true });
-
-      // Récupérer les critères techniques
-      const { data: criteresData } = await this.supabase
-        .from(TABLES.pieces_criteria)
-        .select('pc_cri_id, pc_cri_value')
-        .eq('pc_piece_id_i', pieceId)
-        .eq('pc_display', 1)
-        .order('pc_sort', { ascending: true });
-
-      // Récupérer les liens des critères (jointure manuelle)
-      // 🎯 Filtre PHP: pcl_level='1' pour critères prioritaires, avec fallback si aucun résultat
-      let criteresTechniques: {
-        id: unknown;
-        name: unknown;
-        value: unknown;
-        unit: string;
-        level: string;
-        priority: boolean;
-      }[] = [];
-      if (criteresData && criteresData.length > 0) {
-        const criIds = [...new Set(criteresData.map((c) => c.pc_cri_id))];
-
-        // Étape 1: Essayer avec pcl_level='1' (critères prioritaires)
-        let { data: linksData } = await this.supabase
-          .from(TABLES.pieces_criteria_link)
-          .select('pcl_cri_id, pcl_cri_criteria, pcl_cri_unit, pcl_level')
-          .in('pcl_cri_id', criIds)
-          .eq('pcl_display', 1)
-          .eq('pcl_level', '1')
-          .order('pcl_level', { ascending: true });
-
-        let usedFallback = false;
-
-        // Étape 2: Fallback si aucun critère level=1 trouvé
-        if (!linksData || linksData.length === 0) {
-          usedFallback = true;
-          const fallbackResult = await this.supabase
-            .from(TABLES.pieces_criteria_link)
-            .select('pcl_cri_id, pcl_cri_criteria, pcl_cri_unit, pcl_level')
-            .in('pcl_cri_id', criIds)
-            .eq('pcl_display', 1)
-            .order('pcl_level', { ascending: true });
-          linksData = fallbackResult.data;
-          this.logger.warn(
-            `⚠️ [CRITÈRES FALLBACK] piece_id=${pieceId}: aucun critère level=1, utilisation de tous les niveaux`,
-          );
-        }
-
-        // Logging pour monitoring
-        this.logger.log(
-          `📊 [CRITÈRES] piece_id=${pieceId}: ${criIds.length} critères → ${linksData?.length || 0} level=1 ${usedFallback ? '(FALLBACK all levels)' : ''}`,
+      if (error) {
+        this.logger.error(
+          `getPieceById(${pieceId}) RPC error in ${duration}ms:`,
+          error.message,
         );
-
-        // Créer une map des liens (prendre le premier par cri_id)
-        const linksMap = new Map();
-        linksData?.forEach((link) => {
-          if (!linksMap.has(link.pcl_cri_id)) {
-            linksMap.set(link.pcl_cri_id, link);
-          }
-        });
-
-        // Formater les critères avec leurs liens
-        criteresTechniques = criteresData
-          .map((crit) => {
-            const link = linksMap.get(crit.pc_cri_id);
-            return link
-              ? {
-                  id: crit.pc_cri_id,
-                  name: link.pcl_cri_criteria,
-                  value: crit.pc_cri_value,
-                  unit: link.pcl_cri_unit || '',
-                  level: link.pcl_level || '5',
-                  priority: link.pcl_level === '1',
-                }
-              : null;
-          })
-          .filter(Boolean);
+        throw error;
       }
 
-      // Récupérer les références OEM constructeurs (Type 3) depuis pieces_ref_search
-      const { data: refOemData } = await this.supabase
-        .from(TABLES.pieces_ref_search)
-        .select('prs_ref, prs_prb_id')
-        .eq('prs_piece_id_i', pieceId)
-        .eq('prs_kind', '3') // Type 3 = références OEM constructeurs (RENAULT, BMW, AUDI...)
-        .limit(50);
-
-      // Grouper les références OEM constructeurs par marque
-      const referencesOem: Record<string, string[]> = {};
-
-      if (refOemData && refOemData.length > 0) {
-        const brandIds = [...new Set(refOemData.map((r) => r.prs_prb_id))];
-        const { data: brandsData } = await this.supabase
-          .from(TABLES.pieces_ref_brand)
-          .select('prb_id, prb_name')
-          .in('prb_id', brandIds);
-
-        const brandMap = new Map(
-          brandsData?.map((b) => [b.prb_id.toString(), b.prb_name]) || [],
-        );
-
-        refOemData.forEach((ref) => {
-          const brandName = brandMap.get(ref.prs_prb_id.toString());
-          if (brandName) {
-            if (!referencesOem[brandName]) {
-              referencesOem[brandName] = [];
-            }
-            if (!referencesOem[brandName].includes(ref.prs_ref)) {
-              referencesOem[brandName].push(ref.prs_ref);
-            }
-          }
-        });
-      }
-
-      return {
-        success: true,
-        data: {
-          id: pieceData.piece_id,
-          nom: pieceData.piece_name,
-          reference: pieceData.piece_ref,
-          marque: marqueData?.pm_name || '',
-          marque_logo: marqueData?.pm_logo || null,
-          qualite: marqueData?.pm_quality || null,
-          nb_stars: marqueData?.pm_nb_stars || 0,
-          prix_ttc: Number(prixData?.pri_vente_ttc_n) || 0,
-          consigne_ttc: Number(prixData?.pri_consigne_ttc_n) || 0,
-          dispo: prixData?.pri_dispo === '1' || prixData?.pri_dispo === 1,
-          description: pieceData.piece_des,
-          image:
-            imagesData?.[0]?.pmi_folder && imagesData[0]?.pmi_name
-              ? `${imagesData[0].pmi_folder}/${imagesData[0].pmi_name}`
-              : '',
-          images:
-            imagesData
-              ?.filter((img) => img.pmi_folder && img.pmi_name)
-              .map((img) => `${img.pmi_folder}/${img.pmi_name}`) || [],
-          weight: pieceData.piece_weight_kgm,
-          hasOem: pieceData.piece_has_oem,
-          criteresTechniques,
-          referencesOem,
-        },
+      // La RPC retourne directement { success, data } en jsonb
+      const result = data as {
+        success: boolean;
+        data?: Record<string, unknown>;
+        error?: string;
       };
+
+      if (!result?.success || !result.data) {
+        this.logger.warn(
+          `getPieceById(${pieceId}) piece not found in ${duration}ms`,
+        );
+        return { success: false, error: 'Piece non trouvee', data: null };
+      }
+
+      const response = { success: true, data: result.data };
+
+      // 3. Store in Redis cache (non-blocking)
+      this.cacheService
+        .set(cacheKey, response, this.PIECE_DETAIL_CACHE_TTL)
+        .catch(() => {
+          // Silent cache failure
+        });
+
+      this.logger.log(`getPieceById(${pieceId}) RPC MISS in ${duration}ms`);
+      return response;
     } catch (error) {
-      this.logger.error('Erreur lors de la récupération de la pièce:', error);
+      this.logger.error('Erreur lors de la recuperation de la piece:', error);
       return {
         success: false,
         error: getErrorMessage(error),
