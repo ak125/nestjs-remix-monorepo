@@ -26,8 +26,19 @@ export class VehicleRpcService extends SupabaseBaseService {
   private readonly CACHE_TTL_SECONDS = 3600;
   // TTL Stale: 24h - données expirées mais utilisables en fallback
   private readonly STALE_TTL_SECONDS = 86400;
-  // Timeout RPC avant fallback sur cache stale (optimisé pour LCP)
-  private readonly RPC_TIMEOUT_MS = 1500;
+  // Timeout RPC quand le cache stale existe (stale-while-revalidate).
+  // Warm RPC = ~125ms, p99 cold = ~4s. 3000ms protège le LCP si le cold
+  // path traîne: on sert immédiatement le stale plutôt que d'attendre.
+  private readonly RPC_TIMEOUT_MS = 3000;
+  // Timeout RPC quand AUCUN stale n'est disponible (cold first hit:
+  // post-deploy, éviction Redis, type_id rare). Dans ce cas on ne peut
+  // pas servir de fallback — il faut laisser la RPC aboutir jusqu'au
+  // plafond fonctionnel, sinon on renvoie 503 à l'utilisateur. 9000ms
+  // laisse 1s de marge avant le timeout frontend Remix (10s).
+  private readonly RPC_COLD_TIMEOUT_MS = 9000;
+  // Timeout dur sur l'overlay R8 (non-critique, SEO bonus uniquement).
+  // Doit rester court: un overlay optionnel ne doit jamais bloquer le LCP.
+  private readonly R8_TIMEOUT_MS = 500;
 
   constructor(
     private readonly cacheService: CacheService,
@@ -58,8 +69,9 @@ export class VehicleRpcService extends SupabaseBaseService {
   async getVehiclePageDataOptimized(typeId: number) {
     const startTime = performance.now();
     const cacheKey = this.getCacheKey(typeId);
+    const staleCacheKey = this.getStaleCacheKey(typeId);
 
-    // 1. Vérifier le cache Redis d'abord
+    // 1. Vérifier le cache Redis frais d'abord
     const cached =
       await this.cacheService.get<Record<string, unknown>>(cacheKey);
     if (cached) {
@@ -76,11 +88,25 @@ export class VehicleRpcService extends SupabaseBaseService {
       };
     }
 
-    // 2. Cache miss → Appel RPC avec timeout
-    this.logger.debug(`❌ CACHE MISS vehicle ${typeId}, appel RPC...`);
+    // 2. Cache miss → déterminer la stratégie timeout selon présence du stale.
+    // - Stale présent: timeout court (stale-while-revalidate, protège LCP).
+    // - Stale absent: timeout long (cold first hit, évite 503 fantôme).
+    const staleData =
+      await this.cacheService.get<Record<string, unknown>>(staleCacheKey);
+    const timeoutMs = staleData
+      ? this.RPC_TIMEOUT_MS
+      : this.RPC_COLD_TIMEOUT_MS;
+
+    this.logger.debug(
+      `❌ CACHE MISS vehicle ${typeId}, RPC (timeout=${timeoutMs}ms, hasStale=${!!staleData})`,
+    );
 
     try {
-      const result = await this.fetchRpcWithTimeout(typeId, startTime);
+      const result = await this.fetchRpcWithTimeout(
+        typeId,
+        startTime,
+        timeoutMs,
+      );
 
       // 3. Stocker en cache (async, non-bloquant)
       this.cacheResult(typeId, result).catch((err) =>
@@ -89,18 +115,22 @@ export class VehicleRpcService extends SupabaseBaseService {
 
       return result;
     } catch (error) {
-      // 4. Fallback sur cache stale si disponible
-      return this.handleRpcError(typeId, error, startTime);
+      // 4. Fallback sur le stale qu'on a déjà en main (évite un 2e appel Redis)
+      return this.handleRpcError(typeId, error, startTime, staleData);
     }
   }
 
   /**
    * 🔄 Appel RPC avec timeout strict
    */
-  private async fetchRpcWithTimeout(typeId: number, startTime: number) {
+  private async fetchRpcWithTimeout(
+    typeId: number,
+    startTime: number,
+    timeoutMs: number,
+  ) {
     // Créer une Promise avec timeout
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('RPC_TIMEOUT')), this.RPC_TIMEOUT_MS);
+      setTimeout(() => reject(new Error('RPC_TIMEOUT')), timeoutMs);
     });
 
     // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
@@ -161,20 +191,19 @@ export class VehicleRpcService extends SupabaseBaseService {
 
   /**
    * ⚠️ Gestion erreur RPC avec fallback sur cache stale
+   *
+   * @param staleData Stale cache déjà récupéré par l'appelant (évite un
+   *                  2e round-trip Redis). Si null → appelant n'avait pas
+   *                  de stale, donc propagation de l'erreur vers controller.
    */
   private async handleRpcError(
     typeId: number,
     error: unknown,
     startTime: number,
+    staleData: Record<string, unknown> | null,
   ) {
-    const staleCacheKey = this.getStaleCacheKey(typeId);
-
     const errorMsg = error instanceof Error ? error.message : String(error);
     this.logger.warn(`⚠️ RPC vehicle ${typeId} failed: ${errorMsg}`);
-
-    // Tenter le cache stale
-    const staleData =
-      await this.cacheService.get<Record<string, unknown>>(staleCacheKey);
 
     if (staleData) {
       this.logger.log(`📦 STALE CACHE utilisé pour vehicle ${typeId}`);
@@ -238,7 +267,7 @@ export class VehicleRpcService extends SupabaseBaseService {
     seoDecision: string;
     diversityScore: number;
   } | null> {
-    const { data, error } = await this.client
+    const queryPromise = this.client
       .from('__seo_r8_pages')
       .select(
         'h1, meta_title, meta_description, rendered_json, seo_decision, diversity_score',
@@ -250,7 +279,27 @@ export class VehicleRpcService extends SupabaseBaseService {
       .limit(1)
       .maybeSingle();
 
-    if (error || !data) return null;
+    const timeoutPromise = new Promise<{ data: null; error: Error }>(
+      (resolve) => {
+        setTimeout(
+          () => resolve({ data: null, error: new Error('R8_OVERLAY_TIMEOUT') }),
+          this.R8_TIMEOUT_MS,
+        );
+      },
+    );
+
+    const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+
+    if (error) {
+      if ((error as Error).message === 'R8_OVERLAY_TIMEOUT') {
+        this.logger.warn(
+          `⏱️ R8 overlay timeout (>${this.R8_TIMEOUT_MS}ms) pour vehicle ${typeId} — page servie sans overlay`,
+        );
+      }
+      return null;
+    }
+
+    if (!data) return null;
 
     return {
       h1: data.h1,
