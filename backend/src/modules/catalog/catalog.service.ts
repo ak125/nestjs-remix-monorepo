@@ -557,11 +557,13 @@ export class CatalogService
     }
 
     try {
-      // 2. RPC call — get_piece_detail fait tout en 1 round-trip DB
-      // (piece + prix + marque + images + criteres + OEM refs avec index TEXT)
-      const { data, error } = await this.supabase.rpc('get_piece_detail', {
-        p_piece_id: pieceId,
-      });
+      // 2. RPC call via RPC Safety Gate — get_piece_detail fait tout en 1
+      // round-trip DB (piece + prix + marque + images + criteres + OEM refs)
+      const { data, error } = await this.callRpc<{
+        success: boolean;
+        data?: Record<string, unknown>;
+        error?: string;
+      }>('get_piece_detail', { p_piece_id: pieceId }, { source: 'api' });
 
       const duration = Math.round(performance.now() - startTime);
 
@@ -574,11 +576,7 @@ export class CatalogService
       }
 
       // La RPC retourne directement { success, data } en jsonb
-      const result = data as {
-        success: boolean;
-        data?: Record<string, unknown>;
-        error?: string;
-      };
+      const result = data;
 
       if (!result?.success || !result.data) {
         this.logger.warn(
