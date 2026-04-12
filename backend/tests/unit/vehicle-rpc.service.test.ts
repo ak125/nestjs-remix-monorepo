@@ -160,8 +160,12 @@ describe('VehicleRpcService', () => {
     expect(service['CACHE_TTL_SECONDS']).toBe(3600);
     // Stale cache: 24 hours
     expect(service['STALE_TTL_SECONDS']).toBe(86400);
-    // RPC timeout: 1.5 seconds
-    expect(service['RPC_TIMEOUT_MS']).toBe(1500);
+    // RPC timeout with stale fallback: 3s (protects LCP via SWR)
+    expect(service['RPC_TIMEOUT_MS']).toBe(3000);
+    // RPC timeout cold first-hit: 9s (must complete, no 503 fallback)
+    expect(service['RPC_COLD_TIMEOUT_MS']).toBe(9000);
+    // R8 overlay hard cap: 500ms (SEO bonus must never block critical path)
+    expect(service['R8_TIMEOUT_MS']).toBe(500);
   });
 
   // ═══════════════════════════════════════════════════════════════
