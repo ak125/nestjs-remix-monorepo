@@ -33,6 +33,7 @@ const ExecuteRequestSchema = z.object({
   targetIds: z.array(z.string().min(1)).min(1).max(50),
   dryRun: z.boolean().optional().default(true),
   vehicleKey: z.string().optional(),
+  source: z.string().optional(),
 });
 
 @Controller('api/internal/pipeline')
@@ -56,10 +57,10 @@ export class InternalPipelineController {
       throw new BadRequestException(parsed.error.issues);
     }
 
-    const { roleId, targetIds, dryRun, vehicleKey } = parsed.data;
+    const { roleId, targetIds, dryRun, vehicleKey, source } = parsed.data;
 
     this.logger.log(
-      `[Internal] Pipeline execute: roleId=${roleId} targets=${targetIds.length} dryRun=${dryRun}`,
+      `[Internal] Pipeline execute: roleId=${roleId} targets=${targetIds.length} dryRun=${dryRun} source=${source ?? 'api'}`,
     );
 
     const result = await this.router.execute({
@@ -67,6 +68,7 @@ export class InternalPipelineController {
       targetIds,
       dryRun,
       vehicleKey,
+      source,
     });
 
     this.logger.log(
@@ -151,5 +153,33 @@ export class InternalPipelineController {
   @Get('roles')
   async listRoles() {
     return { success: true, data: this.router.listRoles() };
+  }
+
+  /**
+   * POST /api/internal/pipeline/r4-audit/:pgAlias
+   * Skills-first bridge: run R4 audit (0-LLM) and return sections to improve.
+   * Used by /content-gen skill and Paperclip agents to know what to generate.
+   */
+  @Post('r4-audit/:pgAlias')
+  async r4Audit(@Param('pgAlias') pgAlias: string) {
+    this.logger.log(`[Internal] R4 audit: ${pgAlias}`);
+
+    const result = await this.router.execute({
+      roleId: 'R4_REFERENCE',
+      targetIds: [pgAlias],
+      dryRun: true,
+      source: 'r4_batch',
+    });
+
+    const target = result.results[0];
+    return {
+      success: true,
+      data: {
+        pgAlias,
+        status: target?.status ?? 'failed',
+        auditResult: target?.data ?? null,
+        hint: 'Use /content-gen --r4 to generate content for sections marked IMPROVE',
+      },
+    };
   }
 }

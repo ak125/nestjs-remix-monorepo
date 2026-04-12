@@ -112,7 +112,7 @@ import { ProductsModule } from '../products/products.module';
 import { WorkerModule } from '../../workers/worker.module'; // 📊 Pour SeoMonitorSchedulerService
 import { SeoModule } from '../seo/seo.module'; // 🚀 Pour RiskFlagsEngineService + GooglebotDetectorService
 import { RagProxyModule } from '../rag-proxy/rag-proxy.module'; // 📖 Pour RagProxyService (enrichissement buying guide)
-// AiContentModule SUPPRIME de AdminModule — plus utilise ici (reste dans SeoModule + MarketingModule)
+import { AiContentModule } from '../ai-content/ai-content.module'; // 🤖 Pour ConseilEnricher + BuyingGuideSEODraft (optional LLM polish)
 import { SystemModule } from '../system/system.module';
 import { AdminDbGovernanceController } from './controllers/admin-db-governance.controller';
 import { AdminPipelineController } from './controllers/admin-pipeline.controller'; // 🚀 Unified pipeline execution
@@ -121,7 +121,7 @@ import { ExecutionRouterService } from './services/execution-router.service'; //
 import { R2EnricherService } from './services/r2-enricher.service'; // 🏗️ R2 Product enricher (WriteGate-native)
 import { R1EnricherService } from './services/r1-enricher.service'; // 🏗️ R1 Router enricher (0-LLM, RAG+KP)
 import { ContentQualityGateService } from './services/content-quality-gate.service'; // 🚦 Cross-role quality gates
-import { R4ContentEnricherService } from './services/r4-content-enricher.service'; // 🏗️ R4 Reference enricher (LLM + lint)
+import { R4ContentEnricherService } from './services/r4-content-enricher.service'; // 🏗️ R4 Reference enricher (0-LLM audit + lint)
 import { R4LintGatesService } from './services/r4-lint-gates.service'; // 🚦 R4 content lint gates LG1-LG8
 import { InternalPipelineController } from './controllers/internal-pipeline.controller'; // 🚀 Internal pipeline (X-Internal-Key auth)
 import { InternalSeoAuditController } from './controllers/internal-seo-audit.controller'; // 📊 Internal SEO audit (X-Internal-Key auth)
@@ -136,6 +136,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     SeoModule, // 🚀 Import pour accès aux services SEO (risk flags, googlebot)
     RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
     SystemModule, // DB governance Phase 2 (DbGovernanceService)
+    AiContentModule, // 🤖 Pour ConseilEnricher + BuyingGuideSEODraft (optional LLM polish)
   ],
   controllers: [
     ConfigurationController,
@@ -234,7 +235,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)
     R1EnricherService, // 🏗️ R1 Router enricher (0-LLM, RAG+KP → r1_gamme_slots)
     ContentQualityGateService, // 🚦 Cross-role quality gates (R1/R3/R4/R6 min lengths + vocab)
-    R4ContentEnricherService, // 🏗️ R4 Reference enricher (LLM-powered, lint gates)
+    R4ContentEnricherService, // 🏗️ R4 Reference enricher (0-LLM audit + lint gates)
     R4LintGatesService, // 🚦 R4 content lint gates LG1-LG8
   ],
   exports: [

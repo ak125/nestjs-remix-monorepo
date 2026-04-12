@@ -26,6 +26,7 @@ import { R8VehicleEnricherService } from '../services/r8-vehicle-enricher.servic
 import { DiagnosticService } from '../../seo/validation/diagnostic.service';
 import { R1EnricherService } from '../services/r1-enricher.service';
 import { ReferenceService } from '../../seo/services/reference.service';
+import { R4ContentEnricherService } from '../services/r4-content-enricher.service';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
 // ── Result types ──
@@ -37,6 +38,8 @@ export interface ExecutionRequest {
   targetIds: string[];
   /** Dry run mode — preview without writing to DB */
   dryRun?: boolean;
+  /** Source of the request — used for R4 routing (r4_batch → 0-LLM audit enricher) */
+  source?: string;
   /** Optional vehicle key for R2 (gamme × vehicle) */
   vehicleKey?: string;
 }
@@ -77,6 +80,8 @@ export class ExecutionRouterService extends SupabaseBaseService {
     new (...args: unknown[]) => unknown
   >;
 
+  private r4ContentEnricher: R4ContentEnricherService | null = null;
+
   constructor(
     configService: ConfigService,
     private readonly moduleRef: ModuleRef,
@@ -103,6 +108,9 @@ export class ExecutionRouterService extends SupabaseBaseService {
         ...args: unknown[]
       ) => unknown,
       ReferenceService: ReferenceService as unknown as new (
+        ...args: unknown[]
+      ) => unknown,
+      R4ContentEnricherService: R4ContentEnricherService as unknown as new (
         ...args: unknown[]
       ) => unknown,
     };
@@ -186,6 +194,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
                 targetId,
                 dryRun,
                 request.vehicleKey,
+                request.source,
               ),
             );
             return {
@@ -259,6 +268,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
     targetId: string,
     dryRun: boolean,
     vehicleKey?: string,
+    source?: string,
   ): Promise<unknown> {
     // Resolve pgAlias for gamme-based roles
     const pgAlias = await this.resolvePgAlias(targetId);
@@ -293,7 +303,13 @@ export class ExecutionRouterService extends SupabaseBaseService {
 
       case RoleId.R4_REFERENCE:
         // Single-target: check if reference exists for this pgAlias, or generate for single gamme
-        return this.dispatchR4Single(enricher, targetId, pgAlias, dryRun);
+        return this.dispatchR4Single(
+          enricher,
+          targetId,
+          pgAlias,
+          dryRun,
+          source,
+        );
 
       case RoleId.R5_DIAGNOSTIC:
         // Single-target: generate diagnostics for one gamme only
@@ -340,8 +356,20 @@ export class ExecutionRouterService extends SupabaseBaseService {
     targetId: string,
     pgAlias: string | null,
     dryRun: boolean,
+    source?: string,
   ): Promise<unknown> {
     const slug = pgAlias ?? targetId;
+
+    // Route to R4ContentEnricherService (0-LLM audit — delegates content gen to /content-gen skill)
+    if (source === 'r4_batch') {
+      const enricher0llm = this.getR4ContentEnricher();
+      if (enricher0llm) {
+        return enricher0llm.enrichSingle(slug, { dryRun, source });
+      }
+      this.logger.warn(
+        '[R4] R4ContentEnricherService not available, falling back to RAG-only',
+      );
+    }
 
     if (dryRun) {
       if (typeof enricher.getBySlug === 'function') {
@@ -357,7 +385,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
       return this.dryRunPreview(RoleId.R4_REFERENCE, targetId, pgAlias);
     }
 
-    // Use ReferenceService.refreshSingleGamme for enriched RAG content
+    // Use ReferenceService.refreshSingleGamme for enriched RAG content (default path)
     const refService = enricher as unknown as {
       refreshSingleGamme?: (alias: string) => Promise<{
         created: boolean;
@@ -697,6 +725,19 @@ export class ExecutionRouterService extends SupabaseBaseService {
   }
 
   // ── Private: resolve enricher from DI ──
+
+  /** Lazy-resolve R4ContentEnricherService via ModuleRef (avoids constructor DI issues) */
+  private getR4ContentEnricher(): R4ContentEnricherService | null {
+    if (this.r4ContentEnricher) return this.r4ContentEnricher;
+    try {
+      this.r4ContentEnricher = this.moduleRef.get(R4ContentEnricherService, {
+        strict: false,
+      });
+      return this.r4ContentEnricher;
+    } catch {
+      return null;
+    }
+  }
 
   private resolveEnricher(serviceKey: string): EnricherLike | null {
     const serviceClass = this.serviceClassMap[serviceKey];

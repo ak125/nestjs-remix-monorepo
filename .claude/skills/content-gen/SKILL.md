@@ -55,26 +55,64 @@ Read /opt/automecanik/rag/knowledge/gammes/{pg_alias}.md
 ```
 Parser le frontmatter YAML complet.
 
-**2b** — Keywords importés depuis Claude Chrome (SOURCE PRIORITAIRE) :
+**2b** — Keywords bruts depuis `__seo_keywords` (source Google Ads KP) :
+
+Les KW arrivent SANS role pre-assigne (skills-first architecture). C'est à toi (Claude)
+de classifier contextuellement chaque KW selon le role en cours de génération.
+
+```sql
+SELECT keyword, volume, competition, competition_idx
+FROM __seo_keywords
+WHERE pg_id = {pg_id} AND source = 'google-ads-kp'
+ORDER BY volume DESC;
+```
+
+**2b-bis — Classification contextuelle par Claude (au moment de générer) :**
+
+Pour le role `{role}` en cours, applique ces règles de sélection :
+
+| Role | Critères de selection |
+|------|----------------------|
+| **R1** (transactionnel) | KW qui décrivent la piece à acheter : `{gamme}`, `{gamme} + modèle véhicule`, `{gamme} + prix`, `{gamme} + pas cher`, `achat/acheter {gamme}`, `cartouche/element + {gamme}`. **Exclure** les KW outils (cloche, clé), industriels (hydraulique, tracteur, micron), how-to (changer, vidange), informationnels (c'est quoi, role). |
+| **R3** (how-to) | KW qui décrivent une procédure : `comment changer/remplacer {gamme}`, `tuto/tutoriel {gamme}`, `{gamme} étape`, `dépose/repose {gamme}`, `{gamme} + vidange` (SI sans "prix"). **Exclure** `prix {gamme}` (R1), `meilleur {gamme}` (R6). |
+| **R4** (référence) | KW informationnels/définition : `c'est quoi {gamme}`, `role/fonctionnement {gamme}`, `type de {gamme}`, `différence {gamme}`, `à quoi sert`. Très peu de KW Google Ads tombent dans R4 — majoritairement via PAA. |
+| **R6** (guide d'achat) | KW d'investigation commerciale : `meilleur {gamme}`, `comparatif`, `quel {gamme} choisir`, `marque + {gamme}` (purflux, mann, bosch...), `{gamme} OEM vs adaptable`, `budget/prix moyen`. |
+
+**Règle de priorité absolue** : si un KW a plusieurs intents :
+1. `prix` gagne toujours → R1 (intent transactionnel primaire)
+2. `marque + gamme` → R6 (investigation)
+3. `comment/tuto` (sans prix) → R3
+4. Sinon → R1 par défaut
+
+**Assignation vol (percentile par role)** : après avoir sélectionné les KW du role,
+trie-les par volume desc et assigne :
+- HIGH = top 10%
+- MED  = 10-40%
+- LOW  = 60% restants
+
+Chaque role a ses propres HIGH proportionnels à son volume total.
+
+**Écriture dans `__seo_keyword_results` :**
+```sql
+INSERT INTO __seo_keyword_results (pg_id, pg_alias, role, kw, intent, vol, source)
+VALUES ({pg_id}, '{pg_alias}', '{role}', '{kw}', '{intent}', '{vol}', 'google-ads-kp')
+ON CONFLICT (pg_id, kw, role) DO UPDATE SET
+  vol = EXCLUDED.vol,
+  intent = EXCLUDED.intent,
+  source = EXCLUDED.source;
+```
+
+**Utilisation dans le contenu généré :**
+- KW vol=HIGH → OBLIGATOIRE dans H1 ou H2 + body text
+- KW vol=MED → intégrer dans body text ou FAQ
+- KW vol=LOW → optionnel, variantes naturelles
+
+**2b-fallback** — Si `__seo_keywords` est vide pour ce pg_id, fallback sur `__seo_keyword_results` direct (données legacy de claude_chrome ou kp-batch) :
 ```sql
 SELECT kw, intent, vol FROM __seo_keyword_results
 WHERE pg_id = {pg_id} AND role = '{role}'
-ORDER BY
-  CASE vol WHEN 'HIGH' THEN 1 WHEN 'MED' THEN 2 ELSE 3 END,
-  kw;
+ORDER BY CASE vol WHEN 'HIGH' THEN 1 WHEN 'MED' THEN 2 ELSE 3 END;
 ```
-Ces mots-clés DOIVENT être intégrés dans le contenu généré (H1, H2, body, meta, FAQ).
-Règle d'intégration :
-- KW vol=HIGH → OBLIGATOIRE dans H1 ou H2 + body text
-- KW vol=MED → intégrer dans body text ou FAQ
-- KW vol=LOW → optionnel, utiliser comme variantes naturelles
-
-**2b-fallback** — Si `__seo_keyword_results` est vide pour ce pg_id+role, fallback sur les anciennes tables KP :
-```sql
-SELECT rkp_section_terms, rkp_intent_map, rkp_quality_score
-FROM __seo_r3_keyword_plan WHERE rkp_pg_id = {pg_id} AND rkp_status = 'validated';
-```
-(adapter le nom de table selon le rôle : r1, r3, r4, r5, r6, r8)
 
 **2c** — Contenu existant (pour ne pas régresser) :
 ```sql
@@ -446,34 +484,74 @@ ON CONFLICT (sgc_pg_id, sgc_section_type) DO UPDATE SET
 > **IMPORTANT** : Utiliser `ON CONFLICT (sgc_pg_id, sgc_section_type)` — jamais `(sgc_pg_id, sgc_id)`.
 > Le CASE protège contre la régression : le contenu plus court ne remplace JAMAIS le contenu plus long.
 
+### 6h — Image prompts R3
+
+Après génération des sections R3, générer les prompts image R3 si pas déjà existants :
+
+```bash
+curl -s -X POST http://localhost:3000/api/admin/r3-image-prompts/generate/{pg_alias} \
+  -b cookies.txt
+```
+
+8 slots (1 par section S1-S8) : diagrammes, visuels étape par étape, callouts sécurité.
+Si prompts déjà existants et `--force` non set → skip.
+
+Workflow identique à R1 : generate → approve → create image → upload → set-url → cache invalidate.
+
 ---
 
 ## Étape 7 — Génération R4 (référence encyclopédique)
 
-À partir du RAG, générer les champs texte :
+**Prompt canonique** : lire `.claude/prompts/R4_REFERENCE/generator.md` et suivre ses instructions.
 
-| Champ | Source RAG | Longueur |
-|-------|-----------|----------|
-| definition | domain.role + must_be_true | 800-2000 chars, 3 paragraphes, min 4 chiffres |
-| role_mecanique | domain.role + related_parts | 300-700 chars, transformation physique |
-| role_negatif | domain.must_be_true (inversé) | 300-600 chars, 4-6 phrases "ne fait pas" |
-| confusions_courantes | domain.confusion_with | ARRAY de "{A} ≠ {B} : {explication}" |
-| regles_metier | domain.must_be_true | ARRAY de verbe d'action + pourquoi |
-| composition | domain.composition, related_parts | ARRAY de "{composant} en {matériau} — {spec}" |
-| scope_limites | domain.cross_gammes | 100-300 chars |
+Le generator produit un JSON structuré avec 9 sections (B1-B9). Utiliser le RAG COMPLET (pas de truncation).
+
+| Section | Champ DB | Contraintes |
+|---------|----------|-------------|
+| B1 definition | definition + takeaways | 50-110 mots + 3-5 bullets |
+| B2 role_mecanique | role_mecanique | 70-140 mots |
+| B3 composition | composition | 4-7 éléments |
+| B4 variants | variants | 3-5 cartes (optionnel) |
+| B5 key_specs | key_specs | 4-8 specs avec "selon véhicule" |
+| B6 FAQ | confusions_courantes + common_questions | 3-5 confusions + 4-7 Q/A (25-60 mots) |
+| B7 role_negatif | role_negatif | 5-8 phrases "ne fait pas" |
+| B8 regles_metier | regles_metier | 5-9 règles (Toujours/Ne jamais/Doit) |
+| B9 scope | scope_limites | 80-140 mots + renvoi R3 |
+
+**Lint gates** : 8 gates (LG1-LG8), seuil >= 70. Voir generator.md pour détails.
 
 **Écriture** :
 ```sql
 UPDATE __seo_reference SET
   definition = $def$...$def$,
+  takeaways = ARRAY['...', '...', '...'],
   role_mecanique = $rm$...$rm$,
   role_negatif = $rn$...$rn$,
   confusions_courantes = ARRAY['...', '...', '...'],
+  common_questions = $faq$[{"question":"...","answer":"..."}]$faq$::jsonb,
   regles_metier = ARRAY['...', '...', '...'],
   composition = ARRAY['...', '...', '...'],
+  key_specs = $specs$[{"label":"...","value":"...","note":"selon véhicule"}]$specs$::jsonb,
   scope_limites = '...'
 WHERE pg_id = {pg_id};
 ```
+
+### 7h — Image prompts R4
+
+Après écriture R4, générer 2 prompts image :
+1. **HERO_TECHNIQUE** : schéma technique éclaté de la pièce (vue en coupe)
+2. **COMPOSITION_SCHEMA** : diagramme des composants avec labels
+
+Écrire les prompts inline (pas d'endpoint NestJS dédié pour R4) :
+```sql
+INSERT INTO __seo_r4_image_prompts (rip_pg_id, rip_pg_alias, rip_slot, rip_prompt, rip_status)
+VALUES
+  ({pg_id}, '{pg_alias}', 'HERO_TECHNIQUE', $p$...$p$, 'draft'),
+  ({pg_id}, '{pg_alias}', 'COMPOSITION_SCHEMA', $p$...$p$, 'draft')
+ON CONFLICT (rip_pg_id, rip_slot) DO NOTHING;
+```
+
+Si la table `__seo_r4_image_prompts` n'existe pas encore → skip avec warning.
 
 ---
 
@@ -495,6 +573,41 @@ UPDATE __seo_gamme_purchase_guide SET
   sgpg_how_to_choose = $htc$...$htc$,
   sgpg_updated_at = now()
 WHERE sgpg_pg_id = '{pg_id}';
+```
+
+### 8h — Image prompts R6
+
+Après écriture R6, générer les prompts image via l'agent `r6-image-prompt` :
+
+```
+Agent tool, subagent_type: "r6-image-prompt"
+Prompt: "pg_id = {pg_id}, pg_alias = {pg_alias}"
+```
+
+Ou si l'agent n'est pas disponible, générer 3 prompts inline :
+1. **HERO_GUIDE** : visuel comparatif des critères de choix
+2. **QUALITY_TIERS** : infographie niveaux de qualité (budget/standard/premium)
+3. **CHECKLIST_VISUAL** : checklist illustrée avant achat
+
+Si prompts déjà existants et `--force` non set → skip.
+
+---
+
+## Rapport contenu + images unifié
+
+Après génération de tous les rôles demandés, afficher le rapport unifié :
+
+```
+## Content + Images — {pg_name} (pg_id={pg_id})
+
+| Rôle | Contenu | Images | KW Score | Statut |
+|------|---------|--------|----------|--------|
+| R1   | {chars}c | {n}/5 prompts | {score}/100 | ✅/⚠️ |
+| R3   | {n} sections | {n}/8 prompts | {score}/100 | ✅/⚠️ |
+| R4   | {n} sections | {n}/2 prompts | {score}/100 | ✅/⚠️ |
+| R6   | {n} champs | {n}/3 prompts | {score}/100 | ✅/⚠️ |
+
+Images : {total} prompts générés (status=draft, en attente d'approbation admin)
 ```
 
 ---

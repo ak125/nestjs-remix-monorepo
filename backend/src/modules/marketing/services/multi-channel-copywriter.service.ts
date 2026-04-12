@@ -16,7 +16,7 @@ import type {
  *
  * Integration with AiContentService:
  * - Uses ContentType: social_instagram, social_facebook, social_youtube
- * - Leverages existing cache (7d SHA256), circuit breaker, failover (Claude→Groq)
+ * - Leverages existing cache (7d SHA256), circuit breaker, provider: Claude (Anthropic)
  * - Batch via AiContentService.batchGenerate() (max 10, Promise.allSettled)
  *
  * This service is the orchestrator — it builds the context and delegates

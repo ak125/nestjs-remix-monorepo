@@ -46,13 +46,8 @@ export class CircuitBreakerService {
   private readonly circuits = new Map<string, ProviderCircuit>();
   private readonly config: CircuitBreakerConfig;
 
-  // Provider priority order for failover
-  private readonly providerOrder = [
-    'anthropic',
-    'groq',
-    'huggingface',
-    'openai',
-  ];
+  // Provider priority order for failover (Anthropic-only, skills-first architecture)
+  private readonly providerOrder = ['anthropic'];
 
   constructor(private readonly configService: ConfigService) {
     this.config = {
