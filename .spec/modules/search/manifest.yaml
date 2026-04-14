@@ -1,0 +1,25 @@
+# .spec/modules/search/manifest.yaml
+# Module Manifest — search
+# Version: 1.0.0 | Status: stub | Owner: Software-Architect (d2e89803)
+# Source: AUT-272 / AUT-271 — AUTO-GENERATED STUB
+# TODO: human review required before promoting to draft/certified
+
+module: search
+title: "Search Module"
+description: "Full-text and reference search across pieces."
+domain: D1-catalog
+status: stub
+
+owned_tables: []
+read_tables: []
+owned_rpcs: []
+http_routes: []
+public_exports: []
+depends_on: []
+invariants_ref: []
+
+change_surface:
+  risk_level: medium
+  review_checklist:
+    - "Stub not yet reviewed — fill owned_tables, http_routes, depends_on"
+    - "Promote status to draft after human review"

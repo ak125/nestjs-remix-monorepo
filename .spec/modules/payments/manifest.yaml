@@ -1,0 +1,184 @@
+# .spec/modules/payments/manifest.yaml
+# Module Manifest — payments
+# Version: 1.0.0 | Status: draft | Owner: Software-Architect (d2e89803)
+# Source: AUT-272 / AUT-271
+# References: .claude/rules/payments.md, domain-map.md v1.4.2, full-structural-audit.md v1.5.0
+
+module: payments
+title: "Payments Module (Paybox + SystemPay)"
+description: >
+  Handles payment initialization, gateway callbacks (Paybox CyberPlus, SystemPay),
+  HMAC signature verification (SHA512/SHA256), order status updates, refunds,
+  and payment method management. Critical security surface — timing-safe compare mandatory.
+domain: D4-orders
+status: draft
+
+# ── Database Surface ────────────────────────────────────────────────────────
+owned_tables:
+  # No dedicated payment tables in current schema — payments write to orders tables
+  # owned by orders module. See read_tables + change_surface note.
+  []
+
+read_tables:
+  # Orders domain — payments read and update order state
+  - ___xtr_order
+  - ___xtr_order_line
+  - ___xtr_order_line_status
+  - ___xtr_customer
+  - ___xtr_invoice
+  - ___xtr_invoice_line
+  # Cart tables (written by cart module, read for payment initialization)
+  - cart
+  - cart_items
+
+owned_rpcs:
+  # Payment-related RPCs
+  - get_payment_by_reference
+  - get_payments_by_order
+  - get_payments_by_user
+  - update_order_payment_status
+  - create_payment_record
+
+# ── HTTP Surface ────────────────────────────────────────────────────────────
+http_routes:
+  # Core payment endpoints
+  - method: POST
+    path: /api/payments
+    auth: session
+    notes: Initialize payment (Paybox or SystemPay), returns redirect URL
+  - method: GET
+    path: /api/payments/:id
+    auth: session
+    notes: Get payment by ID
+  - method: GET
+    path: /api/payments/user/:userId
+    auth: session
+    notes: List payments for a user
+  - method: GET
+    path: /api/payments/order/:orderId
+    auth: session
+  - method: GET
+    path: /api/payments/reference/:reference
+    auth: session
+  - method: POST
+    path: /api/payments/:id/cancel
+    auth: session
+  - method: POST
+    path: /api/payments/proceed-supplement
+    auth: session
+    notes: Pay supplement for an existing order
+  # Payment methods
+  - method: GET
+    path: /api/payments/methods/available
+    auth: session
+    notes: Available payment methods for current cart
+  - method: POST
+    path: /api/payments/test/create-with-consignes
+    auth: session
+    notes: Test endpoint — DEV only, must not be accessible in PROD
+  - method: GET
+    path: /api/payments/:id/transactions
+    auth: session
+  # Admin
+  - method: GET
+    path: /api/payments/stats
+    auth: admin
+  - method: GET
+    path: /api/payments/stats/global
+    auth: admin
+  - method: GET
+    path: /api/payments
+    auth: admin
+    notes: List all payments
+  # Paybox callback (public — signed by Paybox HMAC)
+  - method: POST
+    path: /api/paybox/callback
+    auth: public
+    notes: "CRITICAL: HMAC-SHA512 verification required. timingSafeEqual mandatory."
+  - method: GET
+    path: /api/paybox/callback
+    auth: public
+    notes: Paybox GET callback (some scenarios)
+  - method: GET
+    path: /api/paybox/redirect
+    auth: public
+    notes: Post-payment redirect
+  # SystemPay callback (public — signed by SystemPay HMAC)
+  - method: GET
+    path: /api/systempay/redirect
+    auth: public
+    notes: "CRITICAL: HMAC-SHA256 verification. vads_* params sorted alphabetically."
+  # CyberPlus / unified callback
+  - method: POST
+    path: /api/payments/callback/cyberplus
+    auth: public
+    notes: "CRITICAL: Verify signature before any state change."
+  - method: POST
+    path: /api/payments/callback/success
+    auth: public
+  - method: POST
+    path: /api/payments/callback/error
+    auth: public
+  # Admin monitoring
+  - method: GET
+    path: /api/admin/paybox-monitoring
+    auth: admin
+  - method: GET
+    path: /api/admin/paybox-health
+    auth: admin
+
+# ── Exports & Dependencies ───────────────────────────────────────────────────
+public_exports:
+  - symbol: PaymentsModule
+    kind: service
+  - symbol: PaymentsService
+    kind: service
+    notes: Used by orders module for payment status lookup
+  - symbol: PayboxCallbackGateService
+    kind: service
+    notes: Security gate — HMAC verification. Never bypass.
+
+depends_on:
+  - orders     # Order state updates after payment
+  - cart       # Cart data for payment initialization
+  - customers  # Customer data for billing
+  - config     # Gateway credentials (PAYBOX_*, SYSTEMPAY_*)
+
+# ── Invariants ───────────────────────────────────────────────────────────────
+invariants_ref:
+  # Orders/payments integrity (D4-orders)
+  - INV-046    # customer-email-not-null
+  - INV-047    # customer-email-unique
+  - INV-048    # order-fk-customer
+  - INV-049    # order-line-fk-order
+  - INV-050    # order-line-quantity-positive
+  - INV-051    # order-line-unit-price-non-negative
+  - INV-052    # order-status-valid
+  - INV-053    # invoice-line-fk-invoice
+  - INV-054    # invoice-fk-order
+  - INV-055    # order-line-status-valid
+
+# ── Change Surface ────────────────────────────────────────────────────────────
+change_surface:
+  risk_level: critical
+  requires_data_ops_approval: false
+  requires_seo_approval: false
+  review_checklist:
+    # Security checks (non-negotiable)
+    - "timingSafeEqual must be used for ALL HMAC comparisons — never === for signatures"
+    - "normalizeOrderId() must be called before any DB lookup in callback handlers"
+    - "Verify error code before marking order as paid"
+    - "No HMAC keys hardcoded — must come from config module only"
+    - "Test endpoints (/test/*) must not be reachable in production (Docker env check)"
+    - "vads_* params for SystemPay must remain sorted alphabetically before HMAC"
+    # Order integrity checks
+    - "Run INV-046 through INV-055 to confirm order/customer FK integrity"
+    - "Verify payment status transitions are idempotent (duplicate Paybox callbacks)"
+    - "Check that refund flow does not double-refund (reference idempotency key)"
+    # Dependency checks
+    - "Confirm PayboxCallbackGateService is not bypassed in any new route"
+    - "Verify OrdersModule dependency injection is not broken after changes"
+  gate_battery:
+    - manifest-check
+    - invariant-check-D4-orders
+    - security-payment-hmac

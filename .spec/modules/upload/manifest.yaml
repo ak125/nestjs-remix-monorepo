@@ -1,0 +1,25 @@
+# .spec/modules/upload/manifest.yaml
+# Module Manifest — upload
+# Version: 1.0.0 | Status: stub | Owner: Software-Architect (d2e89803)
+# Source: AUT-272 / AUT-271 — AUTO-GENERATED STUB
+# TODO: human review required before promoting to draft/certified
+
+module: upload
+title: "Upload Module"
+description: "File upload handling (images, documents)."
+domain: D5-structural
+status: stub
+
+owned_tables: []
+read_tables: []
+owned_rpcs: []
+http_routes: []
+public_exports: []
+depends_on: []
+invariants_ref: []
+
+change_surface:
+  risk_level: medium
+  review_checklist:
+    - "Stub not yet reviewed — fill owned_tables, http_routes, depends_on"
+    - "Promote status to draft after human review"

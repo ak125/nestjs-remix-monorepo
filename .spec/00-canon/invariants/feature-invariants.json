@@ -1,0 +1,638 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "created": "2026-04-13",
+    "total": 69,
+    "description": "Invariants exécutables pour AutoMecanik — chaque SQL doit retourner 0 ligne. Non-respect = régression ou incident potentiel.",
+    "source": "AUT-274 / AUT-271 epic. Fondé sur full-structural-audit.md v1.5.0, domain-map.md v1.4.2, incident pg_alias 2026-03, sql-governance-rules.md v1.0.0",
+    "domains": ["D1-catalog", "D2-vehicle", "D3-seo", "D4-orders", "D5-structural", "D6-consistency"]
+  },
+  "invariants": [
+    {
+      "id": "INV-001",
+      "name": "pg-alias-unique",
+      "domain": "D1-catalog",
+      "severity": "critical",
+      "description": "pieces_gamme.pg_alias doit être unique (non-null). Violation = incident pg_alias 2026-03 reproduit.",
+      "incident_ref": "20260329_dedup_pg_alias_unique.sql",
+      "tables": ["pieces_gamme"],
+      "sql_file": "INV-001-pg-alias-unique.sql"
+    },
+    {
+      "id": "INV-002",
+      "name": "pg-alias-no-dup-suffix",
+      "domain": "D1-catalog",
+      "severity": "critical",
+      "description": "Aucun pg_alias ne doit contenir le suffixe '-dup' (résidu de la migration de dédup 2026-03).",
+      "incident_ref": "20260329_dedup_pg_alias_unique.sql",
+      "tables": ["pieces_gamme"],
+      "sql_file": "INV-002-pg-alias-no-dup-suffix.sql"
+    },
+    {
+      "id": "INV-003",
+      "name": "pieces-gamme-pg-id-unique",
+      "domain": "D1-catalog",
+      "severity": "critical",
+      "description": "pieces_gamme.pg_id (PK) doit être unique. Doublons = corruption du catalogue.",
+      "tables": ["pieces_gamme"],
+      "sql_file": "INV-003-pieces-gamme-pg-id-unique.sql"
+    },
+    {
+      "id": "INV-004",
+      "name": "pieces-price-non-negative",
+      "domain": "D1-catalog",
+      "severity": "critical",
+      "description": "Tous les prix dans pieces_price doivent être >= 0 (colonnes shadow _n migrées en V4b/V5a).",
+      "tables": ["pieces_price"],
+      "sql_file": "INV-004-pieces-price-non-negative.sql"
+    },
+    {
+      "id": "INV-005",
+      "name": "order-amount-non-negative",
+      "domain": "D4-orders",
+      "severity": "critical",
+      "description": "Tout montant commande ___xtr_order doit être >= 0.",
+      "tables": ["___xtr_order"],
+      "sql_file": "INV-005-order-amount-non-negative.sql"
+    },
+    {
+      "id": "INV-006",
+      "name": "pieces-relation-type-fk-piece",
+      "domain": "D1-catalog",
+      "severity": "high",
+      "description": "pieces_relation_type.rtp_piece_id doit référencer une pièce existante dans pieces.",
+      "tables": ["pieces_relation_type", "pieces"],
+      "sql_file": "INV-006-pieces-relation-type-fk-piece.sql"
+    },
+    {
+      "id": "INV-007",
+      "name": "pieces-media-img-fk-piece",
+      "domain": "D1-catalog",
+      "severity": "high",
+      "description": "pieces_media_img.pmi_piece_id doit référencer une pièce existante dans pieces.",
+      "tables": ["pieces_media_img", "pieces"],
+      "sql_file": "INV-007-pieces-media-img-fk-piece.sql"
+    },
+    {
+      "id": "INV-008",
+      "name": "pieces-ref-ean-fk-piece",
+      "domain": "D1-catalog",
+      "severity": "high",
+      "description": "pieces_ref_ean.pre_piece_id doit référencer une pièce existante dans pieces.",
+      "tables": ["pieces_ref_ean", "pieces"],
+      "sql_file": "INV-008-pieces-ref-ean-fk-piece.sql"
+    },
+    {
+      "id": "INV-009",
+      "name": "pieces-price-fk-piece",
+      "domain": "D1-catalog",
+      "severity": "high",
+      "description": "pieces_price.pp_piece_id doit référencer une pièce existante dans pieces.",
+      "tables": ["pieces_price", "pieces"],
+      "sql_file": "INV-009-pieces-price-fk-piece.sql"
+    },
+    {
+      "id": "INV-010",
+      "name": "pieces-list-fk-piece",
+      "domain": "D1-catalog",
+      "severity": "high",
+      "description": "pieces_list.pl_piece_id doit référencer une pièce existante dans pieces.",
+      "tables": ["pieces_list", "pieces"],
+      "sql_file": "INV-010-pieces-list-fk-piece.sql"
+    },
+    {
+      "id": "INV-011",
+      "name": "pieces-relation-criteria-fk-auto-type",
+      "domain": "D1-catalog",
+      "severity": "high",
+      "description": "pieces_relation_criteria.rcp_type_id doit référencer un véhicule existant dans auto_type.",
+      "tables": ["pieces_relation_criteria", "auto_type"],
+      "sql_file": "INV-011-pieces-relation-criteria-fk-auto-type.sql"
+    },
+    {
+      "id": "INV-012",
+      "name": "pieces-gamme-parent-no-self-ref",
+      "domain": "D1-catalog",
+      "severity": "high",
+      "description": "pieces_gamme ne doit pas avoir de gamme dont pg_parent_gamme_id pointe vers elle-même.",
+      "tables": ["pieces_gamme"],
+      "sql_file": "INV-012-pieces-gamme-parent-no-self-ref.sql"
+    },
+    {
+      "id": "INV-013",
+      "name": "pieces-gamme-parent-fk-valid",
+      "domain": "D1-catalog",
+      "severity": "high",
+      "description": "pieces_gamme.pg_parent_gamme_id doit référencer un pg_id existant dans pieces_gamme (quand non null).",
+      "tables": ["pieces_gamme"],
+      "sql_file": "INV-013-pieces-gamme-parent-fk-valid.sql"
+    },
+    {
+      "id": "INV-014",
+      "name": "pieces-gamme-active-has-name",
+      "domain": "D1-catalog",
+      "severity": "medium",
+      "description": "Une gamme avec pg_status='active' doit avoir pg_name non null et non vide.",
+      "tables": ["pieces_gamme"],
+      "sql_file": "INV-014-pieces-gamme-active-has-name.sql"
+    },
+    {
+      "id": "INV-015",
+      "name": "pieces-gamme-active-has-alias",
+      "domain": "D1-catalog",
+      "severity": "high",
+      "description": "Une gamme avec pg_status='active' doit avoir pg_alias non null et non vide.",
+      "tables": ["pieces_gamme"],
+      "sql_file": "INV-015-pieces-gamme-active-has-alias.sql"
+    },
+    {
+      "id": "INV-016",
+      "name": "pieces-ref-ean-not-empty",
+      "domain": "D1-catalog",
+      "severity": "medium",
+      "description": "pieces_ref_ean ne doit pas contenir de codes EAN vides ou NULL.",
+      "tables": ["pieces_ref_ean"],
+      "sql_file": "INV-016-pieces-ref-ean-not-empty.sql"
+    },
+    {
+      "id": "INV-017",
+      "name": "pieces-media-img-name-not-empty",
+      "domain": "D1-catalog",
+      "severity": "medium",
+      "description": "pieces_media_img.pmi_name ne doit pas être vide (colonne obligatoire du PK composite).",
+      "tables": ["pieces_media_img"],
+      "sql_file": "INV-017-pieces-media-img-name-not-empty.sql"
+    },
+    {
+      "id": "INV-018",
+      "name": "pieces-criteria-link-fk-piece",
+      "domain": "D1-catalog",
+      "severity": "medium",
+      "description": "pieces_criteria_link doit référencer des pièces existantes dans pieces.",
+      "tables": ["pieces_criteria_link", "pieces"],
+      "sql_file": "INV-018-pieces-criteria-link-fk-piece.sql"
+    },
+    {
+      "id": "INV-019",
+      "name": "pieces-ref-search-fk-piece",
+      "domain": "D1-catalog",
+      "severity": "medium",
+      "description": "pieces_ref_search ne doit pas contenir de références orphelines vers pieces.",
+      "tables": ["pieces_ref_search", "pieces"],
+      "sql_file": "INV-019-pieces-ref-search-fk-piece.sql"
+    },
+    {
+      "id": "INV-020",
+      "name": "pieces-gamme-pg-alias-url-safe",
+      "domain": "D1-catalog",
+      "severity": "medium",
+      "description": "pieces_gamme.pg_alias doit correspondre au pattern URL-safe [a-z0-9-]+ (minuscules, chiffres, tirets uniquement).",
+      "tables": ["pieces_gamme"],
+      "sql_file": "INV-020-pieces-gamme-pg-alias-url-safe.sql"
+    },
+    {
+      "id": "INV-021",
+      "name": "auto-type-type-id-unique",
+      "domain": "D2-vehicle",
+      "severity": "critical",
+      "description": "auto_type.type_id doit être unique. Doublons = ambiguïté véhicule sur le catalogue.",
+      "tables": ["auto_type"],
+      "sql_file": "INV-021-auto-type-type-id-unique.sql"
+    },
+    {
+      "id": "INV-022",
+      "name": "auto-type-type-id-i-unique",
+      "domain": "D2-vehicle",
+      "severity": "high",
+      "description": "auto_type.type_id_i (shadow column INTEGER) doit être unique où non null.",
+      "tables": ["auto_type"],
+      "sql_file": "INV-022-auto-type-type-id-i-unique.sql"
+    },
+    {
+      "id": "INV-023",
+      "name": "auto-type-year-range-valid",
+      "domain": "D2-vehicle",
+      "severity": "high",
+      "description": "auto_type: year_from <= year_to quand les deux sont définis et non null.",
+      "tables": ["auto_type"],
+      "sql_file": "INV-023-auto-type-year-range-valid.sql"
+    },
+    {
+      "id": "INV-024",
+      "name": "auto-type-number-code-fk",
+      "domain": "D2-vehicle",
+      "severity": "medium",
+      "description": "auto_type_number_code doit référencer des type_id existants dans auto_type.",
+      "tables": ["auto_type_number_code", "auto_type"],
+      "sql_file": "INV-024-auto-type-number-code-fk.sql"
+    },
+    {
+      "id": "INV-025",
+      "name": "cross-gamme-car-fk-auto-type",
+      "domain": "D2-vehicle",
+      "severity": "high",
+      "description": "__cross_gamme_car_new doit référencer des type_id existants dans auto_type.",
+      "tables": ["__cross_gamme_car_new", "auto_type"],
+      "sql_file": "INV-025-cross-gamme-car-fk-auto-type.sql"
+    },
+    {
+      "id": "INV-026",
+      "name": "cross-gamme-car-fk-gamme",
+      "domain": "D2-vehicle",
+      "severity": "high",
+      "description": "__cross_gamme_car_new doit référencer des pg_alias existants dans pieces_gamme.",
+      "tables": ["__cross_gamme_car_new", "pieces_gamme"],
+      "sql_file": "INV-026-cross-gamme-car-fk-gamme.sql"
+    },
+    {
+      "id": "INV-027",
+      "name": "cross-gamme-car-no-duplicate-pair",
+      "domain": "D2-vehicle",
+      "severity": "medium",
+      "description": "__cross_gamme_car_new: chaque paire (gamme, vehicle) doit être unique.",
+      "tables": ["__cross_gamme_car_new"],
+      "sql_file": "INV-027-cross-gamme-car-no-duplicate-pair.sql"
+    },
+    {
+      "id": "INV-028",
+      "name": "auto-type-type-id-positive",
+      "domain": "D2-vehicle",
+      "severity": "medium",
+      "description": "auto_type.type_id doit être > 0 (valeur TecDoc positive attendue).",
+      "tables": ["auto_type"],
+      "sql_file": "INV-028-auto-type-type-id-positive.sql"
+    },
+    {
+      "id": "INV-029",
+      "name": "cars-engine-fk-auto-type",
+      "domain": "D2-vehicle",
+      "severity": "medium",
+      "description": "cars_engine doit référencer des type_id existants dans auto_type.",
+      "tables": ["cars_engine", "auto_type"],
+      "sql_file": "INV-029-cars-engine-fk-auto-type.sql"
+    },
+    {
+      "id": "INV-030",
+      "name": "auto-type-not-all-null-identity",
+      "domain": "D2-vehicle",
+      "severity": "medium",
+      "description": "auto_type: au moins une des colonnes d'identité (marque, modèle, type) ne doit pas être null.",
+      "tables": ["auto_type"],
+      "sql_file": "INV-030-auto-type-not-all-null-identity.sql"
+    },
+    {
+      "id": "INV-031",
+      "name": "seo-page-slug-unique-per-role",
+      "domain": "D3-seo",
+      "severity": "critical",
+      "description": "__seo_page: slug doit être unique par role (pas de doublons de pages canoniques).",
+      "tables": ["__seo_page"],
+      "sql_file": "INV-031-seo-page-slug-unique-per-role.sql"
+    },
+    {
+      "id": "INV-032",
+      "name": "seo-page-published-has-slug",
+      "domain": "D3-seo",
+      "severity": "critical",
+      "description": "__seo_page: les pages publiées (status='published') doivent avoir un slug non null et non vide.",
+      "tables": ["__seo_page"],
+      "sql_file": "INV-032-seo-page-published-has-slug.sql"
+    },
+    {
+      "id": "INV-033",
+      "name": "seo-page-published-has-title",
+      "domain": "D3-seo",
+      "severity": "high",
+      "description": "__seo_page: les pages publiées doivent avoir un titre non null et non vide.",
+      "tables": ["__seo_page"],
+      "sql_file": "INV-033-seo-page-published-has-title.sql"
+    },
+    {
+      "id": "INV-034",
+      "name": "seo-page-role-valid",
+      "domain": "D3-seo",
+      "severity": "high",
+      "description": "__seo_page.role doit être dans l'ensemble autorisé {R1,R2,R3,R4,R5,R6,R7,R8,R0}.",
+      "tables": ["__seo_page"],
+      "sql_file": "INV-034-seo-page-role-valid.sql"
+    },
+    {
+      "id": "INV-035",
+      "name": "seo-page-status-valid",
+      "domain": "D3-seo",
+      "severity": "high",
+      "description": "__seo_page.status doit être dans l'ensemble autorisé {draft,published,archived,review}.",
+      "tables": ["__seo_page"],
+      "sql_file": "INV-035-seo-page-status-valid.sql"
+    },
+    {
+      "id": "INV-036",
+      "name": "seo-gamme-conseil-fk-pieces-gamme",
+      "domain": "D3-seo",
+      "severity": "high",
+      "description": "__seo_gamme_conseil.pg_alias doit référencer un pg_alias existant dans pieces_gamme.",
+      "incident_ref": "20260329_dedup_pg_alias_unique.sql — .single() cassé sur R3/R6",
+      "tables": ["__seo_gamme_conseil", "pieces_gamme"],
+      "sql_file": "INV-036-seo-gamme-conseil-fk-pieces-gamme.sql"
+    },
+    {
+      "id": "INV-037",
+      "name": "seo-gamme-conseil-no-duplicate-section",
+      "domain": "D3-seo",
+      "severity": "high",
+      "description": "__seo_gamme_conseil: pas de doublons (pg_alias, section_key). Cause directe de .single() error R3/R6.",
+      "incident_ref": "20260329_dedup_pg_alias_unique.sql",
+      "tables": ["__seo_gamme_conseil"],
+      "sql_file": "INV-037-seo-gamme-conseil-no-duplicate-section.sql"
+    },
+    {
+      "id": "INV-038",
+      "name": "seo-gamme-conseil-published-not-empty",
+      "domain": "D3-seo",
+      "severity": "medium",
+      "description": "__seo_gamme_conseil: contenu non vide pour les sections avec status='published'.",
+      "tables": ["__seo_gamme_conseil"],
+      "sql_file": "INV-038-seo-gamme-conseil-published-not-empty.sql"
+    },
+    {
+      "id": "INV-039",
+      "name": "seo-page-brief-pg-alias-unique-per-role",
+      "domain": "D3-seo",
+      "severity": "high",
+      "description": "__seo_page_brief: pg_alias doit être unique par role (pas de doublons de briefs).",
+      "tables": ["__seo_page_brief"],
+      "sql_file": "INV-039-seo-page-brief-pg-alias-unique-per-role.sql"
+    },
+    {
+      "id": "INV-040",
+      "name": "seo-keywords-no-duplicate",
+      "domain": "D3-seo",
+      "severity": "medium",
+      "description": "__seo_keywords: pas de keyword identique pour le même (pg_alias, role).",
+      "tables": ["__seo_keywords"],
+      "sql_file": "INV-040-seo-keywords-no-duplicate.sql"
+    },
+    {
+      "id": "INV-041",
+      "name": "sitemap-link-url-unique",
+      "domain": "D3-seo",
+      "severity": "medium",
+      "description": "__sitemap_p_link: pas de doublon d'URL dans le sitemap.",
+      "tables": ["__sitemap_p_link"],
+      "sql_file": "INV-041-sitemap-link-url-unique.sql"
+    },
+    {
+      "id": "INV-042",
+      "name": "seo-link-impressions-non-negative",
+      "domain": "D3-seo",
+      "severity": "medium",
+      "description": "seo_link_impressions.impressions doit être >= 0.",
+      "tables": ["seo_link_impressions"],
+      "sql_file": "INV-042-seo-link-impressions-non-negative.sql"
+    },
+    {
+      "id": "INV-043",
+      "name": "seo-keywords-search-volume-non-negative",
+      "domain": "D3-seo",
+      "severity": "low",
+      "description": "__seo_keywords.search_volume doit être >= 0 où défini.",
+      "tables": ["__seo_keywords"],
+      "sql_file": "INV-043-seo-keywords-search-volume-non-negative.sql"
+    },
+    {
+      "id": "INV-044",
+      "name": "seo-page-entity-fk-brief",
+      "domain": "D3-seo",
+      "severity": "medium",
+      "description": "__seo_page.entity_id doit référencer une entrée existante dans __seo_page_brief où non null.",
+      "tables": ["__seo_page", "__seo_page_brief"],
+      "sql_file": "INV-044-seo-page-entity-fk-brief.sql"
+    },
+    {
+      "id": "INV-045",
+      "name": "seo-keyword-type-mapping-fk",
+      "domain": "D3-seo",
+      "severity": "low",
+      "description": "__seo_keyword_type_mapping doit référencer des keyword_type valides (si données présentes).",
+      "tables": ["__seo_keyword_type_mapping"],
+      "sql_file": "INV-045-seo-keyword-type-mapping-fk.sql"
+    },
+    {
+      "id": "INV-046",
+      "name": "customer-email-not-null",
+      "domain": "D4-orders",
+      "severity": "critical",
+      "description": "___xtr_customer.email ne doit pas être null ou vide.",
+      "tables": ["___xtr_customer"],
+      "sql_file": "INV-046-customer-email-not-null.sql"
+    },
+    {
+      "id": "INV-047",
+      "name": "customer-email-unique",
+      "domain": "D4-orders",
+      "severity": "high",
+      "description": "___xtr_customer: pas de doublons d'email (identifiant unique client).",
+      "tables": ["___xtr_customer"],
+      "sql_file": "INV-047-customer-email-unique.sql"
+    },
+    {
+      "id": "INV-048",
+      "name": "order-fk-customer",
+      "domain": "D4-orders",
+      "severity": "critical",
+      "description": "___xtr_order doit référencer un client existant dans ___xtr_customer.",
+      "tables": ["___xtr_order", "___xtr_customer"],
+      "sql_file": "INV-048-order-fk-customer.sql"
+    },
+    {
+      "id": "INV-049",
+      "name": "order-line-fk-order",
+      "domain": "D4-orders",
+      "severity": "critical",
+      "description": "___xtr_order_line doit référencer une commande existante dans ___xtr_order.",
+      "tables": ["___xtr_order_line", "___xtr_order"],
+      "sql_file": "INV-049-order-line-fk-order.sql"
+    },
+    {
+      "id": "INV-050",
+      "name": "order-line-quantity-positive",
+      "domain": "D4-orders",
+      "severity": "high",
+      "description": "___xtr_order_line.quantity doit être > 0.",
+      "tables": ["___xtr_order_line"],
+      "sql_file": "INV-050-order-line-quantity-positive.sql"
+    },
+    {
+      "id": "INV-051",
+      "name": "order-line-unit-price-non-negative",
+      "domain": "D4-orders",
+      "severity": "high",
+      "description": "___xtr_order_line.unit_price doit être >= 0.",
+      "tables": ["___xtr_order_line"],
+      "sql_file": "INV-051-order-line-unit-price-non-negative.sql"
+    },
+    {
+      "id": "INV-052",
+      "name": "order-status-valid",
+      "domain": "D4-orders",
+      "severity": "high",
+      "description": "___xtr_order.status doit être dans l'ensemble autorisé (pending, confirmed, shipped, delivered, cancelled, refunded).",
+      "tables": ["___xtr_order"],
+      "sql_file": "INV-052-order-status-valid.sql"
+    },
+    {
+      "id": "INV-053",
+      "name": "invoice-line-fk-invoice",
+      "domain": "D4-orders",
+      "severity": "high",
+      "description": "___xtr_invoice_line doit référencer une facture existante dans ___xtr_invoice.",
+      "tables": ["___xtr_invoice_line", "___xtr_invoice"],
+      "sql_file": "INV-053-invoice-line-fk-invoice.sql"
+    },
+    {
+      "id": "INV-054",
+      "name": "invoice-fk-order",
+      "domain": "D4-orders",
+      "severity": "high",
+      "description": "___xtr_invoice doit référencer une commande existante dans ___xtr_order (où FK est défini).",
+      "tables": ["___xtr_invoice", "___xtr_order"],
+      "sql_file": "INV-054-invoice-fk-order.sql"
+    },
+    {
+      "id": "INV-055",
+      "name": "order-line-status-valid",
+      "domain": "D4-orders",
+      "severity": "medium",
+      "description": "___xtr_order_line_status: statut dans l'ensemble autorisé.",
+      "tables": ["___xtr_order_line_status"],
+      "sql_file": "INV-055-order-line-status-valid.sql"
+    },
+    {
+      "id": "INV-056",
+      "name": "pieces-price-shadow-cols-sync",
+      "domain": "D5-structural",
+      "severity": "high",
+      "description": "pieces_price: les shadow columns _n (numériques) ne doivent pas être null où la colonne TEXT originale est non-null (cohérence migration V4b/V5a).",
+      "tables": ["pieces_price"],
+      "sql_file": "INV-056-pieces-price-shadow-cols-sync.sql"
+    },
+    {
+      "id": "INV-057",
+      "name": "auto-type-shadow-col-sync",
+      "domain": "D5-structural",
+      "severity": "high",
+      "description": "auto_type: type_id_i (shadow col INTEGER) ne doit pas être null où type_id TEXT est non-null.",
+      "tables": ["auto_type"],
+      "sql_file": "INV-057-auto-type-shadow-col-sync.sql"
+    },
+    {
+      "id": "INV-058",
+      "name": "no-public-table-without-pk",
+      "domain": "D5-structural",
+      "severity": "critical",
+      "description": "Aucune table du schéma public ne doit être sans PK (régression sur fix V4a).",
+      "tables": ["information_schema.table_constraints", "information_schema.tables"],
+      "sql_file": "INV-058-no-public-table-without-pk.sql"
+    },
+    {
+      "id": "INV-059",
+      "name": "no-price-text-column-unpopulated",
+      "domain": "D5-structural",
+      "severity": "medium",
+      "description": "pieces_price: les colonnes shadow _n doivent être cohérentes — aucune valeur TEXT non convertible en numérique.",
+      "tables": ["pieces_price"],
+      "sql_file": "INV-059-no-price-text-column-unpopulated.sql"
+    },
+    {
+      "id": "INV-060",
+      "name": "pieces-gamme-pg-level-valid",
+      "domain": "D5-structural",
+      "severity": "medium",
+      "description": "pieces_gamme.pg_level doit être dans l'ensemble autorisé (top, mid, leaf, null) où défini.",
+      "tables": ["pieces_gamme"],
+      "sql_file": "INV-060-pieces-gamme-pg-level-valid.sql"
+    },
+    {
+      "id": "INV-061",
+      "name": "pieces-gamme-no-circular-parent",
+      "domain": "D5-structural",
+      "severity": "medium",
+      "description": "pieces_gamme: pas de cycle dans la hiérarchie parent (pg_parent_gamme_id). Profondeur max 5 niveaux.",
+      "tables": ["pieces_gamme"],
+      "sql_file": "INV-061-pieces-gamme-no-circular-parent.sql"
+    },
+    {
+      "id": "INV-062",
+      "name": "no-orphan-seo-published-pages",
+      "domain": "D5-structural",
+      "severity": "high",
+      "description": "__seo_page: pages publiées sans entity_id correspondant dans __seo_page_brief = pages orphelines.",
+      "tables": ["__seo_page", "__seo_page_brief"],
+      "sql_file": "INV-062-no-orphan-seo-published-pages.sql"
+    },
+    {
+      "id": "INV-063",
+      "name": "seo-page-brief-has-pg-alias",
+      "domain": "D5-structural",
+      "severity": "high",
+      "description": "__seo_page_brief: pg_alias ne doit pas être null ou vide (clé de jointure critique).",
+      "tables": ["__seo_page_brief"],
+      "sql_file": "INV-063-seo-page-brief-has-pg-alias.sql"
+    },
+    {
+      "id": "INV-064",
+      "name": "pieces-gamme-active-count-seo-brief",
+      "domain": "D6-consistency",
+      "severity": "medium",
+      "description": "Les gammes actives avec pg_alias doivent avoir au moins un brief SEO (R3 ou R6) dans __seo_page_brief.",
+      "tables": ["pieces_gamme", "__seo_page_brief"],
+      "sql_file": "INV-064-pieces-gamme-active-count-seo-brief.sql"
+    },
+    {
+      "id": "INV-065",
+      "name": "pieces-active-has-price",
+      "domain": "D6-consistency",
+      "severity": "medium",
+      "description": "Les pièces actives (pg_status implicite ou explicite) devraient avoir au moins un enregistrement de prix dans pieces_price.",
+      "tables": ["pieces", "pieces_price"],
+      "sql_file": "INV-065-pieces-active-has-price.sql"
+    },
+    {
+      "id": "INV-066",
+      "name": "seo-r3-page-has-conseil",
+      "domain": "D6-consistency",
+      "severity": "medium",
+      "description": "Les pages R3 publiées doivent avoir au moins une section dans __seo_gamme_conseil pour le même pg_alias.",
+      "tables": ["__seo_page", "__seo_gamme_conseil"],
+      "sql_file": "INV-066-seo-r3-page-has-conseil.sql"
+    },
+    {
+      "id": "INV-067",
+      "name": "pieces-criteria-link-fk-criteria",
+      "domain": "D6-consistency",
+      "severity": "medium",
+      "description": "pieces_criteria_link doit référencer des critères existants dans pieces_criteria.",
+      "tables": ["pieces_criteria_link", "pieces_criteria"],
+      "sql_file": "INV-067-pieces-criteria-link-fk-criteria.sql"
+    },
+    {
+      "id": "INV-068",
+      "name": "pieces-ref-search-no-duplicate",
+      "domain": "D6-consistency",
+      "severity": "medium",
+      "description": "pieces_ref_search: pas de doublon sur la clé de recherche primaire (si PK composite défini).",
+      "tables": ["pieces_ref_search"],
+      "sql_file": "INV-068-pieces-ref-search-no-duplicate.sql"
+    },
+    {
+      "id": "INV-069",
+      "name": "seo-gamme-conseil-pg-alias-matches-active-gamme",
+      "domain": "D6-consistency",
+      "severity": "high",
+      "description": "__seo_gamme_conseil.pg_alias doit correspondre à une gamme active dans pieces_gamme (pas de conseil orphelin post-dédup).",
+      "incident_ref": "20260329_dedup_pg_alias_unique.sql — conseillers R3/R6 sur alias -dup cassés",
+      "tables": ["__seo_gamme_conseil", "pieces_gamme"],
+      "sql_file": "INV-069-seo-gamme-conseil-pg-alias-matches-active-gamme.sql"
+    }
+  ]
+}
