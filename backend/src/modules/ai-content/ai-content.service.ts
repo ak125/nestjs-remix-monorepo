@@ -9,7 +9,10 @@ import {
 } from './dto/generate-content.dto';
 import { buildPrompt } from './templates/content-templates';
 import { createHash } from 'crypto';
-import { AnthropicProvider } from './providers/anthropic.provider';
+import {
+  AnthropicProvider,
+  GenerateWithMetricsResult,
+} from './providers/anthropic.provider';
 import { CircuitBreakerService } from './services/circuit-breaker.service';
 import {
   ExternalServiceException,
@@ -377,6 +380,47 @@ export class AiContentService {
       },
       useCache: true,
     });
+  }
+
+  /**
+   * Generate with a custom system prompt (bypass content-templates).
+   * Used by ContentGeneratorService which loads canonical prompts from .claude/prompts/.
+   *
+   * Supports Anthropic prompt caching when `cacheSystemPrompt: true` — saves
+   * ~90% input tokens on identical system prompts within 5 min window.
+   *
+   * Returns full metrics (tokens in/out/cached) for observability.
+   *
+   * @throws {ConfigurationException} if Anthropic provider not available
+   */
+  async generateWithSystemPrompt(params: {
+    systemPrompt: string;
+    userMessage: string;
+    maxTokens?: number;
+    temperature?: number;
+    cacheSystemPrompt?: boolean;
+    model?: string;
+  }): Promise<GenerateWithMetricsResult> {
+    const anthropic = this.providers.get('anthropic') as
+      | AnthropicProvider
+      | undefined;
+    if (!anthropic || typeof anthropic.generateWithMetrics !== 'function') {
+      throw new OperationFailedException({
+        message:
+          'Anthropic provider not available for custom-prompt generation',
+      });
+    }
+
+    return anthropic.generateWithMetrics(
+      params.systemPrompt,
+      params.userMessage,
+      {
+        temperature: params.temperature ?? 0.4,
+        maxTokens: params.maxTokens ?? 8000,
+        model: params.model,
+        cacheSystemPrompt: params.cacheSystemPrompt ?? true,
+      },
+    );
   }
 
   async batchGenerate(

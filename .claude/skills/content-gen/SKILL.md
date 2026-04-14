@@ -279,34 +279,42 @@ UPDATE __seo_gamme_purchase_guide SET sgpg_h2_overrides = $h2${
 Règles H2 : nom gamme obligatoire, KW HIGH dans "content", max 60 chars.
 Si 0 KW → ne PAS générer de h2Overrides (fallbacks hardcodés s'appliquent).
 
-### 5d — Écriture avec garde anti-régression
+### 5d — Écriture DRAFT-ONLY (anti-régression soft sur draft)
 
-**⛔ GUARD ANTI-RÉGRESSION (BLOQUANT) :**
+**⛔ REGLE DRAFT-ONLY (editorial.md canonique) :**
+Le skill écrit UNIQUEMENT dans `sg_content_draft`, JAMAIS dans `sg_content` (LIVE).
+Le champ `sg_content` est géré manuellement par le user via SQL de promotion après review.
+
+**⚠️ Garde anti-régression (soft sur draft) :**
 ```python
 new_length = len(generated_content)
-existing_length = existing.chars  # chargé en 5.0
+existing_draft_length = existing.draft_chars  # lu depuis sg_content_draft en 5.0
 
-if existing_length > 0 and new_length < existing_length:
-    print(f"⛔ GUARD: Contenu existant ({existing_length}c) > généré ({new_length}c). Écriture BLOQUÉE.")
-    # NE PAS écrire. Demander confirmation humaine.
+if existing_draft_length > 0 and new_length < existing_draft_length:
+    print(f"⚠️ Draft précédent ({existing_draft_length}c) > nouveau ({new_length}c). Demander confirmation.")
+    # Bloquer uniquement si on écrase un draft existant plus long
     return
 ```
 
-**Si garde OK → écrire directement dans sg_content (champ live) :**
+**Écriture (draft only) :**
 ```sql
 UPDATE __seo_gamme SET
-  sg_content = $content$[HTML 1500-2000 mots]$content$,
+  sg_content_draft = $content$[HTML 1500-2000 mots]$content$,
   sg_h1 = '[H1 enrichi KW]',
   sg_title_draft = '[title draft]',
   sg_descrip_draft = '[description draft]',
   sg_draft_source = 'content-gen-skill',
-  sg_draft_updated_at = now()
+  sg_draft_updated_at = now(),
+  sg_draft_llm_model = 'claude-code'
 WHERE sg_pg_id = '{pg_id}';
 ```
 
-> **Note** : `sg_content` est écrit directement (live) car le editorial.md produit du contenu
-> validé et la garde anti-régression protège contre les régressions.
-> `sg_title_draft` et `sg_descrip_draft` restent en draft (promotion séparée via SeoTitleEngine).
+> **CRITIQUE** : NE JAMAIS UPDATE `sg_content` (LIVE). Le skill est draft-only.
+> La promotion `sg_content_draft` → `sg_content` se fait manuellement par le user
+> après review visuelle du draft. Voir section "Promotion manuelle" en bas du skill.
+>
+> Le cache Redis n'a PAS besoin d'être invalidé après une écriture draft (le live
+> ne change pas). L'invalidation arrive seulement lors de la promotion manuelle.
 
 ### 5e — Validation KW post-écriture
 
@@ -330,23 +338,34 @@ integration_score = round(
 print(f"Score intégration KW : {integration_score}/100")
 ```
 
-### 5f — Invalidation cache
+### 5f — Invalidation cache (SEULEMENT lors de la promotion manuelle)
 
-**OBLIGATOIRE** après toute écriture dans `__seo_gamme` ou `__seo_gamme_purchase_guide` :
+**Pas besoin d'invalider après écriture draft** — le live `sg_content` n'a pas changé.
+
+Le cache doit être invalidé **UNIQUEMENT lors de la promotion manuelle** du draft par le user :
+```sql
+-- Promotion manuelle (par le user, après review)
+UPDATE __seo_gamme SET
+  sg_content = sg_content_draft,
+  sg_title = sg_title_draft,
+  sg_descrip = sg_descrip_draft
+WHERE sg_pg_id = '{pg_id}';
 ```
+```bash
+redis-cli DEL gamme:rpc:v2:{pg_id}
+# ou
 POST http://localhost:3000/api/admin/cache/invalidate?pg_id={pg_id}
 ```
-Fallback si endpoint non disponible : `redis-cli DEL gamme:rpc:v2:{pg_id}`
 
-Sans cette étape, l'ancien contenu est servi pendant 1h (TTL cache).
-
-### 5g — Maillage bidirectionnel
+### 5g — Maillage bidirectionnel (INTÉGRÉ dans la génération, pas post-write)
 
 **Source de vérité** : table `__seo_gamme_links` (1199 liens, 236 gammes).
 
-Après écriture du sg_content pour gamme A :
+**NOUVEAU workflow draft-only** :
+Les liens sortants doivent être **INTÉGRÉS DANS le contenu généré à l'étape 5a** (pas ajoutés après).
+Le prompt editorial.md précise déjà la règle MAILLAGE INTERNE OBLIGATOIRE.
 
-**1. Liens sortants (A → cibles)** :
+**1. Liens sortants (chargés en 5.0, intégrés en 5a)** :
 ```sql
 SELECT l.target_pg_id, l.anchor_text, l.context, l.relation,
        pg.pg_alias, pg.pg_name
@@ -356,41 +375,18 @@ WHERE l.source_pg_id = {pg_id}
 ORDER BY l.relation, pg.pg_name;
 ```
 
-Pour chaque lien cible :
-- Vérifier si `sg_content` contient déjà un `<a href="/pieces/{target_alias}-{target_id}.html">`
-- Si absent → l'ajouter naturellement dans le body (pas en append brut)
-- Format : `<a href="/pieces/{alias}-{id}.html">{anchor_text}</a>` dans une phrase contextuelle
+Ces liens sont passés au prompt editorial.md qui les intègre naturellement dans les paragraphes générés. Le draft contient donc déjà les liens.
 
-**2. Liens entrants (sources → A, bidirectionnel)** :
-```sql
-SELECT l.source_pg_id, l.anchor_text, l.context,
-       pg.pg_alias, pg.pg_name,
-       sg.sg_content
-FROM __seo_gamme_links l
-JOIN pieces_gamme pg ON pg.pg_id = l.source_pg_id
-JOIN __seo_gamme sg ON sg.sg_pg_id = l.source_pg_id::text
-WHERE l.target_pg_id = {pg_id} AND l.bidirectional = true;
-```
+**2. Liens entrants (sources → A)** : **PAS de modification post-run**
+Les pages sources gardent leur contenu intact. Les liens entrants seront ajoutés uniquement lors de la génération du draft de CES pages sources (quand elles passeront par /content-gen).
+Le maillage devient **pull-based** : chaque draft contient ses propres liens sortants, pas d'append dans les autres gammes.
 
-Pour chaque gamme source :
-- Vérifier si `source.sg_content` contient déjà un lien vers gamme A (`/pieces/{pg_alias}-{pg_id}.html`)
-- Si absent ET source.sg_content n'est pas vide :
-  ```sql
-  UPDATE __seo_gamme SET
-    sg_content = sg_content || $link$
-  <p class="mt-3 text-sm text-slate-500">{context} — <a href="/pieces/{pg_alias}-{pg_id}.html" class="text-blue-600 hover:underline">{anchor_text}</a></p>
-  $link$
-  WHERE sg_pg_id = '{source_pg_id}';
-  ```
-- Invalider le cache Redis de la gamme source : `redis-cli DEL gamme:rpc:v2:{source_pg_id}`
-
-**Règles maillage :**
-- **Append only** — ne jamais modifier le contenu existant, ajouter à la fin
-- **Max 3 liens entrants ajoutés** par exécution — pas de sur-optimisation
-- **Deduplicate** — si le lien href existe déjà dans sg_content, NE PAS l'ajouter
-- **Ancre naturelle** — utiliser le `anchor_text` de la table, pas "cliquez ici"
-- **Contexte** — utiliser le `context` de la table pour la phrase d'intro du lien
-- **Garde anti-régression** — append = length augmente toujours (OK)
+**Règles maillage (draft-only) :**
+- **Intégré dans la génération** — le prompt reçoit les liens et les insère dans les paragraphes
+- **Max 6 liens sortants** par draft (R3 + R4 + R6 + 3 gammes liées)
+- **Ancre naturelle** — utiliser le `anchor_text` de la table
+- **Pas de post-write sur d'autres gammes** — chaque draft est autonome
+- **Pas d'append** sur `__seo_gamme` d'autres pg_id — draft-only strict
 
 ### 5h — Image prompts R1
 

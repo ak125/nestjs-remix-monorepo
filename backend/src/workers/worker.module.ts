@@ -20,6 +20,7 @@ import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.ser
 import { RagProxyModule } from '../modules/rag-proxy/rag-proxy.module';
 import { AgenticProcessor } from './processors/agentic.processor';
 import { PipelineChainProcessor } from './processors/pipeline-chain.processor';
+import { ContentGenProcessor } from './processors/content-gen.processor';
 import { RagChangeWatcherService } from './services/rag-change-watcher.service';
 import { ContentMergerService } from './services/content-merger.service';
 import { AgenticDataService } from '../modules/agentic-engine/services/agentic-data.service';
@@ -71,6 +72,21 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
       // { name: 'video-render' }, // SUPPRIMÉ 2026-04-10
       { name: 'agentic-engine' },
       { name: 'pipeline-chain' },
+      {
+        name: 'content-gen',
+        // Content generation queue: rate-limited to 10 jobs/60s for Anthropic standard tier
+        limiter: {
+          max: 10,
+          duration: 60_000,
+        },
+        defaultJobOptions: {
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 30_000 },
+          removeOnComplete: 100,
+          removeOnFail: 500,
+          timeout: 180_000, // 3 min max per content gen job
+        },
+      },
     ),
 
     // Cart module for AbandonedCartService (used by EmailProcessor)
@@ -93,6 +109,7 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     // NOTE: Stateless services, safe duplicate (same pattern as enricher services above)
     AgenticProcessor,
     PipelineChainProcessor, // 🚀 Pipeline chain consumer (dispatches to ExecutionRouterService)
+    ContentGenProcessor, // 🤖 Content generation consumer (R1/R3/R4/R6 via ContentGeneratorService)
     AgenticDataService,
     EvidenceLedgerService,
     RunManagerService,
