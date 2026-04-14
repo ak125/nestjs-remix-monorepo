@@ -1,7 +1,7 @@
 # ADR-002 — Dev-only DB Write Enforcement
 
-**Status:** Accepted — Hardening ticket opened (see §Consequences)  
-**Date:** 2026-04-13  
+**Status:** Accepted — Mode 1 (Network enforcement active); H1 done, H2-H4 retained as P1  
+**Date:** 2026-04-13 · **Revised:** 2026-04-14  
 **Author:** Software-Architect (d2e89803)  
 **Parent issue:** [AUT-282](/AUT/issues/AUT-282) · [AUT-271](/AUT/issues/AUT-271)  
 **Supersedes:** —
@@ -38,9 +38,11 @@ The real key exists in **two places**: the prod host `.env` and the GitHub repos
 
 ### Network-level enforcement
 
-Supabase Cloud projects support an **IP allowlist** feature (Settings → Database → Network Restrictions). Investigation of the codebase, docker-compose files, and `.spec/` reveals **no evidence** of IP allowlist configuration in scripts or documentation.
+Supabase Cloud projects support an **IP allowlist** feature (Settings → Database → Network Restrictions). Initial investigation of the codebase, docker-compose files, and `.spec/` found no evidence of IP allowlist configuration in scripts or documentation.
 
-**Verdict: No verified network-level enforcement.**
+**Board correction (2026-04-14):** The IP allowlist is already active in the Supabase production project. The initial investigation was a false negative caused by the Architect container lacking dashboard access. ✅ **Confirmed by board.**
+
+**Verdict: ✅ IP allowlist active — Network-level enforcement confirmed.**
 
 ### RLS enforcement
 
@@ -56,28 +58,28 @@ Supabase does not currently support fine-grained IAM scoping of the service_role
 
 ### Conclusion
 
-**Enforcement mode: Convention only (Mode 3).**
+**Enforcement mode: Network enforcement active (Mode 1).** *(Revised 2026-04-14 after board correction — see Network-level enforcement above.)*
 
-The current model relies entirely on the convention that developers do not run code that writes to prod using the service role key outside of the deployed backend application. There is no technical barrier preventing anyone who possesses the key from executing arbitrary writes against the production Supabase database.
+The IP allowlist restricts Supabase production connections to known server IPs, providing a technical barrier beyond convention. Anyone holding the `SUPABASE_SERVICE_ROLE_KEY` who is not originating from an allowlisted IP cannot write to the production database. The credential surface concern documented above (key in GitHub Secrets + prod host `.env`) remains valid and is addressed by H2-H4.
 
 ---
 
 ## Decision
 
-We **accept the current convention-based model as a documented baseline** while simultaneously opening a hardening workstream. The architecture plan (AUT-271) may proceed under this baseline, but the following hardening tasks are opened as P0 follow-up:
+We **accept the network-enforced model (Mode 1) as the confirmed baseline**. The architecture plan ([AUT-271](/AUT/issues/AUT-271)) may proceed under this enforcement. Remaining hardening tasks are retained as P1 follow-up:
 
 ### Hardening recommendations (see §Consequences for ticket)
 
-**H1 — Enable Supabase IP Allowlist (P0 Critical)**  
-Configure the Supabase production project to only accept connections from the production server IP (`49.12.233.2`) and the dev server IP (`46.224.118.55`). This is the single highest-leverage control.
+**H1 — Enable Supabase IP Allowlist** ✅ **DONE** *(confirmed by board 2026-04-14)*  
+IP allowlist already active: production server (`49.12.233.2`) and dev server (`46.224.118.55`) are the allowlisted sources. See [AUT-302](/AUT/issues/AUT-302) — H1 closed.
 
-**H2 — GitHub Secret rotation policy**  
+**H2 — GitHub Secret rotation policy (P1)**  
 `SUPABASE_SERVICE_ROLE_KEY` in GitHub Secrets should be rotated every 90 days. Rotation procedure: generate new key in Supabase dashboard → update GitHub Secret → trigger prod re-deploy. No downtime required.
 
-**H3 — Audit log alert**  
-Enable Supabase Audit Logs. Set an alert for writes originating from unexpected source IPs (future: once H1 is in place, any non-allowlisted write is already blocked).
+**H3 — Audit log alert (P1)**  
+Enable Supabase Audit Logs. Set an alert for writes originating from unexpected source IPs (with H1 active, any non-allowlisted write is already blocked at network level).
 
-**H4 — CI: verify mock key is used in tests**  
+**H4 — CI: verify mock key is used in tests (P1)**  
 The CI pipeline already uses `mock-key-for-ci` — document and gate this (assert that `SUPABASE_URL` in CI points to `mock.supabase.co` and never to `*.supabase.co` with a real project ID).
 
 ---
@@ -86,28 +88,32 @@ The CI pipeline already uses `mock-key-for-ci` — document and gate this (asser
 
 ### Positive
 
-- Convention documented: all agents and developers now have explicit awareness that write access is not technically enforced.
-- Hardening path is clear and prioritized (H1 first).
+- Network enforcement (Mode 1) confirmed active: IP allowlist blocks connections from non-allowlisted sources.
+- H1 complete: the single highest-leverage control is already in production.
 - CI/CD proof: tests demonstrably use a mock key — no prod data at risk from automated test runs.
+- Credential surface is fully documented; remaining H2-H4 controls address the residual risk.
 
 ### Negative
 
-- **Risk exposure**: until H1 is implemented, any leaked `SUPABASE_SERVICE_ROLE_KEY` allows arbitrary writes to production. This risk pre-existed this ADR; it is now explicit.
-- **Hardening debt**: H1 requires Supabase dashboard access by a human operator (not automatable by agents).
+- **Residual risk**: a leaked `SUPABASE_SERVICE_ROLE_KEY` used from an allowlisted IP would still reach prod — mitigated by H2 (rotation) and H3 (audit alerts).
+- **Hardening debt**: H2-H4 remain open as P1; H3 requires Supabase dashboard access by a human operator.
 
-### Hardening ticket opened
+### Hardening ticket status
 
-> **[AUT-282-H1] Activer l'IP allowlist Supabase prod** — Priority: Critical  
-> Scope: Supabase dashboard → Settings → Network Restrictions → add `49.12.233.2` (prod) + `46.224.118.55` (dev)  
-> Owner: CTO or human operator  
-> Unblocks: Full enforcement of "dev-only DB write" assumption in AUT-271
+> **[AUT-302](/AUT/issues/AUT-302) — Supabase hardening**  
+> H1: ✅ **DONE** — IP allowlist confirmed active by board (2026-04-14)  
+> H2-H4: Open — Priority **P1** (downgraded from P0 now that H1 is confirmed active)
 
-This ADR is considered `Accepted` with the hardening ticket open. If H1 is never implemented, this ADR must be revisited before Phase 2 of AUT-271 (P2 firewall enforcement) is declared complete.
+This ADR is considered `Accepted` with Mode 1 enforcement in place. H2-H4 are P1 and must be completed before Phase 2 of [AUT-271](/AUT/issues/AUT-271) (P2 firewall enforcement) is declared complete.
 
 ---
 
 ## Artefacts
 
 - This document: `docs/adr/0002-dev-only-db-write-enforcement.md`
-- Related: [AUT-271](/AUT/issues/AUT-271), [AUT-273](/AUT/issues/AUT-273) (DB firewall design)
+- Related: [AUT-271](/AUT/issues/AUT-271), [AUT-273](/AUT/issues/AUT-273) (DB firewall design), [AUT-302](/AUT/issues/AUT-302) (hardening H1-H4)
 - Key locations: see §Investigation table above
+
+---
+
+*Revised 2026-04-14 after board correction — initial Mode 3 verdict was a false negative (Architect container lacked Supabase dashboard access). Board confirmed IP allowlist already active. Verdict updated to Mode 1 (Network enforcement active). Task: [AUT-303](/AUT/issues/AUT-303).*
