@@ -59,8 +59,8 @@ Défauts :
 | `GMAIL_CLIENT_SECRET` | `backend/.env` | OAuth2 secret |
 | `GMAIL_REFRESH_TOKEN` | `backend/.env` | OAuth2 refresh token |
 | `GMAIL_USER_EMAIL` | `backend/.env` | Gmail account (ex: `contact@automecanik.com`) |
-| `ALERT_EMAIL_TO` | *à définir* | Destinataire alerte |
-| `EMAIL_FROM` | *à définir* | Format: `Automecanik <contact@automecanik.com>` (doit matcher `GMAIL_USER_EMAIL` ou être un alias Gmail valide) |
+| `ALERT_EMAIL_TO` | `automecanik.seo@gmail.com` (recommandé) | Destinataire alerte — peut être n'importe quelle adresse |
+| `EMAIL_FROM` | `Automecanik Alerts <contact@automecanik.com>` | **Doit matcher `GMAIL_USER_EMAIL`** ou être un alias Gmail valide — Gmail SMTP rejette sinon |
 
 Optionnelles :
 
@@ -88,7 +88,7 @@ GMAIL_CLIENT_ID=<copy>
 GMAIL_CLIENT_SECRET=<copy>
 GMAIL_REFRESH_TOKEN=<copy>
 GMAIL_USER_EMAIL=contact@automecanik.com
-ALERT_EMAIL_TO=contact@automecanik.com
+ALERT_EMAIL_TO=automecanik.seo@gmail.com
 EMAIL_FROM=Automecanik Alerts <contact@automecanik.com>
 EOF
 sudo chmod 600 /etc/default/check-payment-tunnel
@@ -100,7 +100,7 @@ echo "Exit code attendu : 0 (tunnel sain) ou 1 (erreur)"
 
 # 4. Activer le cron (tous les 15 min)
 sudo tee /etc/cron.d/check-payment-tunnel >/dev/null <<'EOF'
-MAILTO=contact@automecanik.com
+MAILTO=automecanik.seo@gmail.com
 */15 * * * * root set -a; . /etc/default/check-payment-tunnel; set +a; /usr/local/bin/check-payment-tunnel.sh >> /var/log/check-payment-tunnel.log 2>&1
 EOF
 sudo chmod 644 /etc/cron.d/check-payment-tunnel
