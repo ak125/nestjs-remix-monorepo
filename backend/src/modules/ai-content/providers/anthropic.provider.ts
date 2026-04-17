@@ -52,6 +52,18 @@ export class AnthropicProvider implements AIProvider {
     }
   }
 
+  /** Opus 4.7+ rejects temperature/top_p/top_k with 400 error */
+  private isModelRejectingSampling(model: string): boolean {
+    return model.includes('opus-4-7');
+  }
+
+  /** Opus 4.7 tokenizer uses ~35% more tokens for the same text */
+  private adjustMaxTokens(maxTokens: number, model: string): number {
+    return this.isModelRejectingSampling(model)
+      ? Math.round(maxTokens * 1.35)
+      : maxTokens;
+  }
+
   async generateContent(
     systemPrompt: string,
     userPrompt: string,
@@ -73,10 +85,13 @@ export class AnthropicProvider implements AIProvider {
     try {
       this.logger.log(`Generating with Claude model: ${model}`);
 
+      const maxTokens = this.adjustMaxTokens(options.maxTokens || 4096, model);
+      const rejectsSampling = this.isModelRejectingSampling(model);
+
       const message = await this.client.messages.create({
         model,
-        max_tokens: options.maxTokens || 4096,
-        temperature: options.temperature || 0.7,
+        max_tokens: maxTokens,
+        ...(rejectsSampling ? {} : { temperature: options.temperature || 0.7 }),
         system: systemPrompt,
         messages: [
           {
@@ -151,10 +166,13 @@ export class AnthropicProvider implements AIProvider {
           ]
         : systemPrompt;
 
+      const maxTokens = this.adjustMaxTokens(options.maxTokens || 8000, model);
+      const rejectsSampling = this.isModelRejectingSampling(model);
+
       const message = await this.client.messages.create({
         model,
-        max_tokens: options.maxTokens || 8000,
-        temperature: options.temperature ?? 0.7,
+        max_tokens: maxTokens,
+        ...(rejectsSampling ? {} : { temperature: options.temperature ?? 0.7 }),
         system: systemParam,
         messages: [{ role: 'user', content: userPrompt }],
       });

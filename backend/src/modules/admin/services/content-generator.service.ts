@@ -62,13 +62,22 @@ const PROMPT_FILES: Record<ContentRole, string> = {
   R6_GUIDE_ACHAT: 'R6_GUIDE_ACHAT/generator.md',
 };
 
-// Anthropic pricing (Claude Sonnet 4, 2026-04): $3/M input, $15/M output
-// Cached input tokens are read at 10% of base rate ($0.30/M)
-const PRICING = {
+// Anthropic pricing per model ($/M tokens)
+// Sonnet 4: $3/$15, Opus 4.7: $5/$25. Cached reads at 10% of input rate.
+const PRICING_SONNET = {
   inputPer1M: 3.0,
   outputPer1M: 15.0,
   cachedReadPer1M: 0.3,
 } as const;
+const PRICING_OPUS = {
+  inputPer1M: 5.0,
+  outputPer1M: 25.0,
+  cachedReadPer1M: 0.5,
+} as const;
+
+function getPricing(model?: string) {
+  return model?.includes('opus') ? PRICING_OPUS : PRICING_SONNET;
+}
 
 // Draft freshness window for idempotence (7 days)
 const DRAFT_FRESHNESS_DAYS = 7;
@@ -639,16 +648,20 @@ export class ContentGeneratorService extends SupabaseBaseService {
     tokensInput: number;
     tokensOutput: number;
     tokensCached: number;
+    model?: string;
   }): number {
+    const pricing = getPricing(
+      apiResult.model ?? this.configService?.get<string>('ANTHROPIC_MODEL'),
+    );
     const nonCachedInput = Math.max(
       0,
       apiResult.tokensInput - apiResult.tokensCached,
     );
-    const inputCost = (nonCachedInput / 1_000_000) * PRICING.inputPer1M;
+    const inputCost = (nonCachedInput / 1_000_000) * pricing.inputPer1M;
     const cachedCost =
-      (apiResult.tokensCached / 1_000_000) * PRICING.cachedReadPer1M;
+      (apiResult.tokensCached / 1_000_000) * pricing.cachedReadPer1M;
     const outputCost =
-      (apiResult.tokensOutput / 1_000_000) * PRICING.outputPer1M;
+      (apiResult.tokensOutput / 1_000_000) * pricing.outputPer1M;
     return Number((inputCost + cachedCost + outputCost).toFixed(6));
   }
 
@@ -673,7 +686,9 @@ export class ContentGeneratorService extends SupabaseBaseService {
         sar_lint_errors: result.lintErrors ?? null,
         sar_error: result.error ?? null,
         sar_trigger: trigger ?? 'manual',
-        sar_llm_model: 'claude-sonnet-4-20250514',
+        sar_llm_model:
+          this.configService?.get<string>('ANTHROPIC_MODEL') ??
+          'claude-sonnet-4-20250514',
       });
     } catch (err) {
       this.logger.warn(
