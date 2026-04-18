@@ -303,60 +303,28 @@ describe('Circuit breaker: triggers on hotspot', () => {
     // Mock: no pending events (so pollAndProcess returns 0)
     // But the breaker check happens before poll
 
-    // Build hotspot data: 25 rows for same gamme
-    const hotspotRows = Array.from({ length: 25 }, () => ({
-      pcq_pg_alias: 'poulie-d-alternateur',
-    }));
+    // evaluateBreakerConditions now calls a single RPC; logBreakerIncident still
+    // uses individual count queries via from().select().
+    mockClient.rpc = jest.fn().mockResolvedValue({
+      data: {
+        total_24h: 25,
+        failed_24h: 0,
+        failed_ratio: 0,
+        pending_count: 0,
+        hotspot_alias: 'poulie-d-alternateur',
+        hotspot_count: 25,
+      },
+      error: null,
+    });
 
-    let fromCallIdx = 0;
     mockClient.from = jest.fn().mockImplementation(() => {
-      fromCallIdx++;
       const chain: Record<string, jest.Mock> = {};
       chain.select = jest.fn().mockReturnValue(chain);
       chain.eq = jest.fn().mockReturnValue(chain);
-      chain.gte = jest.fn().mockReturnValue(chain);
+      chain.gte = jest.fn().mockResolvedValue({ count: 0 });
       chain.order = jest.fn().mockReturnValue(chain);
-      chain.limit = jest.fn().mockReturnValue(chain);
+      chain.limit = jest.fn().mockResolvedValue({ data: [], error: null });
       chain.insert = jest.fn().mockResolvedValue({ data: null, error: null });
-
-      if (fromCallIdx === 1) {
-        // evaluateBreakerConditions: queue stats (failed ratio check)
-        chain.select = jest.fn().mockReturnValue(chain);
-        chain.gte = jest.fn().mockResolvedValue({
-          data: hotspotRows.map((r) => ({ ...r, pcq_status: 'done' })),
-        });
-      } else if (fromCallIdx === 2) {
-        // evaluateBreakerConditions: pending count
-        chain.select = jest.fn().mockReturnValue(chain);
-        chain.eq = jest.fn().mockResolvedValue({ count: 0 });
-      } else if (fromCallIdx === 3) {
-        // evaluateBreakerConditions: hotspot check
-        chain.select = jest.fn().mockReturnValue(chain);
-        chain.gte = jest.fn().mockResolvedValue({ data: hotspotRows });
-      } else if (fromCallIdx === 4) {
-        // logBreakerIncident: pending count
-        chain.select = jest.fn().mockReturnValue(chain);
-        chain.eq = jest.fn().mockResolvedValue({ count: 0 });
-      } else if (fromCallIdx === 5) {
-        // logBreakerIncident: failed count
-        chain.select = jest.fn().mockReturnValue(chain);
-        chain.eq = jest.fn().mockReturnValue(chain);
-        chain.gte = jest.fn().mockResolvedValue({ count: 0 });
-      } else if (fromCallIdx === 6) {
-        // logBreakerIncident: done count
-        chain.select = jest.fn().mockReturnValue(chain);
-        chain.eq = jest.fn().mockReturnValue(chain);
-        chain.gte = jest.fn().mockResolvedValue({ count: 25 });
-      } else if (fromCallIdx === 7) {
-        // logBreakerIncident: insert into __rag_pipeline_incidents
-        // already handled by default insert mock
-      } else {
-        // pollAndProcess: pending events (none)
-        chain.eq = jest.fn().mockReturnValue(chain);
-        chain.order = jest.fn().mockReturnValue(chain);
-        chain.limit = jest.fn().mockResolvedValue({ data: [], error: null });
-      }
-
       return chain;
     });
 
