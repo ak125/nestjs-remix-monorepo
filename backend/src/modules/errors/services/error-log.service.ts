@@ -1,5 +1,5 @@
 import { TABLES } from '@repo/database-types';
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { ErrorLog, ErrorMetrics } from '../entities/error-log.entity';
@@ -11,7 +11,6 @@ interface ErrorEntry {
   [key: string]: unknown;
 }
 
-// Interface du code utilisateur (conservée pour compatibilité)
 export interface ErrorLogEntry {
   code: number;
   url: string;
@@ -23,47 +22,101 @@ export interface ErrorLogEntry {
   metadata?: Record<string, unknown>;
 }
 
+type XtrMsgRow = {
+  msg_id: string;
+  msg_cst_id: string | null;
+  msg_cnfa_id: string | null;
+  msg_ord_id: string | null;
+  msg_date: string;
+  msg_subject: string;
+  msg_content: string;
+  msg_parent_id: string | null;
+  msg_open: string;
+  msg_close: string;
+};
+
+type Pending = { row: XtrMsgRow; signature: string; metadata: unknown };
+
+const BOT_UA_RE =
+  /bot|crawl|spider|slurp|facebookexternalhit|mediapartners|bingpreview|duckduck|yandex|baiduspider|semrushbot|ahrefsbot|mj12bot|googlebot-image|imgproxy/i;
+
 @Injectable()
-export class ErrorLogService extends SupabaseBaseService {
+export class ErrorLogService
+  extends SupabaseBaseService
+  implements OnModuleInit, OnModuleDestroy
+{
+  private static readonly FLUSH_INTERVAL_MS = 5_000;
+  private static readonly BATCH_MAX = 500;
+  private static readonly BUFFER_MAX = 2_000;
+  private static readonly DEDUP_TTL_MS = 60_000;
+  private static readonly BREAKER_FAIL_LIMIT = 3;
+  private static readonly BREAKER_SILENT_MS = 60_000;
+
+  private buffer: Pending[] = [];
+  private dedup = new Map<string, number>();
+  private flushTimer: ReturnType<typeof setInterval> | null = null;
+  private consecutiveFailures = 0;
+  private silentUntilMs = 0;
+  private droppedSinceLastLog = 0;
+
   constructor(configService: ConfigService) {
     super(configService);
   }
 
-  /**
-   * Enregistrer une erreur (méthode du code utilisateur - 100% compatible)
-   * Conservée exactement comme fournie par l'utilisateur
-   */
+  onModuleInit(): void {
+    this.flushTimer = setInterval(() => {
+      this.flush().catch(() => {});
+    }, ErrorLogService.FLUSH_INTERVAL_MS);
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    if (this.flushTimer) {
+      clearInterval(this.flushTimer);
+      this.flushTimer = null;
+    }
+    await this.flush().catch(() => {});
+  }
+
   async logError(entry: ErrorLogEntry): Promise<void>;
   async logError(errorData: Partial<ErrorLog>): Promise<ErrorLog | null>;
   async logError(
     entryOrErrorData: ErrorLogEntry | Partial<ErrorLog>,
   ): Promise<void | ErrorLog | null> {
-    try {
-      // Détecter le type d'entrée (code utilisateur vs nouveau format)
-      if (this.isErrorLogEntry(entryOrErrorData)) {
-        // Code utilisateur original
-        return this.logErrorOriginal(entryOrErrorData);
-      } else {
-        // Nouveau format avec ErrorLog
-        return this.logErrorAdvanced(entryOrErrorData);
-      }
-    } catch (error) {
-      this.logger.error('Erreur dans logError:', error);
-      if (this.isErrorLogEntry(entryOrErrorData)) {
-        return; // void pour compatibilité
-      }
-      return null;
+    const isLegacy = this.isErrorLogEntry(entryOrErrorData);
+    const ua = this.extractUserAgent(entryOrErrorData);
+
+    if (this.isBot(ua) && this.isClientErrorCode(entryOrErrorData)) {
+      this.logger.debug(
+        `Skipping bot 4xx log [${this.summarize(entryOrErrorData)}]`,
+      );
+      return isLegacy ? undefined : null;
     }
+
+    const pending = this.build(entryOrErrorData);
+    if (!pending) return isLegacy ? undefined : null;
+
+    this.enqueue(pending);
+
+    if (isLegacy) return;
+    return {
+      msg_id: pending.row.msg_id,
+      msg_cst_id: pending.row.msg_cst_id ?? undefined,
+      msg_cnfa_id: pending.row.msg_cnfa_id ?? undefined,
+      msg_ord_id: pending.row.msg_ord_id ?? undefined,
+      msg_date: new Date(pending.row.msg_date),
+      msg_subject: pending.row.msg_subject,
+      msg_content: pending.row.msg_content,
+      msg_parent_id: pending.row.msg_parent_id ?? undefined,
+      msg_open: pending.row.msg_open,
+      msg_close: pending.row.msg_close,
+      errorMetadata: pending.metadata as ErrorLog['errorMetadata'],
+    };
   }
 
-  /**
-   * Implémentation originale du code utilisateur (conservée exactement)
-   */
-  private async logErrorOriginal(entry: ErrorLogEntry): Promise<void> {
-    try {
-      // Convertir vers le nouveau format avec métadonnées enrichies
-      const errorContent = {
-        error_code: entry.code.toString(),
+  private build(entry: ErrorLogEntry | Partial<ErrorLog>): Pending | null {
+    if (this.isErrorLogEntry(entry)) {
+      const content = {
+        error_code: String(entry.code),
         error_message: `Erreur ${entry.code} sur ${entry.url}`,
         request_url: entry.url,
         user_agent: entry.userAgent,
@@ -77,104 +130,127 @@ export class ErrorLogService extends SupabaseBaseService {
         additional_context: entry.metadata,
         user_id: entry.userId,
       };
-
-      const errorLog = {
+      const row: XtrMsgRow = {
         msg_id: this.generateMessageId(),
-        msg_cst_id: entry.userId || null,
+        msg_cst_id: entry.userId ?? null,
         msg_cnfa_id: null,
         msg_ord_id: null,
         msg_date: new Date().toISOString(),
         msg_subject: `ERROR_${entry.code}`,
-        msg_content: JSON.stringify(errorContent),
+        msg_content: JSON.stringify(content),
         msg_parent_id: null,
-        msg_open: '1', // Non résolu
-        msg_close: '0', // Ouvert
+        msg_open: '1',
+        msg_close: '0',
       };
-
-      const { error } = await this.supabase
-        .from(TABLES.xtr_msg)
-        .insert(errorLog);
-
-      if (error) {
-        this.logger.error('Failed to log error:', error);
-      }
-
-      // Mettre à jour les statistiques (méthode utilisateur conservée)
-      await this.updateStatistics(entry.code, entry.url);
-    } catch (error) {
-      this.logger.error('Error logging failed:', error);
-    }
-  }
-
-  /**
-   * Méthode avancée pour le nouveau format ErrorLog
-   */
-  private async logErrorAdvanced(
-    errorData: Partial<ErrorLog>,
-  ): Promise<ErrorLog | null> {
-    try {
-      const errorContent = {
-        error_code: errorData.errorMetadata?.error_code || 'UnknownError',
-        error_message:
-          errorData.errorMetadata?.error_message || 'Erreur inconnue',
-        stack_trace: errorData.errorMetadata?.stack_trace,
-        user_agent: errorData.errorMetadata?.user_agent,
-        ip_address: errorData.errorMetadata?.ip_address,
-        request_url: errorData.errorMetadata?.request_url,
-        request_method: errorData.errorMetadata?.request_method,
-        request_body: errorData.errorMetadata?.request_body,
-        request_headers: errorData.errorMetadata?.request_headers,
-        response_status: errorData.errorMetadata?.response_status,
-        severity: errorData.errorMetadata?.severity || 'low',
-        environment: process.env.NODE_ENV || 'development',
-        service_name: 'nestjs-remix-monorepo',
-        correlation_id:
-          errorData.errorMetadata?.correlation_id ||
-          this.generateCorrelationId(),
-        session_id: errorData.errorMetadata?.session_id,
-        additional_context: errorData.errorMetadata?.additional_context,
-      };
-
-      const errorLog = {
-        msg_id: this.generateMessageId(),
-        msg_cst_id: errorData.msg_cst_id || null,
-        msg_cnfa_id: errorData.msg_cnfa_id || null,
-        msg_ord_id: errorData.msg_ord_id || null,
-        msg_date: new Date().toISOString(),
-        msg_subject: errorData.msg_subject || errorContent.error_code,
-        msg_content: JSON.stringify(errorContent),
-        msg_parent_id: errorData.msg_parent_id || null,
-        msg_open: '1', // Non résolu par défaut
-        msg_close: '0', // Ouvert par défaut
-      };
-
-      const { data, error } = await this.supabase
-        .from(TABLES.xtr_msg)
-        .insert(errorLog)
-        .select()
-        .single();
-
-      if (error) {
-        this.logger.error(
-          "Erreur lors de l'enregistrement de l'erreur:",
-          error,
-        );
-        return null;
-      }
-
       return {
-        ...data,
-        errorMetadata: errorContent,
+        row,
+        signature: `${row.msg_subject}|${entry.url}|${entry.ipAddress ?? ''}`,
+        metadata: content,
       };
-    } catch (error) {
-      this.logger.error('Erreur critique dans logErrorAdvanced:', error);
-      return null;
+    }
+
+    const md: NonNullable<ErrorLog['errorMetadata']> =
+      entry.errorMetadata ?? ({} as NonNullable<ErrorLog['errorMetadata']>);
+    const content = {
+      error_code: md.error_code || 'UnknownError',
+      error_message: md.error_message || 'Erreur inconnue',
+      stack_trace: md.stack_trace,
+      user_agent: md.user_agent,
+      ip_address: md.ip_address,
+      request_url: md.request_url,
+      request_method: md.request_method,
+      request_body: md.request_body,
+      request_headers: md.request_headers,
+      response_status: md.response_status,
+      severity: md.severity || 'low',
+      environment: process.env.NODE_ENV || 'development',
+      service_name: 'nestjs-remix-monorepo',
+      correlation_id: md.correlation_id || this.generateCorrelationId(),
+      session_id: md.session_id,
+      additional_context: md.additional_context,
+    };
+    const row: XtrMsgRow = {
+      msg_id: this.generateMessageId(),
+      msg_cst_id: entry.msg_cst_id ?? null,
+      msg_cnfa_id: entry.msg_cnfa_id ?? null,
+      msg_ord_id: entry.msg_ord_id ?? null,
+      msg_date: new Date().toISOString(),
+      msg_subject: entry.msg_subject || String(content.error_code),
+      msg_content: JSON.stringify(content),
+      msg_parent_id: entry.msg_parent_id ?? null,
+      msg_open: '1',
+      msg_close: '0',
+    };
+    return {
+      row,
+      signature: `${row.msg_subject}|${content.request_url ?? ''}|${content.ip_address ?? ''}`,
+      metadata: content,
+    };
+  }
+
+  private enqueue(pending: Pending): void {
+    const now = Date.now();
+    const last = this.dedup.get(pending.signature);
+    if (last && now - last < ErrorLogService.DEDUP_TTL_MS) {
+      this.droppedSinceLastLog++;
+      return;
+    }
+    this.dedup.set(pending.signature, now);
+
+    if (this.buffer.length >= ErrorLogService.BUFFER_MAX) {
+      this.buffer.shift();
+      this.droppedSinceLastLog++;
+    }
+    this.buffer.push(pending);
+  }
+
+  private async flush(): Promise<void> {
+    if (this.buffer.length === 0) return;
+
+    if (Date.now() < this.silentUntilMs) {
+      const dropped = this.buffer.length;
+      this.buffer.length = 0;
+      this.droppedSinceLastLog += dropped;
+      return;
+    }
+
+    const batch = this.buffer.splice(0, ErrorLogService.BATCH_MAX);
+    const rows = batch.map((p) => p.row);
+
+    try {
+      const { error } = await this.supabase.from(TABLES.xtr_msg).insert(rows);
+      if (error) throw new Error(error.message);
+      this.consecutiveFailures = 0;
+      this.pruneDedup();
+      if (this.droppedSinceLastLog > 0) {
+        this.logger.debug(
+          `ErrorLog flush: ${rows.length} inserted, ${this.droppedSinceLastLog} deduped/dropped since last flush`,
+        );
+        this.droppedSinceLastLog = 0;
+      }
+    } catch (err) {
+      this.consecutiveFailures++;
+      const msg = err instanceof Error ? err.message : String(err);
+      this.logger.warn(
+        `ErrorLog flush failed (${this.consecutiveFailures}/${ErrorLogService.BREAKER_FAIL_LIMIT}): ${msg}`,
+      );
+      if (this.consecutiveFailures >= ErrorLogService.BREAKER_FAIL_LIMIT) {
+        this.silentUntilMs = Date.now() + ErrorLogService.BREAKER_SILENT_MS;
+        this.consecutiveFailures = 0;
+        this.logger.error(
+          `ErrorLog circuit breaker tripped — dropping error logs for ${ErrorLogService.BREAKER_SILENT_MS / 1000}s`,
+        );
+      }
     }
   }
 
-  /**
-   * Méthode pour détecter le type d'entrée
-   */
+  private pruneDedup(): void {
+    const cutoff = Date.now() - ErrorLogService.DEDUP_TTL_MS * 2;
+    for (const [k, v] of this.dedup) {
+      if (v < cutoff) this.dedup.delete(k);
+    }
+  }
+
   private isErrorLogEntry(
     entry: ErrorLogEntry | Partial<ErrorLog>,
   ): entry is ErrorLogEntry {
@@ -187,63 +263,40 @@ export class ErrorLogService extends SupabaseBaseService {
     );
   }
 
-  /**
-   * Détermine la sévérité basée sur le code d'erreur (logique utilisateur)
-   */
+  private extractUserAgent(
+    entry: ErrorLogEntry | Partial<ErrorLog>,
+  ): string | undefined {
+    if (this.isErrorLogEntry(entry)) return entry.userAgent;
+    return entry.errorMetadata?.user_agent;
+  }
+
+  private isClientErrorCode(entry: ErrorLogEntry | Partial<ErrorLog>): boolean {
+    if (this.isErrorLogEntry(entry)) {
+      return entry.code >= 400 && entry.code < 500;
+    }
+    const code = entry.errorMetadata?.error_code;
+    const n = typeof code === 'string' ? parseInt(code, 10) : Number(code);
+    return Number.isFinite(n) && n >= 400 && n < 500;
+  }
+
+  private isBot(ua: string | undefined): boolean {
+    return !!ua && BOT_UA_RE.test(ua);
+  }
+
+  private summarize(entry: ErrorLogEntry | Partial<ErrorLog>): string {
+    if (this.isErrorLogEntry(entry)) return `${entry.code} ${entry.url}`;
+    return `${entry.msg_subject ?? 'ERROR'} ${entry.errorMetadata?.request_url ?? ''}`;
+  }
+
   private determineSeverityFromCode(
     code: number,
   ): 'low' | 'medium' | 'high' | 'critical' {
-    if (code >= 500) return 'critical'; // Erreurs serveur
-    if (code >= 400) return 'high'; // Erreurs client
-    if (code >= 300) return 'medium'; // Redirections
-    return 'low'; // Autres
+    if (code >= 500) return 'critical';
+    if (code >= 400) return 'high';
+    if (code >= 300) return 'medium';
+    return 'low';
   }
 
-  /**
-   * Mettre à jour les statistiques d'erreurs (méthode utilisateur conservée)
-   */
-  private async updateStatistics(errorCode: number, url: string) {
-    try {
-      // Version adaptée pour ___xtr_msg
-      const today = new Date().toISOString().split('T')[0];
-
-      // Chercher ou créer une entrée de statistiques
-      const statsContent = {
-        error_code: errorCode,
-        url: url,
-        date: today,
-        count: 1,
-        last_occurrence: new Date().toISOString(),
-      };
-
-      // Insérer les statistiques comme un message spécialisé
-      const { error } = await this.supabase.from(TABLES.xtr_msg).insert({
-        msg_id: this.generateMessageId(),
-        msg_cst_id: null,
-        msg_cnfa_id: null,
-        msg_ord_id: null,
-        msg_date: new Date().toISOString(),
-        msg_subject: 'ERROR_STATISTICS',
-        msg_content: JSON.stringify(statsContent),
-        msg_parent_id: null,
-        msg_open: '1',
-        msg_close: '0',
-      });
-
-      if (error) {
-        this.logger.warn(
-          'Erreur lors de la mise à jour des statistiques:',
-          error,
-        );
-      }
-    } catch (error) {
-      this.logger.warn('Échec de la mise à jour des statistiques:', error);
-    }
-  }
-
-  /**
-   * Récupérer les statistiques d'erreurs (méthode utilisateur adaptée)
-   */
   async getErrorStatistics(startDate: Date, endDate: Date) {
     try {
       const { data } = await this.supabase
@@ -277,9 +330,6 @@ export class ErrorLogService extends SupabaseBaseService {
     }
   }
 
-  /**
-   * Récupérer les erreurs récentes (méthode utilisateur adaptée)
-   */
   async getRecentErrors(limit: number = 100) {
     try {
       const { data } = await this.supabase
@@ -322,9 +372,6 @@ export class ErrorLogService extends SupabaseBaseService {
     }
   }
 
-  /**
-   * Récupère les erreurs avec pagination et filtres
-   */
   async getErrors(options: {
     page?: number;
     limit?: number;
@@ -342,12 +389,10 @@ export class ErrorLogService extends SupabaseBaseService {
         .select('*', { count: 'exact' })
         .order('msg_date', { ascending: false });
 
-      // Filtrer par statut résolu
       if (typeof resolved === 'boolean') {
         query = query.eq('msg_open', resolved ? '0' : '1');
       }
 
-      // Filtrer par date
       if (startDate) {
         query = query.gte('msg_date', startDate.toISOString());
       }
@@ -373,9 +418,6 @@ export class ErrorLogService extends SupabaseBaseService {
     }
   }
 
-  /**
-   * Marque une erreur comme résolue
-   */
   async resolveError(errorId: string, resolvedBy: string): Promise<boolean> {
     try {
       const { error } = await this.supabase
@@ -399,9 +441,6 @@ export class ErrorLogService extends SupabaseBaseService {
     }
   }
 
-  /**
-   * Génère des métriques d'erreurs
-   */
   async getErrorMetrics(
     period: '24h' | '7d' | '30d' = '24h',
   ): Promise<ErrorMetrics> {
@@ -409,7 +448,6 @@ export class ErrorLogService extends SupabaseBaseService {
       const periodMs = this.getPeriodInMs(period);
       const startDate = new Date(Date.now() - periodMs);
 
-      // Récupération des données
       const { data: errors, error } = await this.supabase
         .from('error_logs')
         .select('error_code, error_message, severity, service_name, timestamp')
@@ -423,7 +461,6 @@ export class ErrorLogService extends SupabaseBaseService {
         return this.getEmptyMetrics();
       }
 
-      // Calcul des métriques
       const totalErrors = errors.length;
       const errorsBySeverity = this.groupBy(errors, 'severity');
       const errorsByService = this.groupBy(errors, 'service_name');
@@ -452,9 +489,6 @@ export class ErrorLogService extends SupabaseBaseService {
     }
   }
 
-  /**
-   * Nettoie les anciens logs d'erreur
-   */
   async cleanupOldLogs(retentionDays: number = 90): Promise<number> {
     try {
       const cutoffDate = new Date();
@@ -485,9 +519,6 @@ export class ErrorLogService extends SupabaseBaseService {
     return `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  /**
-   * Génère un ID unique pour msg_id
-   */
   private generateMessageId(): string {
     return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
@@ -531,7 +562,7 @@ export class ErrorLogService extends SupabaseBaseService {
       (error) => now - new Date(error.timestamp).getTime() < periodMs,
     );
 
-    return recentErrors.length / (periodMs / (60 * 60 * 1000)) || 0; // Erreurs par heure
+    return recentErrors.length / (periodMs / (60 * 60 * 1000)) || 0;
   }
 
   private getEmptyMetrics(): ErrorMetrics {
