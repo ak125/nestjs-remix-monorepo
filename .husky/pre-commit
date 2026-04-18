@@ -1,1 +1,18 @@
+# Block any staged file under app/.local/governance-vault/
+# (deprecated per ADR-015 — governance vault is at /opt/automecanik/governance-vault/)
+BLOCKED=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '^\.local/governance-vault/' || true)
+if [ -n "$BLOCKED" ]; then
+  echo ""
+  echo "ERROR (ADR-015): Staged files under .local/governance-vault/ (deprecated)"
+  echo ""
+  echo "Governance vault canonical path: /opt/automecanik/governance-vault/"
+  echo "Repo: https://github.com/ak125/governance-vault"
+  echo ""
+  echo "Move these files to the canonical vault and commit there:"
+  echo "$BLOCKED" | sed 's/^/  - /'
+  echo ""
+  echo "See ADR-015: ak125/governance-vault/ledger/decisions/adr/ADR-015-vault-single-source-of-truth.md"
+  exit 1
+fi
+
 npx lint-staged
