@@ -494,66 +494,65 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
   // ==========================================================================
 
   /**
-   * Search symptoms via RPC search_diag_symptoms : unaccent + substring-in-array.
-   * Matches label, description, synonyms[] (substring), dtc_codes[] (exact).
-   * Graceful fallback : ILIKE sur label si RPC absente.
+   * Retourne tous les symptomes actifs (utilise par le SearchService RAG
+   * pour resoudre chunk_title -> slug via match exact).
    */
-  async searchSymptoms(q: string, limit = 10): Promise<DiagSymptom[]> {
-    const query = q.trim();
-    if (query.length < 2) return [];
-
-    const { data, error } = await this.supabase.rpc('search_diag_symptoms', {
-      p_q: query,
-      p_limit: limit,
-    });
+  async getAllActiveSymptoms(): Promise<DiagSymptom[]> {
+    const { data, error } = await this.supabase
+      .from('__diag_symptom')
+      .select('*')
+      .eq('active', true);
 
     if (error) {
-      this.logger.warn(
-        `searchSymptoms RPC failed for "${q}" — fallback ILIKE`,
-        error.message,
-      );
-      // Graceful fallback (if RPC missing)
-      const fallback = await this.supabase
-        .from('__diag_symptom')
-        .select('*')
-        .eq('active', true)
-        .ilike('label', `%${query}%`)
-        .limit(limit);
-      return fallback.data || [];
+      this.logger.warn('getAllActiveSymptoms failed', error.message);
+      return [];
     }
-    return (data as DiagSymptom[]) || [];
+    return data || [];
   }
 
   /**
-   * Search maintenance operations via RPC search_diag_maintenance : unaccent.
-   * Graceful fallback : ILIKE sur label si RPC absente.
+   * Fallback ILIKE simple sur __diag_symptom.label (sans synonymes, sans RPC).
+   * Utilise uniquement quand le RAG est indisponible.
    */
-  async searchMaintenance(
+  async searchSymptomsByLabelOnly(
+    q: string,
+    limit = 10,
+  ): Promise<DiagSymptom[]> {
+    const query = q.trim();
+    if (query.length < 2) return [];
+    const { data, error } = await this.supabase
+      .from('__diag_symptom')
+      .select('*')
+      .eq('active', true)
+      .ilike('label', `%${query}%`)
+      .limit(limit);
+    if (error) {
+      this.logger.warn(`searchSymptomsByLabelOnly failed`, error.message);
+      return [];
+    }
+    return data || [];
+  }
+
+  /**
+   * Fallback ILIKE simple sur __diag_maintenance_operation.label.
+   */
+  async searchMaintenanceByLabelOnly(
     q: string,
     limit = 10,
   ): Promise<DiagMaintenanceOperation[]> {
     const query = q.trim();
     if (query.length < 2) return [];
-
-    const { data, error } = await this.supabase.rpc('search_diag_maintenance', {
-      p_q: query,
-      p_limit: limit,
-    });
-
+    const { data, error } = await this.supabase
+      .from('__diag_maintenance_operation')
+      .select('*')
+      .eq('active', true)
+      .ilike('label', `%${query}%`)
+      .limit(limit);
     if (error) {
-      this.logger.warn(
-        `searchMaintenance RPC failed for "${q}" — fallback ILIKE`,
-        error.message,
-      );
-      const fallback = await this.supabase
-        .from('__diag_maintenance_operation')
-        .select('*')
-        .eq('active', true)
-        .ilike('label', `%${query}%`)
-        .limit(limit);
-      return fallback.data || [];
+      this.logger.warn(`searchMaintenanceByLabelOnly failed`, error.message);
+      return [];
     }
-    return (data as DiagMaintenanceOperation[]) || [];
+    return data || [];
   }
 
   /**
