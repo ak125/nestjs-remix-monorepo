@@ -305,6 +305,25 @@ export default function DiagnosticAutoDetail() {
         />
       )}
 
+      {/* Banniere legacy -> nouveau moteur (breezy-eagle plan) */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+        <Container className="py-2.5">
+          <div className="flex items-center justify-between gap-4 text-sm">
+            <p className="flex-1">
+              <span className="font-semibold">Nouveau :</span> un moteur de
+              diagnostic interactif est disponible (13 systèmes, scoring
+              hypothèses, alertes sécurité).
+            </p>
+            <Link
+              to="/diagnostic-auto/wizard"
+              className="inline-flex items-center gap-1 font-medium underline underline-offset-2 hover:no-underline whitespace-nowrap"
+            >
+              Essayer →
+            </Link>
+          </div>
+        </Container>
+      </div>
+
       {/* Breadcrumbs */}
       <div className="bg-white border-b">
         <Container className="py-3">

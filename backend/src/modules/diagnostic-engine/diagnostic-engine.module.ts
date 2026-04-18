@@ -14,6 +14,7 @@ import { RagProxyModule } from '../rag-proxy/rag-proxy.module';
 import { DiagnosticEngineController } from './diagnostic-engine.controller';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
+import { DiagnosticEngineSearchService } from './diagnostic-engine.search.service';
 import { SignalInterpretationEngine } from './engines/signal-interpretation.engine';
 import { HypothesisScoringEngine } from './engines/hypothesis-scoring.engine';
 import { RiskSafetyEngine } from './engines/risk-safety.engine';
@@ -30,6 +31,7 @@ import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
   providers: [
     DiagnosticEngineOrchestrator,
     DiagnosticEngineDataService,
+    DiagnosticEngineSearchService,
     SignalInterpretationEngine,
     HypothesisScoringEngine,
     RiskSafetyEngine,
@@ -37,7 +39,11 @@ import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
     MaintenanceIntelligenceEngine,
     RagEnrichmentEngine,
   ],
-  exports: [DiagnosticEngineOrchestrator, DiagnosticEngineDataService],
+  exports: [
+    DiagnosticEngineOrchestrator,
+    DiagnosticEngineDataService,
+    DiagnosticEngineSearchService,
+  ],
 })
 export class DiagnosticEngineModule {
   private readonly logger = new Logger(DiagnosticEngineModule.name);
