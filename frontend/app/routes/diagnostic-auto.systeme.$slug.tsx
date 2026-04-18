@@ -54,10 +54,20 @@ interface SafetyRuleRow {
   urgency: string | null;
 }
 
+interface MaintenanceOpRow {
+  slug: string;
+  label: string;
+  description: string | null;
+  severity_if_overdue: string | null;
+  interval_km_min: number | null;
+  interval_km_max: number | null;
+}
+
 interface LoaderData {
   system: SystemDetail | null;
   symptoms: SymptomRow[];
   safety_rules: SafetyRuleRow[];
+  maintenance_ops: MaintenanceOpRow[];
   error?: string;
 }
 
@@ -76,6 +86,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
           system: null,
           symptoms: [],
           safety_rules: [],
+          maintenance_ops: [],
           error: `Système non trouvé (${res.status})`,
         },
         { status: res.status },
@@ -88,6 +99,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
           system: null,
           symptoms: [],
           safety_rules: [],
+          maintenance_ops: [],
           error: payload.error || "Erreur",
         },
         { status: 404 },
@@ -97,6 +109,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
       system: payload.system,
       symptoms: payload.symptoms || [],
       safety_rules: payload.safety_rules || [],
+      maintenance_ops: payload.maintenance_ops || [],
     });
   } catch (error) {
     logger.error("[diagnostic-auto.systeme] loader error", error);
@@ -105,6 +118,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
         system: null,
         symptoms: [],
         safety_rules: [],
+        maintenance_ops: [],
         error: "Erreur chargement",
       },
       { status: 500 },
@@ -135,7 +149,7 @@ const URGENCY_COLOR: Record<string, string> = {
 };
 
 export default function DiagnosticSysteme() {
-  const { system, symptoms, safety_rules, error } =
+  const { system, symptoms, safety_rules, maintenance_ops, error } =
     useLoaderData<typeof loader>();
 
   if (!system) {
@@ -295,6 +309,62 @@ export default function DiagnosticSysteme() {
             </div>
           )}
         </section>
+
+        {maintenance_ops.length > 0 && (
+          <section className="mt-10" aria-labelledby="maint-heading">
+            <div className="flex items-center gap-2 mb-4">
+              <Wrench className="h-5 w-5 text-emerald-600" />
+              <h2 id="maint-heading" className="text-lg font-bold">
+                Entretien préventif du système
+              </h2>
+              <Badge variant="outline" className="ml-auto text-xs">
+                {maintenance_ops.length} opération(s)
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4 max-w-3xl">
+              Opérations à respecter pour prévenir les pannes sur ce système.
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {maintenance_ops.map((m) => (
+                <Link
+                  key={m.slug}
+                  to={`/entretien/${m.slug}`}
+                  className="group"
+                >
+                  <Card className="h-full p-4 border transition-all hover:shadow-md hover:border-emerald-400">
+                    <div className="flex items-start gap-3">
+                      <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
+                        <Wrench className="h-4 w-4 text-emerald-700" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm group-hover:text-emerald-700">
+                          {m.label}
+                        </h3>
+                        <div className="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
+                          {m.interval_km_min && (
+                            <span>
+                              Tous les {m.interval_km_min.toLocaleString()}
+                              {m.interval_km_max
+                                ? `–${m.interval_km_max.toLocaleString()}`
+                                : ""}{" "}
+                              km
+                            </span>
+                          )}
+                          {m.severity_if_overdue && (
+                            <Badge variant="outline" className="text-[10px]">
+                              {m.severity_if_overdue}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:translate-x-0.5 group-hover:text-emerald-600 transition-all" />
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </Container>
     </div>
   );

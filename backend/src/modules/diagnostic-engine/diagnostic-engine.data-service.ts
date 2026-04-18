@@ -837,21 +837,23 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
   }
 
   /**
-   * System detail with all its symptoms and safety rules.
+   * System detail with all its symptoms, safety rules and maintenance operations.
    */
   async getSystemBySlugWithSymptoms(slug: string): Promise<{
     system: DiagSystem;
     symptoms: DiagSymptom[];
     safety_rules: DiagSafetyRule[];
+    maintenance_ops: DiagMaintenanceOperation[];
   } | null> {
     const system = await this.getSystemBySlug(slug);
     if (!system) return null;
 
-    const [symptoms, safety_rules] = await Promise.all([
+    const [symptoms, safety_rules, maintenance_ops] = await Promise.all([
       this.getSymptomsBySystem(slug),
       this.getSafetyRules(slug),
+      this.listMaintenanceOps({ system: slug, limit: 50 }),
     ]);
 
-    return { system, symptoms, safety_rules };
+    return { system, symptoms, safety_rules, maintenance_ops };
   }
 }
