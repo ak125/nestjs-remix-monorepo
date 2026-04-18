@@ -58,7 +58,11 @@ export class PayboxService {
       );
     } else {
       this.logger.log(`Paybox configure en mode ${this.mode}`);
-      this.logger.log(`Site: ${this.site}, Rang: ${this.rang}`);
+      // Merchant IDs masked to avoid leaking in logs (Docker/log drain).
+      // Show only the last 3 chars as a disambiguator between accounts.
+      this.logger.log(
+        `Paybox account: site=***${this.site.slice(-3)}, rang=${this.rang}`,
+      );
 
       // Pour les comptes de test mutualisés (pas de clé HMAC)
       if (!this.hmacKey || this.hmacKey.startsWith('0123456789ABCDEF')) {
@@ -115,8 +119,12 @@ export class PayboxService {
     // Construire la chaîne de signature avec les paramètres présents
     const signatureString = this.buildSignatureString(payboxParams);
 
+    // Redacted: raw signature string leaked PBX_SITE, PBX_IDENTIFIANT, PBX_PORTEUR (email PII).
+    // Log only structural metadata for debugging.
     this.logger.log(
-      `Signature string: ${signatureString.substring(0, 100)}...`,
+      `Signature string built (length=${signatureString.length}, params=${
+        signatureString.split('&').length
+      })`,
     );
 
     // Calculer HMAC-SHA512 comme le PHP: hash_hmac('sha512', $string, pack("H*", $key))
@@ -127,9 +135,8 @@ export class PayboxService {
 
     payboxParams.PBX_HMAC = signature;
 
-    this.logger.log(
-      `HMAC signature (20 premiers chars): ${signature.substring(0, 20)}...`,
-    );
+    // Redacted: 20 first chars was 15% of HMAC-SHA512 secret — too much for defense-in-depth.
+    this.logger.log(`HMAC signature computed (length=${signature.length})`);
     this.logger.log('Formulaire Paybox genere');
     this.logger.log(`URL: ${this.paymentUrl}`);
 
