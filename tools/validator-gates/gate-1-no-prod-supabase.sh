@@ -28,6 +28,7 @@ EXCLUDE_GLOBS=(
   "backend/*.sh"
   ".vscode/**"
   "docker-compose.imgproxy.yml" # CDN URL whitelist, pas connexion DB
+  ".github/workflows/prod-*.yml" # PROD smoke tests / deploy workflows (CI, pas DEV)
 )
 
 # Cibles: seulement fichiers trackes pertinents
