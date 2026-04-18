@@ -192,6 +192,12 @@ export class PayboxCallbackGateService {
     }
 
     // 5. Vérification code erreur
+    // NOTE: errorCode est une info BUSINESS (succès/refus/annulation côté banque),
+    // PAS un check de sécurité. Un callback signé RSA par Paybox avec
+    // Erreur=00040 (refus CB) est légitime et doit être accepté par le gate
+    // pour être loggué dans ic_postback (status=FAILED) — sinon Paybox retry
+    // en boucle et on perd la trace des refus (analytics, patterns fraude,
+    // support client). Fix bug #2 incident 2026-04-14.
     const errorCode = parsedParams.errorCode || parsedParams.Erreur || '';
     result.checks.errorCode = {
       ok: errorCode === '00000',
@@ -207,11 +213,16 @@ export class PayboxCallbackGateService {
       alreadyPaid: orderAlreadyPaid,
     };
 
+    // CRITICAL checks = security-relevant only :
+    //   - signature : anti-spoofing (callback vient vraiment de Paybox)
+    //   - orderExists : anti-replay (ord_id existe en DB)
+    //   - amountMatch : anti-tampering (le montant n'a pas été modifié)
+    //   - merchantId : anti-misrouting (bons PBX_SITE/RANG/IDENTIFIANT)
+    // errorCode (succès/refus) est propagé au handler mais ne bloque pas le gate.
     result.allCriticalChecksOk =
       result.checks.signature.ok &&
       result.checks.orderExists.ok &&
       result.checks.amountMatch.ok &&
-      result.checks.errorCode.ok &&
       result.checks.merchantId.ok;
 
     // Logging structuré (sans données sensibles)

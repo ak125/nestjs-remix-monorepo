@@ -192,9 +192,10 @@ describe('PayboxCallbackGateService', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // TEST 5: Erreur non-success => reject
+  // TEST 5: errorCode non-'00000' — info business propagée,
+  //         mais PAS un critère de rejet sécurité (fix bug #2 2026-04-14)
   // ═══════════════════════════════════════════════════════════════
-  it('should reject on non-success error code', async () => {
+  it('should compute errorCode check but NOT gate-reject on non-success code', async () => {
     const query = { Mt: '10050', Ref: 'ORD-123', Erreur: '00015', K: 'fakesig' };
     const rawQuery = 'Mt=10050&Ref=ORD-123&Erreur=00015&K=fakesig';
 
@@ -211,9 +212,108 @@ describe('PayboxCallbackGateService', () => {
       signature: 'fakesig',
     });
 
+    // errorCode reste calculé et propagé au handler pour qu'il loggue
+    // le refus en ic_postback (status=FAILED)
     expect(result.result.checks.errorCode.ok).toBe(false);
     expect(result.result.checks.errorCode.value).toBe('00015');
+    expect(result.result.checks.errorCode.reason).toBe('ERROR_CODE_00015');
+
+    // Reject est basé sur signature (fakesig) qui fail, pas sur errorCode.
+    // Dans ce test la signature est invalide ET errorCode != 00000.
     expect(result.reject).toBe(true);
+    expect(result.result.checks.signature.ok).toBe(false);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TEST 5-BIS: Refus bancaire légitime (sig RSA valide, errorCode=00040)
+  //             → gate PASS, handler loggue status FAILED.
+  //             Prouve le fix du bug #2 incident 2026-04-14.
+  // ═══════════════════════════════════════════════════════════════
+  it('should accept signed callback with non-success errorCode (refus bancaire)', async () => {
+    // Mock verifySignatureRSA pour simuler une signature RSA valide
+    // (impossible de générer une vraie signature en test sans clés Paybox)
+    const sigSpy = jest
+      .spyOn(service as any, 'verifySignatureRSA')
+      .mockReturnValue({
+        ok: true,
+        present: true,
+        triedStrategies: ['RSA'],
+        matchedStrategy: 'RSA_2048',
+      });
+
+    const query = { Mt: '10050', Ref: 'ORD-123', Erreur: '00040', K: 'realsig' };
+    const rawQuery = 'Mt=10050&Ref=ORD-123&Erreur=00040&K=realsig';
+
+    mockOrderExists({
+      ord_id: '123',
+      ord_total_ttc: '100.50',
+      ord_is_pay: '0',
+    });
+
+    const result = await service.validateCallback(rawQuery, query, {
+      amount: '10050',
+      orderReference: 'ORD-123',
+      errorCode: '00040',
+      signature: 'realsig',
+    });
+
+    // Tous les checks SÉCURITÉ sont OK
+    expect(result.result.checks.signature.ok).toBe(true);
+    expect(result.result.checks.orderExists.ok).toBe(true);
+    expect(result.result.checks.amountMatch.ok).toBe(true);
+    expect(result.result.checks.merchantId.ok).toBe(true);
+
+    // Le check business errorCode est à false (refus CB) mais c'est juste
+    // une info propagée au handler — le gate ne bloque plus
+    expect(result.result.checks.errorCode.ok).toBe(false);
+    expect(result.result.checks.errorCode.value).toBe('00040');
+
+    // allCriticalChecksOk ne doit PLUS inclure errorCode.ok
+    expect(result.result.allCriticalChecksOk).toBe(true);
+
+    // Gate accepts → handler pourra logguer en ic_postback (status=FAILED)
+    expect(result.reject).toBe(false);
+    expect(result.valid).toBe(true);
+
+    sigSpy.mockRestore();
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TEST 5-TER: Succès bancaire normal (sig valide + errorCode=00000)
+  //             → gate PASS, comportement nominal.
+  // ═══════════════════════════════════════════════════════════════
+  it('should accept signed callback with success errorCode (paiement nominal)', async () => {
+    const sigSpy = jest
+      .spyOn(service as any, 'verifySignatureRSA')
+      .mockReturnValue({
+        ok: true,
+        present: true,
+        triedStrategies: ['RSA'],
+        matchedStrategy: 'RSA_2048',
+      });
+
+    const query = { Mt: '10050', Ref: 'ORD-123', Erreur: '00000', K: 'realsig' };
+    const rawQuery = 'Mt=10050&Ref=ORD-123&Erreur=00000&K=realsig';
+
+    mockOrderExists({
+      ord_id: '123',
+      ord_total_ttc: '100.50',
+      ord_is_pay: '0',
+    });
+
+    const result = await service.validateCallback(rawQuery, query, {
+      amount: '10050',
+      orderReference: 'ORD-123',
+      errorCode: '00000',
+      signature: 'realsig',
+    });
+
+    expect(result.result.allCriticalChecksOk).toBe(true);
+    expect(result.result.checks.errorCode.ok).toBe(true);
+    expect(result.reject).toBe(false);
+    expect(result.valid).toBe(true);
+
+    sigSpy.mockRestore();
   });
 
   // ═══════════════════════════════════════════════════════════════
