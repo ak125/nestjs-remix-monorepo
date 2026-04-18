@@ -346,50 +346,44 @@ export class RagChangeWatcherService
   }
 
   private async evaluateBreakerConditions(): Promise<string | null> {
-    // 1. Failed ratio > 2% in last 24h
-    const { data: queueStats } = await this.client
-      .from('__pipeline_chain_queue')
-      .select('pcq_status')
-      .gte('pcq_created_at', new Date(Date.now() - 86_400_000).toISOString());
+    const { data, error } = await this.client.rpc(
+      'rag_watcher_breaker_metrics',
+    );
 
-    if (queueStats && queueStats.length > 0) {
-      const total = queueStats.length;
-      const failed = queueStats.filter(
-        (r: { pcq_status: string }) => r.pcq_status === 'failed',
-      ).length;
-      const ratio = failed / total;
-      if (ratio > 0.02 && total >= 10) {
-        return `failed_ratio > 2% (${(ratio * 100).toFixed(1)}%, ${failed}/${total} in 24h)`;
-      }
+    if (error) {
+      this.logger.warn(`breaker_metrics_rpc_failed: ${error.message}`);
+      return null;
     }
 
-    // 2. Pending queue > 50
-    const { count: pendingCount } = await this.client
-      .from('__pipeline_chain_queue')
-      .select('pcq_id', { count: 'exact', head: true })
-      .eq('pcq_status', 'pending');
+    const m = (data ?? {}) as {
+      total_24h?: number;
+      failed_24h?: number;
+      failed_ratio?: number | string;
+      pending_count?: number;
+      hotspot_alias?: string | null;
+      hotspot_count?: number;
+    };
 
-    if ((pendingCount ?? 0) > 50) {
-      return `pending_queue > 50 (${pendingCount} pending)`;
+    const total = m.total_24h ?? 0;
+    const failed = m.failed_24h ?? 0;
+    const ratio =
+      typeof m.failed_ratio === 'string'
+        ? parseFloat(m.failed_ratio)
+        : (m.failed_ratio ?? 0);
+    const pending = m.pending_count ?? 0;
+    const hotspotAlias = m.hotspot_alias;
+    const hotspotCount = m.hotspot_count ?? 0;
+
+    if (total >= 10 && ratio > 0.02) {
+      return `failed_ratio > 2% (${(ratio * 100).toFixed(1)}%, ${failed}/${total} in 24h)`;
     }
 
-    // 3. Hotspot: any gamme with > 20 enqueues in 24h
-    const { data: hotspots } = await this.client
-      .from('__pipeline_chain_queue')
-      .select('pcq_pg_alias')
-      .gte('pcq_created_at', new Date(Date.now() - 86_400_000).toISOString());
+    if (pending > 50) {
+      return `pending_queue > 50 (${pending} pending)`;
+    }
 
-    if (hotspots) {
-      const counts = new Map<string, number>();
-      for (const row of hotspots as { pcq_pg_alias: string }[]) {
-        const alias = row.pcq_pg_alias;
-        counts.set(alias, (counts.get(alias) ?? 0) + 1);
-      }
-      for (const [alias, count] of counts) {
-        if (count > 20) {
-          return `hotspot > 20 enqueues/24h (${alias}: ${count})`;
-        }
-      }
+    if (hotspotAlias && hotspotCount > 20) {
+      return `hotspot > 20 enqueues/24h (${hotspotAlias}: ${hotspotCount})`;
     }
 
     return null;
