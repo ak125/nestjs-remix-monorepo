@@ -36,10 +36,14 @@ function TypeIcon({ type }: { type: HitType }) {
   return <AlertTriangle className="text-amber-600" />;
 }
 
-function routeFor(hit: SearchHitPublic): string {
-  if (hit.type === "dtc") return `/diagnostic-auto/dtc/${hit.slug}`;
-  if (hit.type === "maintenance") return `/entretien/${hit.slug}`;
-  return `/diagnostic-auto/symptome/${hit.slug}`;
+function routeFor(hit: SearchHitPublic, vehicleTypeId?: number): string {
+  const base =
+    hit.type === "dtc"
+      ? `/diagnostic-auto/dtc/${hit.slug}`
+      : hit.type === "maintenance"
+        ? `/entretien/${hit.slug}`
+        : `/diagnostic-auto/symptome/${hit.slug}`;
+  return vehicleTypeId ? `${base}?type=${vehicleTypeId}` : base;
 }
 
 function urgencyClass(urgency: string | null): string {
@@ -225,12 +229,15 @@ interface DiagnosticSearchBarProps {
   className?: string;
   /** Active le raccourci global ⌘K / Ctrl+K (default: true) */
   enableShortcut?: boolean;
+  /** type_id véhicule — propagé en query param ?type= sur la navigation */
+  vehicleTypeId?: number;
 }
 
 export function DiagnosticSearchBar({
   placeholder = "Rechercher un symptôme, un entretien ou un code OBD (ex: P0300)…",
   className = "",
   enableShortcut = true,
+  vehicleTypeId,
 }: DiagnosticSearchBarProps) {
   const navigate = useNavigate();
   const [inlineQ, setInlineQ] = useState("");
@@ -251,12 +258,12 @@ export function DiagnosticSearchBar({
 
   const pickInline = (hit: SearchHitPublic) => {
     setInlineQ("");
-    navigate(routeFor(hit));
+    navigate(routeFor(hit, vehicleTypeId));
   };
   const pickDialog = (hit: SearchHitPublic) => {
     setDialogOpen(false);
     setDialogQ("");
-    navigate(routeFor(hit));
+    navigate(routeFor(hit, vehicleTypeId));
   };
 
   return (
