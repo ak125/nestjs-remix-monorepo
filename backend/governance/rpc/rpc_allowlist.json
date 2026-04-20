@@ -1,8 +1,8 @@
 {
-  "version": "1.0.1",
-  "generated_at": "2026-04-18T16:30:00Z",
+  "version": "1.0.2",
+  "generated_at": "2026-04-20T13:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 166,
+  "total": 164,
   "functions": [
     {
       "name": "__gov_m1_table_sizes",
@@ -758,16 +758,6 @@
       "name": "search_seo_observable_by_dtc",
       "volatility": "STABLE",
       "reason": "SELECT only"
-    },
-    {
-      "name": "search_diag_symptoms",
-      "volatility": "STABLE",
-      "reason": "SELECT only - breezy-eagle public search (unaccent+substring on __diag_symptom)"
-    },
-    {
-      "name": "search_diag_maintenance",
-      "volatility": "STABLE",
-      "reason": "SELECT only - breezy-eagle public search (unaccent+substring on __diag_maintenance_operation)"
     },
     {
       "name": "show_limit",
