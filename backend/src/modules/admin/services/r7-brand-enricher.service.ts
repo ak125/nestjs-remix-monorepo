@@ -17,6 +17,11 @@ import {
   R7_SITEMAP_RULES,
   type R7SeoDecision,
 } from '../../../config/r7-keyword-plan.constants';
+import {
+  safeParseBrandRagFrontmatter,
+  type BrandRagFrontmatter,
+} from '../../../config/brand-rag-frontmatter.schema';
+import { BrandEditorialService } from './brand-editorial.service';
 
 // ── Result ──
 
@@ -29,19 +34,19 @@ export interface R7EnrichResult {
   pageKey: string;
 }
 
-// ── RAG brand frontmatter ──
-
-interface BrandRagData {
-  brand?: string;
-  alias?: string;
-  country?: string;
-  top_models?: string[];
-  top_gammes?: string[];
-  common_issues?: string[];
-  maintenance_tips?: string[];
+// ── RAG brand data (composite) ──
+// = frontmatter YAML du .md (stable, Wikidata+DB+Wikipedia)
+// + editorial live depuis __seo_brand_editorial (curé admin, éditable sans rebuild)
+type BrandRagData = Partial<BrandRagFrontmatter> & {
   faq?: Array<{ q: string; a: string }>;
-  history?: string;
-}
+  common_issues?: Array<{ symptom: string; cause?: string; fix_hint?: string }>;
+  maintenance_tips?: Array<{
+    part: string;
+    interval_km?: number;
+    interval_years?: number;
+    note?: string;
+  }>;
+};
 
 // ── Block ──
 
@@ -63,6 +68,7 @@ export class R7BrandEnricherService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly textUtils: EnricherTextUtils,
+    private readonly editorial: BrandEditorialService,
   ) {
     super(configService);
   }
@@ -113,8 +119,16 @@ export class R7BrandEnricherService extends SupabaseBaseService {
       const relatedBrands: any[] = brandData.related_brands || [];
       const blogContent = brandData.blog_content;
 
-      // RAG: brand file
-      const brandRag = this.loadBrandRag(brandAlias);
+      // RAG: brand file (facts stables) + editorial DB (contenu curé live)
+      const brandRag: BrandRagData = this.loadBrandRag(brandAlias);
+      const editorialRow = await this.editorial
+        .findOne(marqueId)
+        .catch(() => null);
+      if (editorialRow) {
+        brandRag.faq = editorialRow.faq;
+        brandRag.common_issues = editorialRow.common_issues;
+        brandRag.maintenance_tips = editorialRow.maintenance_tips;
+      }
 
       // ── 2. COMPOSE BLOCKS ──
       const blocks = this.composeBlocks(
@@ -276,13 +290,28 @@ export class R7BrandEnricherService extends SupabaseBaseService {
     try {
       const raw = readFileSync(filePath, 'utf-8');
       const match = raw.match(/^---\n([\s\S]*?)\n---/);
-      if (match) {
-        return yaml.load(match[1]) as BrandRagData;
+      if (!match) return {};
+      const parsed = yaml.load(match[1]);
+      // Validate against canonical Zod schema. Fail-safe : si le .md n'est pas conforme,
+      // on renvoie {} (enricher fonctionne sur templates + DB) plutôt que planter.
+      // Les écarts sont logués pour permettre un fix rapide via build-brand-rag.py.
+      const result = safeParseBrandRagFrontmatter(parsed);
+      if (!result.success) {
+        this.logger.warn(
+          `RAG frontmatter non conforme (${brandAlias}) : ${result.error.issues
+            .slice(0, 3)
+            .map((i) => `${i.path.join('.')}: ${i.message}`)
+            .join(' | ')}`,
+        );
+        return {};
       }
-    } catch {
-      // graceful skip
+      return result.data;
+    } catch (e) {
+      this.logger.warn(
+        `loadBrandRag(${brandAlias}) failed : ${(e as Error).message}`,
+      );
+      return {};
     }
-    return {};
   }
 
   // ── Compose Blocks ──
@@ -344,9 +373,15 @@ export class R7BrandEnricherService extends SupabaseBaseService {
       }
     }
     if (rag.common_issues && rag.common_issues.length > 0) {
-      microLines.push(
-        `Les problèmes fréquemment rencontrés sur les véhicules ${brandName} incluent : ${rag.common_issues.slice(0, 3).join(', ')}.`,
-      );
+      const symptoms = rag.common_issues
+        .slice(0, 3)
+        .map((i) => i.symptom)
+        .filter(Boolean);
+      if (symptoms.length > 0) {
+        microLines.push(
+          `Les problèmes fréquemment rencontrés sur les véhicules ${brandName} incluent : ${symptoms.join(', ')}.`,
+        );
+      }
     }
     microLines.push(
       `Notre catalogue couvre l'ensemble des motorisations ${brandName}, de la citadine au véhicule utilitaire. Chaque pièce est vérifiée pour la compatibilité avec votre véhicule précis.`,
@@ -358,7 +393,10 @@ export class R7BrandEnricherService extends SupabaseBaseService {
       renderedText: microLines.join(' '),
       specificityWeight: 0.8,
       boilerplateRisk: 0.15,
-      semanticPayload: [brandName, ...(rag.top_models || []).slice(0, 3)],
+      semanticPayload: [
+        brandName,
+        ...(rag.top_models || []).slice(0, 3).map((m) => m.name),
+      ],
     });
 
     // S3_SHORTCUTS (6 internal link cards)
@@ -492,9 +530,20 @@ export class R7BrandEnricherService extends SupabaseBaseService {
     ];
     if (maintenanceTips.length > 0) {
       safeTableLines.push('', `**Spécificités ${brandName} :**`);
-      maintenanceTips
-        .slice(0, 3)
-        .forEach((tip) => safeTableLines.push(`- ${tip}`));
+      maintenanceTips.slice(0, 3).forEach((tip) => {
+        const intervals = [
+          tip.interval_km
+            ? `${tip.interval_km.toLocaleString('fr-FR')} km`
+            : null,
+          tip.interval_years ? `${tip.interval_years} ans` : null,
+        ]
+          .filter(Boolean)
+          .join(' / ');
+        const note = tip.note ? ` — ${tip.note}` : '';
+        safeTableLines.push(
+          `- **${tip.part}** : ${intervals || 'voir fiche véhicule'}${note}`,
+        );
+      });
     }
     blocks.push({
       id: 'R7_S8_SAFE_TABLE',

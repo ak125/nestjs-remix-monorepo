@@ -94,6 +94,7 @@ import { R1ContentFromRagService } from './services/r1-content-from-rag.service'
 import { R1ImagePromptService } from './services/r1-image-prompt.service'; // 🎨 R1 Image Brief generator (brief-driven, 0-LLM)
 import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service'; // 🚗 R8 Vehicle page enricher (RAG + diversity scoring)
 import { R7BrandEnricherService } from './services/r7-brand-enricher.service'; // 🏭 R7 Brand page enricher (RAG + diversity scoring)
+import { BrandEditorialService } from './services/brand-editorial.service'; // 🏭 R7 Brand editorial content (FAQ/issues/maintenance)
 import { VehicleRagGeneratorService } from './services/vehicle-rag-generator.service'; // 🚗 Vehicle RAG .md generator (0 LLM)
 import { AdminVehicleRagController } from './controllers/admin-vehicle-rag.controller'; // 🚗 Vehicle RAG generation endpoints
 
@@ -229,6 +230,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     R1ImagePromptService, // 🎨 R1 Image Brief generator
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
     R7BrandEnricherService, // 🏭 R7 Brand page enricher (RAG + diversity scoring, 0-LLM)
+    BrandEditorialService, // 🏭 R7 Brand editorial content CRUD
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)
     // AdminSupplierStatsService — not ready for prod
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
