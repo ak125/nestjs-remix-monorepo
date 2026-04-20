@@ -46,32 +46,33 @@ export class DiagnosticEngineSearchService {
     const q = rawQ.trim();
     if (q.length < 2) return [];
 
-    const isDtc = DTC_RE.test(q);
-
-    // DTC : lookup direct via data-service (aucun besoin du RAG)
-    if (isDtc) {
-      const dtcResult = await this.data.lookupDtc(q);
-      if (dtcResult.symptoms.length > 0) {
-        const systemMap = await this.buildSystemMap();
-        return [
-          {
-            type: 'dtc',
-            slug: dtcResult.code,
-            label: `Code OBD ${dtcResult.code} — ${dtcResult.symptoms.length} symptôme(s)`,
-            system_slug: systemMap.get(dtcResult.symptoms[0].system_id) || null,
-            urgency: dtcResult.symptoms[0].urgency,
-            score: 1,
-          },
-        ];
-      }
-    }
-
-    // Recherche semantique via RAG
+    // Tout (free text ET DTC code) passe par le RAG — zero dependance colonnes DB.
+    // Le RAG matche les codes DTC cites dans le texte des chunks R5.
     const ragHits = await this.searchViaRag(q, limit);
     if (ragHits.length > 0) return ragHits;
 
-    // Fallback ILIKE si RAG indisponible ou zero hit
+    // Fallback ILIKE si RAG indisponible (pas applicable aux DTC : pas de match
+    // label->code possible sans source officielle SAE J2012 en DB).
+    if (DTC_RE.test(q)) return [];
     return this.searchViaFallback(q, limit);
+  }
+
+  /**
+   * Lookup DTC code — expose une API structuree au controller /dtc/:code.
+   * Delegue au search() (RAG) puis formate le resultat pour l'endpoint.
+   */
+  async lookupDtc(code: string): Promise<{
+    code: string;
+    symptoms: SearchHit[];
+    rag_hits: SearchHit[];
+  }> {
+    const normalized = code.trim().toUpperCase();
+    const hits = await this.search(normalized, 10);
+    return {
+      code: normalized,
+      symptoms: hits.filter((h) => h.type === 'symptom'),
+      rag_hits: hits.filter((h) => h.type === 'rag'),
+    };
   }
 
   /**
