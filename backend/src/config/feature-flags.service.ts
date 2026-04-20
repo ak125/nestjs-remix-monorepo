@@ -217,6 +217,17 @@ export class FeatureFlagsService {
     return this.bool('ABANDONED_CART_EMAIL_ENABLED', false);
   }
 
+  // ── ADR-016: Vehicle Page Cache ──
+
+  /**
+   * Active le path cache-first `get_vehicle_page_data_cached` (ADR-016).
+   * OFF par défaut → comportement legacy `get_vehicle_page_data_optimized`.
+   * À basculer en staged rollout : 1% → 10% → 100% après backfill complet.
+   */
+  get useVehiclePageCache(): boolean {
+    return this.bool('USE_VEHICLE_PAGE_CACHE', false);
+  }
+
   // ── Write Guard flags (P1.5) ──
 
   get writeGuardEnabled(): boolean {
@@ -288,6 +299,7 @@ export class FeatureFlagsService {
     'WRITE_GUARD_CANARY_ROLES',
     'WRITE_GUARD_CANARY_GROUPS',
     'RAG_VIRTUAL_MERGE_ENABLED',
+    'USE_VEHICLE_PAGE_CACHE',
   ]);
 
   listFlags(): Record<

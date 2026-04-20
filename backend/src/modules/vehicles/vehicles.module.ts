@@ -15,6 +15,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { VehiclesController } from './vehicles.controller';
 import { VehiclesFormsController } from './vehicles-forms-simple.controller';
 import { BrandsController } from './brands.controller'; // 🏷️ API marques automobiles /api/brands/*
+import { AdminVehicleCacheController } from './controllers/admin-vehicle-cache.controller'; // 🗄️ ADR-016 __vehicle_page_cache
 // import { VehiclesEnhancedController } from './vehicles-enhanced.controller'; // 👉 Décommente si présent et compilable
 
 // Services principaux
@@ -77,6 +78,7 @@ import { DatabaseModule } from '../../database/database.module';
     VehiclesController,
     VehiclesFormsController,
     BrandsController, // 🏷️ API marques /api/brands/*
+    AdminVehicleCacheController, // 🗄️ ADR-016 /api/admin/vehicle-cache/*
     // VehiclesEnhancedController,
   ],
   providers: [

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 import { CacheService } from '../../../cache/cache.service';
+import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import {
   DomainNotFoundException,
@@ -43,6 +44,7 @@ export class VehicleRpcService extends SupabaseBaseService {
   constructor(
     private readonly cacheService: CacheService,
     rpcGate: RpcGateService,
+    private readonly featureFlags: FeatureFlagsService,
   ) {
     super();
     this.rpcGate = rpcGate;
@@ -133,9 +135,16 @@ export class VehicleRpcService extends SupabaseBaseService {
       setTimeout(() => reject(new Error('RPC_TIMEOUT')), timeoutMs);
     });
 
+    // ADR-016: route via la RPC cache-first quand le flag est ON.
+    // Legacy par défaut → zéro changement de comportement tant que
+    // USE_VEHICLE_PAGE_CACHE n'a pas été activé explicitement.
+    const rpcName = this.featureFlags.useVehiclePageCache
+      ? 'get_vehicle_page_data_cached'
+      : 'get_vehicle_page_data_optimized';
+
     // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
     const rpcPromise = this.callRpc<any>(
-      'get_vehicle_page_data_optimized',
+      rpcName,
       { p_type_id: typeId },
       { source: 'api' },
     );
@@ -322,6 +331,83 @@ export class VehicleRpcService extends SupabaseBaseService {
     await this.cacheService.del(staleCacheKey);
 
     this.logger.log(`🗑️ Cache invalidé pour vehicle ${typeId}`);
+  }
+
+  // ========================================================================
+  // ADR-016 — Vehicle Page Cache (table __vehicle_page_cache)
+  // ========================================================================
+
+  /**
+   * Force le rebuild de la ligne DB du cache pour un type_id donné.
+   * Retourne TRUE si construit, FALSE si le type_id est invalide.
+   * N'appelle pas Redis — c'est le path lent (cold RPC) par design.
+   */
+  async rebuildDbCache(typeId: number): Promise<boolean> {
+    const { data, error } = await this.callRpc<boolean>(
+      'rebuild_vehicle_page_cache',
+      { p_type_id: typeId },
+      { source: 'api' },
+    );
+    if (error) throw error;
+    // invalide aussi le cache Redis pour forcer la prochaine lecture à
+    // repasser par get_vehicle_page_data_cached et récupérer la nouvelle ligne.
+    await this.invalidateCache(typeId);
+    return Boolean(data);
+  }
+
+  /**
+   * Marque une ou plusieurs lignes du cache DB comme stale (sans rebuild).
+   * Le rebuild effectif sera fait au prochain hit ou par refresh_stale_vehicle_cache.
+   */
+  async markDbCacheStale(
+    typeIds: number[],
+    reason: string,
+  ): Promise<{ marked: number }> {
+    if (!typeIds.length) return { marked: 0 };
+    const { error, count } = await this.client
+      .from('__vehicle_page_cache')
+      .update({ stale: true, stale_reason: reason }, { count: 'exact' })
+      .in('type_id', typeIds);
+    if (error) throw error;
+    for (const id of typeIds) await this.invalidateCache(id);
+    return { marked: count ?? typeIds.length };
+  }
+
+  /**
+   * Statistiques du cache DB — utilisées par le dashboard admin et l'alerting.
+   */
+  async getDbCacheStats(): Promise<{
+    total: number;
+    stale: number;
+    oldest_built_at: string | null;
+    newest_built_at: string | null;
+  }> {
+    const [{ count: total }, { count: stale }, { data: boundsRaw }] =
+      await Promise.all([
+        this.client
+          .from('__vehicle_page_cache')
+          .select('*', { count: 'exact', head: true }),
+        this.client
+          .from('__vehicle_page_cache')
+          .select('*', { count: 'exact', head: true })
+          .eq('stale', true),
+        this.client
+          .from('__vehicle_page_cache')
+          .select('built_at')
+          .order('built_at', { ascending: true })
+          .limit(1),
+      ]);
+    const { data: newestRaw } = await this.client
+      .from('__vehicle_page_cache')
+      .select('built_at')
+      .order('built_at', { ascending: false })
+      .limit(1);
+    return {
+      total: total ?? 0,
+      stale: stale ?? 0,
+      oldest_built_at: boundsRaw?.[0]?.built_at ?? null,
+      newest_built_at: newestRaw?.[0]?.built_at ?? null,
+    };
   }
 
   /**
