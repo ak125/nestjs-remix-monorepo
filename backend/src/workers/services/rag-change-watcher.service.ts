@@ -346,16 +346,7 @@ export class RagChangeWatcherService
   }
 
   private async evaluateBreakerConditions(): Promise<string | null> {
-    const { data, error } = await this.client.rpc(
-      'rag_watcher_breaker_metrics',
-    );
-
-    if (error) {
-      this.logger.warn(`breaker_metrics_rpc_failed: ${error.message}`);
-      return null;
-    }
-
-    const m = (data ?? {}) as {
+    type BreakerMetrics = {
       total_24h?: number;
       failed_24h?: number;
       failed_ratio?: number | string;
@@ -363,6 +354,19 @@ export class RagChangeWatcherService
       hotspot_alias?: string | null;
       hotspot_count?: number;
     };
+
+    const { data, error } = await this.callRpc<BreakerMetrics>(
+      'rag_watcher_breaker_metrics',
+      {},
+      { role: 'rag-change-watcher', source: 'internal' },
+    );
+
+    if (error) {
+      this.logger.warn(`breaker_metrics_rpc_failed: ${error.message}`);
+      return null;
+    }
+
+    const m = data ?? ({} as BreakerMetrics);
 
     const total = m.total_24h ?? 0;
     const failed = m.failed_24h ?? 0;

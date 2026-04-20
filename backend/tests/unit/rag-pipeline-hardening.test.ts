@@ -45,6 +45,19 @@ jest.mock('../../src/database/services/supabase-base.service', () => ({
       error: jest.fn(),
       debug: jest.fn(),
     };
+    protected async callRpc<T>(
+      rpcName: string,
+      _params: Record<string, unknown>,
+      _ctx?: Record<string, unknown>,
+    ): Promise<{ data: T | null; error: { message: string } | null }> {
+      if (typeof mockClient.rpc === 'function') {
+        return mockClient.rpc(rpcName) as Promise<{
+          data: T | null;
+          error: { message: string } | null;
+        }>;
+      }
+      return { data: null, error: null };
+    }
     constructor(..._args: any[]) {}
   },
 }));
