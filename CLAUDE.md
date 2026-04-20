@@ -1,75 +1,116 @@
-# CLAUDE.md
+# CLAUDE.md — Monorepo `nestjs-remix-monorepo`
 
-> Derniere revision : 2026-03-25
+> **Pointer unique** : ce fichier ne contient **aucune** règle de gouvernance.
+> La gouvernance réside dans un **repository séparé**, pas dans ce monorepo.
 
-Detailed rules in `.claude/rules/`: backend, frontend, payments, deployment, agent-teams, context7
+---
 
-## Regle #0 — TOUJOURS demander avant d'agir
+## Source de vérité (SoT)
 
-**JAMAIS prendre de decision seul.** Presenter les options, attendre validation AVANT d'implementer. Si ambiguite : poser la question. Format : "Je propose X car Y. Tu valides ?" — puis ATTENDRE.
+**La gouvernance AutoMecanik vit ici et nulle part ailleurs :**
 
-## Regle #1 — Nettoyer au fur et a mesure
+| Canal | Emplacement |
+|-------|-------------|
+| **Runtime canonique (DEV VPS)** | `/opt/automecanik/governance-vault/` |
+| **Repository Git** | https://github.com/ak125/governance-vault |
+| **ADR fondateur** | `ADR-015 — Governance Vault as Single Source of Truth` |
 
-Supprimer fichiers obsoletes/doublons apres refactoring. Verifier qu'un equivalent n'existe pas avant de creer. Cible : `.spec/`, `scripts/`, composants, services, configs temporaires.
+Tous les documents `type: canon` (ADR, rules T/G/AI/V, MOCs, policies, evidence-packs,
+incidents, post-mortems, retrospectives, runbooks) **doivent** être créés, lus et modifiés
+**uniquement** dans le governance vault — jamais dans ce monorepo.
 
-## Presentation des reponses
+---
 
-Ordre haut→bas : contexte, actions, resultat final (le plus visible en bas).
+## Anti-patterns (interdits)
 
-## Project Overview
+### 1. Ne PAS écrire dans `app/.local/governance-vault/`
 
-NestJS + Remix monorepo, e-commerce pieces auto. Backend sert API + frontend sur port 3000.
-- 4M+ produits, 59k+ users, 9k+ categories
-- Docker + Caddy, DB Supabase (pas de Prisma)
+Ce chemin est `.gitignored` et **déprécié** (cf. ADR-015 du vault). Toute ressource produite
+ici est invisible, non-versionnée, et crée une dérive entre les VPS.
 
-## Infrastructure
+**Si un agent (Claude Code, Cowork, Agent SDK, Codex) écrit accidentellement dans
+`app/.local/governance-vault/`, c'est une régression G2 (Zero Orphelin) — à corriger
+immédiatement en déplaçant le fichier vers `/opt/automecanik/governance-vault/` puis PR.**
 
-| Env | Serveur | Role |
-|-----|---------|------|
-| DEV | `46.224.118.55` (`/opt/automecanik/app`) | Claude Code, tests |
-| PROD | `49.12.233.2` | Deploye par GitHub Actions |
+Un hook `pre-commit` côté monorepo refuse tout fichier sous `app/.local/governance-vault/`.
 
-`git push main` → CI/CD → Docker → deploiement auto PROD. Claude Code = DEV uniquement.
+### 2. Ne PAS dupliquer les règles de gouvernance dans le monorepo
 
-## Source of Truth
+- Pas de `.spec/00-canon/*.md` qui réécrit ce que le vault dit déjà.
+- Pas de `docs/governance/*.md` — ce dossier n'existe pas dans ce monorepo.
+- Pas de `README.md` qui recopie les règles T/G/AI/V.
 
-| Fichier | Contenu |
-|---------|---------|
-| `.spec/00-canon/repo-map.md` | Structure monorepo |
-| `.spec/00-canon/architecture.md` | Architecture technique |
-| `.spec/00-canon/rules.md` | 7 regles non-negociables |
+Si tu as besoin de référencer une règle, **linke** le vault (wikilink ou URL GitHub),
+ne la réécris pas.
 
-RAG Knowledge : `/opt/automecanik/rag/knowledge/` (~318 fichiers .md)
+### 3. Ne PAS décider depuis le monorepo
 
-## Common Commands
+Toute décision architecturale (ajout/modif d'ADR, changement de règle canon, nouvelle
+policy, nouvel evidence-pack) passe par le vault avec commit **signé** (G3) et PR
+reviewée. Aucune ADR ne naît dans `nestjs-remix-monorepo`.
 
-```bash
-npm run dev                    # Full stack (port 3000)
-npm run build                  # Build all (Turbo)
-npm run lint && npm run typecheck
-curl http://localhost:3000/health
-```
+---
 
-## Git Workflow
+## Ce que CE monorepo contient (et uniquement ça)
 
-**Push sur `main` = VALIDATION MANUELLE OBLIGATOIRE** (deploiement immediat en prod).
-Ne committer QUE les fichiers de la session en cours. Verifier `git status` + `git diff --name-only origin/main` avant chaque commit.
+| Dossier | Rôle |
+|---------|------|
+| `backend/` | NestJS API |
+| `frontend/` | Remix SSR |
+| `shared/` | Types, contracts, utils partagés |
+| `scripts/` | Scripts de build, deploy, test |
+| `docker/` | Configs conteneurs |
+| `.github/workflows/` | CI/CD (tests, deploy, lint) |
+| `app/` | Application runtime (lecture seule côté governance) |
 
-## Common Pitfalls
+**Aucun** dossier `governance/`, `docs/adrs/`, `.spec/00-canon/` ne doit être créé ici.
 
-1. Redis requis pour sessions
-2. Port 3000 partage backend/frontend
-3. Turbo cache stale : `npm run clean-turbo-cache`
-4. Memory limit : `--max-old-space-size=4096`
+---
 
-## Governance & Security
+## Workflow pour agents IA (Claude Code, Cowork, Codex)
 
-**Airlock** : mode `observe`, bundles `/opt/automecanik/airlock/inbox/`
-**RPC Gate** : `enforce` P2. P0=BLOCK_ALL(7), P1=SERVICE_ROLE(17), P2=ALLOWLIST(40). Service: `backend/src/security/rpc-gate/rpc-gate.service.ts`
-**Governance Vault** : `/opt/automecanik/governance-vault/`, 10 ADRs
-**Hooks** : bash-guard, file-guard, supabase-guard, lint-check (voir `.claude/settings.json`)
+Quand un utilisateur demande à un agent de :
 
-## Incident 2026-01-11
+- créer/modifier une ADR → **ouvrir** `/opt/automecanik/governance-vault/ledger/decisions/adr/` et créer une PR dans `ak125/governance-vault`
+- rédiger un post-mortem → **ouvrir** `/opt/automecanik/governance-vault/ledger/incidents/YYYY/`
+- mettre à jour une policy ou rule → **ouvrir** `/opt/automecanik/governance-vault/ops/rules/` ou `ledger/policies/`
+- consulter un evidence-pack → **lire** `/opt/automecanik/governance-vault/ledger/audits/evidence-packs/`
+- modifier une MOC → **ouvrir** `/opt/automecanik/governance-vault/ops/moc/`
 
-Module `rm/` importe `@monorepo/shared-types` non lie en Docker → crash prod 15min. Lecon : verifier imports resolus dans Docker avant push.
+**Si l'agent n'a pas accès au vault**, il doit **refuser** la tâche et rediriger l'utilisateur
+vers la VPS DEV ou le repo GitHub — il ne doit **jamais** produire un substitut dans ce monorepo.
 
+---
+
+## 3-VPS Architecture (rappel ADR-012 du vault)
+
+| VPS | Rôle | Gouvernance |
+|-----|------|-------------|
+| **DEV** (46.224.118.55) | Dev, CI artefacts, governance-vault runtime | **SoT canonique** (`/opt/automecanik/governance-vault/`) |
+| **PROD** (49.12.233.2) | Production | Read-only mirror via sync-canon (jamais de write) |
+| **AI-COS** (178.104.1.118) | Agents IA, Airlock | Lit le vault via HTTPS GitHub, ne write jamais |
+
+Ce monorepo peut être déployé sur DEV ou PROD, mais **aucun** des trois VPS ne doit
+écrire de gouvernance depuis le monorepo. Les agents IA s'adressent au vault sur DEV.
+
+---
+
+## Références
+
+- [[ADR-012-aicos-vps-architecture]] (vault) — 3-VPS split
+- [[ADR-015-vault-single-source-of-truth]] (vault) — pourquoi ce pointer existe
+- [[rules-governance]] (vault) — règles G1 à G4 (Canon, Zero Orphelin, Signed Commits, CI Read-Only)
+- Kill-switch `AI_VAULT_WRITE=false` — voir `airlock-decisions-reference` dans le vault
+
+---
+
+## Contact
+
+- Owner : Fafa — automecanik.seo@gmail.com
+- Canon source : https://github.com/ak125/governance-vault
+- Ce monorepo : https://github.com/ak125/nestjs-remix-monorepo
+
+---
+
+_Dernière mise à jour : 2026-04-18_
+_Ce fichier est un pointer — pour toute règle, voir le vault._
