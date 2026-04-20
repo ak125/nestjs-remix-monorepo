@@ -190,7 +190,8 @@ export class DiagnosticEngineController {
         error: 'Format DTC invalide (ex: P0300, C0035)',
       };
     }
-    const result = await this.dataService.lookupDtc(parsed.data.code);
+    // Delegue au RAG via searchService (pivot 2026-04-18)
+    const result = await this.searchService.lookupDtc(parsed.data.code);
     return { success: true, ...result };
   }
 

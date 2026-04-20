@@ -29,8 +29,6 @@ export interface DiagSymptom {
   signal_mode: string;
   urgency: string;
   active: boolean;
-  synonyms: string[];
-  dtc_codes: string[];
 }
 
 export interface DiagMaintenanceOperation {
@@ -410,9 +408,6 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
     causes_count: number;
     safety_rules_count: number;
     maintenance_ops_count: number;
-    symptoms_with_synonyms: number;
-    symptoms_with_dtc: number;
-    maintenance_with_synonyms: number;
   }> {
     // Run counts in parallel
     const [
@@ -422,9 +417,6 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       causesRes,
       rulesRes,
       maintRes,
-      symptomsSynRes,
-      symptomsDtcRes,
-      maintSynRes,
     ] = await Promise.all([
       this.supabase
         .from('__diag_session')
@@ -446,18 +438,6 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
         .from('__diag_maintenance_operation')
         .select('id', { count: 'exact', head: true })
         .eq('active', true),
-      this.supabase
-        .from('__diag_symptom')
-        .select('id', { count: 'exact', head: true })
-        .not('synonyms', 'eq', '{}'),
-      this.supabase
-        .from('__diag_symptom')
-        .select('id', { count: 'exact', head: true })
-        .not('dtc_codes', 'eq', '{}'),
-      this.supabase
-        .from('__diag_maintenance_operation')
-        .select('id', { count: 'exact', head: true })
-        .not('synonyms', 'eq', '{}'),
     ]);
 
     // Sessions by system (manual grouping from recent 500)
@@ -482,9 +462,6 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       causes_count: causesRes.count || 0,
       safety_rules_count: rulesRes.count || 0,
       maintenance_ops_count: maintRes.count || 0,
-      symptoms_with_synonyms: symptomsSynRes.count || 0,
-      symptoms_with_dtc: symptomsDtcRes.count || 0,
-      maintenance_with_synonyms: maintSynRes.count || 0,
     };
   }
 
@@ -556,8 +533,17 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
   }
 
   /**
-   * DTC code lookup: returns symptoms that reference the code + their
-   * top scored causes. Normalizes code to uppercase.
+   * DTC code lookup : delegue au RAG (strategy pivot 2026-04-18).
+   *
+   * Le RAG est interroge avec le code DTC comme query. Les chunks R5_DIAGNOSTIC
+   * qui citent le code (dans leur texte ou frontmatter) sont retournes, puis
+   * on tente de resoudre le slug DB via match exact h3 titre -> label.
+   *
+   * La resolution finale et l'agregation RAG/DB sont faites par SearchService.
+   * Cette methode retourne juste le code normalise + symptomes resolus (si le
+   * caller passe en DB par match exact via getSymptomBySlug).
+   *
+   * Fallback : si aucun RAG disponible, retourne vide.
    */
   async lookupDtc(code: string): Promise<{
     code: string;
@@ -565,34 +551,10 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
     likely_causes: DiagSymptomCauseLink[];
   }> {
     const normalized = code.trim().toUpperCase();
-
-    const { data: symptoms, error } = await this.supabase
-      .from('__diag_symptom')
-      .select('*')
-      .eq('active', true)
-      .contains('dtc_codes', [normalized])
-      .limit(20);
-
-    if (error) {
-      this.logger.warn(`lookupDtc failed for ${normalized}`, error.message);
-      return { code: normalized, symptoms: [], likely_causes: [] };
-    }
-
-    const foundSymptoms: DiagSymptom[] = symptoms || [];
-    if (!foundSymptoms.length) {
-      return { code: normalized, symptoms: [], likely_causes: [] };
-    }
-
-    // Fetch top causes for each symptom, merged
-    const allLinks = await this.getScoredCausesForSymptoms(
-      foundSymptoms.map((s) => s.slug),
-    );
-
-    return {
-      code: normalized,
-      symptoms: foundSymptoms,
-      likely_causes: allLinks.slice(0, 8),
-    };
+    // La resolution complete passe par SearchService (qui injecte RagProxyService).
+    // Ici on retourne la forme canonique ; le controller passe par searchService.search(code)
+    // qui gere deja les cas DTC + delegation RAG.
+    return { code: normalized, symptoms: [], likely_causes: [] };
   }
 
   /**
