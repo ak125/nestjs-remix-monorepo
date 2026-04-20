@@ -19,7 +19,8 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { ArrowRight, Phone, Wrench } from "lucide-react";
+import { ArrowRight, Car, Phone, Wrench, X } from "lucide-react";
+import { useState } from "react";
 
 import { DiagnosticGuide } from "~/components/diagnostic-public/DiagnosticGuide";
 import { DiagnosticSearchBar } from "~/components/diagnostic-public/DiagnosticSearchBar";
@@ -39,9 +40,19 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
+import { Button } from "~/components/ui/button";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import VehicleSelector from "~/components/vehicle/VehicleSelector";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
+
+interface SelectedVehicle {
+  brandName: string;
+  modelName: string;
+  typeName: string;
+  year: number;
+  typeId: number;
+}
 
 export const handle = {
   pageRole: createPageRoleMeta(PageRole.R5_DIAGNOSTIC, {
@@ -165,6 +176,8 @@ export default function DiagnosticAutoIndex() {
   const { systems, popularSymptoms, popularMaintenance, stats } =
     useLoaderData<typeof loader>();
 
+  const [vehicle, setVehicle] = useState<SelectedVehicle | null>(null);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b">
@@ -190,6 +203,47 @@ export default function DiagnosticAutoIndex() {
                 ? `${stats.symptoms_count} symptômes catalogués, ${stats.systems_count} systèmes, ${stats.total_sessions.toLocaleString()} diagnostics réalisés.`
                 : "Recherchez un symptôme, un code OBD ou lancez un diagnostic guidé."}
             </p>
+
+            <div className="mb-6 space-y-4">
+              {vehicle ? (
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-400/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-50">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Car className="h-4 w-4 shrink-0 text-emerald-300" />
+                    <span className="font-semibold">Véhicule :</span>
+                    <span className="truncate">
+                      {vehicle.brandName} {vehicle.modelName} {vehicle.year}
+                      {" • "}
+                      {vehicle.typeName}
+                    </span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setVehicle(null)}
+                    className="h-8 px-2 text-emerald-100 hover:bg-emerald-400/20 hover:text-white"
+                    aria-label="Retirer le véhicule sélectionné"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <VehicleSelector
+                  mode="full"
+                  context="search"
+                  redirectOnSelect={false}
+                  onVehicleSelect={(v) =>
+                    setVehicle({
+                      brandName: v.brand.marque_name,
+                      modelName: v.model.modele_name,
+                      typeName: v.type.type_name,
+                      year: v.year,
+                      typeId: v.type.type_id,
+                    })
+                  }
+                />
+              )}
+            </div>
 
             <DiagnosticSearchBar className="mb-6" />
 
