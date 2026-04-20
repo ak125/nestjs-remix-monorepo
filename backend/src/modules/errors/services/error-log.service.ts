@@ -1,4 +1,3 @@
-import { TABLES } from '@repo/database-types';
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
@@ -22,20 +21,28 @@ export interface ErrorLogEntry {
   metadata?: Record<string, unknown>;
 }
 
-type XtrMsgRow = {
-  msg_id: string;
-  msg_cst_id: string | null;
-  msg_cnfa_id: string | null;
-  msg_ord_id: string | null;
-  msg_date: string;
-  msg_subject: string;
-  msg_content: string;
-  msg_parent_id: string | null;
-  msg_open: string;
-  msg_close: string;
+type ErrorLogRow = {
+  err_created_at: string;
+  err_code: string;
+  err_subject: string;
+  err_severity: 'low' | 'medium' | 'high' | 'critical';
+  err_url: string | null;
+  err_method: string | null;
+  err_status: number | null;
+  err_user_agent: string | null;
+  err_ip: string | null;
+  err_user_id: string | null;
+  err_session_id: string | null;
+  err_correlation: string | null;
+  err_message: string | null;
+  err_stack: string | null;
+  err_context: Record<string, unknown> | null;
+  err_env: string;
 };
 
-type Pending = { row: XtrMsgRow; signature: string; metadata: unknown };
+type Pending = { row: ErrorLogRow; signature: string };
+
+const TABLE = '__error_logs';
 
 const BOT_UA_RE =
   /bot|crawl|spider|slurp|facebookexternalhit|mediapartners|bingpreview|duckduck|yandex|baiduspider|semrushbot|ahrefsbot|mj12bot|googlebot-image|imgproxy/i;
@@ -98,94 +105,101 @@ export class ErrorLogService
     this.enqueue(pending);
 
     if (isLegacy) return;
+
+    // Legacy compat: synthesize an ErrorLog (msg_* shape) from our row
     return {
-      msg_id: pending.row.msg_id,
-      msg_cst_id: pending.row.msg_cst_id ?? undefined,
-      msg_cnfa_id: pending.row.msg_cnfa_id ?? undefined,
-      msg_ord_id: pending.row.msg_ord_id ?? undefined,
-      msg_date: new Date(pending.row.msg_date),
-      msg_subject: pending.row.msg_subject,
-      msg_content: pending.row.msg_content,
-      msg_parent_id: pending.row.msg_parent_id ?? undefined,
-      msg_open: pending.row.msg_open,
-      msg_close: pending.row.msg_close,
-      errorMetadata: pending.metadata as ErrorLog['errorMetadata'],
+      msg_date: new Date(pending.row.err_created_at),
+      msg_subject: pending.row.err_subject,
+      msg_content: JSON.stringify(pending.row.err_context ?? {}),
+      msg_open: '1',
+      msg_close: '0',
+      errorMetadata: this.toLegacyMetadata(pending.row),
     };
   }
 
   private build(entry: ErrorLogEntry | Partial<ErrorLog>): Pending | null {
+    const correlation = this.generateCorrelationId();
+    const now = new Date().toISOString();
+
     if (this.isErrorLogEntry(entry)) {
-      const content = {
-        error_code: String(entry.code),
-        error_message: `Erreur ${entry.code} sur ${entry.url}`,
-        request_url: entry.url,
-        user_agent: entry.userAgent,
-        ip_address: entry.ipAddress,
-        referrer: entry.referrer,
-        session_id: entry.sessionId,
-        severity: this.determineSeverityFromCode(entry.code),
-        environment: process.env.NODE_ENV || 'development',
-        service_name: 'nestjs-remix-monorepo',
-        correlation_id: this.generateCorrelationId(),
-        additional_context: entry.metadata,
-        user_id: entry.userId,
-      };
-      const row: XtrMsgRow = {
-        msg_id: this.generateMessageId(),
-        msg_cst_id: entry.userId ?? null,
-        msg_cnfa_id: null,
-        msg_ord_id: null,
-        msg_date: new Date().toISOString(),
-        msg_subject: `ERROR_${entry.code}`,
-        msg_content: JSON.stringify(content),
-        msg_parent_id: null,
-        msg_open: '1',
-        msg_close: '0',
+      const severity = this.determineSeverityFromCode(entry.code);
+      const row: ErrorLogRow = {
+        err_created_at: now,
+        err_code: String(entry.code),
+        err_subject: `ERROR_${entry.code}`,
+        err_severity: severity,
+        err_url: entry.url || null,
+        err_method: null,
+        err_status: entry.code,
+        err_user_agent: entry.userAgent ?? null,
+        err_ip: this.sanitizeIp(entry.ipAddress),
+        err_user_id: entry.userId ?? null,
+        err_session_id: entry.sessionId ?? null,
+        err_correlation: correlation,
+        err_message: `Erreur ${entry.code} sur ${entry.url}`,
+        err_stack: null,
+        err_context:
+          (entry.metadata as Record<string, unknown> | undefined) ?? null,
+        err_env: process.env.NODE_ENV || 'development',
       };
       return {
         row,
-        signature: `${row.msg_subject}|${entry.url}|${entry.ipAddress ?? ''}`,
-        metadata: content,
+        signature: `${row.err_subject}|${row.err_url ?? ''}|${row.err_ip ?? ''}`,
       };
     }
 
     const md: NonNullable<ErrorLog['errorMetadata']> =
       entry.errorMetadata ?? ({} as NonNullable<ErrorLog['errorMetadata']>);
-    const content = {
-      error_code: md.error_code || 'UnknownError',
-      error_message: md.error_message || 'Erreur inconnue',
-      stack_trace: md.stack_trace,
-      user_agent: md.user_agent,
-      ip_address: md.ip_address,
-      request_url: md.request_url,
-      request_method: md.request_method,
-      request_body: md.request_body,
-      request_headers: md.request_headers,
-      response_status: md.response_status,
-      severity: md.severity || 'low',
-      environment: process.env.NODE_ENV || 'development',
-      service_name: 'nestjs-remix-monorepo',
-      correlation_id: md.correlation_id || this.generateCorrelationId(),
-      session_id: md.session_id,
-      additional_context: md.additional_context,
-    };
-    const row: XtrMsgRow = {
-      msg_id: this.generateMessageId(),
-      msg_cst_id: entry.msg_cst_id ?? null,
-      msg_cnfa_id: entry.msg_cnfa_id ?? null,
-      msg_ord_id: entry.msg_ord_id ?? null,
-      msg_date: new Date().toISOString(),
-      msg_subject: entry.msg_subject || String(content.error_code),
-      msg_content: JSON.stringify(content),
-      msg_parent_id: entry.msg_parent_id ?? null,
-      msg_open: '1',
-      msg_close: '0',
+
+    const row: ErrorLogRow = {
+      err_created_at: now,
+      err_code: String(md.error_code || 'UnknownError'),
+      err_subject: entry.msg_subject || `ERROR_${md.error_code || 'UNKNOWN'}`,
+      err_severity: (md.severity || 'low') as ErrorLogRow['err_severity'],
+      err_url: md.request_url ?? null,
+      err_method: md.request_method ?? null,
+      err_status: md.response_status ?? null,
+      err_user_agent: md.user_agent ?? null,
+      err_ip: this.sanitizeIp(md.ip_address),
+      err_user_id: entry.msg_cst_id ?? null,
+      err_session_id: md.session_id ?? null,
+      err_correlation: md.correlation_id || correlation,
+      err_message: md.error_message ?? null,
+      err_stack: md.stack_trace ?? null,
+      err_context: md.additional_context ?? null,
+      err_env: md.environment || process.env.NODE_ENV || 'development',
     };
     return {
       row,
-      signature: `${row.msg_subject}|${content.request_url ?? ''}|${content.ip_address ?? ''}`,
-      metadata: content,
+      signature: `${row.err_subject}|${row.err_url ?? ''}|${row.err_ip ?? ''}`,
     };
+  }
+
+  private toLegacyMetadata(row: ErrorLogRow): ErrorLog['errorMetadata'] {
+    return {
+      error_code: row.err_code,
+      error_message: row.err_message ?? '',
+      stack_trace: row.err_stack ?? undefined,
+      user_agent: row.err_user_agent ?? undefined,
+      ip_address: row.err_ip ?? undefined,
+      request_url: row.err_url ?? undefined,
+      request_method: row.err_method ?? undefined,
+      response_status: row.err_status ?? undefined,
+      severity: row.err_severity,
+      environment: row.err_env,
+      service_name: 'nestjs-remix-monorepo',
+      correlation_id: row.err_correlation ?? undefined,
+      session_id: row.err_session_id ?? undefined,
+      additional_context: row.err_context ?? undefined,
+    };
+  }
+
+  private sanitizeIp(ip: string | null | undefined): string | null {
+    if (!ip) return null;
+    // Postgres `inet` is picky; reject obviously invalid values
+    const trimmed = ip.trim();
+    if (!trimmed || trimmed === 'unknown') return null;
+    return trimmed;
   }
 
   private enqueue(pending: Pending): void {
@@ -218,7 +232,7 @@ export class ErrorLogService
     const rows = batch.map((p) => p.row);
 
     try {
-      const { error } = await this.supabase.from(TABLES.xtr_msg).insert(rows);
+      const { error } = await this.supabase.from(TABLE).insert(rows);
       if (error) throw new Error(error.message);
       this.consecutiveFailures = 0;
       this.pruneDedup();
@@ -297,72 +311,36 @@ export class ErrorLogService
     return 'low';
   }
 
-  async getErrorStatistics(startDate: Date, endDate: Date) {
-    try {
-      const { data } = await this.supabase
-        .from(TABLES.xtr_msg)
-        .select('*')
-        .eq('msg_subject', 'ERROR_STATISTICS')
-        .gte('msg_date', startDate.toISOString())
-        .lte('msg_date', endDate.toISOString())
-        .order('msg_date', { ascending: false });
+  // ── Read paths ──
 
-      return (data || [])
-        .map((item) => {
-          try {
-            const stats = JSON.parse(item.msg_content || '{}');
-            return {
-              ...stats,
-              id: item.msg_id,
-              created_at: item.msg_date,
-            };
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean);
-    } catch (error) {
-      this.logger.error(
-        'Erreur lors de la récupération des statistiques:',
-        error,
-      );
-      return [];
-    }
+  async getErrorStatistics(_startDate: Date, _endDate: Date) {
+    // Statistics are now aggregated at read-time via getErrorMetrics().
+    // The legacy ERROR_STATISTICS stream (a second insert per error) has been retired.
+    return [];
   }
 
   async getRecentErrors(limit: number = 100) {
     try {
       const { data } = await this.supabase
-        .from(TABLES.xtr_msg)
+        .from(TABLE)
         .select('*')
-        .like('msg_subject', 'ERROR_%')
-        .neq('msg_subject', 'ERROR_STATISTICS')
-        .order('msg_date', { ascending: false })
+        .order('err_created_at', { ascending: false })
         .limit(limit);
 
-      return (data || [])
-        .map((item) => {
-          try {
-            const errorData = JSON.parse(item.msg_content || '{}');
-            return {
-              id: item.msg_id,
-              error_code: errorData.error_code,
-              url: errorData.request_url || errorData.url,
-              user_agent: errorData.user_agent,
-              ip_address: errorData.ip_address,
-              referrer: errorData.referrer,
-              user_id: errorData.user_id || item.msg_cst_id,
-              session_id: errorData.session_id,
-              metadata: errorData.additional_context || errorData.metadata,
-              created_at: item.msg_date,
-              severity: errorData.severity,
-              error_message: errorData.error_message,
-            };
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean);
+      return (data || []).map((row: ErrorLogRow & { err_id: number }) => ({
+        id: String(row.err_id),
+        error_code: row.err_code,
+        url: row.err_url,
+        user_agent: row.err_user_agent,
+        ip_address: row.err_ip,
+        referrer: null,
+        user_id: row.err_user_id,
+        session_id: row.err_session_id,
+        metadata: row.err_context,
+        created_at: row.err_created_at,
+        severity: row.err_severity,
+        error_message: row.err_message,
+      }));
     } catch (error) {
       this.logger.error(
         'Erreur lors de la récupération des erreurs récentes:',
@@ -382,24 +360,29 @@ export class ErrorLogService
     endDate?: Date;
   }): Promise<{ data: ErrorLog[]; total: number }> {
     try {
-      const { page = 1, limit = 50, resolved, startDate, endDate } = options;
+      const {
+        page = 1,
+        limit = 50,
+        severity,
+        resolved,
+        startDate,
+        endDate,
+      } = options;
 
       let query = this.supabase
-        .from(TABLES.xtr_msg)
+        .from(TABLE)
         .select('*', { count: 'exact' })
-        .order('msg_date', { ascending: false });
+        .order('err_created_at', { ascending: false });
 
+      if (severity) query = query.eq('err_severity', severity);
       if (typeof resolved === 'boolean') {
-        query = query.eq('msg_open', resolved ? '0' : '1');
+        query = resolved
+          ? query.not('err_resolved_at', 'is', null)
+          : query.is('err_resolved_at', null);
       }
-
-      if (startDate) {
-        query = query.gte('msg_date', startDate.toISOString());
-      }
-
-      if (endDate) {
-        query = query.lte('msg_date', endDate.toISOString());
-      }
+      if (startDate)
+        query = query.gte('err_created_at', startDate.toISOString());
+      if (endDate) query = query.lte('err_created_at', endDate.toISOString());
 
       const { data, error, count } = await query.range(
         (page - 1) * limit,
@@ -411,7 +394,21 @@ export class ErrorLogService
         return { data: [], total: 0 };
       }
 
-      return { data: data || [], total: count || 0 };
+      const rows = (data || []).map(
+        (r: ErrorLogRow & { err_id: number; err_resolved_at: string | null }) =>
+          ({
+            msg_id: String(r.err_id),
+            msg_cst_id: r.err_user_id ?? undefined,
+            msg_date: new Date(r.err_created_at),
+            msg_subject: r.err_subject,
+            msg_content: JSON.stringify(r.err_context ?? {}),
+            msg_open: r.err_resolved_at ? '0' : '1',
+            msg_close: r.err_resolved_at ? '1' : '0',
+            errorMetadata: this.toLegacyMetadata(r),
+          }) satisfies ErrorLog,
+      );
+
+      return { data: rows, total: count || 0 };
     } catch (error) {
       this.logger.error('Erreur dans getErrors:', error);
       return { data: [], total: 0 };
@@ -421,19 +418,17 @@ export class ErrorLogService
   async resolveError(errorId: string, resolvedBy: string): Promise<boolean> {
     try {
       const { error } = await this.supabase
-        .from('error_logs')
+        .from(TABLE)
         .update({
-          resolved: true,
-          resolved_by: resolvedBy,
-          resolved_at: new Date().toISOString(),
+          err_resolved_at: new Date().toISOString(),
+          err_resolved_by: resolvedBy,
         })
-        .eq('id', errorId);
+        .eq('err_id', Number(errorId));
 
       if (error) {
         this.logger.error("Erreur lors de la résolution de l'erreur:", error);
         return false;
       }
-
       return true;
     } catch (error) {
       this.logger.error('Erreur dans resolveError:', error);
@@ -448,12 +443,12 @@ export class ErrorLogService
       const periodMs = this.getPeriodInMs(period);
       const startDate = new Date(Date.now() - periodMs);
 
-      const { data: errors, error } = await this.supabase
-        .from('error_logs')
-        .select('error_code, error_message, severity, service_name, timestamp')
-        .gte('timestamp', startDate.toISOString());
+      const { data, error } = await this.supabase
+        .from(TABLE)
+        .select('err_code, err_message, err_severity, err_env, err_created_at')
+        .gte('err_created_at', startDate.toISOString());
 
-      if (error || !errors) {
+      if (error || !data) {
         this.logger.error(
           'Erreur lors de la récupération des métriques:',
           error,
@@ -461,9 +456,31 @@ export class ErrorLogService
         return this.getEmptyMetrics();
       }
 
+      const errors: ErrorEntry[] = data.map(
+        (r: {
+          err_code: string;
+          err_message: string | null;
+          err_severity: string;
+          err_env: string;
+          err_created_at: string;
+        }) => ({
+          error_code: r.err_code,
+          error_message: r.err_message ?? '',
+          severity: r.err_severity,
+          service_name: r.err_env,
+          timestamp: r.err_created_at,
+        }),
+      );
+
       const totalErrors = errors.length;
-      const errorsBySeverity = this.groupBy(errors, 'severity');
-      const errorsByService = this.groupBy(errors, 'service_name');
+      const errorsBySeverity = this.groupBy(
+        errors as Record<string, unknown>[],
+        'severity',
+      );
+      const errorsByService = this.groupBy(
+        errors as Record<string, unknown>[],
+        'service_name',
+      );
 
       const errorCounts = this.countErrors(errors);
       const mostCommonErrors = Object.entries(errorCounts)
@@ -489,16 +506,20 @@ export class ErrorLogService
     }
   }
 
-  async cleanupOldLogs(retentionDays: number = 90): Promise<number> {
+  /**
+   * Manual cleanup hook. In normal operation the pg_cron job
+   * `error-logs-retention` handles 30-day retention automatically.
+   */
+  async cleanupOldLogs(retentionDays: number = 30): Promise<number> {
     try {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - retentionDays);
 
       const { data, error } = await this.supabase
-        .from('error_logs')
+        .from(TABLE)
         .delete()
-        .lt('timestamp', cutoffDate.toISOString())
-        .select('id');
+        .lt('err_created_at', cutoff.toISOString())
+        .select('err_id');
 
       if (error) {
         this.logger.error('Erreur lors du nettoyage des logs:', error);
@@ -507,7 +528,6 @@ export class ErrorLogService
 
       const deletedCount = data?.length || 0;
       this.logger.log(`${deletedCount} anciens logs supprimés`);
-
       return deletedCount;
     } catch (error) {
       this.logger.error('Erreur dans cleanupOldLogs:', error);
@@ -517,10 +537,6 @@ export class ErrorLogService
 
   private generateCorrelationId(): string {
     return `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
-
-  private generateMessageId(): string {
-    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 
   private getPeriodInMs(period: string): number {
@@ -559,7 +575,7 @@ export class ErrorLogService
     const periodMs = this.getPeriodInMs(period);
     const now = Date.now();
     const recentErrors = errors.filter(
-      (error) => now - new Date(error.timestamp).getTime() < periodMs,
+      (error) => now - new Date(error.timestamp!).getTime() < periodMs,
     );
 
     return recentErrors.length / (periodMs / (60 * 60 * 1000)) || 0;

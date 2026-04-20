@@ -1,11 +1,12 @@
 /**
  * ErrorLogService hardening tests
  *
- * Guards the runtime contract that stops the ___xtr_msg insert firehose:
+ * Guards the runtime contract on the dedicated __error_logs table:
  *   1. Batch flush — many logError() calls produce a single insert(rows[])
  *   2. Dedup — identical signature within DEDUP_TTL_MS is dropped
  *   3. Bot filter — 4xx from bot UA is never buffered
  *   4. Circuit breaker — 3 consecutive flush failures → silent drop window
+ *   5. Target table is __error_logs with err_* columns
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -31,10 +32,6 @@ jest.mock('../../src/database/services/supabase-base.service', () => ({
   },
 }));
 
-jest.mock('@repo/database-types', () => ({
-  TABLES: { xtr_msg: '___xtr_msg' },
-}));
-
 import { ErrorLogService } from '../../src/modules/errors/services/error-log.service';
 
 function freshService(): ErrorLogService {
@@ -56,7 +53,16 @@ describe('ErrorLogService — batch flush', () => {
     const rows = supabaseMock.insertMock.mock.calls[0][0];
     expect(Array.isArray(rows)).toBe(true);
     expect(rows).toHaveLength(25);
-    expect(rows[0].msg_subject).toBe('ERROR_500');
+    expect(rows[0].err_subject).toBe('ERROR_500');
+    expect(rows[0].err_code).toBe('500');
+    expect(rows[0].err_severity).toBe('critical');
+  });
+
+  it('writes into __error_logs (not the legacy fourre-tout table)', async () => {
+    const svc = freshService();
+    await svc.logError({ code: 500, url: '/any' });
+    await (svc as any).flush();
+    expect(supabaseMock.from).toHaveBeenCalledWith('__error_logs');
   });
 });
 
