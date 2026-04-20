@@ -9,8 +9,14 @@ import {
 } from './dto/generate-content.dto';
 import { buildPrompt } from './templates/content-templates';
 import { createHash } from 'crypto';
-import { AnthropicProvider } from './providers/anthropic.provider';
+import {
+  AnthropicProvider,
+  AIProvider,
+  AiTokenUsage,
+} from './providers/anthropic.provider';
 import { CircuitBreakerService } from './services/circuit-breaker.service';
+import { DEFAULT_EXECUTOR_MODEL } from './config/models.constants';
+import { AiContentCacheService } from './ai-content-cache.service';
 import {
   ExternalServiceException,
   ConfigurationException,
@@ -19,25 +25,12 @@ import {
 } from '../../common/exceptions';
 import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
 
-interface AIProvider {
-  generateContent(
-    systemPrompt: string,
-    userPrompt: string,
-    options: {
-      temperature?: number;
-      maxTokens?: number;
-      model?: string;
-    },
-  ): Promise<string>;
-  checkHealth?(): Promise<boolean>;
-}
-
 @Injectable()
 export class AiContentService {
   private readonly logger = new Logger(AiContentService.name);
   private readonly providers = new Map<string, AIProvider>();
   private currentProvider: string = 'anthropic';
-  private cacheService: any; // Will be injected if Redis is available
+  private cacheService: AiContentCacheService | null = null;
   private circuitBreaker: CircuitBreakerService | null = null;
 
   // Max retries across all providers
@@ -163,7 +156,11 @@ export class AiContentService {
     systemPrompt: string,
     userPrompt: string,
     options: { temperature?: number; maxTokens?: number },
-  ): Promise<{ content: string; usedProvider: string }> {
+  ): Promise<{
+    content: string;
+    usage: AiTokenUsage | null;
+    usedProvider: string;
+  }> {
     const priorityOrder = ['anthropic'];
     const triedProviders: string[] = [];
     let lastError: Error | null = null;
@@ -192,11 +189,25 @@ export class AiContentService {
       try {
         this.logger.debug(`🎯 Trying provider: ${providerName}`);
 
-        const content = await provider.generateContent(
-          systemPrompt,
-          userPrompt,
-          options,
-        );
+        // Prefer the usage-aware path when the provider supports it (Anthropic
+        // does); fall back to the legacy contract for any future provider.
+        let content: string;
+        let usage: AiTokenUsage | null = null;
+        if (provider.generateContentWithUsage) {
+          const result = await provider.generateContentWithUsage(
+            systemPrompt,
+            userPrompt,
+            options,
+          );
+          content = result.content;
+          usage = result.usage;
+        } else {
+          content = await provider.generateContent(
+            systemPrompt,
+            userPrompt,
+            options,
+          );
+        }
 
         // Success! Record it
         if (this.circuitBreaker) {
@@ -206,7 +217,7 @@ export class AiContentService {
         // Update current provider for future requests
         this.currentProvider = providerName;
 
-        return { content, usedProvider: providerName };
+        return { content, usage, usedProvider: providerName };
       } catch (error) {
         lastError = error as Error;
         this.logger.warn(
@@ -261,7 +272,7 @@ export class AiContentService {
       // Check cache if enabled
       if (dto.useCache && this.cacheService) {
         const cacheKey = this.generateCacheKey(dto.type, dto.context || {});
-        const cached = await this.cacheService.get(cacheKey);
+        const cached = await this.cacheService.get<ContentResponse>(cacheKey);
 
         if (cached) {
           this.logger.log(`Cache hit for ${dto.type}`);
@@ -284,7 +295,7 @@ export class AiContentService {
       const { system, user } = buildPrompt(dto.type, context, dto.tone);
 
       // Generate content WITH FAILOVER
-      const { content, usedProvider } = await this.executeWithFailover(
+      const { content, usage, usedProvider } = await this.executeWithFailover(
         system,
         user,
         {
@@ -300,7 +311,12 @@ export class AiContentService {
         metadata: {
           generatedAt: new Date(),
           cached: false,
-          tokens: Math.ceil(content.length / 4), // Rough estimate
+          // Real provider-reported token count (input + output). Falls back to
+          // a conservative char-based estimate only if the provider doesn't
+          // expose usage data.
+          tokens: usage
+            ? usage.input + usage.output
+            : Math.ceil(content.length / 4),
           model: this.getProviderModelName(usedProvider),
           language: dto.language || 'fr',
           provider: usedProvider, // Track which provider was used
@@ -412,7 +428,7 @@ export class AiContentService {
       case 'claude':
         return this.configService.get<string>(
           'ANTHROPIC_MODEL',
-          'claude-sonnet-4-20250514',
+          DEFAULT_EXECUTOR_MODEL,
         );
 
       default:
@@ -427,7 +443,7 @@ export class AiContentService {
   /**
    * Inject cache service if available
    */
-  setCacheService(cacheService: any): void {
+  setCacheService(cacheService: AiContentCacheService): void {
     this.cacheService = cacheService;
     this.logger.log('✅ Cache service configured for AI content generation');
   }
