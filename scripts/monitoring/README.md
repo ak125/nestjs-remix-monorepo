@@ -154,9 +154,113 @@ Le #2 est idéal mais requiert un endpoint backend dédié. À inclure dans PREV
 
 ---
 
-## RPC Supabase associée
+## `check-error-logs-5xx.sh` (PREV-2)
 
-Le script consomme [`check_payment_tunnel_health(p_window_hours int)`](../../backend/supabase/migrations/20260417_add_check_payment_tunnel_health_rpc.sql).
+Alerte générique sur les 5xx backend. Complément structurel à PREV-1 (Paybox-specific).
+
+### Contexte
+
+Incident INC-2026-006 (2026-04-21, 67 min 503 sur `/constructeurs/*` sans alerte). Détection manuelle via smoke test ad-hoc. PREV-2 sonne l'alarme en ≤ 5 min sur **toute classe d'URLs** qui tombe en 5xx, sans liste hardcodée.
+
+Détails : [`governance-vault/ledger/incidents/2026/2026-04-21-503-vehicle-pages-rpc-allowlist-stale-image.md`](https://github.com/ak125/governance-vault/blob/main/ledger/incidents/2026/2026-04-21-503-vehicle-pages-rpc-allowlist-stale-image.md).
+
+### Architecture
+
+Identique à PREV-1 (même pattern → maintenable) :
+
+```
+cron (5min)
+   │
+   ▼
+check-error-logs-5xx.sh
+   │
+   ├── curl POST ──► Supabase PostgREST /rpc/check_error_logs_5xx_threshold
+   │                 Retourne {total_5xx, distinct_urls, breached, top_urls[]}
+   │
+   ├── règle : threshold_breached == true → alerte
+   │
+   └── alerte → python3 stdlib → Gmail SMTP OAuth2
+```
+
+### Couverture
+
+Toutes les routes qui passent par `ErrorLogsInterceptor` NestJS (= toutes les routes HTTP). La RPC matche :
+- `err_status >= 500` (HTTP status explicite)
+- `err_code IN ('ServiceUnavailableException', 'InternalServerErrorException', 'OperationFailedException', 'GatewayTimeoutException', 'BadGatewayException', 'NotImplementedException')` (Exceptions NestJS avec err_status=NULL)
+
+Exclut `/robots.txt`, `/.well-known/*`, `/favicon.ico` (bruit connu).
+
+### Règle d'alerte
+
+```
+alerte si (total_5xx >= MIN_COUNT_THRESHOLD sur WINDOW_MINUTES)
+       ET (pas d'alerte envoyée depuis DEDUP_WINDOW_MIN)
+```
+
+Défauts :
+- `WINDOW_MINUTES=5`
+- `MIN_COUNT_THRESHOLD=5` (évite faux positifs sur traffic léger)
+- `DEDUP_WINDOW_MIN=30`
+
+### Env vars
+
+Identiques à PREV-1 (les secrets Gmail sont partagés). Seuls les seuils changent :
+
+| Variable | Défaut | Usage |
+|---|---|---|
+| `WINDOW_MINUTES` | `5` | Fenêtre glissante (minutes) |
+| `MIN_COUNT_THRESHOLD` | `5` | Nb min 5xx pour déclencher |
+| `DEDUP_WINDOW_MIN` | `30` | Minutes avant ré-alerte |
+| `DEDUP_CACHE` | `/var/tmp/check-error-logs-5xx.last-alert` | Fichier dedup |
+
+### Installation prod (host `49.12.233.2`)
+
+```bash
+RUNNER_REPO=/home/deploy/actions-runner/_work/nestjs-remix-monorepo/nestjs-remix-monorepo
+sudo install -m 755 "$RUNNER_REPO/scripts/monitoring/check-error-logs-5xx.sh" /usr/local/bin/
+
+# Réutilise le fichier env de PREV-1 (mêmes secrets Gmail + Supabase)
+sudo ln -sf /etc/default/check-payment-tunnel /etc/default/check-error-logs-5xx
+
+# Test manuel
+sudo -E bash -c 'set -a; . /etc/default/check-error-logs-5xx; set +a; /usr/local/bin/check-error-logs-5xx.sh'
+# Exit code 0 = pas de breach, 2 = alerte envoyée, 1 = erreur technique
+
+# Activer le cron (toutes les 5 min)
+sudo tee /etc/cron.d/check-error-logs-5xx >/dev/null <<'EOF'
+MAILTO=automecanik.seo@gmail.com
+*/5 * * * * root set -a; . /etc/default/check-error-logs-5xx; set +a; /usr/local/bin/check-error-logs-5xx.sh >> /var/log/check-error-logs-5xx.log 2>&1
+EOF
+sudo chmod 644 /etc/cron.d/check-error-logs-5xx
+```
+
+### Test manuel (force alerte)
+
+```bash
+sudo -E bash -c '
+  set -a; . /etc/default/check-error-logs-5xx; set +a
+  DEDUP_CACHE=/tmp/test-alert-5xx.cache MIN_COUNT_THRESHOLD=1 WINDOW_MINUTES=60 \
+  /usr/local/bin/check-error-logs-5xx.sh
+'
+```
+
+### Exit codes
+
+Identiques à PREV-1 : `0`=OK, `1`=erreur technique, `2`=alerte envoyée.
+
+---
+
+## RPC Supabase associées
+
+**PREV-1** : [`check_payment_tunnel_health(p_window_hours int)`](../../backend/supabase/migrations/20260417_add_check_payment_tunnel_health_rpc.sql)
+
+**PREV-2** : [`check_error_logs_5xx_threshold(p_window_minutes int, p_min_count int)`](../../backend/supabase/migrations/20260421_add_check_error_logs_5xx_threshold_rpc.sql)
+
+Test direct en SQL :
+```sql
+SELECT total_5xx, distinct_urls, threshold_breached FROM check_error_logs_5xx_threshold();
+SELECT jsonb_pretty(top_urls) FROM check_error_logs_5xx_threshold(60, 5);  -- 60min, seuil 5
+```
 
 Test direct en SQL :
 ```sql
