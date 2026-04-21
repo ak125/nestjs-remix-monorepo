@@ -1,10 +1,11 @@
 /**
- * VehicleRpcService Unit Tests
+ * VehicleRpcService Unit Tests — ADR-016 Phase 2
  *
- * Tests the cache-first + stale-while-revalidate pattern
- * for vehicle page data optimized RPC calls.
- *
- * 8 tests: cache hit, cache miss, stale fallback, timeout, not found, cache keys, TTL, error handling
+ * Tests the single-path cache-first architecture :
+ *   - Redis L1 (1h TTL) devant la DB
+ *   - DB cache (__vehicle_page_cache) via get_vehicle_page_data_cached RPC
+ *   - Timeout unique 2000ms (couvre le rebuild on-miss)
+ *   - Plus de stale fallback, plus de timeout adaptatif, plus de flag
  *
  * @see backend/src/modules/vehicles/services/vehicle-rpc.service.ts
  */
@@ -29,7 +30,7 @@ describe('VehicleRpcService', () => {
   };
 
   const mockConfigService = {
-    get: jest.fn((key: string, defaultValue?: any) => defaultValue),
+    get: jest.fn((_key: string, defaultValue?: any) => defaultValue),
   };
 
   beforeEach(async () => {
@@ -48,21 +49,17 @@ describe('VehicleRpcService', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // TEST 1: Cache key generation
+  // TEST 1: Cache key v2 (ADR-016 Phase 2)
   // ═══════════════════════════════════════════════════════════════
-  it('should generate correct cache keys for vehicle type', () => {
-    // Access private methods via bracket notation
+  it('should generate correct cache key v2 for vehicle type', () => {
     const cacheKey = service['getCacheKey'](33302);
-    const staleKey = service['getStaleCacheKey'](33302);
-
-    expect(cacheKey).toBe('vehicle:rpc:v1:33302');
-    expect(staleKey).toBe('vehicle:rpc:v1:stale:33302');
+    expect(cacheKey).toBe('vehicle:rpc:v2:33302');
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // TEST 2: Cache hit returns cached data immediately
+  // TEST 2: Cache hit returns cached data without calling RPC
   // ═══════════════════════════════════════════════════════════════
-  it('should return cached data on cache hit without calling RPC', async () => {
+  it('should return Redis L1 cached data on hit without calling RPC', async () => {
     const cachedData = {
       vehicle: { type_id: 33302, type_name: 'Clio III Diesel' },
       gammes: [{ pg_id: 402, pg_name: 'Plaquettes de frein' }],
@@ -71,77 +68,49 @@ describe('VehicleRpcService', () => {
 
     mockCacheService.get.mockResolvedValueOnce(cachedData);
 
+    const rpcSpy = jest.spyOn(service as any, 'callRpc');
+
     const result = await service.getVehiclePageDataOptimized(33302);
 
     expect(result.vehicle).toEqual(cachedData.vehicle);
     expect(result._cache.hit).toBe(true);
-    expect(mockCacheService.get).toHaveBeenCalledWith('vehicle:rpc:v1:33302');
+    expect(mockCacheService.get).toHaveBeenCalledWith('vehicle:rpc:v2:33302');
+    expect(rpcSpy).not.toHaveBeenCalled();
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // TEST 3: Cache miss triggers RPC call
+  // TEST 3: Cache miss routes to get_vehicle_page_data_cached
   // ═══════════════════════════════════════════════════════════════
-  it('should call RPC when cache misses', async () => {
-    // Cache miss
+  it('should call get_vehicle_page_data_cached RPC on L1 miss', async () => {
     mockCacheService.get.mockResolvedValueOnce(null);
 
-    // Mock the Supabase RPC call via the service's internal method
     const rpcData = {
       vehicle: { type_id: 33302, type_name: 'Clio III Diesel' },
       gammes: [],
       success: true,
     };
 
-    // Mock callRpc (inherited from SupabaseBaseService)
-    jest.spyOn(service as any, 'callRpc').mockResolvedValueOnce({
-      data: rpcData,
-      error: null,
-    });
+    const rpcSpy = jest
+      .spyOn(service as any, 'callRpc')
+      .mockResolvedValueOnce({ data: rpcData, error: null });
 
     const result = await service.getVehiclePageDataOptimized(33302);
 
     expect(result.vehicle).toEqual(rpcData.vehicle);
     expect(result._performance.cacheHit).toBe(false);
-    // Cache should be set after RPC success
-    expect(mockCacheService.set).toHaveBeenCalled();
-  });
-
-  // ═══════════════════════════════════════════════════════════════
-  // TEST 4: Stale cache fallback on RPC error
-  // ═══════════════════════════════════════════════════════════════
-  it('should fall back to stale cache when RPC fails', async () => {
-    // Cache miss
-    mockCacheService.get
-      .mockResolvedValueOnce(null) // Fresh cache miss
-      .mockResolvedValueOnce({
-        // Stale cache hit
-        vehicle: { type_id: 33302, type_name: 'Clio III Diesel (stale)' },
-        success: true,
-      });
-
-    // RPC fails
-    jest
-      .spyOn(service as any, 'callRpc')
-      .mockRejectedValueOnce(new Error('DB_TIMEOUT'));
-
-    const result = await service.getVehiclePageDataOptimized(33302);
-
-    // Should return stale data
-    expect(result.vehicle.type_name).toContain('stale');
-    // Should have checked stale cache key
-    expect(mockCacheService.get).toHaveBeenCalledWith(
-      'vehicle:rpc:v1:stale:33302',
+    expect(rpcSpy).toHaveBeenCalledWith(
+      'get_vehicle_page_data_cached',
+      { p_type_id: 33302 },
+      { source: 'api' },
     );
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // TEST 5: Vehicle not found throws DomainNotFoundException
+  // TEST 4: Vehicle not found throws DomainNotFoundException
   // ═══════════════════════════════════════════════════════════════
   it('should throw DomainNotFoundException when vehicle not found in RPC', async () => {
-    // Cache miss
     mockCacheService.get.mockResolvedValueOnce(null);
 
-    // RPC returns empty/null vehicle
     jest.spyOn(service as any, 'callRpc').mockResolvedValueOnce({
       data: { vehicle: null, success: false },
       error: null,
@@ -153,72 +122,62 @@ describe('VehicleRpcService', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // TEST 6: TTL constants are reasonable
+  // TEST 5: TTL/timeout constants match ADR-016 Phase 2 targets
   // ═══════════════════════════════════════════════════════════════
-  it('should have reasonable TTL constants', () => {
-    // Fresh cache: 1 hour
+  it('should expose single-path timeout constants', () => {
+    // Redis L1 TTL: 1 heure (TecDoc sync quotidien)
     expect(service['CACHE_TTL_SECONDS']).toBe(3600);
-    // Stale cache: 24 hours
-    expect(service['STALE_TTL_SECONDS']).toBe(86400);
-    // RPC timeout with stale fallback: 3s (protects LCP via SWR)
-    expect(service['RPC_TIMEOUT_MS']).toBe(3000);
-    // RPC timeout cold first-hit: 9s (must complete, no 503 fallback)
-    expect(service['RPC_COLD_TIMEOUT_MS']).toBe(9000);
-    // R8 overlay hard cap: 500ms (SEO bonus must never block critical path)
+    // Timeout unique RPC: 2s (cache hit <10ms, rebuild on-miss ~4s)
+    expect(service['RPC_TIMEOUT_MS']).toBe(2000);
+    // Overlay R8: 500ms (SEO bonus non-bloquant)
     expect(service['R8_TIMEOUT_MS']).toBe(500);
+    // Les constantes adaptatives ont été supprimées (ADR-016 Phase 2)
+    expect(service['RPC_COLD_TIMEOUT_MS']).toBeUndefined();
+    expect(service['STALE_TTL_SECONDS']).toBeUndefined();
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // TEST 7: Double cache strategy (fresh + stale)
+  // TEST 6: Redis L1 is populated after successful RPC
   // ═══════════════════════════════════════════════════════════════
-  it('should store both fresh and stale cache after successful RPC', async () => {
+  it('should persist result to Redis L1 after successful RPC', async () => {
     mockCacheService.get.mockResolvedValueOnce(null);
 
-    const rpcData = {
-      vehicle: { type_id: 33302 },
-      success: true,
-    };
-
-    jest.spyOn(service as any, 'callRpc').mockResolvedValueOnce({
-      data: rpcData,
-      error: null,
-    });
+    const rpcData = { vehicle: { type_id: 33302 }, success: true };
+    jest
+      .spyOn(service as any, 'callRpc')
+      .mockResolvedValueOnce({ data: rpcData, error: null });
 
     await service.getVehiclePageDataOptimized(33302);
 
-    // Wait for async cache operations
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    // Attente micro pour laisser la promesse non-bloquante .set() s'exécuter
+    await new Promise((resolve) => setImmediate(resolve));
 
-    // Should have set both fresh and stale cache
-    const setCalls = mockCacheService.set.mock.calls;
-    const freshCall = setCalls.find(
-      (c: any[]) => c[0] === 'vehicle:rpc:v1:33302',
-    );
-    const staleCall = setCalls.find(
-      (c: any[]) => c[0] === 'vehicle:rpc:v1:stale:33302',
-    );
-
-    expect(freshCall).toBeTruthy();
-    expect(staleCall).toBeTruthy();
-    // Fresh TTL = 1h, Stale TTL = 24h
-    if (freshCall) expect(freshCall[2]).toBe(3600);
-    if (staleCall) expect(staleCall[2]).toBe(86400);
+    expect(mockCacheService.set).toHaveBeenCalled();
+    const call = mockCacheService.set.mock.calls[0];
+    expect(call[0]).toBe('vehicle:rpc:v2:33302');
+    expect(call[2]).toBe(3600); // TTL 1h
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // TEST 8: No stale cache = throw error
+  // TEST 7: RPC error propagates (no stale fallback anymore)
   // ═══════════════════════════════════════════════════════════════
-  it('should throw when RPC fails and no stale cache exists', async () => {
-    // No fresh cache, no stale cache
+  it('should propagate RPC error (no stale fallback in Phase 2)', async () => {
     mockCacheService.get.mockResolvedValue(null);
 
-    // RPC fails
     jest
       .spyOn(service as any, 'callRpc')
       .mockRejectedValueOnce(new Error('DB_DOWN'));
 
     await expect(
       service.getVehiclePageDataOptimized(33302),
-    ).rejects.toThrow();
+    ).rejects.toThrow('DB_DOWN');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TEST 8: invalidateCache removes L1 Redis entry
+  // ═══════════════════════════════════════════════════════════════
+  it('should invalidate Redis L1 cache for a type_id', async () => {
+    await service.invalidateCache(33302);
+    expect(mockCacheService.del).toHaveBeenCalledWith('vehicle:rpc:v2:33302');
   });
 });
