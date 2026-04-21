@@ -60,6 +60,40 @@ interface R7Block {
   semanticPayload: string[];
 }
 
+// ── Helpers module-level ──
+
+/**
+ * Mappe le nom de pays (Wikidata) vers l'adjectif de nationalité masculin singulier.
+ * "constructeur automobile italien" vs "constructeur automobile Italie".
+ * Couvre les 36 constructeurs actifs + quelques pays limitrophes.
+ */
+const COUNTRY_ADJECTIVES: Record<string, string> = {
+  Allemagne: 'allemand',
+  Autriche: 'autrichien',
+  Belgique: 'belge',
+  Chine: 'chinois',
+  'Corée du Sud': 'sud-coréen',
+  Espagne: 'espagnol',
+  'États-Unis': 'américain',
+  France: 'français',
+  Inde: 'indien',
+  Italie: 'italien',
+  Japon: 'japonais',
+  Malaisie: 'malaisien',
+  'Pays-Bas': 'néerlandais',
+  'République tchèque': 'tchèque',
+  Roumanie: 'roumain',
+  'Royaume-Uni': 'britannique',
+  Russie: 'russe',
+  Suède: 'suédois',
+  Tchéquie: 'tchèque',
+};
+
+function countryToAdjective(country: string | undefined): string | null {
+  if (!country) return null;
+  return COUNTRY_ADJECTIVES[country] ?? null;
+}
+
 @Injectable()
 export class R7BrandEnricherService extends SupabaseBaseService {
   protected override readonly logger = new Logger(R7BrandEnricherService.name);
@@ -343,8 +377,9 @@ export class R7BrandEnricherService extends SupabaseBaseService {
 
     // S2_MICRO_SEO (140+ words, brand-specific)
     const microLines: string[] = [];
+    const countryAdj = countryToAdjective(rag.country);
     microLines.push(
-      `${brandName} est un constructeur automobile${rag.country ? ` ${rag.country}` : ''} dont les véhicules sont largement représentés sur le marché français.`,
+      `${brandName} est un constructeur automobile${countryAdj ? ` ${countryAdj}` : ''} dont les véhicules sont largement représentés sur le marché français.`,
     );
     if (popularGammes.length > 0) {
       const gammeNames = popularGammes
@@ -400,20 +435,25 @@ export class R7BrandEnricherService extends SupabaseBaseService {
     });
 
     // S3_SHORTCUTS (6 internal link cards)
+    // Sélectionne jusqu'à 3 modèles distincts, pointe vers le premier type de
+    // chaque modèle (URL complète brand-modele-type, même pattern que
+    // brand-bestsellers.service.ts:225).
     const shortcuts: string[] = [];
-    const topModels = [
-      ...new Set(
-        popularVehicles
-          .slice(0, 3)
-          .map((v) => v.modele_name)
-          .filter(Boolean),
-      ),
-    ];
-    topModels.forEach((m) =>
-      shortcuts.push(
-        `- [Pièces ${brandName} ${m}](/constructeurs/${brandAlias}/)`,
-      ),
-    );
+    const seenModels = new Set<string>();
+    const shortcutVehicles: any[] = [];
+    for (const v of popularVehicles) {
+      if (!v.modele_name || seenModels.has(v.modele_name)) continue;
+      if (!v.marque_alias || !v.modele_alias || !v.type_alias) continue;
+      seenModels.add(v.modele_name);
+      shortcutVehicles.push(v);
+      if (shortcutVehicles.length >= 3) break;
+    }
+    shortcutVehicles.forEach((v) => {
+      const typeId = v.cgc_type_id ?? v.type_id;
+      const url = `/constructeurs/${v.marque_alias}-${v.marque_id}/${v.modele_alias}-${v.modele_id}/${v.type_alias}-${typeId}.html`;
+      shortcuts.push(`- [Pièces ${brandName} ${v.modele_name}](${url})`);
+    });
+    const topModels = shortcutVehicles.map((v) => v.modele_name);
     const topGammes = popularGammes.slice(0, 3);
     topGammes.forEach((g) =>
       shortcuts.push(
