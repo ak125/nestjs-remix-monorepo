@@ -434,26 +434,24 @@ export class R7BrandEnricherService extends SupabaseBaseService {
       ],
     });
 
-    // S3_SHORTCUTS (6 internal link cards)
-    // Sélectionne jusqu'à 3 modèles distincts, pointe vers le premier type de
-    // chaque modèle (URL complète brand-modele-type, même pattern que
-    // brand-bestsellers.service.ts:225).
+    // S3_SHORTCUTS (R7-pure : uniquement gammes pièces + marques liées).
+    //
+    // La résolution vers une page véhicule+motorisation (R8) est faite par le
+    // module V-Level via le VehicleSelector déjà présent dans le hero R7.
+    // Construire ici des URLs /{brand}/{model}/{type}.html serait une dérive
+    // de surface (R7 → R8) et ne respecterait pas la pureté du hub marque.
+    //
+    // modèles populaires sont conservés uniquement pour le semanticPayload
+    // (amorce de rappel de modèles dans le texte ambiant), pas comme liens.
     const shortcuts: string[] = [];
-    const seenModels = new Set<string>();
-    const shortcutVehicles: any[] = [];
-    for (const v of popularVehicles) {
-      if (!v.modele_name || seenModels.has(v.modele_name)) continue;
-      if (!v.marque_alias || !v.modele_alias || !v.type_alias) continue;
-      seenModels.add(v.modele_name);
-      shortcutVehicles.push(v);
-      if (shortcutVehicles.length >= 3) break;
-    }
-    shortcutVehicles.forEach((v) => {
-      const typeId = v.cgc_type_id ?? v.type_id;
-      const url = `/constructeurs/${v.marque_alias}-${v.marque_id}/${v.modele_alias}-${v.modele_id}/${v.type_alias}-${typeId}.html`;
-      shortcuts.push(`- [Pièces ${brandName} ${v.modele_name}](${url})`);
-    });
-    const topModels = shortcutVehicles.map((v) => v.modele_name);
+    const topModels = [
+      ...new Set(
+        popularVehicles
+          .slice(0, 3)
+          .map((v) => v.modele_name)
+          .filter(Boolean),
+      ),
+    ];
     const topGammes = popularGammes.slice(0, 3);
     topGammes.forEach((g) =>
       shortcuts.push(
