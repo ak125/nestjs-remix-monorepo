@@ -219,12 +219,13 @@ jobs:
           echo "# 📊 Spec Coverage Report" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
-          # Count specs by type
-          FEATURE_COUNT=$(find .spec/features -name "*.md" | wc -l)
-          ARCH_COUNT=$(find .spec/architecture -name "*.md" | wc -l)
-          API_COUNT=$(find .spec/api -name "*.yaml" -o -name "*.yml" | wc -l)
-          TYPE_COUNT=$(find .spec/types -name "*.ts" | wc -l)
-          WORKFLOW_COUNT=$(find .spec/workflows -name "*.md" | wc -l)
+          # Count specs by type — guard each find against missing subdir.
+          # `set -e` crashes the whole step otherwise (observed on .spec/api).
+          FEATURE_COUNT=$(find .spec/features -name "*.md" 2>/dev/null | wc -l)
+          ARCH_COUNT=$(find .spec/architecture -name "*.md" 2>/dev/null | wc -l)
+          API_COUNT=$(find .spec/api \( -name "*.yaml" -o -name "*.yml" \) 2>/dev/null | wc -l)
+          TYPE_COUNT=$(find .spec/types -name "*.ts" 2>/dev/null | wc -l)
+          WORKFLOW_COUNT=$(find .spec/workflows -name "*.md" 2>/dev/null | wc -l)
           
           echo "| Type | Count |" >> $GITHUB_STEP_SUMMARY
           echo "|------|-------|" >> $GITHUB_STEP_SUMMARY
