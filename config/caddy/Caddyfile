@@ -280,13 +280,6 @@ automecanik.com, www.automecanik.com {
         health_timeout 5s
         health_status 2xx
 
-        # Retry transitoire: re-tente 2s (250ms entre essais) sur hiccup
-        # réseau/dial upstream. Caddy ne re-tente PAS les 5xx applicatifs,
-        # uniquement les échecs de transport (dial refused, conn reset).
-        # Évite qu'un micro-blip n'arrive en 503 chez l'utilisateur.
-        lb_try_duration 2s
-        lb_try_interval 250ms
-
         transport http {
             dial_timeout 30s
             response_header_timeout 60s

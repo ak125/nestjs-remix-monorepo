@@ -114,8 +114,9 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
   private async fetchVehicleData(
     typeId: number,
   ): Promise<Record<string, any> | null> {
+    // ADR-016: route via cache-first RPC (O(1) lookup sur __vehicle_page_cache)
     const { data, error } = await this.callRpc<Record<string, any>>(
-      'get_vehicle_page_data_optimized',
+      'get_vehicle_page_data_cached',
       { p_type_id: typeId },
       { source: 'api' },
     );
