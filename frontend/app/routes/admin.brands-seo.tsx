@@ -18,6 +18,7 @@ import {
   useNavigation,
   useActionData,
 } from "@remix-run/react";
+import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { useState, lazy, Suspense } from "react";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui/alert";
@@ -39,6 +40,59 @@ import {
 } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
+
+// ── Types éditoriaux R7 ──────────────────────────────────
+// Sources of truth : BrandEditorialPayloadSchema + sub-schemas (Zod backend)
+// backend/src/config/brand-rag-frontmatter.schema.ts
+type FaqEntry = { q: string; a: string };
+type IssueEntry = { symptom: string; cause?: string; fix_hint?: string };
+type MaintTipEntry = {
+  part: string;
+  interval_km?: number;
+  interval_years?: number;
+  note?: string;
+};
+
+// Limits : voir brand-rag-frontmatter.schema.ts (z.string().min().max())
+const LIMITS = {
+  faq: { max: 15, q: { min: 5, max: 200 }, a: { min: 20, max: 1000 } },
+  issue: {
+    max: 20,
+    symptom: { min: 5, max: 200 },
+    cause: { min: 5, max: 300 },
+    fix_hint: { min: 5, max: 300 },
+  },
+  maint: {
+    max: 20,
+    part: { min: 1, max: 80 },
+    note: { min: 0, max: 300 },
+  },
+} as const;
+
+// Helpers char counter : affiche "42/200" en rouge hors bornes.
+function CharCount({
+  value,
+  min,
+  max,
+}: {
+  value: string | undefined;
+  min: number;
+  max: number;
+}) {
+  const n = (value ?? "").length;
+  const out = n > 0 && (n < min || n > max);
+  return (
+    <span
+      className={`text-xs tabular-nums ${
+        out ? "text-red-600 font-semibold" : "text-gray-500"
+      }`}
+      aria-live="polite"
+    >
+      {n}/{max}
+      {min > 0 && n > 0 && n < min ? ` · min ${min}` : ""}
+    </span>
+  );
+}
 
 export const meta: MetaFunction = () => createNoIndexMeta("Brands SEO - Admin");
 
@@ -232,16 +286,39 @@ export default function AdminBrandsSeo() {
   const [content, setContent] = useState(brand?.seo?.content || "");
   const isSubmitting = navigation.state === "submitting";
 
-  // JSON editors state (prefilled from loader)
-  const [faqText, setFaqText] = useState(
-    JSON.stringify(editorial?.faq ?? [], null, 2),
+  // Éditeurs de listes (prefill depuis loader). Sérialisés en hidden inputs
+  // au submit (mêmes noms de champs côté backend : faq/common_issues/maintenance_tips).
+  const [faq, setFaq] = useState<FaqEntry[]>(
+    (editorial?.faq ?? []) as FaqEntry[],
   );
-  const [issuesText, setIssuesText] = useState(
-    JSON.stringify(editorial?.common_issues ?? [], null, 2),
+  const [issues, setIssues] = useState<IssueEntry[]>(
+    (editorial?.common_issues ?? []) as IssueEntry[],
   );
-  const [maintText, setMaintText] = useState(
-    JSON.stringify(editorial?.maintenance_tips ?? [], null, 2),
+  const [maint, setMaint] = useState<MaintTipEntry[]>(
+    (editorial?.maintenance_tips ?? []) as MaintTipEntry[],
   );
+  const [showJsonPreview, setShowJsonPreview] = useState(false);
+
+  // Update helpers : immutable patches sur un index donné.
+  const updateFaq = (i: number, patch: Partial<FaqEntry>) =>
+    setFaq((prev) =>
+      prev.map((e, idx) => (idx === i ? { ...e, ...patch } : e)),
+    );
+  const updateIssue = (i: number, patch: Partial<IssueEntry>) =>
+    setIssues((prev) =>
+      prev.map((e, idx) => (idx === i ? { ...e, ...patch } : e)),
+    );
+  const updateMaint = (i: number, patch: Partial<MaintTipEntry>) =>
+    setMaint((prev) =>
+      prev.map((e, idx) => (idx === i ? { ...e, ...patch } : e)),
+    );
+
+  // Payload JSON complet prévisualisé / envoyé en submit.
+  const editorialPayload = {
+    faq,
+    common_issues: issues,
+    maintenance_tips: maint,
+  };
   const editorialActionResult = (
     actionData && "action" in actionData && actionData.action === "editorial"
       ? actionData
@@ -532,71 +609,412 @@ export default function AdminBrandsSeo() {
               </Alert>
             )}
 
-            {/* FAQ */}
-            <div className="space-y-2">
-              <Label htmlFor="faq">
-                ❓ FAQ
-                <span className="text-xs text-gray-500 ml-2">
-                  Array JSON — max 15 entries — format
-                  <code className="bg-gray-100 px-1 ml-1 rounded">
-                    [{"{"}&quot;q&quot;: &quot;...&quot;, &quot;a&quot;:
-                    &quot;...&quot;{"}"}]
-                  </code>
-                </span>
-              </Label>
-              <Textarea
-                id="faq"
-                name="faq"
-                value={faqText}
-                onChange={(e) => setFaqText(e.target.value)}
-                rows={10}
-                className="font-mono text-sm"
-                placeholder='[{"q": "Question marque-spécifique ?", "a": "Réponse ≥ 20 caractères."}]'
-              />
+            {/* Hidden inputs : sérialisation du state pour le submit
+                — le backend attend ces champs au format JSON string. */}
+            <input type="hidden" name="faq" value={JSON.stringify(faq)} />
+            <input
+              type="hidden"
+              name="common_issues"
+              value={JSON.stringify(issues)}
+            />
+            <input
+              type="hidden"
+              name="maintenance_tips"
+              value={JSON.stringify(maint)}
+            />
+
+            {/* ── FAQ ─────────────────────────────────────── */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">
+                  ❓ FAQ
+                  <span className="ml-2 text-xs font-normal text-gray-500">
+                    {faq.length}/{LIMITS.faq.max} entrées — q:{" "}
+                    {LIMITS.faq.q.min}–{LIMITS.faq.q.max} car · a:{" "}
+                    {LIMITS.faq.a.min}–{LIMITS.faq.a.max} car
+                  </span>
+                </Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={faq.length >= LIMITS.faq.max}
+                  onClick={() => setFaq((prev) => [...prev, { q: "", a: "" }])}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Ajouter une FAQ
+                </Button>
+              </div>
+              {faq.length === 0 && (
+                <div className="rounded-lg border-2 border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+                  Aucune FAQ. Cliquez « Ajouter une FAQ » pour démarrer.
+                </div>
+              )}
+              {faq.map((entry, i) => (
+                <div
+                  key={`faq-${i}`}
+                  className="rounded-lg border border-gray-200 bg-white p-4 space-y-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium text-gray-500">
+                      Entrée #{i + 1}
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        setFaq((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                      aria-label={`Supprimer FAQ ${i + 1}`}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label
+                        htmlFor={`faq-q-${i}`}
+                        className="text-xs text-gray-600"
+                      >
+                        Question
+                      </Label>
+                      <CharCount
+                        value={entry.q}
+                        min={LIMITS.faq.q.min}
+                        max={LIMITS.faq.q.max}
+                      />
+                    </div>
+                    <Input
+                      id={`faq-q-${i}`}
+                      value={entry.q}
+                      onChange={(e) => updateFaq(i, { q: e.target.value })}
+                      maxLength={LIMITS.faq.q.max}
+                      placeholder="Question marque-spécifique ?"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label
+                        htmlFor={`faq-a-${i}`}
+                        className="text-xs text-gray-600"
+                      >
+                        Réponse
+                      </Label>
+                      <CharCount
+                        value={entry.a}
+                        min={LIMITS.faq.a.min}
+                        max={LIMITS.faq.a.max}
+                      />
+                    </div>
+                    <Textarea
+                      id={`faq-a-${i}`}
+                      value={entry.a}
+                      onChange={(e) => updateFaq(i, { a: e.target.value })}
+                      maxLength={LIMITS.faq.a.max}
+                      rows={3}
+                      placeholder="Réponse actionnable ≥ 20 caractères."
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {/* Common issues */}
-            <div className="space-y-2">
-              <Label htmlFor="common_issues">
-                🔧 Problèmes courants
-                <span className="text-xs text-gray-500 ml-2">
-                  Array JSON — max 20 — format
-                  <code className="bg-gray-100 px-1 ml-1 rounded">
-                    {"{symptom, cause?, fix_hint?}"}
-                  </code>
-                </span>
-              </Label>
-              <Textarea
-                id="common_issues"
-                name="common_issues"
-                value={issuesText}
-                onChange={(e) => setIssuesText(e.target.value)}
-                rows={10}
-                className="font-mono text-sm"
-                placeholder='[{"symptom": "Consommation huile 1.4 TBi", "cause": "Usure segmentation", "fix_hint": "Décalaminage"}]'
-              />
+            {/* ── Problèmes courants ──────────────────────── */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">
+                  🔧 Problèmes courants
+                  <span className="ml-2 text-xs font-normal text-gray-500">
+                    {issues.length}/{LIMITS.issue.max} entrées
+                  </span>
+                </Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={issues.length >= LIMITS.issue.max}
+                  onClick={() =>
+                    setIssues((prev) => [...prev, { symptom: "" }])
+                  }
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Ajouter un problème
+                </Button>
+              </div>
+              {issues.length === 0 && (
+                <div className="rounded-lg border-2 border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+                  Aucun problème connu. Ajoutez un symptôme pour démarrer.
+                </div>
+              )}
+              {issues.map((entry, i) => (
+                <div
+                  key={`issue-${i}`}
+                  className="rounded-lg border border-gray-200 bg-white p-4 space-y-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium text-gray-500">
+                      Problème #{i + 1}
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        setIssues((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                      aria-label={`Supprimer problème ${i + 1}`}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label
+                        htmlFor={`issue-symptom-${i}`}
+                        className="text-xs text-gray-600"
+                      >
+                        Symptôme <span className="text-red-500">*</span>
+                      </Label>
+                      <CharCount
+                        value={entry.symptom}
+                        min={LIMITS.issue.symptom.min}
+                        max={LIMITS.issue.symptom.max}
+                      />
+                    </div>
+                    <Input
+                      id={`issue-symptom-${i}`}
+                      value={entry.symptom}
+                      onChange={(e) =>
+                        updateIssue(i, { symptom: e.target.value })
+                      }
+                      maxLength={LIMITS.issue.symptom.max}
+                      placeholder="Consommation d'huile anormale 1.4 TBi"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <Label
+                          htmlFor={`issue-cause-${i}`}
+                          className="text-xs text-gray-600"
+                        >
+                          Cause (optionnel)
+                        </Label>
+                        <CharCount
+                          value={entry.cause}
+                          min={LIMITS.issue.cause.min}
+                          max={LIMITS.issue.cause.max}
+                        />
+                      </div>
+                      <Textarea
+                        id={`issue-cause-${i}`}
+                        value={entry.cause ?? ""}
+                        onChange={(e) =>
+                          updateIssue(i, {
+                            cause: e.target.value || undefined,
+                          })
+                        }
+                        maxLength={LIMITS.issue.cause.max}
+                        rows={2}
+                        placeholder="Usure segmentation moteur"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <Label
+                          htmlFor={`issue-fix-${i}`}
+                          className="text-xs text-gray-600"
+                        >
+                          Piste de résolution (optionnel)
+                        </Label>
+                        <CharCount
+                          value={entry.fix_hint}
+                          min={LIMITS.issue.fix_hint.min}
+                          max={LIMITS.issue.fix_hint.max}
+                        />
+                      </div>
+                      <Textarea
+                        id={`issue-fix-${i}`}
+                        value={entry.fix_hint ?? ""}
+                        onChange={(e) =>
+                          updateIssue(i, {
+                            fix_hint: e.target.value || undefined,
+                          })
+                        }
+                        maxLength={LIMITS.issue.fix_hint.max}
+                        rows={2}
+                        placeholder="Décalaminage préventif à 80 000 km"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            {/* Maintenance tips */}
-            <div className="space-y-2">
-              <Label htmlFor="maintenance_tips">
-                🛠️ Intervalles d&apos;entretien
-                <span className="text-xs text-gray-500 ml-2">
-                  Array JSON — max 20 — format
-                  <code className="bg-gray-100 px-1 ml-1 rounded">
-                    {"{part, interval_km?, interval_years?, note?}"}
-                  </code>
+            {/* ── Intervalles d'entretien ─────────────────── */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">
+                  🛠️ Intervalles d&apos;entretien
+                  <span className="ml-2 text-xs font-normal text-gray-500">
+                    {maint.length}/{LIMITS.maint.max} entrées
+                  </span>
+                </Label>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={maint.length >= LIMITS.maint.max}
+                  onClick={() => setMaint((prev) => [...prev, { part: "" }])}
+                >
+                  <Plus className="h-4 w-4 mr-1" /> Ajouter un intervalle
+                </Button>
+              </div>
+              {maint.length === 0 && (
+                <div className="rounded-lg border-2 border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+                  Aucun intervalle d&apos;entretien. Ajoutez une pièce pour
+                  démarrer.
+                </div>
+              )}
+              {maint.map((entry, i) => (
+                <div
+                  key={`maint-${i}`}
+                  className="rounded-lg border border-gray-200 bg-white p-4 space-y-2"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium text-gray-500">
+                      Intervalle #{i + 1}
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() =>
+                        setMaint((prev) => prev.filter((_, idx) => idx !== i))
+                      }
+                      aria-label={`Supprimer intervalle ${i + 1}`}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label
+                        htmlFor={`maint-part-${i}`}
+                        className="text-xs text-gray-600"
+                      >
+                        Pièce <span className="text-red-500">*</span>
+                      </Label>
+                      <CharCount
+                        value={entry.part}
+                        min={LIMITS.maint.part.min}
+                        max={LIMITS.maint.part.max}
+                      />
+                    </div>
+                    <Input
+                      id={`maint-part-${i}`}
+                      value={entry.part}
+                      onChange={(e) => updateMaint(i, { part: e.target.value })}
+                      maxLength={LIMITS.maint.part.max}
+                      placeholder="Courroie de distribution Multiair"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label
+                        htmlFor={`maint-km-${i}`}
+                        className="text-xs text-gray-600"
+                      >
+                        Intervalle (km)
+                      </Label>
+                      <Input
+                        id={`maint-km-${i}`}
+                        type="number"
+                        min={1}
+                        value={entry.interval_km ?? ""}
+                        onChange={(e) =>
+                          updateMaint(i, {
+                            interval_km: e.target.value
+                              ? Number(e.target.value)
+                              : undefined,
+                          })
+                        }
+                        placeholder="120000"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label
+                        htmlFor={`maint-years-${i}`}
+                        className="text-xs text-gray-600"
+                      >
+                        Intervalle (années)
+                      </Label>
+                      <Input
+                        id={`maint-years-${i}`}
+                        type="number"
+                        min={1}
+                        value={entry.interval_years ?? ""}
+                        onChange={(e) =>
+                          updateMaint(i, {
+                            interval_years: e.target.value
+                              ? Number(e.target.value)
+                              : undefined,
+                          })
+                        }
+                        placeholder="5"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <Label
+                        htmlFor={`maint-note-${i}`}
+                        className="text-xs text-gray-600"
+                      >
+                        Note (optionnel)
+                      </Label>
+                      <CharCount
+                        value={entry.note}
+                        min={0}
+                        max={LIMITS.maint.note.max}
+                      />
+                    </div>
+                    <Textarea
+                      id={`maint-note-${i}`}
+                      value={entry.note ?? ""}
+                      onChange={(e) =>
+                        updateMaint(i, { note: e.target.value || undefined })
+                      }
+                      maxLength={LIMITS.maint.note.max}
+                      rows={2}
+                      placeholder="Incluant galets tendeurs et pompe à eau"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ── Preview JSON (debug) ────────────────────── */}
+            <div className="rounded-lg border border-gray-200 bg-gray-50">
+              <button
+                type="button"
+                onClick={() => setShowJsonPreview((v) => !v)}
+                className="w-full flex items-center justify-between px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg"
+                aria-expanded={showJsonPreview}
+              >
+                <span>
+                  🔍 Prévisualisation du payload JSON envoyé au backend
                 </span>
-              </Label>
-              <Textarea
-                id="maintenance_tips"
-                name="maintenance_tips"
-                value={maintText}
-                onChange={(e) => setMaintText(e.target.value)}
-                rows={8}
-                className="font-mono text-sm"
-                placeholder='[{"part": "Courroie distribution Multiair", "interval_km": 120000, "interval_years": 5, "note": "Incluant galets tendeurs"}]'
-              />
+                {showJsonPreview ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+              {showJsonPreview && (
+                <pre className="m-0 px-4 py-3 text-xs font-mono overflow-auto max-h-64 border-t border-gray-200 bg-white">
+                  {JSON.stringify(editorialPayload, null, 2)}
+                </pre>
+              )}
             </div>
 
             {/* Info box */}
