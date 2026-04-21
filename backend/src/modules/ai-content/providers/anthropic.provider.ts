@@ -7,17 +7,34 @@ import {
   ErrorCodes,
 } from '../../../common/exceptions';
 import { getErrorMessage } from '../../../common/utils/error.utils';
+import { DEFAULT_EXECUTOR_MODEL } from '../config/models.constants';
+
+export interface AiTokenUsage {
+  input: number;
+  output: number;
+  cacheRead?: number;
+  cacheCreation?: number;
+}
+
+export interface AiProviderOptions {
+  temperature?: number;
+  maxTokens?: number;
+  model?: string;
+}
 
 export interface AIProvider {
   generateContent(
     systemPrompt: string,
     userPrompt: string,
-    options: {
-      temperature?: number;
-      maxTokens?: number;
-      model?: string;
-    },
+    options: AiProviderOptions,
   ): Promise<string>;
+  /** Returns both the generated text and real token usage from the provider. */
+  generateContentWithUsage?(
+    systemPrompt: string,
+    userPrompt: string,
+    options: AiProviderOptions,
+  ): Promise<{ content: string; usage: AiTokenUsage }>;
+  checkHealth?(): Promise<boolean>;
 }
 
 @Injectable()
@@ -30,7 +47,7 @@ export class AnthropicProvider implements AIProvider {
     const apiKey = this.configService.get<string>('ANTHROPIC_API_KEY', '');
     this.defaultModel = this.configService.get<string>(
       'ANTHROPIC_MODEL',
-      'claude-sonnet-4-20250514',
+      DEFAULT_EXECUTOR_MODEL,
     );
 
     if (apiKey) {
@@ -47,12 +64,21 @@ export class AnthropicProvider implements AIProvider {
   async generateContent(
     systemPrompt: string,
     userPrompt: string,
-    options: {
-      temperature?: number;
-      maxTokens?: number;
-      model?: string;
-    },
+    options: AiProviderOptions,
   ): Promise<string> {
+    const { content } = await this.generateContentWithUsage(
+      systemPrompt,
+      userPrompt,
+      options,
+    );
+    return content;
+  }
+
+  async generateContentWithUsage(
+    systemPrompt: string,
+    userPrompt: string,
+    options: AiProviderOptions,
+  ): Promise<{ content: string; usage: AiTokenUsage }> {
     if (!this.client) {
       throw new ConfigurationException({
         message: 'ANTHROPIC_API_KEY not configured',
@@ -68,7 +94,7 @@ export class AnthropicProvider implements AIProvider {
       const message = await this.client.messages.create({
         model,
         max_tokens: options.maxTokens || 4096,
-        temperature: options.temperature || 0.7,
+        temperature: options.temperature ?? 0.7,
         system: systemPrompt,
         messages: [
           {
@@ -87,10 +113,19 @@ export class AnthropicProvider implements AIProvider {
         });
       }
 
-      const content = textContent.text;
-      this.logger.log(`Generated ${content.length} characters with Claude`);
+      const content = textContent.text.trim();
+      const usage: AiTokenUsage = {
+        input: message.usage.input_tokens,
+        output: message.usage.output_tokens,
+        cacheRead: message.usage.cache_read_input_tokens ?? undefined,
+        cacheCreation: message.usage.cache_creation_input_tokens ?? undefined,
+      };
 
-      return content.trim();
+      this.logger.log(
+        `Generated ${content.length} chars (in=${usage.input} out=${usage.output} tokens)`,
+      );
+
+      return { content, usage };
     } catch (error) {
       this.logger.error(
         `Anthropic generation error: ${getErrorMessage(error)}`,
@@ -99,23 +134,12 @@ export class AnthropicProvider implements AIProvider {
     }
   }
 
+  /**
+   * Lightweight readiness probe: checks the SDK client is instantiated.
+   * Does NOT spend tokens. The first real request is where we'd observe API
+   * issues, and the circuit breaker handles that path.
+   */
   async checkHealth(): Promise<boolean> {
-    if (!this.client) return false;
-
-    try {
-      const message = await this.client.messages.create({
-        model: this.defaultModel,
-        max_tokens: 10,
-        messages: [
-          {
-            role: 'user',
-            content: 'test',
-          },
-        ],
-      });
-      return message.content.length > 0;
-    } catch {
-      return false;
-    }
+    return this.client !== null;
   }
 }
