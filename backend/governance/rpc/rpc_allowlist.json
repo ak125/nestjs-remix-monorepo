@@ -520,6 +520,21 @@
       "reason": "ADR-016 payload builder (called internally by rebuild)"
     },
     {
+      "name": "check_piece_vehicle_compatibility",
+      "volatility": "STABLE",
+      "reason": "Piece↔vehicle compatibility check (caller: pieces service)"
+    },
+    {
+      "name": "get_seo_observable_featured",
+      "volatility": "STABLE",
+      "reason": "SELECT only — featured observable for SEO diag"
+    },
+    {
+      "name": "increment_cache_hit",
+      "volatility": "VOLATILE",
+      "reason": "UPDATE cache hit counter (write but minimal)"
+    },
+    {
       "name": "get_vlevel_champions",
       "volatility": "VOLATILE",
       "reason": "SELECT only"

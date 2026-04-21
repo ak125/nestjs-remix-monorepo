@@ -34,7 +34,20 @@ jobs:
         with:
           context: .
           push: true
-          tags: massdoc/nestjs-remix-monorepo:${{ inputs.tag || 'production' }}
+          # Double-tag : le tag logique (preprod|production) ET le sha court pour
+          # traçabilité irrévocable. deploy-prod.yml utilise le sha pour vérifier
+          # que l'image promue correspond bien au commit du tag git (évite la
+          # classe de bug "tag v* promote une image preprod obsolète").
+          tags: |
+            massdoc/nestjs-remix-monorepo:${{ inputs.tag || 'production' }}
+            massdoc/nestjs-remix-monorepo:sha-${{ github.sha }}
+          # Labels OCI pour introspection via `docker inspect`. deploy-prod.yml
+          # lit org.opencontainers.image.revision pour comparer avec le commit
+          # du tag git.
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |

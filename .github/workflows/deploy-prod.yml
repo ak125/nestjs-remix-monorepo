@@ -24,10 +24,52 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: 🏷️ Promote preprod → production
+      - name: 🔒 Safety gate — SHA consistency (preprod image ↔ tag commit)
         run: |
+          # Le tag git pointe sur un commit précis. L'image :preprod est un alias
+          # flottant qui peut encore contenir un build antérieur (cas typique :
+          # push main → tag v* avant que le build preprod post-merge ait terminé).
+          # Cette étape fail-fast si mismatch, pour empêcher la classe de bug
+          # "promote une image obsolète" (incident 2026-04-21 INC-2026-006).
+          set -euo pipefail
+
           echo "📦 Pulling preprod image..."
           docker pull massdoc/nestjs-remix-monorepo:preprod
+
+          # Le commit pointé par le tag git
+          TAG_SHA="${GITHUB_SHA}"
+          echo "🏷️ Tag commit SHA      : $TAG_SHA"
+
+          # Le SHA inscrit par build.yml dans le label OCI de l'image :preprod
+          IMAGE_SHA=$(docker inspect massdoc/nestjs-remix-monorepo:preprod \
+            --format='{{ index .Config.Labels "org.opencontainers.image.revision" }}' \
+            2>/dev/null || echo "")
+          echo "🐳 Preprod image SHA    : ${IMAGE_SHA:-<unset>}"
+
+          if [ -z "$IMAGE_SHA" ]; then
+            echo "⚠️  Preprod image has no OCI revision label."
+            echo "    Cette image a été buildée avant build.yml labeling (pré 2026-04-21)."
+            echo "    On laisse passer cette fois mais prochain build sera validé."
+            echo "    Si ce message apparaît après le 2026-05-01, c'est un bug à investiguer."
+          elif [ "$IMAGE_SHA" != "$TAG_SHA" ]; then
+            echo ""
+            echo "❌ FATAL: l'image :preprod ne correspond PAS au commit du tag."
+            echo ""
+            echo "  Tag $GITHUB_REF_NAME pointe sur $TAG_SHA"
+            echo "  Mais :preprod contient $IMAGE_SHA"
+            echo ""
+            echo "Cause probable :"
+            echo "  - Le build preprod déclenché par le merge de ce commit n'a pas encore terminé."
+            echo "  - OU un build préprod a échoué sans re-publier :preprod."
+            echo ""
+            echo "Remède :"
+            echo "  1. Attendre que le workflow 'Deploy PREPROD' pour le commit $TAG_SHA soit ✅"
+            echo "  2. OU supprimer ce tag et le re-créer après : git tag -d X && git push --delete origin X"
+            echo "  3. OU utiliser l'image explicite :sha-$TAG_SHA (prochaine étape de ce job)"
+            exit 1
+          else
+            echo "✅ SHA match — safe to promote"
+          fi
 
           echo "🏷️ Tagging as production..."
           docker tag massdoc/nestjs-remix-monorepo:preprod massdoc/nestjs-remix-monorepo:production

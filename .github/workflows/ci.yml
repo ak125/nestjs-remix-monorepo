@@ -483,6 +483,13 @@ jobs:
             echo "✅ All RPC calls go through callRpc()"
           fi
 
+      - name: 🛡️ Check RPC allowlist coverage (source=api)
+        # Empêche la classe de bug INC-2026-006 (2026-04-21) :
+        # un callRpc(..., { source: 'api' }) vers un nom absent de l'allowlist
+        # → RpcBlockedError runtime → 503 prod.
+        run: |
+          bash scripts/ci/check-rpc-allowlist-coverage.sh
+
   # ============================================
   # ADR-010 - Governance Validation (2026-02-04)
   # CI as Final Authority for Agent Governance
