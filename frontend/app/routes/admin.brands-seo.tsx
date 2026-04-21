@@ -12,7 +12,12 @@ import {
   type ActionFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
-import { useLoaderData, Form, useNavigation } from "@remix-run/react";
+import {
+  useLoaderData,
+  Form,
+  useNavigation,
+  useActionData,
+} from "@remix-run/react";
 import { useState, lazy, Suspense } from "react";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui/alert";
@@ -27,7 +32,11 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { getInternalApiUrl } from "~/utils/internal-api.server";
+import { Textarea } from "~/components/ui/textarea";
+import {
+  getInternalApiUrl,
+  getInternalApiUrlFromRequest,
+} from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
@@ -61,15 +70,57 @@ export async function loader({ request }: LoaderFunctionArgs) {
     );
     const brandsData = await brandsRes.json();
 
+    // Contenu éditorial R7 (FAQ / issues / maintenance) — table __seo_brand_editorial
+    // Forwarded admin session cookie requis (IsAdminGuard).
+    const marqueId = brandData.data?.marque_id;
+    let editorial: {
+      faq: Array<{ q: string; a: string }>;
+      common_issues: Array<{
+        symptom: string;
+        cause?: string;
+        fix_hint?: string;
+      }>;
+      maintenance_tips: Array<{
+        part: string;
+        interval_km?: number;
+        interval_years?: number;
+        note?: string;
+      }>;
+      curated_by?: string | null;
+      updated_at?: string;
+    } | null = null;
+    if (marqueId) {
+      try {
+        const editorialRes = await fetch(
+          getInternalApiUrlFromRequest(
+            `/api/admin/r7/editorial/${marqueId}`,
+            request,
+          ),
+          { headers: { cookie: request.headers.get("cookie") || "" } },
+        );
+        if (editorialRes.ok) {
+          const editorialPayload = await editorialRes.json();
+          editorial = editorialPayload.editorial ?? null;
+        }
+        // 404 = pas encore curé, on reste à null (comportement attendu)
+      } catch (e) {
+        logger.warn(
+          `[Brands SEO Admin] editorial fetch failed: ${(e as Error).message}`,
+        );
+      }
+    }
+
     return json({
       brand: brandData.data,
       brands: brandsData.data || [],
+      editorial,
     });
   } catch (error) {
     logger.error("[Brands SEO Admin] Error:", error);
     return json({
       brand: null,
       brands: [],
+      editorial: null,
       error: "Erreur chargement données",
     });
   }
@@ -84,14 +135,131 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ success: true, message: "SEO mis à jour" });
   }
 
+  if (action === "update-editorial") {
+    const marqueId = Number(formData.get("marque_id"));
+    if (!marqueId || marqueId <= 0) {
+      return json({
+        success: false,
+        message: "marque_id invalide",
+        action: "editorial",
+      });
+    }
+
+    // Parse JSON fields from form (textareas)
+    const parseJsonField = (name: string) => {
+      const raw = (formData.get(name) || "").toString().trim();
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) throw new Error("must be array");
+        return parsed;
+      } catch (e) {
+        throw new Error(
+          `Champ ${name} : JSON invalide (${(e as Error).message})`,
+        );
+      }
+    };
+
+    let payload: {
+      faq: unknown[];
+      common_issues: unknown[];
+      maintenance_tips: unknown[];
+      curated_by: string;
+    };
+    try {
+      payload = {
+        faq: parseJsonField("faq"),
+        common_issues: parseJsonField("common_issues"),
+        maintenance_tips: parseJsonField("maintenance_tips"),
+        curated_by: (formData.get("curated_by") || "admin-ui").toString(),
+      };
+    } catch (e) {
+      return json({
+        success: false,
+        message: (e as Error).message,
+        action: "editorial",
+      });
+    }
+
+    try {
+      const res = await fetch(
+        getInternalApiUrlFromRequest(
+          `/api/admin/r7/editorial/${marqueId}`,
+          request,
+        ),
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            cookie: request.headers.get("cookie") || "",
+          },
+          body: JSON.stringify(payload),
+        },
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        return json({
+          success: false,
+          message: data?.message || "Erreur upsert éditorial",
+          issues: data?.issues,
+          action: "editorial",
+        });
+      }
+      return json({
+        success: true,
+        message: `Éditorial enregistré — enrichissement R7 : ${data.enrichment?.seoDecision} (score ${data.enrichment?.diversityScore?.toFixed?.(1) || "?"})`,
+        enrichment: data.enrichment,
+        editorial: data.editorial,
+        action: "editorial",
+      });
+    } catch (e) {
+      logger.error("[Brands SEO Admin] PUT editorial failed:", e);
+      return json({
+        success: false,
+        message: `Erreur réseau : ${(e as Error).message}`,
+        action: "editorial",
+      });
+    }
+  }
+
   return json({ success: false, message: "Action inconnue" });
 }
 
 export default function AdminBrandsSeo() {
-  const { brand, brands } = useLoaderData<typeof loader>();
+  const { brand, brands, editorial } = useLoaderData<typeof loader>();
+  const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const [content, setContent] = useState(brand?.seo?.content || "");
   const isSubmitting = navigation.state === "submitting";
+
+  // JSON editors state (prefilled from loader)
+  const [faqText, setFaqText] = useState(
+    JSON.stringify(editorial?.faq ?? [], null, 2),
+  );
+  const [issuesText, setIssuesText] = useState(
+    JSON.stringify(editorial?.common_issues ?? [], null, 2),
+  );
+  const [maintText, setMaintText] = useState(
+    JSON.stringify(editorial?.maintenance_tips ?? [], null, 2),
+  );
+  const editorialActionResult = (
+    actionData && "action" in actionData && actionData.action === "editorial"
+      ? actionData
+      : null
+  ) as null | {
+    success: boolean;
+    message: string;
+    issues?: unknown;
+    enrichment?: {
+      status: string;
+      seoDecision: string;
+      diversityScore: number;
+      warnings?: string[];
+      reasons?: string[];
+    };
+    editorial?: unknown;
+    action: "editorial";
+  };
 
   if (!brand) {
     return (
@@ -320,6 +488,165 @@ export default function AdminBrandsSeo() {
             </CardContent>
           </Card>
         )}
+      </Form>
+
+      {/* ========== R7 Editorial Content (FAQ / issues / maintenance) ========== */}
+      {/* Form séparé car action distincte (update-editorial) + auto-trigger enrichSingle backend */}
+      <Form method="post" className="space-y-6">
+        <input type="hidden" name="_action" value="update-editorial" />
+        <input type="hidden" name="marque_id" value={brand.marque_id} />
+        <input type="hidden" name="curated_by" value="admin-ui" />
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              🏭 Contenu éditorial R7 — {brand.marque_name}
+              {editorial ? (
+                <Badge variant="success">
+                  Curé par {editorial.curated_by || "inconnu"}
+                </Badge>
+              ) : (
+                <Badge variant="secondary">Non curé (défauts utilisés)</Badge>
+              )}
+            </CardTitle>
+            <CardDescription>
+              FAQ, problèmes connus et conseils d&apos;entretien spécifiques
+              marque. Lu en live par l&apos;enricher R7. Sauvegarder déclenche
+              une régénération automatique de la page R7 en DB.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Feedback dernière action */}
+            {editorialActionResult && (
+              <Alert
+                intent={editorialActionResult.success ? "success" : "error"}
+              >
+                {editorialActionResult.success ? "✅ " : "❌ "}
+                {String(editorialActionResult.message ?? "")}
+                {"issues" in editorialActionResult &&
+                  Boolean(editorialActionResult.issues) && (
+                    <pre className="mt-2 text-xs bg-white/50 p-2 rounded overflow-auto">
+                      {JSON.stringify(editorialActionResult.issues, null, 2)}
+                    </pre>
+                  )}
+              </Alert>
+            )}
+
+            {/* FAQ */}
+            <div className="space-y-2">
+              <Label htmlFor="faq">
+                ❓ FAQ
+                <span className="text-xs text-gray-500 ml-2">
+                  Array JSON — max 15 entries — format
+                  <code className="bg-gray-100 px-1 ml-1 rounded">
+                    [{"{"}&quot;q&quot;: &quot;...&quot;, &quot;a&quot;:
+                    &quot;...&quot;{"}"}]
+                  </code>
+                </span>
+              </Label>
+              <Textarea
+                id="faq"
+                name="faq"
+                value={faqText}
+                onChange={(e) => setFaqText(e.target.value)}
+                rows={10}
+                className="font-mono text-sm"
+                placeholder='[{"q": "Question marque-spécifique ?", "a": "Réponse ≥ 20 caractères."}]'
+              />
+            </div>
+
+            {/* Common issues */}
+            <div className="space-y-2">
+              <Label htmlFor="common_issues">
+                🔧 Problèmes courants
+                <span className="text-xs text-gray-500 ml-2">
+                  Array JSON — max 20 — format
+                  <code className="bg-gray-100 px-1 ml-1 rounded">
+                    {"{symptom, cause?, fix_hint?}"}
+                  </code>
+                </span>
+              </Label>
+              <Textarea
+                id="common_issues"
+                name="common_issues"
+                value={issuesText}
+                onChange={(e) => setIssuesText(e.target.value)}
+                rows={10}
+                className="font-mono text-sm"
+                placeholder='[{"symptom": "Consommation huile 1.4 TBi", "cause": "Usure segmentation", "fix_hint": "Décalaminage"}]'
+              />
+            </div>
+
+            {/* Maintenance tips */}
+            <div className="space-y-2">
+              <Label htmlFor="maintenance_tips">
+                🛠️ Intervalles d&apos;entretien
+                <span className="text-xs text-gray-500 ml-2">
+                  Array JSON — max 20 — format
+                  <code className="bg-gray-100 px-1 ml-1 rounded">
+                    {"{part, interval_km?, interval_years?, note?}"}
+                  </code>
+                </span>
+              </Label>
+              <Textarea
+                id="maintenance_tips"
+                name="maintenance_tips"
+                value={maintText}
+                onChange={(e) => setMaintText(e.target.value)}
+                rows={8}
+                className="font-mono text-sm"
+                placeholder='[{"part": "Courroie distribution Multiair", "interval_km": 120000, "interval_years": 5, "note": "Incluant galets tendeurs"}]'
+              />
+            </div>
+
+            {/* Info box */}
+            <Alert intent="info">
+              💡 Après sauvegarde, l&apos;enricher R7 régénère automatiquement
+              la page{" "}
+              <code>
+                /constructeurs/{brand.marque_alias}-{brand.marque_id}.html
+              </code>{" "}
+              avec le nouveau contenu. Score et décision SEO affichés ci-dessus.
+            </Alert>
+
+            {/* Enrichment result after save */}
+            {editorialActionResult?.success &&
+              "enrichment" in editorialActionResult &&
+              editorialActionResult.enrichment && (
+                <div className="grid grid-cols-3 gap-4 p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                  <div>
+                    <div className="text-xs text-gray-600">Décision SEO</div>
+                    <div className="text-lg font-bold text-green-700">
+                      {editorialActionResult.enrichment.seoDecision}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-600">Diversity Score</div>
+                    <div className="text-lg font-bold text-green-700">
+                      {editorialActionResult.enrichment.diversityScore?.toFixed?.(
+                        1,
+                      ) ?? "?"}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-600">Status</div>
+                    <div className="text-lg font-bold text-green-700">
+                      {editorialActionResult.enrichment.status}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4 border-t">
+              <Button type="submit" disabled={isSubmitting} className="flex-1">
+                {isSubmitting
+                  ? "⏳ Enregistrement + régénération..."
+                  : "💾 Enregistrer et régénérer R7"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </Form>
     </div>
   );
