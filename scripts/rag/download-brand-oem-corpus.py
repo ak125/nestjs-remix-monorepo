@@ -433,7 +433,10 @@ def process_brand(
 
     # --- 1. Wikipedia FR (défaut) ---
     if "wikipedia-fr" in sources:
-        fr_title = WIKI_TITLE_OVERRIDES_FR.get(alias, name)
+        # DB stocke marque_name en MAJUSCULES (PEUGEOT, CITROËN). Wikipedia
+        # exige "Peugeot" / "Citroën". On titlecase par défaut, l'override
+        # priorise quand un nom officiel diffère (ex: DS, Alfa Romeo).
+        fr_title = WIKI_TITLE_OVERRIDES_FR.get(alias, name.title())
         fr_main = out_dir / "wikipedia-fr-main.md"
         if fr_main.exists() and not force:
             print(f"  ⏭️  wikipedia-fr-main.md existe")
@@ -457,7 +460,7 @@ def process_brand(
         if fr_models.exists() and not force:
             print(f"  ⏭️  wikipedia-fr-models.md existe")
         else:
-            list_title = f"Liste des modèles {name}"
+            list_title = f"Liste des modèles {name.title()}"
             if dry_run:
                 print(f"  [DRY-RUN] would fetch FR:{list_title}")
                 counts["wikipedia-fr"] += 1
@@ -472,7 +475,7 @@ def process_brand(
 
     # --- 2. Wikipedia EN (opt-in strict : site et SEO sont FR) ---
     if "wikipedia-en" in sources:
-        en_title = WIKI_TITLE_OVERRIDES_EN.get(alias, name)
+        en_title = WIKI_TITLE_OVERRIDES_EN.get(alias, name.title())
         en_main = out_dir / "wikipedia-en-main.md"
         if en_main.exists() and not force:
             print(f"  ⏭️  wikipedia-en-main.md existe")
