@@ -1176,23 +1176,26 @@ function ApiPartCard({
           />
         </div>
 
-        {/* Titre */}
+        {/* Titre gamme */}
         <h4 className="font-semibold text-sm text-gray-900 mb-1 group-hover:text-blue-600 transition-colors line-clamp-2">
           {part.pg_name}
         </h4>
 
-        {/* Description SEO dynamique */}
-        {part.seo_switch_content ? (
-          <p className="text-xs text-gray-600 mb-2 line-clamp-2 leading-relaxed">
-            {part.seo_switch_content}
-          </p>
-        ) : (
-          <p className="text-xs text-gray-500 mb-2 line-clamp-1">
-            {part.modele_name} • {part.type_name}
+        {/* Véhicule compatible (toujours affiché si dispo) */}
+        {(part.modele_name || part.type_name) && (
+          <p className="text-xs font-medium text-gray-700 mb-1 line-clamp-1">
+            {[part.modele_name, part.type_name].filter(Boolean).join(" · ")}
           </p>
         )}
 
-        {/* Footer avec CTA */}
+        {/* Description SEO (bonus, si présente) */}
+        {part.seo_switch_content && (
+          <p className="text-xs text-gray-500 mb-2 line-clamp-2 leading-relaxed italic">
+            {part.seo_switch_content}
+          </p>
+        )}
+
+        {/* Footer avec CTA + année/puissance */}
         <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
           <span className="text-xs font-medium text-blue-600 group-hover:underline">
             Voir les pièces →
@@ -1201,11 +1204,13 @@ function ApiPartCard({
             <span className="text-[10px] font-medium text-white px-2 py-0.5 rounded-full bg-blue-600">
               {part.type_power_ps} ch
             </span>
-          ) : (
-            <span className="text-[10px] font-medium text-gray-500 px-2 py-0.5 rounded-full bg-gray-100">
-              Universel
+          ) : part.type_year_from ? (
+            <span className="text-[10px] font-medium text-gray-600 px-2 py-0.5 rounded-full bg-gray-100">
+              {part.type_year_to
+                ? `${part.type_year_from}-${part.type_year_to}`
+                : `≥${part.type_year_from}`}
             </span>
-          )}
+          ) : null}
         </div>
       </div>
     </Link>
