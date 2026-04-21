@@ -20,7 +20,8 @@ export type RoleViolationType =
   | 'missing_canonical'
   | 'invalid_canonical'
   | 'role_mismatch'
-  | 'exclusive_vocab_violation';
+  | 'exclusive_vocab_violation'
+  | 'cross_surface_url';
 
 /**
  * Sévérité de la violation
@@ -317,6 +318,178 @@ export class PageRoleValidatorService {
     [PageRole.R4_REFERENCE, this.EXCLUSIVE_VOCAB_R4],
     [PageRole.R5_DIAGNOSTIC, this.EXCLUSIVE_VOCAB_R5],
   ]);
+
+  // =====================================================
+  // GATE SURFACE PURITY: URL patterns étrangères dans le contenu
+  // =====================================================
+
+  /**
+   * Signature d'URL canonique par rôle — détecte une URL qui appartient à
+   * ce rôle dans un corpus textuel (markdown / HTML / JSON).
+   *
+   * IMPORTANT:
+   * - L'ordre de classification doit être : vérifier R8 AVANT R7 (R8 contient
+   *   le préfixe R7). Le tri est géré par `classifyUrlRole()`.
+   * - Les patterns acceptent un slug non-vide + id numérique terminal.
+   * - Flag `gi` global + case-insensitive.
+   */
+  private readonly SURFACE_URL_PATTERNS: Record<string, RegExp> = {
+    [PageRole.R8_VEHICLE]:
+      /\/constructeurs\/[a-z0-9][a-z0-9-]*-\d+\/[a-z0-9][a-z0-9-]*-\d+\/[a-z0-9][a-z0-9-]*-\d+\.html/gi,
+    [PageRole.R7_BRAND]: /\/constructeurs\/[a-z0-9][a-z0-9-]*-\d+\.html/gi,
+    [PageRole.R2_PRODUCT]:
+      /\/pieces\/[a-z0-9][a-z0-9-]*-\d+\/[a-z0-9][a-z0-9-]*-\d+\/[a-z0-9][a-z0-9-]*-\d+\/[a-z0-9][a-z0-9-]*-\d+\.html/gi,
+    [PageRole.R1_ROUTER]: /\/pieces\/[a-z0-9][a-z0-9-]*-\d+\.html/gi,
+    [PageRole.R4_REFERENCE]: /\/reference-auto\/[a-z0-9][a-z0-9-]*/gi,
+    [PageRole.R5_DIAGNOSTIC]: /\/diagnostic-auto\/[a-z0-9][a-z0-9-]*/gi,
+    [PageRole.R6_GUIDE_ACHAT]:
+      /\/blog-pieces-auto\/guide-achat\/[a-z0-9][a-z0-9-]*/gi,
+  };
+
+  /**
+   * Rôle source → rôles cible INTERDITS dans le contenu textuel.
+   *
+   * Raison : un enricher ou un curateur humain ne doit pas embarquer d'URL
+   * profondes d'autres surfaces dans son contenu éditorial. C'est le contrat
+   * de pureté de surface (dérivé d'ADR vault R7 + page-roles.md).
+   *
+   * Distinction avec ALLOWED_LINKS (hiérarchie maillage) : ici on vérifie
+   * le CONTENU renderedText, pas les liens de navigation/footer. Un admin qui
+   * tape une URL R8 dans une FAQ R7 pollue le signal SEO même si le lien
+   * serait autorisé par ALLOWED_LINKS.
+   */
+  private readonly FORBIDDEN_URL_ROLES_IN_CONTENT: Record<string, PageRole[]> =
+    {
+      [PageRole.R7_BRAND]: [PageRole.R8_VEHICLE],
+      [PageRole.R4_REFERENCE]: [
+        PageRole.R2_PRODUCT,
+        PageRole.R7_BRAND,
+        PageRole.R8_VEHICLE,
+      ],
+      [PageRole.R5_DIAGNOSTIC]: [PageRole.R2_PRODUCT],
+      [PageRole.R8_VEHICLE]: [
+        PageRole.R3_BLOG,
+        PageRole.R4_REFERENCE,
+        PageRole.R5_DIAGNOSTIC,
+      ],
+    };
+
+  /**
+   * Détecte et classe toutes les URLs contenues dans `content` qui
+   * correspondent à une signature canonique de rôle.
+   *
+   * L'ordre de matching protège R8 contre capture par le pattern R7
+   * (préfixe commun `/constructeurs/…`).
+   *
+   * @param content - Texte à scanner (markdown/html/json brut)
+   * @returns Liste d'occurrences `{ url, role, index }`
+   */
+  classifyUrls(
+    content: string,
+  ): Array<{ url: string; role: PageRole; index: number }> {
+    const found: Array<{ url: string; role: PageRole; index: number }> = [];
+    // Ordre important : plus spécifique d'abord (R8 avant R7, R2 avant R1)
+    const ordered: Array<[PageRole, RegExp]> = [
+      [PageRole.R8_VEHICLE, this.SURFACE_URL_PATTERNS[PageRole.R8_VEHICLE]],
+      [PageRole.R2_PRODUCT, this.SURFACE_URL_PATTERNS[PageRole.R2_PRODUCT]],
+      [PageRole.R7_BRAND, this.SURFACE_URL_PATTERNS[PageRole.R7_BRAND]],
+      [PageRole.R1_ROUTER, this.SURFACE_URL_PATTERNS[PageRole.R1_ROUTER]],
+      [PageRole.R4_REFERENCE, this.SURFACE_URL_PATTERNS[PageRole.R4_REFERENCE]],
+      [
+        PageRole.R5_DIAGNOSTIC,
+        this.SURFACE_URL_PATTERNS[PageRole.R5_DIAGNOSTIC],
+      ],
+      [
+        PageRole.R6_GUIDE_ACHAT,
+        this.SURFACE_URL_PATTERNS[PageRole.R6_GUIDE_ACHAT],
+      ],
+    ];
+    // Index des bornes déjà consommées (empêche un match R7 de doubler un match R8 déjà capté)
+    const consumed: Array<[number, number]> = [];
+    for (const [role, pattern] of ordered) {
+      // Reset lastIndex (regex /g flag conserve l'état entre usages partagés)
+      pattern.lastIndex = 0;
+      let match: RegExpExecArray | null;
+      while ((match = pattern.exec(content)) !== null) {
+        const start = match.index;
+        const end = start + match[0].length;
+        const overlap = consumed.some(([s, e]) => !(end <= s || start >= e));
+        if (overlap) continue;
+        consumed.push([start, end]);
+        found.push({ url: match[0], role, index: start });
+      }
+    }
+    return found;
+  }
+
+  /**
+   * Vérifie qu'aucune URL d'une surface interdite n'apparaît dans le contenu.
+   *
+   * Cette gate est indépendante de ALLOWED_LINKS (qui contrôle les liens de
+   * navigation entre pages). Elle scanne le CONTENU textuel (renderedText,
+   * éditorial JSON, FAQ…) et bloque les URLs cross-surface qui pollueraient
+   * le signal SEO de la page source.
+   *
+   * Exemple : un enricher R7 ne doit pas dumper d'URL R8 profonde dans ses
+   * blocs éditoriaux (FAQ, common_issues, maintenance_tips).
+   *
+   * @param content - Contenu textuel à valider
+   * @param sourceRole - Rôle de la page qui possède ce contenu
+   * @returns Violations `cross_surface_url` (severity = error)
+   */
+  validateSurfacePurity(
+    content: string,
+    sourceRole: PageRole,
+  ): RoleViolation[] {
+    const forbidden = this.FORBIDDEN_URL_ROLES_IN_CONTENT[sourceRole];
+    if (!forbidden || forbidden.length === 0) return [];
+
+    const violations: RoleViolation[] = [];
+    const urls = this.classifyUrls(content);
+    for (const { url, role } of urls) {
+      if (role === sourceRole) continue;
+      if (!forbidden.includes(role)) continue;
+      violations.push({
+        type: 'cross_surface_url',
+        message: `${sourceRole}: URL ${role} "${url}" interdite dans le contenu (dérive cross-surface)`,
+        severity: 'error',
+        details: {
+          url,
+          sourceRole,
+          foreignRole: role,
+          explanation: `Une page ${PAGE_ROLE_META[sourceRole].label} ne doit pas embarquer d'URL ${PAGE_ROLE_META[role].label} dans son contenu éditorial. Utiliser un composant navigationnel dédié (VehicleSelector, BreadcrumbNav…) plutôt qu'une URL en dur.`,
+        },
+      });
+    }
+    return violations;
+  }
+
+  /**
+   * Valide une page R7 Marque/Constructeur.
+   *
+   * R7 = hub marque. Promesse : orienter vers les accès utiles (modèles, gammes,
+   * pièces populaires) sans devenir fiche véhicule (R8), produit (R2),
+   * procédure (R3), définition (R4) ou diagnostic (R5).
+   *
+   * Gate unique runtime : interdire toute URL R8 profonde dans le contenu
+   * (FAQ, common_issues, maintenance_tips, blocs renderedText). Les autres
+   * contrôles (pureté lexicale, diversité, readiness) sont portés par
+   * l'agent Claude r7-brand-validator lors des audits de pipeline.
+   */
+  validateR7Brand(content: string): RoleViolation[] {
+    return this.validateSurfacePurity(content, PageRole.R7_BRAND);
+  }
+
+  /**
+   * Valide une page R8 Véhicule.
+   *
+   * R8 = hub véhicule transactionnel. Ne doit pas contenir de contenu
+   * pédagogique (R3 blog), encyclopédique (R4) ou diagnostic (R5) en
+   * embarquant leurs URLs canoniques.
+   */
+  validateR8Vehicle(content: string): RoleViolation[] {
+    return this.validateSurfacePurity(content, PageRole.R8_VEHICLE);
+  }
 
   /**
    * Valide une page R1 Routeur
@@ -825,7 +998,24 @@ export class PageRoleValidatorService {
         case PageRole.R5_DIAGNOSTIC:
           violations.push(...this.validateR5Diagnostic(content));
           break;
+        case PageRole.R7_BRAND:
+          violations.push(...this.validateR7Brand(content));
+          break;
+        case PageRole.R8_VEHICLE:
+          violations.push(...this.validateR8Vehicle(content));
+          break;
         // R6 n'a pas de validation spécifique pour l'instant
+      }
+
+      // ================================================
+      // VALIDATION SURFACE PURITY (anti-dérive cross-surface)
+      // Pour R4/R5 la gate est transversale aux autres contrôles.
+      // ================================================
+      if (
+        roleToValidate === PageRole.R4_REFERENCE ||
+        roleToValidate === PageRole.R5_DIAGNOSTIC
+      ) {
+        violations.push(...this.validateSurfacePurity(content, roleToValidate));
       }
 
       // ================================================

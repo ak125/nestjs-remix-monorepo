@@ -22,6 +22,7 @@ import {
   type BrandRagFrontmatter,
 } from '../../../config/brand-rag-frontmatter.schema';
 import { BrandEditorialService } from './brand-editorial.service';
+import { PageRoleValidatorService } from '../../seo/validation/page-role-validator.service';
 
 // ── Result ──
 
@@ -103,6 +104,7 @@ export class R7BrandEnricherService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly textUtils: EnricherTextUtils,
     private readonly editorial: BrandEditorialService,
+    private readonly roleValidator: PageRoleValidatorService,
   ) {
     super(configService);
   }
@@ -202,6 +204,20 @@ export class R7BrandEnricherService extends SupabaseBaseService {
       // ── 4. GATE ──
       const { decision, reasons, warnings } = this.gate(metrics, blocks);
       const sitemapRules = R7_SITEMAP_RULES[decision];
+
+      // Surface purity defense-in-depth : détecte une dérive template
+      // (ex: un futur bloc qui dumperait une URL R8 profonde dans le renderedText)
+      // même si l'éditorial admin est déjà validé côté upsert.
+      const purityViolations = this.roleValidator.validateR7Brand(contentMain);
+      if (purityViolations.length > 0) {
+        for (const v of purityViolations) {
+          warnings.push(v.message);
+          reasons.push('SURFACE_PURITY_VIOLATION');
+        }
+        this.logger.warn(
+          `R7 surface-purity violations marque_id=${marqueId}: ${purityViolations.length} (decision=${decision} preserved, needs template review)`,
+        );
+      }
 
       const blockPlan = blocks.map((bl) => ({
         id: bl.id,

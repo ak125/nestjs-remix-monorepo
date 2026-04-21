@@ -279,6 +279,159 @@ describe('PageRole Content Validation', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // SURFACE PURITY — cross-surface URL leak detection
+  // Gate P3 : un enricher ou éditorial ne doit pas dumper d'URL
+  // de surface étrangère dans son contenu textuel.
+  // ═══════════════════════════════════════════════════════════════
+  describe('Surface Purity Gate', () => {
+    describe('classifyUrls', () => {
+      it('classes an R8 vehicle URL correctly (depth 3)', () => {
+        const content =
+          'Voir plus /constructeurs/bmw-33/serie-3-456/320d-12345.html fin';
+        const urls = validator.classifyUrls(content);
+        expect(urls).toHaveLength(1);
+        expect(urls[0].role).toBe(PageRole.R8_VEHICLE);
+      });
+
+      it('classes an R7 brand URL correctly (depth 1)', () => {
+        const content = 'Voir /constructeurs/bmw-33.html';
+        const urls = validator.classifyUrls(content);
+        expect(urls).toHaveLength(1);
+        expect(urls[0].role).toBe(PageRole.R7_BRAND);
+      });
+
+      it('distinguishes R7 from R8 when both appear', () => {
+        const content =
+          '[BMW](/constructeurs/bmw-33.html) et ' +
+          '[320d](/constructeurs/bmw-33/serie-3-456/320d-12345.html)';
+        const urls = validator.classifyUrls(content);
+        const roles = urls.map((u) => u.role).sort();
+        expect(roles).toEqual([PageRole.R8_VEHICLE, PageRole.R7_BRAND].sort());
+      });
+
+      it('does not double-count overlapping R7/R8 patterns', () => {
+        const content = '/constructeurs/bmw-33/serie-3-456/320d-12345.html';
+        const urls = validator.classifyUrls(content);
+        expect(urls).toHaveLength(1);
+        expect(urls[0].role).toBe(PageRole.R8_VEHICLE);
+      });
+
+      it('classes an R1 gamme URL', () => {
+        const urls = validator.classifyUrls(
+          'Catalogue /pieces/freinage-1.html',
+        );
+        expect(urls).toHaveLength(1);
+        expect(urls[0].role).toBe(PageRole.R1_ROUTER);
+      });
+
+      it('returns empty for content without canonical URLs', () => {
+        const urls = validator.classifyUrls(
+          'Texte pur sans URL ni lien, juste du contenu éditorial.',
+        );
+        expect(urls).toHaveLength(0);
+      });
+    });
+
+    describe('validateR7Brand', () => {
+      it('blocks R8 vehicle URL in R7 editorial content', () => {
+        const faqText =
+          'Q: Quelle huile pour mon 320d ?\n' +
+          'A: Voir /constructeurs/bmw-33/serie-3-456/320d-12345.html';
+        const violations = validator.validateR7Brand(faqText);
+        expect(violations.length).toBe(1);
+        expect(violations[0].type).toBe('cross_surface_url');
+        expect(violations[0].severity).toBe('error');
+        const details = violations[0].details as {
+          foreignRole: PageRole;
+          sourceRole: PageRole;
+        };
+        expect(details.foreignRole).toBe(PageRole.R8_VEHICLE);
+        expect(details.sourceRole).toBe(PageRole.R7_BRAND);
+      });
+
+      it('accepts R7 brand URL in R7 editorial (same surface)', () => {
+        const faqText =
+          'Voir la page marque /constructeurs/bmw-33.html pour tous les modèles.';
+        const violations = validator.validateR7Brand(faqText);
+        expect(violations).toHaveLength(0);
+      });
+
+      it('accepts R1/R2 URLs in R7 content (allowed by ALLOWED_LINKS)', () => {
+        const faqText =
+          'Consultez notre gamme /pieces/freinage-1.html pour toutes les plaquettes.';
+        const violations = validator.validateR7Brand(faqText);
+        expect(violations).toHaveLength(0);
+      });
+
+      it('returns no violations on empty content', () => {
+        expect(validator.validateR7Brand('')).toHaveLength(0);
+      });
+
+      it('reports multiple R8 URLs as multiple violations', () => {
+        const content =
+          '/constructeurs/bmw-33/serie-3-456/320d-12345.html puis ' +
+          '/constructeurs/bmw-33/serie-5-789/530d-67890.html';
+        const violations = validator.validateR7Brand(content);
+        expect(violations).toHaveLength(2);
+      });
+    });
+
+    describe('validateR8Vehicle', () => {
+      it('blocks R4 reference URL in R8 vehicle content', () => {
+        const content =
+          'Information technique /reference-auto/definition-abs complète.';
+        const violations = validator.validateR8Vehicle(content);
+        expect(violations.length).toBe(1);
+        expect(violations[0].type).toBe('cross_surface_url');
+      });
+
+      it('accepts R2 product URL in R8 (allowed per ALLOWED_LINKS)', () => {
+        const content =
+          'Voir /pieces/freinage/plaquettes-avant/bmw-320d/bosch-ref-12345.html';
+        const violations = validator.validateR8Vehicle(content);
+        expect(violations).toHaveLength(0);
+      });
+    });
+
+    describe('validateSurfacePurity — R4 Reference', () => {
+      it('blocks R2 product deep URL in R4 content', () => {
+        // Canonical R2 : /pieces/{gamme-id}/{marque-id}/{modele-id}/{type-id}.html
+        const content =
+          'Exemple de prix /pieces/plaquette-de-frein-5/bmw-33/serie-3-456/320d-12345.html';
+        const violations = validator.validateSurfacePurity(
+          content,
+          PageRole.R4_REFERENCE,
+        );
+        const cross = violations.filter((v) => v.type === 'cross_surface_url');
+        expect(cross).toHaveLength(1);
+      });
+
+      it('blocks R8 vehicle URL in R4 content', () => {
+        const content = 'Voir /constructeurs/bmw-33/serie-3-456/320d-12345.html';
+        const violations = validator.validateSurfacePurity(
+          content,
+          PageRole.R4_REFERENCE,
+        );
+        expect(violations.length).toBeGreaterThanOrEqual(1);
+      });
+    });
+
+    describe('validatePage integration', () => {
+      it('emits cross_surface_url violation when R7 URL contains R8 deep link', () => {
+        const url = '/constructeurs/bmw-33.html';
+        const content =
+          'Catalogue BMW. Fiche /constructeurs/bmw-33/serie-3-456/320d-12345.html';
+        const result = validator.validatePage(url, content);
+        const cross = result.violations.filter(
+          (v) => v.type === 'cross_surface_url',
+        );
+        expect(cross).toHaveLength(1);
+        expect(result.isValid).toBe(false);
+      });
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════
   // FULL PAGE VALIDATION
   // ═══════════════════════════════════════════════════════════════
   describe('Full Page Validation', () => {
