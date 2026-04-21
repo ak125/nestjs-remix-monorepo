@@ -10,10 +10,13 @@ via /admin/brands-seo ou via un script d'extraction à lancer manuellement.
 
 Sources (toutes gratuites + API publique + provenance citable) :
   1. Wikipedia FR   — page principale marque + liste des modèles
-  2. Wikipedia EN   — backup (souvent plus riche sur engines/recalls EN)
-  3. Wikidata SPARQL — modèles structurés avec motorisations (P176 + P279)
-  4. NHTSA (US)     — recalls structurés par make/year (api.nhtsa.gov)
-  5. Rappel Conso FR — rappels consommateurs véhicules (data.economie.gouv.fr)
+  2. Wikidata SPARQL — modèles structurés avec motorisations (P176 + P279)
+  3. Rappel Conso FR — rappels consommateurs véhicules (data.economie.gouv.fr)
+  4. NHTSA (US)     — recalls structurés par make/year (api.nhtsa.gov) OPT-IN
+  5. Wikipedia EN   — OPT-IN strict. Site & SEO sont FR, du contenu EN collé
+                      dans l'éditorial R7 pollue le signal. Utiliser seulement
+                      pour aider l'admin à cross-vérifier des infos techniques
+                      — et traduire en FR avant de les poser dans l'UI.
 
 Règle : **aucune synthèse LLM**. Ce script est 0-LLM. Il télécharge la source
 brute avec l'URL d'origine dans le frontmatter/_meta. Toute synthèse doit
@@ -89,12 +92,20 @@ HEADERS = {
     "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.7",
 }
 
-ALL_SOURCES = ("wikipedia", "wikidata", "rappel-conso", "nhtsa")
-# Sources activées par défaut. NHTSA est opt-in car son API exige un triplet
-# (make, model, modelYear) : sans enumération de modèles, la requête retourne
-# 0 résultat. À activer explicitement avec --source nhtsa une fois qu'un
-# enumérateur modèles NHTSA sera implémenté.
-DEFAULT_SOURCES = ("wikipedia", "wikidata", "rappel-conso")
+ALL_SOURCES = (
+    "wikipedia-fr",
+    "wikidata",
+    "rappel-conso",
+    "nhtsa",
+    "wikipedia-en",
+)
+# Sources activées par défaut.
+# - Wikipedia EN est exclu car site + SEO sont FR : du contenu EN collé
+#   dans l'éditorial R7 pollue le signal. Opt-in via --source wikipedia-en
+#   pour cross-vérification technique (à traduire avant usage).
+# - NHTSA est opt-in car son API exige un triplet (make, model, modelYear) :
+#   sans enumération de modèles, la requête retourne 0 résultat.
+DEFAULT_SOURCES = ("wikipedia-fr", "wikidata", "rappel-conso")
 
 # Alias → Wikipedia page title (FR puis EN). Si absent on fallback sur
 # marque_name tel qu'en DB (la plupart du temps correct).
@@ -415,13 +426,13 @@ def process_brand(
     alias = brand["marque_alias"]
     name = brand["marque_name"]
     out_dir = OUTPUT_ROOT / alias
-    counts = {"wikipedia": 0, "wikidata": 0, "nhtsa": 0, "rappel-conso": 0}
+    counts = {s: 0 for s in ALL_SOURCES}
 
     if dry_run:
         print(f"  [DRY-RUN] output → {out_dir}")
 
-    # --- 1. Wikipedia FR ---
-    if "wikipedia" in sources:
+    # --- 1. Wikipedia FR (défaut) ---
+    if "wikipedia-fr" in sources:
         fr_title = WIKI_TITLE_OVERRIDES_FR.get(alias, name)
         fr_main = out_dir / "wikipedia-fr-main.md"
         if fr_main.exists() and not force:
@@ -429,7 +440,7 @@ def process_brand(
         else:
             if dry_run:
                 print(f"  [DRY-RUN] would fetch FR:{fr_title}")
-                counts["wikipedia"] += 1
+                counts["wikipedia-fr"] += 1
             else:
                 res = fetch_wikipedia_page(WIKIPEDIA_API_FR, fr_title)
                 time.sleep(REQUEST_DELAY)
@@ -437,11 +448,11 @@ def process_brand(
                     t, url, body = res
                     write_md(fr_main, url, t, body, "wikipedia-fr")
                     print(f"  ✅ wikipedia-fr-main ({len(body)}c)")
-                    counts["wikipedia"] += 1
+                    counts["wikipedia-fr"] += 1
                 else:
                     print(f"  ⚠️  FR:{fr_title} not found")
 
-        # Page liste modèles : "Liste des modèles {brand}" ou "Catégorie:Modèle de {brand}"
+        # Page liste modèles : "Liste des modèles {brand}" si existe
         fr_models = out_dir / "wikipedia-fr-models.md"
         if fr_models.exists() and not force:
             print(f"  ⏭️  wikipedia-fr-models.md existe")
@@ -449,7 +460,7 @@ def process_brand(
             list_title = f"Liste des modèles {name}"
             if dry_run:
                 print(f"  [DRY-RUN] would fetch FR:{list_title}")
-                counts["wikipedia"] += 1
+                counts["wikipedia-fr"] += 1
             else:
                 res = fetch_wikipedia_page(WIKIPEDIA_API_FR, list_title)
                 time.sleep(REQUEST_DELAY)
@@ -457,26 +468,30 @@ def process_brand(
                     t, url, body = res
                     write_md(fr_models, url, t, body, "wikipedia-fr-models")
                     print(f"  ✅ wikipedia-fr-models ({len(body)}c)")
-                    counts["wikipedia"] += 1
+                    counts["wikipedia-fr"] += 1
 
-    # --- 2. Wikipedia EN ---
-    if "wikipedia" in sources:
+    # --- 2. Wikipedia EN (opt-in strict : site et SEO sont FR) ---
+    if "wikipedia-en" in sources:
         en_title = WIKI_TITLE_OVERRIDES_EN.get(alias, name)
         en_main = out_dir / "wikipedia-en-main.md"
         if en_main.exists() and not force:
             print(f"  ⏭️  wikipedia-en-main.md existe")
         else:
             if dry_run:
-                print(f"  [DRY-RUN] would fetch EN:{en_title}")
-                counts["wikipedia"] += 1
+                print(f"  [DRY-RUN] would fetch EN:{en_title} (opt-in)")
+                counts["wikipedia-en"] += 1
             else:
                 res = fetch_wikipedia_page(WIKIPEDIA_API_EN, en_title)
                 time.sleep(REQUEST_DELAY)
                 if res:
                     t, url, body = res
                     write_md(en_main, url, t, body, "wikipedia-en")
-                    print(f"  ✅ wikipedia-en-main ({len(body)}c)")
-                    counts["wikipedia"] += 1
+                    print(
+                        f"  ✅ wikipedia-en-main ({len(body)}c) — "
+                        f"⚠️  cross-ref technique seulement, "
+                        f"NE PAS coller en direct dans l'UI FR"
+                    )
+                    counts["wikipedia-en"] += 1
 
     # --- 3. Wikidata SPARQL (models + engines) ---
     if "wikidata" in sources:
@@ -603,10 +618,10 @@ def main() -> None:
         type=str,
         default="default",
         help=(
-            "Sources à activer. 'default' = wikipedia+wikidata+rappel-conso "
-            f"(fiable, pas d'énumération requise). 'all' = défaut + nhtsa "
-            "(requiert énumération modèles, opt-in). Ou CSV parmi "
-            f"{','.join(ALL_SOURCES)}."
+            "Sources à activer. 'default' = wikipedia-fr + wikidata + "
+            "rappel-conso (FR-only, fiable). 'all' = défaut + nhtsa + "
+            "wikipedia-en (opt-in, contenu EN à NE PAS coller en direct "
+            f"dans l'éditorial FR). Ou CSV parmi {','.join(ALL_SOURCES)}."
         ),
     )
     args = parser.parse_args()
