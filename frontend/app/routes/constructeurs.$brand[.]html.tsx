@@ -774,6 +774,36 @@ export default function BrandCatalogPage() {
             </section>
           )}
 
+          {/* Shortcuts — accès rapide aux modèles/gammes populaires */}
+          {r7Blocks.find((b: any) => b.id === "R7_S3_SHORTCUTS") && (
+            <section className="bg-gradient-to-b from-gray-50 to-white py-8 md:py-10 border-b border-gray-100">
+              <div className="container mx-auto px-4">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">
+                  {r7Blocks.find((b: any) => b.id === "R7_S3_SHORTCUTS")?.title}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {r7Blocks
+                    .find((b: any) => b.id === "R7_S3_SHORTCUTS")
+                    ?.renderedText.split("\n")
+                    .map((line: string) =>
+                      line.match(/^-\s+\[(.+?)\]\((.+?)\)/),
+                    )
+                    .filter((m): m is RegExpMatchArray => m !== null)
+                    .map((m: RegExpMatchArray, idx: number) => (
+                      <Link
+                        key={idx}
+                        to={m[2]}
+                        className="flex items-center justify-between gap-2 px-4 py-3 bg-white border border-gray-200 hover:border-blue-400 hover:bg-blue-50 rounded-lg shadow-sm hover:shadow-md transition-all text-sm font-medium text-gray-800 hover:text-blue-700"
+                      >
+                        <span className="truncate">{m[1]}</span>
+                        <ChevronRight className="w-4 h-4 flex-shrink-0 opacity-60" />
+                      </Link>
+                    ))}
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* Compatibility Guide */}
           {r7Blocks.find((b: any) => b.id === "R7_S7_COMPATIBILITY") && (
             <section className="bg-gradient-to-b from-blue-50 to-white py-8 md:py-12 border-b border-gray-100">
@@ -940,10 +970,18 @@ export default function BrandCatalogPage() {
       <div className="bg-white py-8 md:py-12 border-t border-gray-200">
         <div className="container mx-auto px-4">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 md:mb-6">
-            À propos de {manufacturer.marque_name}
+            {r7Blocks.find((b: any) => b.id === "R7_S11_ABOUT")?.title ||
+              `À propos de ${manufacturer.marque_name}`}
           </h2>
           <div className="prose max-w-none">
-            {blog_content?.content ? (
+            {r7Blocks.find((b: any) => b.id === "R7_S11_ABOUT") ? (
+              <p className="text-gray-700 text-lg leading-relaxed mb-6 whitespace-pre-line">
+                {
+                  r7Blocks.find((b: any) => b.id === "R7_S11_ABOUT")
+                    ?.renderedText
+                }
+              </p>
+            ) : blog_content?.content ? (
               <HtmlContent
                 html={blog_content.content}
                 trackLinks={true}
