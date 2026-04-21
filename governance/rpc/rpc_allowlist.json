@@ -470,9 +470,24 @@
       "reason": "SELECT only"
     },
     {
-      "name": "get_vehicle_page_data_optimized",
+      "name": "get_vehicle_page_data_cached",
+      "volatility": "STABLE",
+      "reason": "ADR-016 Phase 2 cache-first RPC, reads from __vehicle_page_cache"
+    },
+    {
+      "name": "rebuild_vehicle_page_cache",
       "volatility": "VOLATILE",
-      "reason": "Read-only optimization (migrated from P2)"
+      "reason": "ADR-016 UPSERT into __vehicle_page_cache (idempotent via source_hash)"
+    },
+    {
+      "name": "refresh_stale_vehicle_cache",
+      "volatility": "VOLATILE",
+      "reason": "ADR-016 cron helper, refresh N stale rows"
+    },
+    {
+      "name": "build_vehicle_page_payload",
+      "volatility": "STABLE",
+      "reason": "ADR-016 payload builder (called internally by rebuild)"
     },
     {
       "name": "get_vlevel_champions",
