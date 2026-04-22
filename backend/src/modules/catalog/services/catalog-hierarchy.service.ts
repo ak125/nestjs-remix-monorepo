@@ -91,9 +91,19 @@ export class CatalogHierarchyService extends SupabaseBaseService {
     const families: CatalogFamilyWithGammes[] = (familiesRes.data || [])
       .sort((a, b) => Number(a.mf_sort || 0) - Number(b.mf_sort || 0))
       .map((family) => {
+        // A gamme may be attached to its primary family via multiple
+        // catalog_gamme rows (one per mc_mf_id). Dedupe by pg_id after sorting
+        // ascending on mc_sort so the earliest-positioned row wins.
+        const seenPgIds = new Set<string>();
         const familyGammeLinks = (catalogGammesRes.data || [])
           .filter((cg) => String(cg.mc_mf_prime) === String(family.mf_id))
-          .sort((a, b) => Number(a.mc_sort || 0) - Number(b.mc_sort || 0));
+          .sort((a, b) => Number(a.mc_sort || 0) - Number(b.mc_sort || 0))
+          .filter((cg) => {
+            const key = String(cg.mc_pg_id);
+            if (seenPgIds.has(key)) return false;
+            seenPgIds.add(key);
+            return true;
+          });
 
         const familyGammes: CatalogGamme[] = familyGammeLinks
           .map((cg) => {
@@ -152,8 +162,10 @@ export class CatalogHierarchyService extends SupabaseBaseService {
     if (linkError || !linkData?.length) return [];
 
     const pgIds = linkData.map((l) => l.mc_pg_id);
+    // mc_pg_id is TEXT in catalog_gamme but pg_id is INTEGER in pieces_gamme.
+    // Normalize keys to string so sortMap.get(String(item.pg_id)) actually hits.
     const sortMap = new Map(
-      linkData.map((l) => [l.mc_pg_id, Number(l.mc_sort || 0)]),
+      linkData.map((l) => [String(l.mc_pg_id), Number(l.mc_sort || 0)]),
     );
 
     const { data: gammesData, error: gammesError } = await this.supabase
@@ -182,7 +194,7 @@ export class CatalogHierarchyService extends SupabaseBaseService {
         pg_name_meta: item.pg_name_meta,
         pg_pic: item.pg_pic,
         pg_img: item.pg_img,
-        mc_sort: sortMap.get(item.pg_id) || 0,
+        mc_sort: sortMap.get(String(item.pg_id)) || 0,
       }))
       .sort((a, b) => (a.mc_sort || 0) - (b.mc_sort || 0));
 
@@ -208,10 +220,27 @@ export class CatalogHierarchyService extends SupabaseBaseService {
   }
 
   /**
-   * Invalide tout le cache hiérarchie
+   * Invalide tout le cache hiérarchie (hiérarchie globale + listes par famille).
    */
   async invalidateCache(): Promise<void> {
+    // Hierarchie globale
     await this.cacheService.del('catalog:families:v2');
-    this.logger.log('Cache hiérarchie invalidé');
+
+    // Listes par famille (getGammesByFamilyId). Les mf_id courants sont les
+    // 19 familles catalogue; on lit la table pour rester agnostique si elles
+    // changent, puis on del chaque clé.
+    const { data: families } = await this.supabase
+      .from(TABLES.catalog_family)
+      .select('mf_id');
+    const ids = (families || [])
+      .map((f) => Number(f.mf_id))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    await Promise.all(
+      ids.map((id) => this.cacheService.del(`catalog:family-gammes:${id}`)),
+    );
+
+    this.logger.log(
+      `Cache hiérarchie invalidé (global + ${ids.length} familles)`,
+    );
   }
 }
