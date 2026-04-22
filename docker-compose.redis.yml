@@ -1,10 +1,18 @@
 services:
   redis_standalone:
-    image: redis:latest
+    image: redis:7-alpine
     restart: always
-    ports:
-      - '6379:6379'
-    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    # SECURITY: Never expose Redis publicly - internal network only
+    # BSI CB-Report#20260422-10008190 — ports retirés volontairement
+    # Accès via réseau Docker uniquement (autres containers du même network)
+    # Pour debug local : docker exec <container> redis-cli
+    # ports:
+    #   - '6379:6379'
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
     deploy:
       resources:
         limits:
@@ -12,4 +20,3 @@ services:
     volumes:
       - ./cache:/data
       # - /dev/volumes/nestjs-remix/dev/sessions/:/data
-

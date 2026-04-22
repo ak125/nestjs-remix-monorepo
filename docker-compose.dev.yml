@@ -14,12 +14,19 @@ services:
     ports:
       - 3000:3000
   redis_dev:
-    image: redis:latest
+    image: redis:7-alpine
     restart: always
-    ports:
-      - '6379:6379'
-    command: ["redis-server"] 
-    # --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
-    volumes: 
+    # SECURITY: Never expose Redis publicly - internal network only
+    # BSI CB-Report#20260422-10008190 — ports retirés volontairement
+    # Accès via réseau Docker uniquement (monorepo_dev via hostname redis_dev)
+    # Pour debug local : docker exec redis-dev redis-cli
+    # ports:
+    #   - '6379:6379'
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
       - ./cache:/data
       # - /dev/volumes/nestjs-remix/dev/sessions/:/data
