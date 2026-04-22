@@ -89,8 +89,8 @@ COMMENT ON TABLE public.pieces_ref_search IS
 -- 3) pieces_ref_ean (3M rows) — clean up always-true policies
 -- -----------------------------------------------------------------------------
 --
--- The two DROP POLICY statements below are the WHOLE POINT of this migration
--- for this table. They remove legacy "USING (true)" policies that allowed any
+-- The two policy-removal statements below are the WHOLE POINT of this
+-- migration for this table. They remove legacy "USING (true)" policies that allowed any
 -- anon/authenticated caller to INSERT/SELECT freely on the EAN mapping
 -- (catalog poisoning attack surface). Each is approved individually with the
 -- specific reason on the same line.
