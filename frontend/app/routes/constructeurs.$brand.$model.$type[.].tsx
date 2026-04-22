@@ -1,6 +1,10 @@
-// Redirection pour les anciennes URLs sans .html vers les nouvelles avec .html
-// Format ancien: /constructeurs/{marque}-{id}/{modele}-{id}/{type}-{id}
-// Format nouveau: /constructeurs/{marque}-{id}/{modele}-{id}/{type}-{id}.html
+// Route 301 pour les URLs véhicule se terminant par un point littéral.
+// Convention remix-flat-routes : `$type[.]` + `.tsx` = segment `:type.`
+// (trailing dot), pas un segment sans extension.
+// Utilité : artefacts legacy / liens cassés (ex. mail client qui ajoute un `.`
+// en fin d'URL) → redirige vers la variante canonique `.html`.
+// Les URLs sans extension sont servies par ./constructeurs.$brand.$model.$type
+// (tolérance 200, pas de 301 — confirmé 2026-04-22 comme intentionnel).
 import { redirect, type LoaderFunctionArgs } from "@remix-run/node";
 import { useRouteError, isRouteErrorResponse } from "@remix-run/react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";

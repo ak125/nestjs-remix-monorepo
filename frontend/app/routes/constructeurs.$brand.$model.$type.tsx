@@ -240,7 +240,7 @@ function transformRpcToLoaderData(
   const modele_id = parseInt(modelParts[modelParts.length - 1]) || 0;
   const modele_alias = modelParts.slice(0, -1).join("-");
 
-  const typeWithoutHtml = params.type.replace(".html", "");
+  const typeWithoutHtml = params.type.replace(/\.html$/, "");
   const typeParts = typeWithoutHtml.split("-");
   const type_id = parseInt(typeParts[typeParts.length - 1]) || 0;
 
@@ -501,8 +501,8 @@ export async function loader({ params }: LoaderFunctionArgs) {
     });
   }
 
-  // Parsing du type_id
-  const typeWithoutHtml = type.replace(".html", "");
+  // Parsing du type_id (suffixe .html optionnel, ancré fin de chaîne)
+  const typeWithoutHtml = type.replace(/\.html$/, "");
   const typeParts = typeWithoutHtml.split("-");
   const type_id = parseInt(typeParts[typeParts.length - 1]) || 0;
 
