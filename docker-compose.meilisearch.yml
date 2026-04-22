@@ -22,9 +22,18 @@ services:
   redis:
     image: redis:7-alpine
     container_name: fafa_redis
-    command: redis-server --appendonly yes
-    ports:
-      - "6379:6379"
+    # SECURITY: Never expose Redis publicly - internal network only
+    # BSI CB-Report#20260422-10008190 — ports retirés volontairement
+    # Accès via réseau Docker uniquement (meilisearch et autres services
+    # joignent `redis` via le DNS Docker interne sur fafa_network)
+    # Pour debug local : docker exec fafa_redis redis-cli
+    # ports:
+    #   - "6379:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
     restart: unless-stopped
