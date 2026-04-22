@@ -469,11 +469,16 @@ export class R7BrandEnricherService extends SupabaseBaseService {
       ),
     ];
     const topGammes = popularGammes.slice(0, 3);
-    topGammes.forEach((g) =>
-      shortcuts.push(
-        `- [${g.pg_name || g.gamme_name} ${brandName}](/pieces/${g.pg_alias || ''})`,
-      ),
-    );
+    // URL canonique R1 : /pieces/{slug}-{id}.html — sans le suffixe `-{id}.html`,
+    // le frontend renvoie 410 Gone (la route Remix exige la forme complète).
+    // Skip toute gamme sans pg_id ou pg_alias plutôt que d'émettre un lien mort.
+    topGammes.forEach((g) => {
+      const alias = g.pg_alias;
+      const id = g.pg_id ?? g.gamme_id;
+      if (!alias || id === undefined || id === null) return;
+      const label = `${g.pg_name || g.gamme_name} ${brandName}`;
+      shortcuts.push(`- [${label}](/pieces/${alias}-${id}.html)`);
+    });
     if (shortcuts.length > 0) {
       blocks.push({
         id: 'R7_S3_SHORTCUTS',
