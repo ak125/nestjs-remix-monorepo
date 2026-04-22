@@ -51,8 +51,12 @@ STOP_WORDS = {'a', 'de', 'd', 'du', 'le', 'la', 'les', 'l', 'un', 'une', 'des', 
 # ─── HELPERS ───────────────────────────────────────────────────────────
 
 def normalize_kw(text: str) -> str:
-    """Lowercase, no accents, single spaces, trimmed."""
+    """Lowercase, no accents, no apostrophes/hyphens, single spaces, trimmed."""
     text = text.lower().strip()
+    # Replace apostrophes (ASCII + typographiques) + hyphens + underscores by space
+    # Critical: pg_names like "Filtre d'habitacle" must normalize to "filtre d habitacle"
+    # so that extract_core_words can split and find "habitacle" (not "d'habitacle")
+    text = re.sub(r"[''’'\-_]", ' ', text)
     text = re.sub(r'\s+', ' ', text)
     text = unicodedata.normalize('NFD', text)
     return ''.join(c for c in text if unicodedata.category(c) != 'Mn')
@@ -112,8 +116,36 @@ def resolve_gamme_from_db_by_slug(slug: str) -> Optional[dict]:
     return None
 
 
+ALIAS_EXPANSIONS_PATH = '/opt/automecanik/app/config/rag-alias-expansions.yaml'
+_alias_expansions_cache: Optional[dict] = None
+
+
+def load_alias_expansions() -> dict:
+    """Load centralized SEO alias expansions (cached)."""
+    global _alias_expansions_cache
+    if _alias_expansions_cache is not None:
+        return _alias_expansions_cache
+    try:
+        import yaml
+        with open(ALIAS_EXPANSIONS_PATH, encoding='utf-8') as f:
+            data = yaml.safe_load(f) or {}
+        _alias_expansions_cache = data if isinstance(data, dict) else {}
+    except FileNotFoundError:
+        _alias_expansions_cache = {}
+    except Exception as e:
+        print(f"  [WARN] Failed to load alias expansions: {e}")
+        _alias_expansions_cache = {}
+    return _alias_expansions_cache
+
+
 def load_gamme_rag(pg_alias: str) -> dict:
-    """Load gamme RAG file → extract aliases + must_not_contain + confusion_with."""
+    """Load gamme RAG file → extract aliases + must_not_contain + confusion_with.
+
+    Aliases sources (fusionnés) :
+      1. title du RAG
+      2. variants[].aliases + variants[].name du RAG
+      3. ALIAS_EXPANSIONS_PATH YAML central (synonymes SEO commerciaux)
+    """
     result = {
         'aliases': set(),
         'must_not_contain': set(),
@@ -164,6 +196,12 @@ def load_gamme_rag(pg_alias: str) -> dict:
 
     except Exception as e:
         print(f"  [WARN] RAG parse failed for {pg_alias}: {e}")
+
+    # Merge centralized alias expansions (additive, never removes existing)
+    expansions = load_alias_expansions()
+    for extra in (expansions.get(pg_alias) or []):
+        if isinstance(extra, str) and extra.strip():
+            result['aliases'].add(normalize_kw(extra))
 
     return result
 
@@ -459,7 +497,56 @@ def main():
     print(f"{'DRY RUN' if args.dry_run else 'LIVE'} mode")
     print(f"{len(files)} fichier(s)")
 
-    results = [process_file(f, args.pg_id, args.dry_run, args.verbose) for f in files]
+    import shutil
+    from datetime import datetime
+
+    # Destinations canoniques pour le lifecycle du fichier CSV
+    processed_dir = '/opt/automecanik/app/data/keywords/processed'
+    failed_dir = '/opt/automecanik/app/data/keywords/failed'
+    output_dir = '/opt/automecanik/app/data/keywords/output'
+    logs_dir = '/opt/automecanik/app/data/keywords/logs'
+    for d in (processed_dir, failed_dir, output_dir, logs_dir):
+        os.makedirs(d, exist_ok=True)
+
+    results = []
+    for f in files:
+        r = process_file(f, args.pg_id, args.dry_run, args.verbose)
+        results.append({**r, '_src_path': f})
+
+        # Lifecycle : déplacer le CSV + écrire snapshot JSON "nettoyé"
+        if not args.dry_run and os.path.isfile(f):
+            ts = datetime.now().strftime('%Y-%m-%dT%H%M%S')
+            basename = os.path.basename(f)
+
+            if r.get('status') == 'success':
+                # CSV brut → processed/ (garde l'original pour audit)
+                dst = os.path.join(processed_dir, f'{ts}__{basename}')
+                shutil.move(f, dst)
+                print(f"        → moved to processed/{os.path.basename(dst)}")
+
+                # Snapshot JSON "nettoyé" dans output/ (les KW pertinents post-filtre RAG)
+                snapshot = {
+                    'imported_at': datetime.now().isoformat(),
+                    'source_csv': basename,
+                    'pg_id': r.get('pg_id'),
+                    'pg_alias': r.get('pg_alias'),
+                    'raw_count': r.get('raw'),
+                    'deduped_count': r.get('deduped'),
+                    'relevant_count': r.get('relevant'),
+                    'rejected': r.get('rejects'),
+                    'upserted': r.get('upserted'),
+                }
+                snap_path = os.path.join(
+                    output_dir,
+                    f'{ts}__{r.get("pg_alias")}__import-summary.json'
+                )
+                with open(snap_path, 'w', encoding='utf-8') as fo:
+                    json.dump(snapshot, fo, ensure_ascii=False, indent=2)
+                print(f"        → summary output/{os.path.basename(snap_path)}")
+            else:
+                dst = os.path.join(failed_dir, f'{ts}__{basename}')
+                shutil.move(f, dst)
+                print(f"        → moved to failed/{os.path.basename(dst)}")
 
     ok = [r for r in results if r.get('status') == 'success']
     skip = [r for r in results if r.get('status') != 'success']
