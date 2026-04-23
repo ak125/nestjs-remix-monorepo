@@ -129,6 +129,12 @@ cable-de-frein-a-main:
   - cable frein main
   - cable frein de parking
   - frein stationnement cable
+  # Added 2026-04-23 (R1_ROUTER batch) — R-SEO-KW-01 review 12.56% vol → 0.47%
+  - cable de frein
+  - cables de frein a main
+  - cable frein de stationnement
+  - cable frein parking
+  - cable frein voiture
 
 maitre-cylindre-de-frein:
   - maitre-cylindre
