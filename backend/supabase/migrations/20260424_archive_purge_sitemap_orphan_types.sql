@@ -132,4 +132,5 @@ CREATE INDEX IF NOT EXISTS idx_archive_20260423_type_id
 -- CLEANUP : Quand la purge est validée en prod depuis ≥ 30 jours et que
 -- le backlog GSC a décru significativement, l'archive peut être supprimée.
 -- ───────────────────────────────────────────────────────────────────────
+-- APPROVED: INC-2026-012 archive table cleanup after 30d+ stability — execute manually only
 -- DROP TABLE IF EXISTS public.__sitemap_p_link_archive_20260423;
