@@ -1,0 +1,185 @@
+# .spec/modules/vehicles/manifest.yaml
+# Module Manifest — vehicles
+# Version: 1.0.0 | Status: draft | Owner: Software-Architect (d2e89803)
+# Source: AUT-272 / AUT-271
+# References: tecdoc-integration-roadmap-v3.md v3.19, domain-map.md v1.4.2
+
+module: vehicles
+title: "Vehicle & Compatibility Module"
+description: >
+  Manages vehicle catalogue (brands, models, types), TecDoc integration,
+  compatibility matching (piece ↔ vehicle), mine codes, motor codes, and
+  brand SEO pages. Owns the D4 domain tables.
+domain: D4-vehicle
+status: draft
+
+# ── Database Surface ────────────────────────────────────────────────────────
+owned_tables:
+  - auto_type
+  - auto_modele
+  - auto_marque
+  - auto_modele_group
+  - auto_type_number_code
+  - auto_type_motor_fuel
+  - auto_type_motor_code
+  - auto_modele_robot
+  - cars_engine
+  - vehicule_v1_dominant
+  # Cross-gamme-car tables: owned by vehicles, produced by TecDoc pipeline
+  - __cross_gamme_car
+  - __cross_gamme_car_new
+  - __cross_gamme_car_new2
+
+read_tables:
+  # D1: catalog compatibility joins
+  - pieces_gamme
+  - pieces_relation_type
+  - pieces_relation_criteria
+  # D3: SEO type/vlevel lookup
+  - __seo_type_vlevel
+  - __seo_type_switch
+  - __seo_gamme_car
+  - __seo_marque
+
+owned_rpcs:
+  # Vehicle-compatibility RPCs (from phase-2b-rpc-audit-results.md, VehicleModule)
+  - get_vehicle_compatible_pieces
+  - get_vehicle_profile
+  - get_brand_bestsellers
+  - get_vehicle_maillage
+  - search_vehicles_advanced
+  - get_vehicle_motor_codes
+  - get_vehicle_mine_codes
+  - get_top_brands
+
+# ── HTTP Surface ────────────────────────────────────────────────────────────
+http_routes:
+  - method: GET
+    path: /api/vehicles/brands
+    auth: public
+    notes: List all vehicle brands
+  - method: GET
+    path: /api/vehicles/brands/:brandId
+    auth: public
+    notes: Brand detail
+  - method: GET
+    path: /api/vehicles/brands/:brandId/models
+    auth: public
+    notes: Models for a brand
+  - method: GET
+    path: /api/vehicles/brands/:brandId/years
+    auth: public
+  - method: GET
+    path: /api/vehicles/models/:modelId/types
+    auth: public
+    notes: Types (motorizations) for a model
+  - method: GET
+    path: /api/vehicles/types/:typeId
+    auth: public
+    notes: Full type detail
+  - method: GET
+    path: /api/vehicles/types/:typeId/motor-codes
+    auth: public
+  - method: GET
+    path: /api/vehicles/types/:typeId/mine-codes
+    auth: public
+  - method: GET
+    path: /api/vehicles/stats
+    auth: admin
+  - method: GET
+    path: /api/vehicles/search/advanced
+    auth: public
+  - method: GET
+    path: /api/vehicles/search/mine/:code
+    auth: public
+    notes: Search by mine code (French homologation code)
+  - method: GET
+    path: /api/vehicles/search/cnit/:code
+    auth: public
+  - method: GET
+    path: /api/vehicles/search/motor-code/:code
+    auth: public
+  - method: GET
+    path: /api/vehicles/mines/model/:id
+    auth: public
+  - method: GET
+    path: /api/vehicles/meta-tags/:typeId
+    auth: public
+    notes: SEO meta tags for a vehicle type page
+  - method: GET
+    path: /api/vehicles/brand/:brandAlias/bestsellers
+    auth: public
+    notes: Top pieces for a brand (SEO maillage)
+  - method: GET
+    path: /api/vehicles/brand/:brandId/maillage
+    auth: public
+    notes: Internal link maillage for brand
+  - method: GET
+    path: /api/vehicles/top-brands
+    auth: public
+  # Brand controller routes
+  - method: GET
+    path: /api/vehicles/brands/:brandAlias/forms
+    auth: public
+    notes: Vehicle selection forms (brands.controller.ts)
+
+# ── Exports & Dependencies ───────────────────────────────────────────────────
+public_exports:
+  - symbol: VehiclesModule
+    kind: service
+  - symbol: VehiclesService
+    kind: service
+  - symbol: VehicleRpcService
+    kind: service
+    notes: Used by catalog/seo for compatibility joins
+  - symbol: BrandRpcService
+    kind: service
+  - symbol: EnhancedVehicleService
+    kind: service
+  - symbol: VehicleProfileService
+    kind: service
+
+depends_on:
+  - seo        # SEO meta-tag generation
+  - catalog    # Piece compatibility reads
+
+# ── Invariants ───────────────────────────────────────────────────────────────
+invariants_ref:
+  # D2-vehicle invariants (from feature-invariants.json)
+  - INV-021    # auto-type-ktypnr-unique
+  - INV-022    # auto-modele-fk-marque
+  - INV-023    # auto-type-fk-modele
+  - INV-024    # auto-type-year-valid
+  - INV-025    # cross-gamme-car-fk-auto-type
+  - INV-026    # cross-gamme-car-fk-pg
+  - INV-027    # auto-type-number-code-fk-type
+  - INV-028    # auto-type-sequential-range
+
+# ── SEO Contracts ────────────────────────────────────────────────────────────
+seo_contracts:
+  canonical_table: __seo_type_vlevel
+  sitemap_feeds:
+    - __sitemap_motorisation
+    - __seo_marque
+  noindex_rules:
+    - "auto_type.type_id in range [60000..83456] → noindex (TecDoc sequential remap 2026-03-27)"
+    - "auto_type.type_id >= 100000 → 301 redirect (orphan protection)"
+  robots_policy: index_follow
+
+# ── Change Surface ────────────────────────────────────────────────────────────
+change_surface:
+  risk_level: critical
+  requires_data_ops_approval: true
+  requires_seo_approval: true
+  review_checklist:
+    - "Verify no auto_type rows are deleted (retirement only via SEO-protection flag)"
+    - "Check that type_id sequential range [60000..83456] noindex is preserved"
+    - "Confirm __cross_gamme_car_new remains the primary consumer (not _new2 orphan)"
+    - "Run INV-021 through INV-028 SQL gates before merge"
+    - "Verify VehicleRpcService is not broken — used by catalog and seo modules"
+    - "Check sitemap __sitemap_motorisation regeneration is not triggered unintentionally"
+    - "SEO approval required if routes /api/vehicles/brand/:brandAlias/* change"
+    - "Data-Ops approval required for any migration touching D4 tables"
+  gate_battery:
+    - manifest-check
+    - invariant-check-D2-vehicle

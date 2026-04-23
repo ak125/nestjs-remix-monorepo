@@ -1,0 +1,213 @@
+# .spec/modules/_schema.yaml
+# Module Manifest Schema — AutoMecanik Monorepo
+# Version: 1.0.0 | Status: CANON | Owner: Software-Architect (d2e89803)
+# ADR reference: docs/adr/0001-module-manifest-schema.md
+# Source epic: AUT-271 / AUT-272
+
+$schema: "https://json-schema.org/draft/2020-12"
+$id: "spec://modules/manifest-schema/v1"
+title: "Module Manifest"
+description: >
+  Machine-verified contract for every NestJS backend module and every Remix
+  route cluster. The gate gates/manifest-check.ts enforces this schema on every
+  PR. Phase 0–1: advisory (report-only). Phase 2+: blocking on certified modules.
+
+type: object
+required:
+  - module
+  - status
+  - owned_tables
+  - http_routes
+  - depends_on
+  - change_surface
+
+properties:
+  # ── Identity ──────────────────────────────────────────────────────────────
+  module:
+    type: string
+    description: >
+      Module identifier, matching the directory name under
+      backend/src/modules/<module>. Snake-case, lowercase.
+    pattern: "^[a-z][a-z0-9_-]*$"
+    examples: ["vehicles", "payments", "catalog", "seo"]
+
+  title:
+    type: string
+    description: Human-readable module title.
+
+  description:
+    type: string
+    description: One-sentence purpose of the module.
+
+  domain:
+    type: string
+    description: Domain code from domain-map.md (D1-D8 or multi).
+    pattern: "^D[1-8](-[A-Za-z]+)?(,D[1-8](-[A-Za-z]+)?)*$"
+    examples: ["D1-catalog", "D4-vehicle", "D3-seo", "D1-catalog,D3-seo"]
+
+  status:
+    type: string
+    description: >
+      Lifecycle status of this manifest.
+      - stub: auto-generated skeleton, not yet reviewed
+      - draft: human-authored, not yet gate-enforced
+      - certified: gate-enforced, auto-merge eligible with full green battery
+      - retired: module removed, archived in .spec/retired/
+    enum: [stub, draft, certified, retired]
+
+  certification_date:
+    type: string
+    format: date
+    description: ISO date when status was set to certified.
+
+  # ── Database Surface ───────────────────────────────────────────────────────
+  owned_tables:
+    type: array
+    description: >
+      Tables this module is the sole authorized writer of. A table must appear
+      in exactly ONE manifest as owned. The gate rejects PRs where a file
+      writes to a table not owned by its enclosing module.
+    items:
+      type: string
+    uniqueItems: true
+    examples:
+      - ["auto_type", "auto_modele", "auto_marque"]
+
+  read_tables:
+    type: array
+    description: >
+      Tables this module reads but does not own (cross-domain reads).
+      Informational only — not gate-enforced in Phase 1.
+    items:
+      type: string
+    uniqueItems: true
+
+  owned_rpcs:
+    type: array
+    description: >
+      RPC/function names in Supabase this module is the sole caller of
+      (or the owner of if defined in a migration it owns).
+    items:
+      type: string
+    uniqueItems: true
+
+  # ── HTTP Surface ───────────────────────────────────────────────────────────
+  http_routes:
+    type: array
+    description: HTTP routes exposed by this module. Method + path pattern.
+    items:
+      type: object
+      required: [method, path]
+      properties:
+        method:
+          type: string
+          enum: [GET, POST, PUT, PATCH, DELETE, WS]
+        path:
+          type: string
+          description: Express-style path, e.g. /api/vehicles/brands/:id
+        auth:
+          type: string
+          enum: [public, session, admin, service_role]
+          default: session
+        notes:
+          type: string
+
+  # ── Exports & Dependencies ─────────────────────────────────────────────────
+  public_exports:
+    type: array
+    description: >
+      Symbols (types, DTOs, services) exported by this module for use by
+      other modules. Everything else is treated as private.
+    items:
+      type: object
+      required: [symbol, kind]
+      properties:
+        symbol:
+          type: string
+        kind:
+          type: string
+          enum: [service, dto, type, interface, enum, constant, guard]
+        notes:
+          type: string
+
+  depends_on:
+    type: array
+    description: >
+      Modules this module imports from (NestJS module imports or
+      shared package imports). Gate will flag circular dependencies.
+    items:
+      type: string
+    uniqueItems: true
+
+  # ── Invariants & SEO ──────────────────────────────────────────────────────
+  invariants_ref:
+    type: array
+    description: >
+      Invariant IDs from .spec/00-canon/invariants/feature-invariants.json
+      that this module must not violate. Gate checks all referenced invariants
+      against .spec/00-canon/invariants/sql/*.sql before certifying.
+    items:
+      type: string
+      pattern: "^INV-[0-9]{3}$"
+    uniqueItems: true
+    examples:
+      - ["INV-001", "INV-002", "INV-003"]
+
+  seo_contracts:
+    type: object
+    description: >
+      SEO obligations for modules that produce or consume SEO data.
+      Only required when domain contains D3-seo.
+    properties:
+      canonical_table:
+        type: string
+        description: Primary SEO table owned by this module.
+      sitemap_feeds:
+        type: array
+        items:
+          type: string
+      noindex_rules:
+        type: array
+        items:
+          type: string
+      robots_policy:
+        type: string
+        enum: [index_follow, noindex_follow, noindex_nofollow]
+
+  # ── Change Surface ─────────────────────────────────────────────────────────
+  change_surface:
+    type: object
+    description: >
+      What to verify when a PR touches files in this module.
+      Used by the manifest gate and Code-Review agent.
+    required: [review_checklist]
+    properties:
+      risk_level:
+        type: string
+        enum: [low, medium, high, critical]
+      review_checklist:
+        type: array
+        description: Ordered list of checks for reviewers.
+        items:
+          type: string
+        minItems: 1
+      requires_data_ops_approval:
+        type: boolean
+        default: false
+        description: >
+          True if any migration or schema change requires Data-Ops sign-off
+          (modules with owned_tables in D1 or D4 always true).
+      requires_seo_approval:
+        type: boolean
+        default: false
+        description: >
+          True if changes could affect SEO indexation or sitemap output.
+      gate_battery:
+        type: array
+        description: >
+          Gate IDs that must pass green before auto-merge is allowed
+          (only applies when status=certified).
+        items:
+          type: string
+
+additionalProperties: false
