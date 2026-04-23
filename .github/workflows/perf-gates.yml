@@ -60,6 +60,13 @@ jobs:
         env:
           NODE_ENV: production
           PORT: 3000
+          # APP_URL: required by PaymentsModule boot (payment.config.ts:48-62).
+          # Without it, backend crashes silently with ConfigurationException
+          # after DiagnosticEngineModule init, and the 60s /health wait times
+          # out (exit 124). Reproducing this fault locally with these exact
+          # mocks + NODE_ENV=production but no APP_URL matches the CI crash
+          # exactly. Incident: INC-2026-009.
+          APP_URL: http://localhost:3000
           REDIS_URL: redis://localhost:6379
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY }}
