@@ -255,22 +255,49 @@ function normalizeKeyword(keyword: string): string {
     .trim();
 }
 
-/**
- * Extract model and variant from keyword
- */
-/**
- * Convert Arabic generation number to Roman numeral for DB matching
- * "clio 4" → "clio iv", "golf 7" → "golf vii", "polo 6" → "polo vi"
- * Converts trailing number (1-10) after a model name
- */
-function generationToRoman(model: string): string {
-  const map: Record<string, string> = {
-    '1': 'i', '2': 'ii', '3': 'iii', '4': 'iv', '5': 'v',
-    '6': 'vi', '7': 'vii', '8': 'viii', '9': 'ix', '10': 'x',
-  };
-  return model.replace(/\s+(\d+)\s*$/, (_, num) => {
-    return map[num] ? ` ${map[num]}` : ` ${num}`;
-  });
+// ── Vehicle extraction — DB-driven via RPC match_keyword_text_to_vehicle_batch ─
+//
+// Design : au lieu de regex hardcodées (qui rataient 2cv, 4l, c15, c25,
+// espace, xantia, saxo, yaris, twingo i, etc.), on délègue l'extraction
+// model+energy à une RPC SQL qui lit auto_modele FULL catalog avec aliases
+// romain/arabe + digit-letter collapsed. Couvre 1482+ modèles dynamiquement.
+//
+// Flow :
+//   1. Avant triage T3, appeler buildVehicleExtractionCache(csvKeywords)
+//      — 1 round-trip DB par chunk de 500 KW
+//   2. extractVehicleInfo() lit depuis la Map, pas de regex
+//
+// Cf. migration 20260423_match_keyword_text_to_vehicle.sql
+
+interface VehicleExtraction {
+  model: string | null;
+  energy: string | null;
+}
+
+const vehicleExtractionCache = new Map<string, VehicleExtraction>();
+
+async function buildVehicleExtractionCache(keywords: string[]): Promise<void> {
+  if (keywords.length === 0) return;
+  const unique = Array.from(new Set(keywords));
+  const BATCH = 500;
+
+  for (let i = 0; i < unique.length; i += BATCH) {
+    const chunk = unique.slice(i, i + BATCH);
+    const { data, error } = await supabase.rpc(
+      'match_keyword_text_to_vehicle_batch',
+      { p_texts: chunk }
+    );
+    if (error) {
+      console.error(`⚠️ RPC match_keyword_text_to_vehicle_batch (batch ${i}): ${error.message}`);
+      continue;
+    }
+    for (const row of (data || []) as Array<{ input: string; matched_model: string | null; matched_energy: string | null }>) {
+      vehicleExtractionCache.set(row.input, {
+        model: row.matched_model,
+        energy: row.matched_energy,
+      });
+    }
+  }
 }
 
 function extractVehicleInfo(
@@ -280,10 +307,10 @@ function extractVehicleInfo(
   const normalized = normalizeKeyword(keyword);
   const gammeNorm = normalizeKeyword(gamme);
 
-  // Remove gamme from keyword
+  // Remove gamme from keyword for variant extraction
   let remaining = normalized.replace(gammeNorm, '').trim();
 
-  // STEP 1: Extract displacement FIRST
+  // STEP 1: Extract displacement (1.6, 2.0, ...)
   let displacement: string | null = null;
   const dispMatch = remaining.match(/\b(\d)[.,](\d)\b/);
   if (dispMatch) {
@@ -291,7 +318,7 @@ function extractVehicleInfo(
     remaining = remaining.replace(dispMatch[0], ' __DISP__ ').trim();
   }
 
-  // STEP 2: Extract power (CV)
+  // STEP 2: Extract power (CV/CH)
   let power: number | null = null;
   const powerMatch = remaining.match(/\b(6[05]|7[05]|8[056]|9[05]|1[0-4][05]|1[56]0)\s*(ch|cv)?\b/i);
   if (powerMatch) {
@@ -299,82 +326,19 @@ function extractVehicleInfo(
     remaining = remaining.replace(powerMatch[0], ' ').trim();
   }
 
-  // STEP 3: Model patterns
-  const modelsWithGeneration = [
-    /\b(clio)\s+(\d+|[ivx]+)\b/i,
-    /\b(megane)\s+(\d+|[ivx]+)\b/i,
-    /\b(scenic)\s+(\d+|[ivx]+)\b/i,
-    /\b(twingo)\s+(\d+|[ivx]+)\b/i,
-    /\b(golf)\s+(\d+|[ivx]+)\b/i,
-  ];
+  // STEP 3: Model from DB-driven cache (canon via auto_modele + roman/arabic/collapsed aliases)
+  const cached = vehicleExtractionCache.get(keyword);
+  const model = cached?.model ?? null;
 
-  const modelsOptionalGeneration = [
-    /\b(captur)\s*(\d+|[ivx]+)?\b/i,
-    /\b(kangoo)\s*(\d+|[ivx]+)?\b/i,
-    /\b(polo)\s*(\d+|[ivx]+)?\b/i,
-    /\b(focus)\s*(\d+|[ivx]+)?\b/i,
-    /\b(fiesta)\s*(\d+|[ivx]+)?\b/i,
-    /\b(mondeo)\s*(\d+|[ivx]+)?\b/i,
-    /\b(corsa)\s*(\d+|[ivx]+)?\b/i,
-    /\b(astra)\s*(\d+|[ivx]+)?\b/i,
-  ];
-
-  // Compound models (must match BEFORE base models to avoid splitting)
-  const modelsCompound = [
-    /\b(c3\s+picasso)\b/i,
-    /\b(c3\s+aircross)\b/i,
-    /\b(c3\s+pluriel)\b/i,
-    /\b(c4\s+grand\s+picasso)\b/i,
-    /\b(c4\s+picasso)\b/i,
-    /\b(c4\s+cactus)\b/i,
-    /\b(c4\s+aircross)\b/i,
-    /\b(c4\s+spacetourer)\b/i,
-    /\b(c5\s+aircross)\b/i,
-    /\b(xsara\s+picasso)\b/i,
-    /\b(grand\s+scenic)\s*(\d+|[ivx]+)?\b/i,
-    /\b(308\s+sw)\b/i,
-    /\b(508\s+sw)\b/i,
-  ];
-
-  const modelsNoGeneration = [
-    /\b(c3|c4|c5)\b/i,
-    /\b(c3 i|c3 ii|c3 iii)\b/i,
-    /\b(c4 i|c4 ii)\b/i,
-    /\b(berlingo)\s*(\d+|[ivx]+)?\b/i,
-    /\b(207|208|2008)\b/i,
-    /\b(307|308|3008)\b/i,
-    /\b(407|408|4008)\b/i,
-    /\b(508|5008)\b/i,
-    /\b(a3|a4|a6|a1|a5|a7|a8)\b/i,
-    /\b(q3|q5|q7|q2|q8)\b/i,
-  ];
-
-  const allPatterns = [
-    ...modelsCompound,         // Compound first (c4 picasso before c4)
-    ...modelsWithGeneration,
-    ...modelsNoGeneration,
-    ...modelsOptionalGeneration,
-  ];
-
-  let model: string | null = null;
+  // STEP 4: Variant = what's left after stripping the matched model + gamme + displacement
   let variant: string | null = null;
-
-  for (const pattern of allPatterns) {
-    const match = remaining.match(pattern);
-    if (match) {
-      model = generationToRoman(match[0].toLowerCase().replace(/\s+/g, ' ').trim());
-
-      const modelEnd = remaining.indexOf(match[0]) + match[0].length;
-      let afterModel = remaining.slice(modelEnd).trim();
-
-      afterModel = afterModel.replace('__DISP__', displacement || '').trim();
-
-      if (afterModel) {
-        variant = afterModel
-          .replace(/\s+/g, ' ')
-          .replace(/^\s*,\s*/, '')
-          .trim() || null;
-      }
+  if (model) {
+    const escapedModel = model.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const modelPattern = new RegExp(`\\b${escapedModel}\\b`, 'i');
+    let afterModel = remaining.replace(modelPattern, ' ').trim();
+    afterModel = afterModel.replace('__DISP__', displacement || '').trim();
+    if (afterModel) {
+      variant = afterModel.replace(/\s+/g, ' ').replace(/^\s*,\s*/, '').trim() || null;
 
       // Strip non-variant noise words
       if (variant) {
@@ -388,12 +352,8 @@ function extractVehicleInfo(
           variant = null;
         }
       }
-
-      break;
     }
-  }
-
-  if (!model && displacement) {
+  } else if (displacement) {
     const cleanRemaining = remaining.replace('__DISP__', '').trim();
     if (cleanRemaining) {
       variant = `${displacement} ${cleanRemaining}`.replace(/\s+/g, ' ').trim();
@@ -562,6 +522,14 @@ Examples:
   const csvKeywordsRaw = parseGoogleAdsCSV(csvPath);
   console.log(`📊 CSV: ${csvKeywordsRaw.length} keywords parsed`);
 
+  // ── Pre-fetch vehicle extraction (DB-driven via RPC) ───────────────────────
+  // Remplace les regex hardcodées par un lookup dans auto_modele (1482+ modèles).
+  // Couvre tous les modèles anciens (2cv/c15/c25/xantia/saxo/espace/twingo i/etc).
+  console.log(`\n⚙️  Pré-fetch extraction véhicule (RPC match_keyword_text_to_vehicle_batch)...`);
+  await buildVehicleExtractionCache(csvKeywordsRaw.map(k => k.keyword));
+  const cachedModelCount = Array.from(vehicleExtractionCache.values()).filter(v => v.model).length;
+  console.log(`   → ${cachedModelCount}/${vehicleExtractionCache.size} KW ont un modèle véhicule détecté`);
+
   // ── Phase T: Triage ─────────────────────────────────────────────────────────
   console.log(`\n⚙️  Phase T: Triage...`);
   const triage = runTriagePipeline(csvKeywordsRaw, gammeName);
@@ -626,24 +594,37 @@ Examples:
 
   // Add existing keywords (for recalc mode) — skip V5 (DB siblings, not from CSV)
   if (recalc) {
+    // Extend vehicle cache with existing KW that aren't in the CSV (e.g. from previous imports).
+    // Ensures V-Level recalculation uses fresh RPC-based model detection even for legacy rows.
+    const existingKwTexts = (existingKeywords || []).map(k => k.keyword).filter(Boolean);
+    const uncached = existingKwTexts.filter(t => !vehicleExtractionCache.has(t));
+    if (uncached.length > 0) {
+      await buildVehicleExtractionCache(uncached);
+    }
+
     for (const kw of (existingKeywords || []).filter(k => k.v_level !== 'V5')) {
       // Find volume from CSV if available
       const csvMatch = csvKeywords.find(
         (c) => normalizeKeyword(c.keyword) === normalizeKeyword(kw.keyword)
       );
 
+      // Refresh model/energy from canonical RPC cache (overrides potentially stale DB values)
+      const cached = vehicleExtractionCache.get(kw.keyword);
+      const refreshedModel = cached?.model ?? kw.model;
+      const refreshedEnergy = cached?.energy ?? kw.energy ?? detectEnergy(kw.keyword);
+
       allKeywords.push({
         id: kw.id,
         keyword: kw.keyword,
         keyword_normalized: normalizeKeyword(kw.keyword),
         gamme: gammeName,
-        model: kw.model,
+        model: refreshedModel,
         variant: kw.variant,
-        energy: kw.energy || detectEnergy(kw.keyword),
+        energy: refreshedEnergy,
         v_level: kw.v_level,
         volume: csvMatch?.volume ?? kw.volume ?? 0,
         score_seo: null, // Will be recalculated
-        type: kw.model ? 'vehicle' : 'generic',
+        type: refreshedModel ? 'vehicle' : 'generic',
         type_id: kw.type_id,
         power: null,
         displacement: null,
