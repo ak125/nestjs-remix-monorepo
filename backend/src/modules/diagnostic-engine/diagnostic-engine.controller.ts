@@ -14,10 +14,19 @@ import {
   Body,
   Query,
   Param,
+  Header,
   Logger,
 } from '@nestjs/common';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
+import { DiagnosticEngineSearchService } from './diagnostic-engine.search.service';
+import {
+  SearchQuerySchema,
+  DtcCodeSchema,
+  MaintenanceListQuerySchema,
+  SlugParamSchema,
+  PopularQuerySchema,
+} from './types/public-endpoints.schema';
 
 @Controller('api/diagnostic-engine')
 export class DiagnosticEngineController {
@@ -26,6 +35,7 @@ export class DiagnosticEngineController {
   constructor(
     private readonly orchestrator: DiagnosticEngineOrchestrator,
     private readonly dataService: DiagnosticEngineDataService,
+    private readonly searchService: DiagnosticEngineSearchService,
   ) {}
 
   /**
@@ -60,6 +70,7 @@ export class DiagnosticEngineController {
    * List active diagnostic systems
    */
   @Get('systems')
+  @Header('Cache-Control', 'public, max-age=3600')
   async getSystems() {
     const systems = await this.dataService.getActiveSystems();
     return {
@@ -69,6 +80,8 @@ export class DiagnosticEngineController {
         slug: s.slug,
         label: s.label,
         description: s.description,
+        icon_slug: s.icon_slug,
+        color_token: s.color_token,
       })),
     };
   }
@@ -134,6 +147,205 @@ export class DiagnosticEngineController {
         created_at: s.created_at,
       })),
     };
+  }
+
+  // ==========================================================================
+  // Public discovery endpoints (breezy-eagle plan Phase A4)
+  // Pour la surface /diagnostic-auto refactored + /entretien + typeahead
+  // ==========================================================================
+
+  /**
+   * GET /api/diagnostic-engine/search?q=...&limit=10
+   * Typeahead unifie symptomes + entretien + DTC
+   */
+  @Get('search')
+  @Header('Cache-Control', 'public, max-age=60')
+  async search(@Query() query: Record<string, string>) {
+    const parsed = SearchQuerySchema.safeParse(query);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: 'Parametres invalides',
+        details: parsed.error.issues.map((i) => i.message),
+      };
+    }
+    const results = await this.searchService.search(
+      parsed.data.q,
+      parsed.data.limit,
+    );
+    return { success: true, q: parsed.data.q, count: results.length, results };
+  }
+
+  /**
+   * GET /api/diagnostic-engine/dtc/:code
+   * Lookup DTC OBD-II → symptomes + causes probables
+   */
+  @Get('dtc/:code')
+  @Header('Cache-Control', 'public, max-age=86400')
+  async lookupDtc(@Param() params: Record<string, string>) {
+    const parsed = DtcCodeSchema.safeParse(params);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: 'Format DTC invalide (ex: P0300, C0035)',
+      };
+    }
+    // Delegue au RAG via searchService (pivot 2026-04-18)
+    const result = await this.searchService.lookupDtc(parsed.data.code);
+    return { success: true, ...result };
+  }
+
+  /**
+   * GET /api/diagnostic-engine/maintenance?system=&popular=&limit=
+   * Liste des operations d'entretien
+   */
+  @Get('maintenance')
+  @Header('Cache-Control', 'public, max-age=3600')
+  async listMaintenance(@Query() query: Record<string, string>) {
+    const parsed = MaintenanceListQuerySchema.safeParse(query);
+    if (!parsed.success) {
+      return {
+        success: false,
+        error: 'Parametres invalides',
+        details: parsed.error.issues.map((i) => i.message),
+      };
+    }
+
+    if (parsed.data.popular) {
+      const items = await this.dataService.popularMaintenance(
+        parsed.data.limit,
+      );
+      return { success: true, count: items.length, items };
+    }
+
+    const items = await this.dataService.listMaintenanceOps({
+      system: parsed.data.system,
+      limit: parsed.data.limit,
+    });
+    return { success: true, count: items.length, items };
+  }
+
+  /**
+   * GET /api/diagnostic-engine/maintenance/:slug
+   * Detail d'une operation d'entretien + symptomes lies
+   */
+  @Get('maintenance/:slug')
+  @Header('Cache-Control', 'public, max-age=3600')
+  async getMaintenance(@Param() params: Record<string, string>) {
+    const parsed = SlugParamSchema.safeParse(params);
+    if (!parsed.success) {
+      return { success: false, error: 'Slug invalide' };
+    }
+    const result = await this.dataService.getMaintenanceBySlug(
+      parsed.data.slug,
+    );
+    if (!result) {
+      return {
+        success: false,
+        error: `Operation d'entretien non trouvee: ${parsed.data.slug}`,
+      };
+    }
+    return { success: true, ...result };
+  }
+
+  /**
+   * GET /api/diagnostic-engine/popular?kind=symptom|maintenance&limit=6
+   * Top-N depuis __diag_session (signal agrege)
+   */
+  @Get('popular')
+  @Header('Cache-Control', 'public, max-age=600')
+  async popular(@Query() query: Record<string, string>) {
+    const parsed = PopularQuerySchema.safeParse(query);
+    if (!parsed.success) {
+      return { success: false, error: 'Parametres invalides' };
+    }
+    const items =
+      parsed.data.kind === 'symptom'
+        ? await this.dataService.popularSymptoms(parsed.data.limit)
+        : await this.dataService.popularMaintenance(parsed.data.limit);
+    return {
+      success: true,
+      kind: parsed.data.kind,
+      count: items.length,
+      items,
+    };
+  }
+
+  /**
+   * GET /api/diagnostic-engine/symptoms/:slug
+   * Detail symptome + causes probables scorees + regles securite du systeme parent
+   */
+  @Get('symptoms/:slug')
+  @Header('Cache-Control', 'public, max-age=3600')
+  async getSymptomBySlug(@Param() params: Record<string, string>) {
+    const parsed = SlugParamSchema.safeParse(params);
+    if (!parsed.success) {
+      return { success: false, error: 'Slug invalide' };
+    }
+    const symptom = await this.dataService.getSymptomBySlug(parsed.data.slug);
+    if (!symptom) {
+      return {
+        success: false,
+        error: `Symptome non trouve: ${parsed.data.slug}`,
+      };
+    }
+    const [causesLinks, system, maintenanceOps] = await Promise.all([
+      this.dataService.getScoredCausesForSymptom(parsed.data.slug),
+      this.dataService.getSystemById(symptom.system_id),
+      this.dataService.getMaintenanceForSymptom(parsed.data.slug),
+    ]);
+    const safety_rules = system?.slug
+      ? await this.dataService.getSafetyRules(system.slug)
+      : [];
+
+    return {
+      success: true,
+      symptom,
+      system,
+      causes: causesLinks.map((l) => ({
+        slug: l.cause?.slug || `cause-${l.cause_id}`,
+        label: l.cause?.label || '',
+        cause_type: l.cause?.cause_type || '',
+        description: l.cause?.description || null,
+        verification_method: l.cause?.verification_method || null,
+        urgency: l.cause?.urgency || null,
+        relative_score: l.relative_score,
+        evidence_for: l.evidence_for || [],
+        evidence_against: l.evidence_against || [],
+        requires_verification: l.requires_verification,
+      })),
+      safety_rules,
+      maintenance_ops: maintenanceOps.map((m) => ({
+        slug: m.slug,
+        label: m.label,
+        severity_if_overdue: m.severity_if_overdue,
+        interval_km_min: m.interval_km_min,
+        interval_km_max: m.interval_km_max,
+      })),
+    };
+  }
+
+  /**
+   * GET /api/diagnostic-engine/systems/:slug
+   * Systeme + symptomes + regles securite
+   */
+  @Get('systems/:slug')
+  @Header('Cache-Control', 'public, max-age=3600')
+  async getSystemBySlug(@Param() params: Record<string, string>) {
+    const parsed = SlugParamSchema.safeParse(params);
+    if (!parsed.success) {
+      return { success: false, error: 'Slug invalide' };
+    }
+    const result = await this.dataService.getSystemBySlugWithSymptoms(
+      parsed.data.slug,
+    );
+    if (!result) {
+      return {
+        success: false,
+        error: `Systeme non trouve: ${parsed.data.slug}`,
+      };
+    }
+    return { success: true, ...result };
   }
 
   /**

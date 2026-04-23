@@ -345,37 +345,61 @@ export class SitemapV10StaticService extends SupabaseBaseService {
   }
 
   /**
-   * 🩺 Génère sitemap-diagnostic.xml (pages R5 Observable Pro)
+   * 🩺 Génère sitemap-diagnostic.xml (pages R5 Observable Pro + moteur breezy-eagle)
+   * Inclut : /diagnostic-auto, /wizard, /systeme/:slug (13), /symptome/:slug (62 actifs).
+   * Les URL legacy /diagnostic-auto/:slug existent toujours (24) mais sont 301 vers /blog-pieces-auto.
    */
   async generateDiagnosticSitemap(): Promise<string | null> {
     try {
-      // 🛡️ RPC Safety Gate
-      const { data: diagnostics, error } = await this.callRpc<
-        Record<string, unknown>[]
-      >('get_all_seo_observables_for_sitemap', {}, { source: 'cron' });
+      const nowIso = new Date().toISOString();
 
-      if (error) {
-        this.logger.error(
-          `❌ Error fetching diagnostics for sitemap: ${error.message}`,
-        );
-        return null;
-      }
-
-      if (!diagnostics || diagnostics.length === 0) {
-        this.logger.warn('⚠️ No diagnostic pages found for sitemap');
-        return null;
-      }
-
-      // R5 consolidation: only include hub, sub-pages redirect to R3
+      // 1. URL statiques
       const urls: SitemapUrl[] = [
         {
           url: '/diagnostic-auto',
           page_type: 'diagnostic',
           changefreq: 'weekly',
           priority: '0.8',
-          last_modified_at: new Date().toISOString(),
+          last_modified_at: nowIso,
+        },
+        {
+          url: '/diagnostic-auto/wizard',
+          page_type: 'diagnostic',
+          changefreq: 'monthly',
+          priority: '0.7',
+          last_modified_at: nowIso,
         },
       ];
+
+      // 2. Hubs systèmes __diag_system (13 actifs)
+      const { data: systems } = await this.supabase
+        .from('__diag_system')
+        .select('slug')
+        .eq('active', true);
+      for (const s of systems || []) {
+        urls.push({
+          url: `/diagnostic-auto/systeme/${s.slug}`,
+          page_type: 'diagnostic',
+          changefreq: 'monthly',
+          priority: '0.7',
+          last_modified_at: nowIso,
+        });
+      }
+
+      // 3. Symptomes canoniques __diag_symptom (62 actifs)
+      const { data: symptoms } = await this.supabase
+        .from('__diag_symptom')
+        .select('slug, created_at')
+        .eq('active', true);
+      for (const sym of symptoms || []) {
+        urls.push({
+          url: `/diagnostic-auto/symptome/${sym.slug}`,
+          page_type: 'diagnostic',
+          changefreq: 'monthly',
+          priority: '0.6',
+          last_modified_at: sym.created_at || nowIso,
+        });
+      }
 
       const filePath = path.join(
         this.xmlService.OUTPUT_DIR,
@@ -386,6 +410,61 @@ export class SitemapV10StaticService extends SupabaseBaseService {
       return filePath;
     } catch (error) {
       this.logger.error(`❌ Failed to generate diagnostic sitemap: ${error}`);
+      return null;
+    }
+  }
+
+  /**
+   * 🔧 Génère sitemap-maintenance.xml (entretien preventif, plan breezy-eagle).
+   * Inclut : /entretien + /entretien/:slug (30 operations).
+   */
+  async generateMaintenanceSitemap(): Promise<string | null> {
+    try {
+      const nowIso = new Date().toISOString();
+
+      const urls: SitemapUrl[] = [
+        {
+          url: '/entretien',
+          page_type: 'maintenance',
+          changefreq: 'weekly',
+          priority: '0.8',
+          last_modified_at: nowIso,
+        },
+      ];
+
+      const { data: ops, error } = await this.supabase
+        .from('__diag_maintenance_operation')
+        .select('slug, created_at')
+        .eq('active', true);
+
+      if (error) {
+        this.logger.error(
+          `❌ Error fetching maintenance ops for sitemap: ${error.message}`,
+        );
+        return null;
+      }
+
+      for (const op of ops || []) {
+        urls.push({
+          url: `/entretien/${op.slug}`,
+          page_type: 'maintenance',
+          changefreq: 'monthly',
+          priority: '0.6',
+          last_modified_at: op.created_at || nowIso,
+        });
+      }
+
+      const filePath = path.join(
+        this.xmlService.OUTPUT_DIR,
+        'sitemap-maintenance.xml',
+      );
+      await this.xmlService.writeStaticSitemapFile(filePath, urls);
+      this.logger.log(
+        `   ✅ sitemap-maintenance.xml: ${urls.length} URLs (entretien)`,
+      );
+      return filePath;
+    } catch (error) {
+      this.logger.error(`❌ Failed to generate maintenance sitemap: ${error}`);
       return null;
     }
   }

@@ -77,10 +77,18 @@ export class DiagnosticController {
    * Crée les entrées en mode DRAFT (is_published: false)
    * ADMIN ONLY
    */
+  /**
+   * @deprecated since breezy-eagle plan (2026-04-18). Use the DiagnosticEngine
+   * at /api/diagnostic-engine backed by __diag_* tables instead. This legacy
+   * generation path writes to __seo_observable which is no longer the source
+   * of truth for the public diagnostic surface.
+   */
   @Post('generate')
   @UseGuards(IsAdminGuard)
   async generateFromTemplates(): Promise<{ created: number; skipped: number }> {
-    this.logger.log('🏭 POST /api/seo/diagnostic/generate');
+    this.logger.warn(
+      '[DEPRECATED] POST /api/seo/diagnostic/generate — use /api/diagnostic-engine (breezy-eagle plan)',
+    );
     return this.diagnosticService.generateFromTemplates();
   }
 
@@ -193,12 +201,19 @@ export class DiagnosticController {
    * PATCH /api/seo/diagnostic/:slug/publish
    * ADMIN ONLY
    */
+  /**
+   * @deprecated since breezy-eagle plan (2026-04-18). __seo_observable publish
+   * path is frozen — use the DiagnosticEngine at /api/diagnostic-engine for
+   * new authored content.
+   */
   @Patch(':slug/publish')
   @UseGuards(IsAdminGuard)
   async publishDiagnostic(
     @Param('slug') slug: string,
   ): Promise<{ success: boolean; error?: string }> {
-    this.logger.log(`📢 PATCH /api/seo/diagnostic/${slug}/publish`);
+    this.logger.warn(
+      `[DEPRECATED] PATCH /api/seo/diagnostic/${slug}/publish — use /api/diagnostic-engine (breezy-eagle plan)`,
+    );
     return this.diagnosticService.publish(slug);
   }
 

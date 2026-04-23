@@ -16,6 +16,8 @@ export interface DiagSystem {
   description: string | null;
   display_order: number;
   active: boolean;
+  icon_slug: string | null;
+  color_token: string | null;
 }
 
 export interface DiagSymptom {
@@ -27,6 +29,42 @@ export interface DiagSymptom {
   signal_mode: string;
   urgency: string;
   active: boolean;
+}
+
+export interface DiagMaintenanceOperation {
+  id: number;
+  slug: string;
+  system_id: number;
+  label: string;
+  description: string | null;
+  interval_km_min: number | null;
+  interval_km_max: number | null;
+  interval_months_min: number | null;
+  interval_months_max: number | null;
+  severity_if_overdue: string | null;
+  normal_wear_km_min: number | null;
+  normal_wear_km_max: number | null;
+  related_gamme_slug: string | null;
+  related_pg_id: number | null;
+  active: boolean;
+}
+
+export interface PopularSymptom {
+  slug: string;
+  label: string;
+  system_slug: string;
+  system_label: string;
+  urgency: string;
+  session_count: number;
+}
+
+export interface PopularMaintenance {
+  slug: string;
+  label: string;
+  system_slug: string;
+  severity_if_overdue: string | null;
+  related_pg_id: number | null;
+  popularity_score: number;
 }
 
 export interface DiagCause {
@@ -84,6 +122,21 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       return [];
     }
     return data || [];
+  }
+
+  /**
+   * Get system by numeric ID
+   */
+  async getSystemById(id: number): Promise<DiagSystem | null> {
+    const { data, error } = await this.supabase
+      .from('__diag_system')
+      .select('*')
+      .eq('id', id)
+      .eq('active', true)
+      .single();
+
+    if (error) return null;
+    return data;
   }
 
   /**
@@ -354,27 +407,38 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
     symptoms_count: number;
     causes_count: number;
     safety_rules_count: number;
+    maintenance_ops_count: number;
   }> {
     // Run counts in parallel
-    const [sessionsRes, systemsRes, symptomsRes, causesRes, rulesRes] =
-      await Promise.all([
-        this.supabase
-          .from('__diag_session')
-          .select('id', { count: 'exact', head: true }),
-        this.supabase
-          .from('__diag_system')
-          .select('id', { count: 'exact', head: true })
-          .eq('active', true),
-        this.supabase
-          .from('__diag_symptom')
-          .select('id', { count: 'exact', head: true }),
-        this.supabase
-          .from('__diag_cause')
-          .select('id', { count: 'exact', head: true }),
-        this.supabase
-          .from('__diag_safety_rule')
-          .select('id', { count: 'exact', head: true }),
-      ]);
+    const [
+      sessionsRes,
+      systemsRes,
+      symptomsRes,
+      causesRes,
+      rulesRes,
+      maintRes,
+    ] = await Promise.all([
+      this.supabase
+        .from('__diag_session')
+        .select('id', { count: 'exact', head: true }),
+      this.supabase
+        .from('__diag_system')
+        .select('id', { count: 'exact', head: true })
+        .eq('active', true),
+      this.supabase
+        .from('__diag_symptom')
+        .select('id', { count: 'exact', head: true }),
+      this.supabase
+        .from('__diag_cause')
+        .select('id', { count: 'exact', head: true }),
+      this.supabase
+        .from('__diag_safety_rule')
+        .select('id', { count: 'exact', head: true }),
+      this.supabase
+        .from('__diag_maintenance_operation')
+        .select('id', { count: 'exact', head: true })
+        .eq('active', true),
+    ]);
 
     // Sessions by system (manual grouping from recent 500)
     const { data: recentSessions } = await this.supabase
@@ -397,6 +461,360 @@ export class DiagnosticEngineDataService extends SupabaseBaseService {
       symptoms_count: symptomsRes.count || 0,
       causes_count: causesRes.count || 0,
       safety_rules_count: rulesRes.count || 0,
+      maintenance_ops_count: maintRes.count || 0,
     };
+  }
+
+  // ==========================================================================
+  // Public surface methods (breezy-eagle plan Phase A2)
+  // Lecture des __diag_* pour /search, /dtc, /maintenance, /popular, /systems/:slug
+  // ==========================================================================
+
+  /**
+   * Retourne tous les symptomes actifs (utilise par le SearchService RAG
+   * pour resoudre chunk_title -> slug via match exact).
+   */
+  async getAllActiveSymptoms(): Promise<DiagSymptom[]> {
+    const { data, error } = await this.supabase
+      .from('__diag_symptom')
+      .select('*')
+      .eq('active', true);
+
+    if (error) {
+      this.logger.warn('getAllActiveSymptoms failed', error.message);
+      return [];
+    }
+    return data || [];
+  }
+
+  /**
+   * Fallback ILIKE simple sur __diag_symptom.label (sans synonymes, sans RPC).
+   * Utilise uniquement quand le RAG est indisponible.
+   */
+  async searchSymptomsByLabelOnly(
+    q: string,
+    limit = 10,
+  ): Promise<DiagSymptom[]> {
+    const query = q.trim();
+    if (query.length < 2) return [];
+    const { data, error } = await this.supabase
+      .from('__diag_symptom')
+      .select('*')
+      .eq('active', true)
+      .ilike('label', `%${query}%`)
+      .limit(limit);
+    if (error) {
+      this.logger.warn(`searchSymptomsByLabelOnly failed`, error.message);
+      return [];
+    }
+    return data || [];
+  }
+
+  /**
+   * Fallback ILIKE simple sur __diag_maintenance_operation.label.
+   */
+  async searchMaintenanceByLabelOnly(
+    q: string,
+    limit = 10,
+  ): Promise<DiagMaintenanceOperation[]> {
+    const query = q.trim();
+    if (query.length < 2) return [];
+    const { data, error } = await this.supabase
+      .from('__diag_maintenance_operation')
+      .select('*')
+      .eq('active', true)
+      .ilike('label', `%${query}%`)
+      .limit(limit);
+    if (error) {
+      this.logger.warn(`searchMaintenanceByLabelOnly failed`, error.message);
+      return [];
+    }
+    return data || [];
+  }
+
+  /**
+   * DTC code lookup : delegue au RAG (strategy pivot 2026-04-18).
+   *
+   * Le RAG est interroge avec le code DTC comme query. Les chunks R5_DIAGNOSTIC
+   * qui citent le code (dans leur texte ou frontmatter) sont retournes, puis
+   * on tente de resoudre le slug DB via match exact h3 titre -> label.
+   *
+   * La resolution finale et l'agregation RAG/DB sont faites par SearchService.
+   * Cette methode retourne juste le code normalise + symptomes resolus (si le
+   * caller passe en DB par match exact via getSymptomBySlug).
+   *
+   * Fallback : si aucun RAG disponible, retourne vide.
+   */
+  async lookupDtc(code: string): Promise<{
+    code: string;
+    symptoms: DiagSymptom[];
+    likely_causes: DiagSymptomCauseLink[];
+  }> {
+    const normalized = code.trim().toUpperCase();
+    // La resolution complete passe par SearchService (qui injecte RagProxyService).
+    // Ici on retourne la forme canonique ; le controller passe par searchService.search(code)
+    // qui gere deja les cas DTC + delegation RAG.
+    return { code: normalized, symptoms: [], likely_causes: [] };
+  }
+
+  /**
+   * List maintenance operations with optional filters.
+   */
+  async listMaintenanceOps(opts: {
+    system?: string;
+    limit?: number;
+  }): Promise<DiagMaintenanceOperation[]> {
+    const limit = Math.min(Math.max(opts.limit || 30, 1), 100);
+
+    let systemId: number | null = null;
+    if (opts.system) {
+      const sys = await this.getSystemBySlug(opts.system);
+      if (!sys) return [];
+      systemId = sys.id;
+    }
+
+    let query = this.supabase
+      .from('__diag_maintenance_operation')
+      .select('*')
+      .eq('active', true)
+      .order('slug')
+      .limit(limit);
+
+    if (systemId !== null) query = query.eq('system_id', systemId);
+
+    const { data, error } = await query;
+    if (error) {
+      this.logger.warn('listMaintenanceOps failed', error.message);
+      return [];
+    }
+    return data || [];
+  }
+
+  /**
+   * Get maintenance operation by slug with linked symptoms.
+   */
+  async getMaintenanceBySlug(slug: string): Promise<{
+    operation: DiagMaintenanceOperation;
+    linked_symptoms: DiagSymptom[];
+  } | null> {
+    const { data: op, error } = await this.supabase
+      .from('__diag_maintenance_operation')
+      .select('*')
+      .eq('slug', slug)
+      .eq('active', true)
+      .single();
+
+    if (error || !op) {
+      this.logger.warn(`getMaintenanceBySlug not found: ${slug}`);
+      return null;
+    }
+
+    const { data: links } = await this.supabase
+      .from('__diag_maintenance_symptom_link')
+      .select('symptom_id')
+      .eq('operation_id', op.id)
+      .eq('active', true);
+
+    const symptomIds = (links || []).map((l) => l.symptom_id);
+    let linkedSymptoms: DiagSymptom[] = [];
+    if (symptomIds.length) {
+      const { data: symptoms } = await this.supabase
+        .from('__diag_symptom')
+        .select('*')
+        .in('id', symptomIds)
+        .eq('active', true);
+      linkedSymptoms = symptoms || [];
+    }
+
+    return { operation: op, linked_symptoms: linkedSymptoms };
+  }
+
+  /**
+   * Popular symptoms aggregated from last 500 sessions.
+   * Reads __diag_session.signal_input->symptom_slugs.
+   */
+  async popularSymptoms(limit = 6): Promise<PopularSymptom[]> {
+    const { data: sessions, error } = await this.supabase
+      .from('__diag_session')
+      .select('signal_input')
+      .order('created_at', { ascending: false })
+      .limit(500);
+
+    if (error || !sessions?.length) {
+      this.logger.warn('popularSymptoms: no sessions', error?.message);
+      return [];
+    }
+
+    // __diag_session.signal_input layout observed in prod:
+    //   { signal_mode, primary_signal, secondary_signals: [] }
+    // Some legacy rows may use symptom_slugs: [] — we handle both.
+    const counts = new Map<string, number>();
+    for (const row of sessions) {
+      const input = row.signal_input as Record<string, unknown>;
+      if (!input) continue;
+      if (typeof input.primary_signal === 'string') {
+        counts.set(
+          input.primary_signal,
+          (counts.get(input.primary_signal) || 0) + 2, // weighted
+        );
+      }
+      const secondary = input.secondary_signals;
+      if (Array.isArray(secondary)) {
+        for (const s of secondary) {
+          if (typeof s === 'string') counts.set(s, (counts.get(s) || 0) + 1);
+        }
+      }
+      // Legacy fallback
+      const legacy = input.symptom_slugs;
+      if (Array.isArray(legacy)) {
+        for (const s of legacy) {
+          if (typeof s === 'string') counts.set(s, (counts.get(s) || 0) + 1);
+        }
+      }
+    }
+
+    const topSlugs = Array.from(counts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit * 2) // oversample, some may be inactive
+      .map(([slug]) => slug);
+
+    if (!topSlugs.length) return [];
+
+    const { data: symptoms } = await this.supabase
+      .from('__diag_symptom')
+      .select(
+        'slug, label, urgency, system_id, active, __diag_system!inner(slug, label)',
+      )
+      .in('slug', topSlugs)
+      .eq('active', true);
+
+    const items: PopularSymptom[] = [];
+    for (const sym of symptoms || []) {
+      const sysJoin = (sym as Record<string, unknown>).__diag_system as
+        | { slug: string; label: string }
+        | undefined;
+      const systemSlug = sysJoin?.slug || '';
+      const systemLabel = sysJoin?.label || '';
+      items.push({
+        slug: sym.slug,
+        label: sym.label,
+        system_slug: systemSlug,
+        system_label: systemLabel,
+        urgency: sym.urgency,
+        session_count: counts.get(sym.slug) || 0,
+      });
+    }
+
+    return items
+      .sort((a, b) => b.session_count - a.session_count)
+      .slice(0, limit);
+  }
+
+  /**
+   * Popular maintenance operations — heuristic:
+   * low interval_km_min first (frequent maintenance), then severity.
+   * (We don't yet have a "session recorded maintenance" metric.)
+   */
+  async popularMaintenance(limit = 6): Promise<PopularMaintenance[]> {
+    // DB uses EN values: critical / high / moderate / low
+    const severityRank: Record<string, number> = {
+      critical: 4,
+      high: 3,
+      moderate: 2,
+      low: 1,
+    };
+
+    const { data, error } = await this.supabase
+      .from('__diag_maintenance_operation')
+      .select(
+        'slug, label, severity_if_overdue, related_pg_id, interval_km_min, __diag_system!inner(slug)',
+      )
+      .eq('active', true)
+      .order('interval_km_min', { ascending: true, nullsFirst: false })
+      .limit(limit * 3);
+
+    if (error || !data?.length) {
+      this.logger.warn('popularMaintenance failed', error?.message);
+      return [];
+    }
+
+    const items = data.map((m) => {
+      const sysJoin = (m as Record<string, unknown>).__diag_system as
+        | { slug: string }
+        | undefined;
+      const severity = m.severity_if_overdue || 'low';
+      const score =
+        (severityRank[severity] || 1) * 10 +
+        (m.interval_km_min ? Math.max(0, 40000 - m.interval_km_min) / 1000 : 0);
+      return {
+        slug: m.slug,
+        label: m.label,
+        system_slug: sysJoin?.slug || '',
+        severity_if_overdue: m.severity_if_overdue,
+        related_pg_id: m.related_pg_id,
+        popularity_score: Math.round(score),
+      };
+    });
+
+    return items
+      .sort((a, b) => b.popularity_score - a.popularity_score)
+      .slice(0, limit);
+  }
+
+  /**
+   * Get maintenance operations linked to a symptom slug (reverse of maintenance.linked_symptoms).
+   * Lit __diag_maintenance_symptom_link puis join vers __diag_maintenance_operation.
+   */
+  async getMaintenanceForSymptom(
+    symptomSlug: string,
+  ): Promise<DiagMaintenanceOperation[]> {
+    const symptom = await this.getSymptomBySlug(symptomSlug);
+    if (!symptom) return [];
+
+    const { data: links } = await this.supabase
+      .from('__diag_maintenance_symptom_link')
+      .select('operation_id')
+      .eq('symptom_id', symptom.id)
+      .eq('active', true);
+
+    const operationIds = (links || []).map((l) => l.operation_id);
+    if (!operationIds.length) return [];
+
+    const { data: ops, error } = await this.supabase
+      .from('__diag_maintenance_operation')
+      .select('*')
+      .in('id', operationIds)
+      .eq('active', true)
+      .order('slug');
+
+    if (error) {
+      this.logger.warn(
+        `getMaintenanceForSymptom failed for ${symptomSlug}`,
+        error.message,
+      );
+      return [];
+    }
+    return ops || [];
+  }
+
+  /**
+   * System detail with all its symptoms, safety rules and maintenance operations.
+   */
+  async getSystemBySlugWithSymptoms(slug: string): Promise<{
+    system: DiagSystem;
+    symptoms: DiagSymptom[];
+    safety_rules: DiagSafetyRule[];
+    maintenance_ops: DiagMaintenanceOperation[];
+  } | null> {
+    const system = await this.getSystemBySlug(slug);
+    if (!system) return null;
+
+    const [symptoms, safety_rules, maintenance_ops] = await Promise.all([
+      this.getSymptomsBySystem(slug),
+      this.getSafetyRules(slug),
+      this.listMaintenanceOps({ system: slug, limit: 50 }),
+    ]);
+
+    return { system, symptoms, safety_rules, maintenance_ops };
   }
 }

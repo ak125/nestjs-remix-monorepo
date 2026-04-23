@@ -120,10 +120,15 @@ export class SitemapV10Service extends SupabaseBaseService {
       const pages = await this.staticService.generatePagesSitemap();
       if (pages) allFilePaths.push(pages);
 
-      // 6. Diagnostic R5 (Observable Pro)
+      // 6. Diagnostic R5 (Observable Pro + hubs systemes + symptomes canoniques)
       this.logger.log('🩺 [6/9] Generating sitemap-diagnostic.xml...');
       const diagnostic = await this.staticService.generateDiagnosticSitemap();
       if (diagnostic) allFilePaths.push(diagnostic);
+
+      // 6b. Entretien preventif (breezy-eagle)
+      this.logger.log('🔧 [6b/9] Generating sitemap-maintenance.xml...');
+      const maintenance = await this.staticService.generateMaintenanceSitemap();
+      if (maintenance) allFilePaths.push(maintenance);
 
       // 7. Référence R4
       this.logger.log('📖 [7/9] Generating sitemap-reference.xml...');
@@ -542,6 +547,10 @@ export class SitemapV10Service extends SupabaseBaseService {
       this.logger.log('🩺 [6/9] Generating sitemap-diagnostic.xml...');
       const diagnostic = await this.staticService.generateDiagnosticSitemap();
       if (diagnostic) allFilePaths.push(diagnostic);
+
+      this.logger.log('🔧 [6b/9] Generating sitemap-maintenance.xml...');
+      const maintenance = await this.staticService.generateMaintenanceSitemap();
+      if (maintenance) allFilePaths.push(maintenance);
 
       this.logger.log('📖 [7/9] Generating sitemap-reference.xml...');
       const reference = await this.staticService.generateReferenceSitemap();
