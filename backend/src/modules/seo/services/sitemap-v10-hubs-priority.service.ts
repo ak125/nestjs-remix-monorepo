@@ -16,6 +16,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
 import { normalizeAlias } from '../../../common/utils/url-builder.utils';
+import { getValidTypeIds } from '../helpers/auto-type-valid-ids.helper';
 import { SITE_ORIGIN } from '../../../config/app.config';
 import {
   HubGenerationResult,
@@ -97,10 +98,20 @@ export class HubsPriorityService extends SupabaseBaseService {
           details: error.message,
         });
 
-      const urls = (pieces || []).map(
-        (p) =>
-          `${this.BASE_URL}/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
-      );
+      // Anti-404 : filtrer les orphelins TecDoc V1
+      const validTypeIds = await getValidTypeIds(this.supabase);
+      const urls = (pieces || [])
+        .filter((p) =>
+          validTypeIds.has(
+            typeof p.map_type_id === 'string'
+              ? parseInt(p.map_type_id, 10)
+              : (p.map_type_id as number),
+          ),
+        )
+        .map(
+          (p) =>
+            `${this.BASE_URL}/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
+        );
 
       // Écrire le fichier
       const dirPath = path.join(this.OUTPUT_DIR, 'hot');
@@ -194,10 +205,20 @@ ${links}
           .lt('map_has_item', 15) // Pages faibles
           .limit(2000);
 
-        const urls = (fallback || []).map(
-          (p) =>
-            `${this.BASE_URL}/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
-        );
+        // Anti-404 : filtrer les orphelins TecDoc V1
+        const validTypeIds = await getValidTypeIds(this.supabase);
+        const urls = (fallback || [])
+          .filter((p) =>
+            validTypeIds.has(
+              typeof p.map_type_id === 'string'
+                ? parseInt(p.map_type_id, 10)
+                : (p.map_type_id as number),
+            ),
+          )
+          .map(
+            (p) =>
+              `${this.BASE_URL}/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
+          );
 
         return this.writeRiskHubFile(urls);
       }

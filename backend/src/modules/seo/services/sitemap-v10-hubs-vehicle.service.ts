@@ -15,6 +15,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { SITE_ORIGIN } from '../../../config/app.config';
 import { normalizeAlias } from '../../../common/utils/url-builder.utils';
+import { getValidTypeIds } from '../helpers/auto-type-valid-ids.helper';
 import {
   HubGenerationResult,
   HubType,
@@ -178,9 +179,12 @@ ${links}
       // 2. Pages modèle (via __sitemap_p_link pour avoir les combinaisons actives)
       // Format: /constructeurs/{marque}/{modele}/{type}.html
       // ⚠️ PAGINATION COMPLÈTE - récupérer TOUS les véhicules puis dédupliquer
+      // Anti-404 : filtrer les orphelins TecDoc V1 (type_ids absents d'auto_type)
+      const validTypeIds = await getValidTypeIds(this.supabase);
       const PAGE_SIZE = 1000;
       let offset = 0;
       let hasMore = true;
+      let skippedOrphans = 0;
       const seen = new Set<string>();
       const vehicleUrls: string[] = [];
 
@@ -202,6 +206,15 @@ ${links}
 
         if (vehicles && vehicles.length > 0) {
           for (const v of vehicles) {
+            const typeIdNum =
+              typeof v.map_type_id === 'string'
+                ? parseInt(v.map_type_id, 10)
+                : (v.map_type_id as number);
+            // Skip orphan type_ids (TecDoc V1 remap residue)
+            if (!validTypeIds.has(typeIdNum)) {
+              skippedOrphans++;
+              continue;
+            }
             const key = `${v.map_marque_id}-${v.map_modele_id}-${v.map_type_id}`;
             if (
               !seen.has(key) &&
@@ -235,6 +248,11 @@ ${links}
       this.logger.log(
         `   Found ${seen.size} unique vehicle pages (scanned ${offset} rows)`,
       );
+      if (skippedOrphans > 0) {
+        this.logger.warn(
+          `   🧹 Filtered out ${skippedOrphans.toLocaleString()} orphan type_ids (TecDoc V1 remap residue)`,
+        );
+      }
 
       // ═══════════════════════════════════════════════════════════
       // PAGINATION: Écrire plusieurs fichiers (max 5000 URLs/fichier)
