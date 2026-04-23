@@ -377,11 +377,69 @@ export default function BlogPiecesAutoMarqueModele() {
                         ✓ Qualité OEM
                       </div>
                     </div>
-                    <p className="text-gray-600 text-sm mb-4">
-                      Retrouvez toutes les motorisations disponibles pour votre{" "}
-                      {brand.name} {modelGroup.name}. Pièces d'origine et
-                      compatibles avec garantie 100%.
-                    </p>
+                    {(() => {
+                      const allTypes = models.flatMap((m) => m.types);
+                      const powers = allTypes
+                        .map((t) => parseInt(String(t.ch)) || 0)
+                        .filter((p) => p > 0);
+                      const minPower = powers.length ? Math.min(...powers) : 0;
+                      const maxPower = powers.length ? Math.max(...powers) : 0;
+                      const dieselCount = allTypes.filter((t) =>
+                        (t.carburant || "").toLowerCase().includes("diesel"),
+                      ).length;
+                      const essenceCount = allTypes.filter((t) =>
+                        (t.carburant || "").toLowerCase().includes("essence"),
+                      ).length;
+                      const hybrideCount = allTypes.filter((t) =>
+                        (t.carburant || "").toLowerCase().includes("hybride"),
+                      ).length;
+                      const electriqueCount = allTypes.filter((t) =>
+                        (t.carburant || "")
+                          .toLowerCase()
+                          .includes("électrique"),
+                      ).length;
+                      const otherCount =
+                        totalTypes -
+                        dieselCount -
+                        essenceCount -
+                        hybrideCount -
+                        electriqueCount;
+                      const fuelMix: string[] = [];
+                      if (dieselCount) fuelMix.push(`${dieselCount} diesel`);
+                      if (essenceCount) fuelMix.push(`${essenceCount} essence`);
+                      if (hybrideCount) fuelMix.push(`${hybrideCount} hybride`);
+                      if (electriqueCount)
+                        fuelMix.push(`${electriqueCount} électrique`);
+                      if (otherCount > 0)
+                        fuelMix.push(
+                          `${otherCount} autre${otherCount > 1 ? "s" : ""}`,
+                        );
+                      const yearLabel = modelGroup.yearTo
+                        ? `${modelGroup.yearFrom}-${modelGroup.yearTo}`
+                        : `depuis ${modelGroup.yearFrom}`;
+                      const bodyLabel = modelGroup.body
+                        ? `${modelGroup.body.toLowerCase()} `
+                        : "";
+                      return (
+                        <p className="text-gray-600 text-sm mb-4">
+                          Catalogue pièces auto {bodyLabel}
+                          <strong>
+                            {brand.name} {modelGroup.name}
+                          </strong>{" "}
+                          ({yearLabel}) — {totalTypes} motorisation
+                          {totalTypes > 1 ? "s" : ""}
+                          {fuelMix.length > 0 && ` (${fuelMix.join(" / ")})`}
+                          {powers.length > 0 &&
+                            minPower !== maxPower &&
+                            `, de ${minPower} à ${maxPower} ch`}
+                          {powers.length > 0 &&
+                            minPower === maxPower &&
+                            `, ${minPower} ch`}
+                          . Pièces d'origine et compatibles, garantie 100%,
+                          livraison 24-48h.
+                        </p>
+                      );
+                    })()}
                   </div>
 
                   {/* Informations claires - Structure améliorée */}
