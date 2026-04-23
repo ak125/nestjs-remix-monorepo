@@ -453,6 +453,35 @@ export const FIELD_CATALOG: FieldOwnership[] = [
     resourceGroup: 'purchase_guide_main',
   },
 
+  // ── R6 gatekeeper verdict (mirrors r1s_gatekeeper_* on R1_ROUTER) ──
+  {
+    table: '__seo_gamme_purchase_guide',
+    field: 'sgpg_gatekeeper_score',
+    ownerRole: RoleId.R6_GUIDE_ACHAT,
+    writeClass: 'metadata',
+    writeStrategy: 'replace',
+    conflictPolicy: 'hold',
+    resourceGroup: 'purchase_guide_main',
+  },
+  {
+    table: '__seo_gamme_purchase_guide',
+    field: 'sgpg_gatekeeper_flags',
+    ownerRole: RoleId.R6_GUIDE_ACHAT,
+    writeClass: 'metadata',
+    writeStrategy: 'replace',
+    conflictPolicy: 'hold',
+    resourceGroup: 'purchase_guide_main',
+  },
+  {
+    table: '__seo_gamme_purchase_guide',
+    field: 'sgpg_gatekeeper_checks',
+    ownerRole: RoleId.R6_GUIDE_ACHAT,
+    writeClass: 'metadata',
+    writeStrategy: 'replace',
+    conflictPolicy: 'hold',
+    resourceGroup: 'purchase_guide_main',
+  },
+
   // ── R6 state slot ──
   {
     table: '__seo_gamme_purchase_guide',
