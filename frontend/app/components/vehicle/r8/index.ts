@@ -14,3 +14,7 @@ export type {
 export { FAMILY_MICRO_DESCRIPTIONS } from "./r8-constants";
 export { generateVehicleSchema } from "./r8-schema";
 export { transformRpcToLoaderData } from "./r8-transform";
+
+// Sections
+export { BreadcrumbSection } from "./sections/BreadcrumbSection";
+export { HeroSection } from "./sections/HeroSection";
