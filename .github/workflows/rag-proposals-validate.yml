@@ -1,0 +1,96 @@
+name: 🔄 RAG Proposals Validate (skeleton)
+
+# Stage 0 A08 skeleton of ADR-022 (R8 RAG Control Plane).
+# This workflow polls __rag_proposals for status='pending' rows and runs
+# validation (JSON Schema + forbidden terms + placeholder resolution +
+# FK check). Auto-approves low-risk proposals, flags medium/high for
+# human review.
+#
+# STAGE 0 SCOPE : skeleton only. Schedule DISABLED until Stage 1.
+# Validation logic is a stub (exits 0). The real CI job wires in
+# when VehicleRagGeneratorService.proposeChanges() starts populating
+# __rag_proposals (A10, Stage 1 shadow mode).
+#
+# Trigger via workflow_dispatch for manual testing in DEV.
+#
+# Refs :
+#   - ADR-022 R8 RAG Control Plane
+#   - Design spec § 5.4 (API contract) + § 5.3 (state machine)
+
+on:
+  # schedule:
+  #   - cron: '*/10 * * * *'  # DISABLED until Stage 1
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode (no status update in DB)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rag-proposals-validate
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate pending proposals
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Print Stage 0 skeleton notice
+        run: |
+          echo "::notice::rag-proposals-validate is Stage 0 skeleton — validation logic wires in at Stage 1 (A10 shadow mode)."
+          echo "Dry-run flag: ${{ inputs.dry_run }}"
+
+      - name: Check __rag_proposals table reachable
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::warning::Supabase secrets not configured yet (expected at Stage 0 — wired at Stage 1)."
+            exit 0
+          fi
+
+          # Minimal reachability test : count proposals by status
+          RESPONSE=$(curl -sf "${SUPABASE_URL}/rest/v1/__rag_proposals?select=status" \
+            -H "apikey: ${SUPABASE_SERVICE_ROLE_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_ROLE_KEY}" \
+            || echo 'ERROR')
+          if [ "$RESPONSE" = "ERROR" ]; then
+            echo "::error::Cannot reach __rag_proposals via PostgREST."
+            exit 1
+          fi
+          echo "OK __rag_proposals reachable. Row sample: $(echo "$RESPONSE" | head -c 200)"
+
+      - name: Placeholder - fetch pending proposals
+        run: |
+          echo "::notice::Stage 1 will fetch pending proposals and run:"
+          echo "  1. JSON Schema validation (vehicle-model / variations / role_map)"
+          echo "  2. Forbidden terms check (29 R7 terms)"
+          echo "  3. Placeholder resolution (for .variations.yaml)"
+          echo "  4. FK check : motorisations[].variants[].type_ids[] exist in auto_type"
+          echo "  5. Auto-approve if risk_level=low AND all green AND RAG_PROPOSAL_AUTO_APPROVE_LOW=true"
+          echo "Stage 0 scope : skeleton only."
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "rag-proposals-validate skeleton ran successfully (Stage 0)."
+          echo "Next: Stage 1 — A10 VehicleRagGeneratorService refactor + actual validation logic."
