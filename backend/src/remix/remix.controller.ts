@@ -40,15 +40,6 @@ export class RemixController {
       return next();
     }
 
-    // 🛑 410 Gone - Legacy supplier URLs
-    // URLs format: /pieces-{supplier}.html (ex: /pieces-al-ko.html, /pieces-bosch.html)
-    const supplierUrlRegex = /^\/pieces-[a-z0-9-]+\.html$/i;
-    if (supplierUrlRegex.test(request.url)) {
-      this.logger.log(`[410] Legacy supplier URL: ${request.url}`);
-      response.status(HttpStatus.GONE).send('Gone');
-      return;
-    }
-
     try {
       const build = await getServerBuild();
       return createRequestHandler({
