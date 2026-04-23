@@ -39,18 +39,18 @@ import {
   Wrench,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { resolveSlogan } from "~/config/visual-intent";
 import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { ErrorGeneric } from "../components/errors";
-import { HeroSelection } from "../components/heroes";
 import { ModelContentV1Display } from "../components/model";
 import { HtmlContent } from "../components/seo/HtmlContent";
 import {
+  BreadcrumbSection,
   FAMILY_MICRO_DESCRIPTIONS,
   generateVehicleSchema,
+  HeroSection,
   transformRpcToLoaderData,
   type LoaderData,
 } from "../components/vehicle/r8";
@@ -442,104 +442,9 @@ export default function VehicleDetailPage() {
       className="min-h-screen bg-gray-50"
       data-brand={vehicle.marque_alias?.toLowerCase()}
     >
-      {/* 🍞 Fil d'Ariane - Au-dessus du hero */}
-      <nav
-        className="bg-white border-b border-gray-200 py-3"
-        aria-label="Breadcrumb"
-        data-section="S_BREADCRUMB"
-      >
-        <div className="container mx-auto px-4">
-          <ol
-            className="flex items-center gap-2 text-sm"
-            itemScope
-            itemType="https://schema.org/BreadcrumbList"
-          >
-            <li
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/ListItem"
-            >
-              <a
-                href="/"
-                itemProp="item"
-                className="hover:underline text-brand"
-              >
-                <span itemProp="name">Accueil</span>
-              </a>
-              <meta itemProp="position" content="1" />
-            </li>
-            <li>
-              <span className="text-gray-400">→</span>
-            </li>
-            <li
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/ListItem"
-            >
-              <a
-                href="/constructeurs"
-                itemProp="item"
-                className="hover:underline text-brand"
-              >
-                <span itemProp="name">Constructeurs</span>
-              </a>
-              <meta itemProp="position" content="2" />
-            </li>
-            <li>
-              <span className="text-gray-400">→</span>
-            </li>
-            <li
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/ListItem"
-            >
-              <a
-                href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`}
-                itemProp="item"
-                className="hover:underline text-brand"
-              >
-                <span itemProp="name">{breadcrumb.brand}</span>
-              </a>
-              <meta itemProp="position" content="3" />
-            </li>
-            <li>
-              <span className="text-gray-400">→</span>
-            </li>
-            <li
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/ListItem"
-            >
-              <span itemProp="name" className="text-gray-600">
-                {breadcrumb.model}
-              </span>
-              <meta itemProp="position" content="4" />
-            </li>
-            <li>
-              <span className="text-gray-400">→</span>
-            </li>
-            <li
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/ListItem"
-            >
-              <span itemProp="name" className="font-semibold text-gray-900">
-                {vehicle.type_name} {vehicle.type_power_ps} ch
-              </span>
-              <meta itemProp="position" content="5" />
-            </li>
-          </ol>
-        </div>
-      </nav>
+      <BreadcrumbSection vehicle={vehicle} breadcrumb={breadcrumb} />
 
-      {/* Hero Selection — H1 unique (image-matrix-v1 §7, gradient-only) */}
-      <div data-section="S_HERO">
-        <HeroSelection
-          title={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch de ${vehicle.type_year_from} à ${vehicle.type_year_to || "aujourd'hui"}`}
-          subtitle={`${vehicle.type_fuel} · ${vehicle.type_body} · ${vehicle.type_year_from}–${vehicle.type_year_to || "Auj."}`}
-          slogan={resolveSlogan("selection")}
-        />
-      </div>
+      <HeroSection vehicle={vehicle} />
 
       {/* Vehicle image + specs (hors hero — SELECTION = gradient-only) */}
       <section className="bg-white border-b" data-section="S_IDENTITY">
