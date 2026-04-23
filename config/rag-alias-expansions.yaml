@@ -1,0 +1,439 @@
+# RAG Alias Expansions — Dictionnaire SEO centralisé
+# ========================================================
+#
+# Rôle : compléter les aliases des RAG .md avec les synonymes commerciaux
+# que les utilisateurs tapent sur Google (et que Google Ads KP renvoie)
+# mais qui diffèrent des termes techniques du RAG.
+#
+# Consommé par : scripts/seo/import-gads-kp.py (chargé une fois au démarrage,
+# fusionné avec les aliases variants du RAG pour le filtre de pertinence).
+#
+# Format :
+#   <pg_alias>:
+#     - synonyme 1 (forme que les gens tapent)
+#     - synonyme 2
+#
+# Règles :
+# - Ne PAS modifier les RAG .md eux-mêmes (additif externe, pas intrusif)
+# - Un alias doit être distinctif (pas juste "filtre" qui matche tout)
+# - Utiliser les formes normalisées (minuscules, sans accents) car
+#   le script normalise keyword_normalized avant matching
+#
+# Maintenance : ajouter ici quand un import montre un taux de rejet
+# no_core_match > 50% sur le CSV Google Ads KP.
+
+# ── Filtration ──────────────────────────────────────────────────────────
+
+filtre-a-huile:
+  - vidange huile
+  - huile moteur
+  - filtre huile moteur
+  - vidange filtre
+  - huile vidange
+
+filtre-a-carburant:
+  - filtre a gasoil
+  - filtre gasoil
+  - filtre gazole
+  - filtre a gazole
+  - filtre diesel
+  - filtre a diesel
+  - decanteur
+  - filtre decanteur
+
+filtre-d-habitacle:
+  - filtre pollen
+  - filtre a pollen
+  - filtre anti pollen
+  - filtre anti-pollen
+  - filtre climatisation
+  - filtre clim
+  - filtre de clim
+  - filtre ventilation
+  - filtre charbon actif
+  - filtre a charbon
+  - filtre charbon habitacle
+  - filtre air habitacle
+
+filtre-de-boite-auto:
+  - filtre boite automatique
+  - filtre de boite automatique
+  - filtre boite auto
+  - filtre de boite auto
+  - filtre boite vitesse automatique
+  - filtre boite de vitesse automatique
+  - filtre transmission automatique
+  - filtre de transmission
+  - filtre atf
+
+# ── Freinage ────────────────────────────────────────────────────────────
+
+plaquette-de-frein:
+  - plaquettes avant
+  - plaquettes arriere
+  - plaquettes frein
+  - jeu plaquettes
+  - kit plaquettes
+
+disque-de-frein:
+  - disques avant
+  - disques arriere
+  - disques frein
+  - paire disques
+  - kit disques
+
+etrier-de-frein:
+  - etrier avant
+  - etrier arriere
+  - etrier gauche
+  - etrier droit
+
+flexible-de-frein:
+  - tuyau frein
+  - durite frein
+  - conduite frein
+
+tambour-de-frein:
+  - tambour avant
+  - tambour arriere
+  - jeu tambours
+  - tambour de frein
+  - tambours de frein
+  - frein a tambour
+  - frein tambour
+  - kit tambour
+  - paire tambour
+  - tambour hydraulique
+  # "tambour" seul suffit car alias spécifique freinage auto (les KW véhicule
+  # comme "tambour clio 3" ou "tambour 206" sont pertinents et essentiels
+  # pour V-Level — fix 2026-04-23)
+  - tambour
+
+machoires-de-frein:
+  - machoire avant
+  - machoire arriere
+  - machoire de frein
+  - machoire frein
+  - frein a machoire
+  - frein machoire
+  - machoir de frein
+  - machoir frein
+  - frein a machoir
+  - jeu machoires
+  - jeu de machoires
+  - kit machoires
+  - segment frein
+  - garniture frein tambour
+
+cable-de-frein-a-main:
+  - cable frein main
+  - cable frein de parking
+  - frein stationnement cable
+
+maitre-cylindre-de-frein:
+  - maitre-cylindre
+  - mc frein
+  - mc de frein
+
+capteur-abs:
+  - sonde abs
+  - capteur vitesse roue
+  - capteur anti blocage
+
+cylindre-de-roue:
+  - cylindre a roue
+  - cylindre recepteur
+  - cylindre hydraulique tambour
+  - piston de roue
+  - frein a tambour cylindre
+
+interrupteur-des-feux-de-freins:
+  - contacteur feux stop
+  - contacteur de feux stop
+  - contacteur stop
+  - contacteur de stop
+  - contacteur feu stop
+  - contacteur pedale de frein
+  - contacteur pedale frein
+  - contacteur frein
+  - contacteur de frein
+  - interrupteur stop
+  - interrupteur feu stop
+  - interrupteur pedale frein
+  - capteur pedale frein
+  # Variantes additionnelles (rejets KP 2026-04-22, ~4500 vol/mois)
+  - contacteur de pedale de frein
+  - interrupteur feux stop
+  - interrupteur de feux stop
+  - interrupteur des feux stop
+  - interrupteur de feux de frein
+  - interrupteur de frein stop
+  - contacteur de feu de stop
+  - contacteur feu de stop
+  - capteur feu stop
+  - capteur de feu stop
+  - capteur de pedale de frein
+  - commutateur feux stop
+  - contact pedale de frein
+
+temoin-d-usure:
+  - temoin usure
+  - temoin usure plaquette
+  - capteur usure
+  - capteur d usure
+  - capteur usure plaquette
+  - capteur usure frein
+  - capteur plaquette
+  - capteur de plaquette
+  - sonde usure plaquette
+  - contact usure plaquette
+  - fil usure plaquette
+
+# ── Distribution ────────────────────────────────────────────────────────
+
+courroie-de-distribution:
+  - courroie distrib
+  - distrib
+  - distribution
+
+kit-de-distribution:
+  - kit distrib
+  - kit distribution complet
+  - kit courroie distribution
+
+galet-tendeur-de-courroie-de-distribution:
+  - galet tendeur distribution
+  - galet distrib
+  - tendeur distribution
+
+kit-de-chaine-de-distribution:
+  - kit chaine distrib
+  - chaine distribution
+  - kit chaine
+
+courroie-d-accessoire:
+  - courroie accessoire
+  - courroie alternateur
+  - courroie auxiliaire
+  - courroie crantee
+
+galet-tendeur-de-courroie-d-accessoire:
+  - galet tendeur accessoire
+  - tendeur courroie accessoire
+
+# ── Allumage ────────────────────────────────────────────────────────────
+
+bougie-d-allumage:
+  - bougies
+  - jeu bougies
+  - bougies moteur
+
+bougie-de-prechauffage:
+  - bougies prechauffage
+  - jeu bougies prechauffage
+  - bougies diesel
+
+bobine-d-allumage:
+  - bobines
+  - bobine ht
+  - bobine haute tension
+
+# ── Suspension ──────────────────────────────────────────────────────────
+
+amortisseur:
+  - amortisseurs avant
+  - amortisseurs arriere
+  - paire amortisseurs
+  - amortisseur gauche
+  - amortisseur droit
+
+ressort-de-suspension:
+  - ressorts suspension
+  - ressort avant
+  - ressort arriere
+
+bras-de-suspension:
+  - bras avant
+  - bras arriere
+  - bras inferieur
+  - bras superieur
+  - triangle suspension
+
+barre-stabilisatrice:
+  - barre antiroulis
+  - barre anti roulis
+  - stab
+
+biellette-de-barre-stabilisatrice:
+  - biellette stab
+  - biellette anti roulis
+  - biellette antiroulis
+
+rotule-de-suspension:
+  - rotule direction
+  - rotule bras
+
+# ── Direction ───────────────────────────────────────────────────────────
+
+cremailliere-de-direction:
+  - cremaillere
+  - cremaillere direction assistee
+
+pompe-de-direction-assistee:
+  - pompe da
+  - pompe direction
+  - pompe assistance
+
+rotule-de-direction:
+  - rotule axial
+  - axial direction
+
+soufflet-de-direction:
+  - soufflet cremaillere
+
+# ── Embrayage ───────────────────────────────────────────────────────────
+
+kit-d-embrayage:
+  - kit embrayage complet
+  - disque embrayage
+  - embrayage complet
+
+cable-d-embrayage:
+  - cable embrayage
+  - corde embrayage
+
+volant-moteur:
+  - volant bimasse
+  - bimasse
+  - volant moteur bimasse
+
+# ── Démarrage / Charge ─────────────────────────────────────────────────
+
+demarreur:
+  - demarreur voiture
+  - demarreur moteur
+  - starter
+
+alternateur:
+  - alternateur voiture
+  - generateur
+  - dynamo
+
+poulie-d-alternateur:
+  - poulie alternateur
+  - poulie libre alternateur
+
+# ── Climatisation ───────────────────────────────────────────────────────
+
+compresseur-de-climatisation:
+  - compresseur clim
+  - compresseur climatisation
+  - compresseur aircon
+
+condenseur-de-climatisation:
+  - condenseur clim
+  - radiateur clim
+
+evaporateur-de-climatisation:
+  - evaporateur clim
+
+capteur-temperature-de-climatisation:
+  - sonde temperature clim
+  - capteur temp clim
+
+# ── Échappement / Dépollution ───────────────────────────────────────────
+
+fap:
+  - filtre a particules
+  - filtre particules
+  - fap diesel
+
+catalyseur:
+  - pot catalytique
+  - pot cata
+  - cata
+
+vanne-egr:
+  - vanne egr
+  - egr valve
+
+sonde-lambda:
+  - sonde o2
+  - sonde oxygene
+
+# ── Refroidissement ────────────────────────────────────────────────────
+
+pompe-a-eau:
+  - pompe eau
+  - pompe a liquide refroidissement
+
+thermostat:
+  - calorstat
+  - thermostat moteur
+
+radiateur-de-refroidissement:
+  - radiateur eau
+  - radiateur moteur
+
+ventilateur-de-refroidissement:
+  - ventilo moteur
+  - ventilateur moteur
+
+# ── Injection / Admission ──────────────────────────────────────────────
+
+injecteur:
+  - injecteurs
+  - jeu injecteurs
+  - injecteur diesel
+  - injecteur common rail
+
+pompe-a-carburant:
+  - pompe essence
+  - pompe a essence
+  - pompe gasoil
+
+debitmetre-d-air:
+  - debitmetre
+  - maf
+  - capteur debit air
+
+turbo:
+  - turbocompresseur
+  - turbo diesel
+  - turbo essence
+
+# ── Transmission ────────────────────────────────────────────────────────
+
+cardan:
+  - cardan gauche
+  - cardan droit
+  - arbre transmission
+
+# ── Essuyage ────────────────────────────────────────────────────────────
+
+balais-d-essuie-glace:
+  - balais essuie glace
+  - balais essuie-glace
+  - jeu balais
+  - balai essuie glace
+  - balais vitre
+
+# ── Éclairage ──────────────────────────────────────────────────────────
+
+feu-avant:
+  - phare avant
+  - phares avant
+  - optique avant
+
+feu-arriere:
+  - feu ar
+  - phare arriere
+
+ampoule-feu-avant:
+  - ampoule phare avant
+  - ampoule h7
+  - ampoule h4
+
+phares-antibrouillard:
+  - antibrouillard
+  - feux brouillard

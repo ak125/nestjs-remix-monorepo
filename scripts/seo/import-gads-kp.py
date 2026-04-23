@@ -44,15 +44,56 @@ if os.path.exists(env_path):
 SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
 SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '')
 RAG_GAMMES = '/opt/automecanik/rag/knowledge/gammes'
+ALIAS_EXPANSIONS_YAML = '/opt/automecanik/app/config/rag-alias-expansions.yaml'
 
 STOP_WORDS = {'a', 'de', 'd', 'du', 'le', 'la', 'les', 'l', 'un', 'une', 'des', 'en', 'et', 'ou', 'pour'}
+
+# Module-level cache — loaded once at first call
+_ALIAS_EXPANSIONS_CACHE: Optional[dict[str, list[str]]] = None
+
+
+def load_alias_expansions() -> dict[str, list[str]]:
+    """Load the centralized SEO alias dictionary (config/rag-alias-expansions.yaml).
+
+    Merged with variants[].aliases from RAG .md at matching time (additive, idempotent).
+    Cached at module level — loaded once per process.
+    """
+    global _ALIAS_EXPANSIONS_CACHE
+    if _ALIAS_EXPANSIONS_CACHE is not None:
+        return _ALIAS_EXPANSIONS_CACHE
+    if not os.path.exists(ALIAS_EXPANSIONS_YAML):
+        _ALIAS_EXPANSIONS_CACHE = {}
+        return _ALIAS_EXPANSIONS_CACHE
+    try:
+        import yaml
+        with open(ALIAS_EXPANSIONS_YAML, encoding='utf-8') as f:
+            data = yaml.safe_load(f) or {}
+        if not isinstance(data, dict):
+            _ALIAS_EXPANSIONS_CACHE = {}
+            return _ALIAS_EXPANSIONS_CACHE
+        _ALIAS_EXPANSIONS_CACHE = {
+            slug: [str(a) for a in (aliases or []) if a]
+            for slug, aliases in data.items()
+            if isinstance(slug, str)
+        }
+    except Exception as e:
+        print(f"  [WARN] Failed to load {ALIAS_EXPANSIONS_YAML}: {e}")
+        _ALIAS_EXPANSIONS_CACHE = {}
+    return _ALIAS_EXPANSIONS_CACHE
 
 
 # ─── HELPERS ───────────────────────────────────────────────────────────
 
 def normalize_kw(text: str) -> str:
-    """Lowercase, no accents, single spaces, trimmed."""
+    """Lowercase, no accents, single spaces, trimmed.
+
+    Replaces apostrophes/hyphens/underscores with spaces BEFORE splitting so
+    "Filtre d'habitacle" → core words ['filtre', 'habitacle'] (not "d'habitacle").
+    Critical for gammes with apostrophe in pg_name (filtre-d-habitacle, etc.).
+    """
     text = text.lower().strip()
+    # Strip apostrophes (straight, curly, typographic) + hyphens + underscores
+    text = re.sub(r"[‘’‛'\-_]", ' ', text)
     text = re.sub(r'\s+', ' ', text)
     text = unicodedata.normalize('NFD', text)
     return ''.join(c for c in text if unicodedata.category(c) != 'Mn')
@@ -113,12 +154,21 @@ def resolve_gamme_from_db_by_slug(slug: str) -> Optional[dict]:
 
 
 def load_gamme_rag(pg_alias: str) -> dict:
-    """Load gamme RAG file → extract aliases + must_not_contain + confusion_with."""
+    """Load gamme RAG file → extract aliases + must_not_contain + confusion_with.
+
+    Also merges in aliases from config/rag-alias-expansions.yaml (centralized SEO dict).
+    """
     result = {
         'aliases': set(),
         'must_not_contain': set(),
         'confusion_terms': set(),
     }
+
+    # Merge centralized alias-expansions dict (additive, independent of RAG .md)
+    expansions = load_alias_expansions().get(pg_alias, [])
+    for alias in expansions:
+        result['aliases'].add(normalize_kw(alias))
+
     rag_path = os.path.join(RAG_GAMMES, f'{pg_alias}.md')
     if not os.path.exists(rag_path):
         return result
