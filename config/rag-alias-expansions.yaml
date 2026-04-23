@@ -195,6 +195,18 @@ temoin-d-usure:
   - contact usure plaquette
   - fil usure plaquette
 
+pompe-a-vide-de-freinage:
+  # Added 2026-04-23 (R1_ROUTER batch) — R-SEO-KW-01 review 89% vol → 0.5%
+  # Canon : pg=387 est la SEULE gamme active "pompe à vide" (level=1, display=1).
+  # Siblings pg=2397/1416/1417 sont inactifs (level=0, display=0). Pas de cannibalisation.
+  - pompe a vide frein
+  - pompe a vide pour frein
+  - pompe a depression frein
+  - pompe depression frein
+  - pompe a vide servo frein
+  - pompe a vide      # catch toutes les formes "pompe a vide + vehicule/motorisation"
+  - pompe de frein    # forme courte FR
+
 # ── Distribution ────────────────────────────────────────────────────────
 
 courroie-de-distribution:
