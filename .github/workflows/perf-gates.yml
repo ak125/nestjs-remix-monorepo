@@ -67,6 +67,13 @@ jobs:
           # mocks + NODE_ENV=production but no APP_URL matches the CI crash
           # exactly. Incident: INC-2026-009.
           APP_URL: http://localhost:3000
+          # RAG_SERVICE_URL / RAG_API_KEY : requis par RagKnowledgeService,
+          # RagChatService, RagPipelineService, RagIngestionService via getOrThrow.
+          # Sans ces vars, Nest crash au boot avec:
+          #   TypeError: Configuration key "RAG_SERVICE_URL" does not exist
+          # Valeurs mock CI : le service RAG n'est pas requis pour Lighthouse/CWV.
+          RAG_SERVICE_URL: http://disabled:8000
+          RAG_API_KEY: ci-mock-rag-api-key-not-for-production-use
           REDIS_URL: redis://localhost:6379
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY }}
