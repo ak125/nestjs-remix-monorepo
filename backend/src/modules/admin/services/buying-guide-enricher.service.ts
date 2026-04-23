@@ -252,6 +252,20 @@ export class BuyingGuideEnricherService {
       qualityScore,
     );
 
+    // Gatekeeper verdict — mirrors R1EnricherService (r1s_gatekeeper_{score,flags})
+    // Persisted in the same UPDATE as content columns so the BEFORE UPDATE
+    // trigger `trg_invalidate_sgpg_gatekeeper` keeps our fresh values instead
+    // of nulling them out.
+    const gatekeeper = this.qualityGates.computeGatekeeperScore({
+      sectionResults,
+      qualityFlags: uniqueFlags,
+      qualityScore,
+      antiWikiGate,
+    });
+    updatePayload.sgpg_gatekeeper_score = gatekeeper.score;
+    updatePayload.sgpg_gatekeeper_flags = gatekeeper.flags;
+    updatePayload.sgpg_gatekeeper_checks = gatekeeper.checks;
+
     // Guard: skip intro_role write if content describes a different piece
     if (
       typeof updatePayload.sgpg_intro_role === 'string' &&

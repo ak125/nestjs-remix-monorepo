@@ -12,8 +12,15 @@ import {
   MIN_FAQS,
   MIN_SYMPTOMS,
   MIN_FAQ_ANSWER_LENGTH,
+  MIN_QUALITY_SCORE,
 } from '../../../../config/buying-guide-quality.constants';
 import type { SectionValidationResult } from './buying-guide.types';
+
+export interface GatekeeperComputation {
+  score: number;
+  flags: string[];
+  checks: Record<string, unknown>;
+}
 
 /**
  * Quality validation gates for buying guide enrichment.
@@ -271,5 +278,47 @@ export class BuyingGuideQualityGatesService {
     }
 
     return { ok: reasons.length === 0, reasons };
+  }
+
+  /**
+   * Build the R6 gatekeeper verdict persisted to
+   * `__seo_gamme_purchase_guide.sgpg_gatekeeper_{score,flags,checks}`.
+   *
+   * Mirrors the R1EnricherService persistence pattern (see r1-enricher.service.ts
+   * lines 192-193) but carries the richer R6 signal — per-section OK + anti-wiki
+   * gate — into the JSONB `checks` column.
+   *
+   * Pure sync: never reads/writes DB. The caller merges the returned fields
+   * into the enricher payload passed to BuyingGuideDbService.upsertBuyingGuide.
+   */
+  computeGatekeeperScore(input: {
+    sectionResults: Record<string, SectionValidationResult>;
+    qualityFlags: GammeContentQualityFlag[];
+    qualityScore: number;
+    antiWikiGate: { ok: boolean; reasons: string[] };
+  }): GatekeeperComputation {
+    const { sectionResults, qualityFlags, qualityScore, antiWikiGate } = input;
+
+    const score = Math.max(0, Math.min(100, Math.round(qualityScore)));
+
+    const flags = Array.from(
+      new Set<string>([...qualityFlags, ...antiWikiGate.reasons]),
+    );
+
+    const sectionsOk: Record<string, boolean> = {};
+    for (const [key, result] of Object.entries(sectionResults)) {
+      sectionsOk[key] = result.ok;
+    }
+
+    const checks: Record<string, unknown> = {
+      quality_score: score,
+      min_threshold: MIN_QUALITY_SCORE,
+      passed: score >= MIN_QUALITY_SCORE && antiWikiGate.ok,
+      anti_wiki: antiWikiGate,
+      sections_ok: sectionsOk,
+      computed_at: new Date().toISOString(),
+    };
+
+    return { score, flags, checks };
   }
 }
