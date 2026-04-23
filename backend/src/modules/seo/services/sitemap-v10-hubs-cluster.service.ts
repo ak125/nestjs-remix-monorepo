@@ -13,6 +13,7 @@ import { SupabaseBaseService } from '../../../database/services/supabase-base.se
 import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
 import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 import { SITE_ORIGIN } from '../../../config/app.config';
+import { getValidTypeIds } from '../helpers/auto-type-valid-ids.helper';
 import {
   FAMILY_CLUSTERS,
   FamilyClusterConfig,
@@ -112,6 +113,8 @@ export class HubsClusterService extends SupabaseBaseService {
             map_type_id: string;
           }> = [];
 
+          // Anti-404 : filtrer les orphelins TecDoc V1
+          const validTypeIds = await getValidTypeIds(this.supabase);
           const PAGE_SIZE = 1000;
           let offset = 0;
           let hasMore = true;
@@ -134,9 +137,17 @@ export class HubsClusterService extends SupabaseBaseService {
             }
 
             if (pieces && pieces.length > 0) {
-              allPieces.push(...pieces);
+              const rawCount = pieces.length;
+              const validPieces = pieces.filter((p) =>
+                validTypeIds.has(
+                  typeof p.map_type_id === 'string'
+                    ? parseInt(p.map_type_id, 10)
+                    : (p.map_type_id as number),
+                ),
+              );
+              allPieces.push(...validPieces);
               offset += PAGE_SIZE;
-              hasMore = pieces.length === PAGE_SIZE;
+              hasMore = rawCount === PAGE_SIZE;
             } else {
               hasMore = false;
             }
@@ -354,6 +365,8 @@ export class HubsClusterService extends SupabaseBaseService {
       const pgIds = gammes.map((g) => String(g.pg_id));
 
       // 2. Pagination complète pour récupérer TOUTES les URLs
+      // Anti-404 : filtrer les orphelins TecDoc V1
+      const validTypeIds = await getValidTypeIds(this.supabase);
       const PAGE_SIZE = 1000;
       let offset = 0;
       let hasMore = true;
@@ -374,7 +387,13 @@ export class HubsClusterService extends SupabaseBaseService {
           break;
         }
 
+        const rawCount = pieces.length;
         for (const p of pieces) {
+          const typeIdNum =
+            typeof p.map_type_id === 'string'
+              ? parseInt(p.map_type_id, 10)
+              : (p.map_type_id as number);
+          if (!validTypeIds.has(typeIdNum)) continue;
           allUrls.push({
             url: `${this.BASE_URL}/pieces/${normalizeAlias(p.map_pg_alias)}-${p.map_pg_id}/${normalizeAlias(p.map_marque_alias)}-${p.map_marque_id}/${normalizeAlias(p.map_modele_alias)}-${p.map_modele_id}/${normalizeAlias(p.map_type_alias)}-${p.map_type_id}.html`,
             subcategory: subcategory.name,
@@ -384,7 +403,7 @@ export class HubsClusterService extends SupabaseBaseService {
         }
 
         offset += PAGE_SIZE;
-        hasMore = pieces.length === PAGE_SIZE;
+        hasMore = rawCount === PAGE_SIZE;
       }
 
       if (subcatCount > 0) {

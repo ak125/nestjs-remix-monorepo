@@ -18,6 +18,7 @@ import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { FAMILY_CLUSTERS } from './sitemap-v10-hubs.types';
+import { getValidTypeIds } from '../helpers/auto-type-valid-ids.helper';
 import {
   type TemperatureBucket,
   type SitemapUrl,
@@ -208,11 +209,19 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
     const config = BUCKET_CONFIG[bucket];
     const pgIdsArray = Array.from(indexPgIds);
 
+    // Anti-404 : charger le Set des type_ids valides dans auto_type
+    // (filtre les ~3,545 orphelins TecDoc V1 = 100001-134362)
+    const validTypeIds = await getValidTypeIds(this.supabase);
+    this.logger.log(
+      `  Loaded ${validTypeIds.size.toLocaleString()} valid type_ids (auto_type WHERE type_display='1')`,
+    );
+
     let currentBatch: PieceV9[] = [];
     let shardIndex = 0;
     let offset = 0;
     let hasMore = true;
     let totalCount = 0;
+    let skippedOrphans = 0;
     const filePaths: string[] = [];
 
     this.logger.log(
@@ -237,10 +246,21 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       }
 
       if (pieces && pieces.length > 0) {
-        currentBatch.push(...(pieces as PieceV9[]));
+        // Anti-404 : filtrer les pieces dont map_type_id n'existe plus dans auto_type
+        const rawCount = pieces.length;
+        const validPieces = (pieces as PieceV9[]).filter((p) =>
+          validTypeIds.has(
+            typeof p.map_type_id === 'string'
+              ? parseInt(p.map_type_id, 10)
+              : (p.map_type_id as number),
+          ),
+        );
+        skippedOrphans += rawCount - validPieces.length;
+
+        currentBatch.push(...validPieces);
         offset += PAGE_SIZE;
-        totalCount += pieces.length;
-        hasMore = pieces.length === PAGE_SIZE;
+        totalCount += validPieces.length;
+        hasMore = rawCount === PAGE_SIZE;
 
         // Quand on atteint SHARD_SIZE, ecrire le fichier et liberer la memoire
         while (currentBatch.length >= SHARD_SIZE) {
@@ -315,6 +335,11 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
     this.logger.log(
       `  ${totalCount.toLocaleString()} URLs pieces INDEX (threshold: ${minItems}) -> ${filePaths.length} files`,
     );
+    if (skippedOrphans > 0) {
+      this.logger.warn(
+        `  🧹 Filtered out ${skippedOrphans.toLocaleString()} URLs with orphan type_ids (TecDoc V1 remap residue)`,
+      );
+    }
 
     return { filePaths, totalCount };
   }
@@ -383,10 +408,13 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       }
 
       // 3. Recuperer TOUTES les pieces depuis __sitemap_p_link (pagination)
+      // Anti-404 : filtrer les orphelins TecDoc V1 (type_ids absents d'auto_type)
+      const validTypeIds = await getValidTypeIds(this.supabase);
       const allPieces: PieceV9[] = [];
       const PAGE_SIZE = 1000;
       let offset = 0;
       let hasMore = true;
+      let skippedOrphans = 0;
 
       while (hasMore) {
         const { data: pieces, error: piecesError } = await this.supabase
@@ -408,9 +436,18 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
         }
 
         if (pieces && pieces.length > 0) {
-          allPieces.push(...pieces);
+          const rawCount = pieces.length;
+          const validPieces = (pieces as PieceV9[]).filter((p) =>
+            validTypeIds.has(
+              typeof p.map_type_id === 'string'
+                ? parseInt(p.map_type_id, 10)
+                : (p.map_type_id as number),
+            ),
+          );
+          skippedOrphans += rawCount - validPieces.length;
+          allPieces.push(...validPieces);
           offset += PAGE_SIZE;
-          hasMore = pieces.length === PAGE_SIZE;
+          hasMore = rawCount === PAGE_SIZE;
         } else {
           hasMore = false;
         }
@@ -419,6 +456,11 @@ export class SitemapV10PiecesService extends SupabaseBaseService {
       this.logger.log(
         `   Found ${allPieces.length.toLocaleString()} URLs for ${familyKey}`,
       );
+      if (skippedOrphans > 0) {
+        this.logger.warn(
+          `   🧹 Filtered out ${skippedOrphans.toLocaleString()} orphan type_ids for ${familyKey}`,
+        );
+      }
 
       // 4. Construire les SitemapUrl
       const urls: SitemapUrl[] = allPieces.map((p) => ({
