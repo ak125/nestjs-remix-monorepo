@@ -369,9 +369,58 @@ def upsert_to_db(table: str, records: list[dict], conflict_cols: str, dry_run: b
     return inserted
 
 
+# ─── SUGGEST ALIASES (R-SEO-KW-05) ─────────────────────────────────────
+
+def emit_alias_suggestions(
+    pg_alias: str,
+    rejects: list[dict],
+    csv_filename: str,
+    threshold_vol: int = 50,
+) -> None:
+    """Print a YAML block of candidate aliases for rag-alias-expansions.yaml.
+
+    Only emits rejects with reason 'no_core_match' AND volume >= threshold_vol,
+    sorted by volume desc. The other reject reasons (exclude:*, confusion:*)
+    are intentional and should NOT become aliases.
+    """
+    candidates = [
+        r for r in rejects
+        if r.get('reason') == 'no_core_match' and (r.get('volume') or 0) >= threshold_vol
+    ]
+    if not candidates:
+        print(f"\n  [SUGGEST] No rejects above threshold vol={threshold_vol}.")
+        return
+
+    candidates.sort(key=lambda r: -(r.get('volume') or 0))
+    total_vol = sum(r.get('volume') or 0 for r in candidates)
+    seen_norms: set[str] = set()
+
+    print(f"\n  [SUGGEST] {len(candidates)} candidates, vol cumule={total_vol}/mois")
+    print(f"  [SUGGEST] YAML pret-a-coller dans config/rag-alias-expansions.yaml :")
+    print()
+    print(f"{pg_alias}:")
+    print(f"  # suggested from {csv_filename} ({len(candidates)} rejets, vol {total_vol})")
+    for r in candidates:
+        norm = r.get('normalized') or ''
+        if norm in seen_norms:
+            continue
+        seen_norms.add(norm)
+        kw = r.get('keyword') or norm
+        vol = r.get('volume') or 0
+        print(f"  - {norm}  # vol={vol}  raw='{kw}'")
+    print()
+
+
 # ─── MAIN PIPELINE ─────────────────────────────────────────────────────
 
-def process_file(filepath: str, pg_id_override: Optional[int], dry_run: bool, verbose: bool) -> dict:
+def process_file(
+    filepath: str,
+    pg_id_override: Optional[int],
+    dry_run: bool,
+    verbose: bool,
+    suggest_aliases: bool = False,
+    suggest_threshold_vol: int = 50,
+) -> dict:
     print(f"\n{'='*60}")
     print(f"  {os.path.basename(filepath)}")
     print(f"{'='*60}")
@@ -429,6 +478,7 @@ def process_file(filepath: str, pg_id_override: Optional[int], dry_run: bool, ve
     print(f"  [3/4] Filtre pertinence gamme (RAG)...")
     relevant = []
     reject_counts = Counter()
+    rejects_detail: list[dict] = []  # {keyword, normalized, volume, reason}
     for row in deduped:
         is_rel, reason = check_relevance(
             row['normalized'],
@@ -441,9 +491,21 @@ def process_file(filepath: str, pg_id_override: Optional[int], dry_run: bool, ve
             relevant.append(row)
         else:
             reject_counts[reason.split(':')[0]] += 1
+            rejects_detail.append({**row, 'reason': reason})
 
     print(f"        {len(deduped)} → {len(relevant)} pertinents")
     print(f"        Rejets: {dict(reject_counts)}")
+
+    # R-SEO-KW-05 : --suggest-aliases imprime un bloc YAML pret-a-coller
+    # pour les rejets no_core_match au-dessus du threshold de volume.
+    # Ne touche pas la DB (le flag implique souvent --dry-run).
+    if suggest_aliases:
+        emit_alias_suggestions(
+            pg_alias=pg_alias,
+            rejects=rejects_detail,
+            csv_filename=os.path.basename(filepath),
+            threshold_vol=suggest_threshold_vol,
+        )
 
     if verbose and len(relevant) > 0:
         print(f"        Echantillon:")
@@ -488,6 +550,18 @@ def main():
     parser.add_argument('--pg-id', type=int, help='Override pg_id (skip slug detection)')
     parser.add_argument('--dry-run', action='store_true', help='Validate without writing')
     parser.add_argument('--verbose', action='store_true', help='Show details')
+    parser.add_argument(
+        '--suggest-aliases',
+        action='store_true',
+        help='Print YAML block of candidate aliases for rag-alias-expansions.yaml '
+             '(rejects with reason=no_core_match above --threshold-vol). R-SEO-KW-05.',
+    )
+    parser.add_argument(
+        '--threshold-vol',
+        type=int,
+        default=50,
+        help='Min monthly volume for --suggest-aliases candidates (default: 50)',
+    )
     args = parser.parse_args()
 
     if not SUPABASE_URL or not SUPABASE_KEY:
@@ -509,7 +583,17 @@ def main():
     print(f"{'DRY RUN' if args.dry_run else 'LIVE'} mode")
     print(f"{len(files)} fichier(s)")
 
-    results = [process_file(f, args.pg_id, args.dry_run, args.verbose) for f in files]
+    results = [
+        process_file(
+            f,
+            args.pg_id,
+            args.dry_run,
+            args.verbose,
+            suggest_aliases=args.suggest_aliases,
+            suggest_threshold_vol=args.threshold_vol,
+        )
+        for f in files
+    ]
 
     ok = [r for r in results if r.get('status') == 'success']
     skip = [r for r in results if r.get('status') != 'success']
