@@ -1,0 +1,82 @@
+name: 🛡️ Audit gates (Phase 0)
+
+# Deterministic codebase audits : knip + madge + dependency-cruiser + ast-grep.
+# Phase 0 posture : warning-mode, ast-grep is the only gate that blocks the PR
+# (and only on `severity: error` rules). knip / madge / depcruise print signals
+# but never fail the run — they are informational until Phase 1 cleanup ships.
+# Promote individual steps to `--strict` / `continue-on-error: false` once the
+# baseline in `audit-reports/phase0-baseline.md` is cleared.
+
+on:
+  pull_request:
+    paths:
+      - "backend/src/**"
+      - "frontend/app/**"
+      - "packages/**"
+      - "scripts/**"
+      - ".ast-grep/**"
+      - "knip.json"
+      - ".dependency-cruiser.cjs"
+      - "sgconfig.yml"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/audit.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: audit-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: 🛡️ Deterministic gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NODE_OPTIONS: "--max-old-space-size=4096"
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: 🎯 ast-grep scan (rule-pattern guard — blocks on severity:error)
+        run: npm run audit:ast
+
+      - name: 🔁 madge — circular dependencies (informational)
+        if: always()
+        continue-on-error: true
+        run: npm run audit:madge
+
+      - name: 🏛️ dependency-cruiser — architectural rules (informational)
+        if: always()
+        continue-on-error: true
+        run: npm run audit:depcruise
+
+      - name: 🧹 knip — unused files / exports / deps (informational)
+        if: always()
+        continue-on-error: true
+        run: npm run audit:knip
+
+      - name: 📋 Baseline reminder
+        if: always()
+        run: |
+          echo ""
+          echo "=================================================="
+          echo "Phase 0 baseline : audit-reports/phase0-baseline.md"
+          echo ""
+          echo "ast-grep runs BLOCKING on rules with severity: error."
+          echo "knip / madge / depcruise are warning-only for now."
+          echo "Promote to blocking after Phase 1 cleanup lands."
+          echo "=================================================="
