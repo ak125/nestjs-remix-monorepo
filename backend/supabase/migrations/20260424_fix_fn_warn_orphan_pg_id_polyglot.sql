@@ -55,7 +55,25 @@ COMMENT ON FUNCTION public.fn_warn_orphan_pg_id() IS
 -- (conséquence des merges gammes historiques — ex: 3942→817, deprecate 3333).
 -- Canon : r6kp_pg_id doit toujours être cohérent avec pieces_gamme.pg_id
 -- pour le r6kp_pg_alias donné.
+--
+-- Ordre impératif :
+--   1. Supprimer les rows duplicata legacy (pg_id orphelin + row canon existe)
+--   2. UPDATE resync sur les rows restantes
+--
+-- Sans step 1, UPDATE échoue avec unique constraint violation
+-- (r6kp_pg_id_key) car 2 rows ont le même pg_alias avec pg_ids différents.
 
+-- Step 1 : DELETE rows duplicata legacy (2 rows sur pg_ids 1562, 1643)
+DELETE FROM __seo_r6_keyword_plan r6
+WHERE NOT EXISTS (SELECT 1 FROM pieces_gamme pg WHERE pg.pg_id::text = r6.r6kp_pg_id::text)
+  AND EXISTS (
+    SELECT 1 FROM __seo_r6_keyword_plan r6_canon
+    JOIN pieces_gamme pg ON pg.pg_alias = r6_canon.r6kp_pg_alias
+    WHERE r6_canon.r6kp_pg_alias = r6.r6kp_pg_alias
+      AND pg.pg_id::text = r6_canon.r6kp_pg_id::text
+  );
+
+-- Step 2 : UPDATE resync pour les ~61 rows restantes
 UPDATE __seo_r6_keyword_plan r6
 SET r6kp_pg_id = pg.pg_id::text
 FROM pieces_gamme pg
