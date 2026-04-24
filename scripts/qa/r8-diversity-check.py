@@ -85,6 +85,16 @@ DEFAULT_THRESHOLD_PCT = 80  # distinct fingerprints ratio threshold
 # from distinctness check. All other fingerprints must be distinct.
 EXPECTED_STABLE_SLOTS = {"distinct_block_seq"}
 
+# When S_FAQ_DEDICATED / S_CATALOG_ACCESS blocks are not rendered (gate
+# conditions unmet : uniqueFaqs < 2 for FAQ, topFamilies < 3 for catalog),
+# r8-vehicle-enricher.service.ts falls back to hashing the literal strings
+# 'NO_FAQ' / 'NO_CATEGORY'. All siblings then share the same absent-block
+# hash — which is NOT a diversity collision, it's block absence.
+# We pre-compute those hashes here to detect the absent-block case and
+# exclude the affected slot from verdict calculation for that model.
+ABSENT_FAQ_HASH = "0cd10ac151ac50f8626e0268bbd1c1f303011fb0060191fbae0ab6afeb021273"
+ABSENT_CATEGORY_HASH = "b176ac4891b8ab06ede9529e193c8ae02476228f93cd34d9287811fc35dc36c9"
+
 SLOT_LABELS = {
     "distinct_content": "content",
     "distinct_normalized": "normalized_text",
@@ -119,21 +129,50 @@ class ModelReport:
     distinct_semantic: int
     distinct_faq: int
     distinct_category: int
-    avg_diversity_score: float | None
-    index_count: int
-    review_count: int
-    regenerate_count: int
-    reject_count: int
+    # Absence flags : True when the block was not rendered for any sibling
+    # (all siblings share the literal SHA-256 of 'NO_FAQ' / 'NO_CATEGORY').
+    # When True, the corresponding slot is excluded from verdict calculation
+    # because absence ≠ collision.
+    faq_block_absent: bool = False
+    category_block_absent: bool = False
+    avg_diversity_score: float | None = None
+    index_count: int = 0
+    review_count: int = 0
+    regenerate_count: int = 0
+    reject_count: int = 0
     slots_failing: list[str] = field(default_factory=list)
+    slots_absent: list[str] = field(default_factory=list)
     verdict: str = "PASS"
     collisions: dict[str, list[dict[str, Any]]] = field(default_factory=dict)
 
     def compute_verdict(self, threshold_pct: int) -> None:
-        """Evaluate per-slot distinct ratios and set verdict."""
+        """Evaluate per-slot distinct ratios and set verdict.
+
+        A slot is excluded from the failing count when :
+        - It is in EXPECTED_STABLE_SLOTS (block_sequence).
+        - The block was not rendered for any sibling (absence flag on).
+          Examples : small brands like SMART where gammes RAG files lack
+          enough FAQ content, or models with <3 compatible families.
+        - Single-sibling models (no duplicate possible by construction).
+        """
         failing: list[str] = []
+        absent: list[str] = []
+
+        # Record absent slots for reporting
+        if self.faq_block_absent:
+            absent.append("faq_signature")
+        if self.category_block_absent:
+            absent.append("category_signature")
+
         for slot_key in SLOT_LABELS:
             if slot_key in EXPECTED_STABLE_SLOTS:
                 continue  # block_sequence is expected stable
+            # Skip slots where the block was not rendered (absence)
+            if slot_key == "distinct_faq" and self.faq_block_absent:
+                continue
+            if slot_key == "distinct_category" and self.category_block_absent:
+                continue
+
             distinct = getattr(self, slot_key)
             if self.sibling_count <= 1:
                 continue  # single sibling = no duplicate possible
@@ -142,6 +181,7 @@ class ModelReport:
                 failing.append(SLOT_LABELS[slot_key])
 
         self.slots_failing = failing
+        self.slots_absent = absent
         if len(failing) == 0:
             self.verdict = "PASS"
         elif len(failing) <= 2:
@@ -169,6 +209,21 @@ AGGREGATE_SQL = """
 WITH scope AS (
   SELECT unnest(%(modele_ids)s::int[]) AS modele_id
 ),
+-- Keep only the MOST RECENT fingerprint per page_id. __seo_r8_fingerprints
+-- stores historical versions (each enrichment creates a new row), so joining
+-- naively produces phantom collisions (same page_id appearing N times).
+latest_fingerprints AS (
+  SELECT DISTINCT ON (page_id)
+    page_id,
+    content_fingerprint,
+    normalized_text_fingerprint,
+    block_sequence_fingerprint,
+    semantic_key_fingerprint,
+    faq_signature,
+    category_signature
+  FROM public.__seo_r8_fingerprints
+  ORDER BY page_id, created_at DESC
+),
 pages_with_fp AS (
   SELECT
     p.type_id::int AS type_id,
@@ -184,8 +239,8 @@ pages_with_fp AS (
     fp.faq_signature,
     fp.category_signature
   FROM public.__seo_r8_pages p
-  JOIN public.__seo_r8_fingerprints fp ON fp.page_id = p.id
-  JOIN public.auto_type t ON t.type_id = p.type_id::int
+  JOIN latest_fingerprints fp ON fp.page_id = p.id
+  JOIN public.auto_type t ON t.type_id::int = p.type_id::int
   JOIN public.auto_modele m ON m.modele_id = t.type_modele_id_i
   JOIN public.auto_marque br ON br.marque_id::text = m.modele_marque_id::text
   WHERE t.type_modele_id_i IN (SELECT modele_id FROM scope)
@@ -201,6 +256,9 @@ SELECT
   COUNT(DISTINCT semantic_key_fingerprint) AS distinct_semantic,
   COUNT(DISTINCT faq_signature) AS distinct_faq,
   COUNT(DISTINCT category_signature) AS distinct_category,
+  -- Detect absent blocks : all siblings sharing SHA-256(NO_FAQ) / SHA-256(NO_CATEGORY)
+  BOOL_AND(faq_signature = %(absent_faq)s) AS faq_block_absent,
+  BOOL_AND(category_signature = %(absent_category)s) AS category_block_absent,
   ROUND(AVG(diversity_score)::numeric, 1) AS avg_diversity_score,
   COUNT(*) FILTER (WHERE seo_decision = 'INDEX') AS index_count,
   COUNT(*) FILTER (WHERE seo_decision = 'REVIEW') AS review_count,
@@ -214,13 +272,24 @@ ORDER BY marque_name, modele_name;
 
 
 COLLISION_SQL_TEMPLATE = """
+WITH latest_fingerprints AS (
+  SELECT DISTINCT ON (page_id)
+    page_id,
+    content_fingerprint,
+    normalized_text_fingerprint,
+    semantic_key_fingerprint,
+    faq_signature,
+    category_signature
+  FROM public.__seo_r8_fingerprints
+  ORDER BY page_id, created_at DESC
+)
 SELECT
   fp.{fp_column} AS hash,
   COUNT(*) AS collision_count,
-  array_agg(p.type_id::int ORDER BY p.type_id::int) AS type_ids
-FROM public.__seo_r8_fingerprints fp
+  array_agg(DISTINCT p.type_id::int ORDER BY p.type_id::int) AS type_ids
+FROM latest_fingerprints fp
 JOIN public.__seo_r8_pages p ON p.id = fp.page_id
-JOIN public.auto_type t ON t.type_id = p.type_id::int
+JOIN public.auto_type t ON t.type_id::int = p.type_id::int
 WHERE t.type_modele_id_i = %(modele_id)s
 GROUP BY fp.{fp_column}
 HAVING COUNT(*) >= 2
@@ -328,7 +397,11 @@ def fetch_collisions(
         cur.execute(sql, {"modele_id": modele_id})
         rows = cur.fetchall()
         result[slot_label] = [
-            {"hash": r[0][:16] + "...", "collision_count": r[1], "type_ids": r[2]}
+            {
+                "hash": (r["hash"] or "")[:16] + "...",
+                "collision_count": r["collision_count"],
+                "type_ids": r["type_ids"],
+            }
             for r in rows
         ]
     return result
@@ -370,20 +443,35 @@ def format_markdown(summary: RunSummary, models: list[ModelReport]) -> str:
     verdict_emoji = {"PASS": "✅", "REVIEW": "⚠️", "FAIL": "❌"}
 
     for m in models:
+        faq_cell = (
+            "absent†" if m.faq_block_absent
+            else _ratio_cell(m.distinct_faq, m.sibling_count)
+        )
+        cat_cell = (
+            "absent†" if m.category_block_absent
+            else _ratio_cell(m.distinct_category, m.sibling_count)
+        )
         lines.append(
             f"| {m.modele_id} | {m.marque_name} | {m.modele_name[:30]} | {m.sibling_count} | "
             f"{_ratio_cell(m.distinct_content, m.sibling_count)} | "
             f"{_ratio_cell(m.distinct_normalized, m.sibling_count)} | "
             f"{_ratio_cell(m.distinct_block_seq, m.sibling_count, stable=True)} | "
             f"{_ratio_cell(m.distinct_semantic, m.sibling_count)} | "
-            f"{_ratio_cell(m.distinct_faq, m.sibling_count)} | "
-            f"{_ratio_cell(m.distinct_category, m.sibling_count)} | "
+            f"{faq_cell} | "
+            f"{cat_cell} | "
             f"{m.avg_diversity_score or 'n/a'} | "
             f"{verdict_emoji.get(m.verdict, '?')} {m.verdict} |"
         )
 
     lines.append("")
     lines.append("\\* `block_sequence` est attendu stable (structure des blocs constante).")
+    any_absent = any(m.faq_block_absent or m.category_block_absent for m in models)
+    if any_absent:
+        lines.append(
+            "† `absent` = le bloc (S_FAQ_DEDICATED ou S_CATALOG_ACCESS) n'a pas été rendu "
+            "par l'enricher pour ce modèle : gammes RAG sans FAQ suffisante (< 2) ou "
+            "moins de 3 familles pièces compatibles. Slot exclu du verdict."
+        )
     lines.append("")
 
     # Collisions section
@@ -454,8 +542,16 @@ def run_check(
     )
     cur_plain.close()
 
-    # 2. Aggregate per modele_id
-    cur.execute(AGGREGATE_SQL, {"modele_ids": modele_ids})
+    # 2. Aggregate per modele_id (pass absence-block hashes to detect
+    #    slots where the block was not rendered for any sibling)
+    cur.execute(
+        AGGREGATE_SQL,
+        {
+            "modele_ids": modele_ids,
+            "absent_faq": ABSENT_FAQ_HASH,
+            "absent_category": ABSENT_CATEGORY_HASH,
+        },
+    )
     rows = cur.fetchall()
 
     if not rows:
@@ -479,6 +575,8 @@ def run_check(
             distinct_semantic=r["distinct_semantic"],
             distinct_faq=r["distinct_faq"],
             distinct_category=r["distinct_category"],
+            faq_block_absent=bool(r["faq_block_absent"]),
+            category_block_absent=bool(r["category_block_absent"]),
             avg_diversity_score=float(r["avg_diversity_score"])
             if r["avg_diversity_score"] is not None
             else None,

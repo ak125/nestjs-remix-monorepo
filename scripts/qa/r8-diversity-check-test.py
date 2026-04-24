@@ -45,6 +45,8 @@ def _make_report(
     semantic: int,
     faq: int,
     category: int,
+    faq_absent: bool = False,
+    category_absent: bool = False,
 ) -> ModelReport:
     return ModelReport(
         modele_id=999,
@@ -57,6 +59,8 @@ def _make_report(
         distinct_semantic=semantic,
         distinct_faq=faq,
         distinct_category=category,
+        faq_block_absent=faq_absent,
+        category_block_absent=category_absent,
         avg_diversity_score=75.0,
         index_count=sib,
         review_count=0,
@@ -115,6 +119,57 @@ class VerdictTest(unittest.TestCase):
         m.compute_verdict(80)
         self.assertEqual(m.verdict, "PASS")
         self.assertNotIn("block_sequence", m.slots_failing)
+
+    def test_faq_absent_block_excluded_from_verdict(self) -> None:
+        # FAQ block not rendered for any sibling (e.g. SMART case : no FAQ in
+        # gamme RAG). All siblings share SHA-256(NO_FAQ) → faq=1/10 (10%).
+        # With faq_absent=True, the slot should be skipped : no failure.
+        m = _make_report(
+            sib=10,
+            content=10,
+            normalized=10,
+            semantic=10,
+            faq=1,  # all siblings hash same NO_FAQ constant
+            category=10,
+            faq_absent=True,
+        )
+        m.compute_verdict(80)
+        self.assertEqual(m.verdict, "PASS")
+        self.assertNotIn("faq_signature", m.slots_failing)
+        self.assertIn("faq_signature", m.slots_absent)
+
+    def test_category_absent_block_excluded_from_verdict(self) -> None:
+        # Similar for S_CATALOG_ACCESS absent (< 3 compatible families).
+        m = _make_report(
+            sib=8,
+            content=8,
+            normalized=8,
+            semantic=8,
+            faq=8,
+            category=1,  # all share NO_CATEGORY hash
+            category_absent=True,
+        )
+        m.compute_verdict(80)
+        self.assertEqual(m.verdict, "PASS")
+        self.assertNotIn("category_signature", m.slots_failing)
+        self.assertIn("category_signature", m.slots_absent)
+
+    def test_faq_present_but_colliding_still_fails(self) -> None:
+        # FAQ IS rendered (faq_absent=False) but all siblings collide on same
+        # opener variant → real collision, should fail verdict.
+        m = _make_report(
+            sib=10,
+            content=10,
+            normalized=10,
+            semantic=10,
+            faq=2,  # only 2 distinct hashes on 10 siblings (20%)
+            category=10,
+            faq_absent=False,
+        )
+        m.compute_verdict(80)
+        self.assertEqual(m.verdict, "REVIEW")
+        self.assertIn("faq_signature", m.slots_failing)
+        self.assertNotIn("faq_signature", m.slots_absent)
 
     def test_single_sibling_yields_pass_regardless(self) -> None:
         # 1 sibling = pas de duplicate possible par construction
