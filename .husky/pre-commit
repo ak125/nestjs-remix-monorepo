@@ -16,3 +16,36 @@ if [ -n "$BLOCKED" ]; then
 fi
 
 npx lint-staged
+
+# Refresh auto-generated YAML frontmatter + AUTO-GENERATED blocks in
+# .claude/knowledge/modules/*.md so last_scan + primary_files stay honest.
+# Only touches files when the module .ts changed; otherwise no-op.
+# Soft-fail: a missing python3/pyyaml must NOT block a commit.
+if command -v python3 >/dev/null 2>&1 \
+   && python3 -c "import yaml" >/dev/null 2>&1 \
+   && [ -f scripts/knowledge/refresh-knowledge.py ]; then
+  # Headers-only: fast path for commit time. Full refresh remains manual.
+  python3 scripts/knowledge/refresh-knowledge.py refresh --headers-only >/dev/null 2>&1 || true
+  # If any knowledge/ files were changed, stage them so they ride along.
+  CHANGED=$(git diff --name-only -- '.claude/knowledge/' || true)
+  if [ -n "$CHANGED" ]; then
+    git add $CHANGED 2>/dev/null || true
+  fi
+fi
+
+# Fast deterministic gate: ast-grep rules in .ast-grep/rules/
+# Warnings do not block commits; only `severity: error` rules fail here.
+# For full audit run: npm run audit:all (see package.json scripts)
+if command -v npx >/dev/null 2>&1; then
+  npx --no-install ast-grep scan --config sgconfig.yml || {
+    code=$?
+    # ast-grep returns non-zero when it finds *errors* (not warnings).
+    # We keep Phase 0 permissive so only explicit `severity: error` rules block.
+    if [ "$code" != "0" ] && [ "$code" != "10" ]; then
+      echo ""
+      echo "ast-grep: blocking errors detected. Commit refused."
+      echo "Run 'npm run audit:ast' to inspect, or fix the flagged files."
+      exit 1
+    fi
+  }
+fi

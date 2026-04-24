@@ -1,0 +1,6 @@
+# Raw tool outputs are regeneratable via `npm run audit:all`.
+# Only the curated baseline.md is versioned.
+phase0-knip.txt
+phase0-madge.txt
+phase0-depcruise.txt
+phase0-astgrep.txt
