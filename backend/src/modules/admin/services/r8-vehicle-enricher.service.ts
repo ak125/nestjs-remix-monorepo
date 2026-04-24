@@ -33,6 +33,23 @@ import {
   SEO_R8_TRUST_SIGNAL_VARIATIONS,
   R8_SLOT_OFFSETS,
 } from '../../../config/seo-variations.config';
+import {
+  deriveEngineProfile,
+  deriveEuroNorm,
+  getEngineProfileIssues,
+  getEngineProfileDescription,
+  SEO_R8_MOTOR_ISSUES_OPENERS,
+  MOTOR_ISSUES_SLOT_OFFSET,
+  type EngineProfileKey,
+} from '../../../config/engine-profile.config';
+
+// ── Per-type wear parts gamme (A1) ──
+
+interface WearGamme {
+  pg_alias: string;
+  pg_name: string;
+  piece_count: number;
+}
 
 // ── Result ──
 
@@ -233,6 +250,12 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       });
       const neighbors = await this.fetchNeighbors(neighborFamilyKey, pageKey);
 
+      // A1: top-8 wear gammes spécifiques à cette motorisation
+      // (motorisation-specific via pieces_relation_type, seule source réellement
+      // par-type_id ; le vehicleRag.pieces_usure est modele-level et partagé
+      // entre tous les siblings → cause majeure du duplicate content).
+      const wearGammes = await this.fetchWearGammesByType(typeId, 8);
+
       // ── 2. COMPOSE BLOCKS ──
       const blocks = this.composeBlocks(
         v,
@@ -241,6 +264,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         vehicleRag,
         gammeRags,
         neighbors,
+        wearGammes,
       );
 
       // Build H1 + meta
@@ -460,6 +484,70 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     }
   }
 
+  // ── Wear parts gammes per type (A1 — pieces_relation_type) ──
+
+  /**
+   * Top N wear-parts gammes for a given type_id, ranked by piece_count.
+   *
+   * Motorisation-specific by construction (each type has its own compatibility
+   * set in pieces_relation_type where target_kind='vehicle_type'). Filters
+   * pg_level IN ('1','2') to keep only top-level + sub-category gammes (matches
+   * the 238-entry catalog used site-wide).
+   *
+   * Returns [] on error or when no rows are found — caller must fallback.
+   */
+  private async fetchWearGammesByType(
+    typeId: number,
+    limit = 8,
+  ): Promise<WearGamme[]> {
+    // Two-step PostgREST query (no direct SQL via Supabase JS client).
+    // pieces_relation_type may contain multiple rows for (type, pg, piece);
+    // we count distinct piece_ids per pg.
+    const { data, error } = await this.client
+      .from('pieces_relation_type')
+      .select('rtp_pg_id, rtp_piece_id')
+      .eq('rtp_type_id', typeId)
+      .eq('rtp_target_kind', 'vehicle_type');
+    if (error || !Array.isArray(data) || data.length === 0) return [];
+
+    const counts = new Map<number, Set<number>>();
+    for (const row of data) {
+      const pgId = (row as { rtp_pg_id: number }).rtp_pg_id;
+      const pieceId = (row as { rtp_piece_id: number }).rtp_piece_id;
+      if (!counts.has(pgId)) counts.set(pgId, new Set());
+      counts.get(pgId)!.add(pieceId);
+    }
+    const topPgIds = [...counts.entries()]
+      .sort((a, b) => b[1].size - a[1].size)
+      .slice(0, limit * 3)
+      .map(([pgId]) => pgId);
+    if (topPgIds.length === 0) return [];
+
+    const { data: gammesData } = await this.client
+      .from('pieces_gamme')
+      .select('pg_id, pg_alias, pg_name, pg_level, pg_display')
+      .in('pg_id', topPgIds)
+      .in('pg_level', ['1', '2'])
+      .eq('pg_display', '1');
+    if (!Array.isArray(gammesData)) return [];
+
+    return gammesData
+      .map((g) => {
+        const row = g as {
+          pg_id: number;
+          pg_alias: string;
+          pg_name: string;
+        };
+        return {
+          pg_alias: row.pg_alias,
+          pg_name: row.pg_name,
+          piece_count: counts.get(row.pg_id)?.size ?? 0,
+        } as WearGamme;
+      })
+      .sort((a, b) => b.piece_count - a.piece_count)
+      .slice(0, limit);
+  }
+
   // ── Neighbors ──
 
   private async fetchNeighbors(
@@ -497,6 +585,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       symptoms: string[];
     }>,
     neighbors: R8Neighbor[],
+    wearGammes: WearGamme[] = [],
   ): R8Block[] {
     const blocks: R8Block[] = [];
     const brand = v.brand_name || '';
@@ -545,26 +634,30 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       semanticPayload: [brand, model, type, fuel, power].filter(Boolean),
     });
 
-    // S_COMPAT_SCOPE
+    // S_COMPAT_SCOPE (A4 enrichment : add motorisation-specific technical
+    // description from engine-profile dict, since auto_type_motor_code is empty
+    // for ~100% of the catalog — engine_codes from rpcData are rarely populated).
     const engineCodes = Array.isArray(v.engine_codes) ? v.engine_codes : [];
     const cnitCodes = Array.isArray(v.cnit_codes) ? v.cnit_codes : [];
-    const compatLines = [];
+    const engineProfile: EngineProfileKey = deriveEngineProfile(fuel, power);
+    const profileDescription = getEngineProfileDescription(engineProfile);
+    const compatLines: string[] = [];
+    compatLines.push(profileDescription);
     if (engineCodes.length)
       compatLines.push(`Codes moteur : ${engineCodes.join(', ')}`);
     if (cnitCodes.length)
       compatLines.push(`Codes CNIT : ${cnitCodes.join(', ')}`);
-    if (!compatLines.length)
-      compatLines.push(
-        `Vérifiez la compatibilité avec votre numéro VIN (case D.2 de la carte grise).`,
-      );
+    compatLines.push(
+      `Vérifiez la compatibilité avec votre numéro VIN (case D.2 de la carte grise) avant commande.`,
+    );
     blocks.push({
       id: 'S_COMPAT_SCOPE',
       type: 'compatibility_scope',
       title: `Compatibilité ${brand} ${model} ${type}`,
-      renderedText: compatLines.join('\n'),
-      specificityWeight: engineCodes.length > 0 ? 0.85 : 0.5,
-      boilerplateRisk: engineCodes.length > 0 ? 0.1 : 0.4,
-      semanticPayload: [...engineCodes, ...cnitCodes],
+      renderedText: compatLines.join('\n\n'),
+      specificityWeight: engineCodes.length > 0 ? 0.9 : 0.75,
+      boilerplateRisk: engineCodes.length > 0 ? 0.1 : 0.2,
+      semanticPayload: [...engineCodes, ...cnitCodes, engineProfile],
     });
 
     // S_TECH_SPECS — motorisation du type courant + web specs (dimensions, performances)
@@ -600,8 +693,18 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
           specRows.push(`| Consommation mixte | ${specs.conso_mixte} |`);
         if (specs.co2) specRows.push(`| Émissions CO₂ | ${specs.co2} |`);
         if (specs.pneus) specRows.push(`| Pneumatiques | ${specs.pneus} |`);
-        if (specs.norme_euro)
+        // A3 : derive Euro norm from year_from if RAG specs don't provide one.
+        // Best-effort SEO hint (actual category dépend de la date d'immatriculation).
+        if (specs.norme_euro) {
           specRows.push(`| Norme Euro | ${specs.norme_euro} |`);
+        } else {
+          const derivedEuro = deriveEuroNorm(yearFrom);
+          if (derivedEuro) {
+            specRows.push(
+              `| Norme Euro (estimée depuis ${yearFrom}) | ${derivedEuro} |`,
+            );
+          }
+        }
         if (specRows.length > 0) {
           parts.push(
             `| Caractéristique | Valeur |\n|---|---|\n${specRows.join('\n')}`,
@@ -609,11 +712,20 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         }
       }
 
-      // Motorisation unique du type courant (1 type = 1 motorisation)
+      // Motorisation unique du type courant (1 type = 1 motorisation).
+      // Si RAG specs absentes, on ajoute la norme Euro dérivée du year_from ici.
       if (type) {
         parts.push(
           `**Motorisation** : ${type} ${power ? power + ' ch' : ''} (${fuel || 'N/C'})`,
         );
+        if (!hasSpecs) {
+          const derivedEuro = deriveEuroNorm(yearFrom);
+          if (derivedEuro) {
+            parts.push(
+              `**Norme Euro (estimée)** : ${derivedEuro} — année de production à partir de ${yearFrom}.`,
+            );
+          }
+        }
       }
 
       blocks.push({
@@ -657,32 +769,77 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       ],
     });
 
-    // S_SELECTION_GUIDE
-    const usurePieces = vehicleRag.pieces_usure || [];
-    if (usurePieces.length > 0) {
+    // S_SELECTION_GUIDE (A1) : top-8 wear gammes RÉELLEMENT par type_id
+    // via pieces_relation_type (source motorisation-specific), avec fallback
+    // sur vehicleRag.pieces_usure si aucune data DB (ex: rare cross-gamme vide).
+    if (wearGammes.length >= 3) {
+      const gammeLines = wearGammes.map(
+        (g, i) =>
+          `${i + 1}. **${g.pg_name}** — ${g.piece_count} références disponibles pour cette motorisation`,
+      );
       blocks.push({
         id: 'S_SELECTION_GUIDE',
         type: 'selection_help',
-        title: `Pièces d'usure courantes`,
-        renderedText: usurePieces.map((p) => `- ${p}`).join('\n'),
-        specificityWeight: 0.85,
-        boilerplateRisk: 0.1,
-        semanticPayload: usurePieces.slice(0, 5),
+        title: `Pièces compatibles les plus demandées pour cette motorisation`,
+        renderedText: `Top ${wearGammes.length} des familles de pièces référencées spécifiquement pour la ${brand} ${model} ${type} ${power ? power + ' ch' : ''}, classées par volume de références compatibles :\n\n${gammeLines.join('\n')}`,
+        specificityWeight: 0.95,
+        boilerplateRisk: 0.05,
+        semanticPayload: wearGammes.slice(0, 5).map((g) => g.pg_alias),
       });
+    } else {
+      // Fallback legacy — used when DB query returns <3 rows (rare, types
+      // non encore couverts par pieces_relation_type).
+      const usurePieces = vehicleRag.pieces_usure || [];
+      if (usurePieces.length > 0) {
+        blocks.push({
+          id: 'S_SELECTION_GUIDE',
+          type: 'selection_help',
+          title: `Pièces d'usure courantes`,
+          renderedText: usurePieces.map((p) => `- ${p}`).join('\n'),
+          specificityWeight: 0.7,
+          boilerplateRisk: 0.25,
+          semanticPayload: usurePieces.slice(0, 5),
+        });
+      }
     }
 
-    // S_ENTRETIEN_CONTEXT
-    const problemes = vehicleRag.problemes_connus || [];
-    if (problemes.length > 0) {
+    // S_MOTOR_ISSUES (A2) : problèmes connus PAR MOTORISATION via engine-profile
+    // dict (fuel × power_tier). Remplace l'ancien S_ENTRETIEN_CONTEXT qui lisait
+    // problemes_connus au niveau modele (identique entre tous les siblings).
+    const profileIssues = getEngineProfileIssues(engineProfile);
+    if (profileIssues.length > 0) {
+      const issuesOpener = renderTemplate(
+        selectVariation(
+          SEO_R8_MOTOR_ISSUES_OPENERS,
+          typeIdInt,
+          0,
+          MOTOR_ISSUES_SLOT_OFFSET,
+        ),
+      );
+      const issuesLines = profileIssues.map((p) => `- ${p}`).join('\n');
       blocks.push({
-        id: 'S_ENTRETIEN_CONTEXT',
-        type: 'maintenance_context',
-        title: `Problèmes connus ${brand} ${model}`,
-        renderedText: problemes.map((p) => `- ${p}`).join('\n'),
-        specificityWeight: 0.85,
+        id: 'S_MOTOR_ISSUES',
+        type: 'motor_issues_by_profile',
+        title: `Points techniques sensibles — ${type} ${power ? power + ' ch' : ''}`,
+        renderedText: `${issuesOpener}\n\n${issuesLines}`,
+        specificityWeight: 0.9,
         boilerplateRisk: 0.1,
-        semanticPayload: problemes.slice(0, 3),
+        semanticPayload: [engineProfile, ...profileIssues.slice(0, 3)],
       });
+    } else {
+      // Fallback legacy if profile dict miss (shouldn't happen after cascade).
+      const problemes = vehicleRag.problemes_connus || [];
+      if (problemes.length > 0) {
+        blocks.push({
+          id: 'S_MOTOR_ISSUES',
+          type: 'motor_issues_fallback',
+          title: `Problèmes connus ${brand} ${model}`,
+          renderedText: problemes.map((p) => `- ${p}`).join('\n'),
+          specificityWeight: 0.6,
+          boilerplateRisk: 0.3,
+          semanticPayload: problemes.slice(0, 3),
+        });
+      }
     }
 
     // S_CATALOG_ACCESS (dynamic ranking + ADR-022 P2d variation opener)
