@@ -33,6 +33,10 @@
     "audit:madge": "madge --circular --extensions ts,tsx backend/src frontend/app",
     "audit:depcruise": "depcruise --config .dependency-cruiser.cjs --output-type err-long backend/src frontend/app",
     "audit:ast": "ast-grep scan",
+    "audit:graph": "madge --json --extensions ts,tsx backend/src frontend/app > audit-reports/dep-graph.json",
+    "audit:baseline": "node scripts/cleanup/audit-compare-baseline.js",
+    "audit:baseline:json": "node scripts/cleanup/audit-compare-baseline.js --json",
+    "audit:baseline:strict": "node scripts/cleanup/audit-compare-baseline.js --strict",
     "audit:all": "npm run audit:ast && npm run audit:madge && npm run audit:depcruise && npm run audit:knip"
   },
   "keywords": [],

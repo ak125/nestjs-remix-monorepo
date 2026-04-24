@@ -11,6 +11,7 @@
 3. `db/*.md` — pour les questions sur les tables, RPCs, migrations Supabase
 4. `integrations/*.md` — pour Paybox, SystemPay, Supabase, catalogue fournisseur (parts-feed)
 5. `routes/*.md` — pour les routes Remix critiques
+6. `ops/*.md` — pour toute question sur **cleanup / refactor / suppression** (procédures, backlog, playbook cycles)
 
 Si la question n'est pas couverte ici, lire `.claude/rules/*` puis grepper.
 
@@ -73,6 +74,21 @@ seo-logs, shipping, staff, suppliers, support, system, upload
 | [routes/pieces.md](routes/pieces.md) | Catalogue pièces (pieces.*) |
 | [routes/admin.md](routes/admin.md) | Dashboard interne (admin.*) |
 | [routes/panier.md](routes/panier.md) | Panier + checkout (panier.*) |
+
+## Opérations cleanup / refactor / fusion
+
+Toute action de suppression, refactor, ou fusion de module DOIT passer par ces docs d'abord :
+
+| Fichier | Couvre |
+|---|---|
+| [ops/safe-delete-procedure.md](ops/safe-delete-procedure.md) | Runbook en 4 étapes + script `validate-before-delete.sh` + anti-patterns |
+| [ops/cleanup-targets.md](ops/cleanup-targets.md) | Backlog structuré : 76 scripts obsolètes, 147 dead components, fusions candidates, 17 cycles classifiés |
+| [ops/cycle-resolution-playbook.md](ops/cycle-resolution-playbook.md) | 5 patterns pour casser les cycles (fortuit / inversion / pipeline / acceptable / Remix) |
+
+Outils associés :
+- `npm run audit:baseline` — comparer counts actuels vs `audit-reports/phase0-baseline.json` (CI bloquant)
+- `npm run audit:graph` — export `audit-reports/dep-graph.json` pour visualisation
+- `./scripts/cleanup/validate-before-delete.sh <path>` — probe safety avant `git rm`
 
 ## Règles adjacentes (NE PAS dupliquer ici)
 
