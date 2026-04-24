@@ -1,255 +1,103 @@
 ---
 name: r8-diversity-check
-description: "Vérifie la diversité réelle du contenu R8 (anti-duplicate) après le wire variation (ADR-022 P2d). Mesure les fingerprints distincts par sibling group (motorisations d'un même modele_id). Verdict PASS/REVIEW/FAIL par slot. Utilise ce skill quand tu veux \"vérifier variation R8\", \"anti-duplicate R8\", \"check diversity motorisations\", \"r8 fingerprint audit\", \"mesurer collisions siblings\". Usage : /r8-diversity-check <brand_alias|modele_id> [--batch] [--generate] [--threshold=80]"
-argument-hint: "<brand_alias|modele_id> [--batch] [--generate] [--threshold=N]"
-allowed-tools: Read, mcp__claude_ai_Supabase__execute_sql, Bash
+description: "Vérifie la diversité réelle du contenu R8 (anti-duplicate) après le wire variation (ADR-022 P2d). Wrapper thin sur scripts/qa/r8-diversity-check.py. Utilise ce skill quand tu veux \"vérifier variation R8\", \"anti-duplicate R8\", \"check diversity motorisations\", \"r8 fingerprint audit\", \"mesurer collisions siblings\". Usage : /r8-diversity-check <brand_alias|modele_id> [--batch] [--threshold=80] [--format=json|markdown]"
+argument-hint: "<brand|modele-id|slug|--batch> [--threshold N] [--format markdown|json]"
+allowed-tools: Read, Bash
 ---
 
-# R8 Diversity Check — Skill v1.0
+# R8 Diversity Check — Skill wrapper v1.0
 
-Vérifie que les pages R8 d'un même modèle (motorisations sœurs) produisent
-un contenu suffisamment distinct pour éviter le duplicate content SEO.
+Thin wrapper sur le script Python exécutable `scripts/qa/r8-diversity-check.py`
+(pattern aligné `scripts/db/adr017-create-index-concurrently.py` — psycopg2 direct,
+déterministe, testé unit).
 
-Scope : enforce les gates de diversité post-`r8-vehicle-enricher` (ADR-022
-Pilier 2d — wire variation pools). Ce skill NE génère PAS de contenu —
-il MESURE seulement la distinctness des fingerprints.
+## Quand utiliser ce skill
 
-## Usage
-
-- `/r8-diversity-check smart` — check all 13 SMART models
-- `/r8-diversity-check 140004` — check Renault Clio III (modele_id direct)
-- `/r8-diversity-check renault-clio-3` — check via slug
-- `/r8-diversity-check smart --generate` — génère R8 pages via enricher AVANT check
-- `/r8-diversity-check --batch` — check tous constructeurs ayant ≥ 3 motorisations indexées
-- `/r8-diversity-check smart --threshold=70` — seuil PASS personnalisé (default 80%)
+Après avoir :
+1. Mergé les PRs ADR-022 Pilier 2 (#145 pools + #146 wire enricher)
+2. Lancé l'enrichissement R8 via `POST /api/admin/r8/enrich/:typeId` pour les types d'un constructeur
+3. Voulu vérifier que les fingerprints sont bien distincts entre motorisations sœurs
 
 ## Démarcation
 
-- **Ce skill VÉRIFIE** les fingerprints `__seo_r8_fingerprints` après enrichissement
-- Pour **GÉNÉRER** le contenu R8 → `content-gen` ou endpoint `/api/admin/r8/enrich/:typeId`
-- Pour l'**AUDIT SEO GLOBAL** (R1-R8) → `seo-gamme-audit`
-- Pour la **QUALITÉ ÉDITORIALE** (lisibilité, génériques) → `content-audit`
-- Pour **AUDIT ANTI-CANNIB CROSS-ROLE** (R1/R3/R4) → `blog-hub-planner`
+- **Ce skill MESURE** la diversité post-enrichement (read-only DB)
+- Pour **GÉNÉRER** contenu R8 → `content-gen` ou endpoint `/api/admin/r8/enrich/:typeId`
+- Pour **AUDIT SEO GLOBAL** R1-R8 → `seo-gamme-audit`
+- Pour **QUALITÉ ÉDITORIALE** → `content-audit`
+- Pour **ANTI-CANNIB CROSS-ROLE** (R1/R3/R4 mélangés) → `blog-hub-planner`
 
-## Base de données
+## Comment invoquer
 
-- Projet Supabase : `cxpojprgwgubzjyqzmoq`
-- Tables lues :
-  - `__seo_r8_pages` (id, page_key, type_id, type_name, seo_decision, diversity_score)
-  - `__seo_r8_fingerprints` (page_id, 6 fingerprints + top_tokens JSONB)
-  - `auto_type` (jointure type_id → modele_id)
-  - `auto_modele` (modele_name, modele_alias, modele_marque_id)
-  - `auto_marque` (marque_name, marque_alias)
-- Tool : `mcp__claude_ai_Supabase__execute_sql` exclusivement
+Le skill exécute directement le script Python via Bash. Exemples :
 
-## Seuils de diversité (defaults)
+```bash
+# Par marque alias
+python3 scripts/qa/r8-diversity-check.py --brand smart
 
-| Fingerprint | Seuil PASS | Bloc impacté | Rotation pool |
-|-------------|-----------|--------------|---------------|
-| `content_fingerprint` | ≥ 80 % distinct | global page | — |
-| `normalized_text_fingerprint` | ≥ 80 % | global page | — |
-| `block_sequence_fingerprint` | = 100 % stable | structure blocs | — |
-| `semantic_key_fingerprint` | ≥ 80 % | sémantique globale | — |
-| `faq_signature` | ≥ 70 % | S_FAQ_DEDICATED | SEO_R8_FAQ_OPENING (N=7) |
-| `category_signature` | ≥ 80 % | S_CATALOG_ACCESS | SEO_R8_CATALOG_ACCESS (N=7) |
+# Par modele_id direct
+python3 scripts/qa/r8-diversity-check.py --modele-id 140004
 
-Règle : un fingerprint `block_sequence` DEVRAIT être stable (même structure de blocs),
-donc 100 % identiques = normal. Les autres mesurent le contenu → distincts souhaités.
+# Par slug
+python3 scripts/qa/r8-diversity-check.py --slug renault-clio-3
 
-## Verdict par modele_id
+# Batch : tous modèles ≥ 3 pages R8 enrichies
+python3 scripts/qa/r8-diversity-check.py --batch
 
-- **PASS** : tous les slots (sauf block_sequence) ≥ seuil
-- **REVIEW** : 1-2 slots sous seuil → enrichir pools ou bump size
-- **FAIL** : ≥ 3 slots sous seuil → wire bug ou pools trop petits
+# Output JSON (pour CI)
+python3 scripts/qa/r8-diversity-check.py --brand smart --format json
 
-## Workflow étape par étape
-
-### Étape 1 — Parse argument
-
-```
-Si argument = entier → modele_id direct
-Si argument = "brand" alias → query auto_marque.marque_alias = argument
-Si argument = slug "brand-model-x" → split → marque_alias + modele_alias
-Si --batch → query tous modeles avec ≥ 3 pages R8 enrichies
+# Seuil custom
+python3 scripts/qa/r8-diversity-check.py --brand smart --threshold 75
 ```
 
-### Étape 2 (optionnel si `--generate`) — Générer les pages R8
+## Exit codes
 
-```
-POST /api/admin/vehicle-rag/generate-batch {modeleIds: [...]}  // RAG files
-POST /api/admin/r8/enrich/:typeId (pour chaque type_id)        // R8 pages + fingerprints
-```
+| Code | Sens |
+|------|------|
+| 0 | PASS — tous slots ≥ seuil sur tous modèles |
+| 1 | REVIEW — 1-2 slots sous seuil sur ≥ 1 modèle |
+| 2 | FAIL — ≥ 3 slots sous seuil OU ≥ 50 % modèles en FAIL |
+| 3 | Erreur technique (DB, args invalides, scope vide) |
 
-Prérequis : backend DEV running + session admin (superadmin@autoparts.com).
+## Seuils par défaut
 
-### Étape 3 — Query DB diversity
-
-```sql
-WITH target AS (
-  -- Selon argument, résout les modele_id cibles
-  SELECT modele_id FROM auto_modele WHERE modele_marque_id::text = :marque_id_or_alias
-),
-pages_with_fp AS (
-  SELECT
-    p.type_id::int AS type_id,
-    t.type_modele_id_i AS modele_id,
-    m.modele_name,
-    br.marque_name,
-    p.seo_decision,
-    p.diversity_score,
-    fp.content_fingerprint,
-    fp.normalized_text_fingerprint,
-    fp.block_sequence_fingerprint,
-    fp.semantic_key_fingerprint,
-    fp.faq_signature,
-    fp.category_signature
-  FROM public.__seo_r8_pages p
-  JOIN public.__seo_r8_fingerprints fp ON fp.page_id = p.id
-  JOIN public.auto_type t ON t.type_id = p.type_id::int
-  JOIN public.auto_modele m ON m.modele_id = t.type_modele_id_i
-  JOIN public.auto_marque br ON br.marque_id::text = m.modele_marque_id::text
-  WHERE t.type_modele_id_i IN (SELECT modele_id FROM target)
-)
-SELECT
-  modele_id,
-  modele_name,
-  marque_name,
-  COUNT(*) AS sibling_count,
-  COUNT(DISTINCT content_fingerprint) AS distinct_content,
-  COUNT(DISTINCT normalized_text_fingerprint) AS distinct_normalized,
-  COUNT(DISTINCT block_sequence_fingerprint) AS distinct_block_seq,
-  COUNT(DISTINCT semantic_key_fingerprint) AS distinct_semantic,
-  COUNT(DISTINCT faq_signature) AS distinct_faq,
-  COUNT(DISTINCT category_signature) AS distinct_category,
-  ROUND(AVG(diversity_score)::numeric, 1) AS avg_diversity_score,
-  COUNT(*) FILTER (WHERE seo_decision = 'INDEX') AS index_count,
-  COUNT(*) FILTER (WHERE seo_decision = 'REVIEW') AS review_count,
-  COUNT(*) FILTER (WHERE seo_decision = 'REGENERATE') AS regenerate_count,
-  COUNT(*) FILTER (WHERE seo_decision = 'REJECT') AS reject_count
-FROM pages_with_fp
-GROUP BY modele_id, modele_name, marque_name
-HAVING COUNT(*) >= 2  -- sibling check nécessite ≥ 2
-ORDER BY modele_name;
-```
-
-### Étape 4 — Detect collisions
-
-Pour chaque modele_id avec ratio distinct < seuil sur un fingerprint :
-
-```sql
-SELECT
-  fp.faq_signature,
-  COUNT(*) AS colliding_type_ids,
-  array_agg(p.type_id::int ORDER BY p.type_id) AS type_ids_with_same_hash
-FROM public.__seo_r8_fingerprints fp
-JOIN public.__seo_r8_pages p ON p.id = fp.page_id
-JOIN public.auto_type t ON t.type_id = p.type_id::int
-WHERE t.type_modele_id_i = :modele_id
-GROUP BY fp.faq_signature
-HAVING COUNT(*) >= 2;
-```
-
-Adapter la colonne `faq_signature` selon le slot qui pose problème.
-
-### Étape 5 — Rapport Markdown
-
-Format final à produire :
-
-```markdown
-# R8 Diversity Check — SMART (13 modèles, 66 motorisations)
-
-**Run** : 2026-04-24T12:34:56Z
-**Seuil** : 80 % distinct par slot (configurable --threshold)
-
-## Résumé par modèle
-
-| modele_id | Modèle | Siblings | content | normalized | block_seq | semantic | faq | category | avg_div | Verdict |
-|-----------|--------|----------|---------|------------|-----------|----------|-----|----------|---------|---------|
-| 151000 | CABRIO (450) | 6 | 6/6 100% | 6/6 100% | 1/6* | 6/6 | 5/6 83% | 5/6 83% | 72.4 | ✅ PASS |
-| 151001 | CITY COUPE | 8 | 8/8 | 8/8 | 1/8* | 8/8 | 6/8 75% | 7/8 88% | 70.2 | ⚠️ REVIEW |
-| ... | | | | | | | | | | |
-
-\* block_sequence attendu à 1 (structure blocs stable) — pas un échec.
-
-## Collisions détectées (REVIEW/FAIL)
-
-### 151001 CITY COUPE — faq_signature (6/8 distinct, 75% < seuil 80%)
-
-```
-Hash abc123 : types 34201, 34205
-  → Collision sur rotation pool SEO_R8_FAQ_OPENING_VARIATIONS (N=7)
-  → Formule : (34201 + 0 + 300) % 7 = (34205 + 0 + 300) % 7
-
-Hash def456 : types 34210, 34212
-  → Même collision
-```
-
-**Recommandation** : enrichir `SEO_R8_FAQ_OPENING_VARIATIONS` à 11 variantes (prime)
-pour baisser la probabilité de collision sur petits siblings groups.
-
-## Verdict global
-
-- PASS : 10 / 13 modèles
-- REVIEW : 2 / 13
-- FAIL : 1 / 13
-
-## Actions suggérées
-
-- [ ] Enrichir `SEO_R8_FAQ_OPENING_VARIATIONS` (7 → 11)
-- [ ] Re-enrichir les 3 modèles en REVIEW/FAIL après enrichissement pool
-- [ ] Valider manuellement editorially les 10 en PASS
-```
-
-## Edge cases
-
-- **0 sibling** (modele avec 1 seul type_id) : skip (pas de duplicate possible)
-- **block_sequence != 1** : bug structurel (structure des blocs varie entre siblings)
-  → investigation required, pas un issue de variation
-- **__seo_r8_fingerprints vide** : demander à l'utilisateur de lancer `--generate`
-  ou d'enrichir d'abord via endpoint admin
-- **diversity_score NULL** : page R8 n'a pas été scorée → enrichissement incomplet
-- **seo_decision=REJECT** : exclure du calcul (page pas publiable pour autres raisons)
-
-## Sécurité
-
-- Read-only : ce skill ne FAIT QUE lire la DB
-- Aucune modification de pages, fingerprints, ou enrichment
-- Mode `--generate` hit backend endpoint admin standard (nécessite session admin)
-
-## Example d'invocation complète
-
-```
-/r8-diversity-check smart --generate --threshold=75
-```
-
-Workflow :
-1. Query 13 SMART modele_id
-2. Pour chaque modele_id, list all type_ids via auto_type
-3. POST vehicle-rag/generate-batch (RAG files)
-4. POST r8/enrich/:typeId en boucle (pages + fingerprints)
-5. Query diversity aggregée
-6. Query collisions pour ratios < 75 %
-7. Render markdown report
+| Fingerprint | Seuil PASS | Justification |
+|-------------|-----------|---------------|
+| `content` | ≥ 80 % | Global page — doit être distinct |
+| `normalized_text` | ≥ 80 % | Global — texte normalisé |
+| `block_sequence` | n/a | Stable attendu (structure des blocs constante) |
+| `semantic_key` | ≥ 80 % | Sémantique globale |
+| `faq_signature` | ≥ 80 % | S_FAQ_DEDICATED (pool SEO_R8_FAQ_OPENING N=7) |
+| `category_signature` | ≥ 80 % | S_CATALOG_ACCESS (pool N=7) |
 
 ## Prérequis
 
-- PRs #145 + #146 mergées (wire variation actif)
-- Backend DEV :3000 running (si `--generate`)
-- Session admin valide dans /tmp/cookies.txt (via POST /auth/login)
-- MCP `mcp__claude_ai_Supabase__execute_sql` disponible
+- `SUPABASE_DB_PASSWORD` dans `backend/.env`
+- Python 3 + `psycopg2` + `python-dotenv` (déjà installés sur DEV VPS)
+- Backend DEV enrichi au préalable via l'endpoint admin
 
-## Limites connues
+## Output attendu
 
-- Ne détecte pas les collisions **cross-modele** (2 modèles avec même content) → utiliser
-  `blog-hub-planner` anti-cannibalisation pour ça
-- Ne mesure pas la **qualité éditoriale** des variantes (lisibilité, cohérence) →
-  utiliser `content-audit`
-- Single shot : pas de monitoring continu (run manuellement après chaque batch)
+- **Markdown** (default) : tableau par modèle + collisions détaillées + actions recommandées
+- **JSON** : structure `{summary, models[]}` parseable (CI friendly)
 
-## Refs
+## Tests unitaires
 
-- ADR-022 : R8 RAG Control Plane (Pilier 2d wire variation)
-- Plan : `/home/deploy/.claude/plans/objectif-sont-les-page-validated-pizza.md`
-- Pools : `backend/src/config/seo-variations.config.ts` (PR #145)
-- Wire : `backend/src/modules/admin/services/r8-vehicle-enricher.service.ts` (PR #146)
+```bash
+python3 scripts/qa/r8-diversity-check-test.py
+# 11 tests (VerdictTest + OutputFormatTest)
+```
+
+## Security
+
+- Read-only sur DB (pas de INSERT / UPDATE)
+- Connexion directe port 5432 via `SUPABASE_DB_PASSWORD` (BYPASSRLS service_role)
+- Pas de génération, pas d'écriture RAG
+
+## Références
+
+- Script : `scripts/qa/r8-diversity-check.py`
+- Tests : `scripts/qa/r8-diversity-check-test.py`
+- ADR-022 Pilier 2d (wire variation)
+- PRs base : #145 (pools), #146 (enricher wire)
 - Related agents : `r8-keyword-planner` (P2_EVALUATE_DIVERSITY), `r8-vehicle-validator`
