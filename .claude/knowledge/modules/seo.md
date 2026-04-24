@@ -30,7 +30,6 @@ _Section à rédiger._
 <!-- AUTO-GENERATED (refresh-knowledge.py — ne pas éditer sous cette ligne) -->
 
 ### Exports publics du module
-- `Core`
 - `SeoService`
 - `DynamicSeoV4UltimateService`
 - `HreflangService`
@@ -38,14 +37,11 @@ _Section à rédiger._
 - `RobotsTxtService`
 - `SeoHeadersService`
 - `UrlCompatibilityService`
-- `Validation`
 - `PageRoleValidatorService`
 - `QualityValidatorService`
 - `PurchaseGuideValidatorService`
-- `Linking`
 - `InternalLinkingService`
 - `SeoLinkTrackingService`
-- `Monitoring`
 - `SeoMonitoringService`
 - `SeoPilotageService`
 - `SeoKpisService`
@@ -53,22 +49,18 @@ _Section à rédiger._
 - `GooglebotDetectorService`
 - `KeywordsDashboardService`
 - `LogIngestionService`
-- `Sitemap`
 - `SitemapV10Service`
 - `SitemapV10HubsService`
 - `SitemapV10ScoringService`
 - `SitemapDeltaService`
 - `SitemapStreamingService`
 - `SitemapHygieneService`
-- `SitemapVehiclePiecesValidator`
-- `Content`
 - `ReferenceService`
 - `DiagnosticService`
 - `SeoGeneratorService`
 - `SeoTitleEngineService`
 
 ### Providers (top 15)
-- `Core`
 - `SeoService`
 - `SeoV4SwitchEngineService`
 - `SeoV4MonitoringService`
@@ -78,11 +70,12 @@ _Section à rédiger._
 - `RobotsTxtService`
 - `SeoHeadersService`
 - `UrlCompatibilityService`
-- `Validation`
 - `PageRoleValidatorService`
 - `QualityValidatorService`
 - `PurchaseGuideValidatorService`
-- `Linking`
+- `InternalLinkingService`
+- `SeoLinkTrackingService`
+- `SeoMonitoringService`
 
 ### Fichiers primaires
 - [backend/src/modules/seo/config/hreflang.config.ts](../../../backend/src/modules/seo/config/hreflang.config.ts)

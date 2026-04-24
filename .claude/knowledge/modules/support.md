@@ -31,8 +31,6 @@ _Section à rédiger._
 - `NotificationService`
 - `SupportAnalyticsService`
 - `SupportConfigService`
-- `Export`
-- `IA`
 - `AISentimentService`
 - `AICategorizationService`
 - `AISmartResponseService`
@@ -41,7 +39,6 @@ _Section à rédiger._
 - `LegalPageService`
 
 ### Providers (top 15)
-- `Services`
 - `ReviewService`
 - `ContactService`
 - `QuoteService`
@@ -51,11 +48,12 @@ _Section à rédiger._
 - `NotificationService`
 - `SupportAnalyticsService`
 - `SupportConfigService`
-- `Intelligence`
-- `Artificielle`
 - `AISentimentService`
 - `AICategorizationService`
 - `AISmartResponseService`
+- `AIPredictiveService`
+- `LegalVersionService`
+- `LegalPageService`
 
 ### Fichiers primaires
 - [backend/src/modules/support/controllers/ai-support.controller.ts](../../../backend/src/modules/support/controllers/ai-support.controller.ts)

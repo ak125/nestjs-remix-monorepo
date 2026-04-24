@@ -25,31 +25,24 @@ _Section à rédiger._
 <!-- AUTO-GENERATED (refresh-knowledge.py — ne pas éditer sous cette ligne) -->
 
 ### Exports publics du module
-- `Services`
 - `McpValidationService`
 - `McpQueryService`
 - `McpAlertingService`
-- `Phase`
-- `External`
 - `ChromeDevToolsClientService`
 - `ExternalCompatibilityService`
 
 ### Providers (top 15)
-- `Core`
 - `McpValidationService`
-- `Phase`
-- `Query`
-- `Alerting`
 - `McpQueryService`
 - `McpAlertingService`
-- `External`
-- `Compatibility`
-- `Chrome`
-- `DevTools`
 - `ChromeDevToolsClientService`
 - `ExternalCompatibilityScrapingService`
 - `ExternalCompatibilityConsensusService`
 - `ExternalCompatibilityCacheService`
+- `ExternalCompatibilityPartsLink24Service`
+- `ExternalCompatibilityService`
+- `McpShadowInterceptor`
+- `McpVerifyInterceptor`
 
 ### Fichiers primaires
 - [backend/src/modules/mcp-validation/config/mcp-route-map.config.ts](../../../backend/src/modules/mcp-validation/config/mcp-route-map.config.ts)

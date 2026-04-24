@@ -33,11 +33,8 @@ _Section à rédiger._
 - `SupabaseIndexationService`
 
 ### Providers (top 15)
-- `Core`
-- `Services`
 - `MeilisearchService`
 - `SearchMonitoringService`
-- `Specialized`
 - `SearchCacheService`
 - `DatabaseAnalysisService`
 - `VehicleNamingService`

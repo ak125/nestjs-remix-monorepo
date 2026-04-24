@@ -31,17 +31,11 @@ _Section à rédiger._
 - `PaymentDataService`
 
 ### Providers (top 15)
-- `Services`
 - `PaymentService`
 - `CyberplusService`
 - `PayboxService`
 - `PaymentValidationService`
 - `PayboxCallbackGateService`
-- `SAFE`
-- `CHANGE`
-- `Callback`
-- `Gate`
-- `Data`
 - `PaymentDataService`
 
 ### Fichiers primaires

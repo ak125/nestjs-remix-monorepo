@@ -44,21 +44,21 @@ _Section à rédiger._
 - `VehicleProfileService`
 
 ### Providers (top 15)
-- `Services`
 - `VehiclesService`
 - `EnhancedVehicleService`
-- `Core`
 - `VehicleCacheService`
 - `VehicleEnrichmentService`
-- `Data`
 - `VehicleBrandsService`
 - `VehicleModelsService`
 - `VehicleTypesService`
-- `Search`
 - `VehicleSearchService`
 - `VehicleMineService`
-- `SEO`
 - `BrandSeoService`
+- `VehicleMetaService`
+- `BrandBestsellersService`
+- `VehicleMotorCodesService`
+- `VehicleProfileService`
+- `VehicleRpcService`
 
 ### Fichiers primaires
 - [backend/src/modules/vehicles/brands.controller.ts](../../../backend/src/modules/vehicles/brands.controller.ts)

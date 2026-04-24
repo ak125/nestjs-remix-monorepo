@@ -31,27 +31,16 @@ _Section à rédiger._
 - `VehicleFilteredCatalogV4HybridService`
 - `CatalogDataIntegrityService`
 - `GammeUnifiedService`
-- `GammeRestModule`
 - `VehiclePiecesCompatibilityService`
 - `OemPlatformMappingService`
-- `OEM`
-- `SEO`
 - `SeoTemplateService`
 - `UnifiedPageDataService`
-- `RPC`
-- `V4`
 - `HomepageRpcService`
 - `CatalogHierarchyService`
-- `Single`
 - `CompatibilityService`
-- `Pack`
-- `Confiance`
-- `V2`
 - `PopularGammesService`
-- `VehiclesModule`
 
 ### Providers (top 15)
-- `Services`
 - `CatalogService`
 - `EnhancedVehicleCatalogService`
 - `GammeUnifiedService`
@@ -59,13 +48,14 @@ _Section à rédiger._
 - `VehicleFilteredCatalogV4HybridService`
 - `VehiclePiecesCompatibilityService`
 - `CatalogDataIntegrityService`
-- `Service`
-- `PRICING`
-- `SERVICE`
 - `PricingService`
-- `OEM`
-- `PLATFORM`
-- `MAPPING`
+- `OemPlatformMappingService`
+- `SeoTemplateService`
+- `UnifiedPageDataService`
+- `HomepageRpcService`
+- `CatalogHierarchyService`
+- `CacheWarmingService`
+- `CompatibilityService`
 
 ### Fichiers primaires
 - [backend/src/modules/catalog/catalog.controller.ts](../../../backend/src/modules/catalog/catalog.controller.ts)

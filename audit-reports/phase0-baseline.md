@@ -1,10 +1,23 @@
 # Phase 0 — Cleanup Gate Baseline
 
 Generated: 2026-04-24 — branch `feat/claude-knowledge-base`
+Updated: 2026-04-24 — tier-1 refinements applied.
 
 Deterministic tools ran on the full monorepo with all rules at `severity: warning`
 (Phase 0 is non-blocking by design). This file is the baseline we promote to
 `error` severity after each Phase 1 cleanup pass.
+
+## Tier-1 refinements applied
+
+- `backend-no-console-log` rule: added `ignores` for validation/CLI/test files.
+  Eliminated 13 false positives (console.log in validate-*.ts tooling).
+- `payments-no-raw-equality` rule: added `not has kind: string | template_string`
+  constraint. Eliminated 2 false positives on config-value equality checks.
+- `knip.json`: added entry patterns for workers, scripts, Remix routes config.
+  Dropped unused types count from 338 to 310.
+- `refresh-knowledge.py`: now strips JS/TS comments + filters providers by
+  NestJS-class suffix (Service / Controller / Module / Guard / …). Cleaned
+  ~117 lines of noise across 20 module .md files.
 
 ## Raw outputs (same directory)
 
@@ -17,21 +30,26 @@ Deterministic tools ran on the full monorepo with all rules at `severity: warnin
 
 ### knip (unused code + deps)
 
-| Category                | Count |
-|-------------------------|-------|
-| Unused files            | 362   |
-| Unused dependencies     | 4     |
-| Unused devDependencies  | 4     |
-| Unlisted dependencies   | 10    |
-| Unlisted binaries       | 4     |
-| Unused exports          | 219   |
-| Unused exported types   | 338   |
-| Duplicate exports       | 41    |
+| Category                | Count (initial) | Count (tier-1) |
+|-------------------------|-----------------|----------------|
+| Unused files            | 362             | 362            |
+| Unused dependencies     | 4               | 4              |
+| Unused devDependencies  | 4               | 4              |
+| Unlisted dependencies   | 10              | 9              |
+| Unlisted binaries       | 4               | 3              |
+| Unused exports          | 219             | 218            |
+| Unused exported types   | 338             | **310** (-28)  |
+| Duplicate exports       | 41              | 41             |
 
-**Interpretation.** 362 files with no detected consumer is the largest lever.
-Some may be false positives (route files loaded by Remix's flat-router, dynamic
-imports, CLI scripts not listed as entry points). A sampling pass before bulk
-delete is non-negotiable.
+**Interpretation.** 362 files with no detected consumer is the largest lever,
+unchanged after tier-1 because knip does not track NestJS decorator-based DI
+registration. Classes annotated with `@Injectable`, `@Controller`, `@Module`
+are loaded via metadata reflection, not imports — knip sees them as unused.
+Fixing this would require a knip NestJS plugin config or explicit per-file
+entries; out of Phase 0 scope.
+
+A sampling pass before any bulk delete remains non-negotiable — expect that
+a significant fraction of the 362 are NestJS-DI false positives.
 
 ### madge (circular dependencies)
 
@@ -58,16 +76,14 @@ likely require breaking out a shared-types file.
 
 ### ast-grep (pattern rules from `.ast-grep/rules/`)
 
-14 warnings across the 2 initial rules:
+**After tier-1 refinement: 0 warnings, 0 errors.** Both initial false-positive
+clusters have been resolved by tightening the rules, so the baseline is clean.
 
-1. `payments-no-raw-equality` — 1 hit in
-   `backend/src/modules/payments/controllers/paybox-monitoring.controller.ts:159`
-   (`config.hmacKey === 'CONFIGURED'`). Not a real HMAC comparison — it's a
-   status probe. Either whitelist this file, or tighten the rule's AST pattern
-   to match only `crypto`-involved comparisons.
-2. `backend-no-console-log` — 13 hits, all in dev utility scripts
-   (`validate-phase0.ts` etc). Legit in validation CLIs; rule needs a
-   `pathNot: scripts|validators` filter.
+Previously (before tier-1): 14 warnings :
+1. `payments-no-raw-equality` — 1 false positive (`config.hmacKey === 'CONFIGURED'`,
+   status probe not HMAC compare). Fixed by adding `not has kind: string`.
+2. `backend-no-console-log` — 13 hits all in dev utility CLIs (`validate-phase0.ts`).
+   Fixed by adding `ignores: backend/src/**/validate-*.ts` + cli/scripts/test patterns.
 
 **Pending rule** : a guard against raw supplier-prefixed columns (the ones
 suffixed `_i` should always be used instead) is **not yet wired**. The literal

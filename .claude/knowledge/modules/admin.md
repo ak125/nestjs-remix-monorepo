@@ -37,46 +37,39 @@ _Section à rédiger._
 - `StockManagementService`
 - `ReportingService`
 - `UserManagementService`
-- `AdminProductsService`
 - `GammeDetailEnricherService`
 - `GammeVLevelService`
 - `StockMovementService`
 - `StockReportService`
 - `PageBriefService`
-- `Export`
-- `WorkerModule`
 - `BriefGatesService`
 - `HardGatesService`
 - `ImageGatesService`
 - `AdminJobHealthService`
 - `RagSafeDistillService`
-- `RAG`
 - `KeywordPlanGatesService`
 - `R1KeywordPlanGatesService`
-- `R1`
 - `R8VehicleEnricherService`
 - `R7BrandEnricherService`
-- `R7`
 - `VehicleRagGeneratorService`
-- `R8`
 - `RagGammeReaderService`
 
 ### Providers (top 15)
 - `ConfigurationService`
 - `StockManagementService`
-- `Service`
 - `WorkingStockService`
-- `RealStockService`
 - `ReportingService`
 - `UserManagementService`
-- `AdminProductsService`
-- `StaffService`
-- `StaffModule`
 - `AdminGammesSeoService`
-- `Gammes`
-- `SEO`
 - `GammeSeoThresholdsService`
-- `Seuils`
+- `GammeSeoAuditService`
+- `GammeSeoBadgesService`
+- `SeoCockpitService`
+- `GammeDetailEnricherService`
+- `GammeVLevelService`
+- `StockMovementService`
+- `StockReportService`
+- `BuyingGuideEnricherService`
 
 ### Fichiers primaires
 - [backend/src/modules/admin/admin.module.ts](../../../backend/src/modules/admin/admin.module.ts)

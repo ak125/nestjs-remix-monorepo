@@ -9,7 +9,6 @@ primary_files:
 - backend/src/modules/commercial/commercial.module.ts
 depends_on:
 - DatabaseModule
-- ScheduleModule
 ---
 
 # Module Commercial
@@ -22,12 +21,9 @@ _Section à rédiger._
 
 ### Exports publics du module
 - `CommercialArchivesService`
-- `Service`
 
 ### Providers (top 15)
 - `CommercialArchivesService`
-- `Service`
-- `CRON`
 
 ### Fichiers primaires
 - [backend/src/modules/commercial/archives/archives.controller.ts](../../../backend/src/modules/commercial/archives/archives.controller.ts)

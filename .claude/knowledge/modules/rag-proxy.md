@@ -25,12 +25,10 @@ _Section à rédiger._
 <!-- AUTO-GENERATED (refresh-knowledge.py — ne pas éditer sous cette ligne) -->
 
 ### Exports publics du module
-- `Backward`
 - `RagProxyService`
 - `FrontmatterValidatorService`
 - `RagCleanupService`
 - `WebhookAuditService`
-- `New`
 - `RagKnowledgeService`
 - `RagChatService`
 - `RagGammeDetectionService`
@@ -42,40 +40,29 @@ _Section à rédiger._
 - `RagMdMergerService`
 - `RagImageManagementService`
 - `RagVideoManagementService`
-- `Phase`
-- `Ingestion`
-- `Foundation`
 - `RagFingerprintService`
 - `RagValidationService`
 - `RagFoundationGateService`
-- `Normalization`
 - `RagNormalizationService`
-- `Business`
-- `Admissibility`
-- `Gate`
 - `RagAdmissibilityGateService`
-- `Legacy`
-- `Adapted`
-- `Shadow`
-- `Audit`
 - `RagPhase2aShadowAuditService`
 
 ### Providers (top 15)
-- `Phase`
-- `Ingestion`
-- `Foundation`
 - `RagFingerprintService`
 - `RagValidationService`
 - `RagFoundationGateService`
-- `Normalization`
-- `Identity`
-- `Resolution`
 - `RagNormalizationService`
-- `Business`
-- `Admissibility`
-- `Gate`
 - `RagAdmissibilityGateService`
-- `Legacy`
+- `RagPhase2aShadowAuditService`
+- `FrontmatterValidatorService`
+- `RagCleanupService`
+- `WebhookAuditService`
+- `RagCircuitBreakerService`
+- `RagRedisJobService`
+- `RagKnowledgeService`
+- `RagChatService`
+- `RagGammeDetectionService`
+- `RagIngestionService`
 
 ### Fichiers primaires
 - [backend/src/modules/rag-proxy/dto/chat.dto.ts](../../../backend/src/modules/rag-proxy/dto/chat.dto.ts)

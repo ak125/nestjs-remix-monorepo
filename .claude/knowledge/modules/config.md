@@ -31,10 +31,6 @@ _Section à rédiger._
 ### Providers (top 15)
 - `DatabaseConfigService`
 - `SimpleDatabaseConfigService`
-- `Providers`
-- `ANALYTICS_ENABLED`
-- `NODE_ENV`
-- `CONFIG_OPTIONS`
 
 ### Fichiers primaires
 - [backend/src/modules/config/config.module.ts](../../../backend/src/modules/config/config.module.ts)

@@ -28,11 +28,7 @@ _Section à rédiger._
 - `CrawlBudgetOrchestratorService`
 
 ### Providers (top 15)
-- `Audit`
 - `SeoAuditSchedulerService`
-- `A`
-- `B`
-- `Testing`
 - `CrawlBudgetSupabaseService`
 - `GoogleSearchConsoleService`
 - `GoogleAnalyticsService`

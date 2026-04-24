@@ -39,21 +39,17 @@ _Section à rédiger._
 - `CrossSellingSourceService`
 
 ### Providers (top 15)
-- `Services`
-- `Split`
-- `Phase`
 - `ProductsService`
-- `CRUD`
-- `Search`
 - `ProductsCatalogService`
-- `Gammes`
-- `Marques`
-- `Stats`
-- `Debug`
 - `ProductsAdminService`
-- `Commercial`
-- `Filtres`
-- `Toggle`
+- `ProductsTechnicalService`
+- `ProductEnhancementService`
+- `ProductFilteringService`
+- `PricingService`
+- `CrossSellingService`
+- `StockService`
+- `CrossSellingSeoService`
+- `CrossSellingSourceService`
 
 ### Fichiers primaires
 - [backend/src/modules/products/controllers/products-admin.controller.ts](../../../backend/src/modules/products/controllers/products-admin.controller.ts)

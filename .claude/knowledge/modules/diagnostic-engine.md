@@ -26,18 +26,10 @@ _Section à rédiger._
 <!-- AUTO-GENERATED (refresh-knowledge.py — ne pas éditer sous cette ligne) -->
 
 ### Exports publics du module
-- `DiagnosticEngineOrchestrator`
 - `DiagnosticEngineDataService`
 
 ### Providers (top 15)
-- `DiagnosticEngineOrchestrator`
 - `DiagnosticEngineDataService`
-- `SignalInterpretationEngine`
-- `HypothesisScoringEngine`
-- `RiskSafetyEngine`
-- `CatalogOrientationEngine`
-- `MaintenanceIntelligenceEngine`
-- `RagEnrichmentEngine`
 
 ### Fichiers primaires
 - [backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts](../../../backend/src/modules/diagnostic-engine/constants/gamme-map.constants.ts)

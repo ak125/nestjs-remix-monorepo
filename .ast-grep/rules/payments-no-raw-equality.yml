@@ -20,3 +20,11 @@ rule:
     - has:
         regex: '(?i)signature|hmac|mac|digest|hash'
         stopBy: end
+    - not:
+        has:
+          kind: string
+          stopBy: end
+    - not:
+        has:
+          kind: template_string
+          stopBy: end

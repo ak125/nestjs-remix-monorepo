@@ -43,6 +43,41 @@ EXPORTS_ARRAY_RE = re.compile(r"exports\s*:\s*\[([^\]]*)\]", re.DOTALL)
 PROVIDERS_ARRAY_RE = re.compile(r"providers\s*:\s*\[([^\]]*)\]", re.DOTALL)
 CLASS_ID_RE = re.compile(r"\b([A-Z][A-Za-z0-9_]*)\b")
 
+# JS/TS comment strippers — apply to source before regex extraction so that
+# words inside // or /* */ don't leak into the detected identifiers list.
+LINE_COMMENT_RE = re.compile(r"//[^\n]*")
+BLOCK_COMMENT_RE = re.compile(r"/\*.*?\*/", re.DOTALL)
+
+# Heuristic suffix filter: NestJS providers/exports/imports almost always end
+# with one of these. Words without a recognised suffix are likely comment
+# fragments, not real class identifiers. Keeps `Module` for imports matching,
+# and domain suffixes for providers/exports.
+NEST_CLASS_SUFFIXES = (
+    "Module",
+    "Service",
+    "Controller",
+    "Repository",
+    "Guard",
+    "Interceptor",
+    "Pipe",
+    "Filter",
+    "Strategy",
+    "Provider",
+    "Gateway",
+    "Middleware",
+    "Factory",
+    "Handler",
+    "Resolver",
+)
+
+
+def _strip_comments(src: str) -> str:
+    return BLOCK_COMMENT_RE.sub("", LINE_COMMENT_RE.sub("", src))
+
+
+def _looks_like_nest_class(ident: str) -> bool:
+    return ident.endswith(NEST_CLASS_SUFFIXES)
+
 
 @dataclass
 class ModuleInfo:
@@ -75,7 +110,12 @@ def detect_modules(only: str | None = None) -> list[ModuleInfo]:
 
 
 def analyze_module(mod_dir: Path, module_file: Path) -> ModuleInfo:
-    content = module_file.read_text(encoding="utf-8", errors="replace")
+    raw = module_file.read_text(encoding="utf-8", errors="replace")
+    # Strip comments before regex-matching @Module arrays — otherwise fragments
+    # like `// SAFE changes`, `// Data services`, `/* Callback Gate */` leak
+    # into the detected identifiers list and pollute the knowledge .md.
+    content = _strip_comments(raw)
+
     imports_match = IMPORTS_ARRAY_RE.search(content)
     exports_match = EXPORTS_ARRAY_RE.search(content)
     providers_match = PROVIDERS_ARRAY_RE.search(content)
@@ -92,13 +132,13 @@ def analyze_module(mod_dir: Path, module_file: Path) -> ModuleInfo:
     exports: list[str] = []
     if exports_match:
         for ident in CLASS_ID_RE.findall(exports_match.group(1)):
-            if ident not in exports:
+            if _looks_like_nest_class(ident) and ident not in exports:
                 exports.append(ident)
 
     providers: list[str] = []
     if providers_match:
         for ident in CLASS_ID_RE.findall(providers_match.group(1)):
-            if ident not in providers:
+            if _looks_like_nest_class(ident) and ident not in providers:
                 providers.append(ident)
 
     primary_files = sorted(

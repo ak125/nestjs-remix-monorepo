@@ -29,12 +29,8 @@ _Section à rédiger._
 <!-- AUTO-GENERATED (refresh-knowledge.py — ne pas éditer sous cette ligne) -->
 
 ### Exports publics du module
-- `SERVICES`
-- `PRINCIPAUX`
 - `UsersFinalService`
-- `Service`
 - `UserDataConsolidatedService`
-- `Services`
 - `ProfileService`
 - `UsersAdminService`
 - `PasswordService`
@@ -42,14 +38,8 @@ _Section à rédiger._
 - `UserShipmentService`
 
 ### Providers (top 15)
-- `SERVICES`
-- `PRINCIPAUX`
 - `UsersFinalService`
-- `Service`
-- `Redis`
 - `UserDataConsolidatedService`
-- `Supabase`
-- `Services`
 - `ProfileService`
 - `UsersAdminService`
 - `PasswordService`

@@ -31,7 +31,6 @@ _Section à rédiger._
 - `ErrorService`
 - `ErrorLogService`
 - `RedirectService`
-- `APP_FILTER`
 - `GlobalErrorFilter`
 
 ### Fichiers primaires

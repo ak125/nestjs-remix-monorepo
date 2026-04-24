@@ -31,12 +31,10 @@ _Section à rédiger._
 - `UTMBuilderService`
 
 ### Providers (top 15)
-- `Existing`
 - `MarketingDataService`
 - `MarketingDashboardService`
 - `MarketingBacklinksService`
 - `MarketingContentRoadmapService`
-- `Hub`
 - `MarketingHubDataService`
 - `UTMBuilderService`
 - `WeeklyPlanGeneratorService`

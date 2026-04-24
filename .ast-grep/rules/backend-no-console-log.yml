@@ -3,11 +3,19 @@ language: typescript
 severity: warning
 message: |
   Use NestJS Logger (this.logger.log / debug / error) instead of console.*
-  in backend modules, so logs honour log levels and structured output.
+  in backend runtime code, so logs honour log levels and structured output.
+  CLI / validation / tooling scripts are exempt (see `ignores` below).
 files:
   - backend/src/modules/**/*.ts
   - backend/src/services/**/*.ts
   - backend/src/controllers/**/*.ts
+ignores:
+  - backend/src/**/validate-*.ts
+  - backend/src/**/cli/*.ts
+  - backend/src/**/scripts/*.ts
+  - backend/src/**/*.spec.ts
+  - backend/src/**/*.e2e-spec.ts
+  - backend/src/**/test-*.ts
 rule:
   any:
     - pattern: console.log($$$)

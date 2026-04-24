@@ -30,7 +30,6 @@ _Section à rédiger._
 <!-- AUTO-GENERATED (refresh-knowledge.py — ne pas éditer sous cette ligne) -->
 
 ### Exports publics du module
-- `Export`
 - `OrdersService`
 - `OrderCalculationService`
 - `OrderStatusService`
@@ -39,21 +38,13 @@ _Section à rédiger._
 - `OrderActionsService`
 
 ### Providers (top 15)
-- `Services`
-- `Phase`
 - `OrdersService`
-- `Service`
-- `CRUD`
 - `OrderCalculationService`
-- `Calculs`
 - `OrderStatusService`
-- `Workflow`
 - `OrderArchiveService`
-- `Archivage`
 - `TicketsService`
-- `SAV`
 - `OrderActionsService`
-- `Actions`
+- `OrderCleanupService`
 
 ### Fichiers primaires
 - [backend/src/modules/orders/controllers/order-actions.controller.ts](../../../backend/src/modules/orders/controllers/order-actions.controller.ts)

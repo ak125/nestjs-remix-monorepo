@@ -26,20 +26,13 @@ _Section à rédiger._
 <!-- AUTO-GENERATED (refresh-knowledge.py — ne pas éditer sous cette ligne) -->
 
 ### Exports publics du module
-- `Export`
 - `MessagesService`
 - `MessageDataService`
 - `MessagingGateway`
 
 ### Providers (top 15)
-- `Services`
 - `MessagesService`
-- `Data`
-- `Repository`
-- `Pattern`
 - `MessageDataService`
-- `WebSocket`
-- `Gateway`
 - `MessagingGateway`
 
 ### Fichiers primaires

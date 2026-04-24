@@ -34,17 +34,10 @@ _Section à rédiger._
 
 ### Providers (top 15)
 - `SystemHealthService`
-- `Simple`
 - `SystemService`
 - `MetricsService`
-- `Enterprise`
 - `DatabaseMonitorService`
-- `Database`
 - `DbGovernanceService`
-- `DB`
-- `Phase`
-- `M1`
-- `M6`
 
 ### Fichiers primaires
 - [backend/src/modules/system/processors/metrics.processor.ts](../../../backend/src/modules/system/processors/metrics.processor.ts)

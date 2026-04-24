@@ -29,8 +29,6 @@ _Section à rédiger._
 ### Exports publics du module
 - `BlogService`
 - `BlogCacheService`
-- `Cache`
-- `HTML`
 - `AdviceService`
 - `GuideService`
 - `ConstructeurService`
@@ -41,21 +39,21 @@ _Section à rédiger._
 - `AdviceEnrichmentService`
 
 ### Providers (top 15)
-- `Services`
 - `BlogService`
 - `BlogCacheService`
 - `HtmlContentSanitizerService`
-- `Nettoyage`
-- `HTML`
-- `Extraction`
-- `SRP`
-- `Single`
-- `Responsibility`
-- `Principle`
 - `BlogArticleTransformService`
-- `Transformations`
 - `BlogArticleDataService`
-- `CRUD`
+- `BlogStatisticsService`
+- `BlogSeoService`
+- `BlogArticleRelationService`
+- `AdviceService`
+- `GuideService`
+- `ConstructeurService`
+- `GlossaryService`
+- `ConstructeurSearchService`
+- `ConstructeurTransformService`
+- `AdviceTransformService`
 
 ### Fichiers primaires
 - [backend/src/modules/blog/blog.module.ts](../../../backend/src/modules/blog/blog.module.ts)
