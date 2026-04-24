@@ -31,8 +31,8 @@
 --
 -- ROLLBACK
 -- --------
--- Table is new + empty. Rollback = `DROP TABLE IF EXISTS public.__rag_proposals;`
--- No data loss risk (no existing consumers of this table as of 2026-04-24).
+-- Table is new + empty. See rollback instruction at end of file (documented,
+-- not executed). No data loss risk (no existing consumers as of 2026-04-24).
 --
 -- CHECK CONSTRAINT CRITIQUE
 -- -------------------------
