@@ -96,6 +96,7 @@ import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service
 import { R7BrandEnricherService } from './services/r7-brand-enricher.service'; // 🏭 R7 Brand page enricher (RAG + diversity scoring)
 import { BrandEditorialService } from './services/brand-editorial.service'; // 🏭 R7 Brand editorial content (FAQ/issues/maintenance)
 import { VehicleRagGeneratorService } from './services/vehicle-rag-generator.service'; // 🚗 Vehicle RAG .md generator (0 LLM)
+import { RagProposalService } from './services/rag-proposal.service'; // 📝 ADR-022 L1 propose-before-write
 import { AdminVehicleRagController } from './controllers/admin-vehicle-rag.controller'; // 🚗 Vehicle RAG generation endpoints
 
 // Services - Stock services pour le controller consolidé
@@ -232,6 +233,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     R7BrandEnricherService, // 🏭 R7 Brand page enricher (RAG + diversity scoring, 0-LLM)
     BrandEditorialService, // 🏭 R7 Brand editorial content CRUD
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)
+    RagProposalService, // 📝 ADR-022 L1 propose-before-write staging (__rag_proposals)
     // AdminSupplierStatsService — not ready for prod
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
     R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)

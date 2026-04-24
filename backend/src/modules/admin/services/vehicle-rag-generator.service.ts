@@ -11,6 +11,8 @@ import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { createHash } from 'node:crypto';
+import { RagProposalService } from './rag-proposal.service';
 
 // ── Result ──
 
@@ -91,7 +93,10 @@ export class VehicleRagGeneratorService extends SupabaseBaseService {
   private readonly RAG_VEHICLES_DIR = `${RAG_KNOWLEDGE_PATH}/vehicles`;
   private readonly RAG_GAMMES_DIR = `${RAG_KNOWLEDGE_PATH}/gammes`;
 
-  constructor(configService: ConfigService) {
+  constructor(
+    configService: ConfigService,
+    private readonly ragProposal: RagProposalService,
+  ) {
     super(configService);
   }
 
@@ -175,16 +180,73 @@ export class VehicleRagGeneratorService extends SupabaseBaseService {
       webSpecs,
     );
 
-    // 8. Write file
-    mkdirSync(this.RAG_VEHICLES_DIR, { recursive: true });
-    writeFileSync(filePath, md, 'utf-8');
+    // 8. Write (branched on RAG_PROPOSAL_MODE — ADR-022 L1 propose-before-write)
+    const mode = this.ragProposal.getMode();
+    const existedBefore = existsSync(filePath);
 
-    const status = existsSync(filePath) ? 'updated' : 'created';
+    if (mode === 'off' || mode === 'shadow') {
+      // Legacy path — direct fs write
+      mkdirSync(this.RAG_VEHICLES_DIR, { recursive: true });
+      writeFileSync(filePath, md, 'utf-8');
+    }
+
+    if (mode === 'shadow' || mode === 'propose-only') {
+      // L1 propose — insert into __rag_proposals
+      const fingerprint = RagProposalService.computeInputFingerprint({
+        modele_id: modelData.modeleId,
+        motorisations_count: motorisations.length,
+        gammes_count: topGammes.length,
+        content_sha256: this.shortHash(md),
+      });
+
+      // target_path is relative to the RAG repo root (ak125/automecanik-rag)
+      const ragTargetPath = `knowledge/vehicles/${slug}.md`;
+
+      const existingHash = existedBefore
+        ? 'sha256:' + this.shortHash(readFileSync(filePath, 'utf-8'))
+        : null;
+
+      const proposal = await this.ragProposal.propose({
+        target_path: ragTargetPath,
+        target_slug: slug,
+        target_kind: 'vehicle_model',
+        base_commit_sha: '',
+        base_content_hash: existingHash,
+        proposed_content: md,
+        input_fingerprint: fingerprint,
+        created_by: `VehicleRagGeneratorService@${mode}`,
+      });
+
+      if (proposal.status === 'failed') {
+        warnings.push(
+          `rag_proposal_failed: ${proposal.message ?? 'unknown error'}`,
+        );
+      } else {
+        warnings.push(
+          `rag_proposal_${proposal.status}: ${proposal.proposal?.proposal_uuid ?? '-'}`,
+        );
+      }
+    }
+
+    const status = existedBefore ? 'updated' : 'created';
     this.logger.log(
-      `RAG vehicle ${status}: ${slug} (${sections.length} sections, ${warnings.length} warnings)`,
+      `RAG vehicle ${status} (mode=${mode}): ${slug} (${sections.length} sections, ${warnings.length} warnings)`,
     );
 
-    return { status: 'created', slug, filePath, sections, warnings };
+    return {
+      status: mode === 'propose-only' ? 'created' : 'created',
+      slug,
+      filePath,
+      sections,
+      warnings,
+    };
+  }
+
+  /**
+   * Short content hash for fingerprint stability (not cryptographic).
+   */
+  private shortHash(content: string): string {
+    return createHash('sha256').update(content).digest('hex').slice(0, 16);
   }
 
   /**
