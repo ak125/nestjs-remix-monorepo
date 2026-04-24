@@ -36,12 +36,10 @@ import {
 import {
   deriveEngineProfile,
   deriveEuroNorm,
-  getEngineProfileIssues,
-  getEngineProfileDescription,
-  SEO_R8_MOTOR_ISSUES_OPENERS,
   MOTOR_ISSUES_SLOT_OFFSET,
   type EngineProfileKey,
 } from '../../../config/engine-profile.config';
+import { EngineProfileRagLoader } from './engine-profile-rag-loader.service';
 
 // ── Per-type wear parts gamme (A1) ──
 
@@ -128,6 +126,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly textUtils: EnricherTextUtils,
     private readonly vehicleRagGenerator: VehicleRagGeneratorService,
+    private readonly engineProfileRag: EngineProfileRagLoader,
     @Optional() private readonly writeGate?: ContentWriteGateService,
     @Optional() private readonly featureFlags?: FeatureFlagsService,
   ) {
@@ -640,7 +639,8 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     const engineCodes = Array.isArray(v.engine_codes) ? v.engine_codes : [];
     const cnitCodes = Array.isArray(v.cnit_codes) ? v.cnit_codes : [];
     const engineProfile: EngineProfileKey = deriveEngineProfile(fuel, power);
-    const profileDescription = getEngineProfileDescription(engineProfile);
+    const profileDescription =
+      this.engineProfileRag.getDescription(engineProfile);
     const compatLines: string[] = [];
     compatLines.push(profileDescription);
     if (engineCodes.length)
@@ -803,14 +803,17 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       }
     }
 
-    // S_MOTOR_ISSUES (A2) : problèmes connus PAR MOTORISATION via engine-profile
-    // dict (fuel × power_tier). Remplace l'ancien S_ENTRETIEN_CONTEXT qui lisait
-    // problemes_connus au niveau modele (identique entre tous les siblings).
-    const profileIssues = getEngineProfileIssues(engineProfile);
+    // S_MOTOR_ISSUES (A2) : problèmes connus PAR MOTORISATION. Contenu lu
+    // au runtime depuis le RAG (rag/knowledge/seo/engine-profile-mapping.yaml
+    // + rag/knowledge/gammes/*.md frontmatter.diagnostic.symptoms). Remplace
+    // l'ancien S_ENTRETIEN_CONTEXT qui lisait problemes_connus au niveau
+    // modele (identique entre tous les siblings).
+    const profileIssues = this.engineProfileRag.getIssues(engineProfile);
+    const motorIssueOpeners = this.engineProfileRag.getSeoOpeners();
     if (profileIssues.length > 0) {
       const issuesOpener = renderTemplate(
         selectVariation(
-          SEO_R8_MOTOR_ISSUES_OPENERS,
+          motorIssueOpeners,
           typeIdInt,
           0,
           MOTOR_ISSUES_SLOT_OFFSET,

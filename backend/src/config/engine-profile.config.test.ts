@@ -3,12 +3,7 @@ import {
   derivePowerTier,
   deriveEuroNorm,
   normalizeFuel,
-  getEngineProfileIssues,
-  getEngineProfileDescription,
-  ENGINE_PROFILE_ISSUES,
-  ENGINE_PROFILE_DESCRIPTIONS,
-  SEO_R8_MOTOR_ISSUES_OPENERS,
-  type EngineProfileKey,
+  MOTOR_ISSUES_SLOT_OFFSET,
 } from './engine-profile.config';
 
 describe('normalizeFuel', () => {
@@ -105,123 +100,9 @@ describe('deriveEuroNorm', () => {
   });
 });
 
-describe('getEngineProfileIssues', () => {
-  it('returns the direct dict when key exists', () => {
-    const issues = getEngineProfileIssues('diesel_p3_moyenne');
-    expect(issues.length).toBeGreaterThanOrEqual(6);
-    expect(issues.some((s) => s.toLowerCase().includes('egr'))).toBe(true);
-    expect(issues.some((s) => s.toLowerCase().includes('fap'))).toBe(true);
-  });
-
-  it('cascades ethanol → essence on same tier', () => {
-    const ethanolP3 = getEngineProfileIssues(
-      'ethanol_p3_moyenne' as EngineProfileKey,
-    );
-    const essenceP3 = getEngineProfileIssues('essence_p3_moyenne');
-    expect(ethanolP3).toEqual(essenceP3);
-  });
-
-  it('cascades gpl → essence on same tier', () => {
-    const gplP1 = getEngineProfileIssues('gpl_p1_mini' as EngineProfileKey);
-    const essenceP1 = getEngineProfileIssues('essence_p1_mini');
-    expect(gplP1).toEqual(essenceP1);
-  });
-
-  it('falls back to inconnu for entirely unknown key', () => {
-    // Force a shape that has no explicit entry, no essence/diesel cascade
-    // (hybride_diesel is explicitly undefined; cascade routes to inconnu)
-    const unknownIssues = getEngineProfileIssues(
-      'hybride_diesel_p1_mini' as EngineProfileKey,
-    );
-    expect(Array.isArray(unknownIssues)).toBe(true);
-    expect(unknownIssues.length).toBeGreaterThanOrEqual(3);
-  });
-
-  it('each defined issue list is deduplicated and non-empty', () => {
-    for (const [key, list] of Object.entries(ENGINE_PROFILE_ISSUES)) {
-      expect(list!.length).toBeGreaterThan(0);
-      const deduped = new Set(list);
-      expect(deduped.size).toBe(list!.length);
-      // Also check: no entry is blank or whitespace-only
-      for (const entry of list!) {
-        expect(entry.trim().length).toBeGreaterThan(5);
-      }
-      // sanity : encode-safe French
-      expect(typeof key).toBe('string');
-    }
-  });
-
-  it('sibling profiles have distinct vocabulary (Jaccard < 0.60)', () => {
-    // DS 3 sample : essence_p2_basse vs diesel_p3_moyenne vs essence_p5_sport
-    const a = getEngineProfileIssues('essence_p2_basse')
-      .join(' ')
-      .toLowerCase();
-    const b = getEngineProfileIssues('diesel_p3_moyenne')
-      .join(' ')
-      .toLowerCase();
-    const c = getEngineProfileIssues('essence_p5_sport')
-      .join(' ')
-      .toLowerCase();
-
-    const words = (s: string) =>
-      new Set(
-        s
-          .split(/\W+/)
-          .filter((w) => w.length >= 4)
-          .map((w) => w.normalize('NFD').replace(/[̀-ͯ]/g, '')),
-      );
-    const jaccard = (x: Set<string>, y: Set<string>) => {
-      const inter = new Set([...x].filter((w) => y.has(w)));
-      const union = new Set([...x, ...y]);
-      return inter.size / union.size;
-    };
-    const wa = words(a);
-    const wb = words(b);
-    const wc = words(c);
-    expect(jaccard(wa, wb)).toBeLessThan(0.6);
-    expect(jaccard(wa, wc)).toBeLessThan(0.6);
-    expect(jaccard(wb, wc)).toBeLessThan(0.6);
-  });
-});
-
-describe('getEngineProfileDescription', () => {
-  it('returns non-empty description for essence/diesel tiers', () => {
-    expect(
-      getEngineProfileDescription('essence_p1_mini').length,
-    ).toBeGreaterThan(30);
-    expect(
-      getEngineProfileDescription('diesel_p4_haute').length,
-    ).toBeGreaterThan(30);
-  });
-
-  it('falls back for unknown profile', () => {
-    const desc = getEngineProfileDescription(
-      'hybride_diesel_p2_basse' as EngineProfileKey,
-    );
-    expect(typeof desc).toBe('string');
-    expect(desc.length).toBeGreaterThan(10);
-  });
-
-  it('every defined description is non-empty and meaningful', () => {
-    for (const [, desc] of Object.entries(ENGINE_PROFILE_DESCRIPTIONS)) {
-      expect(desc!.trim().length).toBeGreaterThan(40);
-    }
-  });
-});
-
-describe('SEO_R8_MOTOR_ISSUES_OPENERS', () => {
-  it('has a prime pool size for max distribution', () => {
-    expect(SEO_R8_MOTOR_ISSUES_OPENERS.length).toBe(7);
-  });
-
-  it('every opener contains at least one placeholder', () => {
-    for (const opener of SEO_R8_MOTOR_ISSUES_OPENERS) {
-      expect(opener).toMatch(/\{(brand|model|type|power|fuel)\}/);
-    }
-  });
-
-  it('openers are distinct (no copy-paste duplicates)', () => {
-    const set = new Set(SEO_R8_MOTOR_ISSUES_OPENERS);
-    expect(set.size).toBe(SEO_R8_MOTOR_ISSUES_OPENERS.length);
+describe('MOTOR_ISSUES_SLOT_OFFSET', () => {
+  it('is a stable number distinct from other slot offsets', () => {
+    // Distinct from R8_SLOT_OFFSETS in seo-variations.config (0/100/200/300/400)
+    expect(MOTOR_ISSUES_SLOT_OFFSET).toBeGreaterThanOrEqual(500);
   });
 });
