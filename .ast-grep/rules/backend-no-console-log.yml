@@ -1,0 +1,16 @@
+id: backend-no-console-log
+language: typescript
+severity: warning
+message: |
+  Use NestJS Logger (this.logger.log / debug / error) instead of console.*
+  in backend modules, so logs honour log levels and structured output.
+files:
+  - backend/src/modules/**/*.ts
+  - backend/src/services/**/*.ts
+  - backend/src/controllers/**/*.ts
+rule:
+  any:
+    - pattern: console.log($$$)
+    - pattern: console.error($$$)
+    - pattern: console.warn($$$)
+    - pattern: console.debug($$$)

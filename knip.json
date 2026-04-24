@@ -1,0 +1,67 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/**/*.{js,ts,mjs,cjs}"],
+      "project": ["scripts/**/*.{js,ts,mjs,cjs}"],
+      "ignore": [
+        "audit-monorepo/**",
+        "99-meta/**",
+        "output/**",
+        "gates/**",
+        ".spec/**",
+        ".codex",
+        ".local/**"
+      ]
+    },
+    "backend": {
+      "entry": [
+        "src/main.ts",
+        "src/main.server.ts",
+        "src/app.module.ts",
+        "src/workers/**/*.ts",
+        "supabase/migrations/**"
+      ],
+      "project": ["src/**/*.ts", "test/**/*.ts"],
+      "ignore": [
+        "dist/**",
+        "rm/**",
+        "**/*.spec.ts",
+        "**/*.e2e-spec.ts"
+      ],
+      "ignoreDependencies": [
+        "reflect-metadata",
+        "@nestjs/.*"
+      ]
+    },
+    "frontend": {
+      "entry": [
+        "server.js",
+        "app/entry.client.tsx",
+        "app/entry.server.tsx",
+        "app/root.tsx",
+        "app/routes/**/*.{ts,tsx}"
+      ],
+      "project": ["app/**/*.{ts,tsx}"],
+      "ignore": [
+        "build/**",
+        "public/build/**",
+        ".cache/**"
+      ]
+    },
+    "packages/*": {
+      "entry": ["src/index.ts", "src/index.tsx"],
+      "project": ["src/**/*.{ts,tsx}"]
+    }
+  },
+  "ignoreBinaries": ["turbo", "husky"],
+  "rules": {
+    "files": "warn",
+    "dependencies": "warn",
+    "devDependencies": "warn",
+    "unlisted": "warn",
+    "exports": "warn",
+    "types": "warn",
+    "duplicates": "warn"
+  }
+}

@@ -5,6 +5,28 @@
 
 ---
 
+## Mémoire codebase — lire `.claude/knowledge/` avant exploration
+
+**Avant** tout `Grep` / `Glob` / lecture en rafale pour répondre à une question
+sur le code applicatif (modules NestJS, tables DB, intégrations externes,
+routes Remix critiques), **lire d'abord** :
+
+1. [`.claude/knowledge/README.md`](.claude/knowledge/README.md) — index racine + règles de navigation
+2. Le ou les fichiers pertinents sous `.claude/knowledge/{modules,db,integrations,routes}/`
+
+Ce dossier est le **miroir structuré du codebase** — il remplace le grep pour
+l'orientation. Le bloc `<!-- AUTO-GENERATED -->` est rafraîchi par
+`scripts/knowledge/refresh-knowledge.py` au pre-commit. Les sections prose
+("Pourquoi", "Gotchas", "Références") sont éditées à la main par les humains.
+
+**Grep reste légitime pour** : debugging ciblé (pattern précis), strings
+dans le code, cas non couverts par le knowledge, cross-refs larges.
+
+La gouvernance canon vit au vault (voir ci-dessous) — `.claude/knowledge/`
+ne la duplique pas, il la référence.
+
+---
+
 ## Source de vérité (SoT)
 
 **La gouvernance AutoMecanik vit ici et nulle part ailleurs :**

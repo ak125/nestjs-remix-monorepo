@@ -1,0 +1,22 @@
+id: payments-no-raw-equality
+language: typescript
+severity: warning
+message: |
+  Signature/HMAC comparison in payments/* must use crypto.timingSafeEqual,
+  not === or !==. Plain string equality is vulnerable to timing attacks.
+  See .claude/rules/payments.md.
+note: |
+  Replace  if (a === b)  with:
+    const aBuf = Buffer.from(a, 'hex');
+    const bBuf = Buffer.from(b, 'hex');
+    if (aBuf.length === bBuf.length && crypto.timingSafeEqual(aBuf, bBuf)) { ... }
+files:
+  - backend/src/modules/payments/**/*.ts
+rule:
+  all:
+    - any:
+        - pattern: $SIG === $REF
+        - pattern: $SIG !== $REF
+    - has:
+        regex: '(?i)signature|hmac|mac|digest|hash'
+        stopBy: end

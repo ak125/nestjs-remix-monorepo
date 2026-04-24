@@ -28,7 +28,12 @@
     "docs:build": "cd .spec/docs && npm run build",
     "dev:full": "echo '⚠️ Lancer dans 2 terminaux: 1) npm run dev (backend+frontend port 3000), 2) npm run docs:dev (portail port 3002)'",
     "prepare": "husky",
-    "check:no-client-localhost": "bash scripts/check-no-client-localhost.sh"
+    "check:no-client-localhost": "bash scripts/check-no-client-localhost.sh",
+    "audit:knip": "knip --no-exit-code --reporter compact",
+    "audit:madge": "madge --circular --extensions ts,tsx backend/src frontend/app",
+    "audit:depcruise": "depcruise --config .dependency-cruiser.cjs --output-type err-long backend/src frontend/app",
+    "audit:ast": "ast-grep scan",
+    "audit:all": "npm run audit:ast && npm run audit:madge && npm run audit:depcruise && npm run audit:knip"
   },
   "keywords": [],
   "author": "",
@@ -44,6 +49,7 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@ast-grep/cli": "0.42.1",
     "@changesets/cli": "^2.29.7",
     "@commitlint/cli": "^20.5.0",
     "@commitlint/config-conventional": "^20.5.0",
@@ -53,11 +59,13 @@
     "@types/bcrypt": "^6.0.0",
     "@types/file-type": "^10.9.3",
     "@types/multer": "^2.0.0",
-    "depcheck": "^1.4.7",
+    "dependency-cruiser": "17.3.10",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
+    "knip": "5.60.0",
     "lint-staged": "^16.2.7",
+    "madge": "8.0.0",
     "prettier": "^3.4.1",
     "reflect-metadata": "^0.1.14",
     "rxjs": "^7.8.2",
