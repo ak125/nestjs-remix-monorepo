@@ -24,6 +24,15 @@ import {
   type R8SeoDecision,
   type R8ReasonCode,
 } from '../../../config/r8-keyword-plan.constants';
+import {
+  selectVariation,
+  SEO_R8_INTRO_VARIATIONS,
+  SEO_R8_VARIANT_HIGHLIGHT_VARIATIONS,
+  SEO_R8_CATALOG_ACCESS_VARIATIONS,
+  SEO_R8_FAQ_OPENING_VARIATIONS,
+  SEO_R8_TRUST_SIGNAL_VARIATIONS,
+  R8_SLOT_OFFSETS,
+} from '../../../config/seo-variations.config';
 
 // ── Result ──
 
@@ -497,15 +506,42 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     const fuel = v.fuel || '';
     const yearFrom = v.year_from || '';
     const yearTo = v.year_to || '';
+    const typeIdInt = parseInt(String(v.type_id || 0), 10);
+    const placeholderCtx = {
+      brand,
+      model,
+      type,
+      power: String(power),
+      fuel,
+      year_from: String(yearFrom),
+      year_to: yearTo ? String(yearTo) : "aujourd'hui",
+      families_count: String(families.length),
+      engine_code:
+        Array.isArray(v.engine_codes) && v.engine_codes.length
+          ? v.engine_codes[0]
+          : '',
+    };
+    const renderTemplate = (template: string): string =>
+      template.replace(/\{(\w+)\}/g, (_, key) =>
+        Object.prototype.hasOwnProperty.call(placeholderCtx, key)
+          ? (placeholderCtx as Record<string, string>)[key]
+          : `{${key}}`,
+      );
 
-    // S_IDENTITY
+    // S_IDENTITY (ADR-022 P2d : rotation déterministe pool 7)
+    const introTemplate = selectVariation(
+      SEO_R8_INTRO_VARIATIONS,
+      typeIdInt,
+      0,
+      R8_SLOT_OFFSETS.INTRO,
+    );
     blocks.push({
       id: 'S_IDENTITY',
       type: 'vehicle_identity',
       title: `${brand} ${model} ${type}`,
-      renderedText: `La ${brand} ${model} ${type} ${power} ch${fuel ? ` (${fuel})` : ''} est produite de ${yearFrom}${yearTo ? ` à ${yearTo}` : " à aujourd'hui"}. Cette fiche regroupe l'ensemble des pièces compatibles avec votre motorisation.`,
-      specificityWeight: 0.7,
-      boilerplateRisk: 0.2,
+      renderedText: renderTemplate(introTemplate),
+      specificityWeight: 0.75,
+      boilerplateRisk: 0.15,
       semanticPayload: [brand, model, type, fuel, power].filter(Boolean),
     });
 
@@ -596,29 +632,30 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       });
     }
 
-    // S_VARIANT_DIFFERENCE
-    if (neighbors.length > 0) {
-      const variantText = `Cette motorisation ${type} ${power} ch se distingue par sa puissance et son catalogue de pièces. Certaines familles (turbo, injecteurs, calculateur) sont spécifiques à cette version.`;
-      blocks.push({
-        id: 'S_VARIANT_DIFFERENCE',
-        type: 'variant_difference',
-        title: `Ce qui distingue la ${type} ${power} ch`,
-        renderedText: variantText,
-        specificityWeight: 0.95,
-        boilerplateRisk: 0.05,
-        semanticPayload: [type, power, 'variant', 'différence'],
-      });
-    } else {
-      blocks.push({
-        id: 'S_VARIANT_DIFFERENCE',
-        type: 'variant_difference',
-        title: `Spécificités de la ${type} ${power} ch`,
-        renderedText: `La ${brand} ${model} ${type} ${power} ch possède un catalogue de ${families.length} familles de pièces. Les pièces de freinage, filtration et distribution sont les plus demandées pour cette motorisation.`,
-        specificityWeight: 0.8,
-        boilerplateRisk: 0.15,
-        semanticPayload: [type, power, String(families.length)],
-      });
-    }
+    // S_VARIANT_DIFFERENCE (ADR-022 P2d : rotation pool 11 avec salt)
+    const variantTemplate = selectVariation(
+      SEO_R8_VARIANT_HIGHLIGHT_VARIATIONS,
+      typeIdInt,
+      0,
+      R8_SLOT_OFFSETS.VARIANT_HIGHLIGHT,
+    );
+    blocks.push({
+      id: 'S_VARIANT_DIFFERENCE',
+      type: 'variant_difference',
+      title:
+        neighbors.length > 0
+          ? `Ce qui distingue la ${type} ${power} ch`
+          : `Spécificités de la ${type} ${power} ch`,
+      renderedText: renderTemplate(variantTemplate),
+      specificityWeight: neighbors.length > 0 ? 0.95 : 0.85,
+      boilerplateRisk: neighbors.length > 0 ? 0.05 : 0.1,
+      semanticPayload: [
+        type,
+        power,
+        neighbors.length > 0 ? 'variant' : String(families.length),
+        'différence',
+      ],
+    });
 
     // S_SELECTION_GUIDE
     const usurePieces = vehicleRag.pieces_usure || [];
@@ -648,9 +685,17 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       });
     }
 
-    // S_CATALOG_ACCESS (dynamic ranking)
+    // S_CATALOG_ACCESS (dynamic ranking + ADR-022 P2d variation opener)
     const topFamilies = families.slice(0, 10);
     if (topFamilies.length >= 3) {
+      const catalogOpener = renderTemplate(
+        selectVariation(
+          SEO_R8_CATALOG_ACCESS_VARIATIONS,
+          typeIdInt,
+          0,
+          R8_SLOT_OFFSETS.CATALOG_ACCESS,
+        ),
+      );
       const catalogLines = topFamilies.map(
         (f, i) => `${i + 1}. **${f.pg_name}** — ${f.product_count} références`,
       );
@@ -658,37 +703,51 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         id: 'S_CATALOG_ACCESS',
         type: 'dynamic_category_ranking',
         title: `Top familles de pièces`,
-        renderedText: catalogLines.join('\n'),
+        renderedText: `${catalogOpener}\n\n${catalogLines.join('\n')}`,
         specificityWeight: 0.75,
         boilerplateRisk: 0.15,
         semanticPayload: topFamilies.map((f) => f.pg_alias),
       });
     }
 
-    // S_FAQ_DEDICATED (merge from gamme RAGs)
+    // S_FAQ_DEDICATED (merge from gamme RAGs + ADR-022 P2d variation opener)
     const allFaqs = gammeRags.flatMap((g) => g.faq);
     const uniqueFaqs = this.deduplicateFaqs(allFaqs).slice(0, 6);
     if (uniqueFaqs.length >= 2) {
+      const faqOpener = renderTemplate(
+        selectVariation(
+          SEO_R8_FAQ_OPENING_VARIATIONS,
+          typeIdInt,
+          0,
+          R8_SLOT_OFFSETS.FAQ_OPENING,
+        ),
+      );
       blocks.push({
         id: 'S_FAQ_DEDICATED',
         type: 'dedicated_faq',
         title: `Questions fréquentes`,
-        renderedText: uniqueFaqs.map((f) => `**${f.q}**\n${f.a}`).join('\n\n'),
-        specificityWeight: 0.65,
-        boilerplateRisk: 0.25,
+        renderedText: `${faqOpener}\n\n${uniqueFaqs.map((f) => `**${f.q}**\n${f.a}`).join('\n\n')}`,
+        specificityWeight: 0.7,
+        boilerplateRisk: 0.2,
         semanticPayload: uniqueFaqs.map((f) => f.q.slice(0, 30)),
       });
     }
 
-    // S_TRUST (static boilerplate)
+    // S_TRUST (ADR-022 P2d : atténue boilerplate via rotation pool 5)
+    const trustTemplate = selectVariation(
+      SEO_R8_TRUST_SIGNAL_VARIATIONS,
+      typeIdInt,
+      0,
+      R8_SLOT_OFFSETS.TRUST_SIGNAL,
+    );
     blocks.push({
       id: 'S_TRUST',
       type: 'trust_and_support',
       title: `Garantie et livraison`,
-      renderedText: `Toutes les pièces sont garanties et expédiées sous 24-48h. Retours gratuits sous 30 jours. Notre service client est disponible du lundi au vendredi.`,
-      specificityWeight: 0.3,
-      boilerplateRisk: 0.8,
-      semanticPayload: ['garantie', 'livraison'],
+      renderedText: renderTemplate(trustTemplate),
+      specificityWeight: 0.4,
+      boilerplateRisk: 0.65,
+      semanticPayload: ['garantie', 'livraison', brand, model].filter(Boolean),
     });
 
     return blocks;
