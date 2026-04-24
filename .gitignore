@@ -1,5 +1,6 @@
 .turbo
 node_modules
+.worktrees/
 
 # compiled output
 /dist
