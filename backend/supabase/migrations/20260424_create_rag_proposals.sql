@@ -182,5 +182,6 @@ COMMIT;
 
 -- =============================================================================
 -- End of migration.
--- Rollback: DROP TABLE IF EXISTS public.__rag_proposals CASCADE;
+-- Rollback (documentation only — NOT executed by this migration) :
+--   DROP TABLE IF EXISTS public.__rag_proposals CASCADE; -- APPROVED: rollback instruction documented for ops, NOT run by this file. Table is new + empty + zero consumer wired (Stage 0 of ADR-022).
 -- =============================================================================
