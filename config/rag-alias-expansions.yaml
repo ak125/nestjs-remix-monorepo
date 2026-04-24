@@ -220,6 +220,21 @@ repartiteur-de-frein:
   - limiteur de freinage          # synonyme technique
   - limiteur frein
 
+kit-de-freins-arriere:
+  # Added 2026-04-24 (R1_ROUTER batch) — R-SEO-KW-06 Option conservative.
+  # Canon : ≥4 gammes actives dans le scope CSV (pg=82 disque, pg=402 plaquette,
+  # pg=123 tambour, pg=70 machoires). Alias large INTERDIT. Aliases kit-only
+  # strictement : head term "kit" + contexte frein arrière/tambour.
+  # Les KW disque/plaquette/tambour/machoires seuls appartiennent aux autres
+  # gammes (leurs CSV respectifs déjà importés ou à venir).
+  - kit frein arriere       # forme courte
+  - kit de frein arriere    # singulier avec "de"
+  - kit freins arriere      # pluriel sans "de"
+  - kit arriere frein       # ordre inversé
+  - kit frein a tambour     # variante tambour dans kit
+  - kit frein tambour       # variante courte (tambours = arrière en majorité)
+  - kit machoire frein      # mâchoires + accessoires dans kit
+
 # ── Distribution ────────────────────────────────────────────────────────
 
 courroie-de-distribution:
