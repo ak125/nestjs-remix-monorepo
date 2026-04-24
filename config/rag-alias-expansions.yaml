@@ -207,6 +207,19 @@ pompe-a-vide-de-freinage:
   - pompe a vide      # catch toutes les formes "pompe a vide + vehicule/motorisation"
   - pompe de frein    # forme courte FR
 
+repartiteur-de-frein:
+  # Added 2026-04-24 (R1_ROUTER batch) — R-SEO-KW-01 review 28.6% vol → ~0%
+  # Canon R-SEO-KW-06 : pg=73 seule active, siblings pg=167/782/1341/2734/3666
+  # tous inactifs (level≥4, display=0, 0 KW). Répartiteur = régulateur =
+  # compensateur = limiteur de freinage (synonymes techniques exacts).
+  - repartiteur freinage          # forme sans "de"
+  - regulateur de frein           # synonyme technique
+  - regulateur de freinage
+  - compensateur de freinage      # synonyme technique auto
+  - compensateur freinage
+  - limiteur de freinage          # synonyme technique
+  - limiteur frein
+
 # ── Distribution ────────────────────────────────────────────────────────
 
 courroie-de-distribution:
