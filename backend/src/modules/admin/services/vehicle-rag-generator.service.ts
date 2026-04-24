@@ -289,13 +289,17 @@ export class VehicleRagGeneratorService extends SupabaseBaseService {
   }
 
   private async fetchMotorisations(modeleId: number): Promise<Motorisation[]> {
+    // Filter on type_display='1' (canonical active flag). Previous filter
+    // type_relfollow='1' was excluding 2250/3434 models (65% of catalog) —
+    // notably TecDoc remapped types (type_id >= 60000) have relfollow='0'
+    // but display='1'. ADR-022 Pilier 1 unblock.
     const { data, error } = await this.client
       .from('auto_type')
       .select(
         'type_id, type_fuel, type_name, type_power_ps, type_liter, type_year_from, type_year_to, type_body',
       )
       .eq('type_modele_id', String(modeleId))
-      .eq('type_relfollow', '1')
+      .eq('type_display', '1')
       .order('type_fuel')
       .order('type_power_ps');
 
@@ -354,12 +358,13 @@ export class VehicleRagGeneratorService extends SupabaseBaseService {
   }
 
   private async fetchTopGammes(modeleId: number): Promise<TopGamme[]> {
-    // Get all type_ids for this model
+    // Get all type_ids for this model — same filter rationale as
+    // fetchMotorisations (type_display='1' canonical active flag, ADR-022 P1).
     const { data: types } = await this.client
       .from('auto_type')
       .select('type_id')
       .eq('type_modele_id', String(modeleId))
-      .eq('type_relfollow', '1');
+      .eq('type_display', '1');
 
     if (!types?.length) return [];
 
