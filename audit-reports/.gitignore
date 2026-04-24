@@ -4,3 +4,8 @@ phase0-knip.txt
 phase0-madge.txt
 phase0-depcruise.txt
 phase0-astgrep.txt
+
+# Generated dependency graph — regenerate via `npm run audit:graph`
+dep-graph.json
+dep-graph.dot
+dep-graph.svg

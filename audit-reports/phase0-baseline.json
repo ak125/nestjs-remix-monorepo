@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "captured_at": "2026-04-24",
+  "captured_on_commit": "c18cd233",
+  "thresholds": {
+    "unused_files_delta": 5,
+    "unused_exports_delta": 10,
+    "unused_types_delta": 15,
+    "unused_dependencies_delta": 0,
+    "duplicate_exports_delta": 2,
+    "cycles_delta": 0,
+    "depcruise_violations_delta": 5,
+    "depcruise_errors_delta": 0,
+    "ast_grep_warnings_delta": 5,
+    "ast_grep_errors_delta": 0
+  },
+  "knip": {
+    "unused_files": 362,
+    "unused_exports": 218,
+    "unused_types": 310,
+    "unused_dependencies": 4,
+    "unused_dev_dependencies": 4,
+    "unlisted_dependencies": 9,
+    "unlisted_binaries": 3,
+    "duplicate_exports": 41
+  },
+  "madge": {
+    "cycles": 17,
+    "backend_cycles": 16,
+    "frontend_cycles": 1
+  },
+  "depcruise": {
+    "violations": 148,
+    "errors": 0,
+    "modules_cruised": 2101,
+    "dependencies_cruised": 8425
+  },
+  "ast_grep": {
+    "warnings": 0,
+    "errors": 0
+  },
+  "notes": [
+    "Thresholds are UPPER bounds for +delta; going DOWN (negative delta) is always allowed.",
+    "ast_grep_errors_delta = 0 means any new blocking rule violation fails CI immediately.",
+    "cycles_delta = 0 because any new cycle indicates coupling going the wrong direction.",
+    "unused_files tolerates +5 to accommodate genuinely new files (e.g. new controller) that knip hasn't yet traced transitively.",
+    "After each cleanup PR merges, refresh this baseline via `npm run audit:baseline:refresh` and commit the new counts."
+  ]
+}

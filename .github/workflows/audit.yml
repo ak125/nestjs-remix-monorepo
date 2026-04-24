@@ -4,8 +4,10 @@ name: 🛡️ Audit gates (Phase 0)
 # Phase 0 posture : warning-mode, ast-grep is the only gate that blocks the PR
 # (and only on `severity: error` rules). knip / madge / depcruise print signals
 # but never fail the run — they are informational until Phase 1 cleanup ships.
-# Promote individual steps to `--strict` / `continue-on-error: false` once the
-# baseline in `audit-reports/phase0-baseline.md` is cleared.
+#
+# Regression gate (added Phase 0.5): audit-compare-baseline.js compares counts
+# against audit-reports/phase0-baseline.json and BLOCKS the PR if any metric
+# exceeds its threshold. Going down (negative delta) is always allowed.
 
 on:
   pull_request:
@@ -20,6 +22,7 @@ on:
       - "sgconfig.yml"
       - "package.json"
       - "package-lock.json"
+      - "audit-reports/phase0-baseline.json"
       - ".github/workflows/audit.yml"
 
 permissions:
@@ -69,14 +72,20 @@ jobs:
         continue-on-error: true
         run: npm run audit:knip
 
+      - name: 🚨 Baseline regression gate (BLOCKING)
+        if: always()
+        run: npm run audit:baseline
+
       - name: 📋 Baseline reminder
         if: always()
         run: |
           echo ""
           echo "=================================================="
-          echo "Phase 0 baseline : audit-reports/phase0-baseline.md"
+          echo "Phase 0 baseline   : audit-reports/phase0-baseline.md"
+          echo "Regression gate    : audit-reports/phase0-baseline.json"
           echo ""
           echo "ast-grep runs BLOCKING on rules with severity: error."
+          echo "Baseline gate BLOCKS when deltas exceed configured thresholds."
           echo "knip / madge / depcruise are warning-only for now."
           echo "Promote to blocking after Phase 1 cleanup lands."
           echo "=================================================="
