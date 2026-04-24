@@ -81,10 +81,18 @@ def _section_body(text_norm: str, start: int) -> str:
 
 
 def _count_terms(section_body: str, markers: list) -> int:
-    """Compte les termes définis via markers (ex: ['**', ':'])."""
-    if len(markers) == 2 and markers[0] == "**" and markers[1] == ":":
-        return len(re.findall(r"\*\*[^*]+\*\*\s*:", section_body))
-    return 0
+    """Compte les termes définis via markers.
+
+    Ex: markers = ["**", ":"] matches `**terme** :` ; markers = ["**", "—"]
+    matches `**terme** —` (em-dash). Le séparateur est normalisé pour
+    accepter variations de whitespace.
+    """
+    if len(markers) != 2:
+        return 0
+    start, end = markers
+    # **terme** suivi d'optional whitespace, suivi du separator
+    pattern = re.escape(start) + r"[^\n*]+?" + re.escape(start) + r"\s*" + re.escape(end)
+    return len(re.findall(pattern, section_body))
 
 
 def _check_tag(text_norm: str, tag: str) -> bool:

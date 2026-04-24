@@ -1,0 +1,707 @@
+{
+  "verdict": "REVIEW_REQUIRED",
+  "extract_manifest": {
+    "zip_path": "/tmp/automecanik-seo-vault.zip",
+    "zip_sha256": "368d0746636b6f804fd58106e6b0c689f308752af5076b57bc107df7549b6d0b",
+    "extract_dir": "/tmp/seo-vault-audit-368d0746636b",
+    "files": [
+      {
+        "path": "automecanik-seo-vault/00-Meta/README.md",
+        "sha256": "e1516e2c804e9dd35328688e97244bf3c8b2219cc040a722d23ec973618ce258",
+        "size": 3438
+      },
+      {
+        "path": "automecanik-seo-vault/00-Meta/Glossary.md",
+        "sha256": "f3c6b785a9b0af5e0949a8bde2b8f23467de808b0f8ee7b7c3845a5945ecbc50",
+        "size": 3823
+      },
+      {
+        "path": "automecanik-seo-vault/00-Meta/Dataview-queries.md",
+        "sha256": "f2e07bf0ecc5fbc8b7e7a5f417f374275ee12e2c273926459df721549af150d3",
+        "size": 2980
+      },
+      {
+        "path": "automecanik-seo-vault/00-Meta/Conventions.md",
+        "sha256": "c531e2101c49e95dd618da67fb7786eab7ed210c4960740e8f825b8f794d1d53",
+        "size": 2403
+      },
+      {
+        "path": "automecanik-seo-vault/05-Content/_template-title-meta.md",
+        "sha256": "bf25ce9931c3abc508a83c0efa7fc3216a342d4921a90dcb1495fca31478d7db",
+        "size": 2611
+      },
+      {
+        "path": "automecanik-seo-vault/05-Content/_template-gamme-brief.md",
+        "sha256": "76f036cc8271d236b3829ec6829c37582d5b384f7644e90639282382076f0823",
+        "size": 4153
+      },
+      {
+        "path": "automecanik-seo-vault/08-Monitoring/_template-gsc-report.md",
+        "sha256": "5b0751b4f2ea219f4a442bce9078e054972f707273bf633f0bcefc068365a8f2",
+        "size": 2204
+      },
+      {
+        "path": "automecanik-seo-vault/07-Authority/_template-linkable-asset.md",
+        "sha256": "19fbb980723a7e28955917eaafc079e4bccb88a0e313c1a50333559132e3a201",
+        "size": 3038
+      },
+      {
+        "path": "automecanik-seo-vault/01-Strategy/Kickoff-Week1.md",
+        "sha256": "4ac59db5038edcaa4004d74657fa0d24c48c7334b01f96650af96eebe2e046a0",
+        "size": 12055
+      },
+      {
+        "path": "automecanik-seo-vault/01-Strategy/Roadmap-90d.md",
+        "sha256": "6f99aa284b14937bae8e1dab04111fc94b63dfa3bd239bf5644d5b7c37c513c7",
+        "size": 4482
+      },
+      {
+        "path": "automecanik-seo-vault/01-Strategy/Pillars.md",
+        "sha256": "fc9b0ec7b51fe44ce323eddcbaf6c3ccd884e72c604ce442116935d42a9c6e93",
+        "size": 3756
+      },
+      {
+        "path": "automecanik-seo-vault/02-ADR/ADR-002-maillage-interne-first.md",
+        "sha256": "65d7168fe7b3c8689b2c32a3340229a57b66f21430c0147c7cf48413be8f064e",
+        "size": 4555
+      },
+      {
+        "path": "automecanik-seo-vault/02-ADR/ADR-001-entity-architecture.md",
+        "sha256": "2e363525138866377ede99ee35b8c7eae52368fef373456b0c60b555c7a779b0",
+        "size": 4158
+      },
+      {
+        "path": "automecanik-seo-vault/02-ADR/_template-adr.md",
+        "sha256": "1a5c854428038c7f069315cb7c534271e2abb9429556c72a9e35c05dd4590836",
+        "size": 977
+      },
+      {
+        "path": "automecanik-seo-vault/04-Audits/_playbook-audit-cwv.md",
+        "sha256": "16e9bfdbec00e9e70683946767176ff5f7f3d48fed11c1a1112a47f56e4667b9",
+        "size": 6961
+      },
+      {
+        "path": "automecanik-seo-vault/04-Audits/_playbook-audit-crawl-budget.md",
+        "sha256": "8e0ca8d4ab6ac33a7be91bdad8dbb415ef46ed7304e1ac5405a7da8fcc58e8b1",
+        "size": 8746
+      },
+      {
+        "path": "automecanik-seo-vault/04-Audits/_playbook-audit-thin-content.md",
+        "sha256": "b816b7022996eb0d683171ef4617f86b7b5a9dbd7b08a04f7e64c9d0f961833f",
+        "size": 9937
+      },
+      {
+        "path": "automecanik-seo-vault/04-Audits/_playbook-audit-cannibalisation.md",
+        "sha256": "60522ee37889e0e3d30134186a5daab57a6dce9bab856314f81c041ab6f4807d",
+        "size": 12075
+      },
+      {
+        "path": "automecanik-seo-vault/04-Audits/_playbook-audit-maillage-interne.md",
+        "sha256": "e84e3c6c9a9677c557bb566ef7a06f3ff602098f8feda070e79520b1bbd87dd0",
+        "size": 15441
+      },
+      {
+        "path": "automecanik-seo-vault/04-Audits/_template-audit.md",
+        "sha256": "02eae89c76b402a27ba913edda36b92aa5af9b77bd4c504ac78644daa119cf2e",
+        "size": 1224
+      },
+      {
+        "path": "automecanik-seo-vault/04-Audits/_playbook-audit-competitor-gap.md",
+        "sha256": "7feaf1747226ed65f8c523b1cccdf4815a5d7ec82352305f52207f5669cb8795",
+        "size": 7991
+      },
+      {
+        "path": "automecanik-seo-vault/04-Audits/_playbook-audit-schema.md",
+        "sha256": "d921bab0cd8f543ca44879876a07e8cf07b39e843bb5cab588299740b9c4e5d2",
+        "size": 9893
+      },
+      {
+        "path": "automecanik-seo-vault/03-Entities/Families/_template-famille.md",
+        "sha256": "e203c769e10713af07ee18dd4e66f70891995bb752a59ecf0bad5ba5531e535b",
+        "size": 825
+      },
+      {
+        "path": "automecanik-seo-vault/03-Entities/Gammes/_template-gamme.md",
+        "sha256": "f8ed4c749697be0bd2791d15a346262a9c3b9de3b25685512fee4ca183899746",
+        "size": 2414
+      },
+      {
+        "path": "automecanik-seo-vault/03-Entities/Vehicles/_template-vehicle.md",
+        "sha256": "56e6dd3c3dc87d216b545bc71ae59ca20c8c417beb6660e959dfae88163cbc7f",
+        "size": 919
+      },
+      {
+        "path": "automecanik-seo-vault/06-Technical/_template-schema-spec.md",
+        "sha256": "6fda24a6201e55f07ca7bae76c2e68d1bbbd2c6bc4f40af0eec10b7177a56231",
+        "size": 967
+      },
+      {
+        "path": "automecanik-seo-vault/06-Technical/Schema-library/README.md",
+        "sha256": "c4bcacf4bf48ef2e1ee5cdd30355f174dd6f0b9e656e74fee1d986d5d7c839da",
+        "size": 1450
+      }
+    ]
+  },
+  "content_checks": [
+    {
+      "pass": true,
+      "path": "/tmp/seo-vault-audit-368d0746636b/automecanik-seo-vault/00-Meta/README.md",
+      "checks": [
+        {
+          "pass": true,
+          "pattern": "ADR-002",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "Kickoff-Week1",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "maillage-interne",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "pilier primaire",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "primaire",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "secondaire",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "playbook",
+          "mode": "simple",
+          "type": "must_contain"
+        }
+      ]
+    },
+    {
+      "pass": true,
+      "path": "/tmp/seo-vault-audit-368d0746636b/automecanik-seo-vault/00-Meta/Conventions.md",
+      "checks": [
+        {
+          "pass": true,
+          "pattern": "même discipline de maillage",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "ADR-002",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "type": "tag_required",
+          "detail": "tag '#pilier/maillage' trouvé"
+        },
+        {
+          "pass": true,
+          "type": "tag_required",
+          "detail": "tag '#pilier/autorite' trouvé"
+        },
+        {
+          "pass": true,
+          "type": "tag_context",
+          "detail": "'#pilier/maillage' près de 'primaire'"
+        },
+        {
+          "pass": true,
+          "type": "tag_context",
+          "detail": "'#pilier/autorite' près de 'secondaire'"
+        }
+      ]
+    },
+    {
+      "pass": true,
+      "path": "/tmp/seo-vault-audit-368d0746636b/automecanik-seo-vault/00-Meta/Glossary.md",
+      "checks": [
+        {
+          "pass": true,
+          "pattern": "PageRank interne",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "orpheline",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "feeding",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "sculpture",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "boilerplate dilutif",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "profondeur depuis home",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "type": "section_min_terms",
+          "detail": "section 'Maillage interne' : 35/11 termes"
+        },
+        {
+          "pass": true,
+          "type": "section_min_terms",
+          "detail": "section 'Crawl & indexation' : 23/6 termes"
+        }
+      ]
+    },
+    {
+      "pass": true,
+      "path": "/tmp/seo-vault-audit-368d0746636b/automecanik-seo-vault/00-Meta/Dataview-queries.md",
+      "checks": [
+        {
+          "pass": true,
+          "pattern": "orphelines",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "money pages sous-alimentées",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "feeding",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "draft",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "type": "section_required",
+          "detail": "section 'Maillage interne' présente"
+        },
+        {
+          "pass": true,
+          "type": "section_required",
+          "detail": "section 'Autorité externe' présente"
+        },
+        {
+          "pass": true,
+          "type": "section_required",
+          "detail": "section 'Activité récente' présente"
+        },
+        {
+          "pass": true,
+          "type": "dataview_blocks",
+          "detail": "14/3 blocks dataview"
+        }
+      ]
+    },
+    {
+      "pass": true,
+      "path": "/tmp/seo-vault-audit-368d0746636b/automecanik-seo-vault/02-ADR/ADR-001-entity-architecture.md",
+      "checks": [
+        {
+          "pass": true,
+          "pattern": "corollaire maillage",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "ADR-002",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "niveau 4",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "dépendance",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "type": "tag_required",
+          "detail": "tag '#pilier/maillage' trouvé"
+        }
+      ]
+    },
+    {
+      "pass": true,
+      "path": "/tmp/seo-vault-audit-368d0746636b/automecanik-seo-vault/03-Entities/Gammes/_template-gamme.md",
+      "checks": [
+        {
+          "pass": true,
+          "pattern": "Hubs",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "Money pages",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "type": "section_required",
+          "detail": "section 'Maillage interne' présente"
+        },
+        {
+          "pass": true,
+          "type": "frontmatter_key",
+          "detail": "clé 'inbound-count' présente dans frontmatter"
+        },
+        {
+          "pass": true,
+          "type": "frontmatter_key",
+          "detail": "clé 'outbound-count' présente dans frontmatter"
+        },
+        {
+          "pass": true,
+          "type": "frontmatter_key",
+          "detail": "clé 'pr-interne' présente dans frontmatter"
+        },
+        {
+          "pass": true,
+          "type": "frontmatter_key",
+          "detail": "clé 'depth-from-home' présente dans frontmatter"
+        },
+        {
+          "pass": true,
+          "type": "frontmatter_key",
+          "detail": "clé 'orpheline' présente dans frontmatter"
+        }
+      ]
+    },
+    {
+      "pass": true,
+      "path": "/tmp/seo-vault-audit-368d0746636b/automecanik-seo-vault/05-Content/_template-gamme-brief.md",
+      "checks": [
+        {
+          "pass": true,
+          "pattern": "10 liens internes entrants",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "J+30",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "plan de feeding",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "blocs sortants",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "anti-sur-optimisation",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "type": "section_required",
+          "detail": "section 'Maillage interne associé' présente"
+        }
+      ]
+    },
+    {
+      "pass": true,
+      "path": "/tmp/seo-vault-audit-368d0746636b/automecanik-seo-vault/07-Authority/_template-linkable-asset.md",
+      "checks": [
+        {
+          "pass": true,
+          "pattern": "opportuniste",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "Intégration au maillage interne",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "p3",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "minimal",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "modéré",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "soutenu",
+          "mode": "near",
+          "type": "must_contain"
+        }
+      ]
+    },
+    {
+      "pass": true,
+      "path": "/tmp/seo-vault-audit-368d0746636b/automecanik-seo-vault/08-Monitoring/_template-gsc-report.md",
+      "checks": [
+        {
+          "pass": true,
+          "pattern": "orphelines",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "money pages sous-alimentées",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "PageRank interne médian",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "profondeur",
+          "mode": "simple",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "% liens",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "pattern": "feeding",
+          "mode": "near",
+          "type": "must_contain"
+        },
+        {
+          "pass": true,
+          "type": "section_required",
+          "detail": "section 'Performance par pilier' présente"
+        },
+        {
+          "pass": true,
+          "type": "section_required",
+          "detail": "section 'Pilier 5' présente"
+        }
+      ]
+    }
+  ],
+  "crossref": {
+    "adr_ref_target": "ADR-002",
+    "count_files_referencing": 13,
+    "expected_min": 5,
+    "expected_max": 27,
+    "in_range": true
+  },
+  "unchanged_checks": [
+    {
+      "path": "01-Strategy/Kickoff-Week1.md",
+      "pass": true,
+      "sha256_actual": "4ac59db5038edcaa4004d74657fa0d24c48c7334b01f96650af96eebe2e046a0",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "01-Strategy/Roadmap-90d.md",
+      "pass": true,
+      "sha256_actual": "6f99aa284b14937bae8e1dab04111fc94b63dfa3bd239bf5644d5b7c37c513c7",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "01-Strategy/Pillars.md",
+      "pass": true,
+      "sha256_actual": "fc9b0ec7b51fe44ce323eddcbaf6c3ccd884e72c604ce442116935d42a9c6e93",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "02-ADR/ADR-002-maillage-interne-first.md",
+      "pass": true,
+      "sha256_actual": "65d7168fe7b3c8689b2c32a3340229a57b66f21430c0147c7cf48413be8f064e",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "02-ADR/_template-adr.md",
+      "pass": true,
+      "sha256_actual": "1a5c854428038c7f069315cb7c534271e2abb9429556c72a9e35c05dd4590836",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "03-Entities/Families/_template-famille.md",
+      "pass": true,
+      "sha256_actual": "e203c769e10713af07ee18dd4e66f70891995bb752a59ecf0bad5ba5531e535b",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "03-Entities/Vehicles/_template-vehicle.md",
+      "pass": true,
+      "sha256_actual": "56e6dd3c3dc87d216b545bc71ae59ca20c8c417beb6660e959dfae88163cbc7f",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "04-Audits/_playbook-audit-cwv.md",
+      "pass": true,
+      "sha256_actual": "16e9bfdbec00e9e70683946767176ff5f7f3d48fed11c1a1112a47f56e4667b9",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "04-Audits/_playbook-audit-crawl-budget.md",
+      "pass": true,
+      "sha256_actual": "8e0ca8d4ab6ac33a7be91bdad8dbb415ef46ed7304e1ac5405a7da8fcc58e8b1",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "04-Audits/_playbook-audit-thin-content.md",
+      "pass": true,
+      "sha256_actual": "b816b7022996eb0d683171ef4617f86b7b5a9dbd7b08a04f7e64c9d0f961833f",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "04-Audits/_playbook-audit-cannibalisation.md",
+      "pass": true,
+      "sha256_actual": "60522ee37889e0e3d30134186a5daab57a6dce9bab856314f81c041ab6f4807d",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "04-Audits/_playbook-audit-maillage-interne.md",
+      "pass": true,
+      "sha256_actual": "e84e3c6c9a9677c557bb566ef7a06f3ff602098f8feda070e79520b1bbd87dd0",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "04-Audits/_playbook-audit-competitor-gap.md",
+      "pass": true,
+      "sha256_actual": "7feaf1747226ed65f8c523b1cccdf4815a5d7ec82352305f52207f5669cb8795",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "04-Audits/_playbook-audit-schema.md",
+      "pass": true,
+      "sha256_actual": "d921bab0cd8f543ca44879876a07e8cf07b39e843bb5cab588299740b9c4e5d2",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "04-Audits/_template-audit.md",
+      "pass": true,
+      "sha256_actual": "02eae89c76b402a27ba913edda36b92aa5af9b77bd4c504ac78644daa119cf2e",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "05-Content/_template-title-meta.md",
+      "pass": true,
+      "sha256_actual": "bf25ce9931c3abc508a83c0efa7fc3216a342d4921a90dcb1495fca31478d7db",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "06-Technical/_template-schema-spec.md",
+      "pass": true,
+      "sha256_actual": "6fda24a6201e55f07ca7bae76c2e68d1bbbd2c6bc4f40af0eec10b7177a56231",
+      "note": "baseline non gelée"
+    },
+    {
+      "path": "06-Technical/Schema-library/README.md",
+      "pass": true,
+      "sha256_actual": "c4bcacf4bf48ef2e1ee5cdd30355f174dd6f0b9e656e74fee1d986d5d7c839da",
+      "note": "baseline non gelée"
+    }
+  ],
+  "obsidian": {
+    "frontmatter_errors": [],
+    "dataview_errors": [],
+    "dataview_blocks_total": 14
+  },
+  "subagent": {
+    "dimensions": [
+      {
+        "name": "pilier_primaire_secondaire",
+        "status": "OK",
+        "evidence": "ADR-002-maillage-interne-first.md:268 'Le maillage interne est promu au rang de pilier stratégique de premier plan'; Pillars.md:211 'Primaire — maillage interne (sculpture PageRank)' et :221 'Secondaire — autorité externe (opportuniste)'",
+        "comment": "La hiérarchie primaire (maillage) / secondaire (autorité externe opportuniste) est déclarée de manière cohérente dans ADR-002, Pillars.md, README.md et Conventions.md (tags pilier/maillage primaire vs pilier/autorite secondaire)."
+      },
+      {
+        "name": "anti_sur_optimisation",
+        "status": "FLAG",
+        "evidence": "ADR-002:292-293 'Risque de sur-optimisation interne (suroptimisation anchor text, footer bloated)' et Pillars.md:218 'Diversité des anchor text, contextualisation par catalogue'",
+        "comment": "Le risque est nommé et la règle de diversité mentionnée, mais aucun exemple concret d'anchor text à éviter/à utiliser n'est fourni dans les fichiers consultés, et aucune mitigation opérationnelle dédiée (ex. ratio max anchor exact-match) n'est documentée."
+      },
+      {
+        "name": "kpis_mesurables",
+        "status": "FLAG",
+        "evidence": "_template-gsc-report.md:544-548 'Pages orphelines / Money pages sous-alimentées (<10 entrants) / PageRank interne médian money pages / Profondeur moyenne ≤3 / % liens vers niveaux 4-5'",
+        "comment": "Orphelines, inbound count, profondeur et %liens vers niveaux 4-5 sont mesurables en Screaming Frog/Ahrefs/GSC. En revanche 'PageRank interne médian money pages' n'est pas un KPI standard GSC — il requiert un calcul custom (Screaming Frog Link Score ou script maison) non spécifié ici, ce qui fragilise la mesurabilité directe annoncée."
+      },
+      {
+        "name": "outreach_opportuniste",
+        "status": "OK",
+        "evidence": "_template-linkable-asset.md:410 'priority: p3', :434-437 'Minimal / Modéré / Soutenu' et :419 'Pas de SLA ni deadline serrée'; ADR-002:273 'pas de programme outreach industrialisé'",
+        "comment": "Le positionnement p3 + gradient minimal/modéré/soutenu + absence de SLA + section 'Intégration au maillage interne — Plus important que l'outreach externe' est pleinement cohérent avec la doctrine 'maillage prioritaire' d'ADR-002."
+      }
+    ],
+    "overall_status": "FLAG",
+    "overall_comment": "La doctrine primaire/secondaire et le positionnement opportuniste de l'outreach sont solidement ancrés et cohérents à travers ADR-002, Pillars.md et les templates. Deux zones de fragilité : (1) la règle anti-sur-optimisation est nommée comme risque sans exemple opérationnel ni seuil chiffré, (2) un des KPIs maillage ('PageRank interne médian') n'est pas directement mesurable avec les outils standards cités et nécessiterait une méthode de calcul explicitée."
+  },
+  "missing_files": [],
+  "generated_at": "2026-04-24T17:44:19.546854+00:00"
+}
