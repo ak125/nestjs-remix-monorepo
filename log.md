@@ -81,3 +81,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-department-phase-2a`
 - **Décision** : feat(seo-department): phase 2a - audit findings table + canonical auditor
 - **Sortie** : PR #174 | commits 9581f6c2
+
+## 2026-04-25 — feat/aicos-fleet-advisor-claude-4-7 (auto)
+
+- **Branche** : `feat/aicos-fleet-advisor-claude-4-7`
+- **Décision** : docs(spec): fleet advisor + Claude 4.7 tiering design
+- **Sortie** : PR aucune | commits aea7919d
