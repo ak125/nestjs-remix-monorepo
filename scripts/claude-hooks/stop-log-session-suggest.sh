@@ -1,82 +1,114 @@
 #!/usr/bin/env bash
 #
-# stop-log-session-suggest.sh — Stop hook for Claude Code.
+# stop-log-session-suggest.sh — Stop hook for Claude Code (auto-commit mode).
 #
 # Detects whether the current Claude Code session has produced commits or
-# PRs that would warrant an entry in log.md. If so, returns JSON instructing
-# Claude to invoke the `session-log` skill (silently if no work found).
+# PRs ahead of origin/main on the current branch. If so, the script:
+#   1. Appends a deterministic 3-line entry to log.md (suffix " (auto)" so
+#      it is visually distinguishable from human-curated entries).
+#   2. Stages and commits ONLY log.md with `chore(log): auto session entry`.
+#   3. Updates the marker file so a re-fire on the same SHA stays silent.
+#
+# No JSON output, no Claude involvement, no LLM tokens consumed. Idempotent
+# (marker file gates re-trigger). Skill `/log-session` remains available for
+# curated manual entries.
 #
 # Wire-up: .claude/settings.json
-#   "hooks": {
-#     "Stop": [
-#       { "hooks": [ { "type": "command", "command": "bash scripts/claude-hooks/stop-log-session-suggest.sh" } ] }
-#     ]
-#   }
+#   "Stop": [ { "hooks": [ { "type": "command", "command": "bash ..." } ] } ]
 #
-# Read-only operation. Never writes to log.md directly. Only signals Claude.
+# Safe by design:
+#   - Only stages log.md ; never touches other files.
+#   - Skips on main / master / detached HEAD / no commits.
+#   - Skips during rebase / merge / cherry-pick / bisect to avoid colliding
+#     with operations the user is steering by hand.
+#   - Honours pre-commit hooks (no --no-verify).
 
 set -u
 
-# Resolve repo root regardless of where the hook runs from.
 REPO_ROOT="$(git -C "${PWD}" rev-parse --show-toplevel 2>/dev/null || echo /opt/automecanik/app)"
 cd "$REPO_ROOT" 2>/dev/null || exit 0
 
-# Marker so we don't re-suggest within the same logical session unless new work appears.
+LOG_FILE="${REPO_ROOT}/log.md"
 MARKER_DIR="${REPO_ROOT}/.claude/.session-log-state"
 mkdir -p "$MARKER_DIR" 2>/dev/null
 LAST_SHA_FILE="${MARKER_DIR}/last-suggested-head"
 LAST_BRANCH_FILE="${MARKER_DIR}/last-suggested-branch"
 
+# Bail if log.md does not exist (feature not yet shipped on this branch).
+[ -f "$LOG_FILE" ] || exit 0
+
+# Bail if a multi-step git operation is in progress.
+GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || echo .git)"
+for marker in rebase-apply rebase-merge MERGE_HEAD CHERRY_PICK_HEAD BISECT_LOG REVERT_HEAD; do
+  [ -e "${GIT_DIR}/${marker}" ] && exit 0
+done
+
 current_branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '')"
 current_head="$(git rev-parse HEAD 2>/dev/null || echo '')"
 
-# Skip if not on a feature branch (main, master, detached HEAD)
+# Skip on protected branches / detached HEAD.
 case "$current_branch" in
-  main|master|HEAD|"")
-    exit 0
-    ;;
+  main|master|HEAD|"") exit 0 ;;
 esac
 
-# Look for commits ahead of origin/main on the current branch
-# (= work done in this branch, not yet merged).
+# Look for commits ahead of origin/main on the current branch.
 commits_ahead="$(git log origin/main..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')"
+[ "${commits_ahead:-0}" -lt 1 ] && exit 0
 
-# Skip if no commits at all on this branch yet.
-if [ "${commits_ahead:-0}" -lt 1 ]; then
-  exit 0
-fi
-
-# Has anything changed since the last suggestion ? (avoid re-prompt loop)
+# Idempotence: same SHA + same branch → already logged, skip.
 last_sha="$(cat "$LAST_SHA_FILE" 2>/dev/null || echo '')"
 last_branch="$(cat "$LAST_BRANCH_FILE" 2>/dev/null || echo '')"
-
 if [ "$current_head" = "$last_sha" ] && [ "$current_branch" = "$last_branch" ]; then
-  # Same SHA + same branch as last time we suggested -> already prompted, skip.
   exit 0
 fi
 
-# Detect open PR for this branch (informational only).
+# Skip if log.md is currently staged or modified by something else — we
+# only auto-commit when log.md is the sole change we will introduce.
+if ! git diff --quiet -- "$LOG_FILE" || ! git diff --cached --quiet -- "$LOG_FILE"; then
+  exit 0
+fi
+
+# Gather facts for the entry.
+today="$(date +%F)"
+last_commit_subject="$(git log -1 --pretty=%s 2>/dev/null | tr -d '\r' | cut -c1-120)"
+short_shas="$(git log origin/main..HEAD --pretty=%h 2>/dev/null | tr '\n' ' ' | sed 's/ *$//')"
+plus_n=""
+if [ "$commits_ahead" -gt 1 ]; then
+  plus_n=" (+$((commits_ahead - 1)) other commit$([ "$((commits_ahead - 1))" -gt 1 ] && echo s))"
+fi
+
 pr_number=""
+pr_part="aucune"
 if command -v gh >/dev/null 2>&1; then
   pr_number="$(gh pr list --head "$current_branch" --state open --json number --jq '.[0].number' 2>/dev/null || true)"
+  [ -n "$pr_number" ] && pr_part="#${pr_number}"
 fi
 
-pr_hint=""
-if [ -n "$pr_number" ]; then
-  pr_hint=" PR #${pr_number} is open."
-fi
-
-# Persist state so we don't re-prompt for the same SHA.
-printf '%s\n' "$current_head" > "$LAST_SHA_FILE"
-printf '%s\n' "$current_branch" > "$LAST_BRANCH_FILE"
-
-# Emit JSON for Claude Code Stop hook protocol — signals additional context
-# for the model. The model will see this as part of the next assistant turn.
-cat <<EOF
+# Append deterministic entry. Always one blank line before the H2 heading.
 {
-  "decision": "block",
-  "reason": "Session has produced ${commits_ahead} commit(s) on branch '${current_branch}'.${pr_hint} Before stopping, invoke the 'session-log' skill to append a 3-4 line entry to log.md. After logging, you may stop."
-}
-EOF
+  printf '\n## %s — %s (auto)\n\n' "$today" "$current_branch"
+  printf -- '- **Branche** : `%s`\n' "$current_branch"
+  printf -- '- **Décision** : %s%s\n' "$last_commit_subject" "$plus_n"
+  printf -- '- **Sortie** : PR %s | commits %s\n' "$pr_part" "$short_shas"
+} >> "$LOG_FILE"
+
+# Stage ONLY log.md and commit.
+git add -- "$LOG_FILE" 2>/dev/null
+
+# Use a dedicated commit message. Pre-commit hooks run normally (no bypass).
+if git commit -m "chore(log): auto session entry for ${current_branch}" \
+              -m "Generated by stop-log-session-suggest.sh after detecting ${commits_ahead} commit(s) ahead of origin/main." \
+              --quiet 2>/tmp/.session-log-commit-err; then
+  # Update marker with the NEW HEAD (the auto-commit just landed).
+  printf '%s\n' "$(git rev-parse HEAD)" > "$LAST_SHA_FILE"
+  printf '%s\n' "$current_branch" > "$LAST_BRANCH_FILE"
+else
+  # Commit failed (probably a pre-commit hook). Roll back the staged change
+  # so the user finds a clean working tree, leave a marker so we don't loop.
+  git reset HEAD -- "$LOG_FILE" >/dev/null 2>&1
+  git checkout -- "$LOG_FILE" >/dev/null 2>&1
+  printf '%s\n' "$current_head" > "$LAST_SHA_FILE"
+  printf '%s\n' "$current_branch" > "$LAST_BRANCH_FILE"
+fi
 
 exit 0
