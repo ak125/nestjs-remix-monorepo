@@ -20,6 +20,68 @@ import { logger } from "~/utils/logger";
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select-radix";
+
+// ─── Carburant : groupage + ordre + couleurs WCAG-AA (≥4.5:1 sur fond blanc) ───
+const FUEL_GROUP_ORDER = ["Diesel", "Essence", "Électrique", "Autres"] as const;
+type FuelGroup = (typeof FUEL_GROUP_ORDER)[number];
+
+const FUEL_GROUP_COLORS: Record<FuelGroup, string> = {
+  Diesel: "#c2410c", // orange-700  (4.78:1)
+  Essence: "#15803d", // green-700   (4.65:1)
+  Électrique: "#1d4ed8", // blue-700    (8.59:1)
+  Autres: "#475569", // slate-600   (7.46:1)
+};
+
+function getFuelGroup(fuel?: string | null): FuelGroup {
+  if (!fuel) return "Autres";
+  const f = fuel.toLowerCase();
+  if (f.startsWith("diesel")) return "Diesel";
+  if (f.startsWith("essence")) return "Essence";
+  if (f.includes("électr") || f.includes("electr")) return "Électrique";
+  return "Autres";
+}
+
+/** Groupe par carburant + trie par puissance ASC dans chaque groupe. */
+function groupAndSortTypesByFuel(
+  types: VehicleType[],
+): Array<[FuelGroup, VehicleType[]]> {
+  const map = new Map<FuelGroup, VehicleType[]>();
+  for (const t of types) {
+    const g = getFuelGroup(t.type_fuel);
+    if (!map.has(g)) map.set(g, []);
+    map.get(g)!.push(t);
+  }
+  for (const list of map.values()) {
+    list.sort((a, b) => {
+      const pa = Number(a.type_power_ps) || 0;
+      const pb = Number(b.type_power_ps) || 0;
+      return pa - pb;
+    });
+  }
+  return FUEL_GROUP_ORDER.filter((g) => map.has(g)).map(
+    (g) => [g, map.get(g)!] as [FuelGroup, VehicleType[]],
+  );
+}
+
+/** Pastille couleur 8px — décorative (aria-hidden), texte reste lisible. */
+function FuelDot({ color }: { color: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="inline-block h-2 w-2 rounded-full mr-2 flex-shrink-0"
+      style={{ backgroundColor: color }}
+    />
+  );
+}
 
 interface VehicleSelectorProps {
   // 🎨 Mode d'affichage
@@ -284,7 +346,7 @@ const VehicleSelector = memo(function VehicleSelector({
               return name
                 .toLowerCase()
                 .normalize("NFD") // Normaliser les caractères accentués
-                .replace(/[\u0300-\u036f]/g, "") // Retirer les accents
+                .replace(/[̀-ͯ]/g, "") // Retirer les accents
                 .replace(/[^\w\s-]/g, "") // Garder uniquement lettres, chiffres, espaces et tirets
                 .trim()
                 .replace(/[\s_]+/g, "-") // Remplacer espaces et underscores par tirets
@@ -389,75 +451,126 @@ const VehicleSelector = memo(function VehicleSelector({
         <Car className="hidden sm:block w-5 h-5 text-cta flex-shrink-0" />
 
         {/* Marque */}
-        <select
-          id="brand-v2"
-          value={selectedBrand?.marque_id || ""}
-          onChange={(e) => handleBrandChange(Number(e.target.value))}
-          onFocus={onSelectorInteraction}
+        <Select
+          value={selectedBrand?.marque_id?.toString() || ""}
+          onValueChange={(value) => handleBrandChange(Number(value))}
           disabled={loadingBrands}
-          className="sm:flex-1 py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
-          aria-label="Sélectionner la marque"
         >
-          <option value="">{loadingBrands ? "Chargement..." : "Marque"}</option>
-          {brands.map((brand) => (
-            <option key={brand.marque_id} value={brand.marque_id}>
-              {brand.marque_name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            id="brand-v2"
+            onFocus={onSelectorInteraction}
+            onPointerDown={onSelectorInteraction}
+            className="sm:flex-1 h-auto py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
+            aria-label="Sélectionner la marque"
+          >
+            <SelectValue
+              placeholder={loadingBrands ? "Chargement..." : "Marque"}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {brands.map((brand) => (
+              <SelectItem
+                key={brand.marque_id}
+                value={brand.marque_id.toString()}
+              >
+                {brand.marque_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Année */}
-        <select
-          value={selectedYear || ""}
-          onChange={(e) => handleYearChange(Number(e.target.value))}
+        <Select
+          value={selectedYear?.toString() || ""}
+          onValueChange={(value) => handleYearChange(Number(value))}
           disabled={!selectedBrand || loadingYears}
-          className="sm:flex-1 py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
-          aria-label="Sélectionner l'année"
         >
-          <option value="">Année</option>
-          {years.map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            className="sm:flex-1 h-auto py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
+            aria-label="Sélectionner l'année"
+          >
+            <SelectValue
+              placeholder={loadingYears ? "Chargement..." : "Année"}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {years.map((year) => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Modèle */}
-        <select
-          value={selectedModel?.modele_id || ""}
-          onChange={(e) => handleModelChange(Number(e.target.value))}
+        <Select
+          value={selectedModel?.modele_id?.toString() || ""}
+          onValueChange={(value) => handleModelChange(Number(value))}
           disabled={!selectedYear || loadingModels}
-          className="sm:flex-1 py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
-          aria-label="Sélectionner le modèle"
         >
-          <option value="">Modèle</option>
-          {models.map((model) => (
-            <option key={model.modele_id} value={model.modele_id}>
-              {model.modele_name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            className="sm:flex-1 h-auto py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
+            aria-label="Sélectionner le modèle"
+          >
+            <SelectValue
+              placeholder={loadingModels ? "Chargement..." : "Modèle"}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {models.map((model) => (
+              <SelectItem
+                key={model.modele_id}
+                value={model.modele_id.toString()}
+              >
+                {model.modele_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-        {/* Type */}
-        <select
-          value={selectedType?.type_id || ""}
-          onChange={(e) => {
-            const selectedType = types.find(
-              (t) => t.type_id.toString() === e.target.value,
-            );
-            if (selectedType) handleTypeSelect(selectedType);
+        {/* Type / Motorisation */}
+        <Select
+          value={selectedType?.type_id?.toString() || ""}
+          onValueChange={(value) => {
+            const t = types.find((t) => t.type_id.toString() === value);
+            if (t) handleTypeSelect(t);
           }}
           disabled={!selectedModel || loadingTypes}
-          className="sm:flex-1 py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
-          aria-label="Sélectionner la motorisation"
         >
-          <option value="">Motorisation</option>
-          {types.map((type) => (
-            <option key={type.type_id} value={type.type_id}>
-              {type.type_name}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger
+            className="sm:flex-1 h-auto py-3 px-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-cta/20 focus:border-cta transition-all disabled:bg-slate-100 disabled:text-slate-400"
+            aria-label="Sélectionner la motorisation"
+          >
+            <SelectValue
+              placeholder={loadingTypes ? "Chargement..." : "Motorisation"}
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {groupAndSortTypesByFuel(types).map(([group, list]) => (
+              <SelectGroup key={group}>
+                <SelectLabel style={{ color: FUEL_GROUP_COLORS[group] }}>
+                  {group}
+                </SelectLabel>
+                {list.map((type) => (
+                  <SelectItem
+                    key={type.type_id}
+                    value={type.type_id.toString()}
+                  >
+                    <span className="flex items-center">
+                      <FuelDot color={FUEL_GROUP_COLORS[group]} />
+                      <span>
+                        {type.type_name}
+                        {type.type_power_ps
+                          ? ` - ${type.type_power_ps} ch`
+                          : ""}
+                      </span>
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            ))}
+          </SelectContent>
+        </Select>
 
         <Button
           onClick={handleReset}
@@ -523,25 +636,36 @@ const VehicleSelector = memo(function VehicleSelector({
             <div className="relative">
               <Car
                 size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-400 pointer-events-none z-10"
               />
-              <select
-                value={selectedBrand?.marque_id || ""}
-                onChange={(e) => handleBrandChange(Number(e.target.value))}
-                onFocus={onSelectorInteraction}
+              <Select
+                value={selectedBrand?.marque_id?.toString() || ""}
+                onValueChange={(value) => handleBrandChange(Number(value))}
                 disabled={loadingBrands}
-                className={`${getFieldClass(0, false)} pl-8`}
-                aria-label="Marque"
               >
-                <option value="">
-                  {loadingBrands ? "Chargement..." : "Sélectionner"}
-                </option>
-                {brands.map((brand) => (
-                  <option key={brand.marque_id} value={brand.marque_id}>
-                    {brand.marque_name}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger
+                  onFocus={onSelectorInteraction}
+                  onPointerDown={onSelectorInteraction}
+                  className={`h-auto pl-8 ${getFieldClass(0, false)}`}
+                  aria-label="Marque"
+                >
+                  <SelectValue
+                    placeholder={
+                      loadingBrands ? "Chargement..." : "Sélectionner"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {brands.map((brand) => (
+                    <SelectItem
+                      key={brand.marque_id}
+                      value={brand.marque_id.toString()}
+                    >
+                      {brand.marque_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </label>
 
@@ -550,22 +674,27 @@ const VehicleSelector = memo(function VehicleSelector({
             <span className={labelClass(!selectedBrand && !loadingYears)}>
               Année
             </span>
-            <select
-              value={selectedYear || ""}
-              onChange={(e) => handleYearChange(Number(e.target.value))}
+            <Select
+              value={selectedYear?.toString() || ""}
+              onValueChange={(value) => handleYearChange(Number(value))}
               disabled={!selectedBrand || loadingYears}
-              className={getFieldClass(1, !selectedBrand && !loadingYears)}
-              aria-label="Année"
             >
-              <option value="">
-                {loadingYears ? "Chargement..." : "Sélectionner"}
-              </option>
-              {years.map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger
+                className={`h-auto ${getFieldClass(1, !selectedBrand && !loadingYears)}`}
+                aria-label="Année"
+              >
+                <SelectValue
+                  placeholder={loadingYears ? "Chargement..." : "Sélectionner"}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
 
           {/* Modele */}
@@ -577,25 +706,33 @@ const VehicleSelector = memo(function VehicleSelector({
             >
               Modèle
             </span>
-            <select
-              value={selectedModel?.modele_id || ""}
-              onChange={(e) => handleModelChange(Number(e.target.value))}
+            <Select
+              value={selectedModel?.modele_id?.toString() || ""}
+              onValueChange={(value) => handleModelChange(Number(value))}
               disabled={!selectedYear || loadingModels}
-              className={getFieldClass(
-                2,
-                (!selectedBrand || !selectedYear) && !loadingModels,
-              )}
-              aria-label="Modèle"
             >
-              <option value="">
-                {loadingModels ? "Chargement..." : "Sélectionner"}
-              </option>
-              {models.map((model) => (
-                <option key={model.modele_id} value={model.modele_id}>
-                  {model.modele_name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger
+                className={`h-auto ${getFieldClass(
+                  2,
+                  (!selectedBrand || !selectedYear) && !loadingModels,
+                )}`}
+                aria-label="Modèle"
+              >
+                <SelectValue
+                  placeholder={loadingModels ? "Chargement..." : "Sélectionner"}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {models.map((model) => (
+                  <SelectItem
+                    key={model.modele_id}
+                    value={model.modele_id.toString()}
+                  >
+                    {model.modele_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
 
           {/* Motorisation */}
@@ -603,27 +740,48 @@ const VehicleSelector = memo(function VehicleSelector({
             <span className={labelClass(!selectedModel && !loadingTypes)}>
               Motorisation
             </span>
-            <select
-              value={selectedType?.type_id || ""}
-              onChange={(e) => {
-                const t = types.find(
-                  (t) => t.type_id.toString() === e.target.value,
-                );
+            <Select
+              value={selectedType?.type_id?.toString() || ""}
+              onValueChange={(value) => {
+                const t = types.find((t) => t.type_id.toString() === value);
                 if (t) handleTypeSelect(t);
               }}
               disabled={!selectedModel || loadingTypes}
-              className={getFieldClass(3, !selectedModel && !loadingTypes)}
-              aria-label="Motorisation"
             >
-              <option value="">
-                {loadingTypes ? "Chargement..." : "Sélectionner"}
-              </option>
-              {types.map((type) => (
-                <option key={type.type_id} value={type.type_id}>
-                  {type.type_name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger
+                className={`h-auto ${getFieldClass(3, !selectedModel && !loadingTypes)}`}
+                aria-label="Motorisation"
+              >
+                <SelectValue
+                  placeholder={loadingTypes ? "Chargement..." : "Sélectionner"}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {groupAndSortTypesByFuel(types).map(([group, list]) => (
+                  <SelectGroup key={group}>
+                    <SelectLabel style={{ color: FUEL_GROUP_COLORS[group] }}>
+                      {group}
+                    </SelectLabel>
+                    {list.map((type) => (
+                      <SelectItem
+                        key={type.type_id}
+                        value={type.type_id.toString()}
+                      >
+                        <span className="flex items-center">
+                          <FuelDot color={FUEL_GROUP_COLORS[group]} />
+                          <span>
+                            {type.type_name}
+                            {type.type_power_ps
+                              ? ` - ${type.type_power_ps} ch`
+                              : ""}
+                          </span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
         </div>
 
@@ -725,23 +883,34 @@ const VehicleSelector = memo(function VehicleSelector({
                     <Car className="w-4 h-4 inline mr-1" />
                     Marque
                   </label>
-                  <select
-                    id="brand-v2"
-                    value={selectedBrand?.marque_id || ""}
-                    onChange={(e) => handleBrandChange(Number(e.target.value))}
-                    onFocus={onSelectorInteraction}
+                  <Select
+                    value={selectedBrand?.marque_id?.toString() || ""}
+                    onValueChange={(value) => handleBrandChange(Number(value))}
                     disabled={loadingBrands}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                   >
-                    <option value="">
-                      {loadingBrands ? "Chargement..." : "Constructeur"}
-                    </option>
-                    {brands.map((brand) => (
-                      <option key={brand.marque_id} value={brand.marque_id}>
-                        {brand.marque_name} {brand.is_featured ? "⭐" : ""}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger
+                      id="brand-v2"
+                      onFocus={onSelectorInteraction}
+                      onPointerDown={onSelectorInteraction}
+                      className="w-full h-auto px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                    >
+                      <SelectValue
+                        placeholder={
+                          loadingBrands ? "Chargement..." : "Constructeur"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {brands.map((brand) => (
+                        <SelectItem
+                          key={brand.marque_id}
+                          value={brand.marque_id.toString()}
+                        >
+                          {brand.marque_name} {brand.is_featured ? "⭐" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Année */}
@@ -753,22 +922,27 @@ const VehicleSelector = memo(function VehicleSelector({
                     <Calendar className="w-4 h-4 inline mr-1" />
                     Année
                   </label>
-                  <select
-                    id="year-v2"
-                    value={selectedYear || ""}
-                    onChange={(e) => handleYearChange(Number(e.target.value))}
+                  <Select
+                    value={selectedYear?.toString() || ""}
+                    onValueChange={(value) => handleYearChange(Number(value))}
                     disabled={!selectedBrand || loadingYears}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                   >
-                    <option value="">
-                      {loadingYears ? "Chargement..." : "Année"}
-                    </option>
-                    {years.map((year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger
+                      id="year-v2"
+                      className="w-full h-auto px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                    >
+                      <SelectValue
+                        placeholder={loadingYears ? "Chargement..." : "Année"}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {years.map((year) => (
+                        <SelectItem key={year} value={year.toString()}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Modèle */}
@@ -780,22 +954,30 @@ const VehicleSelector = memo(function VehicleSelector({
                     <Search className="w-4 h-4 inline mr-1" />
                     Modèle
                   </label>
-                  <select
-                    id="model-v2"
-                    value={selectedModel?.modele_id || ""}
-                    onChange={(e) => handleModelChange(Number(e.target.value))}
+                  <Select
+                    value={selectedModel?.modele_id?.toString() || ""}
+                    onValueChange={(value) => handleModelChange(Number(value))}
                     disabled={!selectedYear || loadingModels}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                   >
-                    <option value="">
-                      {loadingModels ? "Chargement..." : "Modèle"}
-                    </option>
-                    {models.map((model) => (
-                      <option key={model.modele_id} value={model.modele_id}>
-                        {model.modele_name}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger
+                      id="model-v2"
+                      className="w-full h-auto px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                    >
+                      <SelectValue
+                        placeholder={loadingModels ? "Chargement..." : "Modèle"}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {models.map((model) => (
+                        <SelectItem
+                          key={model.modele_id}
+                          value={model.modele_id.toString()}
+                        >
+                          {model.modele_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {selectedYear && !loadingModels && models.length === 0 && (
                     <p className="text-xs text-gray-400 mt-1">
                       Essayez une autre année ou vérifiez la marque
@@ -812,28 +994,55 @@ const VehicleSelector = memo(function VehicleSelector({
                     <Settings className="w-4 h-4 inline mr-1" />
                     Motorisation
                   </label>
-                  <select
-                    id="type-v2"
-                    value={selectedType?.type_id || ""}
-                    onChange={(e) => {
-                      const selectedType = types.find(
-                        (t) => t.type_id.toString() === e.target.value,
+                  <Select
+                    value={selectedType?.type_id?.toString() || ""}
+                    onValueChange={(value) => {
+                      const t = types.find(
+                        (t) => t.type_id.toString() === value,
                       );
-                      if (selectedType) handleTypeSelect(selectedType);
+                      if (t) handleTypeSelect(t);
                     }}
                     disabled={!selectedModel || loadingTypes}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
                   >
-                    <option value="">
-                      {loadingTypes ? "Chargement..." : "Motorisation"}
-                    </option>
-                    {types.map((type) => (
-                      <option key={type.type_id} value={type.type_id}>
-                        {type.type_name} ({type.type_fuel}) -{" "}
-                        {type.type_power_ps} PS
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger
+                      id="type-v2"
+                      className="w-full h-auto px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 bg-white disabled:bg-gray-100 disabled:text-gray-500"
+                    >
+                      <SelectValue
+                        placeholder={
+                          loadingTypes ? "Chargement..." : "Motorisation"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {groupAndSortTypesByFuel(types).map(([group, list]) => (
+                        <SelectGroup key={group}>
+                          <SelectLabel
+                            style={{ color: FUEL_GROUP_COLORS[group] }}
+                          >
+                            {group}
+                          </SelectLabel>
+                          {list.map((type) => (
+                            <SelectItem
+                              key={type.type_id}
+                              value={type.type_id.toString()}
+                            >
+                              <span className="flex items-center">
+                                <FuelDot color={FUEL_GROUP_COLORS[group]} />
+                                <span>
+                                  {type.type_name}
+                                  {type.type_fuel ? ` (${type.type_fuel})` : ""}
+                                  {type.type_power_ps
+                                    ? ` - ${type.type_power_ps} ch`
+                                    : ""}
+                                </span>
+                              </span>
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   {selectedModel && !loadingTypes && types.length > 1 && (
                     <p className="text-xs text-gray-400 mt-1">
                       Carte grise champ D.2 pour identifier la bonne
