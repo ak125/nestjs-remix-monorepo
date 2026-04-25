@@ -81,3 +81,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/vehicle-rag-web-enrichment-stage1`
 - **Décision** : fix(rag): extract_text_generic table-aware (rows joined as Markdown) (+8 other commits)
 - **Sortie** : PR #172 | commits 17644dc5 b6842426 8b1751af 8e17940d b1926420 9f28833a 9dc8f71b 26d3cea0 26812832
+
+## 2026-04-25 — feat/vehicle-rag-web-enrichment-stage1 (auto)
+
+- **Branche** : `feat/vehicle-rag-web-enrichment-stage1`
+- **Décision** : feat(rag): maximalist per-row extraction + real cross-source validation (+10 other commits)
+- **Sortie** : PR #172 | commits 78324b28 c4aa2372 17644dc5 b6842426 8b1751af 8e17940d b1926420 9f28833a 9dc8f71b 26d3cea0 26812832
