@@ -81,3 +81,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-department-phase-2a`
 - **Décision** : feat(seo-department): phase 2a - audit findings table + canonical auditor
 - **Sortie** : PR #174 | commits 9581f6c2
+
+## 2026-04-25 — feat/r8-html-distinct-render (auto)
+
+- **Branche** : `feat/r8-html-distinct-render`
+- **Décision** : feat(r8): cut TrustSection from R8 route + spec for HTML distinct render
+- **Sortie** : PR aucune | commits 9d9ac41e
