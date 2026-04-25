@@ -1,0 +1,20 @@
+{
+  "type": "pre_canon_review",
+  "payload": {
+    "scope": "code_pr",
+    "revision_round_count": 0,
+    "context": {"task_id": "regression-INC-2026-009", "issue_id": null, "session_id": null},
+    "body": {
+      "repo": "ak125/nestjs-remix-monorepo",
+      "branch": "feat/admin-list",
+      "base_sha": "0000000",
+      "head_sha": "2222222",
+      "files_changed": ["backend/supabase/policies/admin.sql"],
+      "diff_summary": "New admin RPC list_admins() returns password_hash column, exposed via anon key — RLS missing on __admin_users.",
+      "diff_url": "fictional-replay",
+      "related_pr_number": 0
+    }
+  },
+  "expected_recommendation": "reject",
+  "expected_axes_floor": {"security": 0}
+}

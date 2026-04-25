@@ -81,3 +81,39 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-department-phase-2a`
 - **Décision** : feat(seo-department): phase 2a - audit findings table + canonical auditor
 - **Sortie** : PR #174 | commits 9581f6c2
+
+## 2026-04-25 — feat/aicos-fleet-advisor-claude-4-7 (auto)
+
+- **Branche** : `feat/aicos-fleet-advisor-claude-4-7`
+- **Décision** : docs(spec): fleet advisor + Claude 4.7 tiering design
+- **Sortie** : PR aucune | commits aea7919d
+
+## 2026-04-25 — feat/aicos-fleet-advisor-claude-4-7 (auto)
+
+- **Branche** : `feat/aicos-fleet-advisor-claude-4-7`
+- **Décision** : docs(plan): fleet advisor + Claude 4.7 implementation plan (phases 0+1) (+2 other commits)
+- **Sortie** : PR aucune | commits 547b983e 6b618531 aea7919d
+
+## 2026-04-25 — feat/aicos-fleet-advisor-claude-4-7 (auto)
+
+- **Branche** : `feat/aicos-fleet-advisor-claude-4-7`
+- **Décision** : feat(aicos): apply_fleet_models.py (idempotent PATCH) (+9 other commits)
+- **Sortie** : PR aucune | commits 30591c4a 555243be 9078b238 ea5bda73 20f59a90 f754acaf 7c0d6295 547b983e 6b618531 aea7919d
+
+## 2026-04-25 — feat/aicos-fleet-advisor-claude-4-7 (auto)
+
+- **Branche** : `feat/aicos-fleet-advisor-claude-4-7`
+- **Décision** : feat(agents): pre-canon review section in 5 producers (+14 other commits)
+- **Sortie** : PR aucune | commits 9f3fd278 6d6e14c4 2912c217 ca89eb35 e885d323 30591c4a 555243be 9078b238 ea5bda73 20f59a90 f754acaf 7c0d6295 547b983e 6b618531 aea7919d
+
+## 2026-04-25 — feat/aicos-fleet-advisor-claude-4-7 (auto)
+
+- **Branche** : `feat/aicos-fleet-advisor-claude-4-7`
+- **Décision** : test(advisor): regression replay — 3 historical incidents BLOCK (+16 other commits)
+- **Sortie** : PR aucune | commits b5485ae2 d30cdf18 9f3fd278 6d6e14c4 2912c217 ca89eb35 e885d323 30591c4a 555243be 9078b238 ea5bda73 20f59a90 f754acaf 7c0d6295 547b983e 6b618531 aea7919d
+
+## 2026-04-25 — feat/aicos-fleet-advisor-claude-4-7 (auto)
+
+- **Branche** : `feat/aicos-fleet-advisor-claude-4-7`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/aicos-fleet-advisor-claude-4-7 (+18 other commits)
+- **Sortie** : PR #182 | commits 5282d779 c9aee275 b5485ae2 d30cdf18 9f3fd278 6d6e14c4 2912c217 ca89eb35 e885d323 30591c4a 555243be 9078b238 ea5bda73 20f59a90 f754acaf 7c0d6295 547b983e 6b618531 aea7919d

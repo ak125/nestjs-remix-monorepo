@@ -1,0 +1,58 @@
+# scripts/aicos/fleet_config.yaml
+# Source of truth for tier model assignment.
+# apply_fleet_models.py reads this file and PATCHes each agent on AI-COS.
+#
+# Models per design spec § 6 (2026-04-25):
+#   Opus 4.7  : strategic + reviewer   (CEO, CTO, Advisor)
+#   Sonnet 4.6: production workers     (CMO, CPO, RAG-Ops, SEO-Content, R4-Batch-Lead)
+#   Haiku 4.5 : pattern checks         (SEO-QA)
+#
+# UUIDs below use 8-char prefixes from .claude/projects memory
+# `paperclip-agents-config.md`. Full UUIDs MUST be resolved before --apply
+# via the procedure in Task 5 Step 2 of the plan.
+
+version: "1.0"
+spec_ref: "docs/superpowers/specs/2026-04-25-fleet-advisor-claude-4-7-design.md"
+
+models:
+  opus_4_7: "claude-opus-4-7"
+  sonnet_4_6: "claude-sonnet-4-6"
+  haiku_4_5: "claude-haiku-4-5-20251001"
+
+agents:
+  - name: "CEO"
+    aicos_id: "993a4a02-XXXX-XXXX-XXXX-XXXXXXXXXXXX"  # confirm full UUID before apply
+    target_model: "opus_4_7"
+    budget_monthly_cents: 200000   # 2000 USD
+  - name: "CTO"
+    aicos_id: "7fa3c971-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    target_model: "opus_4_7"
+    budget_monthly_cents: 200000
+  - name: "Advisor"
+    aicos_id: null   # populated post-hire (Task 7)
+    target_model: "opus_4_7"
+    budget_monthly_cents: 500000   # 5000 USD (initial, tunable)
+  - name: "CMO"
+    aicos_id: "7fb56320-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    target_model: "sonnet_4_6"
+    budget_monthly_cents: 30000
+  - name: "CPO"
+    aicos_id: "41718022-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    target_model: "sonnet_4_6"
+    budget_monthly_cents: 30000
+  - name: "RAG-Ops"
+    aicos_id: "c6762b10-8c8f-4d15-9fec-04b273a6841b"
+    target_model: "sonnet_4_6"
+    budget_monthly_cents: 30000
+  - name: "SEO-Content"
+    aicos_id: "0f978206-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    target_model: "sonnet_4_6"
+    budget_monthly_cents: 30000
+  - name: "R4-Batch-Lead"
+    aicos_id: "e26ea228-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    target_model: "sonnet_4_6"
+    budget_monthly_cents: 30000
+  - name: "SEO-QA"
+    aicos_id: "8ff977f4-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    target_model: "haiku_4_5"
+    budget_monthly_cents: 5000
