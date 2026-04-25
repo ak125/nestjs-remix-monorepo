@@ -1,3 +1,11 @@
+---
+title: "SEO Vault Verify — Analyse classification des findings"
+status: current
+version: "1.0"
+date: 2026-04-24
+skill: seo-vault-verify
+---
+
 # SEO Vault Verify — Analyse des findings 2026-04-24
 
 **Skill** : `.claude/skills/seo-vault-verify/` v1.0

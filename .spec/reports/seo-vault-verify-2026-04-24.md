@@ -1,3 +1,11 @@
+---
+title: "SEO Vault Verify — Rapport d'audit one-shot (manifest v1)"
+status: archived
+version: "1.0"
+date: 2026-04-24
+skill: seo-vault-verify
+---
+
 # SEO Vault Verify — Rapport d'audit 2026-04-24T17:40:18.119725+00:00
 
 **Skill version :** 1.0
