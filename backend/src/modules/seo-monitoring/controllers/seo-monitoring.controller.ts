@@ -18,6 +18,11 @@ import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { GoogleCredentialsService } from '../services/google-credentials.service';
 import { GscDailyFetcherService } from '../services/gsc-daily-fetcher.service';
 import { Ga4DailyFetcherService } from '../services/ga4-daily-fetcher.service';
+import {
+  AuditFindingsService,
+  type AuditType,
+} from '../services/audit-findings.service';
+import { CanonicalAuditorService } from '../services/canonical-auditor.service';
 
 @Controller('api/admin/seo-monitoring')
 export class SeoMonitoringController {
@@ -28,6 +33,8 @@ export class SeoMonitoringController {
     private readonly credentials: GoogleCredentialsService,
     private readonly gscFetcher: GscDailyFetcherService,
     private readonly ga4Fetcher: Ga4DailyFetcherService,
+    private readonly auditFindings: AuditFindingsService,
+    private readonly canonicalAuditor: CanonicalAuditorService,
     configService: ConfigService,
   ) {
     const url = configService.get<string>('SUPABASE_URL');
@@ -201,5 +208,47 @@ export class SeoMonitoringController {
     const date =
       body.date ?? new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
     return this.ga4Fetcher.fetchAndPersist({ date, dryRun: body.dryRun });
+  }
+
+  // ─── Phase 2 — On-page audit findings ────────────────────────────────
+
+  /**
+   * GET /audit/findings?type=canonical_conflict&limit=
+   * Liste les findings open d'un audit_type.
+   */
+  @Get('audit/findings')
+  async listFindings(
+    @Query('type') type: AuditType = 'canonical_conflict',
+    @Query('limit') limit?: string,
+  ) {
+    const max = Math.min(parseInt(limit ?? '100', 10), 1000);
+    const rows = await this.auditFindings.listOpen(type, max);
+    return { audit_type: type, count: rows.length, rows };
+  }
+
+  /**
+   * GET /audit/findings/summary?type=
+   * Aggrégat par severity (KPI cards dashboard).
+   */
+  @Get('audit/findings/summary')
+  async findingsSummary(@Query('type') type: AuditType = 'canonical_conflict') {
+    const bySeverity = await this.auditFindings.countOpenBySeverity(type);
+    const total = Object.values(bySeverity).reduce((a, b) => a + b, 0);
+    return { audit_type: type, total, by_severity: bySeverity };
+  }
+
+  /**
+   * POST /audit/canonical/run
+   * Trigger manuel canonical audit (Phase 2a).
+   */
+  @Post('audit/canonical/run')
+  async runCanonicalAudit(
+    @Body() body: { urlPrefix?: string; limit?: number; dryRun?: boolean },
+  ) {
+    return this.canonicalAuditor.audit({
+      urlPrefix: body.urlPrefix,
+      limit: body.limit,
+      dryRun: body.dryRun,
+    });
   }
 }

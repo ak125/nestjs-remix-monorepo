@@ -17,6 +17,8 @@ import { GscDailyFetcherService } from './services/gsc-daily-fetcher.service';
 import { Ga4DailyFetcherService } from './services/ga4-daily-fetcher.service';
 import { CwvFetcherService } from './services/cwv-fetcher.service';
 import { GscLinksFetcherService } from './services/gsc-links-fetcher.service';
+import { AuditFindingsService } from './services/audit-findings.service';
+import { CanonicalAuditorService } from './services/canonical-auditor.service';
 import { SeoMonitoringController } from './controllers/seo-monitoring.controller';
 
 @Module({
@@ -28,6 +30,8 @@ import { SeoMonitoringController } from './controllers/seo-monitoring.controller
     Ga4DailyFetcherService,
     CwvFetcherService,
     GscLinksFetcherService,
+    AuditFindingsService,
+    CanonicalAuditorService,
   ],
   controllers: [SeoMonitoringController],
   exports: [
@@ -36,6 +40,8 @@ import { SeoMonitoringController } from './controllers/seo-monitoring.controller
     Ga4DailyFetcherService,
     CwvFetcherService,
     GscLinksFetcherService,
+    AuditFindingsService,
+    CanonicalAuditorService,
   ],
 })
 export class SeoMonitoringModule {}
