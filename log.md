@@ -82,6 +82,12 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : feat(seo-department): phase 2a - audit findings table + canonical auditor
 - **Sortie** : PR #174 | commits 9581f6c2
 
+## 2026-04-25 — fix/inc-2026-007-build-vehicle-page-payload-optim (auto)
+
+- **Branche** : `fix/inc-2026-007-build-vehicle-page-payload-optim`
+- **Décision** : fix(ci): smoke /constructeurs/* — replace inactive type + redirect URL with valid ones (+3 other commits)
+- **Sortie** : PR #167 | commits 84aa9655 9dc8f71b 26d3cea0 26812832
+
 ## 2026-04-27 — feat/r1-gamme-page-cache-phase1 (auto)
 
 - **Branche** : `feat/r1-gamme-page-cache-phase1`
