@@ -22,7 +22,6 @@ import {
   AuditFindingsService,
   type AuditType,
 } from '../services/audit-findings.service';
-import { CanonicalAuditorService } from '../services/canonical-auditor.service';
 
 @Controller('api/admin/seo-monitoring')
 export class SeoMonitoringController {
@@ -34,7 +33,6 @@ export class SeoMonitoringController {
     private readonly gscFetcher: GscDailyFetcherService,
     private readonly ga4Fetcher: Ga4DailyFetcherService,
     private readonly auditFindings: AuditFindingsService,
-    private readonly canonicalAuditor: CanonicalAuditorService,
     configService: ConfigService,
   ) {
     const url = configService.get<string>('SUPABASE_URL');
@@ -235,20 +233,5 @@ export class SeoMonitoringController {
     const bySeverity = await this.auditFindings.countOpenBySeverity(type);
     const total = Object.values(bySeverity).reduce((a, b) => a + b, 0);
     return { audit_type: type, total, by_severity: bySeverity };
-  }
-
-  /**
-   * POST /audit/canonical/run
-   * Trigger manuel canonical audit (Phase 2a).
-   */
-  @Post('audit/canonical/run')
-  async runCanonicalAudit(
-    @Body() body: { urlPrefix?: string; limit?: number; dryRun?: boolean },
-  ) {
-    return this.canonicalAuditor.audit({
-      urlPrefix: body.urlPrefix,
-      limit: body.limit,
-      dryRun: body.dryRun,
-    });
   }
 }
