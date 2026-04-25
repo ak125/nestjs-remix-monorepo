@@ -2,9 +2,10 @@
 module: errors
 sources:
 - backend/src/modules/errors
-last_scan: '2026-04-24'
+last_scan: '2026-04-25'
 primary_files:
 - backend/src/modules/errors/controllers/error.controller.ts
+- backend/src/modules/errors/controllers/internal-error-log.controller.ts
 - backend/src/modules/errors/entities/error-log.entity.ts
 - backend/src/modules/errors/errors.module.ts
 - backend/src/modules/errors/filters/global-error.filter.ts

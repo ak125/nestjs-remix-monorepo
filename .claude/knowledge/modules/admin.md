@@ -2,7 +2,7 @@
 module: admin
 sources:
 - backend/src/modules/admin
-last_scan: '2026-04-24'
+last_scan: '2026-04-25'
 primary_files:
 - backend/src/modules/admin/admin.module.ts
 - backend/src/modules/admin/controllers/admin-buying-guide-preview.controller.ts
@@ -22,6 +22,7 @@ depends_on:
 - RagProxyModule
 - SystemModule
 - AiContentModule
+- VehiclesModule
 ---
 
 # Module Admin

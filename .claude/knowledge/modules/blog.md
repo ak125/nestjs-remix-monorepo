@@ -2,7 +2,7 @@
 module: blog
 sources:
 - backend/src/modules/blog
-last_scan: '2026-04-24'
+last_scan: '2026-04-25'
 primary_files:
 - backend/src/modules/blog/blog.module.ts
 - backend/src/modules/blog/controllers/advice-hierarchy.controller.ts
