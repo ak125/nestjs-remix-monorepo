@@ -1,0 +1,20 @@
+{
+  "type": "pre_canon_review",
+  "payload": {
+    "scope": "code_pr",
+    "revision_round_count": 0,
+    "context": {"task_id": "regression-INC-2026-005", "issue_id": null, "session_id": null},
+    "body": {
+      "repo": "ak125/nestjs-remix-monorepo",
+      "branch": "feat/vehicle-page-direct",
+      "base_sha": "0000000",
+      "head_sha": "1111111",
+      "files_changed": ["frontend/app/routes/v.$brand.$model.$type.tsx"],
+      "diff_summary": "Vehicle page uses direct DB query on every request — no matview cache, no fallback. Triggers 5xx under GSC crawler load (see ADR-016).",
+      "diff_url": "fictional-replay",
+      "related_pr_number": 0
+    }
+  },
+  "expected_recommendation": "reject",
+  "expected_axes_floor": {"correctness": 50, "security": 80, "reversibility": 50}
+}

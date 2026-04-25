@@ -1,0 +1,19 @@
+{
+  "type": "pre_canon_review",
+  "payload": {
+    "scope": "canon_db_write",
+    "revision_round_count": 0,
+    "context": {"task_id": "regression-RAG-rollback", "issue_id": null, "session_id": null},
+    "body": {
+      "table": "__seo_diag_session",
+      "op": "insert",
+      "row_count": 350,
+      "sample_rows": [{"engine_keyword": "breezy-eagle", "source": "LLM"}],
+      "sql_or_rpc": "INSERT INTO __seo_diag_session SELECT * FROM tmp_llm_seed",
+      "affected_pg_ids": [],
+      "rollback_plan": ""
+    }
+  },
+  "expected_recommendation": "reject",
+  "expected_axes_floor": {"reversibility": 0, "evidence": 0}
+}
