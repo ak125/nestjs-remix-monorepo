@@ -228,13 +228,25 @@ def load_web_docs_for_modele(modele_id: int) -> list[WebDoc]:
 
 @dataclass
 class ParsedEngine:
-    """Engine description extracted from a web doc line."""
+    """Engine description extracted from a web doc line. Maximalist :
+    capture every factual field available so siblings of same engine code
+    can still be differentiated by power_rpm, couple, vmax, 0-100, boite,
+    masse, etc."""
     family: str          # 'dCi', 'TCe', 'F4R'…
     code: str | None     # 'K9K', 'F4R', 'D4F'…
     displacement_l: str  # '1.5'
     powers_ps: list[int]  # [70, 75, 85, 90, 100, 105]
     fuel: str            # 'Essence' | 'Diesel' | 'Hybride' | ''
     source_url: str
+    source_provider: str = ""
+    # Per-row extraction (fiches-auto Performances et moteurs table)
+    power_rpm: int | None = None       # 3500 (T/min)
+    couple_nm: int | None = None       # 200
+    couple_rpm: int | None = None      # 2000 (T/min)
+    vitesse_max_kmh: int | None = None # 183
+    zero_a_cent_s: float | None = None # 12.9
+    boite: str | None = None           # 'Boîte 5' / 'Boîte 6'
+    masse_kg: int | None = None        # 1170
 
 
 FAMILY_TOKENS = {
@@ -290,11 +302,31 @@ def _fuel_from_context(text_before: str) -> str:
     return ""
 
 
+POWER_RPM_RE = re.compile(r"(\d{2,3})\s*ch\s*[àa]\s*(\d{3,5})\s*T", re.IGNORECASE)
+COUPLE_RE = re.compile(r"(\d{2,4})\s*N[\.\s]?M\s*[àa]\s*(\d{3,5})\s*T", re.IGNORECASE)
+COUPLE_SIMPLE_RE = re.compile(r"(\d{2,4})\s*N[\.\s]?M", re.IGNORECASE)
+VMAX_RE = re.compile(r"(\d{2,3})\s*Km\s*/\s*h", re.IGNORECASE)
+ZERO_CENT_RE = re.compile(r"(\d{1,2}(?:[.,]\d+)?)\s*sec\.?", re.IGNORECASE)
+MASSE_RE = re.compile(r"\((\d{3,4})\s*kg\)", re.IGNORECASE)
+BOITE_RE = re.compile(r"Bo[ïi]te\s*\d+|M[ée]ca\.?\s*\d+|Auto\.?\s*\d+", re.IGNORECASE)
+
+
+def _line_containing(body: str, pos: int) -> str:
+    """Return the full line of `body` that contains character index `pos`."""
+    start = body.rfind("\n", 0, pos) + 1
+    end = body.find("\n", pos)
+    if end == -1:
+        end = len(body)
+    return body[start:end]
+
+
 def parse_engine_lines(doc: WebDoc) -> list[ParsedEngine]:
-    """Extract one ParsedEngine per `displacement … power+ch` substring,
-    even when several engines are packed on the same line (Wikipedia table)."""
+    """Extract one ParsedEngine per `displacement … power+ch` substring.
+    For fiches-auto-style table rows, ALSO extract per-row context :
+    couple, vitesse max, 0-100 km/h, boite, masse — so siblings of the
+    same engine code remain differentiated."""
     out: list[ParsedEngine] = []
-    seen_keys: set[tuple[str, tuple[int, ...]]] = set()
+    seen_keys: set[tuple[str, str, tuple[int, ...]]] = set()
     for m in PER_ENGINE_RE.finditer(doc.body):
         powers_raw = m.group("powers") or ""
         powers = [int(x.strip()) for x in re.split(r"[/-]", powers_raw) if x.strip().isdigit()]
@@ -303,41 +335,104 @@ def parse_engine_lines(doc: WebDoc) -> list[ParsedEngine]:
             continue
         displ = m.group("displ")
         extra = (m.group("extra") or "").strip()
-        # Engine code dans extra
+
+        # Engine code in `extra`
         code: str | None = None
         for cm in CODE_RE.finditer(extra):
             tok = cm.group(1)
             if tok.lower() not in FAMILY_TOKENS and len(tok) >= 3 and not tok.isdigit():
                 code = tok
                 break
+
         # Family marker
         family: str = ""
         for tok in re.findall(r"[A-Za-z]{2,8}", extra):
             if tok.lower() in FAMILY_TOKENS:
                 family = tok
                 break
-        # Fuel context — look at the text BEFORE the displacement match
+
+        # Fuel context — last "Essence"/"Diesel" marker before this match
         fuel = _fuel_from_context(doc.body[: m.start()])
-        # Family token can also discriminate
         if not fuel and family.lower() in {"dci", "hdi", "tdi", "cdi"}:
             fuel = "Diesel"
         if not fuel and family.lower() in {"tce", "tfsi", "thp", "vti", "tsi", "fsi", "mpi"}:
             fuel = "Essence"
 
-        key = (displ, fuel, tuple(sorted(set(powers))))
-        if key in seen_keys:
-            continue
-        seen_keys.add(key)
-        out.append(
-            ParsedEngine(
-                family=family,
-                code=code,
-                displacement_l=displ,
-                powers_ps=powers,
-                fuel=fuel,
-                source_url=doc.source_url,
+        # ── Per-row maximalist extraction (fiches-auto table) ─────────
+        line_full = _line_containing(doc.body, m.start())
+        # Power + RPM together "70 ch à 4000 T/min"
+        power_rpm: int | None = None
+        prm = POWER_RPM_RE.search(line_full)
+        if prm and powers and int(prm.group(1)) in powers:
+            power_rpm = int(prm.group(2))
+        # Couple + RPM together "200 NM à 2000 T/min"
+        couple_nm: int | None = None
+        couple_rpm: int | None = None
+        crm = COUPLE_RE.search(line_full)
+        if crm:
+            couple_nm = int(crm.group(1))
+            couple_rpm = int(crm.group(2))
+        else:
+            cm2 = COUPLE_SIMPLE_RE.search(line_full)
+            if cm2:
+                couple_nm = int(cm2.group(1))
+        # Vitesse max
+        vmax_m = VMAX_RE.search(line_full)
+        vmax = int(vmax_m.group(1)) if vmax_m else None
+        # 0-100 km/h
+        zero_m = ZERO_CENT_RE.search(line_full)
+        zero = float(zero_m.group(1).replace(",", ".")) if zero_m else None
+        # Masse
+        masse_m = MASSE_RE.search(line_full)
+        masse = int(masse_m.group(1)) if masse_m else None
+        # Boîte
+        boite_m = BOITE_RE.search(line_full)
+        boite = boite_m.group(0).strip() if boite_m else None
+
+        # Per fiches-auto, each row is 1 power. Wikipedia rows list multiple powers.
+        # If row has 1 power AND we extracted couple/vmax/0-100, treat as
+        # 1 ParsedEngine per power (so the data attaches correctly).
+        is_per_power_row = couple_nm is not None and vmax is not None and len(powers) == 1
+        if is_per_power_row:
+            key = (displ, fuel, tuple(powers))
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            out.append(
+                ParsedEngine(
+                    family=family,
+                    code=code,
+                    displacement_l=displ,
+                    powers_ps=powers,
+                    fuel=fuel,
+                    source_url=doc.source_url,
+                    source_provider=doc.source_provider,
+                    power_rpm=power_rpm,
+                    couple_nm=couple_nm,
+                    couple_rpm=couple_rpm,
+                    vitesse_max_kmh=vmax,
+                    zero_a_cent_s=zero,
+                    boite=boite,
+                    masse_kg=masse,
+                )
             )
-        )
+        else:
+            # Wikipedia-style : 1 line / multiple powers, no per-row detail
+            key = (displ, fuel, tuple(sorted(set(powers))))
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            out.append(
+                ParsedEngine(
+                    family=family,
+                    code=code,
+                    displacement_l=displ,
+                    powers_ps=powers,
+                    fuel=fuel,
+                    source_url=doc.source_url,
+                    source_provider=doc.source_provider,
+                )
+            )
     return out
 
 
@@ -353,13 +448,21 @@ class TypeEnrichment:
     year_to: int | None
     cylindree: str
     body: str
-    # Enriched fields
+    # Enriched fields (maximalist)
     code_moteur: str | None = None
     famille_moteur: str | None = None
     norme_euro: str | None = None
+    power_rpm: int | None = None
+    couple_nm: int | None = None
+    couple_rpm: int | None = None
+    vitesse_max_kmh: int | None = None
+    zero_a_cent_s: float | None = None
+    boite: str | None = None
+    masse_kg: int | None = None
     cnit: list[str] = field(default_factory=list)
     source_urls: list[str] = field(default_factory=list)
-    # Auto-verify
+    sources_confirming: set[str] = field(default_factory=set)
+    # Auto-verify (real cross-source)
     checks: dict = field(default_factory=dict)
     verdict: str = ""
 
@@ -428,24 +531,94 @@ def enrich_modele(modele: dict, dry_run: bool) -> tuple[list[TypeEnrichment], di
             cylindree=str(t["type_liter"] or ""),
             body=str(t["type_body"] or ""),
         )
-        match = match_engine(all_engines, t)
-        if match:
-            e.code_moteur = match.code
-            e.famille_moteur = match.family or None
-            e.source_urls.append(match.source_url)
+        # Aggregate ALL matching engines from ALL sources for this type_id.
+        target_power = int(t["power_ps"])
+        target_fuel = (t.get("type_fuel") or "").strip().lower()
+
+        def _fuel_ok(eng_fuel: str) -> bool:
+            if not target_fuel or not eng_fuel:
+                return True
+            ef = eng_fuel.lower()
+            return (
+                ef == target_fuel
+                or ("essence" in target_fuel and ef == "essence")
+                or ("diesel" in target_fuel and ef == "diesel")
+            )
+
+        # Exact power match (priority), then ±2 ch fallback
+        matches = [eng for eng in all_engines if target_power in eng.powers_ps and _fuel_ok(eng.fuel)]
+        if not matches:
+            matches = [
+                eng for eng in all_engines
+                if any(abs(p - target_power) <= 2 for p in eng.powers_ps) and _fuel_ok(eng.fuel)
+            ]
+
+        for match in matches:
+            if match.source_provider:
+                e.sources_confirming.add(match.source_provider)
+            if match.source_url and match.source_url not in e.source_urls:
+                e.source_urls.append(match.source_url)
+            if not e.code_moteur and match.code:
+                e.code_moteur = match.code
+            if not e.famille_moteur and match.family:
+                e.famille_moteur = match.family
+            # Per-power factual fields (only set from per-power rows)
+            if e.power_rpm is None and match.power_rpm:
+                e.power_rpm = match.power_rpm
+            if e.couple_nm is None and match.couple_nm:
+                e.couple_nm = match.couple_nm
+            if e.couple_rpm is None and match.couple_rpm:
+                e.couple_rpm = match.couple_rpm
+            if e.vitesse_max_kmh is None and match.vitesse_max_kmh:
+                e.vitesse_max_kmh = match.vitesse_max_kmh
+            if e.zero_a_cent_s is None and match.zero_a_cent_s:
+                e.zero_a_cent_s = match.zero_a_cent_s
+            if not e.boite and match.boite:
+                e.boite = match.boite
+            if e.masse_kg is None and match.masse_kg:
+                e.masse_kg = match.masse_kg
+
         e.norme_euro = derive_euro(e.year_from)
         e.cnit = sorted(set(cnit_map.get(e.type_id, [])))[:3]
 
-        # Auto-verify gate (5 checks against DB) — DB is the source of truth
-        # for power/fuel/year/cylindree, so these always match by construction.
-        # The web adds : code_moteur (no DB row to compare), euro_norm (derived),
-        # cnit (sourced from DB). The gate measures completeness of enrichment.
+        # ── Real cross-source validation (5 checks, NOT bidons) ─────────
+        def _displ_match() -> bool:
+            if not e.cylindree or not matches:
+                return False
+            try:
+                db_cc = int(e.cylindree)
+            except (ValueError, TypeError):
+                return False
+            if 50 <= db_cc <= 250:
+                db_cc *= 10  # 150 → 1500 cc
+            for mat in matches:
+                try:
+                    web_cc = int(float(mat.displacement_l) * 1000)
+                except (ValueError, TypeError):
+                    continue
+                if abs(db_cc - web_cc) <= 100:
+                    return True
+            return False
+
+        def _fuel_match() -> bool:
+            if not e.fuel or not matches:
+                return False
+            target = e.fuel.lower()
+            return any(
+                m.fuel and (
+                    m.fuel.lower() == target
+                    or ("essence" in target and m.fuel.lower() == "essence")
+                    or ("diesel" in target and m.fuel.lower() == "diesel")
+                )
+                for m in matches
+            )
+
         e.checks = {
-            "power_ps_known": e.power_ps > 0,
-            "fuel_known": bool(e.fuel),
-            "year_from_known": e.year_from > 0,
-            "code_moteur_found": bool(e.code_moteur),
-            "cnit_found": bool(e.cnit),
+            "C1_power_match_in_web": bool(matches),
+            "C2_displ_match_db_web": _displ_match(),
+            "C3_fuel_match_db_web": _fuel_match(),
+            "C4_engine_code_found": bool(e.code_moteur),
+            "C5_cross_source_2plus": len(e.sources_confirming) >= 2,
         }
         passed = sum(1 for v in e.checks.values() if v)
         if passed == 5:
@@ -511,10 +684,26 @@ def render_motorisations_yaml(enrichments: Iterable[TypeEnrichment]) -> str:
             item["periode"] = range_str
         if e.norme_euro:
             item["norme_euro"] = e.norme_euro
+        if e.power_rpm:
+            item["power_rpm"] = e.power_rpm
+        if e.couple_nm:
+            item["couple_nm"] = e.couple_nm
+        if e.couple_rpm:
+            item["couple_rpm"] = e.couple_rpm
+        if e.vitesse_max_kmh:
+            item["vitesse_max_kmh"] = e.vitesse_max_kmh
+        if e.zero_a_cent_s:
+            item["zero_a_cent_s"] = e.zero_a_cent_s
+        if e.boite:
+            item["boite"] = e.boite
+        if e.masse_kg:
+            item["masse_kg"] = e.masse_kg
         if e.cnit:
             item["cnit"] = e.cnit
         if e.source_urls:
-            item["source_url"] = e.source_urls[0]
+            item["source_urls"] = e.source_urls
+        if e.sources_confirming:
+            item["sources_confirming"] = sorted(e.sources_confirming)
         item["verification_status"] = e.verdict
         items.append(item)
     if not items:
