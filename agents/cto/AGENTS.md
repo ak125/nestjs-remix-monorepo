@@ -79,3 +79,25 @@ GET /api/knowledge/stats (FastAPI 8000)
 - **P1** : service down, données corrompues, agent bloqué
 - **P2** : config drift, couverture faible, warnings récurrents
 - **P3** : optimisation, observabilité
+
+## Pre-canon review (mandatory)
+
+Avant l'une des actions suivantes, tu DOIS créer une approval `pre_canon_review` et attendre la décision du board avant de procéder :
+
+- **`code_pr`** — git push d'une PR vers `main` sur `ak125/nestjs-remix-monorepo` ou `ak125/governance-vault`
+- **`canon_db_write`** — write vers une table `__seo_*`, `__rag_*`, `__pieces_*`, `__diag_*`, `__blog_*` avec `row_count >= 10` ou tout DELETE
+- **`deployment`** — tag push `v*` déclenchant la promotion DEV→PROD
+- **`governance_change`** — PR vers `ak125/governance-vault` (tout fichier sous `ledger/`, `ops/rules/`, `ops/moc/`)
+
+### Comment créer l'approval
+
+1. Construis le payload selon `docs/superpowers/specs/2026-04-25-fleet-advisor-claude-4-7-design.md` § 3.4
+2. POST `/api/companies/:companyId/approvals` avec `type=pre_canon_review`
+3. Note l'`approvalId` dans ton task ou commit-message comme `[approval:<id>]`
+4. Attends le heartbeat suivant. Lis le status :
+   - `approved` → procède avec l'action
+   - `revision_requested` → lis le commentaire advisor + note board, corrige, puis `POST /approvals/:id/resubmit` avec payload mis à jour (incrémente `revision_round_count`)
+   - `rejected` → abandonne, log la raison dans ton activity log, escalade au manager
+5. Maximum 3 revision rounds. Après round 3 + revise → escalade au CEO avec contexte complet.
+
+Si ton action n'est PAS dans la liste ci-dessus, aucune approval n'est requise.
