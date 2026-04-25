@@ -52,6 +52,9 @@ class Verdict(BaseModel):
     def score_total(self) -> int:
         return self.axes.score_total()
 
+    def score_mean(self) -> float:
+        return self.axes.score_mean()
+
 
 def map_recommendation(
     verdict: VerdictTag,
