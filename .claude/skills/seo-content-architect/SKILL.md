@@ -59,57 +59,18 @@ Tu n'es PAS :
 
 ### Phase 0 — Triage de contenu brut (SI contenu externe fourni)
 
-**Déclencheur** : L'utilisateur fournit un texte brut (copié-collé, PDF, sortie ChatGPT/Gemini, document tiers).
+**Déclencheur** : l'utilisateur fournit un texte brut (copié-collé, PDF, sortie ChatGPT/Gemini/Perplexity, document tiers).
 
-**Objectif** : Classifier chaque bloc du texte vers le rôle de page approprié AVANT la rédaction.
+**Objectif** : classifier chaque bloc vers le rôle de page approprié AVANT la rédaction. Phase 0 ne produit jamais de contenu rédigé — uniquement un rapport de triage + une recommandation d'ordre de production.
 
-**Étape 1 — Scanner et classifier**
+**Détail canonique** : voir [`references/triage-phase0.md`](references/triage-phase0.md) — déclencheurs, matrice de classification, règles d'arbitrage cas ambigus, template de rapport, edge cases observés.
 
-Pour chaque section/paragraphe du contenu brut, attribuer un rôle :
+**Règles invariantes (résumé) :**
 
-| Marqueurs détectés | Rôle cible | URL pattern |
-|---|---|---|
-| Définition, composition, rôle mécanique, "qu'est-ce que" | **R4 Reference** | `/reference-auto/{slug}` |
-| Symptômes, diagnostic, arbre de décision, codes DTC | **R5 Diagnostic** | (futur) |
-| Étapes de remplacement, démontage/remontage, outils, difficulté | **R3/conseils** | `/blog-pieces-auto/conseils/{alias}` |
-| Comment choisir, références OEM, checklist achat, marques | **R3/guide-achat** | `/blog-pieces-auto/guide-achat/{alias}` |
-| Sélection véhicule, variantes, filtrer par | **R1 Router** | `/pieces/{slug}-{pg_id}.html` |
-
-**Étape 2 — Produire le rapport de triage**
-
-```
-TRIAGE CONTENU BRUT — {nom_piece}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Source : {type — PDF/ChatGPT/copié-collé/autre}
-Sections analysées : {N}
-
-RÉPARTITION PAR RÔLE :
-• R3/conseils    : {X}% — {N} blocs (étapes, outils, erreurs)
-• R3/guide-achat : {X}% — {N} blocs (choix, références, checklist)
-• R4 Reference   : {X}% — {N} blocs (définition, composition)
-• R5 Diagnostic  : {X}% — {N} blocs (symptômes, causes)
-• R1 Router      : {X}% — {N} blocs (sélection véhicule)
-
-PROBLÈMES DÉTECTÉS :
-• Répétitions : {liste des blocs qui disent la même chose}
-• Incohérences : {contradictions entre blocs}
-• Vocabulaire mixte : {termes exclusifs de plusieurs rôles dans le même paragraphe}
-
-RECOMMANDATION :
-Rôle prioritaire : {rôle avec le % le plus élevé}
-→ Produire d'abord le contenu {rôle} avec /seo-content-architect {gamme}
-→ Les blocs {autres rôles} seront utilisés comme seed pour les autres pages
-```
-
-**Étape 3 — Demander confirmation**
-
-Avant de rédiger, présenter le rapport et demander :
-> "Le contenu brut couvre {N} rôles. Je recommande de commencer par {rôle prioritaire}. Les blocs des autres rôles seront conservés comme seed. On lance ?"
-
-**Règles Phase 0 :**
-- Ne JAMAIS produire un contenu qui mélange les rôles — toujours séparer
-- Les blocs classés dans un rôle différent du rôle cible sont ignorés (pas supprimés — conservés pour les autres pages)
-- Si > 50% du contenu ne correspond à aucun rôle → signaler "contenu non structuré" et proposer `/content-audit`
+- Ne JAMAIS produire un contenu qui mélange les rôles
+- Blocs hors rôle cible : conservés comme seed (pas supprimés)
+- Si > 50 % du contenu = INCLASSABLE → signaler "contenu non structuré" et proposer `/content-audit`
+- Confirmation explicite requise avant de passer Phase 1
 
 ### Phase 1 — Analyse (VISIBLE)
 
