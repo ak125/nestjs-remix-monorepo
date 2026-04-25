@@ -2,7 +2,7 @@
 module: gamme-rest
 sources:
 - backend/src/modules/gamme-rest
-last_scan: '2026-04-25'
+last_scan: '2026-04-26'
 primary_files:
 - backend/src/modules/gamme-rest/gamme-rest-optimized.controller.ts
 - backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts
