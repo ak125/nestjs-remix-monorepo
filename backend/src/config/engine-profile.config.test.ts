@@ -3,7 +3,6 @@ import {
   derivePowerTier,
   deriveEuroNorm,
   normalizeFuel,
-  MOTOR_ISSUES_SLOT_OFFSET,
 } from './engine-profile.config';
 
 describe('normalizeFuel', () => {
@@ -97,12 +96,5 @@ describe('deriveEuroNorm', () => {
     expect(deriveEuroNorm(null)).toBeNull();
     expect(deriveEuroNorm('')).toBeNull();
     expect(deriveEuroNorm(1980)).toBeNull();
-  });
-});
-
-describe('MOTOR_ISSUES_SLOT_OFFSET', () => {
-  it('is a stable number distinct from other slot offsets', () => {
-    // Distinct from R8_SLOT_OFFSETS in seo-variations.config (0/100/200/300/400)
-    expect(MOTOR_ISSUES_SLOT_OFFSET).toBeGreaterThanOrEqual(500);
   });
 });

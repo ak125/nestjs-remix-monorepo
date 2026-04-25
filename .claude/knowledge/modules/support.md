@@ -2,7 +2,7 @@
 module: support
 sources:
 - backend/src/modules/support
-last_scan: '2026-04-24'
+last_scan: '2026-04-25'
 primary_files:
 - backend/src/modules/support/controllers/ai-support.controller.ts
 - backend/src/modules/support/controllers/claim.controller.ts

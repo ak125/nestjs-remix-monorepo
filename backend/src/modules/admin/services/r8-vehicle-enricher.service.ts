@@ -36,10 +36,9 @@ import {
 import {
   deriveEngineProfile,
   deriveEuroNorm,
-  MOTOR_ISSUES_SLOT_OFFSET,
   type EngineProfileKey,
 } from '../../../config/engine-profile.config';
-import { EngineProfileRagLoader } from './engine-profile-rag-loader.service';
+import { GammeSymptomReader } from './gamme-symptom-reader.service';
 
 // ── Per-type wear parts gamme (A1) ──
 
@@ -126,7 +125,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly textUtils: EnricherTextUtils,
     private readonly vehicleRagGenerator: VehicleRagGeneratorService,
-    private readonly engineProfileRag: EngineProfileRagLoader,
+    private readonly gammeSymptomReader: GammeSymptomReader,
     @Optional() private readonly writeGate?: ContentWriteGateService,
     @Optional() private readonly featureFlags?: FeatureFlagsService,
   ) {
@@ -483,67 +482,87 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     }
   }
 
-  // ── Wear parts gammes per type (A1 — pieces_relation_type) ──
+  // ── Wear parts gammes per type (A1 — __cross_gamme_car_new) ──
 
   /**
-   * Top N wear-parts gammes for a given type_id, ranked by piece_count.
+   * Top N wear-parts gammes for a given type_id.
    *
-   * Motorisation-specific by construction (each type has its own compatibility
-   * set in pieces_relation_type where target_kind='vehicle_type'). Filters
-   * pg_level IN ('1','2') to keep only top-level + sub-category gammes (matches
-   * the 238-entry catalog used site-wide).
+   * Source : `__cross_gamme_car_new` (44–66 rows per type, pre-aggregated
+   * top-N candidates per (type_id, pg_id) with `cgc_level` = priority rank
+   * 1=top, 2=second tier, 3=broader). The table is purpose-built for this
+   * use case ; it bypasses the PostgREST 1000-row limit issue we'd hit
+   * paginating `pieces_relation_type` (368 M rows total).
    *
-   * Returns [] on error or when no rows are found — caller must fallback.
+   * Two siblings of the same model often have DIFFERENT level-1 picks
+   * (verified DS 3 audit 2026-04-25 : diesel 106ch level-1 = volant-moteur,
+   * kit-embrayage, plaquette ; essence 75ch level-1 = corps-papillon,
+   * capteur-pédale-accélérateur). That divergence is the driver of A2's
+   * motorisation-specificity.
+   *
+   * Filters pg_level IN ('1','2') to keep only canonical catalog gammes
+   * (matches the 238-entry site catalog).
+   *
+   * Returns [] on error or when no rows are found — caller falls back.
    */
   private async fetchWearGammesByType(
     typeId: number,
     limit = 8,
   ): Promise<WearGamme[]> {
-    // Two-step PostgREST query (no direct SQL via Supabase JS client).
-    // pieces_relation_type may contain multiple rows for (type, pg, piece);
-    // we count distinct piece_ids per pg.
     const { data, error } = await this.client
-      .from('pieces_relation_type')
-      .select('rtp_pg_id, rtp_piece_id')
-      .eq('rtp_type_id', typeId)
-      .eq('rtp_target_kind', 'vehicle_type');
+      .from('__cross_gamme_car_new')
+      .select('cgc_pg_id, cgc_level')
+      .eq('cgc_type_id', String(typeId))
+      .order('cgc_level', { ascending: true });
     if (error || !Array.isArray(data) || data.length === 0) return [];
 
-    const counts = new Map<number, Set<number>>();
+    // Dedupe by pg_id keeping the lowest cgc_level (best rank).
+    const bestLevel = new Map<number, number>();
     for (const row of data) {
-      const pgId = (row as { rtp_pg_id: number }).rtp_pg_id;
-      const pieceId = (row as { rtp_piece_id: number }).rtp_piece_id;
-      if (!counts.has(pgId)) counts.set(pgId, new Set());
-      counts.get(pgId)!.add(pieceId);
+      const pgId = parseInt(
+        String((row as { cgc_pg_id: string }).cgc_pg_id),
+        10,
+      );
+      const level = parseInt(
+        String((row as { cgc_level: string }).cgc_level),
+        10,
+      );
+      if (!Number.isFinite(pgId) || !Number.isFinite(level)) continue;
+      const existing = bestLevel.get(pgId);
+      if (existing === undefined || level < existing)
+        bestLevel.set(pgId, level);
     }
-    const topPgIds = [...counts.entries()]
-      .sort((a, b) => b[1].size - a[1].size)
+
+    const orderedPgIds = [...bestLevel.entries()]
+      .sort((a, b) => a[1] - b[1])
       .slice(0, limit * 3)
       .map(([pgId]) => pgId);
-    if (topPgIds.length === 0) return [];
+    if (orderedPgIds.length === 0) return [];
 
     const { data: gammesData } = await this.client
       .from('pieces_gamme')
       .select('pg_id, pg_alias, pg_name, pg_level, pg_display')
-      .in('pg_id', topPgIds)
+      .in('pg_id', orderedPgIds)
       .in('pg_level', ['1', '2'])
       .eq('pg_display', '1');
     if (!Array.isArray(gammesData)) return [];
 
-    return gammesData
-      .map((g) => {
-        const row = g as {
-          pg_id: number;
-          pg_alias: string;
-          pg_name: string;
-        };
-        return {
-          pg_alias: row.pg_alias,
-          pg_name: row.pg_name,
-          piece_count: counts.get(row.pg_id)?.size ?? 0,
-        } as WearGamme;
-      })
-      .sort((a, b) => b.piece_count - a.piece_count)
+    // Build rows enriched with their cgc_level (rank ; lower = better).
+    const enriched: WearGamme[] = (
+      gammesData as Array<{
+        pg_id: number;
+        pg_alias: string;
+        pg_name: string;
+      }>
+    ).map((g) => ({
+      pg_alias: g.pg_alias,
+      pg_name: g.pg_name,
+      piece_count: bestLevel.get(g.pg_id) ?? 999,
+    }));
+
+    // Sort ascending on the (smaller-is-better) cgc_level we stashed in
+    // piece_count, then truncate.
+    return enriched
+      .sort((a, b) => a.piece_count - b.piece_count)
       .slice(0, limit);
   }
 
@@ -633,16 +652,26 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       semanticPayload: [brand, model, type, fuel, power].filter(Boolean),
     });
 
-    // S_COMPAT_SCOPE (A4 enrichment : add motorisation-specific technical
-    // description from engine-profile dict, since auto_type_motor_code is empty
-    // for ~100% of the catalog — engine_codes from rpcData are rarely populated).
+    // S_COMPAT_SCOPE (A4) : compatibilité technique strictement type-specific,
+    // alimentée par les colonnes réelles de `auto_type` (cylindrée, body, year
+    // range) + engine_codes/cnit_codes quand DB les expose. Aucun contenu
+    // synthétique : tout vient du DB par construction par-type_id.
     const engineCodes = Array.isArray(v.engine_codes) ? v.engine_codes : [];
     const cnitCodes = Array.isArray(v.cnit_codes) ? v.cnit_codes : [];
     const engineProfile: EngineProfileKey = deriveEngineProfile(fuel, power);
-    const profileDescription =
-      this.engineProfileRag.getDescription(engineProfile);
     const compatLines: string[] = [];
-    compatLines.push(profileDescription);
+    const compatFacts: string[] = [];
+    if (v.liter) compatFacts.push(`cylindrée ${v.liter} cm³`);
+    if (fuel) compatFacts.push(`carburant ${String(fuel).toLowerCase()}`);
+    if (power) compatFacts.push(`${power} ch`);
+    if (v.body) compatFacts.push(`carrosserie ${String(v.body).toLowerCase()}`);
+    if (yearFrom) {
+      const range = yearTo ? `${yearFrom}–${yearTo}` : `${yearFrom}`;
+      compatFacts.push(`production ${range}`);
+    }
+    if (compatFacts.length > 0) {
+      compatLines.push(`Motorisation ${type} : ${compatFacts.join(' · ')}.`);
+    }
     if (engineCodes.length)
       compatLines.push(`Codes moteur : ${engineCodes.join(', ')}`);
     if (cnitCodes.length)
@@ -655,8 +684,8 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       type: 'compatibility_scope',
       title: `Compatibilité ${brand} ${model} ${type}`,
       renderedText: compatLines.join('\n\n'),
-      specificityWeight: engineCodes.length > 0 ? 0.9 : 0.75,
-      boilerplateRisk: engineCodes.length > 0 ? 0.1 : 0.2,
+      specificityWeight: engineCodes.length > 0 ? 0.9 : 0.8,
+      boilerplateRisk: engineCodes.length > 0 ? 0.1 : 0.15,
       semanticPayload: [...engineCodes, ...cnitCodes, engineProfile],
     });
 
@@ -803,34 +832,32 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       }
     }
 
-    // S_MOTOR_ISSUES (A2) : problèmes connus PAR MOTORISATION. Contenu lu
-    // au runtime depuis le RAG (rag/knowledge/seo/engine-profile-mapping.yaml
-    // + rag/knowledge/gammes/*.md frontmatter.diagnostic.symptoms). Remplace
-    // l'ancien S_ENTRETIEN_CONTEXT qui lisait problemes_connus au niveau
-    // modele (identique entre tous les siblings).
-    const profileIssues = this.engineProfileRag.getIssues(engineProfile);
-    const motorIssueOpeners = this.engineProfileRag.getSeoOpeners();
-    if (profileIssues.length > 0) {
-      const issuesOpener = renderTemplate(
-        selectVariation(
-          motorIssueOpeners,
-          typeIdInt,
-          0,
-          MOTOR_ISSUES_SLOT_OFFSET,
-        ),
-      );
-      const issuesLines = profileIssues.map((p) => `- ${p}`).join('\n');
+    // S_MOTOR_ISSUES (A2) : symptômes éditoriaux des gammes top-N de cette
+    // motorisation, composés à runtime depuis gammes/<slug>.md
+    // (frontmatter.diagnostic.symptoms[].label). Réutilise wearGammes de A1 :
+    // ZÉRO fetch supplémentaire, motorisation-spécificité par construction
+    // DB (pieces_relation_type filtré par type_id).
+    const motorIssueLines = this.gammeSymptomReader.compose(
+      wearGammes.map((g) => g.pg_alias),
+      2,
+    );
+    if (motorIssueLines.length > 0) {
+      const issuesText = motorIssueLines.map((l) => `- ${l}`).join('\n');
       blocks.push({
         id: 'S_MOTOR_ISSUES',
-        type: 'motor_issues_by_profile',
+        type: 'motor_issues_from_gamme_rag',
         title: `Points techniques sensibles — ${type} ${power ? power + ' ch' : ''}`,
-        renderedText: `${issuesOpener}\n\n${issuesLines}`,
-        specificityWeight: 0.9,
-        boilerplateRisk: 0.1,
-        semanticPayload: [engineProfile, ...profileIssues.slice(0, 3)],
+        renderedText: `Symptômes éditoriaux relevés sur les pièces les plus référencées pour cette motorisation :\n\n${issuesText}`,
+        specificityWeight: 0.95,
+        boilerplateRisk: 0.05,
+        semanticPayload: [
+          engineProfile,
+          ...wearGammes.slice(0, 3).map((g) => g.pg_alias),
+        ],
       });
     } else {
-      // Fallback legacy if profile dict miss (shouldn't happen after cascade).
+      // Fallback legacy : aucun gamme RAG lisible pour les top wear-parts.
+      // On retombe sur problemes_connus du vehicle .md (model-level).
       const problemes = vehicleRag.problemes_connus || [];
       if (problemes.length > 0) {
         blocks.push({

@@ -93,7 +93,7 @@ import { R3ImagePromptService } from './services/r3-image-prompt.service'; // �
 import { R1ContentFromRagService } from './services/r1-content-from-rag.service'; // 📝 R1 Content from RAG (0-LLM, template)
 import { R1ImagePromptService } from './services/r1-image-prompt.service'; // 🎨 R1 Image Brief generator (brief-driven, 0-LLM)
 import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service'; // 🚗 R8 Vehicle page enricher (RAG + diversity scoring)
-import { EngineProfileRagLoader } from './services/engine-profile-rag-loader.service'; // 🚗 ADR-022 Pilier A : RAG runtime loader for S_MOTOR_ISSUES content
+import { GammeSymptomReader } from './services/gamme-symptom-reader.service'; // 🚗 ADR-022 Pilier A : reads gammes/*.md frontmatter at runtime for S_MOTOR_ISSUES composition
 import { R7BrandEnricherService } from './services/r7-brand-enricher.service'; // 🏭 R7 Brand page enricher (RAG + diversity scoring)
 import { BrandEditorialService } from './services/brand-editorial.service'; // 🏭 R7 Brand editorial content (FAQ/issues/maintenance)
 import { VehicleRagGeneratorService } from './services/vehicle-rag-generator.service'; // 🚗 Vehicle RAG .md generator (0 LLM)
@@ -231,7 +231,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     R1ContentFromRagService, // 📝 R1 Content from RAG (0-LLM)
     R1ImagePromptService, // 🎨 R1 Image Brief generator
     R8VehicleEnricherService, // 🚗 R8 Vehicle page enricher (RAG + diversity scoring, 0-LLM)
-    EngineProfileRagLoader, // 🚗 ADR-022 Pilier A : runtime RAG reader for S_MOTOR_ISSUES
+    GammeSymptomReader, // 🚗 ADR-022 Pilier A : composes S_MOTOR_ISSUES lines from gamme RAG frontmatter
     R7BrandEnricherService, // 🏭 R7 Brand page enricher (RAG + diversity scoring, 0-LLM)
     BrandEditorialService, // 🏭 R7 Brand editorial content CRUD
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)

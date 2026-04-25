@@ -1,20 +1,16 @@
 /**
- * Engine profile derivation — pure functions only.
+ * Engine profile derivation — pure helper functions.
  *
- * ADR-022 Pilier A — R8 duplicate content fix. Because `auto_type_motor_code`
- * is empty for ~100 % of the catalog (DB audit 2026-04-24), we cannot key
- * content on engine_codes (K9K, F4R…). Instead we derive a synthetic profile
- * from (fuel × power_tier), giving 16 profiles covering ~90 % of the catalog.
+ * ADR-022 Pilier A — R8 duplicate content fix. Used by `R8VehicleEnricherService`
+ * to derive a synthetic engine profile key (`<fuel>_<power_tier>`) and an Euro
+ * norm hint from the type's first production year. These helpers carry NO
+ * business content : the S_MOTOR_ISSUES content is composed at runtime by
+ * `GammeSymptomReader` from the gamme RAG (`/opt/automecanik/rag/knowledge/
+ * gammes/<slug>.md` frontmatter) using slugs returned by the enricher's A1
+ * `fetchWearGammesByType()` query on `pieces_relation_type`.
  *
- * This module holds ONLY the type aliases and derivation helpers.
- * Business content (issues per profile, descriptions, opener phrases) lives
- * in the RAG at /opt/automecanik/rag/knowledge/seo/engine-profile-mapping.yaml
- * and is read at runtime by `EngineProfileRagLoader`.
- *
- * Related :
- *   - Mapping YAML : rag/knowledge/seo/engine-profile-mapping.yaml
- *   - Loader       : modules/admin/services/engine-profile-rag-loader.service.ts
- *   - ADR-015       : RAG single source of truth for business content.
+ * Why a synthetic profile then ? Only as a stable fallback key for sibling
+ * grouping in metrics / future plumbing — content is never keyed on it.
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -42,14 +38,14 @@ export type PowerTier =
 export type EngineProfileKey = `${Fuel}_${PowerTier}`;
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Derivation helpers (pure)
+// Pure derivations
 // ─────────────────────────────────────────────────────────────────────────────
 
 const STRIP_ACCENTS_RE = /[̀-ͯ]/g;
 
 /**
  * Normalize a raw fuel string from `auto_type.type_fuel` into a canonical Fuel.
- * Handles accents (essence-électrique / essence-electrique both → hybride_essence).
+ * Handles accents (Essence-Électrique / Essence-Electrique both → hybride_essence).
  */
 export function normalizeFuel(raw?: string | null): Fuel {
   if (!raw) return 'inconnu';
@@ -70,9 +66,9 @@ export function normalizeFuel(raw?: string | null): Fuel {
 }
 
 /**
- * Map horsepower (ps) to canonical power tier.
- * Boundaries validated against DB distribution (audit 2026-04-24) : top 11
- * (fuel×tier) combos cover 85 % of active catalog.
+ * Map horsepower (ps) to canonical power tier. Boundaries validated against
+ * DB distribution audit 2026-04-24 — top 11 (fuel × tier) combinations cover
+ * 85 % of the active catalog.
  */
 export function derivePowerTier(powerPs: number): PowerTier {
   if (!Number.isFinite(powerPs) || powerPs <= 0) return 'p3_moyenne';
@@ -101,9 +97,9 @@ export function deriveEngineProfile(
 }
 
 /**
- * Derive Euro norm from first production year. Best-effort SEO hint — the
- * actual category depends on the date d'immatriculation, not on `year_from`
- * of the type definition.
+ * Best-effort Euro norm hint from `auto_type.type_year_from`. Note : the
+ * legal Euro category depends on the date d'immatriculation, not on the
+ * type's year_from in the DB. Returned as an SEO hint only.
  */
 export function deriveEuroNorm(
   yearFrom?: string | number | null,
@@ -122,10 +118,3 @@ export function deriveEuroNorm(
   if (y < 2020) return 'Euro 6c';
   return 'Euro 6d';
 }
-
-/**
- * Offset for the MOTOR_ISSUES variation slot (distinct from R8_SLOT_OFFSETS
- * in seo-variations.config). Kept here so the loader stays decoupled from
- * that module.
- */
-export const MOTOR_ISSUES_SLOT_OFFSET = 500;
