@@ -252,22 +252,43 @@ def extract_text_generic(html: str) -> tuple[str, str]:
     if not main:
         return title, ""
 
+    # Table-aware : <tr> joined with | so engine specs stay on one line.
     lines: list[str] = []
-    for el in main.find_all(["h1", "h2", "h3", "p", "li", "td", "th"]):
-        text = el.get_text(separator=" ", strip=True)
-        text = re.sub(r"\s+", " ", text).strip()
+    visited_cells: set = set()
+    for el in main.find_all(["h1", "h2", "h3", "p", "li", "tr"]):
+        if el.name == "tr":
+            cells = [
+                re.sub(r"\s+", " ", c.get_text(" ", strip=True)).strip()
+                for c in el.find_all(["td", "th"])
+            ]
+            cells = [c for c in cells if c]
+            if not cells or all(len(c) < 2 for c in cells):
+                continue
+            line = "| " + " | ".join(cells) + " |"
+            if len(line) >= 8:
+                lines.append(line)
+                for c in el.find_all(["td", "th"]):
+                    visited_cells.add(id(c))
+            continue
+        text = re.sub(r"\s+", " ", el.get_text(separator=" ", strip=True)).strip()
         if len(text) < 12:
             continue
         if el.name in ("h1", "h2", "h3"):
             lines.append(f"\n## {text}\n")
         elif el.name == "li":
             lines.append(f"- {text}")
-        elif el.name in ("td", "th"):
-            lines.append(f"| {text} |")
         else:
             lines.append(text)
 
-    return title, "\n".join(lines[:300])
+    # Catch standalone td/th not inside <tr>
+    for cell in main.find_all(["td", "th"]):
+        if id(cell) in visited_cells:
+            continue
+        text = re.sub(r"\s+", " ", cell.get_text(" ", strip=True)).strip()
+        if len(text) >= 12:
+            lines.append(f"| {text} |")
+
+    return title, "\n".join(lines[:400])
 
 
 def extract_text_wikipedia(html: str) -> tuple[str, str]:
