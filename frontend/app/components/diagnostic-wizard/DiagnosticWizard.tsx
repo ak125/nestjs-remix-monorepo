@@ -19,6 +19,7 @@ import {
 import { useReducer, useCallback, useEffect, useState, useRef } from "react";
 import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
+import { trackDiagnosticCompleted } from "~/utils/analytics";
 import { useDiagnosticVehicleSelector } from "./hooks/use-diagnostic-vehicle-selector";
 import { DiagnosticResults } from "./results/DiagnosticResults";
 import { StepSymptom } from "./steps/StepSymptom";
@@ -268,6 +269,26 @@ export function DiagnosticWizard() {
 
       if (data.success) {
         dispatch({ type: "SET_RESULT", payload: data });
+
+        // GA4 funnel event (ADR-027 Phase B) — émis dès analyze success
+        // pour mesurer la conversion diag → achat via v_diag_funnel.
+        if (data.session_id && data.evidence_pack) {
+          const ep = data.evidence_pack;
+          const top = ep.candidate_hypotheses[0];
+          trackDiagnosticCompleted({
+            sessionId: data.session_id,
+            systemScope: state.systemScope,
+            intentType: "diagnostic_symptom",
+            primarySignal: state.symptomSlugs[0],
+            hypothesesCount: ep.candidate_hypotheses.length,
+            topHypothesisId: top?.hypothesis_id,
+            topHypothesisScore: top?.relative_score,
+            riskLevel: ep.risk_level,
+            readyForCatalog: ep.catalog_guard?.ready_for_catalog,
+            suggestedGammesCount:
+              ep.catalog_guard?.suggested_gammes?.length ?? 0,
+          });
+        }
       } else {
         dispatch({
           type: "SET_ERROR",

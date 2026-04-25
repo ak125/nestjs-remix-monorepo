@@ -189,6 +189,72 @@ export function trackSelectorResume(gamme: string, vehicle: string) {
 }
 
 // ============================================================================
+// FUNNEL DIAGNOSTIC R5/R3 (ADR-027)
+// ============================================================================
+
+interface DiagnosticCompletedPayload {
+  sessionId: string;
+  systemScope: string;
+  intentType: string;
+  primarySignal: string;
+  hypothesesCount: number;
+  topHypothesisId?: string;
+  topHypothesisScore?: number;
+  riskLevel?: string;
+  readyForCatalog?: boolean;
+  suggestedGammesCount?: number;
+}
+
+/**
+ * 🩺 Diagnostic R5 : analyse terminée avec succès, evidence pack reçu.
+ * Émis depuis DiagnosticWizard après /api/diagnostic-engine/analyze success.
+ * Permet de mesurer le funnel diag → achat (cf. ADR-027 Phase B,
+ * view SQL v_diag_funnel).
+ */
+export function trackDiagnosticCompleted(payload: DiagnosticCompletedPayload) {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", "diagnostic_completed", {
+      session_id: payload.sessionId,
+      system_scope: payload.systemScope,
+      intent_type: payload.intentType,
+      primary_signal: payload.primarySignal,
+      hypotheses_count: payload.hypothesesCount,
+      top_hypothesis_id: payload.topHypothesisId,
+      top_hypothesis_score: payload.topHypothesisScore,
+      risk_level: payload.riskLevel,
+      ready_for_catalog: payload.readyForCatalog,
+      suggested_gammes_count: payload.suggestedGammesCount,
+      page_location: window.location.href,
+    });
+  }
+  logger.log("📊 Analytics: diagnostic_completed", payload);
+}
+
+/**
+ * 🎯 Diagnostic R5 : clic sur une hypothèse vers la gamme recommandée
+ * (catalog_guard.suggested_gammes). Mesure la conversion intra-funnel.
+ */
+export function trackDiagnosticHypothesisClick(
+  sessionId: string,
+  hypothesisId: string,
+  gammeSlug: string,
+) {
+  if (typeof window !== "undefined" && window.gtag) {
+    window.gtag("event", "diagnostic_hypothesis_click", {
+      session_id: sessionId,
+      hypothesis_id: hypothesisId,
+      gamme_slug: gammeSlug,
+      page_location: window.location.href,
+    });
+  }
+  logger.log("📊 Analytics: diagnostic_hypothesis_click", {
+    sessionId,
+    hypothesisId,
+    gammeSlug,
+  });
+}
+
+// ============================================================================
 // E-COMMERCE GA4 - Tracking Produits
 // ============================================================================
 
