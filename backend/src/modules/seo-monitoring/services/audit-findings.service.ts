@@ -19,7 +19,8 @@ export type AuditType =
   | 'image_seo'
   | 'canonical_conflict'
   | 'meta_experiment'
-  | 'internal_link_suggestion';
+  | 'internal_link_suggestion'
+  | 'r_content_gap';
 
 export type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info';
 
