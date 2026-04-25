@@ -192,6 +192,7 @@ frontend/tests/e2e/reports/
 
 # Claude Code backups
 .claude/*.bak
+.claude/.session-log-state/
 
 # Cookies (curl debug artifacts)
 cookies.txt
