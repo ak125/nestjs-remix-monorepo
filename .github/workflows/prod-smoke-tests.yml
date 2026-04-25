@@ -41,7 +41,7 @@ jobs:
           fi
           echo "✅ Homepage: title='$TITLE'"
 
-      - name: 📦 Pages multi-rôles (8 URLs)
+      - name: 📦 Pages multi-rôles (11 URLs)
         id: pages-check
         run: |
           FAILED=0
@@ -54,6 +54,9 @@ jobs:
             "/blog-pieces-auto/conseils/amortisseur"
             "/blog-pieces-auto/guide-achat/roulement-de-roue"
             "/sitemap.xml"
+            "/constructeurs/renault-140/clio-iii-140004/1-5-dci-34746.html"
+            "/constructeurs/audi-22/r8-422-32058/4-2-fsi-quattro-v8-32058.html"
+            "/constructeurs/peugeot-105/308-105058/1-6-hdi-21090.html"
           )
           for URL in "${URLS[@]}"; do
             STATUS=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000$URL" 2>&1 | grep "HTTP/" | tail -1 | awk '{print $2}')
@@ -68,6 +71,32 @@ jobs:
             exit 1
           fi
           echo "✅ All 8 pages OK"
+
+      - name: 🚨 INC-2026-007 — __error_logs 5xx /constructeurs/* (1h window)
+        id: vehicle-5xx-check
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "⚠️ Supabase credentials missing — skipping vehicle 5xx alert check"
+            exit 0
+          fi
+          # Count 5xx on /constructeurs/* in last hour. Threshold: 5 events.
+          ONE_HOUR_AGO=$(date -u -d '1 hour ago' '+%Y-%m-%dT%H:%M:%S')
+          COUNT=$(curl -sk \
+            "${SUPABASE_URL}/rest/v1/__error_logs?select=err_id&err_status=gte.500&err_url=like.%2Fconstructeurs%2F%25&err_created_at=gte.${ONE_HOUR_AGO}" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Prefer: count=exact" \
+            -H "Range: 0-0" \
+            -D - 2>/dev/null | grep -i "content-range" | sed -n 's/.*\/\([0-9]*\).*/\1/p')
+          COUNT=${COUNT:-0}
+          if [ "$COUNT" -gt 5 ]; then
+            echo "❌ INC-2026-007 ALERT: $COUNT × 5xx on /constructeurs/* in last 1h (threshold 5)"
+            exit 1
+          fi
+          echo "✅ INC-2026-007 OK: $COUNT × 5xx on /constructeurs/* in last 1h (threshold 5)"
 
       - name: 🔍 SEO Meta tags
         id: seo-meta-check
@@ -640,7 +669,8 @@ jobs:
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Health | ${{ steps.health-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Homepage | ${{ steps.homepage-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Pages (8 URLs) | ${{ steps.pages-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Pages (11 URLs) | ${{ steps.pages-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| INC-2026-007 vehicle 5xx | ${{ steps.vehicle-5xx-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| SEO Meta | ${{ steps.seo-meta-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| API catalog | ${{ steps.api-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| imgproxy | ${{ steps.imgproxy-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
