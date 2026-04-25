@@ -56,7 +56,8 @@ jobs:
           echo "Checking .spec directory structure..."
           
           # Check required directories exist
-          for dir in features architecture api types workflows templates; do
+          # Note: 'apis' (plural) is the actual directory in this repo, not 'api'.
+          for dir in features architecture apis types workflows templates; do
             if [ ! -d ".spec/$dir" ]; then
               echo "❌ Missing required directory: .spec/$dir"
               exit 1
