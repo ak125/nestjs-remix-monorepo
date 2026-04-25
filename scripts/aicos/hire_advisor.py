@@ -11,7 +11,7 @@ import sys
 from scripts.aicos.aicos_client import AicosClient
 
 
-CEO_ID = "993a4a02-XXXX-XXXX-XXXX-XXXXXXXXXXXX"  # fill in full UUID before live submit
+CEO_ID = "993a4a02-b3b5-4414-9d5c-94b143ff1fe5"
 
 
 HIRE_PAYLOAD = {

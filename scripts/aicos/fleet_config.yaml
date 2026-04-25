@@ -21,11 +21,11 @@ models:
 
 agents:
   - name: "CEO"
-    aicos_id: "993a4a02-XXXX-XXXX-XXXX-XXXXXXXXXXXX"  # confirm full UUID before apply
+    aicos_id: "993a4a02-b3b5-4414-9d5c-94b143ff1fe5"
     target_model: "opus_4_7"
     budget_monthly_cents: 200000   # 2000 USD
   - name: "CTO"
-    aicos_id: "7fa3c971-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    aicos_id: "7fa3c971-3e9f-4b3b-a6d7-ebddc695a93a"
     target_model: "opus_4_7"
     budget_monthly_cents: 200000
   - name: "Advisor"
@@ -33,11 +33,11 @@ agents:
     target_model: "opus_4_7"
     budget_monthly_cents: 500000   # 5000 USD (initial, tunable)
   - name: "CMO"
-    aicos_id: "7fb56320-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    aicos_id: "7fb56320-00f4-4a08-892f-47145e20cabf"
     target_model: "sonnet_4_6"
     budget_monthly_cents: 30000
   - name: "CPO"
-    aicos_id: "41718022-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    aicos_id: "41718022-9ff5-4237-baa7-0fe3d9c0a5d5"
     target_model: "sonnet_4_6"
     budget_monthly_cents: 30000
   - name: "RAG-Ops"
@@ -45,14 +45,14 @@ agents:
     target_model: "sonnet_4_6"
     budget_monthly_cents: 30000
   - name: "SEO-Content"
-    aicos_id: "0f978206-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    aicos_id: "0f978206-535e-44d9-9f5a-67c254990d1c"
     target_model: "sonnet_4_6"
     budget_monthly_cents: 30000
   - name: "R4-Batch-Lead"
-    aicos_id: "e26ea228-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    aicos_id: "e26ea228-1c23-4859-bae5-5e54f9450b46"
     target_model: "sonnet_4_6"
     budget_monthly_cents: 30000
   - name: "SEO-QA"
-    aicos_id: "8ff977f4-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+    aicos_id: "8ff977f4-e53d-473f-94c7-74eab35d2860"
     target_model: "haiku_4_5"
     budget_monthly_cents: 5000
