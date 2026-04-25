@@ -41,7 +41,7 @@ jobs:
           fi
           echo "✅ Homepage: title='$TITLE'"
 
-      - name: 📦 Pages multi-rôles (11 URLs)
+      - name: 📦 Pages multi-rôles (12 URLs)
         id: pages-check
         run: |
           FAILED=0
@@ -55,8 +55,9 @@ jobs:
             "/blog-pieces-auto/guide-achat/roulement-de-roue"
             "/sitemap.xml"
             "/constructeurs/renault-140/clio-iii-140004/1-5-dci-34746.html"
-            "/constructeurs/audi-22/r8-422-32058/4-2-fsi-quattro-v8-32058.html"
-            "/constructeurs/peugeot-105/308-105058/1-6-hdi-21090.html"
+            "/constructeurs/chevrolet-44/aveo-ii-44011/1-2-1623.html"
+            "/constructeurs/fiat-58/bravo-ii-58011/1-4-16v-1630.html"
+            "/constructeurs/volkswagen-173/passat-iii-173086/1-6-1709.html"
           )
           for URL in "${URLS[@]}"; do
             STATUS=$(docker exec $CONTAINER wget --spider -qS "http://localhost:3000$URL" 2>&1 | grep "HTTP/" | tail -1 | awk '{print $2}')
@@ -669,7 +670,7 @@ jobs:
           echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Health | ${{ steps.health-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Homepage | ${{ steps.homepage-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Pages (11 URLs) | ${{ steps.pages-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Pages (12 URLs) | ${{ steps.pages-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| INC-2026-007 vehicle 5xx | ${{ steps.vehicle-5xx-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| SEO Meta | ${{ steps.seo-meta-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| API catalog | ${{ steps.api-check.outcome == 'success' && '✅' || '❌ FAIL' }} |" >> $GITHUB_STEP_SUMMARY
