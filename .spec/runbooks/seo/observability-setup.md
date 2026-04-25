@@ -10,32 +10,49 @@ applies_to: backend/src/modules/seo-monitoring/
 
 > **Préalable Phase 1.** À exécuter une seule fois avant que `gsc-daily-fetcher`, `ga4-daily-fetcher`, `cwv-fetcher`, `gsc-links-fetcher` puissent ingérer de la donnée.
 
-Cette procédure crée un **Service Account Google Cloud** avec lecture sur GSC + GA4, génère le JSON key, et le wire dans le monorepo via les ENV vars + GitHub Actions secrets.
+Cette procédure utilise le **projet Google Cloud existant d'AutoMecanik** (pas de création), génère un Service Account dédié avec lecture sur GSC + GA4, et le wire dans le monorepo via les ENV vars + GitHub Actions secrets.
+
+**Conventions ENV** : on réutilise les noms déjà câblés dans `crawl-budget-audit.service.ts` et `url-audit.service.ts` — pas de nouvelle convention :
+
+| Var | Service consumer |
+|-----|------------------|
+| `GSC_CLIENT_EMAIL`, `GSC_PRIVATE_KEY` | `crawl-budget-audit.service.ts:208-216` |
+| `GSC_SITE_URL` | `url-audit.service.ts` (fallback `SITE_ORIGIN` = `https://www.automecanik.com`) |
+| `GA4_CLIENT_EMAIL`, `GA4_PRIVATE_KEY`, `GA4_PROPERTY_ID` | `url-audit.service.ts:50-60` |
 
 ---
 
-## 1. Créer le Service Account Google Cloud
+## 1. Créer le Service Account dans le projet GCP existant
 
-1. Ouvrir [console.cloud.google.com](https://console.cloud.google.com/) avec le compte qui possède la propriété GSC `https://www.automecanik.fr/`.
-2. Sélectionner ou créer le projet (ex: `automecanik-seo`).
-3. Activer les APIs (toutes gratuites, quotas généreux) :
+> Le **compte Google Cloud d'AutoMecanik existe déjà**. Cette section ajoute uniquement un Service Account dédié au monitoring SEO. Pas de nouveau projet.
+
+1. Ouvrir [console.cloud.google.com](https://console.cloud.google.com/) avec le compte propriétaire d'AutoMecanik.
+2. Sélectionner le projet existant (celui qui héberge déjà les autres credentials Google Ads / Gmail).
+3. Activer les APIs si pas déjà actives (toutes gratuites, quotas généreux) :
    - **Google Search Console API** — `searchconsole.googleapis.com`
    - **Google Analytics Data API** — `analyticsdata.googleapis.com`
    - **PageSpeed Insights API** — `pagespeedonline.googleapis.com`
-   - **Chrome UX Report API** — `chromeuxreport.googleapis.com` *(optional, used only if PageSpeed quota is hit)*
-4. Aller dans **IAM & Admin → Service Accounts → Create Service Account** :
+   - **Chrome UX Report API** — `chromeuxreport.googleapis.com` *(optional, fallback PageSpeed)*
+
+   Vérification rapide : `IAM & Admin → APIs & Services → Enabled APIs`.
+
+4. **IAM & Admin → Service Accounts → Create Service Account** :
    - Nom : `seo-monitoring-readonly`
-   - Role : aucun rôle GCP global (l'autorisation est faite côté property GSC/GA4, pas côté GCP).
+   - Description : `Lecture GSC + GA4 + PageSpeed pour SEO department backend`
+   - Role : aucun rôle GCP global (les autorisations se font côté property GSC/GA4 directement, pas côté projet GCP).
+
 5. Sur le SA fraîchement créé, onglet **Keys → Add Key → Create new key → JSON**. Télécharger le fichier `seo-monitoring-readonly-XXXX.json`.
 
    ⚠️ **Ce JSON est un secret de production.** Le stocker chiffré (Vaultwarden, Bitwarden, 1Password). Ne **jamais** le committer.
 
+   Le JSON contient `client_email` et `private_key` — ce sont les valeurs des ENV vars `GSC_CLIENT_EMAIL` + `GSC_PRIVATE_KEY` (et idem GA4_*). Le **même SA** peut servir les deux : on copie la même paire dans GSC_* et GA4_* (la séparation reste pour permettre des SA distincts si besoin futur).
+
 ## 2. Autoriser le SA en lecture sur GSC
 
 1. Ouvrir [search.google.com/search-console](https://search.google.com/search-console).
-2. Sélectionner la propriété `https://www.automecanik.fr/`.
+2. Sélectionner la propriété **`https://www.automecanik.com/`** (domaine production).
 3. **Settings → Users and permissions → Add user**.
-4. Email = `<service_account_email>` (ex: `seo-monitoring-readonly@automecanik-seo.iam.gserviceaccount.com`, lisible dans le JSON `client_email`).
+4. Email = `<service_account_email>` (ex: `seo-monitoring-readonly@<project>.iam.gserviceaccount.com`, lisible dans le JSON `client_email`).
 5. Permission : **Restricted** (lecture seule, pas d'édition de paramètres).
 
 **Vérification** : 24-48h après l'ajout, les données GSC deviennent disponibles côté API. Tester avec :
@@ -51,7 +68,7 @@ sc.sites.list().then(r => console.log(r.data));
 "
 ```
 
-Doit retourner la propriété `https://www.automecanik.fr/`. Si erreur 403, l'autorisation GSC n'a pas encore propagé.
+Doit retourner la propriété `https://www.automecanik.com/`. Si erreur 403, l'autorisation GSC n'a pas encore propagé.
 
 ## 3. Autoriser le SA en lecture sur GA4
 
@@ -66,21 +83,26 @@ Doit retourner la propriété `https://www.automecanik.fr/`. Si erreur 403, l'au
 ### En DEV local (`.env.local`, jamais commit)
 
 ```dotenv
-GOOGLE_SA_CLIENT_EMAIL=seo-monitoring-readonly@automecanik-seo.iam.gserviceaccount.com
-GOOGLE_SA_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...REDACTED...\n-----END PRIVATE KEY-----\n"
-GSC_PROPERTY_URL=https://www.automecanik.fr/
+# Même Service Account pour GSC + GA4 (peut être séparé si besoin)
+GSC_CLIENT_EMAIL=seo-monitoring-readonly@<project>.iam.gserviceaccount.com
+GSC_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...REDACTED...\n-----END PRIVATE KEY-----\n"
+GSC_SITE_URL=https://www.automecanik.com
+
+GA4_CLIENT_EMAIL=seo-monitoring-readonly@<project>.iam.gserviceaccount.com
+GA4_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...REDACTED...\n-----END PRIVATE KEY-----\n"
 GA4_PROPERTY_ID=123456789
+
 SEO_MONITORING_ENABLED=true
 SEO_ALERTS_EMAIL_TO=automecanik.seo@gmail.com
 ```
 
-> **Note** : la `GOOGLE_SA_PRIVATE_KEY` doit être encodée avec les `\n` littéraux (la valeur du JSON `private_key`, recopiée tel quel). NestJS `ConfigService` les ré-interprétera au runtime.
+> **Note** : les `*_PRIVATE_KEY` doivent être encodées avec les `\n` littéraux (la valeur du JSON `private_key`, recopiée tel quel). Le code dans `crawl-budget-audit.service.ts:213` fait déjà `.replace(/\\n/g, '\n')` au runtime.
 
 ### En CI / DEV pré-prod (GitHub Actions secrets)
 
 Aller sur le repo GitHub → **Settings → Secrets and variables → Actions → New repository secret** pour chaque clé ci-dessus.
 
-Pour `GOOGLE_SA_PRIVATE_KEY` en GitHub Actions, **conserver les `\n` littéraux** dans la valeur du secret (pas de retours à la ligne réels). Le code Node.js fait `.replace(/\\n/g, '\n')` au runtime.
+Pour les `*_PRIVATE_KEY` en GitHub Actions, **conserver les `\n` littéraux** dans la valeur du secret (pas de retours à la ligne réels).
 
 ### En PROD
 
