@@ -1,9 +1,10 @@
 ---
 name: seo-vault-verify
 description: "Audit reproductible d'un vault Obsidian SEO (ZIP ou dossier). Vérifie 8 fichiers régénérés + non-régression SHA256 sur fichiers inchangés + cross-refs ADR + cohérence stratégique via subagent unique. Invoquer dès qu'un vault SEO, un zip de docs stratégie, ou un bundle Obsidian est fourni pour validation — notamment quand l'utilisateur parle de 'vérifier vault', 'audit vault SEO', 'valider livrable Obsidian', 'team verification vault', ou livre un artefact ADR-002 maillage. NE PAS utiliser pour audit contenu site web (content-audit), audit gammes production (seo-gamme-audit), ou operations governance-vault (governance-vault-ops)."
-argument-hint: "<path-zip-or-dir> [--manifest <path.yaml>]"
 allowed-tools: Read, Bash, Glob, Grep, Agent
-version: "1.0"
+metadata:
+  argument-hint: "<path-zip-or-dir> [--manifest <path.yaml>]"
+  version: "1.0"
 ---
 
 # SEO Vault Verify — v1.0

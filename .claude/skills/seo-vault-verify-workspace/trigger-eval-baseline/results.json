@@ -1,0 +1,139 @@
+{
+  "skill_name": "seo-vault-verify",
+  "description": "Audit reproductible dun vault Obsidian SEO (ZIP ou dossier). Verifie 8 fichiers regeneres + non-regression SHA256 sur fichiers inchanges + cross-refs ADR + coherence strategique via subagent unique. Invoquer des quun vault SEO, un zip de docs strategie, ou un bundle Obsidian est fourni pour validation.",
+  "results": [
+    {
+      "query": "audit vault SEO obsidian \u2014 verifie le livrable du consultant avant que je l'utilise. zip dans /tmp/automecanik-seo-vault.zip. je veux savoir si les 8 fichiers regener\u00e9s sont conformes et si les sections obligatoires sont la",
+      "should_trigger": true,
+      "trigger_rate": 0.3333333333333333,
+      "triggers": 1,
+      "runs": 3,
+      "pass": false
+    },
+    {
+      "query": "j'ai recu un zip d'un vault obsidian de strategie SEO de notre consultant externe (automecanik-seo-vault.zip dans Downloads), il dit avoir mis a jour 8 fichiers autour d'ADR-002 maillage interne et que 17 fichiers referencent maintenant cet ADR. peux-tu verifier que c'est conforme avant que je l'integre dans notre coffre Obsidian de prod ?",
+      "should_trigger": true,
+      "trigger_rate": 0.3333333333333333,
+      "triggers": 1,
+      "runs": 3,
+      "pass": false
+    },
+    {
+      "query": "le consultant nous a livre un coffre Obsidian. il y a 27 fichiers .md, certains avec frontmatter YAML, d'autres avec des blocs dataview. faut faire un check non-regression genre 'ce qui devait pas changer n'a pas change, ce qui devait etre ajoute est present'. on a un manifeste avec les patterns attendus. comment je m'y prends ?",
+      "should_trigger": true,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 3,
+      "pass": false
+    },
+    {
+      "query": "on est une team SEO de 4 personnes et on recoit regulierement des batches de templates Obsidian d'un freelance. besoin d'un check reproductible audit-grade : SHA256 baseline + verif de patterns specifiques + jugement strategique. ca existe ?",
+      "should_trigger": true,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 3,
+      "pass": false
+    },
+    {
+      "query": "verifier vault \u2014 j'ai un coffre obsidian zipp\u00e9 qui doit contenir un ADR-002 sur le maillage interne. besoin de confirmer que les 9 fichiers annonces comme regeneres l'ont bien ete et que les autres n'ont pas bouge. doit etre rejouable a chaque livraison",
+      "should_trigger": true,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 3,
+      "pass": false
+    },
+    {
+      "query": "lance le skill d'audit vault SEO sur le bundle qui vient d'arriver \u2014 path : .claude/prompts/R1_ROUTER/automecanik-seo-vault.zip. je veux le rapport dans .spec/reports/ avec verdict honnete (pas un 'tout va bien' bidon)",
+      "should_trigger": true,
+      "trigger_rate": 0.3333333333333333,
+      "triggers": 1,
+      "runs": 3,
+      "pass": false
+    },
+    {
+      "query": "team verification vault sur livrable strategie pillar 5 maillage. evidence-first svp, et pas d'auto-fix sur le contenu \u2014 juste un verdict + recommandations. zip a /tmp/livraison-2026-04-25.zip",
+      "should_trigger": true,
+      "trigger_rate": 0.6666666666666666,
+      "triggers": 2,
+      "runs": 3,
+      "pass": true
+    },
+    {
+      "query": "j'ai 27 .md d'un consultant SEO. il pretend que 17 referencent un ADR specifique. j'aimerais une cross-ref count + check frontmatter YAML + check syntaxe dataview avant d'accepter la livraison. tu peux orchestrer ca de facon reproductible ?",
+      "should_trigger": true,
+      "trigger_rate": 0.6666666666666666,
+      "triggers": 2,
+      "runs": 3,
+      "pass": true
+    },
+    {
+      "query": "j'ai un audit a faire sur la gamme 'plaquettes-de-frein' (pg_alias=plaquettes-de-frein) \u2014 couverture R1 a R8, scoring qualit\u00e9 contenu, vocabulaire interdit, maillage interne, score composite. metriques DB Supabase",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 3,
+      "pass": true
+    },
+    {
+      "query": "audit la page /pieces/plaquettes-de-frein-renault-clio.html sur notre site, je veux les scores R2D2 (Reponse Decision Details Deploiement) Intent-First Evidence-First, /6 ideal",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 3,
+      "pass": true
+    },
+    {
+      "query": "il faut sync notre canon (.spec/00-canon/) avec le governance-vault sur DEV VPS. push signed commit + check-orphans + verifier qu'aucun document type:canon n'est dans le monorepo",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 3,
+      "pass": true
+    },
+    {
+      "query": "redige le contenu SEO de la gamme disque-de-frein pour notre site automobile e-commerce. content_blocks v4, GEO/E-E-A-T, JSON-LD, et FAQ schema. on a le RAG corpus a /opt/automecanik/rag/knowledge/",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 3,
+      "pass": true
+    },
+    {
+      "query": "j'ai oublie le mot de passe de mon password vault (Bitwarden). comment je recupere mon master key ? c'est stocke localement quelque part ?",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 3,
+      "pass": true
+    },
+    {
+      "query": "comment je configure mon coffre Obsidian sur Windows pour synchroniser avec git ? le freelance et moi on partage un repo, faut que dataview, templater et excalidraw marchent",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 3,
+      "pass": true
+    },
+    {
+      "query": "donne-moi un plan de strategie SEO maillage interne pour un site e-commerce automobile \u2014 comment prioriser le feeding des money pages et limiter la sur-optimisation anchor text. on a 230 gammes et 50k urls",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 3,
+      "pass": true
+    },
+    {
+      "query": "verify que mon ADR-015 dans /opt/automecanik/governance-vault/ledger/decisions/adr/ est bien signed avec SSH signing et que les wikilinks resolvent. CI vault read-only respecte",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 3,
+      "pass": true
+    }
+  ],
+  "summary": {
+    "total": 16,
+    "passed": 10,
+    "failed": 6
+  }
+}

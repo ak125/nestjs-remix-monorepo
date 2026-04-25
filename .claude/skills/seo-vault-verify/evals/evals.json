@@ -1,0 +1,40 @@
+{
+  "skill_name": "seo-vault-verify",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Audite ce vault Obsidian SEO : /tmp/automecanik-seo-vault.zip. Utilise le manifest expected-changes-v2.yaml et produit un rapport markdown + JSON dans /tmp/eval-output/. Je veux le verdict final et les findings.",
+      "expected_output": "Rapport produit avec verdict (REVIEW_REQUIRED attendu sans subagent), JSON valide avec content_checks, crossref, obsidian, unchanged_checks. Aucune modification du vault.",
+      "files": [],
+      "assertions": [
+        {"text": "Rapport markdown produit (fichier .md existe)", "type": "file_exists"},
+        {"text": "Rapport JSON produit avec champs valides", "type": "file_valid_json"},
+        {"text": "Verdict ∈ {SCOPE_SCANNED, PARTIAL_COVERAGE, REVIEW_REQUIRED, INSUFFICIENT_EVIDENCE}", "type": "field_enum"},
+        {"text": "Pas de modification du ZIP source", "type": "no_side_effect"},
+        {"text": "Coverage manifest présent dans rapport", "type": "section_present"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Lance le selftest du skill seo-vault-verify avec le ZIP /tmp/automecanik-seo-vault.zip. Je veux savoir combien de cas passent sur les 6.",
+      "expected_output": "Selftest exécuté, 6/6 cas (ou ≥5/6) passent, output indique les verdicts par cas",
+      "files": [],
+      "assertions": [
+        {"text": "Selftest invoqué via python scripts/selftest.py", "type": "command_present"},
+        {"text": "Au moins 5/6 cas passent (✅)", "type": "min_pass_count"},
+        {"text": "Cas 6 confirme détection SHA mismatch (baseline gelée)", "type": "specific_case_pass"}
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "J'ai un vault Obsidian sur disque à /tmp/seo-vault-inspect/automecanik-seo-vault/ (déjà extrait, pas un ZIP). Peux-tu vérifier qu'il respecte le manifest v2 ? Verdict + résumé des findings.",
+      "expected_output": "Skill accepte le path dossier (pas seulement ZIP), produit verdict identique au cas ZIP",
+      "files": [],
+      "assertions": [
+        {"text": "Path dossier accepté (pas d'erreur 'ZIP requis')", "type": "no_error_on_dir"},
+        {"text": "Verdict cohérent avec audit ZIP équivalent", "type": "verdict_match"},
+        {"text": "content_checks count identique au cas ZIP", "type": "count_match"}
+      ]
+    }
+  ]
+}
