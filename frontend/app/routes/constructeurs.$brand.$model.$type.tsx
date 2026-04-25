@@ -53,7 +53,6 @@ import {
   R8EnrichedSection,
   SeoIntroSection,
   transformRpcToLoaderData,
-  TrustSection,
   type LoaderData,
 } from "../components/vehicle/r8";
 import { hierarchyApi } from "../services/api/hierarchy.api";
@@ -1126,8 +1125,6 @@ export default function VehicleDetailPage() {
             />
           </div>
         )}
-
-        <TrustSection />
 
         {/* 🔗 CTA retour hub marque R7 (maillage R8→R7) */}
         <div className="mt-8 text-center">
