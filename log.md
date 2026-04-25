@@ -81,3 +81,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-department-phase-2a`
 - **Décision** : feat(seo-department): phase 2a - audit findings table + canonical auditor
 - **Sortie** : PR #174 | commits 9581f6c2
+
+## 2026-04-25 — refactor/seo-content-architect-extract-triage-phase0 (auto)
+
+- **Branche** : `refactor/seo-content-architect-extract-triage-phase0`
+- **Décision** : refactor(skill): extract Phase 0 triage into references/triage-phase0.md
+- **Sortie** : PR #183 | commits 618d4872
