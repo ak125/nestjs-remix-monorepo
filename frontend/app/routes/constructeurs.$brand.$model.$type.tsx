@@ -19,7 +19,6 @@ import {
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import {
-  AlertTriangle,
   Award,
   Car,
   CheckCircle,
@@ -29,14 +28,12 @@ import {
   FileText,
   HeadphonesIcon,
   Info,
-  ListChecks,
   Package,
   RotateCcw,
   Search,
   Shield,
   Star,
   Truck,
-  Wrench,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import brandColorsStyles from "~/styles/brand-colors.css?url";
@@ -47,11 +44,16 @@ import { ErrorGeneric } from "../components/errors";
 import { ModelContentV1Display } from "../components/model";
 import { HtmlContent } from "../components/seo/HtmlContent";
 import {
+  AntiErrorsSection,
   BreadcrumbSection,
   FAMILY_MICRO_DESCRIPTIONS,
   generateVehicleSchema,
   HeroSection,
+  HowtoSection,
+  R8EnrichedSection,
+  SeoIntroSection,
   transformRpcToLoaderData,
+  TrustSection,
   type LoaderData,
 } from "../components/vehicle/r8";
 import { hierarchyApi } from "../services/api/hierarchy.api";
@@ -545,40 +547,7 @@ export default function VehicleDetailPage() {
           </div>
         )}
 
-        {/* Description SEO — R8 enriched or fallback */}
-        <div
-          className="bg-white rounded-lg shadow-sm p-6 mb-8"
-          data-section="S_SEO_INTRO"
-        >
-          {r8Content && r8Content.blocks.length > 0 ? (
-            <div className="space-y-6">
-              {r8Content.blocks
-                .filter(
-                  (b) =>
-                    b.type === "vehicle_identity" ||
-                    b.type === "selection_help",
-                )
-                .map((block) => (
-                  <div key={block.id}>
-                    <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                      {block.title}
-                    </h2>
-                    <div className="prose prose-sm max-w-none text-gray-700">
-                      <HtmlContent
-                        html={block.renderedText}
-                        trackLinks={true}
-                      />
-                    </div>
-                  </div>
-                ))}
-            </div>
-          ) : (
-            <div className="prose max-w-none">
-              <HtmlContent html={seo.content} trackLinks={true} />
-              <HtmlContent html={seo.content2} trackLinks={true} />
-            </div>
-          )}
-        </div>
+        <SeoIntroSection r8Content={r8Content} seo={seo} />
 
         {/* 📦 CATALOGUE PRINCIPAL - Design inspiré de la page index */}
         {catalogFamilies.length > 0 &&
@@ -1069,150 +1038,11 @@ export default function VehicleDetailPage() {
         </div>
 
         {/* R8 enriched sections — variant_difference + maintenance_context */}
-        {r8Content?.blocks.some(
-          (b) =>
-            b.type === "variant_difference" || b.type === "maintenance_context",
-        ) && (
-          <div className="mb-12 space-y-6" data-section="S_R8_ENRICHED">
-            {r8Content.blocks
-              .filter(
-                (b) =>
-                  b.type === "variant_difference" ||
-                  b.type === "maintenance_context",
-              )
-              .map((block) => (
-                <div
-                  key={block.id}
-                  className={`rounded-2xl border p-6 ${
-                    block.type === "variant_difference"
-                      ? "bg-indigo-50 border-indigo-200"
-                      : "bg-blue-50 border-blue-200"
-                  }`}
-                >
-                  <div className="flex items-start gap-3 mb-3">
-                    {block.type === "variant_difference" ? (
-                      <Car
-                        size={24}
-                        className="text-indigo-600 flex-shrink-0 mt-0.5"
-                      />
-                    ) : (
-                      <Wrench
-                        size={24}
-                        className="text-blue-600 flex-shrink-0 mt-0.5"
-                      />
-                    )}
-                    <h2 className="text-xl font-bold text-gray-900">
-                      {block.title}
-                    </h2>
-                  </div>
-                  <div className="prose prose-sm max-w-none text-gray-700 ml-9">
-                    <HtmlContent html={block.renderedText} trackLinks={true} />
-                  </div>
-                </div>
-              ))}
-          </div>
-        )}
+        <R8EnrichedSection r8Content={r8Content} />
 
-        {/* Erreurs fréquentes à éviter */}
-        <div className="mb-12" data-section="S_ANTI_ERRORS">
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <AlertTriangle
-                size={24}
-                className="text-amber-600 flex-shrink-0 mt-0.5"
-              />
-              <h2 className="text-xl font-bold text-gray-900">
-                Erreurs fréquentes à éviter
-              </h2>
-            </div>
-            <ul className="space-y-3 ml-9">
-              <li className="flex items-start gap-2 text-gray-700">
-                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                <span>
-                  Vérifier l'année exacte ({vehicle.type_year_from}–
-                  {vehicle.type_year_to || "aujourd'hui"}) : les pièces peuvent
-                  différer d'une année à l'autre
-                </span>
-              </li>
-              <li className="flex items-start gap-2 text-gray-700">
-                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                <span>
-                  Puissance proche ≠ moteur identique : confirmez avec le CNIT
-                  ou le code moteur
-                  {vehicle.motor_codes_formatted
-                    ? ` (${vehicle.motor_codes_formatted})`
-                    : ""}
-                </span>
-              </li>
-              <li className="flex items-start gap-2 text-gray-700">
-                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                <span>
-                  En cas de doute entre deux motorisations, utilisez le VIN (17
-                  caractères, carte grise case E)
-                </span>
-              </li>
-              {vehicle.type_body && vehicle.type_body.includes("/") && (
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>
-                    Attention à la carrosserie ({vehicle.type_body}) : les
-                    pièces peuvent varier selon la version
-                  </span>
-                </li>
-              )}
-            </ul>
-          </div>
-        </div>
+        <AntiErrorsSection vehicle={vehicle} />
 
-        {/* Comment choisir sans se tromper */}
-        <div className="mb-12" data-section="S_HOWTO">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <ListChecks
-                size={24}
-                className="text-blue-600 flex-shrink-0 mt-0.5"
-              />
-              <h2 className="text-xl font-bold text-gray-900">
-                Comment choisir sans se tromper
-              </h2>
-            </div>
-            <ol className="space-y-3 ml-9 list-decimal list-inside">
-              <li className="text-gray-700">
-                Vérifier la période de production ({vehicle.type_year_from}–
-                {vehicle.type_year_to || "aujourd'hui"})
-              </li>
-              <li className="text-gray-700">
-                Confirmer le carburant ({vehicle.type_fuel}) et la puissance (
-                {vehicle.type_power_ps} ch)
-              </li>
-              <li className="text-gray-700">
-                Identifier le code moteur
-                {vehicle.motor_codes_formatted
-                  ? ` (${vehicle.motor_codes_formatted})`
-                  : ""}{" "}
-                ou le CNIT (carte grise case D.2)
-              </li>
-              <li className="text-gray-700">
-                Choisir la gamme dans le{" "}
-                <a
-                  href="#catalogue"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  catalogue ci-dessus
-                </a>
-              </li>
-              <li className="text-gray-700">
-                En cas de doute →{" "}
-                <a
-                  href="/contact"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  contacter notre assistance
-                </a>
-              </li>
-            </ol>
-          </div>
-        </div>
+        <HowtoSection vehicle={vehicle} />
 
         {/* ❓ FAQ dynamique avec Schema.org */}
         <div className="mb-12" data-section="S_FAQ">
@@ -1297,43 +1127,7 @@ export default function VehicleDetailPage() {
           </div>
         )}
 
-        {/* 🛡️ Badges de confiance */}
-        <div className="mb-12" data-section="S_TRUST">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-green-100 mb-3">
-                <Shield size={28} className="text-green-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Garantie 1 an</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Sur toutes nos pièces
-              </p>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-blue-100 mb-3">
-                <Truck size={28} className="text-blue-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Livraison 24-48h</h3>
-              <p className="text-sm text-gray-500 mt-1">Expédition rapide</p>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-purple-100 mb-3">
-                <HeadphonesIcon size={28} className="text-purple-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Conseil expert</h3>
-              <p className="text-sm text-gray-500 mt-1">Service client dédié</p>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-orange-100 mb-3">
-                <RotateCcw size={28} className="text-orange-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Retour 30 jours</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Satisfait ou remboursé
-              </p>
-            </div>
-          </div>
-        </div>
+        <TrustSection />
 
         {/* 🔗 CTA retour hub marque R7 (maillage R8→R7) */}
         <div className="mt-8 text-center">
