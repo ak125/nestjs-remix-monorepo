@@ -52,6 +52,7 @@ import {
   HowtoSection,
   R8EnrichedSection,
   SeoIntroSection,
+  TechSpecsSection,
   transformRpcToLoaderData,
   type LoaderData,
 } from "../components/vehicle/r8";
@@ -547,6 +548,8 @@ export default function VehicleDetailPage() {
         )}
 
         <SeoIntroSection r8Content={r8Content} seo={seo} />
+
+        <TechSpecsSection vehicle={vehicle} />
 
         {/* 📦 CATALOGUE PRINCIPAL - Design inspiré de la page index */}
         {catalogFamilies.length > 0 &&

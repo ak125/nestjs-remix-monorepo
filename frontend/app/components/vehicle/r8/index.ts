@@ -22,4 +22,5 @@ export { HeroSection } from "./sections/HeroSection";
 export { HowtoSection } from "./sections/HowtoSection";
 export { R8EnrichedSection } from "./sections/R8EnrichedSection";
 export { SeoIntroSection } from "./sections/SeoIntroSection";
+export { TechSpecsSection } from "./sections/TechSpecsSection";
 export { TrustSection } from "./sections/TrustSection";
