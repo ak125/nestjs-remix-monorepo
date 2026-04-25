@@ -56,6 +56,16 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/stop-log-session-suggest.sh"
+          }
+        ]
+      }
     ]
   }
 }

@@ -5,6 +5,22 @@
 
 ---
 
+## Démarrage de session — lire `log.md` pour contexte récent
+
+Au début de chaque session Claude Code, lire les ~20 dernières entrées de
+[`log.md`](log.md) à la racine pour situer le travail récent (commits, PRs,
+décisions). Append-only, écrit par le skill `session-log` (déclenché auto par
+le hook `Stop` quand commits/PRs créés).
+
+Délimitation explicite :
+
+- **`log.md`** = QUAND/QUOI : timeline session (date, branche, sortie)
+- **`MEMORY.md`** (auto-loaded) = QUOI APPRIS : règles, gotchas, feedback
+- **PR descriptions GitHub** = POURQUOI : détails techniques du changement
+- **`governance-vault/`** = DÉCIDÉ CANON : ADRs, incidents, retros
+
+---
+
 ## Mémoire codebase — lire `.claude/knowledge/` avant exploration
 
 **Avant** tout `Grep` / `Glob` / lecture en rafale pour répondre à une question
