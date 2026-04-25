@@ -87,3 +87,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/aicos-fleet-advisor-claude-4-7`
 - **Décision** : docs(spec): fleet advisor + Claude 4.7 tiering design
 - **Sortie** : PR aucune | commits aea7919d
+
+## 2026-04-25 — feat/aicos-fleet-advisor-claude-4-7 (auto)
+
+- **Branche** : `feat/aicos-fleet-advisor-claude-4-7`
+- **Décision** : docs(plan): fleet advisor + Claude 4.7 implementation plan (phases 0+1) (+2 other commits)
+- **Sortie** : PR aucune | commits 547b983e 6b618531 aea7919d
