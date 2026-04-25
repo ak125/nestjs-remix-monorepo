@@ -975,7 +975,7 @@ def propose_to_db(
                     diff_lines_added, diff_lines_removed,
                     schema_valid, validation_report
                 ) VALUES (
-                    %s, %s, %s, 'vehicle',
+                    %s, %s, %s, 'vehicle_model',
                     %s, %s,
                     %s, %s,
                     %s, %s,
