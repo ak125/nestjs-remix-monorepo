@@ -69,3 +69,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/vehicle-rag-web-enrichment-stage1`
 - **Décision** : feat(rag): elargir sources web vehicule + curated URL CSV (stage 1+) (+5 other commits)
 - **Sortie** : PR #172 | commits 8e17940d b1926420 9f28833a 9dc8f71b 26d3cea0 26812832
+
+## 2026-04-25 — feat/vehicle-rag-web-enrichment-stage1 (auto)
+
+- **Branche** : `feat/vehicle-rag-web-enrichment-stage1`
+- **Décision** : chore(log): auto session entry for feat/vehicle-rag-web-enrichment-stage1 (+6 other commits)
+- **Sortie** : PR #172 | commits 8b1751af 8e17940d b1926420 9f28833a 9dc8f71b 26d3cea0 26812832
