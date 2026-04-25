@@ -359,8 +359,75 @@ def url_candidates_autoplus(modele: Modele) -> list[str]:
 
 
 def url_candidates_autotitre(modele: Modele) -> list[str]:
+    """Vraie URL : /fiche-technique/<Brand>/<Model>/<VariantRoman>"""
     base = "https://www.autotitre.com"
-    return [f"{base}/fiche-technique-{modele.marque_alias}-{modele.modele_alias}.html"]
+    brand_t = modele.marque_alias.title()
+    parts = modele.modele_alias.split("-")
+    titled: list[str] = []
+    for p in parts:
+        if not p:
+            continue
+        if re.fullmatch(r"[ivxIVX]+", p):
+            titled.append(p.upper())
+        else:
+            titled.append(p.title())
+    if len(titled) >= 2 and re.fullmatch(r"[IVX]+", titled[-1]):
+        path = "/".join(titled[:-1]) + "/" + titled[-1]
+    else:
+        path = "/".join(titled) if titled else modele.modele_alias
+    return [
+        f"{base}/fiche-technique/{brand_t}/{path}",
+        f"{base}/fiche-technique-{modele.marque_alias}-{modele.modele_alias}.html",
+    ]
+
+
+def _arabic_alias(alias: str) -> str:
+    """Convert roman suffix to arabic ('clio-iii' → 'clio-3')."""
+    roman_to_arabic = {"-i": "-1", "-ii": "-2", "-iii": "-3", "-iv": "-4", "-v": "-5", "-vi": "-6"}
+    for roman, arabic in roman_to_arabic.items():
+        if alias.endswith(roman):
+            return alias[: -len(roman)] + arabic
+    return alias
+
+
+def url_candidates_user_manual_renault(modele: Modele) -> list[str]:
+    """Renault constructor manuals (Renault only)."""
+    if modele.marque_alias != "renault":
+        return []
+    base = "https://www.user-manual.renault.com"
+    arabic = _arabic_alias(modele.modele_alias)
+    return [
+        f"{base}/fr/content/{modele.marque_alias}-{arabic}-phase-1",
+        f"{base}/fr/content/{modele.marque_alias}-{arabic}-phase-2",
+        f"{base}/fr/content/{modele.marque_alias}-{arabic}",
+    ]
+
+
+def url_candidates_lenouvelautomobiliste(modele: Modele) -> list[str]:
+    """Editorial articles via search archive."""
+    base = "https://lenouvelautomobiliste.fr"
+    arabic = _arabic_alias(modele.modele_alias)
+    q = f"{modele.marque_alias}+{arabic.replace('-', '+')}"
+    return [f"{base}/?s={q}"]
+
+
+# Curated URL override (CSV-based) — priority over heuristic patterns
+CURATED_CSV = "/opt/automecanik/app/data/vehicles_known_urls.csv"
+
+
+def load_curated_urls(modele_alias: str) -> dict[str, list[str]]:
+    out: dict[str, list[str]] = {}
+    if not os.path.isfile(CURATED_CSV):
+        return out
+    import csv as _csv
+    with open(CURATED_CSV, encoding="utf-8", newline="") as f:
+        for row in _csv.DictReader(f):
+            if (row.get("modele_alias") or "").strip().lower() == modele_alias.lower():
+                src = (row.get("source") or "").strip()
+                url = (row.get("url") or "").strip()
+                if src and url:
+                    out.setdefault(src, []).append(url)
+    return out
 
 
 def url_candidates_wikipedia_fr(modele: Modele) -> list[str]:
@@ -418,6 +485,9 @@ SOURCES = [
     ("autotitre", url_candidates_autotitre, extract_text_generic, False),
     ("wikipedia-fr", url_candidates_wikipedia_fr, extract_text_wikipedia, False),
     ("wikipedia-en", url_candidates_wikipedia_en, extract_text_wikipedia, False),
+    ("user-manual-renault", url_candidates_user_manual_renault, extract_text_generic, False),
+    ("lenouvelautomobiliste", url_candidates_lenouvelautomobiliste, extract_text_generic, False),
+    ("lacentrale", lambda m: [], extract_text_generic, False),  # curated only (anti-bot)
 ]
 
 
@@ -497,11 +567,19 @@ def process_modele(modele: Modele, dry_run: bool, only_sources: set[str] | None 
     saved = 0
     skipped = 0
 
+    # Curated URL overrides — read from data/vehicles_known_urls.csv
+    curated = load_curated_urls(modele.modele_alias)
+    if curated:
+        print(f"  → curated URLs from CSV: {sum(len(v) for v in curated.values())} entries")
+
     for source_name, url_fn, extractor, per_type in SOURCES:
         if only_sources and source_name not in only_sources:
             continue
-        # Per-type variants attempted for sources that support it (fiches-auto)
         candidates_iter: list[tuple[str, list[int]]] = []
+        # 1) curated URLs (priority)
+        for cu in curated.get(source_name, []):
+            candidates_iter.append((cu, type_ids_all))
+        # 2) heuristic patterns
         if per_type:
             for tm in types:
                 urls = url_fn(modele, tm)
