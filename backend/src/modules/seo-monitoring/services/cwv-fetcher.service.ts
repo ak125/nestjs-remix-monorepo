@@ -124,7 +124,9 @@ export class CwvFetcherService {
         } catch (innerErr) {
           const innerMsg =
             innerErr instanceof Error ? innerErr.message : String(innerErr);
-          result.warnings.push(`page_failed:${pageUrl}:${innerMsg.slice(0, 100)}`);
+          result.warnings.push(
+            `page_failed:${pageUrl}:${innerMsg.slice(0, 100)}`,
+          );
         }
       }
 

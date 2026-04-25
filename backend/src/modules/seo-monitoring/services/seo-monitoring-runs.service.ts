@@ -14,7 +14,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 
-export type IngestionSource = 'gsc' | 'ga4' | 'cwv' | 'gsc_links' | 'indexation';
+export type IngestionSource =
+  | 'gsc'
+  | 'ga4'
+  | 'cwv'
+  | 'gsc_links'
+  | 'indexation';
 
 export interface RunStartContext {
   source: IngestionSource;
@@ -55,7 +60,10 @@ export class SeoMonitoringRunsService {
    * Started event — appelé en début de fetch. Retourne un run_id à passer
    * aux completion/fail handlers.
    */
-  async logStarted(supabase: SupabaseClient, ctx: RunStartContext): Promise<string> {
+  async logStarted(
+    supabase: SupabaseClient,
+    ctx: RunStartContext,
+  ): Promise<string> {
     const runId = randomUUID();
     const { error } = await supabase.from('__seo_event_log').insert({
       event_type: 'ingestion_run_started',
@@ -95,7 +103,9 @@ export class SeoMonitoringRunsService {
       resolved_at: new Date().toISOString(),
     });
     if (error) {
-      this.logger.error(`event_log insert failed (completed): ${error.message}`);
+      this.logger.error(
+        `event_log insert failed (completed): ${error.message}`,
+      );
     }
   }
 
@@ -103,7 +113,10 @@ export class SeoMonitoringRunsService {
    * Failed event — appelé sur échec irréversible (après retry).
    * Ne lève pas l'exception : on veut éviter de cascader la failure.
    */
-  async logFailed(supabase: SupabaseClient, ctx: RunFailContext): Promise<void> {
+  async logFailed(
+    supabase: SupabaseClient,
+    ctx: RunFailContext,
+  ): Promise<void> {
     const severity = ctx.errorClass === 'quota_exceeded' ? 'high' : 'critical';
     const { error } = await supabase.from('__seo_event_log').insert({
       event_type: 'ingestion_run_failed',

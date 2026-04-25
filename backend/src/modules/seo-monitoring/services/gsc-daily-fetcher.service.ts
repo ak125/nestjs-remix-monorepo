@@ -132,9 +132,7 @@ export class GscDailyFetcherService {
               dimensions,
               rowLimit,
               startRow,
-              dimensionFilterGroups: filters.length
-                ? [{ filters }]
-                : undefined,
+              dimensionFilterGroups: filters.length ? [{ filters }] : undefined,
             },
           });
 

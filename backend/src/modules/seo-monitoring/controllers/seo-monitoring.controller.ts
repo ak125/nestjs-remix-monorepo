@@ -12,14 +12,7 @@
  *
  * Auth : protégé par IsAdminGuard (ajouté à brancher dans AppModule).
  */
-import {
-  Body,
-  Controller,
-  Get,
-  Logger,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, Query } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { GoogleCredentialsService } from '../services/google-credentials.service';
@@ -109,12 +102,9 @@ export class SeoMonitoringController {
       totals: {
         clicks: totals.clicks,
         impressions: totals.impressions,
-        ctr:
-          totals.impressions > 0 ? totals.clicks / totals.impressions : 0,
+        ctr: totals.impressions > 0 ? totals.clicks / totals.impressions : 0,
         avg_position:
-          totals.impressions > 0
-            ? totals.position_sum / totals.impressions
-            : 0,
+          totals.impressions > 0 ? totals.position_sum / totals.impressions : 0,
       },
     };
   }
@@ -202,16 +192,14 @@ export class SeoMonitoringController {
   @Post('run/gsc')
   async runGsc(@Body() body: { date?: string; dryRun?: boolean }) {
     const date =
-      body.date ??
-      new Date(Date.now() - 86_400_000).toISOString().slice(0, 10); // J-1 par défaut
+      body.date ?? new Date(Date.now() - 86_400_000).toISOString().slice(0, 10); // J-1 par défaut
     return this.gscFetcher.fetchAndPersist({ date, dryRun: body.dryRun });
   }
 
   @Post('run/ga4')
   async runGa4(@Body() body: { date?: string; dryRun?: boolean }) {
     const date =
-      body.date ??
-      new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+      body.date ?? new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
     return this.ga4Fetcher.fetchAndPersist({ date, dryRun: body.dryRun });
   }
 }
