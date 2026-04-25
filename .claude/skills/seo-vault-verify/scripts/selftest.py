@@ -22,7 +22,7 @@ from pathlib import Path
 
 SCRIPTS_DIR = Path(__file__).resolve().parent
 SKILL_DIR = SCRIPTS_DIR.parent
-MANIFEST = SKILL_DIR / "references" / "expected-changes-v1.yaml"
+MANIFEST = SKILL_DIR / "references" / "expected-changes-v2.yaml"
 
 
 def _run_audit(zip_or_dir: str, extra_args: list | None = None) -> dict:
@@ -121,9 +121,16 @@ def case_6_sha_mismatch(zip_path: Path, tmp_dir: Path):
         zip_path, tmp_dir, "Pillars.md",
         lambda t: t + "\n<!-- injected byte -->")
     rep = _run_audit(str(fx))
-    # Si baseline pas gelée, test ne peut pas détecter : on vérifie juste pas de crash
+    # Avec baseline gelée → REVIEW_REQUIRED attendu (détection effective).
+    # Sans baseline gelée (PENDING_BASELINE) → tolérance, on accepte tout verdict ≠ crash.
     ok = "verdict" in rep
-    return ok, f"verdict={rep['verdict']} (baseline-dependent)"
+    detail = f"verdict={rep['verdict']}"
+    # Si on attend SHA mismatch, signaler si check unchanged a effectivement détecté
+    unchanged_fails = sum(1 for c in rep.get("unchanged_checks", [])
+                          if not c.get("pass"))
+    if unchanged_fails:
+        detail += f" (sha-mismatch détecté sur {unchanged_fails} fichier(s))"
+    return ok, detail
 
 
 def main() -> int:

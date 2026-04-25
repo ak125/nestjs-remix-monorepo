@@ -562,109 +562,109 @@
       "path": "01-Strategy/Kickoff-Week1.md",
       "pass": true,
       "sha256_actual": "4ac59db5038edcaa4004d74657fa0d24c48c7334b01f96650af96eebe2e046a0",
-      "note": "baseline non gelée"
+      "sha256_expected": "4ac59db5038edcaa4004d74657fa0d24c48c7334b01f96650af96eebe2e046a0"
     },
     {
       "path": "01-Strategy/Roadmap-90d.md",
       "pass": true,
       "sha256_actual": "6f99aa284b14937bae8e1dab04111fc94b63dfa3bd239bf5644d5b7c37c513c7",
-      "note": "baseline non gelée"
+      "sha256_expected": "6f99aa284b14937bae8e1dab04111fc94b63dfa3bd239bf5644d5b7c37c513c7"
     },
     {
       "path": "01-Strategy/Pillars.md",
       "pass": true,
       "sha256_actual": "fc9b0ec7b51fe44ce323eddcbaf6c3ccd884e72c604ce442116935d42a9c6e93",
-      "note": "baseline non gelée"
+      "sha256_expected": "fc9b0ec7b51fe44ce323eddcbaf6c3ccd884e72c604ce442116935d42a9c6e93"
     },
     {
       "path": "02-ADR/ADR-002-maillage-interne-first.md",
       "pass": true,
       "sha256_actual": "65d7168fe7b3c8689b2c32a3340229a57b66f21430c0147c7cf48413be8f064e",
-      "note": "baseline non gelée"
+      "sha256_expected": "65d7168fe7b3c8689b2c32a3340229a57b66f21430c0147c7cf48413be8f064e"
     },
     {
       "path": "02-ADR/_template-adr.md",
       "pass": true,
       "sha256_actual": "1a5c854428038c7f069315cb7c534271e2abb9429556c72a9e35c05dd4590836",
-      "note": "baseline non gelée"
+      "sha256_expected": "1a5c854428038c7f069315cb7c534271e2abb9429556c72a9e35c05dd4590836"
     },
     {
       "path": "03-Entities/Families/_template-famille.md",
       "pass": true,
       "sha256_actual": "e203c769e10713af07ee18dd4e66f70891995bb752a59ecf0bad5ba5531e535b",
-      "note": "baseline non gelée"
+      "sha256_expected": "e203c769e10713af07ee18dd4e66f70891995bb752a59ecf0bad5ba5531e535b"
     },
     {
       "path": "03-Entities/Vehicles/_template-vehicle.md",
       "pass": true,
       "sha256_actual": "56e6dd3c3dc87d216b545bc71ae59ca20c8c417beb6660e959dfae88163cbc7f",
-      "note": "baseline non gelée"
+      "sha256_expected": "56e6dd3c3dc87d216b545bc71ae59ca20c8c417beb6660e959dfae88163cbc7f"
     },
     {
       "path": "04-Audits/_playbook-audit-cwv.md",
       "pass": true,
       "sha256_actual": "16e9bfdbec00e9e70683946767176ff5f7f3d48fed11c1a1112a47f56e4667b9",
-      "note": "baseline non gelée"
+      "sha256_expected": "16e9bfdbec00e9e70683946767176ff5f7f3d48fed11c1a1112a47f56e4667b9"
     },
     {
       "path": "04-Audits/_playbook-audit-crawl-budget.md",
       "pass": true,
       "sha256_actual": "8e0ca8d4ab6ac33a7be91bdad8dbb415ef46ed7304e1ac5405a7da8fcc58e8b1",
-      "note": "baseline non gelée"
+      "sha256_expected": "8e0ca8d4ab6ac33a7be91bdad8dbb415ef46ed7304e1ac5405a7da8fcc58e8b1"
     },
     {
       "path": "04-Audits/_playbook-audit-thin-content.md",
       "pass": true,
       "sha256_actual": "b816b7022996eb0d683171ef4617f86b7b5a9dbd7b08a04f7e64c9d0f961833f",
-      "note": "baseline non gelée"
+      "sha256_expected": "b816b7022996eb0d683171ef4617f86b7b5a9dbd7b08a04f7e64c9d0f961833f"
     },
     {
       "path": "04-Audits/_playbook-audit-cannibalisation.md",
       "pass": true,
       "sha256_actual": "60522ee37889e0e3d30134186a5daab57a6dce9bab856314f81c041ab6f4807d",
-      "note": "baseline non gelée"
+      "sha256_expected": "60522ee37889e0e3d30134186a5daab57a6dce9bab856314f81c041ab6f4807d"
     },
     {
       "path": "04-Audits/_playbook-audit-maillage-interne.md",
       "pass": true,
       "sha256_actual": "e84e3c6c9a9677c557bb566ef7a06f3ff602098f8feda070e79520b1bbd87dd0",
-      "note": "baseline non gelée"
+      "sha256_expected": "e84e3c6c9a9677c557bb566ef7a06f3ff602098f8feda070e79520b1bbd87dd0"
     },
     {
       "path": "04-Audits/_playbook-audit-competitor-gap.md",
       "pass": true,
       "sha256_actual": "7feaf1747226ed65f8c523b1cccdf4815a5d7ec82352305f52207f5669cb8795",
-      "note": "baseline non gelée"
+      "sha256_expected": "7feaf1747226ed65f8c523b1cccdf4815a5d7ec82352305f52207f5669cb8795"
     },
     {
       "path": "04-Audits/_playbook-audit-schema.md",
       "pass": true,
       "sha256_actual": "d921bab0cd8f543ca44879876a07e8cf07b39e843bb5cab588299740b9c4e5d2",
-      "note": "baseline non gelée"
+      "sha256_expected": "d921bab0cd8f543ca44879876a07e8cf07b39e843bb5cab588299740b9c4e5d2"
     },
     {
       "path": "04-Audits/_template-audit.md",
       "pass": true,
       "sha256_actual": "02eae89c76b402a27ba913edda36b92aa5af9b77bd4c504ac78644daa119cf2e",
-      "note": "baseline non gelée"
+      "sha256_expected": "02eae89c76b402a27ba913edda36b92aa5af9b77bd4c504ac78644daa119cf2e"
     },
     {
       "path": "05-Content/_template-title-meta.md",
       "pass": true,
       "sha256_actual": "bf25ce9931c3abc508a83c0efa7fc3216a342d4921a90dcb1495fca31478d7db",
-      "note": "baseline non gelée"
+      "sha256_expected": "bf25ce9931c3abc508a83c0efa7fc3216a342d4921a90dcb1495fca31478d7db"
     },
     {
       "path": "06-Technical/_template-schema-spec.md",
       "pass": true,
       "sha256_actual": "6fda24a6201e55f07ca7bae76c2e68d1bbbd2c6bc4f40af0eec10b7177a56231",
-      "note": "baseline non gelée"
+      "sha256_expected": "6fda24a6201e55f07ca7bae76c2e68d1bbbd2c6bc4f40af0eec10b7177a56231"
     },
     {
       "path": "06-Technical/Schema-library/README.md",
       "pass": true,
       "sha256_actual": "c4bcacf4bf48ef2e1ee5cdd30355f174dd6f0b9e656e74fee1d986d5d7c839da",
-      "note": "baseline non gelée"
+      "sha256_expected": "c4bcacf4bf48ef2e1ee5cdd30355f174dd6f0b9e656e74fee1d986d5d7c839da"
     }
   ],
   "obsidian": {
@@ -703,5 +703,5 @@
     "overall_comment": "La doctrine primaire/secondaire et le positionnement opportuniste de l'outreach sont solidement ancrés et cohérents à travers ADR-002, Pillars.md et les templates. Deux zones de fragilité : (1) la règle anti-sur-optimisation est nommée comme risque sans exemple opérationnel ni seuil chiffré, (2) un des KPIs maillage ('PageRank interne médian') n'est pas directement mesurable avec les outils standards cités et nécessiterait une méthode de calcul explicitée."
   },
   "missing_files": [],
-  "generated_at": "2026-04-24T17:44:19.546854+00:00"
+  "generated_at": "2026-04-25T09:06:50.227045+00:00"
 }

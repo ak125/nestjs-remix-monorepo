@@ -1,4 +1,4 @@
-# SEO Vault Verify — Rapport d'audit 2026-04-24T17:44:19.546854+00:00
+# SEO Vault Verify — Rapport d'audit 2026-04-25T09:06:50.227045+00:00
 
 **Skill version :** 1.0
 **Manifest version :** 1
@@ -35,24 +35,24 @@
 
 | Fichier | Pass | Note |
 |---|---|---|
-| `01-Strategy/Kickoff-Week1.md` | ✅ | baseline non gelée |
-| `01-Strategy/Roadmap-90d.md` | ✅ | baseline non gelée |
-| `01-Strategy/Pillars.md` | ✅ | baseline non gelée |
-| `02-ADR/ADR-002-maillage-interne-first.md` | ✅ | baseline non gelée |
-| `02-ADR/_template-adr.md` | ✅ | baseline non gelée |
-| `03-Entities/Families/_template-famille.md` | ✅ | baseline non gelée |
-| `03-Entities/Vehicles/_template-vehicle.md` | ✅ | baseline non gelée |
-| `04-Audits/_playbook-audit-cwv.md` | ✅ | baseline non gelée |
-| `04-Audits/_playbook-audit-crawl-budget.md` | ✅ | baseline non gelée |
-| `04-Audits/_playbook-audit-thin-content.md` | ✅ | baseline non gelée |
-| `04-Audits/_playbook-audit-cannibalisation.md` | ✅ | baseline non gelée |
-| `04-Audits/_playbook-audit-maillage-interne.md` | ✅ | baseline non gelée |
-| `04-Audits/_playbook-audit-competitor-gap.md` | ✅ | baseline non gelée |
-| `04-Audits/_playbook-audit-schema.md` | ✅ | baseline non gelée |
-| `04-Audits/_template-audit.md` | ✅ | baseline non gelée |
-| `05-Content/_template-title-meta.md` | ✅ | baseline non gelée |
-| `06-Technical/_template-schema-spec.md` | ✅ | baseline non gelée |
-| `06-Technical/Schema-library/README.md` | ✅ | baseline non gelée |
+| `01-Strategy/Kickoff-Week1.md` | ✅ |  |
+| `01-Strategy/Roadmap-90d.md` | ✅ |  |
+| `01-Strategy/Pillars.md` | ✅ |  |
+| `02-ADR/ADR-002-maillage-interne-first.md` | ✅ |  |
+| `02-ADR/_template-adr.md` | ✅ |  |
+| `03-Entities/Families/_template-famille.md` | ✅ |  |
+| `03-Entities/Vehicles/_template-vehicle.md` | ✅ |  |
+| `04-Audits/_playbook-audit-cwv.md` | ✅ |  |
+| `04-Audits/_playbook-audit-crawl-budget.md` | ✅ |  |
+| `04-Audits/_playbook-audit-thin-content.md` | ✅ |  |
+| `04-Audits/_playbook-audit-cannibalisation.md` | ✅ |  |
+| `04-Audits/_playbook-audit-maillage-interne.md` | ✅ |  |
+| `04-Audits/_playbook-audit-competitor-gap.md` | ✅ |  |
+| `04-Audits/_playbook-audit-schema.md` | ✅ |  |
+| `04-Audits/_template-audit.md` | ✅ |  |
+| `05-Content/_template-title-meta.md` | ✅ |  |
+| `06-Technical/_template-schema-spec.md` | ✅ |  |
+| `06-Technical/Schema-library/README.md` | ✅ |  |
 
 ### 2.3 Cross-références ADR-002
 
