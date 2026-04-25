@@ -43,6 +43,10 @@ import { RagAdmissibilityGateService } from './services/rag-admissibility-gate.s
 // Phase 2A — Legacy Adapted Shadow Audit
 import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audit.service';
 
+// ADR-029 P1 — RAG v2.1 Control Plane Closure (observability)
+import { RagEnrichmentReportEmitterService } from './services/rag-enrichment-report-emitter.service';
+import { RagConflictDetectorService } from './services/rag-conflict-detector.service';
+
 // NOTE: CacheModule is @Global() (registered in app.module.ts) — CacheService
 // is available everywhere without explicit import.
 // EventEmitterModule.forRoot() is also imported globally in app.module.ts.
@@ -60,6 +64,9 @@ import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audi
     RagAdmissibilityGateService,
     // Phase 2A — Legacy Adapted Shadow Audit
     RagPhase2aShadowAuditService,
+    // ADR-029 P1 — RAG v2.1 Control Plane Closure
+    RagEnrichmentReportEmitterService,
+    RagConflictDetectorService,
     // Existing services
     FrontmatterValidatorService,
     RagCleanupService,
@@ -114,6 +121,9 @@ import { RagPhase2aShadowAuditService } from './services/rag-phase2a-shadow-audi
     RagAdmissibilityGateService,
     // Phase 2A — Legacy Adapted Shadow Audit
     RagPhase2aShadowAuditService,
+    // ADR-029 P1 — RAG v2.1 Control Plane Closure
+    RagEnrichmentReportEmitterService,
+    RagConflictDetectorService,
   ],
 })
 export class RagProxyModule {}
