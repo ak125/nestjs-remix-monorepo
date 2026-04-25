@@ -105,3 +105,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/rag-vehicle-scraping-canon`
 - **Décision** : feat(rag): vehicle motor scraper + spec — propose-before-write canon path (+6 other commits)
 - **Sortie** : PR #188 | commits 7642b26f 8fa5df77 f8cb914b 220726ba e7048c22 867808f4 9d9ac41e
+
+## 2026-04-26 — feat/rag-vehicle-scraping-canon (auto)
+
+- **Branche** : `feat/rag-vehicle-scraping-canon`
+- **Décision** : feat(rag): rag-propose-vehicle-from-web.py — propose-mode enricher (ADR-022 L1) (+8 other commits)
+- **Sortie** : PR #188 | commits 6a7f844f ae966167 7642b26f 8fa5df77 f8cb914b 220726ba e7048c22 867808f4 9d9ac41e
