@@ -22,6 +22,7 @@ import {
   AuditFindingsService,
   type AuditType,
 } from '../services/audit-findings.service';
+import { RContentAuditorService } from '../services/r-content-auditor.service';
 
 @Controller('api/admin/seo-monitoring')
 export class SeoMonitoringController {
@@ -33,6 +34,7 @@ export class SeoMonitoringController {
     private readonly gscFetcher: GscDailyFetcherService,
     private readonly ga4Fetcher: Ga4DailyFetcherService,
     private readonly auditFindings: AuditFindingsService,
+    private readonly rContentAuditor: RContentAuditorService,
     configService: ConfigService,
   ) {
     const url = configService.get<string>('SUPABASE_URL');
@@ -229,9 +231,33 @@ export class SeoMonitoringController {
    * Aggrégat par severity (KPI cards dashboard).
    */
   @Get('audit/findings/summary')
-  async findingsSummary(@Query('type') type: AuditType = 'canonical_conflict') {
+  async findingsSummary(@Query('type') type: AuditType = 'r_content_gap') {
     const bySeverity = await this.auditFindings.countOpenBySeverity(type);
     const total = Object.values(bySeverity).reduce((a, b) => a + b, 0);
     return { audit_type: type, total, by_severity: bySeverity };
+  }
+
+  /**
+   * POST /audit/r-content/run
+   * Trigger manuel R-content audit (Phase 2a').
+   * Audite les tables persistées __seo_gamme_conseil, _purchase_guide,
+   * _reference, _brand_editorial. Retourne récap by_source + by_gap_type.
+   */
+  @Post('audit/r-content/run')
+  async runRContentAudit(
+    @Body()
+    body: {
+      sources?: Array<
+        'conseil' | 'purchase_guide' | 'reference' | 'brand_editorial'
+      >;
+      thinContentThreshold?: number;
+      dryRun?: boolean;
+    },
+  ) {
+    return this.rContentAuditor.audit({
+      sources: body.sources,
+      thinContentThreshold: body.thinContentThreshold,
+      dryRun: body.dryRun,
+    });
   }
 }
