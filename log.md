@@ -75,3 +75,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-department-phase-1`
 - **Décision** : feat(seo-department): phase 1a - observability foundations (migrations + module + endpoints)
 - **Sortie** : PR #170 | commits 7d4ce121
+
+## 2026-04-25 — feat/seo-department-phase-2a (auto)
+
+- **Branche** : `feat/seo-department-phase-2a`
+- **Décision** : feat(seo-department): phase 2a - audit findings table + canonical auditor
+- **Sortie** : PR #174 | commits 9581f6c2
