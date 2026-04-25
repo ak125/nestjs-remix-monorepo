@@ -57,3 +57,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/claude-knowledge-base`, `feat/audit-ci-integration`, `feat/cleanup-tooling-prep`
 - **Décision** : Adoption knip + madge + dependency-cruiser + ast-grep en gates déterministes (warning-mode Phase 0). Création `.claude/knowledge/` (42 modules + 4 db + 4 integrations). CI workflow `audit.yml` blockant ast-grep. Safe-delete script + baseline JSON regression gate + 3 runbooks ops.
 - **Sortie** : PRs #149, #152, #155 mergées | knip 6.6.2 (avec nested zod@4 override) + madge 8 + dep-cruiser 17.3 + @ast-grep/cli 0.42 installés | baseline 362 unused / 17 cycles / 148 violations / 0 ast-errors capturée
+
+## 2026-04-25 — feat/vehicle-rag-web-enrichment-stage1 (auto)
+
+- **Branche** : `feat/vehicle-rag-web-enrichment-stage1`
+- **Décision** : feat(rag): vehicle motor corpus scraper + auto-verify enricher (stage 1) (+3 other commits)
+- **Sortie** : PR #172 | commits 9f28833a 9dc8f71b 26d3cea0 26812832
