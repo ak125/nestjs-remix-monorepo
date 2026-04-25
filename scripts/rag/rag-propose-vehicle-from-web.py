@@ -1075,7 +1075,7 @@ def main():
             path = os.path.join(VEHICLES_DIR, f"{slug}.md")
             print(f"  → no vehicles/{slug}.md, proposal will bootstrap from template")
         yaml_block = render_motorisations_yaml(enrichments)
-        sources_used = sorted({d.source for d in load_web_docs_for_modele(m_dict["modele_id"])})
+        sources_used = sorted({d.source_provider for d in load_web_docs_for_modele(m_dict["modele_id"])})
         propose_to_db(
             path,
             yaml_block,
