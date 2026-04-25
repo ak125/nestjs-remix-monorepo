@@ -63,3 +63,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-department-phase-0`
 - **Décision** : feat(seo-department): phase 0 foundations - seo-types package + runbook + recharts + env
 - **Sortie** : PR #166 | commits c7d166e3
+
+## 2026-04-25 — feat/seo-department-phase-0 (auto)
+
+- **Branche** : `feat/seo-department-phase-0`
+- **Décision** : fix(seo-department): align env var names + domain on existing codebase conventions (+2 other commits)
+- **Sortie** : PR #166 | commits 8d6ef182 db07048c c7d166e3
