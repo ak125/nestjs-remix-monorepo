@@ -57,3 +57,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/claude-knowledge-base`, `feat/audit-ci-integration`, `feat/cleanup-tooling-prep`
 - **Décision** : Adoption knip + madge + dependency-cruiser + ast-grep en gates déterministes (warning-mode Phase 0). Création `.claude/knowledge/` (42 modules + 4 db + 4 integrations). CI workflow `audit.yml` blockant ast-grep. Safe-delete script + baseline JSON regression gate + 3 runbooks ops.
 - **Sortie** : PRs #149, #152, #155 mergées | knip 6.6.2 (avec nested zod@4 override) + madge 8 + dep-cruiser 17.3 + @ast-grep/cli 0.42 installés | baseline 362 unused / 17 cycles / 148 violations / 0 ast-errors capturée
+
+## 2026-04-25 — feat/seo-department-phase-0 (auto)
+
+- **Branche** : `feat/seo-department-phase-0`
+- **Décision** : feat(seo-department): phase 0 foundations - seo-types package + runbook + recharts + env
+- **Sortie** : PR #166 | commits c7d166e3
+
+## 2026-04-25 — feat/seo-department-phase-0 (auto)
+
+- **Branche** : `feat/seo-department-phase-0`
+- **Décision** : fix(seo-department): align env var names + domain on existing codebase conventions (+2 other commits)
+- **Sortie** : PR #166 | commits 8d6ef182 db07048c c7d166e3
