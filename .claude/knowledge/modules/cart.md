@@ -2,7 +2,7 @@
 module: cart
 sources:
 - backend/src/modules/cart
-last_scan: '2026-04-25'
+last_scan: '2026-04-26'
 primary_files:
 - backend/src/modules/cart/cart.module.ts
 - backend/src/modules/cart/controllers/cart-analytics.controller.ts

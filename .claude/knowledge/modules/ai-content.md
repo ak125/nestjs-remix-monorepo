@@ -2,7 +2,7 @@
 module: ai-content
 sources:
 - backend/src/modules/ai-content
-last_scan: '2026-04-25'
+last_scan: '2026-04-26'
 primary_files:
 - backend/src/modules/ai-content/ai-content-cache.service.ts
 - backend/src/modules/ai-content/ai-content.controller.ts

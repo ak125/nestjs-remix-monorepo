@@ -52,8 +52,8 @@ import {
   HowtoSection,
   R8EnrichedSection,
   SeoIntroSection,
+  TechSpecsSection,
   transformRpcToLoaderData,
-  TrustSection,
   type LoaderData,
 } from "../components/vehicle/r8";
 import { hierarchyApi } from "../services/api/hierarchy.api";
@@ -548,6 +548,8 @@ export default function VehicleDetailPage() {
         )}
 
         <SeoIntroSection r8Content={r8Content} seo={seo} />
+
+        <TechSpecsSection vehicle={vehicle} />
 
         {/* 📦 CATALOGUE PRINCIPAL - Design inspiré de la page index */}
         {catalogFamilies.length > 0 &&
@@ -1126,8 +1128,6 @@ export default function VehicleDetailPage() {
             />
           </div>
         )}
-
-        <TrustSection />
 
         {/* 🔗 CTA retour hub marque R7 (maillage R8→R7) */}
         <div className="mt-8 text-center">
