@@ -98,6 +98,8 @@ import { BrandEditorialService } from './services/brand-editorial.service'; // �
 import { VehicleRagGeneratorService } from './services/vehicle-rag-generator.service'; // 🚗 Vehicle RAG .md generator (0 LLM)
 import { RagProposalService } from './services/rag-proposal.service'; // 📝 ADR-022 L1 propose-before-write
 import { AdminVehicleRagController } from './controllers/admin-vehicle-rag.controller'; // 🚗 Vehicle RAG generation endpoints
+import { AdminVehicleCacheController } from './controllers/admin-vehicle-cache.controller'; // 🚗 INC-2026-007 — Vehicle cache rebuild/invalidate/stats
+import { VehiclesModule } from '../vehicles/vehicles.module'; // 🚗 INC-2026-007 — pour VehicleRpcService
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -139,6 +141,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
     SystemModule, // DB governance Phase 2 (DbGovernanceService)
     AiContentModule, // 🤖 Pour ConseilEnricher + BuyingGuideSEODraft (optional LLM polish)
+    VehiclesModule, // 🚗 INC-2026-007 — pour AdminVehicleCacheController (VehicleRpcService)
   ],
   controllers: [
     ConfigurationController,
@@ -176,6 +179,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     AdminR8VehicleController, // 🚗 R8 Vehicle enrichment - /api/admin/r8/enrich/:typeId
     AdminR7BrandController, // 🏭 R7 Brand enrichment - /api/admin/r7/enrich/:marqueId
     AdminVehicleRagController, // 🚗 Vehicle RAG generation - /api/admin/vehicle-rag/*
+    AdminVehicleCacheController, // 🚗 INC-2026-007 - /api/admin/vehicle-cache/* (rebuild, invalidate, stats)
     // AdminSupplierStatsController — not ready for prod
     AdminDbGovernanceController, // 📊 DB Governance Phase 2 - /api/admin/db-governance/*
     AdminPipelineController, // 🚀 Unified pipeline execution - /api/admin/pipeline/*
