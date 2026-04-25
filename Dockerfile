@@ -17,7 +17,13 @@ WORKDIR /app
 # First install the dependencies (as they change less often)
 COPY --chown=node:node --from=builder /app/out/json/ .
 COPY --chown=node:node --from=builder /app/out/package-lock.json ./package-lock.json
-RUN --mount=type=cache,target=/root/.npm npm ci
+# --ignore-scripts skips postinstall hooks. Required because @ast-grep/cli
+# (devDep used by audit:ast) crashes its postinstall on Alpine musl
+# ("Failed to move @ast-grep/cli binary into place"). ast-grep is only
+# used in CI audit.yml on Ubuntu (where its binary works), not in Docker
+# build. No other package in this monorepo needs a postinstall step at
+# build time (husky `prepare` is a npm script, not postinstall hook).
+RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts
 
 # Build the project
 COPY --from=builder /app/out/full/ .
