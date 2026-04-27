@@ -1,6 +1,6 @@
 ---
 name: seo-gamme-audit
-description: "Audit SEO complet d'une gamme OU d'un véhicule : métriques R1-R8, couverture RAG, scores qualité, vocabulaire interdit, maillage, historique, score composite, actions recommandées + auto-fix. Détecte auto gamme/véhicule. Usage : /seo-gamme-audit <pg_alias|vehicle_slug> [--batch top20|worst|ready] [--fix]"
+description: "Audit SEO complet gamme/véhicule : métriques R1-R8, RAG coverage, scores, maillage, score composite + auto-fix. Use when user wants gamme audit, vehicle SEO audit. CLI: /seo-gamme-audit <pg_alias|vehicle_slug>"
 argument-hint: "<pg_alias ou vehicle_slug> [--batch top20|worst|ready] [--fix] [--history]"
 ---
 

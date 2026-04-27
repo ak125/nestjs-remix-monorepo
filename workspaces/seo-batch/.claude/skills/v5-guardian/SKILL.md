@@ -1,7 +1,6 @@
 ---
 name: v5-guardian
-description: |
-  Gardien unifié du pipeline v5 : combine détection de pollution, quality gate, et protection anti-régression en un seul skill. Utilise cette skill dès que l'utilisateur mentionne "vérifier qualité v5", "guardian", "audit rapide", "check pipeline", "protection contenu", "anti-régression", "guard v5", "health check gamme", ou "scan qualité". Remplace l'usage séparé de pollution-scanner + content-quality-gate pour les checks de routine. Aussi utile en mode batch pour un health check global.
+description: "Gardien unifié pipeline v5 : pollution + quality gate + anti-régression. Use when user mentions guardian, vérifier qualité v5, check pipeline, anti-régression, health check gamme. Remplace pollution-scanner + content-quality-gate combinés."
 argument-hint: "<pg_alias|pg_id|--batch|--health>"
 allowed-tools: Read, mcp__claude_ai_Supabase__execute_sql, Glob
 ---
