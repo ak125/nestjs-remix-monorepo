@@ -12,7 +12,9 @@
   "scripts": {
     "dev": "run-p dev:compile dev:watch",
     "dev:nest": "nest start --watch --preserveWatchOutput",
-    "dev:compile": "NODE_OPTIONS='--max-old-space-size=4096' tsc --build --watch --preserveWatchOutput",
+    "dev:compile": "NODE_OPTIONS='--max-old-space-size=4096' tsc --build && tsc-alias -p tsconfig.json && run-p dev:compile:tsc dev:compile:alias",
+    "dev:compile:tsc": "tsc --build --watch --preserveWatchOutput",
+    "dev:compile:alias": "tsc-alias -p tsconfig.json --watch",
     "dev:watch": "node wait-and-start.js",
     "dev:no-redis": "nodemon --delay 3000ms --watch dist dist/main.js",
     "format": "prettier --write src/**/*.ts test/**/*.ts",
