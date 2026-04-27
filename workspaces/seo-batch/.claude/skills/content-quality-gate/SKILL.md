@@ -1,7 +1,6 @@
 ---
 name: content-quality-gate
-description: |
-  Quality gate pour le contenu des sections conseils dans __seo_gamme_conseil (Supabase). Utilise cette skill quand l'utilisateur veut "vérifier qualité", "scorer contenu", "quality check", "audit qualité section", "comparer contenu", "détecter sections faibles", "gap analysis", ou "review queue". Aussi quand on parle de verdicts WRITE/REVIEW/BLOCK, scoring de contenu, ou détection de régressions. Peut être utilisé seul pour un audit qualité, ou en combinaison avec surgical-cleaner et legacy-recycler comme gate de validation.
+description: "Quality gate sections __seo_gamme_conseil : scoring + verdicts WRITE/REVIEW/BLOCK. Use when user mentions vérifier qualité, audit qualité section, gap analysis, sections faibles, review queue, détection régressions."
 ---
 
 # Content Quality Gate — Scoring et validation de contenu

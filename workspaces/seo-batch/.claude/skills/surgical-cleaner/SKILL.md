@@ -1,7 +1,6 @@
 ---
 name: surgical-cleaner
-description: |
-  Nettoyeur chirurgical de sections polluées dans __seo_gamme_conseil (Supabase). Utilise cette skill quand l'utilisateur veut "nettoyer une section", "supprimer la pollution", "clean gamme", "retirer le scraping", "corriger le contenu", ou après qu'un scan pollution-scanner a identifié des sections à traiter. Aussi quand on parle de "couper la pollution", "remplacer S4_DEPOSE", ou "pipeline-v5-surgical-clean". Doit toujours être utilisé APRÈS un scan (pollution-scanner), jamais en aveugle.
+description: "Nettoyage chirurgical sections polluées __seo_gamme_conseil. Use when user mentions nettoyer section, supprimer pollution, clean gamme, couper pollution, remplacer S4_DEPOSE. À utiliser APRÈS pollution-scanner."
 ---
 
 # Surgical Cleaner — Nettoyage section par section

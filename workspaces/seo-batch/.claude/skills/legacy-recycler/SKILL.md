@@ -1,7 +1,6 @@
 ---
 name: legacy-recycler
-description: |
-  Recycleur de contenu legacy expert pour enrichir les sections v5 dans __seo_gamme_conseil (Supabase). Utilise cette skill quand l'utilisateur veut "recycler legacy", "injecter contenu expert", "enrichir depuis CSV", "récupérer ancien contenu", "importer blog advice", ou "mapper legacy vers v5". Aussi quand on parle de __blog_advice, __blog_advice_h2, __blog_advice_h3, cross-refs legacy, contenu CMS hérité, ou "enrichir sections faibles". Doit toujours être utilisé APRÈS un scan (pollution-scanner) pour cibler les sections faibles/vides.
+description: "Recycle contenu legacy (__blog_advice*) vers __seo_gamme_conseil v5. Use when user mentions recycler legacy, injecter contenu expert, enrichir depuis CSV, importer blog advice. À utiliser après pollution-scanner."
 ---
 
 # Legacy Recycler — Recyclage de contenu expert hérité

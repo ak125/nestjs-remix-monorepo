@@ -1,7 +1,6 @@
 ---
 name: pollution-scanner
-description: |
-  Scanner de pollution OEM/scraping pour les sections conseils AutoMecanik. Utilise cette skill dès que l'utilisateur mentionne "scanner pollution", "détecter scraping", "audit contenu", "vérifier gamme", "chercher fragments OEM", "qualité des sections", ou veut analyser le contenu de __seo_gamme_conseil dans Supabase. Aussi quand on parle de Textar, Brembo, "Skip to main content", "Source: web/", ou de contenu scrapé. Utiliser même si l'utilisateur dit simplement "scanner" ou "audit" dans le contexte du pipeline v5.
+description: "Scanner pollution OEM/scraping dans __seo_gamme_conseil. Use when user mentions scanner pollution, détecter scraping, fragments OEM, Textar, Brembo, 'Skip to main content', 'Source: web/', ou audit contenu pipeline v5."
 ---
 
 # Pollution Scanner — Détection de contenu scrapé/pollué

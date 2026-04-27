@@ -1,6 +1,6 @@
 ---
 name: r8-diversity-check
-description: "Mesure la diversité réelle entre pages R8 motorisations sœurs (même modele_id) pour détecter le duplicate content SEO avant publication. Invoque IMPÉRATIVEMENT ce skill dès que l'utilisateur pose une question du genre : \"vérifier variation R8\", \"duplicate content motorisations\", \"mes pages véhicule sont-elles distinctes\", \"Clio 3 motorisations ont-elles le même contenu\", \"rapport diversity R8\", \"fingerprint audit R8\", \"anti-duplicate motorisations\", \"collisions sibling véhicule\", \"combien de h1 distincts par modèle\", ou après chaque batch d'enrichissement R8 avant passage INDEX. Ne PAS utiliser pour : génération de contenu (content-gen), audit SEO global R1-R8 (seo-gamme-audit), qualité éditoriale (content-audit), anti-cannibalisation cross-role R1/R3/R4 (blog-hub-planner). Usage CLI : python3 scripts/qa/r8-diversity-check.py [--brand|--modele-id|--slug|--batch] [--threshold N] [--format markdown|json]."
+description: "Mesure la diversité fingerprint entre pages R8 motorisations sœurs (même modele_id). Use when user mentions duplicate content motorisations, variation R8, fingerprint audit, anti-duplicate sibling véhicule, ou avant batch INDEX."
 argument-hint: "<brand|modele-id|slug|--batch> [--threshold N] [--format markdown|json]"
 allowed-tools: Read, Bash
 ---
