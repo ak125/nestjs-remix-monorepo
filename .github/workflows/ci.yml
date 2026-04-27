@@ -1035,107 +1035,13 @@ jobs:
           echo "> Non-blocking: violations signalees mais ne bloquent pas le pipeline." >> $GITHUB_STEP_SUMMARY
 
   # ============================================
-  # AUTO-DEPLOY to PROD (after PREPROD passes)
-  # ============================================
-  # Utilise docker-compose.ci-deploy.yml (monorepo + redis uniquement)
-  # Les autres services (remotion, minio, lighthouse) sont geres manuellement
-
-  deploy-prod:
-    name: 🚀 Deploy to PROD
-    runs-on: [self-hosted, Linux, X64]
-    needs: [lighthouse]
-    if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
-
-      - name: 🔍 Validate production env vars
-        run: |
-          PROD_DIR=~/production
-          if [ ! -f "$PROD_DIR/.env" ]; then
-            echo "❌ FATAL: .env file missing at $PROD_DIR/.env"
-            exit 1
-          fi
-          source "$PROD_DIR/.env"
-          REQUIRED_VARS="SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY SYSTEMPAY_SITE_ID PAYBOX_SITE PAYBOX_HMAC_KEY PAYBOX_CALLBACK_MODE SESSION_SECRET"
-          for var in $REQUIRED_VARS; do
-            if [ -z "${!var}" ]; then
-              echo "❌ FATAL: Missing required env var: $var"
-              exit 1
-            fi
-          done
-          echo "✅ All required environment variables present"
-
-      - name: 🏷️ Promote preprod → production
-        run: |
-          docker tag massdoc/nestjs-remix-monorepo:preprod massdoc/nestjs-remix-monorepo:production
-          echo "✅ Image retagged: preprod → production"
-
-      - name: 🐳 Push production image to DockerHub
-        run: |
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker push massdoc/nestjs-remix-monorepo:production
-          echo "✅ Image pushed to DockerHub"
-
-      - name: 🚀 Deploy PROD
-        run: |
-          PROD_DIR=~/production
-
-          # Copier le compose CI dedie (monorepo + redis uniquement)
-          cp $GITHUB_WORKSPACE/docker-compose.ci-deploy.yml $PROD_DIR/
-
-          cd $PROD_DIR
-
-          # Arreter et supprimer le container monorepo (redis reste up)
-          docker stop nestjs-remix-monorepo-prod 2>/dev/null || true
-          docker rm nestjs-remix-monorepo-prod 2>/dev/null || true
-
-          # Demarrer avec le compose dedie
-          docker compose -f docker-compose.ci-deploy.yml up -d
-
-          # Health check via docker exec (pas de port mapping sur l'hote)
-          echo "⏳ Waiting for PROD to start..."
-          HEALTHY=0
-          for i in {1..24}; do
-            if docker exec nestjs-remix-monorepo-prod wget -qO- http://localhost:3000/health > /dev/null 2>&1; then
-              echo "✅ PROD is healthy after $((i*5))s"
-              HEALTHY=1
-              break
-            fi
-            echo "Attempt $i/24 - waiting 5s..."
-            sleep 5
-          done
-
-          if [ "$HEALTHY" != "1" ]; then
-            echo "❌ PROD health check failed after 2 minutes"
-            docker logs nestjs-remix-monorepo-prod --tail 100
-            exit 1
-          fi
-
-          echo "✅ PROD deployed successfully"
-
-          # Cleanup vieilles images
-          docker image prune -f
-
-      - name: 📊 Deploy summary
-        if: always()
-        run: |
-          STATUS=$(docker inspect --format='{{.State.Status}}' nestjs-remix-monorepo-prod 2>/dev/null || echo "unknown")
-          HEALTH=$(docker inspect --format='{{.State.Health.Status}}' nestjs-remix-monorepo-prod 2>/dev/null || echo "unknown")
-          echo "## 🚀 PROD Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** \`${GITHUB_SHA::7}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Image:** massdoc/nestjs-remix-monorepo:production" >> $GITHUB_STEP_SUMMARY
-          echo "- **Container:** $STATUS (health: $HEALTH)" >> $GITHUB_STEP_SUMMARY
-
-  # ============================================
   # Notifications (Phase 3)
   # ============================================
 
   notify-failure:
     name: 🔔 Notify on Failure
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test, test-frontend, security, core-build, import-firewall, rpc-gate-check, governance-check, gitleaks, migration-safety, build, deploy, e2e-smoke, lighthouse, deploy-prod]
+    needs: [lint, typecheck, test, test-frontend, security, core-build, import-firewall, rpc-gate-check, governance-check, gitleaks, migration-safety, build, deploy, e2e-smoke, lighthouse]
     if: ${{ failure() && github.ref == 'refs/heads/main' }}
     steps:
       - name: 🔔 Send Slack notification

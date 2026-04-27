@@ -2,7 +2,7 @@
 module: products
 sources:
 - backend/src/modules/products
-last_scan: '2026-04-25'
+last_scan: '2026-04-27'
 primary_files:
 - backend/src/modules/products/controllers/products-admin.controller.ts
 - backend/src/modules/products/controllers/products-catalog.controller.ts
