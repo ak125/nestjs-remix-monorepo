@@ -55,6 +55,17 @@ esac
 commits_ahead="$(git log origin/main..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')"
 [ "${commits_ahead:-0}" -lt 1 ] && exit 0
 
+# Defence-in-depth against runaway auto-commit chains:
+# if the most recent commit is itself an auto-log entry, bail. The marker
+# file should already prevent re-fire on the same SHA, but if the hook is
+# invoked twice (parallel terminal, harness retry, marker race), this guard
+# guarantees we never produce two consecutive `chore(log): auto session
+# entry` commits.
+last_subject="$(git log -1 --pretty=%s 2>/dev/null || true)"
+case "$last_subject" in
+  "chore(log): auto session entry"*) exit 0 ;;
+esac
+
 # Idempotence: same SHA + same branch → already logged, skip.
 last_sha="$(cat "$LAST_SHA_FILE" 2>/dev/null || echo '')"
 last_branch="$(cat "$LAST_BRANCH_FILE" 2>/dev/null || echo '')"
