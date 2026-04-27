@@ -69,12 +69,36 @@ jobs:
       - name: Validate spec metadata
         run: |
           echo "Validating spec file metadata..."
-          
-          # Find all spec markdown files (excluding templates and README)
-          SPEC_FILES=$(find .spec -name "*.md" -not -path ".spec/templates/*" -not -name "README.md" || true)
-          
+
+          # Allow-list of directories where YAML frontmatter (title, status,
+          # version) is governance-required. Other .spec/ subdirs (00-canon,
+          # workflows, reports, marketing-module, tests, content-roles, plans,
+          # incidents, root .spec/*.md) are exempt because they pre-date the
+          # validator and contain ad-hoc notes/audits/legacy docs that don't
+          # carry the same governance contract. Adding a new dir here is an
+          # explicit choice — keeps the strict scope intentional.
+          STRICT_DIRS=(
+            "features"
+            "guides"
+            "database"
+            "runbooks"
+            "technical"
+            "types"
+            "architecture/decisions"
+          )
+
+          SPEC_FILES=""
+          for dir in "${STRICT_DIRS[@]}"; do
+            if [ -d ".spec/$dir" ]; then
+              files=$(find ".spec/$dir" -name "*.md" -not -path "*/templates/*" -not -name "README.md" 2>/dev/null || true)
+              if [ -n "$files" ]; then
+                SPEC_FILES="$SPEC_FILES $files"
+              fi
+            fi
+          done
+
           if [ -z "$SPEC_FILES" ]; then
-            echo "ℹ️ No spec files found yet (this is OK for initial setup)"
+            echo "ℹ️ No spec files in strict-validation directories"
             exit 0
           fi
           
