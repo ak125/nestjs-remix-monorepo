@@ -48,6 +48,10 @@ CREATE INDEX IF NOT EXISTS idx_gpc_built_at
 -- Cohérent avec la politique appliquée à __vehicle_page_cache (ADR-021).
 ALTER TABLE public.__gamme_page_cache ENABLE ROW LEVEL SECURITY;
 
+-- APPROVED: Idempotent DROP POLICY IF EXISTS pour rendre la migration ré-appliquable.
+-- Pattern identique à 20260420_vehicle_page_cache_schema.sql (ADR-016 mergée).
+-- La policy est immédiatement recréée juste après par CREATE POLICY (ligne suivante).
+-- Aucun risque de bypass RLS — la table reste ENABLE ROW LEVEL SECURITY entre les deux statements.
 DROP POLICY IF EXISTS gpc_service_role_all ON public.__gamme_page_cache;
 CREATE POLICY gpc_service_role_all
   ON public.__gamme_page_cache
