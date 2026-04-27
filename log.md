@@ -93,3 +93,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/r1-gamme-page-cache-phase1`
 - **Décision** : fix(r1-cache): add gamme_cache RPCs to allowlist + APPROVED comment for DROP POLICY (+2 other commits)
 - **Sortie** : PR #194 | commits 39c034be 8b289897 a95a8b74
+
+## 2026-04-27 — adr-027 r5→r3 voie b (audit + foundation + instrumentation)
+
+- **Branche** : `feat/diag-session-customer-fk-adr027` + vault `adr/027-r5-consolidation-r3-s2-diag`
+- **Décision** : Voie B retenue (consolidation R3 + qualité S2_DIAG). Levier "SEO massif symptômes" déjà tenté mars 2026 (1176 URLs → 15 clics, commit `a57cefc7`) → sunset confirmé. Phase A (ADR-027 vault, dette G1 résolue) + Phase B (FK `customer_id` + view `v_diag_funnel` + GA4 event `diagnostic_completed`) livrées. Phases C/D/E + leviers CRM/ads documentés dans knowledge note vault.
+- **Sortie** : vault PR #76 (ADR-027 + knowledge `r5-r3-consolidation-voie-b-session-20260425`) | monorepo PR #186 (commit 4f8ce9f6) | plan local `verifier-ce-que-mutable-cake.md`
