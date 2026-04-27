@@ -8,13 +8,13 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../../cache/cache.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { CacheService } from '@cache/cache.service';
 import {
   DomainValidationException,
   DatabaseException,
   ErrorCodes,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 
 // Interface des seuils Smart Action
 export interface SmartActionThresholds {

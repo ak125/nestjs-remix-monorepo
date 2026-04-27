@@ -17,7 +17,7 @@ import {
   OperationFailedException,
   DomainNotFoundException,
   DomainValidationException,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 
 /**
  * 📚 ContentController - Contrôleur pour guides, constructeurs et glossaire

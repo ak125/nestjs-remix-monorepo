@@ -16,10 +16,7 @@ import {
   McpAlertChannel,
   McpAlertingConfig,
 } from '../types/mcp-verify.types';
-import {
-  ExternalServiceException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { ExternalServiceException, ErrorCodes } from '@common/exceptions';
 
 @Injectable()
 export class McpAlertingService implements OnModuleInit {

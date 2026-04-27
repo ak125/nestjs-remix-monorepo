@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
-import { OperationFailedException } from '../../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CartAnalyticsService } from '../services/cart-analytics.service';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';

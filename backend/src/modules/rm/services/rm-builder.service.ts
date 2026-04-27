@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
-import { CacheService } from '../../../cache/cache.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { CacheService } from '@cache/cache.service';
 import {
   SeoTemplateService,
   type SeoContext,

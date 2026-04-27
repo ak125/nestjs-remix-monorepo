@@ -1,9 +1,9 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
-import { CacheService } from '../../cache/cache.service';
-import { DatabaseException, ErrorCodes } from '../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { CacheService } from '@cache/cache.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { MetaTagsArianeDataService } from '../../database/services/meta-tags-ariane-data.service';
 
 @Injectable()

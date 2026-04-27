@@ -16,8 +16,8 @@ import {
   UseGuards,
   Logger,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   UserManagementService,
   UserFilters,
@@ -27,7 +27,7 @@ import {
   OperationFailedException,
   DomainNotFoundException,
   DomainValidationException,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 
 @Controller('api/admin/users')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)

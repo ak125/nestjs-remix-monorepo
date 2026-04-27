@@ -1,7 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { MetaTagsArianeDataService } from '../../../database/services/meta-tags-ariane-data.service';
 
 export interface SystemMetric {

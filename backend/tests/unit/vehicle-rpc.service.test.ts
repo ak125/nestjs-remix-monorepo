@@ -11,10 +11,10 @@
  */
 import { Test, TestingModule } from '@nestjs/testing';
 import { VehicleRpcService } from '../../src/modules/vehicles/services/vehicle-rpc.service';
-import { CacheService } from '../../src/cache/cache.service';
-import { RpcGateService } from '../../src/security/rpc-gate/rpc-gate.service';
+import { CacheService } from '@cache/cache.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { ConfigService } from '@nestjs/config';
-import { DomainNotFoundException } from '../../src/common/exceptions';
+import { DomainNotFoundException } from '@common/exceptions';
 
 describe('VehicleRpcService', () => {
   let service: VehicleRpcService;

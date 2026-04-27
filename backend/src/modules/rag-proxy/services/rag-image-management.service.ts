@@ -14,7 +14,7 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { SupabaseStorageService } from '../../upload/services/supabase-storage.service';
 
 const VALID_TARGETS = ['pg_pic', 'pg_img', 'pg_wall', 'r3_slot'] as const;

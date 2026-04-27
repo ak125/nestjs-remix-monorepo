@@ -9,7 +9,7 @@
  * - Le frontend consomme, n'arbitre rien
  */
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import {
   type R1RelatedBlock,
   type R1RelatedBlocksPayload,

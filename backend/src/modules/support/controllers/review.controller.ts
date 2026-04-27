@@ -17,10 +17,7 @@ import {
   ReviewCreateRequest,
   ReviewFilters,
 } from '../services/review.service';
-import {
-  DomainNotFoundException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 
 @Controller('api/support/reviews')
 export class ReviewController {

@@ -6,9 +6,9 @@ import {
   ConfigQueryDto,
   ConfigType,
 } from '../dto/config.dto';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../../cache/cache.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { CacheService } from '@cache/cache.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 /** Raw row shape from ___config table */
 interface ConfigRow {

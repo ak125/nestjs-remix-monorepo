@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { OemPlatformMappingService } from './oem-platform-mapping.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 
 /**
  * 🚗 SERVICE DE COMPATIBILITÉ PIÈCES/VÉHICULES

@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { getErrorMessage } from '@common/utils/error.utils';
 import { MetricsService } from './metrics.service';
 
 export interface DatabaseHealth {

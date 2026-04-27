@@ -8,8 +8,8 @@ import {
   UseInterceptors,
   BadRequestException,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { AdminResponseInterceptor } from '../../../common/interceptors/admin-response.interceptor';
 import { DbGovernanceService } from '../../system/services/db-governance.service';
 import { MetricId } from '../../system/types/db-governance.types';

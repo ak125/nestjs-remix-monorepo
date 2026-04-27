@@ -7,7 +7,7 @@ import {
   Logger,
   BadRequestException,
 } from '@nestjs/common';
-import { OperationFailedException } from '../../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PaymentService } from '../services/payment.service';
 import { CyberplusService } from '../services/cyberplus.service';

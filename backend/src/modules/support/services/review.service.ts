@@ -5,13 +5,13 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { NotificationService } from './notification.service';
 import {
   DatabaseException,
   DomainValidationException,
   ErrorCodes,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 
 export interface ReviewData {
   msg_id: string;

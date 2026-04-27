@@ -20,8 +20,8 @@ import {
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { RAG_KNOWLEDGE_PATH } from '../../config/rag.config';
-import { CacheService } from '../../cache/cache.service';
-import { getErrorMessage } from '../../common/utils/error.utils';
+import { CacheService } from '@cache/cache.service';
+import { getErrorMessage } from '@common/utils/error.utils';
 import type {
   PipelineRun,
   PipelineRunStatus,

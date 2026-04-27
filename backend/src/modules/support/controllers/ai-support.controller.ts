@@ -13,7 +13,7 @@ import {
   DomainNotFoundException,
   DomainValidationException,
   ErrorCodes,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 import {
   AISentimentService,
   AICategorizationService,
@@ -29,7 +29,7 @@ import {
 } from '../services/ai-smart-response.service';
 import { ContactService } from '../services/contact.service';
 import { ReviewService } from '../services/review.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 export interface AIAnalysisRequest {
   type: 'ticket' | 'review';

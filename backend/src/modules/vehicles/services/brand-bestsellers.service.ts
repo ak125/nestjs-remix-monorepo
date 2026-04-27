@@ -8,15 +8,15 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { TABLES } from '@repo/database-types';
 import {
   buildModelImageUrl,
   buildGammeImageUrl,
 } from '../../catalog/utils/image-urls.utils';
 import { CACHE_STRATEGIES } from '../../../config/cache-ttl.config';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 import { normalizeTypeAlias } from '../../../common/utils/url-builder.utils';
 
 /**

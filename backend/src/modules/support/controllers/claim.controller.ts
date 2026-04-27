@@ -15,10 +15,7 @@ import {
   Claim,
   ClaimResolution,
 } from '../services/claim.service';
-import {
-  DomainNotFoundException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 
 @Controller('api/support/claims')
 export class ClaimController {

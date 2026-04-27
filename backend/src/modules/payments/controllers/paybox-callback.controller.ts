@@ -15,7 +15,7 @@ import { PaymentDataService } from '../repositories/payment-data.service';
 import { PayboxCallbackGateService } from '../services/paybox-callback-gate.service';
 import { MailService } from '../../../services/mail.service';
 import { CartDataService } from '../../../database/services/cart-data.service';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import * as crypto from 'crypto';
 import { PaymentStatus, PaymentMethod } from '../entities/payment.entity';
 import { normalizeOrderId } from '../utils/normalize-order-id';

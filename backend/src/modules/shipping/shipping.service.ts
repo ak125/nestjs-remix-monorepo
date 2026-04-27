@@ -4,8 +4,8 @@ import {
   DomainNotFoundException,
   DatabaseException,
   ErrorCodes,
-} from '../../common/exceptions';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+} from '@common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ShippingCalculatorService } from '../cart/services/shipping-calculator.service';
 
 /**

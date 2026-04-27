@@ -1,5 +1,5 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
 import { RagFoundationGateService } from '../../rag-proxy/services/rag-foundation-gate.service';
 import { AiContentService } from '../../ai-content/ai-content.service';

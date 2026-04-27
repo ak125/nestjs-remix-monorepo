@@ -18,8 +18,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import {
   DomainValidationException,
   DatabaseException,
-} from '../../../common/exceptions';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+} from '@common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ProfileService } from './profile.service';
 import { ConfigService } from '@nestjs/config';
 import { TABLES } from '@repo/database-types';

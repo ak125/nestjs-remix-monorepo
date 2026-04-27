@@ -11,7 +11,7 @@ import { Response } from 'express';
 import { PayboxService } from '../services/paybox.service';
 import { ConfigService } from '@nestjs/config';
 import { PaymentDataService } from '../repositories/payment-data.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 /**
  * Contrôleur pour la redirection vers la passerelle Paybox

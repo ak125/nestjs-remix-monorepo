@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 @Injectable()
 export class UserShipmentService extends SupabaseBaseService {

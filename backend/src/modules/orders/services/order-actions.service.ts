@@ -1,7 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import {
   ORDER_EVENTS,
   type OrderStatusChangedEvent,

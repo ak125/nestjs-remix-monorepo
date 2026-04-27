@@ -18,7 +18,7 @@ import { MessagesService } from './messages.service';
 import {
   OperationFailedException,
   DomainNotFoundException,
-} from '../../common/exceptions';
+} from '@common/exceptions';
 
 /** Extract message string from an unknown error */
 function getErrorMessage(error: unknown): string {

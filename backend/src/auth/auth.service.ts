@@ -22,7 +22,7 @@ import * as crypto from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 import { UserDataConsolidatedService } from '../modules/users/services/user-data-consolidated.service';
 import type { User } from '../modules/users/dto/user.dto';
-import { CacheService } from '../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { PasswordCryptoService } from '../shared/crypto/password-crypto.service';
 
 export interface AuthUser {

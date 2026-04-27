@@ -22,7 +22,7 @@ import {
   DeltaConfig,
 } from '../interfaces/sitemap-delta.interface';
 import { SitemapEntry } from '../interfaces/sitemap-config.interface';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 
 @Injectable()
 export class SitemapDeltaService {

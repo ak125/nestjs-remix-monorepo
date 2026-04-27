@@ -2,10 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { CreatePaymentDto } from '../dto/create-payment.dto';
-import {
-  DomainValidationException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DomainValidationException, ErrorCodes } from '@common/exceptions';
 
 @Injectable()
 export class PaymentValidationService {

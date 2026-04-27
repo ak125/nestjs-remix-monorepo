@@ -1,7 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 
 /**
  * Service pour les métadonnées du catalogue : gammes, marques, modèles, types

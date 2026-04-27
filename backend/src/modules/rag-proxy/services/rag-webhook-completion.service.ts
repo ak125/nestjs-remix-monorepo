@@ -8,7 +8,7 @@ import {
   type RagIngestionCompletedEvent,
 } from '../events/rag-ingestion.events';
 import type { WebJob } from '../rag-proxy.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 import { WebhookAuditService } from './webhook-audit.service';
 import { RagGammeDetectionService } from './rag-gamme-detection.service';
 import { RagRedisJobService } from './rag-redis-job.service';

@@ -7,8 +7,8 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { LegalVersionService } from './legal-version.service';
 import { LegalPageService } from './legal-page.service';
 

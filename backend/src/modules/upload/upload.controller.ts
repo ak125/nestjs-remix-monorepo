@@ -22,7 +22,7 @@ import {
   OperationFailedException,
   DomainValidationException,
   DomainNotFoundException,
-} from '../../common/exceptions';
+} from '@common/exceptions';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import {
   UploadService,
@@ -30,7 +30,7 @@ import {
   BulkUploadOptions,
 } from './services/upload.service';
 import { UploadType } from './dto/upload.dto';
-import { IsAdminGuard } from '../../auth/is-admin.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 
 @UseGuards(IsAdminGuard)
 @Controller('upload')

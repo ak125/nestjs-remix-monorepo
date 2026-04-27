@@ -1,9 +1,9 @@
 import { Controller, Get, Logger, Query } from '@nestjs/common';
-import { OperationFailedException } from '../../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import { PiecesAnalysisService } from '../services/pieces-analysis.service';
 import { SupabaseIndexationService } from '../services/supabase-indexation.service';
 import { MeilisearchService } from '../services/meilisearch.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 /**
  * 🔧 Contrôleur pour l'analyse des pièces

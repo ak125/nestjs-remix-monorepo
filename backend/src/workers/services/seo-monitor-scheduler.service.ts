@@ -8,8 +8,8 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { DatabaseException, ErrorCodes } from '../../common/exceptions';
-import { getErrorMessage } from '../../common/utils/error.utils';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 @Injectable()
 export class SeoMonitorSchedulerService implements OnModuleInit {

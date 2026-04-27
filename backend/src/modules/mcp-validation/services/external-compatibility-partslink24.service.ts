@@ -11,11 +11,8 @@ import {
   SOURCE_CONFIGS,
   sleep,
 } from './external-compatibility.types';
-import {
-  ExternalServiceException,
-  ErrorCodes,
-} from '../../../common/exceptions';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { ExternalServiceException, ErrorCodes } from '@common/exceptions';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 /**
  * PartLink24 Specialist Service

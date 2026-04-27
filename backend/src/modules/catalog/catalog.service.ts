@@ -1,10 +1,10 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
-import { DatabaseException, ErrorCodes } from '../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { TABLES } from '@repo/database-types';
-import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
-import { CacheService } from '../../cache/cache.service';
-import { getErrorMessage } from '../../common/utils/error.utils';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { CacheService } from '@cache/cache.service';
+import { getErrorMessage } from '@common/utils/error.utils';
 // 📁 backend/src/modules/catalog/catalog.service.ts
 // 🏗️ Service principal pour le catalogue - Orchestrateur des données
 

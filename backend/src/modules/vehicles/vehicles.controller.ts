@@ -9,7 +9,7 @@ import {
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { DomainNotFoundException } from '../../common/exceptions';
+import { DomainNotFoundException } from '@common/exceptions';
 import { Response } from 'express';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';

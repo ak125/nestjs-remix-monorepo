@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import * as crypto from 'crypto';
 import { AuthService } from '../auth.service';
 import { UserDataConsolidatedService } from '../../modules/users/services/user-data-consolidated.service';
-import { CacheService } from '../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { PasswordCryptoService } from '../../shared/crypto/password-crypto.service';
 import { TokenValidationDto } from '../dto/module-access.dto';
 

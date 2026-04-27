@@ -16,10 +16,7 @@ import {
   MCP_VERIFY_KEY,
   MCP_VERIFY_DEFAULTS,
 } from '../types/mcp-verify.types';
-import {
-  DomainValidationException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DomainValidationException, ErrorCodes } from '@common/exceptions';
 
 /**
  * @McpVerify() Decorator

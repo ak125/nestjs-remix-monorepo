@@ -11,7 +11,7 @@ import {
 import {
   OperationFailedException,
   DomainValidationException,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 import {
   ApiTags,
   ApiOperation,

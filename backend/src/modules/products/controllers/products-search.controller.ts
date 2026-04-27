@@ -6,7 +6,7 @@ import {
   Logger,
   UseInterceptors,
 } from '@nestjs/common';
-import { OperationFailedException } from '../../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from '../products.service';
@@ -17,7 +17,7 @@ import {
   PopularProductsSchema,
 } from '../schemas/product.schemas';
 import { ZodQueryValidationPipe } from '../../../common/pipes/zod-query-validation.pipe';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 @ApiTags('Products Search')
 @Controller('api/products')

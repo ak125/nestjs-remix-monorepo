@@ -3,13 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { fetch as undiciFetch, RequestInit as UndiciRequestInit } from 'undici';
 import { getAppConfig } from '../../config/app.config';
-import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { RpcGateContext } from '../../security/rpc-gate/rpc-gate.types';
 import {
   SupabaseRpcError,
   RpcBlockedError,
 } from '../../security/rpc-gate/rpc-gate.errors';
-import { ConfigurationException, ErrorCodes } from '../../common/exceptions';
+import { ConfigurationException, ErrorCodes } from '@common/exceptions';
 import { sleep } from '../../utils/promise-helpers';
 
 interface CircuitBreakerState {

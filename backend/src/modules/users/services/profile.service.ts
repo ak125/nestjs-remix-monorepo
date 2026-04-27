@@ -19,12 +19,12 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import {
   OperationFailedException,
   DatabaseException,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { UserDataConsolidatedService } from './user-data-consolidated.service';
 import { User } from '../dto/user.dto';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { UserResponseDto, UpdateProfileDto } from '../dto/users.dto';
 
 @Injectable()

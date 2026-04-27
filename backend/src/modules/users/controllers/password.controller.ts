@@ -18,7 +18,7 @@ import {
   AuthenticationException,
   DomainValidationException,
   OperationFailedException,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 import { PasswordService } from '../services/password.service';
 import { ZodValidationPipe } from '../../../common/pipes/zod-validation.pipe';
 import { ChangePasswordSchema } from '../dto/change-password.dto';
@@ -26,8 +26,8 @@ import {
   RequestPasswordResetSchema,
   UsePasswordResetTokenSchema,
 } from '../dto/password-reset.dto';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 
 @Controller('api/password')
 export class PasswordController {

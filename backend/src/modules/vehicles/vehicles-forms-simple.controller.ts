@@ -9,7 +9,7 @@ import { VehiclesService } from './vehicles.service';
 import { VehicleSearchService } from './services/search/vehicle-search.service';
 import { VehicleTypesService } from './services/data/vehicle-types.service';
 import { CacheInterceptor } from '@nestjs/cache-manager';
-import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
+import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
 
 /**
  * 🚗 CONTROLLER VEHICLES FORMS - Version optimisée

@@ -8,15 +8,15 @@
  */
 
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
-import { CacheService } from '../../../cache/cache.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { CacheService } from '@cache/cache.service';
 import {
   BusinessRuleException,
   DomainNotFoundException,
   DomainValidationException,
   ErrorCodes,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 import {
   GammeSeoThresholdsService,
   SmartActionThresholds,

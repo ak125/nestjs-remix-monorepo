@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
 import { readFileSync } from 'node:fs';
 import * as path from 'node:path';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { isSourceTypeBusinessAdmissible } from '../../../config/document-storage-policies';
 import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagFingerprintService } from './rag-fingerprint.service';

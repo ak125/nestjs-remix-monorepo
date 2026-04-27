@@ -5,7 +5,7 @@
  * No business logic — pure data access.
  */
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import type {
   AgenticRun,
   CreateRunInput,

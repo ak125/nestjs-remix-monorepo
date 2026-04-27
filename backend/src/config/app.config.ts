@@ -1,7 +1,7 @@
 // Configuration centralisée pour éviter les dépendances circulaires
 // Approche Context7 : centraliser la configuration
 
-import { ConfigurationException, ErrorCodes } from '../common/exceptions';
+import { ConfigurationException, ErrorCodes } from '@common/exceptions';
 
 // Re-export pour compatibilite — la source de verite est site.constants.ts
 export { SITE_ORIGIN } from './site.constants';

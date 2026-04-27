@@ -10,7 +10,7 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { SeoV4SwitchEngineService } from './services/seo-v4-switch-engine.service';
 import { SeoV4MonitoringService } from './services/seo-v4-monitoring.service';
 import {
