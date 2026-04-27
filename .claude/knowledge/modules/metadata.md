@@ -2,7 +2,7 @@
 module: metadata
 sources:
 - backend/src/modules/metadata
-last_scan: '2026-04-25'
+last_scan: '2026-04-27'
 primary_files:
 - backend/src/modules/metadata/controllers/breadcrumb-admin.controller.ts
 - backend/src/modules/metadata/controllers/optimized-breadcrumb.controller.ts
