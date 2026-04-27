@@ -21,6 +21,19 @@ Délimitation explicite :
 
 ---
 
+## Workspaces Claude Code — séparation dev / SEO
+
+Le monorepo expose deux **racines de session** Claude Code distinctes :
+
+| cwd | Surface chargée | Usage |
+|-----|-----------------|-------|
+| `/opt/automecanik/app/` | 8 skills DEV (`code-review`, `db-migration`, `frontend-design`, `governance-vault-ops`, `responsive-audit`, `session-log`, `ui-ux-pro-max`, `vehicle-ops`) — **0 agents** R*, **0 skills SEO** | dev backend/frontend, refactor, CI, ADR, governance |
+| `/opt/automecanik/app/workspaces/seo-batch/` | 39 agents R0-R8 + 16 skills SEO (`content-gen`, `kw-classify`, `pollution-scanner`, `seo-gamme-audit`, `r8-diversity-check`, `rag-check`, `v5-guardian`, …) | campagnes SEO, KW planning, content gen R*, RAG enrich |
+
+Pour les batchs SEO : `cd workspaces/seo-batch && claude`. Voir `workspaces/seo-batch/README.md`.
+
+---
+
 ## Mémoire codebase — lire `.claude/knowledge/` avant exploration
 
 **Avant** tout `Grep` / `Glob` / lecture en rafale pour répondre à une question
