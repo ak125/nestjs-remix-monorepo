@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 164,
+  "total": 174,
   "functions": [
     {
       "name": "__gov_m1_table_sizes",
@@ -513,6 +513,26 @@
       "name": "refresh_stale_vehicle_cache",
       "volatility": "VOLATILE",
       "reason": "ADR-016 cron helper, refresh N stale rows"
+    },
+    {
+      "name": "get_gamme_page_data_cached",
+      "volatility": "STABLE",
+      "reason": "ADR-024 Phase 1 cache-first RPC, reads from __gamme_page_cache (parity ADR-016)"
+    },
+    {
+      "name": "rebuild_gamme_page_cache",
+      "volatility": "VOLATILE",
+      "reason": "ADR-024 Phase 1 UPSERT into __gamme_page_cache (idempotent via source_hash, parity ADR-016)"
+    },
+    {
+      "name": "refresh_stale_gamme_cache",
+      "volatility": "VOLATILE",
+      "reason": "ADR-024 Phase 1 cron helper, refresh N stale rows (parity ADR-016)"
+    },
+    {
+      "name": "build_gamme_page_payload",
+      "volatility": "STABLE",
+      "reason": "ADR-024 Phase 1 internal builder used by rebuild_gamme_page_cache (parity ADR-016)"
     },
     {
       "name": "build_vehicle_page_payload",
