@@ -8,7 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { GammePageDataService } from './services/gamme-page-data.service';
-import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
+import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
 
 /**
  * 🚀 GAMME REST CONTROLLER OPTIMISÉ - Fallback classique

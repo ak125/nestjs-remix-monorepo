@@ -7,8 +7,8 @@ import { TABLES } from '@repo/database-types';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
-import { DatabaseException, ErrorCodes } from '../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 @Injectable()
 export class InvoicesService extends SupabaseBaseService {

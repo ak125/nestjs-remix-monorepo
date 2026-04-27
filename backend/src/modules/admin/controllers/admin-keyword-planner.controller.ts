@@ -17,8 +17,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { R1ContentFromRagService } from '../services/r1-content-from-rag.service';
 import { R1KeywordPlanBatchService } from '../services/r1-keyword-plan-batch.service';
 

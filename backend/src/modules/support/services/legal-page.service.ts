@@ -1,5 +1,5 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import type { LegalDocument } from './legal.service';
 
 /**

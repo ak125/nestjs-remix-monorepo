@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { SITE_ORIGIN } from '../../../config/app.config';
 
 export interface MetaTagsData {

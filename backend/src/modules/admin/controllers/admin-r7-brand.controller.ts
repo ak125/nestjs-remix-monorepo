@@ -12,8 +12,8 @@ import {
   NotFoundException,
   ParseIntPipe,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { R7BrandEnricherService } from '../services/r7-brand-enricher.service';
 import {
   BrandEditorialService,

@@ -13,7 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '../../src/auth/auth.service';
 import { UserDataConsolidatedService } from '../../src/modules/users/services/user-data-consolidated.service';
-import { CacheService } from '../../src/cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { PasswordCryptoService } from '../../src/shared/crypto/password-crypto.service';
 
 // ─── Shared mock fixtures ──────────────────────────────────────────────

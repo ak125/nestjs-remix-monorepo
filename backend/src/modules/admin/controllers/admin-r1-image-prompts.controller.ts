@@ -12,8 +12,8 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { R1ImagePromptService } from '../services/r1-image-prompt.service';
 
 @Controller('api/admin/r1-image-prompts')

@@ -18,7 +18,7 @@ import {
   ParseIntPipe,
   Logger,
 } from '@nestjs/common';
-import { OperationFailedException } from '../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import {
   ApiTags,
   ApiOperation,
@@ -31,7 +31,7 @@ import {
   DynamicSeoV4UltimateService,
   SeoVariables,
 } from './dynamic-seo-v4-ultimate.service';
-import { getErrorMessage } from '../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 @ApiTags('SEO - Dynamic V4')
 @Controller('api/seo-dynamic-v4')

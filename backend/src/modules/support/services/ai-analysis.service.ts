@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ContactTicket, ContactFormData } from './contact.service';
 import { ReviewData } from './review.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 export interface SentimentAnalysis {
   sentiment: 'positive' | 'negative' | 'neutral';

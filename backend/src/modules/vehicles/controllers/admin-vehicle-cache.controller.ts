@@ -26,11 +26,11 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { AdminResponseInterceptor } from '../../../common/interceptors/admin-response.interceptor';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { VehicleRpcService } from '../services/vehicle-rpc.service';
 
 @Controller('api/admin/vehicle-cache')

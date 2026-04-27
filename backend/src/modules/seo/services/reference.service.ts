@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { ContentWriteGateService } from '../../../config/content-write-gate.service';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { RoleId } from '../../../config/role-ids';

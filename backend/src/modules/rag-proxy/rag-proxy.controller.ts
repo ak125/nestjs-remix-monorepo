@@ -63,8 +63,8 @@ import {
   WebhookIngestionCompleteDto,
 } from './dto/webhook-ingest.dto';
 import { ZodValidationPipe } from '../../common/pipes/zod-validation.pipe';
-import { AuthenticatedGuard } from '../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { InternalApiKeyGuard } from '../../auth/internal-api-key.guard';
 import { existsSync } from 'node:fs';
 import path from 'node:path';

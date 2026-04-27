@@ -20,10 +20,10 @@ import {
 import {
   OperationFailedException,
   DomainValidationException,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 import { Request } from 'express';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   AdminGammesSeoService,
   GammeSeoUpdateData,

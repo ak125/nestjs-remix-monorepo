@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'node:crypto';
 import { execSync } from 'node:child_process';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import {
   RagProposalCreateInput,
   RagProposalMode,

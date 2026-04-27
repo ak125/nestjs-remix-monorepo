@@ -22,9 +22,9 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { SitemapV10XmlService } from './sitemap-v10-xml.service';
 import { SitemapV10DataService } from './sitemap-v10-data.service';
 import { SitemapV10StaticService } from './sitemap-v10-static.service';

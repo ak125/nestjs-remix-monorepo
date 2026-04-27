@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ErrorService } from '../services/error.service';
-import { DomainException } from '../../../common/exceptions';
+import { DomainException } from '@common/exceptions';
 import { RedirectException } from '../../../auth/redirected-error.exception';
 
 @Catch()

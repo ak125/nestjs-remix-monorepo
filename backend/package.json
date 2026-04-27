@@ -17,7 +17,7 @@
     "dev:no-redis": "nodemon --delay 3000ms --watch dist dist/main.js",
     "format": "prettier --write src/**/*.ts test/**/*.ts",
     "prebuild": "rimraf dist tsconfig.tsbuildinfo",
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' tsc --build",
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' tsc --build && tsc-alias -p tsconfig.json",
     "start": "node dist/main",
     "lint": "NODE_OPTIONS='--max-old-space-size=4096' eslint --cache --cache-location .eslintcache 'src/**/*.ts'",
     "typecheck": "NODE_OPTIONS='--max-old-space-size=4096' tsc --noEmit",
@@ -131,6 +131,7 @@
     "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.3",
     "ts-node": "^10.9.1",
+    "tsc-alias": "^1.8.16",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3",
     "zod-to-json-schema": "^3.25.1"

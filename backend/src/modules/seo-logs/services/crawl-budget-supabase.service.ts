@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 export interface CrawlBudgetExperiment {
   id: string;

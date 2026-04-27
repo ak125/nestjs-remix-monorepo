@@ -1,6 +1,6 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ErrorLog, ErrorMetrics } from '../entities/error-log.entity';
 
 interface ErrorEntry {

@@ -1,7 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../../cache/cache.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { CacheService } from '@cache/cache.service';
 // ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
 import { buildRackImageUrl } from '../../catalog/utils/image-urls.utils';
 

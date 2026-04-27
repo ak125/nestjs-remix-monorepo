@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import {
   DatabaseException,
   DomainNotFoundException,
   ErrorCodes,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 
 /**
  * 🔧 ConfigurationService - Service de configuration système

@@ -16,8 +16,8 @@ import {
   PdfIngestRunResponseDto,
   PdfIngestJobStatusResponseDto,
 } from '../dto/pdf-ingest.dto';
-import { getErrorMessage } from '../../../common/utils/error.utils';
-import { ExternalServiceException } from '../../../common/exceptions';
+import { getErrorMessage } from '@common/utils/error.utils';
+import { ExternalServiceException } from '@common/exceptions';
 import { RagRedisJobService, type WebJob } from './rag-redis-job.service';
 import { FrontmatterValidatorService } from './frontmatter-validator.service';
 import { RagGammeDetectionService } from './rag-gamme-detection.service';

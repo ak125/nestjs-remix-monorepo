@@ -11,8 +11,8 @@ import {
   Logger,
   UseGuards,
 } from '@nestjs/common';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import {
   SimpleDatabaseConfigService,
   DatabaseConfig,

@@ -6,7 +6,7 @@ import * as path from 'path';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const matter = require('gray-matter');
 
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { SITE_ORIGIN } from '../../../config/app.config';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 

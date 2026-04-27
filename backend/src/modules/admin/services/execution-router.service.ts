@@ -17,7 +17,7 @@ import { ModuleRef } from '@nestjs/core';
 import { EXECUTION_REGISTRY } from '../../../config/execution-registry.constants';
 import { RoleId, normalizeRoleId } from '../../../config/role-ids';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { BuyingGuideEnricherService } from '../services/buying-guide-enricher.service';
 import { ConseilEnricherService } from '../services/conseil-enricher.service';

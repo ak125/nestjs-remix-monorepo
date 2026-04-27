@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Queue } from 'bull';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { CartDataService } from '../../../database/services/cart-data.service';
 import { AbandonedCartDataService } from './abandoned-cart-data.service';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';

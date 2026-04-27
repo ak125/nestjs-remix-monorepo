@@ -1,7 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { createClient } from '@supabase/supabase-js';
 
 export interface HeaderData {

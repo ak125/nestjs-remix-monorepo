@@ -6,8 +6,8 @@
  */
 
 import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 
 @Controller('admin')
 @UseGuards(AuthenticatedGuard, IsAdminGuard)

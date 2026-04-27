@@ -12,9 +12,9 @@ import { Processor, Process, OnQueueError, OnQueueFailed } from '@nestjs/bull';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bull';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
-import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
-import { getErrorMessage } from '../../common/utils/error.utils';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { getErrorMessage } from '@common/utils/error.utils';
 import { AdminJobHealthService } from '../../modules/admin/services/admin-job-health.service';
 
 interface SeoMonitorJobData {

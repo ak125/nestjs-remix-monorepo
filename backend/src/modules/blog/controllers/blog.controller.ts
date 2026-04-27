@@ -18,13 +18,13 @@ import { ConstructeurService } from '../services/constructeur.service';
 import { GlossaryService } from '../services/glossary.service';
 import { AuthGuard } from '@nestjs/passport';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { IsAdminGuard } from '@auth/is-admin.guard';
+import { getErrorMessage } from '@common/utils/error.utils';
 import {
   OperationFailedException,
   DomainNotFoundException,
   DomainValidationException,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 
 /**
  * 📚 BlogController - Contrôleur principal du module blog

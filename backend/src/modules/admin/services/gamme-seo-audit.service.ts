@@ -8,7 +8,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 // Types d'actions trackées
 export type GammeSeoActionType =

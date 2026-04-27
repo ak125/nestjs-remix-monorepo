@@ -12,10 +12,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { LegalService, LegalDocument } from '../services/legal.service';
-import {
-  DomainNotFoundException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 
 @Controller('api/support/legal')
 export class LegalController {

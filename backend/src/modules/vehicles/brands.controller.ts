@@ -20,7 +20,7 @@ import {
   ParseIntPipe,
   Header,
 } from '@nestjs/common';
-import { OperationFailedException } from '../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import { VehicleBrandsService } from './services/data/vehicle-brands.service';
 import { VehicleModelsService } from './services/data/vehicle-models.service';
 import { VehicleTypesService } from './services/data/vehicle-types.service';

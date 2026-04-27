@@ -7,8 +7,8 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { PdfTextExtractorService } from '../../rag-proxy/services/pdf-text-extractor.service';
 import { PdfRagClassifierService } from '../../rag-proxy/services/pdf-rag-classifier.service';
 import { RagMdMergerService } from '../../rag-proxy/services/rag-md-merger.service';

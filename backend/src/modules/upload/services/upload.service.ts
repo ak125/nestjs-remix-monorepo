@@ -6,7 +6,7 @@
  */
 
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import { OperationFailedException } from '../../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseStorageService } from './supabase-storage.service';
 import { FileValidationService } from './file-validation.service';

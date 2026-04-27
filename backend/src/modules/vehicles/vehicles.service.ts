@@ -2,7 +2,7 @@ import { TABLES } from '@repo/database-types';
 import { Injectable, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { VehicleResponseDto } from './dto/vehicles.dto';
 import { buildBrandLogoUrl } from '../catalog/utils/image-urls.utils';
 

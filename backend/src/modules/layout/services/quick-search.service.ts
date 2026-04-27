@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 // import { DatabaseService } from '../../../database/database.service'; // Temporarily removed
 
 export interface QuickSearchResult {

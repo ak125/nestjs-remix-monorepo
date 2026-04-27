@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MeilisearchService } from './meilisearch.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 export interface FilterOption {
   value: string;

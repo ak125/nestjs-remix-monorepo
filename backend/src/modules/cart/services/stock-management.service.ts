@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
 

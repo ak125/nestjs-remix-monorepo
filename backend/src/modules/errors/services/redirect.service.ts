@@ -1,8 +1,8 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 export interface RedirectEntry {
   old_path: string;

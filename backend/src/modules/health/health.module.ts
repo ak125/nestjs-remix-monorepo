@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { Controller, Get } from '@nestjs/common';
 import { Injectable } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
-import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 
 @Injectable()
 export class HealthService {

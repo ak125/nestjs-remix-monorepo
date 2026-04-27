@@ -1,5 +1,5 @@
 import { registerAs } from '@nestjs/config';
-import { ConfigurationException, ErrorCodes } from '../common/exceptions';
+import { ConfigurationException, ErrorCodes } from '@common/exceptions';
 
 export enum PaymentMode {
   TEST = 'TEST',

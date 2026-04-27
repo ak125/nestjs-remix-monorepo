@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { MetaTagsArianeDataService } from '../../database/services/meta-tags-ariane-data.service';
 
 // 🎯 INTERFACES SEO (utilisées par dynamic-seo-v4-ultimate.service.ts)

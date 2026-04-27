@@ -1,8 +1,8 @@
 import { Controller, Get, Logger, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { KeywordDensityGateService } from '../services/keyword-density-gate.service';
 
 // Expected overlaps (source of truth: scripts/seo/expected-overlaps.json)

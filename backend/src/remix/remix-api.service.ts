@@ -8,7 +8,7 @@
 
 import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
 import { OrdersService } from '../database/services/orders.service';
-import { ExternalServiceException, ErrorCodes } from '../common/exceptions';
+import { ExternalServiceException, ErrorCodes } from '@common/exceptions';
 
 interface StaffMember {
   status: string;

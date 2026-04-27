@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { IntentExtractorService } from './intent-extractor.service';
 import { SubstitutionLoggerService } from './substitution-logger.service';
 import {
@@ -13,7 +13,7 @@ import {
   SubstitutionLock,
   SubstitutionDataResponse,
 } from '../types/substitution.types';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 /**
  * SubstitutionService - Moteur de Substitution Sémantique

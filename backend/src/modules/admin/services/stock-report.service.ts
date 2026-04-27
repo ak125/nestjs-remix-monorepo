@@ -6,8 +6,8 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import type {
   StockItem,
   StockStatistics,

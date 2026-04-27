@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 export interface ArchiveFilters {
   customerId?: number;

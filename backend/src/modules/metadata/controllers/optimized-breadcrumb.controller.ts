@@ -24,7 +24,7 @@ import {
   OptimizedBreadcrumbService,
   BreadcrumbItem,
 } from '../services/optimized-breadcrumb.service';
-import { OperationFailedException } from '../../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 
 @Controller('api/breadcrumb')
 export class OptimizedBreadcrumbController {

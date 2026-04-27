@@ -1,5 +1,5 @@
 import { Controller, Get, Logger, Param, Query } from '@nestjs/common';
-import { OperationFailedException } from '../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import { CrossSellingService } from './services/cross-selling.service';
 
 /**

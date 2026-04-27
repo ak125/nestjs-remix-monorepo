@@ -23,7 +23,7 @@ import {
   PageMetadata,
   MetadataUpdateData,
 } from '../services/optimized-metadata.service';
-import { OperationFailedException } from '../../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 
 @Controller('api/metadata')
 export class OptimizedMetadataController {

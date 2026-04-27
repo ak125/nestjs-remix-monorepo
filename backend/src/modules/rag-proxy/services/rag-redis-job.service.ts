@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { CacheService } from '../../../cache/cache.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { CacheService } from '@cache/cache.service';
+import { getErrorMessage } from '@common/utils/error.utils';
 import type { WebJob } from '../rag-proxy.service';
 
 export { type WebJob } from '../rag-proxy.service';

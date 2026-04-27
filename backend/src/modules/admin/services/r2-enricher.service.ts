@@ -20,7 +20,7 @@
 
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ContentWriteGateService } from '../../../config/content-write-gate.service';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { RoleId } from '../../../config/role-ids';

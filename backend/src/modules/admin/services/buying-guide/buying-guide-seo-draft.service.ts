@@ -1,6 +1,6 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { FeatureFlagsService } from '../../../../config/feature-flags.service';
 import { AiContentService } from '../../../ai-content/ai-content.service';
 import { PageBriefService } from '../page-brief.service';

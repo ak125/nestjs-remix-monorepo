@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { MetaTagsArianeDataService } from '../../../database/services/meta-tags-ariane-data.service';
 

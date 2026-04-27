@@ -6,12 +6,9 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../../cache/cache.service';
-import {
-  ExternalServiceException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { CacheService } from '@cache/cache.service';
+import { ExternalServiceException, ErrorCodes } from '@common/exceptions';
 
 export interface UserFilters {
   isActive?: boolean;

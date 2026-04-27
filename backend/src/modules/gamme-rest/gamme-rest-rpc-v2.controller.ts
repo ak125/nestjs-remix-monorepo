@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { GammeResponseBuilderService } from './services';
 import { GammeRpcService } from './services/gamme-rpc.service';
-import { CacheService } from '../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 
 interface SupabaseRpcError {
   message?: string;

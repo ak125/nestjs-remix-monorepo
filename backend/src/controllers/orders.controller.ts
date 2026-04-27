@@ -1,8 +1,5 @@
 import { Controller, Get, Param, Query, Logger } from '@nestjs/common';
-import {
-  OperationFailedException,
-  DomainException,
-} from '../common/exceptions';
+import { OperationFailedException, DomainException } from '@common/exceptions';
 import { OrdersService } from '../database/services/orders.service';
 
 @Controller('api/legacy-orders')

@@ -9,10 +9,10 @@
 
 import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RagChangeWatcherService } from '../../../workers/services/rag-change-watcher.service';
 
 type Phase = 'DISABLED' | 'A' | 'B' | 'C' | 'C_BREAKER';

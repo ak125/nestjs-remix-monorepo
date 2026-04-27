@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { AdminJobHealthService } from './admin-job-health.service';
 import type { JobHealthRow } from './admin-job-health.service';
 

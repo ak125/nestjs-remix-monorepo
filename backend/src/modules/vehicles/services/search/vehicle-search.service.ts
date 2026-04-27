@@ -1,6 +1,6 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { VehicleCacheService, CacheType } from '../core/vehicle-cache.service';
 import { VehicleEnrichmentService } from '../core/vehicle-enrichment.service';
 import { PaginationOptions, VehicleResponse } from '../../types/vehicle.types';

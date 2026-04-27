@@ -1,12 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
-import { CacheService } from '../../../cache/cache.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
-import {
-  DomainNotFoundException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { CacheService } from '@cache/cache.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 import { GammeRpcAggregatedDataSchema } from './gamme-rpc.schema';
 
 interface SeoFragmentRow {

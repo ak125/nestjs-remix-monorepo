@@ -9,7 +9,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import { VehicleRagGeneratorService } from './vehicle-rag-generator.service';
 import {

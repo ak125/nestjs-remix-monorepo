@@ -12,10 +12,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { FaqService, FAQ, FAQCategory } from '../services/faq.service';
-import {
-  DomainNotFoundException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 
 @Controller('api/support/faq')
 export class FaqController {

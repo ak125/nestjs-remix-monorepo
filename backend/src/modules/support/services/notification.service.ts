@@ -1,9 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupportConfigService } from './support-config.service';
-import {
-  getErrorMessage,
-  getErrorStack,
-} from '../../../common/utils/error.utils';
+import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
 
 export interface NotificationPayload {
   type: 'contact' | 'review' | 'quote' | 'claim' | 'faq' | 'system';
