@@ -1,3 +1,11 @@
+---
+title: "ADR-007: AI Orchestrator Architecture"
+status: accepted
+version: 1.0.0
+authors: [Backend Team]
+created: 2025-12-29
+---
+
 # ADR-007: Architecture AI Orchestrator
 
 ## Statut

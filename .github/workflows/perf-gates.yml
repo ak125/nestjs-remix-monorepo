@@ -55,11 +55,15 @@ jobs:
         run: |
           npm run start &
           echo "⏳ Waiting for server to start..."
-          # 180s needed because backend does cache warming (176 gammes + hierarchy + homepage)
+          # 300s needed because backend does cache warming (176 gammes + hierarchy + homepage)
           # at onApplicationBootstrap. In local dev this takes ~5s; in CI runners with
-          # remote Supabase, cold RPCs, and slow network it can take 60-120s.
-          # Previous timeout=60 caused exit 124 even though backend would eventually start.
-          timeout 180 bash -c 'until curl -s http://localhost:3000/health > /dev/null 2>&1; do sleep 2; done'
+          # remote Supabase, cold RPCs, and slow network it can take 60-180s — and
+          # occasionally up to ~280s under load (observed exit 124 at 180s on PR #190
+          # while server logs showed "Démarrage du serveur" + "Redis connecté" with
+          # no further output, indicating the cache-warm onApplicationBootstrap was
+          # still in progress). Job-level timeout-minutes:15 still caps total runtime
+          # if cold-path is genuinely broken.
+          timeout 300 bash -c 'until curl -s http://localhost:3000/health > /dev/null 2>&1; do sleep 2; done'
           echo "✅ Server is ready"
         env:
           NODE_ENV: production

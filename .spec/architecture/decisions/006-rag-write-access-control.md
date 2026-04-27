@@ -1,3 +1,11 @@
+---
+title: "ADR-006: RAG Write Access Control"
+status: accepted
+version: 1.0.0
+authors: [Backend Team]
+created: 2025-12-28
+---
+
 # ADR-006: Controle d'Acces en Ecriture au RAG
 
 ## Statut
