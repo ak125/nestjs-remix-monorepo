@@ -18,9 +18,27 @@ updates:
       - dependency-name: "@remix-run/*"
         update-types: ["version-update:semver-major"]
     groups:
+      audit-tools:
+        # Audit tools have their own group because bumping them shifts the
+        # baseline counters in audit-reports/phase0-baseline.json. Reviewer
+        # is expected to refresh the baseline (`npm run audit:baseline:refresh`)
+        # in the same PR, otherwise the deterministic gate fires a false
+        # regression. Keeping them out of dev-dependencies preserves a clean
+        # signal on the main dev-deps bumps.
+        patterns:
+          - "knip"
+          - "madge"
+          - "dependency-cruiser"
+          - "@ast-grep/cli"
+        update-types: ["minor", "patch"]
       dev-dependencies:
         dependency-type: "development"
         update-types: ["minor", "patch"]
+        exclude-patterns:
+          - "knip"
+          - "madge"
+          - "dependency-cruiser"
+          - "@ast-grep/cli"
 
   - package-ecosystem: "docker"
     directory: "/"

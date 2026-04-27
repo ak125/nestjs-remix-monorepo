@@ -1,7 +1,13 @@
 {
-  "version": 1,
+  "version": 2,
   "captured_at": "2026-04-24",
   "captured_on_commit": "c18cd233",
+  "tool_versions": {
+    "knip": "6.6.2",
+    "madge": "8.0.0",
+    "dependency-cruiser": "17.3.10",
+    "@ast-grep/cli": "0.42.1"
+  },
   "thresholds": {
     "unused_files_delta": 5,
     "unused_exports_delta": 10,
