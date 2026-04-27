@@ -136,8 +136,13 @@ export class GammeRpcService extends SupabaseBaseService {
     });
 
     // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+    // ADR-024 Phase 5a: bascule vers get_gamme_page_data_cached (cache-first
+    // sur __gamme_page_cache, rebuild-on-miss). Identité de payload garantie
+    // par construction (la fonction cached délègue à build_gamme_page_payload
+    // qui wrappe l'ancienne RPC). Hot path: ~5ms (cache hit), cold path: même
+    // qu'avant + UPSERT du cache pour le hit suivant.
     const rpcPromise = this.callRpc<Record<string, unknown>>(
-      'get_gamme_page_data_optimized',
+      'get_gamme_page_data_cached',
       { p_pg_id: pgIdNum },
       { source: 'api' },
     );

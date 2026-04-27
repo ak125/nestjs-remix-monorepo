@@ -33,6 +33,31 @@ export class R1RelatedResourcesService extends SupabaseBaseService {
     pgName: string,
     _options?: { referenceSlug?: string | null },
   ): Promise<R1RelatedBlocksPayload> {
+    // ADR-024 Phase 5a: cache-first via get_r1_related_blocks_cached.
+    // Hit (~5ms) = retour immédiat sans RAG fs read ni 3 sub-queries.
+    // Miss (NULL ou stale=TRUE) = fallback sur le calcul legacy ci-dessous.
+    try {
+      const { data: cachedPayload, error } =
+        await this.callRpc<R1RelatedBlocksPayload | null>(
+          'get_r1_related_blocks_cached',
+          { p_pg_id: pgId },
+          { source: 'api' },
+        );
+      if (
+        !error &&
+        cachedPayload &&
+        Array.isArray(cachedPayload.blocks) &&
+        cachedPayload.blocks.length > 0
+      ) {
+        return cachedPayload;
+      }
+    } catch (e) {
+      this.logger.debug(
+        `[R1-related-cache] miss/error pg_id=${pgId}, fallback legacy: ${e instanceof Error ? e.message : e}`,
+      );
+    }
+
+    // Cache miss / empty / error → legacy path (RAG fs read + 3 sub-queries).
     // Lire le RAG (virtual merge si flag ON)
     const mergeResult =
       await this.ragReader.readAndParseWithDbKnowledge(pgAlias);
