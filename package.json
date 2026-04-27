@@ -37,6 +37,7 @@
     "audit:baseline": "node scripts/cleanup/audit-compare-baseline.js",
     "audit:baseline:json": "node scripts/cleanup/audit-compare-baseline.js --json",
     "audit:baseline:strict": "node scripts/cleanup/audit-compare-baseline.js --strict",
+    "audit:baseline:refresh": "node scripts/cleanup/audit-compare-baseline.js --refresh",
     "audit:all": "npm run audit:ast && npm run audit:madge && npm run audit:depcruise && npm run audit:knip"
   },
   "keywords": [],
