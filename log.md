@@ -87,3 +87,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/r1-gamme-page-cache-phase1`
 - **Décision** : feat(r1-cache): adr-024 phase 1 gamme_page_cache scaffolding (no runtime impact)
 - **Sortie** : PR #194 | commits a95a8b74
+
+## 2026-04-27 — feat/r1-gamme-page-cache-phase1 (auto)
+
+- **Branche** : `feat/r1-gamme-page-cache-phase1`
+- **Décision** : fix(r1-cache): add gamme_cache RPCs to allowlist + APPROVED comment for DROP POLICY (+2 other commits)
+- **Sortie** : PR #194 | commits 39c034be 8b289897 a95a8b74
