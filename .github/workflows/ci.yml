@@ -851,6 +851,14 @@ jobs:
           check_timing "$BASE/" "Homepage" 2000
           check_timing "$BASE/pieces/catalogue" "/pieces/catalogue" 2000
           check_timing "$BASE/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html" "R2 Product Page" 3000
+          # ADR-024 R1 gamme perf gate (parity R2). Backed by __gamme_page_cache (Phase 1) +
+          # SSR cache-first read path (Phase 5a). Hot-path target ~5ms (PK lookup),
+          # cold-path/legacy ceiling 3000ms. Top 5 G1 gammes covering bulk of indexed traffic.
+          check_timing "$BASE/pieces/plaquette-de-frein-402.html"        "R1 Gamme (plaquette-de-frein)"  3000
+          check_timing "$BASE/pieces/disque-de-frein-82.html"            "R1 Gamme (disque-de-frein)"     3000
+          check_timing "$BASE/pieces/filtre-a-huile-7.html"              "R1 Gamme (filtre-a-huile)"      3000
+          check_timing "$BASE/pieces/filtre-a-air-8.html"                "R1 Gamme (filtre-a-air)"        3000
+          check_timing "$BASE/pieces/courroie-de-distribution-306.html"  "R1 Gamme (courroie-distribution)" 3000
 
       - name: ⏱️ API Timing Gate (blocking)
         run: |
