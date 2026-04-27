@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "generated_at": "2026-02-03T14:00:00Z",
   "description": "RPC READ_SAFE - Autorisees pour tous les roles",
-  "total": 174,
+  "total": 175,
   "functions": [
     {
       "name": "__gov_m1_table_sizes",
@@ -533,6 +533,11 @@
       "name": "build_gamme_page_payload",
       "volatility": "STABLE",
       "reason": "ADR-024 Phase 1 internal builder used by rebuild_gamme_page_cache (parity ADR-016)"
+    },
+    {
+      "name": "get_r1_related_blocks_cached",
+      "volatility": "STABLE",
+      "reason": "ADR-024 Phase 2 cache-first lookup for R1 related blocks (sortir RAG fs read du SSR)"
     },
     {
       "name": "build_vehicle_page_payload",
