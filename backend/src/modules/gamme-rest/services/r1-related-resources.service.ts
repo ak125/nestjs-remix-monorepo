@@ -8,6 +8,7 @@
  * - Blocs vides non retournés
  * - Le frontend consomme, n'arbitre rien
  */
+import { createHash } from 'crypto';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import {
@@ -191,4 +192,130 @@ export class R1RelatedResourcesService extends SupabaseBaseService {
   }
 
   // RAG lecture centralisée via RagGammeReaderService (injecté)
+
+  // ========================================================================
+  // ADR-024 Phase 2 — __seo_r1_related_blocks_cache
+  //
+  // Méthodes idempotentes pour matérialiser les blocks dans la table cache,
+  // afin que la Phase 5 puisse retirer le RAG filesystem read du chemin SSR.
+  // Phase 2 = ces méthodes existent et sont appelables via admin endpoint,
+  // mais le chemin de lecture SSR continue d'appeler buildRelatedBlocks
+  // (qui relit le RAG à chaque hit). Phase 5 fera basculer.
+  // ========================================================================
+
+  async rebuildCacheForGamme(
+    pgId: number,
+    pgAlias: string,
+    pgName: string,
+  ): Promise<{ built: boolean; blocks_count: number }> {
+    const payload = await this.buildRelatedBlocks(pgId, pgAlias, pgName);
+    const sourceHash = createHash('md5')
+      .update(JSON.stringify(payload))
+      .digest('hex');
+
+    const { error } = await this.supabase
+      .from('__seo_r1_related_blocks_cache')
+      .upsert(
+        {
+          pg_id: pgId,
+          payload,
+          source_hash: sourceHash,
+          built_at: new Date().toISOString(),
+          stale: false,
+          stale_reason: null,
+        },
+        { onConflict: 'pg_id' },
+      );
+
+    if (error) {
+      this.logger.error(
+        `[R1-related-cache] upsert failed pg_id=${pgId}: ${error.message}`,
+      );
+      throw error;
+    }
+
+    return { built: true, blocks_count: payload.blocks.length };
+  }
+
+  async rebuildCacheForAllG1G2(): Promise<{
+    total: number;
+    built: number;
+    failed: number;
+    duration_ms: number;
+  }> {
+    const t0 = Date.now();
+    const { data: gammes, error } = await this.supabase
+      .from('pieces_gamme')
+      .select('pg_id, pg_alias, pg_name, pg_level')
+      .in('pg_level', ['1', '2']);
+
+    if (error || !gammes?.length) {
+      throw error ?? new Error('No G1/G2 gammes found');
+    }
+
+    let built = 0;
+    let failed = 0;
+    for (const g of gammes) {
+      try {
+        const pgIdNum =
+          typeof g.pg_id === 'number' ? g.pg_id : parseInt(String(g.pg_id), 10);
+        if (!Number.isFinite(pgIdNum) || pgIdNum <= 0) {
+          failed++;
+          continue;
+        }
+        await this.rebuildCacheForGamme(
+          pgIdNum,
+          String(g.pg_alias ?? ''),
+          String(g.pg_name ?? ''),
+        );
+        built++;
+      } catch (e) {
+        failed++;
+        this.logger.warn(
+          `[R1-related-cache] gamme pg_id=${g.pg_id} failed: ${e instanceof Error ? e.message : e}`,
+        );
+      }
+    }
+
+    return {
+      total: gammes.length,
+      built,
+      failed,
+      duration_ms: Date.now() - t0,
+    };
+  }
+
+  async getCacheStats(): Promise<{
+    total: number;
+    stale: number;
+    oldest_built_at: string | null;
+    newest_built_at: string | null;
+  }> {
+    const [{ count: total }, { count: stale }, { data: oldestRaw }] =
+      await Promise.all([
+        this.supabase
+          .from('__seo_r1_related_blocks_cache')
+          .select('*', { count: 'exact', head: true }),
+        this.supabase
+          .from('__seo_r1_related_blocks_cache')
+          .select('*', { count: 'exact', head: true })
+          .eq('stale', true),
+        this.supabase
+          .from('__seo_r1_related_blocks_cache')
+          .select('built_at')
+          .order('built_at', { ascending: true })
+          .limit(1),
+      ]);
+    const { data: newestRaw } = await this.supabase
+      .from('__seo_r1_related_blocks_cache')
+      .select('built_at')
+      .order('built_at', { ascending: false })
+      .limit(1);
+    return {
+      total: total ?? 0,
+      stale: stale ?? 0,
+      oldest_built_at: oldestRaw?.[0]?.built_at ?? null,
+      newest_built_at: newestRaw?.[0]?.built_at ?? null,
+    };
+  }
 }
