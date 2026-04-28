@@ -32,8 +32,11 @@ except ImportError:
     sys.exit(1)
 
 # === CONFIG ===
-GAMMES_DIR = "/opt/automecanik/rag/knowledge/gammes"
-WEB_DIR = "/opt/automecanik/rag/knowledge/web"
+# AUTOMECANIK_RAW_PATH overrides the rag-knowledge root for ADR-031 Phase D.
+# Default keeps the legacy location so unset = no behavioral change.
+RAW_KNOWLEDGE_ROOT = os.getenv("AUTOMECANIK_RAW_PATH", "/opt/automecanik/rag/knowledge")
+GAMMES_DIR = f"{RAW_KNOWLEDGE_ROOT}/gammes"
+WEB_DIR = f"{RAW_KNOWLEDGE_ROOT}/web"
 REQUEST_DELAY = 1.2
 MAX_RETRIES = 2
 TIMEOUT = 12

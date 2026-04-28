@@ -18,9 +18,12 @@ import argparse
 from collections import defaultdict
 from datetime import datetime
 
-WEB_DIR = "/opt/automecanik/rag/knowledge/web"
-WEB_CATALOG_DIR = "/opt/automecanik/rag/knowledge/web-catalog"
-GAMMES_DIR = "/opt/automecanik/rag/knowledge/gammes"
+# AUTOMECANIK_RAW_PATH overrides the rag-knowledge root for ADR-031 Phase D.
+# Default keeps the legacy location so unset = no behavioral change.
+RAW_KNOWLEDGE_ROOT = os.getenv("AUTOMECANIK_RAW_PATH", "/opt/automecanik/rag/knowledge")
+WEB_DIR = f"{RAW_KNOWLEDGE_ROOT}/web"
+WEB_CATALOG_DIR = f"{RAW_KNOWLEDGE_ROOT}/web-catalog"
+GAMMES_DIR = f"{RAW_KNOWLEDGE_ROOT}/gammes"
 
 # === MAPPING GAMME → TERMES DE RECHERCHE ===
 # Chaque gamme a des termes FR + EN qui matchent dans le contenu web
