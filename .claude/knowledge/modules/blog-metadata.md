@@ -2,7 +2,7 @@
 module: blog-metadata
 sources:
 - backend/src/modules/blog-metadata
-last_scan: '2026-04-27'
+last_scan: '2026-04-28'
 primary_files:
 - backend/src/modules/blog-metadata/blog-metadata.controller.ts
 - backend/src/modules/blog-metadata/blog-metadata.module.ts
