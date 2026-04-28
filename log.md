@@ -40,6 +40,12 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 
 # Timeline
 
+## 2026-04-27 — INC-2026-010 fix root-cause 503 R8 + steady state J+2
+
+- **Branche** : `fix/inc-2026-007-build-vehicle-page-payload-optim` (monorepo) + `incident/inc-2026-007-503-vehicle-build-payload-slow` (vault) — note : nom branches garde `007` historique, ID incident vault renumerote `INC-2026-010` post collision detectee par CI vault
+- **Décision** : Root-cause 503 R8 vehicle pages = `build_vehicle_page_payload` cree par Phase 1 ADR-016 (21/04) avec sous-requete `catalog` qui force le PK 12 GB au lieu de l'index covering 4 GB existant (~2 s rebuild vs timeout 2 s = 503). Fix structurel : reecriture en deux phases (CTE) -> warm 27 ms (-96 %) + steady-state guarantees (cron one-shot backfill + trigger auto_type + wrapper canon mark_stale_with_followup_rebuild + check CI guard). Validation J+2 : stale=0/28 505, watcher auto-unschedule, page 34746 = 200, stress 100 hits = 100/100 = 200.
+- **Sortie** : PR monorepo #167 OPEN (4 commits, 4 migrations DB + 2 controllers NestJS + instrumentation loader Remix + smoke 12 URLs + check CI) | PR vault #65 OPEN (post-mortem INC-2026-010 + steady state J+2 + fix CI G2/wikilinks) | DB deja patchee en prod via MCP (idempotent) | Reste : merge user PR #167 + tag semver pour deploy PROD, Etape 6 RPC_TIMEOUT_MS=500 (post-merge), Etape 10 ADR-016 accepted (J+7 = 2026-05-02), J+14 verif __error_logs + GSC
+
 ## 2026-04-25 — bootstrap log.md timeline
 
 - **Branche** : `chore/log-md-session-timeline-1777110107`
@@ -81,6 +87,12 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-department-phase-2a`
 - **Décision** : feat(seo-department): phase 2a - audit findings table + canonical auditor
 - **Sortie** : PR #174 | commits 9581f6c2
+
+## 2026-04-25 — fix/inc-2026-007-build-vehicle-page-payload-optim (auto)
+
+- **Branche** : `fix/inc-2026-007-build-vehicle-page-payload-optim`
+- **Décision** : fix(ci): smoke /constructeurs/* — replace inactive type + redirect URL with valid ones (+3 other commits)
+- **Sortie** : PR #167 | commits 84aa9655 9dc8f71b 26d3cea0 26812832
 
 ## 2026-04-27 — feat/r1-gamme-page-cache-phase1 (auto)
 

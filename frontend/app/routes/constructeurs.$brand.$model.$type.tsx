@@ -79,6 +79,38 @@ export const links: LinksFunction = () => [
 const loaderCache = new Map<string, { data: LoaderData; timestamp: number }>();
 const CACHE_TTL = 60000; // 1 minute
 
+// 📡 INC-2026-007 — Comble le blindspot __error_logs : notifie le backend
+// avant chaque throw 503 du loader. Fire-and-forget, jamais bloquant.
+async function notify503ToErrorLog(
+  url: string,
+  subject: string,
+  message: string,
+  metadata?: Record<string, unknown>,
+): Promise<void> {
+  const internalKey = process.env.INTERNAL_API_KEY;
+  if (!internalKey) return;
+
+  try {
+    await fetch(`${getInternalApiUrl("")}/api/internal/error-log`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Internal-Key": internalKey,
+      },
+      body: JSON.stringify({
+        status: 503,
+        url,
+        subject,
+        message,
+        metadata,
+      }),
+      signal: AbortSignal.timeout(500), // ne jamais bloquer le loader
+    }).catch(() => {});
+  } catch {
+    // best-effort, jamais bloquant
+  }
+}
+
 // Types, transform, schema, constants moved to components/vehicle/r8/
 // - r8.types.ts        : VehicleData, CatalogFamily, PopularPart, SEOData, R8Block, R8Content, LoaderData
 // - r8-transform.ts    : transformRpcToLoaderData (RPC → LoaderData, pure)
@@ -212,6 +244,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
         throw new Response("Véhicule supprimé du catalogue", { status: 410 });
       }
       // Vrais erreurs serveur → 503 (Google réessaye) au lieu de 500
+      await notify503ToErrorLog(
+        `/constructeurs/${brand}/${model}/${type}`,
+        "LOADER_503_BACKEND_RPC_ERROR",
+        `Backend page-data-rpc returned HTTP ${rpcResponse.status} for type_id=${type_id}`,
+        { type_id, backend_status: rpcResponse.status },
+      );
       throw new Response("Service temporairement indisponible", {
         status: 503,
       });
@@ -225,6 +263,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
       (error.name === "AbortError" || error.name === "TimeoutError")
     ) {
       logger.error(`⏱️ [RPC] Timeout 10s pour type_id=${type_id}`);
+      await notify503ToErrorLog(
+        `/constructeurs/${brand}/${model}/${type}`,
+        "LOADER_503_RPC_TIMEOUT",
+        `Backend page-data-rpc timeout (10s) for type_id=${type_id}`,
+        { type_id, timeout_ms: 10000 },
+      );
       throw new Response("Service temporairement indisponible", {
         status: 503,
       });
@@ -235,6 +279,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
     }
     // Autres erreurs → 503 (Google réessaye) au lieu de 500
     logger.error(`❌ [RPC] Erreur fetch pour type_id=${type_id}:`, error);
+    await notify503ToErrorLog(
+      `/constructeurs/${brand}/${model}/${type}`,
+      "LOADER_503_RPC_FETCH_ERROR",
+      `Backend page-data-rpc fetch failed for type_id=${type_id}: ${error instanceof Error ? error.message : String(error)}`,
+      { type_id, error_name: error instanceof Error ? error.name : "unknown" },
+    );
     throw new Response("Service temporairement indisponible", { status: 503 });
   }
 
@@ -242,6 +292,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
     logger.error("❌ [RPC] Données invalides:", rpcResult);
     // 503 et non 410 : le véhicule peut exister mais le service a échoué.
     // 410 causerait une désindexation Google permanente.
+    await notify503ToErrorLog(
+      `/constructeurs/${brand}/${model}/${type}`,
+      "LOADER_503_RPC_INVALID_PAYLOAD",
+      `Backend returned 200 but payload invalid for type_id=${type_id}`,
+      {
+        type_id,
+        payload_success: rpcResult.success,
+        has_vehicle: !!rpcResult.data?.vehicle,
+      },
+    );
     throw new Response("Service temporairement indisponible", { status: 503 });
   }
 
