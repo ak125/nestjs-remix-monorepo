@@ -44,10 +44,9 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
     }).compile();
 
     service = module.get(MaintenanceCalculatorService);
-    // Override the protected supabase client with our mock
-    (service as unknown as { supabase: { rpc: jest.Mock } }).supabase = {
-      rpc: mockRpc,
-    };
+    // Override the protected callRpc method (gate-aware wrapper from
+    // SupabaseBaseService) — RPC Safety Gate compliant.
+    (service as unknown as { callRpc: typeof mockRpc }).callRpc = mockRpc;
   });
 
   describe('getSchedule()', () => {

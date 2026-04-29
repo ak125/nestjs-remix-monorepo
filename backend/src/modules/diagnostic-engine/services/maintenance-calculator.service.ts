@@ -65,13 +65,14 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
     currentKm: number,
     fuelType?: string | null,
   ): Promise<MaintenanceScheduleItem[]> {
-    const { data, error } = await this.supabase.rpc(
+    const { data, error } = await this.callRpc<MaintenanceScheduleItem[]>(
       'kg_get_smart_maintenance_schedule',
       {
         p_type_id: typeId,
         p_current_km: currentKm,
         p_fuel_type: fuelType ?? null,
       },
+      { source: 'MaintenanceCalculatorService.getSchedule' },
     );
 
     if (error) {
@@ -80,7 +81,7 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
       );
       return [];
     }
-    return (data ?? []) as MaintenanceScheduleItem[];
+    return data ?? [];
   }
 
   /**
@@ -94,12 +95,13 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
     fuelType?: string | null,
     milestones: number[] = DEFAULT_MILESTONES,
   ): Promise<MaintenanceAlertMilestone[]> {
-    const { data, error } = await this.supabase.rpc(
+    const { data, error } = await this.callRpc<MaintenanceAlertMilestone[]>(
       'kg_get_maintenance_alerts_by_milestone',
       {
         p_milestones: milestones,
         p_fuel_type: fuelType ?? null,
       },
+      { source: 'MaintenanceCalculatorService.getAlerts' },
     );
 
     if (error) {
@@ -108,6 +110,6 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
       );
       return [];
     }
-    return (data ?? []) as MaintenanceAlertMilestone[];
+    return data ?? [];
   }
 }
