@@ -10,7 +10,10 @@
  * @see backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts
  * @see governance-vault/ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md
  */
-import { jest, describe, it, expect, beforeEach } from '@jest/globals';
+// Note: jest globals (describe/it/expect/beforeEach/jest) are auto-injected
+// by ts-jest preset. Pattern aligned on tests/unit/rag-proxy.service.test.ts.
+// Do NOT import from '@jest/globals' (strict typing breaks
+// mockResolvedValueOnce<T>() inference).
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { MaintenanceCalculatorService } from '../../src/modules/diagnostic-engine/services/maintenance-calculator.service';
