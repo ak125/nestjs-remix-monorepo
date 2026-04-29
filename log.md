@@ -105,3 +105,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/r1-gamme-page-cache-phase1`
 - **Décision** : fix(r1-cache): add gamme_cache RPCs to allowlist + APPROVED comment for DROP POLICY (+2 other commits)
 - **Sortie** : PR #194 | commits 39c034be 8b289897 a95a8b74
+
+## 2026-04-29 — feat/db-diag-maintenance-via-kg-and-cleanup (auto)
+
+- **Branche** : `feat/db-diag-maintenance-via-kg-and-cleanup`
+- **Décision** : feat(adr-032-pr1): kg_* canon for maintenance/safety/DTC + DROP __diag_safety_rule
+- **Sortie** : PR #207 | commits 3ca8db82
