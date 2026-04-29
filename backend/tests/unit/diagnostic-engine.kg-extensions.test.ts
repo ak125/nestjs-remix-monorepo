@@ -13,7 +13,10 @@
  * @see backend/supabase/migrations/20260429_diag_maintenance_via_kg.sql
  * @see governance-vault/ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md
  */
-import { jest, describe, it, expect, beforeEach } from '@jest/globals';
+// Note: jest globals (describe/it/expect/beforeEach/jest) are auto-injected
+// by ts-jest preset — do NOT import from '@jest/globals' (typing strict
+// breaks mockResolvedValueOnce inference, parameter resolves to `never`).
+// Pattern aligned on tests/unit/rag-proxy.service.test.ts.
 
 type MockSupabaseClient = {
   rpc: jest.Mock;
