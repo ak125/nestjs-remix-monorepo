@@ -1,10 +1,20 @@
 /**
  * Route : /blog-pieces-auto/calendrier-entretien
- * Calendrier d'entretien automobile — page statique noindex/nofollow
+ * Calendrier d'entretien automobile — DYNAMIQUE (ADR-032 PR-7)
+ *
+ * Single fetch loader → /api/diagnostic-engine/calendar (D9 agrégé) qui
+ * retourne schedule (kg_*) + alerts paliers (kg_*) + controles_mensuels (wiki/support/).
+ *
+ * Query string : ?type_id=X&current_km=Y&fuel_type=Z (tous optionnels).
+ * Si pas fournis : calendrier générique (sans personnalisation véhicule).
  */
 
-import { type MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import {
+  json,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
 import {
   AlertTriangle,
   Battery,
@@ -16,6 +26,7 @@ import {
   Sun,
   Thermometer,
   Wrench,
+  type LucideIcon,
 } from "lucide-react";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
@@ -47,222 +58,101 @@ export const meta: MetaFunction = () => [
 ];
 
 /* ===========================================================================
-   DATA
+   API SHAPE (mirror backend MaintenanceCalendar — ADR-032 D9)
    =========================================================================== */
 
-const ENTRETIEN_PERIODIQUE = [
-  {
-    piece: "Vidange huile moteur",
-    kmInterval: "10 000 - 15 000 km",
-    tempsInterval: "1 an",
-    importance: "critique" as const,
-    lien: "/pieces/huile-moteur",
-    conseil:
-      "Utiliser l'huile recommandee par le constructeur (viscosite sur le carnet d'entretien).",
-  },
-  {
-    piece: "Filtre a huile",
-    kmInterval: "A chaque vidange",
-    tempsInterval: "1 an",
-    importance: "critique" as const,
-    lien: "/pieces/filtre-a-huile",
-    conseil: "Toujours remplacer en meme temps que l'huile moteur.",
-  },
-  {
-    piece: "Filtre a air",
-    kmInterval: "20 000 - 30 000 km",
-    tempsInterval: "2 ans",
-    importance: "important" as const,
-    lien: "/pieces/filtre-a-air",
-    conseil:
-      "Un filtre encrasse augmente la consommation de carburant de 5 a 10 %.",
-  },
-  {
-    piece: "Filtre habitacle (pollen)",
-    kmInterval: "15 000 - 20 000 km",
-    tempsInterval: "1 an",
-    importance: "normal" as const,
-    lien: "/pieces/filtre-habitacle",
-    conseil:
-      "Remplacer avant l'ete pour une climatisation efficace. Filtre a charbon actif pour les allergiques.",
-  },
-  {
-    piece: "Liquide de frein",
-    kmInterval: "40 000 km",
-    tempsInterval: "2 ans",
-    importance: "critique" as const,
-    lien: "/pieces/liquide-de-frein",
-    conseil:
-      "Le liquide de frein absorbe l'humidite avec le temps, ce qui reduit son efficacite.",
-  },
-  {
-    piece: "Plaquettes de frein avant",
-    kmInterval: "30 000 - 50 000 km",
-    tempsInterval: "Variable",
-    importance: "critique" as const,
-    lien: "/pieces/plaquettes-de-frein",
-    conseil: "Verifier l'epaisseur tous les 20 000 km. Minimum legal : 2 mm.",
-  },
-  {
-    piece: "Disques de frein avant",
-    kmInterval: "60 000 - 80 000 km",
-    tempsInterval: "Variable",
-    importance: "critique" as const,
-    lien: "/pieces/disques-de-frein",
-    conseil:
-      "Remplacer si epaisseur sous le minimum (grave sur le disque) ou si voile.",
-  },
-  {
-    piece: "Bougies d'allumage (essence)",
-    kmInterval: "30 000 - 60 000 km",
-    tempsInterval: "3-4 ans",
-    importance: "important" as const,
-    lien: "/pieces/bougies-d-allumage",
-    conseil:
-      "Bougies iridium : jusqu'a 100 000 km. Symptome d'usure : ratees au demarrage.",
-  },
-  {
-    piece: "Courroie de distribution",
-    kmInterval: "80 000 - 120 000 km",
-    tempsInterval: "5-6 ans",
-    importance: "critique" as const,
-    lien: "/pieces/kit-de-distribution",
-    conseil:
-      "Rupture = casse moteur. Toujours remplacer la pompe a eau en meme temps.",
-  },
-  {
-    piece: "Liquide de refroidissement",
-    kmInterval: "60 000 km",
-    tempsInterval: "4-5 ans",
-    importance: "important" as const,
-    lien: "/pieces/liquide-de-refroidissement",
-    conseil: "Ne jamais melanger les types de liquide (G11, G12, G13).",
-  },
-  {
-    piece: "Batterie",
-    kmInterval: "—",
-    tempsInterval: "4-5 ans",
-    importance: "important" as const,
-    lien: "/pieces/batterie",
-    conseil:
-      "Tester la tension avant l'hiver. Sous 12,4 V au repos = remplacement proche.",
-  },
-  {
-    piece: "Amortisseurs",
-    kmInterval: "80 000 - 100 000 km",
-    tempsInterval: "5-6 ans",
-    importance: "important" as const,
-    lien: "/pieces/amortisseur",
-    conseil:
-      "Usure progressive, difficile a detecter. Tester au controle technique.",
-  },
-  {
-    piece: "Pneus",
-    kmInterval: "40 000 - 50 000 km",
-    tempsInterval: "5 ans max",
-    importance: "critique" as const,
-    lien: "/pieces/pneu",
-    conseil:
-      "Profondeur minimale legale : 1,6 mm (recommande : 3 mm). Verifier aussi les flancs.",
-  },
-];
+interface ScheduleItem {
+  rule_alias: string;
+  rule_label: string;
+  km_interval: number | null;
+  month_interval: number | null;
+  maintenance_priority: "critique" | "important" | "normal" | null;
+  applies_to_fuel: "essence" | "diesel" | null;
+  km_remaining: number;
+  status: "ok" | "due_soon" | "overdue" | "time_only";
+}
 
-const CONTROLES_MENSUELS = [
-  {
-    element: "Niveau d'huile moteur",
-    icon: Droplets,
-    detail:
-      "Verifier a froid, moteur a l'horizontale. Completer si sous le repere MIN.",
-  },
-  {
-    element: "Liquide de refroidissement",
-    icon: Thermometer,
-    detail:
-      "Niveau entre MIN et MAX sur le vase d'expansion. Ne jamais ouvrir a chaud.",
-  },
-  {
-    element: "Pression des pneus",
-    icon: Gauge,
-    detail:
-      "Verifier a froid. Valeurs sur l'etiquette montant de porte conducteur. +0,2 bar si charge lourde.",
-  },
-  {
-    element: "Eclairage",
-    icon: Sun,
-    detail:
-      "Feux de croisement, de route, clignotants, feux de recul, feux stop. Remplacer par paire.",
-  },
-  {
-    element: "Lave-glace",
-    icon: Droplets,
-    detail: "Completer avec du liquide lave-glace (pas d'eau seule en hiver).",
-  },
-  {
-    element: "Essuie-glaces",
-    icon: Wrench,
-    detail: "Verifier les traces. Remplacer si trainees ou bruit au passage.",
-  },
-];
+interface AlertAction {
+  rule_alias: string;
+  rule_label: string;
+  maintenance_priority: "critique" | "important" | "normal" | null;
+  km_interval: number | null;
+}
 
-const ALERTES_KM = [
-  {
-    palier: "10 000 km",
-    actions: [
-      "Premiere vidange huile + filtre",
-      "Controle visuel freins",
-      "Verification pression pneus",
-    ],
-  },
-  {
-    palier: "30 000 km",
-    actions: [
-      "Vidange + filtres (huile, air, habitacle)",
-      "Remplacement bougies (essence)",
-      "Controle plaquettes de frein",
-      "Controle courroie accessoires",
-    ],
-  },
-  {
-    palier: "60 000 km",
-    actions: [
-      "Vidange complete + tous filtres",
-      "Remplacement liquide de frein",
-      "Controle disques de frein",
-      "Verification amortisseurs",
-      "Remplacement liquide de refroidissement",
-    ],
-  },
-  {
-    palier: "100 000 km",
-    actions: [
-      "Remplacement courroie de distribution + pompe a eau",
-      "Remplacement amortisseurs si usure",
-      "Controle embrayage (boite manuelle)",
-      "Revision complete suspension",
-      "Remplacement bougies iridium",
-    ],
-  },
-  {
-    palier: "150 000 km",
-    actions: [
-      "2e remplacement distribution",
-      "Controle vanne EGR / turbo (diesel)",
-      "Remplacement silent-blocs si jeu",
-      "Verification boite de vitesses (huile)",
-      "Bilan complet train roulant",
-    ],
-  },
-];
+interface AlertMilestone {
+  milestone_km: number;
+  actions: AlertAction[];
+}
+
+interface ControleMensuel {
+  element: string;
+  icon: string;
+  detail: string;
+}
+
+interface CalendarPayload {
+  type_id: number | null;
+  current_km: number;
+  fuel_type: string | null;
+  schedule: ScheduleItem[];
+  alerts: AlertMilestone[];
+  controles_mensuels: ControleMensuel[];
+}
+
+/* ===========================================================================
+   LOADER — single fetch /api/diagnostic-engine/calendar
+   =========================================================================== */
+
+const API_BASE =
+  process.env.BACKEND_API_URL ?? "http://localhost:3000/api/diagnostic-engine";
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const params = new URLSearchParams();
+  for (const k of ["type_id", "current_km", "fuel_type"]) {
+    const v = url.searchParams.get(k);
+    if (v) params.set(k, v);
+  }
+  const qs = params.toString();
+  const apiUrl = `${API_BASE}/calendar${qs ? `?${qs}` : ""}`;
+
+  try {
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error(`API ${res.status}`);
+    const calendar = (await res.json()) as CalendarPayload;
+    return json({ calendar });
+  } catch {
+    return json({
+      calendar: {
+        type_id: null,
+        current_km: 0,
+        fuel_type: null,
+        schedule: [],
+        alerts: [],
+        controles_mensuels: [],
+      } as CalendarPayload,
+    });
+  }
+}
 
 /* ===========================================================================
    HELPERS
    =========================================================================== */
 
+const ICON_MAP: Record<string, LucideIcon> = {
+  Droplets,
+  Thermometer,
+  Gauge,
+  Sun,
+  Wrench,
+};
+
 function ImportanceBadge({
   level,
 }: {
-  level: "critique" | "important" | "normal";
+  level: "critique" | "important" | "normal" | null;
 }) {
+  if (!level) return null;
   const styles = {
     critique: "bg-red-100 text-red-700 border-red-200",
     important: "bg-amber-100 text-amber-700 border-amber-200",
@@ -280,11 +170,31 @@ function ImportanceBadge({
   );
 }
 
+function formatKmInterval(km: number | null): string {
+  if (km == null) return "—";
+  return `${km.toLocaleString("fr-FR")} km`;
+}
+
+function formatMonthInterval(months: number | null): string {
+  if (months == null) return "—";
+  if (months >= 12 && months % 12 === 0) {
+    const years = months / 12;
+    return years === 1 ? "1 an" : `${years} ans`;
+  }
+  return `${months} mois`;
+}
+
+function pieceLinkFromSlug(slug: string): string {
+  return `/pieces/${slug}`;
+}
+
 /* ===========================================================================
    PAGE
    =========================================================================== */
 
 export default function CalendrierEntretienPage() {
+  const { calendar } = useLoaderData<typeof loader>();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <BlogPiecesAutoNavigation />
@@ -299,13 +209,21 @@ export default function CalendrierEntretienPage() {
           { label: "Calendrier entretien" },
         ]}
         stats={[
-          { icon: Wrench, value: "13", label: "pieces" },
-          { icon: Calendar, value: "5", label: "paliers km" },
+          {
+            icon: Wrench,
+            value: String(calendar.schedule.length),
+            label: "pieces",
+          },
+          {
+            icon: Calendar,
+            value: String(calendar.alerts.length),
+            label: "paliers km",
+          },
         ]}
       />
 
       <div className="container mx-auto px-4 py-8 max-w-5xl space-y-10">
-        {/* ── Section 1 : Entretien periodique ── */}
+        {/* ── Section 1 : Entretien periodique (dynamique kg_*) ── */}
         <section id="entretien-periodique">
           <Card>
             <CardHeader>
@@ -324,52 +242,65 @@ export default function CalendrierEntretienPage() {
                 </AlertDescription>
               </Alert>
 
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[200px]">Piece</TableHead>
-                      <TableHead>Kilometrage</TableHead>
-                      <TableHead>Duree</TableHead>
-                      <TableHead>Priorite</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        Conseil
-                      </TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {ENTRETIEN_PERIODIQUE.map((item) => (
-                      <TableRow key={item.piece}>
-                        <TableCell className="font-medium">
-                          <Link
-                            to={item.lien}
-                            className="text-blue-600 hover:underline"
-                          >
-                            {item.piece}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">{item.kmInterval}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{item.tempsInterval}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <ImportanceBadge level={item.importance} />
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell text-sm text-gray-600 max-w-[300px]">
-                          {item.conseil}
-                        </TableCell>
+              {calendar.schedule.length === 0 ? (
+                <p className="text-sm text-gray-500 italic">
+                  Calendrier en cours de population. Reessayez avec
+                  ?type_id=X&amp;current_km=Y dans l&apos;URL.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[260px]">Piece</TableHead>
+                        <TableHead>Kilometrage</TableHead>
+                        <TableHead>Duree</TableHead>
+                        <TableHead>Priorite</TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Carburant
+                        </TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                    </TableHeader>
+                    <TableBody>
+                      {calendar.schedule.map((item) => (
+                        <TableRow key={item.rule_alias}>
+                          <TableCell className="font-medium">
+                            <Link
+                              to={pieceLinkFromSlug(item.rule_alias)}
+                              className="text-blue-600 hover:underline"
+                            >
+                              {item.rule_label}
+                            </Link>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">
+                              {formatKmInterval(item.km_interval)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {formatMonthInterval(item.month_interval)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <ImportanceBadge
+                              level={item.maintenance_priority}
+                            />
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell text-sm text-gray-600">
+                            {item.applies_to_fuel ?? "tous"}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </section>
 
-        {/* ── Section 2 : Entretien saisonnier ── */}
+        {/* ── Section 2 : Entretien saisonnier (statique éditorial, hors ADR-032) ── */}
         <section id="entretien-saisonnier">
           <Card>
             <CardHeader>
@@ -380,7 +311,6 @@ export default function CalendrierEntretienPage() {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-6">
-                {/* Ete */}
                 <div className="border rounded-lg p-5 bg-amber-50/50 border-amber-200">
                   <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
                     <Sun className="w-5 h-5 text-amber-500" />
@@ -403,7 +333,6 @@ export default function CalendrierEntretienPage() {
                   </ul>
                 </div>
 
-                {/* Hiver */}
                 <div className="border rounded-lg p-5 bg-blue-50/50 border-blue-200">
                   <h3 className="font-semibold text-lg flex items-center gap-2 mb-4">
                     <Snowflake className="w-5 h-5 text-blue-500" />
@@ -431,7 +360,7 @@ export default function CalendrierEntretienPage() {
           </Card>
         </section>
 
-        {/* ── Section 3 : Controles mensuels ── */}
+        {/* ── Section 3 : Controles mensuels (dynamique wiki/support/) ── */}
         <section id="controles-mensuels">
           <Card>
             <CardHeader>
@@ -441,30 +370,36 @@ export default function CalendrierEntretienPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {CONTROLES_MENSUELS.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div
-                      key={item.element}
-                      className="border rounded-lg p-4 hover:shadow-sm transition-shadow"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <Icon className="w-4 h-4 text-gray-500" />
-                        <span className="font-medium text-sm">
-                          {item.element}
-                        </span>
+              {calendar.controles_mensuels.length === 0 ? (
+                <p className="text-sm text-gray-500 italic">
+                  Liste en cours de population.
+                </p>
+              ) : (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {calendar.controles_mensuels.map((item) => {
+                    const Icon = ICON_MAP[item.icon] ?? CheckCircle;
+                    return (
+                      <div
+                        key={item.element}
+                        className="border rounded-lg p-4 hover:shadow-sm transition-shadow"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon className="w-4 h-4 text-gray-500" />
+                          <span className="font-medium text-sm">
+                            {item.element}
+                          </span>
+                        </div>
+                        <p className="text-xs text-gray-600">{item.detail}</p>
                       </div>
-                      <p className="text-xs text-gray-600">{item.detail}</p>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </section>
 
-        {/* ── Section 4 : Alertes kilometrage ── */}
+        {/* ── Section 4 : Alertes paliers km (dynamique kg_*) ── */}
         <section id="alertes-km">
           <Card>
             <CardHeader>
@@ -474,36 +409,42 @@ export default function CalendrierEntretienPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {ALERTES_KM.map((palier) => (
-                  <div
-                    key={palier.palier}
-                    className="border-l-4 border-purple-300 pl-4"
-                  >
-                    <h3 className="font-semibold text-lg flex items-center gap-2 mb-2">
-                      <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-sm">
-                        {palier.palier}
-                      </Badge>
-                    </h3>
-                    <ul className="space-y-1">
-                      {palier.actions.map((action) => (
-                        <li
-                          key={action}
-                          className="flex items-start gap-2 text-sm text-gray-700"
-                        >
-                          <Wrench className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
-                          {action}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+              {calendar.alerts.length === 0 ? (
+                <p className="text-sm text-gray-500 italic">
+                  Paliers en cours de population.
+                </p>
+              ) : (
+                <div className="space-y-6">
+                  {calendar.alerts.map((palier) => (
+                    <div
+                      key={palier.milestone_km}
+                      className="border-l-4 border-purple-300 pl-4"
+                    >
+                      <h3 className="font-semibold text-lg flex items-center gap-2 mb-2">
+                        <Badge className="bg-purple-100 text-purple-700 border-purple-200 text-sm">
+                          {palier.milestone_km.toLocaleString("fr-FR")} km
+                        </Badge>
+                      </h3>
+                      <ul className="space-y-1">
+                        {palier.actions.map((action) => (
+                          <li
+                            key={action.rule_alias}
+                            className="flex items-start gap-2 text-sm text-gray-700"
+                          >
+                            <Wrench className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                            {action.rule_label}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </section>
 
-        {/* ── Section 5 : CTA ── */}
+        {/* ── Section 5 : CTA (statique éditorial) ── */}
         <section id="cta">
           <Card className="bg-gradient-to-r from-orange-50 to-amber-50 border-orange-200">
             <CardContent className="py-8">
