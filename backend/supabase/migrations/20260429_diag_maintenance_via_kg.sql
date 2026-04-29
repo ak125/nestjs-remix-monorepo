@@ -1,6 +1,7 @@
 -- =============================================================================
 -- ADR-032 — Diagnostic & Maintenance Unification (Phase 1 PR-1)
--- Migration : kg_* canon for maintenance/safety/DTC + RPCs + DROP __diag_safety_rule
+-- Migration : kg_* canon for maintenance + DTC view + RPCs (pas de DROP, audit
+--             empirique a confirmé que __diag_safety_rule reste canon distinct)
 -- =============================================================================
 -- Related: ADR-032 (governance vault PR ak125/governance-vault#107)
 --
@@ -10,15 +11,18 @@
 --   3. Extension kg_get_smart_maintenance_schedule(p_type_id, p_fuel_type) (D2, D3).
 --   4. RPC dérivée kg_get_maintenance_alerts_by_milestone() (D7).
 --   5. Vue v_dtc_lookup + RPC kg_get_dtc_lookup() (D1).
---   6. Backfill 21 rows __diag_safety_rule → kg_safety_triggers + DROP (D1).
 --
 -- Cleanup TS types orphelins (__diag_context_questions/safe_phrases/wizard_steps,
--- __diag_maintenance_operation/symptom_link, __diag_safety_rule) : regen
--- database.types.ts post-migration (commit séparé même PR).
+-- __diag_maintenance_operation/symptom_link) : regen database.types.ts
+-- post-migration (commit séparé même PR).
 --
--- Safe to apply: NON par défaut (DROP TABLE __diag_safety_rule destructif).
--- Validation gate transactionnelle dans la section 6 — RAISE EXCEPTION si
--- count kg_safety_triggers post-backfill < 24+21=45.
+-- NB : `__diag_safety_rule` reste canon diagnostic interactif (audit empirique
+-- 2026-04-29 : 21 rules consommées par risk-safety.engine.ts via RULE_CAUSE_MAP
+-- + isRuleRelevant() — sémantique cause-by-cause distincte de
+-- kg_check_safety_gate(observable_ids[]) qui retourne 1 row aggregate).
+-- Voir mémoire `diag-safety-rule-canonical-distinct.md` + ADR-032 amendement D1.
+--
+-- Safe to apply: OUI (pas de DROP destructif, juste backfill kg_nodes + RPCs).
 -- =============================================================================
 
 BEGIN;
@@ -398,18 +402,29 @@ COMMENT ON FUNCTION public.kg_get_dtc_lookup(TEXT) IS
   'ADR-032 D1: lookup single point pour codes DTC consolidés. Retourne 0 ou 1 row.';
 
 -- =============================================================================
--- SECTION 6 — Backfill __diag_safety_rule (21 rows) → kg_safety_triggers + DROP
+-- SECTION 6 — RETIRÉE (audit empirique 2026-04-29)
 -- =============================================================================
--- Mapping éditorial validé pour les 21 rules existantes. Chaque rule devient
--- un kg_safety_triggers avec :
---   - observable_label_pattern : keyword SQL LIKE construit depuis condition_description
---   - safety_gate : urgency=haute+blocks=true→stop_immediate, haute→stop_soon, autre→warning
---   - safety_message_fr : condition_description (cause)
---   - recommended_action_fr : risk_flag (avertissement utilisateur)
---   - priority : haute=80, moyenne=50, basse=20
---   - block_sales : blocks_catalog
---
--- ⚠️ Ce mapping est best-effort. DRI Fafa peut affiner avant merge.
+-- ADR-032 V1 prévoyait DROP __diag_safety_rule + backfill 21 rows vers
+-- kg_safety_triggers. Audit empirique a révélé que :
+--   - __diag_safety_rule = 21 règles texte consommées par
+--     backend/src/modules/diagnostic-engine/engines/risk-safety.engine.ts
+--     avec RULE_CAUSE_MAP (8 mappings cause-by-cause hardcodés).
+--   - kg_check_safety_gate(p_observable_ids uuid[]) retourne 1 row aggregate
+--     basé sur observable UUIDs — sémantique distincte.
+-- Ce sont 2 canons COMPLÉMENTAIRES (interactif vs KG observable), pas
+-- redondants. Pas de DROP, pas de backfill.
+-- Voir mémoire `diag-safety-rule-canonical-distinct.md`.
+-- =============================================================================
+
+COMMIT;
+
+-- =============================================================================
+-- ANCIEN backfill V1 (commenté, conservé pour traçabilité du mapping
+-- éditorial proposé en cas de besoin futur d'export observable-pattern). NE PAS
+-- DÉCOMMENTER sans nouvelle ADR.
+-- =============================================================================
+
+/* DÉSACTIVÉ — voir SECTION 6 RETIRÉE ci-dessus.
 
 INSERT INTO public.kg_safety_triggers (
   trigger_id, observable_label_pattern, safety_gate,
@@ -543,27 +558,11 @@ INSERT INTO public.kg_safety_triggers (
    TRUE, 80, TRUE, NOW(), NOW())
 ;
 
--- Validation gate transactionnelle ADR-032 D1 :
--- kg_safety_triggers >= 24 (existing) + 21 (backfilled) = 45 minimum AVANT DROP
-DO $$
-DECLARE
-  v_count INT;
-BEGIN
-  SELECT COUNT(*) INTO v_count
-  FROM public.kg_safety_triggers
-  WHERE is_active = TRUE;
+-- Validation gate transactionnelle V1 (désactivée avec le backfill) :
+-- DO $$ ... kg_safety_triggers count >= 45 ... END $$;
+-- DROP TABLE IF EXISTS public.__diag_safety_rule;
 
-  IF v_count < 45 THEN
-    RAISE EXCEPTION
-      'ADR-032 PR-1 backfill safety failed: kg_safety_triggers count = %, expected >= 45',
-      v_count;
-  END IF;
-END $$;
-
--- DROP (destructif, gate validation passé) :
-DROP TABLE IF EXISTS public.__diag_safety_rule;
-
-COMMIT;
+*/ -- fin du bloc commenté V1 backfill safety
 
 -- =============================================================================
 -- POST-MIGRATION : regen TS types + grep verification
@@ -576,10 +575,8 @@ COMMIT;
 --
 --   2. Cleanup imports orphelins (suppression types __diag_context_questions /
 --      __diag_safe_phrases / __diag_wizard_steps / __diag_maintenance_operation /
---      __diag_maintenance_symptom_link / __diag_safety_rule) :
---        grep -rnE "__diag_(context_questions|safe_phrases|wizard_steps|maintenance_operation|maintenance_symptom_link|safety_rule)" backend/ frontend/
---
---   3. Vérifier consumers backend ne référencent plus __diag_safety_rule :
---        grep -rnE "from\(['\"]__diag_safety_rule" backend/src/
---      (Doit retourner 0 ; sinon refactor PR-3 pas encore fait, rebase ordering.)
+--      __diag_maintenance_symptom_link) :
+--        grep -rnE "__diag_(context_questions|safe_phrases|wizard_steps|maintenance_operation|maintenance_symptom_link)" backend/ frontend/
+--      (Note : __diag_safety_rule conservé canon — voir mémoire
+--       diag-safety-rule-canonical-distinct.md.)
 -- =============================================================================

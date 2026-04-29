@@ -13,13 +13,17 @@
 
 \echo '=== ADR-032 PR-1 smoke test ==='
 
--- Assertion 1 : __diag_safety_rule droppée
+-- Assertion 1 : __diag_safety_rule reste canon (PAS droppée — audit empirique
+-- 2026-04-29 a confirmé canon distinct de kg_safety_triggers, voir mémoire
+-- diag-safety-rule-canonical-distinct.md).
 DO $$
+DECLARE v_count INT;
 BEGIN
-  IF to_regclass('public.__diag_safety_rule') IS NOT NULL THEN
-    RAISE EXCEPTION 'FAIL: __diag_safety_rule still exists';
+  IF to_regclass('public.__diag_safety_rule') IS NULL THEN
+    RAISE EXCEPTION 'FAIL: __diag_safety_rule absente (canon diagnostic interactif)';
   END IF;
-  RAISE NOTICE 'OK: __diag_safety_rule droppée (to_regclass NULL)';
+  SELECT COUNT(*) INTO v_count FROM public.__diag_safety_rule WHERE active = TRUE;
+  RAISE NOTICE 'OK: __diag_safety_rule canon préservé (% rules actives)', v_count;
 END $$;
 
 -- Assertion 2 : tables ghost __diag_maintenance_* toujours absentes (n'ont jamais existé)
@@ -60,17 +64,18 @@ BEGIN
   RAISE NOTICE 'OK: tous les MaintenanceInterval ont maintenance_priority backfillée';
 END $$;
 
--- Assertion 5 : kg_safety_triggers >= 45 (24 existing + 21 backfillés)
+-- Assertion 5 : kg_safety_triggers >= 24 (existing — PR-1 ne backfille plus,
+-- canon distinct de __diag_safety_rule).
 DO $$
 DECLARE v_count INT;
 BEGIN
   SELECT COUNT(*) INTO v_count
   FROM public.kg_safety_triggers
   WHERE is_active = TRUE;
-  IF v_count < 45 THEN
-    RAISE EXCEPTION 'FAIL: kg_safety_triggers active = %, attendu >= 45', v_count;
+  IF v_count < 24 THEN
+    RAISE EXCEPTION 'FAIL: kg_safety_triggers active = %, attendu >= 24', v_count;
   END IF;
-  RAISE NOTICE 'OK: kg_safety_triggers active = %', v_count;
+  RAISE NOTICE 'OK: kg_safety_triggers active = % (canon KG observable distinct)', v_count;
 END $$;
 
 -- Assertion 6 : RPC kg_get_smart_maintenance_schedule étendue (signature avec p_type_id)
