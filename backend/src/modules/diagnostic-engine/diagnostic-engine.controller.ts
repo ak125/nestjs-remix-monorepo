@@ -19,6 +19,7 @@ import {
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
 import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
+import { DiagnosticContentService } from './services/diagnostic-content.service';
 
 @Controller('api/diagnostic-engine')
 export class DiagnosticEngineController {
@@ -28,7 +29,49 @@ export class DiagnosticEngineController {
     private readonly orchestrator: DiagnosticEngineOrchestrator,
     private readonly dataService: DiagnosticEngineDataService,
     private readonly maintenanceCalculator: MaintenanceCalculatorService,
+    private readonly diagnosticContent: DiagnosticContentService,
   ) {}
+
+  /**
+   * GET /api/diagnostic-engine/wizard-steps
+   * GET /api/diagnostic-engine/safety-config
+   * GET /api/diagnostic-engine/vocab-clusters
+   * GET /api/diagnostic-engine/signs
+   * GET /api/diagnostic-engine/faq
+   * GET /api/diagnostic-engine/controles-mensuels
+   *
+   * ADR-032 D1+D5 — contenu UI servi depuis submodule git wiki/.
+   * Source unique : `backend/content/automecanik-wiki/wiki/{diagnostic,support}/<slug>.md`.
+   */
+  @Get('wizard-steps')
+  getWizardSteps() {
+    return this.diagnosticContent.getWizardSteps();
+  }
+
+  @Get('safety-config')
+  getSafetyConfig() {
+    return this.diagnosticContent.getSafetyConfig();
+  }
+
+  @Get('vocab-clusters')
+  getVocabClusters() {
+    return this.diagnosticContent.getVocabClusters();
+  }
+
+  @Get('signs')
+  getSigns() {
+    return this.diagnosticContent.getSigns();
+  }
+
+  @Get('faq')
+  getFaq() {
+    return this.diagnosticContent.getFaq();
+  }
+
+  @Get('controles-mensuels')
+  getControlesMensuels() {
+    return this.diagnosticContent.getControlesMensuels();
+  }
 
   /**
    * GET /api/diagnostic-engine/maintenance-schedule
