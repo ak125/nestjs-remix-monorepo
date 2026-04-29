@@ -42,6 +42,7 @@ import {
   Eye,
   Cpu,
   AlertOctagon,
+  type LucideIcon,
 } from "lucide-react";
 
 // UI Components
@@ -120,88 +121,53 @@ interface DiagnosticData {
   schema_org: object;
 }
 
-// Safety Gate Configuration
-const SAFETY_GATE_CONFIG = {
-  none: {
-    icon: CheckCircle,
-    color: "text-green-600",
-    bg: "bg-green-50",
-    label: "",
-  },
-  warning: {
-    icon: AlertTriangle,
-    color: "text-yellow-600",
-    bg: "bg-yellow-50",
-    label: "⚠️ À surveiller",
-  },
-  stop_soon: {
-    icon: AlertOctagon,
-    color: "text-cta",
-    bg: "bg-cta-50",
-    label: "⚠️ Contrôle sous 24h",
-  },
-  stop_immediate: {
-    icon: XCircle,
-    color: "text-red-600",
-    bg: "bg-red-50",
-    label: "⛔ NE PAS ROULER",
-  },
+// Wiki content types — resolves wiki/diagnostic/safety-config.md entity_data
+interface SafetyGateEntry {
+  icon: string;
+  color: string;
+  bg: string;
+  label: string;
+}
+interface RiskLevelEntry {
+  label: string;
+  color: string;
+}
+interface UrgencyEntry {
+  label: string;
+  color: string;
+}
+interface SkillEntry {
+  label: string;
+  icon: string;
+}
+interface SafetyConfigData {
+  safety_gate: Record<string, SafetyGateEntry>;
+  risk_levels: Record<string, RiskLevelEntry>;
+  urgency: Record<string, UrgencyEntry>;
+  skill: Record<string, SkillEntry>;
+  ctx_phase: Record<string, string>;
+  ctx_temp: Record<string, string>;
+  ctx_freq: Record<string, string>;
+}
+
+// ICON_MAP — local UI utility, resolves string from wiki frontmatter to
+// lucide component. Pattern aligned with PR-7 calendrier-entretien.tsx.
+const ICON_MAP: Record<string, LucideIcon> = {
+  CheckCircle,
+  AlertTriangle,
+  AlertOctagon,
+  XCircle,
+  Wrench,
+  ScanLine,
 };
 
-// Risk level config
-const RISK_CONFIG = {
-  critique: {
-    label: "Critique",
-    color: "bg-red-100 text-red-800 border-red-300",
-  },
-  securite: {
-    label: "Sécurité",
-    color: "bg-cta-50 text-cta-hover border-cta-light",
-  },
-  confort: {
-    label: "Confort",
-    color: "bg-blue-100 text-blue-800 border-blue-300",
-  },
-};
-
-// Urgency config
-const URGENCY_CONFIG: Record<string, { label: string; color: string }> = {
-  immediate: { label: "Immédiat", color: "text-red-600" },
-  soon: { label: "Sous 48h", color: "text-cta" },
-  scheduled: { label: "Planifier", color: "text-blue-600" },
-};
-
-// Skill level config
-const SKILL_CONFIG: Record<
-  string,
-  { label: string; icon: React.ComponentType<{ className?: string }> }
-> = {
-  diy: { label: "Bricoleur", icon: Wrench },
-  amateur: { label: "Amateur", icon: Wrench },
-  professional: { label: "Professionnel", icon: ScanLine },
-};
-
-// Context labels
-const CTX_PHASE_LABELS: Record<string, string> = {
-  demarrage: "🔵 Démarrage",
-  ralenti: "🔵 Ralenti",
-  acceleration: "🔵 Accélération",
-  freinage: "🔵 Freinage",
-  virage: "🔵 Virage",
-  vitesse_stable: "🔵 Vitesse stable",
-  arret: "🔵 À l'arrêt",
-};
-
-const CTX_TEMP_LABELS: Record<string, string> = {
-  froid: "❄️ Moteur froid",
-  chaud: "🔥 Moteur chaud",
-};
-
-const CTX_FREQ_LABELS: Record<string, string> = {
-  intermittent: "🟡 Intermittent (probable: capteur/électronique)",
-  permanent: "🔴 Permanent (probable: mécanique/usure)",
-  progressif: "🟠 Progressif (probable: usure/fuite)",
-  sporadique: "⚪ Sporadique (probable: électronique/température)",
+// Sentinel safety gate fallback — used if /safety-config endpoint is down
+// AND fallbacks for diagnostic.safety_gate value also missing from API.
+const SAFETY_GATE_FALLBACK: SafetyGateEntry = {
+  icon: "CheckCircle",
+  color: "text-green-600",
+  bg: "bg-green-50",
+  label: "",
 };
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -264,20 +230,35 @@ export async function loader({ params }: LoaderFunctionArgs) {
       }
     }
 
-    // Fallback: serve R5 page if no redirect target (shouldn't happen for published observables)
-    const response = await fetch(`${API_URL}/api/seo/diagnostic/${slug}`, {
-      headers: { Accept: "application/json" },
-    });
+    // Parallel fetch: diagnostic data + safety-config wiki entry.
+    // Graceful degradation on safety-config: if endpoint down, page still renders
+    // (icons fall back to ICON_MAP defaults, ctx labels fall back to raw strings).
+    const [diagResponse, safetyJson] = await Promise.all([
+      fetch(`${API_URL}/api/seo/diagnostic/${slug}`, {
+        headers: { Accept: "application/json" },
+      }),
+      fetch(`${API_URL}/api/diagnostic-engine/safety-config`, {
+        headers: { Accept: "application/json" },
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ]);
 
-    if (!response.ok) {
-      if (response.status === 404) {
+    if (!diagResponse.ok) {
+      if (diagResponse.status === 404) {
         throw new Response("Diagnostic non trouvé", { status: 404 });
       }
-      throw new Response("Erreur serveur", { status: response.status });
+      throw new Response("Erreur serveur", { status: diagResponse.status });
     }
 
-    const data = await response.json();
-    return json({ diagnostic: data.data as DiagnosticData });
+    const data = await diagResponse.json();
+    const safetyConfig = (safetyJson?.entity_data ??
+      null) as SafetyConfigData | null;
+
+    return json({
+      diagnostic: data.data as DiagnosticData,
+      safetyConfig,
+    });
   } catch (error) {
     if (error instanceof Response) throw error;
     logger.error("[diagnostic-auto.$slug] Loader error:", error);
@@ -286,12 +267,17 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 export default function DiagnosticAutoDetail() {
-  const { diagnostic } = useLoaderData<typeof loader>();
+  const { diagnostic, safetyConfig } = useLoaderData<typeof loader>();
 
-  const safetyConfig =
-    SAFETY_GATE_CONFIG[diagnostic.safety_gate] || SAFETY_GATE_CONFIG.none;
-  const SafetyIcon = safetyConfig.icon;
-  const riskConfig = RISK_CONFIG[diagnostic.risk_level] || RISK_CONFIG.confort;
+  const safetyGate =
+    safetyConfig?.safety_gate?.[diagnostic.safety_gate] ??
+    safetyConfig?.safety_gate?.none ??
+    SAFETY_GATE_FALLBACK;
+  const SafetyIcon = ICON_MAP[safetyGate.icon] ?? CheckCircle;
+  const riskConfig =
+    safetyConfig?.risk_levels?.[diagnostic.risk_level] ??
+    safetyConfig?.risk_levels?.confort ??
+    null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -324,14 +310,14 @@ export default function DiagnosticAutoDetail() {
       {/* Safety Gate Alert (si critique) */}
       {diagnostic.safety_gate !== "none" && (
         <div
-          className={`${safetyConfig.bg} border-b-2 ${safetyConfig.color.replace("text-", "border-")}`}
+          className={`${safetyGate.bg} border-b-2 ${safetyGate.color.replace("text-", "border-")}`}
         >
           <Container className="py-4">
             <div className="flex items-center gap-3">
-              <SafetyIcon className={`h-8 w-8 ${safetyConfig.color}`} />
+              <SafetyIcon className={`h-8 w-8 ${safetyGate.color}`} />
               <div>
-                <p className={`font-bold text-lg ${safetyConfig.color}`}>
-                  {safetyConfig.label}
+                <p className={`font-bold text-lg ${safetyGate.color}`}>
+                  {safetyGate.label}
                 </p>
                 {diagnostic.safety_gate === "stop_immediate" && (
                   <p className="text-red-700">
@@ -373,9 +359,11 @@ export default function DiagnosticAutoDetail() {
             Retour aux diagnostics
           </Link>
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline" className={riskConfig.color}>
-              {riskConfig.label}
-            </Badge>
+            {riskConfig && (
+              <Badge variant="outline" className={riskConfig.color}>
+                {riskConfig.label}
+              </Badge>
+            )}
             <Badge variant="secondary" className="bg-cta-50 text-cta-hover">
               {diagnostic.cluster_id}
             </Badge>
@@ -533,7 +521,7 @@ export default function DiagnosticAutoDetail() {
                       <div className="flex flex-wrap gap-2">
                         {diagnostic.ctx_phase.map((phase) => (
                           <Badge key={phase} variant="secondary">
-                            {CTX_PHASE_LABELS[phase] || phase}
+                            {safetyConfig?.ctx_phase?.[phase] ?? phase}
                           </Badge>
                         ))}
                       </div>
@@ -549,7 +537,7 @@ export default function DiagnosticAutoDetail() {
                       <div className="flex flex-wrap gap-2">
                         {diagnostic.ctx_temp.map((temp) => (
                           <Badge key={temp} variant="secondary">
-                            {CTX_TEMP_LABELS[temp] || temp}
+                            {safetyConfig?.ctx_temp?.[temp] ?? temp}
                           </Badge>
                         ))}
                       </div>
@@ -563,7 +551,7 @@ export default function DiagnosticAutoDetail() {
                         Fréquence
                       </h4>
                       <Badge variant="outline" className="text-sm">
-                        {CTX_FREQ_LABELS[diagnostic.ctx_freq] ||
+                        {safetyConfig?.ctx_freq?.[diagnostic.ctx_freq] ??
                           diagnostic.ctx_freq}
                       </Badge>
                     </div>
@@ -584,13 +572,17 @@ export default function DiagnosticAutoDetail() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {diagnostic.recommended_actions.map((action, index) => {
+                      {diagnostic.recommended_actions.map((action) => {
                         const urgency =
-                          URGENCY_CONFIG[action.urgency] ||
-                          URGENCY_CONFIG.scheduled;
+                          safetyConfig?.urgency?.[action.urgency] ??
+                          safetyConfig?.urgency?.scheduled ??
+                          null;
                         const skill =
-                          SKILL_CONFIG[action.skill_level] || SKILL_CONFIG.diy;
-                        const SkillIcon = skill.icon;
+                          safetyConfig?.skill?.[action.skill_level] ??
+                          safetyConfig?.skill?.diy ??
+                          null;
+                        const SkillIcon =
+                          (skill && ICON_MAP[skill.icon]) ?? Wrench;
 
                         return (
                           <div
@@ -608,14 +600,23 @@ export default function DiagnosticAutoDetail() {
                                 <div className="flex items-center gap-2 text-sm text-gray-500">
                                   <Clock className="h-3 w-3" />
                                   <span>{action.duration}</span>
-                                  <span>•</span>
-                                  <span>{skill.label}</span>
+                                  {skill && (
+                                    <>
+                                      <span>•</span>
+                                      <span>{skill.label}</span>
+                                    </>
+                                  )}
                                 </div>
                               </div>
                             </div>
-                            <Badge variant="outline" className={urgency.color}>
-                              {urgency.label}
-                            </Badge>
+                            {urgency && (
+                              <Badge
+                                variant="outline"
+                                className={urgency.color}
+                              >
+                                {urgency.label}
+                              </Badge>
+                            )}
                           </div>
                         );
                       })}
