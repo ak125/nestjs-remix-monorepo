@@ -55,6 +55,42 @@ export class DiagnosticEngineController {
   }
 
   /**
+   * POST /api/diagnostic-engine/breakdown
+   *
+   * ADR-032 — endpoint urgence routière (panne immobilisante).
+   * Force `intent_type: 'breakdown'` et délègue à l'orchestrator standard
+   * (le `RiskSafetyEngine` priorise les rules safety_gate=stop_immediate
+   * via la priority haute du flag breakdown).
+   */
+  @Post('breakdown')
+  async breakdown(@Body() body: unknown) {
+    this.logger.log('POST /breakdown');
+
+    const input = (body && typeof body === 'object' ? body : {}) as Record<
+      string,
+      unknown
+    >;
+    const result = await this.orchestrator.analyze({
+      ...input,
+      intent_type: 'breakdown',
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error,
+        hint: 'Voir le schema AnalyzeDiagnosticInput pour le format attendu (intent_type forcé à breakdown).',
+      };
+    }
+
+    return {
+      success: true,
+      session_id: result.data!.session_id,
+      ...result.data!.evidence,
+    };
+  }
+
+  /**
    * GET /api/diagnostic-engine/systems
    *
    * List active diagnostic systems
