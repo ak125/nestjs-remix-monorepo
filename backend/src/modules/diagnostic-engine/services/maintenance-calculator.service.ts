@@ -72,7 +72,7 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
         p_current_km: currentKm,
         p_fuel_type: fuelType ?? null,
       },
-      { source: 'MaintenanceCalculatorService.getSchedule' },
+      { source: 'internal' },
     );
 
     if (error) {
@@ -101,7 +101,7 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
         p_milestones: milestones,
         p_fuel_type: fuelType ?? null,
       },
-      { source: 'MaintenanceCalculatorService.getAlerts' },
+      { source: 'internal' },
     );
 
     if (error) {
