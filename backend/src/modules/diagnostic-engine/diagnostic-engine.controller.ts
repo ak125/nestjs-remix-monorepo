@@ -18,6 +18,7 @@ import {
 } from '@nestjs/common';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
+import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
 
 @Controller('api/diagnostic-engine')
 export class DiagnosticEngineController {
@@ -26,7 +27,52 @@ export class DiagnosticEngineController {
   constructor(
     private readonly orchestrator: DiagnosticEngineOrchestrator,
     private readonly dataService: DiagnosticEngineDataService,
+    private readonly maintenanceCalculator: MaintenanceCalculatorService,
   ) {}
+
+  /**
+   * GET /api/diagnostic-engine/maintenance-schedule
+   *
+   * ADR-032 D2/D3 — schedule fuel-aware par véhicule.
+   */
+  @Get('maintenance-schedule')
+  async maintenanceSchedule(
+    @Query('type_id') typeId?: string,
+    @Query('current_km') currentKm?: string,
+    @Query('fuel_type') fuelType?: string,
+  ) {
+    const tid = typeId ? parseInt(typeId, 10) : null;
+    const km = currentKm ? parseInt(currentKm, 10) : 0;
+    const items = await this.maintenanceCalculator.getSchedule(
+      tid,
+      km,
+      fuelType ?? null,
+    );
+    return { success: true, type_id: tid, current_km: km, items };
+  }
+
+  /**
+   * GET /api/diagnostic-engine/maintenance-alerts
+   *
+   * ADR-032 D7 — alertes regroupées par palier km (zéro hardcode des paliers).
+   */
+  @Get('maintenance-alerts')
+  async maintenanceAlerts(
+    @Query('fuel_type') fuelType?: string,
+    @Query('milestones') milestones?: string,
+  ) {
+    const list = milestones
+      ? milestones
+          .split(',')
+          .map((s) => parseInt(s.trim(), 10))
+          .filter((n) => Number.isFinite(n))
+      : undefined;
+    const result = await this.maintenanceCalculator.getAlerts(
+      fuelType ?? null,
+      list,
+    );
+    return { success: true, milestones: result };
+  }
 
   /**
    * POST /api/diagnostic-engine/analyze

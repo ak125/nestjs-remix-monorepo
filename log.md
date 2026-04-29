@@ -111,3 +111,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/db-diag-maintenance-via-kg-and-cleanup`
 - **Décision** : feat(adr-032-pr1): kg_* canon for maintenance/safety/DTC + DROP __diag_safety_rule
 - **Sortie** : PR #207 | commits 3ca8db82
+
+## 2026-04-29 — feat/be-maintenance-calculator-service-v2 (auto)
+
+- **Branche** : `feat/be-maintenance-calculator-service-v2`
+- **Décision** : fix(adr-032-pr2): drop @jest/globals import in calculator test (+1 other commit)
+- **Sortie** : PR #211 | commits 317ccb67 a55d03ee
