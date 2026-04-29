@@ -7,7 +7,8 @@
  *
  * @see backend/src/modules/diagnostic-engine/types/diagnostic-contract.schema.ts
  */
-import { describe, it, expect } from '@jest/globals';
+// Note: jest globals (describe/it/expect) are auto-injected by ts-jest
+// preset. Pattern aligned on tests/unit/rag-proxy.service.test.ts.
 import { DiagnosticIntentEnum } from '../../src/modules/diagnostic-engine/types/diagnostic-contract.schema';
 
 describe('ADR-032 PR-3 — DiagnosticIntent breakdown', () => {
