@@ -76,6 +76,7 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
           p_current_km: 80000,
           p_fuel_type: null,
         }),
+        expect.objectContaining({ source: 'internal' }),
       );
       expect(items).toHaveLength(1);
       expect(items[0].maintenance_priority).toBe('critique');
@@ -89,6 +90,7 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
       expect(mockRpc).toHaveBeenCalledWith(
         'kg_get_smart_maintenance_schedule',
         expect.objectContaining({ p_fuel_type: 'diesel' }),
+        expect.objectContaining({ source: 'internal' }),
       );
     });
 
@@ -125,6 +127,7 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
           p_milestones: [10000, 30000, 60000, 100000, 150000],
           p_fuel_type: null,
         }),
+        expect.objectContaining({ source: 'internal' }),
       );
       expect(alerts).toHaveLength(5);
     });
@@ -140,6 +143,7 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
           p_milestones: [50000],
           p_fuel_type: 'essence',
         }),
+        expect.objectContaining({ source: 'internal' }),
       );
     });
   });
