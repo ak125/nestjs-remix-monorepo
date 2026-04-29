@@ -117,3 +117,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/be-maintenance-calculator-service-v2`
 - **Décision** : fix(adr-032-pr2): drop @jest/globals import in calculator test (+1 other commit)
 - **Sortie** : PR #211 | commits 317ccb67 a55d03ee
+
+## 2026-04-29 — feat/fe-diagnostic-wizard-dynamic (auto)
+
+- **Branche** : `feat/fe-diagnostic-wizard-dynamic`
+- **Décision** : feat(adr-032-pr10): make DiagnosticWizard.tsx dynamic via /wizard-steps endpoint
+- **Sortie** : PR #219 | commits d55e5beb
