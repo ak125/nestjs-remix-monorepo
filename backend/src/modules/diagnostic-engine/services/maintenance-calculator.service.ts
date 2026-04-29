@@ -18,8 +18,9 @@
  * @see governance-vault/ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md
  * @see backend/supabase/migrations/20260429_diag_maintenance_via_kg.sql
  */
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DiagnosticContentService } from './diagnostic-content.service';
 
 // ── DTOs (aligned on RPC return shapes) ─────────────────
 
@@ -46,11 +47,33 @@ export interface MaintenanceAlertMilestone {
   actions: MaintenanceAlertAction[];
 }
 
+/**
+ * Calendrier d'entretien agrégé (ADR-032 D9).
+ * Frontend `calendrier-entretien.tsx` consomme un seul fetch pour tout
+ * remplacer les 212 lignes de constants (`ENTRETIEN_PERIODIQUE`,
+ * `CONTROLES_MENSUELS`, `ALERTES_KM`).
+ */
+export interface MaintenanceCalendar {
+  type_id: number | null;
+  current_km: number;
+  fuel_type: string | null;
+  schedule: MaintenanceScheduleItem[];
+  alerts: MaintenanceAlertMilestone[];
+  controles_mensuels: Array<{
+    element: string;
+    icon: string;
+    detail: string;
+  }>;
+}
+
 const DEFAULT_MILESTONES = [10000, 30000, 60000, 100000, 150000];
 
 @Injectable()
 export class MaintenanceCalculatorService extends SupabaseBaseService {
   protected readonly logger = new Logger(MaintenanceCalculatorService.name);
+
+  @Inject(DiagnosticContentService)
+  protected readonly diagnosticContent!: DiagnosticContentService;
 
   /**
    * Schedule entretien périodique pour un véhicule donné.
@@ -111,5 +134,41 @@ export class MaintenanceCalculatorService extends SupabaseBaseService {
       return [];
     }
     return data ?? [];
+  }
+
+  /**
+   * Calendrier agrégé (ADR-032 D9).
+   *
+   * Combine schedule + alerts + controles-mensuels (wiki/support/) en un
+   * seul fetch pour le frontend `calendrier-entretien.tsx`.
+   *
+   * Note : la jointure `wiki/gamme/<slug>.md` pour `educational_advice`
+   * (D9 ADR-032) est différée Phase 4 RG-2/RG-3 (10 gammes entretien).
+   * Tant que ces wiki/gamme/ n'existent pas, `schedule[i].educational_advice`
+   * sera `undefined` et le frontend affiche un placeholder.
+   */
+  async getCalendar(
+    typeId: number | null,
+    currentKm: number,
+    fuelType?: string | null,
+  ): Promise<MaintenanceCalendar> {
+    const [schedule, alerts] = await Promise.all([
+      this.getSchedule(typeId, currentKm, fuelType),
+      this.getAlerts(fuelType),
+    ]);
+    const controlesEntry = this.diagnosticContent.getControlesMensuels();
+    const controlesItems = (controlesEntry?.entity_data?.items ?? []) as Array<{
+      element: string;
+      icon: string;
+      detail: string;
+    }>;
+    return {
+      type_id: typeId,
+      current_km: currentKm,
+      fuel_type: fuelType ?? null,
+      schedule,
+      alerts,
+      controles_mensuels: controlesItems,
+    };
   }
 }

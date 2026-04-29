@@ -99,6 +99,24 @@ export class DiagnosticEngineController {
    *
    * ADR-032 D7 — alertes regroupées par palier km (zéro hardcode des paliers).
    */
+  /**
+   * GET /api/diagnostic-engine/calendar
+   *
+   * ADR-032 D9 — endpoint agrégé pour calendrier-entretien.tsx.
+   * Single fetch côté frontend (zéro hardcode des 3 sections : schedule,
+   * alerts paliers, contrôles mensuels).
+   */
+  @Get('calendar')
+  async maintenanceCalendar(
+    @Query('type_id') typeId?: string,
+    @Query('current_km') currentKm?: string,
+    @Query('fuel_type') fuelType?: string,
+  ) {
+    const tid = typeId ? parseInt(typeId, 10) : null;
+    const km = currentKm ? parseInt(currentKm, 10) : 0;
+    return this.maintenanceCalculator.getCalendar(tid, km, fuelType ?? null);
+  }
+
   @Get('maintenance-alerts')
   async maintenanceAlerts(
     @Query('fuel_type') fuelType?: string,
