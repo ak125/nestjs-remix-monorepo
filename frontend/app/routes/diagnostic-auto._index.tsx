@@ -36,6 +36,7 @@ import {
   Wrench,
   Zap,
   BookOpen,
+  type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -75,97 +76,51 @@ interface DiagnosticItem {
   cluster_id: string;
 }
 
-interface ClusterInfo {
+interface ClusterEntry {
   id: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: string;
   description: string;
   color: string;
 }
 
-const CLUSTERS: ClusterInfo[] = [
-  {
-    id: "embrayage",
-    label: "Embrayage",
-    icon: Disc3,
-    description: "Patinage, bruits, vibrations pédale",
-    color: "from-amber-500 to-orange-600",
-  },
-  {
-    id: "freinage",
-    label: "Freinage",
-    icon: Shield,
-    description: "Sifflements, vibrations, efficacité réduite",
-    color: "from-red-500 to-rose-600",
-  },
-  {
-    id: "moteur",
-    label: "Moteur",
-    icon: Gauge,
-    description: "Claquements, fumées, perte de puissance",
-    color: "from-slate-600 to-slate-800",
-  },
-  {
-    id: "suspension",
-    label: "Suspension",
-    icon: Car,
-    description: "Cognements, tenue de route dégradée",
-    color: "from-blue-500 to-indigo-600",
-  },
-  {
-    id: "electricite",
-    label: "Électricité",
-    icon: Zap,
-    description: "Voyants allumés, démarrage difficile",
-    color: "from-yellow-500 to-amber-600",
-  },
-  {
-    id: "refroidissement",
-    label: "Refroidissement",
-    icon: ThermometerSun,
-    description: "Surchauffe, fuites liquide, ventilateur",
-    color: "from-cyan-500 to-teal-600",
-  },
-];
+interface SignEntry {
+  title: string;
+  detail: string;
+  cluster: string;
+  cluster_label: string;
+}
 
-const PERCEPTION_ICONS: Record<
-  string,
-  React.ComponentType<{ className?: string }>
-> = {
-  auditory: Volume2,
-  visual: Eye,
-  tactile: Wrench,
-  performance: Gauge,
-  electronic: Zap,
-  olfactory: ThermometerSun,
+interface FaqEntry {
+  question: string;
+  answer: string;
+  link: { href: string; label: string } | null | undefined;
+}
+
+interface RiskLevel {
+  label: string;
+  color: string;
+}
+
+// ICON_MAP — local UI utility, resolves string from wiki frontmatter to
+// lucide component. Pattern aligned with calendrier-entretien.tsx (PR-7).
+const ICON_MAP: Record<string, LucideIcon> = {
+  Disc3,
+  Shield,
+  Gauge,
+  Car,
+  Zap,
+  ThermometerSun,
+  Volume2,
+  Eye,
+  Wrench,
 };
-
-const RISK_CONFIG = {
-  critique: {
-    label: "Critique",
-    dot: "bg-red-500",
-    text: "text-red-700",
-    bg: "bg-red-50",
-  },
-  securite: {
-    label: "Sécurité",
-    dot: "bg-amber-500",
-    text: "text-amber-700",
-    bg: "bg-amber-50",
-  },
-  confort: {
-    label: "Confort",
-    dot: "bg-blue-500",
-    text: "text-blue-700",
-    bg: "bg-blue-50",
-  },
-} as const;
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   const canonicalUrl = "https://www.automecanik.com/diagnostic-auto";
 
-  // Unified FAQPage: static items + dynamic featured items
-  const staticEntities = FAQ_DATA.map((item) => ({
+  // Unified FAQPage: wiki FAQ entries + dynamic featured items
+  const staticEntities = (data?.faq ?? []).map((item) => ({
     "@type": "Question" as const,
     name: item.question,
     acceptedAnswer: { "@type": "Answer" as const, text: item.answer },
@@ -259,157 +214,74 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   ];
 };
 
-const SIGNS_DATA = [
-  {
-    title: "Bruit inhabituel au freinage",
-    detail:
-      "Sifflement aigu = plaquettes usées. Grincement métallique = disques atteints ou étrier. Organe de sécurité : à traiter en priorité.",
-    cluster: "freinage",
-    clusterLabel: "Freinage",
-  },
-  {
-    title: "Voyant moteur allumé (check engine)",
-    detail:
-      "Un code OBD est enregistré dans le calculateur. Lisez-le dans les 48h avec un scanner OBD ou entrez-le dans notre outil ci-dessus.",
-    cluster: "electricite",
-    clusterLabel: "Électricité",
-  },
-  {
-    title: "Vibration au volant",
-    detail:
-      "À vitesse constante : pneumatiques ou géométrie. Au freinage : disques voilés. Basse vitesse : rotule ou biellette de suspension.",
-    cluster: "suspension",
-    clusterLabel: "Suspension",
-  },
-  {
-    title: "Démarrage difficile ou raté",
-    detail:
-      "Lent = batterie faible. Clic unique = relais de démarrage. Silence total = démarreur ou sécurité moteur. Vérifiez aussi les bougies.",
-    cluster: "electricite",
-    clusterLabel: "Électricité",
-  },
-  {
-    title: "Surconsommation soudaine",
-    detail:
-      "Augmentation > 15% sans changement de conduite. Causes : injecteurs, bougie défaillante, thermostat bloqué ouvert, fuite circuit d'air.",
-    cluster: "moteur",
-    clusterLabel: "Moteur",
-  },
-  {
-    title: "Fumée à l'échappement",
-    detail:
-      "Blanche dense = liquide de refroidissement (joint de culasse). Noire = mélange trop riche. Bleue = huile brûlée (segments, joints spi).",
-    cluster: "moteur",
-    clusterLabel: "Moteur",
-  },
-  {
-    title: "Perte de puissance",
-    detail:
-      "FAP obstrué (diesel, trajets courts), turbo défaillant, injecteurs encrassés ou problème de gestion moteur. Scanner OBD recommandé.",
-    cluster: "moteur",
-    clusterLabel: "Moteur",
-  },
-  {
-    title: "Odeur de brûlé",
-    detail:
-      "Caoutchouc : courroie en contact. Plastique : fusible ou faisceau. Œuf pourri : catalyseur. Âcre : embrayage en patinage.",
-    cluster: "embrayage",
-    clusterLabel: "Embrayage",
-  },
-  {
-    title: "Pédale de frein molle ou spongieuse",
-    detail:
-      "Air dans le circuit ou fuite de liquide de frein. Perte de freinage possible. Arrêt immédiat si la pédale touche le plancher.",
-    cluster: "freinage",
-    clusterLabel: "Freinage",
-  },
-  {
-    title: "Voyant ABS ou ESP allumé",
-    detail:
-      "ABS orange = capteur de roue défaillant dans 60% des cas. Le freinage reste actif mais sans assistance. Contrôle sous 7 jours.",
-    cluster: "electricite",
-    clusterLabel: "Électricité",
-  },
-];
+interface WikiContentEntry<T> {
+  slug: string;
+  title: string;
+  entity_data: T;
+  body: string;
+}
 
-const FAQ_DATA = [
-  {
-    question: "Comment savoir quel est le problème de ma voiture ?",
-    answer:
-      "Commencez par observer les symptômes sensoriels : voyants allumés, bruits inhabituels, vibrations, odeurs. Si un voyant moteur est allumé, lisez le code OBD avec un scanner ou entrez-le directement dans notre outil ci-dessus. Pour les pannes sans voyant, décrivez le symptôme dans le champ de recherche (ex : « bruit au freinage », « vibration volant »).",
-    link: null as { href: string; label: string } | null,
-  },
-  {
-    question: "Comment identifier une panne de démarreur ?",
-    answer:
-      "Un démarreur défaillant se manifeste par : un clic unique sans démarrage du moteur (relais ou solénoïde), un grincement bref lors de la mise en route, ou une absence totale de réaction alors que la batterie est chargée (tension > 12.4V). Pour confirmer, mesurez la tension aux bornes du démarreur lors de la sollicitation.",
-    link: {
-      href: "/diagnostic-auto?cluster=electricite",
-      label: "Voir les diagnostics électricité",
-    },
-  },
-  {
-    question: "Qu'est-ce qu'une panne voyant ABS ?",
-    answer:
-      "Le voyant ABS orange indique que le système antiblocage est désactivé. Le freinage normal reste fonctionnel. Cause la plus fréquente : capteur ABS de roue défaillant (50 à 80 EUR la pièce). La lecture d'un code OBD Cxxxx confirme le capteur concerné. Rouler sans ABS est dangereux en freinage d'urgence.",
-    link: null,
-  },
-  {
-    question: "Comment lire un code panne OBD ?",
-    answer:
-      "Branchez un scanner OBD2 sur le port situé sous le tableau de bord côté conducteur (sous la colonne de direction). Le scanner lit les codes du type P0300 (raté d'allumage), C0031 (capteur ABS), etc. Vous pouvez également entrer le code dans notre outil Scanner en haut de page. N'effacez un code qu'après réparation.",
-    link: null,
-  },
-  {
-    question: "Voiture en panne qui ne démarre pas : par où commencer ?",
-    answer:
-      "Vérifiez dans cet ordre : 1) Batterie — tension > 12.4V au repos, bornes non oxydées. 2) Démarreur — clic = relais OK, silence = démarreur ou sécurité. 3) Allumage — bougies, bobines si le moteur tourne mais cale. 4) Alimentation — pompe à carburant (bruit 2 sec au contact). Un code OBD précise souvent la piste.",
-    link: null,
-  },
-  {
-    question: "Panne mécanique ou électrique : comment savoir ?",
-    answer:
-      "Une panne mécanique est progressive : bruits, vibrations, odeurs, aggravée par la température. Une panne électronique est souvent soudaine avec voyant allumé et sans symptôme sonore. Le scanner OBD identifie les défauts électroniques ; une inspection physique révèle les pannes mécaniques.",
-    link: null,
-  },
-  {
-    question: "Que faire si un voyant rouge s'allume en conduisant ?",
-    answer:
-      "Un voyant rouge impose l'arrêt immédiat sécurisé du véhicule (huile, température, frein). Garez-vous dès que possible, coupez le moteur. Relancer un moteur surchauffé ou en manque de pression d'huile cause des dommages irréversibles. Appelez de l'assistance.",
-    link: {
-      href: "/diagnostic-auto?cluster=moteur",
-      label: "Diagnostics moteur urgents",
-    },
-  },
-];
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  const API_URL = process.env.VITE_API_URL || "http://127.0.0.1:3000";
-
+async function fetchWikiContent<T>(
+  apiUrl: string,
+  endpoint: string,
+): Promise<T | null> {
   try {
-    const response = await fetch(`${API_URL}/api/seo/diagnostic/featured`, {
+    const res = await fetch(`${apiUrl}/api/diagnostic-engine/${endpoint}`, {
       headers: { Accept: "application/json" },
     });
-
-    let featured: DiagnosticItem[] = [];
-    if (response.ok) {
-      const data = await response.json();
-      featured = data?.data || [];
-    }
-
-    return json({ featured });
+    if (!res.ok) return null;
+    const json = (await res.json()) as WikiContentEntry<T> | null;
+    return json?.entity_data ?? null;
   } catch (error) {
-    logger.error("[diagnostic-auto._index] Loader error:", error);
-    return json({ featured: [] as DiagnosticItem[] });
+    logger.error(`[diagnostic-auto._index] fetch ${endpoint} failed:`, error);
+    return null;
   }
 }
 
+export async function loader({ request: _request }: LoaderFunctionArgs) {
+  const API_URL = process.env.VITE_API_URL || "http://127.0.0.1:3000";
+
+  // Single Promise.all → 5 parallel fetches (featured SEO + 4 wiki endpoints).
+  // Graceful degradation: any failure returns empty data, page renders without crash.
+  const [featuredJson, vocab, signsData, faqData, safetyData] =
+    await Promise.all([
+      fetch(`${API_URL}/api/seo/diagnostic/featured`, {
+        headers: { Accept: "application/json" },
+      })
+        .then((r) => (r.ok ? r.json() : null))
+        .catch((err) => {
+          logger.error("[diagnostic-auto._index] featured fetch failed:", err);
+          return null;
+        }),
+      fetchWikiContent<{
+        clusters: ClusterEntry[];
+        perception_icons: Record<string, string>;
+      }>(API_URL, "vocab-clusters"),
+      fetchWikiContent<{ signs: SignEntry[] }>(API_URL, "signs"),
+      fetchWikiContent<{ faq: FaqEntry[] }>(API_URL, "faq"),
+      fetchWikiContent<{ risk_levels: Record<string, RiskLevel> }>(
+        API_URL,
+        "safety-config",
+      ),
+    ]);
+
+  return json({
+    featured: (featuredJson?.data ?? []) as DiagnosticItem[],
+    clusters: vocab?.clusters ?? [],
+    perceptionIcons: vocab?.perception_icons ?? {},
+    signs: signsData?.signs ?? [],
+    faq: faqData?.faq ?? [],
+    riskLevels: safetyData?.risk_levels ?? {},
+  });
+}
+
 export default function DiagnosticAutoIndex() {
-  const { featured } = useLoaderData<typeof loader>();
+  const { featured, clusters, perceptionIcons, signs, faq, riskLevels } =
+    useLoaderData<typeof loader>();
   const [searchQuery, setSearchQuery] = useState("");
   const [dtcCode, setDtcCode] = useState("");
 
-  const filteredClusters = CLUSTERS.filter(
+  const filteredClusters = clusters.filter(
     (c) =>
       c.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.description.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -496,7 +368,7 @@ export default function DiagnosticAutoIndex() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {filteredClusters.map((cluster) => {
-            const Icon = cluster.icon;
+            const Icon = ICON_MAP[cluster.icon] ?? Disc3;
             return (
               <Link
                 key={cluster.id}
@@ -704,35 +576,41 @@ export default function DiagnosticAutoIndex() {
             Reconnaître ces signaux tôt évite l'immobilisation et réduit le coût
             de réparation. Classés par fréquence d'apparition.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {SIGNS_DATA.map((sign, index) => (
-              <div
-                key={index}
-                className="flex items-start gap-4 bg-white rounded-xl p-4 border border-gray-100"
-              >
-                <span className="text-2xl font-extrabold text-gray-200 w-8 shrink-0 leading-none mt-0.5">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm mb-0.5">
-                    {sign.title}
-                  </p>
-                  <p className="text-xs text-gray-500 leading-relaxed">
-                    {sign.detail}
-                  </p>
-                  {sign.cluster && (
-                    <Link
-                      to={`/diagnostic-auto?cluster=${sign.cluster}`}
-                      className="mt-1.5 inline-flex items-center gap-1 text-xs text-cta hover:text-cta-hover font-medium transition-colors"
-                    >
-                      Diagnostics {sign.clusterLabel}{" "}
-                      <ChevronRight className="h-3 w-3" />
-                    </Link>
-                  )}
+          {signs.length === 0 ? (
+            <p className="text-sm text-gray-500 italic">
+              Liste de signes en cours de population.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {signs.map((sign, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-4 bg-white rounded-xl p-4 border border-gray-100"
+                >
+                  <span className="text-2xl font-extrabold text-gray-200 w-8 shrink-0 leading-none mt-0.5">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm mb-0.5">
+                      {sign.title}
+                    </p>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      {sign.detail}
+                    </p>
+                    {sign.cluster && (
+                      <Link
+                        to={`/diagnostic-auto?cluster=${sign.cluster}`}
+                        className="mt-1.5 inline-flex items-center gap-1 text-xs text-cta hover:text-cta-hover font-medium transition-colors"
+                      >
+                        Diagnostics {sign.cluster_label}{" "}
+                        <ChevronRight className="h-3 w-3" />
+                      </Link>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Container>
       </section>
 
@@ -866,10 +744,10 @@ export default function DiagnosticAutoIndex() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {featured.map((item) => {
                 const PerceptionIcon =
-                  PERCEPTION_ICONS[item.perception_channel] || Volume2;
+                  ICON_MAP[perceptionIcons[item.perception_channel] ?? ""] ??
+                  Volume2;
                 const risk =
-                  RISK_CONFIG[item.risk_level as keyof typeof RISK_CONFIG] ||
-                  RISK_CONFIG.confort;
+                  riskLevels[item.risk_level] ?? riskLevels.confort ?? null;
 
                 return (
                   <Link
@@ -893,14 +771,13 @@ export default function DiagnosticAutoIndex() {
                         {item.meta_description}
                       </p>
                       <div className="flex items-center gap-2">
-                        <span
-                          className={`inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-full ${risk.bg} ${risk.text}`}
-                        >
+                        {risk && (
                           <span
-                            className={`w-1.5 h-1.5 rounded-full ${risk.dot}`}
-                          />
-                          {risk.label}
-                        </span>
+                            className={`inline-flex items-center text-xs font-medium px-2 py-0.5 rounded-full border ${risk.color}`}
+                          >
+                            {risk.label}
+                          </span>
+                        )}
                         <span className="text-xs text-gray-400 capitalize">
                           {item.cluster_id?.replace(/-/g, " ")}
                         </span>
@@ -1008,30 +885,37 @@ export default function DiagnosticAutoIndex() {
           </h2>
         </div>
         <div className="max-w-3xl">
-          <Accordion type="single" collapsible className="space-y-2">
-            {FAQ_DATA.map((item, index) => (
-              <AccordionItem
-                key={index}
-                value={`faq-${index}`}
-                className="border rounded-xl px-4 bg-white"
-              >
-                <AccordionTrigger className="text-left text-sm font-semibold text-gray-900 py-4 hover:no-underline">
-                  {item.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-sm text-gray-600 leading-relaxed pb-4">
-                  {item.answer}
-                  {item.link && (
-                    <Link
-                      to={item.link.href}
-                      className="mt-2 inline-flex items-center gap-1 text-cta hover:text-cta-hover font-medium transition-colors"
-                    >
-                      {item.link.label} <ChevronRight className="h-3.5 w-3.5" />
-                    </Link>
-                  )}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+          {faq.length === 0 ? (
+            <p className="text-sm text-gray-500 italic">
+              FAQ en cours de population.
+            </p>
+          ) : (
+            <Accordion type="single" collapsible className="space-y-2">
+              {faq.map((item, index) => (
+                <AccordionItem
+                  key={index}
+                  value={`faq-${index}`}
+                  className="border rounded-xl px-4 bg-white"
+                >
+                  <AccordionTrigger className="text-left text-sm font-semibold text-gray-900 py-4 hover:no-underline">
+                    {item.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm text-gray-600 leading-relaxed pb-4">
+                    {item.answer}
+                    {item.link && (
+                      <Link
+                        to={item.link.href}
+                        className="mt-2 inline-flex items-center gap-1 text-cta hover:text-cta-hover font-medium transition-colors"
+                      >
+                        {item.link.label}{" "}
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      </Link>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          )}
         </div>
       </Container>
 
