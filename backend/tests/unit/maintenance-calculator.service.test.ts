@@ -17,6 +17,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { MaintenanceCalculatorService } from '../../src/modules/diagnostic-engine/services/maintenance-calculator.service';
+import { DiagnosticContentService } from '../../src/modules/diagnostic-engine/services/diagnostic-content.service';
 
 describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
   let service: MaintenanceCalculatorService;
@@ -40,6 +41,10 @@ describe('MaintenanceCalculatorService (ADR-032 PR-2)', () => {
       providers: [
         MaintenanceCalculatorService,
         { provide: ConfigService, useValue: mockConfig },
+        {
+          provide: DiagnosticContentService,
+          useValue: { getControlesMensuels: jest.fn().mockReturnValue(null) },
+        },
       ],
     }).compile();
 
