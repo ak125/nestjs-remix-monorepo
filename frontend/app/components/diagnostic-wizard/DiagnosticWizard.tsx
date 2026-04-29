@@ -32,13 +32,27 @@ import {
 const STORAGE_KEY = "diag-wizard-draft";
 const DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 jours
 
-const STEPS = [
+interface StepEntry {
+  id: number;
+  label: string;
+  description: string;
+}
+
+interface WizardStepsContent {
+  steps: StepEntry[];
+  loading_steps: string[];
+}
+
+// Fallback used during initial client render (before useEffect fetch completes)
+// AND if /api/diagnostic-engine/wizard-steps endpoint is unreachable.
+// Wiki source: automecanik-wiki/wiki/diagnostic/wizard-steps.md
+const FALLBACK_STEPS: StepEntry[] = [
   { id: 1, label: "Vehicule", description: "Identifiez votre vehicule" },
   { id: 2, label: "Symptome", description: "Decrivez le probleme" },
   { id: 3, label: "Diagnostic", description: "Resultat et recommandations" },
 ];
 
-const LOADING_STEPS = [
+const FALLBACK_LOADING_STEPS: string[] = [
   "Analyse des symptomes...",
   "Evaluation des hypotheses...",
   "Verification securite...",
@@ -148,10 +162,36 @@ export function DiagnosticWizard() {
   const [linkCopied, setLinkCopied] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [transitioning, setTransitioning] = useState(false);
+  const [steps, setSteps] = useState<StepEntry[]>(FALLBACK_STEPS);
+  const [loadingMessages, setLoadingMessages] = useState<string[]>(
+    FALLBACK_LOADING_STEPS,
+  );
   const resultsRef = useRef<HTMLDivElement>(null);
 
   // Vehicle selector (lifted from StepVehicle for draft restore)
   const vehicleSelector = useDiagnosticVehicleSelector();
+
+  // Fetch wizard content from wiki/diagnostic/wizard-steps.md (ADR-032).
+  // Client-side fetch keeps DiagnosticWizard parent-agnostic (used in 2+ pages).
+  // FALLBACK_* drive initial render — endpoint failure leaves them in place.
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/diagnostic-engine/wizard-steps")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        if (cancelled) return;
+        const content = json?.entity_data as WizardStepsContent | undefined;
+        if (content?.steps?.length) setSteps(content.steps);
+        if (content?.loading_steps?.length)
+          setLoadingMessages(content.loading_steps);
+      })
+      .catch(() => {
+        // Silent fallback — fallbacks above already in state.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Restore draft on mount
   useEffect(() => {
@@ -207,10 +247,10 @@ export function DiagnosticWizard() {
       return;
     }
     const interval = setInterval(() => {
-      setLoadingStep((prev) => (prev + 1) % LOADING_STEPS.length);
+      setLoadingStep((prev) => (prev + 1) % loadingMessages.length);
     }, 1200);
     return () => clearInterval(interval);
-  }, [state.loading]);
+  }, [state.loading, loadingMessages.length]);
 
   // Scroll to results when they arrive
   useEffect(() => {
@@ -303,7 +343,7 @@ export function DiagnosticWizard() {
         ? state.symptomSlugs.length > 0
         : false;
 
-  const progressValue = (state.step / STEPS.length) * 100;
+  const progressValue = (state.step / steps.length) * 100;
 
   return (
     <div className="space-y-6" ref={resultsRef}>
@@ -314,7 +354,7 @@ export function DiagnosticWizard() {
         role="navigation"
       >
         <div className="flex items-center justify-between text-sm">
-          {STEPS.map((s, idx) => (
+          {steps.map((s, idx) => (
             <div key={s.id} className="flex items-center flex-1">
               <div
                 className={`flex items-center gap-2 transition-colors duration-300 ${
@@ -340,7 +380,7 @@ export function DiagnosticWizard() {
                 <span className="hidden sm:inline">{s.label}</span>
               </div>
               {/* Connector line */}
-              {idx < STEPS.length - 1 && (
+              {idx < steps.length - 1 && (
                 <div className="flex-1 mx-3 hidden sm:block">
                   <div
                     className={`h-0.5 rounded transition-colors duration-500 ${
@@ -376,7 +416,7 @@ export function DiagnosticWizard() {
           <DiagnosticResults
             state={state}
             dispatch={dispatch}
-            loadingStepLabel={LOADING_STEPS[loadingStep]}
+            loadingStepLabel={loadingMessages[loadingStep]}
             onRetry={() => {
               dispatch({ type: "SET_STEP", payload: 2 });
               dispatch({ type: "SET_ERROR", payload: "" });
