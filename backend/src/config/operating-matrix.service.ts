@@ -58,6 +58,24 @@ const DEPRECATED_ROLES: ReadonlySet<RoleId> = new Set<RoleId>([
   RoleId.R9_GOVERNANCE,
 ]);
 
+/**
+ * Roles that intentionally have NO `EXECUTION_REGISTRY` entry because their
+ * agents are validators / orchestration templates, not writers. Excluded from
+ * `gaps[]` — they are not "registry-missing" defects, they are by-design.
+ *
+ * Inventory evidence (2026-04-30):
+ *  - R0_HOME: r0-home-execution.md + r0-home-validator.md → JSON output only
+ *  - R6_SUPPORT: r6-support-validator.md → JSON output only, "n'est pas un
+ *    rôle éditorial canonique cœur" (file body L8)
+ *
+ * If a NEW writing agent appears under these roles, the role must be added
+ * to EXECUTION_REGISTRY and removed from this set.
+ */
+const NON_WRITING_ROLES: ReadonlySet<RoleId> = new Set<RoleId>([
+  RoleId.R0_HOME,
+  RoleId.R6_SUPPORT,
+]);
+
 const ROLE_PREFIX_RE = /^(r\d)(_|-)/i;
 
 interface AgentFile {
@@ -270,7 +288,13 @@ export class OperatingMatrixService {
     const m = filename.match(ROLE_PREFIX_RE);
     if (!m) return 'UNKNOWN';
     const prefix = m[1].toUpperCase();
-    const candidates = ROLE_ID_LIST.filter((r) => r.startsWith(prefix + '_'));
+    // Exclude deprecated roles from candidate set: a deprecated role cannot
+    // claim new agents. This means after a role is deprecated (e.g. R3_GUIDE),
+    // formerly-ambiguous "r3-*.md" filenames auto-resolve to the surviving
+    // sibling (R3_CONSEILS). No agent rename required.
+    const candidates = ROLE_ID_LIST.filter(
+      (r) => r.startsWith(prefix + '_') && !DEPRECATED_ROLES.has(r),
+    );
     if (candidates.length === 0) return 'UNKNOWN';
     if (candidates.length === 1) return candidates[0];
 
@@ -386,7 +410,16 @@ export class OperatingMatrixService {
 
   private detectGaps(roles: MatrixRoleEntry[]): MatrixGap[] {
     return roles
-      .filter((r) => !r.registry.present && r.agents.length > 0)
+      .filter(
+        (r) =>
+          !r.registry.present &&
+          r.agents.length > 0 &&
+          // Validators / orchestration templates are by-design without registry.
+          // Excluding them means the gaps[] list reflects ACTIONABLE defects
+          // only — a non-empty gaps[] means "someone needs to add a registry
+          // entry", not "we have read-only agents lying around".
+          !NON_WRITING_ROLES.has(r.roleId),
+      )
       .map((r) => ({
         roleId: r.roleId,
         reason: 'agents_without_registry' as const,

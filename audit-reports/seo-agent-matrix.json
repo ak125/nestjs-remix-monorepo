@@ -22,9 +22,9 @@
     "r2-keyword-planner": "R2_PRODUCT",
     "r2-product-validator": "R2_PRODUCT",
     "r3-conseils-validator": "R3_CONSEILS",
-    "r3-image-prompt": "UNKNOWN",
-    "r3-keyword-plan-batch": "UNKNOWN",
-    "r3-keyword-planner": "UNKNOWN",
+    "r3-image-prompt": "R3_CONSEILS",
+    "r3-keyword-plan-batch": "R3_CONSEILS",
+    "r3-keyword-planner": "R3_CONSEILS",
     "r4-content-batch": "R4_REFERENCE",
     "r4-keyword-planner": "R4_REFERENCE",
     "r4-reference-execution": "R4_REFERENCE",
@@ -48,36 +48,7 @@
   },
   "anomalies": [],
   "catalogFieldCount": 141,
-  "gaps": [
-    {
-      "agentCount": 2,
-      "agents": [
-        "r0-home-execution",
-        "r0-home-validator"
-      ],
-      "reason": "agents_without_registry",
-      "roleId": "R0_HOME"
-    },
-    {
-      "agentCount": 1,
-      "agents": [
-        "r6-support-validator"
-      ],
-      "reason": "agents_without_registry",
-      "roleId": "R6_SUPPORT"
-    },
-    {
-      "agentCount": 4,
-      "agents": [
-        "r7-brand-execution",
-        "r7-brand-rag-generator",
-        "r7-brand-validator",
-        "r7-keyword-planner"
-      ],
-      "reason": "agents_without_registry",
-      "roleId": "R7_BRAND"
-    }
-  ],
+  "gaps": [],
   "registryVersion": "1.0.0",
   "roles": [
     {
@@ -194,7 +165,10 @@
     },
     {
       "agents": [
-        "r3-conseils-validator"
+        "r3-conseils-validator",
+        "r3-image-prompt",
+        "r3-keyword-plan-batch",
+        "r3-keyword-planner"
       ],
       "deprecated": false,
       "healthScore": 100,
@@ -372,9 +346,26 @@
         "r7-keyword-planner"
       ],
       "deprecated": false,
-      "healthScore": 40,
+      "healthScore": 70,
       "registry": {
-        "present": false
+        "agentFiles": [
+          "r7-keyword-planner.md",
+          "r7-brand-rag-generator.md"
+        ],
+        "allowedModes": [
+          "create",
+          "regenerate",
+          "refresh_full",
+          "qa_only"
+        ],
+        "contractSchemaRef": "page-contract-r7.schema",
+        "defaultWriteMode": "draft_write",
+        "enricherServiceKey": "R7BrandEnricherService",
+        "present": true,
+        "stopPolicy": {
+          "maxRetries": 2,
+          "timeoutMs": 180000
+        }
       },
       "roleId": "R7_BRAND",
       "writeScope": {
@@ -437,7 +428,7 @@
     }
   ],
   "sourcesHash": {
-    "executionRegistry": "sha256:16dba7bd8a61116ccc225af04d10d2c2d6b04eead18d799c2970bceabc915e1d",
+    "executionRegistry": "sha256:8efeb1b39cc9f3a3ab86a773afd6edcc936f33b9fc48eb95c8d8b4dd415e6b4c",
     "executionRegistryTypes": "sha256:6c585a3075471f5189d5c1a48bd83e0f1ce6460cd1af9a9398a6d2b0d68c1d46",
     "fieldCatalog": "sha256:de4b23f16019338092340be58b0cfe421519aceb94a148efca07f99021fef0f7",
     "roleIds": "sha256:8c8257d1ad07acf06cd97a240822ca9ac6d625600300048a73c66d52134c2857"
@@ -451,9 +442,6 @@
     "conseil-batch",
     "keyword-planner",
     "phase1-auditor",
-    "r3-image-prompt",
-    "r3-keyword-plan-batch",
-    "r3-keyword-planner",
     "r6-content-batch",
     "r6-image-prompt",
     "r6-keyword-planner",
