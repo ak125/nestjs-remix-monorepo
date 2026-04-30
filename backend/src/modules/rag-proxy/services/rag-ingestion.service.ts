@@ -56,57 +56,97 @@ export class RagIngestionService implements OnModuleInit, OnModuleDestroy {
   }> = [];
   private static readonly MAX_PENDING = 10;
 
-  async onModuleInit() {
-    // 1. Mark orphaned "running" jobs as failed in DB (crash recovery)
-    await this.ragWebIngestDbService.failOrphanedRunningJobs();
-
-    // 1b. Also mark orphaned "running" jobs as failed in Redis
-    const allRedisJobs = await this.ragRedisJobService.getAllJobs();
-    for (const job of allRedisJobs) {
-      if (job.status === 'running') {
-        job.status = 'failed';
-        job.finishedAt = Math.floor(Date.now() / 1000);
-        job.logLines = [...(job.logLines || []), 'Orphaned: server restarted'];
-        await this.ragRedisJobService.setJob(job);
-        this.logger.warn(`Marked orphaned Redis job ${job.jobId} as failed`);
-      }
-    }
-
-    // 1c. Force-clear in-memory pool (any "running" job from previous process is dead)
+  /**
+   * Recovery + queue rehydrate non-bloquants.
+   *
+   * Les étapes 1, 1b, 2, 3 font des appels Supabase/Redis (`failOrphanedRunningJobs`,
+   * `listJobsByStatus`, `getAllJobs`, `getPendingReindexPaths`). Awaiter ici
+   * bloquerait `app.listen()` (NestJS exécute tous les `onModuleInit`
+   * sérialement durant la phase init) → `/health` muet → exit 124 sur
+   * `perf-gates.yml`.
+   *
+   * Sync path (immédiat) :
+   *   - Clear pool in-memory (étape 1c)
+   *   - Arm le lock watchdog (étape 4)
+   *
+   * Async path (fire-and-forget via `void recoverFromCrash()`) :
+   *   - Mark orphan running jobs (DB + Redis)
+   *   - Rehydrate queued jobs depuis DB
+   *   - Rehydrate pending reindex paths depuis Redis
+   *
+   * Voir `.claude/rules/backend.md` § "Non-blocking onModuleInit".
+   */
+  onModuleInit(): void {
+    // 1c. Force-clear in-memory pool (synchrone) — any "running" job from
+    // previous process is dead.
     this.activeWebIngestJobs.clear();
     this.activeWebIngestStartTimes.clear();
 
-    // 2. Rehydrate "queued" jobs from DB into pendingWebIngests
-    const queued = await this.ragWebIngestDbService.listJobsByStatus('queued');
-    for (const job of queued) {
-      this.pendingWebIngests.push({
-        jobId: job.job_id,
-        url: job.url,
-        truthLevel: job.truth_level,
-      });
-    }
-    if (this.pendingWebIngests.length > 0) {
-      this.logger.log(
-        `Rehydrated ${this.pendingWebIngests.length} queued job(s) from DB`,
-      );
-      // Drain immediately (slots are free after startup)
-      this.drainPendingQueue();
-    }
-
-    // 3. Rehydrate pending reindex paths from Redis
-    const pendingPaths = await this.ragRedisJobService.getPendingReindexPaths();
-    for (const p of pendingPaths) this.pendingReindexPaths.add(p);
-    if (pendingPaths.length > 0) {
-      this.logger.log(
-        `Rehydrated ${pendingPaths.length} pending reindex path(s)`,
-      );
-      void this.flushReindex();
-    }
-
-    // 4. Start lock watchdog
+    // 4. Start lock watchdog (synchrone) — armé immédiatement.
     this.lockWatchdogTimer = setInterval(() => {
       this.checkStaleLock();
     }, RagIngestionService.LOCK_WATCHDOG_INTERVAL_MS);
+
+    // Recovery + rehydrate en arrière-plan (Supabase + Redis I/O).
+    this.logger.log(
+      'RagIngestionService startup: crash-recovery + rehydrate en arrière-plan...',
+    );
+    void this.recoverFromCrash();
+  }
+
+  private async recoverFromCrash(): Promise<void> {
+    try {
+      // 1. Mark orphaned "running" jobs as failed in DB (crash recovery)
+      await this.ragWebIngestDbService.failOrphanedRunningJobs();
+
+      // 1b. Also mark orphaned "running" jobs as failed in Redis
+      const allRedisJobs = await this.ragRedisJobService.getAllJobs();
+      for (const job of allRedisJobs) {
+        if (job.status === 'running') {
+          job.status = 'failed';
+          job.finishedAt = Math.floor(Date.now() / 1000);
+          job.logLines = [
+            ...(job.logLines || []),
+            'Orphaned: server restarted',
+          ];
+          await this.ragRedisJobService.setJob(job);
+          this.logger.warn(`Marked orphaned Redis job ${job.jobId} as failed`);
+        }
+      }
+
+      // 2. Rehydrate "queued" jobs from DB into pendingWebIngests
+      const queued =
+        await this.ragWebIngestDbService.listJobsByStatus('queued');
+      for (const job of queued) {
+        this.pendingWebIngests.push({
+          jobId: job.job_id,
+          url: job.url,
+          truthLevel: job.truth_level,
+        });
+      }
+      if (this.pendingWebIngests.length > 0) {
+        this.logger.log(
+          `Rehydrated ${this.pendingWebIngests.length} queued job(s) from DB`,
+        );
+        // Drain immediately (slots are free after startup)
+        this.drainPendingQueue();
+      }
+
+      // 3. Rehydrate pending reindex paths from Redis
+      const pendingPaths =
+        await this.ragRedisJobService.getPendingReindexPaths();
+      for (const p of pendingPaths) this.pendingReindexPaths.add(p);
+      if (pendingPaths.length > 0) {
+        this.logger.log(
+          `Rehydrated ${pendingPaths.length} pending reindex path(s)`,
+        );
+        void this.flushReindex();
+      }
+    } catch (err) {
+      this.logger.error(
+        `RagIngestionService recovery failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 
   private checkStaleLock(): void {

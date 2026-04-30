@@ -13,9 +13,20 @@ import { SITE_ORIGIN } from './app.config';
 // 🖼️ DOMAINES D'IMAGES AUTORISÉS - SOURCE UNIQUE
 // ═══════════════════════════════════════════════════════════════════════════
 
+/**
+ * Sanitize a CSP source : retire whitespace / control chars qui invalident
+ * l'en-tête `Content-Security-Policy`. Les secrets GitHub stockés ont
+ * souvent un newline final → `setHeader` lève `ERR_INVALID_CHAR` et toute
+ * réponse retourne 500. Vérifié sur perf-gates.yml run 25173022159
+ * ([helmet/index.cjs:123](node_modules/helmet/index.cjs#L123)).
+ */
+const sanitizeCspSource = (raw: string): string =>
+  // eslint-disable-next-line no-control-regex
+  raw.replace(/[\x00-\x20\x7F]+/g, '');
+
 export const IMAGE_DOMAINS = {
   /** Supabase Storage - images rack, logos, etc. */
-  SUPABASE: process.env.SUPABASE_URL || '',
+  SUPABASE: sanitizeCspSource(process.env.SUPABASE_URL || ''),
 
   /** imgproxy pour optimisation d'images (resize, webp, avif) */
   IMGPROXY: SITE_ORIGIN,
@@ -46,8 +57,14 @@ export const CSP_DIRECTIVES = {
     'https://tagmanager.google.com',
   ],
 
-  // img-src: Construit dynamiquement depuis IMAGE_DOMAINS
-  imgSrc: ["'self'", 'data:', 'blob:', ...Object.values(IMAGE_DOMAINS)],
+  // img-src: Construit dynamiquement depuis IMAGE_DOMAINS (filter sources vides
+  // pour éviter `img-src 'self' data: blob:  https://…` → safe en cas d'env var absente).
+  imgSrc: [
+    "'self'",
+    'data:',
+    'blob:',
+    ...Object.values(IMAGE_DOMAINS).filter((s) => s.length > 0),
+  ],
 
   connectSrc: [
     "'self'",
