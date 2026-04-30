@@ -1,10 +1,19 @@
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+
+import {
+  parseMarketingAgentFrontmatter,
+  safeParseMarketingAgentFrontmatter,
+} from './marketing-agent-frontmatter.schema';
 import { MarketingMatrixService } from './marketing-matrix.service';
 import {
   MarketingBusinessUnit,
   MarketingChannel,
   MarketingConversionGoal,
   MarketingGateLevel,
+  MarketingRoleId,
 } from './marketing-matrix.types';
 
 function makeService(env: Record<string, string | undefined> = {}) {
@@ -12,6 +21,53 @@ function makeService(env: Record<string, string | undefined> = {}) {
     get: <T = unknown>(key: string): T | undefined => env[key] as T | undefined,
   } as unknown as ConfigService;
   return new MarketingMatrixService(config);
+}
+
+/**
+ * Build a temp repo root with `workspaces/marketing/.claude/agents/`
+ * populated by `agentFiles` (filename → content) — used by ADR-038
+ * frontmatter parsing tests. The service is pointed at this temp root via
+ * a special env var (we override `__dirname`-based resolution by symlinking
+ * the marketing rules path).
+ */
+function makeServiceWithFixtures(agentFiles: Record<string, string>): {
+  svc: MarketingMatrixService;
+  cleanup: () => void;
+} {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mkt-matrix-'));
+  const agentsDir = path.join(tmp, 'workspaces/marketing/.claude/agents');
+  fs.mkdirSync(agentsDir, { recursive: true });
+  for (const [filename, content] of Object.entries(agentFiles)) {
+    fs.writeFileSync(path.join(agentsDir, filename), content, 'utf-8');
+  }
+  // Service computes repoRoot from __dirname (3 levels up). Override is not
+  // exposed via config — instead we monkey-patch process.cwd briefly.
+  // The MarketingMatrixService constructor uses path.resolve(__dirname, '..', '..', '..')
+  // which gives the repo root at runtime. To redirect, we leverage the fact
+  // that scanAgents() uses path.join(this.repoRoot, rel). Since we cannot
+  // override repoRoot via env, we instead provide MARKETING_MATRIX_SCAN_AGENTS=true
+  // and rely on the directory scan path being `workspaces/marketing/.claude/agents`
+  // resolved from the original repoRoot. For deterministic fixture tests, we
+  // bypass via a subclass that exposes repoRoot setter.
+  const svc = new (class extends MarketingMatrixService {
+    constructor() {
+      const cfg = {
+        get: <T = unknown>(k: string): T | undefined =>
+          (k === 'NODE_ENV'
+            ? 'test'
+            : k === 'MARKETING_MATRIX_SCAN_AGENTS'
+              ? 'true'
+              : undefined) as T | undefined,
+      } as unknown as ConfigService;
+      super(cfg);
+      // Override the private repoRoot — accessed via reflection.
+      (this as unknown as { repoRoot: string }).repoRoot = tmp;
+    }
+  })();
+  return {
+    svc,
+    cleanup: () => fs.rmSync(tmp, { recursive: true, force: true }),
+  };
 }
 
 describe('MarketingMatrixService', () => {
@@ -149,6 +205,189 @@ describe('MarketingMatrixService', () => {
     it('shows ECOMMERCE and LOCAL subdomains', () => {
       expect(md).toContain('ECOMMERCE');
       expect(md).toContain('LOCAL');
+    });
+
+    it('shows expected canonical role per agent (ADR-038)', () => {
+      expect(md).toContain(MarketingRoleId.LOCAL_BUSINESS);
+      expect(md).toContain(MarketingRoleId.MARKETING_LEAD);
+      expect(md).toContain(MarketingRoleId.CUSTOMER_RETENTION);
+    });
+  });
+
+  describe('Zod schema (marketing-agent-frontmatter, ADR-038)', () => {
+    it('parses a valid frontmatter object', () => {
+      const result = parseMarketingAgentFrontmatter({
+        name: 'local-business-agent',
+        description: 'Agent local',
+        role: MarketingRoleId.LOCAL_BUSINESS,
+        business_unit: [MarketingBusinessUnit.LOCAL],
+      });
+      expect(result.role).toBe(MarketingRoleId.LOCAL_BUSINESS);
+      expect(result.business_unit).toEqual([MarketingBusinessUnit.LOCAL]);
+    });
+
+    it('throws if role is missing', () => {
+      expect(() =>
+        parseMarketingAgentFrontmatter({
+          name: 'foo',
+          description: 'bar',
+          business_unit: [MarketingBusinessUnit.ECOMMERCE],
+        }),
+      ).toThrow();
+    });
+
+    it('throws if role is not a MarketingRoleId', () => {
+      expect(() =>
+        parseMarketingAgentFrontmatter({
+          name: 'foo',
+          description: 'bar',
+          role: 'R1_ROUTER',
+          business_unit: [MarketingBusinessUnit.ECOMMERCE],
+        }),
+      ).toThrow();
+    });
+
+    it('throws if business_unit is empty', () => {
+      expect(() =>
+        parseMarketingAgentFrontmatter({
+          name: 'foo',
+          description: 'bar',
+          role: MarketingRoleId.LOCAL_BUSINESS,
+          business_unit: [],
+        }),
+      ).toThrow();
+    });
+
+    it('throws if business_unit contains an invalid value', () => {
+      expect(() =>
+        parseMarketingAgentFrontmatter({
+          name: 'foo',
+          description: 'bar',
+          role: MarketingRoleId.LOCAL_BUSINESS,
+          business_unit: ['INVALID_UNIT'],
+        }),
+      ).toThrow();
+    });
+
+    it('safeParse returns success: false for invalid role', () => {
+      const result = safeParseMarketingAgentFrontmatter({
+        name: 'foo',
+        description: 'bar',
+        role: 'R99_INVALID',
+        business_unit: [MarketingBusinessUnit.ECOMMERCE],
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('passthrough preserves model + tools (Claude Code native fields)', () => {
+      const result = parseMarketingAgentFrontmatter({
+        name: 'foo',
+        description: 'bar',
+        role: MarketingRoleId.MARKETING_LEAD,
+        business_unit: [
+          MarketingBusinessUnit.ECOMMERCE,
+          MarketingBusinessUnit.LOCAL,
+        ],
+        model: 'sonnet',
+        tools: ['Read', 'Grep'],
+      });
+      expect(result.model).toBe('sonnet');
+      expect(result.tools).toEqual(['Read', 'Grep']);
+    });
+  });
+
+  describe('agent classification via frontmatter (ADR-038)', () => {
+    it('maps each expected agent to its declared role + scope from frontmatter', () => {
+      const { svc, cleanup } = makeServiceWithFixtures({
+        'local-business-agent.md': `---\nname: local-business-agent\ndescription: local agent\nrole: LOCAL_BUSINESS\nbusiness_unit: [LOCAL]\n---\n# body\n`,
+        'marketing-lead-agent.md': `---\nname: marketing-lead-agent\ndescription: lead agent\nrole: MARKETING_LEAD\nbusiness_unit: [ECOMMERCE, LOCAL]\n---\n# body\n`,
+        'customer-retention-agent.md': `---\nname: customer-retention-agent\ndescription: retention agent\nrole: CUSTOMER_RETENTION\nbusiness_unit: [ECOMMERCE, HYBRID]\n---\n# body\n`,
+      });
+      try {
+        const snap = svc.snapshot();
+        const byName = new Map(snap.agents.map((a) => [a.name, a]));
+        expect(byName.get('local-business-agent')).toMatchObject({
+          present: true,
+          role: MarketingRoleId.LOCAL_BUSINESS,
+          scope: [MarketingBusinessUnit.LOCAL],
+        });
+        expect(byName.get('marketing-lead-agent')).toMatchObject({
+          present: true,
+          role: MarketingRoleId.MARKETING_LEAD,
+        });
+        expect(byName.get('customer-retention-agent')).toMatchObject({
+          present: true,
+          role: MarketingRoleId.CUSTOMER_RETENTION,
+        });
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
+        expect(errors).toEqual([]);
+      } finally {
+        cleanup();
+      }
+    });
+
+    it('emits boot-log error if frontmatter is missing role:', () => {
+      const { svc, cleanup } = makeServiceWithFixtures({
+        'local-business-agent.md': `---\nname: local-business-agent\ndescription: local agent\nbusiness_unit: [LOCAL]\n---\n# body\n`,
+      });
+      try {
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
+        expect(errors.length).toBe(1);
+        expect(errors[0].message).toMatch(/local-business-agent\.md/);
+      } finally {
+        cleanup();
+      }
+    });
+
+    it('emits boot-log error if role is not in MarketingRoleId enum', () => {
+      const { svc, cleanup } = makeServiceWithFixtures({
+        'local-business-agent.md': `---\nname: local-business-agent\ndescription: local agent\nrole: R1_ROUTER\nbusiness_unit: [LOCAL]\n---\n# body\n`,
+      });
+      try {
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
+        expect(errors.length).toBe(1);
+        expect(errors[0].message).toMatch(/role/i);
+      } finally {
+        cleanup();
+      }
+    });
+
+    it('cross-validates: error if filename ↔ role mismatch', () => {
+      const { svc, cleanup } = makeServiceWithFixtures({
+        // filename = local-business-agent but role declared as MARKETING_LEAD
+        'local-business-agent.md': `---\nname: local-business-agent\ndescription: oops\nrole: MARKETING_LEAD\nbusiness_unit: [LOCAL]\n---\n# body\n`,
+      });
+      try {
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
+        expect(errors.length).toBe(1);
+        expect(errors[0].message).toMatch(/role mismatch/);
+      } finally {
+        cleanup();
+      }
+    });
+
+    it('emits boot-log error if business_unit is empty', () => {
+      const { svc, cleanup } = makeServiceWithFixtures({
+        'local-business-agent.md': `---\nname: local-business-agent\ndescription: local agent\nrole: LOCAL_BUSINESS\nbusiness_unit: []\n---\n# body\n`,
+      });
+      try {
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
+        expect(errors.length).toBe(1);
+        expect(errors[0].message).toMatch(/business_unit/);
+      } finally {
+        cleanup();
+      }
+    });
+
+    it('the real workspaces/marketing agents all have a valid role: (post-creation)', () => {
+      // Smoke against real repo content. Validates that the 3 agent stubs
+      // created by ADR-038 PR pass the boot fail-fast.
+      const svc = makeService({
+        NODE_ENV: 'test',
+        MARKETING_MATRIX_SCAN_AGENTS: 'true',
+      });
+      const errors = svc.formatBootLog().filter((l) => l.level === 'error');
+      expect(errors).toEqual([]);
     });
   });
 });
