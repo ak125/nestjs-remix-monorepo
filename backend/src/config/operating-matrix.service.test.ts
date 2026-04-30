@@ -71,9 +71,9 @@ describe('OperatingMatrixService', () => {
       if (r.agents.length > 0) expect(r.healthScore).toBe(100);
     });
 
-    it('R3_GUIDE — deprecated role still in registry, no FIELD_CATALOG ownership', () => {
+    it('R3_GUIDE — deprecated role removed from registry (closed deprecation)', () => {
       const r = byRole.get(RoleId.R3_GUIDE)!;
-      expect(r.registry.present).toBe(true);
+      expect(r.registry.present).toBe(false);
       expect(r.deprecated).toBe(true);
       expect(r.writeScope.ownedFieldsCount).toBe(0);
     });
