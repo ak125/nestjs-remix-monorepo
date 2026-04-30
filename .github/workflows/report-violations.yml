@@ -32,9 +32,11 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Run depcruise (JSON)
+        # Same paths as `npm run audit:depcruise` (package.json) — backend/src + frontend/app.
+        # `shared/` is not a real top-level dir in this repo (`packages/shared-types/*` lives elsewhere).
         run: |
           npx depcruise --config .dependency-cruiser.cjs \
-            --output-type json backend/src frontend/app shared \
+            --output-type json backend/src frontend/app \
             > depcruise-report.json
 
       - name: Summarize per-rule

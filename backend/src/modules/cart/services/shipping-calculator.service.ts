@@ -51,8 +51,26 @@ export class ShippingCalculatorService
     super();
   }
 
-  async onModuleInit(): Promise<void> {
-    await this.loadAllZoneTiers();
+  /**
+   * Préchargement non-bloquant des paliers tarifaires.
+   *
+   * `loadAllZoneTiers()` fait 4 RPCs Supabase séquentielles (1 par zone).
+   * Awaiter ici bloquerait `app.listen()` (NestJS exécute tous les
+   * `onModuleInit` sérialement durant la phase init). Sur runner CI à
+   * froid → `/health` muet → exit 124 sur `perf-gates.yml`.
+   *
+   * Fire-and-forget : le serveur écoute immédiatement, le cache se peuple
+   * en parallèle. Les premiers calculs avant que le cache soit prêt
+   * passent par `fallbackTier` (déjà géré ligne 62 — même fallback que
+   * pour table vide / erreur RPC).
+   *
+   * Voir `.claude/rules/backend.md` § "Non-blocking onModuleInit".
+   */
+  onModuleInit(): void {
+    this.logger.log(
+      '🚀 Initialisation ShippingCalculatorService — chargement paliers en arrière-plan',
+    );
+    void this.loadAllZoneTiers();
   }
 
   /**

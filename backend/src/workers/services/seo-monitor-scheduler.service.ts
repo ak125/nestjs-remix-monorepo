@@ -20,9 +20,22 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
   ) {}
 
   /**
-   * 🚀 Configure les jobs répétitifs au démarrage de l'app
+   * 🚀 Configure les jobs répétitifs au démarrage de l'app — non-bloquant.
+   *
+   * Les `await this.seoMonitorQueue.*` (clean, add) touchent Redis via Bull.
+   * Awaiter ici bloquerait `app.listen()` (NestJS exécute tous les
+   * `onModuleInit` durant `app.init()` appelé par `listen()` → /health muet
+   * → exit 124 sur perf-gates.yml). Cf. PR #224 / runs 25166916535 +
+   * 25172104783 (preuve via INIT_TRACE markers : ce service hangait avec
+   * abandoned-cart pour le même motif).
+   *
+   * Voir `.claude/rules/backend.md` § "Non-blocking onModuleInit".
    */
-  async onModuleInit() {
+  onModuleInit(): void {
+    void this.configureRepeatableJobs();
+  }
+
+  private async configureRepeatableJobs(): Promise<void> {
     this.logger.log('🚀 Initialisation scheduler monitoring SEO...');
 
     try {

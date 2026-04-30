@@ -60,19 +60,30 @@ export class CatalogService
   }
 
   /**
-   * 🚀 Initialisation du module - Préchargement intelligent
+   * 🚀 Initialisation du module - Préchargement non-bloquant
+   *
+   * Les preloads (mainCategories + autoBrands + globalStats) appellent des
+   * RPCs Supabase distantes qui peuvent prendre 60-280s sur runners CI lents.
+   * Awaiter ici bloque app.listen() et donc /health → exit 124 sur perf-gates.yml.
+   *
+   * Solution structurelle : fire-and-forget. Le serveur HTTP écoute
+   * immédiatement, le cache se peuple en parallèle. Premiers requests =
+   * cache-miss (fallback live RPC déjà géré), suivants = warmed.
    */
-  async onModuleInit() {
-    this.logger.log('🚀 Initialisation CatalogService avec préchargement...');
+  onModuleInit(): void {
+    this.logger.log(
+      '🚀 Initialisation CatalogService — préchargement en arrière-plan',
+    );
+    void this.warmCacheInBackground();
+  }
 
+  private async warmCacheInBackground(): Promise<void> {
     try {
-      // Préchargement parallèle des données critiques
       await Promise.allSettled([
         this.preloadMainCategories(),
         this.preloadAutoBrands(),
         this.preloadGlobalStats(),
       ]);
-
       this.logger.log('✅ Préchargement du catalogue terminé avec succès');
     } catch (error) {
       this.logger.error('❌ Erreur préchargement catalogue:', error);
