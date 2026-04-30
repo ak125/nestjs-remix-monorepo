@@ -268,11 +268,6 @@ async function main(): Promise<void> {
   const repoRoot = path.resolve(__dirname, '../..');
   const dir = path.resolve(repoRoot, SOURCE_DIR);
 
-  if (!fs.existsSync(dir)) {
-    console.error(`[inject-agent-role] missing source dir: ${SOURCE_DIR}`);
-    process.exit(1);
-  }
-
   const stats: InjectionStats = {
     injected: 0,
     alreadyCorrect: 0,
@@ -282,12 +277,20 @@ async function main(): Promise<void> {
 
   for (const entry of MAPPING) {
     const filePath = path.join(dir, entry.filename);
-    if (!fs.existsSync(filePath)) {
-      stats.notFound.push(entry.filename);
-      continue;
+    let raw: string;
+    try {
+      // No prior existsSync check: readFileSync throws ENOENT if missing,
+      // which is then mapped to `notFound`. Avoids TOCTOU race
+      // (CodeQL js/file-system-race) between existsSync and writeFileSync.
+      raw = fs.readFileSync(filePath, 'utf-8');
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code === 'ENOENT') {
+        stats.notFound.push(entry.filename);
+        continue;
+      }
+      throw e;
     }
 
-    const raw = fs.readFileSync(filePath, 'utf-8');
     const parsed = matter(raw);
     const data = parsed.data as Record<string, unknown>;
     const existingRole = data.role;
