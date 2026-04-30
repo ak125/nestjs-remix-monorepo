@@ -1,0 +1,90 @@
+name: Report Violations (depcruise + tsc)
+
+# Quantifies dependency-cruiser violations and TypeScript backend errors.
+# Non-blocking — produces JSON artifacts for offline review.
+# Output is the input for ADR P1.2 (depcruise warn→error) and P1.3 (noEmitOnError flip).
+# Local tooling cannot produce this report (V8 OOM on backend size, --max-old-space-size=8192 needed).
+
+on:
+  workflow_dispatch:
+  schedule:
+    # nightly 03:00 UTC (low activity window)
+    - cron: '0 3 * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  depcruise-report:
+    name: dependency-cruiser report
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci --ignore-scripts
+
+      - name: Run depcruise (JSON)
+        run: |
+          npx depcruise --config .dependency-cruiser.cjs \
+            --output-type json backend/src frontend/app shared \
+            > depcruise-report.json
+
+      - name: Summarize per-rule
+        run: |
+          {
+            echo "## dependency-cruiser violations"
+            echo ""
+            echo "| Rule | Severity | Count |"
+            echo "|------|----------|-------|"
+            jq -r '.violations
+              | group_by(.rule.name)
+              | map({rule: .[0].rule.name, severity: .[0].rule.severity, count: length})
+              | sort_by(-.count)
+              | .[]
+              | "| \(.rule) | \(.severity) | \(.count) |"' depcruise-report.json
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: depcruise-report
+          path: depcruise-report.json
+          retention-days: 30
+
+  tsc-noemit-report:
+    name: tsc --noEmit report (backend)
+    runs-on: [self-hosted, Linux, X64]
+    env:
+      NODE_OPTIONS: --max-old-space-size=8192
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci --ignore-scripts
+
+      - name: Run tsc --noEmit (capture errors)
+        run: |
+          cd backend
+          npx tsc --noEmit 2>&1 | tee tsc-errors.txt || true
+          ERROR_COUNT=$(grep -cE '^[^:]+\.ts\(' tsc-errors.txt || true)
+          echo "## tsc --noEmit (backend)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Errors: \`$ERROR_COUNT\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: tsc-errors
+          path: backend/tsc-errors.txt
+          retention-days: 30
