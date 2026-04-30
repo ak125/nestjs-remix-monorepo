@@ -1,10 +1,11 @@
 -- ADR-036 Phase 1 — Marketing Operating Layer (PR-1.1)
 --
--- Source : ADR-036 (governance-vault) + plan rev 8.
+-- Source : ADR-036 (governance-vault) + plan rev 8 + canon brand voice
+-- (`.claude/rules/marketing-voice.md` v1.0.0, hash-locked vs vault).
 -- Auto-revue post-inventaire DB :
 --   9 tables __marketing_* existent déjà (vérifié inventory-marketing-tables.py)
 --   Aucune n'est doublon parfait : toutes channel-specific
---     (__marketing_social_posts = IG/FB/YT only, __marketing_campaigns = backlinks
+--     (__marketing_social_posts = IG/FB only, __marketing_campaigns = backlinks
 --      only, __marketing_weekly_plans = plan agrégé, __marketing_kpi_snapshots =
 --      snapshot quotidien). __marketing_brief comme table fédératrice multi-channel
 --      agent-orchestrated n'a pas d'équivalent.
@@ -13,6 +14,23 @@
 --   __marketing_social_posts.brand_gate_level CHECK IN ('PASS','WARN','FAIL')
 --   → __marketing_brief reprend la même convention (pas d'invention BLOCK/WRITE/REVIEW).
 --
+-- Channels enum aligné strict canon `marketing-voice.md` v1.0.0 :
+--   ECOMMERCE → website_seo, email, social_facebook, social_instagram
+--   LOCAL     → gbp, local_landing, sms
+--   HYBRID    → ECOMMERCE channels (cas d'école : email cross-business)
+--   YouTube hors scope canon Phase 1. Si ajouté plus tard : PR vault dédiée
+--   (bump marketing-voice.md → v1.1) puis migration ALTER CONSTRAINT.
+--
+-- Defense-in-depth gates (3 couches indépendantes) :
+--   - SQL CHECK             = invariants immuables (énums, présence champs,
+--                             cohérence unit×channel)
+--   - DTO Zod (NestJS)      = validation valeurs runtime (ex: target_zone='93')
+--   - brand-compliance-gate.service.ts
+--                           = règles métier dynamiques (lit
+--                             `__marketing_brand_rules` + `local_canon.validated`,
+--                             retourne BLOCK avec reason `local_canon_unvalidated`
+--                             tant que local_canon n'est pas validé par le métier)
+--
 -- 3 changes idempotents (IF NOT EXISTS partout) :
 --   1. __marketing_brief : table fédératrice briefs agent-orchestrated
 --   2. __retention_trigger_rules : règles métier data-driven cycles véhicule
@@ -20,8 +38,11 @@
 --
 -- RLS service_role only sur les 2 nouvelles tables.
 -- ALTER ___xtr_customer = additif uniquement (NULL backfill, non rétroactif RGPD).
-
-BEGIN;
+--
+-- Transaction : gérée par le caller (apply-migration-marketing-phase1.py
+-- enveloppe en BEGIN/ROLLBACK-on-error/COMMIT côté driver, ou supabase CLI,
+-- ou `psql -1`). Pas de BEGIN/COMMIT inline ici → refactoring-safe et
+-- compatible tous les runners.
 
 -- ── 1. __marketing_brief ─────────────────────────────────────────────────────
 -- Table fédératrice : 1 brief = 1 sortie agent (LEAD/LOCAL/RETENTION).
@@ -36,11 +57,13 @@ CREATE TABLE IF NOT EXISTS public.__marketing_brief (
   -- Business unit + channel (ECOMMERCE/LOCAL/HYBRID séparation cf ADR-036)
   business_unit   text        NOT NULL
                               CHECK (business_unit IN ('ECOMMERCE','LOCAL','HYBRID')),
+  -- Channel enum strict canon marketing-voice.md v1.0.0 — 7 valeurs.
+  -- Pas de social_youtube : hors scope canon Phase 1 (cf header §"Channels enum").
   channel         text        NOT NULL
                               CHECK (channel IN (
                                 'gbp','local_landing','website_seo',
                                 'email','sms',
-                                'social_facebook','social_instagram','social_youtube'
+                                'social_facebook','social_instagram'
                               )),
 
   -- Conversion-driven (NOT NULL = règle ADR-036 anti contenu décoratif)
@@ -95,27 +118,41 @@ CREATE TABLE IF NOT EXISTS public.__marketing_brief (
   created_at      timestamptz NOT NULL DEFAULT now(),
   updated_at      timestamptz NOT NULL DEFAULT now(),
 
-  -- HYBRID payload structure obligatoire (validation Zod côté NestJS,
-  -- mais double-check côté SQL : payload doit contenir hybrid_reason)
+  -- HYBRID payload — invariants immuables (5 conditions canon marketing-voice.md
+  -- §"Voix HYBRID — Conditions strictes"). Le SQL CHECK enforce la PRÉSENCE
+  -- des 6 clés obligatoires + length>0 sur les chaînes critiques. La
+  -- VALIDATION DES VALEURS (target_zone='93' ou intention magasin explicite,
+  -- cohérence sémantique cta_ecommerce ≠ cta_local, conversion_goals distincts
+  -- non-identiques, local_canon.validated=true) est faite par :
+  --   1. DTO Zod (NestJS) au moment du POST /admin/marketing/briefs
+  --   2. brand-compliance-gate.service.ts au moment du transition status reviewed
   CONSTRAINT marketing_brief_hybrid_payload_check CHECK (
     business_unit <> 'HYBRID'
     OR (
       payload ? 'hybrid_reason'
+      AND payload ? 'target_zone'
       AND payload ? 'cta_ecommerce'
       AND payload ? 'cta_local'
       AND payload ? 'conversion_goal_ecommerce'
       AND payload ? 'conversion_goal_local'
       AND length(coalesce(payload->>'hybrid_reason','')) > 0
+      AND length(coalesce(payload->>'target_zone','')) > 0
+      AND length(coalesce(payload->>'cta_ecommerce','')) > 0
+      AND length(coalesce(payload->>'cta_local','')) > 0
     )
   ),
 
-  -- Cohérence business_unit × channel
+  -- Cohérence business_unit × channel — strict canon marketing-voice.md v1.0.0
+  -- HYBRID emprunte les channels ECOMMERCE (cas d'école : email cross-business).
   CONSTRAINT marketing_brief_unit_channel_coherence CHECK (
-    (business_unit = 'LOCAL' AND channel IN ('gbp','local_landing','sms'))
+    (business_unit = 'LOCAL'
+      AND channel IN ('gbp','local_landing','sms'))
     OR
-    (business_unit = 'ECOMMERCE' AND channel IN ('website_seo','email','social_facebook','social_instagram','social_youtube'))
+    (business_unit = 'ECOMMERCE'
+      AND channel IN ('website_seo','email','social_facebook','social_instagram'))
     OR
-    (business_unit = 'HYBRID')
+    (business_unit = 'HYBRID'
+      AND channel IN ('website_seo','email','social_facebook','social_instagram'))
   )
 );
 
@@ -158,7 +195,12 @@ REVOKE ALL ON public.__marketing_brief FROM anon, authenticated;
 COMMENT ON TABLE public.__marketing_brief IS
   'ADR-036 Phase 1 — Briefs agent-orchestrated multi-channel (LEAD/LOCAL/RETENTION). '
   'Canal d''échange agent → engine. Métriques inline cohérentes __marketing_social_posts.actual_*. '
-  'FK optionnel social_post_id pour briefs qui génèrent un post IG/FB/YT.';
+  'FK optionnel social_post_id pour briefs qui génèrent un post IG/FB. '
+  'Channels enum strict canon marketing-voice.md v1.0.0 (pas de social_youtube hors scope). '
+  'Defense-in-depth : SQL CHECK (invariants) + Zod DTO (valeurs) + '
+  'brand-compliance-gate.service.ts (règles dynamiques — local_canon.validated, '
+  'cohérence cta_ecommerce ≠ cta_local, lit __marketing_brand_rules pour rejeter '
+  'briefs non conformes au canon brand voice).';
 
 -- ── 2. __retention_trigger_rules ─────────────────────────────────────────────
 -- Règles métier data-driven (cycles véhicule). Pas hardcodé code.
@@ -231,9 +273,10 @@ COMMENT ON COLUMN public.___xtr_customer.cst_marketing_consent_at IS
   'NULL = pas consentant → exclu de toute query RETENTION (filtre dur DTO Zod + WHERE clause). '
   'Backfill = NULL (consentement non rétroactif). Set/unset par UI compte/profil/checkout.';
 
-COMMIT;
+-- (Pas de COMMIT inline : la transaction est ouverte et fermée par le caller —
+-- voir header §"Transaction".)
 
--- ── Tests négatifs (à exécuter dans la même session ou via Jest) ─────────────
+-- ── Tests négatifs (cf. apply-migration-marketing-phase1.py --test-negative) ──
 -- Doivent ÉCHOUER (CHECK constraint violation) :
 --
 --   -- 1. business_unit invalide
@@ -248,23 +291,35 @@ COMMIT;
 --   INSERT INTO __marketing_brief (agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest)
 --   VALUES ('t', 'ECOMMERCE', 'gbp', 'CALL', 'x', 'y', '{}', '{}');
 --
---   -- 4. HYBRID sans hybrid_reason
+--   -- 4. social_youtube (hors canon Phase 1, doit fail le CHECK channel)
 --   INSERT INTO __marketing_brief (agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest)
---   VALUES ('t', 'HYBRID', 'email', 'CALL', 'x', 'y', '{}', '{}');
+--   VALUES ('t', 'ECOMMERCE', 'social_youtube', 'ORDER', 'x', 'y', '{}', '{}');
 --
---   -- 5. retention min >= max
+--   -- 5. HYBRID sans hybrid_reason (a target_zone, manque hybrid_reason)
+--   INSERT INTO __marketing_brief (agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest)
+--   VALUES ('t', 'HYBRID', 'email', 'CALL', 'x', 'y',
+--           '{"target_zone":"93","cta_ecommerce":"a","cta_local":"b","conversion_goal_ecommerce":"ORDER","conversion_goal_local":"VISIT"}',
+--           '{}');
+--
+--   -- 6. HYBRID sans target_zone (a hybrid_reason, manque target_zone)
+--   INSERT INTO __marketing_brief (agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest)
+--   VALUES ('t', 'HYBRID', 'email', 'CALL', 'x', 'y',
+--           '{"hybrid_reason":"r","cta_ecommerce":"a","cta_local":"b","conversion_goal_ecommerce":"ORDER","conversion_goal_local":"VISIT"}',
+--           '{}');
+--
+--   -- 7. retention min >= max
 --   INSERT INTO __retention_trigger_rules (category, min_days_since_last_order, max_days_since_last_order, trigger_template)
 --   VALUES ('test', 100, 50, 'test_template');
 --
 -- Doivent RÉUSSIR :
 --
---   -- 6. brief LOCAL+gbp valide
+--   -- 8. brief LOCAL+gbp valide
 --   INSERT INTO __marketing_brief (agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest)
 --   VALUES ('local-business-agent', 'LOCAL', 'gbp', 'CALL', 'Appelez le 01-XX', 'commune-bondy',
 --           '{"text":"Test"}', '{"final_status":"PARTIAL_COVERAGE"}');
 --
---   -- 7. brief HYBRID complet
+--   -- 9. brief HYBRID complet (6 clés payload présentes + length>0)
 --   INSERT INTO __marketing_brief (agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest)
 --   VALUES ('customer-retention-agent', 'HYBRID', 'email', 'CALL', 'split', 'zone-93',
---           '{"hybrid_reason":"client zone 93 panier abandonné","cta_ecommerce":"Reprenez en ligne","cta_local":"Ou venez chercher","conversion_goal_ecommerce":"ORDER","conversion_goal_local":"VISIT"}',
+--           '{"hybrid_reason":"client zone 93 panier abandonné","target_zone":"93","cta_ecommerce":"Reprenez en ligne","cta_local":"Ou venez chercher","conversion_goal_ecommerce":"ORDER","conversion_goal_local":"VISIT"}',
 --           '{"final_status":"PARTIAL_COVERAGE"}');

@@ -98,23 +98,30 @@ def cmd_dry_run() -> int:
 
 
 def cmd_apply() -> int:
+    """Apply the migration in a single explicit transaction.
+
+    La migration n'a pas de BEGIN/COMMIT inline (depuis 2026-04-30, cf header SQL) :
+    le caller ouvre une transaction unique, exécute le bloc multi-statements, et
+    commit ou rollback. psycopg2 démarre une transaction implicite à la première
+    requête (autocommit=False par défaut) ; cur.execute(sql) accepte un script
+    multi-statements et tout fail intermédiaire fait remonter l'exception, qui
+    déclenche le rollback dans le except.
+    """
     print(f"[apply] reading {MIGRATION_PATH.relative_to(REPO_ROOT)}")
     sql = MIGRATION_PATH.read_text(encoding="utf-8")
 
     conn = connect()
+    assert conn.autocommit is False, "expected explicit transaction (autocommit=False)"
     cur = conn.cursor()
     try:
-        # La migration contient déjà BEGIN/COMMIT, pas besoin d'envelopper.
-        # psycopg2 démarre par défaut une transaction implicite ; cur.execute(sql)
-        # exécute le bloc complet (les BEGIN/COMMIT internes sont honorés).
-        print("[apply] executing migration...")
+        print("[apply] executing migration in single transaction...")
         cur.execute(sql)
         conn.commit()
-        print("[apply] OK — migration applied successfully")
+        print("[apply] OK — migration applied + committed")
         return 0
     except Exception as e:
         conn.rollback()
-        sys.stderr.write(f"[FATAL] migration failed: {e}\n")
+        sys.stderr.write(f"[FATAL] migration failed (rolled back): {e}\n")
         return 1
     finally:
         cur.close()
@@ -203,31 +210,64 @@ def cmd_verify() -> int:
 
 
 def cmd_test_negative() -> int:
-    """Lance les 5 tests négatifs CHECK constraints. Tous doivent ÉCHOUER."""
+    """Run the 7 negative + 2 positive constraint tests.
+
+    Each negative test is isolated : its payload satisfies every check OTHER
+    than the one being asserted, so the failure can only come from the
+    targeted CHECK. This makes regression-tracing trivial when a constraint
+    is later loosened or tightened.
+    """
+    # HYBRID payload missing only ONE key at a time — explicit isolation per test.
+    HYBRID_BASE = {
+        "hybrid_reason": "client zone 93 panier abandonné",
+        "target_zone": "93",
+        "cta_ecommerce": "Reprenez en ligne",
+        "cta_local": "Ou venez chercher en magasin",
+        "conversion_goal_ecommerce": "ORDER",
+        "conversion_goal_local": "VISIT",
+    }
+
+    def hybrid_payload_missing(key: str) -> str:
+        import json
+        clone = {k: v for k, v in HYBRID_BASE.items() if k != key}
+        return json.dumps(clone).replace("'", "''")
+
     tests = [
         (
             "business_unit invalide",
             "INSERT INTO public.__marketing_brief "
             "(agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest) "
-            "VALUES ('test', 'INVALID', 'gbp', 'CALL', 'x', 'y', '{}'::jsonb, '{}'::jsonb)",
+            "VALUES ('test_neg', 'INVALID', 'gbp', 'CALL', 'x', 'y', '{}'::jsonb, '{}'::jsonb)",
+        ),
+        (
+            "channel social_youtube (hors canon Phase 1)",
+            "INSERT INTO public.__marketing_brief "
+            "(agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest) "
+            "VALUES ('test_neg', 'ECOMMERCE', 'social_youtube', 'ORDER', 'x', 'y', '{}'::jsonb, '{}'::jsonb)",
         ),
         (
             "LOCAL + website_seo (incohérent)",
             "INSERT INTO public.__marketing_brief "
             "(agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest) "
-            "VALUES ('test', 'LOCAL', 'website_seo', 'CALL', 'x', 'y', '{}'::jsonb, '{}'::jsonb)",
+            "VALUES ('test_neg', 'LOCAL', 'website_seo', 'CALL', 'x', 'y', '{}'::jsonb, '{}'::jsonb)",
         ),
         (
             "ECOMMERCE + gbp (incohérent)",
             "INSERT INTO public.__marketing_brief "
             "(agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest) "
-            "VALUES ('test', 'ECOMMERCE', 'gbp', 'CALL', 'x', 'y', '{}'::jsonb, '{}'::jsonb)",
+            "VALUES ('test_neg', 'ECOMMERCE', 'gbp', 'CALL', 'x', 'y', '{}'::jsonb, '{}'::jsonb)",
         ),
         (
-            "HYBRID sans hybrid_reason",
+            "HYBRID sans hybrid_reason (autres clés présentes)",
             "INSERT INTO public.__marketing_brief "
             "(agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest) "
-            "VALUES ('test', 'HYBRID', 'email', 'CALL', 'x', 'y', '{}'::jsonb, '{}'::jsonb)",
+            f"VALUES ('test_neg', 'HYBRID', 'email', 'CALL', 'x', 'y', '{hybrid_payload_missing('hybrid_reason')}'::jsonb, '{{}}'::jsonb)",
+        ),
+        (
+            "HYBRID sans target_zone (autres clés présentes)",
+            "INSERT INTO public.__marketing_brief "
+            "(agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest) "
+            f"VALUES ('test_neg', 'HYBRID', 'email', 'CALL', 'x', 'y', '{hybrid_payload_missing('target_zone')}'::jsonb, '{{}}'::jsonb)",
         ),
         (
             "retention min >= max",
@@ -237,57 +277,73 @@ def cmd_test_negative() -> int:
         ),
     ]
 
+    # Positive tests — each MUST succeed and is then cleaned up.
+    import json as _json
+    hybrid_full_payload = _json.dumps(HYBRID_BASE).replace("'", "''")
+    positives = [
+        (
+            "LOCAL + gbp valide",
+            "INSERT INTO public.__marketing_brief "
+            "(agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest) "
+            "VALUES ('test_positive', 'LOCAL', 'gbp', 'CALL', 'Appelez le 01-XX', 'commune-bondy', "
+            "'{\"text\":\"Test post GBP Bondy\"}'::jsonb, "
+            "'{\"final_status\":\"PARTIAL_COVERAGE\",\"scope_requested\":\"test\"}'::jsonb)",
+        ),
+        (
+            "HYBRID + email + payload complet (6 clés)",
+            "INSERT INTO public.__marketing_brief "
+            "(agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest) "
+            f"VALUES ('test_positive', 'HYBRID', 'email', 'CALL', 'split-cta', 'zone-93', "
+            f"'{hybrid_full_payload}'::jsonb, "
+            "'{\"final_status\":\"PARTIAL_COVERAGE\"}'::jsonb)",
+        ),
+    ]
+
     conn = connect()
     failures = []
     passed = 0
 
+    # Negative tests
     for label, sql in tests:
         cur = conn.cursor()
         try:
             cur.execute(sql)
-            # If we reach here, the INSERT did NOT fail — that's a TEST failure.
             conn.rollback()
             failures.append(f"{label}: INSERT should have failed but succeeded")
             print(f"  ✗ {label}: INSERT should have failed but succeeded")
         except (pg_errors.CheckViolation, pg_errors.IntegrityError) as e:
             conn.rollback()
-            # Expected — CHECK violation
             print(f"  ✓ {label}: rejected ({type(e).__name__})")
             passed += 1
         except Exception as e:
             conn.rollback()
             failures.append(f"{label}: unexpected error {type(e).__name__}: {e}")
-            print(f"  ⚠ {label}: unexpected error {type(e).__name__}")
+            print(f"  ⚠ {label}: unexpected error {type(e).__name__}: {e}")
         finally:
             cur.close()
 
-    # Test positif : 1 INSERT valide doit passer
-    cur = conn.cursor()
-    try:
-        cur.execute(
-            "INSERT INTO public.__marketing_brief "
-            "(agent_id, business_unit, channel, conversion_goal, cta, target_segment, payload, coverage_manifest) "
-            "VALUES ('test_positive', 'LOCAL', 'gbp', 'CALL', 'Appelez le 01-XX', 'commune-bondy', "
-            "'{\"text\":\"Test post GBP Bondy\"}'::jsonb, "
-            "'{\"final_status\":\"PARTIAL_COVERAGE\",\"scope_requested\":\"test\"}'::jsonb)"
-        )
-        conn.commit()
-        # Cleanup test row
-        cur.execute("DELETE FROM public.__marketing_brief WHERE agent_id = 'test_positive'")
-        conn.commit()
-        print("  ✓ INSERT positif (LOCAL+gbp valide) accepté + nettoyé")
-        passed += 1
-    except Exception as e:
-        conn.rollback()
-        failures.append(f"INSERT positif failed unexpectedly: {e}")
-        print(f"  ✗ INSERT positif: {e}")
-    finally:
-        cur.close()
+    # Positive tests — cleanup after each so the table stays empty for next run.
+    for label, sql in positives:
+        cur = conn.cursor()
+        try:
+            cur.execute(sql)
+            conn.commit()
+            cur.execute("DELETE FROM public.__marketing_brief WHERE agent_id = 'test_positive'")
+            conn.commit()
+            print(f"  ✓ {label}: accepté + nettoyé")
+            passed += 1
+        except Exception as e:
+            conn.rollback()
+            failures.append(f"{label}: failed unexpectedly: {e}")
+            print(f"  ✗ {label}: {e}")
+        finally:
+            cur.close()
 
     conn.close()
 
+    total = len(tests) + len(positives)
     print(
-        f"\n[test-negative] {passed}/{len(tests)+1} tests passed "
+        f"\n[test-negative] {passed}/{total} tests passed "
         f"({len(failures)} failure(s))"
     )
     return 0 if not failures else 1
