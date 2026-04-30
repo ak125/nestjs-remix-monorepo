@@ -23,7 +23,6 @@ depends_on:
 - SystemModule
 - AiContentModule
 - VehiclesModule
-- OperatingMatrixModule
 ---
 
 # Module Admin
