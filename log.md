@@ -129,3 +129,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/permissions-canonical-backend`
 - **Décision** : feat(auth): add UserPermissions DTO + level constants (+2 other commits)
 - **Sortie** : PR aucune | commits fa3c03ef 8ba4394a 2b9678b3
+
+## 2026-04-30 — feat/p1.1-report-violations-workflow (auto)
+
+- **Branche** : `feat/p1.1-report-violations-workflow`
+- **Décision** : ci(workflows): add nightly report-violations.yml (depcruise + tsc) — non blocking
+- **Sortie** : PR #223 | commits 2ce82b9a
