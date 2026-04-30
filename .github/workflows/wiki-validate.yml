@@ -1,0 +1,87 @@
+name: wiki-validate
+
+# ADR-033 §"Phase 2" — CI validator for wiki gamme fiches against the v2.0.0
+# diagnostic_relations[] contract. Mirrors the wiki repo's own
+# _scripts/quality-gates.py 9-gates, focused on FK validation + 3 anti-patterns
+# figés §D3.
+#
+# Triggered on monorepo PRs that touch :
+#   - workspaces/wiki/** (skill changes that may affect proposal generation)
+#   - scripts/wiki/** (validator updates)
+#   - .github/workflows/wiki-validate.yml (self-CI)
+#
+# Also runs on schedule (weekly) to catch wiki repo drift not caught by the
+# wiki repo's own CI.
+#
+# Refs :
+#   - ADR-033 vault PR #108 commit 77085ef
+#   - canon : automecanik-wiki/_meta/schema/frontmatter.schema.json v2.0.0
+#   - companion : automecanik-wiki/_scripts/quality-gates.py (full 9 gates)
+#   - plan rev 3 PR-C : /home/deploy/.claude/plans/mvp-et-raw-et-wobbly-brooks.md
+
+on:
+  pull_request:
+    paths:
+      - 'workspaces/wiki/**'
+      - 'scripts/wiki/**'
+      - '.github/workflows/wiki-validate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'workspaces/wiki/**'
+      - 'scripts/wiki/**'
+      - '.github/workflows/wiki-validate.yml'
+  schedule:
+    # Lundi 03:00 UTC — drift detection wiki repo (after weekly canon-publish runs)
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-wiki-gamme-diagnostic-relations:
+    name: 🔍 Validate wiki gamme diagnostic_relations[]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v4
+        with:
+          path: monorepo
+
+      - name: Checkout automecanik-wiki
+        uses: actions/checkout@v4
+        with:
+          repository: ak125/automecanik-wiki
+          path: automecanik-wiki
+          ref: main
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python deps
+        run: |
+          python3 -m pip install --quiet pyyaml
+
+      - name: Run validator (--all)
+        env:
+          AUTOMECANIK_WIKI_PATH: ${{ github.workspace }}/automecanik-wiki
+        run: |
+          python3 monorepo/scripts/wiki/validate-gamme-diagnostic-relations.py --all
+
+      - name: Generate JSON report (artifact)
+        if: always()
+        env:
+          AUTOMECANIK_WIKI_PATH: ${{ github.workspace }}/automecanik-wiki
+        run: |
+          python3 monorepo/scripts/wiki/validate-gamme-diagnostic-relations.py --all --json > wiki-validate-report.json || true
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wiki-validate-report
+          path: wiki-validate-report.json
+          retention-days: 14
