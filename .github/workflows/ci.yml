@@ -697,15 +697,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: 🧪 Deploy to PREPROD (read-only hardening — ADR-028 Option D)
+      - name: 🧪 Deploy to PREPROD
         env:
-          # Couche 1+2 ADR-028 Option D : aucune SERVICE_ROLE_KEY distribuée au conteneur préprod
-          # (privilege downgrade + anon key only). Voir ADR-021 RLS hardening (couche 3) +
-          # READ_ONLY guard backend (couche 4, PR 2B) + write-detect (couche 5, PR 2B).
           NODE_ENV: preprod
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          READ_ONLY: "true"
+          ALLOW_PROD_ENV_COPY: "1"
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           docker pull massdoc/nestjs-remix-monorepo:preprod
 
@@ -715,21 +712,22 @@ jobs:
           # Copier docker-compose.preprod.yml
           cp $GITHUB_WORKSPACE/docker-compose.preprod.yml $PREPROD_DIR/
 
-          # Génération in-place .env.preprod minimal
-          # Plus de copie de ~/production/.env (ALLOW_PROD_ENV_COPY supprimé — voir plan AI-COS rev5).
-          cat > "$PREPROD_DIR/.env" <<EOF
-          NODE_ENV=preprod
-          SUPABASE_URL=${SUPABASE_URL}
-          SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-          READ_ONLY=true
-          REDIS_URL=redis://redis-preprod:6379
-          APP_URL=http://localhost:3200
-          PORT=3200
-          EOF
+          # Copier le .env de prod (controle par flag)
+          if [ "${ALLOW_PROD_ENV_COPY:-0}" = "1" ] && [ -f ~/production/.env ]; then
+            echo "⚠️  ALLOW_PROD_ENV_COPY=1 enabled: copying production env (should be temporary)"
+            cp ~/production/.env "$PREPROD_DIR/.env"
+          else
+            echo "ℹ️  Skipping prod env copy (default safe mode)"
+          fi
 
           cd $PREPROD_DIR
 
-          echo "✅ .env.preprod generated (anon key only, no SERVICE_ROLE_KEY, READ_ONLY=true)"
+          # Inject Supabase keys from GitHub Secrets (overrides .env values)
+          if [ -n "$SUPABASE_SECRET_KEY" ] && [ -f ".env" ]; then
+            sed -i "s|^SUPABASE_SERVICE_ROLE_KEY=.*|SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SECRET_KEY}|" .env
+            sed -i "s|^SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=${SUPABASE_PUBLISHABLE_KEY}|" .env
+            echo "✅ Supabase keys injected from GitHub Secrets"
+          fi
 
           # Arreter anciens conteneurs
           docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
