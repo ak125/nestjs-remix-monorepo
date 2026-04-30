@@ -171,3 +171,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cache-warm-non-blocking`
 - **Décision** : Revert "perf(home): lazy-load below-the-fold sections via React.lazy + Suspense" (+17 other commits)
 - **Sortie** : PR #224 | commits 74148c9e 374cba10 e5b05cac 96fa0553 a580ba03 74c9305e fdf691af 20d8e294 5a6e63b4 5e034ca4 919ba33a abc6cd6a 45cddefd e489ecbe 5b7c5530 5d503e1a 31e9517e a0a67c66
+
+## 2026-04-30 — perf/warm-cache-homepage-families (auto)
+
+- **Branche** : `perf/warm-cache-homepage-families`
+- **Décision** : perf(home): warm homepage:families cache key alongside below-fold
+- **Sortie** : PR #227 | commits a0dc5519
