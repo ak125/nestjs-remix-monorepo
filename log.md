@@ -135,3 +135,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cache-warm-non-blocking`
 - **Décision** : fix(boot): make cache-warm non-blocking in CatalogService + InternalLinkingService
 - **Sortie** : PR #224 | commits a0a67c66
+
+## 2026-04-30 — fix/cache-warm-non-blocking (auto)
+
+- **Branche** : `fix/cache-warm-non-blocking`
+- **Décision** : fix(boot): finish non-blocking onModuleInit + lock contract via lint (+2 other commits)
+- **Sortie** : PR #224 | commits 5d503e1a 31e9517e a0a67c66
