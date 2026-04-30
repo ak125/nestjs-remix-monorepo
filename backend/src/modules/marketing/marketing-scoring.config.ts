@@ -60,9 +60,13 @@ const DEFAULT_WEIGHTS: MarketingScoringWeights = {
 /**
  * Lit la config depuis l'env (avec fallback default).
  * Format attendu : ENV var `MARKETING_SCORING_<KEY>` numérique.
+ *
+ * Type signature `Record<string, string | undefined>` plutôt que `NodeJS.ProcessEnv`
+ * pour permettre aux tests d'injecter des objets littéraux sans cast inutile
+ * (NodeJS.ProcessEnv est un index signature opaque côté TS strict).
  */
 export function getMarketingScoringWeights(
-  env: NodeJS.ProcessEnv = process.env,
+  env: Record<string, string | undefined> = process.env,
 ): MarketingScoringWeights {
   const parseFloatOr = (val: string | undefined, fallback: number): number => {
     if (val === undefined || val === '') return fallback;

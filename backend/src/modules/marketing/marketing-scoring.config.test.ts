@@ -16,7 +16,7 @@ describe('Marketing scoring config', () => {
       const w = getMarketingScoringWeights({
         MARKETING_SCORING_CALL: '5',
         MARKETING_SCORING_ORDER: '20',
-      } as unknown as NodeJS.ProcessEnv);
+      });
       expect(w.call).toBe(5);
       expect(w.order).toBe(20);
       // unchanged
@@ -26,21 +26,21 @@ describe('Marketing scoring config', () => {
     it('falls back to default on invalid env value', () => {
       const w = getMarketingScoringWeights({
         MARKETING_SCORING_CALL: 'not-a-number',
-      } as unknown as NodeJS.ProcessEnv);
+      });
       expect(w.call).toBe(MARKETING_SCORING_DEFAULTS.call);
     });
 
     it('falls back to default on empty string', () => {
       const w = getMarketingScoringWeights({
         MARKETING_SCORING_CALL: '',
-      } as unknown as NodeJS.ProcessEnv);
+      });
       expect(w.call).toBe(MARKETING_SCORING_DEFAULTS.call);
     });
 
     it('accepts decimal values (revenue ratio)', () => {
       const w = getMarketingScoringWeights({
         MARKETING_SCORING_REVENUE_EUR_PER_UNIT: '0.05',
-      } as unknown as NodeJS.ProcessEnv);
+      });
       expect(w.revenue_eur_per_unit).toBe(0.05);
     });
   });
