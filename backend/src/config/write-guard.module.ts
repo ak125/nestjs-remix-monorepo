@@ -24,12 +24,12 @@ import { ContentRegressionGuard } from './content-regression-guard.service';
 import { ContentWriteExecutor } from './content-write-executor.service';
 import { ContentWriteGateService } from './content-write-gate.service';
 import { FeatureFlagsModule } from './feature-flags.module';
-import { EXECUTION_REGISTRY } from './execution-registry.constants';
-import { deriveWriteScope, FIELD_CATALOG } from './field-catalog.constants';
+import { OperatingMatrixModule } from './operating-matrix.module';
+import { OperatingMatrixService } from './operating-matrix.service';
 
 @Global()
 @Module({
-  imports: [ConfigModule, FeatureFlagsModule],
+  imports: [ConfigModule, FeatureFlagsModule, OperatingMatrixModule],
   providers: [
     // P1.5 core
     WriteGuardLockService,
@@ -54,45 +54,15 @@ import { deriveWriteScope, FIELD_CATALOG } from './field-catalog.constants';
 export class WriteGuardModule implements OnModuleInit {
   private readonly logger = new Logger(WriteGuardModule.name);
 
+  constructor(private readonly matrix: OperatingMatrixService) {}
+
   onModuleInit(): void {
-    // ── Boot invariant: validate catalog ↔ registry coherence ──
-    const rolesSeen = new Set<string>();
-    let fieldsTotal = 0;
-
-    for (const entry of Object.values(EXECUTION_REGISTRY)) {
-      const scope = deriveWriteScope(entry.roleId);
-
-      if (scope.ownedFields.length === 0) {
-        this.logger.warn(
-          `WriteGuard: role ${entry.roleId} has no owned fields in FIELD_CATALOG`,
-        );
-      } else {
-        this.logger.log(
-          `WriteGuard: role ${entry.roleId} owns ${scope.ownedFields.length} fields ` +
-            `across ${scope.resourceGroups.length} groups (${scope.resourceGroups.join(', ')})`,
-        );
-      }
-
-      rolesSeen.add(entry.roleId);
-      fieldsTotal += scope.ownedFields.length;
+    // Boot invariant: validate catalog ↔ registry coherence.
+    // Single source of truth for these log lines = OperatingMatrixService.formatBootLog()
+    // (synchronous, in-memory iteration over EXECUTION_REGISTRY + FIELD_CATALOG —
+    // no remote IO, conforms to .claude/rules/backend.md § "Non-blocking onModuleInit").
+    for (const entry of this.matrix.formatBootLog()) {
+      this.logger[entry.level](entry.message);
     }
-
-    // Check for orphan catalog entries (fields referencing roles not in registry)
-    const orphanRoles = new Set<string>();
-    for (const field of FIELD_CATALOG) {
-      if (!rolesSeen.has(field.ownerRole)) {
-        orphanRoles.add(field.ownerRole);
-      }
-    }
-    if (orphanRoles.size > 0) {
-      this.logger.warn(
-        `WriteGuard: FIELD_CATALOG references roles not in registry: ${[...orphanRoles].join(', ')}`,
-      );
-    }
-
-    this.logger.log(
-      `WriteGuard: initialized — ${FIELD_CATALOG.length} catalog entries, ` +
-        `${fieldsTotal} owned fields across ${rolesSeen.size} roles`,
-    );
   }
 }
