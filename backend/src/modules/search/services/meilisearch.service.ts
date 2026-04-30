@@ -31,7 +31,21 @@ export class MeilisearchService implements OnModuleInit {
     );
   }
 
-  async onModuleInit() {
+  /**
+   * 🚀 Init non-bloquant — voir .claude/rules/backend.md § "Non-blocking onModuleInit".
+   * `initializeIndexes()` fait des `await this.<index>.updateSettings(...)` HTTP
+   * vers Meilisearch. En CI (perf-gates.yml) Meilisearch n'est pas démarré
+   * → le client tente de se connecter à `localhost:7700`, hit le TCP connect
+   * timeout, et bloque `app.listen()` → exit 124 sur /health.
+   */
+  onModuleInit(): void {
+    this.logger.log(
+      '🚀 Init MeilisearchService — initialisation des index en arrière-plan',
+    );
+    void this.initializeInBackground();
+  }
+
+  private async initializeInBackground(): Promise<void> {
     try {
       await this.initializeIndexes();
       this.logger.log('✅ Meilisearch initialized successfully');

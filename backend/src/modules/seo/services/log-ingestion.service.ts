@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MeiliSearch } from 'meilisearch';
 import { ExternalServiceException, ErrorCodes } from '@common/exceptions';
@@ -53,7 +53,7 @@ export interface LogIngestionStats {
 }
 
 @Injectable()
-export class LogIngestionService {
+export class LogIngestionService implements OnModuleInit {
   private readonly logger = new Logger(LogIngestionService.name);
   private readonly meilisearch: MeiliSearch;
   private readonly lokiUrl: string;
@@ -83,13 +83,22 @@ export class LogIngestionService {
   }
 
   /**
-   * Initialiser l'index Meilisearch pour les logs SEO
+   * 🚀 Init non-bloquant — voir .claude/rules/backend.md § "Non-blocking onModuleInit".
+   * `index.updateSettings(...)` fait un appel HTTP vers Meilisearch. En CI
+   * (perf-gates.yml) Meilisearch n'est pas démarré → TCP connect timeout sur
+   * `localhost:7700` qui bloque `app.listen()` → exit 124 sur /health.
    */
-  async onModuleInit(): Promise<void> {
+  onModuleInit(): void {
+    this.logger.log(
+      '🚀 Init LogIngestionService — config Meilisearch en arrière-plan',
+    );
+    void this.configureAccessLogIndex();
+  }
+
+  private async configureAccessLogIndex(): Promise<void> {
     try {
       const index = this.meilisearch.index('access_logs');
 
-      // Configuration de l'index
       await index.updateSettings({
         searchableAttributes: ['path', 'route', 'referer', 'ua'],
         filterableAttributes: [
