@@ -35,32 +35,45 @@ export default defineConfig({
 				// Vendor chunking — only pure third-party node_modules (never @remix-run/*, react-router)
 				// Previous race condition was caused by splitting Remix internals; this config avoids that
 				manualChunks(id) {
-					if (!id.includes('node_modules')) return;
+					// ─── Vendor chunks (node_modules) ────────────────────
+					if (id.includes('node_modules')) {
+						// React core — stable, long-term cached
+						if (id.includes('/react-dom/') || id.includes('/react/') || id.includes('/scheduler/')) {
+							return 'react-vendor';
+						}
+						// HTML parser stack — only loaded on content routes
+						if (id.includes('/html-react-parser/') || id.includes('/dompurify/') || id.includes('/isomorphic-dompurify/') || id.includes('/htmlparser2/')) {
+							return 'html-parser-vendor';
+						}
+						// Radix UI primitives — shared across UI components
+						if (id.includes('/@radix-ui/')) {
+							return 'radix-vendor';
+						}
+						// Embla carousel — only on routes with carousels
+						if (id.includes('/embla-carousel')) {
+							return 'carousel-vendor';
+						}
+						// cmdk — only on routes with command palette/search
+						if (id.includes('/cmdk/')) {
+							return 'cmdk-vendor';
+						}
+						// Lucide icons — deduplicate across routes
+						if (id.includes('/lucide-react/')) {
+							return 'lucide-vendor';
+						}
+						return; // other node_modules → Rollup default
+					}
 
-					// React core — stable, long-term cached
-					if (id.includes('/react-dom/') || id.includes('/react/') || id.includes('/scheduler/')) {
-						return 'react-vendor';
-					}
-					// HTML parser stack — only loaded on content routes
-					if (id.includes('/html-react-parser/') || id.includes('/dompurify/') || id.includes('/isomorphic-dompurify/') || id.includes('/htmlparser2/')) {
-						return 'html-parser-vendor';
-					}
-					// Radix UI primitives — shared across UI components
-					if (id.includes('/@radix-ui/')) {
-						return 'radix-vendor';
-					}
-					// Embla carousel — only on routes with carousels
-					if (id.includes('/embla-carousel')) {
-						return 'carousel-vendor';
-					}
-					// cmdk — only on routes with command palette/search
-					if (id.includes('/cmdk/')) {
-						return 'cmdk-vendor';
-					}
-					// Lucide icons — deduplicate across routes
-					if (id.includes('/lucide-react/')) {
-						return 'lucide-vendor';
-					}
+					// ─── App-level shared chunks ─────────────────────────
+					// Avoid Rollup's per-shared-component micro-chunks. Each
+					// shared util/UI primitive used by ≥2 routes was emitted
+					// as its own chunk (button, input, card, Section, Footer,
+					// useRootData, logger, etc.) — 17 modulepreload tags on
+					// the home alone. Consolidate into 4 stable chunks that
+					// cache cross-route.
+					if (id.includes('/app/components/ui/')) return 'app-ui-primitives';
+					if (id.includes('/app/components/layout/') || /\/app\/components\/(Section|SectionHeader|Footer)\.tsx$/.test(id)) return 'app-shell';
+					if (id.includes('/app/utils/') || id.includes('/app/lib/')) return 'app-core';
 				},
 			},
 		},
@@ -75,6 +88,22 @@ export default defineConfig({
 			ignoredRouteFiles: ['**/*'],
 			future: {
 				v3_fetcherPersist: true,
+				// Lazy route discovery: manifest of 239 routes (~85 KB) is
+				// loaded on demand per nav instead of injected fully at SSR.
+				// Initial __remixManifest payload drops to ~5 KB, eliminating
+				// the modulepreload cascade triggered by prefetch="intent".
+				v3_lazyRouteDiscovery: true,
+				// Surface AbortSignal.reason on aborted fetches. v3 default.
+				v3_throwAbortReason: true,
+				// Resolve relative paths inside splat ($) routes against the
+				// splat boundary. Audit confirmed all 5 splat routes
+				// ($.tsx, constructeurs.$, gammes.$, sitemaps.$, pieces.$)
+				// use absolute Links only — flag is a no-op for current
+				// code, opt-in for v3 readiness.
+				v3_relativeSplatPath: true,
+				// NOTE: v3_singleFetch deferred to a follow-up PR. Audit
+				// surfaced 18 useFetcher() and 6 headers() exports that
+				// need coordinated review before flipping this flag.
 			},
 
 			// When running locally in development mode, we use the built in remix
