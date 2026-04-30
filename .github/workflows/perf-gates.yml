@@ -8,12 +8,18 @@ on:
       - 'backend/src/**'
       - 'packages/**'
 
-# Thresholds (from lighthouse-budget.json):
-# - LCP: ≤2500ms (Google "Good")
-# - CLS: ≤0.1 (Google "Good")
-# - TTFB: ≤800ms (critical for SEO)
-# - TBT: ≤300ms (proxy for INP)
-# - FCP: ≤2000ms
+# Thresholds : voir frontend/lighthouse-budget.json (calibré sur baseline
+# mesuré, anti-régression). Documentation + procédure de mise à jour dans
+# frontend/lighthouse-budget.README.md.
+
+# `pull-requests: write` requis par le step "Comment PR with Results" pour
+# poster le récap performance. Sans cette permission le workflow échoue
+# avec "Resource not accessible by integration" même quand l'audit lui-même
+# passe (cf. run 25176006026). Les autres permissions sont à `read` par
+# défaut (least-privilege).
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   lighthouse:
