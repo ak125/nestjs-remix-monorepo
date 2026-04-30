@@ -89,7 +89,9 @@ describe('OperatingMatrixService', () => {
     it('R0_HOME has no registry entry but is excluded from gaps (NON_WRITING_ROLES)', () => {
       const r = byRole.get(RoleId.R0_HOME)!;
       expect(r.registry.present).toBe(false);
-      expect(snap.gaps.find((g) => g.roleId === RoleId.R0_HOME)).toBeUndefined();
+      expect(
+        snap.gaps.find((g) => g.roleId === RoleId.R0_HOME),
+      ).toBeUndefined();
     });
 
     it('R6_SUPPORT has no registry entry but is excluded from gaps (NON_WRITING_ROLES)', () => {
