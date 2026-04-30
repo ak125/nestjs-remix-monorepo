@@ -177,3 +177,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `perf/warm-cache-homepage-families`
 - **Décision** : perf(home): warm homepage:families cache key alongside below-fold
 - **Sortie** : PR #227 | commits a0dc5519
+
+## 2026-04-30 — feat/marketing-phase1-db (auto)
+
+- **Branche** : `feat/marketing-phase1-db`
+- **Décision** : feat(adr-036-pr1.1): marketing phase 1 db migration + python apply scripts
+- **Sortie** : PR #238 | commits 2200cb61
+
+## 2026-04-30 — feat/marketing-phase1-db (auto)
+
+- **Branche** : `feat/marketing-phase1-db`
+- **Décision** : fix(migration-safety): approve idempotent drop policy pattern (recreate immediate) (+2 other commits)
+- **Sortie** : PR #238 | commits 3c446aa8 8c742bc8 2200cb61
