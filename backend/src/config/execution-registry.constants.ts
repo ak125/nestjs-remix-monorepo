@@ -64,26 +64,12 @@ export const EXECUTION_REGISTRY: Record<string, ExecutionRegistryEntry> = {
     requiredUpstreamPhases: ['phase16_admissibility'],
   },
 
-  [RoleId.R3_GUIDE]: {
-    roleId: RoleId.R3_GUIDE,
-    pageType: 'R3_guide_howto',
-    contractSchemaRef: 'page-contract-r3.schema',
-    enricherServiceKey: 'BuyingGuideEnricherService',
-    agentFiles: ['content-batch.md'],
-    promptChain: ['guide_enrichment'],
-    allowedModes: [
-      'create',
-      'regenerate',
-      'refresh_partial',
-      'refresh_full',
-      'repair',
-      'qa_only',
-    ],
-    defaultWriteMode: 'draft_write',
-    stopPolicy: { maxRetries: 2, timeoutMs: 180_000 },
-    escalationPolicy: { onGateFail: 'block', onTimeout: 'hold' },
-    requiredUpstreamPhases: ['phase16_admissibility'],
-  },
+  // R3_GUIDE: deprecated since role-ids.ts:17 ("no route, no contract, no prompts").
+  // Already in FORBIDDEN_ROLE_IDS + DEPRECATED_OUTPUT_ROLES (role-ids.ts).
+  // Registry entry removed to align: a deprecated role MUST NOT have an
+  // executable plan. Legacy content uses R3_CONSEILS (how-to) or R6_GUIDE_ACHAT
+  // (buying guides) — see PAGE_TYPE_TO_ROLE remap. Closes the matrix anomaly
+  // `deprecated_but_in_registry` flagged by OperatingMatrixService.
 
   [RoleId.R3_CONSEILS]: {
     roleId: RoleId.R3_CONSEILS,
