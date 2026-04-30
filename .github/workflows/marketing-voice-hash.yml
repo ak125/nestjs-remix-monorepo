@@ -11,11 +11,13 @@ on:
     branches: [main]
     paths:
       - ".claude/rules/marketing-voice.md"
+      - "workspaces/marketing/.claude/rules/marketing-voice.md"
       - "scripts/ci/check-marketing-voice-hash.sh"
       - ".github/workflows/marketing-voice-hash.yml"
   pull_request:
     paths:
       - ".claude/rules/marketing-voice.md"
+      - "workspaces/marketing/.claude/rules/marketing-voice.md"
       - "scripts/ci/check-marketing-voice-hash.sh"
       - ".github/workflows/marketing-voice-hash.yml"
   schedule:
@@ -31,7 +33,13 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        copy:
+          - .claude/rules/marketing-voice.md
+          - workspaces/marketing/.claude/rules/marketing-voice.md
     steps:
       - uses: actions/checkout@v4
-      - name: Verify .claude/rules/marketing-voice.md
-        run: bash scripts/ci/check-marketing-voice-hash.sh ".claude/rules/marketing-voice.md"
+      - name: Verify ${{ matrix.copy }}
+        run: bash scripts/ci/check-marketing-voice-hash.sh "${{ matrix.copy }}"
