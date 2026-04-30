@@ -5,15 +5,21 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Await, useLoaderData } from "@remix-run/react";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 
-// ─── Above-the-fold: eager imports (rendered immediately, drives LCP) ───
 import {
   HomepageJsonLd,
   HeroSection,
   QuickAccessGrid,
+  HomeResourcesAndVideoSection,
   CatalogueSection,
+  BrandsGrid,
+  BlogCarousel,
+  FaqSection,
+  Footer,
+  WhyAutomecanikSection,
   DiagnosticBanner,
+  PopularSearches,
 } from "~/components/home";
 import { type BrandItem } from "~/components/home/constants";
 import {
@@ -27,48 +33,6 @@ import {
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
-
-// ─── Below-the-fold: lazy chunks (loaded after hydration / on visibility) ───
-//
-// React.lazy() est le pattern canon pour le code-splitting au niveau composant
-// (cf. https://react.dev/reference/react/lazy). Chaque composant ci-dessous
-// devient un chunk JS séparé qui n'est téléchargé que lorsqu'il est rendu —
-// ce qui n'arrive qu'après l'hydration de l'above-the-fold.
-//
-// Impact : initial JS ↓ (perf-gates `resource-summary.script.size`),
-// TTI ↓ (moins de bytes à parser/exécuter),
-// nb scripts initial ↓.
-//
-// Aucune perte fonctionnelle : Remix SSR rend le HTML complet côté serveur
-// (chaque `lazy()` est résolu pendant le SSR), seul le téléchargement du JS
-// d'hydration des chunks below-the-fold est différé côté client.
-const HomeResourcesAndVideoSection = lazy(() =>
-  import("~/components/home/GuidesStrip").then((m) => ({ default: m.default })),
-);
-const BrandsGrid = lazy(() =>
-  import("~/components/home/BrandsGrid").then((m) => ({ default: m.default })),
-);
-const BlogCarousel = lazy(() =>
-  import("~/components/home/BlogCarousel").then((m) => ({
-    default: m.default,
-  })),
-);
-const FaqSection = lazy(() =>
-  import("~/components/home/FaqSection").then((m) => ({ default: m.default })),
-);
-const Footer = lazy(() =>
-  import("~/components/home/Footer").then((m) => ({ default: m.default })),
-);
-const WhyAutomecanikSection = lazy(() =>
-  import("~/components/home/WhyAutomecanikSection").then((m) => ({
-    default: m.default,
-  })),
-);
-const PopularSearches = lazy(() =>
-  import("~/components/home/PopularSearches").then((m) => ({
-    default: m.default,
-  })),
-);
 
 // ─── SEO page role ───────────────────────────────────────
 export const handle = {
@@ -233,18 +197,9 @@ export default function Homepage() {
       <QuickAccessGrid />
       <CatalogueSection families={catalogFamilies} />
       <DiagnosticBanner />
+      <HomeResourcesAndVideoSection />
 
-      {/* Below-the-fold (lazy chunks). Suspense fallback = null pour ne pas
-          peindre de placeholder shifty (CLS). Le SSR rend déjà le HTML
-          complet, donc l'utilisateur voit le contenu pendant que le JS
-          d'hydration télécharge en background. */}
-      <Suspense fallback={null}>
-        <HomeResourcesAndVideoSection />
-      </Suspense>
-
-      {/* Below-fold streamé via defer() — données ET composants tous deux
-          paresseux : double Suspense (defer + lazy) géré par le même
-          fallback. */}
+      {/* Below-fold: streamed via defer() */}
       <Suspense fallback={<BrandsGridSkeleton />}>
         <Await
           resolve={loaderData.belowFold}
@@ -274,15 +229,9 @@ export default function Homepage() {
         </Await>
       </Suspense>
 
-      <Suspense fallback={null}>
-        <PopularSearches />
-      </Suspense>
-      <Suspense fallback={null}>
-        <FaqSection faqsPromise={loaderData.faqs} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <Footer />
-      </Suspense>
+      <PopularSearches />
+      <FaqSection faqsPromise={loaderData.faqs} />
+      <Footer />
     </div>
   );
 }
