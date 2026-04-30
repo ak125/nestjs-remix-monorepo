@@ -104,12 +104,27 @@ describe('OperatingMatrixService', () => {
       expect(extract('brief-enricher.md')).toBe('UNKNOWN');
     });
 
-    it('returns UNKNOWN for ambiguous R3 prefix', () => {
+    it('returns UNKNOWN for ambiguous R3 prefix WITHOUT disambiguation suffix in name', () => {
       expect(extract('r3-keyword-planner.md')).toBe('UNKNOWN');
+      expect(extract('r3-image-prompt.md')).toBe('UNKNOWN');
+      expect(extract('r3-keyword-plan-batch.md')).toBe('UNKNOWN');
     });
 
-    it('returns UNKNOWN for ambiguous R6 prefix', () => {
+    it('returns UNKNOWN for ambiguous R6 prefix WITHOUT disambiguation suffix', () => {
       expect(extract('r6-keyword-planner.md')).toBe('UNKNOWN');
+      expect(extract('r6-content-batch.md')).toBe('UNKNOWN');
+      expect(extract('r6-image-prompt.md')).toBe('UNKNOWN');
+    });
+
+    it('disambiguates R3 via suffix in filename', () => {
+      expect(extract('r3-conseils-validator.md')).toBe(RoleId.R3_CONSEILS);
+    });
+
+    it('disambiguates R6 via suffix in filename', () => {
+      expect(extract('r6-guide-achat-validator.md')).toBe(
+        RoleId.R6_GUIDE_ACHAT,
+      );
+      expect(extract('r6-support-validator.md')).toBe(RoleId.R6_SUPPORT);
     });
 
     it('returns the unique RoleId for unambiguous prefix', () => {

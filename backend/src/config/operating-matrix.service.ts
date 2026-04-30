@@ -252,13 +252,45 @@ export class OperatingMatrixService {
     return { agents, scannedPaths, skipped: false };
   }
 
+  /**
+   * Map an agent filename to a RoleId.
+   *
+   * Strategy:
+   *  1. Extract the `r\d` prefix (case-insensitive). No prefix → UNKNOWN.
+   *  2. Filter ROLE_ID_LIST to candidates starting with that prefix + "_".
+   *  3. If exactly one candidate, return it.
+   *  4. If multiple candidates (R3_GUIDE/R3_CONSEILS, R6_SUPPORT/R6_GUIDE_ACHAT),
+   *     try to disambiguate by checking the filename suffix against each
+   *     candidate's canonical suffix (e.g. R6_GUIDE_ACHAT → "guide-achat").
+   *     Pick the candidate with the longest matching suffix. If 0 or >1 match
+   *     unambiguously, return UNKNOWN — forces explicit disambiguation in the
+   *     filename (e.g. "r3-keyword-planner" stays UNKNOWN).
+   */
   private extractRoleId(filename: string): RoleId | 'UNKNOWN' {
     const m = filename.match(ROLE_PREFIX_RE);
     if (!m) return 'UNKNOWN';
     const prefix = m[1].toUpperCase();
     const candidates = ROLE_ID_LIST.filter((r) => r.startsWith(prefix + '_'));
+    if (candidates.length === 0) return 'UNKNOWN';
     if (candidates.length === 1) return candidates[0];
-    return 'UNKNOWN';
+
+    const rest = filename.replace(/\.md$/, '').slice(m[0].length).toLowerCase();
+
+    // Score each candidate by the length of its canonical suffix found in `rest`.
+    let best: { roleId: RoleId; len: number } | null = null;
+    for (const candidate of candidates) {
+      const suffix = candidate.split('_').slice(1).join('-').toLowerCase(); // R6_GUIDE_ACHAT → "guide-achat"
+      if (!suffix) continue;
+      if (rest.includes(suffix)) {
+        if (!best || suffix.length > best.len) {
+          best = { roleId: candidate, len: suffix.length };
+        } else if (suffix.length === best.len) {
+          // Tie on length → ambiguous. Bail out.
+          return 'UNKNOWN';
+        }
+      }
+    }
+    return best ? best.roleId : 'UNKNOWN';
   }
 
   private groupAgentsByRole(
