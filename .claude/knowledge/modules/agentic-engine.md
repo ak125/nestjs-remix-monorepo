@@ -2,7 +2,7 @@
 module: agentic-engine
 sources:
 - backend/src/modules/agentic-engine
-last_scan: '2026-04-29'
+last_scan: '2026-04-30'
 primary_files:
 - backend/src/modules/agentic-engine/agentic-engine.controller.ts
 - backend/src/modules/agentic-engine/agentic-engine.module.ts

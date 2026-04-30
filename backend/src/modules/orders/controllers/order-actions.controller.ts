@@ -13,17 +13,20 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
-import { IsAdminGuard } from '@auth/is-admin.guard';
+import { PermissionsGuard } from '@auth/guards/permissions.guard';
+import { RequirePermission } from '@auth/decorators/require-permission.decorator';
 import { OrderActionsService } from '../services/order-actions.service';
 import { MailService } from '../../../services/mail.service';
 
 /**
  * 🎮 Controller Actions Commandes
  *
- * Endpoints pour toutes les actions backoffice
+ * Endpoints pour toutes les actions backoffice. Permissions per-action via
+ * @RequirePermission(canX) consultant la matrice canonique PermissionsService.
+ * Cf docs/superpowers/specs/2026-04-30-permissions-canonical-backend-design.md
  */
 @Controller('api/admin/orders')
-@UseGuards(AuthenticatedGuard, IsAdminGuard)
+@UseGuards(AuthenticatedGuard, PermissionsGuard)
 export class OrderActionsController {
   private readonly logger = new Logger(OrderActionsController.name);
 
@@ -37,6 +40,7 @@ export class OrderActionsController {
    * Changer statut ligne (1-6, 91-94)
    */
   @Patch(':orderId/lines/:lineId/status/:newStatus')
+  @RequirePermission('canValidate')
   async updateLineStatus(
     @Param('orderId', ParseIntPipe) orderId: number,
     @Param('lineId', ParseIntPipe) lineId: number,
@@ -61,6 +65,7 @@ export class OrderActionsController {
    * Commander chez fournisseur (statut 6)
    */
   @Post(':orderId/lines/:lineId/order-from-supplier')
+  @RequirePermission('canValidate')
   async orderFromSupplier(
     @Param('orderId', ParseIntPipe) orderId: number,
     @Param('lineId', ParseIntPipe) lineId: number,
@@ -89,6 +94,7 @@ export class OrderActionsController {
    * Proposer équivalence (statut 91)
    */
   @Post(':orderId/lines/:lineId/propose-equivalent')
+  @RequirePermission('canValidate')
   async proposeEquivalent(
     @Param('orderId', ParseIntPipe) orderId: number,
     @Param('lineId', ParseIntPipe) lineId: number,
@@ -109,6 +115,7 @@ export class OrderActionsController {
    * Accepter équivalence (statut 92)
    */
   @Patch(':orderId/lines/:lineId/accept-equivalent')
+  @RequirePermission('canValidate')
   async acceptEquivalent(
     @Param('orderId', ParseIntPipe) orderId: number,
     @Param('lineId', ParseIntPipe) lineId: number,
@@ -121,6 +128,7 @@ export class OrderActionsController {
    * Refuser équivalence (statut 93)
    */
   @Patch(':orderId/lines/:lineId/reject-equivalent')
+  @RequirePermission('canValidate')
   async rejectEquivalent(
     @Param('orderId', ParseIntPipe) orderId: number,
     @Param('lineId', ParseIntPipe) lineId: number,
@@ -137,6 +145,7 @@ export class OrderActionsController {
    * Valider commande (statut 2 → 3)
    */
   @Post(':orderId/validate')
+  @RequirePermission('canValidate')
   async validateOrder(@Param('orderId') orderId: string) {
     try {
       this.logger.log(`🔍 Validation commande ${orderId} démarrée`);
@@ -172,6 +181,7 @@ export class OrderActionsController {
    * Expédier commande (statut 3 → 4)
    */
   @Post(':orderId/ship')
+  @RequirePermission('canShip')
   async shipOrder(
     @Param('orderId') orderId: string,
     @Body() body: { trackingNumber: string },
@@ -220,6 +230,7 @@ export class OrderActionsController {
    * Marquer comme livrée (statut 4 → 5)
    */
   @Post(':orderId/deliver')
+  @RequirePermission('canDeliver')
   async markAsDelivered(@Param('orderId') orderId: string) {
     try {
       this.logger.log(`🚚 Livraison commande ${orderId}`);
@@ -244,6 +255,7 @@ export class OrderActionsController {
    * Annuler commande
    */
   @Post(':orderId/cancel')
+  @RequirePermission('canCancel')
   async cancelOrder(
     @Param('orderId') orderId: string,
     @Body() body: { reason: string },
@@ -291,6 +303,7 @@ export class OrderActionsController {
    * Confirmer paiement manuellement (admin)
    */
   @Post(':orderId/confirm-payment')
+  @RequirePermission('canMarkPaid')
   async confirmPayment(@Param('orderId') orderId: string) {
     try {
       this.logger.log(`💰 Confirmation paiement manuel commande ${orderId}`);
@@ -315,6 +328,7 @@ export class OrderActionsController {
    * Envoyer rappel de paiement
    */
   @Post(':orderId/payment-reminder')
+  @RequirePermission('canSendEmails')
   async sendPaymentReminder(@Param('orderId') orderId: string) {
     try {
       this.logger.log(`📧 Envoi rappel paiement pour commande ${orderId}`);
