@@ -1,11 +1,15 @@
 ---
 name: r1-keyword-planner
-description: "Pipeline R1 Router keyword planner v2. Sections courtes (buy_args, equipementiers, motorisations, faq, intro_role). 3 intents, 7 quality gates, anti-cannib R3, vehicle enrichment, DB persistence. Budget 150 mots max."
+description: >-
+  Pipeline R1 Router keyword planner v2. Sections courtes (buy_args,
+  equipementiers, motorisations, faq, intro_role). 3 intents, 7 quality gates,
+  anti-cannib R3, vehicle enrichment, DB persistence. Budget 150 mots max.
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: R1_ROUTER
 ---
 
 # R1_ROUTER Keyword Planner v2

@@ -6,14 +6,14 @@
   ],
   "agentScanSkipped": false,
   "agentsIndex": {
-    "agentic-critic": "UNKNOWN",
-    "agentic-planner": "UNKNOWN",
-    "agentic-solver": "UNKNOWN",
-    "blog-hub-planner": "UNKNOWN",
-    "brief-enricher": "UNKNOWN",
-    "conseil-batch": "UNKNOWN",
-    "keyword-planner": "UNKNOWN",
-    "phase1-auditor": "UNKNOWN",
+    "agentic-critic": "AGENTIC_ENGINE",
+    "agentic-planner": "AGENTIC_ENGINE",
+    "agentic-solver": "AGENTIC_ENGINE",
+    "blog-hub-planner": "FOUNDATION",
+    "brief-enricher": "FOUNDATION",
+    "conseil-batch": "R3_CONSEILS",
+    "keyword-planner": "FOUNDATION",
+    "phase1-auditor": "FOUNDATION",
     "r0-home-execution": "R0_HOME",
     "r0-home-validator": "R0_HOME",
     "r1-content-batch": "R1_ROUTER",
@@ -32,10 +32,10 @@
     "r5-diagnostic-execution": "R5_DIAGNOSTIC",
     "r5-diagnostic-validator": "R5_DIAGNOSTIC",
     "r5-keyword-planner": "R5_DIAGNOSTIC",
-    "r6-content-batch": "UNKNOWN",
+    "r6-content-batch": "R6_GUIDE_ACHAT",
     "r6-guide-achat-validator": "R6_GUIDE_ACHAT",
-    "r6-image-prompt": "UNKNOWN",
-    "r6-keyword-planner": "UNKNOWN",
+    "r6-image-prompt": "R6_GUIDE_ACHAT",
+    "r6-keyword-planner": "R6_GUIDE_ACHAT",
     "r6-support-validator": "R6_SUPPORT",
     "r7-brand-execution": "R7_BRAND",
     "r7-brand-rag-generator": "R7_BRAND",
@@ -44,7 +44,7 @@
     "r8-keyword-planner": "R8_VEHICLE",
     "r8-vehicle-execution": "R8_VEHICLE",
     "r8-vehicle-validator": "R8_VEHICLE",
-    "research-agent": "UNKNOWN"
+    "research-agent": "FOUNDATION"
   },
   "anomalies": [],
   "catalogFieldCount": 141,
@@ -165,6 +165,7 @@
     },
     {
       "agents": [
+        "conseil-batch",
         "r3-conseils-validator",
         "r3-image-prompt",
         "r3-keyword-plan-batch",
@@ -301,7 +302,10 @@
     },
     {
       "agents": [
-        "r6-guide-achat-validator"
+        "r6-content-batch",
+        "r6-guide-achat-validator",
+        "r6-image-prompt",
+        "r6-keyword-planner"
       ],
       "deprecated": false,
       "healthScore": 100,
@@ -425,26 +429,50 @@
         "ownedTables": [],
         "resourceGroups": []
       }
+    },
+    {
+      "agents": [
+        "agentic-critic",
+        "agentic-planner",
+        "agentic-solver"
+      ],
+      "deprecated": false,
+      "healthScore": 40,
+      "registry": {
+        "present": false
+      },
+      "roleId": "AGENTIC_ENGINE",
+      "writeScope": {
+        "ownedFieldsCount": 0,
+        "ownedTables": [],
+        "resourceGroups": []
+      }
+    },
+    {
+      "agents": [
+        "blog-hub-planner",
+        "brief-enricher",
+        "keyword-planner",
+        "phase1-auditor",
+        "research-agent"
+      ],
+      "deprecated": false,
+      "healthScore": 40,
+      "registry": {
+        "present": false
+      },
+      "roleId": "FOUNDATION",
+      "writeScope": {
+        "ownedFieldsCount": 0,
+        "ownedTables": [],
+        "resourceGroups": []
+      }
     }
   ],
   "sourcesHash": {
     "executionRegistry": "sha256:8efeb1b39cc9f3a3ab86a773afd6edcc936f33b9fc48eb95c8d8b4dd415e6b4c",
     "executionRegistryTypes": "sha256:6c585a3075471f5189d5c1a48bd83e0f1ce6460cd1af9a9398a6d2b0d68c1d46",
     "fieldCatalog": "sha256:de4b23f16019338092340be58b0cfe421519aceb94a148efca07f99021fef0f7",
-    "roleIds": "sha256:8c8257d1ad07acf06cd97a240822ca9ac6d625600300048a73c66d52134c2857"
-  },
-  "unmappableAgents": [
-    "agentic-critic",
-    "agentic-planner",
-    "agentic-solver",
-    "blog-hub-planner",
-    "brief-enricher",
-    "conseil-batch",
-    "keyword-planner",
-    "phase1-auditor",
-    "r6-content-batch",
-    "r6-image-prompt",
-    "r6-keyword-planner",
-    "research-agent"
-  ]
+    "roleIds": "sha256:baf84e2311cbb530bf6825339f181a3184a3818c8195e933df36455b284b8d66"
+  }
 }

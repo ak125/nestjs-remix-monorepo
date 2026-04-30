@@ -1,6 +1,10 @@
 ---
 name: r0-home-validator
-description: "Validator canonique R0_HOME. Vérifie la pureté d'accueil, la cohérence navigationnelle et l'absence de dérive vers catalogue, article, diagnostic, guide ou transaction."
+description: >-
+  Validator canonique R0_HOME. Vérifie la pureté d'accueil, la cohérence
+  navigationnelle et l'absence de dérive vers catalogue, article, diagnostic,
+  guide ou transaction.
+role: R0_HOME
 ---
 
 # IDENTITY

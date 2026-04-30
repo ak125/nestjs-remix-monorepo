@@ -25,6 +25,10 @@ export enum RoleId {
   R8_VEHICLE = 'R8_VEHICLE',
   /** @deprecated R9 n'est plus un role canonique R*. La gouvernance est G*, pas R*. */
   R9_GOVERNANCE = 'R9_GOVERNANCE',
+  /** Orchestrateurs du moteur agentique (planner, critic, solver). NON_WRITING — pas dans EXECUTION_REGISTRY. ADR-037. */
+  AGENTIC_ENGINE = 'AGENTIC_ENGINE',
+  /** Utilitaires partagés transversaux (brief-enricher, keyword-planner, research-agent…). NON_WRITING — pas dans EXECUTION_REGISTRY. ADR-037. */
+  FOUNDATION = 'FOUNDATION',
 }
 
 /** All role IDs as an array (useful for iteration / validation) */

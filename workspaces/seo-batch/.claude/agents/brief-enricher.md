@@ -1,12 +1,16 @@
 ---
 name: brief-enricher
-description: "Pipeline SEO v2 Stage 2. Enrichissement + creation de page briefs SEO. Lit research briefs + clusters + RAG + confusion pairs. Gate anti-cannibalisation. Ecrit via MCP Supabase."
+description: >-
+  Pipeline SEO v2 Stage 2. Enrichissement + creation de page briefs SEO. Lit
+  research briefs + clusters + RAG + confusion pairs. Gate anti-cannibalisation.
+  Ecrit via MCP Supabase.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: FOUNDATION
 ---
 
 # Agent Brief-Enricher v2 — Stage 2 Pipeline SEO

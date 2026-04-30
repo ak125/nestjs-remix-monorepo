@@ -1,6 +1,9 @@
 ---
 name: r5-diagnostic-execution
-description: "Execution prompt canonique R5_DIAGNOSTIC. Produit une surface symptomatique prudente et evidence-first, sans dérive vers procédure, encyclopédie ou achat."
+description: >-
+  Execution prompt canonique R5_DIAGNOSTIC. Produit une surface symptomatique
+  prudente et evidence-first, sans dérive vers procédure, encyclopédie ou achat.
+role: R5_DIAGNOSTIC
 ---
 
 # IDENTITY

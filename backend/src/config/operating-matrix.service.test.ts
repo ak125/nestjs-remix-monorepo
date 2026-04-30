@@ -1,7 +1,15 @@
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+
+import {
+  parseAgentFrontmatter,
+  safeParseAgentFrontmatter,
+} from './agent-frontmatter.schema';
+import { EXECUTION_REGISTRY } from './execution-registry.constants';
 import { OperatingMatrixService } from './operating-matrix.service';
 import { ROLE_ID_LIST, RoleId } from './role-ids';
-import { EXECUTION_REGISTRY } from './execution-registry.constants';
 
 function makeService(env: Record<string, string | undefined> = {}) {
   const config = {
@@ -10,14 +18,36 @@ function makeService(env: Record<string, string | undefined> = {}) {
   return new OperatingMatrixService(config);
 }
 
+/**
+ * Build a temp directory with `.claude/agents/` populated by `agentFiles` map
+ * (filename → frontmatter+body). Returns a service pointed at this temp dir
+ * via `REPO_ROOT` env. Used by ADR-037 frontmatter parsing tests.
+ */
+function makeServiceWithFixtures(agentFiles: Record<string, string>): {
+  svc: OperatingMatrixService;
+  cleanup: () => void;
+} {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'op-matrix-test-'));
+  const agentsDir = path.join(tmp, 'workspaces/seo-batch/.claude/agents');
+  fs.mkdirSync(agentsDir, { recursive: true });
+  for (const [filename, content] of Object.entries(agentFiles)) {
+    fs.writeFileSync(path.join(agentsDir, filename), content, 'utf-8');
+  }
+  const svc = makeService({ NODE_ENV: 'test', REPO_ROOT: tmp });
+  return {
+    svc,
+    cleanup: () => fs.rmSync(tmp, { recursive: true, force: true }),
+  };
+}
+
 describe('OperatingMatrixService', () => {
   describe('snapshot()', () => {
     const svc = makeService({ NODE_ENV: 'test' });
     const snap = svc.snapshot();
 
-    it('emits one entry per RoleId in ROLE_ID_LIST (12 entries)', () => {
+    it('emits one entry per RoleId in ROLE_ID_LIST (14 entries — incl. AGENTIC_ENGINE + FOUNDATION)', () => {
       expect(snap.roles.map((r) => r.roleId)).toEqual([...ROLE_ID_LIST]);
-      expect(snap.roles).toHaveLength(12);
+      expect(snap.roles).toHaveLength(14);
     });
 
     it('records the registry version + catalog field count', () => {
@@ -57,6 +87,20 @@ describe('OperatingMatrixService', () => {
         .map((a) => a.roleId)
         .filter((x): x is RoleId => Boolean(x));
       expect(flagged.sort()).toEqual(expected.sort());
+    });
+
+    it('OperatingMatrix payload no longer carries unmappableAgents (ADR-037)', () => {
+      // The field has been removed — fail-fast at boot prevents any agent from
+      // being silently UNKNOWN, so the carrier is no longer needed.
+      expect(
+        (snap as unknown as Record<string, unknown>).unmappableAgents,
+      ).toBeUndefined();
+    });
+
+    it('agentsIndex maps every scanned agent to a RoleId (no UNKNOWN possible)', () => {
+      for (const role of Object.values(snap.agentsIndex)) {
+        expect(ROLE_ID_LIST).toContain(role);
+      }
     });
   });
 
@@ -102,57 +146,140 @@ describe('OperatingMatrixService', () => {
       ).toBeUndefined();
     });
 
+    it('AGENTIC_ENGINE is NON_WRITING — never appears in gaps[] (ADR-037)', () => {
+      expect(
+        snap.gaps.find((g) => g.roleId === RoleId.AGENTIC_ENGINE),
+      ).toBeUndefined();
+    });
+
+    it('FOUNDATION is NON_WRITING — never appears in gaps[] (ADR-037)', () => {
+      expect(
+        snap.gaps.find((g) => g.roleId === RoleId.FOUNDATION),
+      ).toBeUndefined();
+    });
+
     it('R7_BRAND has a registry entry (writers found in inventory 2026-04-30)', () => {
       const r = byRole.get(RoleId.R7_BRAND)!;
       expect(r.registry.present).toBe(true);
     });
   });
 
-  describe('agent role extraction', () => {
-    const svc = makeService({ NODE_ENV: 'test' });
-    const extract = (
-      svc as unknown as { extractRoleId: (f: string) => RoleId | 'UNKNOWN' }
-    ).extractRoleId.bind(svc);
-
-    it('returns UNKNOWN for non-prefixed agent files', () => {
-      expect(extract('research-agent.md')).toBe('UNKNOWN');
-      expect(extract('keyword-planner.md')).toBe('UNKNOWN');
-      expect(extract('brief-enricher.md')).toBe('UNKNOWN');
+  describe('agent role classification via frontmatter (ADR-037)', () => {
+    it('reads `role` from frontmatter and maps the agent file to that RoleId', () => {
+      const { svc, cleanup } = makeServiceWithFixtures({
+        'r1-content-batch.md': `---\nname: r1-content-batch\ndescription: writes\nrole: R1_ROUTER\n---\n# body\n`,
+        'agentic-critic.md': `---\nname: agentic-critic\ndescription: orchestrator\nrole: AGENTIC_ENGINE\n---\n# body\n`,
+        'r6-content-batch.md': `---\nname: r6-content-batch\ndescription: writes\nrole: R6_GUIDE_ACHAT\n---\n# body\n`,
+      });
+      try {
+        const snap = svc.snapshot();
+        expect(snap.agentsIndex).toEqual({
+          'agentic-critic': RoleId.AGENTIC_ENGINE,
+          'r1-content-batch': RoleId.R1_ROUTER,
+          'r6-content-batch': RoleId.R6_GUIDE_ACHAT,
+        });
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
+        expect(errors).toEqual([]);
+      } finally {
+        cleanup();
+      }
     });
 
-    it('R3 prefix auto-resolves to R3_CONSEILS (R3_GUIDE deprecated → not a candidate)', () => {
-      // After R3_GUIDE deprecation, R3 prefix has only one non-deprecated
-      // candidate (R3_CONSEILS) → no disambiguation suffix needed.
-      expect(extract('r3-keyword-planner.md')).toBe(RoleId.R3_CONSEILS);
-      expect(extract('r3-image-prompt.md')).toBe(RoleId.R3_CONSEILS);
-      expect(extract('r3-keyword-plan-batch.md')).toBe(RoleId.R3_CONSEILS);
+    it('emits boot-log errors when an agent has no frontmatter (fail-fast)', () => {
+      const { svc, cleanup } = makeServiceWithFixtures({
+        'r1-content-batch.md': `# body without frontmatter\n`,
+      });
+      try {
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
+        expect(errors.length).toBe(1);
+        expect(errors[0].message).toMatch(/r1-content-batch\.md/);
+        // Without a valid role, the agent must NOT appear in agentsIndex.
+        expect(svc.snapshot().agentsIndex).toEqual({});
+      } finally {
+        cleanup();
+      }
     });
 
-    it('returns UNKNOWN for ambiguous R6 prefix WITHOUT disambiguation suffix', () => {
-      expect(extract('r6-keyword-planner.md')).toBe('UNKNOWN');
-      expect(extract('r6-content-batch.md')).toBe('UNKNOWN');
-      expect(extract('r6-image-prompt.md')).toBe('UNKNOWN');
+    it('emits boot-log errors when frontmatter is missing the role key (Zod fail)', () => {
+      const { svc, cleanup } = makeServiceWithFixtures({
+        'r1-content-batch.md': `---\nname: r1-content-batch\ndescription: writes\n---\n# body\n`,
+      });
+      try {
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
+        expect(errors.length).toBe(1);
+        expect(errors[0].message).toMatch(/role/i);
+      } finally {
+        cleanup();
+      }
     });
 
-    it('disambiguates R3 via suffix in filename', () => {
-      expect(extract('r3-conseils-validator.md')).toBe(RoleId.R3_CONSEILS);
+    it('emits boot-log errors when role is not in ROLE_ID_LIST', () => {
+      const { svc, cleanup } = makeServiceWithFixtures({
+        'r1-content-batch.md': `---\nname: r1-content-batch\ndescription: writes\nrole: R99_INVALID\n---\n# body\n`,
+      });
+      try {
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
+        expect(errors.length).toBe(1);
+        expect(errors[0].message).toMatch(/role/i);
+      } finally {
+        cleanup();
+      }
     });
 
-    it('disambiguates R6 via suffix in filename', () => {
-      expect(extract('r6-guide-achat-validator.md')).toBe(
-        RoleId.R6_GUIDE_ACHAT,
-      );
-      expect(extract('r6-support-validator.md')).toBe(RoleId.R6_SUPPORT);
+    it('the real workspaces/seo-batch agents all have a valid role: (post-migration)', () => {
+      // Smoke test against the actual repo content. Validates the migration
+      // script (`scripts/seo/inject-agent-role.ts`) has been run end-to-end.
+      const svc = makeService({ NODE_ENV: 'test' });
+      const errors = svc.formatBootLog().filter((l) => l.level === 'error');
+      expect(errors).toEqual([]);
+    });
+  });
+
+  describe('Zod schema (agent-frontmatter)', () => {
+    it('parses a valid frontmatter object', () => {
+      const result = parseAgentFrontmatter({
+        name: 'foo',
+        description: 'bar',
+        role: RoleId.R1_ROUTER,
+      });
+      expect(result.role).toBe(RoleId.R1_ROUTER);
     });
 
-    it('returns the unique RoleId for unambiguous prefix', () => {
-      expect(extract('r1-keyword-planner.md')).toBe(RoleId.R1_ROUTER);
-      expect(extract('r2-product-validator.md')).toBe(RoleId.R2_PRODUCT);
-      expect(extract('r4-content-batch.md')).toBe(RoleId.R4_REFERENCE);
-      expect(extract('r5-diagnostic-validator.md')).toBe(RoleId.R5_DIAGNOSTIC);
-      expect(extract('r7-brand-execution.md')).toBe(RoleId.R7_BRAND);
-      expect(extract('r8-vehicle-execution.md')).toBe(RoleId.R8_VEHICLE);
-      expect(extract('r0-home-validator.md')).toBe(RoleId.R0_HOME);
+    it('throws if role is missing', () => {
+      expect(() =>
+        parseAgentFrontmatter({ name: 'foo', description: 'bar' }),
+      ).toThrow();
+    });
+
+    it('throws if role is not in ROLE_ID_LIST', () => {
+      expect(() =>
+        parseAgentFrontmatter({
+          name: 'foo',
+          description: 'bar',
+          role: 'R99_INVALID',
+        }),
+      ).toThrow();
+    });
+
+    it('safeParse returns success: false for invalid role', () => {
+      const result = safeParseAgentFrontmatter({
+        name: 'foo',
+        description: 'bar',
+        role: 'R99_INVALID',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('passthrough preserves unknown keys (model, tools, etc.)', () => {
+      const result = parseAgentFrontmatter({
+        name: 'foo',
+        description: 'bar',
+        role: RoleId.R1_ROUTER,
+        model: 'sonnet',
+        tools: ['Read', 'Grep'],
+      });
+      expect(result.model).toBe('sonnet');
+      expect(result.tools).toEqual(['Read', 'Grep']);
     });
   });
 
@@ -197,6 +324,11 @@ describe('OperatingMatrixService', () => {
     it('drops agentScanRootsFound from JSON (filesystem-dependent)', () => {
       const json = svc.formatJsonString();
       expect(json).not.toMatch(/"agentScanRootsFound"/);
+    });
+
+    it('does not embed unmappableAgents (removed by ADR-037)', () => {
+      const json = svc.formatJsonString();
+      expect(json).not.toMatch(/"unmappableAgents"/);
     });
   });
 

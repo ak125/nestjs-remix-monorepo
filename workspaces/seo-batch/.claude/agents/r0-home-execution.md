@@ -1,6 +1,10 @@
 ---
 name: r0-home-execution
-description: "Execution prompt canonique R0_HOME. Produit une surface d'accueil orientée navigation globale, sans dériver vers catalogue, article, diagnostic, guide d'achat ou transaction."
+description: >-
+  Execution prompt canonique R0_HOME. Produit une surface d'accueil orientée
+  navigation globale, sans dériver vers catalogue, article, diagnostic, guide
+  d'achat ou transaction.
+role: R0_HOME
 ---
 
 # IDENTITY

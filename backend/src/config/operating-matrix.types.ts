@@ -75,8 +75,12 @@ export interface OperatingMatrix {
   /** Found at runtime — present in JSON only when scan ran. Not part of CI compare (filesystem-dependent). */
   agentScanRootsFound?: string[];
   roles: MatrixRoleEntry[];
-  agentsIndex: Record<string, RoleId | 'UNKNOWN'>;
+  /**
+   * Agent filename (basename, sans .md) → RoleId résolu via frontmatter `role:`.
+   * Plus de valeur 'UNKNOWN' depuis ADR-037 — un agent sans `role:` valide
+   * fait échouer le boot du WriteGuardModule (fail-fast).
+   */
+  agentsIndex: Record<string, RoleId>;
   gaps: MatrixGap[];
   anomalies: MatrixAnomaly[];
-  unmappableAgents: string[];
 }

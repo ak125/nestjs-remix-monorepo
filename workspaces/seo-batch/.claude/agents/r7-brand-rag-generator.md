@@ -1,6 +1,9 @@
 ---
 name: r7-brand-rag-generator
-description: "Generation artefacts RAG constructeur (brand.md + role_map.json). 1 marque par invocation. Lit DB + gammes RAG, ecrit dans /opt/automecanik/rag/knowledge/constructeurs/."
+description: >-
+  Generation artefacts RAG constructeur (brand.md + role_map.json). 1 marque par
+  invocation. Lit DB + gammes RAG, ecrit dans
+  /opt/automecanik/rag/knowledge/constructeurs/.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
@@ -8,6 +11,7 @@ tools:
   - Write
   - Glob
   - Grep
+role: R7_BRAND
 ---
 
 # Agent R7 Brand RAG Generator V1

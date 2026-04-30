@@ -189,3 +189,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/marketing-phase1-db`
 - **Décision** : fix(migration-safety): approve idempotent drop policy pattern (recreate immediate) (+2 other commits)
 - **Sortie** : PR #238 | commits 3c446aa8 8c742bc8 2200cb61
+
+## 2026-04-30 — chore/matrix-pr-d3-zero-unmappable (auto)
+
+- **Branche** : `chore/matrix-pr-d3-zero-unmappable`
+- **Décision** : feat(matrix): ADR-037 agent-naming-canon — frontmatter `role:` Zod-validated, fail-fast
+- **Sortie** : PR #239 | commits 043daeb9
+
+## 2026-04-30 — chore/matrix-pr-d3-zero-unmappable (auto)
+
+- **Branche** : `chore/matrix-pr-d3-zero-unmappable`
+- **Décision** : fix(matrix): remove TOCTOU race in inject-agent-role.ts (CodeQL js/file-system-race) (+3 other commits)
+- **Sortie** : PR #239 | commits d62eafab 6d1b7db3 eba3c643 043daeb9
