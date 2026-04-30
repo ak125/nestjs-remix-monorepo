@@ -146,7 +146,7 @@ CREATE TRIGGER trg_marketing_brief_updated_at
 -- RLS : service_role only (pas d'accès anon ou authenticated direct)
 ALTER TABLE public.__marketing_brief ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS marketing_brief_service_role_all ON public.__marketing_brief;
+DROP POLICY IF EXISTS marketing_brief_service_role_all ON public.__marketing_brief; -- APPROVED: idempotent recreate, policy redefined immediately below (no access gap)
 CREATE POLICY marketing_brief_service_role_all
   ON public.__marketing_brief
   FOR ALL TO service_role
@@ -191,7 +191,7 @@ CREATE TRIGGER trg_retention_rules_updated_at
 
 ALTER TABLE public.__retention_trigger_rules ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS retention_rules_service_role_all ON public.__retention_trigger_rules;
+DROP POLICY IF EXISTS retention_rules_service_role_all ON public.__retention_trigger_rules; -- APPROVED: idempotent recreate, policy redefined immediately below (no access gap)
 CREATE POLICY retention_rules_service_role_all
   ON public.__retention_trigger_rules
   FOR ALL TO service_role
