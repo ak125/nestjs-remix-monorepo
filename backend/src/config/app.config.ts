@@ -10,6 +10,8 @@ export interface AppConfig {
   supabase: {
     url: string;
     serviceKey: string;
+    anonKey: string;
+    readOnly: boolean;
   };
   redis: {
     url?: string;
@@ -29,6 +31,8 @@ export function createAppConfig(): AppConfig {
     supabase: {
       url: process.env.SUPABASE_URL || '',
       serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
+      anonKey: process.env.SUPABASE_ANON_KEY || '',
+      readOnly: process.env.READ_ONLY === 'true',
     },
     redis: {
       url: process.env.REDIS_URL,
@@ -46,6 +50,15 @@ export function createAppConfig(): AppConfig {
     throw new ConfigurationException({
       code: ErrorCodes.CONFIG.MISSING,
       message: 'SUPABASE_SERVICE_ROLE_KEY is required in production',
+    });
+  }
+
+  // ADR-028 Option D : READ_ONLY mode requires SUPABASE_ANON_KEY (privilege downgrade)
+  if (config.supabase.readOnly && !config.supabase.anonKey) {
+    throw new ConfigurationException({
+      code: ErrorCodes.CONFIG.MISSING,
+      message:
+        'READ_ONLY=true requires SUPABASE_ANON_KEY (ADR-028 Option D — anon key + RLS protection per ADR-021)',
     });
   }
 
