@@ -33,8 +33,23 @@ export class AbandonedCartService implements OnModuleInit {
     private readonly mailService: MailService,
   ) {}
 
-  async onModuleInit(): Promise<void> {
-    // Register repeatable scanner job (every 15 min)
+  /**
+   * Enregistrement non-bloquant du scanner répétitif.
+   *
+   * `await this.emailQueue.add(...)` touche Redis via Bull. Si la connexion
+   * Redis n'est pas immédiate (config Bull cassée, Redis lent au boot, retry
+   * forever d'ioredis), awaiter ici bloquerait `app.listen()` (NestJS exécute
+   * tous les `onModuleInit` durant `app.init()` appelé par `listen()` →
+   * /health muet → exit 124 sur perf-gates.yml). Cf. PR #224 / runs
+   * 25166916535 + 25172104783 (preuve via INIT_TRACE markers).
+   *
+   * Voir `.claude/rules/backend.md` § "Non-blocking onModuleInit".
+   */
+  onModuleInit(): void {
+    void this.registerScannerJob();
+  }
+
+  private async registerScannerJob(): Promise<void> {
     try {
       await this.emailQueue.add(
         'abandoned-cart-scan',
