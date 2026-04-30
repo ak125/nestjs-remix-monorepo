@@ -201,3 +201,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/matrix-pr-d3-zero-unmappable`
 - **Décision** : fix(matrix): remove TOCTOU race in inject-agent-role.ts (CodeQL js/file-system-race) (+3 other commits)
 - **Sortie** : PR #239 | commits d62eafab 6d1b7db3 eba3c643 043daeb9
+
+## 2026-04-30 — feat/marketing-phase1-dto-scoring (auto)
+
+- **Branche** : `feat/marketing-phase1-dto-scoring`
+- **Décision** : fix(adr-036-pr1.3): broaden env signature to record (avoids unknown cast) (+2 other commits)
+- **Sortie** : PR #241 | commits d1baf143 a5c86dca 7f4ebdf1
