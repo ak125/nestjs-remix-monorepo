@@ -9,9 +9,9 @@ primary_files:
 - backend/src/modules/marketing/controllers/marketing-dashboard.controller.ts
 - backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts
 - backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts
+- backend/src/modules/marketing/dto/marketing-brief.dto.ts
 - backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts
 - backend/src/modules/marketing/interfaces/marketing.interfaces.ts
-- backend/src/modules/marketing/marketing.module.ts
 depends_on:
 - DatabaseModule
 - AiContentModule
