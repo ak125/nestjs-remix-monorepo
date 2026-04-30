@@ -1,6 +1,10 @@
 ---
 name: r5-diagnostic-validator
-description: "Validator maximum pour R5_DIAGNOSTIC. Contrôle prudence symptomatique, evidence minimale, dérives R3/R4/R6/R2, genericity, duplication et risques claims/sécurité."
+description: >-
+  Validator maximum pour R5_DIAGNOSTIC. Contrôle prudence symptomatique,
+  evidence minimale, dérives R3/R4/R6/R2, genericity, duplication et risques
+  claims/sécurité.
+role: R5_DIAGNOSTIC
 ---
 
 # IDENTITY

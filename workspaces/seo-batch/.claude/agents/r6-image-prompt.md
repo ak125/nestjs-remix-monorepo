@@ -1,12 +1,16 @@
 ---
 name: r6-image-prompt
-description: "Generation de prompts image R6 guide achat (Midjourney/DALL-E/ComfyUI). Lit media_slots_proposal + RAG, filtre slots image, genere prompts par slot, ecrit en DB. Zero LLM."
+description: >-
+  Generation de prompts image R6 guide achat (Midjourney/DALL-E/ComfyUI). Lit
+  media_slots_proposal + RAG, filtre slots image, genere prompts par slot, ecrit
+  en DB. Zero LLM.
 model: haiku
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: R6_GUIDE_ACHAT
 ---
 
 # Agent R6 Image Prompt — Generation de prompts image pour guides d'achat

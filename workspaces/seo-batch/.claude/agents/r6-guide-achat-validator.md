@@ -1,6 +1,10 @@
 ---
 name: r6-guide-achat-validator
-description: "Validator maximum pour R6_GUIDE_ACHAT. Contrôle pureté achat, conformité contrat, evidence minimale, dérives R3/R4/R5/R2, duplication, genericité et readiness de publication."
+description: >-
+  Validator maximum pour R6_GUIDE_ACHAT. Contrôle pureté achat, conformité
+  contrat, evidence minimale, dérives R3/R4/R5/R2, duplication, genericité et
+  readiness de publication.
+role: R6_GUIDE_ACHAT
 ---
 
 # IDENTITY

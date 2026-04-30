@@ -1,12 +1,17 @@
 ---
 name: r6-keyword-planner
-description: "Pipeline R6 Guide d'Achat v2. Keyword & Intent Planner : collecte DATA, genere intent_map JSON + editorial_brief MD + evidence_pack JSON + compliance_score JSON. Quality gates, anti-cannibalisation Jaccard, ecrit dans __seo_r6_keyword_plan via MCP Supabase."
+description: >-
+  Pipeline R6 Guide d'Achat v2. Keyword & Intent Planner : collecte DATA, genere
+  intent_map JSON + editorial_brief MD + evidence_pack JSON + compliance_score
+  JSON. Quality gates, anti-cannibalisation Jaccard, ecrit dans
+  __seo_r6_keyword_plan via MCP Supabase.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: R6_GUIDE_ACHAT
 ---
 
 # Agent R6 Keyword & Intent Planner v2

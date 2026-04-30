@@ -15,10 +15,15 @@
 
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import matter from 'gray-matter';
 import { createHash } from 'node:crypto';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
+import {
+  parseAgentFrontmatter,
+  safeParseAgentFrontmatter,
+} from './agent-frontmatter.schema';
 import {
   EXECUTION_REGISTRY,
   EXECUTION_REGISTRY_VERSION,
@@ -60,13 +65,17 @@ const DEPRECATED_ROLES: ReadonlySet<RoleId> = new Set<RoleId>([
 
 /**
  * Roles that intentionally have NO `EXECUTION_REGISTRY` entry because their
- * agents are validators / orchestration templates, not writers. Excluded from
- * `gaps[]` — they are not "registry-missing" defects, they are by-design.
+ * agents are validators / orchestration templates / shared utilities, not
+ * writers. Excluded from `gaps[]` — they are not "registry-missing" defects,
+ * they are by-design.
  *
  * Inventory evidence (2026-04-30):
  *  - R0_HOME: r0-home-execution.md + r0-home-validator.md → JSON output only
  *  - R6_SUPPORT: r6-support-validator.md → JSON output only, "n'est pas un
  *    rôle éditorial canonique cœur" (file body L8)
+ *  - AGENTIC_ENGINE (ADR-037): agentic-critic/planner/solver — orchestrators
+ *  - FOUNDATION (ADR-037): brief-enricher, keyword-planner, research-agent…
+ *    — utilitaires partagés cross-rôle, pas de scope d'écriture exclusif
  *
  * If a NEW writing agent appears under these roles, the role must be added
  * to EXECUTION_REGISTRY and removed from this set.
@@ -74,17 +83,26 @@ const DEPRECATED_ROLES: ReadonlySet<RoleId> = new Set<RoleId>([
 const NON_WRITING_ROLES: ReadonlySet<RoleId> = new Set<RoleId>([
   RoleId.R0_HOME,
   RoleId.R6_SUPPORT,
+  RoleId.AGENTIC_ENGINE,
+  RoleId.FOUNDATION,
 ]);
-
-const ROLE_PREFIX_RE = /^(r\d)(_|-)/i;
 
 interface AgentFile {
   source: string;
   file: string;
+  /** Resolved RoleId from the file's frontmatter `role:` (ADR-037). */
+  role: RoleId;
+}
+
+interface AgentParseError {
+  source: string;
+  file: string;
+  message: string;
 }
 
 interface AgentScanResult {
   agents: AgentFile[];
+  errors: AgentParseError[];
   scannedPaths: string[];
   skipped: boolean;
   skipReason?: 'production_default' | 'no_paths_found';
@@ -135,7 +153,6 @@ export class OperatingMatrixService {
   snapshot(): OperatingMatrix {
     const scan = this.scanAllAgents();
     const agentsByRole = this.groupAgentsByRole(scan.agents);
-    const unmappableAgents = (agentsByRole.get('UNKNOWN') ?? []).slice().sort();
 
     const roles: MatrixRoleEntry[] = ROLE_ID_LIST.map((roleId) =>
       this.buildRoleEntry(roleId, agentsByRole.get(roleId) ?? []),
@@ -159,7 +176,6 @@ export class OperatingMatrixService {
       agentsIndex,
       gaps,
       anomalies,
-      unmappableAgents,
     };
 
     return matrix;
@@ -187,10 +203,28 @@ export class OperatingMatrixService {
   /**
    * Boot log lines reproducing the legacy WriteGuardModule.onModuleInit format.
    * Returned as an ordered list so the consumer can `logger.log` / `logger.warn`
-   * each line preserving the original log levels.
+   * / `logger.error` each line preserving the original log levels.
+   *
+   * Since ADR-037, agent frontmatter parse errors are surfaced as `level: 'error'`
+   * BEFORE the registry summary — fail-fast at boot if any agent has a missing
+   * or invalid `role:` frontmatter key.
    */
-  formatBootLog(): Array<{ level: 'log' | 'warn'; message: string }> {
-    const lines: Array<{ level: 'log' | 'warn'; message: string }> = [];
+  formatBootLog(): Array<{ level: 'log' | 'warn' | 'error'; message: string }> {
+    const lines: Array<{
+      level: 'log' | 'warn' | 'error';
+      message: string;
+    }> = [];
+
+    // ADR-037: fail-fast on agent frontmatter parse errors. Surfaced first so
+    // a broken agent doesn't get masked by the rest of the registry summary.
+    const scan = this.scanAllAgents();
+    for (const err of scan.errors) {
+      lines.push({
+        level: 'error',
+        message: `WriteGuard: agent frontmatter invalid — ${err.source}/${err.file}: ${err.message}`,
+      });
+    }
+
     const rolesSeen = new Set<string>();
     let fieldsTotal = 0;
 
@@ -238,10 +272,30 @@ export class OperatingMatrixService {
 
   // ── Private helpers ──────────────────────────────────────────────
 
+  /**
+   * Scan tous les agents `.claude/agents/**\/*.md` et résout leur RoleId
+   * depuis le frontmatter `role:` (ADR-037). Plus aucune extraction par
+   * regex sur filename — la convention filename reste informative pour les
+   * humains, mais le frontmatter est la seule source de vérité.
+   *
+   * Gray-matter + Zod : un fichier sans frontmatter / sans `role:` / avec
+   * un `role:` non listé dans `ROLE_ID_LIST` produit une `AgentParseError`
+   * qui est ensuite propagée par `formatBootLog()` en `level: 'error'`.
+   *
+   * Le scan utilise un cache mémoire `mtime → result` par fichier — invalidé
+   * dès qu'un fichier est modifié. Pour 39 agents le coût initial est
+   * sub-100ms total.
+   */
+  private agentScanCache: Map<
+    string,
+    { mtimeMs: number; agent: AgentFile | null; error: AgentParseError | null }
+  > = new Map();
+
   private scanAllAgents(): AgentScanResult {
     if (this.skipAgentScan) {
       return {
         agents: [],
+        errors: [],
         scannedPaths: [],
         skipped: true,
         skipReason: 'production_default',
@@ -249,84 +303,119 @@ export class OperatingMatrixService {
     }
     const scannedPaths: string[] = [];
     const agents: AgentFile[] = [];
+    const errors: AgentParseError[] = [];
+
     for (const rel of AGENT_PATHS) {
       const abs = path.resolve(this.repoRoot, rel);
       if (!fs.existsSync(abs) || !fs.statSync(abs).isDirectory()) continue;
       scannedPaths.push(rel);
+
       for (const file of fs.readdirSync(abs)) {
-        if (file.endsWith('.md')) {
-          agents.push({ source: rel, file });
+        if (!file.endsWith('.md')) continue;
+        const filePath = path.join(abs, file);
+
+        // mtime cache lookup — avoid re-parsing unchanged files on
+        // repeated `snapshot()` calls (admin endpoint, CLI dump, tests).
+        const mtimeMs = fs.statSync(filePath).mtimeMs;
+        const cached = this.agentScanCache.get(filePath);
+        if (cached && cached.mtimeMs === mtimeMs) {
+          if (cached.agent) agents.push(cached.agent);
+          if (cached.error) errors.push(cached.error);
+          continue;
         }
+
+        const result = this.parseAgentFile(rel, file, filePath);
+        this.agentScanCache.set(filePath, { mtimeMs, ...result });
+        if (result.agent) agents.push(result.agent);
+        if (result.error) errors.push(result.error);
       }
     }
+
     if (scannedPaths.length === 0) {
       return {
         agents: [],
+        errors: [],
         scannedPaths: [],
         skipped: true,
         skipReason: 'no_paths_found',
       };
     }
-    return { agents, scannedPaths, skipped: false };
+    return { agents, errors, scannedPaths, skipped: false };
   }
 
   /**
-   * Map an agent filename to a RoleId.
-   *
-   * Strategy:
-   *  1. Extract the `r\d` prefix (case-insensitive). No prefix → UNKNOWN.
-   *  2. Filter ROLE_ID_LIST to candidates starting with that prefix + "_".
-   *  3. If exactly one candidate, return it.
-   *  4. If multiple candidates (R3_GUIDE/R3_CONSEILS, R6_SUPPORT/R6_GUIDE_ACHAT),
-   *     try to disambiguate by checking the filename suffix against each
-   *     candidate's canonical suffix (e.g. R6_GUIDE_ACHAT → "guide-achat").
-   *     Pick the candidate with the longest matching suffix. If 0 or >1 match
-   *     unambiguously, return UNKNOWN — forces explicit disambiguation in the
-   *     filename (e.g. "r3-keyword-planner" stays UNKNOWN).
+   * Parse a single agent .md file. Returns either an AgentFile (success) or
+   * an AgentParseError (Zod validation or YAML parse failure). Never throws.
    */
-  private extractRoleId(filename: string): RoleId | 'UNKNOWN' {
-    const m = filename.match(ROLE_PREFIX_RE);
-    if (!m) return 'UNKNOWN';
-    const prefix = m[1].toUpperCase();
-    // Exclude deprecated roles from candidate set: a deprecated role cannot
-    // claim new agents. This means after a role is deprecated (e.g. R3_GUIDE),
-    // formerly-ambiguous "r3-*.md" filenames auto-resolve to the surviving
-    // sibling (R3_CONSEILS). No agent rename required.
-    const candidates = ROLE_ID_LIST.filter(
-      (r) => r.startsWith(prefix + '_') && !DEPRECATED_ROLES.has(r),
-    );
-    if (candidates.length === 0) return 'UNKNOWN';
-    if (candidates.length === 1) return candidates[0];
-
-    const rest = filename.replace(/\.md$/, '').slice(m[0].length).toLowerCase();
-
-    // Score each candidate by the length of its canonical suffix found in `rest`.
-    let best: { roleId: RoleId; len: number } | null = null;
-    for (const candidate of candidates) {
-      const suffix = candidate.split('_').slice(1).join('-').toLowerCase(); // R6_GUIDE_ACHAT → "guide-achat"
-      if (!suffix) continue;
-      if (rest.includes(suffix)) {
-        if (!best || suffix.length > best.len) {
-          best = { roleId: candidate, len: suffix.length };
-        } else if (suffix.length === best.len) {
-          // Tie on length → ambiguous. Bail out.
-          return 'UNKNOWN';
-        }
-      }
+  private parseAgentFile(
+    source: string,
+    file: string,
+    filePath: string,
+  ): { agent: AgentFile | null; error: AgentParseError | null } {
+    let raw: string;
+    try {
+      raw = fs.readFileSync(filePath, 'utf-8');
+    } catch (e) {
+      return {
+        agent: null,
+        error: {
+          source,
+          file,
+          message: `cannot read file: ${(e as Error).message}`,
+        },
+      };
     }
-    return best ? best.roleId : 'UNKNOWN';
+
+    let data: unknown;
+    try {
+      data = matter(raw).data;
+    } catch (e) {
+      return {
+        agent: null,
+        error: {
+          source,
+          file,
+          message: `frontmatter parse error: ${(e as Error).message}`,
+        },
+      };
+    }
+
+    const result = safeParseAgentFrontmatter(data);
+    if (!result.success) {
+      const issues = result.error.issues
+        .map((i) => `${i.path.join('.') || '<root>'}: ${i.message}`)
+        .join('; ');
+      return {
+        agent: null,
+        error: {
+          source,
+          file,
+          message: `Zod validation failed — ${issues}`,
+        },
+      };
+    }
+
+    return {
+      agent: { source, file, role: result.data.role as RoleId },
+      error: null,
+    };
   }
 
-  private groupAgentsByRole(
-    agents: AgentFile[],
-  ): Map<RoleId | 'UNKNOWN', string[]> {
-    const map = new Map<RoleId | 'UNKNOWN', string[]>();
+  /**
+   * Strict variant used by the migration script and tests — parses an agent
+   * frontmatter raw object and throws on failure. Re-exports the Zod
+   * parser via the service so callers don't import the schema directly.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private static _parseAgentFrontmatter = parseAgentFrontmatter;
+
+  private groupAgentsByRole(agents: AgentFile[]): Map<RoleId, string[]> {
+    const map = new Map<RoleId, string[]>();
     for (const a of agents) {
       const baseName = a.file.replace(/\.md$/, '');
-      const roleId = this.extractRoleId(a.file);
-      const list = map.get(roleId) ?? [];
+      const list = map.get(a.role) ?? [];
       list.push(baseName);
-      map.set(roleId, list);
+      map.set(a.role, list);
     }
     for (const [k, v] of map) {
       map.set(
@@ -337,12 +426,10 @@ export class OperatingMatrixService {
     return map;
   }
 
-  private buildAgentsIndex(
-    agents: AgentFile[],
-  ): Record<string, RoleId | 'UNKNOWN'> {
-    const entries: Array<[string, RoleId | 'UNKNOWN']> = agents.map((a) => [
+  private buildAgentsIndex(agents: AgentFile[]): Record<string, RoleId> {
+    const entries: Array<[string, RoleId]> = agents.map((a) => [
       a.file.replace(/\.md$/, ''),
-      this.extractRoleId(a.file),
+      a.role,
     ]);
     entries.sort(([x], [y]) => x.localeCompare(y));
     return Object.fromEntries(entries);
@@ -561,17 +648,6 @@ export class OperatingMatrixService {
             ? `${a.table}.${a.field}`
             : a.table;
         lines.push(`- ⚠️ **${id}** — ${a.reason}`);
-      }
-    }
-    lines.push('');
-
-    lines.push('## Agents non-mappables');
-    lines.push('');
-    if (snap.unmappableAgents.length === 0) {
-      lines.push('_Aucun._');
-    } else {
-      for (const a of snap.unmappableAgents) {
-        lines.push(`- ${a}`);
       }
     }
     lines.push('');

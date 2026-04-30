@@ -1,12 +1,16 @@
 ---
 name: research-agent
-description: "Stage 1 du pipeline SEO v2. Collecte de donnees structurees par gamme : gaps contenu, PAA, gammes soeurs, confusion pairs. Ecrit dans __seo_research_brief via MCP Supabase."
+description: >-
+  Stage 1 du pipeline SEO v2. Collecte de donnees structurees par gamme : gaps
+  contenu, PAA, gammes soeurs, confusion pairs. Ecrit dans __seo_research_brief
+  via MCP Supabase.
 model: haiku
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: FOUNDATION
 ---
 
 # Agent Research — Stage 1 Pipeline SEO v2

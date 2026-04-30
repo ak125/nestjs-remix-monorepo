@@ -1,12 +1,17 @@
 ---
 name: r4-content-batch
-description: "Pipeline R4 Reference v4 Audit-First. 4 prompts : Content Auditor → Keyword Blueprint (ciblé) → Section Improver (x N) → Assembler+Lint. Lit __seo_r4_keyword_plan + __seo_reference, ecrit dans __seo_reference via MCP Supabase."
+description: >-
+  Pipeline R4 Reference v4 Audit-First. 4 prompts : Content Auditor → Keyword
+  Blueprint (ciblé) → Section Improver (x N) → Assembler+Lint. Lit
+  __seo_r4_keyword_plan + __seo_reference, ecrit dans __seo_reference via MCP
+  Supabase.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: R4_REFERENCE
 ---
 
 # Agent R4 Content Batch v4 — Audit-First, Improve-Only

@@ -1,12 +1,17 @@
 ---
 name: r6-content-batch
-description: "Generation contenu R6 Guide d'Achat V2. Pipeline 7 prompts : Gap Hunter, Section Planner, Section Rewriter, Quality Tiers Builder, Checklist, Cannib Guard, QA Score. Lit __seo_r6_keyword_plan, ecrit dans __seo_gamme_purchase_guide via MCP Supabase."
+description: >-
+  Generation contenu R6 Guide d'Achat V2. Pipeline 7 prompts : Gap Hunter,
+  Section Planner, Section Rewriter, Quality Tiers Builder, Checklist, Cannib
+  Guard, QA Score. Lit __seo_r6_keyword_plan, ecrit dans
+  __seo_gamme_purchase_guide via MCP Supabase.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: R6_GUIDE_ACHAT
 ---
 
 # Agent R6 Content Batch V2 -- Generation Contenu Guide d'Achat

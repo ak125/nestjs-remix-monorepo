@@ -1,6 +1,10 @@
 ---
 name: r8-vehicle-execution
-description: "Execution prompt canonique R8_VEHICLE. Produit une surface véhicule/hub véhicule sans dérive vers marque, transaction, how-to, référence ou diagnostic."
+description: >-
+  Execution prompt canonique R8_VEHICLE. Produit une surface véhicule/hub
+  véhicule sans dérive vers marque, transaction, how-to, référence ou
+  diagnostic.
+role: R8_VEHICLE
 ---
 
 # IDENTITY

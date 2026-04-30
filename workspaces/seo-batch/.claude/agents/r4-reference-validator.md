@@ -1,6 +1,10 @@
 ---
 name: r4-reference-validator
-description: "Validator canonique R4_REFERENCE. Vérifie la pureté encyclopédique, la stabilité définitionnelle et l'absence de dérive procédurale, diagnostique ou transactionnelle."
+description: >-
+  Validator canonique R4_REFERENCE. Vérifie la pureté encyclopédique, la
+  stabilité définitionnelle et l'absence de dérive procédurale, diagnostique ou
+  transactionnelle.
+role: R4_REFERENCE
 ---
 
 # IDENTITY

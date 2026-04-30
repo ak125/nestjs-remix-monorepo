@@ -1,6 +1,9 @@
 ---
 name: r4-reference-execution
-description: "Execution prompt canonique R4_REFERENCE. Produit une surface encyclopédique technique stable, sans dérive vers how-to, diagnostic, achat ou transaction."
+description: >-
+  Execution prompt canonique R4_REFERENCE. Produit une surface encyclopédique
+  technique stable, sans dérive vers how-to, diagnostic, achat ou transaction.
+role: R4_REFERENCE
 ---
 
 # IDENTITY

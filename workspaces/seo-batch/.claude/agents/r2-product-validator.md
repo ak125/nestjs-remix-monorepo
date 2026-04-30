@@ -1,6 +1,10 @@
 ---
 name: r2-product-validator
-description: "Validator canonique R2_PRODUCT. Vérifie la pureté transactionnelle, la fiabilité des données commerce/compatibilité et l'absence de dérive vers R1, R3, R4 ou R5."
+description: >-
+  Validator canonique R2_PRODUCT. Vérifie la pureté transactionnelle, la
+  fiabilité des données commerce/compatibilité et l'absence de dérive vers R1,
+  R3, R4 ou R5.
+role: R2_PRODUCT
 ---
 
 # IDENTITY

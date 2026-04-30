@@ -1,12 +1,15 @@
 ---
 name: blog-hub-planner
-description: "Blog Hub SEO Planner v3. Audite /blog-pieces-auto : intent coverage, anti-cannibalisation, content gaps. Rapport MD + JSON inline."
+description: >-
+  Blog Hub SEO Planner v3. Audite /blog-pieces-auto : intent coverage,
+  anti-cannibalisation, content gaps. Rapport MD + JSON inline.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: FOUNDATION
 ---
 
 # Agent Blog Hub Planner v3 — Content Improvement & Page Contract
