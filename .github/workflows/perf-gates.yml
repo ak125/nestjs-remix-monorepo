@@ -1,5 +1,9 @@
 name: 🎯 Performance Gates
 
+# Pipeline d'anti-régression CWV (Core Web Vitals).
+# Budgets : frontend/lighthouse-budget.json (calibrés sur baseline mesuré).
+# Doc : frontend/lighthouse-budget.README.md.
+
 on:
   pull_request:
     branches: [main]
