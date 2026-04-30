@@ -148,6 +148,27 @@ export const EXECUTION_REGISTRY: Record<string, ExecutionRegistryEntry> = {
     requiredUpstreamPhases: ['phase16_admissibility'],
   },
 
+  [RoleId.R7_BRAND]: {
+    roleId: RoleId.R7_BRAND,
+    pageType: 'R7_brand',
+    contractSchemaRef: 'page-contract-r7.schema',
+    enricherServiceKey: 'R7BrandEnricherService',
+    // Writers only — validators/execution-templates are read-only and not part
+    // of the WriteGuard plan (see r7-brand-validator.md, r7-brand-execution.md).
+    agentFiles: ['r7-keyword-planner.md', 'r7-brand-rag-generator.md'],
+    promptChain: [
+      'keyword_plan',
+      'section_bundle_generation',
+      'qa_gatekeeper',
+      'rag_generation',
+    ],
+    allowedModes: ['create', 'regenerate', 'refresh_full', 'qa_only'],
+    defaultWriteMode: 'draft_write',
+    stopPolicy: { maxRetries: 2, timeoutMs: 180_000 },
+    escalationPolicy: { onGateFail: 'block', onTimeout: 'hold' },
+    requiredUpstreamPhases: ['phase16_admissibility'],
+  },
+
   [RoleId.R8_VEHICLE]: {
     roleId: RoleId.R8_VEHICLE,
     pageType: 'R8_vehicle',

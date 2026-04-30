@@ -86,9 +86,23 @@ describe('OperatingMatrixService', () => {
       expect(r.healthScore).toBe(0);
     });
 
-    it('R0_HOME has no registry entry (gap candidate)', () => {
+    it('R0_HOME has no registry entry but is excluded from gaps (NON_WRITING_ROLES)', () => {
       const r = byRole.get(RoleId.R0_HOME)!;
       expect(r.registry.present).toBe(false);
+      expect(snap.gaps.find((g) => g.roleId === RoleId.R0_HOME)).toBeUndefined();
+    });
+
+    it('R6_SUPPORT has no registry entry but is excluded from gaps (NON_WRITING_ROLES)', () => {
+      const r = byRole.get(RoleId.R6_SUPPORT)!;
+      expect(r.registry.present).toBe(false);
+      expect(
+        snap.gaps.find((g) => g.roleId === RoleId.R6_SUPPORT),
+      ).toBeUndefined();
+    });
+
+    it('R7_BRAND has a registry entry (writers found in inventory 2026-04-30)', () => {
+      const r = byRole.get(RoleId.R7_BRAND)!;
+      expect(r.registry.present).toBe(true);
     });
   });
 
@@ -104,10 +118,12 @@ describe('OperatingMatrixService', () => {
       expect(extract('brief-enricher.md')).toBe('UNKNOWN');
     });
 
-    it('returns UNKNOWN for ambiguous R3 prefix WITHOUT disambiguation suffix in name', () => {
-      expect(extract('r3-keyword-planner.md')).toBe('UNKNOWN');
-      expect(extract('r3-image-prompt.md')).toBe('UNKNOWN');
-      expect(extract('r3-keyword-plan-batch.md')).toBe('UNKNOWN');
+    it('R3 prefix auto-resolves to R3_CONSEILS (R3_GUIDE deprecated → not a candidate)', () => {
+      // After R3_GUIDE deprecation, R3 prefix has only one non-deprecated
+      // candidate (R3_CONSEILS) → no disambiguation suffix needed.
+      expect(extract('r3-keyword-planner.md')).toBe(RoleId.R3_CONSEILS);
+      expect(extract('r3-image-prompt.md')).toBe(RoleId.R3_CONSEILS);
+      expect(extract('r3-keyword-plan-batch.md')).toBe(RoleId.R3_CONSEILS);
     });
 
     it('returns UNKNOWN for ambiguous R6 prefix WITHOUT disambiguation suffix', () => {
