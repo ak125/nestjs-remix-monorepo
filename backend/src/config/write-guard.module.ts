@@ -55,9 +55,6 @@ export class WriteGuardModule implements OnModuleInit {
   private readonly logger = new Logger(WriteGuardModule.name);
 
   onModuleInit(): void {
-    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
-
-    console.warn('INIT_TRACE: write-guard');
     // ── Boot invariant: validate catalog ↔ registry coherence ──
     const rolesSeen = new Set<string>();
     let fieldsTotal = 0;

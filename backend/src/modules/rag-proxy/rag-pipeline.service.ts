@@ -157,8 +157,6 @@ export class RagPipelineService implements OnModuleInit, OnModuleDestroy {
    * Voir `.claude/rules/backend.md` § "Non-blocking onModuleInit".
    */
   onModuleInit(): void {
-    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
-    console.warn('INIT_TRACE: rag-pipeline');
     this.logger.log(
       'RagPipelineService startup: scanning orphaned runs en arrière-plan...',
     );

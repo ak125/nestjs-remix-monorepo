@@ -89,8 +89,6 @@ export class LogIngestionService implements OnModuleInit {
    * `localhost:7700` qui bloque `app.listen()` → exit 124 sur /health.
    */
   onModuleInit(): void {
-    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
-    console.warn('INIT_TRACE: log-ingestion');
     this.logger.log(
       '🚀 Init LogIngestionService — config Meilisearch en arrière-plan',
     );

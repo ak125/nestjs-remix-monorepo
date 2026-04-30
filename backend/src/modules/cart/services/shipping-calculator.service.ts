@@ -67,8 +67,6 @@ export class ShippingCalculatorService
    * Voir `.claude/rules/backend.md` § "Non-blocking onModuleInit".
    */
   onModuleInit(): void {
-    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
-    console.warn('INIT_TRACE: shipping-calculator');
     this.logger.log(
       '🚀 Initialisation ShippingCalculatorService — chargement paliers en arrière-plan',
     );

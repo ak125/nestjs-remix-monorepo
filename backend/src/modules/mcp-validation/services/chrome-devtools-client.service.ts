@@ -77,9 +77,6 @@ export class ChromeDevToolsClientService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
-
-    console.warn('INIT_TRACE: chrome-devtools-client');
     // Check if Chrome DevTools MCP is available
     // In production, this would verify the MCP server is running
     this.isAvailable = true;

@@ -103,9 +103,6 @@ export class RagChangeWatcherService
   }
 
   onModuleInit() {
-    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
-
-    console.warn('INIT_TRACE: rag-change-watcher');
     if (!this.flags.ragChangePipelineEnabled) {
       this.logger.log(
         'RAG Change Pipeline DISABLED (RAG_CHANGE_PIPELINE_ENABLED=false)',

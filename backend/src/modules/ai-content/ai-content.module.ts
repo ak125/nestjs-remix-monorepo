@@ -28,9 +28,6 @@ export class AiContentModule implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
-
-    console.warn('INIT_TRACE: ai-content');
     // Inject cache service into AI content service
     this.aiContentService.setCacheService(this.cacheService);
 

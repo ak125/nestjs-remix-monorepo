@@ -39,8 +39,6 @@ export class MeilisearchService implements OnModuleInit {
    * timeout, et bloque `app.listen()` → exit 124 sur /health.
    */
   onModuleInit(): void {
-    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
-    console.warn('INIT_TRACE: meilisearch');
     this.logger.log(
       '🚀 Init MeilisearchService — initialisation des index en arrière-plan',
     );

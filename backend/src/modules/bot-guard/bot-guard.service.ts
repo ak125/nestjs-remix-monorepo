@@ -105,9 +105,6 @@ export class BotGuardService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
-
-    console.warn('INIT_TRACE: bot-guard');
     // Load initial config from env
     this.enabled =
       this.configService.get('BOT_GUARD_ENABLED', 'true') === 'true';

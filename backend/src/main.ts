@@ -26,15 +26,10 @@ const redisStoreFactory = RedisStore(session);
 
 async function bootstrap() {
   try {
-    // INIT_TRACE: diagnostic boot markers — remove once perf-gates exit-124 is resolved.
-    // Written via console.warn (stderr, line-buffered) to bypass Pino's stdout buffering
-    // which hides service logs during init() on CI.
-    console.warn('BOOT_TRACE: bootstrap() entered');
     const app = await NestFactory.create(AppModule, {
       bodyParser: false,
       bufferLogs: true, // Buffer logs jusqu'à ce que Pino soit initialisé
     });
-    console.warn('BOOT_TRACE: NestFactory.create() returned');
 
     // 📝 Utiliser Pino comme logger global
     const logger = app.get(Logger);
@@ -242,10 +237,8 @@ async function bootstrap() {
       );
     }
     logger.log(`Démarrage du serveur sur le port ${selectedPort}...`);
-    console.warn('BOOT_TRACE: about to call app.listen()');
 
     await app.listen(selectedPort);
-    console.warn('BOOT_TRACE: app.listen() returned');
     logger.log(`Serveur opérationnel sur http://localhost:${selectedPort}`);
 
     // ✅ HTTP Server Hardening - Évite socket hang up et connexions zombies

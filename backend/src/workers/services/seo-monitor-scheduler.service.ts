@@ -23,8 +23,6 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
    * 🚀 Configure les jobs répétitifs au démarrage de l'app
    */
   async onModuleInit() {
-    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
-    console.warn('INIT_TRACE: seo-monitor-scheduler');
     this.logger.log('🚀 Initialisation scheduler monitoring SEO...');
 
     try {

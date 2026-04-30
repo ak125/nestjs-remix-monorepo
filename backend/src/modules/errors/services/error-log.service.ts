@@ -71,9 +71,6 @@ export class ErrorLogService
   }
 
   onModuleInit(): void {
-    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
-
-    console.warn('INIT_TRACE: error-log');
     this.flushTimer = setInterval(() => {
       this.flush().catch(() => {});
     }, ErrorLogService.FLUSH_INTERVAL_MS);
