@@ -189,3 +189,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/marketing-phase1-db`
 - **Décision** : fix(migration-safety): approve idempotent drop policy pattern (recreate immediate) (+2 other commits)
 - **Sortie** : PR #238 | commits 3c446aa8 8c742bc8 2200cb61
+
+## 2026-04-30 — chore/matrix-pr-d3-zero-unmappable (auto)
+
+- **Branche** : `chore/matrix-pr-d3-zero-unmappable`
+- **Décision** : feat(matrix): ADR-037 agent-naming-canon — frontmatter `role:` Zod-validated, fail-fast
+- **Sortie** : PR #239 | commits 043daeb9
