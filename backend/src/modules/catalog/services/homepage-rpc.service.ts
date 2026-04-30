@@ -402,14 +402,22 @@ export class HomepageRpcService extends SupabaseBaseService {
   async warmCache(): Promise<{ success: boolean; time: number }> {
     const startTime = performance.now();
     try {
-      await this.getHomepageBelowFold();
+      // Warm BOTH keys awaited by the home loader:
+      //   - homepage:families:v1   (above-fold, blocks SSR via _index.tsx loader await)
+      //   - homepage:below-fold:v2 (deferred but still nice to have warm)
+      // Without families warming, first Lighthouse hit = CACHE MISS = SSR blocked
+      // 1-3s on cold Supabase; FCP/TTI baseline ~10s on perf-gates CI.
+      await Promise.all([
+        this.getHomepageFamilies(),
+        this.getHomepageBelowFold(),
+      ]);
       const time = performance.now() - startTime;
       this.logger.log(
-        `🔥 Warm cache below-fold terminé en ${time.toFixed(1)}ms`,
+        `🔥 Warm cache homepage (families+below-fold) terminé en ${time.toFixed(1)}ms`,
       );
       return { success: true, time };
     } catch (error) {
-      this.logger.error('❌ Warm cache below-fold failed:', error);
+      this.logger.error('❌ Warm cache homepage failed:', error);
       return { success: false, time: performance.now() - startTime };
     }
   }
