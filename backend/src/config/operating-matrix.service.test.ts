@@ -23,9 +23,10 @@ function makeService(env: Record<string, string | undefined> = {}) {
  * (filename → frontmatter+body). Returns a service pointed at this temp dir
  * via `REPO_ROOT` env. Used by ADR-037 frontmatter parsing tests.
  */
-function makeServiceWithFixtures(
-  agentFiles: Record<string, string>,
-): { svc: OperatingMatrixService; cleanup: () => void } {
+function makeServiceWithFixtures(agentFiles: Record<string, string>): {
+  svc: OperatingMatrixService;
+  cleanup: () => void;
+} {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'op-matrix-test-'));
   const agentsDir = path.join(tmp, 'workspaces/seo-batch/.claude/agents');
   fs.mkdirSync(agentsDir, { recursive: true });
@@ -33,7 +34,10 @@ function makeServiceWithFixtures(
     fs.writeFileSync(path.join(agentsDir, filename), content, 'utf-8');
   }
   const svc = makeService({ NODE_ENV: 'test', REPO_ROOT: tmp });
-  return { svc, cleanup: () => fs.rmSync(tmp, { recursive: true, force: true }) };
+  return {
+    svc,
+    cleanup: () => fs.rmSync(tmp, { recursive: true, force: true }),
+  };
 }
 
 describe('OperatingMatrixService', () => {
@@ -88,7 +92,9 @@ describe('OperatingMatrixService', () => {
     it('OperatingMatrix payload no longer carries unmappableAgents (ADR-037)', () => {
       // The field has been removed — fail-fast at boot prevents any agent from
       // being silently UNKNOWN, so the carrier is no longer needed.
-      expect((snap as unknown as Record<string, unknown>).unmappableAgents).toBeUndefined();
+      expect(
+        (snap as unknown as Record<string, unknown>).unmappableAgents,
+      ).toBeUndefined();
     });
 
     it('agentsIndex maps every scanned agent to a RoleId (no UNKNOWN possible)', () => {
@@ -172,9 +178,7 @@ describe('OperatingMatrixService', () => {
           'r1-content-batch': RoleId.R1_ROUTER,
           'r6-content-batch': RoleId.R6_GUIDE_ACHAT,
         });
-        const errors = svc
-          .formatBootLog()
-          .filter((l) => l.level === 'error');
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
         expect(errors).toEqual([]);
       } finally {
         cleanup();
@@ -186,9 +190,7 @@ describe('OperatingMatrixService', () => {
         'r1-content-batch.md': `# body without frontmatter\n`,
       });
       try {
-        const errors = svc
-          .formatBootLog()
-          .filter((l) => l.level === 'error');
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
         expect(errors.length).toBe(1);
         expect(errors[0].message).toMatch(/r1-content-batch\.md/);
         // Without a valid role, the agent must NOT appear in agentsIndex.
@@ -203,9 +205,7 @@ describe('OperatingMatrixService', () => {
         'r1-content-batch.md': `---\nname: r1-content-batch\ndescription: writes\n---\n# body\n`,
       });
       try {
-        const errors = svc
-          .formatBootLog()
-          .filter((l) => l.level === 'error');
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
         expect(errors.length).toBe(1);
         expect(errors[0].message).toMatch(/role/i);
       } finally {
@@ -218,9 +218,7 @@ describe('OperatingMatrixService', () => {
         'r1-content-batch.md': `---\nname: r1-content-batch\ndescription: writes\nrole: R99_INVALID\n---\n# body\n`,
       });
       try {
-        const errors = svc
-          .formatBootLog()
-          .filter((l) => l.level === 'error');
+        const errors = svc.formatBootLog().filter((l) => l.level === 'error');
         expect(errors.length).toBe(1);
         expect(errors[0].message).toMatch(/role/i);
       } finally {
