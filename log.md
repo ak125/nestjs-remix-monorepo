@@ -123,3 +123,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/fe-diagnostic-wizard-dynamic`
 - **Décision** : feat(adr-032-pr10): make DiagnosticWizard.tsx dynamic via /wizard-steps endpoint
 - **Sortie** : PR #219 | commits d55e5beb
+
+## 2026-04-30 — fix/permissions-canonical-backend (auto)
+
+- **Branche** : `fix/permissions-canonical-backend`
+- **Décision** : feat(auth): add UserPermissions DTO + level constants (+2 other commits)
+- **Sortie** : PR aucune | commits fa3c03ef 8ba4394a 2b9678b3
