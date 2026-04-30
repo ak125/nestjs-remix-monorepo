@@ -36,6 +36,8 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
    * 🚀 Initialise BullMQ queue et worker au démarrage
    */
   async onModuleInit() {
+    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
+    console.warn('INIT_TRACE: seo-audit-scheduler');
     this.logger.log('🚀 Initialisation BullMQ pour audits SEO...');
 
     // Configuration Redis

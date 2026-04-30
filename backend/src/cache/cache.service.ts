@@ -17,6 +17,9 @@ export class CacheService implements OnModuleInit {
   }
 
   async onModuleInit() {
+    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
+
+    console.warn('INIT_TRACE: cache');
     await this.initializeRedis();
     await this.waitForRedis();
   }

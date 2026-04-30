@@ -65,6 +65,9 @@ export class RpcGateService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
+    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
+
+    console.warn('INIT_TRACE: rpc-gate');
     await this.loadGovernanceFiles();
     this.logger.log(
       `RPC Gate initialized: mode=${this.mode}, level=${this.enforceLevel}, env=${this.env}`,

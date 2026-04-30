@@ -71,6 +71,8 @@ export class CatalogService
    * cache-miss (fallback live RPC déjà géré), suivants = warmed.
    */
   onModuleInit(): void {
+    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
+    console.warn('INIT_TRACE: catalog');
     this.logger.log(
       '🚀 Initialisation CatalogService — préchargement en arrière-plan',
     );

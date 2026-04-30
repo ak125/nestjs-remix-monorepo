@@ -77,6 +77,8 @@ export class RagIngestionService implements OnModuleInit, OnModuleDestroy {
    * Voir `.claude/rules/backend.md` § "Non-blocking onModuleInit".
    */
   onModuleInit(): void {
+    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
+    console.warn('INIT_TRACE: rag-ingestion');
     // 1c. Force-clear in-memory pool (synchrone) — any "running" job from
     // previous process is dead.
     this.activeWebIngestJobs.clear();

@@ -48,6 +48,9 @@ export class McpAlertingService implements OnModuleInit {
   constructor(private readonly configService: ConfigService) {}
 
   onModuleInit() {
+    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
+
+    console.warn('INIT_TRACE: mcp-alerting');
     const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
     const supabaseKey = this.configService.get<string>(
       'SUPABASE_SERVICE_ROLE_KEY',

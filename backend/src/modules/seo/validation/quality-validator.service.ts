@@ -96,6 +96,8 @@ export class QualityValidatorService implements OnModuleInit {
    * Charge les mots interdits au démarrage du module
    */
   async onModuleInit() {
+    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
+    console.warn('INIT_TRACE: quality-validator');
     await this.loadForbiddenWords();
   }
 

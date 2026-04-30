@@ -32,6 +32,8 @@ export class CacheWarmingService
    * 🚀 Exécuté automatiquement au démarrage de l'application
    */
   async onModuleInit() {
+    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
+    console.warn('INIT_TRACE: cache-warming');
     // Délai pour laisser Redis se connecter
     setTimeout(() => {
       this.warmAllCaches().catch((err) =>

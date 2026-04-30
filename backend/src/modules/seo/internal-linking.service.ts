@@ -152,6 +152,8 @@ export class InternalLinkingService implements OnModuleInit {
    * cas où on a besoin d'attendre la fin du warming.
    */
   onModuleInit(): void {
+    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
+    console.warn('INIT_TRACE: internal-linking');
     this.logger.log(
       '🚀 Initialisation InternalLinkingService — préchargement en arrière-plan',
     );

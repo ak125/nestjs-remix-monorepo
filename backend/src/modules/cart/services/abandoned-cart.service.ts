@@ -34,6 +34,9 @@ export class AbandonedCartService implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    // INIT_TRACE: diagnostic — remove once perf-gates exit-124 is resolved
+
+    console.warn('INIT_TRACE: abandoned-cart');
     // Register repeatable scanner job (every 15 min)
     try {
       await this.emailQueue.add(
