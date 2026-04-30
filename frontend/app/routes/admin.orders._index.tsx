@@ -51,7 +51,7 @@ import {
   type LoaderData,
   type Order,
 } from "../types/orders.types";
-import { getUserPermissions, getUserRole } from "../utils/permissions";
+import { loadUserPermissions, getUserRole } from "../utils/permissions";
 
 // ========================================
 // 📄 META
@@ -78,7 +78,10 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     return json<ActionData>({ error: "Accès refusé" }, { status: 403 });
   }
 
-  const permissions = getUserPermissions(user.level);
+  const permissions = await loadUserPermissions(
+    user.id,
+    request.headers.get("Cookie") ?? undefined,
+  );
   const userRole = getUserRole(user.level);
 
   const formData = await request.formData();
@@ -396,7 +399,10 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     throw new Response("Accès refusé", { status: 403 });
   }
 
-  const permissions = getUserPermissions(user.level || 0);
+  const permissions = await loadUserPermissions(
+    user.id,
+    request.headers.get("Cookie") ?? undefined,
+  );
   const userRole = getUserRole(user.level || 0);
 
   logger.log(
