@@ -8,6 +8,7 @@
 
 import { Injectable, Inject, forwardRef, Logger } from '@nestjs/common';
 import { OrdersService } from '../database/services/orders.service';
+import { HomepageRpcService } from '../modules/catalog/services/homepage-rpc.service';
 import { ExternalServiceException, ErrorCodes } from '@common/exceptions';
 
 interface StaffMember {
@@ -30,7 +31,31 @@ export class RemixApiService {
   constructor(
     @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
+    private readonly homepageRpcService: HomepageRpcService,
   ) {}
+
+  /**
+   * 🏠 HOMEPAGE FAMILIES — direct service call (no HTTP loopback)
+   *
+   * Awaited by the home loader (`routes/_index.tsx`). Bypasses the
+   * `fetch('http://localhost:3000/api/catalog/homepage-families')` round
+   * trip, which created a TCP loopback connection per SSR (~10-50ms cold,
+   * port pressure under load).
+   */
+  async getHomepageFamilies() {
+    return this.homepageRpcService.getHomepageFamilies();
+  }
+
+  /**
+   * 🏠 HOMEPAGE BELOW-FOLD — direct service call (no HTTP loopback)
+   *
+   * Streamed via Remix `defer()` from the home loader. Even though
+   * deferred (non-blocking), eliminating the loopback frees a connection
+   * slot and shaves the cold TCP handshake.
+   */
+  async getHomepageBelowFold() {
+    return this.homepageRpcService.getHomepageBelowFold();
+  }
 
   /**
    * 🚀 Helper HTTP simplifié - L'auth passe par le contexte Remix
