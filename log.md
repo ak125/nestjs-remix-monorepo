@@ -153,3 +153,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/cache-warm-non-blocking`
 - **Décision** : fix(boot): align bullmq redis config with REDIS_URL + remove diagnostics (+7 other commits)
 - **Sortie** : PR #224 | commits 919ba33a abc6cd6a 45cddefd e489ecbe 5b7c5530 5d503e1a 31e9517e a0a67c66
+
+## 2026-04-30 — fix/cache-warm-non-blocking (auto)
+
+- **Branche** : `fix/cache-warm-non-blocking`
+- **Décision** : fix(ci): correct constructeur URL format in perf-gates lighthouse list (+12 other commits)
+- **Sortie** : PR #224 | commits 74c9305e fdf691af 20d8e294 5a6e63b4 5e034ca4 919ba33a abc6cd6a 45cddefd e489ecbe 5b7c5530 5d503e1a 31e9517e a0a67c66
