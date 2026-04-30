@@ -3,12 +3,22 @@ language: typescript
 severity: error
 message: |
   Awaited remote I/O inside an `onModuleInit` hook blocks `app.listen()`
-  during NestJS init phase. /health stays muet → exit 124 on perf-gates.yml
-  (CI) and unready container in k8s. Cause confirmed: PR #224 / run 25166916535.
+  during NestJS init phase. NestJS v10 fires `onModuleInit` from
+  `app.init() → callInitHook()` invoked by `app.listen()` (cf.
+  node_modules/@nestjs/core/nest-application.js:90-103). Any await whose
+  network round-trip is slow or unreachable blocks listen() → /health
+  stays muet → exit 124 on perf-gates.yml + unready container in k8s.
 
-  Pattern (sync onModuleInit + void warmer):
+  Confirmed offenders to date (PR #224 timeline):
+    - this.supabase.* (RPCs Supabase)         — patched 5d503e1a
+    - this.<*Queue>.{add,getRepeatableJobs,removeRepeatableByKey}(...)
+        (Bull/BullMQ Redis ops)               — patched ce commit
+    - this.meilisearch.* / this.<*>.updateSettings(...) (Meilisearch HTTP)
+                                              — patched e489ecbe
+    - fetch(...)                              — direct HTTP
+
+  Pattern canonique (sync onModuleInit + void warmer):
       onModuleInit(): void {
-        this.logger.log('🚀 Init <ServiceName> en arrière-plan');
         void this.<warmOrRecover>();
       }
       private async <warmOrRecover>(): Promise<void> {
@@ -24,12 +34,27 @@ ignores:
   - backend/src/**/test-*.ts
 rule:
   any:
-    # Any awaited expression whose subject references `this.supabase`
-    # (catches chained calls: await this.supabase.from(...).select(...).order(...))
+    # Awaited expression whose subtree references a known remote-I/O subject.
+    # Catches chained calls: `await this.supabase.from(...).select(...)`,
+    # `await this.meilisearch.index(...).updateSettings(...)`, etc.
     - all:
         - pattern: await $_
         - has:
-            pattern: this.supabase
+            any:
+              - pattern: this.supabase
+              - pattern: this.meilisearch
+              - pattern: this.httpService
+            stopBy: end
+    # Bull / BullMQ queue ops: any identifier ending in `Queue` calling Redis
+    # (catches `this.emailQueue.add`, `this.seoMonitorQueue.getRepeatableJobs`,
+    # `this.auditQueue.removeRepeatableByKey`, etc.).
+    - all:
+        - pattern: await $_
+        - has:
+            regex: '\.(add|getRepeatableJobs|removeRepeatableByKey|getJob|getJobs|removeJobs|drain|empty|count|isReady)\b'
+            stopBy: end
+        - has:
+            regex: '\bthis\.[A-Za-z_$][A-Za-z0-9_$]*[Qq]ueue\b'
             stopBy: end
     # Direct global fetch
     - pattern: await fetch($$$)
