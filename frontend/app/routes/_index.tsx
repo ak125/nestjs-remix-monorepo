@@ -22,6 +22,7 @@ import {
   PopularSearches,
 } from "~/components/home";
 import { type BrandItem } from "~/components/home/constants";
+import { getRemixApiService } from "~/server/remix-api.server";
 import {
   type SlimFamily,
   mapFamiliesFromSplit,
@@ -101,15 +102,20 @@ export const meta: MetaFunction = () => [
 ];
 
 // ─── Loader (Phase 1 perf: split above-fold / below-fold) ─
-// Above-fold: families via lightweight /homepage-families → awaited (blocks SSR)
-// Below-fold: brands, equipementiers, blog via /homepage-below-fold → REAL deferred streaming
-export async function loader({ request }: LoaderFunctionArgs) {
-  // Below-fold + FAQ: fire immediately, NOT awaited (real streaming)
-  const belowFoldPromise = fetch(
-    getInternalApiUrl("/api/catalog/homepage-below-fold"),
-  )
-    .then((res) => (res.ok ? res.json() : null))
-    .then((data) => {
+// Above-fold: families via lightweight homepage-families → awaited (blocks SSR)
+// Below-fold: brands, equipementiers, blog via homepage-below-fold → REAL deferred streaming
+//
+// Layer 2 perf: families + below-fold come from NestJS DI (no HTTP loopback).
+// FAQ stays on internal HTTP because FaqService isn't exported by SupportModule
+// — separate scope, deferred so non-blocking anyway.
+export async function loader({ request, context }: LoaderFunctionArgs) {
+  const remixApi = await getRemixApiService(context);
+
+  // Below-fold: direct service call wrapped in a Promise so Remix can
+  // still defer-stream it via <Await>. The await is captured *inside* the
+  // Promise chain — the loader proceeds without blocking.
+  const belowFoldPromise = Promise.resolve(remixApi.getHomepageBelowFold())
+    .then((data: any) => {
       if (!data) return { brands: [], equipementiers: [], blogArticles: [] };
       return mapBelowFoldData(data);
     })
@@ -119,6 +125,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       blogArticles: [] as any[],
     }));
 
+  // FAQ: kept on HTTP (FaqService not exported by SupportModule yet)
   const faqPromise = fetch(
     getInternalApiUrl("/api/support/faq?status=published&limit=5"),
   )
@@ -133,22 +140,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
     )
     .catch(() => [] as Array<{ id: string; question: string; answer: string }>);
 
-  // Above-fold: AWAIT families only (lightweight, fast)
+  // Above-fold: AWAIT families only (lightweight, fast). Direct service
+  // call — bypasses TCP loopback handshake that previously cost ~10-50ms
+  // cold per SSR and consumed a connection pool slot.
   try {
-    const familiesRes = await fetch(
-      getInternalApiUrl("/api/catalog/homepage-families"),
-    );
-
-    const familiesRaw = familiesRes.ok ? await familiesRes.json() : null;
+    const familiesRaw = await remixApi.getHomepageFamilies();
     const families = mapFamiliesFromSplit(familiesRaw);
 
     return defer({
       families,
-      belowFold: belowFoldPromise, // REAL promise — enables Remix streaming
+      belowFold: belowFoldPromise,
       faqs: faqPromise,
     });
   } catch (err) {
-    logger.error("[homepage-families] Fetch failed:", {
+    logger.error("[homepage-families] Service call failed:", {
       error: err instanceof Error ? err.message : String(err),
     });
     return defer({
