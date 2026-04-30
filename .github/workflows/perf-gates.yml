@@ -102,7 +102,11 @@ jobs:
             http://localhost:3000/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html
             http://localhost:3000/constructeurs/renault-140.html
           budgetPath: ./frontend/lighthouse-budget.json
-          uploadArtifacts: true
+          # uploadArtifacts: false — l'action treosh/lighthouse-ci-action@v10 utilise
+          # actions/upload-artifact@v3 en interne, déprécié par GitHub depuis 2024.
+          # `temporaryPublicStorage: true` suffit pour récupérer le rapport via le
+          # lien retourné par l'action (cf. lighthouseLinks dans Comment PR step).
+          uploadArtifacts: false
           temporaryPublicStorage: true
 
       - name: Check CWV Thresholds

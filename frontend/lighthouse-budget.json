@@ -20,7 +20,6 @@
   },
   {
     "path": "/",
-    "name": "Homepage",
     "timings": [
       { "metric": "first-contentful-paint", "budget": 4000 },
       { "metric": "largest-contentful-paint", "budget": 5000 },
@@ -29,7 +28,6 @@
   },
   {
     "path": "/pieces/*",
-    "name": "Catalog Pages",
     "timings": [
       { "metric": "first-contentful-paint", "budget": 4500 },
       { "metric": "largest-contentful-paint", "budget": 5500 }
