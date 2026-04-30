@@ -1,0 +1,44 @@
+id: backend-no-remote-io-in-onmoduleinit
+language: typescript
+severity: error
+message: |
+  Awaited remote I/O inside an `onModuleInit` hook blocks `app.listen()`
+  during NestJS init phase. /health stays muet → exit 124 on perf-gates.yml
+  (CI) and unready container in k8s. Cause confirmed: PR #224 / run 25166916535.
+
+  Pattern (sync onModuleInit + void warmer):
+      onModuleInit(): void {
+        this.logger.log('🚀 Init <ServiceName> en arrière-plan');
+        void this.<warmOrRecover>();
+      }
+      private async <warmOrRecover>(): Promise<void> {
+        try { /* current async body */ } catch (e) { this.logger.error(...); }
+      }
+
+  See .claude/rules/backend.md § "Non-blocking onModuleInit".
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/**/*.spec.ts
+  - backend/src/**/*.e2e-spec.ts
+  - backend/src/**/test-*.ts
+rule:
+  any:
+    # Any awaited expression whose subject references `this.supabase`
+    # (catches chained calls: await this.supabase.from(...).select(...).order(...))
+    - all:
+        - pattern: await $_
+        - has:
+            pattern: this.supabase
+            stopBy: end
+    # Direct global fetch
+    - pattern: await fetch($$$)
+  inside:
+    any:
+      - pattern:
+          context: "class C { async onModuleInit($$$) { $$$ } }"
+          selector: method_definition
+      - pattern:
+          context: "class C { onModuleInit($$$) { $$$ } }"
+          selector: method_definition
+    stopBy: end

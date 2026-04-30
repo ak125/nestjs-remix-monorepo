@@ -142,9 +142,25 @@ export class RagPipelineService implements OnModuleInit, OnModuleDestroy {
 
   // ── Lifecycle ───────────────────────────────────────────────────────────────
 
-  async onModuleInit(): Promise<void> {
-    this.logger.log('RagPipelineService startup: scanning orphaned runs...');
-    await this.handleOrphanedRuns();
+  /**
+   * Crash-recovery non-bloquant.
+   *
+   * `handleOrphanedRuns()` fait des appels Supabase (`getLock`, `getRun`,
+   * `updateRun`, `releaseLock`). Awaiter ici bloquerait `app.listen()`
+   * (NestJS exécute tous les `onModuleInit` sérialement durant la phase
+   * init) → `/health` muet → exit 124 sur `perf-gates.yml`.
+   *
+   * Fire-and-forget : la recovery ne gate aucune requête entrante (lock
+   * vérifié à chaque `launch()`). Le `try/catch` interne (ligne ~196)
+   * garde la sémantique d'origine.
+   *
+   * Voir `.claude/rules/backend.md` § "Non-blocking onModuleInit".
+   */
+  onModuleInit(): void {
+    this.logger.log(
+      'RagPipelineService startup: scanning orphaned runs en arrière-plan...',
+    );
+    void this.handleOrphanedRuns();
   }
 
   onModuleDestroy(): void {
