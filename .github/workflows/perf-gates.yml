@@ -7,6 +7,11 @@ on:
       - 'frontend/**'
       - 'backend/src/**'
       - 'packages/**'
+      # Self-trigger : changes to this workflow (lighthouse budgets,
+      # permissions, env, paths) must re-run the workflow to validate
+      # them. Without this entry, fixes to the workflow file silently
+      # ship without CI verification on the same PR.
+      - '.github/workflows/perf-gates.yml'
 
 # Thresholds : voir frontend/lighthouse-budget.json (calibré sur baseline
 # mesuré, anti-régression). Documentation + procédure de mise à jour dans
