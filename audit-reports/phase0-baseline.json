@@ -17,7 +17,7 @@
   "knip": {
     "unused_files": 362,
     "unused_exports": 218,
-    "unused_types": 310,
+    "unused_types": 326,
     "unused_dependencies": 4,
     "unused_dev_dependencies": 4,
     "unlisted_dependencies": 9,
