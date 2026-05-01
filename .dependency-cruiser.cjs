@@ -1,7 +1,7 @@
 /**
  * dependency-cruiser config for AutoMecanik monorepo
  *
- * Phase 1 partial (2026-05-01) — 5 rules promoted from warn to error after
+ * Phase 1 (2026-05-01, PR #260) — 5 rules promoted from warn to error after
  * audit confirmed zero existing violations on each :
  *   - not-to-deprecated
  *   - frontend-not-to-backend-src
@@ -9,11 +9,16 @@
  *   - not-to-test
  *   - not-to-spec
  *
+ * Phase 1 bis (2026-05-01) — no-non-package-json promoted to error after the
+ * 3 phantom deps (file-type, @radix-ui/react-collapsible, cookie) were
+ * properly declared in backend/package.json and frontend/package.json.
+ * Anti-bricolage : the violations were real bugs (transitive accidents),
+ * not legitimate exceptions — fixed root cause instead of adding allowlist.
+ *
  * Rules with existing technical debt remain warn until cleanup :
  *   - no-circular         (41 violations, Phase 2)
  *   - no-orphans          (48 violations, Phase 2)
  *   - no-deep-module-access (77 violations, Phase 2)
- *   - no-non-package-json (3 violations, Phase 1 bis after allowlist)
  */
 /** @type {import('dependency-cruiser').IConfiguration} */
 module.exports = {
@@ -105,9 +110,9 @@ module.exports = {
     },
     {
       name: 'no-non-package-json',
-      severity: 'warn',
+      severity: 'error',
       comment:
-        'Only allow deps declared in package.json (prevents phantom deps). Promote to error after Phase 1 cleanup.',
+        'Only allow deps declared in package.json (prevents phantom deps). Promoted to error 2026-05-01 (Phase 1 bis, after fixing 3 transitive accidents : file-type, @radix-ui/react-collapsible, cookie).',
       from: {},
       to: { dependencyTypes: ['npm-no-pkg', 'npm-unknown'] },
     },
