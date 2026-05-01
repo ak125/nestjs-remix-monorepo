@@ -243,3 +243,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
 - **Décision** : Merge branch 'main' into feat/p3-diag-canon-flat-map-composite-fk (+7 other commits)
 - **Sortie** : PR #262 | commits 683178d4 2a4cf7d7 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
+
+## 2026-05-02 — feat/p3-diag-canon-flat-map-composite-fk (auto)
+
+- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
+- **Décision** : Merge branch 'main' into feat/p3-diag-canon-flat-map-composite-fk (+10 other commits)
+- **Sortie** : PR #262 | commits 9b94dc04 0862f103 a0c05032 683178d4 2a4cf7d7 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
