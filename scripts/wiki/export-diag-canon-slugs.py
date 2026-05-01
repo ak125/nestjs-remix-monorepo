@@ -55,9 +55,14 @@ from pathlib import Path
 
 
 def get_supabase_config() -> tuple[str, str]:
-    """Reads SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY from env. Both required."""
-    url = os.environ.get("SUPABASE_URL", "").rstrip("/")
-    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+    """Reads SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY from env. Both required.
+
+    .strip() removes trailing whitespace including newlines that may sneak in
+    when secrets are copy-pasted via GitHub UI (urllib rejects control chars
+    in hostnames with InvalidURL).
+    """
+    url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
+    key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "").strip()
     if not url:
         sys.stderr.write("FATAL: SUPABASE_URL missing in env\n")
         sys.exit(2)
