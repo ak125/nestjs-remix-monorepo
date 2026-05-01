@@ -237,3 +237,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
 - **Décision** : fix(p3): wrap tsx -e parse step in async iife (cjs forbids top-level await) (+5 other commits)
 - **Sortie** : PR #262 | commits 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
+
+## 2026-05-02 — feat/p3-diag-canon-flat-map-composite-fk (auto)
+
+- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
+- **Décision** : Merge branch 'main' into feat/p3-diag-canon-flat-map-composite-fk (+7 other commits)
+- **Sortie** : PR #262 | commits 683178d4 2a4cf7d7 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
