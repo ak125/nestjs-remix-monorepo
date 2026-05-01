@@ -14,12 +14,14 @@ name: diag-canon-slugs-export
 # differs. So a no-op run = no commit, no PR noise.
 #
 # Required secrets (monorepo Settings → Secrets and variables → Actions) :
-#   - SUPABASE_DB_PASSWORD : password for postgres user (port 5432 direct)
+#   - SUPABASE_URL : Supabase project base URL (already in monorepo CI secrets)
+#   - SUPABASE_SERVICE_ROLE_KEY : RLS-bypass JWT for PostgREST queries
+#                                  (already in monorepo CI secrets)
 #   - WIKI_REPO_TOKEN : PAT or GitHub App token with contents:write on
 #                       ak125/automecanik-wiki (for committing exports/)
 #
-# Optional :
-#   - SUPABASE_PROJECT_REF : default is the prod project ref (hardcoded in script)
+# Note : the script uses Supabase REST API (PostgREST) via stdlib urllib.request.
+# No psycopg2/SUPABASE_DB_PASSWORD needed. Reuses existing secrets.
 #
 # Refs :
 #   - ADR-033 §"Phase 3" vault PR #108 commit 77085ef
@@ -54,13 +56,10 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Python deps
-        run: |
-          python3 -m pip install --quiet psycopg2-binary
-
       - name: Run export
         env:
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           python3 monorepo/scripts/wiki/export-diag-canon-slugs.py \
             --output /tmp/diag-canon-slugs.json
