@@ -213,3 +213,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
 - **Décision** : feat(p3): diag-canon flat map + composite FK validator + drop hardcoded fallback
 - **Sortie** : PR aucune | commits 714b742e
+
+## 2026-05-01 — Roadmap globale 2026 + Chantier C ADR-033 READY
+
+- **Branche** : `audit/2026-05-01-roadmap-chantier-c-clean` (vault)
+- **Décision** : Re-cadrage ADR-033 → Chantier C (1/9) via MOC-Roadmap-2026 + verdict wiki-readiness-check READY après 2 hotfixes cron PR-D
+- **Sortie** : PRs vault #128 #131 | monorepo #256 #257 | commits b3f820a ec17aaa b70ca1e6 097d3558 | fichiers `ops/moc/MOC-Roadmap-2026.md`, `scripts/wiki/export-diag-canon-slugs.py`
+
+## 2026-05-01 — ADR-033 wave 2/3 closed + canonisation vault
+
+- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
+- **Décision** : Wave Phase 2/3 ADR-033 livrée (10 PRs : rag #7 + wiki #10 + monorepo #249 #250 #251 #253 + 3 fixes) ; verdict wiki-readiness-check READY 6/6 atteint run #25211876381 ; knowledge canonisé vault PR #129
+- **Sortie** : PRs vault #129 | monorepo #249 #250 #251 #253 | rag #7 | wiki #10 | commits 224e4c63 7d77be6d d0b32a0b 96837b95 b6a73af8 c6c8eae4 | fichiers `workspaces/wiki/`, `scripts/wiki/`, `.github/workflows/{wiki-validate,diag-canon-slugs-export,wiki-readiness-check}.yml`, `ledger/knowledge/adr-033-wave-2-closed-20260501.md`
