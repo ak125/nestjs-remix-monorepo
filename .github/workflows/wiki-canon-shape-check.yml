@@ -1,0 +1,73 @@
+name: wiki-canon-shape-check
+
+# ADR-033 P3 — Drift detection layer 3.
+#
+# Independently re-parses the diagnostic canon published in
+# `automecanik-wiki/exports/diag-canon.json` against the Zod TS source-of-truth
+# (`backend/src/config/diag-canon.schema.ts`). Catches the case where the
+# wiki canon is edited manually outside the standard cron flow.
+#
+# Why no `actions/checkout` of the wiki repo : `ak125/automecanik-wiki` is
+# public (verified `gh repo view --json isPrivate` = `false`). We `curl` the
+# canon via raw GitHub URL — a few KB, no token, no clone of the ~2800
+# `recycled/` files. Faster + no `WIKI_REPO_TOKEN` dependency.
+#
+# `curl -fsSL` exits non-zero if the file is absent or unreachable, so the
+# workflow fails loudly rather than passing silently.
+#
+# Refs : plan `tat-adr-033-wave-abundant-crown.md` §C2.
+
+on:
+  schedule:
+    # 03:00 UTC daily — runs after the cron 02:00 UTC export
+    # (diag-canon-slugs-export.yml). If the export pushed a shape change the
+    # backend Zod schema does not recognize, we catch it within ~24h max.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/src/config/diag-canon.schema.ts'
+      - 'backend/src/config/diag-canon-jsonschema.ts'
+      - 'scripts/wiki/print-diag-canon-jsonschema.ts'
+
+permissions:
+  contents: read
+
+jobs:
+  shape-check:
+    name: 🔎 Parse wiki canon against Zod TS (drift detection)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci --ignore-scripts
+
+      - name: Fetch wiki canon (public repo, no token)
+        run: |
+          mkdir -p /tmp/wiki-canon-mock/exports
+          curl -fsSL \
+            https://raw.githubusercontent.com/ak125/automecanik-wiki/main/exports/diag-canon.json \
+            -o /tmp/wiki-canon-mock/exports/diag-canon.json
+          jq . /tmp/wiki-canon-mock/exports/diag-canon.json > /dev/null
+          echo "[fetch] $(wc -c < /tmp/wiki-canon-mock/exports/diag-canon.json) bytes"
+          jq '. | {version, generated_at, n_systems: (.systems | length), n_symptoms: (.symptoms | length)}' \
+            /tmp/wiki-canon-mock/exports/diag-canon.json
+
+      - name: Parse wiki canon against Zod TS source-of-truth
+        env:
+          # The cross-source test in backend/src/config/diag-canon.schema.test.ts
+          # reads `${WIKI_REPO_PATH}/exports/diag-canon.json`. We point it at
+          # the mocked layout we just populated.
+          WIKI_REPO_PATH: /tmp/wiki-canon-mock
+          # ts-jest compiles backend tsconfig + zod-to-json-schema deep types,
+          # default 2GB heap is borderline. 4GB is comfortable on GH runners (7GB).
+          NODE_OPTIONS: '--max-old-space-size=4096'
+        run: |
+          cd backend
+          npx jest src/config/diag-canon.schema.test.ts --runInBand

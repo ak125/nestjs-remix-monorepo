@@ -56,7 +56,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Run export (P3 — emits 3 artifacts)
+      - name: Run export — Python (data only, 2 files)
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -70,9 +70,55 @@ jobs:
           echo "---flat map diag-canon.json (P3 cible)---"
           head -10 /tmp/canon/diag-canon.json
           echo "[size] $(wc -c < /tmp/canon/diag-canon.json) bytes, $(jq '.symptoms | length' /tmp/canon/diag-canon.json) symptoms, $(jq '.systems | length' /tmp/canon/diag-canon.json) systems"
+
+      - name: Setup Node + install monorepo deps (for tsx + zod-to-json-schema)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: monorepo/package-lock.json
+      - run: cd monorepo && npm ci --ignore-scripts
+
+      - name: Precheck — tsx executable available
+        run: |
+          cd monorepo
+          npm exec tsx -- --version
+          # If this fails: tsx is hoisted from frontend/. If install layout
+          # changes, add tsx to root devDependency rather than rely on hoist.
+
+      - name: Generate JSON Schema (TS step, derived from Zod SoT)
+        # zod-to-json-schema reads `backend/src/config/diag-canon.schema.ts`
+        # (single source of truth) and emits the structural JSON Schema.
+        # Python build_flat_schema() was removed in this PR — the schema is
+        # never written by hand any more.
+        run: |
+          cd monorepo
+          npx tsx scripts/wiki/print-diag-canon-jsonschema.ts \
+            > /tmp/canon/diag-canon.schema.json
+          jq . /tmp/canon/diag-canon.schema.json > /dev/null
           echo "---schema diag-canon.schema.json---"
           head -10 /tmp/canon/diag-canon.schema.json
           echo "[size] $(wc -c < /tmp/canon/diag-canon.schema.json) bytes"
+
+      - name: Verify Zod parse on real data (drift fail-fast)
+        # ESM dynamic import — robust with TS + tsx + module interop.
+        # If the data exported by Python does not match the Zod canon
+        # (e.g. a schema bump landed without bumping `version` literal),
+        # this step fails before anything is committed to wiki.
+        run: |
+          cd monorepo
+          npx tsx -e "
+            const { DiagCanon } = await import('./backend/src/config/diag-canon.schema.ts');
+            const fs = await import('node:fs');
+            const data = JSON.parse(fs.readFileSync('/tmp/canon/diag-canon.json', 'utf8'));
+            const result = DiagCanon.safeParse(data);
+            if (!result.success) {
+              console.error('ZOD PARSE FAIL — shape drift detected:');
+              console.error(JSON.stringify(result.error.format(), null, 2));
+              process.exit(1);
+            }
+            console.log('OK — diag-canon.json parses against Zod canon');
+          "
 
       - name: Checkout automecanik-wiki
         uses: actions/checkout@v4
