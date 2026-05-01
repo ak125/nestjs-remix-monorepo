@@ -225,3 +225,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
 - **Décision** : Wave Phase 2/3 ADR-033 livrée (10 PRs : rag #7 + wiki #10 + monorepo #249 #250 #251 #253 + 3 fixes) ; verdict wiki-readiness-check READY 6/6 atteint run #25211876381 ; knowledge canonisé vault PR #129
 - **Sortie** : PRs vault #129 | monorepo #249 #250 #251 #253 | rag #7 | wiki #10 | commits 224e4c63 7d77be6d d0b32a0b 96837b95 b6a73af8 c6c8eae4 | fichiers `workspaces/wiki/`, `scripts/wiki/`, `.github/workflows/{wiki-validate,diag-canon-slugs-export,wiki-readiness-check}.yml`, `ledger/knowledge/adr-033-wave-2-closed-20260501.md`
+
+## 2026-05-01 — feat/p3-diag-canon-flat-map-composite-fk (auto)
+
+- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
+- **Décision** : feat(p3): zod ts as single sot, schema derived, drift via parse runtime (+3 other commits)
+- **Sortie** : PR aucune | commits 4e24f1b9 85214f84 9a6b9240 714b742e
