@@ -2,7 +2,7 @@
 module: admin
 sources:
 - backend/src/modules/admin
-last_scan: '2026-04-30'
+last_scan: '2026-05-01'
 primary_files:
 - backend/src/modules/admin/admin.module.ts
 - backend/src/modules/admin/controllers/admin-buying-guide-preview.controller.ts

@@ -14,12 +14,14 @@ name: diag-canon-slugs-export
 # differs. So a no-op run = no commit, no PR noise.
 #
 # Required secrets (monorepo Settings → Secrets and variables → Actions) :
-#   - SUPABASE_DB_PASSWORD : password for postgres user (port 5432 direct)
+#   - SUPABASE_URL : Supabase project base URL (already in monorepo CI secrets)
+#   - SUPABASE_SERVICE_ROLE_KEY : RLS-bypass JWT for PostgREST queries
+#                                  (already in monorepo CI secrets)
 #   - WIKI_REPO_TOKEN : PAT or GitHub App token with contents:write on
 #                       ak125/automecanik-wiki (for committing exports/)
 #
-# Optional :
-#   - SUPABASE_PROJECT_REF : default is the prod project ref (hardcoded in script)
+# Note : the script uses Supabase REST API (PostgREST) via stdlib urllib.request.
+# No psycopg2/SUPABASE_DB_PASSWORD needed. Reuses existing secrets.
 #
 # Refs :
 #   - ADR-033 §"Phase 3" vault PR #108 commit 77085ef
@@ -54,20 +56,23 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Python deps
-        run: |
-          python3 -m pip install --quiet psycopg2-binary
-
-      - name: Run export
+      - name: Run export (P3 — emits 3 artifacts)
         env:
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
+          mkdir -p /tmp/canon
           python3 monorepo/scripts/wiki/export-diag-canon-slugs.py \
-            --output /tmp/diag-canon-slugs.json
-          echo "---generated---"
-          head -20 /tmp/diag-canon-slugs.json
-          echo "..."
-          echo "[size] $(wc -c < /tmp/diag-canon-slugs.json) bytes, $(jq 'length' /tmp/diag-canon-slugs.json) symptoms"
+            --output-dir /tmp/canon
+          echo "---legacy diag-canon-slugs.json---"
+          head -10 /tmp/canon/diag-canon-slugs.json
+          echo "[size] $(wc -c < /tmp/canon/diag-canon-slugs.json) bytes, $(jq 'length' /tmp/canon/diag-canon-slugs.json) symptoms"
+          echo "---flat map diag-canon.json (P3 cible)---"
+          head -10 /tmp/canon/diag-canon.json
+          echo "[size] $(wc -c < /tmp/canon/diag-canon.json) bytes, $(jq '.symptoms | length' /tmp/canon/diag-canon.json) symptoms, $(jq '.systems | length' /tmp/canon/diag-canon.json) systems"
+          echo "---schema diag-canon.schema.json---"
+          head -10 /tmp/canon/diag-canon.schema.json
+          echo "[size] $(wc -c < /tmp/canon/diag-canon.schema.json) bytes"
 
       - name: Checkout automecanik-wiki
         uses: actions/checkout@v4
@@ -77,42 +82,51 @@ jobs:
           token: ${{ secrets.WIKI_REPO_TOKEN }}
           ref: main
 
-      - name: Diff vs current wiki exports/diag-canon-slugs.json
+      - name: Diff vs current wiki exports/ (3 files)
         id: diff
         run: |
           mkdir -p automecanik-wiki/exports
-          if [ ! -f automecanik-wiki/exports/diag-canon-slugs.json ]; then
-            echo "diff_status=initial" >> "$GITHUB_OUTPUT"
-            echo "[diff] no existing file in wiki — initial export"
-          elif diff -q /tmp/diag-canon-slugs.json automecanik-wiki/exports/diag-canon-slugs.json > /dev/null; then
+          changed=0
+          for f in diag-canon-slugs.json diag-canon.json diag-canon.schema.json; do
+            if [ ! -f "automecanik-wiki/exports/$f" ]; then
+              echo "[diff] $f: missing in wiki — will create"
+              changed=1
+            elif diff -q "/tmp/canon/$f" "automecanik-wiki/exports/$f" > /dev/null; then
+              echo "[diff] $f: identical (idempotent)"
+            else
+              echo "[diff] $f: content changed — will update"
+              diff -u "automecanik-wiki/exports/$f" "/tmp/canon/$f" | head -20 || true
+              changed=1
+            fi
+          done
+          if [ $changed -eq 0 ]; then
             echo "diff_status=identical" >> "$GITHUB_OUTPUT"
-            echo "[diff] no change — skipping commit (idempotent)"
           else
             echo "diff_status=changed" >> "$GITHUB_OUTPUT"
-            echo "[diff] content changed — will commit"
-            diff -u automecanik-wiki/exports/diag-canon-slugs.json /tmp/diag-canon-slugs.json | head -40 || true
           fi
 
       - name: Commit and push to wiki repo
         if: steps.diff.outputs.diff_status != 'identical'
         run: |
-          cp /tmp/diag-canon-slugs.json automecanik-wiki/exports/diag-canon-slugs.json
+          cp /tmp/canon/diag-canon-slugs.json automecanik-wiki/exports/diag-canon-slugs.json
+          cp /tmp/canon/diag-canon.json automecanik-wiki/exports/diag-canon.json
+          cp /tmp/canon/diag-canon.schema.json automecanik-wiki/exports/diag-canon.schema.json
           cd automecanik-wiki
           git config user.name "automecanik-bot"
           git config user.email "automecanik-bot@users.noreply.github.com"
-          git add exports/diag-canon-slugs.json
+          git add exports/diag-canon-slugs.json exports/diag-canon.json exports/diag-canon.schema.json
           DATE=$(date -u +%Y-%m-%d)
-          git commit -m "chore(diag-canon-slugs): nightly export ${DATE}" \
+          git commit -m "chore(diag-canon): nightly export ${DATE}" \
             -m "Auto-generated by nestjs-remix-monorepo .github/workflows/diag-canon-slugs-export.yml" \
             -m "Source : SELECT FROM public.__diag_symptom JOIN __diag_system" \
-            -m "Schema : ADR-033 §\"Phase 3\" canon FK source for diagnostic_relations[].symptom_slug" \
+            -m "Files : diag-canon-slugs.json (legacy array, transition) + diag-canon.json (P3 flat map) + diag-canon.schema.json (forme structurelle)" \
             -m "DO NOT EDIT manually — re-run the workflow if you need to refresh."
           git push origin main
 
-      - name: Upload export as artifact
+      - name: Upload exports as artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: diag-canon-slugs-${{ github.run_id }}
-          path: /tmp/diag-canon-slugs.json
+          name: diag-canon-${{ github.run_id }}
+          path: /tmp/canon/
           retention-days: 30
