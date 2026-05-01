@@ -1,7 +1,25 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck — see file-level comment below.
 /**
  * diag-canon-jsonschema.ts — pure JSON Schema builder, derived from the Zod
  * canon `diag-canon.schema.ts`. Importable by Jest specs and by the CLI
  * `scripts/wiki/print-diag-canon-jsonschema.ts`.
+ *
+ * The `// @ts-nocheck` directive at the top is intentional: the combination
+ * of `DiagCanon`'s chained type (`.strict().superRefine(...).readonly()`)
+ * and the recursive generics of `zodToJsonSchema` causes ts-jest to spend
+ * O(N^k) memory resolving the call site, leading to OOM in CI (run
+ * 25234999710 confirmed: 4036MB → 4131MB → process exit 134). Targeted
+ * `@ts-expect-error` does not stop the calculation, only the error
+ * emission. Various cast strategies (ZodTypeAny, unknown → ZodType<unknown>)
+ * also do not bypass since the inference happens on the function's own
+ * generic resolution.
+ *
+ * The file has 1 imported function and 1 exported wrapper of 5 lines. No
+ * business logic. Both libs (zod, zod-to-json-schema) are externally typed
+ * and validated. Skipping type-check on this micro-file is the cheapest
+ * non-invasive fix; runtime behavior is fully verified by the co-located
+ * spec (idempotence + shape).
  *
  * Lives in `backend/src/config/` (not in `scripts/wiki/`) so that the Jest
  * config (`testRegex: '.*\\.test\\.ts$'`, `roots: ['src/', 'tests/']`) can
@@ -27,17 +45,6 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 import { DiagCanon } from './diag-canon.schema';
 
 export function buildDiagCanonJsonSchema(): object {
-  // The combination of `DiagCanon`'s chained type
-  // (`.strict().superRefine(...).readonly()`) and the deep generic
-  // signature of `zodToJsonSchema` exceeds TypeScript's instantiation
-  // depth limit (TS2589) when compiled by ts-jest in strict mode.
-  // Tsx/esbuild handles it without type checking, but ts-jest does
-  // type-check. Various cast strategies (`ZodTypeAny`, `unknown →
-  // ZodType<unknown>`) do not bypass the issue because the inference
-  // happens at the call site, not on the argument's type.
-  // Targeted ts-expect-error : the error is real but cosmetic — runtime
-  // behavior is verified by the spec (idempotence + shape).
-  // @ts-expect-error TS2589 — zod-to-json-schema deep generic inference
   return zodToJsonSchema(DiagCanon, {
     target: 'jsonSchema2019-09',
     $refStrategy: 'none',
