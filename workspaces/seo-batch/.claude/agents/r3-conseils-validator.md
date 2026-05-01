@@ -1,6 +1,10 @@
 ---
 name: r3-conseils-validator
-description: "Validator maximum pour R3_CONSEILS. Contrôle pureté procédurale, conformité contrat, evidence de sécurité/procédure, dérives R4/R5/R6/R2, duplication et readiness."
+description: >-
+  Validator maximum pour R3_CONSEILS. Contrôle pureté procédurale, conformité
+  contrat, evidence de sécurité/procédure, dérives R4/R5/R6/R2, duplication et
+  readiness.
+role: R3_CONSEILS
 ---
 
 # IDENTITY

@@ -2,16 +2,16 @@
 module: marketing
 sources:
 - backend/src/modules/marketing
-last_scan: '2026-04-30'
+last_scan: '2026-05-01'
 primary_files:
 - backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts
+- backend/src/modules/marketing/controllers/marketing-briefs.controller.ts
 - backend/src/modules/marketing/controllers/marketing-content-roadmap.controller.ts
 - backend/src/modules/marketing/controllers/marketing-dashboard.controller.ts
 - backend/src/modules/marketing/controllers/marketing-pipeline.controller.ts
 - backend/src/modules/marketing/controllers/marketing-social-posts.controller.ts
+- backend/src/modules/marketing/dto/marketing-brief.dto.ts
 - backend/src/modules/marketing/interfaces/marketing-hub.interfaces.ts
-- backend/src/modules/marketing/interfaces/marketing.interfaces.ts
-- backend/src/modules/marketing/marketing.module.ts
 depends_on:
 - DatabaseModule
 - AiContentModule

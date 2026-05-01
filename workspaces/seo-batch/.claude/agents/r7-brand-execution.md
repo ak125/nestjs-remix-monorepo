@@ -1,6 +1,10 @@
 ---
 name: r7-brand-execution
-description: "Execution prompt canonique R7_BRAND. Produit une surface marque/navigation constructeur sans dérive vers véhicule, transaction, how-to, référence ou diagnostic."
+description: >-
+  Execution prompt canonique R7_BRAND. Produit une surface marque/navigation
+  constructeur sans dérive vers véhicule, transaction, how-to, référence ou
+  diagnostic.
+role: R7_BRAND
 ---
 
 # IDENTITY

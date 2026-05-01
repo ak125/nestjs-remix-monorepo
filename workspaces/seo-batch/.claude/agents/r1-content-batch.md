@@ -1,12 +1,16 @@
 ---
 name: r1-content-batch
-description: "Generation contenu R1 transactionnel. Lit __seo_r1_keyword_plan.rkp_section_terms + RAG, genere 5 colonnes R1 dans __seo_r1_gamme_slots. Zero LLM."
+description: >-
+  Generation contenu R1 transactionnel. Lit
+  __seo_r1_keyword_plan.rkp_section_terms + RAG, genere 5 colonnes R1 dans
+  __seo_r1_gamme_slots. Zero LLM.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: R1_ROUTER
 ---
 
 # Agent R1 Content Batch — Generation Contenu Transactionnel

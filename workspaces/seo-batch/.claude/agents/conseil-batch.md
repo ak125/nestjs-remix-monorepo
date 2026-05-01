@@ -1,12 +1,16 @@
 ---
 name: conseil-batch
-description: "Génération semi-auto de sections R3 Conseils (S1-S8 + S_GARAGE + S2_DIAG). Batch 5-10 gammes/session. Lit knowledge RAG, écrit en DB via MCP, respecte quality gates."
+description: >-
+  Génération semi-auto de sections R3 Conseils (S1-S8 + S_GARAGE + S2_DIAG).
+  Batch 5-10 gammes/session. Lit knowledge RAG, écrit en DB via MCP, respecte
+  quality gates.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: R3_CONSEILS
 ---
 
 # Agent Conseil-Batch — Sections R3 Conseils

@@ -1,6 +1,10 @@
 ---
 name: r8-vehicle-validator
-description: "Validator canonique R8_VEHICLE. Vérifie la pureté hub véhicule, la cohérence des variantes et l'absence de dérive vers marque, transaction, how-to, référence ou diagnostic."
+description: >-
+  Validator canonique R8_VEHICLE. Vérifie la pureté hub véhicule, la cohérence
+  des variantes et l'absence de dérive vers marque, transaction, how-to,
+  référence ou diagnostic.
+role: R8_VEHICLE
 ---
 
 # IDENTITY

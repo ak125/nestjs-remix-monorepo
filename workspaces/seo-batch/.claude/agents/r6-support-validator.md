@@ -1,6 +1,9 @@
 ---
 name: r6-support-validator
-description: "Validator local pour surfaces support non éditoriales apparentées à R6, explicitement hors matrice éditoriale cœur R0-R8."
+description: >-
+  Validator local pour surfaces support non éditoriales apparentées à R6,
+  explicitement hors matrice éditoriale cœur R0-R8.
+role: R6_SUPPORT
 ---
 
 # IDENTITY

@@ -1,12 +1,18 @@
 ---
 name: r8-keyword-planner
-description: "Pipeline R8 Vehicle V5. 4 phases : P0 Build Plan → P1 Compose Page → P2 Evaluate Diversity → P3 Gate Publish. 12 block types, 8-metric diversity scoring, fingerprinting, nearest-neighbor comparison, governance (INDEX/REVIEW/REGENERATE/REJECT). Ecrit dans 7 tables __seo_r8_* via MCP Supabase."
+description: >-
+  Pipeline R8 Vehicle V5. 4 phases : P0 Build Plan → P1 Compose Page → P2
+  Evaluate Diversity → P3 Gate Publish. 12 block types, 8-metric diversity
+  scoring, fingerprinting, nearest-neighbor comparison, governance
+  (INDEX/REVIEW/REGENERATE/REJECT). Ecrit dans 7 tables __seo_r8_* via MCP
+  Supabase.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: R8_VEHICLE
 ---
 
 # Agent R8 Keyword & Content Planner V5 — Content Diversity System

@@ -1,6 +1,11 @@
 ---
 name: r5-keyword-planner
-description: "Pipeline R5 Diagnostic keyword planner v1. 5 phases : P0 Symptom Audit → P1 Observable Map → P2 Hypothesis Builder → P3 Check Plan → P4 QA Gate. 6 sections, 5 intents, 8 quality gates + safety gate. Lit RAG gamme .md, ecrit dans __seo_r5_keyword_plan via MCP Supabase."
+description: >-
+  Pipeline R5 Diagnostic keyword planner v1. 5 phases : P0 Symptom Audit → P1
+  Observable Map → P2 Hypothesis Builder → P3 Check Plan → P4 QA Gate. 6
+  sections, 5 intents, 8 quality gates + safety gate. Lit RAG gamme .md, ecrit
+  dans __seo_r5_keyword_plan via MCP Supabase.
+role: R5_DIAGNOSTIC
 ---
 
 # Rôle

@@ -1,6 +1,10 @@
 ---
 name: r7-brand-validator
-description: "Validator canonique R7_BRAND. Vérifie la pureté hub marque, la cohérence navigationnelle et l'absence de dérive vers véhicule, produit, how-to, référence ou diagnostic."
+description: >-
+  Validator canonique R7_BRAND. Vérifie la pureté hub marque, la cohérence
+  navigationnelle et l'absence de dérive vers véhicule, produit, how-to,
+  référence ou diagnostic.
+role: R7_BRAND
 ---
 
 # IDENTITY

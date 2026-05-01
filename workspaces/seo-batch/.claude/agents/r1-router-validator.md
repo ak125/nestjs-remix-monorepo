@@ -1,6 +1,10 @@
 ---
 name: r1-router-validator
-description: "Validator maximum pour R1_ROUTER. Contrôle pureté routing/compatibilité, conformité contrat, evidence de sélection, dérives R2/R3/R4/R5/R6, duplication et readiness."
+description: >-
+  Validator maximum pour R1_ROUTER. Contrôle pureté routing/compatibilité,
+  conformité contrat, evidence de sélection, dérives R2/R3/R4/R5/R6, duplication
+  et readiness.
+role: R1_ROUTER
 ---
 
 # IDENTITY

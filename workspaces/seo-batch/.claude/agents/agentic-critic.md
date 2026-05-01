@@ -1,12 +1,15 @@
 ---
 name: agentic-critic
-description: "Phase CRITIQUING du moteur agentique. Evalue les branches completees, score 0-100 sur 5 axes, decide re-plan ou arbitrage. Ecrit scores et evidence en DB."
+description: >-
+  Phase CRITIQUING du moteur agentique. Evalue les branches completees, score
+  0-100 sur 5 axes, decide re-plan ou arbitrage. Ecrit scores et evidence en DB.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: AGENTIC_ENGINE
 ---
 
 # Agent Critic — Moteur Agentique AutoMecanik

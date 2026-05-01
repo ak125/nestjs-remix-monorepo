@@ -1,0 +1,132 @@
+name: diag-canon-slugs-export
+
+# ADR-033 §"Phase 3" — Nightly export of canon __diag_symptom slugs from
+# production DB to automecanik-wiki/exports/diag-canon-slugs.json.
+#
+# This file is consumed by :
+#   - monorepo PR-C validator (scripts/wiki/validate-gamme-diagnostic-relations.py)
+#   - monorepo PR-E migration (scripts/wiki/migrate-symptoms-to-relations.ts)
+#   - wiki repo own validator (_scripts/quality-gates.py via FK lookup)
+#
+# Idempotent : the export script writes deterministic JSON (sorted keys,
+# 2-space indent, trailing newline). The job diffs the new export vs the
+# current committed version and only commits if the content actually
+# differs. So a no-op run = no commit, no PR noise.
+#
+# Required secrets (monorepo Settings → Secrets and variables → Actions) :
+#   - SUPABASE_URL : Supabase project base URL (already in monorepo CI secrets)
+#   - SUPABASE_SERVICE_ROLE_KEY : RLS-bypass JWT for PostgREST queries
+#                                  (already in monorepo CI secrets)
+#   - WIKI_REPO_TOKEN : PAT or GitHub App token with contents:write on
+#                       ak125/automecanik-wiki (for committing exports/)
+#
+# Note : the script uses Supabase REST API (PostgREST) via stdlib urllib.request.
+# No psycopg2/SUPABASE_DB_PASSWORD needed. Reuses existing secrets.
+#
+# Refs :
+#   - ADR-033 §"Phase 3" vault PR #108 commit 77085ef
+#   - canon DB convention : memory diag-symptom-db-convention.md
+#   - sibling : monorepo PR-C ADR-033 validator (consumer of this export)
+#   - plan rev 3 PR-D : /home/deploy/.claude/plans/mvp-et-raw-et-wobbly-brooks.md
+
+on:
+  schedule:
+    # Quotidien 02:00 UTC (avant les autres workflows scheduled lundi 03:00 UTC
+    # qui en sont consommateurs : wiki-validate.yml drift detection)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+  # Pas de trigger sur PR — le script connecte à la prod DB, on ne veut pas
+  # le déclencher en boucle sur chaque PR review.
+
+permissions:
+  contents: read
+
+jobs:
+  export-and-commit:
+    name: 🌙 Nightly export canon __diag_symptom slugs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v4
+        with:
+          path: monorepo
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run export (P3 — emits 3 artifacts)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          mkdir -p /tmp/canon
+          python3 monorepo/scripts/wiki/export-diag-canon-slugs.py \
+            --output-dir /tmp/canon
+          echo "---legacy diag-canon-slugs.json---"
+          head -10 /tmp/canon/diag-canon-slugs.json
+          echo "[size] $(wc -c < /tmp/canon/diag-canon-slugs.json) bytes, $(jq 'length' /tmp/canon/diag-canon-slugs.json) symptoms"
+          echo "---flat map diag-canon.json (P3 cible)---"
+          head -10 /tmp/canon/diag-canon.json
+          echo "[size] $(wc -c < /tmp/canon/diag-canon.json) bytes, $(jq '.symptoms | length' /tmp/canon/diag-canon.json) symptoms, $(jq '.systems | length' /tmp/canon/diag-canon.json) systems"
+          echo "---schema diag-canon.schema.json---"
+          head -10 /tmp/canon/diag-canon.schema.json
+          echo "[size] $(wc -c < /tmp/canon/diag-canon.schema.json) bytes"
+
+      - name: Checkout automecanik-wiki
+        uses: actions/checkout@v4
+        with:
+          repository: ak125/automecanik-wiki
+          path: automecanik-wiki
+          token: ${{ secrets.WIKI_REPO_TOKEN }}
+          ref: main
+
+      - name: Diff vs current wiki exports/ (3 files)
+        id: diff
+        run: |
+          mkdir -p automecanik-wiki/exports
+          changed=0
+          for f in diag-canon-slugs.json diag-canon.json diag-canon.schema.json; do
+            if [ ! -f "automecanik-wiki/exports/$f" ]; then
+              echo "[diff] $f: missing in wiki — will create"
+              changed=1
+            elif diff -q "/tmp/canon/$f" "automecanik-wiki/exports/$f" > /dev/null; then
+              echo "[diff] $f: identical (idempotent)"
+            else
+              echo "[diff] $f: content changed — will update"
+              diff -u "automecanik-wiki/exports/$f" "/tmp/canon/$f" | head -20 || true
+              changed=1
+            fi
+          done
+          if [ $changed -eq 0 ]; then
+            echo "diff_status=identical" >> "$GITHUB_OUTPUT"
+          else
+            echo "diff_status=changed" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push to wiki repo
+        if: steps.diff.outputs.diff_status != 'identical'
+        run: |
+          cp /tmp/canon/diag-canon-slugs.json automecanik-wiki/exports/diag-canon-slugs.json
+          cp /tmp/canon/diag-canon.json automecanik-wiki/exports/diag-canon.json
+          cp /tmp/canon/diag-canon.schema.json automecanik-wiki/exports/diag-canon.schema.json
+          cd automecanik-wiki
+          git config user.name "automecanik-bot"
+          git config user.email "automecanik-bot@users.noreply.github.com"
+          git add exports/diag-canon-slugs.json exports/diag-canon.json exports/diag-canon.schema.json
+          DATE=$(date -u +%Y-%m-%d)
+          git commit -m "chore(diag-canon): nightly export ${DATE}" \
+            -m "Auto-generated by nestjs-remix-monorepo .github/workflows/diag-canon-slugs-export.yml" \
+            -m "Source : SELECT FROM public.__diag_symptom JOIN __diag_system" \
+            -m "Files : diag-canon-slugs.json (legacy array, transition) + diag-canon.json (P3 flat map) + diag-canon.schema.json (forme structurelle)" \
+            -m "DO NOT EDIT manually — re-run the workflow if you need to refresh."
+          git push origin main
+
+      - name: Upload exports as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diag-canon-${{ github.run_id }}
+          path: /tmp/canon/
+          retention-days: 30

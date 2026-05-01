@@ -1,12 +1,16 @@
 ---
 name: agentic-planner
-description: "Phase PLANNING du moteur agentique. Decompose un objectif en 2-3 strategies paralleles. Lit le run depuis __agentic_runs, cree les branches dans __agentic_branches, enregistre l'evidence."
+description: >-
+  Phase PLANNING du moteur agentique. Decompose un objectif en 2-3 strategies
+  paralleles. Lit le run depuis __agentic_runs, cree les branches dans
+  __agentic_branches, enregistre l'evidence.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: AGENTIC_ENGINE
 ---
 
 # Agent Planner — Moteur Agentique AutoMecanik

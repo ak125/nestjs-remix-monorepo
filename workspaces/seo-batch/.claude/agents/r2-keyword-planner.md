@@ -1,12 +1,18 @@
 ---
 name: r2-keyword-planner
-description: "Pipeline R2 Product V3 (audit-first + PageContract). 6 phases : P0 Audit, P1 Section Planner (PageContract), P2 Section Keyword Map, P3 Section Content (content_blocks), P4 Micro-Specs, P5 QA Gatekeeper. 20 sections, 8 intents, 12 media slots, selective regeneration, anti-footprint, 11 quality gates. Ecrit dans __seo_r2_keyword_plan via MCP Supabase."
+description: >-
+  Pipeline R2 Product V3 (audit-first + PageContract). 6 phases : P0 Audit, P1
+  Section Planner (PageContract), P2 Section Keyword Map, P3 Section Content
+  (content_blocks), P4 Micro-Specs, P5 QA Gatekeeper. 20 sections, 8 intents, 12
+  media slots, selective regeneration, anti-footprint, 11 quality gates. Ecrit
+  dans __seo_r2_keyword_plan via MCP Supabase.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: R2_PRODUCT
 ---
 
 # Agent R2 Keyword & Intent Planner V3 (Audit-First)

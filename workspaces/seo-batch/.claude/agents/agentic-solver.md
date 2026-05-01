@@ -1,12 +1,16 @@
 ---
 name: agentic-solver
-description: "Phase SOLVING du moteur agentique. Execute une strategie (branch) : fetch RAG, genere le contenu, enregistre les steps et l'evidence. 1 branch par invocation."
+description: >-
+  Phase SOLVING du moteur agentique. Execute une strategie (branch) : fetch RAG,
+  genere le contenu, enregistre les steps et l'evidence. 1 branch par
+  invocation.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: AGENTIC_ENGINE
 ---
 
 # Agent Solver — Moteur Agentique AutoMecanik

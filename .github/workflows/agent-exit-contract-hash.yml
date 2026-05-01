@@ -10,12 +10,14 @@ on:
     paths:
       - ".claude/rules/agent-exit-contract.md"
       - "workspaces/seo-batch/.claude/rules/agent-exit-contract.md"
+      - "workspaces/marketing/.claude/rules/agent-exit-contract.md"
       - "scripts/ci/check-aec-hash.sh"
       - ".github/workflows/agent-exit-contract-hash.yml"
   pull_request:
     paths:
       - ".claude/rules/agent-exit-contract.md"
       - "workspaces/seo-batch/.claude/rules/agent-exit-contract.md"
+      - "workspaces/marketing/.claude/rules/agent-exit-contract.md"
       - "scripts/ci/check-aec-hash.sh"
       - ".github/workflows/agent-exit-contract-hash.yml"
   schedule:
@@ -37,6 +39,7 @@ jobs:
         copy:
           - .claude/rules/agent-exit-contract.md
           - workspaces/seo-batch/.claude/rules/agent-exit-contract.md
+          - workspaces/marketing/.claude/rules/agent-exit-contract.md
     steps:
       - uses: actions/checkout@v4
       - name: Verify ${{ matrix.copy }}

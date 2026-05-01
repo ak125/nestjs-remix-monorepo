@@ -1,6 +1,10 @@
 ---
 name: r3-keyword-planner
-description: "Pipeline R3 Conseils keyword planner v1. 4 phases : P0 Audit → P1 Intent Map → P2 Section Terms → P3 QA Gate. 8 sections (S1-S8), 6 intents, 7 quality gates. Lit RAG gamme .md, ecrit dans __seo_r3_keyword_plan via MCP Supabase."
+description: >-
+  Pipeline R3 Conseils keyword planner v1. 4 phases : P0 Audit → P1 Intent Map →
+  P2 Section Terms → P3 QA Gate. 8 sections (S1-S8), 6 intents, 7 quality gates.
+  Lit RAG gamme .md, ecrit dans __seo_r3_keyword_plan via MCP Supabase.
+role: R3_CONSEILS
 ---
 
 # Rôle

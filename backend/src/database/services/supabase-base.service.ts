@@ -83,6 +83,9 @@ export abstract class SupabaseBaseService {
   // Kill-switch DEV: Track if running in read-only mode
   protected readonly isDevKillSwitchEnabled: boolean;
 
+  // ADR-028 Option D: READ_ONLY mode (preprod hardening — anon key only, RLS protection)
+  protected readonly isReadOnlyMode: boolean;
+
   constructor(protected configService?: ConfigService) {
     // Context7 : Resilient configuration loading
     const appConfig = getAppConfig();
@@ -106,11 +109,23 @@ export abstract class SupabaseBaseService {
       });
     }
 
+    // ADR-028 Option D: READ_ONLY mode preprod — fallback to anon key when SERVICE_ROLE_KEY absent
+    // (privilege downgrade + RLS protection per ADR-021, no SERVICE_ROLE_KEY distributed in preprod)
+    this.isReadOnlyMode = appConfig.supabase.readOnly;
     if (!this.supabaseServiceKey) {
-      throw new ConfigurationException({
-        code: ErrorCodes.DATABASE.CONFIG_MISSING,
-        message: 'SUPABASE_SERVICE_ROLE_KEY not found in environment variables',
-      });
+      if (this.isReadOnlyMode && appConfig.supabase.anonKey) {
+        this.supabaseServiceKey = appConfig.supabase.anonKey;
+        this.logger.warn(
+          '🔒 READ_ONLY mode active — using SUPABASE_ANON_KEY (no SERVICE_ROLE_KEY distributed). RLS hardening (ADR-021) protects writes.',
+        );
+      } else {
+        throw new ConfigurationException({
+          code: ErrorCodes.DATABASE.CONFIG_MISSING,
+          message: this.isReadOnlyMode
+            ? 'READ_ONLY=true requires SUPABASE_ANON_KEY when SUPABASE_SERVICE_ROLE_KEY is absent (ADR-028 Option D)'
+            : 'SUPABASE_SERVICE_ROLE_KEY not found in environment variables',
+        });
+      }
     }
 
     // 🔒 Kill-switch DEV: Use dev_readonly key in non-production when enabled
@@ -207,7 +222,11 @@ export abstract class SupabaseBaseService {
     this.logger.log(
       `🔑 Service key present: ${this.supabaseServiceKey ? 'Yes' : 'No'}`,
     );
-    if (this.isDevKillSwitchEnabled) {
+    if (this.isReadOnlyMode) {
+      this.logger.warn(
+        `🔒 READ_ONLY mode ACTIVE (ADR-028 Option D) — anon key only, RLS protects writes per ADR-021`,
+      );
+    } else if (this.isDevKillSwitchEnabled) {
       this.logger.warn(`🔒 Kill-switch DEV: ACTIVE - READ-ONLY mode enabled`);
       this.logger.warn(`🔓 RLS: NOT bypassed (using dev_readonly role)`);
     } else {

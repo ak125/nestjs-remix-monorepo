@@ -1,12 +1,16 @@
 ---
 name: keyword-planner
-description: "Orchestrateur canon-aware de planification editoriale SEO. Resout le role canonique, verifie l'admissibilite, prepare la strategie de generation ou de refresh, puis route vers le pipeline metier adapte."
+description: >-
+  Orchestrateur canon-aware de planification editoriale SEO. Resout le role
+  canonique, verifie l'admissibilite, prepare la strategie de generation ou de
+  refresh, puis route vers le pipeline metier adapte.
 model: sonnet
 tools:
   - mcp__supabase__execute_sql
   - Read
   - Glob
   - Grep
+role: FOUNDATION
 ---
 
 # Orchestrateur Keyword-Planner Canon-Aware

@@ -100,6 +100,8 @@ import { RagProposalService } from './services/rag-proposal.service'; // 📝 AD
 import { AdminVehicleRagController } from './controllers/admin-vehicle-rag.controller'; // 🚗 Vehicle RAG generation endpoints
 import { AdminVehicleCacheController } from './controllers/admin-vehicle-cache.controller'; // 🚗 INC-2026-007 — Vehicle cache rebuild/invalidate/stats
 import { VehiclesModule } from '../vehicles/vehicles.module'; // 🚗 INC-2026-007 — pour VehicleRpcService
+import { OperatingMatrixModule } from '../../config/operating-matrix.module'; // 🛡️ Read-only governance matrix (registry × catalog × agents)
+import { GovernanceMatrixController } from './controllers/governance-matrix.controller'; // 🛡️ Admin REST exposure of SEO Operating Matrix
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -142,6 +144,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     SystemModule, // DB governance Phase 2 (DbGovernanceService)
     AiContentModule, // 🤖 Pour ConseilEnricher + BuyingGuideSEODraft (optional LLM polish)
     VehiclesModule, // 🚗 INC-2026-007 — pour AdminVehicleCacheController (VehicleRpcService)
+    OperatingMatrixModule, // 🛡️ Read-only governance matrix (zero infra deps)
   ],
   controllers: [
     ConfigurationController,
@@ -186,6 +189,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     AdminRagPipelineStatusController, // 📊 RAG pipeline dashboard - /api/admin/rag-pipeline/status
     InternalPipelineController, // 🚀 Internal pipeline (X-Internal-Key) - /api/internal/pipeline/*
     InternalSeoAuditController, // 📊 Internal SEO audit (X-Internal-Key) - /api/internal/seo/audit/*
+    GovernanceMatrixController, // 🛡️ SEO Operating Matrix - /api/admin/governance/seo-operating-matrix
   ],
   providers: [
     ConfigurationService,
