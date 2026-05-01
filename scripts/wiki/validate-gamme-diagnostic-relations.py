@@ -6,7 +6,9 @@ Validates wiki gamme fiches against the ADR-033 v2.0.0 frontmatter contract :
   - NO entity_data.symptoms[] block (anti-pattern §D2 → blocked_reasons:[legacy_symptoms_block])
   - NO file under wiki/systemes/ (anti-pattern §D3 → forbidden_systemes_dir)
   - NO file matching wiki/diagnostic/<symptom>-*.md regex (anti-pattern §D3 → forbidden_per_symptom_file)
-  - diagnostic_relations[].symptom_slug ∈ exports/diag-canon-slugs.json (fallback hardcoded if absent)
+  - diagnostic_relations[].symptom_slug ∈ canon symptoms (FK strict)
+  - diagnostic_relations[].system_slug ∈ canon systems (FK strict, P3)
+  - diagnostic_relations[] composite : symptom_slug must belong to declared system_slug (P3)
   - diagnostic_relations[].sources[] ∈ _meta/source-catalog.yaml
   - relation_to_part required per entry (§D1 → relation_to_part_missing)
 
@@ -16,6 +18,10 @@ narrower contract enforcer focused on FK validation and the 3 anti-patterns fig�
 The wiki repo CI runs the full 9 gates ; this monorepo CI runs the FK-strict subset
 to catch regressions when monorepo changes (skill updates, content/ embed changes)
 would invalidate wiki fiches.
+
+**Plan humble-cuddling-scott P3** — canon source = exports/diag-canon.json (flat map).
+Plus de FALLBACK_CANON_SYMPTOM_SLUGS hardcodé : si l'export est absent, fail-fast pour
+forcer l'invariant cron-PR-D vivant (vérifié par wiki-readiness-check.py C3).
 
 Usage :
   python3 scripts/wiki/validate-gamme-diagnostic-relations.py --all
@@ -29,9 +35,11 @@ Exit :
 
 Refs :
   - ADR-033 vault PR #108 commit 77085ef
+  - Plan humble-cuddling-scott §P3 (composite FK, drop hardcoded fallback)
   - canon : automecanik-wiki/_meta/schema/frontmatter.schema.json v2.0.0
   - source registry : automecanik-wiki/_meta/source-catalog.yaml
-  - canon DB slugs : automecanik-wiki/exports/diag-canon-slugs.json (Phase 3 PR-D ADR-033)
+  - canon DB slugs : automecanik-wiki/exports/diag-canon.json (P3 cible)
+                     automecanik-wiki/exports/diag-canon-slugs.json (legacy, transition)
 """
 from __future__ import annotations
 
@@ -53,22 +61,12 @@ except ImportError:
 
 DEFAULT_WIKI_PATH = Path(os.environ.get("AUTOMECANIK_WIKI_PATH", "/opt/automecanik/automecanik-wiki"))
 
-# Fallback canon slugs si exports/diag-canon-slugs.json absent (PR-D ADR-033 wires the cron).
-# Snapshot de public.__diag_symptom au 2026-04-30 (cf. mémoire diag-symptom-db-convention.md).
-FALLBACK_CANON_SYMPTOM_SLUGS = {
-    "brake_noise_metallic",
-    "brake_noise_grinding",
-    "brake_pulling_side",
-    "brake_soft_pedal",
-    "brake_vibration_pedal",
-}
-
 # Pattern interdit ADR-033 §D3 : wiki/diagnostic/<symptom>-*.md
 FORBIDDEN_PER_SYMPTOM_FILE_PATTERN = re.compile(
     r"^wiki/diagnostic/(bruit|grincement|vibration|voyant|fumee|surchauffe|fuite|usure|symptome|claquement|sifflement)-.*\.md$"
 )
 
-# blocked_reasons enum (subset des 9 quality-gates wiki, focused FK + anti-patterns §D3)
+# blocked_reasons enum (subset des 9 quality-gates wiki, focused FK + anti-patterns §D3 + composite P3)
 BLOCKED_REASONS = (
     "schema_version_invalid",
     "legacy_symptoms_block",
@@ -76,26 +74,83 @@ BLOCKED_REASONS = (
     "forbidden_per_symptom_file",
     "relation_to_part_missing",
     "symptom_slug_unknown",
+    "system_slug_unknown",         # P3
+    "symptom_system_mismatch",     # P3 — composite FK violation
     "source_slug_unknown",
+    "canon_export_missing",        # P3 — fail-fast si cron PR-D mort
 )
 
 
 # ── Canon loaders ────────────────────────────────────────────────────────────
 
 
-def load_canon_symptom_slugs(wiki_path: Path) -> tuple[set[str], str]:
-    """Load __diag_symptom canon slugs. Prefers exports/diag-canon-slugs.json,
-    falls back to hardcoded snapshot if absent (PR-D ADR-033 wires nightly export)."""
-    export_path = wiki_path / "exports" / "diag-canon-slugs.json"
-    if export_path.exists():
+def load_canon(wiki_path: Path) -> tuple[set[str], set[str], dict[str, str], str]:
+    """Plan P3 — charge le flat map exports/diag-canon.json.
+
+    Returns:
+        (symptom_slugs, system_slugs, symptom_to_system, source_msg)
+
+    Fallback transition : si diag-canon.json absent, lit l'ancien diag-canon-slugs.json
+    (array format) pendant la cohabitation. Si AUCUN export n'existe, fail-fast
+    (force l'invariant cron PR-D vivant — wiki-readiness-check.py C3).
+    """
+    flat_path = wiki_path / "exports" / "diag-canon.json"
+    if flat_path.exists():
         try:
-            data = json.loads(export_path.read_text(encoding="utf-8"))
-            if isinstance(data, list):
-                slugs = {entry["symptom_slug"] for entry in data if "symptom_slug" in entry}
-                return slugs, f"loaded {len(slugs)} slugs from {export_path}"
-        except (json.JSONDecodeError, KeyError, TypeError) as e:
-            sys.stderr.write(f"WARN: cannot parse {export_path}: {e}. Using fallback.\n")
-    return FALLBACK_CANON_SYMPTOM_SLUGS, f"using hardcoded fallback ({len(FALLBACK_CANON_SYMPTOM_SLUGS)} slugs, PR-D ADR-033 not yet wired)"
+            data = json.loads(flat_path.read_text(encoding="utf-8"))
+            symptoms_map = data.get("symptoms") or {}
+            systems_set = set(data.get("systems") or [])
+            if not isinstance(symptoms_map, dict) or not isinstance(systems_set, set):
+                raise ValueError("diag-canon.json malformed: symptoms must be object, systems must be array")
+            symptom_slugs = set(symptoms_map.keys())
+            return (
+                symptom_slugs,
+                systems_set,
+                dict(symptoms_map),
+                f"loaded flat map from {flat_path} ({len(symptom_slugs)} symptoms, {len(systems_set)} systems)",
+            )
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
+            sys.stderr.write(f"FATAL: cannot parse {flat_path}: {e}\n")
+            sys.exit(2)
+
+    # Transition fallback : legacy array format (diag-canon-slugs.json).
+    legacy_path = wiki_path / "exports" / "diag-canon-slugs.json"
+    if legacy_path.exists():
+        try:
+            data = json.loads(legacy_path.read_text(encoding="utf-8"))
+            if not isinstance(data, list):
+                raise ValueError("diag-canon-slugs.json must be a JSON array")
+            symptom_slugs: set[str] = set()
+            systems_set: set[str] = set()
+            mapping: dict[str, str] = {}
+            for entry in data:
+                if not isinstance(entry, dict):
+                    continue
+                sym = entry.get("symptom_slug")
+                sys_slug = entry.get("system_slug")
+                if sym:
+                    symptom_slugs.add(sym)
+                if sys_slug:
+                    systems_set.add(sys_slug)
+                if sym and sys_slug:
+                    mapping[sym] = sys_slug
+            return (
+                symptom_slugs,
+                systems_set,
+                mapping,
+                f"loaded legacy array from {legacy_path} ({len(symptom_slugs)} symptoms, {len(systems_set)} systems) — transition mode, prefer diag-canon.json",
+            )
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
+            sys.stderr.write(f"FATAL: cannot parse {legacy_path}: {e}\n")
+            sys.exit(2)
+
+    # P3 — fail-fast : pas de fallback hardcoded. Force PR-D cron vivant.
+    sys.stderr.write(
+        f"FATAL: canon export absent ({flat_path} et {legacy_path}). "
+        "Le cron PR-D ADR-033 doit être vivant (wiki-readiness-check.py C3). "
+        "Pas de fallback hardcoded — c'était précisément l'anti-pattern à éliminer (Plan §P3).\n"
+    )
+    sys.exit(2)
 
 
 def load_source_catalog(wiki_path: Path) -> set[str]:
@@ -160,8 +215,18 @@ def gate_schema_version(fm: dict) -> list[str]:
     return []
 
 
-def gate_diagnostic_relations_fk(fm: dict, canon_slugs: set[str], catalog_slugs: set[str]) -> list[str]:
-    """Validate diagnostic_relations[] FK + relation_to_part presence."""
+def gate_diagnostic_relations_fk(
+    fm: dict,
+    canon_symptoms: set[str],
+    canon_systems: set[str],
+    symptom_to_system: dict[str, str],
+    catalog_slugs: set[str],
+) -> list[str]:
+    """Validate diagnostic_relations[] FK + composite + relation_to_part presence.
+
+    P3 — composite FK : si symptom_slug est canon ET system_slug est canon, vérifie
+    que symptom appartient au system déclaré. Émet symptom_system_mismatch sinon.
+    """
     if fm.get("entity_type") != "gamme":
         return []
     relations = fm.get("diagnostic_relations")
@@ -177,8 +242,17 @@ def gate_diagnostic_relations_fk(fm: dict, canon_slugs: set[str], catalog_slugs:
         if not rel.get("relation_to_part"):
             reasons.append("relation_to_part_missing")
         sym = rel.get("symptom_slug")
-        if sym and sym not in canon_slugs:
+        sys_declared = rel.get("system_slug")
+        if sym and sym not in canon_symptoms:
             reasons.append(f"symptom_slug_unknown:{sym}")
+        if sys_declared and sys_declared not in canon_systems:
+            reasons.append(f"system_slug_unknown:{sys_declared}")
+        # Composite FK : seulement si les 2 slugs sont individuellement canon.
+        # (Si l'un des deux est unknown, l'erreur est déjà signalée — pas de double bruit.)
+        if sym and sys_declared and sym in canon_symptoms and sys_declared in canon_systems:
+            sys_canon = symptom_to_system.get(sym)
+            if sys_canon and sys_canon != sys_declared:
+                reasons.append(f"symptom_system_mismatch:{sym}:{sys_declared}:{sys_canon}")
         for src in rel.get("sources") or []:
             if src not in catalog_slugs:
                 reasons.append(f"source_slug_unknown:{src}")
@@ -199,7 +273,14 @@ def gather_files(args, wiki_path: Path) -> list[Path]:
     return [Path(p).resolve() for p in args.files]
 
 
-def process_file(path: Path, wiki_path: Path, canon_slugs: set[str], catalog_slugs: set[str]) -> tuple[bool, list[str]]:
+def process_file(
+    path: Path,
+    wiki_path: Path,
+    canon_symptoms: set[str],
+    canon_systems: set[str],
+    symptom_to_system: dict[str, str],
+    catalog_slugs: set[str],
+) -> tuple[bool, list[str]]:
     """Returns (passed, blocked_reasons)."""
     rel = str(path.relative_to(wiki_path)) if path.is_absolute() and wiki_path in path.parents else path.name
     text = path.read_text(encoding="utf-8")
@@ -214,7 +295,7 @@ def process_file(path: Path, wiki_path: Path, canon_slugs: set[str], catalog_slu
     reasons.extend(gate_schema_version(fm))
     # Only run FK strict validation if schema_version 2.0.0 (cohabitation)
     if str(fm.get("schema_version") or "") == "2.0.0":
-        reasons.extend(gate_diagnostic_relations_fk(fm, canon_slugs, catalog_slugs))
+        reasons.extend(gate_diagnostic_relations_fk(fm, canon_symptoms, canon_systems, symptom_to_system, catalog_slugs))
     return (len(reasons) == 0), reasons
 
 
@@ -235,12 +316,12 @@ def main() -> int:
         sys.stderr.write(f"FATAL: wiki path {wiki_path} does not exist\n")
         return 2
 
-    canon_slugs, canon_msg = load_canon_symptom_slugs(wiki_path)
+    canon_symptoms, canon_systems, symptom_to_system, canon_msg = load_canon(wiki_path)
     catalog_slugs = load_source_catalog(wiki_path)
 
     if not args.json:
         sys.stderr.write(f"[validate] wiki: {wiki_path}\n")
-        sys.stderr.write(f"[validate] canon symptoms: {canon_msg}\n")
+        sys.stderr.write(f"[validate] canon: {canon_msg}\n")
         sys.stderr.write(f"[validate] source-catalog: {len(catalog_slugs)} registered slugs\n")
 
     files = gather_files(args, wiki_path)
@@ -251,7 +332,7 @@ def main() -> int:
     results = []
     failed = 0
     for f in files:
-        passed, reasons = process_file(f, wiki_path, canon_slugs, catalog_slugs)
+        passed, reasons = process_file(f, wiki_path, canon_symptoms, canon_systems, symptom_to_system, catalog_slugs)
         rel = str(f.relative_to(wiki_path)) if wiki_path in f.parents else str(f)
         results.append({"file": rel, "passed": passed, "blocked_reasons": reasons})
         if not passed:
