@@ -231,3 +231,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
 - **Décision** : feat(p3): zod ts as single sot, schema derived, drift via parse runtime (+3 other commits)
 - **Sortie** : PR aucune | commits 4e24f1b9 85214f84 9a6b9240 714b742e
+
+## 2026-05-01 — feat/p3-diag-canon-flat-map-composite-fk (auto)
+
+- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
+- **Décision** : fix(p3): wrap tsx -e parse step in async iife (cjs forbids top-level await) (+5 other commits)
+- **Sortie** : PR #262 | commits 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
