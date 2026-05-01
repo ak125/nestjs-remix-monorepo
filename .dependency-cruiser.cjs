@@ -1,8 +1,19 @@
 /**
  * dependency-cruiser config for AutoMecanik monorepo
- * Starts permissive: hard errors on obvious wrongs, warnings on architectural
- * concerns so the pre-commit hook never blocks day 1.
- * Tighten severity as cleanup Phase 1 progresses.
+ *
+ * Phase 1 partial (2026-05-01) — 5 rules promoted from warn to error after
+ * audit confirmed zero existing violations on each :
+ *   - not-to-deprecated
+ *   - frontend-not-to-backend-src
+ *   - backend-not-to-frontend
+ *   - not-to-test
+ *   - not-to-spec
+ *
+ * Rules with existing technical debt remain warn until cleanup :
+ *   - no-circular         (41 violations, Phase 2)
+ *   - no-orphans          (48 violations, Phase 2)
+ *   - no-deep-module-access (77 violations, Phase 2)
+ *   - no-non-package-json (3 violations, Phase 1 bis after allowlist)
  */
 /** @type {import('dependency-cruiser').IConfiguration} */
 module.exports = {
@@ -33,24 +44,24 @@ module.exports = {
     },
     {
       name: 'not-to-deprecated',
-      severity: 'warn',
-      comment: 'Imported module is deprecated.',
+      severity: 'error',
+      comment: 'Imported module is deprecated. Promoted to error 2026-05-01 (Phase 1, 0 violations).',
       from: {},
       to: { dependencyTypes: ['deprecated'] },
     },
     {
       name: 'frontend-not-to-backend-src',
-      severity: 'warn',
+      severity: 'error',
       comment:
-        'Frontend must go through HTTP/API, never reach into backend source directly. Promote to error after Phase 1 cleanup.',
+        'Frontend must go through HTTP/API, never reach into backend source directly. Promoted to error 2026-05-01 (Phase 1, 0 violations).',
       from: { path: '^frontend/app/' },
       to: { path: '^backend/src/' },
     },
     {
       name: 'backend-not-to-frontend',
-      severity: 'warn',
+      severity: 'error',
       comment:
-        'Backend must not reach into frontend source (coupling + bundling disaster). Promote to error after Phase 1 cleanup.',
+        'Backend must not reach into frontend source (coupling + bundling disaster). Promoted to error 2026-05-01 (Phase 1, 0 violations).',
       from: { path: '^backend/src/' },
       to: { path: '^frontend/app/' },
     },
@@ -74,8 +85,8 @@ module.exports = {
     },
     {
       name: 'not-to-test',
-      severity: 'warn',
-      comment: 'Production code should not import tests. Promote to error after Phase 1 cleanup.',
+      severity: 'error',
+      comment: 'Production code should not import tests. Promoted to error 2026-05-01 (Phase 1, 0 violations).',
       from: {
         pathNot: [
           '\\.(spec|test|e2e-spec)\\.(js|mjs|cjs|ts|ls|coffee|litcoffee|coffee\\.md)$',
@@ -87,8 +98,8 @@ module.exports = {
     },
     {
       name: 'not-to-spec',
-      severity: 'warn',
-      comment: 'No imports from documentation folder. Promote to error after Phase 1 cleanup.',
+      severity: 'error',
+      comment: 'No imports from documentation folder. Promoted to error 2026-05-01 (Phase 1, 0 violations).',
       from: {},
       to: { path: '^\\.spec/' },
     },
