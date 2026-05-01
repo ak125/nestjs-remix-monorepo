@@ -101,23 +101,28 @@ jobs:
           echo "[size] $(wc -c < /tmp/canon/diag-canon.schema.json) bytes"
 
       - name: Verify Zod parse on real data (drift fail-fast)
-        # ESM dynamic import — robust with TS + tsx + module interop.
         # If the data exported by Python does not match the Zod canon
         # (e.g. a schema bump landed without bumping `version` literal),
         # this step fails before anything is committed to wiki.
+        #
+        # Async IIFE wrapper : `tsx -e` compiles in CJS by default which
+        # forbids top-level await. The IIFE keeps dynamic import() which
+        # is robust with TS + esbuild + module interop.
         run: |
           cd monorepo
           npx tsx -e "
-            const { DiagCanon } = await import('./backend/src/config/diag-canon.schema.ts');
-            const fs = await import('node:fs');
-            const data = JSON.parse(fs.readFileSync('/tmp/canon/diag-canon.json', 'utf8'));
-            const result = DiagCanon.safeParse(data);
-            if (!result.success) {
-              console.error('ZOD PARSE FAIL — shape drift detected:');
-              console.error(JSON.stringify(result.error.format(), null, 2));
-              process.exit(1);
-            }
-            console.log('OK — diag-canon.json parses against Zod canon');
+            (async () => {
+              const { DiagCanon } = await import('./backend/src/config/diag-canon.schema.ts');
+              const fs = await import('node:fs');
+              const data = JSON.parse(fs.readFileSync('/tmp/canon/diag-canon.json', 'utf8'));
+              const result = DiagCanon.safeParse(data);
+              if (!result.success) {
+                console.error('ZOD PARSE FAIL — shape drift detected:');
+                console.error(JSON.stringify(result.error.format(), null, 2));
+                process.exit(1);
+              }
+              console.log('OK — diag-canon.json parses against Zod canon');
+            })();
           "
 
       - name: Checkout automecanik-wiki
