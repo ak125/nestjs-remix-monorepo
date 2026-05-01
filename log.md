@@ -207,3 +207,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/marketing-phase1-dto-scoring`
 - **Décision** : fix(adr-036-pr1.3): broaden env signature to record (avoids unknown cast) (+2 other commits)
 - **Sortie** : PR #241 | commits d1baf143 a5c86dca 7f4ebdf1
+
+## 2026-05-01 — feat/p3-diag-canon-flat-map-composite-fk (auto)
+
+- **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
+- **Décision** : feat(p3): diag-canon flat map + composite FK validator + drop hardcoded fallback
+- **Sortie** : PR aucune | commits 714b742e

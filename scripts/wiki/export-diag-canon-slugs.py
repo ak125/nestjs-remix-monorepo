@@ -10,36 +10,48 @@ Output : deterministic JSON (sorted keys, 2-space indent, trailing newline)
 to make idempotence trivial — workflow only commits if content actually
 differs from current wiki HEAD.
 
-The output file `automecanik-wiki/exports/diag-canon-slugs.json` is
-consumed by :
-  - PR-C validator (scripts/wiki/validate-gamme-diagnostic-relations.py)
-  - PR-E migration script (deferred — Partie 3 sync-from-rag)
-  - Wiki repo's own _scripts/quality-gates.py (read-only consumer)
+**Plan humble-cuddling-scott P3** — émet désormais DEUX artefacts :
 
-Schema of the output JSON :
+1. `automecanik-wiki/exports/diag-canon-slugs.json` (legacy array format,
+   conservé en cohabitation pour PR-C historique + tooling existant). Sera
+   déprécié post-migration via deprecate-before-rename.
 
-  [
-    {
-      "active": true,
-      "label": "Grincement aigu au freinage",
-      "symptom_slug": "brake_noise_metallic",
-      "system_slug": "freinage",
-      "urgency": "haute"
-    },
-    ...
-  ]
+2. `automecanik-wiki/exports/diag-canon.json` (flat map cible, P3) :
+
+   {
+     "version": "1.0.0",
+     "generated_at": "2026-05-01T02:00:00Z",
+     "systems": ["freinage", "filtration", ...],
+     "symptoms": {"brake_noise_metallic": "freinage", ...}
+   }
+
+   Structure plate (Principe 1 — schema-first, lisible, scalable 62-65
+   symptômes). Consommé par validateur composite (validate-gamme-
+   diagnostic-relations.py P3) qui peut détecter `system_slug_unknown` et
+   `symptom_system_mismatch` en O(1) lookup.
+
+3. `automecanik-wiki/exports/diag-canon.schema.json` (forme structurelle
+   du flat map, JSON Schema 2020-12). Re-écrit à chaque export pour
+   refléter la version. Validateur générique consomme ce schema.
+
+Consommateurs :
+  - validate-gamme-diagnostic-relations.py (P3 — flat map cible)
+  - PR-C validator legacy (consomme diag-canon-slugs.json — transition)
+  - wiki-readiness-check.py C3 (vérifie freshness < 7j)
 
 Usage :
-  python3 scripts/wiki/export-diag-canon-slugs.py --output /tmp/diag-canon-slugs.json
-  python3 scripts/wiki/export-diag-canon-slugs.py --output /tmp/foo.json --dry-run
+  python3 scripts/wiki/export-diag-canon-slugs.py --output-dir /tmp/exports
+  python3 scripts/wiki/export-diag-canon-slugs.py --output /tmp/x.json (legacy)
+  python3 scripts/wiki/export-diag-canon-slugs.py --output-dir /tmp/x --dry-run
 
 Exit :
-  0 — export written
+  0 — export(s) written
   1 — HTTP/parse error
   2 — config error (missing env var)
 
 Refs :
   - ADR-033 §"Phase 3" vault PR #108 commit 77085ef
+  - Plan humble-cuddling-scott §P3 (flat map + composite FK validator)
   - canon DB convention : memory diag-symptom-db-convention.md
   - PostgREST embedded resource : __diag_symptom?select=...,__diag_system(slug)
 """
@@ -51,7 +63,10 @@ import os
 import sys
 import urllib.error
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
+
+CANON_VERSION = "1.0.0"
 
 
 def get_supabase_config() -> tuple[str, str]:
@@ -134,27 +149,109 @@ def serialize_canonical(rows: list[dict]) -> str:
     return json.dumps(rows, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
 
 
+def build_flat_map(rows: list[dict], generated_at: str) -> dict:
+    """Plan humble-cuddling-scott P3 — flat map cible (Principe 1)."""
+    systems = sorted({r["system_slug"] for r in rows if r.get("system_slug")})
+    symptoms: dict[str, str] = {}
+    for r in rows:
+        sym = r.get("symptom_slug")
+        sys_slug = r.get("system_slug")
+        if sym and sys_slug:
+            symptoms[sym] = sys_slug
+    return {
+        "version": CANON_VERSION,
+        "generated_at": generated_at,
+        "systems": systems,
+        "symptoms": dict(sorted(symptoms.items())),
+    }
+
+
+def build_flat_schema() -> dict:
+    """JSON Schema 2020-12 décrivant la FORME du flat map (pas la cohérence métier).
+
+    La cohérence FK (symptom appartient à system) est validée par
+    validate-gamme-diagnostic-relations.py qui croise la map elle-même —
+    pas via un oneOf énorme dans le schema (anti-pattern auditeur)."""
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": "https://github.com/ak125/automecanik-wiki/exports/diag-canon.schema.json",
+        "title": "automecanik diagnostic canon (flat map)",
+        "description": "Forme structurelle de exports/diag-canon.json. Les valeurs sont validées par croisement direct dans le script consommateur — pas de oneOf énorme.",
+        "type": "object",
+        "required": ["version", "generated_at", "systems", "symptoms"],
+        "additionalProperties": False,
+        "properties": {
+            "version": {"type": "string", "pattern": r"^\d+\.\d+\.\d+$"},
+            "generated_at": {"type": "string", "format": "date-time"},
+            "systems": {
+                "type": "array",
+                "uniqueItems": True,
+                "items": {"type": "string", "pattern": r"^[a-z][a-z0-9_]*$"},
+            },
+            "symptoms": {
+                "type": "object",
+                "patternProperties": {
+                    r"^[a-z][a-z0-9_]*$": {
+                        "type": "string",
+                        "pattern": r"^[a-z][a-z0-9_]*$",
+                        "description": "system_slug — DOIT être présent dans la liste 'systems'.",
+                    }
+                },
+                "additionalProperties": False,
+            },
+        },
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--output", required=True, help="Path to write JSON output")
-    ap.add_argument("--dry-run", action="store_true", help="Fetch + log row count, do NOT write file")
+    g = ap.add_mutually_exclusive_group(required=True)
+    g.add_argument("--output-dir", help="Directory to write all 3 export files (P3 cible)")
+    g.add_argument("--output", help="Legacy: path for diag-canon-slugs.json (kept for compat, deprecated)")
+    ap.add_argument("--dry-run", action="store_true", help="Fetch + log row count, do NOT write file(s)")
     args = ap.parse_args()
 
     supabase_url, service_role_key = get_supabase_config()
     rows = fetch_canon_slugs(supabase_url, service_role_key)
+    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    out = Path(args.output)
-    serialized = serialize_canonical(rows)
+    legacy_payload = serialize_canonical(rows)
+    flat_map = build_flat_map(rows, generated_at)
+    flat_payload = json.dumps(flat_map, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+    schema_payload = json.dumps(build_flat_schema(), indent=2, sort_keys=True, ensure_ascii=False) + "\n"
 
     if args.dry_run:
-        print(f"[dry-run] would write {len(serialized)} bytes to {out}")
+        print(f"[dry-run] {len(rows)} symptoms — would write 3 files (legacy + flat + schema)")
+        print(f"[dry-run] flat map sample: systems={len(flat_map['systems'])}, symptoms={len(flat_map['symptoms'])}")
         if rows:
             print(f"[dry-run] first row sample: {rows[0]}")
         return 0
 
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(serialized, encoding="utf-8")
-    print(f"[write] {out} ({len(serialized)} bytes, {len(rows)} symptoms)")
+    if args.output_dir:
+        out_dir = Path(args.output_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        legacy_path = out_dir / "diag-canon-slugs.json"
+        flat_path = out_dir / "diag-canon.json"
+        schema_path = out_dir / "diag-canon.schema.json"
+    else:
+        # Legacy single-output mode (kept for backward compat with PR-D workflow).
+        # Emits only the legacy array format. New consumers should use --output-dir.
+        legacy_path = Path(args.output)
+        flat_path = None
+        schema_path = None
+
+    legacy_path.parent.mkdir(parents=True, exist_ok=True)
+    legacy_path.write_text(legacy_payload, encoding="utf-8")
+    print(f"[write] {legacy_path} ({len(legacy_payload)} bytes, {len(rows)} symptoms) [legacy]")
+
+    if flat_path is not None:
+        flat_path.write_text(flat_payload, encoding="utf-8")
+        print(f"[write] {flat_path} ({len(flat_payload)} bytes, {len(flat_map['systems'])} systems, {len(flat_map['symptoms'])} symptoms) [flat map P3]")
+
+    if schema_path is not None:
+        schema_path.write_text(schema_payload, encoding="utf-8")
+        print(f"[write] {schema_path} ({len(schema_payload)} bytes) [JSON Schema P3]")
+
     return 0
 
 
