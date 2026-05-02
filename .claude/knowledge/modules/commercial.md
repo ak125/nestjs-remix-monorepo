@@ -2,7 +2,7 @@
 module: commercial
 sources:
 - backend/src/modules/commercial
-last_scan: '2026-05-01'
+last_scan: '2026-05-02'
 primary_files:
 - backend/src/modules/commercial/archives/archives.controller.ts
 - backend/src/modules/commercial/archives/archives.service.ts

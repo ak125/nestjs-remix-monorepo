@@ -2,7 +2,7 @@
 module: knowledge-graph
 sources:
 - backend/src/modules/knowledge-graph
-last_scan: '2026-05-01'
+last_scan: '2026-05-02'
 primary_files:
 - backend/src/modules/knowledge-graph/index.ts
 - backend/src/modules/knowledge-graph/kg-data.service.ts

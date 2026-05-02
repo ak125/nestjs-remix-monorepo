@@ -2,7 +2,7 @@
 module: seo-logs
 sources:
 - backend/src/modules/seo-logs
-last_scan: '2026-05-01'
+last_scan: '2026-05-02'
 primary_files:
 - backend/src/modules/seo-logs/controllers/crawl-budget-audit.controller.ts
 - backend/src/modules/seo-logs/controllers/crawl-budget-experiment.controller.ts
