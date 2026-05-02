@@ -1,0 +1,51 @@
+# pre-push — block direct pushes to protected branches (main, dev)
+#
+# Per .claude/rules/deployment.md, pushes to main/dev trigger the DEV
+# pre-prod deploy workflow (.github/workflows/ci.yml deploy job). Direct
+# pushes bypass PR review and reduce CI gating to a single linear check;
+# they must go through reviewed PRs.
+#
+# Tag pushes (refs/tags/v*) for PROD deploy are allowed.
+#
+# Bypass: `git push --no-verify` (logged in reflog; reserve for documented
+# emergencies — e.g. revert + roll-forward when waiting on PR review is
+# itself the risk).
+#
+# Hook contract (git pre-push):
+#   - args: $1 = remote name, $2 = remote URL
+#   - stdin: one line per ref being pushed,
+#            "<local_ref> <local_sha> <remote_ref> <remote_sha>"
+
+zero=0000000000000000000000000000000000000000
+
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main | refs/heads/dev)
+      branch=${remote_ref#refs/heads/}
+      if [ "$local_sha" = "$zero" ]; then
+        op="deletion of"
+      elif [ "$remote_sha" = "$zero" ]; then
+        op="creation of"
+      else
+        op="direct push to"
+      fi
+      echo
+      echo "✗ Refused by .husky/pre-push: $op '$branch'."
+      echo
+      echo "  Per .claude/rules/deployment.md, pushes to $branch trigger the"
+      echo "  DEV pre-prod deploy and must go through a reviewed PR. Branch"
+      echo "  creation/deletion of $branch is also refused as defense-in-depth"
+      echo "  against accidental destructive operations."
+      echo
+      echo "  Open a PR instead:"
+      echo "    git push -u origin HEAD:refs/heads/<type>/<topic>"
+      echo "    gh pr create --base $branch"
+      echo
+      echo "  Tag pushes for PROD (refs/tags/v*) remain allowed."
+      echo "  Emergency bypass (leaves reflog trail): git push --no-verify"
+      exit 1
+      ;;
+  esac
+done
+
+exit 0
