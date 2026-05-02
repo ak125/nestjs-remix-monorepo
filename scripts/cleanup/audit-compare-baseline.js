@@ -13,6 +13,13 @@
  *   node scripts/cleanup/audit-compare-baseline.js            # run, print, exit
  *   node scripts/cleanup/audit-compare-baseline.js --json     # machine-readable
  *   node scripts/cleanup/audit-compare-baseline.js --strict   # zero-tolerance
+ *   node scripts/cleanup/audit-compare-baseline.js --refresh  # rewrite baseline
+ *
+ * --refresh re-runs the same audits and writes the result back into the
+ * baseline JSON, preserving thresholds/notes/version and any sub-fields the
+ * parsers don't extract (madge.backend_cycles, depcruise.modules_cruised,
+ * etc.). captured_at and captured_on_commit are updated to today / HEAD.
+ * Run this only after a maintainer merge that intentionally moves baselines.
  */
 
 const fs = require('fs');
@@ -35,6 +42,24 @@ function loadBaseline() {
     return JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf-8'));
   } catch (e) {
     die(`invalid JSON in baseline: ${e.message}`);
+  }
+}
+
+function ensureDepsInstalled() {
+  // The audits resolve imports against installed deps. Without node_modules
+  // knip flags every import as "unlisted" and depcruise reports zero
+  // violations because it can't traverse — both produce silently-wrong
+  // numbers that would corrupt the baseline if written.
+  const required = ['knip', 'madge', 'dependency-cruiser', '@ast-grep/cli'];
+  const missing = required.filter(
+    (pkg) => !fs.existsSync(path.join(REPO_ROOT, 'node_modules', pkg)),
+  );
+  if (missing.length) {
+    die(
+      `node_modules out of sync (missing: ${missing.join(', ')}).\n` +
+        `Run \`npm ci\` first; the audits depend on installed packages to\n` +
+        `resolve imports correctly. Refusing to run with broken environment.`,
+    );
   }
 }
 
@@ -147,11 +172,27 @@ function renderTable(rows) {
   return [fmt(lines[0]), fmt(widths.map((w) => '-'.repeat(w))), ...lines.slice(1).map(fmt)].join('\n');
 }
 
+function refreshBaseline(baseline, current) {
+  const today = new Date().toISOString().slice(0, 10);
+  const commit = runSilent('git rev-parse --short HEAD').trim() || baseline.captured_on_commit;
+  return {
+    ...baseline,
+    captured_at: today,
+    captured_on_commit: commit,
+    knip: { ...baseline.knip, ...current.knip },
+    madge: { ...baseline.madge, ...current.madge },
+    depcruise: { ...baseline.depcruise, ...current.depcruise },
+    ast_grep: { ...baseline.ast_grep, ...current.ast_grep },
+  };
+}
+
 function main() {
   const strict = process.argv.includes('--strict');
   const jsonOut = process.argv.includes('--json');
+  const refresh = process.argv.includes('--refresh');
 
   const baseline = loadBaseline();
+  ensureDepsInstalled();
 
   process.stderr.write('[audit-compare] running knip...\n');
   const knip = parseKnip();
@@ -163,6 +204,24 @@ function main() {
   const ast_grep = parseAstGrep();
 
   const current = { knip, madge, depcruise, ast_grep };
+
+  if (refresh) {
+    const refreshed = refreshBaseline(baseline, current);
+    fs.writeFileSync(BASELINE_PATH, JSON.stringify(refreshed, null, 2) + '\n');
+    process.stdout.write(`[audit-compare] baseline refreshed at ${BASELINE_PATH}\n`);
+    process.stdout.write(`  captured_at: ${baseline.captured_at} → ${refreshed.captured_at}\n`);
+    process.stdout.write(`  captured_on_commit: ${baseline.captured_on_commit} → ${refreshed.captured_on_commit}\n`);
+    for (const [section, vals] of Object.entries({ knip: current.knip, madge: current.madge, depcruise: current.depcruise, ast_grep: current.ast_grep })) {
+      for (const [key, newVal] of Object.entries(vals)) {
+        const oldVal = baseline[section] && baseline[section][key];
+        if (oldVal !== newVal) {
+          process.stdout.write(`  ${section}.${key}: ${oldVal} → ${newVal}\n`);
+        }
+      }
+    }
+    process.exit(0);
+  }
+
   const { rows, hasFailure } = computeDelta(current, baseline, baseline.thresholds, strict);
 
   if (jsonOut) {
