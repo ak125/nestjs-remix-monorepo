@@ -68,15 +68,15 @@ export const DiagCanon = z
 export type DiagCanon = z.infer<typeof DiagCanon>;
 
 /**
- * Outcome of `checkDiagnosticRelation`. The `blockedReason` strings are
+ * Outcome of `checkDiagnosticRelation`. Internal: callers should infer via
+ * `ReturnType<typeof checkDiagnosticRelation>` or destructure `result.ok`
+ * directly (TypeScript narrows the union). The `blockedReason` strings are
  * **byte-identical** to those emitted by the Python validator
  * `scripts/wiki/validate-gamme-diagnostic-relations.py` (function
  * `gate_diagnostic_relations_fk`). Any future change in the Python validator
  * MUST update the spec assertions in this file.
  */
-export type RelationCheckResult =
-  | { ok: true }
-  | { ok: false; blockedReason: string };
+type RelationCheckResult = { ok: true } | { ok: false; blockedReason: string };
 
 /**
  * Validates a single `diagnostic_relations[]` entry of a wiki gamme proposal
