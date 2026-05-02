@@ -273,3 +273,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/p3-diag-canon-flat-map-composite-fk`
 - **Décision** : Merge branch 'main' into feat/p3-diag-canon-flat-map-composite-fk (+18 other commits)
 - **Sortie** : PR #262 | commits 21ea2b3a 0d300149 9d5af4da baa8ee78 6992eea5 ce7f7c7f cd2789fe 2fd4f936 9b94dc04 0862f103 a0c05032 683178d4 2a4cf7d7 8fe27520 7669f75d 4e24f1b9 85214f84 9a6b9240 714b742e
+
+## 2026-05-02 — fix/diag-canon-jsonschema-typed-cast (auto)
+
+- **Branche** : `fix/diag-canon-jsonschema-typed-cast`
+- **Décision** : fix(p3): replace @ts-nocheck with typed cast on zodToJsonSchema import
+- **Sortie** : PR aucune | commits 5e56077a
