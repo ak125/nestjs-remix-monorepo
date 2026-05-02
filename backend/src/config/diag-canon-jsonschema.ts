@@ -1,30 +1,11 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck — see file-level comment below.
 /**
  * diag-canon-jsonschema.ts — pure JSON Schema builder, derived from the Zod
  * canon `diag-canon.schema.ts`. Importable by Jest specs and by the CLI
  * `scripts/wiki/print-diag-canon-jsonschema.ts`.
  *
- * The `// @ts-nocheck` directive at the top is intentional: the combination
- * of `DiagCanon`'s chained type (`.strict().superRefine(...).readonly()`)
- * and the recursive generics of `zodToJsonSchema` causes ts-jest to spend
- * O(N^k) memory resolving the call site, leading to OOM in CI (run
- * 25234999710 confirmed: 4036MB → 4131MB → process exit 134). Targeted
- * `@ts-expect-error` does not stop the calculation, only the error
- * emission. Various cast strategies (ZodTypeAny, unknown → ZodType<unknown>)
- * also do not bypass since the inference happens on the function's own
- * generic resolution.
- *
- * The file has 1 imported function and 1 exported wrapper of 5 lines. No
- * business logic. Both libs (zod, zod-to-json-schema) are externally typed
- * and validated. Skipping type-check on this micro-file is the cheapest
- * non-invasive fix; runtime behavior is fully verified by the co-located
- * spec (idempotence + shape).
- *
  * Lives in `backend/src/config/` (not in `scripts/wiki/`) so that the Jest
- * config (`testRegex: '.*\\.test\\.ts$'`, `roots: ['src/', 'tests/']`) can
- * pick up the co-located `.test.ts` spec without modifying the global
- * config — see plan §risks line "jest.config.js testMatch".
+ * config (`testRegex: '.*\\.test\\.ts$'`, `roots: ['src/', 'tests/']`) picks
+ * up the co-located `.test.ts` spec without modifying the global config.
  *
  * The Zod schema is the SOURCE OF TRUTH. Never write the JSON Schema by
  * hand; never edit the generated artifact in `automecanik-wiki/exports/`.
@@ -39,10 +20,39 @@
  * `type: 'object'` at the root rather than a `$ref` wrapper around
  * `definitions/DiagCanon`. The inline form is what consumer tooling
  * (linters, IDE autocomplete) expects.
+ *
+ * Typing note (TS2589 mitigation):
+ *   `zodToJsonSchema<T extends ZodSchema>(schema: T, ...)` infers `T`
+ *   from `DiagCanon`'s deep chained type (`.strict().superRefine(...).
+ *   readonly()`), which exceeds TypeScript's instantiation depth limit
+ *   under ts-jest's strict mode (TS2589) and triggers OOM in CI.
+ *   Tsx/esbuild-based runs are unaffected because they do not type-check.
+ *
+ *   The fix is a one-line **typed cast on the imported function** that
+ *   erases its deep generic signature at the call site. The cast lives
+ *   inside this file (no global declare-module override), targets only
+ *   the lib whose typings cause the issue, and keeps full runtime
+ *   correctness — verified by `diag-canon-jsonschema.test.ts` (shape +
+ *   idempotence) and by `diag-canon.schema.test.ts` (cross-source).
+ *
+ *   This is a strict improvement over `// @ts-nocheck`: no file-level
+ *   type-check disable, no eslint-disable directive, no `any`, and the
+ *   rest of this file remains type-checked.
  */
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { zodToJsonSchema as _zodToJsonSchema } from 'zod-to-json-schema';
 
 import { DiagCanon } from './diag-canon.schema';
+
+/**
+ * Type-erased view of `zodToJsonSchema`. Both inputs are widened to
+ * `unknown` so ts-jest stops trying to instantiate the deep generic of
+ * `DiagCanon`. The return type is narrowed back to `object` so callers
+ * stay typed safely.
+ */
+const zodToJsonSchema = _zodToJsonSchema as (
+  schema: unknown,
+  options?: unknown,
+) => object;
 
 export function buildDiagCanonJsonSchema(): object {
   return zodToJsonSchema(DiagCanon, {
