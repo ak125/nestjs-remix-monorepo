@@ -285,3 +285,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/diag-canon-jsonschema-typed-cast`
 - **Décision** : chore(audit): ratchet baseline unused_types 355→326 (revert post-#262 over-bump) (+2 other commits)
 - **Sortie** : PR #265 | commits 12f54d26 cefeb9ae 5e56077a
+
+## 2026-05-02 — fix/diag-canon-jsonschema-typed-cast (auto)
+
+- **Branche** : `fix/diag-canon-jsonschema-typed-cast`
+- **Décision** : revert(audit): undo baseline ratchet 355→326 (was based on stale local knip) (+4 other commits)
+- **Sortie** : PR #265 | commits c0ca674e 4e290722 12f54d26 cefeb9ae 5e56077a
