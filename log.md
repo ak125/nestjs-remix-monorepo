@@ -309,3 +309,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/audit-claude-md-agents-md`
 - **Décision** : feat(agents): audit + structural gate for AGENTS.md / CLAUDE.md
 - **Sortie** : PR aucune | commits 9842fa00
+
+## 2026-05-03 — chore/bump-wiki-submodule-pointer (auto)
+
+- **Branche** : `chore/bump-wiki-submodule-pointer`
+- **Décision** : chore: bump wiki submodule pointer to current origin/main
+- **Sortie** : PR #273 | commits 707a1775
