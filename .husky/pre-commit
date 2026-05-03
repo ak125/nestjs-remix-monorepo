@@ -33,6 +33,12 @@ if command -v python3 >/dev/null 2>&1 \
   fi
 fi
 
+# Validateur AGENTS.md / CLAUDE.md (anti-pattern + structure).
+# Mémoire associée : feedback_no_hardcoded_infra_in_agentsmd.md
+if git diff --cached --name-only | grep -qE '(^|/)(AGENTS|CLAUDE)\.md$'; then
+  bash scripts/agents/validate-agents-md.sh --staged || exit 1
+fi
+
 # Fast deterministic gate: ast-grep rules in .ast-grep/rules/
 # Warnings do not block commits; only `severity: error` rules fail here.
 # For full audit run: npm run audit:all (see package.json scripts)
