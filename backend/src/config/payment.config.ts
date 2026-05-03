@@ -1,5 +1,9 @@
+import { Logger } from '@nestjs/common';
 import { registerAs } from '@nestjs/config';
 import { ConfigurationException, ErrorCodes } from '@common/exceptions';
+import { isReadOnlyMode } from './env-validation';
+
+const logger = new Logger('PaymentConfig');
 
 export enum PaymentMode {
   TEST = 'TEST',
@@ -31,6 +35,13 @@ export interface PaymentConfig {
  * - Les valeurs sensibles (CERTIFICATE) ne doivent JAMAIS être loggées
  * - Utilisez des secrets managers en production (Vault, AWS Secrets Manager)
  * - Ne commitez JAMAIS le fichier .env
+ *
+ * ADR-028 Option D — read-only mode (READ_ONLY=true) :
+ * preprod ne traite aucun paiement réel → la validation stricte des secrets
+ * est skipped, un stub config est retourné. Les routes paiement amont sont
+ * bloquées par les write-guards SupabaseBaseService (PR #246) et 410 Gone
+ * F.5 (PR #8). Si une future PR ré-active des paiements en preprod, ce
+ * comportement DOIT être révisé.
  */
 export default registerAs('payment', (): PaymentConfig => {
   const mode = (
@@ -45,7 +56,33 @@ export default registerAs('payment', (): PaymentConfig => {
     });
   }
 
-  // Validation des variables requises
+  const readOnly = isReadOnlyMode();
+
+  if (readOnly) {
+    logger.warn(
+      'READ_ONLY=true (ADR-028 Option D) — payment config skipping strict env ' +
+        'validation ; payment routes are blocked upstream by write-guards.',
+    );
+    return {
+      systempay: {
+        siteId: process.env.SYSTEMPAY_SITE_ID || '',
+        certificate: process.env.SYSTEMPAY_CERTIFICATE_TEST || '',
+        hmacKey: process.env.SYSTEMPAY_HMAC_KEY || '',
+        signatureMethod: 'SHA1',
+        certificateTest: process.env.SYSTEMPAY_CERTIFICATE_TEST || '',
+        mode: PaymentMode.TEST,
+        apiUrl:
+          process.env.SYSTEMPAY_API_URL ||
+          'https://paiement.systempay.fr/vads-payment/',
+      },
+      app: {
+        url: process.env.APP_URL || 'http://localhost:3000',
+        callbackPath: '/api/payments/callback',
+      },
+    };
+  }
+
+  // Validation des variables requises (mode normal — writeable)
   const requiredVars = [
     'SYSTEMPAY_SITE_ID',
     'SYSTEMPAY_CERTIFICATE_PROD',
