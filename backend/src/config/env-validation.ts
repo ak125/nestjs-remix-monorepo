@@ -138,9 +138,7 @@ export function validateRequiredEnvVars(): void {
   // Log success in non-test environments
   if (process.env.NODE_ENV !== 'test') {
     if (readOnly) {
-      logger.log(
-        'READ_ONLY=true (ADR-028 Option D) — relaxed env baseline OK',
-      );
+      logger.log('READ_ONLY=true (ADR-028 Option D) — relaxed env baseline OK');
     } else {
       logger.log('All required environment variables present');
     }
