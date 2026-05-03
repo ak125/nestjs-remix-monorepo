@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 """
-rag-enrich-from-web-corpus.py — Enrichit les gammes .md depuis le corpus web OEM existant.
+gamme-from-web-corpus-generator.py — Génère les gammes .md depuis le corpus web OEM.
 
-Lit les 1273 fichiers dans /opt/automecanik/rag/knowledge/web/,
-mappe chaque fichier vers les gammes correspondantes,
-extrait les données techniques (normes, matériaux, valeurs, types),
-et injecte dans le frontmatter des gammes.
+Lit le corpus web depuis automecanik-raw/recycled/rag-knowledge/web/ (1771 fichiers
+post PR raw #15) + web-catalog/ (182 fichiers), mappe chaque fichier vers les
+gammes correspondantes, extrait les données techniques (normes, matériaux,
+valeurs, types), et écrit les .md gammes dans automecanik-wiki/exports/rag/gammes/
+(ADR-031 §D20, plan v3 §Étape 5).
+
+Configurable via env :
+  AUTOMECANIK_RAW_PATH  (default /opt/automecanik/automecanik-raw) — INPUT corpus web
+  AUTOMECANIK_WIKI_PATH (default /opt/automecanik/automecanik-wiki) — OUTPUT artefact
 
 Usage:
-  python3 scripts/rag/rag-enrich-from-web-corpus.py [--dry-run] [--gamme disque-de-frein] [--force]
+  python3 scripts/wiki-generators/gamme-from-web-corpus-generator.py [--dry-run] [--gamme disque-de-frein] [--force]
 """
 
 import os
@@ -18,12 +23,17 @@ import argparse
 from collections import defaultdict
 from datetime import datetime
 
-# AUTOMECANIK_RAW_PATH overrides the rag-knowledge root for ADR-031 Phase D.
-# Default keeps the legacy location so unset = no behavioral change.
-RAW_KNOWLEDGE_ROOT = os.getenv("AUTOMECANIK_RAW_PATH", "/opt/automecanik/rag/knowledge")
-WEB_DIR = f"{RAW_KNOWLEDGE_ROOT}/web"
-WEB_CATALOG_DIR = f"{RAW_KNOWLEDGE_ROOT}/web-catalog"
-GAMMES_DIR = f"{RAW_KNOWLEDGE_ROOT}/gammes"
+# INPUT : corpus web brut hébergé dans automecanik-raw/recycled/rag-knowledge/
+# (post PR raw #15 — Phase C extension import contenu métier).
+RAW_REPO = os.getenv("AUTOMECANIK_RAW_PATH", "/opt/automecanik/automecanik-raw")
+RECYCLED_RAG_KNOWLEDGE = f"{RAW_REPO}/recycled/rag-knowledge"
+WEB_DIR = f"{RECYCLED_RAG_KNOWLEDGE}/web"
+WEB_CATALOG_DIR = f"{RECYCLED_RAG_KNOWLEDGE}/web-catalog"
+
+# OUTPUT : artefact auto-généré dans wiki/exports/rag/ (ADR-031 §D20).
+# Mirror downstream vers automecanik-rag/knowledge/ via CI workflow sync.
+WIKI_REPO = os.getenv("AUTOMECANIK_WIKI_PATH", "/opt/automecanik/automecanik-wiki")
+GAMMES_DIR = f"{WIKI_REPO}/exports/rag/gammes"
 
 # === MAPPING GAMME → TERMES DE RECHERCHE ===
 # Chaque gamme a des termes FR + EN qui matchent dans le contenu web

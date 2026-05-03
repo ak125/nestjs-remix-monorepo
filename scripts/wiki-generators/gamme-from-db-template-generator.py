@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """
-Enrichit en masse les entrées __rag_knowledge 'Données techniques OEM' sparse (< 500c).
-Génère du contenu technique par template selon le nom de la pièce.
+gamme-from-db-template-generator.py — Enrichit les entrées DB __rag_knowledge
+'Données techniques OEM' sparse (< 500c) par templates de contenu technique.
+
+⚠️ CAS PARTICULIER : ce générateur écrit dans la **DB Supabase** (table
+__rag_knowledge), pas dans le filesystem wiki/exports/rag/. Sa logique métier
+produit du contenu RAG consommé directement par le backend NestJS (pas
+mirroré via sync-from-wiki). Placement dans wiki-generators/ reflète son
+rôle de producteur de contenu RAG, mais l'OUTPUT path est DB-only.
 
 Usage:
-  python3 scripts/rag/enrich-rag-bulk.py [--dry-run] [--gamme disque-de-frein]
+  python3 scripts/wiki-generators/gamme-from-db-template-generator.py [--dry-run] [--gamme disque-de-frein]
 
 Requiert : SUPABASE_SERVICE_ROLE_KEY dans l'environnement (.env.vps)
 """
