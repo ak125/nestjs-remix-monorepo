@@ -37,6 +37,18 @@ L'auto-memory Claude Code utilise un store distinct par workspace : ce workspace
 
 L'index `MEMORY.md` du monorepo (`-opt-automecanik-app/memory/`) reste consultable manuellement pour les faits cross-workload (V-Level, gamme_aggregates, etc.).
 
+## Phase actuelle
+
+Objectif courant :
+- pipeline KW / R4 / batch SEO
+- vérification qualité avant promotion
+- respect des mémoires récentes et du canon SEO
+
+Références de session (mémoires monorepo) :
+- `r4-batch-progress.md` — état R4 batch 119/231 + 177 skip-kp throttled
+- `kw-pipeline-status.md` — pipeline KW skills-first, 178 gammes restantes
+- `seo-kw-pipeline-canon-20260423.md` — pg_id=124 PASS 15/232, V-Level SQL port
+
 ---
 
 _Workspace créé pour séparer la surface d'outils (39 agents + 16 skills SEO) du daily dev — voir `README.md` pour la motivation._

@@ -21,18 +21,44 @@ Délimitation explicite :
 
 ---
 
-## Workspaces Claude Code — séparation dev / SEO / marketing
+## Workspaces Claude Code — séparation dev / SEO / marketing / wiki
 
-Le monorepo expose trois **racines de session** Claude Code distinctes :
+Le monorepo expose **quatre racines de session** Claude Code distinctes :
 
 | cwd | Surface chargée | Usage |
 |-----|-----------------|-------|
 | `/opt/automecanik/app/` | 8 skills DEV (`code-review`, `db-migration`, `frontend-design`, `governance-vault-ops`, `responsive-audit`, `session-log`, `ui-ux-pro-max`, `vehicle-ops`) — **0 agents** R*, **0 skills SEO** | dev backend/frontend, refactor, CI, ADR, governance |
 | `/opt/automecanik/app/workspaces/seo-batch/` | 39 agents R0-R8 + 16 skills SEO (`content-gen`, `kw-classify`, `pollution-scanner`, `seo-gamme-audit`, `r8-diversity-check`, `rag-check`, `v5-guardian`, …) | campagnes SEO, KW planning, content gen R*, RAG enrich |
 | `/opt/automecanik/app/workspaces/marketing/` | 3 agents G1 marketing (LEAD/LOCAL/RETENTION en Phase 1-2 ADR-036) + canon brand voice + AEC | briefs marketing orientés conversion, posts GBP, retention, plan hebdo cross-units |
+| `/opt/automecanik/app/workspaces/wiki/` | skill `wiki-proposal-writer` + canon ADR-033 + AEC | sas wiki documentaire (Phase 2 ADR-033), proposals frontmatter v2.0.0 |
 
 Pour les batchs SEO : `cd workspaces/seo-batch && claude`. Voir `workspaces/seo-batch/README.md`.
 Pour les sessions marketing : `cd workspaces/marketing && claude`. Voir `workspaces/marketing/README.md` (ADR-036).
+Pour le sas wiki : `cd workspaces/wiki && claude`. Voir `workspaces/wiki/README.md` (ADR-033).
+
+---
+
+## Agents Paperclip AI-COS
+
+Les agents Paperclip sont documentés dans `agents/*/AGENTS.md`. Chaque fichier
+décrit rôle, périmètre, protocole et format de sortie. Les UUID Paperclip
+restent dans le registre Paperclip (SoT mapping) — pas ici, pour éviter
+duplication et dérive.
+
+| Domaine | Fichier |
+|---------|---------|
+| CEO | `agents/ceo/AGENTS.md` |
+| CTO | `agents/cto/AGENTS.md` |
+| CMO | `agents/cmo/AGENTS.md` |
+| CPO | `agents/cpo/AGENTS.md` |
+| RAG Lead | `agents/rag-lead/AGENTS.md` |
+| SEO Content | `agents/seo-content/AGENTS.md` |
+| SEO QA | `agents/seo-qa/AGENTS.md` |
+
+**Validation** : tout commit modifiant `agents/*/AGENTS.md` ou `**/CLAUDE.md`
+passe par `scripts/agents/validate-agents-md.sh` (pre-commit + CI). Voir
+mémoire `feedback_no_hardcoded_infra_in_agentsmd.md` pour les règles
+(pas d'IP / URL / UUID / clé hardcodée — env vars + contrats d'usage).
 
 ---
 
@@ -200,5 +226,5 @@ Ce monorepo peut être déployé sur DEV ou PROD, mais **aucun** des trois VPS n
 
 ---
 
-_Dernière mise à jour : 2026-04-18_
+_Dernière mise à jour : 2026-05-03_
 _Ce fichier est un pointer — pour toute règle, voir le vault._

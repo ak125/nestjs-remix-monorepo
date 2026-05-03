@@ -2,7 +2,7 @@
 module: catalog
 sources:
 - backend/src/modules/catalog
-last_scan: '2026-05-02'
+last_scan: '2026-05-03'
 primary_files:
 - backend/src/modules/catalog/catalog.controller.ts
 - backend/src/modules/catalog/catalog.module.ts
