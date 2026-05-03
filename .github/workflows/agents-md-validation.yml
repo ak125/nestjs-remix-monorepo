@@ -37,7 +37,10 @@ jobs:
 
       - name: Validate diff vs base (anti-patterns sur lignes ajoutées)
         if: github.event_name == 'pull_request'
-        run: bash scripts/agents/validate-agents-md.sh --diff origin/${{ github.base_ref }}
+        # Use base.sha (unambiguous) au lieu de origin/<base_ref> :
+        # sur une PR forkée externe, `origin` peut pointer vers le fork
+        # → `git diff origin/main` retournerait vide silencieusement (gate passerait à tort).
+        run: bash scripts/agents/validate-agents-md.sh --diff ${{ github.event.pull_request.base.sha }}
 
       - name: Validate full repo (structure check)
         run: bash scripts/agents/validate-agents-md.sh --all
