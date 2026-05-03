@@ -303,3 +303,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/diag-canon-jsonschema-typed-cast`
 - **Décision** : Merge remote-tracking branch 'origin/main' into fix/diag-canon-jsonschema-typed-cast (+6 other commits)
 - **Sortie** : PR #265 | commits c9b7a2be a9f8741a c0ca674e 4e290722 12f54d26 cefeb9ae 5e56077a
+
+## 2026-05-03 — feat/audit-claude-md-agents-md (auto)
+
+- **Branche** : `feat/audit-claude-md-agents-md`
+- **Décision** : feat(agents): audit + structural gate for AGENTS.md / CLAUDE.md
+- **Sortie** : PR aucune | commits 9842fa00
