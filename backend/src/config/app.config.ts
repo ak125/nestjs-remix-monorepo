@@ -45,8 +45,17 @@ export function createAppConfig(): AppConfig {
     },
   };
 
-  // Validation Context7 : échouer rapidement si config invalide
-  if (!config.supabase.serviceKey && config.app.environment === 'production') {
+  // Validation Context7 : échouer rapidement si config invalide.
+  // ADR-028 Option D — READ_ONLY=true overrides this check : preprod sets
+  // NODE_ENV=production (Dockerfile L39/L63 + docker-compose.preprod.yml L9) for
+  // Node/library optimizations, but the deploy intentionally omits SERVICE_ROLE_KEY
+  // in favor of ANON_KEY + RLS protection. The dedicated check below validates
+  // the anon-key requirement for read-only mode.
+  if (
+    !config.supabase.serviceKey &&
+    config.app.environment === 'production' &&
+    !config.supabase.readOnly
+  ) {
     throw new ConfigurationException({
       code: ErrorCodes.CONFIG.MISSING,
       message: 'SUPABASE_SERVICE_ROLE_KEY is required in production',
