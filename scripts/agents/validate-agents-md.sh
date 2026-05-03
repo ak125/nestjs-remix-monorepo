@@ -271,8 +271,21 @@ EOF
   bash "$0" --file "$tmp/clean.md" >/dev/null 2>&1
   test_case "PASS — fichier propre" 0 $?
 
+  # 8. PASS — non-régression : "présente" lowercase = français normal,
+  #    pas une assertion d'état infra. Le filtre case-sensitive per-ligne
+  #    doit rejeter (seul ABSENTE/PRÉSENTE/DOWN uppercase = vraie assertion).
+  echo 'La documentation présente les modules backend.' > "$tmp/fr-presente.md"
+  bash "$0" --file "$tmp/fr-presente.md" >/dev/null 2>&1
+  test_case "PASS — 'présente' lowercase (FR normal, pas assertion)" 0 $?
+
+  # 9. PASS — non-régression : "down" lowercase dans une phrase FR
+  #    n'est pas une assertion d'état infra (qui s'écrit "DOWN" par convention).
+  echo "Quand l'API est down, les jobs s'accumulent." > "$tmp/fr-down.md"
+  bash "$0" --file "$tmp/fr-down.md" >/dev/null 2>&1
+  test_case "PASS — 'down' lowercase (FR normal, pas assertion)" 0 $?
+
   if [ $failed -eq 0 ]; then
-    echo "✅ all 7 self-tests passed"
+    echo "✅ all 9 self-tests passed"
     exit 0
   else
     echo "❌ $failed self-test(s) failed"

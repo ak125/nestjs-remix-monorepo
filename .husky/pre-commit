@@ -15,6 +15,14 @@ if [ -n "$BLOCKED" ]; then
   exit 1
 fi
 
+# Validateur AGENTS.md / CLAUDE.md (anti-pattern + structure).
+# Placé AVANT lint-staged et autres transformations : check bloquant doit
+# voir le contenu tel que stagé par l'utilisateur, pas une version
+# auto-formatée. Mémoire : feedback_no_hardcoded_infra_in_agentsmd.md
+if git diff --cached --name-only | grep -qE '(^|/)(AGENTS|CLAUDE)\.md$'; then
+  bash scripts/agents/validate-agents-md.sh --staged || exit 1
+fi
+
 npx lint-staged
 
 # Refresh auto-generated YAML frontmatter + AUTO-GENERATED blocks in
@@ -31,12 +39,6 @@ if command -v python3 >/dev/null 2>&1 \
   if [ -n "$CHANGED" ]; then
     git add $CHANGED 2>/dev/null || true
   fi
-fi
-
-# Validateur AGENTS.md / CLAUDE.md (anti-pattern + structure).
-# Mémoire associée : feedback_no_hardcoded_infra_in_agentsmd.md
-if git diff --cached --name-only | grep -qE '(^|/)(AGENTS|CLAUDE)\.md$'; then
-  bash scripts/agents/validate-agents-md.sh --staged || exit 1
 fi
 
 # Fast deterministic gate: ast-grep rules in .ast-grep/rules/
