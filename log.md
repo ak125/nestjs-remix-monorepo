@@ -327,3 +327,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/perf-gates-read-only-adr028`
 - **Décision** : fix(ci): mock SERVICE_ROLE_KEY for boot — ~30 services bypass SupabaseBaseService (+1 other commit)
 - **Sortie** : PR #285 | commits 442f5956 af006c72
+
+## 2026-05-04 — chore/sync-rag-from-wiki-cron-canon (auto)
+
+- **Branche** : `chore/sync-rag-from-wiki-cron-canon`
+- **Décision** : chore(cron): sync-rag-from-wiki canon DEV VPS — meilleure approche (zero PAT)
+- **Sortie** : PR #288 | commits 005b9d0a
