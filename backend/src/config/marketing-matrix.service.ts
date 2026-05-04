@@ -45,7 +45,7 @@ const MARKETING_AGENT_PATHS = ['workspaces/marketing/.claude/agents'] as const;
 /** Hash file = canon distribué localement (pas filesystem vault qui est read-only sur PROD/AI-COS). */
 const SOURCE_FILES: Record<keyof MarketingMatrixSourcesHash, string> = {
   matrixTypes: 'backend/src/config/marketing-matrix.types.ts',
-  marketingVoiceCanon: '.claude/rules/marketing-voice.md',
+  marketingVoiceCanon: '.claude/canon-mirrors/marketing-voice.md',
 };
 
 /**

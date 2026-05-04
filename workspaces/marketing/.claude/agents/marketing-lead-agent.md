@@ -59,4 +59,4 @@ Plan hebdo DOIT inclure :
 
 - ADR-036, ADR-038
 - `.claude/rules/marketing-batch.md`
-- `.claude/rules/agent-exit-contract.md`
+- `.claude/canon-mirrors/agent-exit-contract.md`

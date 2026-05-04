@@ -56,5 +56,5 @@ par DTO Zod NestJS qui appliquera les CHECK SQL.
 - ADR-036 §"Verdict & approche retenue" (canon scope)
 - ADR-038 (canon naming agent — frontmatter `role:` Zod-validated)
 - `.claude/rules/marketing-batch.md` (rules scoped pour cet agent)
-- `.claude/rules/marketing-voice.md` (canon brand voice, distribué depuis vault)
-- `.claude/rules/agent-exit-contract.md` (AEC v1.0.0 — obligatoire)
+- `.claude/canon-mirrors/marketing-voice.md` (canon brand voice, distribué depuis vault)
+- `.claude/canon-mirrors/agent-exit-contract.md` (AEC v1.0.0 — obligatoire)

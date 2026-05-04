@@ -54,6 +54,6 @@ cd /opt/automecanik/app && claude
 ## Références
 
 - ADR-036 : `governance-vault/ledger/decisions/adr/ADR-036-marketing-operating-layer.md`
-- Brand voice : `.claude/rules/marketing-voice.md` (canon distribué depuis vault)
+- Brand voice : `.claude/canon-mirrors/marketing-voice.md` (canon distribué depuis vault)
 - Runbook rollback : `governance-vault/ledger/knowledge/runbook-marketing-pilot-rollback.md`
 - Plan détaillé : `/home/deploy/.claude/plans/verifier-la-strategie-une-piped-hummingbird.md`
