@@ -41,6 +41,14 @@ if command -v python3 >/dev/null 2>&1 \
   fi
 fi
 
+# Plan v3 §Étape 9 deliverable 3 : block direct writes to automecanik-rag/knowledge/
+# from refactored pipeline directories. Defense-in-depth complement to
+# .ast-grep/rules/no-direct-rag-knowledge-write.yml (warning-level twin).
+# Only blocks staged files in scope; near-zero overhead on unrelated commits.
+if [ -x scripts/ci/check-no-direct-rag-knowledge-paths.sh ]; then
+  bash scripts/ci/check-no-direct-rag-knowledge-paths.sh --staged || exit 1
+fi
+
 # Fast deterministic gate: ast-grep rules in .ast-grep/rules/
 # Warnings do not block commits; only `severity: error` rules fail here.
 # For full audit run: npm run audit:all (see package.json scripts)

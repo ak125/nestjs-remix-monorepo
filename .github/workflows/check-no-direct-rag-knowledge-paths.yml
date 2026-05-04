@@ -1,0 +1,39 @@
+name: check-no-direct-rag-knowledge-paths
+
+# Plan v3 §Étape 9 deliverable 3 — defense-in-depth gate.
+# Catches `--no-verify` bypass of the .husky/pre-commit hook by re-running the
+# same check in CI on every PR and push to main. Same script, same SoT.
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/wiki-generators/**'
+      - 'scripts/wiki-exports/**'
+      - 'scripts/raw-downloaders/**'
+      - 'scripts/ci/check-no-direct-rag-knowledge-paths.sh'
+      - '.github/workflows/check-no-direct-rag-knowledge-paths.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/wiki-generators/**'
+      - 'scripts/wiki-exports/**'
+      - 'scripts/raw-downloaders/**'
+      - 'scripts/ci/check-no-direct-rag-knowledge-paths.sh'
+
+jobs:
+  check:
+    name: No direct rag/knowledge paths in refactored dirs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint script with shellcheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: 'scripts/ci'
+          severity: error
+
+      - name: Run check (--all mode)
+        run: bash scripts/ci/check-no-direct-rag-knowledge-paths.sh --all

@@ -339,3 +339,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/sync-rag-from-wiki-cron-canon`
 - **Décision** : fix(cron): log path /opt/automecanik/rag/logs/ (le user deploy n'a pas droit /var/log) (+2 other commits)
 - **Sortie** : PR #288 | commits ee0ba019 8fc09139 005b9d0a
+
+## 2026-05-04 — feat/plan-v3-step9-precommit-rag-paths (auto)
+
+- **Branche** : `feat/plan-v3-step9-precommit-rag-paths`
+- **Décision** : feat(ci): block direct writes to rag/knowledge/ in refactored dirs (Étape 9 plan v3)
+- **Sortie** : PR #290 | commits 05b918f2
+
+## 2026-05-04 — feat/plan-v3-step9-precommit-rag-paths (auto)
+
+- **Branche** : `feat/plan-v3-step9-precommit-rag-paths`
+- **Décision** : fix(ci): match single quote in rag-knowledge gate via $'\047' (POSIX ERE compat) (+2 other commits)
+- **Sortie** : PR #290 | commits 4e180cbd 14750e44 05b918f2
