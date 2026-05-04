@@ -98,22 +98,30 @@ jobs:
           RAG_SERVICE_URL: http://disabled:8000
           RAG_API_KEY: ci-mock-rag-api-key-not-for-production-use
           REDIS_URL: redis://localhost:6379
-          # ADR-028 Option D : le backend boote en read-only sans SERVICE_ROLE_KEY
-          # depuis PRs #246/#274/#276/#277 (mergées 2026-05-03). Lighthouse CWV ne
-          # fait que des HTTP GET sur des pages SSR cachées — READ_ONLY=true suffit.
-          # Cohérent avec ci.yml:705-709 (job `deploy`, premier consommateur du
-          # contrat). Préserve le principe de moindre privilège : aucun workflow CI
-          # n'a besoin de SERVICE_ROLE_KEY pour mesurer la performance frontend.
-          # Bénéfice transverse : ce job échouait systématiquement sur les PRs
-          # Dependabot car GitHub n'expose pas les Actions secrets aux PRs créées
-          # par les bots externes (politique anti-exfiltration depuis 2021). Avec
-          # READ_ONLY=true + fallbacks mocks, les bumps de dev-deps passent CWV
-          # (et les bumps runtime restent évalués par Lighthouse comme avant).
+          # ADR-028 Option D : READ_ONLY=true permet le boot en mode read-only.
+          # EnvValidation + SupabaseBaseService respectent ce contrat depuis les PRs
+          # #246/#274/#276/#277 (mergées 2026-05-03), MAIS de nombreux services
+          # backend créent leur propre client via `createClient(url, key)` sans
+          # passer par SupabaseBaseService — ils plantent au boot si SERVICE_ROLE_KEY
+          # est vide ("supabaseKey is required" depuis @supabase/supabase-js).
+          # Refactorer ces ~30 services pour respecter ADR-028 est hors scope de ce
+          # fix CI (PR de suivi à prévoir).
+          # Solution courante : mocks aux trois variables (pattern déjà adopté par
+          # le job `🧪 Backend Tests` de ci.yml lignes 230-231). Ces mocks sont des
+          # string literals CI-only et n'exposent aucun secret prod. READ_ONLY=true
+          # garantit qu'aucune écriture ne sortira du process Nest même si le client
+          # se croit "service_role" — `__write_log_redirect` + RLS hardening (ADR-021)
+          # protègent côté DB. Lighthouse ne fait que des HTTP GET sur les pages SSR
+          # cachées, les RPCs DB live sont court-circuitées par le warmer cache
+          # homepage / hierarchy.
+          # Bénéfice transverse : sur les PRs Dependabot et forks, GitHub n'expose
+          # pas les Actions secrets (politique 2021 anti-exfiltration). Sans
+          # fallback mocks, le job échouait systématiquement (cf #279, #280, #281,
+          # #282, #283 — tous bloqués par cette même cause).
           READ_ONLY: "true"
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mock.supabase.co' }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY || 'ci-mock-anon-key' }}
-          # SUPABASE_SERVICE_ROLE_KEY : retiré volontairement — non requis sous
-          # READ_ONLY=true (EnvValidation l'exempte depuis PR #274).
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'ci-mock-service-role-key-not-for-production-use' }}
           SESSION_SECRET: ci-perf-test-session-secret-not-for-production-use
           SYSTEMPAY_SITE_ID: "00000000"
           SYSTEMPAY_CERTIFICATE_PROD: "ci-mock-systempay-certificate-prod-not-for-production-use"
