@@ -119,102 +119,29 @@ le codebase utilisait déjà `GSC_CLIENT_EMAIL`, `GSC_SITE_URL`,
 
 ---
 
-## Source de vérité (SoT)
+## Gouvernance — pointer vault uniquement
 
-**La gouvernance AutoMecanik vit ici et nulle part ailleurs :**
+Toute la gouvernance (ADRs, rules T/G/AI/V, policies, MOCs, incidents, evidence-packs,
+runbooks) vit dans **un repo séparé** :
 
-| Canal | Emplacement |
-|-------|-------------|
-| **Runtime canonique (DEV VPS)** | `/opt/automecanik/governance-vault/` |
-| **Repository Git** | https://github.com/ak125/governance-vault |
-| **ADR fondateur** | `ADR-015 — Governance Vault as Single Source of Truth` |
+- Runtime DEV : `/opt/automecanik/governance-vault/`
+- GitHub : https://github.com/ak125/governance-vault
 
-Tous les documents `type: canon` (ADR, rules T/G/AI/V, MOCs, policies, evidence-packs,
-incidents, post-mortems, retrospectives, runbooks) **doivent** être créés, lus et modifiés
-**uniquement** dans le governance vault — jamais dans ce monorepo.
+Règles synthétiques (détails dans MEMORY.md `vault-sot-adr013.md`,
+`vault-flow-direction.md`, `feedback_branch_scope_discipline.md`) :
 
----
+1. **Aucune ADR / rule / policy / evidence-pack ne naît dans ce monorepo.** Ouvrir une
+   PR dans `ak125/governance-vault` (commit signé G3, voir ADR-015).
+2. **Ne jamais écrire dans `app/.local/governance-vault/`** — `.gitignored`, déprécié,
+   refusé par hook pre-commit. Régression G2 si fait → déplacer vers le runtime DEV.
+3. **Ne jamais dupliquer une rule canon** dans `.spec/`, `docs/governance/`, ou un
+   README — **linker** le vault, ne pas réécrire.
+4. **3-VPS** (ADR-012) : DEV = SoT canonique (write), PROD = mirror read-only,
+   AI-COS = lit via HTTPS GitHub. Kill-switch `AI_VAULT_WRITE=false`.
 
-## Anti-patterns (interdits)
-
-### 1. Ne PAS écrire dans `app/.local/governance-vault/`
-
-Ce chemin est `.gitignored` et **déprécié** (cf. ADR-015 du vault). Toute ressource produite
-ici est invisible, non-versionnée, et crée une dérive entre les VPS.
-
-**Si un agent (Claude Code, Cowork, Agent SDK, Codex) écrit accidentellement dans
-`app/.local/governance-vault/`, c'est une régression G2 (Zero Orphelin) — à corriger
-immédiatement en déplaçant le fichier vers `/opt/automecanik/governance-vault/` puis PR.**
-
-Un hook `pre-commit` côté monorepo refuse tout fichier sous `app/.local/governance-vault/`.
-
-### 2. Ne PAS dupliquer les règles de gouvernance dans le monorepo
-
-- Pas de `.spec/00-canon/*.md` qui réécrit ce que le vault dit déjà.
-- Pas de `docs/governance/*.md` — ce dossier n'existe pas dans ce monorepo.
-- Pas de `README.md` qui recopie les règles T/G/AI/V.
-
-Si tu as besoin de référencer une règle, **linke** le vault (wikilink ou URL GitHub),
-ne la réécris pas.
-
-### 3. Ne PAS décider depuis le monorepo
-
-Toute décision architecturale (ajout/modif d'ADR, changement de règle canon, nouvelle
-policy, nouvel evidence-pack) passe par le vault avec commit **signé** (G3) et PR
-reviewée. Aucune ADR ne naît dans `nestjs-remix-monorepo`.
-
----
-
-## Ce que CE monorepo contient (et uniquement ça)
-
-| Dossier | Rôle |
-|---------|------|
-| `backend/` | NestJS API |
-| `frontend/` | Remix SSR |
-| `shared/` | Types, contracts, utils partagés |
-| `scripts/` | Scripts de build, deploy, test |
-| `docker/` | Configs conteneurs |
-| `.github/workflows/` | CI/CD (tests, deploy, lint) |
-| `app/` | Application runtime (lecture seule côté governance) |
-
-**Aucun** dossier `governance/`, `docs/adrs/`, `.spec/00-canon/` ne doit être créé ici.
-
----
-
-## Workflow pour agents IA (Claude Code, Cowork, Codex)
-
-Quand un utilisateur demande à un agent de :
-
-- créer/modifier une ADR → **ouvrir** `/opt/automecanik/governance-vault/ledger/decisions/adr/` et créer une PR dans `ak125/governance-vault`
-- rédiger un post-mortem → **ouvrir** `/opt/automecanik/governance-vault/ledger/incidents/YYYY/`
-- mettre à jour une policy ou rule → **ouvrir** `/opt/automecanik/governance-vault/ops/rules/` ou `ledger/policies/`
-- consulter un evidence-pack → **lire** `/opt/automecanik/governance-vault/ledger/audits/evidence-packs/`
-- modifier une MOC → **ouvrir** `/opt/automecanik/governance-vault/ops/moc/`
-
-**Si l'agent n'a pas accès au vault**, il doit **refuser** la tâche et rediriger l'utilisateur
-vers la VPS DEV ou le repo GitHub — il ne doit **jamais** produire un substitut dans ce monorepo.
-
----
-
-## 3-VPS Architecture (rappel ADR-012 du vault)
-
-| VPS | Rôle | Gouvernance |
-|-----|------|-------------|
-| **DEV** (46.224.118.55) | Dev, CI artefacts, governance-vault runtime | **SoT canonique** (`/opt/automecanik/governance-vault/`) |
-| **PROD** (49.12.233.2) | Production | Read-only mirror via sync-canon (jamais de write) |
-| **AI-COS** (178.104.1.118) | Agents IA, Airlock | Lit le vault via HTTPS GitHub, ne write jamais |
-
-Ce monorepo peut être déployé sur DEV ou PROD, mais **aucun** des trois VPS ne doit
-écrire de gouvernance depuis le monorepo. Les agents IA s'adressent au vault sur DEV.
-
----
-
-## Références
-
-- [[ADR-012-aicos-vps-architecture]] (vault) — 3-VPS split
-- [[ADR-015-vault-single-source-of-truth]] (vault) — pourquoi ce pointer existe
-- [[rules-governance]] (vault) — règles G1 à G4 (Canon, Zero Orphelin, Signed Commits, CI Read-Only)
-- Kill-switch `AI_VAULT_WRITE=false` — voir `airlock-decisions-reference` dans le vault
+Ce monorepo contient uniquement : `backend/`, `frontend/`, `shared/`, `scripts/`,
+`docker/`, `.github/workflows/`, `app/`. **Aucun** `governance/`, `docs/adrs/`,
+`.spec/00-canon/`.
 
 ---
 
