@@ -3,10 +3,21 @@ name: 🎯 Performance Gates
 on:
   pull_request:
     branches: [main]
+    # Trigger restreint au code source qui peut affecter le rendu mesuré par
+    # Lighthouse. Les bumps de dev-deps (eslint-config-prettier, vite-tsconfig-paths,
+    # storybook, etc.) ne touchent que `package.json` / `package-lock.json` et
+    # n'ont aucun impact sur la perf rendue — les déclencher faisait tourner CWV
+    # pour rien et bloquait inutilement les PRs Dependabot (5 PRs simultanément
+    # bloquées le 2026-05-04 : #279, #280, #281, #282, #283).
+    # Si un bump runtime dep frontend doit être audité (ex: react major), utiliser
+    # `workflow_dispatch` ou tester en local avec lhci.
     paths:
-      - 'frontend/**'
-      - 'backend/src/**'
-      - 'packages/**'
+      - 'frontend/app/**'           # source SSR (Remix routes, components, services)
+      - 'frontend/public/**'        # assets statiques
+      - 'frontend/vite.config.ts'   # config build qui affecte le bundle
+      - 'frontend/tsconfig.json'    # peut changer l'output TS
+      - 'backend/src/**'            # source backend (impacte SSR + RPC)
+      - 'packages/*/src/**'         # source des packages partagés
       # Self-trigger : changes to this workflow (budgets, permissions,
       # env, paths) must re-run the workflow to validate them. Without
       # this entry, fixes to the workflow file silently ship without CI
