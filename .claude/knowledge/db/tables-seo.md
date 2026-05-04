@@ -45,7 +45,7 @@ last_scan: 2026-04-24
 ## Règles associées
 
 - `.claude/rules/backend.md` — SupabaseBaseService, pas de Prisma
-- `.claude/rules/agent-exit-contract.md` — anti-overclaim agents SEO
+- `.claude/canon-mirrors/agent-exit-contract.md` — anti-overclaim agents SEO
 - MEMORY.md : `qa-seo.md`, `kw-pipeline-gads.md`, `kw-pipeline-status.md`, `r4-batch-progress.md`
 
 ## Accès

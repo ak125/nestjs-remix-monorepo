@@ -10,14 +10,14 @@ on:
   push:
     branches: [main]
     paths:
-      - ".claude/rules/marketing-voice.md"
-      - "workspaces/marketing/.claude/rules/marketing-voice.md"
+      - ".claude/canon-mirrors/marketing-voice.md"
+      - "workspaces/marketing/.claude/canon-mirrors/marketing-voice.md"
       - "scripts/ci/check-marketing-voice-hash.sh"
       - ".github/workflows/marketing-voice-hash.yml"
   pull_request:
     paths:
-      - ".claude/rules/marketing-voice.md"
-      - "workspaces/marketing/.claude/rules/marketing-voice.md"
+      - ".claude/canon-mirrors/marketing-voice.md"
+      - "workspaces/marketing/.claude/canon-mirrors/marketing-voice.md"
       - "scripts/ci/check-marketing-voice-hash.sh"
       - ".github/workflows/marketing-voice-hash.yml"
   schedule:
@@ -37,8 +37,8 @@ jobs:
       fail-fast: false
       matrix:
         copy:
-          - .claude/rules/marketing-voice.md
-          - workspaces/marketing/.claude/rules/marketing-voice.md
+          - .claude/canon-mirrors/marketing-voice.md
+          - workspaces/marketing/.claude/canon-mirrors/marketing-voice.md
     steps:
       - uses: actions/checkout@v4
       - name: Verify ${{ matrix.copy }}

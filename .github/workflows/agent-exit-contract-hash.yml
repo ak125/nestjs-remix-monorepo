@@ -8,16 +8,16 @@ on:
   push:
     branches: [main]
     paths:
-      - ".claude/rules/agent-exit-contract.md"
-      - "workspaces/seo-batch/.claude/rules/agent-exit-contract.md"
-      - "workspaces/marketing/.claude/rules/agent-exit-contract.md"
+      - ".claude/canon-mirrors/agent-exit-contract.md"
+      - "workspaces/seo-batch/.claude/canon-mirrors/agent-exit-contract.md"
+      - "workspaces/marketing/.claude/canon-mirrors/agent-exit-contract.md"
       - "scripts/ci/check-aec-hash.sh"
       - ".github/workflows/agent-exit-contract-hash.yml"
   pull_request:
     paths:
-      - ".claude/rules/agent-exit-contract.md"
-      - "workspaces/seo-batch/.claude/rules/agent-exit-contract.md"
-      - "workspaces/marketing/.claude/rules/agent-exit-contract.md"
+      - ".claude/canon-mirrors/agent-exit-contract.md"
+      - "workspaces/seo-batch/.claude/canon-mirrors/agent-exit-contract.md"
+      - "workspaces/marketing/.claude/canon-mirrors/agent-exit-contract.md"
       - "scripts/ci/check-aec-hash.sh"
       - ".github/workflows/agent-exit-contract-hash.yml"
   schedule:
@@ -37,9 +37,9 @@ jobs:
       fail-fast: false
       matrix:
         copy:
-          - .claude/rules/agent-exit-contract.md
-          - workspaces/seo-batch/.claude/rules/agent-exit-contract.md
-          - workspaces/marketing/.claude/rules/agent-exit-contract.md
+          - .claude/canon-mirrors/agent-exit-contract.md
+          - workspaces/seo-batch/.claude/canon-mirrors/agent-exit-contract.md
+          - workspaces/marketing/.claude/canon-mirrors/agent-exit-contract.md
     steps:
       - uses: actions/checkout@v4
       - name: Verify ${{ matrix.copy }}

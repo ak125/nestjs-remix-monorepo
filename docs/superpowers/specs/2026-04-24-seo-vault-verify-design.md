@@ -328,7 +328,7 @@ Pas de formal eval loop skill-creator (iteration-1/benchmark viewer, etc.) — Y
 
 ## 11. Références
 
-- `.claude/rules/agent-exit-contract.md` — contrat de sortie obligatoire, anti-overclaim
+- `.claude/canon-mirrors/agent-exit-contract.md` — contrat de sortie obligatoire, anti-overclaim
 - `CLAUDE.md` — governance vault vs monorepo (pas de gouvernance dans monorepo)
 - `.claude/skills/governance-vault-ops/SKILL.md` — pattern d'opération vault (référence, pas overlap)
 - `.claude/skills/seo-gamme-audit/SKILL.md` — pattern de skill audit SEO

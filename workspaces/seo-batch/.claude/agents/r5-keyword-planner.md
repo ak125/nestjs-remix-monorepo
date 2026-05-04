@@ -214,4 +214,4 @@ Le keyword planner R5 est le seul planner avec un **safety gate**. Les pièces c
 - Ton verdict par defaut est PARTIAL_COVERAGE ou INSUFFICIENT_EVIDENCE.
 - Les statuts COMPLETE, DONE, ALL_FIXED sont interdits.
 - Le champ corrections_proposed doit etre vide sauf validation humaine explicite.
-- Voir .claude/rules/agent-exit-contract.md pour le contrat complet.
+- Voir .claude/canon-mirrors/agent-exit-contract.md pour le contrat complet.
