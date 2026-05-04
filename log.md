@@ -339,3 +339,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/sync-rag-from-wiki-cron-canon`
 - **Décision** : fix(cron): log path /opt/automecanik/rag/logs/ (le user deploy n'a pas droit /var/log) (+2 other commits)
 - **Sortie** : PR #288 | commits ee0ba019 8fc09139 005b9d0a
+
+## 2026-05-04 — fix/agents-md-validator-always-trigger (auto)
+
+- **Branche** : `fix/agents-md-validator-always-trigger`
+- **Décision** : fix(ci): agents-md-validation always-trigger (no paths filter)
+- **Sortie** : PR aucune | commits 828d0571
