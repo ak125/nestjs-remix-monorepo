@@ -34,8 +34,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-
+      # Pas de `actions/checkout` ici : DEV Safety GATE-3 interdit la combinaison
+      # `pull_request_target` + `actions/checkout` (risque d'exécution de code
+      # malveillant si une PR fork modifie un script). `dependabot/fetch-metadata`
+      # n'a pas besoin du repo en local. L'action `anthropics/claude-code-action@v1`
+      # gère son propre checkout en interne.
       - name: Fetch Dependabot metadata
         id: meta
         uses: dependabot/fetch-metadata@v2
