@@ -11,11 +11,14 @@ NOTE : faq / common_issues / maintenance_tips ne sont PAS dans ce frontmatter.
 L'enricher R7 les charge directement depuis la table __seo_brand_editorial
 au runtime, pour permettre la curation admin sans rebuild du .md.
 
-Écrit : /opt/automecanik/rag/knowledge/constructeurs/{slug}.md
+Écrit : automecanik-wiki/exports/rag/constructeurs/{slug}.md (artefact auto, ADR-031 §D20)
 Body préservé (seul le frontmatter est régénéré).
 
+Configurable via env :
+  AUTOMECANIK_WIKI_PATH (default /opt/automecanik/automecanik-wiki)
+
 Usage :
-  python3 scripts/rag/build-brand-rag.py [--brand alias] [--limit N] [--dry-run]
+  python3 scripts/wiki-generators/brand-fiche-generator.py [--brand alias] [--limit N] [--dry-run]
 """
 
 from __future__ import annotations
@@ -39,7 +42,12 @@ except ImportError:
     sys.exit(1)
 
 # === CONFIG ===
-BRANDS_DIR = Path("/opt/automecanik/rag/knowledge/constructeurs")
+# OUTPUT path : wiki/exports/rag/constructeurs/ (ADR-031 §D20).
+# Cohérent avec pipeline canon : générateur produit l'auto-gen direct dans
+# wiki/exports/rag/, qui est ensuite mirroré vers automecanik-rag/knowledge/
+# via CI workflow sync-from-wiki (Étape 7 plan v3 pending).
+WIKI_REPO = Path(os.environ.get("AUTOMECANIK_WIKI_PATH", "/opt/automecanik/automecanik-wiki"))
+BRANDS_DIR = WIKI_REPO / "exports" / "rag" / "constructeurs"
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://cxpojprgwgubzjyqzmoq.supabase.co")
 SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 WIKIDATA_SPARQL = "https://query.wikidata.org/sparql"

@@ -315,3 +315,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/bump-wiki-submodule-pointer`
 - **Décision** : chore: bump wiki submodule pointer to current origin/main
 - **Sortie** : PR #273 | commits 707a1775
+
+## 2026-05-03 — feat/wiki-generators-output-redirect (auto)
+
+- **Branche** : `feat/wiki-generators-output-redirect`
+- **Décision** : feat(scripts): refactor placement vers sous-dossiers thematiques (Etape 5 plan v3)
+- **Sortie** : PR aucune | commits b6400f07
