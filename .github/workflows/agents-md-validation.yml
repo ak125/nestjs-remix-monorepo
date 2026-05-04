@@ -1,20 +1,20 @@
 name: agents-md-validation
 
+# Aucun `paths` filter : le workflow tourne sur CHAQUE PR + push main.
+# Justification (P1 vault `audit-claude-md-agents-md-validator-20260503.md`) :
+#   - paths-filtered + required-check → PR ne touchant aucun path → check
+#     « expected mais missing » → blocage merge silencieux (cf. PR #273 BEHIND).
+#   - Le validateur lui-même est ultra-rapide (<10s total) sur un diff vide :
+#     `--diff` retourne 0 fichier scanné → exit 0 PASS, `--all` retourne 0 BLOCK.
+#   - Pas de coût CI significatif : shellcheck (~1s) + self-test (~1s) +
+#     diff (<1s sur diff vide) + all (~6s sur les 11 AGENTS.md/CLAUDE.md).
+# Si `agents-md-validation` est ajouté un jour aux required checks de
+# `branches/main/protection`, ce design empêche le piège paths-filter.
 on:
   pull_request:
-    paths:
-      - 'agents/**/AGENTS.md'
-      - '**/CLAUDE.md'
-      - '.claude/rules/**'
-      - 'scripts/agents/**'
-      - '.github/workflows/agents-md-validation.yml'
   push:
     branches:
       - main
-    paths:
-      - 'agents/**/AGENTS.md'
-      - '**/CLAUDE.md'
-      - 'scripts/agents/**'
 
 jobs:
   validate:
