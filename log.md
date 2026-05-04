@@ -327,3 +327,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/perf-gates-read-only-adr028`
 - **Décision** : fix(ci): mock SERVICE_ROLE_KEY for boot — ~30 services bypass SupabaseBaseService (+1 other commit)
 - **Sortie** : PR #285 | commits 442f5956 af006c72
+
+## 2026-05-04 — feat/plan-v3-step9-precommit-rag-paths (auto)
+
+- **Branche** : `feat/plan-v3-step9-precommit-rag-paths`
+- **Décision** : feat(ci): block direct writes to rag/knowledge/ in refactored dirs (Étape 9 plan v3)
+- **Sortie** : PR #290 | commits 05b918f2
