@@ -20,7 +20,7 @@
 # Cron cadence : hourly. Le sync est idempotent (sha256 check) donc no-op si
 # rien n'a changé.
 #
-# Logs : /var/log/automecanik/sync-rag-from-wiki.log (mkdir -p si absent).
+# Logs : /opt/automecanik/rag/logs/sync-rag-from-wiki.log (mkdir -p si absent).
 #
 # Env (optionnels, defaults sains pour DEV VPS) :
 #   AUTOMECANIK_WIKI_PATH (default /opt/automecanik/automecanik-wiki)
@@ -33,7 +33,7 @@ WIKI_PATH="${AUTOMECANIK_WIKI_PATH:-/opt/automecanik/automecanik-wiki}"
 RAG_PATH="${AUTOMECANIK_RAG_PATH:-/opt/automecanik/rag}"
 APP_PATH="${APP_PATH:-/opt/automecanik/app}"
 SYNC_SCRIPT="$APP_PATH/scripts/rag-sync/sync-wiki-exports-to-rag.py"
-LOG_DIR="/var/log/automecanik"
+LOG_DIR="/opt/automecanik/rag/logs"
 LOG_FILE="$LOG_DIR/sync-rag-from-wiki.log"
 
 mkdir -p "$LOG_DIR"

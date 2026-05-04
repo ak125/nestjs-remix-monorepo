@@ -19,7 +19,7 @@ Une seule ligne à ajouter au crontab DEV (`crontab -e`) :
 ```bash
 # Première run manuelle (pour vérifier les credentials, paths, idempotence)
 /opt/automecanik/app/scripts/cron/sync-rag-from-wiki.sh
-tail -50 /var/log/automecanik/sync-rag-from-wiki.log
+tail -50 /opt/automecanik/rag/logs/sync-rag-from-wiki.log
 
 # Status post-run
 cd /opt/automecanik/rag && git log --oneline -1
