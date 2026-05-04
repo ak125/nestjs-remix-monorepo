@@ -345,3 +345,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/agents-md-validator-always-trigger`
 - **Décision** : fix(ci): agents-md-validation always-trigger (no paths filter)
 - **Sortie** : PR aucune | commits 828d0571
+
+## 2026-05-04 — fix/agents-md-validator-always-trigger (auto)
+
+- **Branche** : `fix/agents-md-validator-always-trigger`
+- **Décision** : Merge remote-tracking branch 'origin/main' into fix/agents-md-validator-always-trigger (+2 other commits)
+- **Sortie** : PR #293 | commits ae0a5e36 cc16626a 828d0571
