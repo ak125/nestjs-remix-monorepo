@@ -26,6 +26,7 @@ import {
   GROUP_TABLE_MAP,
 } from './field-catalog.constants';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { getEffectiveSupabaseKey } from '@common/utils';
 
 export interface OwnershipViolation {
   field: string;
@@ -41,7 +42,8 @@ export class WriteGuardCasService {
 
   constructor(private readonly config: ConfigService) {
     const url = this.config.get<string>('SUPABASE_URL') || '';
-    const key = this.config.get<string>('SUPABASE_SERVICE_ROLE_KEY') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const key = getEffectiveSupabaseKey();
     this.supabase = createClient(url, key);
   }
 

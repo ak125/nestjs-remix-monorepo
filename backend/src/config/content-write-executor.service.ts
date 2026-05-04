@@ -17,6 +17,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { getEffectiveSupabaseKey } from '@common/utils';
 import type {
   ResourceGroup,
   WriteLockHandle,
@@ -52,7 +53,8 @@ export class ContentWriteExecutor {
     private readonly featureFlags: FeatureFlagsService,
   ) {
     const url = this.config.get<string>('SUPABASE_URL') || '';
-    const key = this.config.get<string>('SUPABASE_SERVICE_ROLE_KEY') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const key = getEffectiveSupabaseKey();
     this.supabase = createClient(url, key);
   }
 
