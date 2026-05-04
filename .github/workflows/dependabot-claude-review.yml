@@ -1,0 +1,119 @@
+name: 🤖 Dependabot Claude Review
+
+# Review automatique des PRs Dependabot que les règles déterministes de
+# `dependabot-auto-merge.yml` ne couvrent pas (= dev-majors et runtime-bumps).
+# Pour les patches / dev-minors / GitHub Actions, le job se skip et laisse
+# l'auto-merge déterministe faire son travail.
+#
+# Activation contrôlée par deux variables repo (à créer côté Settings) :
+#   - vars.CLAUDE_REVIEW_ENABLED  : kill-switch global (true|false)
+#   - vars.CLAUDE_REVIEW_DRY_RUN  : commenter sans merger (true|false)
+# Et le secret repo `ANTHROPIC_API_KEY`.
+#
+# Voir plan rev 1 : /home/deploy/.claude/plans/aller-au-contenu-utiliser-dapper-rose.md
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    if: |
+      github.actor == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      vars.CLAUDE_REVIEW_ENABLED == 'true' &&
+      !contains(github.event.pull_request.labels.*.name, 'dependabot-hold')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Pas de `actions/checkout` ici : DEV Safety GATE-3 interdit la combinaison
+      # `pull_request_target` + `actions/checkout` (risque d'exécution de code
+      # malveillant si une PR fork modifie un script). `dependabot/fetch-metadata`
+      # n'a pas besoin du repo en local. L'action `anthropics/claude-code-action@v1`
+      # gère son propre checkout en interne.
+      - name: Fetch Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+
+      - name: Skip if already auto-mergeable (deterministic rules)
+        id: skip-check
+        run: |
+          ut="${{ steps.meta.outputs.update-type }}"
+          dt="${{ steps.meta.outputs.dependency-type }}"
+          eco="${{ steps.meta.outputs.package-ecosystem }}"
+          if [ "$ut" = "version-update:semver-patch" ] || \
+             { [ "$ut" = "version-update:semver-minor" ] && [ "$dt" = "direct:development" ]; } || \
+             [ "$eco" = "github_actions" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Bump couvert par dependabot-auto-merge.yml — Claude review skipped."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "🔎 Bump non couvert par les règles déterministes — Claude review nécessaire."
+            echo "   update-type=$ut dependency-type=$dt ecosystem=$eco"
+          fi
+
+      - name: Claude review
+        if: steps.skip-check.outputs.skip == 'false'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_bots: "dependabot[bot]"
+          claude_args: "--model claude-haiku-4-5-20251001"
+          prompt: |
+            You are reviewing a Dependabot PR on ak125/nestjs-remix-monorepo
+            (NestJS backend + Remix frontend). Bias toward HOLD on any doubt.
+
+            BUMP DETAILS
+            - Dependency: ${{ steps.meta.outputs.dependency-names }}
+            - Update type: ${{ steps.meta.outputs.update-type }}
+            - Dependency scope: ${{ steps.meta.outputs.dependency-type }}
+            - Ecosystem: ${{ steps.meta.outputs.package-ecosystem }}
+            - PR number: ${{ github.event.pull_request.number }}
+            - PR URL: ${{ github.event.pull_request.html_url }}
+
+            STEPS
+            1. Read PR body / release notes via `gh pr view ${{ github.event.pull_request.number }}`.
+            2. Read the actual diff via `gh pr diff ${{ github.event.pull_request.number }}`.
+            3. Grep usage in codebase:
+               `grep -rn '<dep>' --include='*.ts' --include='*.tsx' frontend/app backend/src packages | head -50`.
+            4. Ecosystem coupling check — if the dep matches `@storybook/*`,
+               `@nestjs/*`, `@remix-run/*`, `@tiptap/*`, `@radix-ui/*`,
+               `@vitejs/*`, verify all peers in `package.json` (root +
+               frontend + backend + packages/*) are at the same major. If
+               mismatch → HOLD.
+            5. Decide GO only if ALL of:
+               (a) no breaking change applies to current code usage,
+               (b) ecosystem peers compatible (no major mismatch),
+               (c) changelog reports no runtime behavior change OR change is opt-in.
+
+            ACTIONS
+            - GO + (update-type ≠ semver-major OR dependency-type ≠ direct:production):
+              run
+              `gh pr review ${{ github.event.pull_request.number }} --approve --body "Auto-approved by Claude review (model: claude-haiku-4-5)."`
+              then
+              `gh pr merge ${{ github.event.pull_request.number }} --auto --squash`.
+            - GO + (update-type == semver-major AND dependency-type == direct:production):
+              post comment via
+              `gh pr comment ${{ github.event.pull_request.number }} --body "VERDICT: GO (manual approval required for runtime-major bump)\n\nReason: <your reason>"` —
+              DO NOT run `gh pr merge`.
+            - HOLD: post comment via
+              `gh pr comment ${{ github.event.pull_request.number }} --body "VERDICT: HOLD\n\nReason: <your reason>"`
+              then run
+              `gh pr edit ${{ github.event.pull_request.number }} --add-label dependabot-hold`.
+
+            DRY-RUN MODE
+            If `${{ vars.CLAUDE_REVIEW_DRY_RUN }}` == "true": post the verdict
+            as a comment ONLY (with prefix "[DRY-RUN] "), never run
+            `gh pr merge` or add the label.
+
+            End your reply with one line: `VERDICT: GO|HOLD - <reason ≤200 chars>`.
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

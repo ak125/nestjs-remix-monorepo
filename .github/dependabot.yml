@@ -21,6 +21,24 @@ updates:
       dev-dependencies:
         dependency-type: "development"
         update-types: ["minor", "patch"]
+      # Ecosystem-coupling groups : forcent les bumps cohérents pour les
+      # familles qui doivent rester alignées sur le même major (sinon
+      # incompat runtime, cf. cas #280 storybook 9 vs addon-onboarding@10
+      # le 2026-05-04). Dependabot émettra une seule PR par écosystème
+      # plutôt que des PRs partielles.
+      storybook-ecosystem:
+        patterns:
+          - "storybook"
+          - "@storybook/*"
+      tiptap-ecosystem:
+        patterns:
+          - "@tiptap/*"
+      vite-ecosystem:
+        patterns:
+          - "vite"
+          - "vitest"
+          - "@vitejs/*"
+          - "vite-tsconfig-paths"
 
   - package-ecosystem: "docker"
     directory: "/"
