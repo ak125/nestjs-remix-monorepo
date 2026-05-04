@@ -60,8 +60,11 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY }}
+          # Fallback aux mocks quand les secrets ne sont pas exposés (PRs Dependabot
+          # et forks — politique GitHub 2021 anti-exfiltration). Le build TypeScript
+          # n'exécute pas Nest donc les valeurs n'ont pas besoin d'être réelles.
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mock.supabase.co' }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY || 'ci-mock-anon-key' }}
 
       - name: Start server
         run: |
@@ -95,9 +98,22 @@ jobs:
           RAG_SERVICE_URL: http://disabled:8000
           RAG_API_KEY: ci-mock-rag-api-key-not-for-production-use
           REDIS_URL: redis://localhost:6379
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # ADR-028 Option D : le backend boote en read-only sans SERVICE_ROLE_KEY
+          # depuis PRs #246/#274/#276/#277 (mergées 2026-05-03). Lighthouse CWV ne
+          # fait que des HTTP GET sur des pages SSR cachées — READ_ONLY=true suffit.
+          # Cohérent avec ci.yml:705-709 (job `deploy`, premier consommateur du
+          # contrat). Préserve le principe de moindre privilège : aucun workflow CI
+          # n'a besoin de SERVICE_ROLE_KEY pour mesurer la performance frontend.
+          # Bénéfice transverse : ce job échouait systématiquement sur les PRs
+          # Dependabot car GitHub n'expose pas les Actions secrets aux PRs créées
+          # par les bots externes (politique anti-exfiltration depuis 2021). Avec
+          # READ_ONLY=true + fallbacks mocks, les bumps de dev-deps passent CWV
+          # (et les bumps runtime restent évalués par Lighthouse comme avant).
+          READ_ONLY: "true"
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mock.supabase.co' }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY || 'ci-mock-anon-key' }}
+          # SUPABASE_SERVICE_ROLE_KEY : retiré volontairement — non requis sous
+          # READ_ONLY=true (EnvValidation l'exempte depuis PR #274).
           SESSION_SECRET: ci-perf-test-session-secret-not-for-production-use
           SYSTEMPAY_SITE_ID: "00000000"
           SYSTEMPAY_CERTIFICATE_PROD: "ci-mock-systempay-certificate-prod-not-for-production-use"
