@@ -613,6 +613,9 @@ def main():
                         help='Écraser les gammes déjà oem_verified (défaut: skip)')
     args = parser.parse_args()
 
+    if not args.dry_run:
+        os.makedirs(GAMMES_DIR, exist_ok=True)
+
     print("Étape 1 : Mapping gammes → fichiers web OEM...")
     mapping = build_gamme_mapping()
 
