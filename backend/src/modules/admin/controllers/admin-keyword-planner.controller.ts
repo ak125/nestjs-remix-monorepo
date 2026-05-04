@@ -19,6 +19,7 @@ import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
+import { getEffectiveSupabaseKey } from '@common/utils';
 import { R1ContentFromRagService } from '../services/r1-content-from-rag.service';
 import { R1KeywordPlanBatchService } from '../services/r1-keyword-plan-batch.service';
 
@@ -46,9 +47,10 @@ export class AdminKeywordPlannerController {
     @Optional() private readonly r1ContentFromRag?: R1ContentFromRagService,
     @Optional() @Inject(CACHE_MANAGER) private readonly cacheManager?: Cache,
   ) {
-    const url = this.configService.get<string>('SUPABASE_URL');
-    const key = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
-    this.supabase = createClient(url!, key!);
+    const url = this.configService.get<string>('SUPABASE_URL') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const key = getEffectiveSupabaseKey();
+    this.supabase = createClient(url, key);
   }
 
   /**

@@ -14,6 +14,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
+import { getEffectiveSupabaseKey } from '@common/utils';
 import { google } from 'googleapis';
 import { GoogleCredentialsService } from './google-credentials.service';
 import { SeoMonitoringRunsService } from './seo-monitoring-runs.service';
@@ -43,10 +44,13 @@ export class GscLinksFetcherService {
     private readonly runsService: SeoMonitoringRunsService,
     configService: ConfigService,
   ) {
-    const url = configService.get<string>('SUPABASE_URL');
-    const key = configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
+    const url = configService.get<string>('SUPABASE_URL') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const key = getEffectiveSupabaseKey();
     if (!url || !key) {
-      throw new Error('GscLinksFetcherService: Supabase env missing');
+      this.logger.warn(
+        'GscLinksFetcherService: Supabase env missing — service will fail on first call',
+      );
     }
     this.supabase = createClient(url, key, {
       auth: { autoRefreshToken: false, persistSession: false },
