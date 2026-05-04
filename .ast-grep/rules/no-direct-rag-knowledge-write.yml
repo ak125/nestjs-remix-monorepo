@@ -1,0 +1,42 @@
+id: no-direct-rag-knowledge-write
+language: python
+severity: warning
+message: |
+  Écriture directe vers `automecanik-rag/knowledge/` (ou `/opt/automecanik/rag/knowledge/`)
+  interdite. Ce répertoire est un MIRROR généré automatiquement depuis
+  `automecanik-wiki/exports/rag/` via le CI workflow `sync-rag-from-wiki.yml`
+  (ADR-031 §D20/D22, plan v3 §Étape 7).
+
+  Pipeline canon :
+    automecanik-raw/         (sources brutes)
+        ↓
+    scripts/wiki-generators/ (lit raw + DB → wiki/exports/rag/)
+        ↓
+    automecanik-wiki/exports/rag/<entity>/<slug>.md
+        ↓ CI sync
+    automecanik-rag/knowledge/<entity>/<slug>.md  ← MIRROR, jamais écrit à la main
+
+  Si vous avez besoin de produire du contenu RAG, écrivez dans
+  `automecanik-wiki/exports/rag/<cat>/` via un script `wiki-generators/` ou
+  `wiki-exports/` au lieu de cibler rag/knowledge/ directement.
+
+  Pour rejouer une migration legacy ou un rollback ponctuel, le marker
+  `rollback-documented` dans le commit message bypass la garde D22 côté
+  `automecanik-rag` (voir `.githooks/commit-msg` + workflow CI
+  `d22-protected-paths.yml` côté rag).
+files:
+  # Scope étroit aux dossiers refactorisés du plan v3 §Étape 5. Les scripts
+  # legacy `scripts/seo/` et `scripts/rag/` (ingester) sont hors scope —
+  # à intégrer quand ce chantier sera entrepris séparément.
+  - scripts/wiki-generators/**/*.py
+  - scripts/wiki-exports/**/*.py
+  - scripts/raw-downloaders/**/*.py
+ignores:
+  # Le sync officiel a le droit d'écrire vers rag/knowledge — c'est sa raison d'être.
+  - scripts/rag-sync/**
+  # Tests / fixtures peuvent référencer le path en literal.
+  - scripts/**/test_*.py
+  - scripts/**/*_test.py
+rule:
+  kind: string
+  regex: '(automecanik-rag/knowledge/|/opt/automecanik/rag/knowledge/)'
