@@ -7,11 +7,14 @@ Sources (ordre de priorité) :
   2. Pages OEM statiques vérifiées (textar.com, gates.com, monroe.com, bremboparts.com…)
 
 Cible : 221 gammes avec phase5_enrichment insuffisant (< 2 signaux types/mats/norms).
-Output : fichiers .md dans /opt/automecanik/rag/knowledge/web/ (format corpus existant).
+Output : fichiers .md dans automecanik-raw/recycled/rag-knowledge/web/ (format corpus existant).
+
+Configurable via env :
+  AUTOMECANIK_RAW_PATH (default /opt/automecanik/automecanik-raw)
 
 Usage:
-  python3 scripts/rag/download-oem-corpus.py [--dry-run] [--limit 20] [--category freinage]
-  python3 scripts/rag/download-oem-corpus.py --gamme alternateur
+  python3 scripts/raw-downloaders/download-oem-corpus.py [--dry-run] [--limit 20] [--category freinage]
+  python3 scripts/raw-downloaders/download-oem-corpus.py --gamme alternateur
 """
 
 import os

@@ -23,7 +23,7 @@ brute avec l'URL d'origine dans le frontmatter/_meta. Toute synthèse doit
 passer par un humain ou un second script dédié avec validation.
 
 Output :
-  /opt/automecanik/rag/knowledge/web/brands/{alias}/
+  automecanik-raw/recycled/rag-knowledge/web/brands/{alias}/
     wikipedia-fr-main.md
     wikipedia-fr-models.md
     wikipedia-en-main.md
@@ -59,11 +59,12 @@ except ImportError:
     sys.exit(1)
 
 # === CONFIG ========================================================
-# AUTOMECANIK_RAW_PATH overrides the rag-knowledge root for ADR-031 Phase D.
-# Default keeps the legacy location so unset = no behavioral change.
-RAW_KNOWLEDGE_ROOT = Path(os.getenv("AUTOMECANIK_RAW_PATH", "/opt/automecanik/rag/knowledge"))
-BRANDS_RAG_DIR = RAW_KNOWLEDGE_ROOT / "constructeurs"
-OUTPUT_ROOT = RAW_KNOWLEDGE_ROOT / "web" / "brands"
+# Post Phase C + PR raw #15 : le contenu rag/knowledge/ est migré dans
+# automecanik-raw/recycled/rag-knowledge/. Default canon = repo raw.
+RAW_REPO = Path(os.getenv("AUTOMECANIK_RAW_PATH", "/opt/automecanik/automecanik-raw"))
+RECYCLED_RAG_KNOWLEDGE = RAW_REPO / "recycled" / "rag-knowledge"
+BRANDS_RAG_DIR = RECYCLED_RAG_KNOWLEDGE / "constructeurs"
+OUTPUT_ROOT = RECYCLED_RAG_KNOWLEDGE / "web" / "brands"
 
 SUPABASE_URL = os.environ.get(
     "SUPABASE_URL", "https://cxpojprgwgubzjyqzmoq.supabase.co"
