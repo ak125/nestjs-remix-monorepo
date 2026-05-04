@@ -531,6 +531,9 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
+    if not args.dry_run:
+        BRANDS_DIR.mkdir(parents=True, exist_ok=True)
+
     brands = fetch_brands()
     if args.brand:
         brands = [b for b in brands if b["marque_alias"] == args.brand]
