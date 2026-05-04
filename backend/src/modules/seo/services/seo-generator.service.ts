@@ -1,12 +1,12 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { getEffectiveSupabaseKey } from '@common/utils';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const matter = require('gray-matter');
 
-import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { SITE_ORIGIN } from '../../../config/app.config';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 
@@ -133,16 +133,14 @@ export class SeoGeneratorService {
     @Optional() private readonly qualityValidator?: QualityValidatorService,
     @Optional() private readonly aiContentService?: AiContentService,
   ) {
-    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>(
-      'SUPABASE_SERVICE_ROLE_KEY',
-    );
+    const supabaseUrl = this.configService.get<string>('SUPABASE_URL') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const supabaseKey = getEffectiveSupabaseKey();
 
     if (!supabaseUrl || !supabaseKey) {
-      throw new DatabaseException({
-        code: ErrorCodes.DATABASE.CONFIG_MISSING,
-        message: 'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be defined',
-      });
+      this.logger.warn(
+        'SeoGeneratorService: SUPABASE_URL ou clé Supabase manquant — service will fail on first call',
+      );
     }
 
     this.supabase = createClient(supabaseUrl, supabaseKey);

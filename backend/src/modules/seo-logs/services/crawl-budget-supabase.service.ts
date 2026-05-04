@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { getEffectiveSupabaseKey } from '@common/utils';
 
 export interface CrawlBudgetExperiment {
   id: string;
@@ -43,13 +44,16 @@ export class CrawlBudgetSupabaseService {
 
   constructor() {
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const supabaseKey = getEffectiveSupabaseKey();
 
     if (!supabaseUrl || !supabaseKey) {
-      this.logger.warn('⚠️ SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set');
+      this.logger.warn(
+        '⚠️ SUPABASE_URL or Supabase key not set — CrawlBudgetSupabaseService disabled',
+      );
     }
 
-    this.supabase = createClient(supabaseUrl || '', supabaseKey || '');
+    this.supabase = createClient(supabaseUrl || '', supabaseKey);
   }
 
   /**

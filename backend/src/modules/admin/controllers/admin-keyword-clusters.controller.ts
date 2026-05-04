@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
+import { getEffectiveSupabaseKey } from '@common/utils';
 import { KeywordDensityGateService } from '../services/keyword-density-gate.service';
 
 // Expected overlaps (source of truth: scripts/seo/expected-overlaps.json)
@@ -17,9 +18,10 @@ export class AdminKeywordClustersController {
   private readonly supabase: SupabaseClient;
 
   constructor(private readonly configService: ConfigService) {
-    const url = this.configService.get<string>('SUPABASE_URL');
-    const key = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
-    this.supabase = createClient(url!, key!);
+    const url = this.configService.get<string>('SUPABASE_URL') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const key = getEffectiveSupabaseKey();
+    this.supabase = createClient(url, key);
   }
 
   /**
