@@ -85,7 +85,11 @@ is_exempt() {
 
 # Pattern : literal between quotes (`'`, `"`, or backtick). Mirrors ast-grep's
 # `kind: string` semantics for non-Python files. Comments without quotes pass.
-pattern='([\x27"`])(automecanik-rag/knowledge/|/opt/automecanik/rag/knowledge/)'
+# POSIX ERE char class : single quote injected via $'\047' (ANSI-C octal).
+# Avoids the \x27 hex escape which is PCRE-only and silently misses single
+# quotes under grep -E on stock GNU/BSD grep.
+quote_class=$'[\047"`]'
+pattern="${quote_class}(automecanik-rag/knowledge/|/opt/automecanik/rag/knowledge/)"
 
 # File extensions where a quoted path is a real anti-pattern.
 ext_re='\.(py|ts|tsx|js|mjs|cjs|sh|yml|yaml)$'
