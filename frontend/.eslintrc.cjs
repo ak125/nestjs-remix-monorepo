@@ -68,5 +68,22 @@ module.exports = {
 				},
 			},
 		},
+		// ── PR-3a SEO role canon : SoT files exempt from legacy literal warning ──
+		// These files DEFINE the canon (PageRole enum, R6GuidePayload typed
+		// literals, etc.) — they MUST contain the literal forms. The legacy
+		// literal rule (Literal[value=/^(R3_BLOG|...)$/]) targets OUTPUT contexts,
+		// not type definitions. Mirrors backend/.eslintrc.js overrides.
+		{
+			files: [
+				'app/utils/page-role.types.ts',
+				'app/types/r6-guide.types.ts',
+				'**/__tests__/**',
+				'**/__fixtures__/**',
+				'**/*.{spec,test}.{ts,tsx}',
+			],
+			rules: {
+				'no-restricted-syntax': 'off',
+			},
+		},
 	],
 };

@@ -1,13 +1,18 @@
 /**
  * SEO Role canon guard — regression fixture (PR-3a / PR-3b)
  *
- * This file is intentionally suffixed `.test.ts.disabled` so it's NOT picked
- * up by Jest, ast-grep, or ESLint at rest. To verify the canon enforcement
- * rules trigger correctly (ast-grep + ESLint union coverage), rename to
- * `.test.ts` locally and run:
+ * This file is intentionally suffixed `.regression.ts.disabled` so it's NOT
+ * picked up by Jest (testRegex: .*\.test\.ts$), ast-grep (scope: *.ts under
+ * __regression__/, .disabled invisible), or ESLint at rest.
+ *
+ * NB : `.regression.ts` (not `.test.ts`) avoids the global `**/*.test.ts`
+ * ignore in the ast-grep rule, which would silently override our fixture.
+ *
+ * To verify the canon enforcement rules trigger correctly (ast-grep + ESLint
+ * union coverage), rename to `.regression.ts` locally and run:
  *
  *   npx ast-grep scan --rule .ast-grep/rules/seo-no-bare-role-literal.yml
- *   cd backend && npx eslint __regression__/seo-role-canon-guard.test.ts
+ *   cd backend && npx eslint ../__regression__/seo-role-canon-guard.regression.ts
  *
  * Expected behavior :
  *

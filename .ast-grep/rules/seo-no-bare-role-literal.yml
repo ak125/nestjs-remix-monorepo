@@ -20,10 +20,13 @@ note: |
   PR-3a (this rule) is `severity: warning` initially. Promotion to `error`
   happens in PR-3b after 7 days of clean observation.
 files:
-  # ── Apply to frontend + backend TypeScript only ──
+  # ── Apply to frontend + backend TypeScript ──
   - backend/src/**/*.ts
   - frontend/app/**/*.ts
   - frontend/app/**/*.tsx
+  # ── Regression test scope : the rule MUST trigger here when the fixture
+  # is renamed from .ts.disabled → .ts (validates ast-grep coverage). ──
+  - __regression__/**/*.ts
 ignores:
   # ── SoT helpers : these files DEFINE the canon, must contain literals ──
   - "**/role-ids.ts"
