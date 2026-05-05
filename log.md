@@ -346,14 +346,8 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : chore(canon): relocate AEC + Marketing Voice mirrors to canon-mirrors/
 - **Sortie** : PR aucune | commits aa0e8980
 
-## 2026-05-05 — chore/seo-roles-pr3a-lint-warn (auto)
+## 2026-05-05 — chore/cleanup-dead-page-type-map (auto)
 
-- **Branche** : `chore/seo-roles-pr3a-lint-warn`
-- **Décision** : feat(seo-roles): lint enforcement phase 3a — observe (PR-3a)
-- **Sortie** : PR #309 | commits 1b3250d5
-
-## 2026-05-05 — chore/seo-roles-pr3a-cleanup-baseline (auto)
-
-- **Branche** : `chore/seo-roles-pr3a-cleanup-baseline`
-- **Décision** : chore(seo-roles): cleanup PR-3a baseline — extend ignores to 0 warnings (+2 other commits)
-- **Sortie** : PR #310 | commits fce4a667 de15486f 1b3250d5
+- **Branche** : `chore/cleanup-dead-page-type-map`
+- **Décision** : chore(seo-roles): drop dead-code PAGE_TYPE_TO_CANONICAL_ROLE map
+- **Sortie** : PR #311 | commits 10135a2f
