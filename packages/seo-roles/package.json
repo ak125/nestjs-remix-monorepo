@@ -1,0 +1,29 @@
+{
+  "name": "@repo/seo-roles",
+  "version": "0.2.0",
+  "description": "Single source of truth for canonical SEO page roles (R0..R8). Normalization, display labels, badge colors, branded CanonicalRoleId type, Zod schemas. Legacy accepted in input, canon mandatory in output.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -78,6 +78,7 @@ COPY --chown=remix-api:nodejs --from=installer /app/frontend/package.json ./fron
 # Copier les packages internes nécessaires
 COPY --chown=remix-api:nodejs --from=installer /app/packages/design-tokens ./packages/design-tokens
 COPY --chown=remix-api:nodejs --from=installer /app/packages/database-types ./packages/database-types
+COPY --chown=remix-api:nodejs --from=installer /app/packages/seo-roles ./packages/seo-roles
 
 # 🛡️ RPC Safety Gate - Governance files
 # IMPORTANT: Copy to /app/backend/governance/ because start.sh does "cd backend"

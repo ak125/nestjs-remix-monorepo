@@ -9,6 +9,7 @@ import {
   useLoaderData,
   useSearchParams,
 } from "@remix-run/react";
+import { getRoleDisplayLabel } from "@repo/seo-roles";
 import {
   RefreshCw,
   Check,
@@ -441,7 +442,8 @@ export default function AdminContentRefresh() {
       header: "Page Type",
       render: (_val, row) => (
         <Badge variant="outline" className="text-xs font-mono">
-          {PAGE_TYPE_LABELS[row.page_type] || row.page_type}
+          {PAGE_TYPE_LABELS[row.page_type] ??
+            getRoleDisplayLabel(row.page_type)}
         </Badge>
       ),
     },
