@@ -351,3 +351,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/seo-roles-pr0b-zod-branded`
 - **Décision** : feat(seo-roles): branded CanonicalRoleId + Zod schemas (PR-0B v0.2.0) (+2 other commits)
 - **Sortie** : PR #307 | commits e57ccc95 ee73add6 80b84c40
+
+## 2026-05-05 — chore/seo-roles-pr2-backend-zod (auto)
+
+- **Branche** : `chore/seo-roles-pr2-backend-zod`
+- **Décision** : feat(seo-roles): backend Zod boundary + parseResponseOrSoft helper (PR-2) (+4 other commits)
+- **Sortie** : PR #308 | commits 57ec4721 9c7d2aac e57ccc95 ee73add6 80b84c40
