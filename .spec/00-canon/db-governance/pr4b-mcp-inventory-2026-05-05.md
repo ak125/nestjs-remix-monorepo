@@ -158,19 +158,62 @@ Si `__seo_page.page_role` n'existe pas et qu'aucune vue/RPC ne consomme l'ENUM `
 
 ---
 
-## Recommandation : **Option A** (pivot)
+## Recommandation finale : **Option C** (cleanup minimal)
 
-Justification :
+> **Première itération recommandait Option A** (backfill `__rag_content_refresh_log`).
+> Reflexion approfondie : Option A serait du bricolage. Voici pourquoi.
 
-1. La fuite legacy mesurable est sur `__rag_content_refresh_log.page_type` (218 lignes), PAS sur `__seo_page`
-2. Recréer une fonction PL/pgSQL et une colonne dont aucun consumer n'existe est du bricolage anticipé
-3. Le package `@repo/seo-roles` (PR-0A) fournit déjà `PAGE_TYPE_TO_ROLE` côté TS — la normalisation peut se faire côté backend sans recourir à PL/pgSQL
-4. L'ENUM orphelin peut être documenté comme dette technique (DROP en PR-4B-cleanup ultérieure)
+### Réfutation de l'Option A : `R3_guide_howto` n'est PAS une fuite
 
-Le plan PR-4B révisé Option A est :
-- **Plus chirurgical** : 1 table, 218 lignes, 1 trigger
-- **Plus mesurable** : avant/après backfill via les compteurs `seo_role_normalization_failed_total` (PR-2)
-- **Cohérent avec PR-0A/0B** : utilise le canon TS comme SoT, la DB suit
+L'analyse initiale a confondu **vocabulaire worker** et **canon R0..R8** :
+
+```
+Pipeline réel :
+  DB (__rag_content_refresh_log.page_type = "R3_guide_howto")
+    ↓ TS @repo/seo-roles : PAGE_TYPE_TO_ROLE.R3_guide_howto = RoleId.R3_CONSEILS
+    ↓ UI : getRoleDisplayLabel('R3_guide_howto') → "R3 · Conseils"
+  
+  ✅ Aucune fuite : la couche TS traduit correctement.
+```
+
+`R3_guide_howto` est un identifiant **worker page_type** (vocabulaire du pipeline content-refresh), pas un rôle canonique. Le package `@repo/seo-roles` (PR-0A) sépare intentionnellement les deux vocabulaires :
+
+- **`WorkerPageType`** : `R1_pieces | R2_product | R3_conseils | R3_guide_howto | R4_reference | R5_diagnostic | R6_guide_achat | R7_brand | R8_vehicle` — utilisé par les workers pour identifier le type de contenu à rafraîchir
+- **`RoleId`** (canonical) : `R0_HOME | R1_ROUTER | R2_PRODUCT | R3_CONSEILS | R4_REFERENCE | R5_DIAGNOSTIC | R6_GUIDE_ACHAT | R6_SUPPORT | R7_BRAND | R8_VEHICLE` — utilisé pour le SEO output
+
+Le mapping `pageTypeToRoleId()` (du package) traduit l'un vers l'autre. **La DB stocke worker, le TS expose canon. C'est la séparation architecturale prévue, pas une fuite.**
+
+Migrer `R3_guide_howto → R3_conseils` dans la DB serait du bricolage :
+- Casserait la sémantique worker (`R3_guide_howto` ≠ `R3_conseils` dans le vocab worker — l'un est how-to, l'autre est conseil pédagogique)
+- Aplatit deux concepts distincts qui partagent un canon (R3_CONSEILS) mais ont des sources/traitements différents
+- Aucune fuite mesurable côté UI (tests PR-1 prouvent que getRoleDisplayLabel transforme correctement)
+
+### Recommandation : Option C — Cleanup minimal
+
+PR-4B devient un **cleanup de dette technique muette** :
+
+1. **DROP TYPE `seo_page_role`** orphelin (zéro consumer vérifié — 0 colonne, 0 vue, 0 fonction)
+2. **Mark migration `20260124_add_page_role.sql` as never-applied** : ajouter un README dans `backend/supabase/migrations/` ou commentaire en tête expliquant que la migration repose sur une hypothèse architecturale obsolète (DB stocke canon direct vs DB stocke worker vocab + TS traduit)
+3. **NE PAS toucher `__rag_content_refresh_log`** — worker vocab intentionnel
+4. **NE PAS recréer `assign_page_role_from_url`** — pas de consumer, ne ferait que dupliquer la logique de `pageTypeToRoleId()` côté TS
+
+### Conséquences pour le plan stratégique global
+
+- **Plan original PR-4B → PR-5 (drop legacy DB ≥30j)** doit être révisé : il n'y a pas de "legacy DB" canon-incompatible à drop
+- **Couche DB d'enforcement (couche 4 du plan)** est **non applicable** : pas de CHECK strict canonique parce que la DB n'est pas censée stocker canonique
+- **Le canon R0..R8 vit côté TS uniquement** (package `@repo/seo-roles`), enforced via PR-3a/3b lint + branded type compile-time
+- **Le worker vocab vit côté DB** sans contrainte canon, traduction TS au boundary
+
+Le plan stratégique se simplifie : 4 couches d'enforcement effectives (TypeScript branded, Zod runtime, lint statique, observability) — la couche DB devient un **commentaire architectural**, pas un mur.
+
+### Précondition révisée pour avancer
+
+- [ ] Validation humaine : Option C accepté ?
+- [ ] Si oui : préparer migration cleanup (DROP TYPE) avec backup + test rollback
+- [ ] Si non : justifier pourquoi Option A est préférable malgré l'analyse de séparation worker vs canon
+- [ ] Mettre à jour le plan stratégique original (`/home/deploy/.claude/plans/ton-architecture-canonique-est-silly-crab.md`) pour retirer la couche 4 DB CHECK et clarifier que canon R0..R8 vit côté TS uniquement
+
+L'Option C est l'aboutissement du principe "no bricolage" appliqué récursivement à l'analyse elle-même : avant de migrer, vérifier que la migration adresse une vraie fuite, pas une apparente.
 
 ---
 
