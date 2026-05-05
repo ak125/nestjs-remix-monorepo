@@ -237,13 +237,15 @@ L'Option C est l'aboutissement du principe "no bricolage" appliqué récursiveme
 
 ---
 
-## Précondition pour avancer
+## Précondition pour avancer (révisée Option C)
 
-**STOP** — PR-4B requiert validation humaine avant migration :
+**STOP** — validation humaine requise avant toute action DDL :
 
-- [ ] Décision Option A / B / C (recommandation : A)
-- [ ] Si A : valider que `R3_guide_howto → R3_conseils` est le mapping correct (cf. `legacy-canon-map.md` v1.2.0 §1.4 → confirmé : R3_guide_howto IS R3_CONSEILS, pas R6_GUIDE_ACHAT comme la migration `20260124` mappait par erreur)
-- [ ] Valider l'ordre : backfill avant ou après PR-3b promotion error ?
-- [ ] Vérifier qu'aucun consommateur applicatif ne pattern-match sur `R3_guide_howto` strict (audit code après)
+- [ ] Décision finale : Option C (no migration needed) acceptée ?
+- [ ] Annotation migration `20260124_add_page_role.sql` (NEVER APPLIED) reviewée
+- [ ] Plan stratégique aligné : 4 couches enforcement (TS branded + Zod runtime + lint + observability), pas 5 (la couche DB CHECK est retirée — non applicable per analyse)
+- [ ] Si découverte ultérieure d'un canal de fuite réel (mismatch canon vs DB sur une table OUTPUT), revoir la décision
 
-Cet inventaire est la première étape — il rend possible la décision architecturale, mais la décision elle-même doit être humaine.
+Cet inventaire est l'étape qui ferme la question PR-4B : l'analyse architecturale révèle que la séparation worker-vocab vs canon est intentionnelle et fonctionnelle, et qu'aucune migration DB n'est nécessaire pour aligner la prod sur le canon SEO R0..R8 — le canon vit côté TS exclusivement.
+
+> **Historique** : la première itération de ce doc recommandait Option A (backfill `__rag_content_refresh_log.page_type R3_guide_howto → R3_conseils`). Cette recommandation était elle-même du bricolage anticipé — elle aplaitissait deux concepts worker distincts (how-to procédural vs conseil pédagogique) sous prétexte qu'ils partagent un canon. Voir réfutation détaillée §"Réfutation de l'Option A" plus haut.
