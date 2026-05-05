@@ -52,6 +52,24 @@ ignores:
   - "**/admissibility-gate.constants.ts"
   # ── Generated types (from Supabase introspection) ──
   - "**/database.types.ts"
+  # ── Legitimate consumers of canon-defining types (audit confirmed) ──
+  # These files USE bare role literals as values of types defined in already-
+  # excluded canon-defining files (r5-diagnostic.constants, etc.).
+  # The literals here aren't OUTPUT leaks — they're typed constants matching
+  # internal switch / gate / interface contracts.
+  - "**/diagnostic.service.ts"           # consumes SurfaceTarget = 'R3' | 'R4' | ...
+  - "**/content-quality-gate.service.ts" # internal gate context labels
+  - "**/quality-validator.service.ts"    # type alias for legacy DB short forms
+  - "**/rag-safe-distill.service.ts"     # SearchTargetRole canon-defining map
+  - "**/conseil-enricher.service.ts"     # log marker template (non-output)
+  # ── R6 buying-guide engine internal intent labels (legacy compat layer) ──
+  # The R6 engine uses 'R6' as its own short intent identifier in its interface
+  # contract. Migrating would cascade to many consumers; out of scope of phase 3a.
+  - "**/r6-guide.service.ts"
+  - "**/r6-guide.interfaces.ts"
+  - "**/r6-guide.types.ts"
+  # ── Input DTOs accepting legacy roles (per "Legacy accepté en entrée") ──
+  - "**/rag-proxy/dto/search.dto.ts"
   # NB : __regression__/ NOT excluded — that's where the regression
   # fixture lives, the rule MUST trigger there to verify it works.
 rule:
