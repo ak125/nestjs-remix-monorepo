@@ -25,7 +25,7 @@ Audit de contenu base sur le framework **R2D2** (Reponse → Decision → Detail
 |------------------|------------|
 | Demande audit qualite contenu ou page | `/content-audit [url ou fichier]` |
 | Verifier une page SEO apres production | `/content-audit [url]` |
-| Audit par role (R1-R6) | `/content-audit R3` |
+| Audit par role (R1-R8) | `/content-audit R3_CONSEILS` (ou `R6_GUIDE_ACHAT`, `R6_SUPPORT`) — **utiliser les noms canoniques**, pas les rôles courts (`R3` / `R6` ambigus, voir `legacy-canon-map.md`) |
 | Apres `/seo-content-architect` (chaine contenu) | `/content-audit [gamme]` |
 
 ---
@@ -35,7 +35,7 @@ Audit de contenu base sur le framework **R2D2** (Reponse → Decision → Detail
 | Mode | Invocation | Comportement |
 |------|-----------|-------------|
 | Audit cible | `/content-audit [url ou fichier]` | Audit d'une page ou composant |
-| Audit par role | `/content-audit R3` | Toutes les pages detectees pour ce role |
+| Audit par role | `/content-audit R3_CONSEILS` | Toutes les pages detectees pour ce role canonique (jamais `R3` / `R6` court — ambigus) |
 | Audit complet | `/content-audit` | Toutes les routes publiques |
 
 ---
@@ -65,7 +65,8 @@ Le role est declare dans `handle.pageRole` via `createPageRoleMeta(PageRole.XX_Y
 | `pieces.$slug` | R1_ROUTER |
 | `pieces.$gamme.$marque.$modele.$type*` | R2_PRODUCT |
 | `products.$id` | R2_PRODUCT |
-| `blog-pieces-auto.*` | R3_BLOG |
+| `blog-pieces-auto.*` | R3_CONSEILS (ex-R3_BLOG, déprécié — voir `legacy-canon-map.md`) |
+| `blog-pieces-auto.guide-achat.*` | R6_GUIDE_ACHAT |
 | `reference-auto.*` | R4_REFERENCE |
 | `diagnostic-auto.*` | R5_DIAGNOSTIC |
 | `constructeurs.*` | R1_ROUTER |
