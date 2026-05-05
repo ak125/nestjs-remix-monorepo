@@ -2,7 +2,7 @@
 module: users
 sources:
 - backend/src/modules/users
-last_scan: '2026-05-04'
+last_scan: '2026-05-05'
 primary_files:
 - backend/src/modules/users/controllers/addresses.controller.ts
 - backend/src/modules/users/controllers/password.controller.ts
