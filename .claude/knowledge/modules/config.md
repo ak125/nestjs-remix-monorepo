@@ -2,7 +2,7 @@
 module: config
 sources:
 - backend/src/modules/config
-last_scan: '2026-05-04'
+last_scan: '2026-05-05'
 primary_files:
 - backend/src/modules/config/config.module.ts
 - backend/src/modules/config/controllers/simple-database-config.controller.ts
