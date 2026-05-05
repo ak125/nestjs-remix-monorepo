@@ -22,13 +22,17 @@ ast-grep at rest — opt-in only.
 mv __regression__/seo-role-canon-guard.regression.ts.disabled \
    __regression__/seo-role-canon-guard.regression.ts
 
-# Step 2 — Run ast-grep (should report 4 warnings : R3, R6, R9, R3_GUIDE)
-npx ast-grep scan --rule .ast-grep/rules/seo-no-bare-role-literal.yml \
-  __regression__/seo-role-canon-guard.regression.ts
+# Step 2 — Run ast-grep with project config (should report 4 warnings)
+# IMPORTANT : passe `--config sgconfig.yml` (sinon ast-grep ne charge pas
+# le `files:` glob `__regression__/**/*.ts` et zéro hit). Scan le repo
+# entier — ast-grep filtrera via le rule's files: glob.
+npx ast-grep scan --config sgconfig.yml \
+  --rule .ast-grep/rules/seo-no-bare-role-literal.yml \
+  | grep "__regression__"
+# Expected : 4 lines matching R3, R6, R9, R3_GUIDE bare literals
 
 # Step 3 — Run ESLint (should report 8 warnings on suffixed legacy forms)
-cd backend && npx eslint ../__regression__/seo-role-canon-guard.regression.ts \
-  --rulesdir ../node_modules/eslint-plugin-no-restricted-syntax
+cd backend && npx eslint ../__regression__/seo-role-canon-guard.regression.ts
 
 # Step 4 — Restore fixture to disabled state
 mv __regression__/seo-role-canon-guard.regression.ts \
