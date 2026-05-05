@@ -14,6 +14,11 @@ import { IsAdminGuard } from '@auth/is-admin.guard';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RagChangeWatcherService } from '../../../workers/services/rag-change-watcher.service';
+import {
+  ragPipelineStatusResponseSchema,
+  type RagPipelineStatusResponse,
+} from '../../seo/schemas/rag-pipeline-status.response.schema';
+import { parseResponseOrSoft } from '../../seo/utils/parse-response';
 
 type Phase = 'DISABLED' | 'A' | 'B' | 'C' | 'C_BREAKER';
 
@@ -33,7 +38,7 @@ export class AdminRagPipelineStatusController extends SupabaseBaseService {
   }
 
   @Get('status')
-  async getStatus() {
+  async getStatus(): Promise<RagPipelineStatusResponse> {
     // Persisted flags (env values only, without overrides)
     const allFlags = this.flags.listFlags();
     const persistedFlags = {
@@ -164,7 +169,7 @@ export class AdminRagPipelineStatusController extends SupabaseBaseService {
       .order('rpi_created_at', { ascending: false })
       .limit(5);
 
-    return {
+    const raw = {
       phaseEffective: finalPhase,
       phasePersisted,
       effectiveFlags,
@@ -186,12 +191,27 @@ export class AdminRagPipelineStatusController extends SupabaseBaseService {
       recentErrors: (recentErrors ?? []).map((r: any) => ({
         id: r.pcq_id,
         gamme: r.pcq_pg_alias,
+        // role: pcq_page_type may contain legacy worker page_type values
+        // (R1_pieces, R3_guide_howto, ...). Zod tolerantRoleSchema in
+        // ragPipelineStatusResponseSchema normalizes to canonical RoleId.
         role: r.pcq_page_type,
         error: r.pcq_error,
         at: r.pcq_created_at,
       })),
       openIncidents: openIncidents ?? [],
     };
+
+    // Zod boundary : normalize legacy role values to canonical, log + counter
+    // on parse failure (soft fallback returns raw to avoid breaking the UI).
+    return parseResponseOrSoft(
+      ragPipelineStatusResponseSchema,
+      raw,
+      {
+        controller: AdminRagPipelineStatusController.name,
+        endpoint: 'getStatus',
+      },
+      this.logger,
+    ) as RagPipelineStatusResponse;
   }
 
   private deducePhase(flags: {

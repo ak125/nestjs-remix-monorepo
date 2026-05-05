@@ -52,6 +52,7 @@
     "@paralleldrive/cuid2": "^2.2.2",
     "@remix-run/express": "^2.17.4",
     "@repo/database-types": "*",
+    "@repo/seo-roles": "*",
     "@supabase/supabase-js": "^2.95.0",
     "@types/bull": "^4.10.4",
     "@types/compression": "^1.8.1",
