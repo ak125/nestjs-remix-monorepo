@@ -3,7 +3,10 @@ import 'dotenv/config';
 
 // Validate environment variables BEFORE any other imports
 // This ensures the app fails fast if required vars are missing
-import { validateRequiredEnvVars } from './config/env-validation';
+import {
+  validateRequiredEnvVars,
+  isReadOnlyMode,
+} from './config/env-validation';
 import { buildCSPDirectives } from './config/csp.config';
 validateRequiredEnvVars();
 
@@ -60,8 +63,12 @@ async function bootstrap() {
       ttl: 86400 * 30,
     });
 
-    // Sécurité de session et cookies selon l'environnement
-    if (isProd && !process.env.SESSION_SECRET) {
+    // Sécurité de session et cookies selon l'environnement.
+    // ADR-028 Option D : preprod sets NODE_ENV=production but READ_ONLY=true
+    // means no mutable session state to protect — SESSION_SECRET becomes
+    // a soft warning instead of a hard requirement.
+    const readOnly = isReadOnlyMode();
+    if (isProd && !readOnly && !process.env.SESSION_SECRET) {
       throw new Error('SESSION_SECRET requis en production');
     }
 
@@ -74,7 +81,7 @@ async function bootstrap() {
       logger.warn('Générez un secret sécurisé avec: openssl rand -base64 32');
       logger.warn('Ajoutez-le dans votre fichier .env');
 
-      if (process.env.NODE_ENV === 'production') {
+      if (process.env.NODE_ENV === 'production' && !readOnly) {
         throw new Error(
           'SESSION_SECRET OBLIGATOIRE en production! Impossible de démarrer.',
         );
