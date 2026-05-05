@@ -116,6 +116,30 @@ export class SeoMonitorProcessor extends SupabaseBaseService {
   async handleMonitoring(
     job: Job<SeoMonitorJobData>,
   ): Promise<MonitoringResult> {
+    // ADR-028 Option D — 8e classe : cron registered en preprod (validation
+    // BullMQ wiring) mais le handler court-circuite sans appel DB/RPC.
+    // Ce gate vit dans le PROCESSOR, pas le scheduler — préserve la couche
+    // scheduling validée en preprod miroir prod.
+    if (this.isReadOnlyMode) {
+      this.logger.warn(
+        {
+          metric: 'readonly.skipped',
+          operation: 'seo-monitor.handleMonitoring',
+          jobId: job.id,
+          taskType: job.data.taskType,
+        },
+        `[READ_ONLY] Skip seo-monitor processor (job #${job.id}, ${job.data.taskType}) — cron registered but writes/RPC disabled`,
+      );
+      return {
+        totalChecked: 0,
+        okCount: 0,
+        warningCount: 0,
+        errorCount: 0,
+        alerts: [],
+        timestamp: new Date().toISOString(),
+      };
+    }
+
     this.logger.log(
       `🔍 [Job #${job.id}] Démarrage monitoring SEO (${job.data.taskType})`,
     );

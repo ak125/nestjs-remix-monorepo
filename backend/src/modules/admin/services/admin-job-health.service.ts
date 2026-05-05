@@ -28,6 +28,7 @@ export class AdminJobHealthService extends SupabaseBaseService {
    * and computes a running average duration.
    */
   async recordSuccess(queueName: string, durationMs: number): Promise<void> {
+    if (this.guardReadOnly('recordSuccess', queueName)) return;
     try {
       const { error } = await this.supabase.rpc('__admin_job_health_success', {
         p_queue: queueName,
@@ -47,6 +48,7 @@ export class AdminJobHealthService extends SupabaseBaseService {
     queueName: string,
     durationMs: number,
   ): Promise<void> {
+    if (this.guardReadOnly('recordSuccessFallback', queueName)) return;
     try {
       // Read current row
       const { data: current } = await this.supabase
@@ -86,6 +88,7 @@ export class AdminJobHealthService extends SupabaseBaseService {
    * Updates lastFailure, increments totalFailed + consecutiveFailures, stores error message.
    */
   async recordFailure(queueName: string, errorMessage: string): Promise<void> {
+    if (this.guardReadOnly('recordFailure', queueName)) return;
     try {
       // Read current row
       const { data: current } = await this.supabase

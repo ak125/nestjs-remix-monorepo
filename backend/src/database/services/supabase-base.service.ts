@@ -241,6 +241,36 @@ export abstract class SupabaseBaseService {
     return this.supabase;
   }
 
+  /**
+   * READ_ONLY write guard (ADR-028 Option D — 8e classe).
+   *
+   * Court-circuite les opérations d'écriture / RPC mutantes en mode read-only
+   * (preprod sans SERVICE_ROLE_KEY, anon key + RLS hardening ADR-021).
+   * À appeler en début de toute méthode qui ferait un INSERT/UPDATE/DELETE
+   * ou un RPC qui écrit dans une table service_role-only.
+   *
+   * Émet un warn structuré Pino exploitable par LogQL :
+   *   `count_over_time({app="nestjs"} |~ "readonly.skipped" [1h]) by (operation)`
+   *
+   * @param operation nom de la méthode protégée (ex: "recordSuccess")
+   * @param context optionnel — désambiguïse entre instances (queueName, jobId)
+   * @returns true si on doit court-circuiter, false si on peut continuer
+   */
+  protected guardReadOnly(operation: string, context?: string): boolean {
+    if (this.isReadOnlyMode) {
+      this.logger.warn(
+        {
+          metric: 'readonly.skipped',
+          operation,
+          context: context ?? null,
+        },
+        `[READ_ONLY] Skip ${operation}${context ? ` (${context})` : ''} — write blocked (ADR-028 Option D)`,
+      );
+      return true;
+    }
+    return false;
+  }
+
   protected get headers() {
     return {
       'Content-Type': 'application/json',
