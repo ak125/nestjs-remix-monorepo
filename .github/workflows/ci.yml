@@ -730,7 +730,6 @@ jobs:
           READ_ONLY=true
           REDIS_URL=redis://redis-preprod:6379
           APP_URL=http://localhost:3200
-          PORT=3200
           # RAG service disabled in preprod (4 rag-proxy services use
           # configService.getOrThrow<string>('RAG_SERVICE_URL') and 'RAG_API_KEY'
           # at constructor — both crash without sentinel values).
