@@ -56,3 +56,12 @@ export {
   canonicalRoleSchema,
   roleIdNativeEnum,
 } from "./schema";
+
+// ── PR-0C surface : keyword → role classification ──
+
+export {
+  SearchIntentSchema,
+  classifyKeywordToRole,
+  type SearchIntent,
+  type KeywordRoleClassification,
+} from "./keyword-intent";

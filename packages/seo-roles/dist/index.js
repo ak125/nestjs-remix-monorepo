@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.roleIdNativeEnum = exports.canonicalRoleSchema = exports.tolerantRoleSchema = exports.isCanonicalRoleId = exports.assertCanonicalRoleStrict = exports.ROLE_BADGE_COLORS = exports.getRoleShortLabel = exports.getRoleDisplayLabel = exports.pageTypeToRoleId = exports.roleIdToPageType = exports.assertCanonicalRole = exports.normalizeRoleId = exports.DEPRECATED_OUTPUT_ROLES = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = exports.ROLE_ID_LIST = exports.RoleId = void 0;
+exports.classifyKeywordToRole = exports.SearchIntentSchema = exports.roleIdNativeEnum = exports.canonicalRoleSchema = exports.tolerantRoleSchema = exports.isCanonicalRoleId = exports.assertCanonicalRoleStrict = exports.ROLE_BADGE_COLORS = exports.getRoleShortLabel = exports.getRoleDisplayLabel = exports.pageTypeToRoleId = exports.roleIdToPageType = exports.assertCanonicalRole = exports.normalizeRoleId = exports.DEPRECATED_OUTPUT_ROLES = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = exports.ROLE_ID_LIST = exports.RoleId = void 0;
 var canonical_1 = require("./canonical");
 Object.defineProperty(exports, "RoleId", { enumerable: true, get: function () { return canonical_1.RoleId; } });
 Object.defineProperty(exports, "ROLE_ID_LIST", { enumerable: true, get: function () { return canonical_1.ROLE_ID_LIST; } });
@@ -27,4 +27,7 @@ var schema_1 = require("./schema");
 Object.defineProperty(exports, "tolerantRoleSchema", { enumerable: true, get: function () { return schema_1.tolerantRoleSchema; } });
 Object.defineProperty(exports, "canonicalRoleSchema", { enumerable: true, get: function () { return schema_1.canonicalRoleSchema; } });
 Object.defineProperty(exports, "roleIdNativeEnum", { enumerable: true, get: function () { return schema_1.roleIdNativeEnum; } });
+var keyword_intent_1 = require("./keyword-intent");
+Object.defineProperty(exports, "SearchIntentSchema", { enumerable: true, get: function () { return keyword_intent_1.SearchIntentSchema; } });
+Object.defineProperty(exports, "classifyKeywordToRole", { enumerable: true, get: function () { return keyword_intent_1.classifyKeywordToRole; } });
 //# sourceMappingURL=index.js.map

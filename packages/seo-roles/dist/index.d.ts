@@ -5,4 +5,5 @@ export { getRoleDisplayLabel, getRoleShortLabel, } from "./display";
 export { ROLE_BADGE_COLORS } from "./colors";
 export { type CanonicalRoleId, assertCanonicalRoleStrict, isCanonicalRoleId, } from "./branded";
 export { tolerantRoleSchema, canonicalRoleSchema, roleIdNativeEnum, } from "./schema";
+export { SearchIntentSchema, classifyKeywordToRole, type SearchIntent, type KeywordRoleClassification, } from "./keyword-intent";
 //# sourceMappingURL=index.d.ts.map
