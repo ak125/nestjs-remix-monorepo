@@ -351,3 +351,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/pr4b-mcp-inventory-prep`
 - **Décision** : docs(seo-canon): record MCP inventory
 - **Sortie** : PR #312 | commits 5b32614a
+
+## 2026-05-05 — chore/pr4b-mcp-inventory-prep (auto)
+
+- **Branche** : `chore/pr4b-mcp-inventory-prep`
+- **Décision** : docs(seo-canon): annotate never-applied migration + Option C final (+3 other commits)
+- **Sortie** : PR #312 | commits fca6e7d2 2bacabe0 86f3a11f 5b32614a
