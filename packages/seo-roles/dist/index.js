@@ -1,0 +1,23 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ROLE_BADGE_COLORS = exports.getRoleShortLabel = exports.getRoleDisplayLabel = exports.pageTypeToRoleId = exports.roleIdToPageType = exports.assertCanonicalRole = exports.normalizeRoleId = exports.DEPRECATED_OUTPUT_ROLES = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = exports.ROLE_ID_LIST = exports.RoleId = void 0;
+var canonical_1 = require("./canonical");
+Object.defineProperty(exports, "RoleId", { enumerable: true, get: function () { return canonical_1.RoleId; } });
+Object.defineProperty(exports, "ROLE_ID_LIST", { enumerable: true, get: function () { return canonical_1.ROLE_ID_LIST; } });
+var legacy_1 = require("./legacy");
+Object.defineProperty(exports, "LEGACY_ROLE_ALIASES", { enumerable: true, get: function () { return legacy_1.LEGACY_ROLE_ALIASES; } });
+Object.defineProperty(exports, "PAGE_TYPE_TO_ROLE", { enumerable: true, get: function () { return legacy_1.PAGE_TYPE_TO_ROLE; } });
+Object.defineProperty(exports, "ROLE_TO_PAGE_TYPE", { enumerable: true, get: function () { return legacy_1.ROLE_TO_PAGE_TYPE; } });
+Object.defineProperty(exports, "FORBIDDEN_ROLE_IDS", { enumerable: true, get: function () { return legacy_1.FORBIDDEN_ROLE_IDS; } });
+Object.defineProperty(exports, "DEPRECATED_OUTPUT_ROLES", { enumerable: true, get: function () { return legacy_1.DEPRECATED_OUTPUT_ROLES; } });
+var normalize_1 = require("./normalize");
+Object.defineProperty(exports, "normalizeRoleId", { enumerable: true, get: function () { return normalize_1.normalizeRoleId; } });
+Object.defineProperty(exports, "assertCanonicalRole", { enumerable: true, get: function () { return normalize_1.assertCanonicalRole; } });
+Object.defineProperty(exports, "roleIdToPageType", { enumerable: true, get: function () { return normalize_1.roleIdToPageType; } });
+Object.defineProperty(exports, "pageTypeToRoleId", { enumerable: true, get: function () { return normalize_1.pageTypeToRoleId; } });
+var display_1 = require("./display");
+Object.defineProperty(exports, "getRoleDisplayLabel", { enumerable: true, get: function () { return display_1.getRoleDisplayLabel; } });
+Object.defineProperty(exports, "getRoleShortLabel", { enumerable: true, get: function () { return display_1.getRoleShortLabel; } });
+var colors_1 = require("./colors");
+Object.defineProperty(exports, "ROLE_BADGE_COLORS", { enumerable: true, get: function () { return colors_1.ROLE_BADGE_COLORS; } });
+//# sourceMappingURL=index.js.map
