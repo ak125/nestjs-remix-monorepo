@@ -9,6 +9,7 @@ import {
   useRevalidator,
   useSearchParams,
 } from "@remix-run/react";
+import { getRoleDisplayLabel } from "@repo/seo-roles";
 import {
   RefreshCw,
   Check,
@@ -1257,7 +1258,7 @@ export default function AdminRagPipeline() {
       header: "Type",
       render: (val) => (
         <Badge variant="outline" className="font-mono text-xs">
-          {PAGE_TYPE_LABELS[val as string] || String(val)}
+          {PAGE_TYPE_LABELS[val as string] ?? getRoleDisplayLabel(String(val))}
         </Badge>
       ),
     },

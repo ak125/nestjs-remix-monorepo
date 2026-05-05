@@ -4,6 +4,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { getRoleDisplayLabel } from "@repo/seo-roles";
 import {
   Activity,
   AlertTriangle,
@@ -543,7 +544,8 @@ function FeatureChip({ fd, value }: { fd: FeatureDisplay; value: unknown }) {
 
 function PageScoreCard({ ps }: { ps: PageScore }) {
   const [showDetails, setShowDetails] = useState(false);
-  const label = PAGE_TYPE_LABELS[ps.page_type] || ps.page_type;
+  const label =
+    PAGE_TYPE_LABELS[ps.page_type] ?? getRoleDisplayLabel(ps.page_type);
   const statusLabel = QUALITY_STATUS_LABELS[ps.status] || ps.status;
   const statusType = QUALITY_STATUS_MAP[ps.status] || "NEUTRAL";
 
@@ -718,7 +720,7 @@ function GammeExpandedRow({ row }: { row: GammeScore }) {
             <div className="flex gap-1 mt-1">
               {row.missing_page_types.map((pt) => (
                 <Badge key={pt} variant="outline" className="text-[10px]">
-                  {PAGE_TYPE_LABELS[pt] || pt}
+                  {PAGE_TYPE_LABELS[pt] ?? getRoleDisplayLabel(pt)}
                 </Badge>
               ))}
             </div>
@@ -972,7 +974,8 @@ export default function AdminRagCockpit() {
       header: "Type de page",
       render: (_val, row) => (
         <Badge variant="outline" className="text-xs">
-          {PAGE_TYPE_LABELS[row.page_type] || row.page_type}
+          {PAGE_TYPE_LABELS[row.page_type] ??
+            getRoleDisplayLabel(row.page_type)}
         </Badge>
       ),
     },

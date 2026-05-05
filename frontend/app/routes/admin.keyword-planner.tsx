@@ -1128,25 +1128,25 @@ function FamilyOverview({
         if (r1 < total)
           recs.push({
             role: "R1",
-            label: `${total - r1} gammes sans R1 (achat)`,
+            label: `${total - r1} gammes sans R1_ROUTER (router gamme)`,
             priority: r1 < total * 0.5 ? "high" : "medium",
           });
         if (r3 < total)
           recs.push({
             role: "R3",
-            label: `${total - r3} gammes sans R3 (conseils)`,
+            label: `${total - r3} gammes sans R3_CONSEILS (conseils)`,
             priority: r3 < total * 0.5 ? "high" : "medium",
           });
         if (r6 < total)
           recs.push({
             role: "R6",
-            label: `${total - r6} gammes sans R6 (guide achat)`,
+            label: `${total - r6} gammes sans R6_GUIDE_ACHAT (guide d'achat)`,
             priority: r6 < total * 0.5 ? "high" : "medium",
           });
         if (r4 < total * 0.3)
           recs.push({
             role: "R4",
-            label: `${total - r4} gammes sans R4 (reference)`,
+            label: `${total - r4} gammes sans R4_REFERENCE (référence)`,
             priority: "low",
           });
         if (r5 === 0 && total >= 3)
