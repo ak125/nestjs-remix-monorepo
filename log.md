@@ -345,3 +345,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/canon-mirrors-relocation`
 - **Décision** : chore(canon): relocate AEC + Marketing Voice mirrors to canon-mirrors/
 - **Sortie** : PR aucune | commits aa0e8980
+
+## 2026-05-05 — chore/cleanup-dead-page-type-map (auto)
+
+- **Branche** : `chore/cleanup-dead-page-type-map`
+- **Décision** : chore(seo-roles): drop dead-code PAGE_TYPE_TO_CANONICAL_ROLE map
+- **Sortie** : PR #311 | commits 10135a2f
