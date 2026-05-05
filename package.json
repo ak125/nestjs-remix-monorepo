@@ -67,7 +67,7 @@
     "@types/multer": "^2.1.0",
     "dependency-cruiser": "17.4.0",
     "eslint": "^8.57.1",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.2.1",
     "knip": "6.11.0",
     "lint-staged": "^16.4.0",
