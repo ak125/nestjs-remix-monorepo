@@ -102,7 +102,7 @@ Source de vérité TS : `packages/seo-roles/src/display.ts` (`getRoleDisplayLabe
 
 Les rôles courts `R3` et `R6` sont **interdits en sortie** (canon obligatoire). Trois mécanismes de résolution autorisés :
 
-1. **Via URL** : appel à la PL/pgSQL `assign_page_role_from_url(url)` côté DB. Source unique. Côté TS, exposé en PR-0B via `RoleDisambiguationService` (NestJS) et la route Remix `api.seo.role-for-url.ts`. Pas de pattern URL hardcodé en TypeScript.
+1. **Via URL** : appel à la PL/pgSQL `assign_page_role_from_url(url)` côté DB. **Source unique pour URL→role**. Côté TS, l'adapter serveur sera exposé en **PR-4B** sous forme de `RoleDisambiguationService` (NestJS) et route Remix `api.seo.role-for-url.ts` — décalé par rapport à PR-0B initialement prévue, car la PL/pgSQL retourne aujourd'hui des rôles courts (`R6`, `R3`) bare-forbidden ; PR-4B patchera la fonction pour retourner canonical en sub-step 0 avant d'introduire l'adapter (un seul changement cohérent, pas de bridge bricolage). En attendant, aucun pattern URL n'est hardcodé en TypeScript.
 2. **Via fallback éditorial documenté** : `R3` bare → `R3_CONSEILS` par défaut (la majorité des `R3` legacy DB sont des contenus conseils, pas un mélange 50/50 comme R6).
 3. **Via label admin "Legacy à qualifier"** : pour `R6` bare quand aucun contexte URL n'est disponible. Le curateur humain tranche.
 
