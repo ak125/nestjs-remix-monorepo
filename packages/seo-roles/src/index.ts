@@ -6,10 +6,14 @@
  * Rule : "Legacy accepté en entrée, canon obligatoire en sortie."
  *
  * - Inputs (DB, API request, worker page_type) tolerated via `normalizeRoleId()`
- * - Outputs MUST be canonical via `assertCanonicalRole()`
+ *   or `tolerantRoleSchema` (Zod)
+ * - Outputs MUST be canonical via `assertCanonicalRole()`, `assertCanonicalRoleStrict()`
+ *   (returns branded `CanonicalRoleId`), or `canonicalRoleSchema` (Zod)
  *
  * @see `.spec/00-canon/db-governance/legacy-canon-map.md`
  */
+
+// ── PR-0A surface ──
 
 export {
   RoleId,
@@ -38,3 +42,17 @@ export {
 } from "./display";
 
 export { ROLE_BADGE_COLORS } from "./colors";
+
+// ── PR-0B surface : branded type + Zod schemas ──
+
+export {
+  type CanonicalRoleId,
+  assertCanonicalRoleStrict,
+  isCanonicalRoleId,
+} from "./branded";
+
+export {
+  tolerantRoleSchema,
+  canonicalRoleSchema,
+  roleIdNativeEnum,
+} from "./schema";

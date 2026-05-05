@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DEPRECATED_OUTPUT_ROLES = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = void 0;
+exports.DEPRECATED_OUTPUT_ROLES = exports.CANONICAL_ROLE_SET = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = void 0;
 const canonical_1 = require("./canonical");
 exports.LEGACY_ROLE_ALIASES = {
     R3_guide: canonical_1.RoleId.R6_GUIDE_ACHAT,
@@ -35,6 +35,7 @@ exports.ROLE_TO_PAGE_TYPE = {
     [canonical_1.RoleId.R8_VEHICLE]: "R8_vehicle",
 };
 exports.FORBIDDEN_ROLE_IDS = ["R3", "R6", "R9", "R3_GUIDE"];
+exports.CANONICAL_ROLE_SET = new Set(Object.values(canonical_1.RoleId));
 exports.DEPRECATED_OUTPUT_ROLES = new Set([
     canonical_1.RoleId.R9_GOVERNANCE,
     canonical_1.RoleId.R3_GUIDE,

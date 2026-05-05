@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ROLE_BADGE_COLORS = exports.getRoleShortLabel = exports.getRoleDisplayLabel = exports.pageTypeToRoleId = exports.roleIdToPageType = exports.assertCanonicalRole = exports.normalizeRoleId = exports.DEPRECATED_OUTPUT_ROLES = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = exports.ROLE_ID_LIST = exports.RoleId = void 0;
+exports.roleIdNativeEnum = exports.canonicalRoleSchema = exports.tolerantRoleSchema = exports.isCanonicalRoleId = exports.assertCanonicalRoleStrict = exports.ROLE_BADGE_COLORS = exports.getRoleShortLabel = exports.getRoleDisplayLabel = exports.pageTypeToRoleId = exports.roleIdToPageType = exports.assertCanonicalRole = exports.normalizeRoleId = exports.DEPRECATED_OUTPUT_ROLES = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = exports.ROLE_ID_LIST = exports.RoleId = void 0;
 var canonical_1 = require("./canonical");
 Object.defineProperty(exports, "RoleId", { enumerable: true, get: function () { return canonical_1.RoleId; } });
 Object.defineProperty(exports, "ROLE_ID_LIST", { enumerable: true, get: function () { return canonical_1.ROLE_ID_LIST; } });
@@ -20,4 +20,11 @@ Object.defineProperty(exports, "getRoleDisplayLabel", { enumerable: true, get: f
 Object.defineProperty(exports, "getRoleShortLabel", { enumerable: true, get: function () { return display_1.getRoleShortLabel; } });
 var colors_1 = require("./colors");
 Object.defineProperty(exports, "ROLE_BADGE_COLORS", { enumerable: true, get: function () { return colors_1.ROLE_BADGE_COLORS; } });
+var branded_1 = require("./branded");
+Object.defineProperty(exports, "assertCanonicalRoleStrict", { enumerable: true, get: function () { return branded_1.assertCanonicalRoleStrict; } });
+Object.defineProperty(exports, "isCanonicalRoleId", { enumerable: true, get: function () { return branded_1.isCanonicalRoleId; } });
+var schema_1 = require("./schema");
+Object.defineProperty(exports, "tolerantRoleSchema", { enumerable: true, get: function () { return schema_1.tolerantRoleSchema; } });
+Object.defineProperty(exports, "canonicalRoleSchema", { enumerable: true, get: function () { return schema_1.canonicalRoleSchema; } });
+Object.defineProperty(exports, "roleIdNativeEnum", { enumerable: true, get: function () { return schema_1.roleIdNativeEnum; } });
 //# sourceMappingURL=index.js.map

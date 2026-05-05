@@ -229,6 +229,10 @@ jobs:
         env:
           SUPABASE_URL: "https://mock.supabase.co"
           SUPABASE_SERVICE_ROLE_KEY: "mock-key-for-ci"
+          # PR-2 : strict mode for SEO role normalization — throws on schema
+          # parse failure instead of soft fallback. Catches regressions in CI
+          # that would otherwise pass silently in prod (where soft is the default).
+          SEO_ROLE_STRICT: "true"
 
       - name: 📊 Backend coverage summary
         if: always()

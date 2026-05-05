@@ -65,6 +65,15 @@ export const ROLE_TO_PAGE_TYPE: Partial<Record<RoleId, WorkerPageType>> = {
  */
 export const FORBIDDEN_ROLE_IDS = ["R3", "R6", "R9", "R3_GUIDE"] as const;
 
+/**
+ * O(1) lookup set of all canonical RoleId values. Used by hot-path
+ * assertions (`assertCanonicalRole`, `assertCanonicalRoleStrict`) to
+ * avoid the linear scan of `ROLE_ID_LIST.find()` on every Zod transform.
+ */
+export const CANONICAL_ROLE_SET: ReadonlySet<string> = new Set<string>(
+  Object.values(RoleId),
+);
+
 /** Canonical roles that should not appear in new output (deprecated). */
 export const DEPRECATED_OUTPUT_ROLES: ReadonlySet<RoleId> = new Set<RoleId>([
   RoleId.R9_GOVERNANCE,

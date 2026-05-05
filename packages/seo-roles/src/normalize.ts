@@ -3,6 +3,7 @@ import {
   LEGACY_ROLE_ALIASES,
   FORBIDDEN_ROLE_IDS,
   DEPRECATED_OUTPUT_ROLES,
+  CANONICAL_ROLE_SET,
   PAGE_TYPE_TO_ROLE,
   ROLE_TO_PAGE_TYPE,
 } from "./legacy";
@@ -17,9 +18,8 @@ import {
 export function normalizeRoleId(input: string): RoleId | null {
   // Reject forbidden / ambiguous role IDs first
   if ((FORBIDDEN_ROLE_IDS as readonly string[]).includes(input)) return null;
-  // Direct match on enum values
-  const asRole = (Object.values(RoleId) as string[]).find((v) => v === input);
-  if (asRole) return asRole as RoleId;
+  // Direct match on enum values (O(1) via Set, hot path on Zod transforms)
+  if (CANONICAL_ROLE_SET.has(input)) return input as RoleId;
   // Legacy alias
   if (input in LEGACY_ROLE_ALIASES) return LEGACY_ROLE_ALIASES[input];
   // Worker page type
@@ -33,18 +33,18 @@ export function normalizeRoleId(input: string): RoleId | null {
  * Throws if the string is not a canonical RoleId or is a deprecated output role.
  */
 export function assertCanonicalRole(role: string): RoleId {
-  const canonical = (Object.values(RoleId) as string[]).find((v) => v === role);
-  if (!canonical) {
+  // O(1) Set lookup (hot path : called on every Zod boundary parse)
+  if (!CANONICAL_ROLE_SET.has(role)) {
     throw new Error(
       `Non-canonical role in output: "${role}". Use normalizeRoleId() first.`,
     );
   }
-  if (DEPRECATED_OUTPUT_ROLES.has(canonical as RoleId)) {
+  if (DEPRECATED_OUTPUT_ROLES.has(role as RoleId)) {
     throw new Error(
       `Deprecated role in output: "${role}". R9 / R3_GUIDE no longer canonical.`,
     );
   }
-  return canonical as RoleId;
+  return role as RoleId;
 }
 
 /** Convert a `RoleId` to the worker `page_type`. Returns null for roles without a worker equivalent. */
