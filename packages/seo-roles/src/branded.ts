@@ -1,5 +1,5 @@
-import { RoleId, ROLE_ID_LIST } from "./canonical";
-import { DEPRECATED_OUTPUT_ROLES } from "./legacy";
+import { RoleId } from "./canonical";
+import { CANONICAL_ROLE_SET, DEPRECATED_OUTPUT_ROLES } from "./legacy";
 
 /**
  * Branded type for canonical SEO role IDs.
@@ -42,24 +42,23 @@ export type CanonicalRoleId = RoleId & {
  * @throws Error if the input is not a canonical, non-deprecated `RoleId`.
  */
 export function assertCanonicalRoleStrict(role: string): CanonicalRoleId {
-  const canonical = ROLE_ID_LIST.find((v) => v === role);
-  if (!canonical) {
+  // O(1) Set lookup (hot path : called on every Zod boundary parse)
+  if (!CANONICAL_ROLE_SET.has(role)) {
     throw new Error(
       `Non-canonical role in output: "${role}". Use normalizeRoleId() first.`,
     );
   }
-  if (DEPRECATED_OUTPUT_ROLES.has(canonical)) {
+  if (DEPRECATED_OUTPUT_ROLES.has(role as RoleId)) {
     throw new Error(
       `Deprecated role in output: "${role}". R9 / R3_GUIDE no longer canonical.`,
     );
   }
-  return canonical as CanonicalRoleId;
+  return role as CanonicalRoleId;
 }
 
 /** Type guard — returns true when `role` is a non-deprecated canonical RoleId. */
 export function isCanonicalRoleId(role: unknown): role is CanonicalRoleId {
   if (typeof role !== "string") return false;
-  const canonical = ROLE_ID_LIST.find((v) => v === role);
-  if (!canonical) return false;
-  return !DEPRECATED_OUTPUT_ROLES.has(canonical);
+  if (!CANONICAL_ROLE_SET.has(role)) return false;
+  return !DEPRECATED_OUTPUT_ROLES.has(role as RoleId);
 }
