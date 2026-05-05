@@ -119,7 +119,7 @@ export interface MarketingAgentParseError {
 export interface MarketingMatrixSourcesHash {
   /** Hash de `marketing-matrix.types.ts` lui-même (référence stable). */
   matrixTypes: string;
-  /** Hash de `.claude/rules/marketing-voice.md` (canon distribué via canon-publish). */
+  /** Hash de `.claude/canon-mirrors/marketing-voice.md` (canon distribué via canon-publish). */
   marketingVoiceCanon: string;
 }
 

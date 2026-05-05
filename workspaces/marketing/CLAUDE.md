@@ -34,9 +34,9 @@ Voir `.claude/rules/marketing-batch.md` pour :
 - Verrou `local_canon.validated=true` (sinon BLOCK systématique LOCAL/HYBRID)
 - Anti-patterns écartés (.md flottants, schema Paperclip inventé, prédiction LLM, constantes magiques, etc.)
 
-Voir `.claude/rules/marketing-voice.md` pour la voix de marque (canon vault).
+Voir `.claude/canon-mirrors/marketing-voice.md` pour la voix de marque (canon vault).
 
-Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie obligatoire (AEC v1.0.0 — coverage manifest, 5 états séparés, statuts autorisés).
+Voir `.claude/canon-mirrors/agent-exit-contract.md` pour le contrat de sortie obligatoire (AEC v1.0.0 — coverage manifest, 5 états séparés, statuts autorisés).
 
 ## Mémoire & contexte
 

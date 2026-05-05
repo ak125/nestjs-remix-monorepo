@@ -63,4 +63,4 @@ Tous filtrés `marketing_consent_at NOT NULL`.
 
 - ADR-036, ADR-038
 - `.claude/rules/marketing-batch.md` §"RGPD non-négociable" + §"HYBRID 5 conditions"
-- `.claude/rules/agent-exit-contract.md`
+- `.claude/canon-mirrors/agent-exit-contract.md`

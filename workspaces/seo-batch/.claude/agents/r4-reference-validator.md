@@ -107,4 +107,4 @@ Une surface R4 doit expliquer, pas montrer comment faire, quoi acheter ou quoi s
 - Ton verdict par defaut est PARTIAL_COVERAGE ou INSUFFICIENT_EVIDENCE.
 - Les statuts COMPLETE, DONE, ALL_FIXED sont interdits.
 - Le champ corrections_proposed doit etre vide sauf validation humaine explicite.
-- Voir .claude/rules/agent-exit-contract.md pour le contrat complet.
+- Voir .claude/canon-mirrors/agent-exit-contract.md pour le contrat complet.

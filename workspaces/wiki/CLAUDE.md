@@ -35,7 +35,7 @@ Voir `.claude/rules/wiki-batch.md` pour :
 - Convention slug DB `__diag_symptom.slug` (anglais snake_case `brake_*`)
 - Workflow `wiki-protected-paths.yml` (4 markers `metadata-backfill: | template-migration: | promotion-from-proposals: | rollback:`)
 
-Voir `.claude/rules/agent-exit-contract.md` pour le contrat de sortie obligatoire (AEC v1.0.0 — coverage manifest, 5 états séparés, statuts autorisés).
+Voir `.claude/canon-mirrors/agent-exit-contract.md` pour le contrat de sortie obligatoire (AEC v1.0.0 — coverage manifest, 5 états séparés, statuts autorisés).
 
 ## Mémoire & contexte
 

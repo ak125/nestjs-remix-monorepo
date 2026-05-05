@@ -41,7 +41,7 @@ cd /opt/automecanik/app && claude
 - `.claude/skills/wiki-proposal-writer/` : skill principal — produit un fichier `automecanik-wiki/proposals/<slug>.md` avec frontmatter ADR-033 v2.0.0 strict (mode propose-only, 0-LLM pour structure, Anthropic seul pour rédactionnel).
 - `.claude/agents/` : agents wiki orchestrateurs (Phase 4 ADR-033, vide aujourd'hui — modèle pattern `pipeline-orchestrator` du seo-batch pour migration progressive `entity_data.symptoms[]` → `diagnostic_relations[]` sur 500+ fiches gamme).
 - `.claude/rules/wiki-batch.md` : règles spécifiques wiki (sas markdown vs sas DB, schema strict, 9 quality gates, 3 anti-patterns figés ADR-033 §D3, convention slug DB).
-- `.claude/rules/agent-exit-contract.md` : copie canon distribuée depuis vault (hash SHA-256 vérifié CI).
+- `.claude/canon-mirrors/agent-exit-contract.md` : copie canon distribuée depuis vault (hash SHA-256 vérifié CI).
 - `.claude/settings.json` : hooks PreToolUse / PostToolUse / Stop (mêmes scripts que monorepo, paths absolus).
 - `CLAUDE.md` : pointer vers gouvernance + règles wiki spécifiques.
 

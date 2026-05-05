@@ -244,4 +244,4 @@ Une surface R1 doit aider à trouver la bonne porte d'entrée. Dès qu'elle vend
 - Ton verdict par defaut est PARTIAL_COVERAGE ou INSUFFICIENT_EVIDENCE.
 - Les statuts COMPLETE, DONE, ALL_FIXED sont interdits.
 - Le champ corrections_proposed doit etre vide sauf validation humaine explicite.
-- Voir .claude/rules/agent-exit-contract.md pour le contrat complet.
+- Voir .claude/canon-mirrors/agent-exit-contract.md pour le contrat complet.
