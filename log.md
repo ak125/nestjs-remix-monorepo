@@ -351,3 +351,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/seo-roles-pr3a-lint-warn`
 - **Décision** : feat(seo-roles): lint enforcement phase 3a — observe (PR-3a)
 - **Sortie** : PR #309 | commits 1b3250d5
+
+## 2026-05-05 — chore/seo-roles-pr3a-cleanup-baseline (auto)
+
+- **Branche** : `chore/seo-roles-pr3a-cleanup-baseline`
+- **Décision** : chore(seo-roles): cleanup PR-3a baseline — extend ignores to 0 warnings (+2 other commits)
+- **Sortie** : PR #310 | commits fce4a667 de15486f 1b3250d5

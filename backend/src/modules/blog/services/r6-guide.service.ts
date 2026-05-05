@@ -362,7 +362,7 @@ export class R6GuideService {
               .map((n) => ({
                 label: n.label!,
                 href: n.href!,
-                target_role: 'R6',
+                target_role: 'R6_GUIDE_ACHAT',
               })),
             internal_links: (row.sgpg_family_cross_sell_intro as string)
               ? [
@@ -370,7 +370,7 @@ export class R6GuideService {
                     anchor_text:
                       (row.sgpg_family_cross_sell_intro as string) || '',
                     href: `/pieces/${pg_alias}.html`,
-                    target_role: 'R1',
+                    target_role: 'R1_ROUTER',
                   },
                 ]
               : undefined,
