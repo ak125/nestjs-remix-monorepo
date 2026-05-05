@@ -345,3 +345,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/canon-mirrors-relocation`
 - **Décision** : chore(canon): relocate AEC + Marketing Voice mirrors to canon-mirrors/
 - **Sortie** : PR aucune | commits aa0e8980
+
+## 2026-05-05 — chore/pr4b-mcp-inventory-prep (auto)
+
+- **Branche** : `chore/pr4b-mcp-inventory-prep`
+- **Décision** : docs(seo-canon): record MCP inventory
+- **Sortie** : PR #312 | commits 5b32614a
