@@ -346,19 +346,8 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : chore(canon): relocate AEC + Marketing Voice mirrors to canon-mirrors/
 - **Sortie** : PR aucune | commits aa0e8980
 
-## 2026-05-05 — chore/seo-roles-pr1-admin-display (auto)
+## 2026-05-05 — chore/cleanup-dead-page-type-map (auto)
 
-- **Branche** : `chore/seo-roles-pr1-admin-display`
-- **Décision** : chore(seo-matrix): regenerate roleIds hash after PR-0A re-export refactor (+1 other commit)
-- **Sortie** : PR aucune | commits ee73add6 80b84c40
-## 2026-05-05 — chore/seo-roles-pr0b-zod-branded (auto)
-
-- **Branche** : `chore/seo-roles-pr0b-zod-branded`
-- **Décision** : feat(seo-roles): branded CanonicalRoleId + Zod schemas (PR-0B v0.2.0) (+2 other commits)
-- **Sortie** : PR #307 | commits e57ccc95 ee73add6 80b84c40
-
-## 2026-05-05 — chore/seo-roles-pr2-backend-zod (auto)
-
-- **Branche** : `chore/seo-roles-pr2-backend-zod`
-- **Décision** : feat(seo-roles): backend Zod boundary + parseResponseOrSoft helper (PR-2) (+4 other commits)
-- **Sortie** : PR #308 | commits 57ec4721 9c7d2aac e57ccc95 ee73add6 80b84c40
+- **Branche** : `chore/cleanup-dead-page-type-map`
+- **Décision** : chore(seo-roles): drop dead-code PAGE_TYPE_TO_CANONICAL_ROLE map
+- **Sortie** : PR #311 | commits 10135a2f
