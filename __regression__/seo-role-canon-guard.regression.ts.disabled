@@ -1,0 +1,68 @@
+/**
+ * SEO Role canon guard — regression fixture (PR-3a / PR-3b)
+ *
+ * This file is intentionally suffixed `.regression.ts.disabled` so it's NOT
+ * picked up by Jest (testRegex: .*\.test\.ts$), ast-grep (scope: *.ts under
+ * __regression__/, .disabled invisible), or ESLint at rest.
+ *
+ * NB : `.regression.ts` (not `.test.ts`) avoids the global `**/*.test.ts`
+ * ignore in the ast-grep rule, which would silently override our fixture.
+ *
+ * To verify the canon enforcement rules trigger correctly (ast-grep + ESLint
+ * union coverage), rename to `.regression.ts` locally and run:
+ *
+ *   npx ast-grep scan --rule .ast-grep/rules/seo-no-bare-role-literal.yml
+ *   cd backend && npx eslint ../__regression__/seo-role-canon-guard.regression.ts
+ *
+ * Expected behavior :
+ *
+ * | PR-3 phase | ast-grep | ESLint     | CI status |
+ * |------------|----------|------------|-----------|
+ * | 3a (warn)  | warning  | warning    | green     |
+ * | 3b (error) | error    | error      | RED       |
+ *
+ * Each literal below is annotated with which rule should catch it. The two
+ * rules are *complementary* (ast-grep = bare/forbidden, ESLint = suffixed
+ * legacy) and together their union covers the FORBIDDEN + LEGACY surface.
+ */
+
+// ── ast-grep should catch these (bare FORBIDDEN_ROLE_IDS) ──
+const bareR3 = "R3"; // ast-grep ✅ (bare R3)
+const bareR6 = "R6"; // ast-grep ✅ (bare R6)
+const bareR9 = "R9"; // ast-grep ✅ (bare R9)
+const deprecatedR3Guide = "R3_GUIDE"; // ast-grep ✅ (deprecated)
+
+// ── ESLint should catch these (legacy suffixed forms) ──
+const legacyR3Blog = "R3_BLOG"; // ESLint ✅
+const legacyR3Guide = "R3_guide"; // ESLint ✅
+const legacyR6Buying = "R6_BUYING_GUIDE"; // ESLint ✅
+const legacyR3GuideAchat = "R3_guide_achat"; // ESLint ✅
+const legacyR3GuideHowto = "R3_guide_howto"; // ESLint ✅
+const legacyR3Conseils = "R3_conseils"; // ESLint ✅
+const legacyR1Pieces = "R1_pieces"; // ESLint ✅
+const legacyR6Guide = "R6_GUIDE"; // ESLint ✅
+
+// ── Canonical (should NOT trigger any rule) ──
+const canonical = "R3_CONSEILS";
+const canonical2 = "R6_GUIDE_ACHAT";
+const canonical3 = "R6_SUPPORT";
+
+console.log({
+  bareR3,
+  bareR6,
+  bareR9,
+  deprecatedR3Guide,
+  legacyR3Blog,
+  legacyR3Guide,
+  legacyR6Buying,
+  legacyR3GuideAchat,
+  legacyR3GuideHowto,
+  legacyR3Conseils,
+  legacyR1Pieces,
+  legacyR6Guide,
+  canonical,
+  canonical2,
+  canonical3,
+});
+
+export {};
