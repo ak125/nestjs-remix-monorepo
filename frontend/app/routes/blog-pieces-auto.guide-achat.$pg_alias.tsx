@@ -166,7 +166,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
       const guide = result?.data as R6GuidePayload | null;
 
-      if (guide && (!guide.intentType || guide.intentType === "R6")) {
+      if (
+        guide &&
+        (!guide.intentType || guide.intentType === "R6_GUIDE_ACHAT")
+      ) {
         const r4Reference = await fetchR4Reference(guide.page.pg_id, request);
         return json({ guide, pg_alias, r4Reference });
       }
@@ -206,8 +209,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
     // Convert BlogArticle → R6GuidePayload (V1 format for rendering)
     const guide: R6GuidePayload = {
-      intentType: "R6",
-      pageRole: "R6_BUYING_GUIDE",
+      intentType: "R6_GUIDE_ACHAT",
+      pageRole: "R6_GUIDE_ACHAT",
       canonicalRoleUrl: `/blog-pieces-auto/guide-achat/${pg_alias}`,
       roleVersion: "v1",
       page: {

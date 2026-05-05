@@ -556,7 +556,7 @@ export const R6PageContractSchema = z.object({
   gamme_name: z.string().min(3),
 
   // ── Intent & role V2 ───────────────────────────────────
-  intentType: z.literal('R6').default('R6'),
+  intentType: z.literal('R6_GUIDE_ACHAT').default('R6_GUIDE_ACHAT'),
   pageRole: z
     .literal('R6_BUYING_GUIDE' satisfies PageRole)
     .default('R6_BUYING_GUIDE'),
