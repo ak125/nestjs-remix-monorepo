@@ -42,6 +42,12 @@ function isNormalizationDisabled(): boolean {
  *
  * Ces compteurs alimentent la précondition mesurable de PR-5
  * ("0 fail sur 7 jours consécutifs sur les controllers décorés").
+ *
+ * **Cluster / multi-process caveat** : ces Maps sont per-process. En cluster
+ * (PM2 / Node cluster module / Kubernetes replicas), chaque worker tient sa
+ * propre instance — Prometheus scrape doit collecter via /metrics par worker
+ * (pattern standard). Pour un total agrégé applicatif, agréger côté Prometheus
+ * via `sum()` et non via lecture du compteur in-memory côté code.
  */
 const FAIL_COUNTER = new Map<string, number>();
 const KILL_SWITCH_COUNTER = new Map<string, number>();
