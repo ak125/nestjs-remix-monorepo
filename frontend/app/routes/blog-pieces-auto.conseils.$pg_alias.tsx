@@ -80,7 +80,7 @@ const VehicleCarousel = lazy(() => import("~/components/blog/VehicleCarousel"));
  * Handle export pour propager le rôle SEO au root Layout
  */
 export const handle = {
-  pageRole: createPageRoleMeta(PageRole.R3_BLOG, {
+  pageRole: createPageRoleMeta(PageRole.R3_CONSEILS, {
     clusterId: "conseils",
   }),
 };
