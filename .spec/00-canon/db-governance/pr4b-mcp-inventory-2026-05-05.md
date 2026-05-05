@@ -112,7 +112,14 @@ Aucune vue.
 {R1, R2, R3, R4, R5, R6}
 ```
 
-ENUM défini en prod mais **non consommé** (recherche colonne d'aucune table : 0 hits). Type orphelin issu d'une migration partielle.
+ENUM défini en prod, **consommé par `__seo_observable.page_role`** (table introduite par migration `20260126_create_seo_observable.sql:18`).
+
+Distribution `__seo_observable.page_role` :
+- `R5` : 1176 lignes (100%)
+
+Mono-valué (DEFAULT 'R5', tous les rows sont R5). Comme `__seo_reference.page_role = 'R4'`, c'est un champ strict-typé legacy court avec une seule valeur, pas un canal de mismatch canon-incompatible.
+
+**Conséquence** : l'ENUM `seo_page_role` n'est pas orphelin — il a 1 consumer, donc **DROP TYPE seo_page_role n'est pas safe**. Plan de cleanup ENUM à reconsidérer.
 
 ### Triggers `__seo_*` et `__rag_*`
 
@@ -188,14 +195,27 @@ Migrer `R3_guide_howto → R3_conseils` dans la DB serait du bricolage :
 - Aplatit deux concepts distincts qui partagent un canon (R3_CONSEILS) mais ont des sources/traitements différents
 - Aucune fuite mesurable côté UI (tests PR-1 prouvent que getRoleDisplayLabel transforme correctement)
 
-### Recommandation : Option C — Cleanup minimal
+### Recommandation : Option C affinée — **No migration needed**
 
-PR-4B devient un **cleanup de dette technique muette** :
+> **Itération 2** : la première version d'Option C proposait DROP TYPE seo_page_role
+> orphelin. Vérification approfondie : l'ENUM **n'est pas orphelin** (consommé
+> par `__seo_observable.page_role` introduit par migration `20260126_create_seo_observable.sql`).
 
-1. **DROP TYPE `seo_page_role`** orphelin (zéro consumer vérifié — 0 colonne, 0 vue, 0 fonction)
-2. **Mark migration `20260124_add_page_role.sql` as never-applied** : ajouter un README dans `backend/supabase/migrations/` ou commentaire en tête expliquant que la migration repose sur une hypothèse architecturale obsolète (DB stocke canon direct vs DB stocke worker vocab + TS traduit)
-3. **NE PAS toucher `__rag_content_refresh_log`** — worker vocab intentionnel
-4. **NE PAS recréer `assign_page_role_from_url`** — pas de consumer, ne ferait que dupliquer la logique de `pageTypeToRoleId()` côté TS
+PR-4B devient un **no-op architectural** :
+
+1. **Pas de DROP TYPE** : l'ENUM a 1 consumer (`__seo_observable`, mono-valué R5)
+2. **Pas de migration `__rag_content_refresh_log`** : worker vocab intentionnel
+3. **Pas de recréation `assign_page_role_from_url`** : pas de consumer, dupliquerait `pageTypeToRoleId()` côté TS
+4. **Pas d'application de `20260124_add_page_role.sql`** : architecture obsolète (DB stocke canon direct vs DB stocke short forms + TS traduit)
+
+### Action concrète unique : annoter la migration jamais-appliquée
+
+Modification minimale safe : ajouter un commentaire en tête de `backend/supabase/migrations/20260124_add_page_role.sql` indiquant que :
+- Cette migration n'a jamais été appliquée en prod
+- Son hypothèse architecturale est obsolète (DB stocke canon direct vs séparation worker/canon actuelle)
+- Voir `pr4b-mcp-inventory-2026-05-05.md` pour le contexte complet
+
+Ce commentaire empêche un futur contributeur d'appliquer la migration par erreur. Pas de DDL prod, pas de behavior change, juste un guardrail documentaire.
 
 ### Conséquences pour le plan stratégique global
 
