@@ -2,7 +2,7 @@
 module: rm
 sources:
 - backend/src/modules/rm
-last_scan: '2026-05-04'
+last_scan: '2026-05-05'
 primary_files:
 - backend/src/modules/rm/controllers/rm.controller.ts
 - backend/src/modules/rm/rm.module.ts
