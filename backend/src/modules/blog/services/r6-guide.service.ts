@@ -378,8 +378,8 @@ export class R6GuideService {
         : undefined;
 
     return {
-      intentType: 'R6',
-      pageRole: 'R6_BUYING_GUIDE',
+      intentType: 'R6_GUIDE_ACHAT',
+      pageRole: 'R6_GUIDE_ACHAT',
       canonicalRoleUrl: `/blog-pieces-auto/guide-achat/${pg_alias}`,
       roleVersion: 'v2',
       page,
@@ -452,8 +452,8 @@ export class R6GuideService {
       (row.sgpg_interest_nuggets as R6InterestNugget[]) || [];
 
     return {
-      intentType: 'R6',
-      pageRole: 'R6_BUYING_GUIDE',
+      intentType: 'R6_GUIDE_ACHAT',
+      pageRole: 'R6_GUIDE_ACHAT',
       canonicalRoleUrl: `/blog-pieces-auto/guide-achat/${pg_alias}`,
       roleVersion: 'v1',
       page,

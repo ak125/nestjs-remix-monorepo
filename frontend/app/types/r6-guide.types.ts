@@ -177,8 +177,8 @@ export interface R6GuidePage {
 
 export interface R6GuidePayload {
   // Intent & role (always present)
-  intentType: "R6";
-  pageRole: "R6_BUYING_GUIDE";
+  intentType: "R6_GUIDE_ACHAT";
+  pageRole: "R6_GUIDE_ACHAT";
   canonicalRoleUrl: string;
   roleVersion: "v1" | "v2";
 

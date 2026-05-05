@@ -18,8 +18,8 @@
     },
     "intentType": {
       "type": "string",
-      "const": "R6",
-      "default": "R6"
+      "const": "R6_GUIDE_ACHAT",
+      "default": "R6_GUIDE_ACHAT"
     },
     "pageRole": {
       "type": "string",
