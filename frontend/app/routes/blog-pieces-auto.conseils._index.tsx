@@ -50,7 +50,7 @@ import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 // ── Handle ──────────────────────────────────────────────
 
 export const handle = {
-  pageRole: createPageRoleMeta(PageRole.R3_BLOG, {
+  pageRole: createPageRoleMeta(PageRole.R3_CONSEILS, {
     clusterId: "conseils",
     canonicalEntity: "conseils-index",
   }),
