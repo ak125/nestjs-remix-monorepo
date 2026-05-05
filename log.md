@@ -345,3 +345,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/canon-mirrors-relocation`
 - **Décision** : chore(canon): relocate AEC + Marketing Voice mirrors to canon-mirrors/
 - **Sortie** : PR aucune | commits aa0e8980
+
+## 2026-05-05 — chore/seo-roles-pr3a-lint-warn (auto)
+
+- **Branche** : `chore/seo-roles-pr3a-lint-warn`
+- **Décision** : feat(seo-roles): lint enforcement phase 3a — observe (PR-3a)
+- **Sortie** : PR #309 | commits 1b3250d5
