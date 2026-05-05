@@ -26,6 +26,7 @@ export class RagWebIngestDbService extends SupabaseBaseService {
 
   /** Upsert a web ingest job record (fire-and-forget safe). */
   async upsertJob(job: WebJob, gammesDetected?: string[]): Promise<void> {
+    if (this.guardReadOnly('upsertJob', job.jobId)) return;
     const errorMessage = this.extractErrorMessage(job.logLines);
     const { error } = await this.supabase.from('__rag_web_ingest_jobs').upsert(
       {
@@ -114,6 +115,7 @@ export class RagWebIngestDbService extends SupabaseBaseService {
 
   /** Mark all "running" jobs as failed (orphan cleanup on startup). */
   async failOrphanedRunningJobs(): Promise<number> {
+    if (this.guardReadOnly('failOrphanedRunningJobs')) return 0;
     const { data, error } = await this.supabase
       .from('__rag_web_ingest_jobs')
       .update({

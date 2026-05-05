@@ -11,6 +11,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { ExternalServiceException, ErrorCodes } from '@common/exceptions';
 import { getErrorMessage } from '@common/utils/error.utils';
+import { isReadOnlyMode } from '@config/env-validation';
 
 const execAsync = promisify(exec);
 
@@ -102,11 +103,28 @@ export class SeoAuditSchedulerService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * � Process un job (audit ou cleanup)
+   * 🔄 Process un job (audit ou cleanup)
+   *
+   * ADR-028 Option D — gate processor (Principe 1) : worker créé en preprod
+   * pour valider BullMQ wiring, mais le handler court-circuite sans
+   * `execAsync(scriptPath)` qui crasherait sur script absent du Docker image.
    */
   private async processJob(
     job: any,
   ): Promise<{ success: boolean; type: string } | Record<string, unknown>> {
+    if (isReadOnlyMode()) {
+      this.logger.warn(
+        {
+          metric: 'readonly.skipped',
+          operation: 'seo-audit.processJob',
+          jobId: job?.id,
+          taskType: job?.data?.task ?? job?.data?.auditType ?? 'unknown',
+        },
+        `[READ_ONLY] Skip seo-audit job #${job?.id} — script execution disabled (ADR-028 Option D)`,
+      );
+      return { skipped: true, reason: 'READ_ONLY' };
+    }
+
     // Job de nettoyage
     if (job.data.task === 'cleanup-old-jobs') {
       this.logger.log(`🗑️ Processing cleanup job #${job.id}`);
