@@ -22,31 +22,34 @@
 # their owning machine + be backed up to Bitwarden / 1Password / Yubikey.
 
 keys:
-  # --- Operators (humans, multi-machine via personal password manager) ---
-  - &owner_fafa age1PLACEHOLDER_REPLACE_WITH_OWNER_PUBLIC_KEY
-
   # --- VPS DEV (preprod) — 46.224.118.55 ---
-  - &dev_vps age1PLACEHOLDER_REPLACE_WITH_DEV_VPS_PUBLIC_KEY
+  # Generated 2026-05-06, private key in ~deploy/.config/sops/age/keys.txt on dev VPS.
+  - &dev_vps age17p8cdc42j9fj0045pqd33epc4z3fkgr7643365uj73hl2zq74gzqfkx6jd
+
+  # --- Operator backup (Fafa) — TO ADD ASAP from personal laptop ---
+  # Currently UNSET → secrets in this repo are recoverable ONLY from VPS DEV.
+  # If VPS DEV is wiped before this is filled, secrets must be regenerated.
+  # Steps:
+  #   1. On personal machine: `age-keygen -o ~/.config/sops/age/owner.key`
+  #   2. Backup ~/.config/sops/age/owner.key to Bitwarden / 1Password
+  #   3. Replace this comment with: `- &owner_fafa <public-key>`
+  #   4. Add `*owner_fafa` to creation_rules below
+  #   5. `sops updatekeys -y secrets/sentry.dev.sops.env`
+  #   6. Commit + push.
 
   # --- VPS PROD — 49.12.233.2 ---
-  # Uncomment when PR-B promotes SOPS to PROD
-  # - &prod_vps age1PLACEHOLDER_REPLACE_WITH_PROD_VPS_PUBLIC_KEY
+  # Uncomment + add public key when PR-B promotes SOPS to PROD.
+  # - &prod_vps age1...
 
 creation_rules:
   # Sentry-only secrets (PR-A scope) — DEV environment
   - path_regex: ^secrets/sentry\.dev\.sops\.env$
-    age: >-
-      age1PLACEHOLDER_REPLACE_WITH_OWNER_PUBLIC_KEY,
-      age1PLACEHOLDER_REPLACE_WITH_DEV_VPS_PUBLIC_KEY
+    key_groups:
+      - age:
+          - *dev_vps
 
   # Future: other DEV secrets migrated from plain .env (PR-B)
   - path_regex: ^secrets/.+\.dev\.sops\.env$
-    age: >-
-      age1PLACEHOLDER_REPLACE_WITH_OWNER_PUBLIC_KEY,
-      age1PLACEHOLDER_REPLACE_WITH_DEV_VPS_PUBLIC_KEY
-
-  # Future: PROD secrets (PR-B+)
-  # - path_regex: ^secrets/.+\.prod\.sops\.env$
-  #   age: >-
-  #     age1PLACEHOLDER_REPLACE_WITH_OWNER_PUBLIC_KEY,
-  #     age1PLACEHOLDER_REPLACE_WITH_PROD_VPS_PUBLIC_KEY
+    key_groups:
+      - age:
+          - *dev_vps
