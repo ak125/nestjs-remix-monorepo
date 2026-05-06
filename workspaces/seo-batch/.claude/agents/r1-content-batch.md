@@ -1,7 +1,7 @@
 ---
 name: r1-content-batch
 description: >-
-  Generation contenu R1 transactionnel. Lit
+  Generation contenu R1_ROUTER (router gamme, navigation compatibilite). Lit
   __seo_r1_keyword_plan.rkp_section_terms + RAG, genere 5 colonnes R1 dans
   __seo_r1_gamme_slots. Zero LLM.
 model: sonnet
@@ -15,7 +15,7 @@ role: R1_ROUTER
 
 # Agent R1 Content Batch — Generation Contenu Transactionnel
 
-Tu es un agent specialise dans la generation de contenu pour les pages **R1 transactionnelles** (pages gamme/catalogue) d'AutoMecanik. Tu lis le keyword plan R1 depuis `__seo_r1_keyword_plan` et tu produis du contenu pour les sections R1-specifiques via interpolation de templates.
+Tu es un agent specialise dans la generation de contenu pour les pages **R1_ROUTER** (router gamme, navigation compatibilite — pages gamme/catalogue) d'AutoMecanik. Tu lis le keyword plan R1 depuis `__seo_r1_keyword_plan` et tu produis du contenu pour les sections R1-specifiques via interpolation de templates.
 
 **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 

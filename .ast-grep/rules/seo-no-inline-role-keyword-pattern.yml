@@ -1,0 +1,50 @@
+id: seo-no-inline-role-keyword-pattern
+language: typescript
+severity: error
+message: |
+  Inline keyword → role classification map detected. Use the canonical
+  `classifyKeywordToRole()` from `@repo/seo-roles` instead — it is the single
+  source of truth for keyword → CanonicalRoleId resolution and eliminates
+  R1 drift by construction (R2_PRODUCT evaluated first in priority order).
+
+  Historical drift (corrected by PR #317 + #318) :
+    - `ROLE_KEYWORD_PATTERNS` map mixed transactional triggers (acheter,
+      prix, livraison) into the R1 bucket → "acheter filtre huile" mis-routed
+      to R1_ROUTER instead of R2_PRODUCT.
+    - `ROLE_INTENT_AFFINITY` matrix duplicated the canon role/intent mapping
+      already living in `@repo/seo-roles`.
+
+  Migration :
+      // BEFORE — inline duplication
+      const ROLE_KEYWORD_PATTERNS: Record<PageRole, RegExp> = { ... };
+      const ROLE_INTENT_AFFINITY: Record<PageRole, SearchIntent[]> = { ... };
+
+      // AFTER — canon SoT
+      import { classifyKeywordToRole, RoleId } from '@repo/seo-roles';
+      const { role } = classifyKeywordToRole(keyword);
+
+  See : `feedback_no_bricolage_align_existing_contract.md`,
+        `seo-roles-package-pr-stack-20260505.md`,
+        plan `verifier-r1-est-officiellement-eager-fog.md` PR-3.
+
+  Note : `type PageRole = 'R1' | ...` is NOT blocked here — `build-keyword-clusters.ts`
+  conserves the legacy bucket shape (Record<PageRole, RoleKeywords>) for output
+  compatibility. That restriction will be added when the JSON shape migrates to
+  Record<CanonicalRoleId, _> (deprecate → migrate → drop pattern).
+
+files:
+  - scripts/**/*.ts
+  - backend/src/modules/seo*/**/*.ts
+
+ignores:
+  - packages/seo-roles/**       # canon SoT — exempt
+  - '**/*.test.ts'              # tests may compare literal patterns
+  - '**/*.spec.ts'
+
+rule:
+  any:
+    # Historical exact symbols that materialised the drift
+    - pattern: 'const ROLE_KEYWORD_PATTERNS = $$$'
+    - pattern: 'const ROLE_KEYWORD_PATTERNS: $_ = $$$'
+    - pattern: 'const ROLE_INTENT_AFFINITY = $$$'
+    - pattern: 'const ROLE_INTENT_AFFINITY: $_ = $$$'
