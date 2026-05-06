@@ -166,10 +166,10 @@ Les sections sont utilisees dans `GET /api/rag/section/:section` pour filtrer le
 
 | Section | Mapping page |
 |---------|-------------|
-| `diagnostic` | R5 Diagnostic |
-| `guide-achat` | R3 Blog / Guide |
-| `reference` | R4 Reference |
-| `entretien` | Maintenance / Education |
+| `diagnostic` | R5_DIAGNOSTIC |
+| `guide-achat` | R6_GUIDE_ACHAT |
+| `reference` | R4_REFERENCE |
+| `entretien` | R3_CONSEILS |
 
 ---
 
