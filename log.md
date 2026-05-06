@@ -363,3 +363,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-roles-keyword-intent-canon`
 - **Décision** : feat(seo-roles): keyword-intent canonical SoT @repo/seo-roles@0.3.0 (PR-0C)
 - **Sortie** : PR #317 | commits 94aabb03
+
+## 2026-05-06 — fix/seo-roles-normalize-frontend-shortvalues (auto)
+
+- **Branche** : `fix/seo-roles-normalize-frontend-shortvalues`
+- **Décision** : feat(seo-roles): map frontend short values R0/R1/R2/R4/R5/R7/R8 + R6_GUIDE to canonical RoleId (A2) (+1 other commit)
+- **Sortie** : PR #323 | commits ffe1eb01 9b2c12c4
