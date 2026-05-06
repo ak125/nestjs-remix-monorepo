@@ -50,6 +50,12 @@ jobs:
       - name: 🔬 Lint
         run: npm run lint
 
+      # Cloudflare cache poisoning guard: zero-arg HeadersFunction with
+      # `s-maxage` lets Cloudflare cache 5xx for 24h (INC-2026-005-recurrence
+      # 2026-05-06). Use ~/utils/cache-control#buildCacheHeaders instead.
+      - name: 🛡️ Cache-Control discipline (Remix routes)
+        run: bash scripts/lint/check-no-zero-arg-headers-with-s-maxage.sh
+
   typecheck:
     name: ʦ TypeScript
     runs-on: ubuntu-latest

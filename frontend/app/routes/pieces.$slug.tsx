@@ -54,6 +54,7 @@ import {
   extractEditorialBlocks,
   mergeFaqBlocks,
 } from "~/utils/editorial-parser";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { parseGammePageData } from "~/utils/gamme-page-contract.utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
@@ -531,16 +532,9 @@ export const meta: MetaFunction<typeof loader> = ({
   return result;
 };
 
-export function headers({ loaderHeaders }: { loaderHeaders: Headers }) {
-  const h: Record<string, string> = {
-    "Cache-Control":
-      loaderHeaders.get("Cache-Control") ||
-      "public, max-age=3600, s-maxage=86400, stale-while-revalidate=7200",
-  };
-  const xr = loaderHeaders.get("X-Robots-Tag");
-  if (xr) h["X-Robots-Tag"] = xr;
-  return h;
-}
+export const headers = buildCacheHeaders(
+  "public, max-age=3600, s-maxage=86400, stale-while-revalidate=7200",
+);
 
 // Sync data: disponible immediatement (above-fold + meta/JSON-LD)
 type PiecesPageSyncData = Omit<

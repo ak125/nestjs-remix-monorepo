@@ -17,7 +17,6 @@
 
 import {
   json,
-  type HeadersFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from "@remix-run/node";
@@ -58,6 +57,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { ResponsiveImage } from "~/components/ui/ResponsiveImage";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
@@ -175,11 +175,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
 };
 
-// Cache — 1min browser + 10min CDN (listing stable)
-export const headers: HeadersFunction = () => ({
-  "Cache-Control":
-    "public, max-age=60, s-maxage=600, stale-while-revalidate=86400",
-});
+// Cache — 1min browser + 10min CDN (listing stable). Errors hit no-store via
+// buildCacheHeaders so loader-thrown 5xx never inherit the success policy.
+export const headers = buildCacheHeaders(
+  "public, max-age=60, s-maxage=600, stale-while-revalidate=86400",
+);
 
 /* ===========================
    Meta + Structured Data
