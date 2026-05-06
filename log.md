@@ -369,3 +369,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/observability-sentry-dev`
 - **Décision** : feat(observability): Sentry wiring + SOPS+age secret management infra
 - **Sortie** : PR #324 | commits aaa59617
+
+## 2026-05-06 — chore/trigger-redeploy-sentry-fix (auto)
+
+- **Branche** : `chore/trigger-redeploy-sentry-fix`
+- **Décision** : fix(ci): source preprod .env in deploy step to prevent env stripping on manual rerun
+- **Sortie** : PR #329 | commits a008b0fe

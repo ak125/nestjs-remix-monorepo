@@ -751,6 +751,20 @@ jobs:
 
           echo "✅ .env.preprod generated (anon key only, no SERVICE_ROLE_KEY, READ_ONLY=true)"
 
+          # Source the just-generated .env into the shell. docker-compose.preprod.yml
+          # uses bare `environment: - SUPABASE_URL` style refs which inherit from the
+          # shell at compose-invocation time and OVERRIDE env_file when shell has no
+          # value. CI's job-level `env:` block already sets SUPABASE_*, but explicit
+          # sourcing here makes the deploy step robust to manual reruns from a shell
+          # that doesn't have those vars (e.g. `sudo -u deploy ... --force-recreate`
+          # outside of CI). Discovered post-PR-B redeploy 2026-05-06: a manual rerun
+          # had stripped SUPABASE_ANON_KEY from container, surfaced via Sentry as
+          # repeated 401 "Invalid API key" — which is exactly what observability is for.
+          set -a
+          # shellcheck disable=SC1091
+          . "$PREPROD_DIR/.env"
+          set +a
+
           # Arreter anciens conteneurs
           docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
           docker rm nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
