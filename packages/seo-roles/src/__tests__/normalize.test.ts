@@ -49,6 +49,48 @@ describe("normalizeRoleId", () => {
     });
   });
 
+  describe("frontend short values (page-role.types.ts PageRole enum)", () => {
+    test("maps R0 → R0_HOME", () => {
+      assert.equal(normalizeRoleId("R0"), RoleId.R0_HOME);
+    });
+
+    test("maps R1 → R1_ROUTER", () => {
+      assert.equal(normalizeRoleId("R1"), RoleId.R1_ROUTER);
+    });
+
+    test("maps R2 → R2_PRODUCT", () => {
+      assert.equal(normalizeRoleId("R2"), RoleId.R2_PRODUCT);
+    });
+
+    test("maps R4 → R4_REFERENCE", () => {
+      assert.equal(normalizeRoleId("R4"), RoleId.R4_REFERENCE);
+    });
+
+    test("maps R5 → R5_DIAGNOSTIC", () => {
+      assert.equal(normalizeRoleId("R5"), RoleId.R5_DIAGNOSTIC);
+    });
+
+    test("maps R7 → R7_BRAND", () => {
+      assert.equal(normalizeRoleId("R7"), RoleId.R7_BRAND);
+    });
+
+    test("maps R8 → R8_VEHICLE", () => {
+      assert.equal(normalizeRoleId("R8"), RoleId.R8_VEHICLE);
+    });
+
+    test("maps R6_GUIDE → R6_GUIDE_ACHAT (frontend distinct value)", () => {
+      assert.equal(normalizeRoleId("R6_GUIDE"), RoleId.R6_GUIDE_ACHAT);
+    });
+
+    test("preserves R3 ambiguity discipline (still null)", () => {
+      assert.equal(normalizeRoleId("R3"), null);
+    });
+
+    test("preserves R6 ambiguity discipline (still null)", () => {
+      assert.equal(normalizeRoleId("R6"), null);
+    });
+  });
+
   describe("worker page types", () => {
     test("maps R3_guide_howto → R3_CONSEILS", () => {
       assert.equal(normalizeRoleId("R3_guide_howto"), RoleId.R3_CONSEILS);
