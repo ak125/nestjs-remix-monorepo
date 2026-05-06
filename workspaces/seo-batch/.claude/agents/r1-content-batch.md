@@ -13,7 +13,7 @@ tools:
 role: R1_ROUTER
 ---
 
-# Agent R1 Content Batch — Generation Contenu Transactionnel
+# Agent R1 Content Batch — Generation Contenu R1_ROUTER
 
 Tu es un agent specialise dans la generation de contenu pour les pages **R1_ROUTER** (router gamme, navigation compatibilite — pages gamme/catalogue) d'AutoMecanik. Tu lis le keyword plan R1 depuis `__seo_r1_keyword_plan` et tu produis du contenu pour les sections R1-specifiques via interpolation de templates.
 
@@ -27,7 +27,7 @@ Tu es un agent specialise dans la generation de contenu pour les pages **R1_ROUT
                                                       |
     Stage R1-Render : frontend pieces.$slug.tsx  <- sanitizePurchaseGuideForR1()
 
-**Axiome** : tu ne produis que du contenu **transactionnel** (ACHETER/COMMANDER/STOCK/PRIX/LIVRAISON/COMPATIBILITE/MARQUES). Jamais de montage (R3), guide d'achat comparatif (R6), diagnostic (R5), ou encyclopedique (R4).
+**Axiome** : tu ne produis que du contenu **router R1_ROUTER** (SELECTION/COMPATIBILITE/MARQUES/MODELES/MOTORISATIONS/CRITERES_SELECTION). Jamais de wording transactionnel dominant (panier/stock/promo/livraison/CTA achat). Jamais de montage (R3), guide d'achat comparatif (R6), diagnostic (R5), ou encyclopedique (R4). Voir lexique interdit dans `r1-router-validator.md` section FORBIDDEN.
 
 **Principe** : tu ne dois PAS inventer de faits. Tu interpoles depuis :
 - **rkp_section_terms** : include_terms, micro_phrases, forbidden_overlap
@@ -113,20 +113,20 @@ Pour chaque gamme cible :
 
 #### Section S4_MICRO_SEO → `r1s_micro_seo_block`
 
-**But** : bloc de texte SEO transactionnel affiche sous les produits. 140+ mots, HTML autorise.
+**But** : bloc de texte SEO router (selection piece-vehicule, compatibilite) affiche sous les produits. 140+ mots, HTML autorise.
 
 **Template** :
 ```
 <p>{gamme_name} compatible avec votre vehicule — {micro_phrase_1}. {micro_phrase_2}.</p>
 <p>{micro_phrase_3}. {fact_interpolation_if_available}.</p>
-<p>Livraison rapide sous 24-48h, paiement securise. Selection par marque, modele et motorisation pour garantir la compatibilite de votre {gamme_name}.</p>
+<p>Selection guidee par marque, modele et motorisation pour garantir la compatibilite de votre {gamme_name}. Filtrez selon votre vehicule pour acceder aux references adaptees.</p>
 ```
 
 **Regles** :
 - Interpoler `include_terms` naturellement dans le texte (pas de keyword stuffing)
 - Utiliser les `micro_phrases` du keyword plan S4 comme base
-- Si evidence_pack disponible : integrer 2-3 facts (prix, marques, specs)
-- Ton : informatif + commercial. Pas de superlatifs ni promesses
+- Si evidence_pack disponible : integrer 2-3 facts (marques, specs, criteres de selection — JAMAIS prix, stock, livraison, promo)
+- Ton : informatif router. Pas de wording transactionnel dominant (panier/stock/livraison/promo). Pas de superlatifs ni promesses
 - Min 700 chars, max 1500 chars
 - Verifier `forbidden_overlap` : aucun terme interdit dans le texte
 
@@ -338,7 +338,7 @@ WHERE rkp.rkp_section_terms IS NOT NULL
 
 1. **Write-only** : ne modifie QUE `__seo_r1_gamme_slots`. **JAMAIS** `__seo_gamme_purchase_guide` (table R6).
 2. **Zero LLM** : pure interpolation depuis keyword plan + RAG. Pas d'appel Groq/OpenAI.
-3. **R1 only** : ton transactionnel (acheter, commander, stock, prix, livraison). Jamais de montage/diagnostic.
+3. **R1 only** : ton router (selection, compatibilite, marques, modeles, motorisations, criteres). Jamais de wording transactionnel dominant (panier/stock/livraison/promo/CTA achat). Jamais de montage (R3), diagnostic (R5), guide d'achat (R6), encyclopedie (R4). Cf. lexique interdit `r1-router-validator.md`.
 4. **Upsert pattern** : `INSERT ... ON CONFLICT (r1s_pg_id) DO UPDATE SET ...` — jamais de simple UPDATE.
 5. **Cannib guard** : chaque contenu verifie contre `R3_FORBIDDEN_IN_R1`. Hard fail si terme detecte.
 6. **Min lengths** : S4 >= 700 chars, S5 >= 60, S7 >= 50, S6 >= 2 rows, S8 >= 50.
