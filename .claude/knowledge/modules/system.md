@@ -2,7 +2,7 @@
 module: system
 sources:
 - backend/src/modules/system
-last_scan: '2026-05-05'
+last_scan: '2026-05-06'
 primary_files:
 - backend/src/modules/system/processors/metrics.processor.ts
 - backend/src/modules/system/services/database-monitor.service.ts

@@ -2,7 +2,7 @@
 module: substitution
 sources:
 - backend/src/modules/substitution
-last_scan: '2026-05-05'
+last_scan: '2026-05-06'
 primary_files:
 - backend/src/modules/substitution/controllers/substitution.controller.ts
 - backend/src/modules/substitution/services/intent-extractor.service.ts

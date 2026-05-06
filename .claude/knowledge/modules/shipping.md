@@ -2,7 +2,7 @@
 module: shipping
 sources:
 - backend/src/modules/shipping
-last_scan: '2026-05-05'
+last_scan: '2026-05-06'
 primary_files:
 - backend/src/modules/shipping/shipping-new.module.ts
 - backend/src/modules/shipping/shipping.controller.ts
