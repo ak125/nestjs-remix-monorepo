@@ -45,6 +45,7 @@
     "@remix-run/server-runtime": "^2.17.4",
     "@repo/database-types": "*",
     "@repo/seo-roles": "*",
+    "@sentry/remix": "^10.51.0",
     "@tanstack/react-query": "^5.87.1",
     "@tiptap/extension-bold": "^3.20.0",
     "@tiptap/extension-italic": "^3.20.0",

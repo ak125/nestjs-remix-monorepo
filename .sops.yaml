@@ -1,0 +1,55 @@
+# SOPS configuration for AutoMecanik monorepo
+# Reference: https://github.com/getsops/sops
+#
+# Each file matched by `path_regex` is encrypted with all listed `age` recipients.
+# Anyone holding ANY of those private keys can decrypt the file.
+#
+# How to add a new recipient (new VPS, new operator):
+#   1. On the new machine: `age-keygen -o ~/.config/sops/age/keys.txt`
+#      → outputs both private key (keep) and public key `age1...` (share)
+#   2. Add the public key to the relevant `age:` list below
+#   3. Re-encrypt existing files: `sops updatekeys secrets/<file>.sops.env`
+#   4. Commit `.sops.yaml` + the updated `secrets/*.sops.env`
+#
+# How to remove a compromised recipient:
+#   1. Remove its public key from the lists below
+#   2. `sops updatekeys secrets/<file>.sops.env` for every affected file
+#   3. ROTATE every secret value in those files (the old encrypted blob is in
+#      git history and the removed key still decrypts it — only rotation
+#      invalidates the leak)
+#
+# Public keys are PUBLIC by design — safe to commit. Private keys MUST stay on
+# their owning machine + be backed up to Bitwarden / 1Password / Yubikey.
+
+keys:
+  # --- VPS DEV (preprod) — 46.224.118.55 ---
+  # Generated 2026-05-06, private key in ~deploy/.config/sops/age/keys.txt on dev VPS.
+  - &dev_vps age17p8cdc42j9fj0045pqd33epc4z3fkgr7643365uj73hl2zq74gzqfkx6jd
+
+  # --- Operator backup (Fafa) — TO ADD ASAP from personal laptop ---
+  # Currently UNSET → secrets in this repo are recoverable ONLY from VPS DEV.
+  # If VPS DEV is wiped before this is filled, secrets must be regenerated.
+  # Steps:
+  #   1. On personal machine: `age-keygen -o ~/.config/sops/age/owner.key`
+  #   2. Backup ~/.config/sops/age/owner.key to Bitwarden / 1Password
+  #   3. Replace this comment with: `- &owner_fafa <public-key>`
+  #   4. Add `*owner_fafa` to creation_rules below
+  #   5. `sops updatekeys -y secrets/sentry.dev.sops.env`
+  #   6. Commit + push.
+
+  # --- VPS PROD — 49.12.233.2 ---
+  # Uncomment + add public key when PR-B promotes SOPS to PROD.
+  # - &prod_vps age1...
+
+creation_rules:
+  # Sentry-only secrets (PR-A scope) — DEV environment
+  - path_regex: ^secrets/sentry\.dev\.sops\.env$
+    key_groups:
+      - age:
+          - *dev_vps
+
+  # Future: other DEV secrets migrated from plain .env (PR-B)
+  - path_regex: ^secrets/.+\.dev\.sops\.env$
+    key_groups:
+      - age:
+          - *dev_vps

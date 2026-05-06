@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { SentryExceptionCaptured } from '@sentry/nestjs';
 import { Request, Response } from 'express';
 import { ErrorService } from '../services/error.service';
 import { DomainException } from '@common/exceptions';
@@ -17,6 +18,13 @@ export class GlobalErrorFilter implements ExceptionFilter {
 
   constructor(private readonly errorService: ErrorService) {}
 
+  // @SentryExceptionCaptured forwards every caught exception to Sentry BEFORE
+  // the existing handler logic runs. RedirectException + DomainException with
+  // status < 500 are filtered out by Sentry's default `ignoreErrors` heuristics
+  // (HttpException with 4xx is considered "expected" and dropped) — only true
+  // 5xx and unhandled errors are reported. Tune via Sentry.init `ignoreErrors`
+  // if false-positives appear in the Issues feed.
+  @SentryExceptionCaptured()
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
