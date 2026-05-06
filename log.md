@@ -375,3 +375,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `chore/trigger-redeploy-sentry-fix`
 - **Décision** : fix(ci): source preprod .env in deploy step to prevent env stripping on manual rerun
 - **Sortie** : PR #329 | commits a008b0fe
+
+## 2026-05-06 — feat/observability-sentry-prod (auto)
+
+- **Branche** : `feat/observability-sentry-prod`
+- **Décision** : feat(observability): extend Sentry+SOPS to PROD via deploy-prod.yml wrapper (PR-D)
+- **Sortie** : PR #334 | commits f433640a

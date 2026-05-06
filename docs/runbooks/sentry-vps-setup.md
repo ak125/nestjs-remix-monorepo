@@ -110,6 +110,78 @@ CRON
 
 The output JSON file is read by the dashboard / alerting (TBD in PR-B+).
 
+## Promoting Sentry to PROD (post PR-D)
+
+PROD container co-locates with the GitHub Actions self-hosted runner on
+49.12.233.2 — same machine as preprod. So no new age key is needed; the
+existing `runner_vps` recipient covers both `secrets/sentry.dev.sops.env`
+and `secrets/sentry.prod.sops.env`.
+
+### Bootstrap the prod SOPS file (one-time)
+
+On the dev VPS (where `dev_vps` age key lives, decryption capability for
+triage):
+
+```bash
+cd /opt/automecanik/app
+git fetch origin && git checkout main && git pull
+
+tmp=/dev/shm/sentry.prod.env.$$
+cat > "$tmp" <<EOF
+SENTRY_DSN=https://<backend-prod-public-key>@o4511342880555008.ingest.de.sentry.io/<backend-prod-project-id>
+VITE_SENTRY_DSN=https://<frontend-prod-public-key>@o4511342880555008.ingest.de.sentry.io/<frontend-prod-project-id>
+SENTRY_AUTH_TOKEN=sntryu_...
+SENTRY_ORG=auto-pieces-equipement
+SENTRY_PROJECT_BACKEND=automecanik-backend-prod
+SENTRY_PROJECT_FRONTEND=automecanik-frontend-prod
+SENTRY_ENVIRONMENT=production
+SENTRY_TRACES_SAMPLE_RATE=0.05
+EOF
+chmod 600 "$tmp"
+cp "$tmp" secrets/sentry.prod.sops.env
+sops encrypt --input-type dotenv --output-type dotenv --in-place secrets/sentry.prod.sops.env
+shred -u "$tmp"
+
+git rm secrets/sentry.prod.sops.env.PLACEHOLDER
+git add secrets/sentry.prod.sops.env
+
+# Open a follow-up PR for review; do NOT push directly to main
+git checkout -b chore/secrets-prod-bootstrap
+git commit -s -m 'chore(secrets): bootstrap sentry.prod.sops.env'
+git push -u origin chore/secrets-prod-bootstrap
+gh pr create --base main --title 'chore(secrets): bootstrap sentry.prod.sops.env' \
+  --body 'Real encrypted PROD Sentry secrets, replaces PLACEHOLDER from PR-D'
+```
+
+### First PROD deploy with Sentry actif
+
+```bash
+git tag v$(date +%Y.%m.%d)
+git push origin v$(date +%Y.%m.%d)
+# triggers .github/workflows/deploy-prod.yml
+# wrapper logs should show "✅ Injecting Sentry secrets via sops exec-env"
+```
+
+Verify post-deploy:
+
+```bash
+curl -s https://www.automecanik.com/ | grep -oE 'window\.ENV = \{[^}]+\}'
+# expect VITE_SENTRY_DSN populated with PROD frontend DSN value
+```
+
+The PROD `/health/sentry-debug` endpoint defaults to 404 unless
+`SENTRY_ALLOW_DEBUG_ENDPOINT=true` (see backend/src/modules/health/
+health.module.ts). Don't enable in PROD long-term; use it only for one-shot
+post-deploy validation, then disable.
+
+### Sentry tuning recommendations PROD vs DEV
+
+| Knob | DEV | PROD | Why |
+|------|-----|------|-----|
+| `SENTRY_TRACES_SAMPLE_RATE` | 0.1 | 0.05 | PROD has 10-100× DEV traffic; 5% sampling keeps quota usable |
+| `SENTRY_SEND_PII` | false | false | RGPD minimisation; only enable for narrow time-bound debugging windows |
+| `SENTRY_ALLOW_DEBUG_ENDPOINT` | true | false | Avoid public 5xx oracle in PROD |
+
 ## Smoke test the wiring after first deploy
 
 ```bash
