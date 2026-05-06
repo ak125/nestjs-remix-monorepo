@@ -330,7 +330,7 @@ Presenter directement dans la conversation :
 
 ```json
 {
-  "page": { "url": "/blog-pieces-auto", "role": "R3_BLOG_HUB", "language": "fr" },
+  "page": { "url": "/blog-pieces-auto", "role": "R3_CONSEILS", "language": "fr" },
   "audit": {
     "current_intent": "...",
     "content_gaps": [{ "gap": "...", "impact": "high|med|low", "fix": "..." }],
