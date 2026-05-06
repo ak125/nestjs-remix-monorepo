@@ -1,5 +1,8 @@
-// Load environment variables FIRST (before any validation)
-import 'dotenv/config';
+// Sentry MUST be imported first so its OpenTelemetry-based auto-instrumentation
+// can patch http/fs/express before any other module loads.
+// `instrument.ts` also runs `dotenv/config` internally — populating env vars
+// for the validation step below.
+import './instrument';
 
 // Validate environment variables BEFORE any other imports
 // This ensures the app fails fast if required vars are missing

@@ -15,6 +15,16 @@ services:
       # 🛡️ RPC Safety Gate - ENFORCE P1 (2026-02-03)
       - RPC_GATE_MODE=enforce
       - RPC_GATE_ENFORCE_LEVEL=P1
+      # 🚨 Sentry — values inherited from `sops exec-env secrets/sentry.dev.sops.env`
+      # wrapping the deploy command. See docs/runbooks/sentry-vps-setup.md.
+      # Variable name only (no `=value`) means "inherit from host process env".
+      - SENTRY_DSN
+      - VITE_SENTRY_DSN
+      - SENTRY_ENVIRONMENT
+      - SENTRY_TRACES_SAMPLE_RATE
+      - SENTRY_RELEASE
+      - SENTRY_SEND_PII
+      - SENTRY_ALLOW_DEBUG_ENDPOINT
 
     container_name: nestjs-remix-monorepo-preprod
     image: massdoc/nestjs-remix-monorepo:preprod

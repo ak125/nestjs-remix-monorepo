@@ -11,9 +11,33 @@ import {
   type EntryContext,
 } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
+import * as Sentry from "@sentry/remix";
 import { isbot } from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
 import { logger } from "~/utils/logger";
+
+// Sentry server SDK init — picks up DSN from process.env populated by NestJS
+// before SSR runs. In the monorepo, Remix is mounted inside NestJS so process.env
+// is already populated by the backend's `dotenv/config` (via `instrument.ts`).
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment:
+      process.env.SENTRY_ENVIRONMENT ||
+      process.env.APP_ENV ||
+      process.env.NODE_ENV ||
+      "development",
+    tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? 0.1),
+  });
+}
+
+export const handleError = Sentry.wrapHandleErrorWithSentry(
+  (error: unknown, _details: { request: unknown }) => {
+    if (error instanceof Error) {
+      logger.error("[Remix SSR]", error.message);
+    }
+  },
+);
 
 const ABORT_DELAY = 5_000;
 

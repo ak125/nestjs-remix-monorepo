@@ -64,6 +64,14 @@ frontend/.env*
 *-credentials.json
 *-serviceaccount.json
 
+# SOPS-encrypted env files in secrets/ are committed; plain .env there is not.
+# (These re-enable .env.* matching the SOPS naming convention.)
+!secrets/*.sops.env
+!secrets/README.md
+# age private keys must NEVER be committed
+secrets/*.key
+secrets/*.txt
+
 # temp directory
 .temp
 .tmp

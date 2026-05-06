@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggerModule } from 'nestjs-pino';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { loggerConfig } from './config/logger.config';
 import { RequestIdMiddleware } from './modules/mcp-validation/middleware/request-id.middleware';
 // import { ScheduleModule } from '@nestjs/schedule'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
@@ -69,6 +70,9 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
  */
 @Module({
   imports: [
+    // 🚨 Sentry — DI bridge so Sentry-aware filters/services can be injected.
+    // The actual SDK init happens in `instrument.ts` (loaded via main.ts).
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
