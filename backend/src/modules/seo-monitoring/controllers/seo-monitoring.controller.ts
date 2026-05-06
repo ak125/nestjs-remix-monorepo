@@ -24,6 +24,7 @@ import {
   type AuditType,
 } from '../services/audit-findings.service';
 import { RContentAuditorService } from '../services/r-content-auditor.service';
+import { SeoMonitoringRunsService } from '../services/seo-monitoring-runs.service';
 
 @Controller('api/admin/seo-monitoring')
 export class SeoMonitoringController {
@@ -36,6 +37,7 @@ export class SeoMonitoringController {
     private readonly ga4Fetcher: Ga4DailyFetcherService,
     private readonly auditFindings: AuditFindingsService,
     private readonly rContentAuditor: RContentAuditorService,
+    private readonly runsService: SeoMonitoringRunsService,
     configService: ConfigService,
   ) {
     const url = configService.get<string>('SUPABASE_URL') || '';
@@ -58,6 +60,46 @@ export class SeoMonitoringController {
       readiness: this.credentials.checkReadiness(),
       gsc_site_url: this.credentials.getGSCSiteUrl(),
       ga4_property: this.credentials.getGA4PropertyName(),
+    };
+  }
+
+  /**
+   * V0.A — GET /cron/health
+   *
+   * Last successful + last failed run par source d'ingestion.
+   * Source : `__seo_event_log` (event_type ENUM + payload JSONB).
+   * Utilisé pour monitoring externe (Slack alerting / dashboard / readiness probe).
+   */
+  @Get('cron/health')
+  async cronHealth() {
+    const runs = await this.runsService.getRunsHealth(this.supabase);
+    const now = Date.now();
+    const staleThresholdHours = 36; // J-3 par défaut + tolérance 12h
+
+    const sources = runs.map((r) => {
+      const lastSuccessAgeHours = r.lastSuccessAt
+        ? Math.round((now - new Date(r.lastSuccessAt).getTime()) / 3_600_000)
+        : null;
+      const isStale =
+        lastSuccessAgeHours === null ||
+        lastSuccessAgeHours > staleThresholdHours;
+      return {
+        ...r,
+        lastSuccessAgeHours,
+        status: isStale ? 'stale' : 'healthy',
+      };
+    });
+
+    const overall = sources.every((s) => s.status === 'healthy')
+      ? 'healthy'
+      : 'stale';
+
+    return {
+      overall,
+      monitoring_enabled: this.credentials.isMonitoringEnabled(),
+      checked_at: new Date().toISOString(),
+      stale_threshold_hours: staleThresholdHours,
+      sources,
     };
   }
 
