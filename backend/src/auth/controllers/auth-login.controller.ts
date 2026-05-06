@@ -930,7 +930,17 @@ export class AuthLoginController {
       return next(err);
     }
 
-    await promisifySessionDestroy(request.session);
+    // Defense in depth: log session destroy failures (Redis transient errors,
+    // etc.) without blocking cookie clearing. The cookie is cleared regardless
+    // so the client cannot reuse the session ID, even if Redis fails to evict
+    // the server-side record (cleaned up later by TTL — 30j max).
+    try {
+      await promisifySessionDestroy(request.session);
+    } catch (err: unknown) {
+      this.logger.warn(
+        `Session destroy failed for ${email} (cookie cleared anyway): ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
     response.clearCookie('connect.sid');
     this.logger.log(`Logout: ${email}`);
     response.redirect('/');
