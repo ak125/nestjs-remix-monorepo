@@ -755,8 +755,28 @@ jobs:
           docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
           docker rm nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
 
-          # Demarrer preprod
-          docker compose -f docker-compose.preprod.yml up -d
+          # 🚨 Sentry secrets injection via SOPS exec-env wrapper.
+          # docker-compose.preprod.yml declares `environment: - SENTRY_DSN` etc.
+          # which inherit from this shell's env. sops exec-env decrypts the SOPS
+          # file in memory and exports the variables to the wrapped command.
+          # If sops or the age key is unavailable on this runner, fall back to
+          # plain `docker compose up` (Sentry SDK no-ops, deploy still succeeds).
+          SOPS_FILE="$GITHUB_WORKSPACE/secrets/sentry.dev.sops.env"
+          AGE_KEY_FILE="${SOPS_AGE_KEY_FILE:-$HOME/.config/sops/age/keys.txt}"
+          if command -v sops >/dev/null 2>&1 \
+             && [ -f "$SOPS_FILE" ] \
+             && [ -r "$AGE_KEY_FILE" ]; then
+            echo "✅ Injecting Sentry secrets via sops exec-env"
+            export SOPS_AGE_KEY_FILE="$AGE_KEY_FILE"
+            sops exec-env "$SOPS_FILE" \
+              'docker compose -f docker-compose.preprod.yml up -d'
+          else
+            echo "::warning::sops binary, secrets file, or age key missing on runner — Sentry SDK will start in no-op mode"
+            echo "  sops:        $(command -v sops || echo 'NOT FOUND')"
+            echo "  SOPS_FILE:   $SOPS_FILE ($([ -f "$SOPS_FILE" ] && echo present || echo absent))"
+            echo "  age key:     $AGE_KEY_FILE ($([ -r "$AGE_KEY_FILE" ] && echo readable || echo unreadable))"
+            docker compose -f docker-compose.preprod.yml up -d
+          fi
 
           # Health check avec retry (max 2 min)
           echo "⏳ Waiting for PREPROD to start..."
