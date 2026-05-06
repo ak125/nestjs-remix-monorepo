@@ -1,6 +1,6 @@
 {
   "name": "@repo/seo-roles",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Single source of truth for canonical SEO page roles (R0..R8). Normalization, display labels, badge colors, branded CanonicalRoleId type, Zod schemas. Legacy accepted in input, canon mandatory in output.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
