@@ -33,8 +33,8 @@ rule:
   all:
     # An exported `headers` whose value is an arrow function with NO parameters.
     - any:
-        - pattern: export const headers: HeadersFunction = () => $BODY
-        - pattern: export const headers = (() => $BODY) as HeadersFunction
+        - pattern: "export const headers: HeadersFunction = () => $BODY"
+        - pattern: "export const headers = (() => $BODY) as HeadersFunction"
     # Whose body mentions s-maxage (the CDN-cache axis we must guard).
     - has:
         regex: 's-maxage'
