@@ -4,7 +4,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
-import { getRoleDisplayLabel } from "@repo/seo-roles";
+import { getRoleDisplayLabel, getRoleShortLabel } from "@repo/seo-roles";
 import {
   Activity,
   AlertTriangle,
@@ -278,28 +278,6 @@ const QUALITY_STATUS_LABELS: Record<string, string> = {
   PENDING: "Non calcule",
 };
 
-const PAGE_TYPE_LABELS: Record<string, string> = {
-  R1_pieces: "Transactionnel",
-  R3_conseils: "Conseils DIY",
-  R3_guide_howto: "Guide How-To",
-  R4_reference: "Reference",
-  R5_diagnostic: "Diagnostic",
-  R6_guide_achat: "Guide d'achat",
-  // legacy aliases (DB backward compat)
-  R3_guide: "Guide d'achat",
-};
-
-const PAGE_TYPE_SHORT: Record<string, string> = {
-  R1_pieces: "R1",
-  R3_conseils: "R3c",
-  R3_guide_howto: "R3h",
-  R4_reference: "R4",
-  R5_diagnostic: "R5",
-  R6_guide_achat: "R6",
-  // legacy alias
-  R3_guide: "R6",
-};
-
 const DIMENSION_LABELS: Record<string, string> = {
   content_depth: "Contenu",
   seo_technical: "SEO",
@@ -544,8 +522,7 @@ function FeatureChip({ fd, value }: { fd: FeatureDisplay; value: unknown }) {
 
 function PageScoreCard({ ps }: { ps: PageScore }) {
   const [showDetails, setShowDetails] = useState(false);
-  const label =
-    PAGE_TYPE_LABELS[ps.page_type] ?? getRoleDisplayLabel(ps.page_type);
+  const label = getRoleDisplayLabel(ps.page_type);
   const statusLabel = QUALITY_STATUS_LABELS[ps.status] || ps.status;
   const statusType = QUALITY_STATUS_MAP[ps.status] || "NEUTRAL";
 
@@ -583,7 +560,7 @@ function PageScoreCard({ ps }: { ps: PageScore }) {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-[10px] font-mono px-1.5">
-            {PAGE_TYPE_SHORT[ps.page_type] || ps.page_type}
+            {getRoleShortLabel(ps.page_type)}
           </Badge>
           <span className="text-xs font-medium">{label}</span>
         </div>
@@ -720,7 +697,7 @@ function GammeExpandedRow({ row }: { row: GammeScore }) {
             <div className="flex gap-1 mt-1">
               {row.missing_page_types.map((pt) => (
                 <Badge key={pt} variant="outline" className="text-[10px]">
-                  {PAGE_TYPE_LABELS[pt] ?? getRoleDisplayLabel(pt)}
+                  {getRoleDisplayLabel(pt)}
                 </Badge>
               ))}
             </div>
@@ -974,8 +951,7 @@ export default function AdminRagCockpit() {
       header: "Type de page",
       render: (_val, row) => (
         <Badge variant="outline" className="text-xs">
-          {PAGE_TYPE_LABELS[row.page_type] ??
-            getRoleDisplayLabel(row.page_type)}
+          {getRoleDisplayLabel(row.page_type)}
         </Badge>
       ),
     },
@@ -1108,7 +1084,7 @@ export default function AdminRagCockpit() {
                 key={cat}
                 className="text-[9px] bg-muted px-1 py-0.5 rounded"
               >
-                {PAGE_TYPE_SHORT[cat] || cat}: {count}
+                {getRoleShortLabel(cat)}: {count}
               </span>
             ))}
           </div>

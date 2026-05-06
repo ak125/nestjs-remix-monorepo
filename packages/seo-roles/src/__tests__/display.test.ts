@@ -47,6 +47,26 @@ describe("getRoleDisplayLabel — legacy → canonical FR", () => {
   test("R6_BUYING_GUIDE → 'R6 · Guide d'achat'", () => {
     assert.equal(getRoleDisplayLabel("R6_BUYING_GUIDE"), "R6 · Guide d'achat");
   });
+
+  test("R3_guide_achat → 'R6 · Guide d'achat'", () => {
+    assert.equal(getRoleDisplayLabel("R3_guide_achat"), "R6 · Guide d'achat");
+  });
+
+  test("R3_conseils → 'R3 · Conseils'", () => {
+    assert.equal(getRoleDisplayLabel("R3_conseils"), "R3 · Conseils");
+  });
+
+  test("R6_guide_achat → 'R6 · Guide d'achat'", () => {
+    assert.equal(getRoleDisplayLabel("R6_guide_achat"), "R6 · Guide d'achat");
+  });
+
+  test("R4_reference → 'R4 · Référence'", () => {
+    assert.equal(getRoleDisplayLabel("R4_reference"), "R4 · Référence");
+  });
+
+  test("R5_diagnostic → 'R5 · Diagnostic'", () => {
+    assert.equal(getRoleDisplayLabel("R5_diagnostic"), "R5 · Diagnostic");
+  });
 });
 
 describe("getRoleDisplayLabel — R6 ambigu", () => {
@@ -125,6 +145,26 @@ describe("getRoleShortLabel", () => {
 
   test("legacy R3_BLOG → 'R3'", () => {
     assert.equal(getRoleShortLabel("R3_BLOG"), "R3");
+  });
+
+  test("legacy R3_guide → 'R6'", () => {
+    assert.equal(getRoleShortLabel("R3_guide"), "R6");
+  });
+
+  test("legacy R3_guide_howto → 'R3'", () => {
+    assert.equal(getRoleShortLabel("R3_guide_howto"), "R3");
+  });
+
+  test("page_type R6_guide_achat → 'R6'", () => {
+    assert.equal(getRoleShortLabel("R6_guide_achat"), "R6");
+  });
+
+  test("page_type R4_reference → 'R4'", () => {
+    assert.equal(getRoleShortLabel("R4_reference"), "R4");
+  });
+
+  test("page_type R5_diagnostic → 'R5'", () => {
+    assert.equal(getRoleShortLabel("R5_diagnostic"), "R5");
   });
 
   test("null input → '—'", () => {
