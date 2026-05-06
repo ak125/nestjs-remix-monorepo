@@ -9,7 +9,13 @@ import {
   useRevalidator,
   useSearchParams,
 } from "@remix-run/react";
-import { getRoleDisplayLabel } from "@repo/seo-roles";
+import {
+  getRoleDisplayLabel,
+  pageTypeToRoleId,
+  PAGE_TYPE_TO_ROLE,
+  RoleId,
+  type WorkerPageType,
+} from "@repo/seo-roles";
 import {
   RefreshCw,
   Check,
@@ -283,22 +289,21 @@ const REFRESH_STATUS: Record<string, StatusType> = {
   skipped: "NEUTRAL",
 };
 
-const PAGE_TYPE_LABELS: Record<string, string> = {
-  R1_pieces: "R1 Pieces",
-  R3_conseils: "R3 Conseils",
-  R3_guide_howto: "R3 Guide",
-  R4_reference: "R4 Reference",
-  R5_diagnostic: "R5 Diagnostic",
-  R6_guide_achat: "R6 Guide Achat",
-};
+// __rag_content_refresh_log.page_type lives across worker page types except
+// product/brand/vehicle pages (handled by separate refresh pipelines).
+const NON_RAG_REFRESH_PAGE_TYPES: ReadonlySet<WorkerPageType> = new Set([
+  "R2_product",
+  "R7_brand",
+  "R8_vehicle",
+]);
+const RAG_REFRESH_PAGE_TYPES = (
+  Object.keys(PAGE_TYPE_TO_ROLE) as WorkerPageType[]
+).filter((pt) => !NON_RAG_REFRESH_PAGE_TYPES.has(pt));
 
-const PAGE_TYPE_OPTIONS = [
-  { value: "R1_pieces", label: "R1 Pieces" },
-  { value: "R3_conseils", label: "R3 Conseils" },
-  { value: "R3_guide_howto", label: "R3 Guide How-To" },
-  { value: "R4_reference", label: "R4 Reference" },
-  { value: "R6_guide_achat", label: "R6 Guide Achat" },
-] as const;
+const PAGE_TYPE_OPTIONS = RAG_REFRESH_PAGE_TYPES.map((value) => ({
+  value,
+  label: getRoleDisplayLabel(value),
+}));
 
 const GATE_LABELS: Record<string, string> = {
   attribution: "Attribution des sources",
@@ -1132,7 +1137,10 @@ export default function AdminRagPipeline() {
   const [kpOpen, setKpOpen] = useState(false);
 
   const r1Items = useMemo(
-    () => items.filter((i) => i.page_type === "R1_pieces"),
+    () =>
+      items.filter(
+        (i) => pageTypeToRoleId(i.page_type) === RoleId.R1_ROUTER,
+      ),
     [items],
   );
   const r1DraftItems = useMemo(
@@ -1236,7 +1244,7 @@ export default function AdminRagPipeline() {
         return (
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-medium">{String(val)}</span>
-            {item.page_type === "R1_pieces" && (
+            {pageTypeToRoleId(item.page_type) === RoleId.R1_ROUTER && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -1258,7 +1266,7 @@ export default function AdminRagPipeline() {
       header: "Type",
       render: (val) => (
         <Badge variant="outline" className="font-mono text-xs">
-          {PAGE_TYPE_LABELS[val as string] ?? getRoleDisplayLabel(String(val))}
+          {getRoleDisplayLabel(String(val))}
         </Badge>
       ),
     },
@@ -1957,13 +1965,11 @@ export default function AdminRagPipeline() {
                     className="h-9 rounded-md border border-input bg-background px-3 text-sm"
                   >
                     <SelectItem value="">Tous</SelectItem>
-                    <SelectItem value="R1_pieces">R1 Pieces</SelectItem>
-                    <SelectItem value="R3_conseils">R3 Conseils</SelectItem>
-                    <SelectItem value="R3_guide_howto">
-                      R3 Guide How-To
-                    </SelectItem>
-                    <SelectItem value="R4_reference">R4 Reference</SelectItem>
-                    <SelectItem value="R5_diagnostic">R5 Diagnostic</SelectItem>
+                    {RAG_REFRESH_PAGE_TYPES.map((pt) => (
+                      <SelectItem key={pt} value={pt}>
+                        {getRoleDisplayLabel(pt)}
+                      </SelectItem>
+                    ))}
                   </Select>
                 </div>
                 <div className="space-y-1.5 sm:w-52">
