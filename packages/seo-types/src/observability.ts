@@ -43,10 +43,51 @@ export type GSCTimeseriesResponse = z.infer<typeof GSCTimeseriesResponseSchema>;
 
 // ─── GA4 Data API ────────────────────────────────────────────────────────
 
+/**
+ * GA4 `sessionDefaultChannelGroup` canonical values (lowercased).
+ *
+ * Reference: GA4 Default channel group, 19 standard values returned by the
+ * Data API dimension `sessionDefaultChannelGroup`. The fetcher service
+ * (`ga4-daily-fetcher.service.ts:133`) lowercases the value before insert,
+ * so this canon mirrors that normalization.
+ *
+ * Schema below stays permissive (`z.string()`) to absorb new channels GA4
+ * may add over time — this const is the documented expectation, not a
+ * runtime enum gate. Consumers wanting strict validation can build a
+ * `z.enum(GA4_CHANNEL_CANON)` schema locally.
+ */
+export const GA4_CHANNEL_CANON = [
+  "direct",
+  "organic search",
+  "paid search",
+  "display",
+  "paid social",
+  "organic social",
+  "referral",
+  "email",
+  "affiliates",
+  "audio",
+  "video",
+  "cross-network",
+  "sms",
+  "mobile push notifications",
+  "unassigned",
+  "organic shopping",
+  "paid shopping",
+  "paid other",
+  "organic video",
+] as const;
+export type GA4ChannelCanon = (typeof GA4_CHANNEL_CANON)[number];
+
 /** One row of GA4 daily data — one (date, page, channel) tuple. */
 export const GA4DailyRowSchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   page: z.string().url(),
+  /**
+   * GA4 default channel group, lowercased by the fetcher. Not enum-gated
+   * because GA4 may add new channels (e.g. "audio" was added 2024). See
+   * `GA4_CHANNEL_CANON` for the documented expected values.
+   */
   channel: z.string().default("organic"),
   sessions: z.number().int().nonnegative(),
   conversions: z.number().int().nonnegative(),
