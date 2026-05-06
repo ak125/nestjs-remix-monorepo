@@ -72,7 +72,7 @@ import { SeoModule } from '../seo/seo.module';
   ],
   controllers: [
     BlogController, // API générale blog et recherche
-    R3GuideController, // R3 page engine — single endpoint /api/r3-guide/:pg_alias
+    R3GuideController, // R3_CONSEILS page engine — single endpoint /api/r3-guide/:pg_alias. @deprecated misnamed (canon = R3_CONSEILS), rename → R3ConseilsController post-2026-06-05 per ADR-044.
     R6GuideController, // R6 guide d'achat — single endpoint /api/r6-guide/:pg_alias
     AdviceController, // Endpoints spécifiques conseils
     AdviceHierarchyController, // Hiérarchie conseils par famille catalogue
@@ -100,7 +100,7 @@ import { SeoModule } from '../seo/seo.module';
     ConstructeurTransformService,
     AdviceTransformService,
     AdviceEnrichmentService,
-    R3GuideService, // R3 page engine orchestrator
+    R3GuideService, // R3_CONSEILS page engine orchestrator. @deprecated misnamed (canon = R3_CONSEILS), rename → R3ConseilsService post-2026-06-05 per ADR-044.
     R6GuideService, // R6 guide d'achat orchestrator
   ],
   exports: [

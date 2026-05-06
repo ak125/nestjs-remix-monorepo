@@ -1,6 +1,12 @@
 /**
  * R3GuideController — Single endpoint for R3 conseil guide pages.
  * GET /api/r3-guide/:pg_alias → R3GuidePayload
+ *
+ * @deprecated Misnamed legacy: serves R3_CONSEILS canonical content (per
+ * @repo/seo-roles), not the deprecated R3_GUIDE role. Will be renamed to
+ * `R3ConseilsController @Controller('api/r3-conseils')` after a 30-day
+ * deprecation window. See ADR-044 (vault). Do not extend this controller —
+ * add new endpoints to its successor when it lands.
  */
 
 import { Controller, Get, Param, Logger } from '@nestjs/common';
@@ -11,6 +17,10 @@ import {
 } from '@common/exceptions';
 import { getErrorMessage } from '@common/utils/error.utils';
 
+/**
+ * @deprecated See file-level note. Replacement: `R3ConseilsController`
+ * (post-2026-06-05, per ADR-044).
+ */
 @Controller('api/r3-guide')
 export class R3GuideController {
   private readonly logger = new Logger(R3GuideController.name);
