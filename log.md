@@ -357,3 +357,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `main` (squash cascade)
 - **Décision** : Stack canon SEO complet livré : foundation `@repo/seo-roles@0.2.0` + admin display + Zod boundary + lint enforcement observe + dead-code cleanup + MCP inventory pivot Option C ; 4 couches enforcement (TS branded + Zod runtime + lint statique + observability), DB CHECK retiré (worker vocab vs canon séparation intentionnelle).
 - **Sortie** : PRs #304 #305 #306 #307 #308 #309 #310 #311 #312 | commits 0a792dcc 7f139d91 0545f36c d06677ae 179bbfdb | fichiers `packages/seo-roles/`, `frontend/app/routes/admin.*.tsx`, `backend/src/modules/seo/utils/parse-response.ts`, `.ast-grep/rules/seo-no-bare-role-literal.yml`, `.spec/00-canon/db-governance/legacy-canon-map.md`
+
+## 2026-05-05 — feat/seo-roles-keyword-intent-canon (auto)
+
+- **Branche** : `feat/seo-roles-keyword-intent-canon`
+- **Décision** : feat(seo-roles): keyword-intent canonical SoT @repo/seo-roles@0.3.0 (PR-0C)
+- **Sortie** : PR #317 | commits 94aabb03
