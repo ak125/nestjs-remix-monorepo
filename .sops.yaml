@@ -59,8 +59,18 @@ creation_rules:
           - *dev_vps
           - *runner_vps
 
-  # Future: other DEV secrets migrated from plain .env (PR-D)
-  - path_regex: ^secrets/.+\.dev\.sops\.env$
+  # PROD secrets — same machine as runner_vps (PROD container co-locates
+  # with the GitHub Actions self-hosted runner on 49.12.233.2). dev_vps is
+  # kept as recipient for triage parity with DEV (operator can sops-decrypt
+  # locally to verify what's deployed without SSH'ing to the runner).
+  - path_regex: ^secrets/sentry\.prod\.sops\.env$
+    key_groups:
+      - age:
+          - *dev_vps
+          - *runner_vps
+
+  # Future: other DEV / PROD secrets migrated from plain .env
+  - path_regex: ^secrets/.+\.(dev|prod)\.sops\.env$
     key_groups:
       - age:
           - *dev_vps
