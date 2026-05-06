@@ -225,7 +225,7 @@ Usage non confirme en hot path. 25 GB (24% de la DB) pour des donnees historique
 
 | Table | Lignes | Role |
 |-------|--------|------|
-| `__seo_r1_keyword_plan` | 10 | R1 transactionnel |
+| `__seo_r1_keyword_plan` | 10 | R1_ROUTER navigationnel |
 | `__seo_r2_keyword_plan` | 0 | R2 categorie (vide) |
 | `__seo_r3_keyword_plan` | 15 | R3 conseil |
 | `__seo_r4_keyword_plan` | 36 | R4 reference |
