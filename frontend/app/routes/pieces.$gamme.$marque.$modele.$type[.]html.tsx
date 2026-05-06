@@ -11,7 +11,7 @@
  * sont delegues a des fichiers dedies.
  */
 
-import { type HeadersFunction, type MetaFunction } from "@remix-run/node";
+import { type MetaFunction } from "@remix-run/node";
 import {
   isRouteErrorResponse,
   useLoaderData,
@@ -24,6 +24,7 @@ import {
   type NoProductsData,
 } from "~/components/pieces/NoProductsAlternatives";
 import { PiecesVehicleContent } from "~/components/pieces/PiecesVehicleContent";
+import { buildCacheHeaders } from "~/utils/cache-control";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { piecesVehicleLoader } from "~/utils/pieces-vehicle.loader.server";
@@ -47,13 +48,14 @@ export const handle = {
 export const loader = piecesVehicleLoader;
 
 // ========================================
-// CACHE — 1min browser + 24h CDN stale
+// CACHE — 1min browser + 24h CDN stale on success, no-store on errors.
+// `buildCacheHeaders` reads errorHeaders so loader-thrown 4xx/5xx never inherit
+// the success policy (would otherwise let Cloudflare cache 5xx for 24h).
 // ========================================
 
-export const headers: HeadersFunction = () => ({
-  "Cache-Control":
-    "public, max-age=60, s-maxage=86400, stale-while-revalidate=3600",
-});
+export const headers = buildCacheHeaders(
+  "public, max-age=60, s-maxage=86400, stale-while-revalidate=3600",
+);
 
 // ========================================
 // META - SEO (Schema.org genere par composant Breadcrumbs)

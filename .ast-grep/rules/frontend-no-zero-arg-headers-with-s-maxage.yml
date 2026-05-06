@@ -1,0 +1,41 @@
+id: frontend-no-zero-arg-headers-with-s-maxage
+language: typescript
+severity: warning
+message: |
+  Zero-arg `HeadersFunction = () => ({...})` cannot inspect `loaderHeaders` /
+  `errorHeaders`, so the success Cache-Control policy (with `s-maxage`) is
+  applied to loader-thrown 4xx/5xx responses too. Cloudflare then caches the
+  failure for `s-maxage` seconds (24h on /pieces/* — see GSC INC-2026-005
+  recurrence: 27.8% of /pieces/* sample 5xx in cache HIT, age >300s).
+
+  Use the helper instead:
+
+      import { buildCacheHeaders } from "~/utils/cache-control";
+      export const headers = buildCacheHeaders(
+        "public, max-age=60, s-maxage=86400, stale-while-revalidate=3600",
+      );
+
+  The helper:
+    - reads `errorHeaders` first → loader-thrown Response wins
+    - falls back to `no-store` if the thrown Response has no Cache-Control
+    - reads `loaderHeaders.Cache-Control` next → loader can override the
+      success policy per-call (e.g. shorter TTL for low-confidence content)
+    - falls back to the `successPolicy` argument
+    - propagates `X-Robots-Tag` from whichever source set it
+
+  See:
+    - frontend/app/utils/cache-control.ts
+    - frontend/app/utils/cache-control.test.ts
+files:
+  - frontend/app/routes/**/*.tsx
+  - frontend/app/routes/**/*.ts
+rule:
+  all:
+    # An exported `headers` whose value is an arrow function with NO parameters.
+    - any:
+        - pattern: export const headers: HeadersFunction = () => $BODY
+        - pattern: export const headers = (() => $BODY) as HeadersFunction
+    # Whose body mentions s-maxage (the CDN-cache axis we must guard).
+    - has:
+        regex: 's-maxage'
+        stopBy: end
