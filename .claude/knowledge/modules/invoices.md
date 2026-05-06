@@ -2,7 +2,7 @@
 module: invoices
 sources:
 - backend/src/modules/invoices
-last_scan: '2026-05-05'
+last_scan: '2026-05-06'
 primary_files:
 - backend/src/modules/invoices/invoices.controller.ts
 - backend/src/modules/invoices/invoices.module.ts

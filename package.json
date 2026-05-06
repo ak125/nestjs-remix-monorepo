@@ -80,6 +80,7 @@
   },
   "dependencies": {
     "@remix-run/express": "^2.17.4",
+    "@repo/seo-roles": "*",
     "@remix-run/node": "^2.17.4",
     "@remix-run/react": "^2.17.4",
     "@remix-run/serve": "^2.17.4",

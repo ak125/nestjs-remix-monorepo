@@ -27,6 +27,12 @@ import { createClient } from '@supabase/supabase-js';
 import * as dotenv from 'dotenv';
 import * as yaml from 'js-yaml';
 
+import {
+  type CanonicalRoleId,
+  classifyKeywordToRole,
+  RoleId,
+} from '@repo/seo-roles';
+
 // ── Load environment ─────────────────────────────────────────────────────────
 
 dotenv.config({ path: path.join(__dirname, '../../backend/.env'), quiet: true } as dotenv.DotenvConfigOptions);
@@ -107,76 +113,90 @@ interface ClusterBuildResult {
   keywordsProcessed: number;
   rolesCovered: PageRole[];
   cluster?: SeoCluster;
+  /** Keywords classified R2_PRODUCT by canon (transactional pure) — not bucketed
+   *  in roleKeywords (no R2 bucket in legacy SeoCluster shape).
+   *  Observability-only field added in PR-2 (drift elimination at source). */
+  excludedTransactionalKeywords?: string[];
   error?: string;
 }
 
-// ── Intent classification (deterministic regex) ──────────────────────────────
+// ── Canonical role classification — delegates to @repo/seo-roles ─────────────
+//
+// All keyword → role decisions go through `classifyKeywordToRole` (canon
+// SoT, single point of entry). This eliminates the historical R1 drift by
+// construction : R2_PRODUCT is evaluated first in the package classifier.
+// See packages/seo-roles/src/keyword-intent.ts for the priority order.
 
-const INTENT_RULES: Array<{ pattern: RegExp; intent: SearchIntent }> = [
-  // Diagnostique — symptomes, pannes, problemes
-  {
-    pattern:
-      /(?:^|\s)(symptome|bruit|fuite|vibration|voyant|panne|probleme|claquement|sifflement|grince|tremble|casse|defaillance|usure|use)/i,
-    intent: 'diagnostique',
-  },
-  // Navigationnelle — definitions, termes techniques
-  {
-    pattern:
-      /(?:^|\s)(definition|c'est quoi|qu'est.ce qu|role |fonction |signification|glossaire|compose de)/i,
-    intent: 'navigationnelle',
-  },
-  // Informationnelle — guides, conseils, how-to
-  {
-    pattern:
-      /(?:^|\s)(comment |pourquoi |quand |quel |quelle |guide |conseil |choisir |meilleur |comparatif|entretien|remplacement|changer |remplacer |duree de vie|frequence)/i,
-    intent: 'informationnelle',
-  },
-  // Transactionnelle — achat, prix
-  {
-    pattern:
-      /(?:^|\s)(acheter|achat|prix|tarif|pas cher|commander|promo|promotion|solde|discount|livraison)/i,
-    intent: 'transactionnelle',
-  },
-];
+/**
+ * Map canonical RoleId (returned by `classifyKeywordToRole`) → script-local
+ * `PageRole` bucket. Only roles that have a matching script bucket are listed.
+ * Other canonical roles (R0_HOME, R6_SUPPORT, R7_BRAND, R8_VEHICLE) have no
+ * historical bucket and are dropped silently.
+ *
+ * Note : R6_GUIDE_ACHAT is NOT in this table — it is split locally into
+ * `R3_guide` vs `R6` via `splitR6Bucket()` to preserve the legacy 2-bucket
+ * shape. Fusion R3_guide → R6 planned in a follow-up PR.
+ *
+ * R2_PRODUCT is intentionally absent : transactional keywords are excluded
+ * from `roleKeywords` and collected in `excludedTransactionalKeywords` for
+ * observability — preserves the SeoCluster shape (no breaking change).
+ */
+const CANONICAL_TO_CLUSTER_BUCKET = {
+  [RoleId.R1_ROUTER]: 'R1',
+  [RoleId.R3_CONSEILS]: 'R3_conseils',
+  [RoleId.R4_REFERENCE]: 'R4',
+  [RoleId.R5_DIAGNOSTIC]: 'R5',
+} as const satisfies Partial<Record<CanonicalRoleId, PageRole>>;
 
-function inferIntent(keyword: string): SearchIntent {
-  const normalized = keyword
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
+/**
+ * Local R3_guide vs R6 split — only invoked for keywords classified
+ * `R6_GUIDE_ACHAT` by the canon. Transitional : preserves the historical
+ * 2-bucket shape. To be removed in a follow-up PR when downstream consumers
+ * migrate to a single `R6` bucket.
+ */
+const R3_GUIDE_HEURISTIC =
+  /(?:^|\s)(comment\s+choisir|guide|meilleur|quel\s|quelle\s|critere)/i;
 
-  for (const rule of INTENT_RULES) {
-    if (rule.pattern.test(normalized)) {
-      return rule.intent;
-    }
-  }
-
-  // Default: informationnelle (generic product keywords are informational searches)
-  return 'informationnelle';
+function splitR6Bucket(normalized: string): 'R3_guide' | 'R6' {
+  return R3_GUIDE_HEURISTIC.test(normalized) ? 'R3_guide' : 'R6';
 }
 
-// ── Role ↔ Intent affinity matrix ────────────────────────────────────────────
+/**
+ * Map canonical role → local SearchIntent label (4-value enum kept for DB
+ * schema compatibility — `__seo_keyword_cluster.primary_intent` and YAML
+ * frontmatter `intent` field). Drops the package's `investigation_commerciale`
+ * to historical `informationnelle` (matches the legacy R6 affinity).
+ */
+function intentFromRole(role: CanonicalRoleId): SearchIntent {
+  switch (role) {
+    case RoleId.R2_PRODUCT:
+      return 'transactionnelle';
+    case RoleId.R5_DIAGNOSTIC:
+      return 'diagnostique';
+    case RoleId.R4_REFERENCE:
+      return 'navigationnelle';
+    case RoleId.R1_ROUTER:
+    case RoleId.R7_BRAND:
+    case RoleId.R8_VEHICLE:
+      return 'navigationnelle';
+    case RoleId.R3_CONSEILS:
+    case RoleId.R6_GUIDE_ACHAT:
+    case RoleId.R6_SUPPORT:
+    case RoleId.R0_HOME:
+    default:
+      return 'informationnelle';
+  }
+}
 
-const ROLE_INTENT_AFFINITY: Record<PageRole, SearchIntent[]> = {
-  R1: ['transactionnelle', 'navigationnelle'],
-  R3_guide: ['informationnelle'],
-  R3_conseils: ['diagnostique', 'informationnelle'],
-  R4: ['navigationnelle', 'informationnelle'],
-  R5: ['diagnostique'],
-  R6: ['informationnelle'],
-};
-
-// More specific patterns for role assignment (overrides general intent)
-const ROLE_KEYWORD_PATTERNS: Record<PageRole, RegExp> = {
-  R1: /(?:^|\s)(acheter|achat|prix|tarif|pas cher|commander|voiture|auto )/i,
-  R3_guide:
-    /(?:^|\s)(comment choisir|guide|meilleur|comparatif|quel |quelle |plein ou ventile|ventile ou plein|critere)/i,
-  R3_conseils:
-    /(?:^|\s)(quand changer|quand remplacer|entretien|remplacement|duree de vie|frequence|comment remplacer|comment changer|epaisseur mini|usure)/i,
-  R4: /(?:^|\s)(definition|c'est quoi|qu'est|role |fonction |compose|glossaire)/i,
-  R5: /(?:^|\s)(symptome|bruit|vibration|voyant|panne|probleme|claquement|sifflement|diagnostic)/i,
-  R6: /(?:^|\s)(versus|(?<!\w)vs(?!\w)|avis|review|reviews|test[eé]|tests?\b|oem|adaptable|equivalen|alternatif|top\s*\d+|classement|ranking|rapport\s+qualite|prix.?performance|purflux|mann[\s-]?filter|bosch|mahle|hengst|knecht|filtron|champion|wix|donaldson|fleetguard|meyle|febi[\s-]?bilstein|brembo|trw|ate\b|valeo|luk\b|sachs|nk\b|blue\s*print|japanparts|ashika|nipparts|herth|topran|swag|mapco|ridex|stark|metzger|optimal|skf\b|snr\b|ina\b|fag\b|gates\b|dayco|contitech|corteco|elring|ajusa|glaser|goetze|kolbenschmidt|nural|glyco)/i,
-};
+/**
+ * Structured trace for keyword classification (observability layer).
+ * Opt-in via `KW_CLASSIFY_TRACE=1` env. Writes to stderr to keep stdout
+ * (`--output=json:stdout`) pipeable to `jq` without pollution.
+ */
+function traceClassification(payload: Record<string, unknown>): void {
+  if (process.env.KW_CLASSIFY_TRACE !== '1') return;
+  process.stderr.write(JSON.stringify(payload) + '\n');
+}
 
 /**
  * Generate synthetic keywords for roles that have no natural keyword match.
@@ -247,10 +267,17 @@ function generateSyntheticKeywords(
   };
 }
 
+/** Result of role segmentation : per-role keyword buckets + transactional excludes. */
+interface SegmentByRoleResult {
+  roleKeywords: Record<PageRole, RoleKeywords>;
+  excludedTransactionalKeywords: string[];
+}
+
 function segmentByRole(
   keywords: ClassifiedKeyword[],
   gammeName: string,
-): Record<PageRole, RoleKeywords> {
+  pgAlias: string,
+): SegmentByRoleResult {
   const buckets: Record<PageRole, ClassifiedKeyword[]> = {
     R1: [],
     R3_guide: [],
@@ -259,31 +286,43 @@ function segmentByRole(
     R5: [],
     R6: [],
   };
+  const excludedTransactionalKeywords: string[] = [];
 
   for (const kw of keywords) {
-    const normalized = kw.keyword
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '');
+    const { role, matched } = classifyKeywordToRole(kw.keyword);
+    traceClassification({
+      event: 'kw_classified',
+      pg_alias: pgAlias,
+      kw: kw.keyword,
+      role,
+      matched,
+    });
 
-    // First: try specific role pattern match
-    let assigned = false;
-    for (const [role, pattern] of Object.entries(ROLE_KEYWORD_PATTERNS)) {
-      if (pattern.test(normalized)) {
-        buckets[role as PageRole].push(kw);
-        assigned = true;
-        break;
-      }
+    // R2_PRODUCT : transactional pure → no historical bucket → observability only
+    if (role === RoleId.R2_PRODUCT) {
+      excludedTransactionalKeywords.push(kw.keyword);
+      continue;
     }
 
-    // Fallback: use intent affinity
-    if (!assigned) {
-      for (const [role, intents] of Object.entries(ROLE_INTENT_AFFINITY)) {
-        if (intents.includes(kw.intent)) {
-          buckets[role as PageRole].push(kw);
-          break;
-        }
-      }
+    // R6_GUIDE_ACHAT : split locally between R3_guide (informational pre-purchase)
+    // and R6 (investigation commerciale + brands) to preserve the legacy 2-bucket
+    // shape. Fusion R3_guide → R6 planned in a follow-up PR.
+    if (role === RoleId.R6_GUIDE_ACHAT) {
+      const normalized = kw.keyword
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      const bucket = splitR6Bucket(normalized);
+      buckets[bucket].push(kw);
+      continue;
+    }
+
+    // Other roles : direct lookup in canon → script bucket table.
+    // Roles without a script bucket (R0_HOME, R6_SUPPORT, R7_BRAND, R8_VEHICLE)
+    // are dropped silently — they should not appear at gamme scope anyway.
+    const bucket = (CANONICAL_TO_CLUSTER_BUCKET as Record<string, PageRole | undefined>)[role];
+    if (bucket !== undefined) {
+      buckets[bucket].push(kw);
     }
   }
 
@@ -313,7 +352,7 @@ function segmentByRole(
     }
   }
 
-  return result;
+  return { roleKeywords: result, excludedTransactionalKeywords };
 }
 
 function deduplicateKeywords(
@@ -519,11 +558,17 @@ function isKeywordStrictlyPertinent(
   return gammeTerms.every((term) => kwNorm.includes(term));
 }
 
+/** Build result : the SeoCluster + observability extras (transactional excludes). */
+interface BuildClusterResult {
+  cluster: SeoCluster;
+  excludedTransactionalKeywords: string[];
+}
+
 function buildCluster(
   pgAlias: string,
   pgId: number,
   keywords: KeywordRow[],
-): SeoCluster {
+): BuildClusterResult {
   // Derive gamme display name
   const gammeName = pgAlias.replace(/-/g, ' ');
 
@@ -547,10 +592,12 @@ function buildCluster(
     `  Pertinence: ${strictPertinent.length} strict / ${loosePertinent.length} loose / ${keywords.length} total → using ${effective.length}`,
   );
 
-  // 1. Classify intent for each keyword
+  // 1. Classify intent for each keyword via canon classifier (single SoT).
+  //    Intent label is derived from the canonical role to preserve the legacy
+  //    JSON/DB shape (`primary_intent`, YAML `intent` field).
   const classified: ClassifiedKeyword[] = effective.map((kw) => ({
     ...kw,
-    intent: inferIntent(kw.keyword),
+    intent: intentFromRole(classifyKeywordToRole(kw.keyword).role),
   }));
 
   // 2. Select primary keyword (highest volume, strictly pertinent to THIS gamme)
@@ -569,8 +616,13 @@ function buildCluster(
     ),
   ).slice(0, 20);
 
-  // 4. Segment by role (with synthetic fallback for roles without natural keywords)
-  const roleKeywords = segmentByRole(classified, gammeName);
+  // 4. Segment by role (with synthetic fallback for roles without natural keywords).
+  //    Returns roleKeywords + R2_PRODUCT excludes for observability.
+  const { roleKeywords, excludedTransactionalKeywords } = segmentByRole(
+    classified,
+    gammeName,
+    pgAlias,
+  );
 
   // 5. Build forbidden overlap per role
   const forbiddenOverlap: Record<PageRole, string[]> = {} as any;
@@ -578,7 +630,7 @@ function buildCluster(
     forbiddenOverlap[role] = FORBIDDEN_OVERLAP[role];
   }
 
-  return {
+  const cluster: SeoCluster = {
     pgId,
     pgAlias,
     primaryKeyword: {
@@ -598,6 +650,7 @@ function buildCluster(
     source: 'keyword-dataset',
     schemaVersion: '1.0',
   };
+  return { cluster, excludedTransactionalKeywords };
 }
 
 // ── DB operations ────────────────────────────────────────────────────────────
@@ -1022,7 +1075,11 @@ async function processGamme(
     }
 
     // Build cluster
-    const cluster = buildCluster(pgAlias, pgId, keywords);
+    const { cluster, excludedTransactionalKeywords } = buildCluster(
+      pgAlias,
+      pgId,
+      keywords,
+    );
 
     // Identify covered roles
     const rolesCovered = (
@@ -1039,6 +1096,7 @@ async function processGamme(
         keywordsProcessed: keywords.length,
         rolesCovered,
         cluster,
+        excludedTransactionalKeywords,
       };
     }
 
@@ -1084,6 +1142,7 @@ async function processGamme(
       keywordsProcessed: keywords.length,
       rolesCovered,
       cluster,
+      excludedTransactionalKeywords,
     };
   } catch (err: any) {
     return {
@@ -1242,6 +1301,9 @@ Examples:
         primaryKeyword: r.cluster?.primaryKeyword || null,
         roleKeywords: r.cluster?.roleKeywords || null,
         intentDistribution: intentDist,
+        // PR-2 (canon @repo/seo-roles) : R2_PRODUCT keywords excluded from
+        // roleKeywords for observability — drift elimination at source.
+        excludedTransactionalKeywords: r.excludedTransactionalKeywords ?? [],
         error: r.error || null,
       };
     });

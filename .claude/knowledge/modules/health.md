@@ -2,7 +2,7 @@
 module: health
 sources:
 - backend/src/modules/health
-last_scan: '2026-05-05'
+last_scan: '2026-05-06'
 primary_files:
 - backend/src/modules/health/health.module.ts
 depends_on: []
