@@ -7,9 +7,22 @@ import { RoleId, WorkerPageType } from "./canonical";
  * are intentionally absent — they are ambiguous and must be resolved via URL
  * context (see `RoleDisambiguationService` in backend, not in this pure package).
  *
+ * Frontend short values: the Remix frontend stores `PageRole` enum values as
+ * short strings (`"R0"`, `"R1"`, `"R2"`, `"R4"`, `"R5"`, `"R7"`, `"R8"`) for
+ * historical reasons (cf. `frontend/app/utils/page-role.types.ts`). These
+ * unambiguous shorts are mapped to their canonical RoleId here so analytics
+ * exports / dashboards / GSC integrations can pass through `normalizeRoleId()`
+ * without producing `null`. `"R3"` and `"R6"` shorts remain forbidden — they
+ * stay in `FORBIDDEN_ROLE_IDS` because the frontend uses `R3_BLOG = "R3"` and
+ * `R6_SUPPORT = "R6"` which conflict with `R3_CONSEILS` / `R6_GUIDE_ACHAT`.
+ *
+ * `"R6_GUIDE"` is the frontend-specific value of `PageRole.R6_GUIDE_ACHAT`
+ * (distinct from bare `"R6"`) — mapped here as it is unambiguous.
+ *
  * See `.spec/00-canon/db-governance/legacy-canon-map.md` v1.1.0+
  */
 export const LEGACY_ROLE_ALIASES: Record<string, RoleId> = {
+  // Backend-side legacy aliases
   R3_guide: RoleId.R6_GUIDE_ACHAT,
   R3_guide_achat: RoleId.R6_GUIDE_ACHAT,
   R3_BLOG: RoleId.R3_CONSEILS,
@@ -18,6 +31,16 @@ export const LEGACY_ROLE_ALIASES: Record<string, RoleId> = {
   R4_GLOSSARY: RoleId.R4_REFERENCE,
   R5_diagnostic: RoleId.R5_DIAGNOSTIC,
   R6_BUYING_GUIDE: RoleId.R6_GUIDE_ACHAT,
+  // Frontend short values (PageRole enum values from page-role.types.ts) —
+  // unambiguous shorts only; R3 and R6 stay forbidden (see FORBIDDEN_ROLE_IDS)
+  R0: RoleId.R0_HOME,
+  R1: RoleId.R1_ROUTER,
+  R2: RoleId.R2_PRODUCT,
+  R4: RoleId.R4_REFERENCE,
+  R5: RoleId.R5_DIAGNOSTIC,
+  R7: RoleId.R7_BRAND,
+  R8: RoleId.R8_VEHICLE,
+  R6_GUIDE: RoleId.R6_GUIDE_ACHAT,
 };
 
 /**
