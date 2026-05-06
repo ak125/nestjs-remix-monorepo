@@ -69,24 +69,33 @@ LIMIT 30;
 -- by r1-router-validator.md (prix detailles, panier, stock, promo, livraison,
 -- acheter, commander, paiement) ? Total + per-keyword breakdown.
 --
--- Note: word boundaries (\b... \b) on `prix` and `stock` to avoid matching
--- `comprix`, `restock`, etc.
+-- Distinguishes:
+--   • TRUE drift   : capital-imperative `Commandez\s+votre`, `livraison\s+rapide`,
+--                    `paiement\s+securise`, `\yen stock\y` — these are buy-CTA
+--                    phrases lifted from legacy r1-content-batch.md template
+--                    (cleaned in PR #321).
+--   • FALSE drift  : lowercase `commander` (functional verb "to control/operate"
+--                    — e.g. "piloter, commander, controler" for module-d-allumage).
+--                    Do not flag.
+--
+-- Word boundaries (\\y...\\y) on `prix`, `stock`, `en stock` to avoid matching
+-- `comprix`, `restock`, `enseignement`, etc.
 -- -----------------------------------------------------------------------------
 \echo ''
-\echo '=== Q3: Contradiction R1 transactionnel ==='
+\echo '=== Q3: Contradiction R1 transactionnel (buy-CTA phrases only) ==='
 SELECT
-  COUNT(*) AS total_with_forbidden,
-  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* '\yprix\y')      AS has_prix,
-  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* 'promo')           AS has_promo,
-  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* 'panier')          AS has_panier,
-  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* '\ystock\y')      AS has_stock,
-  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* 'acheter')         AS has_acheter,
-  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* 'commander')       AS has_commander,
-  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* 'livraison')       AS has_livraison,
-  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* 'paiement')        AS has_paiement
+  COUNT(*) AS total_with_drift,
+  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~  'Commandez\s+votre')       AS has_commandez_votre,
+  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* '\yen stock\y')             AS has_en_stock,
+  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* 'livraison\s+rapide')       AS has_livraison_rapide,
+  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* 'paiement\s+securise')      AS has_paiement_securise,
+  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* 'panier')                    AS has_panier,
+  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* '\ypromo\y')                AS has_promo,
+  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* 'acheter')                   AS has_acheter,
+  COUNT(*) FILTER (WHERE r1s_micro_seo_block ~* '\yprix\s+(detaille|reduit)') AS has_prix_detaille
 FROM __seo_r1_gamme_slots
 WHERE r1s_micro_seo_block IS NOT NULL
-  AND r1s_micro_seo_block ~* '(\yprix\y|promo|panier|\ystock\y|acheter|commander|livraison|paiement)';
+  AND r1s_micro_seo_block ~ '(Commandez\s+votre|\yen stock\y|livraison\s+rapide|paiement\s+securise|panier|\ypromo\y|acheter|\yprix\s+(detaille|reduit))';
 
 -- -----------------------------------------------------------------------------
 -- Q4 — R1 trop pauvres
