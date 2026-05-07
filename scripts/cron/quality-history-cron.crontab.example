@@ -1,0 +1,17 @@
+# Quality History Cron — ADR-050 Phase 0 baseline
+# Source: scripts/cron/quality-history-cron.crontab.example
+#
+# Installation (sur VPS DEV/PROD, user runtime backend) :
+#   crontab -u nestjs scripts/cron/quality-history-cron.crontab.example
+#
+# Variables d'environnement attendues :
+#   API_URL          (ex: http://localhost:3000)
+#   ADMIN_TOKEN      (token admin pour authentifier les calls)
+#
+# Pré-requis : ADR-050 implémentation (PR-X1) déployée + endpoints actifs.
+
+# Crée la partition du mois suivant — le 25 à 02:30 UTC (préemptif)
+30 2 25 * * curl -fsS -X POST -H "X-Admin-Token: $ADMIN_TOKEN" "$API_URL/api/admin/quality-history/ensure-partition" >> /var/log/quality-history-cron.log 2>&1
+
+# Snapshot mensuel des 8 rôles — 1er du mois à 03:00 UTC
+0 3 1 * * curl -fsS -X POST -H "X-Admin-Token: $ADMIN_TOKEN" -H "Content-Type: application/json" -d '{"kind":"monthly_cron"}' "$API_URL/api/admin/quality-history/snapshot" >> /var/log/quality-history-cron.log 2>&1
