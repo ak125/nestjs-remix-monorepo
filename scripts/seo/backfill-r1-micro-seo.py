@@ -128,6 +128,123 @@ def fetch_row_chars(conn, pg_id: str) -> int | None:
         return r[0] if r else None
 
 
+def snapshot_quality_history(
+    conn,
+    snapshot_kind: str,
+    batch_id: str,
+    target_pg_ids: list[str] | None = None,
+) -> int:
+    """ADR-050 snapshot pattern : capture char_count + gatekeeper_score for the
+    R1 slot population (or a subset) into __seo_quality_history.
+
+    Used pre/post batch to enable diff detection via detect_quality_outliers RPC.
+    Returns the number of (pg_id, metric) rows inserted.
+    """
+    where_clause = ""
+    params: tuple = ()
+    if target_pg_ids:
+        where_clause = "AND r1s_pg_id = ANY(%s)"
+        params = (target_pg_ids,)
+
+    metadata = jsonlib.dumps({
+        "batch_id": batch_id,
+        "source": "backfill-r1-micro-seo.py",
+        "min_chars_target": MIN_CHARS,
+    })
+
+    with conn.cursor() as cur:
+        cur.execute(
+            f"""
+            INSERT INTO __seo_quality_history
+              (pg_id, role_id, metric_name, metric_value, snapshot_kind, metadata)
+            SELECT
+              r1s_pg_id::TEXT,
+              'R1_ROUTER',
+              'char_count',
+              char_length(COALESCE(r1s_micro_seo_block, ''))::NUMERIC,
+              %s,
+              %s::jsonb
+            FROM __seo_r1_gamme_slots
+            WHERE r1s_pg_id IS NOT NULL {where_clause}
+            """,
+            (snapshot_kind, metadata) + params,
+        )
+        cur.execute(
+            f"""
+            INSERT INTO __seo_quality_history
+              (pg_id, role_id, metric_name, metric_value, snapshot_kind, metadata)
+            SELECT
+              r1s_pg_id::TEXT,
+              'R1_ROUTER',
+              'gatekeeper_score',
+              COALESCE(r1s_gatekeeper_score, 0)::NUMERIC,
+              %s,
+              %s::jsonb
+            FROM __seo_r1_gamme_slots
+            WHERE r1s_pg_id IS NOT NULL {where_clause}
+            """,
+            (snapshot_kind, metadata) + params,
+        )
+        conn.commit()
+        # Count for return — pg_id_count × 2 metrics.
+        cur.execute(
+            "SELECT count(*) FROM __seo_r1_gamme_slots WHERE r1s_pg_id IS NOT NULL"
+            + (f" {where_clause}" if where_clause else ""),
+            params,
+        )
+        n = cur.fetchone()[0]
+        return n * 2  # char_count + gatekeeper_score
+
+
+def detect_regressions(
+    conn,
+    batch_id: str,
+    drop_pct_threshold: float = 0.15,
+) -> list[dict]:
+    """ADR-050 abort gate : compare pre_batch vs post_batch snapshots for this
+    batch_id, return rows where any metric dropped > drop_pct_threshold.
+
+    Returns list of {pg_id, metric_name, before, after, drop_ratio}.
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            WITH pre AS (
+              SELECT pg_id, metric_name, metric_value AS before_val
+              FROM __seo_quality_history
+              WHERE snapshot_kind = 'pre_batch'
+                AND metadata->>'batch_id' = %s
+            ),
+            post AS (
+              SELECT pg_id, metric_name, metric_value AS after_val
+              FROM __seo_quality_history
+              WHERE snapshot_kind = 'post_batch'
+                AND metadata->>'batch_id' = %s
+            )
+            SELECT pre.pg_id, pre.metric_name,
+                   pre.before_val, post.after_val,
+                   CASE WHEN pre.before_val = 0 THEN 0
+                        ELSE (pre.before_val - post.after_val) / pre.before_val
+                   END AS drop_ratio
+            FROM pre JOIN post USING (pg_id, metric_name)
+            WHERE pre.before_val > 0
+              AND (pre.before_val - post.after_val) / pre.before_val >= %s
+            ORDER BY drop_ratio DESC
+            """,
+            (batch_id, batch_id, drop_pct_threshold),
+        )
+        return [
+            {
+                "pg_id": r[0],
+                "metric_name": r[1],
+                "before": float(r[2]),
+                "after": float(r[3]),
+                "drop_ratio": float(r[4]),
+            }
+            for r in cur.fetchall()
+        ]
+
+
 def enrich_one(pg_id: str, key: str) -> tuple[bool, str]:
     payload = jsonlib.dumps(
         {"roleId": "R1_ROUTER", "targetIds": [pg_id], "dryRun": False}
@@ -185,7 +302,36 @@ def main() -> int:
             "above old threshold but below Option B canon)"
         ),
     )
+    ap.add_argument(
+        "--regression-threshold",
+        type=float,
+        default=0.15,
+        help=(
+            "ADR-050 abort gate : if any pg_id's char_count or gatekeeper_score "
+            "drops by more than this ratio between pre/post snapshots, the "
+            "script exits non-zero. Default 0.15 (15%%)."
+        ),
+    )
+    ap.add_argument(
+        "--max-regression-pct",
+        type=float,
+        default=0.05,
+        help=(
+            "ADR-050 abort gate : tolerated fraction of slots that may regress. "
+            "Default 0.05 (5%% of batch). If exceeded, script exits non-zero "
+            "AND emits a Sentry-bound warning. Snapshots stay in __seo_quality_history "
+            "either way for forensics."
+        ),
+    )
+    ap.add_argument(
+        "--no-snapshot",
+        action="store_true",
+        help="skip __seo_quality_history pre/post-batch snapshot (NOT recommended)",
+    )
     args = ap.parse_args()
+
+    # ADR-050 batch_id : timestamped + git SHA (best-effort, no exception if not in repo)
+    batch_id = f"backfill-r1-{datetime.utcnow().strftime('%Y%m%d-%H%M%S')}"
 
     log(
         f"backfill-r1-micro-seo start — api={API_BASE} sleep={args.sleep}s "
@@ -213,7 +359,15 @@ def main() -> int:
             return 0
 
         target = rows[: args.limit] if args.limit else rows
-        log(f"processing {len(target)} pg_id(s)")
+        log(f"processing {len(target)} pg_id(s) — batch_id={batch_id}")
+
+        # ADR-050 pre-batch snapshot (only on target subset to keep history slim)
+        target_pg_ids = [pg_id for pg_id, _ in target]
+        if not args.no_snapshot:
+            n_pre = snapshot_quality_history(
+                conn, "pre_batch", batch_id, target_pg_ids
+            )
+            log(f"[ADR-050] pre_batch snapshot : {n_pre} rows in __seo_quality_history")
 
         stats = {"ok": 0, "now_at_min": 0, "still_short": 0, "error": 0}
         for i, (pg_id, before_chars) in enumerate(target, 1):
@@ -246,7 +400,44 @@ def main() -> int:
         )
         remaining = fetch_under_dim_pg_ids(conn, args.include_legacy_band)
         log(f"remaining under-dim after run: {len(remaining)}")
-        return 0 if stats["error"] == 0 else 1
+
+        # ADR-050 post-batch snapshot + regression abort gate
+        regression_failed = False
+        if not args.no_snapshot:
+            n_post = snapshot_quality_history(
+                conn, "post_batch", batch_id, target_pg_ids
+            )
+            log(f"[ADR-050] post_batch snapshot : {n_post} rows in __seo_quality_history")
+
+            regressions = detect_regressions(conn, batch_id, args.regression_threshold)
+            n_target = len(target)
+            n_regressed_pg = len({r["pg_id"] for r in regressions})
+            regress_pct = n_regressed_pg / n_target if n_target > 0 else 0.0
+            tolerated = args.max_regression_pct
+
+            log(
+                f"[ADR-050] regression check : {n_regressed_pg}/{n_target} pg_ids "
+                f"({regress_pct:.1%}) regressed >= {args.regression_threshold:.0%} "
+                f"on at least one metric (tolerated: {tolerated:.0%})"
+            )
+
+            for r in regressions[:10]:  # cap output, full list in DB
+                log(
+                    f"  [regression] pg_id={r['pg_id']} {r['metric_name']} "
+                    f"{r['before']:.0f}->{r['after']:.0f} drop={r['drop_ratio']:.1%}"
+                )
+            if len(regressions) > 10:
+                log(f"  [regression] ... and {len(regressions) - 10} more (see __seo_quality_history)")
+
+            if regress_pct > tolerated:
+                log(
+                    f"[FAIL] regression gate exceeded ({regress_pct:.1%} > {tolerated:.0%}). "
+                    f"Snapshots persisted in __seo_quality_history (batch_id={batch_id}) "
+                    "for forensics. Investigate before re-running."
+                )
+                regression_failed = True
+
+        return 0 if (stats["error"] == 0 and not regression_failed) else 1
     finally:
         conn.close()
 
