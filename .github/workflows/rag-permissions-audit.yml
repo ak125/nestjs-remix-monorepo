@@ -18,6 +18,10 @@ on:
       - main
       - dev
 
+# Minimum scope: PR diff inspection + checkout (ADR-043 Sprint 1 ticket #7).
+permissions:
+  contents: read
+
 jobs:
   rag-direct-write-guard:
     name: rag/knowledge direct modification guard
