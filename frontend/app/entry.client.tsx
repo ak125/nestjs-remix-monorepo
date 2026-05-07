@@ -9,6 +9,7 @@ import { useLocation, useMatches, RemixBrowser } from "@remix-run/react";
 import { startTransition, useEffect } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { logger } from "~/utils/logger";
+import { sentryBeforeSend } from "~/utils/analytics-sanitize";
 
 // Sentry browser SDK — DSN injected at SSR time via `window.ENV.VITE_SENTRY_DSN`
 // (see root.tsx loader). When the DSN is absent, all Sentry calls are no-ops.
@@ -34,6 +35,10 @@ if (dsn) {
         useMatches,
       }),
     ],
+    // V0.B / S10 — RGPD scrubbing PII en defense-in-depth.
+    // Strip immat FR, emails, tels des URL, query-string, breadcrumbs, extra.
+    // Cf. `~/utils/analytics-sanitize`.
+    beforeSend: (event) => sentryBeforeSend(event),
   });
 }
 
