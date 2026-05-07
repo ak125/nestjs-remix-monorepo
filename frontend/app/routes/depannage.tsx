@@ -12,6 +12,12 @@
 
 import { type MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
+
+import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
+import { HeroDiagnostic } from "~/components/heroes";
+import Container from "~/components/layout/Container";
+import { Badge } from "~/components/ui/badge";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   AlertTriangle,
   ArrowRight,
@@ -22,13 +28,7 @@ import {
   Shield,
   ShoppingCart,
   Stethoscope,
-} from "lucide-react";
-
-import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
-import { HeroDiagnostic } from "~/components/heroes";
-import Container from "~/components/layout/Container";
-import { Badge } from "~/components/ui/badge";
-import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+} from '~/lib/icons';
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 
 export const handle = {

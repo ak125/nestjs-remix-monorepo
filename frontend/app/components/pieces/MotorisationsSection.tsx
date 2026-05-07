@@ -1,4 +1,6 @@
 import { Link } from "@remix-run/react";
+import { useEffect, useState, memo } from "react";
+import { Input } from "~/components/ui/input";
 import {
   Car,
   ChevronRight,
@@ -6,9 +8,7 @@ import {
   ChevronUp,
   Search,
   TrendingUp,
-} from "lucide-react";
-import { useEffect, useState, memo } from "react";
-import { Input } from "~/components/ui/input";
+} from '~/lib/icons';
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { getOptimizedLogoUrl } from "~/utils/image-optimizer";
 import { sanitizeAdvice } from "~/utils/sanitize-advice";

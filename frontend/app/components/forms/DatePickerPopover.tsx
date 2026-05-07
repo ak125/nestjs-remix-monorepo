@@ -18,8 +18,8 @@
  * />
  */
 
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, memo } from "react";
+import { Calendar, ChevronLeft, ChevronRight } from '~/lib/icons';
 
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 

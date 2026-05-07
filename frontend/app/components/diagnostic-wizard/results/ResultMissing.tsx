@@ -1,8 +1,8 @@
 /**
  * ResultMissing — Block 6: Missing data that could improve the diagnostic
  */
-import { HelpCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { HelpCircle } from '~/lib/icons';
 
 interface Props {
   missing: string[];

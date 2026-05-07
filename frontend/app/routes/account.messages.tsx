@@ -9,6 +9,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   Mail,
   Clock,
@@ -18,8 +19,7 @@ import {
   Archive,
   Search,
   Send,
-} from "lucide-react";
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { requireUserWithRedirect } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";

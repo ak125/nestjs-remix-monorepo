@@ -1,6 +1,6 @@
 import { Link } from '@remix-run/react';
-import { Car, TrendingUp, Zap } from 'lucide-react';
 import { VehicleImage } from '~/components/ui/ResponsiveImage';
+import { Car, TrendingUp, Zap } from '~/lib/icons';
 
 interface Vehicle {
   type_id: number;

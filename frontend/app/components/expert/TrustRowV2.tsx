@@ -15,6 +15,7 @@
  * - No cookie-cutter badge patterns
  */
 
+import { forwardRef, useState, memo } from "react";
 import {
   Shield,
   Truck,
@@ -25,8 +26,7 @@ import {
   Package,
   BadgeCheck,
   CheckCircle2,
-} from "lucide-react";
-import { forwardRef, useState, memo } from "react";
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 // ============================================================================

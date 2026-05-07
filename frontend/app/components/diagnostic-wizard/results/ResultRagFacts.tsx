@@ -4,6 +4,8 @@
  * Shows verified facts from the RAG knowledge base,
  * grouped by evidence type with source citations.
  */
+import { Badge } from "~/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   BookOpen,
   CheckCircle2,
@@ -11,9 +13,7 @@ import {
   Wrench,
   AlertTriangle,
   GraduationCap,
-} from "lucide-react";
-import { Badge } from "~/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+} from '~/lib/icons';
 
 interface RagFact {
   evidence_type: string;

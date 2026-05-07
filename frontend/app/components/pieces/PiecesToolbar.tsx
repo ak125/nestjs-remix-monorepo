@@ -12,6 +12,7 @@
  * - Tri en dropdown au lieu de 4 boutons icons
  */
 
+import { memo } from "react";
 import {
   ArrowDownAZ,
   ArrowDownUp,
@@ -22,8 +23,7 @@ import {
   LayoutList,
   Package,
   Tag,
-} from "lucide-react";
-import { memo } from "react";
+} from '~/lib/icons';
 
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";

@@ -4,23 +4,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
-import {
-  FileText,
-  CheckCircle2,
-  ShieldCheck,
-  Send,
-  MoreHorizontal,
-  Eye,
-  ThumbsUp,
-  ThumbsDown,
-  ShieldAlert,
-  Download,
-  RefreshCw,
-  Wand2,
-  Sparkles,
-  Play,
-  CalendarDays,
-} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AdminDataTable } from "~/components/admin/patterns/AdminDataTable";
@@ -65,6 +48,23 @@ import { Label } from "~/components/ui/label";
 import { Select, SelectItem } from "~/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  FileText,
+  CheckCircle2,
+  ShieldCheck,
+  Send,
+  MoreHorizontal,
+  Eye,
+  ThumbsUp,
+  ThumbsDown,
+  ShieldAlert,
+  Download,
+  RefreshCw,
+  Wand2,
+  Sparkles,
+  Play,
+  CalendarDays,
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

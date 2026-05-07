@@ -13,6 +13,7 @@
  */
 
 import { useFetcher } from "@remix-run/react";
+import { memo, useState, useEffect, useRef, useCallback } from "react";
 import {
   Bell,
   X,
@@ -25,8 +26,7 @@ import {
   Clock,
   Eye,
   EyeOff,
-} from "lucide-react";
-import { memo, useState, useEffect, useRef, useCallback } from "react";
+} from '~/lib/icons';
 
 interface Notification {
   id: string;

@@ -9,9 +9,9 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { ArrowLeft, Clock } from "lucide-react";
-
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { ArrowLeft, Clock } from '~/lib/icons';
+
 import { logger } from "~/utils/logger";
 import { requireAuth, type AuthUser } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";

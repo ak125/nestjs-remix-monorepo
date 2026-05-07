@@ -1,5 +1,4 @@
 import { Link } from "@remix-run/react";
-import { ChevronDown, ChevronUp, Loader2, Search, X } from "lucide-react";
 import { memo, useCallback, useMemo, useState } from "react";
 import {
   CATALOG_DOMAINS,
@@ -8,6 +7,7 @@ import {
 import { Reveal, Section, SectionHeader } from "~/components/layout";
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { ChevronDown, ChevronUp, Loader2, Search, X } from '~/lib/icons';
 
 // Check if a family is popular
 function isPopular(name: string): boolean {

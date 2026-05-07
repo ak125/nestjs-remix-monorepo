@@ -1,4 +1,6 @@
 import { Link } from "@remix-run/react";
+import { memo } from "react";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   BookOpen,
   CheckCircle2,
@@ -6,9 +8,7 @@ import {
   Info,
   Shield,
   Wrench,
-} from "lucide-react";
-import { memo } from "react";
-import { Card, CardContent } from "~/components/ui/card";
+} from '~/lib/icons';
 import {
   buildR1MicroBlock,
   type R1Card,

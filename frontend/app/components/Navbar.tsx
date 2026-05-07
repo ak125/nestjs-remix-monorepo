@@ -1,4 +1,8 @@
 import { Link, useNavigate } from "@remix-run/react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { registerCartSidebarSetter } from "~/hooks/useCartSidebar";
+import { useOptionalUser, useRootCart } from "~/hooks/useRootData";
 import {
   Bell,
   BookOpen,
@@ -12,11 +16,7 @@ import {
   Truck,
   User,
   X,
-} from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-import { registerCartSidebarSetter } from "~/hooks/useCartSidebar";
-import { useOptionalUser, useRootCart } from "~/hooks/useRootData";
+} from '~/lib/icons';
 import { SITE_CONFIG } from "../config/site";
 import { CartSidebarSimple } from "./navbar/CartSidebarSimple";
 import { UserDropdownMenu } from "./navbar/UserDropdownMenu";

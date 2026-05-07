@@ -13,9 +13,9 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { Bell, Eye, Globe, Trash2, Download } from "lucide-react";
-
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { Bell, Eye, Globe, Trash2, Download } from '~/lib/icons';
+
 import { requireUser } from "../auth/unified.server";
 import { Alert, AlertDescription } from "../components/ui/alert";
 import { Badge } from "../components/ui/badge";

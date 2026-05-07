@@ -17,6 +17,10 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { useState } from "react";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   Star,
   Plus,
@@ -28,11 +32,7 @@ import {
   MoreHorizontal,
   TrendingUp,
   MessageSquare,
-} from "lucide-react";
-import { useState } from "react";
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import {
   getReviewStats,

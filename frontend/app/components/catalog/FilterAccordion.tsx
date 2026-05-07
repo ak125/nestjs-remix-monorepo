@@ -19,8 +19,8 @@
  * />
  */
 
-import { X, Check, DollarSign, Tag, Package, Layers } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { X, Check, DollarSign, Tag, Package, Layers } from '~/lib/icons';
 
 import { debounce } from "../../utils/performance.utils";
 import {

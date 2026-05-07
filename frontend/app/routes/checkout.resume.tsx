@@ -13,9 +13,9 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { CheckCircle, CreditCard, AlertTriangle } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { CheckCircle, CreditCard, AlertTriangle } from '~/lib/icons';
 import { buildPayboxRedirectUrl } from "~/services/order.server";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

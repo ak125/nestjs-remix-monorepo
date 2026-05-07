@@ -18,6 +18,7 @@ import {
 } from "@remix-run/react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
+import { useState, useEffect } from "react";
 import {
   Award,
   Car,
@@ -34,8 +35,7 @@ import {
   Shield,
   Star,
   Truck,
-} from "lucide-react";
-import { useState, useEffect } from "react";
+} from '~/lib/icons';
 import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

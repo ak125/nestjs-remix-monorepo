@@ -32,15 +32,6 @@ import {
   useNavigation,
   useSearchParams,
 } from "@remix-run/react";
-import {
-  AlertCircle,
-  AlertTriangle,
-  BarChart3,
-  CheckCircle2,
-  Info,
-  Play,
-  XCircle,
-} from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -66,6 +57,15 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import {
+  AlertCircle,
+  AlertTriangle,
+  BarChart3,
+  CheckCircle2,
+  Info,
+  Play,
+  XCircle,
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

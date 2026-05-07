@@ -14,7 +14,7 @@ import {
   Zap,
   Snowflake,
   RotateCcw,
-} from "lucide-react";
+} from '~/lib/icons';
 
 const THEMES = [
   { name: "Freinage", slug: "plaquette-de-frein", icon: Disc },

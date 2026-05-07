@@ -1,12 +1,12 @@
 import { Link } from "@remix-run/react";
+import { memo } from "react";
+import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import {
   ShieldCheck,
   AlertTriangle,
   PackageCheck,
   ChevronRight,
-} from "lucide-react";
-import { memo } from "react";
-import { Card, CardContent, CardHeader } from "~/components/ui/card";
+} from '~/lib/icons';
 
 interface SelectionCriterion {
   key: string;

@@ -11,6 +11,12 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { OrderLineActions } from "~/components/admin/OrderLineActions";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   ArrowLeft,
   Package,
@@ -20,13 +26,7 @@ import {
   User,
   Phone,
   Mail,
-} from "lucide-react";
-import { OrderLineActions } from "~/components/admin/OrderLineActions";
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
-import { HtmlContent } from "~/components/seo/HtmlContent";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

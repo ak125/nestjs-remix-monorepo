@@ -9,11 +9,11 @@
  * - Set pour lookups O(1) sur selectedPieces
  */
 
-import { Truck } from "lucide-react";
 import React, { useState, useRef, useMemo, useCallback, memo } from "react";
 import { toast } from "sonner";
 
 import { openCartSidebar } from "~/hooks/useCartSidebar";
+import { Truck } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";
 import { type PieceData } from "../../types/pieces-route.types";

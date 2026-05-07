@@ -15,19 +15,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import {
-  AlertTriangle,
-  Battery,
-  Calendar,
-  CheckCircle,
-  Droplets,
-  Gauge,
-  Snowflake,
-  Sun,
-  Thermometer,
-  Wrench,
-  type LucideIcon,
-} from "lucide-react";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { CompactBlogHeader } from "~/components/blog/CompactBlogHeader";
@@ -42,6 +29,19 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import {
+  AlertTriangle,
+  Battery,
+  Calendar,
+  CheckCircle,
+  Droplets,
+  Gauge,
+  Snowflake,
+  Sun,
+  Thermometer,
+  Wrench,
+  type LucideIcon,
+} from '~/lib/icons';
 
 /* ===========================================================================
    SEO — noindex, nofollow

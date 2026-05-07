@@ -14,15 +14,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
-import {
-  BarChart3,
-  RefreshCw,
-  AlertCircle,
-  Clock,
-  Database,
-  TrendingUp,
-  Layers,
-} from "lucide-react";
 
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -35,6 +26,15 @@ import {
 } from "~/components/ui/card";
 import { Progress } from "~/components/ui/progress";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import {
+  BarChart3,
+  RefreshCw,
+  AlertCircle,
+  Clock,
+  Database,
+  TrendingUp,
+  Layers,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 

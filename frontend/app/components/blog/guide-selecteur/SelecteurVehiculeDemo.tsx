@@ -4,6 +4,17 @@
  */
 
 import { Link } from "@remix-run/react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { Select, SelectItem } from "~/components/ui/select";
+import { Separator } from "~/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   AlertTriangle,
   ArrowRight,
@@ -16,18 +27,7 @@ import {
   RotateCcw,
   Search,
   Settings,
-} from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { Select, SelectItem } from "~/components/ui/select";
-import { Separator } from "~/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+} from '~/lib/icons';
 
 /* ===========================================================================
    MOCK DATA

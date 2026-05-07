@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "@remix-run/react";
-import { Megaphone, BarChart3, Link2, Map, Share2 } from "lucide-react";
+import { Megaphone, BarChart3, Link2, Map, Share2 } from '~/lib/icons';
 
 export default function MarketingLayout() {
   const location = useLocation();

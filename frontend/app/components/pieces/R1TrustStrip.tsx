@@ -2,8 +2,8 @@
  * R1 Trust Strip — 4 items de réassurance purs (statiques).
  * Aucune donnée dynamique — KPI séparé dans R1KpiCoverage.
  */
-import { Lock, RotateCcw, ShieldCheck, Truck } from "lucide-react";
 import { memo } from "react";
+import { Lock, RotateCcw, ShieldCheck, Truck } from '~/lib/icons';
 
 export const R1TrustStrip = memo(function R1TrustStrip() {
   return (

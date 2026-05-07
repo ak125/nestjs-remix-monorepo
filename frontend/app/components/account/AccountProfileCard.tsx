@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
-import { Award, Bell, Package, Pencil, Settings } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { Award, Bell, Package, Pencil, Settings } from '~/lib/icons';
 import { type AccountUser, type AccountStats } from "./account.types";
 
 function getInitials(firstName?: string, lastName?: string, email?: string) {

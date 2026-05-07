@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 export default function SectionHeader({

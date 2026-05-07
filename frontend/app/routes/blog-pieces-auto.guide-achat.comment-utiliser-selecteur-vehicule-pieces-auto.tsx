@@ -10,23 +10,6 @@
 
 import { type MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
-import {
-  AlertTriangle,
-  ArrowRight,
-  BookOpen,
-  Car,
-  Check,
-  CheckCircle,
-  FileSearch,
-  Hash,
-  HelpCircle,
-  Info,
-  Package,
-  Search,
-  Settings,
-  Shield,
-  Wrench,
-} from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
@@ -53,6 +36,23 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BookOpen,
+  Car,
+  Check,
+  CheckCircle,
+  FileSearch,
+  Hash,
+  HelpCircle,
+  Info,
+  Package,
+  Search,
+  Settings,
+  Shield,
+  Wrench,
+} from '~/lib/icons';
 
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 

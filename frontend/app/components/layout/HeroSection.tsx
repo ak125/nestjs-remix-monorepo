@@ -17,8 +17,8 @@
  * ```
  */
 
-import { CheckCircle2, Truck, Shield, Users } from "lucide-react";
 import React, { memo } from "react";
+import { CheckCircle2, Truck, Shield, Users } from '~/lib/icons';
 import { cn } from "../../lib/utils";
 
 // Types pour les breadcrumbs

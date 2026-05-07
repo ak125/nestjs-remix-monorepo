@@ -2,7 +2,7 @@
  * EditorialTrust — Bloc E-E-A-T "Notre méthode éditoriale"
  * Renforce la confiance et la qualité perçue (SEO + UX)
  */
-import { ShieldCheck, RefreshCw, BookCheck, Users } from "lucide-react";
+import { ShieldCheck, RefreshCw, BookCheck, Users } from '~/lib/icons';
 
 const TRUST_POINTS = [
   {

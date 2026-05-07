@@ -4,6 +4,16 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useSubmit } from "@remix-run/react";
+import { useState, useMemo, useCallback } from "react";
+import { toast } from "sonner";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { ModelSelector, type Model } from "~/components/vehicles/ModelSelector";
+import {
+  TypeSelector,
+  type VehicleType,
+} from "~/components/vehicles/TypeSelector";
+import { YearSelector } from "~/components/vehicles/YearSelector";
 import {
   Search,
   Download,
@@ -15,17 +25,7 @@ import {
   Star,
   ShoppingCart,
   Eye,
-} from "lucide-react";
-import { useState, useMemo, useCallback } from "react";
-import { toast } from "sonner";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { ModelSelector, type Model } from "~/components/vehicles/ModelSelector";
-import {
-  TypeSelector,
-  type VehicleType,
-} from "~/components/vehicles/TypeSelector";
-import { YearSelector } from "~/components/vehicles/YearSelector";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

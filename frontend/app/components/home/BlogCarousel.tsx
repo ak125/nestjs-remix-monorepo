@@ -1,13 +1,13 @@
 import { Link } from "@remix-run/react";
+import { type BlogArticle } from "~/components/home/constants";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   ArrowRight,
   BookOpen,
   Clock,
   ShoppingCart,
   Wrench,
-} from "lucide-react";
-import { type BlogArticle } from "~/components/home/constants";
-import { Card, CardContent } from "~/components/ui/card";
+} from '~/lib/icons';
 
 function getTagStyle(tag: string) {
   if (tag.toLowerCase().includes("achat"))

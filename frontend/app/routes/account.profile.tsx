@@ -5,9 +5,9 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { User, Mail, Phone, Calendar, Shield, Edit } from "lucide-react";
-
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { User, Mail, Phone, Calendar, Shield, Edit } from '~/lib/icons';
+
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { requireAuth } from "../auth/unified.server";

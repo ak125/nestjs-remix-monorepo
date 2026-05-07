@@ -1,4 +1,3 @@
-import { HelpCircle, ArrowRight, Target } from "lucide-react";
 import { memo } from "react";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import {
@@ -9,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { HelpCircle, ArrowRight, Target } from '~/lib/icons';
 import { pluralizePieceName } from "~/lib/seo-utils";
 
 interface UseCase {

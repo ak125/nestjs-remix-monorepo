@@ -4,13 +4,6 @@
  * @aligned AI-COS Architecture - CSV Import Pipeline
  */
 
-import {
-  AlertCircle,
-  CheckCircle,
-  FileText,
-  Loader2,
-  Upload,
-} from "lucide-react";
 import { useRef, useState } from "react";
 
 import { Badge } from "~/components/ui/badge";
@@ -22,6 +15,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
+import {
+  AlertCircle,
+  CheckCircle,
+  FileText,
+  Loader2,
+  Upload,
+} from '~/lib/icons';
 
 interface VLevelImportDialogProps {
   open: boolean;

@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { Reveal, Section, SectionHeader } from "~/components/layout";
 import {
   Car,
   CheckCircle,
@@ -7,9 +9,7 @@ import {
   Settings,
   Shield,
   Zap,
-} from "lucide-react";
-import { useState } from "react";
-import { Reveal, Section, SectionHeader } from "~/components/layout";
+} from '~/lib/icons';
 
 interface CheckItem {
   label: string;

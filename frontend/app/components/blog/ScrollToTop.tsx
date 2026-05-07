@@ -1,5 +1,5 @@
-import { ArrowUp } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { ArrowUp } from '~/lib/icons';
 
 /**
  * 🔝 ScrollToTop - Bouton flottant pour retourner en haut de page

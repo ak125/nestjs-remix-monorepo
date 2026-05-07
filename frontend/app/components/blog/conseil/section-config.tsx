@@ -16,7 +16,7 @@ import {
   Settings,
   Car,
   Stethoscope,
-} from "lucide-react";
+} from '~/lib/icons';
 
 // --- Types ---
 

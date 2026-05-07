@@ -15,8 +15,8 @@
  * - Responsive mobile/desktop
  */
 
-import { FileText, MessageSquare, Settings2, Wrench } from "lucide-react";
 import { useState, memo } from "react";
+import { FileText, MessageSquare, Settings2, Wrench } from '~/lib/icons';
 import { HtmlContent } from "../seo/HtmlContent";
 
 import { Badge } from "../ui/badge";

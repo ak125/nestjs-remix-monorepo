@@ -4,9 +4,9 @@
  * Replaces the V1 R6CriteriaTable for V2 pages.
  */
 
-import { CheckCircle2, XCircle } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
+import { CheckCircle2, XCircle } from '~/lib/icons';
 import { type R6QualityTier } from "~/types/r6-guide.types";
 
 interface Props {

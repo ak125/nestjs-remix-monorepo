@@ -4,6 +4,10 @@
  * 🎨 Features: Glassmorphism premium, logos marques avec fiabilité, grille de cartes
  */
 
+import { useState, useEffect, memo } from "react";
+import { Badge } from "~/components/ui/badge";
+import { FilterSection } from "~/components/ui/filter-section";
+import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   Package,
   DollarSign,
@@ -12,11 +16,7 @@ import {
   Bookmark,
   Tag,
   Layers,
-} from "lucide-react";
-import { useState, useEffect, memo } from "react";
-import { Badge } from "~/components/ui/badge";
-import { FilterSection } from "~/components/ui/filter-section";
-import { ScrollArea } from "~/components/ui/scroll-area";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 
 export interface FilterFacet {

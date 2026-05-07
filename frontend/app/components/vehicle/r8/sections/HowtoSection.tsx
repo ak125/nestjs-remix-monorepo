@@ -1,7 +1,7 @@
 // 📋 R8 Vehicle — S_HOWTO
 // Step-by-step guide for choosing the right part for this vehicle.
 
-import { ListChecks } from "lucide-react";
+import { ListChecks } from '~/lib/icons';
 import { type LoaderData } from "../r8.types";
 
 interface Props {

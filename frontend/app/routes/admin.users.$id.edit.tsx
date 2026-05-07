@@ -5,9 +5,9 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useActionData, Form, Link } from "@remix-run/react";
-import { ArrowLeft, User, Save, Mail, Phone, MapPin } from "lucide-react";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { ArrowLeft, User, Save, Mail, Phone, MapPin } from '~/lib/icons';
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {

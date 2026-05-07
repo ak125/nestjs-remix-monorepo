@@ -17,6 +17,22 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { useState } from "react";
+
+import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { HeroDiagnostic } from "~/components/heroes";
+import Container from "~/components/layout/Container";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "~/components/ui/accordion";
+import { Badge } from "~/components/ui/badge";
+import { Input } from "~/components/ui/input";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { Separator } from "~/components/ui/separator";
 import {
   AlertTriangle,
   ArrowRight,
@@ -37,23 +53,7 @@ import {
   Zap,
   BookOpen,
   type LucideIcon,
-} from "lucide-react";
-import { useState } from "react";
-
-import { DiagnosticWizard } from "~/components/diagnostic-wizard/DiagnosticWizard";
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
-import { HeroDiagnostic } from "~/components/heroes";
-import Container from "~/components/layout/Container";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "~/components/ui/accordion";
-import { Badge } from "~/components/ui/badge";
-import { Input } from "~/components/ui/input";
-import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
-import { Separator } from "~/components/ui/separator";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 

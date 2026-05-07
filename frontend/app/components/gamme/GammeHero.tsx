@@ -1,4 +1,8 @@
 import { Link, useNavigate } from "@remix-run/react";
+import { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import VehicleSelector from "~/components/vehicle/VehicleSelector";
 import {
   BookOpen,
   Car,
@@ -6,11 +10,7 @@ import {
   Filter,
   Gauge,
   Search,
-} from "lucide-react";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import VehicleSelector from "~/components/vehicle/VehicleSelector";
+} from '~/lib/icons';
 import { ImageOptimizer } from "~/utils/image-optimizer";
 
 interface GammeHeroProps {

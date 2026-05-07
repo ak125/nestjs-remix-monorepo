@@ -1,13 +1,13 @@
 import { Link } from "@remix-run/react";
+import { useState } from "react";
+import { Button } from "~/components/ui/button";
 import {
   ChevronDown,
   ChevronRight,
   FileText,
   Package,
   Truck,
-} from "lucide-react";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
+} from '~/lib/icons';
 import { formatPrice } from "~/utils/format";
 import { type OrderStatus, type RecentOrder } from "./account.types";
 

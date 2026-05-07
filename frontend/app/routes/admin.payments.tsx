@@ -7,6 +7,8 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Outlet, useLoaderData, NavLink } from "@remix-run/react";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import {
   CreditCard,
   TrendingUp,
@@ -16,9 +18,7 @@ import {
   DollarSign,
   Users,
   Calendar,
-} from "lucide-react";
-import { Alert } from "~/components/ui/alert";
-import { Badge } from "~/components/ui/badge";
+} from '~/lib/icons';
 import { requireAuth } from "../auth/unified.server";
 
 export const meta: MetaFunction = () => [

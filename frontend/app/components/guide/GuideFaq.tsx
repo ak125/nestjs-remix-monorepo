@@ -3,12 +3,12 @@
  * Uses native <details>/<summary> from the HTML content, styled for the guide design system.
  */
 
-import { HelpCircle } from "lucide-react";
 import {
   type GammeConseil,
   normalizeFaqHtml,
 } from "~/components/blog/conseil/section-config";
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import { HelpCircle } from '~/lib/icons';
 import { GuideCard } from "./GuideCard";
 
 interface GuideFaqProps {

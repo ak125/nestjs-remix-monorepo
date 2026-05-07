@@ -5,16 +5,6 @@
  * Utilisé dans le générateur et les formulaires d'édition
  */
 
-import {
-  Check,
-  X,
-  AlertTriangle,
-  Eye,
-  EyeOff,
-  ExternalLink,
-  FileText,
-  Gauge,
-} from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -28,6 +18,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import {
+  Check,
+  X,
+  AlertTriangle,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  FileText,
+  Gauge,
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 export type ContentType = "r4" | "r5";

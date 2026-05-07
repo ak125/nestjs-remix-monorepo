@@ -5,8 +5,8 @@
  * ⚠️ URLS PRÉSERVÉES - Breadcrumb et navigation inchangés
  */
 
-import { Car, Package, Shield, Truck } from "lucide-react";
 import React, { useState, memo } from "react";
+import { Car, Package, Shield, Truck } from '~/lib/icons';
 
 import { brandColorsService } from "../../services/brand-colors.service";
 import {

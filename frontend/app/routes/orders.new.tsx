@@ -17,14 +17,6 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import {
-  ArrowLeft,
-  Plus,
-  Trash2,
-  Package,
-  MapPin,
-  CreditCard,
-} from "lucide-react";
 import { useState } from "react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
@@ -39,6 +31,14 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Package,
+  MapPin,
+  CreditCard,
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

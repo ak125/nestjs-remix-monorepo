@@ -1,7 +1,7 @@
 // ⚠️ R8 Vehicle — S_ANTI_ERRORS
 // Common mistakes to avoid when picking parts for this vehicle.
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle } from '~/lib/icons';
 import { type LoaderData } from "../r8.types";
 
 interface Props {

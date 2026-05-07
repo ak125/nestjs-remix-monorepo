@@ -1,4 +1,11 @@
 import { Link } from "@remix-run/react";
+import { Badge } from "~/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import {
   ArrowRight,
   Info,
@@ -7,14 +14,7 @@ import {
   Shield,
   ShoppingBag,
   Truck,
-} from "lucide-react";
-import { Badge } from "~/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
+} from '~/lib/icons';
 import { type CartSummary as CartSummaryType } from "~/schemas/cart.schemas";
 import { formatPrice, FREE_SHIPPING_THRESHOLD } from "./cart-utils";
 

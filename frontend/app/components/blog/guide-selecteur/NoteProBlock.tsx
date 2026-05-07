@@ -3,10 +3,10 @@
  */
 
 import { Link } from "@remix-run/react";
-import { Lightbulb } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
+import { Lightbulb } from '~/lib/icons';
 
 export function NoteProBlock() {
   return (
