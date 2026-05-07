@@ -65,3 +65,27 @@ export {
   type SearchIntent,
   type KeywordRoleClassification,
 } from "./keyword-intent";
+
+// ── PR-0D surface : intent matrix, text normalisation, forbidden overlap ──
+
+export {
+  type RoleIntents,
+  getRoleIntents,
+  isIntentAllowedForRole,
+} from "./intents";
+
+export {
+  type SupportedLocale,
+  normalizeSeoText,
+  normalizePhrase,
+  tokenize,
+  stem,
+  tokenizeAndStem,
+} from "./text-normalize";
+
+export { getForbiddenOverlap } from "./forbidden-overlap";
+
+export {
+  KeywordClusterSchema,
+  type KeywordCluster,
+} from "./keyword-cluster.schema";
