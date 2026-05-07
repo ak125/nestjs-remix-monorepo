@@ -51,7 +51,9 @@ export class RagKnowledgeBootstrapGuardService implements OnModuleInit {
       if (isProd) {
         throw new Error(msg);
       }
-      this.logger.warn(`${msg} (dev/preprod : soft-warn — Phase 3B livre le sync)`);
+      this.logger.warn(
+        `${msg} (dev/preprod : soft-warn — Phase 3B livre le sync)`,
+      );
       return;
     }
 
