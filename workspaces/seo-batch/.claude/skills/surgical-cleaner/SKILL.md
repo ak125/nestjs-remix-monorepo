@@ -14,7 +14,7 @@ description: "Nettoyage chirurgical sections polluées __seo_gamme_conseil. Use 
 - **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 - **Table** : `__seo_gamme_conseil`
 - **Colonnes** : `sgc_pg_id` (TEXT !), `sgc_section_type`, `sgc_content`, `sgc_enriched_by`
-- **Outil** : `mcp__claude_ai_Supabase__execute_sql`
+- **Outil** : `mcp__supabase__execute_sql`
 
 ## Catégories de sections
 

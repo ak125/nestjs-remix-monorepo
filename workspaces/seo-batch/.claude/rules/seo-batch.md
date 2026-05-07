@@ -5,7 +5,7 @@ S'applique aux runs depuis `workspaces/seo-batch/`. Complète (sans les remplace
 ## Sources de vérité
 
 - **RAG knowledge** : `/opt/automecanik/rag/knowledge/` (gammes `.md`, vehicles, constructeurs). **Ne jamais seed du contenu métier depuis le LLM** — incident breezy-eagle 2026-04-18, 350 entrées rollback.
-- **DB Supabase** via MCP (`mcp__supabase__execute_sql` ou `mcp__claude_ai_Supabase__execute_sql`). Tables : `__seo_*`, `__rag_*`, `__pg_*`, `__diag_*`, `__blog_*`. Pas de DROP/TRUNCATE sans validation humaine.
+- **DB Supabase** via MCP (`mcp__supabase__execute_sql`). Tables : `__seo_*`, `__rag_*`, `__pg_*`, `__diag_*`, `__blog_*`. Pas de DROP/TRUNCATE sans validation humaine.
 - **Vault gouvernance** : `/opt/automecanik/governance-vault/ledger/knowledge/` pour les recettes canon (V-Level, KW pipeline, gamme audit).
 
 ## Pièges DB connus

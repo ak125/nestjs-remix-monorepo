@@ -2,7 +2,7 @@
 name: v5-guardian
 description: "Gardien unifié pipeline v5 : pollution + quality gate + anti-régression. Use when user mentions guardian, vérifier qualité v5, check pipeline, anti-régression, health check gamme. Remplace pollution-scanner + content-quality-gate combinés."
 argument-hint: "<pg_alias|pg_id|--batch|--health>"
-allowed-tools: Read, mcp__claude_ai_Supabase__execute_sql, Glob
+allowed-tools: Read, mcp__supabase__execute_sql, Glob
 ---
 
 # V5 Guardian — Gardien unifié du contenu pipeline v5
@@ -29,7 +29,7 @@ allowed-tools: Read, mcp__claude_ai_Supabase__execute_sql, Glob
 - **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 - **Table principale** : `__seo_gamme_conseil`
 - **Colonnes clés** : `sgc_pg_id` (TEXT !), `sgc_section_type`, `sgc_content`, `sgc_enriched_by`
-- **Outil MCP** : `mcp__claude_ai_Supabase__execute_sql`
+- **Outil MCP** : `mcp__supabase__execute_sql`
 
 ---
 

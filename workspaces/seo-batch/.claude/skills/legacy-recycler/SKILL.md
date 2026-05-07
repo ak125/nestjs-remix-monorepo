@@ -65,7 +65,7 @@ ORDER BY LENGTH(ba.ba_content) DESC;
 - **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 - **Table cible** : `__seo_gamme_conseil`
 - **Tables source** : `__blog_advice`, `__blog_advice_h2`, `__blog_advice_h3`
-- **Outil** : `mcp__claude_ai_Supabase__execute_sql`
+- **Outil** : `mcp__supabase__execute_sql`
 
 ## Pipeline de recyclage (4 étapes)
 

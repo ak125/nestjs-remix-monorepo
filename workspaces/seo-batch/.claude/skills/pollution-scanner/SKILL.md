@@ -29,7 +29,7 @@ Le site AutoMecanik a subi une injection massive de contenu scrapé par 73 servi
 - **Projet Supabase** : `cxpojprgwgubzjyqzmoq`
 - **Table** : `__seo_gamme_conseil`
 - **Colonnes clés** : `sgc_pg_id` (TEXT), `sgc_section_type`, `sgc_content`, `sgc_enriched_by`
-- **Outil** : `mcp__claude_ai_Supabase__execute_sql`
+- **Outil** : `mcp__supabase__execute_sql`
 
 ## Les 15+ patterns de pollution
 

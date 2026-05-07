@@ -505,7 +505,7 @@ Règles non-négociables :
 - Erreur BDD/RAG → corriger dans le contenu généré ET générer une requête MCP de correction prête à exécuter (jamais de signalement passif)
 - Ne JAMAIS publier avec des fautes, même si la source en contient
 
-> **Détail complet (périmètre par source, exemples de corrections, format requêtes `mcp__claude_ai_Supabase__execute_sql` + Edit RAG)** : `references/lang-correction.md`
+> **Détail complet (périmètre par source, exemples de corrections, format requêtes `mcp__supabase__execute_sql` + Edit RAG)** : `references/lang-correction.md`
 
 ---
 
