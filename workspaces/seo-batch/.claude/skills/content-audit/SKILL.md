@@ -25,7 +25,7 @@ Audit de contenu base sur le framework **R2D2** (Reponse → Decision → Detail
 |------------------|------------|
 | Demande audit qualite contenu ou page | `/content-audit [url ou fichier]` |
 | Verifier une page SEO apres production | `/content-audit [url]` |
-| Audit par role (R1-R8) | `/content-audit R3_CONSEILS` (ou `R6_GUIDE_ACHAT`, `R6_SUPPORT`) — **utiliser les noms canoniques**, pas les rôles courts (`R3` / `R6` ambigus, voir `legacy-canon-map.md`) |
+| Audit par role (R1-R8) | `/content-audit R3_CONSEILS` (ou `R6_GUIDE_ACHAT`) — **utiliser les noms canoniques**, pas les rôles courts (`R3` / `R6` ambigus, voir `legacy-canon-map.md`). `R6_SUPPORT` est hors matrice editoriale coeur (cf. checklist plus bas). |
 | Apres `/seo-content-architect` (chaine contenu) | `/content-audit [gamme]` |
 
 ---
@@ -222,17 +222,29 @@ Detecte via : `PageRole.R5_DIAGNOSTIC` ou pattern `diagnostic-auto.*`
 | R5-8 | **B10** Lien vers pieces de remplacement (R2) | HAUTE |
 | R5-9 | Maillage vers R2 (pieces) et R4 (reference) | MOYENNE |
 
-### R6 — Support/Legal
+### R6_GUIDE_ACHAT — Guide d'achat
 
-Detecte via : `PageRole.R6_SUPPORT` ou pattern `contact`, `mentions-*`, `politique-*`, `conditions-*`, `legal.*`
+Detecte via : `PageRole.R6_GUIDE_ACHAT` ou pattern `/blog-pieces-auto/guide-achat/*`. Pages produites par les agents `r6-keyword-planner`, `r6-content-batch`, `r6-image-prompt`, validees par `r6-guide-achat-validator`. Stockage canon : tables `__seo_r6_keyword_plan` (input) et `__seo_gamme_purchase_guide` (output).
+
+**Intent canon** : `investigation_commerciale` (investigation pre-achat). Ne **jamais** confondre avec R3_CONSEILS (tutoriel HowTo, intent informationnel) ni avec R6_SUPPORT (legal / contact, hors scope ce skill).
 
 | Check | Critere | Severite |
 |-------|---------|----------|
-| R6-1 | H1 unique et clair | CRITIQUE |
-| R6-2 | Information actionnable (email, tel, formulaire) | HAUTE |
-| R6-3 | FAQ si pertinent | MOYENNE |
-| R6-4 | Schema.org ContactPoint si page contact | MOYENNE |
-| R6-5 | Breadcrumb | MOYENNE |
+| R6GA-1 | H1 unique et oriente choix d'achat (ex. "Comment choisir des plaquettes de frein") | CRITIQUE |
+| R6GA-2 | Sections V2 obligatoires : CHOISIR / COMPARER / COMPAT / QUALITE / BUDGET / MARQUES / PIEGES / PRO | CRITIQUE |
+| R6GA-3 | FAQ guide (5+ questions investigation : "quel critere", "meilleur", "comparatif", "marque vs marque") | HAUTE |
+| R6GA-4 | JSON-LD `ItemList` ou `Product` (jamais `HowTo` — c'est R3) | HAUTE |
+| R6GA-5 | Tables comparatives marques + criteres techniques (au moins 1) | HAUTE |
+| R6GA-6 | Encart "Quel budget prevoir" + fourchettes prix indicatives | HAUTE |
+| R6GA-7 | Encart "Pieges a eviter" / "Erreurs frequentes" | HAUTE |
+| R6GA-8 | Lien vers les pieces R2 + maillage vers gamme parente | HAUTE |
+| R6GA-9 | Pas de procedural detaille (HowTo) — interdit en R6 (renvoyer vers R3) | CRITIQUE |
+| R6GA-10 | Pas de diagnostic complet (cause -> effet panne) — interdit en R6 (renvoyer vers R5) | CRITIQUE |
+| R6GA-11 | Breadcrumb + canonical | MOYENNE |
+
+> **Hors scope ce skill** :
+> - **R6_SUPPORT** (pages legal / contact / mentions / CGV) — role canonique mais **hors matrice editoriale coeur**, pas piloté par les agents R*. Les regles universelles ci-dessous (U1..U10) s'appliquent par defaut ; pour un audit SAV / legal dedie, utiliser les regles SEO U5-U7 + Schema.org `ContactPoint` manuellement.
+> - **R6 nu** : `/content-audit R6` est **interdit** — `R6` figure dans `FORBIDDEN_ROLE_IDS` ([packages/seo-roles/src/legacy.ts](../../../../../packages/seo-roles/src/legacy.ts)). Toujours suffixer en `R6_GUIDE_ACHAT`.
 
 ---
 
