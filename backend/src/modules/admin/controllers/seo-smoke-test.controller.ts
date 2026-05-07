@@ -19,9 +19,25 @@ import {
   ForbiddenException,
   Logger,
   Post,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { MetricsService } from '../../metrics/metrics.service';
 import { captureEnricherException } from '../../../common/observability/enricher-observability.helper';
+
+/**
+ * Robust prod check : NODE_ENV peut être absent, en majuscules, ou avoir
+ * du whitespace (cf. memory feedback_strip_env_vars_python.md sur secrets
+ * GitHub avec trailing newline).
+ *
+ * Fail-closed : si NODE_ENV ne peut être lu OU est ambigu, on considère
+ * production (refus du smoke test).
+ */
+function isProdEnv(): boolean {
+  const raw = (process.env.NODE_ENV ?? '').trim().toLowerCase();
+  return raw === 'production' || raw === 'prod' || raw === '';
+}
 
 const SUPPORTED_ROLES = [
   'R0_HOME',
@@ -35,6 +51,7 @@ const SUPPORTED_ROLES = [
 ];
 
 @Controller('api/admin/seo')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class SeoSmokeTestController {
   private readonly logger = new Logger(SeoSmokeTestController.name);
 
@@ -52,7 +69,7 @@ export class SeoSmokeTestController {
     sentryEventCaptured: boolean;
     metricsIncremented: boolean;
   } {
-    if (process.env.NODE_ENV === 'production') {
+    if (isProdEnv()) {
       throw new ForbiddenException(
         'smoke-fail-enricher refusé en production. Validation prod = capture réelle ou dry-run sécurisé (Options A/B/C plan v12).',
       );
@@ -94,7 +111,7 @@ export class SeoSmokeTestController {
    */
   @Post('smoke-reset-metrics')
   smokeReset(): { reset: boolean; warning: string } {
-    if (process.env.NODE_ENV === 'production') {
+    if (isProdEnv()) {
       throw new ForbiddenException('reset refusé en production.');
     }
     return {
