@@ -67,6 +67,8 @@ module.exports = {
         bleuClair: tokens.colors.accent.bleuClair,
         lightTurquoise: tokens.colors.accent.lightTurquoise,
         extraLightTurquoise: tokens.colors.accent.extraLightTurquoise,
+        signatureYellow: tokens.colors.accent.signatureYellow,
+        signatureYellowSoft: tokens.colors.accent.signatureYellowSoft,
         darkIron: tokens.colors.neutral.darkIron,
         iron: tokens.colors.neutral.iron,
         neutral: tokens.colors.neutral,

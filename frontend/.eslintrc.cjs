@@ -26,6 +26,24 @@ module.exports = {
 			caughtErrorsIgnorePattern: '^_',
 		}],
 		'jsx-a11y/anchor-has-content': 'off',
+		// Mobile-V5 preview anti-leak — fixtures et hook preview ne doivent JAMAIS
+		// fuiter dans les routes V4 réelles. Whitelist : routes preview-mobile.* +
+		// composants components/mobile-v5/ (cf. overrides plus bas).
+		'no-restricted-imports': ['error',
+			{
+				patterns: [
+					{
+						group: [
+							'~/components/mobile-v5/preview-fixtures',
+							'~/components/mobile-v5/preview-fixtures.*',
+							'~/components/mobile-v5/usePreviewCart',
+							'~/components/mobile-v5/usePreviewCart.*',
+						],
+						message: '❌ Mobile-V5 preview fixtures / cart sont réservés aux routes preview-mobile.* et components/mobile-v5/. Pour la vraie app, utiliser useCart + PiecesService.',
+					},
+				],
+			},
+		],
 		// UI Lint: Classes Tailwind interdites + SEO role legacy literals (PR-3a warn)
 		'no-restricted-syntax': [
 			'warn',
@@ -83,6 +101,19 @@ module.exports = {
 			],
 			rules: {
 				'no-restricted-syntax': 'off',
+			},
+		},
+		// ── Mobile-V5 preview namespace exempt — fixtures + cart preview
+		// légitimes ici. Les routes preview-mobile.* et components/mobile-v5/**
+		// sont les seuls autorisés à importer preview-fixtures et usePreviewCart.
+		{
+			files: [
+				'app/routes/preview-mobile.{ts,tsx}',
+				'app/routes/preview-mobile.*.{ts,tsx}',
+				'app/components/mobile-v5/**/*.{ts,tsx}',
+			],
+			rules: {
+				'no-restricted-imports': 'off',
 			},
 		},
 	],

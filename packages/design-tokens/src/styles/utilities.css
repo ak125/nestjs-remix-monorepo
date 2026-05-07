@@ -129,6 +129,14 @@
 .text-extra-light-turquoise { color: var(--color-accent-extraLightTurquoise); }
 .border-extra-light-turquoise { border-color: var(--color-accent-extraLightTurquoise); }
 .text-extra-light-turquoise-contrast { color: var(--color-accent-extraLightTurquoise-contrast); }
+.bg-signature-yellow { background-color: var(--color-accent-signatureYellow); }
+.text-signature-yellow { color: var(--color-accent-signatureYellow); }
+.border-signature-yellow { border-color: var(--color-accent-signatureYellow); }
+.text-signature-yellow-contrast { color: var(--color-accent-signatureYellow-contrast); }
+.bg-signature-yellow-soft { background-color: var(--color-accent-signatureYellowSoft); }
+.text-signature-yellow-soft { color: var(--color-accent-signatureYellowSoft); }
+.border-signature-yellow-soft { border-color: var(--color-accent-signatureYellowSoft); }
+.text-signature-yellow-soft-contrast { color: var(--color-accent-signatureYellowSoft-contrast); }
 
 /* Semantic Colors */
 .bg-action { background-color: var(--color-semantic-action); }
@@ -631,6 +639,8 @@
 .shadow-xl { box-shadow: var(--shadow-xl); }
 .shadow-2xl { box-shadow: var(--shadow-2xl); }
 .shadow-inner { box-shadow: var(--shadow-inner); }
+.shadow-plate { box-shadow: var(--shadow-plate); }
+.shadow-cta { box-shadow: var(--shadow-cta); }
 
 /* === TYPOGRAPHY === */
 
