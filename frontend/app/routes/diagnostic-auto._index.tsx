@@ -287,6 +287,27 @@ export default function DiagnosticAutoIndex() {
       c.description.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  // V0.B — track DTC code submit (warning_light intent) avant redirection.
+  // Pour la recherche libre, on track au blur si ≥ 3 chars (évite events
+  // spammy pendant la frappe). PII sanitize via `safeGtag`.
+  const handleDtcSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = dtcCode.trim().toUpperCase();
+    if (!code) return;
+    void import("~/utils/analytics").then(({ trackSymptomSearch }) => {
+      trackSymptomSearch(code, "warning_light", undefined);
+    });
+    window.location.href = `/diagnostic-auto?dtc=${encodeURIComponent(code)}`;
+  };
+
+  const handleSearchBlur = () => {
+    const query = searchQuery.trim();
+    if (query.length < 3) return;
+    void import("~/utils/analytics").then(({ trackSymptomSearch }) => {
+      trackSymptomSearch(query, "other", filteredClusters.length);
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Breadcrumbs */}
@@ -329,18 +350,10 @@ export default function DiagnosticAutoIndex() {
                 className="pl-11 h-11 rounded-xl text-base"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onBlur={handleSearchBlur}
               />
             </div>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const code = dtcCode.trim().toUpperCase();
-                if (code) {
-                  window.location.href = `/diagnostic-auto?dtc=${encodeURIComponent(code)}`;
-                }
-              }}
-              className="flex gap-2"
-            >
+            <form onSubmit={handleDtcSubmit} className="flex gap-2">
               <Input
                 type="text"
                 placeholder="Code OBD (P0300...)"
@@ -937,16 +950,7 @@ export default function DiagnosticAutoIndex() {
               95% de fiabilité.
             </p>
           </div>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const code = dtcCode.trim().toUpperCase();
-              if (code) {
-                window.location.href = `/diagnostic-auto?dtc=${encodeURIComponent(code)}`;
-              }
-            }}
-            className="flex gap-2 shrink-0"
-          >
+          <form onSubmit={handleDtcSubmit} className="flex gap-2 shrink-0">
             <Input
               type="text"
               placeholder="P0300"
