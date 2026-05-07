@@ -20,6 +20,7 @@ import { GscLinksFetcherService } from './services/gsc-links-fetcher.service';
 import { AuditFindingsService } from './services/audit-findings.service';
 import { RContentAuditorService } from './services/r-content-auditor.service';
 import { QualityHistorySnapshotService } from './services/quality-history-snapshot.service';
+import { RagMirrorFreshnessService } from './services/rag-mirror-freshness.service';
 import { SeoMonitoringController } from './controllers/seo-monitoring.controller';
 import { QualityHistoryController } from './controllers/quality-history.controller';
 
@@ -35,6 +36,7 @@ import { QualityHistoryController } from './controllers/quality-history.controll
     AuditFindingsService,
     RContentAuditorService,
     QualityHistorySnapshotService, // ADR-050 Phase 0 baseline
+    RagMirrorFreshnessService, // ADR-046 § L3 RAG MIRROR read-only — PR-E.2
   ],
   controllers: [SeoMonitoringController, QualityHistoryController],
   exports: [
@@ -46,6 +48,7 @@ import { QualityHistoryController } from './controllers/quality-history.controll
     AuditFindingsService,
     RContentAuditorService,
     QualityHistorySnapshotService, // exposé pour PR-T (re-enrich pre/post snapshot)
+    RagMirrorFreshnessService, // exposé pour cron health endpoint
   ],
 })
 export class SeoMonitoringModule {}
