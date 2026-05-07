@@ -11,6 +11,14 @@ exports.LEGACY_ROLE_ALIASES = {
     R4_GLOSSARY: canonical_1.RoleId.R4_REFERENCE,
     R5_diagnostic: canonical_1.RoleId.R5_DIAGNOSTIC,
     R6_BUYING_GUIDE: canonical_1.RoleId.R6_GUIDE_ACHAT,
+    R0: canonical_1.RoleId.R0_HOME,
+    R1: canonical_1.RoleId.R1_ROUTER,
+    R2: canonical_1.RoleId.R2_PRODUCT,
+    R4: canonical_1.RoleId.R4_REFERENCE,
+    R5: canonical_1.RoleId.R5_DIAGNOSTIC,
+    R7: canonical_1.RoleId.R7_BRAND,
+    R8: canonical_1.RoleId.R8_VEHICLE,
+    R6_GUIDE: canonical_1.RoleId.R6_GUIDE_ACHAT,
 };
 exports.PAGE_TYPE_TO_ROLE = {
     R1_pieces: canonical_1.RoleId.R1_ROUTER,
