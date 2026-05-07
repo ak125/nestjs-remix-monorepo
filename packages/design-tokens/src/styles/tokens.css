@@ -65,6 +65,10 @@
   --color-accent-lightTurquoise-contrast: #000000;
   --color-accent-extraLightTurquoise: #F3F8F8;
   --color-accent-extraLightTurquoise-contrast: #000000;
+  --color-accent-signatureYellow: #FBE12C;
+  --color-accent-signatureYellow-contrast: #000000;
+  --color-accent-signatureYellowSoft: #FFF38C;
+  --color-accent-signatureYellowSoft-contrast: #000000;
   --color-neutral-50: #F5F7FA;
   --color-neutral-50-contrast: #000000;
   --color-neutral-100: #E5E7EB;
@@ -236,6 +240,8 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+  --shadow-plate: 4px 4px 0 0 #F97316;
+  --shadow-cta: 0 4px 12px rgba(249, 115, 22, 0.25);
 
   /* Border Radius */
   --radius-none: 0;

@@ -26,6 +26,21 @@ module.exports = {
 			caughtErrorsIgnorePattern: '^_',
 		}],
 		'jsx-a11y/anchor-has-content': 'off',
+		// V5 mock data guard — anti-leak hors namespace /v5/*.
+		// Le fichier `app/components/v5/data.ts` est un mock temporaire (ship 1).
+		// Tout import depuis hors `routes/_v5*` ou `components/v5/*` doit échouer
+		// pour empêcher la fuite des données mock dans les routes de production.
+		// Sera supprimé au ship 2 (wiring backend réel).
+		'no-restricted-imports': ['error',
+			{
+				patterns: [
+					{
+						group: ['~/components/v5/data', '~/components/v5/data.*', '../components/v5/data', '../../components/v5/data'],
+						message: '❌ V5 mock data is restricted to `routes/_v5*` and `components/v5/*` only. Replace with real Remix loader (ship 2).',
+					},
+				],
+			},
+		],
 		// UI Lint: Classes Tailwind interdites + SEO role legacy literals (PR-3a warn)
 		'no-restricted-syntax': [
 			'warn',
@@ -83,6 +98,19 @@ module.exports = {
 			],
 			rules: {
 				'no-restricted-syntax': 'off',
+			},
+		},
+		// ── V5 mock data : namespace exempt — fichiers V5 légitimes ──
+		// Les routes _v5* et les composants v5/* sont autorisés à importer
+		// le mock data (c'est leur seule raison d'exister au ship 1).
+		// Hors de ce namespace, no-restricted-imports bloque l'import.
+		{
+			files: [
+				'app/routes/_v5*.{ts,tsx}',
+				'app/components/v5/**/*.{ts,tsx}',
+			],
+			rules: {
+				'no-restricted-imports': 'off',
 			},
 		},
 	],
