@@ -57,6 +57,9 @@ export function captureEnricherException(
 
   if (logger) {
     const message = err instanceof Error ? err.message : String(err);
-    logger.error(`[${ctx.role}] enrich failed (${ctx.service}): ${message}`, err as any);
+    logger.error(
+      `[${ctx.role}] enrich failed (${ctx.service}): ${message}`,
+      err as any,
+    );
   }
 }
