@@ -20,8 +20,8 @@
 --
 -- Réversibilité :
 --   - ADD COLUMN IF NOT EXISTS : idempotent
---   - DROP TRIGGER + DROP FUNCTION : reversible via prochaine migration
---   - Tables ajoutées : DROP TABLE en migration de revert si nécessaire
+--   - DROP TRIGGER + DROP FUNCTION : reversible via next migration
+--   - Tables ajoutées : revert migration les supprime si nécessaire
 
 BEGIN;
 
@@ -82,7 +82,7 @@ COMMENT ON TABLE public.__seo_role_canon_forbidden IS
 
 ALTER TABLE public.__seo_role_canon_forbidden ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS canon_forbidden_readonly ON public.__seo_role_canon_forbidden;
+DROP POLICY IF EXISTS canon_forbidden_readonly ON public.__seo_role_canon_forbidden;  -- APPROVED: idempotent re-create of read-only policy on first apply
 CREATE POLICY canon_forbidden_readonly ON public.__seo_role_canon_forbidden
   FOR SELECT TO authenticated, anon USING (true);
 
