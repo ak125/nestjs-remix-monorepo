@@ -716,6 +716,13 @@ jobs:
           NODE_ENV: preprod
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # SESSION_SECRET propagation : depuis PR #339 (commit 6c7df152), main.ts:102
+          # fail-fast si SESSION_SECRET manquant ou < 32 chars en NODE_ENV=production.
+          # Le container preprod tourne en NODE_ENV=production (Dockerfile:39+63 +
+          # docker-compose.preprod.yml:9 override le NODE_ENV=preprod du shell CI),
+          # donc le fail-fast trigger ici. Source : audit-trail vault
+          # 2026-05-07-pr339-deploy-regression.md.
+          SESSION_SECRET: ${{ secrets.PREPROD_SESSION_SECRET }}
           READ_ONLY: "true"
         run: |
           docker pull massdoc/nestjs-remix-monorepo:preprod
@@ -733,6 +740,7 @@ jobs:
           NODE_ENV=preprod
           SUPABASE_URL=${SUPABASE_URL}
           SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+          SESSION_SECRET=${SESSION_SECRET}
           READ_ONLY=true
           REDIS_URL=redis://redis-preprod:6379
           APP_URL=http://localhost:3200

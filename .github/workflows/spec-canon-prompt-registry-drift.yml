@@ -1,0 +1,154 @@
+name: 📐 Prompt Registry Path Drift Check (ADR-048 sprint 2 P1)
+
+# Detecte les paths cites dans .spec/00-canon/prompt-registry.md qui ne pointent
+# plus vers des fichiers existants sur le filesystem. Implemente la regle de
+# maintenance §3 du canon ("Les paths doivent pointer vers des fichiers
+# existants") en gate CI mecanique plutot qu'audit manuel.
+#
+# Mode warn-only initial (cohérent ADR-048 strategie escalade J+30) — les
+# findings `error` sont surfaces via ::error:: annotations CI mais n'echouent
+# pas la PR. Promo en `--strict` (exit 1 si dead paths) a evaluer apres 30j
+# si signal clair et bruit faible.
+#
+# Pattern aligne avec spec-canon-repo-map-drift.yml (PR #358 + 5 fixes Important
+# review) : set -euo pipefail explicit, JSON shape validation, error annotations
+# distinct du warning, pas de `|| true` swallow.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.spec/00-canon/prompt-registry.md'
+      - '.claude/agents/**'
+      - '.claude/prompts/**'
+      - '.claude/skills/**'
+      - 'backend/src/config/page-contract-*.{ts,schema.ts}'
+      - 'backend/src/config/r[0-9]-*.{ts,constants.ts}'
+      - 'scripts/spec-canon/check-prompt-registry-drift.py'
+      - '.github/workflows/spec-canon-prompt-registry-drift.yml'
+
+  push:
+    branches: [main]
+    paths:
+      - '.spec/00-canon/prompt-registry.md'
+      - '.claude/agents/**'
+      - '.claude/prompts/**'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-prompt-registry-drift:
+    name: Prompt Registry Path Drift Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run drift check
+        id: drift_check
+        # set -euo pipefail explicite + JSON shape validation avant les python3 -c
+        # extracts. Si le script crashe (regex bug, ImportError), le step echoue
+        # bruyamment via ::error:: annotation plutot que JSON malforme silencieux.
+        run: |
+          set -euo pipefail
+          if ! python3 scripts/spec-canon/check-prompt-registry-drift.py --json > /tmp/prompt-registry-drift.json 2>/tmp/prompt-registry-drift.stderr; then
+            echo "::warning::check-prompt-registry-drift.py exit non-zero (errors detectes, mode warn-only -- voir step summary + annotations)"
+          fi
+          if ! python3 -c "import json; d=json.load(open('/tmp/prompt-registry-drift.json')); assert 'summary' in d and 'findings' in d, 'JSON shape invalide'" 2>/tmp/json-validation.err; then
+            echo "::error::JSON output du script invalide. stderr script :"
+            cat /tmp/prompt-registry-drift.stderr || true
+            echo "JSON validation error :"
+            cat /tmp/json-validation.err || true
+            exit 1
+          fi
+          cat /tmp/prompt-registry-drift.json
+          ERROR_COUNT=$(python3 -c "import json; print(json.load(open('/tmp/prompt-registry-drift.json'))['summary']['error'])")
+          DEAD_COUNT=$(python3 -c "import json; print(json.load(open('/tmp/prompt-registry-drift.json'))['stats']['dead'])")
+          ALIVE_COUNT=$(python3 -c "import json; print(json.load(open('/tmp/prompt-registry-drift.json'))['stats']['alive'])")
+          TOTAL_COUNT=$(python3 -c "import json; print(json.load(open('/tmp/prompt-registry-drift.json'))['stats']['total_paths_extracted'])")
+          echo "error_count=$ERROR_COUNT" >> "$GITHUB_OUTPUT"
+          echo "dead_count=$DEAD_COUNT" >> "$GITHUB_OUTPUT"
+          echo "alive_count=$ALIVE_COUNT" >> "$GITHUB_OUTPUT"
+          echo "total_count=$TOTAL_COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Surface dead paths as annotations
+        # Remonte chaque dead path en ::error file=...:: annotation visible dans
+        # la PR checks UI, meme en mode warn-only.
+        if: always() && steps.drift_check.outputs.error_count != '0'
+        run: |
+          set -euo pipefail
+          python3 -c "
+          import json
+          d = json.load(open('/tmp/prompt-registry-drift.json'))
+          for f in d['findings']:
+              if f['severity'] == 'error':
+                  print(f'::error file={f.get(\"file\", \"?\")}::{f[\"rule\"]}: {f[\"message\"]}')"
+
+      - name: Generate step summary
+        if: always()
+        run: |
+          set -euo pipefail
+          echo "# 📐 Prompt Registry Path Drift Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Vérifie que tous les paths cités dans \`.spec/00-canon/prompt-registry.md\` pointent vers des fichiers existants (règle §3 du canon)." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Stats** : ${{ steps.drift_check.outputs.alive_count }}/${{ steps.drift_check.outputs.total_count }} alive, **${{ steps.drift_check.outputs.dead_count }} dead paths**." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if ! python3 scripts/spec-canon/check-prompt-registry-drift.py >> "$GITHUB_STEP_SUMMARY" 2>/tmp/summary-stderr.log; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**⚠️ Script exit non-zero (errors detectés -- voir annotations CI).**" >> "$GITHUB_STEP_SUMMARY"
+            if [ -s /tmp/summary-stderr.log ]; then
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+              cat /tmp/summary-stderr.log >> "$GITHUB_STEP_SUMMARY"
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+              echo "::warning::check-prompt-registry-drift.py stderr present, voir step summary"
+            fi
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "---" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Mode** : warn-only (ADR-048 escalade J+30). Dead path = signal de mise à jour" >> "$GITHUB_STEP_SUMMARY"
+          echo "manuelle de \`prompt-registry.md\` (ajouter le fichier OU retirer la ligne du registre)," >> "$GITHUB_STEP_SUMMARY"
+          echo "pas blocage CI. Promo \`--strict\` à évaluer post-30j." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment PR with dead path report (if drift detected)
+        if: github.event_name == 'pull_request' && steps.drift_check.outputs.dead_count != '0'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const drift = JSON.parse(fs.readFileSync('/tmp/prompt-registry-drift.json', 'utf8'));
+              const dead = (drift.findings || []).filter(f => f.rule && f.rule.endsWith('.dead-path'));
+              if (dead.length === 0) return;
+              const lines = dead.map(f => `- \`${f.path}\``);
+              const stats = drift.stats || {};
+              const body = [
+                '## 📐 Prompt Registry — Dead paths détectés',
+                '',
+                `\`.spec/00-canon/prompt-registry.md\` cite **${dead.length} path(s)** introuvable(s) sur filesystem :`,
+                '',
+                ...lines,
+                '',
+                `**Stats** : ${stats.alive || '?'}/${stats.total_paths_extracted || '?'} alive, ${stats.dead || '?'} dead.`,
+                '',
+                '> Mode warn-only (ADR-048 escalade J+30). Pour fixer : ajouter les fichiers manquants OU retirer leur référence du registre canon (§3 maintenance).',
+              ].join('\n');
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } catch (e) {
+              core.warning(`drift report unavailable: ${e.message}`);
+            }

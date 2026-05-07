@@ -1,0 +1,158 @@
+name: 📐 Repo Map Drift Check (ADR-048 sprint 2 P1)
+
+# Detecte les ecarts entre les chiffres declares dans .spec/00-canon/repo-map.md
+# et la realite du filesystem (backend modules, frontend routes, packages, docker configs).
+#
+# Mode warn-only initial (cohérent ADR-048 strategie escalade J+30) — affiche
+# les findings dans le step summary mais ne bloque pas la PR. Apres 30j
+# d'observation, le check pourra etre promu en `--strict` (exit 1 si drift) si
+# le signal est clair et le bruit faible.
+#
+# Reference :
+#  - ADR-048 §Implementation Sprint 2 ("PR monorepo : repo-map.md auto-generator
+#    + drift CI")
+#  - REG-002 (governance-vault) : repo-map.md state prose-only -> enforced
+#    post-merge cette PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.spec/00-canon/repo-map.md'
+      - 'backend/src/modules/**'
+      - 'frontend/app/routes/**'
+      - 'packages/**'
+      - 'docker-compose*.yml'
+      - 'scripts/spec-canon/check-repo-map-drift.py'
+      - '.github/workflows/spec-canon-repo-map-drift.yml'
+
+  push:
+    branches: [main]
+    paths:
+      - '.spec/00-canon/repo-map.md'
+      - 'backend/src/modules/**'
+      - 'frontend/app/routes/**'
+      - 'packages/**'
+      - 'docker-compose*.yml'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-repo-map-drift:
+    name: Repo Map Drift Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run drift check
+        id: drift_check
+        # Fix #4 (PR review) : set -euo pipefail explicite + jq pour valider la
+        # forme JSON avant les python3 -c. Si le script crashe, le step echoue
+        # bruyamment plutot que de silencieusement produire un JSON malforme.
+        # Mode warn-only : on accepte exit 0 du script meme avec drift, mais
+        # un crash technique (regex bug, ImportError) DOIT echouer la step.
+        run: |
+          set -euo pipefail
+          # Run script en --json. Si ca crashe (exit != 0 sur error severity),
+          # on continue (mode warn-only) mais on emet une annotation explicite.
+          if ! python3 scripts/spec-canon/check-repo-map-drift.py --json > /tmp/repo-map-drift.json 2>/tmp/repo-map-drift.stderr; then
+            echo "::warning::check-repo-map-drift.py exit non-zero (ERROR severity findings present, mode warn-only -- voir step summary pour detail)"
+          fi
+          # Validate JSON shape avant de l'utiliser (sinon les python3 -c suivants explosent opaquement)
+          if ! python3 -c "import json,sys; d=json.load(open('/tmp/repo-map-drift.json')); assert 'summary' in d and 'findings' in d, 'JSON shape invalide'" 2>/tmp/json-validation.err; then
+            echo "::error::JSON output du script invalide. stderr script :"
+            cat /tmp/repo-map-drift.stderr || true
+            echo "JSON validation error :"
+            cat /tmp/json-validation.err || true
+            exit 1
+          fi
+          cat /tmp/repo-map-drift.json
+          # Extraire compteurs pour decision UI (JSON deja valide a ce point)
+          WARN_COUNT=$(python3 -c "import json; print(json.load(open('/tmp/repo-map-drift.json'))['summary']['warning'])")
+          ERROR_COUNT=$(python3 -c "import json; print(json.load(open('/tmp/repo-map-drift.json'))['summary']['error'])")
+          echo "warn_count=$WARN_COUNT" >> "$GITHUB_OUTPUT"
+          echo "error_count=$ERROR_COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Surface error findings as annotations
+        # Fix #4 (PR review) : error_count etait capture ligne 67 mais jamais
+        # utilise. Maintenant les errors (dir missing, format change, etc.) sont
+        # remontees via ::error:: annotations visibles dans la PR checks UI,
+        # meme en mode warn-only (exit 0). Distinct du drift legitime.
+        if: always() && steps.drift_check.outputs.error_count != '0'
+        run: |
+          set -euo pipefail
+          python3 -c "
+          import json
+          d = json.load(open('/tmp/repo-map-drift.json'))
+          for f in d['findings']:
+              if f['severity'] == 'error':
+                  print(f'::error file={f.get(\"file\", \"?\")}::{f[\"rule\"]}: {f[\"message\"]}')"
+
+      - name: Generate step summary
+        # Fix #4 (PR review) : || true retire. Si le script crashe ici, on
+        # surface l'erreur via ::error:: annotation explicite plutot que de
+        # silencieusement coller un traceback dans le summary.
+        if: always()
+        run: |
+          set -euo pipefail
+          echo "# 📐 Repo Map Drift Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Compare \`.spec/00-canon/repo-map.md\` claims with filesystem reality." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          # Re-run en mode human-readable. Si crash, capture stderr separement
+          # pour surface en annotation -- pas de masquage silencieux.
+          if ! python3 scripts/spec-canon/check-repo-map-drift.py >> "$GITHUB_STEP_SUMMARY" 2>/tmp/summary-stderr.log; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**⚠️ Script exit non-zero (errors detectes -- voir annotations CI).**" >> "$GITHUB_STEP_SUMMARY"
+            if [ -s /tmp/summary-stderr.log ]; then
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+              cat /tmp/summary-stderr.log >> "$GITHUB_STEP_SUMMARY"
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+              echo "::warning::check-repo-map-drift.py stderr present, voir step summary"
+            fi
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "---" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Mode** : warn-only (ADR-048 escalade J+30). Drift = signal de mise à jour" >> "$GITHUB_STEP_SUMMARY"
+          echo "manuelle de \`repo-map.md\`, pas blocage CI. Promo \`--strict\` à évaluer post-30j." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment PR with drift report (if drift detected)
+        if: github.event_name == 'pull_request' && steps.drift_check.outputs.warn_count != '0'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const drift = JSON.parse(fs.readFileSync('/tmp/repo-map-drift.json', 'utf8'));
+            const findings = drift.findings || [];
+            if (findings.length === 0) return;
+            const lines = findings.map(f => {
+              if (f.metric) {
+                return `- **${f.metric}** : claim=\`${f.claimed ?? '—'}\`, réel=\`${f.actual ?? '—'}\` (drift=\`${f.drift !== undefined ? (f.drift > 0 ? '+' : '') + f.drift : '—'}\`)`;
+              }
+              return `- ${f.message}`;
+            });
+            const body = [
+              '## 📐 Repo Map Drift detecte',
+              '',
+              '`.spec/00-canon/repo-map.md` ne reflete plus la realite filesystem :',
+              '',
+              ...lines,
+              '',
+              '> Mode warn-only (ADR-048 escalade J+30). Met à jour `repo-map.md` ou ajoute la metric manquante au prochain canon refresh.',
+            ].join('\n');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
