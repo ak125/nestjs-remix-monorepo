@@ -73,6 +73,10 @@ export const CSP_DIRECTIVES = {
     'https://www.google-analytics.com',
     'https://analytics.google.com',
     'https://region1.google-analytics.com',
+    // Sentry envelope ingest (EU region). Required for the browser SDK to
+    // report errors from prod pages — without this the CSP blocks all
+    // ingest requests and Sentry is silent client-side.
+    'https://*.ingest.de.sentry.io',
   ],
 
   fontSrc: ["'self'", 'data:'], // Google Fonts retiré — fonts self-hosted
