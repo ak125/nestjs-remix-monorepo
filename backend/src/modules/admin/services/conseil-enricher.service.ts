@@ -29,6 +29,7 @@ import {
   getForbiddenOverlap,
   tokenizeAndStem,
 } from '@repo/seo-roles';
+import { CanonObservabilityService } from './canon-observability.service';
 
 // ── Section type constants matching DB values ──
 
@@ -239,6 +240,8 @@ export class ConseilEnricherService extends SupabaseBaseService {
     private readonly foundationGate?: RagFoundationGateService,
     @Optional()
     private readonly writeGate?: ContentWriteGateService,
+    @Optional()
+    private readonly canonObservability?: CanonObservabilityService,
   ) {
     super(configService);
   }
@@ -683,6 +686,16 @@ export class ConseilEnricherService extends SupabaseBaseService {
         .map((v) => `${v.flag}@${v.evidence}`)
         .join('|')}`;
       this.logger.warn(`[R3] Canon block ${pgId}: ${flagsList.join(',')}`);
+
+      // Sentry observability — emit one structured event per violation. No-op
+      // if SENTRY_DSN unset (local dev). See `canon-observability.service.ts`.
+      this.canonObservability?.recordViolations(
+        CanonRoleId.R3_CONSEILS,
+        pgAlias,
+        canon.violations,
+        'enricher',
+      );
+
       return {
         status: 'failed',
         score: 0,
