@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DEPRECATED_OUTPUT_ROLES = exports.CANONICAL_ROLE_SET = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = void 0;
+exports.setLegacyResolutionHook = setLegacyResolutionHook;
+exports._emitLegacyResolution = _emitLegacyResolution;
 const canonical_1 = require("./canonical");
 exports.LEGACY_ROLE_ALIASES = {
     R3_guide: canonical_1.RoleId.R6_GUIDE_ACHAT,
@@ -48,4 +50,11 @@ exports.DEPRECATED_OUTPUT_ROLES = new Set([
     canonical_1.RoleId.R9_GOVERNANCE,
     canonical_1.RoleId.R3_GUIDE,
 ]);
+let _legacyHook = null;
+function setLegacyResolutionHook(hook) {
+    _legacyHook = hook;
+}
+function _emitLegacyResolution(event) {
+    _legacyHook?.(event);
+}
 //# sourceMappingURL=legacy.js.map

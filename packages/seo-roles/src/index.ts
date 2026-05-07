@@ -27,6 +27,9 @@ export {
   ROLE_TO_PAGE_TYPE,
   FORBIDDEN_ROLE_IDS,
   DEPRECATED_OUTPUT_ROLES,
+  setLegacyResolutionHook,
+  type LegacyResolutionEvent,
+  type LegacyResolutionHook,
 } from "./legacy";
 
 export {

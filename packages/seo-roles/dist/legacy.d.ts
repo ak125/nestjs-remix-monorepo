@@ -5,4 +5,11 @@ export declare const ROLE_TO_PAGE_TYPE: Partial<Record<RoleId, WorkerPageType>>;
 export declare const FORBIDDEN_ROLE_IDS: readonly ["R3", "R6", "R9", "R3_GUIDE"];
 export declare const CANONICAL_ROLE_SET: ReadonlySet<string>;
 export declare const DEPRECATED_OUTPUT_ROLES: ReadonlySet<RoleId>;
+export type LegacyResolutionEvent = Readonly<{
+    from: string;
+    to: RoleId;
+}>;
+export type LegacyResolutionHook = (event: LegacyResolutionEvent) => void;
+export declare function setLegacyResolutionHook(hook: LegacyResolutionHook | null): void;
+export declare function _emitLegacyResolution(event: LegacyResolutionEvent): void;
 //# sourceMappingURL=legacy.d.ts.map

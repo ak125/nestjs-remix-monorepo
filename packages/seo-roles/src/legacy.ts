@@ -19,6 +19,13 @@ import { RoleId, WorkerPageType } from "./canonical";
  * `"R6_GUIDE"` is the frontend-specific value of `PageRole.R6_GUIDE_ACHAT`
  * (distinct from bare `"R6"`) — mapped here as it is unambiguous.
  *
+ * @deprecated since 2026-05-07, slated for removal after 2026-06-07 (see PR-F
+ * in plan `verifier-v-rit-canonique-toasty-lamport`). Promoted to `error`
+ * severity once `seo_role_legacy_resolution_total = 0/7j` across all major
+ * consumers (backend, frontend, worker, orchestrator). New code MUST emit
+ * canonical RoleId values directly — these aliases exist only for historical
+ * data ingestion during the deprecation window.
+ *
  * See `.spec/00-canon/db-governance/legacy-canon-map.md` v1.1.0+
  */
 export const LEGACY_ROLE_ALIASES: Record<string, RoleId> = {
@@ -102,3 +109,53 @@ export const DEPRECATED_OUTPUT_ROLES: ReadonlySet<RoleId> = new Set<RoleId>([
   RoleId.R9_GOVERNANCE,
   RoleId.R3_GUIDE,
 ]);
+
+// ── Legacy resolution observability hook (PR-A) ──────────────────────────
+//
+// The package stays pure (no Prometheus / network / Supabase imports). Consumers
+// (backend NestJS, frontend Remix loaders, worker, orchestrator) inject a hook
+// at bootstrap to count legacy resolutions. The compteur drives PR-F purge
+// readiness: when `seo_role_legacy_resolution_total = 0/7j` across all major
+// instrumented consumers, the legacy aliases above can be safely removed.
+
+/**
+ * Event emitted on each legacy alias resolution by `normalizeRoleId()`.
+ * `from` is the legacy input string; `to` is the canonical RoleId result.
+ */
+export type LegacyResolutionEvent = Readonly<{ from: string; to: RoleId }>;
+
+/** Hook signature consumers register via `setLegacyResolutionHook`. */
+export type LegacyResolutionHook = (event: LegacyResolutionEvent) => void;
+
+let _legacyHook: LegacyResolutionHook | null = null;
+
+/**
+ * Register an observability hook invoked on every effective legacy alias
+ * resolution. Pass `null` to clear. Single-subscriber (last-wins) by design —
+ * if multiple consumers must subscribe within the same process, fan-out via
+ * the registered hook on the consumer side.
+ *
+ * The hook is **never** invoked for:
+ * - Canonical inputs (e.g. `"R6_GUIDE_ACHAT"`) — direct match, no resolution.
+ * - Forbidden inputs (e.g. `"R6"`, `"R3"`) — `normalizeRoleId()` returns `null`.
+ * - Worker `page_type` inputs (e.g. `"R3_conseils"`) — distinct branch.
+ *
+ * @example Backend NestJS bootstrap
+ *   setLegacyResolutionHook(({ from }) => {
+ *     prom.legacyResolutionCounter.inc({ from });
+ *   });
+ */
+export function setLegacyResolutionHook(
+  hook: LegacyResolutionHook | null,
+): void {
+  _legacyHook = hook;
+}
+
+/**
+ * @internal — invoked by `normalize.ts` only, at the `LEGACY_ROLE_ALIASES`
+ * branch. Not part of the public surface despite being exported (TS lacks
+ * package-private visibility).
+ */
+export function _emitLegacyResolution(event: LegacyResolutionEvent): void {
+  _legacyHook?.(event);
+}

@@ -10,8 +10,11 @@ function normalizeRoleId(input) {
         return null;
     if (legacy_1.CANONICAL_ROLE_SET.has(input))
         return input;
-    if (input in legacy_1.LEGACY_ROLE_ALIASES)
-        return legacy_1.LEGACY_ROLE_ALIASES[input];
+    if (input in legacy_1.LEGACY_ROLE_ALIASES) {
+        const to = legacy_1.LEGACY_ROLE_ALIASES[input];
+        (0, legacy_1._emitLegacyResolution)({ from: input, to });
+        return to;
+    }
     return legacy_1.PAGE_TYPE_TO_ROLE[input] ?? null;
 }
 function assertCanonicalRole(role) {

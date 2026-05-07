@@ -6,6 +6,7 @@ import {
   CANONICAL_ROLE_SET,
   PAGE_TYPE_TO_ROLE,
   ROLE_TO_PAGE_TYPE,
+  _emitLegacyResolution,
 } from "./legacy";
 
 /**
@@ -14,14 +15,22 @@ import {
  * Returns `null` if the input is unrecognized OR forbidden (bare `R3`, `R6`, etc.).
  *
  * Legacy accepté en entrée — mapping géré par `LEGACY_ROLE_ALIASES` et `PAGE_TYPE_TO_ROLE`.
+ *
+ * Side effect : emits a `LegacyResolutionEvent` via `_emitLegacyResolution()`
+ * **only** when an input matches `LEGACY_ROLE_ALIASES`. Canonical, forbidden,
+ * worker `page_type`, and unknown inputs do NOT trigger the hook.
  */
 export function normalizeRoleId(input: string): RoleId | null {
   // Reject forbidden / ambiguous role IDs first
   if ((FORBIDDEN_ROLE_IDS as readonly string[]).includes(input)) return null;
   // Direct match on enum values (O(1) via Set, hot path on Zod transforms)
   if (CANONICAL_ROLE_SET.has(input)) return input as RoleId;
-  // Legacy alias
-  if (input in LEGACY_ROLE_ALIASES) return LEGACY_ROLE_ALIASES[input];
+  // Legacy alias — emit observability event for deprecation tracking (PR-A)
+  if (input in LEGACY_ROLE_ALIASES) {
+    const to = LEGACY_ROLE_ALIASES[input];
+    _emitLegacyResolution({ from: input, to });
+    return to;
+  }
   // Worker page type
   return PAGE_TYPE_TO_ROLE[input as WorkerPageType] ?? null;
 }

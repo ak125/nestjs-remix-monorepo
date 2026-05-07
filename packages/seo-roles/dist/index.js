@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KeywordClusterSchema = exports.getForbiddenOverlap = exports.tokenizeAndStem = exports.stem = exports.tokenize = exports.normalizePhrase = exports.normalizeSeoText = exports.isIntentAllowedForRole = exports.getRoleIntents = exports.classifyKeywordToRole = exports.SearchIntentSchema = exports.roleIdNativeEnum = exports.canonicalRoleSchema = exports.tolerantRoleSchema = exports.isCanonicalRoleId = exports.assertCanonicalRoleStrict = exports.ROLE_BADGE_COLORS = exports.getRoleShortLabel = exports.getRoleDisplayLabel = exports.pageTypeToRoleId = exports.roleIdToPageType = exports.assertCanonicalRole = exports.normalizeRoleId = exports.DEPRECATED_OUTPUT_ROLES = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = exports.ROLE_ID_LIST = exports.RoleId = void 0;
+exports.KeywordClusterSchema = exports.getForbiddenOverlap = exports.tokenizeAndStem = exports.stem = exports.tokenize = exports.normalizePhrase = exports.normalizeSeoText = exports.isIntentAllowedForRole = exports.getRoleIntents = exports.classifyKeywordToRole = exports.SearchIntentSchema = exports.roleIdNativeEnum = exports.canonicalRoleSchema = exports.tolerantRoleSchema = exports.isCanonicalRoleId = exports.assertCanonicalRoleStrict = exports.ROLE_BADGE_COLORS = exports.getRoleShortLabel = exports.getRoleDisplayLabel = exports.pageTypeToRoleId = exports.roleIdToPageType = exports.assertCanonicalRole = exports.normalizeRoleId = exports.setLegacyResolutionHook = exports.DEPRECATED_OUTPUT_ROLES = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = exports.ROLE_ID_LIST = exports.RoleId = void 0;
 var canonical_1 = require("./canonical");
 Object.defineProperty(exports, "RoleId", { enumerable: true, get: function () { return canonical_1.RoleId; } });
 Object.defineProperty(exports, "ROLE_ID_LIST", { enumerable: true, get: function () { return canonical_1.ROLE_ID_LIST; } });
@@ -10,6 +10,7 @@ Object.defineProperty(exports, "PAGE_TYPE_TO_ROLE", { enumerable: true, get: fun
 Object.defineProperty(exports, "ROLE_TO_PAGE_TYPE", { enumerable: true, get: function () { return legacy_1.ROLE_TO_PAGE_TYPE; } });
 Object.defineProperty(exports, "FORBIDDEN_ROLE_IDS", { enumerable: true, get: function () { return legacy_1.FORBIDDEN_ROLE_IDS; } });
 Object.defineProperty(exports, "DEPRECATED_OUTPUT_ROLES", { enumerable: true, get: function () { return legacy_1.DEPRECATED_OUTPUT_ROLES; } });
+Object.defineProperty(exports, "setLegacyResolutionHook", { enumerable: true, get: function () { return legacy_1.setLegacyResolutionHook; } });
 var normalize_1 = require("./normalize");
 Object.defineProperty(exports, "normalizeRoleId", { enumerable: true, get: function () { return normalize_1.normalizeRoleId; } });
 Object.defineProperty(exports, "assertCanonicalRole", { enumerable: true, get: function () { return normalize_1.assertCanonicalRole; } });
