@@ -14,7 +14,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 
-export type SnapshotKind = 'monthly_cron' | 'pre_batch' | 'post_batch' | 'on_demand';
+export type SnapshotKind =
+  | 'monthly_cron'
+  | 'pre_batch'
+  | 'post_batch'
+  | 'on_demand';
 
 export interface QualityHistoryRow {
   pg_id: string;
@@ -67,7 +71,12 @@ export class QualityHistorySnapshotService {
 
     for (const roleId of SUPPORTED_ROLES) {
       try {
-        const rows = await this.fetchMetricsForRole(supabase, roleId, kind, metadata);
+        const rows = await this.fetchMetricsForRole(
+          supabase,
+          roleId,
+          kind,
+          metadata,
+        );
         allRows.push(...rows);
       } catch (err) {
         this.logger.error(
@@ -97,11 +106,15 @@ export class QualityHistorySnapshotService {
    * À appeler le 25 de chaque mois via cron système.
    */
   async ensureNextMonthPartition(supabase: SupabaseClient): Promise<string> {
-    const { data, error } = await supabase.rpc('ensure_next_quality_history_partition');
+    const { data, error } = await supabase.rpc(
+      'ensure_next_quality_history_partition',
+    );
 
     if (error) {
       this.logger.error('ensureNextMonthPartition RPC fail', error);
-      throw new Error(`ensure_next_quality_history_partition: ${error.message}`);
+      throw new Error(
+        `ensure_next_quality_history_partition: ${error.message}`,
+      );
     }
     return data as string;
   }
@@ -206,7 +219,11 @@ export class QualityHistorySnapshotService {
           metric_name: 'char_count',
           metric_value: charCount,
           snapshot_kind: kind,
-          metadata: { ...baseMetadata, source_table: '__seo_r1_gamme_slots', column: 'r1s_micro_seo_block' },
+          metadata: {
+            ...baseMetadata,
+            source_table: '__seo_r1_gamme_slots',
+            column: 'r1s_micro_seo_block',
+          },
         });
         if (r.r1s_gatekeeper_score != null) {
           rows.push({
@@ -215,7 +232,11 @@ export class QualityHistorySnapshotService {
             metric_name: 'gatekeeper_score',
             metric_value: Number(r.r1s_gatekeeper_score),
             snapshot_kind: kind,
-            metadata: { ...baseMetadata, source_table: '__seo_r1_gamme_slots', column: 'r1s_gatekeeper_score' },
+            metadata: {
+              ...baseMetadata,
+              source_table: '__seo_r1_gamme_slots',
+              column: 'r1s_gatekeeper_score',
+            },
           });
         }
       }

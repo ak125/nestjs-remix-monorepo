@@ -67,14 +67,14 @@ CREATE INDEX IF NOT EXISTS idx_seo_quality_history_metadata
 -- =====================================================
 ALTER TABLE __seo_quality_history ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS service_role_all ON __seo_quality_history;
+DROP POLICY IF EXISTS service_role_all ON __seo_quality_history; -- APPROVED: idempotent re-create of RLS policy
 CREATE POLICY service_role_all ON __seo_quality_history
   FOR ALL
   TO service_role
   USING (true)
   WITH CHECK (true);
 
-DROP POLICY IF EXISTS authenticated_read ON __seo_quality_history;
+DROP POLICY IF EXISTS authenticated_read ON __seo_quality_history; -- APPROVED: idempotent re-create of RLS policy
 CREATE POLICY authenticated_read ON __seo_quality_history
   FOR SELECT
   TO authenticated

@@ -16,7 +16,15 @@
  *                 -d '{"kind":"monthly_cron"}'
  */
 
-import { Body, Controller, Get, Logger, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
@@ -54,10 +62,15 @@ export class QualityHistoryController {
    */
   @Post('snapshot')
   async snapshot(
-    @Body() body: { kind?: SnapshotKind; metadata?: Record<string, unknown> } = {},
+    @Body()
+    body: { kind?: SnapshotKind; metadata?: Record<string, unknown> } = {},
   ): Promise<{ inserted: number; kind: SnapshotKind }> {
     const kind: SnapshotKind = body.kind ?? 'on_demand';
-    const inserted = await this.service.snapshotAllRoles(this.supabase, kind, body.metadata);
+    const inserted = await this.service.snapshotAllRoles(
+      this.supabase,
+      kind,
+      body.metadata,
+    );
     return { inserted, kind };
   }
 
