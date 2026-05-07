@@ -69,6 +69,10 @@ describe('AuthService', () => {
     set: jest.fn(),
     del: jest.fn(),
     delete: jest.fn(),
+    // ADR-043 Sprint 1 ticket #8 — login lockout helpers
+    getLoginAttempts: jest.fn(),
+    incrementLoginAttempts: jest.fn(),
+    clearLoginAttempts: jest.fn(),
   };
 
   const mockPasswordCrypto = {
@@ -96,6 +100,11 @@ describe('AuthService', () => {
     mockCacheService.set.mockResolvedValue(undefined);
     mockCacheService.del.mockResolvedValue(undefined);
     mockCacheService.delete.mockResolvedValue(undefined);
+
+    // Default: lockout helpers — 0 prior attempts (no lockout active)
+    mockCacheService.getLoginAttempts.mockResolvedValue(0);
+    mockCacheService.incrementLoginAttempts.mockResolvedValue(1);
+    mockCacheService.clearLoginAttempts.mockResolvedValue(undefined);
 
     // Default: upgradeHashIfNeeded resolves (async no-op)
     mockPasswordCrypto.upgradeHashIfNeeded.mockResolvedValue(false);
@@ -222,6 +231,75 @@ describe('AuthService', () => {
       'im10tech7legacy',
       expect.any(Function), // the update callback
     );
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TEST 5b: lockout — counter increments on each failed login (wrong password)
+  // ADR-043 Sprint 1 ticket #8
+  // ═══════════════════════════════════════════════════════════════
+  it('authenticateUser() should increment login attempts on invalid password', async () => {
+    mockUserService.resolveUserByEmail.mockResolvedValue(mockResolved);
+    mockPasswordCrypto.validatePassword.mockResolvedValue({
+      isValid: false,
+      format: 'bcrypt',
+    });
+
+    await service.authenticateUser('Test@Example.com', 'wrongPassword');
+
+    // Expect lowercase normalized key (case-insensitive lockout)
+    expect(mockCacheService.incrementLoginAttempts).toHaveBeenCalledWith(
+      'test@example.com',
+    );
+    expect(mockCacheService.clearLoginAttempts).not.toHaveBeenCalled();
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TEST 5c: lockout — counter increments on unknown user (anti-enumeration)
+  // ═══════════════════════════════════════════════════════════════
+  it('authenticateUser() should increment login attempts on unknown user (prevents enumeration)', async () => {
+    mockUserService.resolveUserByEmail.mockResolvedValue(null);
+
+    await service.authenticateUser('unknown@example.com', 'anyPassword');
+
+    expect(mockCacheService.incrementLoginAttempts).toHaveBeenCalledWith(
+      'unknown@example.com',
+    );
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TEST 5d: lockout — counter clears on successful login
+  // ═══════════════════════════════════════════════════════════════
+  it('authenticateUser() should clear login attempts on successful login', async () => {
+    mockUserService.resolveUserByEmail.mockResolvedValue(mockResolved);
+    mockPasswordCrypto.validatePassword.mockResolvedValue({
+      isValid: true,
+      format: 'bcrypt',
+    });
+
+    await service.authenticateUser('test@example.com', 'correctPassword');
+
+    expect(mockCacheService.clearLoginAttempts).toHaveBeenCalledWith(
+      'test@example.com',
+    );
+    expect(mockCacheService.incrementLoginAttempts).not.toHaveBeenCalled();
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TEST 5e: lockout — threshold reached → fail-fast UnauthorizedException
+  //          (no DB lookup, no password compute)
+  // ═══════════════════════════════════════════════════════════════
+  it('authenticateUser() should reject without DB lookup when lockout threshold reached', async () => {
+    // Default threshold = 5 (env LOGIN_LOCKOUT_MAX_ATTEMPTS unset)
+    mockCacheService.getLoginAttempts.mockResolvedValue(5);
+
+    await expect(
+      service.authenticateUser('test@example.com', 'anyPassword'),
+    ).rejects.toThrow(UnauthorizedException);
+
+    // Critical: fail-fast — no DB / hash compute / counter increment
+    expect(mockUserService.resolveUserByEmail).not.toHaveBeenCalled();
+    expect(mockPasswordCrypto.validatePassword).not.toHaveBeenCalled();
+    expect(mockCacheService.incrementLoginAttempts).not.toHaveBeenCalled();
   });
 
   // ═══════════════════════════════════════════════════════════════
