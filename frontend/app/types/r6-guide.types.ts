@@ -176,9 +176,9 @@ export interface R6GuidePage {
 // ── Top-level payload (dual-mode V1/V2) ─────────────────
 
 export interface R6GuidePayload {
-  // Intent & role (always present)
-  intentType: "R6";
-  pageRole: "R6_BUYING_GUIDE";
+  // Intent & role (always present) — canon ADR-040
+  intentType: "R6_GUIDE_ACHAT";
+  pageRole: "R6_GUIDE_ACHAT";
   canonicalRoleUrl: string;
   roleVersion: "v1" | "v2";
 
