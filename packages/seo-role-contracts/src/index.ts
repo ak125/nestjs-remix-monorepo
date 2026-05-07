@@ -93,3 +93,31 @@ export function getContract(roleId: RoleId): RoleContract {
   }
   return contract;
 }
+
+/**
+ * Strict accessor pour une section d'un rôle. Throw si rôle ou section
+ * absent. Helper utilisé par les enrichers (PR-H Phase 2) pour lire
+ * `min_chars` / `max_chars` / `description` depuis le contract canon
+ * au lieu de constants hardcodées dans le service.
+ *
+ * @example
+ *   const s4 = getSection(RoleId.R1_ROUTER, 'R1_S4_MICRO_SEO');
+ *   const minChars = s4.min_chars; // 1500
+ *   const maxChars = s4.max_chars; // 3000
+ */
+export function getSection(
+  roleId: RoleId,
+  sectionId: string,
+): import("./schema").SectionSpec {
+  const contract = getContract(roleId);
+  const section = contract.allowed_sections.find((s) => s.id === sectionId);
+  if (!section) {
+    throw new Error(
+      `[seo-role-contracts] Section '${sectionId}' not registered in ` +
+        `${roleId} contract. Available : ${contract.allowed_sections
+          .map((s) => s.id)
+          .join(", ") || "(none — contract.allowed_sections is empty, see PR-H Phase 2)"}.`,
+    );
+  }
+  return section;
+}

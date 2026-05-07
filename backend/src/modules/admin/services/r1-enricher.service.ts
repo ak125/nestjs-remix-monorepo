@@ -20,15 +20,21 @@ import type { ResourceGroup } from '../../../config/execution-registry.types';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
+import { RoleId as CanonRoleId } from '@repo/seo-roles';
+import { getSection } from '@repo/seo-role-contracts';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import { EnricherYamlParser } from './enricher-yaml-parser.service';
 
-// ── Canon thresholds (Option B sweet-spot 2026-05-07) ─────────────────────────
-// Aligned with workspaces/seo-batch/.claude/agents/r1-content-batch.md.
+// ── Canon thresholds — read from @repo/seo-role-contracts (PR-H.1) ────────────
+// PR-H.1 (ADR-046 § L1.5 + ADR-047) : remplace les constants hardcodées par
+// lecture du contract canon `seo-role-contracts/contracts/r1.ts` (section
+// R1_S4_MICRO_SEO). Aligned with workspaces/seo-batch/.claude/agents/r1-content-batch.md.
 // Min not enforced here (synth produces best-effort) ; max is the truncate cap.
-const R1_MICRO_SEO_MIN_CHARS = 1500;
-const R1_MICRO_SEO_MAX_CHARS = 3000;
+// PR monorepo #346 (Option B sweet-spot 2026-05-07) — bornes 1500/3000.
+const R1_S4_MICRO_SEO = getSection(CanonRoleId.R1_ROUTER, 'R1_S4_MICRO_SEO');
+const R1_MICRO_SEO_MIN_CHARS = R1_S4_MICRO_SEO.min_chars;
+const R1_MICRO_SEO_MAX_CHARS = R1_S4_MICRO_SEO.max_chars;
 
 export interface R1EnrichResult {
   pgId: string;
