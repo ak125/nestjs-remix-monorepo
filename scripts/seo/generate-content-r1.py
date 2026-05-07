@@ -1,6 +1,23 @@
 #!/usr/bin/env python3
 """
-Generate R1 Content — On-demand pipeline for a single gamme.
+🚨 DEPRECATED 2026-05-07 — sunset 2026-06-07 (Phase 6 PR-V archive).
+
+Ce script utilise l'API Anthropic directement (hors gouvernance rate-limit
++ observabilité Sentry). Il est remplacé par :
+
+    1. Skill Claude Code `/content-gen --r1` (gratuit, pas d'API key)
+    2. R1EnricherService (NestJS, 0-LLM template-based)
+    3. Agent `r1-content-batch.md` (LLM polish via Claude Code, pas API direct)
+
+Voir : workspaces/seo-batch/AGENTS.md (Phase 1 PR-C ownership canon)
+       ADR-046 § Layer L4 GENERATORS
+       ADR-050 (observabilité enrichers — ce script ne l'a pas)
+
+NE PAS UTILISER POUR DE NOUVEAUX ENRICHMENTS. Sunset Phase 6 PR-V.
+
+──────────────────────────────────────────────────────────────────────
+
+Generate R1 Content — On-demand pipeline for a single gamme. (DEPRECATED)
 
 Takes a raw Google Ads Keyword Planner CSV for one gamme, imports KW,
 classifies them, generates R1 editorial HTML via Anthropic API, and writes

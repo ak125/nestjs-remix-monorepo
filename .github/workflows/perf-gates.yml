@@ -3,27 +3,17 @@ name: 🎯 Performance Gates
 on:
   pull_request:
     branches: [main]
-    # Trigger restreint au code source qui peut affecter le rendu mesuré par
-    # Lighthouse. Les bumps de dev-deps (eslint-config-prettier, vite-tsconfig-paths,
-    # storybook, etc.) ne touchent que `package.json` / `package-lock.json` et
-    # n'ont aucun impact sur la perf rendue — les déclencher faisait tourner CWV
-    # pour rien et bloquait inutilement les PRs Dependabot (5 PRs simultanément
-    # bloquées le 2026-05-04 : #279, #280, #281, #282, #283).
-    # Si un bump runtime dep frontend doit être audité (ex: react major), utiliser
-    # `workflow_dispatch` ou tester en local avec lhci.
-    paths:
-      - 'frontend/app/**'           # source SSR (Remix routes, components, services)
-      - 'frontend/public/**'        # assets statiques
-      - 'frontend/vite.config.ts'   # config build qui affecte le bundle
-      - 'frontend/tsconfig.json'    # peut changer l'output TS
-      - 'backend/src/**'            # source backend (impacte SSR + RPC)
-      - 'packages/*/src/**'         # source des packages partagés
-      # Self-trigger : changes to this workflow (budgets, permissions,
-      # env, paths) must re-run the workflow to validate them. Without
-      # this entry, fixes to the workflow file silently ship without CI
-      # verification on the same PR.
-      - '.github/workflows/perf-gates.yml'
-      - 'frontend/lighthouse-budget.json'
+    # Pattern "required-but-skippable" (PR #364 unblock) :
+    # - Le workflow run TOUJOURS sur PR pour pouvoir produire le check
+    #   "CWV Performance Check" exigé par branch protection main.
+    # - Le job lighthouse a un step early qui détecte les paths via
+    #   dorny/paths-filter. Si aucun path frontend/SSR-relevant n'est touché,
+    #   les steps lourds (build + lhci) sont skippés et le job émet success.
+    # - Conserve la propriété anti-Dependabot regression (#279-#283 du
+    #   2026-05-04) : aucune execution lighthouse pour les bumps dev-deps.
+    # - Évite le blocage des PRs scripts-only (ex: #364 PR-D docstring)
+    #   qui n'auraient pas trigger le workflow auparavant et restaient
+    #   bloquées sur "14 of 14 expected" en branch protection.
 
 # Thresholds : voir frontend/lighthouse-budget.json (calibré sur baseline
 # mesuré, anti-régression). Documentation + procédure de mise à jour dans
@@ -58,16 +48,43 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Path filter au niveau job (vs workflow-level) pour permettre au job
+      # de produire un check status "success" même quand les paths ne match
+      # pas. Pattern "required-but-skippable" (cf. on.pull_request comment).
+      - name: Detect SSR-relevant changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            ssr:
+              - 'frontend/app/**'
+              - 'frontend/public/**'
+              - 'frontend/vite.config.ts'
+              - 'frontend/tsconfig.json'
+              - 'backend/src/**'
+              - 'packages/*/src/**'
+              - '.github/workflows/perf-gates.yml'
+              - 'frontend/lighthouse-budget.json'
+
+      - name: Skip notice (no SSR-relevant changes)
+        if: steps.filter.outputs.ssr != 'true'
+        run: |
+          echo "::notice::No SSR-relevant paths changed — skipping lighthouse audit (success)."
+          echo "Touched paths : $(git diff --name-only origin/${{ github.base_ref }}...HEAD | head -20)"
+
       - name: Setup Node.js
+        if: steps.filter.outputs.ssr == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
+        if: steps.filter.outputs.ssr == 'true'
         run: npm ci
 
       - name: Build
+        if: steps.filter.outputs.ssr == 'true'
         run: npm run build
         env:
           NODE_ENV: production
@@ -78,6 +95,7 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY || 'ci-mock-anon-key' }}
 
       - name: Start server
+        if: steps.filter.outputs.ssr == 'true'
         run: |
           npm run start &
           echo "⏳ Waiting for server to start..."
@@ -141,6 +159,7 @@ jobs:
           PAYBOX_HMAC_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
 
       - name: Run Lighthouse CI
+        if: steps.filter.outputs.ssr == 'true'
         id: lighthouse
         uses: treosh/lighthouse-ci-action@v12
         with:
@@ -157,7 +176,7 @@ jobs:
           temporaryPublicStorage: true
 
       - name: Check CWV Thresholds
-        if: always()
+        if: always() && steps.filter.outputs.ssr == 'true'
         run: |
           echo "🎯 Performance Gate Results"
           echo "=========================="
@@ -173,7 +192,7 @@ jobs:
           echo "Budget violations will cause automatic failure."
 
       - name: Comment PR with Results
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.filter.outputs.ssr == 'true'
         uses: actions/github-script@v9
         with:
           script: |
