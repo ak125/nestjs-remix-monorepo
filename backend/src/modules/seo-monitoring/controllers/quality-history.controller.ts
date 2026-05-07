@@ -16,15 +16,18 @@
  *                 -d '{"kind":"monthly_cron"}'
  */
 
-import { Body, Controller, Get, Logger, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post, Query, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   QualityHistorySnapshotService,
   SnapshotKind,
 } from '../services/quality-history-snapshot.service';
 
 @Controller('api/admin/quality-history')
+@UseGuards(AuthenticatedGuard, IsAdminGuard)
 export class QualityHistoryController {
   private readonly logger = new Logger(QualityHistoryController.name);
   private readonly supabase: SupabaseClient;
