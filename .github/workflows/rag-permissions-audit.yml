@@ -1,0 +1,75 @@
+name: RAG L3 Permissions Audit
+
+# ADR-046 § Layer L3 RAG MIRROR + ADR-050 enforcement at PR/push time.
+#
+# Bloque toute PR qui modifie directement rag/knowledge/ sans passer par le
+# pipeline canonique L1→L2→L3 (wiki/exports/ → sync-wiki-exports-to-rag.py).
+#
+# Memory: feedback_canon_rule_live_iff_adr_accepted.md.
+
+on:
+  pull_request:
+    paths:
+      - 'rag/knowledge/**'
+      - 'scripts/rag-sync/**'
+      - 'scripts/wiki/**'
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  rag-direct-write-guard:
+    name: rag/knowledge direct modification guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history for diff against base
+
+      - name: Detect direct modifications under rag/knowledge/
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+          fi
+          HEAD_SHA="${{ github.sha }}"
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            echo "ℹ️  No base commit (initial push or branch creation) — skipping rag/knowledge diff."
+            exit 0
+          fi
+
+          CHANGED=$(git diff --name-only "$BASE_SHA..$HEAD_SHA" -- 'rag/knowledge/' || true)
+          if [ -n "$CHANGED" ]; then
+            echo "❌ Direct modification of rag/knowledge/ detected — refused per ADR-046/050."
+            echo ""
+            echo "Files modified:"
+            echo "$CHANGED" | sed 's/^/  /'
+            echo ""
+            echo "rag/knowledge/ est un MIRROR L3 read-only. Toute écriture doit passer"
+            echo "par automecanik-wiki/exports/rag/ + sync-wiki-exports-to-rag.py."
+            exit 1
+          fi
+          echo "✓ Aucune modification directe rag/knowledge/ détectée."
+
+  ast-grep-rag-write:
+    name: ast-grep no-direct-rag-knowledge-write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ast-grep rule
+        run: |
+          npx --yes @ast-grep/cli@latest scan \
+            --config sgconfig.yml \
+            --rule .ast-grep/rules/no-direct-rag-knowledge-write.yml || {
+            code=$?
+            # ast-grep returns 10 for warnings, non-zero for errors. Severity:error blocks here.
+            if [ "$code" != "0" ] && [ "$code" != "10" ]; then
+              echo "❌ ast-grep no-direct-rag-knowledge-write violations detected."
+              exit "$code"
+            fi
+          }
+          echo "✓ ast-grep no-direct-rag-knowledge-write : 0 violation."
