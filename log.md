@@ -387,3 +387,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-roles-canon-pr-a-classification`
 - **Décision** : feat(seo-roles): intents + forbidden-overlap + text-normalize @0.5.0 (R3 PR-A)
 - **Sortie** : PR #342 | commits 9f58b1ca
+
+## 2026-05-07 — feat/r3-canon-observability-pr-e (auto)
+
+- **Branche** : `feat/r3-canon-observability-pr-e`
+- **Décision** : feat(seo-r3): conseil-enricher 2-gate canon refactor (r3 canon hardening pr-c)
+- **Sortie** : PR aucune | commits 35ae7726
+
+## 2026-05-07 — feat/r3-canon-observability-pr-e (auto)
+
+- **Branche** : `feat/r3-canon-observability-pr-e`
+- **Décision** : feat(seo-r3): canon violation sentry counter (r3 canon hardening pr-e) (+2 other commits)
+- **Sortie** : PR aucune | commits 10e247bd 09177259 35ae7726
