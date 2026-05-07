@@ -19,9 +19,16 @@ import { RoleId } from '../../../config/role-ids';
 import type { ResourceGroup } from '../../../config/execution-registry.types';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import { EnricherYamlParser } from './enricher-yaml-parser.service';
+
+// ── Canon thresholds (Option B sweet-spot 2026-05-07) ─────────────────────────
+// Aligned with workspaces/seo-batch/.claude/agents/r1-content-batch.md.
+// Min not enforced here (synth produces best-effort) ; max is the truncate cap.
+const R1_MICRO_SEO_MIN_CHARS = 1500;
+const R1_MICRO_SEO_MAX_CHARS = 3000;
 
 export interface R1EnrichResult {
   pgId: string;
@@ -113,8 +120,14 @@ export class R1EnricherService extends SupabaseBaseService {
       if (!microSeo && fm) {
         microSeo = this.synthesizeMicroSeo(fm, gammeName, sections);
       }
-      slots.r1s_micro_seo_block = this.textUtils.truncateText(microSeo, 1000);
+      slots.r1s_micro_seo_block = this.textUtils.truncateText(
+        microSeo,
+        R1_MICRO_SEO_MAX_CHARS,
+      );
       if (!microSeo) flags.push('MISSING_MICRO_SEO');
+      else if (microSeo.length < R1_MICRO_SEO_MIN_CHARS) {
+        flags.push('R1_MICRO_SEO_BELOW_MIN');
+      }
 
       // Equipementiers line
       const equipList = fm
@@ -310,45 +323,141 @@ export class R1EnricherService extends SupabaseBaseService {
     return match ? match[1].trim().replace(/^['"]|['"]$/g, '') : null;
   }
 
+  /**
+   * Synthesise the R1 micro-SEO block from RAG frontmatter.
+   *
+   * Targets the Option B canonical envelope (2026-05-07) :
+   * `R1_MICRO_SEO_MIN_CHARS` = 1500c min / `R1_MICRO_SEO_MAX_CHARS` = 3000c max,
+   * structured as 3-5 short HTML `<p>` paragraphs covering :
+   *
+   *   §1 fonction / role (intro)
+   *   §2 critères de sélection (full criteria list)
+   *   §3 distinctions vs pièces voisines (confusion_with) — optional
+   *   §4 équipementiers reconnus (selection.brands.premium) — optional
+   *   §5 cas d'usage / symptômes top 3 + invitation à filtrer
+   *
+   * Stays single-block (no R3 multi-section drift). Forbidden_overlap
+   * enforcement is performed by `r1-router-validator` downstream — not here.
+   *
+   * Sources : RAG `.md` YAML frontmatter ; nested fields parsed via js-yaml
+   * (the legacy regex extractor handles only top-level lists).
+   */
   private synthesizeMicroSeo(
     fm: string,
     gammeName: string,
     sections: Map<string, string>,
   ): string {
-    const parts: string[] = [];
+    const fullYaml = this.parseFullFrontmatter(fm);
+    const domain = (fullYaml?.domain ?? {}) as Record<string, unknown>;
+    const selection = (fullYaml?.selection ?? {}) as Record<string, unknown>;
+    const diagnostic = (fullYaml?.diagnostic ?? {}) as Record<string, unknown>;
+    const paragraphs: string[] = [];
 
-    // Extract domain.role from YAML
-    const role = this.extractYamlValue(fm, 'role');
+    // ── §1 — fonction / rôle ────────────────────────────────────────────
+    const role =
+      this.extractYamlValue(fm, 'role') || (domain.role as string) || '';
+    const mustBeTrue = this.yamlParser.extractYamlList(fm, 'must_be_true');
+    const introBits: string[] = [];
     if (role) {
-      parts.push(
+      introBits.push(
         `Le ${gammeName} ${role.charAt(0).toLowerCase()}${role.slice(1)}.`,
       );
     }
-
-    // Extract must_be_true keywords
-    const mustBeTrue = this.yamlParser.extractYamlList(fm, 'must_be_true');
     if (mustBeTrue.length > 0) {
-      parts.push(
-        `Fonctions essentielles : ${mustBeTrue.slice(0, 3).join(', ')}.`,
+      introBits.push(
+        `Pièce essentielle du système, son fonctionnement implique : ${mustBeTrue.slice(0, 5).join(', ')}.`,
       );
     }
+    if (introBits.length > 0) paragraphs.push(`<p>${introBits.join(' ')}</p>`);
 
-    // Extract selection criteria if available
+    // ── §2 — critères de sélection ──────────────────────────────────────
     const criteria = this.yamlParser.extractYamlList(fm, 'criteria');
     if (criteria.length > 0) {
-      parts.push(`Critères de choix : ${criteria.slice(0, 3).join(', ')}.`);
+      const criteriaProse = criteria
+        .slice(0, 5)
+        .map((c) => c.replace(/^['"]|['"]$/g, '').trim())
+        .join(' ; ');
+      paragraphs.push(`<p>Critères de sélection : ${criteriaProse}.</p>`);
     }
 
-    // Fallback to role section content
-    if (parts.length === 0) {
-      const roleSection =
-        sections.get('role') || sections.get('fonctionnement') || '';
-      if (roleSection) {
-        parts.push(roleSection.slice(0, 300));
+    // ── §3 — distinctions vs pièces voisines ────────────────────────────
+    const confusionItems =
+      (domain.confusion_with as
+        | Array<{ term: string; difference: string }>
+        | undefined) ?? [];
+    if (confusionItems.length > 0) {
+      const distinguish = confusionItems
+        .slice(0, 2)
+        .filter((c) => c?.term && c?.difference)
+        .map((c) => `${c.term} (${c.difference})`)
+        .join(', et de ');
+      if (distinguish) {
+        paragraphs.push(`<p>À distinguer de : ${distinguish}.</p>`);
       }
     }
 
-    return parts.join(' ');
+    // ── §4 — équipementiers reconnus ────────────────────────────────────
+    const brands = (selection.brands as Record<string, unknown>) ?? {};
+    const brandsPremium = (brands.premium as string[]) ?? [];
+    if (brandsPremium.length > 0) {
+      paragraphs.push(
+        `<p>Équipementiers reconnus pour cette gamme : ${brandsPremium.slice(0, 6).join(', ')}.</p>`,
+      );
+    }
+
+    // ── §5 — cas d'usage + invitation filtrage ──────────────────────────
+    const symptoms =
+      (diagnostic.symptoms as
+        | Array<{ id: string; label: string }>
+        | undefined) ?? [];
+    const closing = `Identifiez le ${gammeName} adapté en filtrant par marque, modèle et motorisation pour garantir la compatibilité avec votre véhicule.`;
+    if (symptoms.length > 0) {
+      const symptomList = symptoms
+        .slice(0, 3)
+        .map((s) => s?.label)
+        .filter(Boolean)
+        .join(' ; ');
+      if (symptomList) {
+        paragraphs.push(
+          `<p>Cas d'usage typiques justifiant un remplacement : ${symptomList}. ${closing}</p>`,
+        );
+      } else {
+        paragraphs.push(`<p>${closing}</p>`);
+      }
+    } else {
+      paragraphs.push(`<p>${closing}</p>`);
+    }
+
+    // ── Fallback if everything was empty ────────────────────────────────
+    if (paragraphs.length === 0) {
+      const roleSection =
+        sections.get('role') || sections.get('fonctionnement') || '';
+      if (roleSection) {
+        paragraphs.push(`<p>${roleSection.slice(0, 800)}</p>`);
+      }
+    }
+
+    return paragraphs.join('\n');
+  }
+
+  /**
+   * Parse the full YAML frontmatter as a JavaScript object. Returns `null`
+   * on parse failure — the legacy regex extractor remains the fallback for
+   * top-level lists. Use this only when nested fields are required.
+   */
+  private parseFullFrontmatter(fm: string): Record<string, unknown> | null {
+    if (!fm) return null;
+    try {
+      const parsed = yaml.load(fm);
+      return typeof parsed === 'object' && parsed !== null
+        ? (parsed as Record<string, unknown>)
+        : null;
+    } catch (err) {
+      this.logger.warn(
+        `Failed to parse YAML frontmatter: ${(err as Error).message}`,
+      );
+      return null;
+    }
   }
 
   private extractBuyArgs(
