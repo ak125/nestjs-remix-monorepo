@@ -51,18 +51,26 @@ export class MetricsService {
   renderPrometheus(): string {
     const lines: string[] = [];
 
-    lines.push('# HELP seo_enrich_total Total enrichments by role and outcome (ADR-050).');
+    lines.push(
+      '# HELP seo_enrich_total Total enrichments by role and outcome (ADR-050).',
+    );
     lines.push('# TYPE seo_enrich_total counter');
     for (const [key, value] of this.enrichCounters.entries()) {
       const [role, outcome] = key.split('|');
-      lines.push(`seo_enrich_total{role="${role}",outcome="${outcome}"} ${value}`);
+      lines.push(
+        `seo_enrich_total{role="${role}",outcome="${outcome}"} ${value}`,
+      );
     }
 
-    lines.push('# HELP seo_gate_violation_total Total gate violations by role and gate name (ADR-050).');
+    lines.push(
+      '# HELP seo_gate_violation_total Total gate violations by role and gate name (ADR-050).',
+    );
     lines.push('# TYPE seo_gate_violation_total counter');
     for (const [key, value] of this.gateCounters.entries()) {
       const [role, gate] = key.split('|');
-      lines.push(`seo_gate_violation_total{role="${role}",gate="${gate}"} ${value}`);
+      lines.push(
+        `seo_gate_violation_total{role="${role}",gate="${gate}"} ${value}`,
+      );
     }
 
     return lines.join('\n') + '\n';
