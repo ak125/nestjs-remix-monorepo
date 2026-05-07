@@ -19,6 +19,7 @@ import { DatabaseModule } from '../../database/database.module';
 
 // Controllers - Stock consolidé ✅
 import { ConfigurationController } from './controllers/configuration.controller';
+import { SeoSmokeTestController } from './controllers/seo-smoke-test.controller'; // 🧪 ADR-050 MVP-0 smoke test (dev/preprod-only)
 import { StockController } from './controllers/stock.controller'; // 🔥 Controller consolidé unique
 import { AdminController } from './controllers/admin.controller';
 import { AdminRootController } from './controllers/admin-root.controller';
@@ -149,6 +150,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
   ],
   controllers: [
     ConfigurationController,
+    SeoSmokeTestController, // 🧪 ADR-050 MVP-0 — POST /api/admin/seo/smoke-fail-enricher (dev/preprod-only)
     StockController, // 🔥 Un seul controller stock consolidé (13 routes)
     // ❌ StockEnhancedController - SUPPRIMÉ
     // ❌ StockTestController - SUPPRIMÉ

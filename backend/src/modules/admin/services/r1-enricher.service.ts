@@ -23,6 +23,8 @@ import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import { EnricherYamlParser } from './enricher-yaml-parser.service';
+import { MetricsService } from '../../metrics/metrics.service';
+import { captureEnricherException } from '../../../common/observability/enricher-observability.helper';
 
 // ── Canon thresholds (Option B sweet-spot 2026-05-07) ─────────────────────────
 // Aligned with workspaces/seo-batch/.claude/agents/r1-content-batch.md.
@@ -50,6 +52,7 @@ export class R1EnricherService extends SupabaseBaseService {
     private readonly flags: FeatureFlagsService,
     private readonly textUtils: EnricherTextUtils,
     private readonly yamlParser: EnricherYamlParser,
+    private readonly metrics: MetricsService,
     @Optional() private readonly writeGate?: ContentWriteGateService,
   ) {
     super(configService);
@@ -264,6 +267,14 @@ export class R1EnricherService extends SupabaseBaseService {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       this.logger.error(`${ctx} Exception: ${msg}`);
+      // ADR-050 Livrable 3 : Sentry capture obligatoire au catch level enricher.
+      captureEnricherException(err, {
+        role: 'R1_ROUTER',
+        service: 'R1EnricherService',
+        pgId,
+        step: 'enrichSingle',
+      });
+      this.metrics.incrementEnrich('R1_ROUTER', 'error');
       return {
         pgId,
         status: 'failed',
