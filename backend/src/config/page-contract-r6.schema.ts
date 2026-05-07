@@ -556,10 +556,14 @@ export const R6PageContractSchema = z.object({
   gamme_name: z.string().min(3),
 
   // ── Intent & role V2 ───────────────────────────────────
-  intentType: z.literal('R6').default('R6'),
+  // Canon strict : R6_GUIDE_ACHAT en sortie (cf. ADR-040, @repo/seo-roles).
+  // Bare R6 et R6_BUYING_GUIDE (legacy anglais) sont maintenant rejetés —
+  // si une voie d'entrée legacy doit accepter ces alias, wrapper séparément
+  // avec tolerantRoleSchema au site spécifique (pas dans ce contrat).
+  intentType: z.literal('R6_GUIDE_ACHAT').default('R6_GUIDE_ACHAT'),
   pageRole: z
-    .literal('R6_BUYING_GUIDE' satisfies PageRole)
-    .default('R6_BUYING_GUIDE'),
+    .literal('R6_GUIDE_ACHAT' satisfies PageRole)
+    .default('R6_GUIDE_ACHAT'),
   canonicalRoleUrl: z.string().startsWith('/').optional(),
   roleVersion: z.enum(['v1', 'v2']).default('v2'),
 

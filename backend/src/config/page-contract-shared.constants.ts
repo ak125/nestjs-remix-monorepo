@@ -15,7 +15,7 @@ export const PAGE_ROLES = [
   'R3_BLOG',
   'R4_REFERENCE',
   'R5_DIAGNOSTIC',
-  'R6_BUYING_GUIDE',
+  'R6_GUIDE_ACHAT',
   'R7_BRAND',
   'R8_VEHICLE',
 ] as const;
@@ -29,7 +29,7 @@ export const LINK_TARGET_ROLES = [
   'R3_CONSEILS',
   'R4_REFERENCE',
   'R5_DIAGNOSTIC',
-  'R6_BUYING_GUIDE',
+  'R6_GUIDE_ACHAT',
   'OTHER',
   'NONE',
 ] as const;

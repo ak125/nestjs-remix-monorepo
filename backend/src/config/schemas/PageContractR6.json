@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://automecanik.com/schemas/PageContractR6.json",
+  "$id": "https://www.automecanik.com/schemas/PageContractR6.json",
   "title": "PageContractR6",
   "type": "object",
   "properties": {
@@ -18,13 +18,13 @@
     },
     "intentType": {
       "type": "string",
-      "const": "R6",
-      "default": "R6"
+      "const": "R6_GUIDE_ACHAT",
+      "default": "R6_GUIDE_ACHAT"
     },
     "pageRole": {
       "type": "string",
-      "const": "R6_BUYING_GUIDE",
-      "default": "R6_BUYING_GUIDE"
+      "const": "R6_GUIDE_ACHAT",
+      "default": "R6_GUIDE_ACHAT"
     },
     "canonicalRoleUrl": {
       "type": "string",
