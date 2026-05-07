@@ -101,12 +101,13 @@ module.exports = {
 			},
 		},
 		// ── V5 mock data : namespace exempt — fichiers V5 légitimes ──
-		// Les routes _v5* et les composants v5/* sont autorisés à importer
-		// le mock data (c'est leur seule raison d'exister au ship 1).
-		// Hors de ce namespace, no-restricted-imports bloque l'import.
+		// Les routes v5.* (layout v5.tsx + nested v5.*.tsx) et les composants v5/*
+		// sont autorisés à importer le mock data (c'est leur seule raison d'exister
+		// au ship 1). Hors de ce namespace, no-restricted-imports bloque l'import.
 		{
 			files: [
-				'app/routes/_v5*.{ts,tsx}',
+				'app/routes/v5.{ts,tsx}',
+				'app/routes/v5.*.{ts,tsx}',
 				'app/components/v5/**/*.{ts,tsx}',
 			],
 			rules: {
