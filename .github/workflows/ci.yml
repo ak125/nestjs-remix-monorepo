@@ -547,16 +547,28 @@ jobs:
   gitleaks:
     name: 🔐 Secrets Detection
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      security-events: write
     steps:
       - name: Check out code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 🔐 Run gitleaks
+      - name: 🔐 Run gitleaks (incremental scan, blocking)
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐷 Run TruffleHog (verified secrets, blocking)
+        uses: trufflesecurity/trufflehog@v3.83.7
+        with:
+          path: ./
+          base: ${{ github.event.pull_request.base.sha || github.event.before }}
+          head: ${{ github.event.pull_request.head.sha || github.sha }}
+          extra_args: --results=verified,unknown --fail
 
   migration-safety:
     name: 🗄️ Migration Safety
