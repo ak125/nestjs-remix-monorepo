@@ -405,3 +405,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-f-seo-role-contracts-create`
 - **Décision** : feat(seo-role-contracts): create @repo/seo-role-contracts (Phase 2 PR-F, ADR-047)
 - **Sortie** : PR #365 | commits 7af2c200
+
+## 2026-05-07 — feat/pr-f-seo-role-contracts-create (auto)
+
+- **Branche** : `feat/pr-f-seo-role-contracts-create`
+- **Décision** : fix(contracts): align R3 section IDs to canon SECTION_TYPES + R1_S9_FAQ canon (review fix) (+2 other commits)
+- **Sortie** : PR #365 | commits 2780e3db ab146194 12af3f8f
