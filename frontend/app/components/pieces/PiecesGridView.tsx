@@ -10,7 +10,15 @@
  */
 
 import { Truck } from "lucide-react";
-import React, { useState, useRef, useMemo, useCallback, memo } from "react";
+import React, {
+  useState,
+  useRef,
+  useMemo,
+  useCallback,
+  memo,
+  Suspense,
+  lazy,
+} from "react";
 import { toast } from "sonner";
 
 import { openCartSidebar } from "~/hooks/useCartSidebar";
@@ -20,8 +28,14 @@ import { type PieceData } from "../../types/pieces-route.types";
 import { trackAddToCart } from "../../utils/analytics";
 import { hasStockAvailable } from "../../utils/stock.utils";
 import { BrandLogo } from "../ui/BrandLogo";
-import { PieceDetailModal } from "./PieceDetailModal";
 import { ProductGallery } from "./ProductGallery";
+
+// PieceDetailModal opens on user click (selectedPieceId !== null) and is
+// never above-the-fold. Lazy-load to shrink the route entry chunk.
+// Fallback = null: the modal is hidden when not opened, so no skeleton needed.
+const PieceDetailModal = lazy(() =>
+  import("./PieceDetailModal").then((m) => ({ default: m.PieceDetailModal })),
+);
 
 // ⚡ Mappings de couleurs pré-calculés (hors du render loop)
 const RELIABILITY_COLORS = [
@@ -565,12 +579,16 @@ export function PiecesGridView({
           />
         ))}
       </div>
-      <PieceDetailModal
-        pieceId={selectedPieceId}
-        vehicleMarque={vehicleMarque}
-        typeId={typeId}
-        onClose={handleCloseModal}
-      />
+      <Suspense fallback={null}>
+        {selectedPieceId !== null && (
+          <PieceDetailModal
+            pieceId={selectedPieceId}
+            vehicleMarque={vehicleMarque}
+            typeId={typeId}
+            onClose={handleCloseModal}
+          />
+        )}
+      </Suspense>
     </>
   );
 }

@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-05-07T21:54:30.937Z",
+  "generated_at": "2026-05-07T22:37:15.441Z",
   "total": {
-    "count": 184,
-    "size": 2708263,
-    "gzip": 769938,
-    "brotli": 676306
+    "count": 185,
+    "size": 2709373,
+    "gzip": 771461,
+    "brotli": 677855
   },
   "by_category": {
     "vendor": {
@@ -16,26 +16,26 @@
     "shared": {
       "count": 3,
       "size": 199246,
-      "gzip": 55446,
-      "brotli": 48445
+      "gzip": 55447,
+      "brotli": 48535
     },
     "route": {
-      "count": 174,
-      "size": 1746012,
-      "gzip": 494078,
-      "brotli": 436808
+      "count": 175,
+      "size": 1747048,
+      "gzip": 495589,
+      "brotli": 438257
     },
     "manifest": {
       "count": 1,
-      "size": 70676,
-      "gzip": 6035,
-      "brotli": 5135
+      "size": 70750,
+      "gzip": 6047,
+      "brotli": 5144
     },
     "entry": {
       "count": 2,
       "size": 43251,
-      "gzip": 11917,
-      "brotli": 10544
+      "gzip": 11916,
+      "brotli": 10545
     }
   },
   "top10": [
@@ -48,12 +48,12 @@
       "brotli": 123090
     },
     {
-      "file": "app-core-CsZbcsnH.js",
+      "file": "app-core-OFKCk6eG.js",
       "name": "app-core",
       "category": "shared",
       "size": 157642,
       "gzip": 43067,
-      "brotli": 37526
+      "brotli": 37608
     },
     {
       "file": "radix-vendor-Dt-o3bp4.js",
@@ -64,28 +64,28 @@
       "brotli": 24918
     },
     {
-      "file": "pieces._gamme._marque._modele._type_._html-C0aK8aGs.js",
+      "file": "pieces._gamme._marque._modele._type_._html-wiOIorkg.js",
       "name": "pieces._gamme._marque._modele._type_._html",
       "category": "route",
       "size": 88778,
       "gzip": 22849,
-      "brotli": 19452
+      "brotli": 19503
     },
     {
-      "file": "manifest-5a150bfa.js",
+      "file": "manifest-781c6abd.js",
       "name": "manifest",
       "category": "manifest",
-      "size": 70676,
-      "gzip": 6035,
-      "brotli": 5135
+      "size": 70750,
+      "gzip": 6047,
+      "brotli": 5144
     },
     {
-      "file": "blog-pieces-auto.guide-achat.comment-utiliser-selecteur-vehicule-pieces-auto-DFRWIoNI.js",
+      "file": "blog-pieces-auto.guide-achat.comment-utiliser-selecteur-vehicule-pieces-auto-BkL3QyHE.js",
       "name": "blog-pieces-auto.guide-achat.comment-utiliser-selecteur-vehicule-pieces-auto",
       "category": "route",
       "size": 67749,
-      "gzip": 16866,
-      "brotli": 14852
+      "gzip": 16868,
+      "brotli": 14846
     },
     {
       "file": "lucide-vendor-BY2cXvNg.js",
@@ -96,14 +96,6 @@
       "brotli": 10125
     },
     {
-      "file": "use-pieces-filters-B7qOdxKB.js",
-      "name": "use-pieces-filters",
-      "category": "route",
-      "size": 57715,
-      "gzip": 15035,
-      "brotli": 13281
-    },
-    {
       "file": "html-parser-vendor-AK-nBqHW.js",
       "name": "html-parser-vendor",
       "category": "vendor",
@@ -112,12 +104,20 @@
       "brotli": 17241
     },
     {
-      "file": "pieces._slug-DdJ1n3e0.js",
+      "file": "pieces._slug-BXP0zK0Z.js",
       "name": "pieces._slug",
       "category": "route",
       "size": 50720,
-      "gzip": 14112,
-      "brotli": 12550
+      "gzip": 14114,
+      "brotli": 12494
+    },
+    {
+      "file": "checkout-BTZGYMXa.js",
+      "name": "checkout",
+      "category": "route",
+      "size": 50429,
+      "gzip": 13227,
+      "brotli": 11625
     }
   ],
   "chunks": [
@@ -130,12 +130,12 @@
       "brotli": 123090
     },
     {
-      "file": "app-core-CsZbcsnH.js",
+      "file": "app-core-OFKCk6eG.js",
       "name": "app-core",
       "category": "shared",
       "size": 157642,
       "gzip": 43067,
-      "brotli": 37526
+      "brotli": 37608
     },
     {
       "file": "radix-vendor-Dt-o3bp4.js",
@@ -146,28 +146,28 @@
       "brotli": 24918
     },
     {
-      "file": "pieces._gamme._marque._modele._type_._html-C0aK8aGs.js",
+      "file": "pieces._gamme._marque._modele._type_._html-wiOIorkg.js",
       "name": "pieces._gamme._marque._modele._type_._html",
       "category": "route",
       "size": 88778,
       "gzip": 22849,
-      "brotli": 19452
+      "brotli": 19503
     },
     {
-      "file": "manifest-5a150bfa.js",
+      "file": "manifest-781c6abd.js",
       "name": "manifest",
       "category": "manifest",
-      "size": 70676,
-      "gzip": 6035,
-      "brotli": 5135
+      "size": 70750,
+      "gzip": 6047,
+      "brotli": 5144
     },
     {
-      "file": "blog-pieces-auto.guide-achat.comment-utiliser-selecteur-vehicule-pieces-auto-DFRWIoNI.js",
+      "file": "blog-pieces-auto.guide-achat.comment-utiliser-selecteur-vehicule-pieces-auto-BkL3QyHE.js",
       "name": "blog-pieces-auto.guide-achat.comment-utiliser-selecteur-vehicule-pieces-auto",
       "category": "route",
       "size": 67749,
-      "gzip": 16866,
-      "brotli": 14852
+      "gzip": 16868,
+      "brotli": 14846
     },
     {
       "file": "lucide-vendor-BY2cXvNg.js",
@@ -178,14 +178,6 @@
       "brotli": 10125
     },
     {
-      "file": "use-pieces-filters-B7qOdxKB.js",
-      "name": "use-pieces-filters",
-      "category": "route",
-      "size": 57715,
-      "gzip": 15035,
-      "brotli": 13281
-    },
-    {
       "file": "html-parser-vendor-AK-nBqHW.js",
       "name": "html-parser-vendor",
       "category": "vendor",
@@ -194,84 +186,92 @@
       "brotli": 17241
     },
     {
-      "file": "pieces._slug-DdJ1n3e0.js",
+      "file": "pieces._slug-BXP0zK0Z.js",
       "name": "pieces._slug",
       "category": "route",
       "size": 50720,
-      "gzip": 14112,
-      "brotli": 12550
+      "gzip": 14114,
+      "brotli": 12494
     },
     {
-      "file": "checkout-M_Da8D6b.js",
+      "file": "checkout-BTZGYMXa.js",
       "name": "checkout",
       "category": "route",
       "size": 50429,
-      "gzip": 13226,
-      "brotli": 11590
+      "gzip": 13227,
+      "brotli": 11625
     },
     {
-      "file": "constructeurs._brand._model._type-BAcWZ-TE.js",
+      "file": "constructeurs._brand._model._type-DfPvRt1T.js",
       "name": "constructeurs._brand._model._type",
       "category": "route",
       "size": 47986,
-      "gzip": 11577,
-      "brotli": 10272
+      "gzip": 11574,
+      "brotli": 10270
     },
     {
-      "file": "blog-pieces-auto._index-BSl30x0C.js",
+      "file": "blog-pieces-auto._index-kpl0htyK.js",
       "name": "blog-pieces-auto._index",
       "category": "route",
       "size": 44385,
       "gzip": 11364,
-      "brotli": 10038
+      "brotli": 10029
     },
     {
-      "file": "_index-CsMTadoi.js",
+      "file": "use-pieces-filters-Bn3HTOWO.js",
+      "name": "use-pieces-filters",
+      "category": "route",
+      "size": 43904,
+      "gzip": 12282,
+      "brotli": 10902
+    },
+    {
+      "file": "_index-BfN26QMZ.js",
       "name": "_index",
       "category": "route",
       "size": 43331,
       "gzip": 11319,
-      "brotli": 9991
+      "brotli": 9985
     },
     {
-      "file": "blog-pieces-auto.guide-achat._index-DmEjgnKa.js",
+      "file": "blog-pieces-auto.guide-achat._index-Ct9mKdFR.js",
       "name": "blog-pieces-auto.guide-achat._index",
       "category": "route",
       "size": 42680,
-      "gzip": 10129,
-      "brotli": 9107
+      "gzip": 10130,
+      "brotli": 9087
     },
     {
-      "file": "root-iUaQVJjo.js",
+      "file": "root--IgudQFw.js",
       "name": "root",
       "category": "entry",
       "size": 40668,
-      "gzip": 10611,
-      "brotli": 9384
+      "gzip": 10609,
+      "brotli": 9385
     },
     {
-      "file": "blog-pieces-auto.guide-achat._pg_alias-asFBH3Cm.js",
+      "file": "blog-pieces-auto.guide-achat._pg_alias-D8JBR7wC.js",
       "name": "blog-pieces-auto.guide-achat._pg_alias",
       "category": "route",
-      "size": 39433,
-      "gzip": 9915,
-      "brotli": 8793
+      "size": 39434,
+      "gzip": 9917,
+      "brotli": 8800
     },
     {
-      "file": "DiagnosticWizard-UIgUSRIW.js",
+      "file": "DiagnosticWizard-nutTSflF.js",
       "name": "DiagnosticWizard",
       "category": "route",
-      "size": 35264,
-      "gzip": 9406,
-      "brotli": 8320
+      "size": 35260,
+      "gzip": 9404,
+      "brotli": 8325
     },
     {
-      "file": "blog-pieces-auto.conseils._pg_alias-CsRVDXrB.js",
+      "file": "blog-pieces-auto.conseils._pg_alias-D7lgQLpe.js",
       "name": "blog-pieces-auto.conseils._pg_alias",
       "category": "route",
       "size": 34929,
-      "gzip": 9888,
-      "brotli": 8803
+      "gzip": 9889,
+      "brotli": 8808
     },
     {
       "file": "index-CKRHGYNN.js",
@@ -282,71 +282,71 @@
       "brotli": 8524
     },
     {
-      "file": "app-ui-primitives-yHzYJPjy.js",
+      "file": "app-ui-primitives-Cuy7QYcu.js",
       "name": "app-ui-primitives",
       "category": "shared",
       "size": 33567,
       "gzip": 9236,
-      "brotli": 8117
+      "brotli": 8123
     },
     {
-      "file": "constructeurs._brand_._html-DDKRXfTk.js",
+      "file": "constructeurs._brand_._html-icJf-Jj3.js",
       "name": "constructeurs._brand_._html",
       "category": "route",
       "size": 32834,
-      "gzip": 8607,
-      "brotli": 7704
+      "gzip": 8606,
+      "brotli": 7669
     },
     {
-      "file": "cart-DLkd6dGv.js",
+      "file": "cart-gvxtPhFL.js",
       "name": "cart",
       "category": "route",
-      "size": 26570,
-      "gzip": 7373,
-      "brotli": 6610
+      "size": 26575,
+      "gzip": 7372,
+      "brotli": 6609
     },
     {
-      "file": "diagnostic-auto._index-pdZWrEK8.js",
+      "file": "diagnostic-auto._index-DUMYSEca.js",
       "name": "diagnostic-auto._index",
       "category": "route",
       "size": 24546,
-      "gzip": 6941,
-      "brotli": 6170
+      "gzip": 6938,
+      "brotli": 6177
     },
     {
-      "file": "register-BYGm2zAP.js",
+      "file": "register-C5ZoHyD1.js",
       "name": "register",
       "category": "route",
       "size": 24401,
-      "gzip": 6886,
-      "brotli": 6108
+      "gzip": 6887,
+      "brotli": 6100
     },
     {
-      "file": "blog-pieces-auto.auto._index-D5tUmA3I.js",
+      "file": "blog-pieces-auto.auto._index-DLZ7p87O.js",
       "name": "blog-pieces-auto.auto._index",
       "category": "route",
       "size": 24098,
-      "gzip": 5509,
-      "brotli": 4881
+      "gzip": 5508,
+      "brotli": 4879
     },
     {
-      "file": "blog-pieces-auto.conseils._index-BTbfxi9S.js",
+      "file": "blog-pieces-auto.conseils._index-Z9Nb2EDi.js",
       "name": "blog-pieces-auto.conseils._index",
       "category": "route",
       "size": 23096,
-      "gzip": 6308,
-      "brotli": 5636
+      "gzip": 6309,
+      "brotli": 5603
     },
     {
-      "file": "commercial.vehicles.advanced-search-BOhqa868.js",
+      "file": "commercial.vehicles.advanced-search-DKOCX0aJ.js",
       "name": "commercial.vehicles.advanced-search",
       "category": "route",
       "size": 22606,
       "gzip": 6256,
-      "brotli": 5570
+      "brotli": 5578
     },
     {
-      "file": "commercial.orders._index-CjwH9F21.js",
+      "file": "commercial.orders._index-W3Gvckv2.js",
       "name": "commercial.orders._index",
       "category": "route",
       "size": 22593,
@@ -354,271 +354,279 @@
       "brotli": 4947
     },
     {
-      "file": "orders._id-Bpzpu3H8.js",
+      "file": "recherche-JwOQgy7B.js",
+      "name": "recherche",
+      "category": "route",
+      "size": 21946,
+      "gzip": 6599,
+      "brotli": 5931
+    },
+    {
+      "file": "orders._id-BfCiYq4g.js",
       "name": "orders._id",
       "category": "route",
       "size": 21914,
-      "gzip": 4742,
-      "brotli": 4201
+      "gzip": 4744,
+      "brotli": 4203
     },
     {
-      "file": "recherche-FFkFDT49.js",
-      "name": "recherche",
-      "category": "route",
-      "size": 21909,
-      "gzip": 6577,
-      "brotli": 5922
-    },
-    {
-      "file": "account.dashboard-Ch0sP3XF.js",
+      "file": "account.dashboard-DBwVdghx.js",
       "name": "account.dashboard",
       "category": "route",
-      "size": 21223,
-      "gzip": 6093,
-      "brotli": 5445
+      "size": 21224,
+      "gzip": 6094,
+      "brotli": 5451
     },
     {
-      "file": "reference-auto._slug-L6Ek4grs.js",
+      "file": "reference-auto._slug-B3_Cp6Xk.js",
       "name": "reference-auto._slug",
       "category": "route",
       "size": 20615,
-      "gzip": 5924,
-      "brotli": 5252
+      "gzip": 5923,
+      "brotli": 5255
     },
     {
-      "file": "contact-BizMZk_d.js",
+      "file": "contact-D_1GYMtk.js",
       "name": "contact",
       "category": "route",
       "size": 19798,
-      "gzip": 5270,
-      "brotli": 4622
+      "gzip": 5269,
+      "brotli": 4615
     },
     {
-      "file": "blog-pieces-auto.constructeurs._index-CfLuzS0m.js",
+      "file": "blog-pieces-auto.constructeurs._index-TSjmRZuD.js",
       "name": "blog-pieces-auto.constructeurs._index",
       "category": "route",
       "size": 19745,
       "gzip": 5393,
-      "brotli": 4796
+      "brotli": 4798
     },
     {
-      "file": "blog-pieces-auto.auto._marque._modele-6q3CnsAJ.js",
+      "file": "blog-pieces-auto.auto._marque._modele-BDoKt4kh.js",
       "name": "blog-pieces-auto.auto._marque._modele",
       "category": "route",
       "size": 18948,
-      "gzip": 5253,
-      "brotli": 4681
+      "gzip": 5250,
+      "brotli": 4680
     },
     {
-      "file": "blog-pieces-auto.auto._marque.index-BsNzSct3.js",
+      "file": "blog-pieces-auto.auto._marque.index-BNRMQywq.js",
       "name": "blog-pieces-auto.auto._marque.index",
       "category": "route",
       "size": 17556,
-      "gzip": 4891,
-      "brotli": 4348
+      "gzip": 4889,
+      "brotli": 4354
     },
     {
-      "file": "enhanced-vehicle-catalog._brand._model._type-Bjcguonf.js",
+      "file": "enhanced-vehicle-catalog._brand._model._type-CsuIEk2A.js",
       "name": "enhanced-vehicle-catalog._brand._model._type",
       "category": "route",
       "size": 17080,
-      "gzip": 4540,
-      "brotli": 4010
+      "gzip": 4541,
+      "brotli": 3972
     },
     {
-      "file": "products.admin-Bo6NXjn3.js",
+      "file": "products.admin-CTztyhvt.js",
       "name": "products.admin",
       "category": "route",
       "size": 16886,
       "gzip": 4804,
-      "brotli": 4233
+      "brotli": 4234
     },
     {
-      "file": "blog-pieces-auto.advice._index-BEmBUSli.js",
+      "file": "blog-pieces-auto.advice._index-BgJcwA9k.js",
       "name": "blog-pieces-auto.advice._index",
       "category": "route",
       "size": 16650,
-      "gzip": 5052,
-      "brotli": 4446
+      "gzip": 5053,
+      "brotli": 4445
     },
     {
-      "file": "VehicleSelector-BUDmL-vo.js",
+      "file": "VehicleSelector-CJ6_-3cD.js",
       "name": "VehicleSelector",
       "category": "route",
       "size": 16247,
       "gzip": 4444,
-      "brotli": 3928
+      "brotli": 3931
     },
     {
-      "file": "diagnostic-auto._slug-DgpoIMo5.js",
+      "file": "diagnostic-auto._slug-DeX4hBge.js",
       "name": "diagnostic-auto._slug",
       "category": "route",
       "size": 15101,
-      "gzip": 4028,
-      "brotli": 3594
+      "gzip": 4026,
+      "brotli": 3597
     },
     {
-      "file": "support.ai-BR0r0bQW.js",
+      "file": "PieceDetailModal-BhHVULmo.js",
+      "name": "PieceDetailModal",
+      "category": "route",
+      "size": 14770,
+      "gzip": 4154,
+      "brotli": 3709
+    },
+    {
+      "file": "support.ai-CXNDrI7A.js",
       "name": "support.ai",
       "category": "route",
       "size": 14636,
-      "gzip": 3695,
-      "brotli": 3250
+      "gzip": 3698,
+      "brotli": 3253
     },
     {
-      "file": "commercial.shipping._index-C3j86_kK.js",
+      "file": "commercial.shipping._index-D-gyzyD0.js",
       "name": "commercial.shipping._index",
       "category": "route",
       "size": 14562,
-      "gzip": 3001,
-      "brotli": 2616
+      "gzip": 3002,
+      "brotli": 2617
     },
     {
-      "file": "SearchBar-CaPk5U1I.js",
+      "file": "SearchBar-D1xn2R6m.js",
       "name": "SearchBar",
       "category": "route",
       "size": 13599,
-      "gzip": 4860,
-      "brotli": 4286
+      "gzip": 4862,
+      "brotli": 4288
     },
     {
-      "file": "TableOfContents-Dwte5fjl.js",
+      "file": "TableOfContents-B4h5NO14.js",
       "name": "TableOfContents",
       "category": "route",
       "size": 12870,
       "gzip": 4984,
-      "brotli": 4459
+      "brotli": 4461
     },
     {
-      "file": "products.gammes._gammeId-DmLQfow5.js",
+      "file": "products.gammes._gammeId-1bUgqWpa.js",
       "name": "products.gammes._gammeId",
       "category": "route",
       "size": 12210,
-      "gzip": 3230,
-      "brotli": 2884
+      "gzip": 3231,
+      "brotli": 2900
     },
     {
-      "file": "checkout-payment-return-CoQpC7NZ.js",
+      "file": "checkout-payment-return-1oZRP8B1.js",
       "name": "checkout-payment-return",
       "category": "route",
       "size": 12174,
-      "gzip": 2647,
-      "brotli": 2325
+      "gzip": 2648,
+      "brotli": 2322
     },
     {
-      "file": "reviews._index-1LGtiqGx.js",
+      "file": "reviews._index-C_ET0kn0.js",
       "name": "reviews._index",
       "category": "route",
       "size": 11963,
-      "gzip": 3018,
-      "brotli": 2688
+      "gzip": 3019,
+      "brotli": 2674
     },
     {
-      "file": "commercial.returns._index-Wl7LJZS8.js",
+      "file": "commercial.returns._index-DW3fHGQF.js",
       "name": "commercial.returns._index",
       "category": "route",
       "size": 11924,
-      "gzip": 2725,
-      "brotli": 2406
+      "gzip": 2727,
+      "brotli": 2403
     },
     {
-      "file": "commercial.orders._orderId-Bw3EDfeh.js",
+      "file": "commercial.orders._orderId-DlxYKbkU.js",
       "name": "commercial.orders._orderId",
       "category": "route",
       "size": 10946,
-      "gzip": 2923,
+      "gzip": 2924,
       "brotli": 2625
     },
     {
-      "file": "products.ranges.advanced-Bx_E5jyy.js",
+      "file": "products.ranges.advanced-FVV-Dnz4.js",
       "name": "products.ranges.advanced",
       "category": "route",
       "size": 10910,
-      "gzip": 2675,
-      "brotli": 2388
+      "gzip": 2676,
+      "brotli": 2391
     },
     {
-      "file": "support-BFtTeThx.js",
+      "file": "support-BST4F5N0.js",
       "name": "support",
       "category": "route",
       "size": 10679,
       "gzip": 2207,
-      "brotli": 1959
+      "brotli": 1961
     },
     {
-      "file": "reviews.analytics-DEEiLOkf.js",
+      "file": "reviews.analytics-Ce4JKKnZ.js",
       "name": "reviews.analytics",
       "category": "route",
       "size": 10629,
       "gzip": 2499,
-      "brotli": 2193
+      "brotli": 2195
     },
     {
-      "file": "products.ranges._rangeId-CqNGSOBX.js",
+      "file": "products.ranges._rangeId-CXccqngZ.js",
       "name": "products.ranges._rangeId",
       "category": "route",
       "size": 10448,
-      "gzip": 2661,
-      "brotli": 2385
+      "gzip": 2662,
+      "brotli": 2392
     },
     {
-      "file": "plan-du-site-D1b9tsKb.js",
+      "file": "plan-du-site-Df7Cf86x.js",
       "name": "plan-du-site",
       "category": "route",
       "size": 10330,
-      "gzip": 2966,
+      "gzip": 2967,
       "brotli": 2626
     },
     {
-      "file": "reference-auto._index-CXTS6Eav.js",
+      "file": "reference-auto._index-D_v4eGLx.js",
       "name": "reference-auto._index",
       "category": "route",
       "size": 10142,
-      "gzip": 3603,
-      "brotli": 3194
+      "gzip": 3604,
+      "brotli": 3199
     },
     {
-      "file": "commercial.shipping.create._index-D6PbCRKa.js",
+      "file": "commercial.shipping.create._index-DoUmeu9W.js",
       "name": "commercial.shipping.create._index",
       "category": "route",
       "size": 9965,
-      "gzip": 2521,
-      "brotli": 2208
+      "gzip": 2523,
+      "brotli": 2214
     },
     {
-      "file": "brands._index-D0JA9kD2.js",
+      "file": "brands._index-DMz1xf5D.js",
       "name": "brands._index",
       "category": "route",
       "size": 9836,
-      "gzip": 3335,
-      "brotli": 2963
+      "gzip": 3334,
+      "brotli": 2961
     },
     {
-      "file": "products.ranges-CT38AoRD.js",
+      "file": "products.ranges-BEPA6d8w.js",
       "name": "products.ranges",
       "category": "route",
       "size": 9778,
       "gzip": 2270,
-      "brotli": 2001
+      "brotli": 2003
     },
     {
-      "file": "commercial.shipping.tracking._index-DHilxvKc.js",
+      "file": "commercial.shipping.tracking._index-D7ylkFj1.js",
       "name": "commercial.shipping.tracking._index",
       "category": "route",
       "size": 9609,
-      "gzip": 2579,
-      "brotli": 2278
+      "gzip": 2580,
+      "brotli": 2300
     },
     {
-      "file": "commercial.reports._index-ag8N65xQ.js",
+      "file": "commercial.reports._index-BnaNmqlX.js",
       "name": "commercial.reports._index",
       "category": "route",
       "size": 9402,
       "gzip": 2009,
-      "brotli": 1748
+      "brotli": 1752
     },
     {
-      "file": "blog-pieces-auto.article._slug-Bpl6cAC2.js",
+      "file": "blog-pieces-auto.article._slug-DMG39ENr.js",
       "name": "blog-pieces-auto.article._slug",
       "category": "route",
       "size": 9320,
@@ -626,103 +634,103 @@
       "brotli": 2817
     },
     {
-      "file": "account_.orders._orderId--6mk-Wo8.js",
+      "file": "account_.orders._orderId-BhJT7Fjh.js",
       "name": "account_.orders._orderId",
       "category": "route",
       "size": 9234,
       "gzip": 2711,
-      "brotli": 2416
+      "brotli": 2419
     },
     {
-      "file": "account.orders-DZ50t6CO.js",
+      "file": "account.orders-BEndARSC.js",
       "name": "account.orders",
       "category": "route",
       "size": 9188,
-      "gzip": 2732,
-      "brotli": 2425
+      "gzip": 2733,
+      "brotli": 2431
     },
     {
-      "file": "ChatWidget-BR06-Mnq.js",
+      "file": "ChatWidget-WkLn5InY.js",
       "name": "ChatWidget",
       "category": "route",
       "size": 8873,
-      "gzip": 3373,
-      "brotli": 3015
+      "gzip": 3374,
+      "brotli": 3017
     },
     {
-      "file": "blog-pieces-auto.calendrier-entretien-DlwpmlEU.js",
+      "file": "blog-pieces-auto.calendrier-entretien-DkjalLIR.js",
       "name": "blog-pieces-auto.calendrier-entretien",
       "category": "route",
       "size": 8833,
       "gzip": 2991,
-      "brotli": 2705
+      "brotli": 2702
     },
     {
-      "file": "products.catalog-BMgG6gxE.js",
+      "file": "products.catalog-Bz0AiuTb.js",
       "name": "products.catalog",
       "category": "route",
       "size": 8797,
       "gzip": 2585,
-      "brotli": 2306
+      "brotli": 2307
     },
     {
-      "file": "products._id-DWlzLvGt.js",
+      "file": "products._id-BObUjV5i.js",
       "name": "products._id",
       "category": "route",
       "size": 8650,
-      "gzip": 2470,
-      "brotli": 2232
+      "gzip": 2468,
+      "brotli": 2225
     },
     {
-      "file": "reviews._reviewId-CjDsnWPE.js",
+      "file": "reviews._reviewId-BozUPrBC.js",
       "name": "reviews._reviewId",
       "category": "route",
       "size": 8558,
-      "gzip": 2468,
-      "brotli": 2172
+      "gzip": 2469,
+      "brotli": 2173
     },
     {
-      "file": "commercial.stock._index-DLLM7sTc.js",
+      "file": "commercial.stock._index-Uflyc0dr.js",
       "name": "commercial.stock._index",
       "category": "route",
       "size": 8497,
-      "gzip": 2436,
+      "gzip": 2437,
       "brotli": 2188
     },
     {
-      "file": "depannage-CxBPtOLK.js",
+      "file": "depannage-Jl63ipIU.js",
       "name": "depannage",
       "category": "route",
       "size": 8445,
       "gzip": 2897,
-      "brotli": 2657
+      "brotli": 2649
     },
     {
-      "file": "account_.orders._orderId.invoice-BUTX2CIM.js",
+      "file": "account_.orders._orderId.invoice-C_eyND2k.js",
       "name": "account_.orders._orderId.invoice",
       "category": "route",
       "size": 8408,
       "gzip": 2727,
-      "brotli": 2361
+      "brotli": 2363
     },
     {
-      "file": "account.settings-DaGMu-Qk.js",
+      "file": "account.settings-DvSZTc3J.js",
       "name": "account.settings",
       "category": "route",
       "size": 8043,
-      "gzip": 2179,
-      "brotli": 1920
+      "gzip": 2180,
+      "brotli": 1921
     },
     {
-      "file": "app-shell-BAfW4yZE.js",
+      "file": "app-shell-CU_vmHPf.js",
       "name": "app-shell",
       "category": "shared",
       "size": 8037,
-      "gzip": 3143,
-      "brotli": 2802
+      "gzip": 3144,
+      "brotli": 2804
     },
     {
-      "file": "orders.new-BBsOGEHs.js",
+      "file": "orders.new-C_Nq9WHq.js",
       "name": "orders.new",
       "category": "route",
       "size": 7981,
@@ -730,28 +738,28 @@
       "brotli": 1996
     },
     {
-      "file": "commercial.vehicles.compatibility-BHU447bu.js",
+      "file": "commercial.vehicles.compatibility-D4qgyT7r.js",
       "name": "commercial.vehicles.compatibility",
       "category": "route",
       "size": 7593,
-      "gzip": 2007,
-      "brotli": 1773
+      "gzip": 2008,
+      "brotli": 1777
     },
     {
-      "file": "VehicleCarousel-BJAu9f6l.js",
+      "file": "VehicleCarousel-CQT0IWvA.js",
       "name": "VehicleCarousel",
       "category": "route",
       "size": 7553,
       "gzip": 2645,
-      "brotli": 2363
+      "brotli": 2366
     },
     {
-      "file": "staff._index-Bkhxnkhk.js",
+      "file": "staff._index-chqfZySP.js",
       "name": "staff._index",
       "category": "route",
       "size": 7553,
-      "gzip": 1863,
-      "brotli": 1682
+      "gzip": 1865,
+      "brotli": 1683
     },
     {
       "file": "PiecesStatistics-BiEV8V-5.js",
@@ -762,52 +770,52 @@
       "brotli": 1734
     },
     {
-      "file": "legal._pageKey-CD1mapXe.js",
+      "file": "legal._pageKey-BmTxYeQ-.js",
       "name": "legal._pageKey",
       "category": "route",
       "size": 7371,
-      "gzip": 2345,
-      "brotli": 2055
+      "gzip": 2346,
+      "brotli": 2080
     },
     {
-      "file": "diagnostic-vTNafcVY.js",
+      "file": "diagnostic-CpsW1P8W.js",
       "name": "diagnostic",
       "category": "route",
       "size": 7199,
       "gzip": 2453,
-      "brotli": 2183
+      "brotli": 2180
     },
     {
-      "file": "account.security-CIc-OgJn.js",
+      "file": "account.security-DB1SNJos.js",
       "name": "account.security",
       "category": "route",
       "size": 7140,
       "gzip": 2143,
-      "brotli": 1891
+      "brotli": 1892
     },
     {
-      "file": "reviews.create-CJOCiT6B.js",
+      "file": "reviews.create-BIXFt2K1.js",
       "name": "reviews.create",
       "category": "route",
       "size": 7030,
       "gzip": 2241,
-      "brotli": 1986
+      "brotli": 1991
     },
     {
-      "file": "aide-CHqMLo_j.js",
+      "file": "aide-CPE-S0lS.js",
       "name": "aide",
       "category": "route",
       "size": 7001,
       "gzip": 1992,
-      "brotli": 1758
+      "brotli": 1768
     },
     {
-      "file": "tickets._index-DnLwOSwE.js",
+      "file": "tickets._index-BCIBc7mF.js",
       "name": "tickets._index",
       "category": "route",
       "size": 6997,
-      "gzip": 2285,
-      "brotli": 2034
+      "gzip": 2284,
+      "brotli": 2037
     },
     {
       "file": "Footer-Cm2VkEH_.js",
@@ -818,60 +826,60 @@
       "brotli": 1536
     },
     {
-      "file": "brands._brandId.models._modelId.types-1wz23065.js",
+      "file": "brands._brandId.models._modelId.types-BslcQki1.js",
       "name": "brands._brandId.models._modelId.types",
       "category": "route",
       "size": 6940,
-      "gzip": 1996,
-      "brotli": 1788
+      "gzip": 1999,
+      "brotli": 1789
     },
     {
-      "file": "account.messages-_dNKSent.js",
+      "file": "account.messages-DfCO8iE5.js",
       "name": "account.messages",
       "category": "route",
       "size": 6832,
-      "gzip": 2113,
-      "brotli": 1883
+      "gzip": 2114,
+      "brotli": 1885
     },
     {
-      "file": "products.brands-BSfUZ4z2.js",
+      "file": "products.brands-TApQ3S-f.js",
       "name": "products.brands",
       "category": "route",
       "size": 6822,
-      "gzip": 1827,
-      "brotli": 1605
+      "gzip": 1828,
+      "brotli": 1612
     },
     {
-      "file": "login-BjbgCqzD.js",
+      "file": "login-DA-A1jhn.js",
       "name": "login",
       "category": "route",
       "size": 6739,
-      "gzip": 2594,
-      "brotli": 2317
+      "gzip": 2596,
+      "brotli": 2325
     },
     {
-      "file": "search.cnit-BIzwFJEU.js",
+      "file": "search.cnit-BSgjh3Fk.js",
       "name": "search.cnit",
       "category": "route",
       "size": 6407,
       "gzip": 2218,
-      "brotli": 1969
+      "brotli": 1972
     },
     {
-      "file": "tickets._ticketId-BLmyL1ux.js",
+      "file": "tickets._ticketId-BOniaODK.js",
       "name": "tickets._ticketId",
       "category": "route",
       "size": 6358,
       "gzip": 1964,
-      "brotli": 1732
+      "brotli": 1731
     },
     {
-      "file": "commercial.vehicles.models._modelId.types-B1aQo_lt.js",
+      "file": "commercial.vehicles.models._modelId.types-95tE76dI.js",
       "name": "commercial.vehicles.models._modelId.types",
       "category": "route",
       "size": 6291,
-      "gzip": 1682,
-      "brotli": 1507
+      "gzip": 1683,
+      "brotli": 1509
     },
     {
       "file": "ErrorGeneric-87UDyOoc.js",
@@ -882,15 +890,15 @@
       "brotli": 1961
     },
     {
-      "file": "search.results-BKVpsA82.js",
+      "file": "search.results-CSneYY31.js",
       "name": "search.results",
       "category": "route",
       "size": 6198,
-      "gzip": 2097,
+      "gzip": 2098,
       "brotli": 1866
     },
     {
-      "file": "commercial.vehicles._index-UBXpqekI.js",
+      "file": "commercial.vehicles._index-CTAMALqz.js",
       "name": "commercial.vehicles._index",
       "category": "route",
       "size": 6156,
@@ -898,59 +906,59 @@
       "brotli": 1296
     },
     {
-      "file": "commercial.vehicles.search-BYRpdLpw.js",
+      "file": "commercial.vehicles.search-CcQHSU7S.js",
       "name": "commercial.vehicles.search",
       "category": "route",
       "size": 6039,
-      "gzip": 1873,
-      "brotli": 1687
+      "gzip": 1874,
+      "brotli": 1675
     },
     {
-      "file": "account.messages.compose-Dwof4-0z.js",
+      "file": "account.messages.compose-DBHnHhj7.js",
       "name": "account.messages.compose",
       "category": "route",
       "size": 5736,
       "gzip": 2011,
-      "brotli": 1777
+      "brotli": 1774
     },
     {
-      "file": "constructeurs._-BWpC9x-9.js",
+      "file": "constructeurs._-nKaT4i-v.js",
       "name": "constructeurs._",
       "category": "route",
       "size": 5703,
-      "gzip": 1788,
-      "brotli": 1587
+      "gzip": 1790,
+      "brotli": 1594
     },
     {
-      "file": "commercial.vehicles.brands-Bgk0uVEj.js",
+      "file": "commercial.vehicles.brands-YDTZelp-.js",
       "name": "commercial.vehicles.brands",
       "category": "route",
       "size": 5638,
       "gzip": 2199,
-      "brotli": 1998
+      "brotli": 1997
     },
     {
-      "file": "search.mine-DV7BuSpI.js",
+      "file": "search.mine-BU8x5x3M.js",
       "name": "search.mine",
       "category": "route",
       "size": 5583,
       "gzip": 1954,
-      "brotli": 1748
+      "brotli": 1747
     },
     {
-      "file": "account.addresses-CSE0Bt5C.js",
+      "file": "account.addresses-_TocjkTb.js",
       "name": "account.addresses",
       "category": "route",
       "size": 5528,
-      "gzip": 1791,
-      "brotli": 1597
+      "gzip": 1792,
+      "brotli": 1604
     },
     {
-      "file": "commercial-Ds57GEc3.js",
+      "file": "commercial-oIB41y38.js",
       "name": "commercial",
       "category": "route",
       "size": 5401,
-      "gzip": 1833,
+      "gzip": 1834,
       "brotli": 1639
     },
     {
@@ -962,12 +970,12 @@
       "brotli": 1130
     },
     {
-      "file": "account.profile.edit-Cstpu2ql.js",
+      "file": "account.profile.edit-PZFz4Zob.js",
       "name": "account.profile.edit",
       "category": "route",
       "size": 5270,
-      "gzip": 1699,
-      "brotli": 1508
+      "gzip": 1698,
+      "brotli": 1509
     },
     {
       "file": "brand-colors.service-DikvDAzw.js",
@@ -978,52 +986,52 @@
       "brotli": 1184
     },
     {
-      "file": "HtmlContent-3gxDbSNt.js",
+      "file": "HtmlContent-DnV1Q0cu.js",
       "name": "HtmlContent",
       "category": "route",
       "size": 5191,
-      "gzip": 2202,
-      "brotli": 1946
+      "gzip": 2204,
+      "brotli": 1947
     },
     {
-      "file": "BlogPiecesAutoNavigation-BPuV8by6.js",
+      "file": "BlogPiecesAutoNavigation-BDkwWlvk.js",
       "name": "BlogPiecesAutoNavigation",
       "category": "route",
       "size": 5187,
-      "gzip": 1629,
-      "brotli": 1442
+      "gzip": 1631,
+      "brotli": 1446
     },
     {
-      "file": "commercial.vehicles.brands._brandId.models-DBORkVjn.js",
+      "file": "commercial.vehicles.brands._brandId.models-BBX_xVV-.js",
       "name": "commercial.vehicles.brands._brandId.models",
       "category": "route",
       "size": 5027,
-      "gzip": 1429,
-      "brotli": 1279
+      "gzip": 1431,
+      "brotli": 1280
     },
     {
-      "file": "account.claims.new-BRH7o13J.js",
+      "file": "account.claims.new-B7SMTC29.js",
       "name": "account.claims.new",
       "category": "route",
       "size": 4878,
       "gzip": 1602,
-      "brotli": 1449
+      "brotli": 1444
     },
     {
-      "file": "brands._brandId-Cz9aSf2r.js",
+      "file": "brands._brandId-CaZ3KSej.js",
       "name": "brands._brandId",
       "category": "route",
       "size": 4710,
-      "gzip": 1725,
-      "brotli": 1558
+      "gzip": 1727,
+      "brotli": 1550
     },
     {
-      "file": "commercial._index-D32t9En8.js",
+      "file": "commercial._index-guX2OihC.js",
       "name": "commercial._index",
       "category": "route",
       "size": 4627,
-      "gzip": 1692,
-      "brotli": 1494
+      "gzip": 1693,
+      "brotli": 1497
     },
     {
       "file": "enhanced-vehicle.api-BYF-5BNW.js",
@@ -1034,92 +1042,92 @@
       "brotli": 1274
     },
     {
-      "file": "account.claims-DXNKLcTJ.js",
+      "file": "account.claims-D-zrzrik.js",
       "name": "account.claims",
       "category": "route",
       "size": 4531,
-      "gzip": 1638,
-      "brotli": 1445
+      "gzip": 1639,
+      "brotli": 1442
     },
     {
-      "file": "account.claims._claimId-Dg1R9oYn.js",
+      "file": "account.claims._claimId-Cn62rfoi.js",
       "name": "account.claims._claimId",
       "category": "route",
       "size": 4250,
       "gzip": 1674,
-      "brotli": 1486
+      "brotli": 1489
     },
     {
-      "file": "account.messages._index-BhK1U8tU.js",
+      "file": "account.messages._index-D7ZMCbXr.js",
       "name": "account.messages._index",
       "category": "route",
       "size": 4192,
-      "gzip": 1484,
-      "brotli": 1306
+      "gzip": 1485,
+      "brotli": 1307
     },
     {
-      "file": "account.profile-hwZ7-c6k.js",
+      "file": "account.profile-DrmYuTcZ.js",
       "name": "account.profile",
       "category": "route",
       "size": 4125,
-      "gzip": 1288,
-      "brotli": 1127
+      "gzip": 1289,
+      "brotli": 1128
     },
     {
-      "file": "marques-CLc1hKWx.js",
+      "file": "marques-B-K94Q5y.js",
       "name": "marques",
       "category": "route",
       "size": 4102,
-      "gzip": 1467,
-      "brotli": 1321
+      "gzip": 1468,
+      "brotli": 1326
     },
     {
-      "file": "catalogue-TeHN45hm.js",
+      "file": "catalogue-a2xaH3rw.js",
       "name": "catalogue",
       "category": "route",
       "size": 4080,
-      "gzip": 1041,
-      "brotli": 933
+      "gzip": 1042,
+      "brotli": 936
     },
     {
-      "file": "AccountNavigation-DEVSdMM1.js",
+      "file": "AccountNavigation-hyR4pz8b.js",
       "name": "AccountNavigation",
       "category": "route",
       "size": 3849,
       "gzip": 1385,
-      "brotli": 1224
+      "brotli": 1233
     },
     {
-      "file": "BlogNavigation-BP75fKV5.js",
+      "file": "BlogNavigation-YpIe5Iys.js",
       "name": "BlogNavigation",
       "category": "route",
       "size": 3681,
-      "gzip": 1372,
-      "brotli": 1196
+      "gzip": 1374,
+      "brotli": 1197
     },
     {
-      "file": "VehicleCard-CnhDN0r8.js",
+      "file": "VehicleCard-DNySVZsu.js",
       "name": "VehicleCard",
       "category": "route",
       "size": 3393,
-      "gzip": 988,
-      "brotli": 882
+      "gzip": 986,
+      "brotli": 881
     },
     {
-      "file": "404-BW7p1Vw3.js",
+      "file": "404-B0vkjNnp.js",
       "name": "404",
       "category": "route",
       "size": 3326,
-      "gzip": 1034,
-      "brotli": 916
+      "gzip": 1035,
+      "brotli": 917
     },
     {
-      "file": "reset-password._token-D1dCQ0tR.js",
+      "file": "reset-password._token-W5FlzX55.js",
       "name": "reset-password._token",
       "category": "route",
       "size": 3027,
       "gzip": 1372,
-      "brotli": 1217
+      "brotli": 1219
     },
     {
       "file": "products._category._subcategory-Bm9LBbTp.js",
@@ -1130,23 +1138,23 @@
       "brotli": 1023
     },
     {
-      "file": "client.set-password-C2-HCUHI.js",
+      "file": "client.set-password-CyQfg2Wp.js",
       "name": "client.set-password",
       "category": "route",
       "size": 2614,
-      "gzip": 1182,
+      "gzip": 1184,
       "brotli": 1054
     },
     {
-      "file": "entry.client-BhD23uAU.js",
+      "file": "entry.client-DosEER1x.js",
       "name": "entry.client",
       "category": "entry",
       "size": 2583,
-      "gzip": 1306,
+      "gzip": 1307,
       "brotli": 1160
     },
     {
-      "file": "ProductsQuickActions-C8hhsTht.js",
+      "file": "ProductsQuickActions-CipRabNR.js",
       "name": "ProductsQuickActions",
       "category": "route",
       "size": 2507,
@@ -1162,12 +1170,12 @@
       "brotli": 755
     },
     {
-      "file": "RelatedArticlesSidebar-B9bRuJdN.js",
+      "file": "RelatedArticlesSidebar-AfEoFVhw.js",
       "name": "RelatedArticlesSidebar",
       "category": "route",
       "size": 2366,
-      "gzip": 964,
-      "brotli": 845
+      "gzip": 965,
+      "brotli": 851
     },
     {
       "file": "CompactBlogHeader-BkQLNWcQ.js",
@@ -1178,31 +1186,31 @@
       "brotli": 909
     },
     {
-      "file": "unauthorized-Bvtp5QCY.js",
+      "file": "unauthorized-Dx8fONWb.js",
       "name": "unauthorized",
       "category": "route",
       "size": 2331,
-      "gzip": 1032,
-      "brotli": 909
+      "gzip": 1033,
+      "brotli": 910
     },
     {
-      "file": "checkout.resume-DDa0h93I.js",
+      "file": "checkout.resume-zTIa7h2m.js",
       "name": "checkout.resume",
       "category": "route",
       "size": 2159,
-      "gzip": 879,
-      "brotli": 761
+      "gzip": 880,
+      "brotli": 760
     },
     {
-      "file": "forgot-password-CesDJnVM.js",
+      "file": "forgot-password-XpEE8y-S.js",
       "name": "forgot-password",
       "category": "route",
       "size": 2159,
-      "gzip": 1043,
-      "brotli": 926
+      "gzip": 1044,
+      "brotli": 927
     },
     {
-      "file": "blog-helpers-Cw_qMflc.js",
+      "file": "blog-helpers-DehmA5pC.js",
       "name": "blog-helpers",
       "category": "route",
       "size": 1992,
@@ -1210,36 +1218,36 @@
       "brotli": 838
     },
     {
-      "file": "BrandLogoClient-Drg7PwNP.js",
+      "file": "BrandLogoClient-L6WH0EBc.js",
       "name": "BrandLogoClient",
       "category": "route",
       "size": 1805,
-      "gzip": 864,
-      "brotli": 759
+      "gzip": 866,
+      "brotli": 762
     },
     {
-      "file": "account.messages._messageId-vAU2cyHB.js",
+      "file": "account.messages._messageId-DhxfW3gG.js",
       "name": "account.messages._messageId",
       "category": "route",
       "size": 1777,
       "gzip": 858,
-      "brotli": 741
+      "brotli": 749
     },
     {
-      "file": "hierarchy.api-DnMjHIZo.js",
+      "file": "hierarchy.api-CaEEBRLW.js",
       "name": "hierarchy.api",
       "category": "route",
       "size": 1588,
-      "gzip": 821,
-      "brotli": 727
+      "gzip": 825,
+      "brotli": 717
     },
     {
-      "file": "GoogleSignInButton-DEY2okg5.js",
+      "file": "GoogleSignInButton-BDzdUVzW.js",
       "name": "GoogleSignInButton",
       "category": "route",
       "size": 1575,
-      "gzip": 963,
-      "brotli": 833
+      "gzip": 962,
+      "brotli": 834
     },
     {
       "file": "brands-DkZ5EOKj.js",
@@ -1274,12 +1282,12 @@
       "brotli": 502
     },
     {
-      "file": "SectionImage-DgUlVQha.js",
+      "file": "SectionImage-Bl0UZTI-.js",
       "name": "SectionImage",
       "category": "route",
       "size": 1159,
-      "gzip": 653,
-      "brotli": 561
+      "gzip": 654,
+      "brotli": 563
     },
     {
       "file": "preload-helper-D7HrI6pR.js",
@@ -1298,60 +1306,60 @@
       "brotli": 484
     },
     {
-      "file": "HeroReference-B71839pl.js",
+      "file": "HeroReference-BUhgk_EF.js",
       "name": "HeroReference",
       "category": "route",
       "size": 823,
-      "gzip": 464,
-      "brotli": 395
+      "gzip": 466,
+      "brotli": 397
     },
     {
-      "file": "politique-confidentialite-Cz8uv_G9.js",
+      "file": "politique-confidentialite-C93LFEph.js",
       "name": "politique-confidentialite",
       "category": "route",
       "size": 786,
-      "gzip": 465,
-      "brotli": 408
-    },
-    {
-      "file": "politique-cookies-D6YaBVbr.js",
-      "name": "politique-cookies",
-      "category": "route",
-      "size": 752,
-      "gzip": 452,
-      "brotli": 389
-    },
-    {
-      "file": "mentions-legales-BRuHvD-L.js",
-      "name": "mentions-legales",
-      "category": "route",
-      "size": 744,
-      "gzip": 455,
-      "brotli": 394
-    },
-    {
-      "file": "conditions-generales-de-vente_._html-B9YMChol.js",
-      "name": "conditions-generales-de-vente_._html",
-      "category": "route",
-      "size": 724,
-      "gzip": 464,
+      "gzip": 466,
       "brotli": 409
     },
     {
-      "file": "gone-5sKMT1dt.js",
+      "file": "politique-cookies-DisRM4MA.js",
+      "name": "politique-cookies",
+      "category": "route",
+      "size": 752,
+      "gzip": 454,
+      "brotli": 391
+    },
+    {
+      "file": "mentions-legales-RlIGgr8J.js",
+      "name": "mentions-legales",
+      "category": "route",
+      "size": 744,
+      "gzip": 456,
+      "brotli": 395
+    },
+    {
+      "file": "conditions-generales-de-vente_._html-CIeEpoz_.js",
+      "name": "conditions-generales-de-vente_._html",
+      "category": "route",
+      "size": 724,
+      "gzip": 465,
+      "brotli": 411
+    },
+    {
+      "file": "gone-ZSpG8_wy.js",
       "name": "gone",
       "category": "route",
       "size": 634,
-      "gzip": 416,
+      "gzip": 417,
       "brotli": 363
     },
     {
-      "file": "constructeurs._brand._model._type_._html-CA0j6OvE.js",
+      "file": "constructeurs._brand._model._type_._html-B-IdMXrQ.js",
       "name": "constructeurs._brand._model._type_._html",
       "category": "route",
       "size": 584,
-      "gzip": 347,
-      "brotli": 303
+      "gzip": 349,
+      "brotli": 319
     },
     {
       "file": "_-SPR3E13f.js",
@@ -1362,20 +1370,20 @@
       "brotli": 331
     },
     {
-      "file": "account-F9jAiy6w.js",
+      "file": "search-jn9qHnZz.js",
+      "name": "search",
+      "category": "route",
+      "size": 512,
+      "gzip": 307,
+      "brotli": 276
+    },
+    {
+      "file": "account-DPYsM0GO.js",
       "name": "account",
       "category": "route",
       "size": 489,
-      "gzip": 342,
-      "brotli": 306
-    },
-    {
-      "file": "search-Bj6nWf1N.js",
-      "name": "search",
-      "category": "route",
-      "size": 475,
-      "gzip": 291,
-      "brotli": 259
+      "gzip": 344,
+      "brotli": 305
     },
     {
       "file": "site-lbQT3Ihp.js",
