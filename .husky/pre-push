@@ -19,6 +19,7 @@
 zero=0000000000000000000000000000000000000000
 
 while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+  # ── Check 1 : block direct pushes to protected branches (main, dev) ────
   case "$remote_ref" in
     refs/heads/main | refs/heads/dev)
       branch=${remote_ref#refs/heads/}
@@ -46,6 +47,41 @@ while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
       exit 1
       ;;
   esac
+
+  # ── Check 2 : block direct modifications to rag/knowledge/ (L3 mirror) ──
+  # ADR-046 § Layer L3 RAG MIRROR read-only + ADR-050.
+  # rag/knowledge/ est généré par sync-wiki-exports-to-rag.py — toute modif
+  # directe contourne le pipeline L1→L2→L3 et casse la SoT wiki.
+  if [ "$local_sha" = "$zero" ]; then
+    continue  # deletion of branch, nothing to check
+  fi
+
+  if [ "$remote_sha" = "$zero" ]; then
+    # New branch on remote — compare against origin/main
+    range="origin/main..$local_sha"
+  else
+    range="$remote_sha..$local_sha"
+  fi
+
+  RAG_CHANGED=$(git diff --name-only "$range" -- 'rag/knowledge/' 2>/dev/null || true)
+  if [ -n "$RAG_CHANGED" ]; then
+    echo
+    echo "✗ Refused by .husky/pre-push: direct modification of rag/knowledge/ (L3 mirror)."
+    echo
+    echo "  ADR-046 § Layer L3 RAG MIRROR + ADR-050 : rag/knowledge/ est un mirror"
+    echo "  read-only généré automatiquement depuis automecanik-wiki/exports/rag/."
+    echo "  Toute modification directe contourne le pipeline L1→L2→L3 canonique."
+    echo
+    echo "  Fichiers modifiés :"
+    echo "$RAG_CHANGED" | sed 's/^/    /'
+    echo
+    echo "  Pour produire du contenu RAG, écrire dans automecanik-wiki/exports/rag/."
+    echo "  Le sync vers rag/knowledge/ est fait par scripts/rag-sync/sync-wiki-exports-to-rag.py"
+    echo "  (canon ADR-031 §D22)."
+    echo
+    echo "  Emergency bypass (incident postmortem requis) : git push --no-verify"
+    exit 1
+  fi
 done
 
 exit 0

@@ -1,0 +1,145 @@
+name: 📐 SQL Rule R2 — Index Justification Check (ADR-049 sprint DB-2)
+
+# Detecte les CREATE INDEX ajoutes dans une PR sans le comment block R2
+# requis par .spec/00-canon/db-governance/sql-governance-rules.md.
+#
+# Mode warn-only initial (cohérent ADR-049 strategie escalade J+30) :
+# findings `error` surfaces via ::error:: annotations CI mais n'echouent
+# pas la PR. Promo `--strict` apres 30j si signal clair.
+#
+# Scope : --since=origin/main pour scanner uniquement les migrations
+# modifiees dans la PR (R2 s'applique aux NOUVEAUX index, pas retro).
+#
+# Pattern aligne avec spec-canon-{repo-map,prompt-registry,phase2-canon}
+# -drift.yml : set -euo pipefail, JSON shape validation, error
+# annotations distinct du warning, pas de `|| true` swallow,
+# timeout-minutes job, try/catch sur actions/github-script.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/supabase/migrations/**'
+      - 'scripts/spec-canon/check-sql-rule-r2-index-justification.py'
+      - '.github/workflows/spec-canon-sql-rule-r2-check.yml'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-sql-r2:
+    name: SQL Rule R2 Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth: 0 pour avoir origin/main accessible pour --since
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run R2 check (scope = migrations modifiees dans la PR)
+        id: r2_check
+        run: |
+          set -euo pipefail
+          if ! python3 scripts/spec-canon/check-sql-rule-r2-index-justification.py --since=origin/main --json > /tmp/r2-check.json 2>/tmp/r2-check.stderr; then
+            echo "::warning::check-sql-rule-r2-index-justification.py exit non-zero (errors detectes, mode warn-only -- voir step summary + annotations)"
+          fi
+          if ! python3 -c "import json; d=json.load(open('/tmp/r2-check.json')); assert 'summary' in d and 'findings' in d, 'JSON shape invalide'" 2>/tmp/json-validation.err; then
+            echo "::error::JSON output du script invalide. stderr script :"
+            cat /tmp/r2-check.stderr || true
+            echo "JSON validation error :"
+            cat /tmp/json-validation.err || true
+            exit 1
+          fi
+          cat /tmp/r2-check.json
+          ERROR_COUNT=$(python3 -c "import json; print(json.load(open('/tmp/r2-check.json'))['summary']['error'])")
+          MIGRATIONS_SCANNED=$(python3 -c "import json; print(json.load(open('/tmp/r2-check.json'))['stats']['migrations_scanned'])")
+          echo "error_count=$ERROR_COUNT" >> "$GITHUB_OUTPUT"
+          echo "migrations_scanned=$MIGRATIONS_SCANNED" >> "$GITHUB_OUTPUT"
+
+      - name: Surface R2 violations as annotations
+        if: always() && steps.r2_check.outputs.error_count != '0'
+        run: |
+          set -euo pipefail
+          python3 -c "
+          import json
+          d = json.load(open('/tmp/r2-check.json'))
+          for f in d['findings']:
+              if f['severity'] == 'error':
+                  line_param = f',line={f[\"line\"]}' if 'line' in f else ''
+                  print(f'::error file={f.get(\"file\", \"?\")}{line_param}::{f[\"rule\"]}: {f[\"message\"]}')"
+
+      - name: Generate step summary
+        if: always()
+        run: |
+          set -euo pipefail
+          echo "# 📐 SQL Rule R2 — Index Justification Check" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Vérifie que tout \`CREATE INDEX\` ajouté dans la PR a un comment block R2 (cf. \`.spec/00-canon/db-governance/sql-governance-rules.md\` R2)." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Scope** : ${{ steps.r2_check.outputs.migrations_scanned }} migration(s) modifiée(s) dans la PR. **${{ steps.r2_check.outputs.error_count }} R2 violation(s)**." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if ! python3 scripts/spec-canon/check-sql-rule-r2-index-justification.py --since=origin/main >> "$GITHUB_STEP_SUMMARY" 2>/tmp/summary-stderr.log; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**⚠️ Script exit non-zero (errors detectés -- voir annotations CI).**" >> "$GITHUB_STEP_SUMMARY"
+            if [ -s /tmp/summary-stderr.log ]; then
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+              cat /tmp/summary-stderr.log >> "$GITHUB_STEP_SUMMARY"
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+              echo "::warning::check-sql-rule-r2 stderr present, voir step summary"
+            fi
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "---" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Mode** : warn-only (ADR-049 escalade J+30). Violations R2 = signal de mise à jour" >> "$GITHUB_STEP_SUMMARY"
+          echo "manuelle de la migration (ajouter le comment block R2), pas blocage CI." >> "$GITHUB_STEP_SUMMARY"
+          echo "Promo \`--strict\` à évaluer post-30j." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment PR with R2 violations (if any)
+        if: github.event_name == 'pull_request' && steps.r2_check.outputs.error_count != '0'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const result = JSON.parse(fs.readFileSync('/tmp/r2-check.json', 'utf8'));
+              const violations = (result.findings || []).filter(f => f.rule && f.rule.endsWith('.missing-r2-comment'));
+              if (violations.length === 0) return;
+              const lines = violations.map(f => `- \`${f.file}:L${f.line}\` index \`${f.index_name}\` (markers ${f.markers_found}/${f.markers_required})`);
+              const body = [
+                '## 📐 SQL Rule R2 — Index Justification violations',
+                '',
+                `**${violations.length}** \`CREATE INDEX\` sans comment block R2 dans cette PR :`,
+                '',
+                ...lines,
+                '',
+                '> Format requis (cf. `.spec/00-canon/db-governance/sql-governance-rules.md` R2) :',
+                '> ```sql',
+                '> -- INDEX: idx_xxx',
+                '> -- Table: xxx (N rows, X GB)',
+                '> -- Pattern: JOIN/WHERE sur colonne Y avec cast Z',
+                '> -- Gain attendu: Seq Scan N rows -> Index Scan ~M rows',
+                '> -- RPC concernees: rpc_name_1, rpc_name_2',
+                '> CREATE INDEX CONCURRENTLY idx_xxx ON table (...);',
+                '> ```',
+                '',
+                '> Mode warn-only (ADR-049 escalade J+30). Pour fixer : ajouter le comment block au-dessus de chaque CREATE INDEX (minimum 3/5 markers requis).',
+              ].join('\n');
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } catch (e) {
+              core.warning(`R2 report unavailable: ${e.message}`);
+            }
