@@ -400,14 +400,8 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : feat(seo-r3): canon violation sentry counter (r3 canon hardening pr-e) (+2 other commits)
 - **Sortie** : PR aucune | commits 10e247bd 09177259 35ae7726
 
-## 2026-05-07 — feat/adr-048-repo-map-drift-detector (auto)
+## 2026-05-07 — feat/pr-f-seo-role-contracts-create (auto)
 
-- **Branche** : `feat/adr-048-repo-map-drift-detector`
-- **Décision** : feat(spec-canon): repo-map.md drift detector + CI workflow (ADR-048 sprint 2 P1)
-- **Sortie** : PR #358 | commits 7b031164
-
-## 2026-05-07 — feat/pr-e-l3-rag-mirror-readonly (auto)
-
-- **Branche** : `feat/pr-e-l3-rag-mirror-readonly`
-- **Décision** : feat(rag): L3 mirror readonly enforcement + bootstrap guard (MVP-0 PR-E)
-- **Sortie** : PR #356 | commits 2ed2e9b7
+- **Branche** : `feat/pr-f-seo-role-contracts-create`
+- **Décision** : feat(seo-role-contracts): create @repo/seo-role-contracts (Phase 2 PR-F, ADR-047)
+- **Sortie** : PR #365 | commits 7af2c200
