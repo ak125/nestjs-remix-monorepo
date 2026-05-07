@@ -411,3 +411,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-e-l3-rag-mirror-readonly`
 - **Décision** : feat(rag): L3 mirror readonly enforcement + bootstrap guard (MVP-0 PR-E)
 - **Sortie** : PR #356 | commits 2ed2e9b7
+
+## 2026-05-08 — chore/perf-sprint-pr1-bundle-baseline (auto)
+
+- **Branche** : `chore/perf-sprint-pr1-bundle-baseline`
+- **Décision** : chore(perf): bundle:analyze + bundle:report scripts (PR-1, ADR-051 baseline)
+- **Sortie** : PR #387 | commits ab151779
