@@ -41,6 +41,20 @@ export class RagKnowledgeBootstrapGuardService implements OnModuleInit {
       return;
     }
 
+    // CI environments (GitHub Actions, GitLab CI, etc.) set CI=true.
+    // Le bootstrap guard ne doit JAMAIS throw en CI car :
+    //  - Le mirror RAG L3 n'existe pas dans les runners éphémères
+    //  - NODE_ENV peut être 'production' (build prod) sans que ce soit prod réel
+    //  - CI build/test ne dépend pas de la fraîcheur RAG runtime
+    // Sans ce bypass, perf-gates/lighthouse + tests intégration échouent
+    // (incident détecté #359/#365 post-#356 merge, 2026-05-07).
+    if (process.env.CI === 'true') {
+      this.logger.log(
+        'RAG L3 bootstrap guard skipped in CI (process.env.CI === "true")',
+      );
+      return;
+    }
+
     const ragDir =
       process.env.RAG_KNOWLEDGE_PATH ?? '/opt/automecanik/rag/knowledge';
     const manifestPath = path.join(ragDir, MANIFEST_FILENAME);
