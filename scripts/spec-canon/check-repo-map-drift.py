@@ -39,11 +39,26 @@ REPO_MAP_PATH = REPO_ROOT / ".spec" / "00-canon" / "repo-map.md"
 def parse_repo_map_claims(text: str) -> dict[str, int]:
     """Extract numeric claims from repo-map.md "Statistiques" table.
 
-    Expected pattern: `| Backend modules | 40 |` etc.
+    Fix #2 (PR review) : regex ancree a la section `## Statistiques` pour
+    eviter de matcher des tables ailleurs (changelog, exemple, futur).
+    Si la section est absente, retourne dict vide -> finding `error`
+    (no-claims-found, fix #5 : detector casse, pas un simple drift).
+
+    Expected pattern within section : `| Backend modules | 40 |` etc.
     """
     claims: dict[str, int] = {}
-    # Match table rows like "| Metric Name | 123 |"
-    for m in re.finditer(r"\|\s*([A-Z][\w\s]+?)\s*\|\s*(\d+)(\+|k\+)?\s*\|", text):
+    # Section anchor : depuis "## Statistiques" jusqu'au prochain H2 ou EOF
+    section_match = re.search(
+        r"^##\s+Statistiques.*?\n(.*?)(?=^##\s|\Z)",
+        text,
+        re.MULTILINE | re.DOTALL,
+    )
+    if not section_match:
+        return claims
+    section_body = section_match.group(1)
+
+    # Match table rows like "| Metric Name | 123 |" within the section only
+    for m in re.finditer(r"\|\s*([A-Z][\w\s]+?)\s*\|\s*(\d+)(\+|k\+)?\s*\|", section_body):
         metric = m.group(1).strip()
         value = int(m.group(2))
         # Only keep the "structurel" metrics (not "Produits DB 4M+" / "Utilisateurs 59k+" / "Categories 9k+"
@@ -58,45 +73,102 @@ def parse_repo_map_claims(text: str) -> dict[str, int]:
     return claims
 
 
-def count_filesystem_reality() -> dict[str, int]:
-    """Count actual filesystem state for each tracked metric."""
+def _count_dir_entries(
+    metric: str,
+    dir_path: Path,
+    predicate,
+    findings: list[dict],
+    reality: dict[str, int],
+) -> None:
+    """Helper : count entries matching predicate, with explicit error findings.
+
+    Fix #3 (PR review) : iterdir() peut lever PermissionError (NFS, sandbox),
+    FileNotFoundError TOCTOU (dir disparait apres .exists()), ou autre OSError.
+    Au lieu de silencieusement retourner 0 (ce qui masque la vraie cause comme
+    drift), on emet un finding `error` distinct -> le reader voit "dir missing"
+    pas "drift -40".
+    """
+    if not dir_path.exists():
+        findings.append({
+            "severity": "error",
+            "file": str(dir_path.relative_to(REPO_ROOT)) if dir_path.is_relative_to(REPO_ROOT) else str(dir_path),
+            "rule": f"{CHECK_NAME}.tracked-dir-missing",
+            "metric": metric,
+            "message": (
+                f"Repertoire suivi pour metric '{metric}' introuvable : {dir_path}. "
+                f"Drift detector ne peut pas compter -- dir absent != claim=0."
+            ),
+        })
+        return
+    try:
+        reality[metric] = sum(1 for p in dir_path.iterdir() if predicate(p))
+    except OSError as e:
+        findings.append({
+            "severity": "error",
+            "file": str(dir_path.relative_to(REPO_ROOT)) if dir_path.is_relative_to(REPO_ROOT) else str(dir_path),
+            "rule": f"{CHECK_NAME}.iterdir-failed",
+            "metric": metric,
+            "message": f"iterdir({dir_path}) leve {type(e).__name__}: {e}",
+        })
+
+
+def count_filesystem_reality() -> tuple[dict[str, int], list[dict]]:
+    """Count actual filesystem state for each tracked metric.
+
+    Fix #3 (PR review) : retourne (reality, findings) au lieu de juste reality.
+    Les findings cumulent les erreurs FS (dir missing, PermissionError, OSError)
+    distinctes du drift legitime.
+    """
     reality: dict[str, int] = {}
+    findings: list[dict] = []
 
-    # Backend modules : dirs in backend/src/modules/ (exclude .module.ts files)
-    backend_modules_dir = REPO_ROOT / "backend" / "src" / "modules"
-    if backend_modules_dir.exists():
-        reality["Backend modules"] = sum(
-            1 for p in backend_modules_dir.iterdir() if p.is_dir()
-        )
-    else:
-        reality["Backend modules"] = 0
-
-    # Frontend routes : .tsx + .ts files in frontend/app/routes/ (top-level only)
-    frontend_routes_dir = REPO_ROOT / "frontend" / "app" / "routes"
-    if frontend_routes_dir.exists():
-        reality["Frontend routes"] = sum(
-            1
-            for p in frontend_routes_dir.iterdir()
-            if p.is_file() and p.suffix in {".tsx", ".ts"}
-        )
-    else:
-        reality["Frontend routes"] = 0
-
-    # Shared packages : dirs in packages/
-    packages_dir = REPO_ROOT / "packages"
-    if packages_dir.exists():
-        reality["Shared packages"] = sum(
-            1 for p in packages_dir.iterdir() if p.is_dir()
-        )
-    else:
-        reality["Shared packages"] = 0
-
-    # Docker configs : docker-compose*.yml at repo root
-    reality["Docker configs"] = sum(
-        1 for p in REPO_ROOT.iterdir() if p.is_file() and p.name.startswith("docker-compose") and p.suffix == ".yml"
+    # Backend modules : dirs in backend/src/modules/
+    _count_dir_entries(
+        "Backend modules",
+        REPO_ROOT / "backend" / "src" / "modules",
+        lambda p: p.is_dir(),
+        findings,
+        reality,
     )
 
-    return reality
+    # Frontend routes : .tsx + .ts files in frontend/app/routes/ (top-level only)
+    # NOTE: cette metrique compte les fichiers top-level, pas les routes Remix
+    # effectives (les flat-routes peuvent etre dans des sous-dossiers via
+    # convention `routes/_layout/...`). C'est un proxy, le canon `repo-map.md`
+    # doit clarifier le perimetre exact (cf. PR review Suggestion).
+    _count_dir_entries(
+        "Frontend routes",
+        REPO_ROOT / "frontend" / "app" / "routes",
+        lambda p: p.is_file() and p.suffix in {".tsx", ".ts"},
+        findings,
+        reality,
+    )
+
+    # Shared packages : dirs in packages/
+    _count_dir_entries(
+        "Shared packages",
+        REPO_ROOT / "packages",
+        lambda p: p.is_dir(),
+        findings,
+        reality,
+    )
+
+    # Docker configs : docker-compose*.yml at repo root
+    try:
+        reality["Docker configs"] = sum(
+            1 for p in REPO_ROOT.iterdir()
+            if p.is_file() and p.name.startswith("docker-compose") and p.suffix == ".yml"
+        )
+    except OSError as e:
+        findings.append({
+            "severity": "error",
+            "file": str(REPO_ROOT),
+            "rule": f"{CHECK_NAME}.iterdir-failed",
+            "metric": "Docker configs",
+            "message": f"iterdir({REPO_ROOT}) leve {type(e).__name__}: {e}",
+        })
+
+    return reality, findings
 
 
 def main(argv: list[str]) -> int:
@@ -105,6 +177,10 @@ def main(argv: list[str]) -> int:
     strict = "--strict" in args
 
     findings: list[dict] = []
+    # Fix #1 (PR review) : claims/reality au scope main, pas de re-parse
+    # double + walrus avec `text` undefined dans le bloc human-readable.
+    claims: dict[str, int] = {}
+    reality: dict[str, int] = {}
 
     if not REPO_MAP_PATH.exists():
         findings.append({
@@ -125,14 +201,22 @@ def main(argv: list[str]) -> int:
             })
         else:
             claims = parse_repo_map_claims(text)
-            reality = count_filesystem_reality()
+            # Fix #3 : count_filesystem_reality retourne maintenant tuple (reality, fs_findings)
+            reality, fs_findings = count_filesystem_reality()
+            findings.extend(fs_findings)
 
             if not claims:
+                # Fix #5 (PR review) : severity error (pas warning) -- format change
+                # = detector casse, pas un simple drift. Doit etre visible
+                # immediatement, pas noye dans des warnings drift.
                 findings.append({
-                    "severity": "warning",
+                    "severity": "error",
                     "file": str(REPO_MAP_PATH.relative_to(REPO_ROOT)),
                     "rule": f"{CHECK_NAME}.no-claims-found",
-                    "message": "Aucun claim numerique extrait de repo-map.md table 'Statistiques'. Le format a peut-etre change.",
+                    "message": (
+                        "Aucun claim numerique extrait de repo-map.md table 'Statistiques'. "
+                        "Le format a change ou la section est absente -- detector casse."
+                    ),
                 })
 
             for metric, claimed in claims.items():
@@ -187,13 +271,13 @@ def main(argv: list[str]) -> int:
                 print(f"{marker} {f['rule']}: {f['message']}")
             print()
         print(f"Total: {summary['error']} error(s), {summary['warning']} warning(s)")
-        if "Backend modules" in (claim_dict := parse_repo_map_claims(text) if REPO_MAP_PATH.exists() else {}):
-            reality = count_filesystem_reality()
+        # Fix #1 : utilise claims/reality du scope, pas de re-parse + walrus.
+        if claims or reality:
             print()
             print("| Metric | Claimed | Actual | Drift |")
             print("|---|---:|---:|---:|")
-            for metric in sorted(set(list(claim_dict.keys()) + list(reality.keys()))):
-                c = claim_dict.get(metric, "—")
+            for metric in sorted(set(list(claims.keys()) + list(reality.keys()))):
+                c = claims.get(metric, "—")
                 a = reality.get(metric, "—")
                 d = (a - c) if isinstance(c, int) and isinstance(a, int) else "—"
                 d_str = f"{d:+d}" if isinstance(d, int) else d
