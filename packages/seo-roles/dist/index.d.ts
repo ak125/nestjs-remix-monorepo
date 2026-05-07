@@ -6,4 +6,8 @@ export { ROLE_BADGE_COLORS } from "./colors";
 export { type CanonicalRoleId, assertCanonicalRoleStrict, isCanonicalRoleId, } from "./branded";
 export { tolerantRoleSchema, canonicalRoleSchema, roleIdNativeEnum, } from "./schema";
 export { SearchIntentSchema, classifyKeywordToRole, type SearchIntent, type KeywordRoleClassification, } from "./keyword-intent";
+export { type RoleIntents, getRoleIntents, isIntentAllowedForRole, } from "./intents";
+export { type SupportedLocale, normalizeSeoText, normalizePhrase, tokenize, stem, tokenizeAndStem, } from "./text-normalize";
+export { getForbiddenOverlap } from "./forbidden-overlap";
+export { KeywordClusterSchema, type KeywordCluster, } from "./keyword-cluster.schema";
 //# sourceMappingURL=index.d.ts.map

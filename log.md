@@ -381,3 +381,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/observability-sentry-prod`
 - **Décision** : feat(observability): extend Sentry+SOPS to PROD via deploy-prod.yml wrapper (PR-D)
 - **Sortie** : PR #334 | commits f433640a
+
+## 2026-05-07 — feat/seo-roles-canon-pr-a-classification (auto)
+
+- **Branche** : `feat/seo-roles-canon-pr-a-classification`
+- **Décision** : feat(seo-roles): intents + forbidden-overlap + text-normalize @0.5.0 (R3 PR-A)
+- **Sortie** : PR #342 | commits 9f58b1ca
