@@ -75,20 +75,49 @@ async function bootstrap() {
       throw new Error('SESSION_SECRET requis en production');
     }
 
-    // SECURITE: Vérifier que SESSION_SECRET est configuré
-    const sessionSecret = process.env.SESSION_SECRET;
-    if (!sessionSecret || sessionSecret === '123') {
-      logger.warn(
-        'ALERTE SECURITE: SESSION_SECRET non configuré ou utilise la valeur par défaut!',
-      );
-      logger.warn('Générez un secret sécurisé avec: openssl rand -base64 32');
-      logger.warn('Ajoutez-le dans votre fichier .env');
+    // SECURITE: SESSION_SECRET fail-fast en non-DEV + détection placeholders.
+    // Référence STRIDE 03-sessions critique #3, ADR-043 Sprint 1 Plan F.
+    const sessionSecretRaw = process.env.SESSION_SECRET ?? '';
+    const sessionSecretNorm = sessionSecretRaw.trim();
+    const KNOWN_WEAK_PLACEHOLDERS = [
+      '123',
+      'changeme',
+      'change-me',
+      'secret',
+      'mysecret',
+      'insecure_dev_secret_change_me',
+      'your-secret-here',
+      'todo',
+      'xxxxx',
+    ];
+    const isWeakSecret =
+      !sessionSecretNorm ||
+      sessionSecretNorm.length < 32 ||
+      KNOWN_WEAK_PLACEHOLDERS.includes(sessionSecretNorm.toLowerCase());
 
-      if (process.env.NODE_ENV === 'production' && !readOnly) {
+    let sessionSecret = sessionSecretNorm;
+    if (isWeakSecret) {
+      // PROD/PREPROD: refuse de démarrer même en read-only — un secret faible
+      // expose toutes les sessions actives, indépendamment du mode RW/RO.
+      if (process.env.NODE_ENV === 'production') {
         throw new Error(
-          'SESSION_SECRET OBLIGATOIRE en production! Impossible de démarrer.',
+          `SESSION_SECRET ${sessionSecretNorm ? 'FAIBLE' : 'MANQUANT'} en production. ` +
+            `Génère un secret >= 32 caractères avec: openssl rand -base64 32`,
         );
       }
+
+      // DEV: génère un secret aléatoire runtime (sessions invalidées au restart,
+      // accepté en DEV). Plus jamais le hardcoded `INSECURE_DEV_SECRET_CHANGE_ME`
+      // qui était identique entre toutes les instances DEV — vector de spoofing.
+      sessionSecret = crypto.randomBytes(32).toString('base64');
+      logger.warn(
+        `[SECURITY] SESSION_SECRET ${sessionSecretNorm ? 'FAIBLE' : 'MANQUANT'} en DEV. ` +
+          `Secret aléatoire généré (32 bytes). Sessions perdues au restart.`,
+      );
+      logger.warn(
+        '[SECURITY] Pour des sessions persistantes, ajoute dans .env: ' +
+          'SESSION_SECRET=$(openssl rand -base64 32)',
+      );
     }
 
     app.use(
@@ -96,7 +125,7 @@ async function bootstrap() {
         store: redisStore,
         resave: false,
         saveUninitialized: false, // Session créée uniquement quand des données y sont écrites (login, panier)
-        secret: sessionSecret || 'INSECURE_DEV_SECRET_CHANGE_ME',
+        secret: sessionSecret,
         name: 'connect.sid', // ✅ Nom explicite du cookie
         cookie: {
           maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours
