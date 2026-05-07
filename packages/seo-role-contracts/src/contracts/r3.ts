@@ -17,16 +17,20 @@ import type { RoleContract } from '../schema';
 export const R3_CONSEILS_CONTRACT: RoleContract = {
   id: RoleId.R3_CONSEILS,
 
+  // IDs alignés sur SECTION_TYPES backend (conseil-enricher.service.ts:36-48).
+  // Ne pas inventer — extension via ADR-047 si nouvelles sections.
   allowed_sections: [
-    { id: 'S0_INTRO', min_chars: 200, max_chars: 800, required: true },
-    { id: 'S1_DEFINITION', min_chars: 300, max_chars: 1200, required: true },
-    { id: 'S2_DIAG', min_chars: 400, max_chars: 2000, required: true }, // ADR-027 — replace R5
-    { id: 'S3_PROCEDURE', min_chars: 500, max_chars: 3000, required: true },
-    { id: 'S4_DEPOSE', min_chars: 300, max_chars: 1500, required: false }, // legacy possible
-    { id: 'S5_ERRORS', min_chars: 300, max_chars: 1500, required: false },
-    { id: 'S6_TOOLS', min_chars: 100, max_chars: 600, required: false },
-    { id: 'S7_FAQ', min_chars: 400, max_chars: 2000, required: true },
-    { id: 'S8_CONCLUSION', min_chars: 100, max_chars: 500, required: false },
+    { id: 'S1', min_chars: 200, max_chars: 800, required: true },           // Fonction
+    { id: 'S2', min_chars: 200, max_chars: 800, required: true },           // Quand changer
+    { id: 'S2_DIAG', min_chars: 400, max_chars: 2000, required: true },     // Diagnostic (ADR-027 replace R5)
+    { id: 'S3', min_chars: 300, max_chars: 1500, required: true },          // Comment choisir
+    { id: 'S4_DEPOSE', min_chars: 300, max_chars: 1500, required: false },  // Démontage
+    { id: 'S4_REPOSE', min_chars: 300, max_chars: 1500, required: false },  // Remontage
+    { id: 'S5', min_chars: 300, max_chars: 1500, required: false },         // Erreurs à éviter
+    { id: 'S6', min_chars: 100, max_chars: 600, required: false },          // Vérification finale
+    { id: 'S_GARAGE', min_chars: 100, max_chars: 800, required: false },    // Quand aller au garage
+    { id: 'S7', min_chars: 100, max_chars: 600, required: false },          // Pièces associées
+    { id: 'S8', min_chars: 400, max_chars: 2000, required: true },          // FAQ
   ],
 
   forbidden_overlap: [

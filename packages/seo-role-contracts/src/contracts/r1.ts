@@ -27,7 +27,7 @@ export const R1_ROUTER_CONTRACT: RoleContract = {
     { id: 'R1_S6_SAFE_TABLE', min_chars: 80, max_chars: 800, required: false },
     { id: 'R1_S7_EQUIP', min_chars: 50, max_chars: 300, required: false },
     { id: 'R1_S8_CROSS_SELL', min_chars: 50, max_chars: 500, required: false },
-    { id: 'R1_S9_FAQ', min_chars: 40, max_chars: 1500, required: false },
+    { id: 'R1_S9_FAQ', min_chars: 600, max_chars: 1500, required: true }, // canon r1-keyword-plan.constants.ts:158-167 (min 600c, required)
   ],
 
   forbidden_overlap: [

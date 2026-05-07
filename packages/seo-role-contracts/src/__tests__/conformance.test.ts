@@ -51,6 +51,23 @@ test('R3 contract — promotion_gate inclut diagnostic (ADR-033)', () => {
   );
 });
 
+test('R3 contract — section IDs alignés canon SECTION_TYPES backend', () => {
+  const r3 = getRoleContract(RoleId.R3_CONSEILS);
+  const ids = r3.allowed_sections.map((s) => s.id);
+  // Canon : conseil-enricher.service.ts:36-48 SECTION_TYPES
+  for (const canonId of ['S1', 'S2', 'S2_DIAG', 'S3', 'S4_DEPOSE', 'S4_REPOSE', 'S5', 'S6', 'S_GARAGE', 'S7', 'S8']) {
+    assert.ok(ids.includes(canonId), `Section ${canonId} (canon backend) absente du contract R3`);
+  }
+});
+
+test('R1_S9_FAQ — required + min 600c (canon r1-keyword-plan.constants.ts:158-167)', () => {
+  const r1 = getRoleContract(RoleId.R1_ROUTER);
+  const faq = r1.allowed_sections.find((s) => s.id === 'R1_S9_FAQ');
+  assert.ok(faq, 'R1_S9_FAQ absent');
+  assert.equal(faq!.min_chars, 600, 'R1_S9_FAQ min_chars=600 (canon backend)');
+  assert.equal(faq!.required, true, 'R1_S9_FAQ required=true (canon backend)');
+});
+
 test('R3 contract — gate_strictness all fail-closed', () => {
   const r3 = getRoleContract(RoleId.R3_CONSEILS);
   assert.equal(r3.gate_strictness.quality_gate, 'fail-closed');
