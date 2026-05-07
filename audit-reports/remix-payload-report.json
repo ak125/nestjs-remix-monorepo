@@ -1,0 +1,75 @@
+{
+  "generated_at": "2026-05-07T23:12:47.198Z",
+  "base_url": "https://www.automecanik.com",
+  "flags": {
+    "any_unparseable_context": false,
+    "duplicated_entities": false,
+    "oversized_context": false,
+    "any_fetch_error": false
+  },
+  "urls": [
+    {
+      "url": "/",
+      "fetched": "https://www.automecanik.com/",
+      "html_size": 256254,
+      "html_gzip": 33620,
+      "html_brotli": 24174,
+      "remix_context_size_raw": 12332,
+      "remix_context_parseable": true,
+      "loader_routes": 2,
+      "loader_top5": [
+        {
+          "routeId": "routes/_index",
+          "bytes": 11787
+        },
+        {
+          "routeId": "root",
+          "bytes": 233
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "url": "/pieces/embrayage-303-1.html",
+      "fetched": "https://www.automecanik.com/pieces/embrayage-303-1.html",
+      "html_size": 118302,
+      "html_gzip": 21939,
+      "html_brotli": 17045,
+      "remix_context_size_raw": 13646,
+      "remix_context_parseable": true,
+      "loader_routes": 2,
+      "loader_top5": [
+        {
+          "routeId": "routes/pieces.$slug",
+          "bytes": 12270
+        },
+        {
+          "routeId": "root",
+          "bytes": 233
+        }
+      ],
+      "duplicates": []
+    },
+    {
+      "url": "/constructeurs/renault-140.html",
+      "fetched": "https://www.automecanik.com/constructeurs/renault-140.html",
+      "html_size": 207522,
+      "html_gzip": 27219,
+      "html_brotli": 19619,
+      "remix_context_size_raw": 30082,
+      "remix_context_parseable": true,
+      "loader_routes": 2,
+      "loader_top5": [
+        {
+          "routeId": "routes/constructeurs.$brand[.]html",
+          "bytes": 29271
+        },
+        {
+          "routeId": "root",
+          "bytes": 233
+        }
+      ],
+      "duplicates": []
+    }
+  ]
+}
