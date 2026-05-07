@@ -303,17 +303,27 @@ L'utilisateur fournit un `pg_alias`. L'agent :
 
 ### Mode batch
 
+Sélectionne les gammes (a) sans aucun contenu R1, OU (b) avec contenu trop
+court par rapport au seuil canonique (S4 < 1500c, Option B 2026-05-07). Le
+re-enrich est idempotent côté DB grâce au pattern UPSERT.
+
 ```sql
 -- Gammes batch candidates
-SELECT rkp.rkp_pg_id, pg.pg_alias, pg.pg_name
+SELECT rkp.rkp_pg_id, pg.pg_alias, pg.pg_name,
+  char_length(COALESCE(r1s.r1s_micro_seo_block, '')) AS s4_chars
 FROM __seo_r1_keyword_plan rkp
 JOIN pieces_gamme pg ON pg.pg_id = rkp.rkp_pg_id
 LEFT JOIN __seo_r1_gamme_slots r1s ON r1s.r1s_pg_id = rkp.rkp_pg_id::text
 WHERE rkp.rkp_section_terms IS NOT NULL
-  AND (r1s.r1s_compatibilities_intro IS NULL
+  AND (
+    -- Missing content
+    r1s.r1s_compatibilities_intro IS NULL
     OR r1s.r1s_equipementiers_line IS NULL
-    OR r1s.r1s_safe_table_rows IS NULL)
-ORDER BY pg.pg_alias
+    OR r1s.r1s_safe_table_rows IS NULL
+    -- Under-dimensioned S4 (Option B threshold)
+    OR char_length(COALESCE(r1s.r1s_micro_seo_block, '')) < 1500
+  )
+ORDER BY s4_chars ASC NULLS FIRST, pg.pg_alias
 LIMIT {N};
 ```
 
