@@ -31,6 +31,9 @@ export {
   PromotionGate,
 } from "./schema";
 
+// PR-G — Forbidden overlap canon (migrated from @repo/seo-roles, ADR-047)
+export { getForbiddenOverlap } from "./forbidden-overlap";
+
 // Per-role contracts (named exports for direct import)
 export {
   R0_HOME_CONTRACT,

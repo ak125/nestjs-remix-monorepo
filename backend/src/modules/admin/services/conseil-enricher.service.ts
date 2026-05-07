@@ -26,9 +26,10 @@ import { RoleId } from '../../../config/role-ids';
 import type { ResourceGroup } from '../../../config/execution-registry.types';
 import {
   RoleId as CanonRoleId,
-  getForbiddenOverlap,
   tokenizeAndStem,
 } from '@repo/seo-roles';
+// PR-G — getForbiddenOverlap migrated to @repo/seo-role-contracts (ADR-047)
+import { getForbiddenOverlap } from '@repo/seo-role-contracts';
 import { CanonObservabilityService } from './canon-observability.service';
 
 // ── Section type constants matching DB values ──

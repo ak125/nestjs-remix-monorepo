@@ -83,7 +83,10 @@ export {
   tokenizeAndStem,
 } from "./text-normalize";
 
-export { getForbiddenOverlap } from "./forbidden-overlap";
+// PR-G — `getForbiddenOverlap` migrated to `@repo/seo-role-contracts`
+// (ADR-046 § L1.5 + ADR-047). Consumers must import from
+// `@repo/seo-role-contracts` directly. Shim retiré pour éviter circular
+// dep et pour clarifier le SoT comportemental vs identité.
 
 export {
   KeywordClusterSchema,

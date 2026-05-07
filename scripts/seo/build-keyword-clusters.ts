@@ -31,9 +31,10 @@ import {
   type CanonicalRoleId,
   classifyKeywordToRole,
   DEPRECATED_OUTPUT_ROLES,
-  getForbiddenOverlap,
   RoleId,
 } from '@repo/seo-roles';
+// PR-G — getForbiddenOverlap migrated to @repo/seo-role-contracts (ADR-047)
+import { getForbiddenOverlap } from '@repo/seo-role-contracts';
 
 // ── Load environment ─────────────────────────────────────────────────────────
 

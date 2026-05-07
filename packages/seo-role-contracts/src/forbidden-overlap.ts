@@ -1,6 +1,15 @@
 /**
  * Per-role forbidden vocabulary — canon SoT for cross-role pollution detection.
  *
+ * **PR-G migration** (ADR-046 § L1.5 CONTRACTS + ADR-047 — vault PR #183) :
+ * canon **déplacé** depuis `@repo/seo-roles/src/forbidden-overlap.ts` vers
+ * `@repo/seo-role-contracts/src/forbidden-overlap.ts`. `@repo/seo-roles` ne
+ * garde qu'un re-export shim deprecated pour transition douce
+ * (memory `feedback_deprecate_before_rename_before_drop`).
+ *
+ * Une PR follow-up retirera le shim après migration de tous les consumers
+ * (alors bump major `seo-roles` 1.0.0).
+ *
  * A term in `getForbiddenOverlap(role)` MUST NOT appear in role-injectable
  * surfaces (page content, H2 headings, micro-phrases, include_terms). It
  * signals that the content has drifted into another role's territory :
@@ -10,23 +19,18 @@
  * - `démontage`, `étapes de remplacement` in R6_GUIDE_ACHAT → procedural (belongs to R3)
  *
  * Mirror of historical `FORBIDDEN_OVERLAP` map in
- * `scripts/seo/build-keyword-clusters.ts:377-515` (snapshot 2026-05-07).
- * The script becomes a consumer of this canon (PR-B). This module is the SoT.
+ * `scripts/seo/build-keyword-clusters.ts:377-515`. The script becomes a
+ * consumer of this canon. This module is the SoT.
  *
- * Matching strategy is locale-aware and provided by `text-normalize.ts` —
- * single tokens stem-match, multi-word terms phrase-match. See `runCanonGate`
- * in `ConseilEnricherService` (PR-C) and the DB trigger `fn_skp_canon_check`
- * (PR-D, exported via `scripts/seo/export-canon-forbidden.ts`).
+ * Matching strategy is locale-aware and provided by `text-normalize.ts`
+ * (re-exported from `@repo/seo-roles`) — single tokens stem-match,
+ * multi-word terms phrase-match. See `runCanonGate` in
+ * `ConseilEnricherService` and the DB trigger `fn_skp_canon_check`
+ * (exported via `scripts/seo/export-canon-forbidden.ts`).
  */
 
-import { RoleId } from "./canonical";
+import { RoleId } from "@repo/seo-roles";
 
-/**
- * Sentinel for legacy script roles ("R3_guide", "R3_conseils") that are NOT
- * canonical RoleIds. The legacy script bucket `R3_guide` has no entry — it
- * resolves through legacy-to-canon mapping to `R6_GUIDE_ACHAT`, which carries
- * its own forbidden list below.
- */
 const FORBIDDEN_TERMS: Readonly<Record<RoleId, readonly string[]>> = {
   [RoleId.R0_HOME]: Object.freeze([] as string[]),
 
@@ -125,7 +129,7 @@ const FORBIDDEN_TERMS: Readonly<Record<RoleId, readonly string[]>> = {
  *
  * Each term is normalised to NFD-stripped lowercase form (no accents, lowercase)
  * — call sites compare against `normalizeSeoText(content)` or
- * `tokenizeAndStem(content)` from `./text-normalize` for stem-aware matching.
+ * `tokenizeAndStem(content)` from `@repo/seo-roles` for stem-aware matching.
  */
 export function getForbiddenOverlap(role: RoleId): readonly string[] {
   return FORBIDDEN_TERMS[role] ?? [];

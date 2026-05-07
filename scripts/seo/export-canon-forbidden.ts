@@ -30,10 +30,11 @@ import * as path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import {
   RoleId,
-  getForbiddenOverlap,
   FORBIDDEN_ROLE_IDS,
   DEPRECATED_OUTPUT_ROLES,
 } from '@repo/seo-roles';
+// PR-G — getForbiddenOverlap migrated to @repo/seo-role-contracts (ADR-047)
+import { getForbiddenOverlap } from '@repo/seo-role-contracts';
 
 dotenv.config({
   path: path.join(__dirname, '../../backend/.env'),
