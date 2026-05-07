@@ -405,3 +405,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/adr-048-repo-map-drift-detector`
 - **Décision** : feat(spec-canon): repo-map.md drift detector + CI workflow (ADR-048 sprint 2 P1)
 - **Sortie** : PR #358 | commits 7b031164
+
+## 2026-05-07 — feat/mobile-v5-preview (auto)
+
+- **Branche** : `feat/mobile-v5-preview`
+- **Décision** : feat(preview): mobile-V5 visual preview routes for V4 funnel validation
+- **Sortie** : PR #368 | commits b1a689fd
