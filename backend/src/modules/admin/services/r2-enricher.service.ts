@@ -28,6 +28,8 @@ import type { ResourceGroup } from '../../../config/execution-registry.types';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
+import { MetricsService } from '../../metrics/metrics.service';
+import { captureEnricherException } from '../../../common/observability/enricher-observability.helper';
 
 export interface R2EnrichResult {
   pgId: string;
@@ -49,6 +51,7 @@ export class R2EnricherService extends SupabaseBaseService {
   constructor(
     configService: ConfigService,
     private readonly flags: FeatureFlagsService,
+    private readonly metrics: MetricsService,
     @Optional() private readonly writeGate?: ContentWriteGateService,
   ) {
     super(configService);
@@ -236,6 +239,15 @@ export class R2EnricherService extends SupabaseBaseService {
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       this.logger.error(`${ctx} Failed: ${msg}`);
+      // ADR-050 Livrable 3 : Sentry capture obligatoire au catch level enricher.
+      captureEnricherException(error, {
+        role: 'R2_PRODUCT',
+        service: 'R2EnricherService',
+        pgId,
+        vehicleKey,
+        step: 'enrichSingle',
+      });
+      this.metrics.incrementEnrich('R2_PRODUCT', 'error');
       return {
         pgId,
         vehicleKey,

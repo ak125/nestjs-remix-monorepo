@@ -23,6 +23,8 @@ import {
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
+import { MetricsService } from '../../metrics/metrics.service';
+import { captureEnricherException } from '../../../common/observability/enricher-observability.helper';
 
 // ── Types ──
 
@@ -83,6 +85,7 @@ export class R4ContentEnricherService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly lintGates: R4LintGatesService,
     private readonly flags: FeatureFlagsService,
+    private readonly metrics: MetricsService,
     @Optional() private readonly writeGate?: ContentWriteGateService,
   ) {
     super(configService);
@@ -167,6 +170,14 @@ export class R4ContentEnricherService extends SupabaseBaseService {
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err);
       this.logger.error(`[R4] enrichSingle error for ${pgAlias}: ${error}`);
+      // ADR-050 Livrable 3 : Sentry capture obligatoire au catch level enricher.
+      captureEnricherException(err, {
+        role: 'R4_REFERENCE',
+        service: 'R4ContentEnricherService',
+        pgId: pgAlias,
+        step: 'enrichSingle',
+      });
+      this.metrics.incrementEnrich('R4_REFERENCE', 'error');
       return this.buildResult(pgAlias, 0, 'failed', start, { error });
     }
   }

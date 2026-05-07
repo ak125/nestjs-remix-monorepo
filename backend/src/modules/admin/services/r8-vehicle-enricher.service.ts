@@ -12,6 +12,8 @@ import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { EnricherTextUtils } from './enricher-text-utils.service';
 import { VehicleRagGeneratorService } from './vehicle-rag-generator.service';
+import { MetricsService } from '../../metrics/metrics.service';
+import { captureEnricherException } from '../../../common/observability/enricher-observability.helper';
 import {
   R8_TABLES,
   R8_HARD_GATES,
@@ -111,6 +113,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly textUtils: EnricherTextUtils,
     private readonly vehicleRagGenerator: VehicleRagGeneratorService,
+    private readonly metrics: MetricsService,
     @Optional() private readonly writeGate?: ContentWriteGateService,
     @Optional() private readonly featureFlags?: FeatureFlagsService,
   ) {
@@ -393,6 +396,14 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       this.logger.error(
         `❌ R8 enrichment failed type_id=${typeId}: ${(error as Error).message}`,
       );
+      // ADR-050 Livrable 3 : Sentry capture obligatoire au catch level enricher.
+      captureEnricherException(error, {
+        role: 'R8_VEHICLE',
+        service: 'R8VehicleEnricherService',
+        pgId: String(typeId),
+        step: 'enrichSingle',
+      });
+      this.metrics.incrementEnrich('R8_VEHICLE', 'error');
       return {
         status: 'failed',
         seoDecision: 'REJECT',

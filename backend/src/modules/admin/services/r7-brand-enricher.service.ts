@@ -23,6 +23,8 @@ import {
 } from '../../../config/brand-rag-frontmatter.schema';
 import { BrandEditorialService } from './brand-editorial.service';
 import { PageRoleValidatorService } from '../../seo/validation/page-role-validator.service';
+import { MetricsService } from '../../metrics/metrics.service';
+import { captureEnricherException } from '../../../common/observability/enricher-observability.helper';
 
 // ── Result ──
 
@@ -105,6 +107,7 @@ export class R7BrandEnricherService extends SupabaseBaseService {
     private readonly textUtils: EnricherTextUtils,
     private readonly editorial: BrandEditorialService,
     private readonly roleValidator: PageRoleValidatorService,
+    private readonly metrics: MetricsService,
   ) {
     super(configService);
   }
@@ -321,6 +324,14 @@ export class R7BrandEnricherService extends SupabaseBaseService {
       this.logger.error(
         `❌ R7 enrichment failed marque_id=${marqueId}: ${(error as Error).message}`,
       );
+      // ADR-050 Livrable 3 : Sentry capture obligatoire au catch level enricher.
+      captureEnricherException(error, {
+        role: 'R7_BRAND',
+        service: 'R7BrandEnricherService',
+        pgId: String(marqueId),
+        step: 'enrichSingle',
+      });
+      this.metrics.incrementEnrich('R7_BRAND', 'error');
       return {
         status: 'failed',
         seoDecision: 'REJECT',
