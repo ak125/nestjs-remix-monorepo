@@ -1,11 +1,13 @@
 id: no-direct-rag-knowledge-write
 language: python
-severity: warning
+# Phase 1 PR-A — bumped warning → error (ADR-046 § Layer L3 RAG MIRROR
+# read-only). Pre-commit hook bloque les commits avec violations error.
+severity: error
 message: |
   Écriture directe vers `automecanik-rag/knowledge/` (ou `/opt/automecanik/rag/knowledge/`)
-  interdite. Ce répertoire est un MIRROR généré automatiquement depuis
+  interdite. Ce répertoire est un MIRROR L3 généré automatiquement depuis
   `automecanik-wiki/exports/rag/` via le CI workflow `sync-rag-from-wiki.yml`
-  (ADR-031 §D20/D22, plan v3 §Étape 7).
+  (ADR-031 §D20/D22, ADR-046 § Layer L3 RAG MIRROR read-only).
 
   Pipeline canon :
     automecanik-raw/         (sources brutes)
@@ -32,8 +34,10 @@ files:
   - scripts/wiki-exports/**/*.py
   - scripts/raw-downloaders/**/*.py
 ignores:
-  # Le sync officiel a le droit d'écrire vers rag/knowledge — c'est sa raison d'être.
-  - scripts/rag-sync/**
+  # Phase 1 PR-A — allowlist canon : un seul script peut écrire vers L3
+  # RAG MIRROR. Tout autre fichier dans `scripts/rag-sync/` est
+  # délibérément non-allowlisté (drift garde-fou).
+  - scripts/rag-sync/sync-wiki-exports-to-rag.py
   # Tests / fixtures peuvent référencer le path en literal.
   - scripts/**/test_*.py
   - scripts/**/*_test.py
