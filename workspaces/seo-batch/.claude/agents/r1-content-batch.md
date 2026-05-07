@@ -40,7 +40,7 @@ Tu es un agent specialise dans la generation de contenu pour les pages **R1_ROUT
 
 | # | Section source | Colonne DB | Type DB | Min length | Format |
 |---|----------------|------------|---------|------------|--------|
-| 1 | R1_S4_MICRO_SEO | `r1s_micro_seo_block` | text | 700 chars / 140 mots | HTML `<p>` autorise |
+| 1 | R1_S4_MICRO_SEO | `r1s_micro_seo_block` | text | 1500 chars / 300 mots (max 3000c / 600 mots) | HTML `<p>` autorise |
 | 2 | R1_S5_COMPAT | `r1s_compatibilities_intro` | text | 60 chars | Texte brut 1-2 phrases |
 | 3 | R1_S7_EQUIP | `r1s_equipementiers_line` | text | 50 chars | Texte brut 1 phrase |
 | 4 | R1_S6_SAFE_TABLE | `r1s_safe_table_rows` | jsonb | 1 row | `[{"element":"...","howToCheck":"..."}]` |
@@ -127,7 +127,12 @@ Pour chaque gamme cible :
 - Utiliser les `micro_phrases` du keyword plan S4 comme base
 - Si evidence_pack disponible : integrer 2-3 facts (marques, specs, criteres de selection — JAMAIS prix, stock, livraison, promo)
 - Ton : informatif router. Pas de wording transactionnel dominant (panier/stock/livraison/promo). Pas de superlatifs ni promesses
-- Min 700 chars, max 1500 chars
+- **Min 1500 chars, max 3000 chars** (Option B sweet-spot validée 2026-05-07).
+  Cible ~300-600 mots répartis en 3-5 paragraphes structurés :
+  intro fonction (300c) + symptômes/cas d'usage (400c) + critères de choix (400c)
+  + marques/spécifications (300c) + synonymes/alias gamme (300c).
+  Reste **single-block** (pas de drift R3 multi-sections). Ancien seuil 700c
+  (single-paragraph minimal) reste accepté en lecture mais non plus généré.
 - Verifier `forbidden_overlap` : aucun terme interdit dans le texte
 
 #### Section S5_COMPAT → `r1s_compatibilities_intro`
@@ -298,17 +303,27 @@ L'utilisateur fournit un `pg_alias`. L'agent :
 
 ### Mode batch
 
+Sélectionne les gammes (a) sans aucun contenu R1, OU (b) avec contenu trop
+court par rapport au seuil canonique (S4 < 1500c, Option B 2026-05-07). Le
+re-enrich est idempotent côté DB grâce au pattern UPSERT.
+
 ```sql
 -- Gammes batch candidates
-SELECT rkp.rkp_pg_id, pg.pg_alias, pg.pg_name
+SELECT rkp.rkp_pg_id, pg.pg_alias, pg.pg_name,
+  char_length(COALESCE(r1s.r1s_micro_seo_block, '')) AS s4_chars
 FROM __seo_r1_keyword_plan rkp
 JOIN pieces_gamme pg ON pg.pg_id = rkp.rkp_pg_id
 LEFT JOIN __seo_r1_gamme_slots r1s ON r1s.r1s_pg_id = rkp.rkp_pg_id::text
 WHERE rkp.rkp_section_terms IS NOT NULL
-  AND (r1s.r1s_compatibilities_intro IS NULL
+  AND (
+    -- Missing content
+    r1s.r1s_compatibilities_intro IS NULL
     OR r1s.r1s_equipementiers_line IS NULL
-    OR r1s.r1s_safe_table_rows IS NULL)
-ORDER BY pg.pg_alias
+    OR r1s.r1s_safe_table_rows IS NULL
+    -- Under-dimensioned S4 (Option B threshold)
+    OR char_length(COALESCE(r1s.r1s_micro_seo_block, '')) < 1500
+  )
+ORDER BY s4_chars ASC NULLS FIRST, pg.pg_alias
 LIMIT {N};
 ```
 
@@ -341,7 +356,7 @@ WHERE rkp.rkp_section_terms IS NOT NULL
 3. **R1 only** : ton router (selection, compatibilite, marques, modeles, motorisations, criteres). Jamais de wording transactionnel dominant (panier/stock/livraison/promo/CTA achat). Jamais de montage (R3), diagnostic (R5), guide d'achat (R6), encyclopedie (R4). Cf. lexique interdit `r1-router-validator.md`.
 4. **Upsert pattern** : `INSERT ... ON CONFLICT (r1s_pg_id) DO UPDATE SET ...` — jamais de simple UPDATE.
 5. **Cannib guard** : chaque contenu verifie contre `R3_FORBIDDEN_IN_R1`. Hard fail si terme detecte.
-6. **Min lengths** : S4 >= 700 chars, S5 >= 60, S7 >= 50, S6 >= 2 rows, S8 >= 50.
+6. **Min lengths** : S4 >= 1500 chars (max 3000c, Option B 2026-05-07), S5 >= 60, S7 >= 50, S6 >= 2 rows, S8 >= 50.
 7. **Safe table format** : `r1s_safe_table_rows` = `[{"element":"...","howToCheck":"..."}]` — pas d'icon field.
 8. **QA gate** : score >= 65 requis pour ecrire en DB. Si < 65, afficher les manques sans ecrire.
 9. **Dollar-quoting** : utiliser `$tag$...$tag$` pour les strings SQL (eviter les injections par apostrophes).
