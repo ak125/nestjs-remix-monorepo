@@ -1,10 +1,18 @@
 /**
  * R3 Guide Page Engine — Typed payload contract.
  * Single endpoint GET /api/r3-guide/:pg_alias returns this structure.
+ *
+ * @deprecated Misnamed legacy: this contract serves R3_CONSEILS canonical
+ * content (per @repo/seo-roles), not the deprecated R3_GUIDE role. Will be
+ * renamed to `R3ConseilsPage` / `R3ConseilsPayload` after a 30-day
+ * deprecation window (post-2026-06-05). See ADR-044 (vault).
  */
 
 import type { BlogArticle } from './blog.interfaces';
 
+/**
+ * @deprecated Renamed to `R3ConseilsPage` post-2026-06-05 per ADR-044.
+ */
 export interface R3GuidePage {
   pg_alias: string;
   pg_id: number;

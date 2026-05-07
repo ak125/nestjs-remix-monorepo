@@ -2,6 +2,12 @@
  * R3GuideService — Page engine orchestrator for R3 conseil guide pages.
  * Single method composes 5 existing services into one typed R3GuidePayload.
  * Replaces 5 separate HTTP calls from the Remix route.
+ *
+ * @deprecated Misnamed legacy: serves R3_CONSEILS canonical content (per
+ * @repo/seo-roles), not the deprecated R3_GUIDE role. Will be renamed to
+ * `R3ConseilsService` after a 30-day deprecation window (post-2026-06-05).
+ * See ADR-044 (vault). Do not extend this service — its successor will
+ * delegate here during the rename phase.
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -26,6 +32,10 @@ import {
 import { PRIX_PAS_CHER } from '../../seo/seo-v4.types';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
 
+/**
+ * @deprecated See file-level note. Replacement: `R3ConseilsService`
+ * (post-2026-06-05, per ADR-044).
+ */
 @Injectable()
 export class R3GuideService {
   private readonly logger = new Logger(R3GuideService.name);
