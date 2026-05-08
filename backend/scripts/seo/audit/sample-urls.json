@@ -1,0 +1,16 @@
+{
+  "samples": [
+    {
+      "url": "https://www.automecanik.com/pieces/freinage/peugeot/308/1-6-hdi-110.html",
+      "surface_key": "R1_GAMME_VEHICLE_ROUTER",
+      "endpoint_actuel": "/api/rm/page-v2",
+      "category": "indexed_control"
+    },
+    {
+      "url": "https://www.automecanik.com/pieces/embrayage/citroen/c4/1-6-vti-120.html",
+      "surface_key": "R1_GAMME_VEHICLE_ROUTER",
+      "endpoint_actuel": "/api/rm/page-v2",
+      "category": "crawled_not_indexed"
+    }
+  ]
+}
