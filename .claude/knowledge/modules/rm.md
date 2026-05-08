@@ -7,10 +7,12 @@ primary_files:
 - backend/src/modules/rm/controllers/rm.controller.ts
 - backend/src/modules/rm/rm.module.ts
 - backend/src/modules/rm/rm.types.ts
+- backend/src/modules/rm/services/__tests__/rm-builder-seo-shadow.test.ts
 - backend/src/modules/rm/services/rm-builder.service.ts
 depends_on:
 - DatabaseModule
 - CatalogModule
+- SeoModule
 ---
 
 # Module Rm
