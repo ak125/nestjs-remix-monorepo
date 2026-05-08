@@ -88,7 +88,7 @@ exports[`SeoChainOrchestratorService Snapshot freeze contrat output (Étape 6 pl
   "surfaceKey": "R1_GAMME_VEHICLE_ROUTER",
   "template": {
     "content": "<p>dans la catégorie <b>Freinage</b></p>",
-    "description": "Description économique",
+    "description": "Description à prix discount",
     "h1": "<h1><b>Plaquettes</b></h1>",
     "keywords": "Plaquettes de frein, Renault, Clio IV, 1.5 dCi 90, 90 ch, 2015, berline, diesel, K9K",
     "preview": "Aperçu Plaquettes de frein",
