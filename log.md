@@ -411,3 +411,21 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-e-l3-rag-mirror-readonly`
 - **Décision** : feat(rag): L3 mirror readonly enforcement + bootstrap guard (MVP-0 PR-E)
 - **Sortie** : PR #356 | commits 2ed2e9b7
+
+## 2026-05-08 — feat/seo-v9-pr2b-policies (auto)
+
+- **Branche** : `feat/seo-v9-pr2b-policies`
+- **Décision** : feat(seo): 4 services policies SEO (PR-2b/v9, stacked sur 2a) (+1 other commit)
+- **Sortie** : PR #400 | commits 85731ace 8d66d310
+
+## 2026-05-08 — feat/seo-v9-pr2c-renderer-switch (auto)
+
+- **Branche** : `feat/seo-v9-pr2c-renderer-switch`
+- **Décision** : feat(seo): chain services + orchestrator (PR-2c/v9, stacked sur 2b) (+3 other commits)
+- **Sortie** : PR #401 | commits d4278b8e c02a31d2 85731ace 8d66d310
+
+## 2026-05-08 — feat/seo-v9-pr2c-renderer-switch (auto)
+
+- **Branche** : `feat/seo-v9-pr2c-renderer-switch`
+- **Décision** : refactor(seo): v4 delegates to chain orchestrator (PR-2c rev 2) (+5 other commits)
+- **Sortie** : PR #401 | commits 79c32c9c 93c63ffe d4278b8e c02a31d2 85731ace 8d66d310

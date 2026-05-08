@@ -1,0 +1,142 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SeoChainOrchestratorService Snapshot freeze contrat output (Étape 6 plan v9 rev 2) freeze R0_HOME output shape 1`] = `
+{
+  "ariane": {
+    "jsonLd": {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "item": "https://www.automecanik.com/",
+          "name": "Accueil",
+          "position": 1,
+        },
+      ],
+    },
+    "textTrail": "Accueil",
+  },
+  "contentBlocks": [],
+  "metadata": {
+    "chainVersion": "seo-v9-pr2c",
+    "internalLinkCount": 0,
+    "surfaceKey": "R0_HOME",
+    "templateId": null,
+    "variantIds": {},
+  },
+  "policies": {
+    "blockingReasons": [],
+    "canonical": "https://www.automecanik.com/",
+    "robots": "index,follow",
+  },
+  "surfaceKey": "R0_HOME",
+  "template": {
+    "content": "",
+    "description": "",
+    "h1": "",
+    "keywords": "Plaquettes de frein, Renault, Clio IV, 1.5 dCi 90, 90 ch, 2015, berline, diesel, K9K",
+    "preview": "",
+    "title": "",
+  },
+}
+`;
+
+exports[`SeoChainOrchestratorService Snapshot freeze contrat output (Étape 6 plan v9 rev 2) freeze R1_GAMME_VEHICLE_ROUTER output shape 1`] = `
+{
+  "ariane": {
+    "jsonLd": {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "item": "https://www.automecanik.com/",
+          "name": "Accueil",
+          "position": 1,
+        },
+      ],
+    },
+    "textTrail": "Accueil",
+  },
+  "contentBlocks": [
+    {
+      "html": "Aperçu Plaquettes de frein",
+      "type": "lead",
+    },
+    {
+      "html": "<p>dans la catégorie <b>Freinage</b></p>",
+      "type": "paragraph",
+    },
+  ],
+  "metadata": {
+    "chainVersion": "seo-v9-pr2c",
+    "internalLinkCount": 0,
+    "surfaceKey": "R1_GAMME_VEHICLE_ROUTER",
+    "templateId": "R1_GAMME_VEHICLE_ROUTER:124",
+    "variantIds": {
+      "1": null,
+      "2": null,
+      "3": null,
+    },
+  },
+  "policies": {
+    "blockingReasons": [],
+    "canonical": "https://www.automecanik.com/pieces/plaquettes-de-frein/renault/clio/1-5-dci-90.html",
+    "robots": "index,follow",
+  },
+  "surfaceKey": "R1_GAMME_VEHICLE_ROUTER",
+  "template": {
+    "content": "<p>dans la catégorie <b>Freinage</b></p>",
+    "description": "Description économique",
+    "h1": "<h1><b>Plaquettes</b></h1>",
+    "keywords": "Plaquettes de frein, Renault, Clio IV, 1.5 dCi 90, 90 ch, 2015, berline, diesel, K9K",
+    "preview": "Aperçu Plaquettes de frein",
+    "title": "Plaquettes de frein pour Renault Clio IV",
+  },
+}
+`;
+
+exports[`SeoChainOrchestratorService Snapshot freeze contrat output (Étape 6 plan v9 rev 2) freeze R7_BRAND_HUB output shape (noindex via threshold) 1`] = `
+{
+  "ariane": {
+    "jsonLd": {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "item": "https://www.automecanik.com/",
+          "name": "Accueil",
+          "position": 1,
+        },
+      ],
+    },
+    "textTrail": "Accueil",
+  },
+  "contentBlocks": [],
+  "metadata": {
+    "chainVersion": "seo-v9-pr2c",
+    "internalLinkCount": 0,
+    "surfaceKey": "R7_BRAND_HUB",
+    "templateId": null,
+    "variantIds": {},
+  },
+  "policies": {
+    "blockingReasons": [
+      "families_below_threshold(1<3)",
+    ],
+    "canonical": "https://www.automecanik.com/constructeurs/bosch.html",
+    "robots": "noindex,follow",
+  },
+  "surfaceKey": "R7_BRAND_HUB",
+  "template": {
+    "content": "",
+    "description": "",
+    "h1": "",
+    "keywords": "Plaquettes de frein, Renault, Clio IV, 1.5 dCi 90, 90 ch, 2015, berline, diesel, K9K",
+    "preview": "",
+    "title": "",
+  },
+}
+`;
