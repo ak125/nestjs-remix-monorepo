@@ -411,3 +411,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-e-l3-rag-mirror-readonly`
 - **Décision** : feat(rag): L3 mirror readonly enforcement + bootstrap guard (MVP-0 PR-E)
 - **Sortie** : PR #356 | commits 2ed2e9b7
+
+## 2026-05-08 — feat/seo-v9-pr2b-policies (auto)
+
+- **Branche** : `feat/seo-v9-pr2b-policies`
+- **Décision** : feat(seo): 4 services policies SEO (PR-2b/v9, stacked sur 2a) (+1 other commit)
+- **Sortie** : PR #400 | commits 85731ace 8d66d310
