@@ -459,3 +459,21 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-v9-pr1-gap-matrix`
 - **Décision** : fix(seo-v9-pr1): samples complets avec 14 variables SeoVariablesSchema requises (+24 other commits)
 - **Sortie** : PR #398 | commits 65e3cdac af66d534 86d77b1b a34af83e 9b970255 99372469 beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr2b-policies (auto)
+
+- **Branche** : `feat/seo-v9-pr2b-policies`
+- **Décision** : feat(seo): 4 services policies SEO (PR-2b/v9, stacked sur 2a) (+1 other commit)
+- **Sortie** : PR #400 | commits 85731ace 8d66d310
+
+## 2026-05-08 — feat/seo-v9-pr2c-renderer-switch (auto)
+
+- **Branche** : `feat/seo-v9-pr2c-renderer-switch`
+- **Décision** : feat(seo): chain services + orchestrator (PR-2c/v9, stacked sur 2b) (+3 other commits)
+- **Sortie** : PR #401 | commits d4278b8e c02a31d2 85731ace 8d66d310
+
+## 2026-05-08 — feat/seo-v9-pr2c-renderer-switch (auto)
+
+- **Branche** : `feat/seo-v9-pr2c-renderer-switch`
+- **Décision** : refactor(seo): v4 delegates to chain orchestrator (PR-2c rev 2) (+5 other commits)
+- **Sortie** : PR #401 | commits 79c32c9c 93c63ffe d4278b8e c02a31d2 85731ace 8d66d310
