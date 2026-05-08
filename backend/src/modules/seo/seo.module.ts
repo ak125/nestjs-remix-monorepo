@@ -125,6 +125,13 @@ import { DiagnosticController } from './controllers/diagnostic.controller';
 import { SeoGeneratorController } from './controllers/seo-generator.controller';
 
 // ═══════════════════════════════════════════════════════════════════════════
+// REGISTRIES (PR-2a plan seo-v9 — catalogues SoT, pas de logique métier)
+// ═══════════════════════════════════════════════════════════════════════════
+import { SeoSurfaceRegistry } from './registries/seo-surface.registry';
+import { SeoVariantFamilyRegistry } from './registries/seo-variant-family.registry';
+import { SeoFeatureFlagRegistry } from './registries/seo-feature-flag.registry';
+
+// ═══════════════════════════════════════════════════════════════════════════
 // INTERCEPTORS
 // ═══════════════════════════════════════════════════════════════════════════
 import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
@@ -220,6 +227,10 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     DiagnosticService,
     SeoGeneratorService,
     SeoTitleEngineService,
+    // Registries (PR-2a plan seo-v9)
+    SeoSurfaceRegistry,
+    SeoVariantFamilyRegistry,
+    SeoFeatureFlagRegistry,
 
     // Interceptors globaux
     {
@@ -275,6 +286,10 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     DiagnosticService,
     SeoGeneratorService,
     SeoTitleEngineService,
+    // Registries (PR-2a plan seo-v9)
+    SeoSurfaceRegistry,
+    SeoVariantFamilyRegistry,
+    SeoFeatureFlagRegistry,
   ],
 })
 export class SeoModule {

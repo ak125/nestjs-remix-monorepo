@@ -90,3 +90,33 @@ export function getContract(roleId: RoleId): RoleContract {
   }
   return contract;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PR-2a (plan seo-v9) — registries SoT : surfaces, seuils noindex, gate R2.
+// Catalogues purs (pas de logique métier hors des fonctions utilitaires
+// déterministes). Consommés par `backend/src/modules/seo/registries/*.ts`.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Surface keys (PR-2a)
+export {
+  SurfaceKeySchema,
+  type SurfaceKey,
+  SURFACE_TO_ROLE,
+  surfaceToRole,
+} from "./surface-keys";
+
+// Noindex thresholds (PR-2a, plan seo-v9 section 3.6)
+export {
+  NoindexThresholdsSchema,
+  type NoindexThresholds,
+  NOINDEX_THRESHOLDS,
+  getThresholds,
+} from "./noindex-thresholds";
+
+// R2 indexability gate conditions (PR-2a)
+export {
+  R2IndexabilityConditionsSchema,
+  type R2IndexabilityConditions,
+  type R2IndexabilityVerdict,
+  evaluateR2Indexability,
+} from "./r2-indexability-conditions";
