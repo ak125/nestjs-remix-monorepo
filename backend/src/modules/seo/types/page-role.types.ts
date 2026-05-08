@@ -96,49 +96,20 @@ export const PAGE_ROLE_HIERARCHY: PageRole[] = [
 ];
 
 /**
- * Règles de maillage autorisées (hiérarchique)
- * Clé = rôle source, Valeur = rôles cibles autorisés
+ * Règles de maillage autorisées — désormais dérivées du canon
+ * `@repo/seo-roles/handoff-graph.ts` (`ROLE_HANDOFF_GRAPH`).
  *
- * Schéma strict :
- * - R4 Référence → R3/R5 + R1 (optionnel)
- * - R3 Blog → R4 + R2 (1-2 max)
- * - R5 Diagnostic → R4 + R1
- * - R1 Routeur → R2 uniquement
- * - R2 Produit → R4 (1 max) + R3 (0-1 max)
+ * @deprecated `ALLOWED_LINKS` constante locale supprimée par ADR-052
+ * (governance-vault). Le graphe de navigation inter-rôles est désormais
+ * piloté par le canon mirror typé de `.spec/00-canon/role-matrix.md`.
+ *
+ * `isLinkAllowed()` consulte le canon via `pageRoleToRoleId()` +
+ * `isHandoffAllowed()`. Pour le rendu effectif d'un `<a href>` public,
+ * utiliser `isRenderableLinkAllowed()` (handoff conceptuel + surface
+ * routable).
+ *
+ * @see backend/src/modules/seo/routable-surface-registry.ts
  */
-export const ALLOWED_LINKS: Record<PageRole, PageRole[]> = {
-  [PageRole.R0_HOME]: [
-    PageRole.R1_ROUTER,
-    PageRole.R2_PRODUCT,
-    PageRole.R3_BLOG,
-    PageRole.R4_REFERENCE,
-    PageRole.R5_DIAGNOSTIC,
-    PageRole.R6_GUIDE_ACHAT,
-    PageRole.R7_BRAND,
-  ],
-  [PageRole.R4_REFERENCE]: [
-    PageRole.R3_BLOG,
-    PageRole.R5_DIAGNOSTIC,
-    PageRole.R1_ROUTER,
-  ],
-  [PageRole.R3_BLOG]: [PageRole.R4_REFERENCE, PageRole.R2_PRODUCT],
-  [PageRole.R5_DIAGNOSTIC]: [PageRole.R4_REFERENCE, PageRole.R1_ROUTER],
-  [PageRole.R1_ROUTER]: [PageRole.R2_PRODUCT],
-  [PageRole.R2_PRODUCT]: [PageRole.R4_REFERENCE, PageRole.R3_BLOG], // max 1 lien R4, 0-1 lien R3
-  [PageRole.R7_BRAND]: [
-    PageRole.R1_ROUTER,
-    PageRole.R2_PRODUCT,
-    PageRole.R7_BRAND,
-    PageRole.R8_VEHICLE,
-  ],
-  [PageRole.R8_VEHICLE]: [
-    PageRole.R1_ROUTER,
-    PageRole.R2_PRODUCT,
-    PageRole.R7_BRAND,
-  ],
-  [PageRole.R6_SUPPORT]: [], // pas de liens sortants SEO
-  [PageRole.R6_GUIDE_ACHAT]: [PageRole.R4_REFERENCE, PageRole.R2_PRODUCT], // guide → référence + produit
-};
 
 /**
  * Pattern URL avec son rôle associé
@@ -357,15 +328,48 @@ export function getPageRoleFromUrl(url: string): PageRole | null {
 
 /**
  * Vérifie si un lien de sourceRole vers targetRole est autorisé
+ * (handoff conceptuel — canon `ROLE_HANDOFF_GRAPH`).
+ *
+ * Pour décider de rendre un `<a href>` public (avec surface routable),
+ * utiliser plutôt `isRenderableLinkAllowed()`.
+ *
  * @param sourceRole - Le rôle de la page source
  * @param targetRole - Le rôle de la page cible
- * @returns true si le lien est autorisé
+ * @returns true si le handoff est canonique
  */
 export function isLinkAllowed(
   sourceRole: PageRole,
   targetRole: PageRole,
 ): boolean {
-  return ALLOWED_LINKS[sourceRole]?.includes(targetRole) ?? false;
+  const sourceRoleId = pageRoleToRoleId(sourceRole);
+  const targetRoleId = pageRoleToRoleId(targetRole);
+  if (!sourceRoleId || !targetRoleId) return false;
+  return isHandoffAllowed(sourceRoleId, targetRoleId);
+}
+
+/**
+ * Vérifie si un lien `<a href>` public peut être effectivement rendu.
+ *
+ * Combine 2 conditions :
+ *   1. Handoff conceptuel autorisé par canon (`isLinkAllowed`).
+ *   2. La cible expose une surface URL publique routable
+ *      (`hasRoutableSurface`).
+ *
+ * Évite la résurrection de liens publics vers R5 (sunset ADR-027) ou
+ * vers R3_GUIDE (déprécié) tout en préservant la validité conceptuelle
+ * du handoff côté planning éditorial.
+ *
+ * @param sourceRole - Le rôle de la page source
+ * @param targetRole - Le rôle de la page cible
+ * @returns true si le lien public peut être rendu
+ */
+export function isRenderableLinkAllowed(
+  sourceRole: PageRole,
+  targetRole: PageRole,
+): boolean {
+  if (!isLinkAllowed(sourceRole, targetRole)) return false;
+  const targetRoleId = pageRoleToRoleId(targetRole);
+  return targetRoleId !== null && hasRoutableSurface(targetRoleId);
 }
 
 /**
@@ -415,10 +419,19 @@ export function getR3SubRoleFromUrl(url: string): R3SubRole | null {
 export { RoleId } from '../../../config/role-ids';
 import { RoleId } from '../../../config/role-ids';
 
+// ADR-052 : link graph dérivé du canon `@repo/seo-roles/handoff-graph`
+// (mirror typé de `.spec/00-canon/role-matrix.md`). `routable-surface-registry`
+// est runtime backend (cf doc fichier).
+import { isHandoffAllowed } from '@repo/seo-roles';
+import { hasRoutableSurface } from '../routable-surface-registry';
+
 /**
  * Map PageRole enum to canonical RoleId.
- * R3 needs URL context (r3SubRole) to distinguish guide vs conseils.
- * Default R3 (no sub-role) → R3_GUIDE.
+ *
+ * R3 sub-role distinction :
+ *   - 'conseils' → RoleId.R3_CONSEILS (canon vivant)
+ *   - 'guide-achat' → RoleId.R3_GUIDE (legacy explicite, déprécié)
+ *   - undefined → RoleId.R3_CONSEILS (canon, ADR-052 fix : avant R3_GUIDE)
  */
 export function pageRoleToRoleId(
   role: PageRole,
@@ -432,8 +445,14 @@ export function pageRoleToRoleId(
     case PageRole.R2_PRODUCT:
       return RoleId.R2_PRODUCT;
     case PageRole.R3_BLOG:
+      // ADR-052 fix : default canon vivant R3_CONSEILS (avant : R3_GUIDE déprécié).
+      // R3_GUIDE n'est ni dans ROLE_HANDOFF_GRAPH ni dans ROUTABLE_SURFACES, donc
+      // tout `isLinkAllowed(*, R3_BLOG)` retournait `false` sans ce fix.
+      // Sub-role 'guide-achat' explicite continue à mapper vers R3_GUIDE pour
+      // backwards-compat avec les appelants qui distinguent encore guide vs conseils.
       if (r3SubRole === 'conseils') return RoleId.R3_CONSEILS;
-      return RoleId.R3_GUIDE;
+      if (r3SubRole === 'guide-achat') return RoleId.R3_GUIDE;
+      return RoleId.R3_CONSEILS;
     case PageRole.R4_REFERENCE:
       return RoleId.R4_REFERENCE;
     case PageRole.R5_DIAGNOSTIC:

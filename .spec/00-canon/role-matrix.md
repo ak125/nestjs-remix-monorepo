@@ -167,7 +167,7 @@ La serie R* est ouverte : R9, R10, R11... peuvent etre ajoutes pour de futurs ro
 - **Sorties interdites** : pas a pas, symptomes/causes, glossaire dominant, panier/stock detaille
 - **forbidden_dominant_signals** : `["procedure_steps", "symptom_tree", "deep_glossary", "transactional_listing", "stock_pricing"]`
 - **Gates de purete** : zero R3 dominant, zero R5 dominant, zero R4 dominant, zero R2 dominant
-- **handoff_targets** : `[{target: R2, condition: "decision prise, pret a acheter"}, {target: R3, condition: "besoin = comment remplacer"}, {target: R5, condition: "besoin = comprendre un symptome"}, {target: R4, condition: "besoin = definition technique"}]`
+- **handoff_targets** : `[{target: R1, condition: "besoin = verifier compatibilite avant commande"}, {target: R2, condition: "decision prise, pret a acheter"}, {target: R3, condition: "besoin = comment remplacer"}, {target: R5, condition: "besoin = comprendre un symptome"}, {target: R4, condition: "besoin = definition technique"}]`
 
 ### R7 — BRAND / CONSTRUCTEUR / HUB MARQUE
 

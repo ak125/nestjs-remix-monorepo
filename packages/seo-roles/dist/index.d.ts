@@ -10,4 +10,5 @@ export { type RoleIntents, getRoleIntents, isIntentAllowedForRole, } from "./int
 export { type SupportedLocale, normalizeSeoText, normalizePhrase, tokenize, stem, tokenizeAndStem, } from "./text-normalize";
 export { getForbiddenOverlap } from "./forbidden-overlap";
 export { KeywordClusterSchema, type KeywordCluster, } from "./keyword-cluster.schema";
+export { type HandoffEdge, ROLE_HANDOFF_GRAPH, ROLE_HANDOFF_GRAPH_VERSION, getHandoffTargets, isHandoffAllowed, } from "./handoff-graph";
 //# sourceMappingURL=index.d.ts.map

@@ -21,8 +21,15 @@ import {
   PageRole,
   getPageRoleFromUrl,
   isLinkAllowed,
+  isRenderableLinkAllowed,
+  pageRoleToRoleId,
   PAGE_ROLE_META,
 } from './types/page-role.types';
+import { ROLE_HANDOFF_GRAPH_VERSION } from '@repo/seo-roles';
+import {
+  SeoHandoffMetricsService,
+  type HandoffFilterReason,
+} from './services/seo-handoff-metrics.service';
 
 // =====================================================
 // Types
@@ -126,7 +133,7 @@ export class InternalLinkingService implements OnModuleInit {
     lastWarm: null as Date | null,
   };
 
-  constructor() {
+  constructor(private readonly handoffMetrics: SeoHandoffMetricsService) {
     const supabaseUrl = process.env.SUPABASE_URL;
     const supabaseKey =
       process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -411,10 +418,15 @@ export class InternalLinkingService implements OnModuleInit {
   /**
    * 🛡️ Valide un lien selon les règles de maillage par rôle
    *
-   * Règles appliquées:
-   * - ALLOWED_LINKS: sourceRole peut lier vers targetRole?
-   * - R2→R4: max 1 lien vers référence
-   * - R6: aucun lien sortant
+   * Règles appliquées (ADR-052) :
+   * - `isRenderableLinkAllowed()` : handoff canon `ROLE_HANDOFF_GRAPH`
+   *   + cible avec surface routable (ROUTABLE_SURFACES). Évite la
+   *   résurrection de liens publics R5 (sunset ADR-027) ou R3_GUIDE.
+   * - R2→R4 : max 1 lien vers référence
+   * - R6 : aucun lien sortant
+   * - Émission métrique `seo_handoff_filtered` quand un lien est
+   *   filtré (log structuré Loki + compteur in-memory pour endpoint
+   *   admin existant `GET /api/seo-dynamic-v4/internal-links/metrics`).
    */
   private validateLinkByRole(
     sourceUrl: string,
@@ -437,11 +449,28 @@ export class InternalLinkingService implements OnModuleInit {
       };
     }
 
-    // Vérifier règles ALLOWED_LINKS
-    if (!isLinkAllowed(sourceRole, targetRole)) {
+    // Vérifier le handoff canonique + surface routable runtime.
+    if (!isRenderableLinkAllowed(sourceRole, targetRole)) {
+      const handoffOk = isLinkAllowed(sourceRole, targetRole);
+      const reason: HandoffFilterReason = handoffOk
+        ? 'not_routable_surface'
+        : 'not_in_handoff_canon';
+
+      // Log structuré Loki — pas de PII, pas d'URL.
+      this.logger.warn(
+        `[seo_handoff_filtered] source=${sourceRole} target=${targetRole} reason=${reason} graph_version=${ROLE_HANDOFF_GRAPH_VERSION}`,
+      );
+
+      // Compteur in-memory pour endpoint admin
+      const sourceRoleId = pageRoleToRoleId(sourceRole);
+      const targetRoleId = pageRoleToRoleId(targetRole);
+      if (sourceRoleId && targetRoleId) {
+        this.handoffMetrics.increment(sourceRoleId, targetRoleId, reason);
+      }
+
       return {
         allowed: false,
-        reason: `${sourceRole} (${PAGE_ROLE_META[sourceRole].label}) → ${targetRole} (${PAGE_ROLE_META[targetRole].label}) non autorisé`,
+        reason: `${sourceRole} (${PAGE_ROLE_META[sourceRole].label}) → ${targetRole} (${PAGE_ROLE_META[targetRole].label}) non autorisé (${reason})`,
       };
     }
 

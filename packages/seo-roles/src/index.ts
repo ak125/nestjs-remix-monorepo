@@ -89,3 +89,14 @@ export {
   KeywordClusterSchema,
   type KeywordCluster,
 } from "./keyword-cluster.schema";
+
+// ── PR-0E surface : handoff graph canon (mirror typé de role-matrix.md) ──
+// Cf ADR-052 (governance-vault) — hoist + amendement R6 → R1.
+
+export {
+  type HandoffEdge,
+  ROLE_HANDOFF_GRAPH,
+  ROLE_HANDOFF_GRAPH_VERSION,
+  getHandoffTargets,
+  isHandoffAllowed,
+} from "./handoff-graph";

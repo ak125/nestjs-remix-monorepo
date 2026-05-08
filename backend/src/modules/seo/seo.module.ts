@@ -48,6 +48,7 @@ import { PurchaseGuideValidatorService } from './validation/purchase-guide-valid
 // ═══════════════════════════════════════════════════════════════════════════
 import { InternalLinkingService } from './internal-linking.service';
 import { SeoLinkTrackingService } from './infrastructure/seo-link-tracking.service';
+import { SeoHandoffMetricsService } from './services/seo-handoff-metrics.service';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SERVICES MONITORING (ex seo-monitoring)
@@ -192,6 +193,7 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     // Linking
     InternalLinkingService,
     SeoLinkTrackingService,
+    SeoHandoffMetricsService,
     // Monitoring
     SeoMonitoringService,
     SeoPilotageService,
@@ -254,6 +256,7 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     // Linking
     InternalLinkingService,
     SeoLinkTrackingService,
+    SeoHandoffMetricsService,
     // Monitoring
     SeoMonitoringService,
     SeoPilotageService,
@@ -291,14 +294,20 @@ export class SeoModule {
 export { SeoVariables } from './seo-v4.types';
 
 /**
- * EXPORTS POUR ROLES DE PAGES (Phase 0)
+ * EXPORTS POUR ROLES DE PAGES (Phase 0 + ADR-052)
+ *
+ * `ALLOWED_LINKS` legacy supprimé — graphe désormais piloté par
+ * `@repo/seo-roles/handoff-graph` (canon mirror typé). Consommer
+ * `isRenderableLinkAllowed` pour le rendu d'`<a href>` public,
+ * `isLinkAllowed` pour la validation conceptuelle d'intent.
  */
 export {
   PageRole,
   PAGE_ROLE_META,
   PAGE_ROLE_HIERARCHY,
-  ALLOWED_LINKS,
   URL_ROLE_PATTERNS,
   getPageRoleFromUrl,
   isLinkAllowed,
+  isRenderableLinkAllowed,
 } from './types/page-role.types';
+export { hasRoutableSurface } from './routable-surface-registry';

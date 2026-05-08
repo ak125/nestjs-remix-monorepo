@@ -1,15 +1,20 @@
 /**
  * PageRole Link Hierarchy Tests
  *
- * Validates that internal links follow the SEO hierarchy rules.
- * Links should flow DOWN the hierarchy: R4 → R3 → R5 → R1 → R2
+ * Validates that internal links follow the canonical `ROLE_HANDOFF_GRAPH`
+ * (mirror typé de `.spec/00-canon/role-matrix.md`, cf @repo/seo-roles).
  *
- * @see backend/src/modules/seo/types/page-role.types.ts - ALLOWED_LINKS
+ * Distinction (ADR-052) :
+ *   - `isLinkAllowed`           → handoff conceptuel canon (planning)
+ *   - `isRenderableLinkAllowed` → handoff + surface routable (rendu public)
+ *
+ * @see ADR-052 (governance-vault) — hoist + amendement R6 → R1.
  */
 import { PageRoleValidatorService } from '../../src/modules/seo/validation/page-role-validator.service';
 import {
   PageRole,
   isLinkAllowed,
+  isRenderableLinkAllowed,
   isRoleAbove,
 } from '../../src/modules/seo/types/page-role.types';
 
@@ -21,107 +26,126 @@ describe('PageRole Link Hierarchy', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // HELPER FUNCTION TESTS
+  // CANONICAL HANDOFF MATRIX (ROLE_HANDOFF_GRAPH source of truth)
   // ═══════════════════════════════════════════════════════════════
-  describe('isLinkAllowed helper', () => {
-    describe('R4 Reference allowed links', () => {
-      it('R4 → R3 (reference → blog) is allowed', () => {
-        expect(isLinkAllowed(PageRole.R4_REFERENCE, PageRole.R3_BLOG)).toBe(
-          true,
-        );
+  describe('isLinkAllowed — canonical handoff matrix', () => {
+    describe('R6_GUIDE_ACHAT handoffs (ADR-052 amendement R1 ∈ R6)', () => {
+      it('R6 → R1 (verifier compatibilite avant commande) — amendement', () => {
+        expect(
+          isLinkAllowed(PageRole.R6_GUIDE_ACHAT, PageRole.R1_ROUTER),
+        ).toBe(true);
       });
 
-      it('R4 → R5 (reference → diagnostic) is allowed', () => {
-        expect(isLinkAllowed(PageRole.R4_REFERENCE, PageRole.R5_DIAGNOSTIC)).toBe(
-          true,
-        );
+      it('R6 → R2 (decision prise, pret a acheter)', () => {
+        expect(
+          isLinkAllowed(PageRole.R6_GUIDE_ACHAT, PageRole.R2_PRODUCT),
+        ).toBe(true);
       });
 
-      it('R4 → R1 (reference → router) is allowed', () => {
-        expect(isLinkAllowed(PageRole.R4_REFERENCE, PageRole.R1_ROUTER)).toBe(
-          true,
-        );
+      it('R6 → R3 (comment remplacer)', () => {
+        expect(
+          isLinkAllowed(PageRole.R6_GUIDE_ACHAT, PageRole.R3_BLOG),
+        ).toBe(true);
       });
 
-      it('R4 → R2 (reference → product) is NOT allowed', () => {
-        expect(isLinkAllowed(PageRole.R4_REFERENCE, PageRole.R2_PRODUCT)).toBe(
-          false,
-        );
-      });
-    });
-
-    describe('R3 Blog allowed links', () => {
-      it('R3 → R4 (blog → reference) is allowed', () => {
-        expect(isLinkAllowed(PageRole.R3_BLOG, PageRole.R4_REFERENCE)).toBe(
-          true,
-        );
+      it('R6 → R4 (definition technique)', () => {
+        expect(
+          isLinkAllowed(PageRole.R6_GUIDE_ACHAT, PageRole.R4_REFERENCE),
+        ).toBe(true);
       });
 
-      it('R3 → R2 (blog → product) is allowed', () => {
-        expect(isLinkAllowed(PageRole.R3_BLOG, PageRole.R2_PRODUCT)).toBe(true);
-      });
-
-      it('R3 → R1 (blog → router) is NOT allowed', () => {
-        expect(isLinkAllowed(PageRole.R3_BLOG, PageRole.R1_ROUTER)).toBe(false);
+      it('R6 → R5 (comprendre symptome) — handoff conceptuel uniquement', () => {
+        expect(
+          isLinkAllowed(PageRole.R6_GUIDE_ACHAT, PageRole.R5_DIAGNOSTIC),
+        ).toBe(true);
       });
     });
 
-    describe('R1 Router allowed links', () => {
-      it('R1 → R2 (router → product) is allowed', () => {
-        expect(isLinkAllowed(PageRole.R1_ROUTER, PageRole.R2_PRODUCT)).toBe(
-          true,
-        );
-      });
-
-      it('R1 → R3 (router → blog) is NOT allowed', () => {
-        expect(isLinkAllowed(PageRole.R1_ROUTER, PageRole.R3_BLOG)).toBe(false);
-      });
-
-      it('R1 → R4 (router → reference) is NOT allowed', () => {
-        expect(isLinkAllowed(PageRole.R1_ROUTER, PageRole.R4_REFERENCE)).toBe(
-          false,
-        );
-      });
-    });
-
-    describe('R2 Product allowed links', () => {
-      it('R2 → R4 (product → reference) is allowed (max 1)', () => {
-        expect(isLinkAllowed(PageRole.R2_PRODUCT, PageRole.R4_REFERENCE)).toBe(
-          true,
-        );
-      });
-
-      it('R2 → R3 (product → blog) is allowed (max 1)', () => {
-        expect(isLinkAllowed(PageRole.R2_PRODUCT, PageRole.R3_BLOG)).toBe(true);
-      });
-
-      it('R2 → R1 (product → router) is NOT allowed (upward)', () => {
-        expect(isLinkAllowed(PageRole.R2_PRODUCT, PageRole.R1_ROUTER)).toBe(
-          false,
-        );
-      });
-    });
-
-    describe('R6 Support links', () => {
-      it('R6 has no allowed outbound links', () => {
+    describe('R6_SUPPORT — pas de handoffs sortants', () => {
+      it('R6_SUPPORT → R1 = false', () => {
         expect(isLinkAllowed(PageRole.R6_SUPPORT, PageRole.R1_ROUTER)).toBe(
           false,
         );
+      });
+
+      it('R6_SUPPORT → R2 = false', () => {
         expect(isLinkAllowed(PageRole.R6_SUPPORT, PageRole.R2_PRODUCT)).toBe(
           false,
         );
-        expect(isLinkAllowed(PageRole.R6_SUPPORT, PageRole.R3_BLOG)).toBe(
-          false,
+      });
+    });
+
+    describe('R0_HOME canon handoffs', () => {
+      it('R0 → R1 (besoin gamme)', () => {
+        expect(isLinkAllowed(PageRole.R0_HOME, PageRole.R1_ROUTER)).toBe(true);
+      });
+
+      it('R0 → R7 (besoin marque)', () => {
+        expect(isLinkAllowed(PageRole.R0_HOME, PageRole.R7_BRAND)).toBe(true);
+      });
+
+      it('R0 → R8 (besoin vehicule)', () => {
+        expect(isLinkAllowed(PageRole.R0_HOME, PageRole.R8_VEHICLE)).toBe(true);
+      });
+
+      it('R0 → R6 (besoin guide achat)', () => {
+        expect(isLinkAllowed(PageRole.R0_HOME, PageRole.R6_GUIDE_ACHAT)).toBe(
+          true,
         );
-        expect(isLinkAllowed(PageRole.R6_SUPPORT, PageRole.R4_REFERENCE)).toBe(
-          false,
-        );
+      });
+
+      it('R0 → R2 = false (canon ne liste pas R2 directement)', () => {
+        expect(isLinkAllowed(PageRole.R0_HOME, PageRole.R2_PRODUCT)).toBe(false);
       });
     });
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // HIERARCHY TESTS
+  // RENDERABLE LINK GATE (handoff + surface routable)
+  // ═══════════════════════════════════════════════════════════════
+  describe('isRenderableLinkAllowed — handoff + surface routable', () => {
+    it('R6 → R1 = true (R1 routable)', () => {
+      expect(
+        isRenderableLinkAllowed(PageRole.R6_GUIDE_ACHAT, PageRole.R1_ROUTER),
+      ).toBe(true);
+    });
+
+    it('R6 → R2 = true (R2 routable)', () => {
+      expect(
+        isRenderableLinkAllowed(PageRole.R6_GUIDE_ACHAT, PageRole.R2_PRODUCT),
+      ).toBe(true);
+    });
+
+    it('R6 → R3 = true (R3_CONSEILS routable, par défaut R3_BLOG → R3_CONSEILS)', () => {
+      expect(
+        isRenderableLinkAllowed(PageRole.R6_GUIDE_ACHAT, PageRole.R3_BLOG),
+      ).toBe(true);
+    });
+
+    it('R6 → R4 = true (R4 routable)', () => {
+      expect(
+        isRenderableLinkAllowed(PageRole.R6_GUIDE_ACHAT, PageRole.R4_REFERENCE),
+      ).toBe(true);
+    });
+
+    it('R6 → R5 = false (handoff OK mais R5 non routable autonome — ADR-027)', () => {
+      // Cas critique : handoff conceptuel autorisé canon, mais R5 sunset
+      // autonome (ADR-027) — pas de surface URL publique. Évite la
+      // résurrection de liens publics R5.
+      expect(isLinkAllowed(PageRole.R6_GUIDE_ACHAT, PageRole.R5_DIAGNOSTIC)).toBe(
+        true,
+      );
+      expect(
+        isRenderableLinkAllowed(
+          PageRole.R6_GUIDE_ACHAT,
+          PageRole.R5_DIAGNOSTIC,
+        ),
+      ).toBe(false);
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // HIERARCHY TESTS (existant, inchangé)
   // ═══════════════════════════════════════════════════════════════
   describe('isRoleAbove helper', () => {
     it('R4 is above R3', () => {
@@ -146,171 +170,96 @@ describe('PageRole Link Hierarchy', () => {
   });
 
   // ═══════════════════════════════════════════════════════════════
-  // VALIDATOR SERVICE LINK TESTS
+  // COMPLETE LINKING MATRIX vs canonical ROLE_HANDOFF_GRAPH
   // ═══════════════════════════════════════════════════════════════
-  describe('validateLink service method', () => {
-    describe('Allowed links (no violation)', () => {
-      it('R4 → R3 (reference → blog) returns no violation', () => {
-        const violation = validator.validateLink(
-          '/reference-auto/definition-abs',
-          '/blog-pieces-auto/guide/freinage',
-        );
-        expect(violation).toBeNull();
-      });
-
-      it('R1 → R2 (router → product) returns no violation', () => {
-        const violation = validator.validateLink(
-          '/pieces/freinage-1.html',
-          '/pieces/disque-frein/peugeot/308/1.6-hdi.html',
-        );
-        expect(violation).toBeNull();
-      });
-
-      it('R3 → R4 (blog → reference) returns warning (upward link)', () => {
-        const violation = validator.validateLink(
-          '/blog-pieces-auto/guide/entretien',
-          '/reference-auto/definition-abs',
-        );
-        // R3 → R4 is technically upward, so it returns a warning
-        if (violation) {
-          expect(violation.severity).toBe('warning');
-        }
-      });
-    });
-
-    describe('Forbidden links (returns violation)', () => {
-      it('R4 → R2 (reference → product) returns error', () => {
-        const violation = validator.validateLink(
-          '/reference-auto/definition-abs',
-          '/pieces/disque-frein/peugeot/308/1.6-hdi.html',
-        );
-        expect(violation).not.toBeNull();
-        expect(violation?.type).toBe('invalid_link');
-        expect(violation?.severity).toBe('error');
-      });
-
-      it('R1 → R4 (router → reference) returns error', () => {
-        const violation = validator.validateLink(
-          '/pieces/freinage-1.html',
-          '/reference-auto/definition-abs',
-        );
-        expect(violation).not.toBeNull();
-        expect(violation?.type).toBe('invalid_link');
-      });
-    });
-
-    describe('Forbidden upward links', () => {
-      it('R2 → R1 (product → router) returns error (upward link forbidden)', () => {
-        const violation = validator.validateLink(
-          '/pieces/disque-frein/peugeot/308/1.6-hdi.html',
-          '/pieces/freinage-1.html',
-        );
-        // R2 → R1 is forbidden (upward link to router)
-        expect(violation).not.toBeNull();
-        expect(violation?.type).toBe('invalid_link');
-      });
-    });
-  });
-
-  // ═══════════════════════════════════════════════════════════════
-  // BATCH LINK VALIDATION
-  // ═══════════════════════════════════════════════════════════════
-  describe('validatePageLinks (batch)', () => {
-    it('validates multiple links from a page', () => {
-      const sourceUrl = '/reference-auto/definition-abs';
-      const targetUrls = [
-        '/blog-pieces-auto/guide/freinage', // R4 → R3 (allowed)
-        '/diagnostic-auto/bruit-freinage', // R4 → R5 (allowed)
-        '/pieces/freinage-1.html', // R4 → R1 (allowed)
-      ];
-
-      const violations = validator.validatePageLinks(sourceUrl, targetUrls);
-      expect(violations.length).toBe(0); // All links are valid
-    });
-
-    it('catches forbidden links in batch', () => {
-      const sourceUrl = '/reference-auto/definition-abs';
-      const targetUrls = [
-        '/blog-pieces-auto/guide/freinage', // R4 → R3 (allowed)
-        '/pieces/disque-frein/peugeot/308/1.6-hdi.html', // R4 → R2 (forbidden!)
-      ];
-
-      const violations = validator.validatePageLinks(sourceUrl, targetUrls);
-      expect(violations.length).toBeGreaterThan(0);
-      expect(violations[0].type).toBe('invalid_link');
-    });
-  });
-
-  // ═══════════════════════════════════════════════════════════════
-  // LINK LIMITS (R2 specific)
-  // ═══════════════════════════════════════════════════════════════
-  describe('Link count limits', () => {
-    it('R2 should limit R4 links to 1 max', () => {
-      // This is a documentation of the rule - actual enforcement may vary
-      // R2 Product → R4 Reference: max 1 link
-      const sourceUrl = '/pieces/disque-frein/peugeot/308/1.6-hdi.html';
-      const targetUrls = [
-        '/reference-auto/definition-disque', // 1st R4 link
-        '/reference-auto/definition-frein', // 2nd R4 link - should warn
-      ];
-
-      const violations = validator.validatePageLinks(sourceUrl, targetUrls);
-      // May or may not enforce limit depending on implementation
-      // This test documents the expected behavior
-      expect(violations).toBeDefined();
-    });
-  });
-
-  // ═══════════════════════════════════════════════════════════════
-  // COMPLETE LINKING MATRIX
-  // ═══════════════════════════════════════════════════════════════
-  describe('Complete Linking Matrix', () => {
+  describe('Complete Linking Matrix (canonical)', () => {
+    /**
+     * Source of truth : `.spec/00-canon/role-matrix.md` `handoff_targets`
+     * mirroré dans `@repo/seo-roles/handoff-graph.ts`.
+     *
+     * Note R3_BLOG default → R3_CONSEILS (ADR-052 fix). Donc tous les
+     * tests `R3 → X` reflètent ce qui est dans `R3_CONSEILS.handoff_targets`.
+     */
     const testCases = [
+      // From R0 Home
+      { from: 'R0', to: 'R1', allowed: true },
+      { from: 'R0', to: 'R7', allowed: true },
+      { from: 'R0', to: 'R8', allowed: true },
+      { from: 'R0', to: 'R5', allowed: true },
+      { from: 'R0', to: 'R6', allowed: true },
+      { from: 'R0', to: 'R2', allowed: false },
+      { from: 'R0', to: 'R4', allowed: false },
+
+      // From R1 Router
+      { from: 'R1', to: 'R2', allowed: true },
+      { from: 'R1', to: 'R4', allowed: true },
+      { from: 'R1', to: 'R5', allowed: true },
+      { from: 'R1', to: 'R3', allowed: true },
+      { from: 'R1', to: 'R6', allowed: true },
+
+      // From R2 Product
+      { from: 'R2', to: 'R1', allowed: true },
+      { from: 'R2', to: 'R3', allowed: true },
+      { from: 'R2', to: 'R4', allowed: true },
+      { from: 'R2', to: 'R6', allowed: true },
+      { from: 'R2', to: 'R5', allowed: false },
+
+      // From R3 (default → R3_CONSEILS canon)
+      { from: 'R3', to: 'R6', allowed: true },
+      { from: 'R3', to: 'R5', allowed: true },
+      { from: 'R3', to: 'R4', allowed: true },
+      { from: 'R3', to: 'R1', allowed: false },
+      { from: 'R3', to: 'R2', allowed: false },
+
       // From R4 Reference
       { from: 'R4', to: 'R3', allowed: true },
       { from: 'R4', to: 'R5', allowed: true },
       { from: 'R4', to: 'R1', allowed: true },
+      { from: 'R4', to: 'R6', allowed: true },
       { from: 'R4', to: 'R2', allowed: false },
-      { from: 'R4', to: 'R6', allowed: false },
-
-      // From R3 Blog
-      { from: 'R3', to: 'R4', allowed: true },
-      { from: 'R3', to: 'R2', allowed: true },
-      { from: 'R3', to: 'R1', allowed: false },
-      { from: 'R3', to: 'R5', allowed: false },
 
       // From R5 Diagnostic
+      { from: 'R5', to: 'R3', allowed: true },
       { from: 'R5', to: 'R4', allowed: true },
       { from: 'R5', to: 'R1', allowed: true },
       { from: 'R5', to: 'R2', allowed: false },
-      { from: 'R5', to: 'R3', allowed: false },
+      { from: 'R5', to: 'R6', allowed: false },
 
-      // From R1 Router
-      { from: 'R1', to: 'R2', allowed: true },
-      { from: 'R1', to: 'R3', allowed: false },
-      { from: 'R1', to: 'R4', allowed: false },
-      { from: 'R1', to: 'R5', allowed: false },
+      // From R6 Guide d'achat (ADR-052 amendement)
+      { from: 'R6', to: 'R1', allowed: true },
+      { from: 'R6', to: 'R2', allowed: true },
+      { from: 'R6', to: 'R3', allowed: true },
+      { from: 'R6', to: 'R4', allowed: true },
+      { from: 'R6', to: 'R5', allowed: true },
 
-      // From R2 Product
-      { from: 'R2', to: 'R4', allowed: true },
-      { from: 'R2', to: 'R3', allowed: true },
-      { from: 'R2', to: 'R1', allowed: false },
-      { from: 'R2', to: 'R5', allowed: false },
+      // From R7 Brand
+      { from: 'R7', to: 'R8', allowed: true },
+      { from: 'R7', to: 'R1', allowed: true },
+      { from: 'R7', to: 'R2', allowed: true },
 
-      // From R6 Support (no outbound)
-      { from: 'R6', to: 'R1', allowed: false },
-      { from: 'R6', to: 'R2', allowed: false },
-      { from: 'R6', to: 'R3', allowed: false },
-      { from: 'R6', to: 'R4', allowed: false },
+      // From R8 Vehicle
+      { from: 'R8', to: 'R1', allowed: true },
+      { from: 'R8', to: 'R3', allowed: true },
+      { from: 'R8', to: 'R5', allowed: true },
+      { from: 'R8', to: 'R7', allowed: true },
+      { from: 'R8', to: 'R2', allowed: false },
+
+      // From R6_SUPPORT (no outbound)
+      { from: 'R6S', to: 'R1', allowed: false },
+      { from: 'R6S', to: 'R2', allowed: false },
     ];
 
     const roleMap: Record<string, PageRole> = {
+      R0: PageRole.R0_HOME,
       R1: PageRole.R1_ROUTER,
       R2: PageRole.R2_PRODUCT,
-      R3: PageRole.R3_BLOG,
+      R3: PageRole.R3_BLOG, // default → R3_CONSEILS canon (ADR-052 fix)
       R4: PageRole.R4_REFERENCE,
       R5: PageRole.R5_DIAGNOSTIC,
-      R6: PageRole.R6_SUPPORT,
+      R6: PageRole.R6_GUIDE_ACHAT,
+      R6S: PageRole.R6_SUPPORT,
+      R7: PageRole.R7_BRAND,
+      R8: PageRole.R8_VEHICLE,
     };
 
     it.each(testCases)(

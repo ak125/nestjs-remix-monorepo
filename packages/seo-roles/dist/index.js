@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.KeywordClusterSchema = exports.getForbiddenOverlap = exports.tokenizeAndStem = exports.stem = exports.tokenize = exports.normalizePhrase = exports.normalizeSeoText = exports.isIntentAllowedForRole = exports.getRoleIntents = exports.classifyKeywordToRole = exports.SearchIntentSchema = exports.roleIdNativeEnum = exports.canonicalRoleSchema = exports.tolerantRoleSchema = exports.isCanonicalRoleId = exports.assertCanonicalRoleStrict = exports.ROLE_BADGE_COLORS = exports.getRoleShortLabel = exports.getRoleDisplayLabel = exports.pageTypeToRoleId = exports.roleIdToPageType = exports.assertCanonicalRole = exports.normalizeRoleId = exports.DEPRECATED_OUTPUT_ROLES = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = exports.ROLE_ID_LIST = exports.RoleId = void 0;
+exports.isHandoffAllowed = exports.getHandoffTargets = exports.ROLE_HANDOFF_GRAPH_VERSION = exports.ROLE_HANDOFF_GRAPH = exports.KeywordClusterSchema = exports.getForbiddenOverlap = exports.tokenizeAndStem = exports.stem = exports.tokenize = exports.normalizePhrase = exports.normalizeSeoText = exports.isIntentAllowedForRole = exports.getRoleIntents = exports.classifyKeywordToRole = exports.SearchIntentSchema = exports.roleIdNativeEnum = exports.canonicalRoleSchema = exports.tolerantRoleSchema = exports.isCanonicalRoleId = exports.assertCanonicalRoleStrict = exports.ROLE_BADGE_COLORS = exports.getRoleShortLabel = exports.getRoleDisplayLabel = exports.pageTypeToRoleId = exports.roleIdToPageType = exports.assertCanonicalRole = exports.normalizeRoleId = exports.DEPRECATED_OUTPUT_ROLES = exports.FORBIDDEN_ROLE_IDS = exports.ROLE_TO_PAGE_TYPE = exports.PAGE_TYPE_TO_ROLE = exports.LEGACY_ROLE_ALIASES = exports.ROLE_ID_LIST = exports.RoleId = void 0;
 var canonical_1 = require("./canonical");
 Object.defineProperty(exports, "RoleId", { enumerable: true, get: function () { return canonical_1.RoleId; } });
 Object.defineProperty(exports, "ROLE_ID_LIST", { enumerable: true, get: function () { return canonical_1.ROLE_ID_LIST; } });
@@ -43,4 +43,9 @@ var forbidden_overlap_1 = require("./forbidden-overlap");
 Object.defineProperty(exports, "getForbiddenOverlap", { enumerable: true, get: function () { return forbidden_overlap_1.getForbiddenOverlap; } });
 var keyword_cluster_schema_1 = require("./keyword-cluster.schema");
 Object.defineProperty(exports, "KeywordClusterSchema", { enumerable: true, get: function () { return keyword_cluster_schema_1.KeywordClusterSchema; } });
+var handoff_graph_1 = require("./handoff-graph");
+Object.defineProperty(exports, "ROLE_HANDOFF_GRAPH", { enumerable: true, get: function () { return handoff_graph_1.ROLE_HANDOFF_GRAPH; } });
+Object.defineProperty(exports, "ROLE_HANDOFF_GRAPH_VERSION", { enumerable: true, get: function () { return handoff_graph_1.ROLE_HANDOFF_GRAPH_VERSION; } });
+Object.defineProperty(exports, "getHandoffTargets", { enumerable: true, get: function () { return handoff_graph_1.getHandoffTargets; } });
+Object.defineProperty(exports, "isHandoffAllowed", { enumerable: true, get: function () { return handoff_graph_1.isHandoffAllowed; } });
 //# sourceMappingURL=index.js.map
