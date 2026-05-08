@@ -7,7 +7,6 @@
  * - Patch 3: V3 excludes V2 entries (done via canon_key check)
  */
 
-import { Check, ChevronDown, ChevronUp, Copy } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import {
@@ -18,6 +17,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { type EnrichedVehicleType } from "~/hooks/useVehicleEnrichment";
+import { Check, ChevronDown, ChevronUp, Copy } from '~/lib/icons';
 import { type VLevelItem } from "./types";
 
 interface VLevelCardProps {

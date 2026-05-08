@@ -1,3 +1,4 @@
+import { Reveal, Section } from "~/components/layout";
 import {
   Award,
   CheckCircle,
@@ -5,8 +6,7 @@ import {
   Package,
   RotateCcw,
   Truck,
-} from "lucide-react";
-import { Reveal, Section } from "~/components/layout";
+} from '~/lib/icons';
 
 const VALUE_PROPS = [
   {

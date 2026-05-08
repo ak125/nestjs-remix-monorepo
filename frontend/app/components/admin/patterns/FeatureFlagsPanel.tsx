@@ -1,4 +1,3 @@
-import { Wrench, AlertTriangle } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "~/components/ui/alert";
@@ -7,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Switch } from "~/components/ui/switch";
+import { Wrench, AlertTriangle } from '~/lib/icons';
 
 interface FlagEntry {
   envValue: string | null;

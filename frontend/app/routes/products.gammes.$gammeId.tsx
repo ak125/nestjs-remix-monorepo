@@ -24,6 +24,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   ArrowLeft,
   Search,
@@ -38,8 +39,7 @@ import {
   ChevronLeft,
   ChevronRight,
   RefreshCw,
-} from "lucide-react";
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

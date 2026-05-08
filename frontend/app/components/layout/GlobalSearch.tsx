@@ -14,6 +14,9 @@
  */
 
 import { useFetcher } from "@remix-run/react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
+
+import { Badge } from "~/components/ui/badge";
 import {
   Search,
   X,
@@ -25,10 +28,7 @@ import {
   Settings,
   ArrowRight,
   Command,
-} from "lucide-react";
-import { useState, useEffect, useRef, useCallback, memo } from "react";
-
-import { Badge } from "~/components/ui/badge";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 
 interface GlobalSearchProps {

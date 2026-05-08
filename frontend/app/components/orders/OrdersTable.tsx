@@ -3,17 +3,6 @@
  */
 
 import { useNavigate } from "@remix-run/react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Eye,
-  MoreHorizontal,
-  Pencil,
-  Truck,
-  XCircle,
-} from "lucide-react";
 import { memo } from "react";
 
 import { Badge } from "~/components/ui/badge";
@@ -25,6 +14,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Eye,
+  MoreHorizontal,
+  Pencil,
+  Truck,
+  XCircle,
+} from '~/lib/icons';
 import { type OrdersTableProps } from "../../types/orders.types";
 import {
   formatDate,

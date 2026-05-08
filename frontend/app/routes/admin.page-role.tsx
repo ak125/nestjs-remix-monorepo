@@ -14,18 +14,6 @@ import {
   json,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import {
-  Shield,
-  Search,
-  FileText,
-  Link2,
-  Grid3X3,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  ArrowRight,
-  Info,
-} from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -49,6 +37,18 @@ import {
 } from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  Shield,
+  Search,
+  FileText,
+  Link2,
+  Grid3X3,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  ArrowRight,
+  Info,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import {

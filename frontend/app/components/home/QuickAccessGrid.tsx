@@ -1,4 +1,5 @@
 import { Link } from "@remix-run/react";
+import { useCallback } from "react";
 import {
   BookMarked,
   Building2,
@@ -6,8 +7,7 @@ import {
   Grid3x3,
   ScanLine,
   Search,
-} from "lucide-react";
-import { useCallback } from "react";
+} from '~/lib/icons';
 
 /** Scroll to an element with offset for sticky header */
 function scrollToId(id: string) {

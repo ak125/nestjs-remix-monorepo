@@ -1,8 +1,8 @@
-import { Wrench, Clock, Banknote, ChevronRight } from "lucide-react";
 import { memo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { Wrench, Clock, Banknote, ChevronRight } from '~/lib/icons';
 import { pluralizePieceName } from "~/lib/seo-utils";
 
 export interface PurchaseGuideData {

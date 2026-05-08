@@ -2,7 +2,7 @@
 // Optional block with variant_difference and maintenance_context from R8 enricher.
 // Renders nothing if no matching blocks.
 
-import { Car, Wrench } from "lucide-react";
+import { Car, Wrench } from '~/lib/icons';
 import { HtmlContent } from "../../../seo/HtmlContent";
 import { type LoaderData } from "../r8.types";
 

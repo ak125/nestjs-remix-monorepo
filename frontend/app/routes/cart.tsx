@@ -22,13 +22,6 @@ import {
   useLoaderData,
   useRouteError,
 } from "@remix-run/react";
-import {
-  ArrowRight,
-  Car,
-  ChevronLeft,
-  ShoppingBag,
-  Trash2,
-} from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   formatPrice,
@@ -52,6 +45,13 @@ import {
   MobileBottomBarSpacer,
 } from "~/components/layout/MobileBottomBar";
 import { Button } from "~/components/ui/button";
+import {
+  ArrowRight,
+  Car,
+  ChevronLeft,
+  ShoppingBag,
+  Trash2,
+} from '~/lib/icons';
 import {
   cartActionSchema,
   type CartItem as CartItemType,

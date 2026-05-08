@@ -3,7 +3,7 @@
  * Displayed below conseil sections for E-E-A-T credibility.
  */
 
-import { FileText } from "lucide-react";
+import { FileText } from '~/lib/icons';
 
 export function SourcesDisclaimer() {
   return (

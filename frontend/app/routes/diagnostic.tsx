@@ -1,12 +1,5 @@
 import { json, type ActionFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
-import {
-  Search,
-  Wrench,
-  ShoppingCart,
-  AlertTriangle,
-  CheckCircle,
-} from "lucide-react";
 import { useState } from "react";
 import Container from "~/components/layout/Container";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
@@ -15,6 +8,13 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
 import { LoadingSpinner } from "~/components/ui/LoadingSpinner";
+import {
+  Search,
+  Wrench,
+  ShoppingCart,
+  AlertTriangle,
+  CheckCircle,
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 
 // Types

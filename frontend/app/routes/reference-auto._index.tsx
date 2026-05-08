@@ -17,7 +17,6 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { BookOpen, Search, ChevronRight, ShoppingCart } from "lucide-react";
 import { useState, useMemo, useCallback } from "react";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
@@ -30,6 +29,7 @@ import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { ScrollArea, ScrollBar } from "~/components/ui/scroll-area";
+import { BookOpen, Search, ChevronRight, ShoppingCart } from '~/lib/icons';
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

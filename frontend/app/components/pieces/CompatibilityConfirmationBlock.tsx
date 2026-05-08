@@ -8,9 +8,9 @@
  * - Bleu  : aucun véhicule sélectionné (CTA sélection)
  */
 
-import { Car, CheckCircle2, ShieldCheck, ShieldQuestion } from "lucide-react";
 import { memo, useCallback, useMemo, useState, lazy, Suspense } from "react";
 import { Button } from "~/components/ui/button";
+import { Car, CheckCircle2, ShieldCheck, ShieldQuestion } from '~/lib/icons';
 import { type GammePageMotorisationItem } from "~/types/gamme-page-contract.types";
 import { type VehicleCookie, formatVehicleName } from "~/utils/vehicle-cookie";
 

@@ -9,6 +9,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   AlertTriangle,
   Plus,
@@ -16,9 +17,8 @@ import {
   CheckCircle,
   XCircle,
   Search,
-} from "lucide-react";
+} from '~/lib/icons';
 
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
 import { requireAuth, type AuthUser } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";

@@ -5,7 +5,7 @@
  * avec tracking en temps réel et statuts détaillés
  */
 
-import { Package, Truck, MapPin, Clock, CheckCircle, AlertTriangle } from "lucide-react";
+import { Package, Truck, MapPin, Clock, CheckCircle, AlertTriangle } from '~/lib/icons';
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";

@@ -1,6 +1,6 @@
-import { ArrowRight, CheckCircle } from "lucide-react";
 import { Reveal, Section, SectionHeader } from "~/components/layout";
 import { Badge } from "~/components/ui/badge";
+import { ArrowRight, CheckCircle } from '~/lib/icons';
 
 interface EquipementierItem {
   name: string;

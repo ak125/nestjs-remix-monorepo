@@ -10,14 +10,6 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import {
-  ArrowRight,
-  Car,
-  Factory,
-  Search,
-  Sparkles,
-  TrendingUp,
-} from "lucide-react";
 import * as React from "react";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
@@ -27,6 +19,14 @@ import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import {
+  ArrowRight,
+  Car,
+  Factory,
+  Search,
+  Sparkles,
+  TrendingUp,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 

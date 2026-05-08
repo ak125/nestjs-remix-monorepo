@@ -28,6 +28,11 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+
+// 🎯 Layout components
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { Badge } from "~/components/ui/badge";
 import {
   Search as SearchIcon,
   Grid3X3,
@@ -39,12 +44,7 @@ import {
   TrendingDown,
   SortAsc,
   Package,
-} from "lucide-react";
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-
-// 🎯 Layout components
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
-import { Badge } from "~/components/ui/badge";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import {
   MobileBottomBar,

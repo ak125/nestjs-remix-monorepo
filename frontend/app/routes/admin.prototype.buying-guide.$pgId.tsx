@@ -10,14 +10,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  BarChart3,
-  Database,
-  Layers,
-} from "lucide-react";
 
 import { AntiMistakesSection } from "~/components/seo/AntiMistakesSection";
 import { FAQSection } from "~/components/seo/FAQSection";
@@ -26,6 +18,14 @@ import { SymptomsSection } from "~/components/seo/SymptomsSection";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  BarChart3,
+  Database,
+  Layers,
+} from '~/lib/icons';
 import { type GammeBuyingGuideV1 } from "~/types/gamme-content-contract.types";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

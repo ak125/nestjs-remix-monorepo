@@ -2,11 +2,11 @@
  * ⚡ Optimisé INP: Utilise flushSync minimal et requestAnimationFrame pour animations
  */
 
-import { ShoppingCart, Check, AlertCircle, Loader2 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 
 import { Alert } from "~/components/ui/alert";
 import { useCart } from "~/hooks/useCart";
+import { ShoppingCart, Check, AlertCircle, Loader2 } from '~/lib/icons';
 import { useNotifications } from "../notifications/NotificationContainer";
 
 interface PieceData {

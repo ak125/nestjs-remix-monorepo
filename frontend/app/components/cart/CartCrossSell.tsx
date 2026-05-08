@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { ChevronRight, Package } from "lucide-react";
+import { ChevronRight, Package } from '~/lib/icons';
 import { normalizeTypeAlias } from "~/utils/url-builder.utils";
 import { type VehicleCookie } from "~/utils/vehicle-cookie";
 

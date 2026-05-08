@@ -2,8 +2,8 @@
  * R1 Quick Nav — barre horizontale de chips ancres pour navigation rapide.
  * Pur client-side, pas de data fetching.
  */
-import { Car, HelpCircle, Package, ShieldCheck, Wrench } from "lucide-react";
 import { memo } from "react";
+import { Car, HelpCircle, Package, ShieldCheck, Wrench } from '~/lib/icons';
 
 const NAV_ITEMS = [
   { id: "compatibilities", label: "Motorisations", Icon: Car },

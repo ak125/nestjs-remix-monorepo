@@ -1,5 +1,4 @@
 import { useFetcher } from "@remix-run/react";
-import { Info, Minus, Package, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Tooltip,
@@ -7,6 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "~/components/ui/tooltip";
+import { Info, Minus, Package, Plus, Trash2 } from '~/lib/icons';
 import { type CartItem as CartItemType } from "~/schemas/cart.schemas";
 import { trackRemoveFromCart } from "~/utils/analytics";
 import { formatPrice, MAX_CART_QUANTITY } from "./cart-utils";

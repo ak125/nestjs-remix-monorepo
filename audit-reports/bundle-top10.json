@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-05-07T21:54:30.937Z",
+  "generated_at": "2026-05-07T22:14:39.325Z",
   "total": {
     "count": 184,
     "size": 2708263,
     "gzip": 769938,
-    "brotli": 676306
+    "brotli": 676224
   },
   "by_category": {
     "vendor": {
@@ -23,19 +23,19 @@
       "count": 174,
       "size": 1746012,
       "gzip": 494078,
-      "brotli": 436808
+      "brotli": 436728
     },
     "manifest": {
       "count": 1,
       "size": 70676,
-      "gzip": 6035,
-      "brotli": 5135
+      "gzip": 6034,
+      "brotli": 5134
     },
     "entry": {
       "count": 2,
       "size": 43251,
-      "gzip": 11917,
-      "brotli": 10544
+      "gzip": 11918,
+      "brotli": 10543
     }
   },
   "top10": [
@@ -72,12 +72,12 @@
       "brotli": 19452
     },
     {
-      "file": "manifest-5a150bfa.js",
+      "file": "manifest-c57c8acb.js",
       "name": "manifest",
       "category": "manifest",
       "size": 70676,
-      "gzip": 6035,
-      "brotli": 5135
+      "gzip": 6034,
+      "brotli": 5134
     },
     {
       "file": "blog-pieces-auto.guide-achat.comment-utiliser-selecteur-vehicule-pieces-auto-DFRWIoNI.js",
@@ -112,12 +112,12 @@
       "brotli": 17241
     },
     {
-      "file": "pieces._slug-DdJ1n3e0.js",
+      "file": "pieces._slug-k3L6WPyV.js",
       "name": "pieces._slug",
       "category": "route",
       "size": 50720,
       "gzip": 14112,
-      "brotli": 12550
+      "brotli": 12504
     }
   ],
   "chunks": [
@@ -154,12 +154,12 @@
       "brotli": 19452
     },
     {
-      "file": "manifest-5a150bfa.js",
+      "file": "manifest-c57c8acb.js",
       "name": "manifest",
       "category": "manifest",
       "size": 70676,
-      "gzip": 6035,
-      "brotli": 5135
+      "gzip": 6034,
+      "brotli": 5134
     },
     {
       "file": "blog-pieces-auto.guide-achat.comment-utiliser-selecteur-vehicule-pieces-auto-DFRWIoNI.js",
@@ -194,12 +194,12 @@
       "brotli": 17241
     },
     {
-      "file": "pieces._slug-DdJ1n3e0.js",
+      "file": "pieces._slug-k3L6WPyV.js",
       "name": "pieces._slug",
       "category": "route",
       "size": 50720,
       "gzip": 14112,
-      "brotli": 12550
+      "brotli": 12504
     },
     {
       "file": "checkout-M_Da8D6b.js",
@@ -210,12 +210,12 @@
       "brotli": 11590
     },
     {
-      "file": "constructeurs._brand._model._type-BAcWZ-TE.js",
+      "file": "constructeurs._brand._model._type-BKUCaUh_.js",
       "name": "constructeurs._brand._model._type",
       "category": "route",
       "size": 47986,
       "gzip": 11577,
-      "brotli": 10272
+      "brotli": 10270
     },
     {
       "file": "blog-pieces-auto._index-BSl30x0C.js",
@@ -242,12 +242,12 @@
       "brotli": 9107
     },
     {
-      "file": "root-iUaQVJjo.js",
+      "file": "root-RZv1O2Xl.js",
       "name": "root",
       "category": "entry",
       "size": 40668,
-      "gzip": 10611,
-      "brotli": 9384
+      "gzip": 10612,
+      "brotli": 9383
     },
     {
       "file": "blog-pieces-auto.guide-achat._pg_alias-asFBH3Cm.js",
@@ -418,12 +418,12 @@
       "brotli": 4348
     },
     {
-      "file": "enhanced-vehicle-catalog._brand._model._type-Bjcguonf.js",
+      "file": "enhanced-vehicle-catalog._brand._model._type-CHPWqZiq.js",
       "name": "enhanced-vehicle-catalog._brand._model._type",
       "category": "route",
       "size": 17080,
       "gzip": 4540,
-      "brotli": 4010
+      "brotli": 3967
     },
     {
       "file": "products.admin-Bo6NXjn3.js",
@@ -1346,12 +1346,12 @@
       "brotli": 363
     },
     {
-      "file": "constructeurs._brand._model._type_._html-CA0j6OvE.js",
+      "file": "constructeurs._brand._model._type_._html-DSQuz6xF.js",
       "name": "constructeurs._brand._model._type_._html",
       "category": "route",
       "size": 584,
       "gzip": 347,
-      "brotli": 303
+      "brotli": 314
     },
     {
       "file": "_-SPR3E13f.js",

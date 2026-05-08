@@ -13,8 +13,8 @@
  */
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { ShoppingCart, ClipboardList, Shield, X } from "lucide-react";
 import { memo, useEffect, useState } from "react";
+import { ShoppingCart, ClipboardList, Shield, X } from '~/lib/icons';
 
 import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";

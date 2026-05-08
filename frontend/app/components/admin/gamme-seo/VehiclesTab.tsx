@@ -3,7 +3,6 @@
  * Handles vehicle compatibility display by level with search and CSV export
  */
 
-import { Download, Search } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -15,6 +14,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { Download, Search } from '~/lib/icons';
 import { type GammeDetail, type VehicleEntry } from "./types";
 import {
   exportVehiclesToCSV,

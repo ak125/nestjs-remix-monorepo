@@ -3,7 +3,6 @@
  * Uses shadcn Accordion with pre-structured R6FaqItem[] (no HTML parsing needed).
  */
 
-import { HelpCircle } from "lucide-react";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import {
   Accordion,
@@ -11,6 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
+import { HelpCircle } from '~/lib/icons';
 import { type R6FaqItem } from "~/types/r6-guide.types";
 import { annotateGlossaryTerms } from "./GlossaryTooltip";
 import { GuideCard } from "./GuideCard";

@@ -12,7 +12,6 @@
  */
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, Link, Form, useSubmit } from "@remix-run/react";
-import { Calendar, FileText, MapPin, ShoppingBag, Zap } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
@@ -22,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Calendar, FileText, MapPin, ShoppingBag, Zap } from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 
 interface BriefRow {

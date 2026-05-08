@@ -1,4 +1,9 @@
 import { useNavigate } from "@remix-run/react";
+import { useEffect, useState } from "react";
+
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import VehicleSelector from "~/components/vehicle/VehicleSelector";
 import {
   Award,
   BookOpen,
@@ -7,12 +12,7 @@ import {
   Gauge,
   Search,
   Truck,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import VehicleSelector from "~/components/vehicle/VehicleSelector";
+} from '~/lib/icons';
 
 const HERO_TRUST = [
   { icon: CheckCircle, label: "Compatibilité vérifiée" },

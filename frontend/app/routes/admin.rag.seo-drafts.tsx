@@ -4,19 +4,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
-import {
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Eye,
-  FilePen,
-  Info,
-  MoreHorizontal,
-  RefreshCw,
-  Search,
-  Trash2,
-  XCircle,
-} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AdminDataTable } from "~/components/admin/patterns/AdminDataTable";
@@ -68,6 +55,19 @@ import {
   SheetTitle,
 } from "~/components/ui/sheet";
 import { Skeleton } from "~/components/ui/skeleton";
+import {
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  FilePen,
+  Info,
+  MoreHorizontal,
+  RefreshCw,
+  Search,
+  Trash2,
+  XCircle,
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

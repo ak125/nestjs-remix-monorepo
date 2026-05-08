@@ -21,16 +21,6 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { FAMILY_REGISTRY, findFamilyIdByKeyword } from "@repo/database-types";
-import {
-  Wrench,
-  AlertTriangle,
-  ShoppingCart,
-  Eye,
-  ArrowRight,
-  ShieldCheck,
-  ChevronDown,
-  Package,
-} from "lucide-react";
 import { useState } from "react";
 
 import { ArticleCardEnhanced } from "~/components/blog/ArticleCardEnhanced";
@@ -42,6 +32,16 @@ import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNaviga
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import {
+  Wrench,
+  AlertTriangle,
+  ShoppingCart,
+  Eye,
+  ArrowRight,
+  ShieldCheck,
+  ChevronDown,
+  Package,
+} from '~/lib/icons';
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

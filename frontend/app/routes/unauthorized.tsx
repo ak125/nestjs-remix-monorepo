@@ -7,8 +7,8 @@
 
 import { type MetaFunction } from "@remix-run/node";
 import { Link, useRouteError, isRouteErrorResponse } from "@remix-run/react";
-import { AlertTriangle, Home, Mail, Phone } from "lucide-react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { AlertTriangle, Home, Mail, Phone } from '~/lib/icons';
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 

@@ -1,5 +1,5 @@
-import { Car, HelpCircle, List } from "lucide-react";
 import { memo } from "react";
+import { Car, HelpCircle, List } from '~/lib/icons';
 
 interface MobileStickyBarProps {
   gammeName?: string;

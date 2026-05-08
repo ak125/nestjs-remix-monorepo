@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@remix-run/react";
-import { Search } from "lucide-react";
 import { useState, useCallback, memo } from "react";
+import { Search } from '~/lib/icons';
 
 interface ErrorSearchBarProps {
   placeholder?: string;

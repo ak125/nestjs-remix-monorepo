@@ -1,6 +1,6 @@
-import { Calendar, Filter, HelpCircle, Plus, Settings } from "lucide-react";
 import { useState } from "react";
 import { Reveal, Section, SectionHeader } from "~/components/layout";
+import { Calendar, Filter, HelpCircle, Plus, Settings } from '~/lib/icons';
 
 interface FaqItem {
   question: string;

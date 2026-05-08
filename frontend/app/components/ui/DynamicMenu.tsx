@@ -1,4 +1,3 @@
-import { ChevronDown, ChevronRight } from "lucide-react";
 import {
   useState,
   useCallback,
@@ -7,6 +6,7 @@ import {
   type CSSProperties,
 } from "react";
 import { Button } from "~/components/ui/button";
+import { ChevronDown, ChevronRight } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 
 interface MenuItemData {

@@ -1,3 +1,5 @@
+import { memo } from "react";
+import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import {
   ShieldAlert,
   Clock,
@@ -5,9 +7,7 @@ import {
   AlertTriangle,
   ChevronRight,
   Link2,
-} from "lucide-react";
-import { memo } from "react";
-import { Card, CardContent, CardHeader } from "~/components/ui/card";
+} from '~/lib/icons';
 
 interface PurchaseNarrativeProps {
   intro: { title: string; role: string; syncParts: string[] };

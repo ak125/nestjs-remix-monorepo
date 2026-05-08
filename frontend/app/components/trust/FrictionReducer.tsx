@@ -8,8 +8,8 @@
  * - Support 7j/7
  */
 
-import { RotateCcw, Lock, Shield, Headphones } from "lucide-react";
 import { memo } from "react";
+import { RotateCcw, Lock, Shield, Headphones } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 export type AssuranceType =

@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
-import { Clock, Wrench, Eye, ArrowRight } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { ResponsiveImage } from "~/components/ui/ResponsiveImage";
+import { Clock, Wrench, Eye, ArrowRight } from '~/lib/icons';
 import {
   type BlogArticle,
   getArticleUrl,

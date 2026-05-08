@@ -14,17 +14,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
-import {
-  Activity,
-  AlertTriangle,
-  Bot,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  Eye,
-  FileText,
-  RefreshCw,
-} from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -42,6 +31,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  Activity,
+  AlertTriangle,
+  Bot,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  Eye,
+  FileText,
+  RefreshCw,
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

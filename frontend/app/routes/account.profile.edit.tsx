@@ -13,9 +13,9 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { User, Save, ArrowLeft } from "lucide-react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
+import { User, Save, ArrowLeft } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
 import { Badge } from "../components/ui/badge";

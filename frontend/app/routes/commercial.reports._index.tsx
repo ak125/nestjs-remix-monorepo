@@ -11,6 +11,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
+import { Button } from "~/components/ui/button";
 import {
   BarChart3,
   TrendingUp,
@@ -20,8 +21,7 @@ import {
   DollarSign,
   Package,
   Users,
-} from "lucide-react";
-import { Button } from "~/components/ui/button";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";

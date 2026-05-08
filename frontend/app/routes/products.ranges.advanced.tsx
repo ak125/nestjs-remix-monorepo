@@ -26,7 +26,7 @@ import {
   Grid,
   List,
   RefreshCw,
-} from "lucide-react";
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

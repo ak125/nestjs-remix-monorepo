@@ -1,5 +1,5 @@
-import { Package, Truck, Clock, CheckCircle } from "lucide-react";
 import { useEffect, useState, memo } from "react";
+import { Package, Truck, Clock, CheckCircle } from '~/lib/icons';
 
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";

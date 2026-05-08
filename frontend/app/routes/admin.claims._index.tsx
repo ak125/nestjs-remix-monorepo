@@ -13,9 +13,9 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { AlertTriangle, CheckCircle, UserCheck, Filter } from "lucide-react";
-
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { AlertTriangle, CheckCircle, UserCheck, Filter } from '~/lib/icons';
+
 import { logger } from "~/utils/logger";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";

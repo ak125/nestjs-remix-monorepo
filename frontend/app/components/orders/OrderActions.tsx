@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   CheckCircle,
   CreditCard,
@@ -6,8 +7,7 @@ import {
   Trash2,
   Truck,
   XCircle,
-} from "lucide-react";
-import { memo } from "react";
+} from '~/lib/icons';
 import { type Order } from "../../types/orders.types";
 import { type UserPermissions } from "../../utils/permissions";
 

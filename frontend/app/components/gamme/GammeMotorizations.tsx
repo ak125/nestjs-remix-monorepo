@@ -1,10 +1,10 @@
 import { Link } from "@remix-run/react";
-import { ArrowRight, CheckCircle, ChevronDown, Search } from "lucide-react";
 import { useState } from "react";
 import { Reveal, Section, SectionHeader } from "~/components/layout";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
+import { ArrowRight, CheckCircle, ChevronDown, Search } from '~/lib/icons';
 import { type GammePageMotorisationItem } from "~/types/gamme-page-contract.types";
 
 interface GammeMotorizationsProps {

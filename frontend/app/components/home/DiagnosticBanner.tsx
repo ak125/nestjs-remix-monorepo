@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@remix-run/react";
-import { ScanLine } from "lucide-react";
-
 import { Button } from "~/components/ui/button";
+import { ScanLine } from '~/lib/icons';
+
 
 const SYMPTOM_TAGS = [
   { label: "Bruit au freinage", param: "bruit-freinage" },

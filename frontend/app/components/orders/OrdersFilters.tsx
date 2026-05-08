@@ -3,8 +3,8 @@
  * Composant extrait de routes/orders._index.tsx
  */
 
-import { Search, X } from "lucide-react";
 import { memo } from "react";
+import { Search, X } from '~/lib/icons';
 
 import { type OrdersFiltersProps } from "../../types/orders.types";
 

@@ -6,12 +6,12 @@
  * ✅ Support dark mode via tokens
  */
 
-import { DollarSign, Package, RotateCcw, Star } from "lucide-react";
 import { memo } from "react";
 
 import { Badge } from "~/components/ui/badge";
 import { FilterSection } from "~/components/ui/filter-section";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { DollarSign, Package, RotateCcw, Star } from '~/lib/icons';
 import { type PiecesFilters } from "../../types/pieces-route.types";
 import { BrandLogo } from "../ui/BrandLogo";
 

@@ -3,12 +3,12 @@
  * Uses step-prose CSS for numbered circles and vertical connector line.
  */
 
-import { Wrench } from "lucide-react";
 import {
   type GammeConseil,
   normalizeStepHtml,
 } from "~/components/blog/conseil/section-config";
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Wrench } from '~/lib/icons';
 import { GuideCard } from "./GuideCard";
 
 interface GuideStepsProps {

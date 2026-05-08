@@ -2,8 +2,8 @@
  * R6SourcesBlock — E-E-A-T block: source type, verification status, freshness.
  */
 
-import { ShieldCheck, Calendar, Info } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { ShieldCheck, Calendar, Info } from '~/lib/icons';
 
 interface R6SourcesBlockProps {
   sourceType: string | null;

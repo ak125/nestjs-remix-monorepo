@@ -5,13 +5,6 @@ import {
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import {
-  ShieldCheck,
-  ShieldAlert,
-  RefreshCw,
-  AlertTriangle,
-  Info,
-} from "lucide-react";
-import {
   DashboardShell,
   KpiGrid,
 } from "~/components/admin/patterns/DashboardShell";
@@ -30,6 +23,13 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import {
+  ShieldCheck,
+  ShieldAlert,
+  RefreshCw,
+  AlertTriangle,
+  Info,
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

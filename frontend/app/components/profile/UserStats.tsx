@@ -3,8 +3,8 @@
  * Affiche les métriques importantes sous forme de cards
  */
 
-import { Package, CreditCard, TrendingUp, Clock } from "lucide-react";
 import { memo } from "react";
+import { Package, CreditCard, TrendingUp, Clock } from '~/lib/icons';
 
 import { formatPrice } from "../../utils/orders";
 import { Card, CardContent } from "../ui/card";

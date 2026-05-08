@@ -4,7 +4,7 @@
  */
 
 import { Link } from "@remix-run/react";
-import { BookOpen, ArrowRight } from "lucide-react";
+import { BookOpen, ArrowRight } from '~/lib/icons';
 
 interface GuideLinkCardProps {
   pgAlias: string;

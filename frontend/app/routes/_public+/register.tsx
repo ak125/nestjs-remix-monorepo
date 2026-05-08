@@ -5,6 +5,13 @@ import {
   redirect,
 } from "@remix-run/node";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
+import { useEffect, useState } from "react";
+import { z } from "zod";
+import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
 import {
   Car,
   CheckCircle2,
@@ -16,14 +23,7 @@ import {
   RefreshCw,
   Shield,
   Zap,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { z } from "zod";
-import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
-import { Button } from "~/components/ui/button";
-import { Checkbox } from "~/components/ui/checkbox";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
+} from '~/lib/icons';
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { getOptionalUser } from "../../auth/unified.server";
 

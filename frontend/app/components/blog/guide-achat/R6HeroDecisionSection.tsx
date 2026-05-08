@@ -4,7 +4,7 @@
  */
 
 import { Link } from "@remix-run/react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from '~/lib/icons';
 import { type R6HeroDecision } from "~/types/r6-guide.types";
 
 interface Props {
