@@ -1,5 +1,17 @@
 import type { GapMatrixRow } from './types';
 
+/**
+ * Baseline figée à PR-1 (10 mappings legacy PHP → monorepo issus de l'itération 8 du plan stratégique).
+ *
+ * **ANTI-COMMENT-ROT** : chaque champ `gap` reflète l'état du codebase au moment du baseline.
+ * Quand une PR ferme un gap (ex: PR-2c branche `SeoSwitchSelector` sur `__seo_item_switch`),
+ * **mettre à jour la ligne correspondante dans la même PR** — sinon le markdown généré ment.
+ *
+ * Format ligne : { php_file, monorepo_equivalent, status, gap, priority, proof_link }
+ * - status : ✅ porté / ⚠️ partiel / ❌ absent
+ * - priority : P0 (consolider) / P1 (compléter PR-2) / P2 (différé wiki/blog/R4)
+ * - proof_link : chemin file:line ou rpc:name
+ */
 export const BASELINE_MATRIX_ROWS: GapMatrixRow[] = [
   {
     php_file: 'index.php',

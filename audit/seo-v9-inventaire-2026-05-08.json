@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-08T17:16:15.095Z",
+  "generated_at": "2026-05-08T17:26:33.162Z",
   "gap_matrix": [
     {
       "php_file": "index.php",
@@ -86,9 +86,7 @@
     {
       "path": "src/modules/admin/services/admin-gammes-seo.service.ts",
       "public_methods": [
-        "super",
         "resolveIdOrSlug",
-        "setTimeout",
         "calculateSmartAction",
         "getGammesList",
         "getStats",
@@ -104,14 +102,7 @@
         "recalculateVLevel",
         "getBadgesService"
       ],
-      "tables_read": [
-        "pieces_gamme",
-        "catalog_gamme",
-        "gamme_seo_metrics",
-        "catalog_family",
-        "gamme_aggregates",
-        "pieces"
-      ],
+      "tables_read": [],
       "consumers": [],
       "status": "production",
       "maps_to_target_service": null,
@@ -120,7 +111,6 @@
     {
       "path": "src/modules/admin/services/brief-template.service.ts",
       "public_methods": [
-        "super",
         "createTemplate",
         "getActiveTemplate",
         "listTemplates",
@@ -132,11 +122,7 @@
         "bulkGenerateFromTemplate"
       ],
       "tables_read": [
-        "__seo_brief_template",
-        "__seo_page_brief",
-        "pieces_gamme",
-        "__seo_keywords",
-        "__rag_content_refresh_log"
+        "__seo_page_brief"
       ],
       "consumers": [],
       "status": "production",
@@ -146,13 +132,10 @@
     {
       "path": "src/modules/admin/services/buying-guide/buying-guide-seo-draft.service.ts",
       "public_methods": [
-        "super",
         "composeSeoContent",
         "writeSeoContentDraft"
       ],
-      "tables_read": [
-        "__seo_gamme"
-      ],
+      "tables_read": [],
       "consumers": [],
       "status": "production",
       "maps_to_target_service": null,
@@ -174,16 +157,11 @@
     {
       "path": "src/modules/admin/services/gamme-seo-badges.service.ts",
       "public_methods": [
-        "super",
         "getVLevelGlobalStats",
         "refreshAggregates",
         "getGammeAggregates"
       ],
-      "tables_read": [
-        "pieces_gamme",
-        "gamme_seo_metrics",
-        "gamme_aggregates"
-      ],
+      "tables_read": [],
       "consumers": [],
       "status": "production",
       "maps_to_target_service": null,
@@ -192,7 +170,6 @@
     {
       "path": "src/modules/admin/services/gamme-seo-thresholds.service.ts",
       "public_methods": [
-        "super",
         "getThresholds",
         "updateThresholds",
         "resetToDefaults",
@@ -209,7 +186,6 @@
     {
       "path": "src/modules/admin/services/seo-cockpit.service.ts",
       "public_methods": [
-        "super",
         "getUnifiedDashboard",
         "getExecutiveSummary",
         "getCrawlActivity",
@@ -222,16 +198,7 @@
         "refreshAllRisks",
         "triggerMonitor"
       ],
-      "tables_read": [
-        "__seo_index_history",
-        "pieces_gamme",
-        "__seo_confusion_pairs",
-        "__seo_reference",
-        "__seo_observable",
-        "__blog_advice",
-        "gamme_seo_audit",
-        "__seo_page"
-      ],
+      "tables_read": [],
       "consumers": [],
       "status": "production",
       "maps_to_target_service": null,
@@ -266,12 +233,7 @@
         "getInternalLinkStats",
         "hasPublishedR6Guide"
       ],
-      "tables_read": [
-        "__seo_gamme_conseil",
-        "__seo_r3_image_prompts",
-        "__seo_r3_keyword_plan",
-        "__seo_gamme_purchase_guide"
-      ],
+      "tables_read": [],
       "consumers": [],
       "status": "production",
       "maps_to_target_service": null,
@@ -339,13 +301,10 @@
     {
       "path": "src/modules/navigation/services/seo-menu.service.ts",
       "public_methods": [
-        "super",
         "getMenu",
         "getSeoMenuConfig"
       ],
-      "tables_read": [
-        "error_logs"
-      ],
+      "tables_read": [],
       "consumers": [],
       "status": "production",
       "maps_to_target_service": null,
@@ -366,9 +325,7 @@
         "getDefaultCrossSeo",
         "generateCrossKeywords"
       ],
-      "tables_read": [
-        "__seo_type_switch"
-      ],
+      "tables_read": [],
       "consumers": [],
       "status": "production",
       "maps_to_target_service": null,
@@ -377,10 +334,9 @@
     {
       "path": "src/modules/seo/dynamic-seo-v4-ultimate.service.ts",
       "public_methods": [
-        "super",
-        "generateCompleteSeo",
         "clearExpiredCache",
         "invalidateCache",
+        "generateCompleteSeo",
         "auditSeoQuality",
         "getMetrics",
         "generateAbTestVariants",
@@ -430,7 +386,6 @@
     {
       "path": "src/modules/seo/infrastructure/seo-link-tracking.service.ts",
       "public_methods": [
-        "super",
         "trackClick",
         "trackImpression",
         "getMetricsByLinkType",
@@ -439,8 +394,7 @@
         "cleanupOldData"
       ],
       "tables_read": [
-        "seo_link_clicks",
-        "seo_link_impressions"
+        "seo_link_clicks"
       ],
       "consumers": [],
       "status": "production",
@@ -450,7 +404,6 @@
     {
       "path": "src/modules/seo/seo.service.ts",
       "public_methods": [
-        "super",
         "getMetadata",
         "updateMetadata",
         "getRedirect",
@@ -458,9 +411,7 @@
         "getPagesWithoutSeo",
         "getSeoAnalytics"
       ],
-      "tables_read": [
-        "error_logs"
-      ],
+      "tables_read": [],
       "consumers": [],
       "status": "production",
       "maps_to_target_service": null,
@@ -471,14 +422,11 @@
       "public_methods": [
         "getVLevel",
         "getMaxTokens",
-        "generateFromGamme",
         "saveR4Draft",
         "saveR5Draft",
-        "generateAndSave",
         "listAvailableRagFiles"
       ],
       "tables_read": [
-        "__pg_gammes",
         "__seo_reference",
         "__seo_observable"
       ],
@@ -492,11 +440,7 @@
       "public_methods": [
         "getDashboardKPIs"
       ],
-      "tables_read": [
-        "seo_sitemap_urls",
-        "seo_crawl_budget_experiments",
-        "seo_audit_results"
-      ],
+      "tables_read": [],
       "consumers": [],
       "status": "production",
       "maps_to_target_service": null,
@@ -521,15 +465,12 @@
     {
       "path": "src/modules/seo/services/seo-pilotage.service.ts",
       "public_methods": [
-        "super",
         "generateWeeklyReport",
         "generateMonthlyReport",
         "generateAutoDiagnosticsReport",
         "diagnoseUrl"
       ],
-      "tables_read": [
-        "__seo_page"
-      ],
+      "tables_read": [],
       "consumers": [],
       "status": "production",
       "maps_to_target_service": null,
@@ -583,9 +524,7 @@
       "path": "src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
       "public_methods": [
         "onModuleInit",
-        "async",
         "onModuleDestroy",
-        "getErrorMessage",
         "triggerManualAudit",
         "getQueueStats",
         "getRecentJobs",
@@ -617,7 +556,6 @@
     {
       "path": "src/modules/vehicles/services/seo/brand-seo.service.ts",
       "public_methods": [
-        "getEffectiveSupabaseKey",
         "getBrandSeo",
         "processBrandSeoVariables",
         "getProcessedBrandSeo",
@@ -679,11 +617,13 @@
     "total_pieces": 4135954,
     "indexable_estimate": 502734,
     "breakdown": {
-      "with_price": 0,
-      "with_stock": 0,
+      "with_price": null,
+      "with_stock": null,
       "with_image": 1583183,
-      "with_oem_ref": 0
-    }
+      "with_oem_ref": null
+    },
+    "errors": [],
+    "complete": true
   },
   "php_vs_remix_comparison": {
     "available": false,

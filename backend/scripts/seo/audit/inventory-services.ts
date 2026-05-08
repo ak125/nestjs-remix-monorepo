@@ -26,29 +26,24 @@ export interface InventoryOptions {
 }
 
 async function resolveModulesRoot(root: string): Promise<string> {
-  // Try as-is, then try stripping a leading "backend/" if cwd is already inside backend/
-  try {
-    await readdir(root);
-    return root;
-  } catch {
-    if (root.startsWith('backend/')) {
-      const stripped = root.slice('backend/'.length);
-      try {
-        await readdir(stripped);
-        return stripped;
-      } catch {
-        // fallthrough
-      }
-    }
-    // Try resolving from monorepo root upwards
-    const fromRoot = path.resolve(process.cwd(), '..', root);
+  // Essaie 3 chemins selon cwd ; throw explicite si aucun ne résout.
+  // Un audit qui retourne "0 services" silencieusement est un audit qui ment — on préfère échouer fort.
+  const candidates = [root];
+  if (root.startsWith('backend/')) candidates.push(root.slice('backend/'.length));
+  candidates.push(path.resolve(process.cwd(), '..', root));
+
+  for (const c of candidates) {
     try {
-      await readdir(fromRoot);
-      return fromRoot;
+      await readdir(c);
+      return c;
     } catch {
-      return root; // give up — caller will get empty
+      // try next
     }
   }
+  throw new Error(
+    `[volet 1] modules root introuvable. Essayé : ${candidates.join(', ')}. ` +
+      `cwd=${process.cwd()}. Vérifier --modules-root ou démarrer le script depuis backend/ ou la racine du monorepo.`,
+  );
 }
 
 async function walkServiceFiles(root: string, patterns: string[]): Promise<string[]> {
@@ -99,22 +94,42 @@ export async function runInventoryVolet(opts: InventoryOptions): Promise<Service
   return entries;
 }
 
+/**
+ * Méthodes publiques d'un service NestJS/TS.
+ *
+ * Limitation assumée : extraction par regex (pas AST). Évite les faux positifs sur
+ * appels (`this.x.y(`, `console.log(`, `await fetch(`) en exigeant :
+ * - soit le mot-clé `public ` explicite,
+ * - soit une indentation à exactement 2 espaces (méthode de classe NestJS) ET
+ *   une signature complète terminée par `:` (return type) ou `{` (corps).
+ *
+ * Pour une analyse exhaustive, basculer vers ts-morph en PR-2.
+ */
 function extractPublicMethods(src: string): string[] {
   const out: string[] = [];
-  const re = /^\s*(?:async\s+)?(?:public\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/gm;
-  let match: RegExpExecArray | null;
-  while ((match = re.exec(src)) !== null) {
-    if (!['constructor', 'if', 'for', 'while', 'switch', 'catch', 'return'].includes(match[1])) {
-      out.push(match[1]);
+  const reExplicit = /^\s*public\s+(?:async\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/gm;
+  const reImplicit = /^  (?:async\s+)?([a-zA-Z_][a-zA-Z0-9_]*)\s*\([^)]*\)\s*(?::|{)/gm;
+  const reserved = new Set([
+    'constructor', 'if', 'for', 'while', 'switch', 'catch', 'return',
+    'private', 'protected', 'static', 'readonly', 'get', 'set', 'async', 'await',
+  ]);
+  for (const re of [reExplicit, reImplicit]) {
+    let match: RegExpExecArray | null;
+    while ((match = re.exec(src)) !== null) {
+      if (!reserved.has(match[1])) out.push(match[1]);
     }
   }
   return Array.from(new Set(out));
 }
 
+/**
+ * Tables Supabase lues / RPCs invoquées. Restreint aux clients Supabase pour éviter
+ * `Array.from`, `Buffer.from`, RxJS `from` qui matcheraient un `.from(` générique.
+ */
 function extractTablesRead(src: string): string[] {
   const tables = new Set<string>();
-  const reFrom = /\.from\(['"`]([^'"`]+)['"`]\)/g;
-  const reRpc = /\.rpc\(['"`]([^'"`]+)['"`]/g;
+  const reFrom = /(?:supabase|client|sb)\.from\(['"`]([^'"`]+)['"`]\)/g;
+  const reRpc = /(?:supabase|client|sb)\.rpc\(['"`]([^'"`]+)['"`]/g;
   let m: RegExpExecArray | null;
   while ((m = reFrom.exec(src)) !== null) tables.add(m[1]);
   while ((m = reRpc.exec(src)) !== null) tables.add(`rpc:${m[1]}`);

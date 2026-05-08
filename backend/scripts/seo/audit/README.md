@@ -22,16 +22,16 @@ npx tsx scripts/seo/audit-v9-inventaire.ts \
   --output-md=docs/seo/legacy_to_monorepo_gap_matrix.md
 ```
 
-### Mode sans Supabase (volets 1-2-3-5 seulement)
+### Mode sans Supabase
 
-Pas encore implémenté — futur flag `--skip-volet-4` à ajouter si besoin. En l'état le volet 4 throw et arrête le script.
+Non supporté pour l'instant. `makeSupabaseFromEnv()` (`audit/r2-volume-sample.ts`) throw fail-fast si `SUPABASE_URL` ou `SUPABASE_SERVICE_ROLE_KEY` est absent — comportement intentionnel : un audit sans volet 4 ment sur le volume R2 (qui drive la décision sur `R2IndexabilityGate`). Si vraiment nécessaire, ajouter un flag `--skip-volet-4` qui inscrit `r2_volume_stats.complete=false` + warning explicite dans la matrice.
 
 ## Volets
 
 | # | Volet | Module | Output |
 |---|---|---|---|
 | 1 | Inventaire services SEO | `audit/inventory-services.ts` | `service_inventory[]` |
-| 2 | Diff fingerprint V4 vs actuel (50 URLs) | `audit/diff-v4-vs-current.ts` | `diff_samples[]` |
+| 2 | Diff fingerprint V4 vs actuel (N URLs depuis `audit/sample-urls.json`, baseline = 2) | `audit/diff-v4-vs-current.ts` | `diff_samples[]` |
 | 3 | Audit R2 routes Remix | `audit/r2-routes-audit.ts` | `r2_routes_audit` |
 | 4 | Sample volume R2 indexable | `audit/r2-volume-sample.ts` | `r2_volume_stats` |
 | 5 | Comparaison PHP vs Remix (skip-friendly) | `audit/php-vs-remix-comparison.ts` | `php_vs_remix_comparison` |

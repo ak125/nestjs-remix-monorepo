@@ -62,14 +62,18 @@ export type R2RouteAudit = z.infer<typeof R2RouteAuditSchema>;
 export const R2VolumeStatsSchema = z.object({
   total_pieces: z.number().int().nonnegative(),
   indexable_estimate: z.number().int().nonnegative(),
+  // null = "non mesuré dans cette itération" ; 0 = "mesuré, vide". Distinction explicite.
   breakdown: z
     .object({
-      with_price: z.number().int().nonnegative(),
-      with_stock: z.number().int().nonnegative(),
-      with_image: z.number().int().nonnegative(),
-      with_oem_ref: z.number().int().nonnegative(),
+      with_price: z.number().int().nonnegative().nullable(),
+      with_stock: z.number().int().nonnegative().nullable(),
+      with_image: z.number().int().nonnegative().nullable(),
+      with_oem_ref: z.number().int().nonnegative().nullable(),
     })
     .optional(),
+  // Erreurs Supabase exposées dans le rapport (vs silent fail trompeur dans console.warn).
+  errors: z.array(z.object({ source: z.string(), message: z.string() })).optional().default([]),
+  complete: z.boolean().optional().default(true),
 });
 export type R2VolumeStats = z.infer<typeof R2VolumeStatsSchema>;
 
