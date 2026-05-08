@@ -268,6 +268,7 @@ export class SeoChainOrchestratorService {
         (templateRow[colA] ?? templateRow[colB] ?? '') as string,
       );
       if (!raw) continue;
+      const seeds = this.legacyMarketingSeeds(field, input.pgId, input.typeId);
       out[field as keyof SeoChainTemplateData] = this.renderer.applyVariables({
         surfaceKey: input.surfaceKey,
         templateText: raw,
@@ -276,10 +277,52 @@ export class SeoChainOrchestratorService {
         typeId: input.typeId,
         useMeta,
         minPriceFormat: field === 'description' ? 'descrip' : 'title',
+        prixPasCherSeed: seeds.prixPasCher,
+        vousProposeSeed: seeds.vousPropose,
       });
     }
 
     return out;
+  }
+
+  /**
+   * Reproduit les seeds `#PrixPasCher#` / `#VousPropose#` legacy V4 PHP,
+   * qui variaient PAR CHAMP pour donner de la diversité lexicale au rendu :
+   *
+   *   title       : `((pgId % 100) + 1 + typeId) % len`
+   *   description : `((pgId % 100) + typeId) % len`
+   *   content     : `typeId % len`
+   *   h1 / preview: pas de marqueur prix legacy → seed neutre `0`
+   *
+   * Sans cette parité, toutes les sections d'une page sortent le MÊME
+   * `#PrixPasCher#` (régression de duplicate content vs legacy).
+   *
+   * @see plan seo-v9 §1.2 pilier 4 « marqueurs marketing »
+   * @see legacy `dynamic-seo-v4-ultimate.service.ts` (avant refactor PR-2c rev 2)
+   */
+  private legacyMarketingSeeds(
+    field: string,
+    pgId: number,
+    typeId: number,
+  ): { prixPasCher: number; vousPropose: number } {
+    switch (field) {
+      case 'title':
+        return {
+          prixPasCher: (pgId % 100) + 1 + typeId,
+          vousPropose: typeId,
+        };
+      case 'description':
+        return {
+          prixPasCher: (pgId % 100) + typeId,
+          vousPropose: typeId,
+        };
+      case 'content':
+        return { prixPasCher: typeId, vousPropose: typeId };
+      case 'h1':
+      case 'preview':
+      default:
+        return { prixPasCher: 0, vousPropose: 0 };
+    }
   }
 
   private buildKeywords(v: TemplateVariables): string {
