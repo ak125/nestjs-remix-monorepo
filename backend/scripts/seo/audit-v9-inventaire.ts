@@ -25,6 +25,7 @@ interface CliArgs {
   baseUrl: string;
   outputJson: string;
   outputMd: string;
+  rmEndpoint: string;
   v4Endpoint: string;
   modulesRoot: string;
   routesRoot: string;
@@ -43,6 +44,7 @@ function parseArgs(argv: string[]): CliArgs {
     baseUrl: get('base-url', 'http://localhost:3000'),
     outputJson: get('output-json', `audit/seo-v9-inventaire-${today}.json`),
     outputMd: get('output-md', 'docs/seo/legacy_to_monorepo_gap_matrix.md'),
+    rmEndpoint: get('rm-endpoint', '/api/rm/page-v2'),
     v4Endpoint: get('v4-endpoint', '/api/seo-dynamic-v4/generate-complete'),
     modulesRoot: get('modules-root', 'backend/src/modules'),
     routesRoot: get('routes-root', 'frontend/app/routes'),
@@ -50,10 +52,21 @@ function parseArgs(argv: string[]): CliArgs {
   };
 }
 
-async function loadSampleUrls(scriptDir: string): Promise<Array<{ url: string; surface_key: string; endpoint_actuel: string; category: string }>> {
+interface SampleEntry {
+  url: string;
+  surface_key: string;
+  gamme_id: number;
+  vehicle_id: number;
+  pgId: number;
+  typeId: number;
+  variables: Record<string, unknown>;
+  category: string;
+}
+
+async function loadSampleUrls(scriptDir: string): Promise<SampleEntry[]> {
   const sampleFile = path.join(scriptDir, 'audit', 'sample-urls.json');
   const raw = await readFile(sampleFile, 'utf-8');
-  const json = JSON.parse(raw) as { samples: Array<{ url: string; surface_key: string; endpoint_actuel: string; category: string }> };
+  const json = JSON.parse(raw) as { samples: SampleEntry[] };
   return json.samples;
 }
 
@@ -77,6 +90,7 @@ async function main() {
   const sampleUrls = await loadSampleUrls(scriptDir);
   const diff_samples = await runDiffVolet({
     baseUrl: args.baseUrl,
+    rmEndpoint: args.rmEndpoint,
     v4Endpoint: args.v4Endpoint,
     samples: sampleUrls,
   });
