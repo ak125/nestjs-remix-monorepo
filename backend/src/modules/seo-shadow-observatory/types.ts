@@ -6,7 +6,7 @@ import { SurfaceKeySchema } from '@repo/seo-role-contracts';
  * Snapshot SEO comparable côté legacy (extrait du payload RPC R7/R8).
  * Tous les champs optionnels — un legacy minimaliste reste exploitable.
  */
-export const LegacySeoSnapshotSchema = z
+const LegacySeoSnapshotSchema = z
   .object({
     title: z.string().nullable().optional(),
     description: z.string().nullable().optional(),

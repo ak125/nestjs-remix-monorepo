@@ -18,4 +18,3 @@ export const SeoShadowEnvSchema = z.object({
   SEO_CHAIN_R8_MODE: z.enum(['off', 'shadow', 'on']).default('off'),
   SEO_CHAIN_SHADOW_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0.01),
 });
-export type SeoShadowEnv = z.infer<typeof SeoShadowEnvSchema>;
