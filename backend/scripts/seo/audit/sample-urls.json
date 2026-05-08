@@ -1,37 +1,35 @@
 {
   "samples": [
     {
-      "url": "https://www.automecanik.com/pieces/freinage/peugeot/308/1-6-hdi-110.html",
+      "url": "https://www.automecanik.com/pieces/balais-d-essuie-glace/nissan/almera-ii/1-5.html",
       "surface_key": "R1_GAMME_VEHICLE_ROUTER",
-      "gamme_id": 402,
-      "vehicle_id": 100413,
-      "pgId": 402,
-      "typeId": 100413,
+      "gamme_id": 298,
+      "vehicle_id": 17242,
+      "pgId": 298,
+      "typeId": 17242,
       "variables": {
-        "gamme": "freinage",
-        "marque": "Peugeot",
-        "modele": "308",
-        "type": "1.6 HDi 110",
-        "annee": "2007",
-        "nbCh": 110,
-        "fuel": "Diesel"
+        "gamme": "Balais d'essuie-glace",
+        "marque": "NISSAN",
+        "modele": "ALMERA II",
+        "type": "1.5",
+        "nbCh": 98,
+        "fuel": "Essence"
       },
       "category": "indexed_control"
     },
     {
-      "url": "https://www.automecanik.com/pieces/embrayage/citroen/c4/1-6-vti-120.html",
+      "url": "https://www.automecanik.com/pieces/batterie/bmw/serie-3-e21/315-i.html",
       "surface_key": "R1_GAMME_VEHICLE_ROUTER",
-      "gamme_id": 7,
-      "vehicle_id": 99000,
-      "pgId": 7,
-      "typeId": 99000,
+      "gamme_id": 1,
+      "vehicle_id": 11,
+      "pgId": 1,
+      "typeId": 11,
       "variables": {
-        "gamme": "embrayage",
-        "marque": "Citroen",
-        "modele": "C4",
-        "type": "1.6 VTi 120",
-        "annee": "2008",
-        "nbCh": 120,
+        "gamme": "Batterie",
+        "marque": "BMW",
+        "modele": "Série 3 (E21)",
+        "type": "315 i",
+        "nbCh": 75,
         "fuel": "Essence"
       },
       "category": "crawled_not_indexed"
