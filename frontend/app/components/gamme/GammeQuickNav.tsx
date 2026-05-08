@@ -5,7 +5,7 @@ import {
   HelpCircle,
   MapPin,
   ShieldCheck,
-} from "lucide-react";
+} from '~/lib/icons';
 
 const SECTIONS = [
   { id: "bien-choisir", label: "Bien choisir", icon: ShieldCheck },

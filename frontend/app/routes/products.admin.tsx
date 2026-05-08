@@ -42,14 +42,14 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   ShoppingCart,
   Eye,
   TrendingUp,
   AlertTriangle,
   BarChart3,
-} from "lucide-react";
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

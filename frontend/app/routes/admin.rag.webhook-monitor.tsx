@@ -4,7 +4,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { Zap, RefreshCw, CheckCircle2, Activity, Clock } from "lucide-react";
 import {
   DashboardShell,
   KpiGrid,
@@ -25,6 +24,7 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Zap, RefreshCw, CheckCircle2, Activity, Clock } from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

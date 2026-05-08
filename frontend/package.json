@@ -18,7 +18,10 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:qa": "npm run test:a11y && npm run test:visual"
+    "test:qa": "npm run test:a11y && npm run test:visual",
+    "bundle:analyze": "ANALYZE=true npm run build",
+    "bundle:report": "node ../scripts/perf/bundle-top10.mjs",
+    "bundle:check-fresh": "node ../scripts/perf/check-bundle-fresh.mjs"
   },
   "dependencies": {
     "@fafa/design-tokens": "^1.0.0",

@@ -4,6 +4,9 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { useState, useCallback } from "react";
+import { Badge } from "~/components/ui/badge";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   AlertCircle,
   Database,
@@ -12,10 +15,7 @@ import {
   Trash2,
   Search,
   RefreshCw,
-} from "lucide-react";
-import { useState, useCallback } from "react";
-import { Badge } from "~/components/ui/badge";
-import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 

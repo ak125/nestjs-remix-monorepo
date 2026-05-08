@@ -5,10 +5,10 @@
  * Pas de fetch independant — root.tsx revalide sur cart:updated (300ms debounce)
  */
 import { Link } from "@remix-run/react";
-import { ShoppingCart } from "lucide-react";
 import { memo } from "react";
 
 import { useRootCart } from "~/hooks/useRootData";
+import { ShoppingCart } from '~/lib/icons';
 import { Badge } from "../ui/badge";
 
 interface CartIconProps {

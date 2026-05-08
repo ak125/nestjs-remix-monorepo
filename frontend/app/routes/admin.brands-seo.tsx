@@ -18,7 +18,6 @@ import {
   useNavigation,
   useActionData,
 } from "@remix-run/react";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
 import { useState, lazy, Suspense } from "react";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Alert } from "~/components/ui/alert";
@@ -34,6 +33,7 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
+import { ChevronDown, ChevronUp, Plus, Trash2 } from '~/lib/icons';
 import {
   getInternalApiUrl,
   getInternalApiUrlFromRequest,

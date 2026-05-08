@@ -13,8 +13,8 @@
  * />
  */
 
-import { Car, Fuel, Zap, Battery } from "lucide-react";
 import { memo } from "react";
+import { Car, Fuel, Zap, Battery } from '~/lib/icons';
 
 import { getEnergyTheme } from "~/utils/family-theme";
 

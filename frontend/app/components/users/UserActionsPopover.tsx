@@ -20,8 +20,8 @@
  * </UserActionsPopover>
  */
 
-import { Edit, Eye, Mail, Ban, Trash2, MoreVertical } from "lucide-react";
 import { type ReactNode, memo } from "react";
+import { Edit, Eye, Mail, Ban, Trash2, MoreVertical } from '~/lib/icons';
 
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";

@@ -2,7 +2,7 @@
  * R1 "Erreurs fréquentes de compatibilité" — Checklist visuelle.
  * Family-aware defaults: contenu différencié par famille automobile.
  */
-import { Square } from "lucide-react";
+import { Square } from '~/lib/icons';
 
 import {
   getDefaultCompatErrors,

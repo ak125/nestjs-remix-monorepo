@@ -1,18 +1,6 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
 import {
-  Map,
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  BookOpen,
-  ShoppingCart,
-  Activity,
-  AlertTriangle,
-  GitBranch,
-  FileText,
-} from "lucide-react";
-import {
   DashboardShell,
   KpiGrid,
 } from "~/components/admin/patterns/DashboardShell";
@@ -24,6 +12,18 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Map,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  BookOpen,
+  ShoppingCart,
+  Activity,
+  AlertTriangle,
+  GitBranch,
+  FileText,
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

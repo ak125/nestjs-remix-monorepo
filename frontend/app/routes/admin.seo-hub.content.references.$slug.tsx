@@ -17,15 +17,6 @@ import {
   Link,
   useActionData,
 } from "@remix-run/react";
-import {
-  ArrowLeft,
-  BookOpen,
-  Save,
-  Eye,
-  AlertCircle,
-  Check,
-  ExternalLink,
-} from "lucide-react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -40,6 +31,15 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  ArrowLeft,
+  BookOpen,
+  Save,
+  Eye,
+  AlertCircle,
+  Check,
+  ExternalLink,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

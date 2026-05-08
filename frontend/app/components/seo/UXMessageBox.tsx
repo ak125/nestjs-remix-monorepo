@@ -1,5 +1,5 @@
-import { Info } from "lucide-react";
 import { memo } from "react";
+import { Info } from '~/lib/icons';
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { cn } from "~/lib/utils";
 

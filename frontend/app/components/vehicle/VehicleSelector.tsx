@@ -7,6 +7,7 @@ import {
   type VehicleModel,
   type VehicleType,
 } from "@repo/database-types";
+import { memo, useState, useEffect, useCallback } from "react";
 import {
   Search,
   Car,
@@ -14,8 +15,7 @@ import {
   Settings,
   RotateCcw,
   FileText,
-} from "lucide-react";
-import { memo, useState, useEffect, useCallback } from "react";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { enhancedVehicleApi } from "../../services/api/enhanced-vehicle.api";
 import { Button } from "../ui/button";

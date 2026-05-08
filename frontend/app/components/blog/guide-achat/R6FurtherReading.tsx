@@ -1,4 +1,5 @@
 import { Link } from "@remix-run/react";
+import { GuideCard } from "~/components/guide/GuideCard";
 import {
   ShoppingCart,
   Wrench,
@@ -6,8 +7,7 @@ import {
   Stethoscope,
   ArrowRight,
   type LucideIcon,
-} from "lucide-react";
-import { GuideCard } from "~/components/guide/GuideCard";
+} from '~/lib/icons';
 
 const ROLE_CONFIG: Record<
   string,

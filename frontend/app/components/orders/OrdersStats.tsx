@@ -3,8 +3,8 @@
  * Composant extrait de routes/orders._index.tsx
  */
 
-import { CheckCircle, Clock, DollarSign, Package } from "lucide-react";
 import { memo } from "react";
+import { CheckCircle, Clock, DollarSign, Package } from '~/lib/icons';
 
 import { type OrdersStatsProps } from "../../types/orders.types";
 import { formatPrice } from "../../utils/orders.utils";

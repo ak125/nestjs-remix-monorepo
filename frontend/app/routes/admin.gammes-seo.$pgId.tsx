@@ -23,27 +23,6 @@ import {
   Link,
   useFetcher,
 } from "@remix-run/react";
-import {
-  ArrowLeft,
-  BarChart3,
-  Eye,
-  FileText,
-  Car,
-  TrendingUp,
-  Wrench,
-  Calendar,
-  ExternalLink,
-  Plus,
-  Edit2,
-  Trash2,
-  Search,
-  CheckCircle2,
-  AlertCircle,
-  BookOpen,
-  ToggleLeft,
-  ToggleRight,
-  Save,
-} from "lucide-react";
 import { useState } from "react";
 
 import {
@@ -78,6 +57,27 @@ import { Label } from "~/components/ui/label";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  ArrowLeft,
+  BarChart3,
+  Eye,
+  FileText,
+  Car,
+  TrendingUp,
+  Wrench,
+  Calendar,
+  ExternalLink,
+  Plus,
+  Edit2,
+  Trash2,
+  Search,
+  CheckCircle2,
+  AlertCircle,
+  BookOpen,
+  ToggleLeft,
+  ToggleRight,
+  Save,
+} from '~/lib/icons';
 
 // Import extracted components
 import { getInternalApiUrl } from "~/utils/internal-api.server";

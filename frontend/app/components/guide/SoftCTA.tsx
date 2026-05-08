@@ -5,7 +5,7 @@
  */
 
 import { Link } from "@remix-run/react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from '~/lib/icons';
 
 interface SoftCTAProps {
   label: string;

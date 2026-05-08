@@ -1,9 +1,9 @@
 import { Link, useLocation } from "@remix-run/react";
-import { Home, Package, ShoppingCart, Stethoscope, User } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { openCartSidebar } from "~/hooks/useCartSidebar";
 import { useRootCart } from "~/hooks/useRootData";
+import { Home, Package, ShoppingCart, Stethoscope, User } from '~/lib/icons';
 
 const LINK_ITEMS = [
   { icon: Home, label: "Accueil", href: "/", match: (p: string) => p === "/" },

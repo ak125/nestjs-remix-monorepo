@@ -1,6 +1,6 @@
 import { useSearchParams } from "@remix-run/react";
-import { Wrench, AlertTriangle, ShoppingCart, X } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { Wrench, AlertTriangle, ShoppingCart, X } from '~/lib/icons';
 
 const CONTENT_TYPES = [
   { value: "HOWTO", label: "Montage", icon: Wrench },

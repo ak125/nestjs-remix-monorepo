@@ -18,6 +18,10 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { toast } from "sonner";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { Alert } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 import {
   Star,
   ArrowLeft,
@@ -30,11 +34,7 @@ import {
   User,
   Package,
   MessageSquare,
-} from "lucide-react";
-import { toast } from "sonner";
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
-import { Alert } from "~/components/ui/alert";
-import { Button } from "~/components/ui/button";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import {
   getReviewById,

@@ -9,8 +9,8 @@
  */
 
 import { Link } from "@remix-run/react";
-import { Link2 } from "lucide-react";
 import { memo } from "react";
+import { Link2 } from '~/lib/icons';
 
 import {
   type GammeData,

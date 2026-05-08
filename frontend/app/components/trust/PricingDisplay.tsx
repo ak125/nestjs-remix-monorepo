@@ -8,8 +8,8 @@
  * - Optionnel: prix HT/TTC
  */
 
-import { TrendingDown } from "lucide-react";
 import { memo } from "react";
+import { TrendingDown } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 interface PricingDisplayProps {

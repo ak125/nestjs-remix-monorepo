@@ -1,7 +1,7 @@
 import { Link } from '@remix-run/react';
-import { CheckCircle2, Shield, AlertTriangle, Info, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import guideContent from '~/data/guide-content.json';
+import { CheckCircle2, Shield, AlertTriangle, Info, ExternalLink } from '~/lib/icons';
 
 interface PurchaseGuideProps {
   familleId?: string | number;

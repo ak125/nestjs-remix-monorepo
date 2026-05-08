@@ -6,8 +6,8 @@
  */
 
 import { Link } from "@remix-run/react";
-import { Zap, Calendar, Fuel, Settings } from "lucide-react";
 import { memo } from "react";
+import { Zap, Calendar, Fuel, Settings } from '~/lib/icons';
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";

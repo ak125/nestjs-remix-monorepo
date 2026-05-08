@@ -20,23 +20,6 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import {
-  ArrowLeft,
-  BookOpen,
-  AlertTriangle,
-  Wrench,
-  Layers,
-  ExternalLink,
-  FileText,
-  ShoppingCart,
-  XCircle,
-  Shield,
-  Info,
-  Sparkles,
-  ListChecks,
-  HelpCircle,
-  Tag,
-} from "lucide-react";
 import { type ReactNode } from "react";
 
 // UI Components
@@ -55,6 +38,23 @@ import {
   getSectionImageConfig,
   resolveAltText,
 } from "~/config/visual-intent";
+import {
+  ArrowLeft,
+  BookOpen,
+  AlertTriangle,
+  Wrench,
+  Layers,
+  ExternalLink,
+  FileText,
+  ShoppingCart,
+  XCircle,
+  Shield,
+  Info,
+  Sparkles,
+  ListChecks,
+  HelpCircle,
+  Tag,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)

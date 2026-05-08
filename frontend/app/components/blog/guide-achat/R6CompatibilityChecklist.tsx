@@ -3,7 +3,7 @@
  * Shows what to verify before ordering (dimensions, refs, mounting).
  */
 
-import { AlertTriangle, Search } from "lucide-react";
+import { AlertTriangle, Search } from '~/lib/icons';
 import { type R6CompatibilityAxis } from "~/types/r6-guide.types";
 
 interface Props {

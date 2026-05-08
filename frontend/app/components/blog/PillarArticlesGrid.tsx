@@ -2,6 +2,9 @@
  * PillarArticlesGrid — 3 articles en vedette (piliers)
  */
 import { Link, useFetcher } from "@remix-run/react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Clock,
   Eye,
@@ -10,10 +13,7 @@ import {
   Share2,
   Bookmark,
   Star,
-} from "lucide-react";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+} from '~/lib/icons';
 import { ArticleBadges } from "./ArticleBadges";
 import {
   type BlogArticle,

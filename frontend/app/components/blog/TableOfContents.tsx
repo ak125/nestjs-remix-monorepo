@@ -1,5 +1,5 @@
-import { ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
+import { ChevronRight } from '~/lib/icons';
 
 export interface TOCSection {
   level: number;

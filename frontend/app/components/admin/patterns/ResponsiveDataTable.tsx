@@ -9,13 +9,6 @@
  * Pattern Senior: UX type Stripe/Notion
  */
 
-import {
-  ChevronDown,
-  ChevronUp,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-} from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -33,6 +26,13 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import {
+  ChevronDown,
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 import { StatusBadge, type StatusType } from "./StatusBadge";
 

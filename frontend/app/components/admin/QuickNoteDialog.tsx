@@ -18,8 +18,8 @@
  * ```
  */
 
-import { MessageSquarePlus } from "lucide-react";
 import { memo, useState } from "react";
+import { MessageSquarePlus } from '~/lib/icons';
 
 import { logger } from "~/utils/logger";
 import { Button } from "../ui/button";

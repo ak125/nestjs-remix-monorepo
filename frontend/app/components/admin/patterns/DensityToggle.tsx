@@ -6,7 +6,6 @@
  * Affiche un Select avec les 3 modes de densité
  */
 
-import { Rows3, Rows4, FileText } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -15,6 +14,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useDensity, type DensityMode } from "~/contexts/DensityContext";
+import { Rows3, Rows4, FileText } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 const densityIcons: Record<DensityMode, React.ReactNode> = {

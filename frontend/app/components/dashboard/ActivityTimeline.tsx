@@ -1,4 +1,4 @@
-import { Clock, User, ShoppingBag, Package, CheckCircle } from "lucide-react";
+import { Clock, User, ShoppingBag, Package, CheckCircle } from '~/lib/icons';
 
 import { cn } from "../../lib/utils";
 import { Badge } from "../ui/badge";

@@ -3,7 +3,7 @@ import {
   FAMILY_IDS_ORDERED,
   FAMILY_DOMAIN_GROUPS,
 } from "@repo/database-types";
-import { type LucideIcon, Car, Cog, Shield, Wrench, Zap } from "lucide-react";
+import { type LucideIcon, Car, Cog, Shield, Wrench, Zap } from '~/lib/icons';
 
 // ─── Image proxy paths ───────────────────────────────────
 export const IMG_PROXY_LOGOS =

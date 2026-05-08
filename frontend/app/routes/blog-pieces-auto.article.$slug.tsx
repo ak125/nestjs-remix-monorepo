@@ -11,15 +11,6 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import {
-  ArrowLeft,
-  Calendar,
-  Clock,
-  Eye,
-  Share2,
-  Bookmark,
-  Tag,
-} from "lucide-react";
 
 import { useState } from "react";
 import { toast } from "sonner";
@@ -34,6 +25,15 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Eye,
+  Share2,
+  Bookmark,
+  Tag,
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { stripHtmlForMeta } from "~/utils/seo-clean.utils";

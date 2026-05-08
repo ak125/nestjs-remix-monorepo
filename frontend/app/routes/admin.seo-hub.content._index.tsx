@@ -13,16 +13,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import {
-  BookOpen,
-  Eye,
-  FileText,
-  PenTool,
-  Plus,
-  Search,
-  Wand2,
-  Zap,
-} from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -33,6 +23,16 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import {
+  BookOpen,
+  Eye,
+  FileText,
+  PenTool,
+  Plus,
+  Search,
+  Wand2,
+  Zap,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

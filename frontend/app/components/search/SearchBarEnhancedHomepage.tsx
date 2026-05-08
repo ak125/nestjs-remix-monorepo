@@ -11,6 +11,7 @@
  */
 
 import { Form, useNavigate } from "@remix-run/react";
+import { useState, useEffect, useRef, memo } from "react";
 import {
   Search,
   X,
@@ -22,8 +23,7 @@ import {
   ArrowRight,
   Zap,
   Command,
-} from "lucide-react";
-import { useState, useEffect, useRef, memo } from "react";
+} from '~/lib/icons';
 
 import { logger } from "~/utils/logger";
 import {

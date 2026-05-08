@@ -10,7 +10,7 @@
  * @see .spec/00-canon/image-matrix-v1.md §2
  */
 
-import { type LucideIcon, Cog } from "lucide-react";
+import { type LucideIcon, Cog } from '~/lib/icons';
 import { getFamilyTheme } from "~/utils/family-theme";
 
 interface HeroRoleProps {

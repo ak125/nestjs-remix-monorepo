@@ -6,8 +6,8 @@
  * - Affiche les sources pour les réponses RAG
  */
 
-import { User, Bot, ExternalLink } from "lucide-react";
 import { memo } from "react";
+import { User, Bot, ExternalLink } from '~/lib/icons';
 
 export interface ChatMessageData {
   id: string;

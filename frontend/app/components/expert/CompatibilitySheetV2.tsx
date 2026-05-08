@@ -15,6 +15,17 @@
  * - No cookie-cutter patterns
  */
 
+import { forwardRef, useState, useEffect, memo } from "react";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "~/components/ui/sheet";
 import {
   X,
   AlertTriangle,
@@ -28,18 +39,7 @@ import {
   ChevronDown,
   ChevronRight,
   Sparkles,
-} from "lucide-react";
-import { forwardRef, useState, useEffect, memo } from "react";
-import { Button } from "~/components/ui/button";
-import { Separator } from "~/components/ui/separator";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "~/components/ui/sheet";
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 // ============================================================================

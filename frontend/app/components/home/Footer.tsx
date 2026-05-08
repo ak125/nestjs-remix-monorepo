@@ -1,4 +1,5 @@
 import { Link } from "@remix-run/react";
+import { SITE_CONFIG } from "~/config/site";
 import {
   Facebook,
   Instagram,
@@ -6,8 +7,7 @@ import {
   MapPin,
   Phone,
   Youtube,
-} from "lucide-react";
-import { SITE_CONFIG } from "~/config/site";
+} from '~/lib/icons';
 
 const USEFUL_LINKS = [
   { label: "Catalogue pièces", href: "/#catalogue" },

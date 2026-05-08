@@ -22,8 +22,8 @@
  * </ProductQuickViewPopover>
  */
 
-import { Eye, ShoppingCart, Star, Package } from "lucide-react";
 import { type ReactNode, memo } from "react";
+import { Eye, ShoppingCart, Star, Package } from '~/lib/icons';
 
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";

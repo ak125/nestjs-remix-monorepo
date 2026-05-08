@@ -1,5 +1,5 @@
-import { AlertTriangle, X } from "lucide-react";
 import { Reveal, Section } from "~/components/layout";
+import { AlertTriangle, X } from '~/lib/icons';
 
 interface GammeErrorsProps {
   errors?: string[];

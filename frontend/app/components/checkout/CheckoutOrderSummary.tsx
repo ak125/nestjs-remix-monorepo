@@ -7,7 +7,7 @@ import {
   RotateCcw,
   Shield,
   Truck,
-} from "lucide-react";
+} from '~/lib/icons';
 
 import {
   type CartItem as CartItemType,

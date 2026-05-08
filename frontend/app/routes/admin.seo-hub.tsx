@@ -15,6 +15,8 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Outlet, Link, useLocation, useLoaderData } from "@remix-run/react";
+import { Badge } from "~/components/ui/badge";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   LayoutDashboard,
   Package,
@@ -27,9 +29,7 @@ import {
   Search,
   Layers,
   ClipboardList,
-} from "lucide-react";
-import { Badge } from "~/components/ui/badge";
-import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

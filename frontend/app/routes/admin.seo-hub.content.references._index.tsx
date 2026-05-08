@@ -22,19 +22,6 @@ import {
   useNavigation,
 } from "@remix-run/react";
 import {
-  BookOpen,
-  Edit,
-  Eye,
-  Filter,
-  MoreVertical,
-  Plus,
-  Search,
-  Trash2,
-  Check,
-  ExternalLink,
-  RefreshCw,
-} from "lucide-react";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -71,6 +58,19 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import {
+  BookOpen,
+  Edit,
+  Eye,
+  Filter,
+  MoreVertical,
+  Plus,
+  Search,
+  Trash2,
+  Check,
+  ExternalLink,
+  RefreshCw,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

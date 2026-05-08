@@ -4,9 +4,9 @@
  * Intégration complète avec backend NestJS + Supabase
  */
 import { Link, useLocation } from "@remix-run/react";
-import { ChevronDown, ChevronRight } from "lucide-react";
 import { memo, useState, useEffect, useCallback } from "react";
 import { Alert } from "~/components/ui/alert";
+import { ChevronDown, ChevronRight } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import {
   type MenuItem,

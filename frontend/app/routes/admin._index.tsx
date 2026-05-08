@@ -4,6 +4,10 @@
 
 import { type MetaFunction } from "@remix-run/node";
 import { Link, useRouteLoaderData } from "@remix-run/react";
+import { useEffect, useState } from "react";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
 import {
   Users,
   ShoppingCart,
@@ -27,11 +31,7 @@ import {
   Truck,
   Palette,
   Sparkles,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { Alert } from "~/components/ui/alert";
-import { Badge } from "~/components/ui/badge";
-import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+} from '~/lib/icons';
 import { DashboardDesignTab } from "../components/admin/DashboardDesignTab";
 import { SeoWidget } from "../components/SeoWidget";
 import {

@@ -2,7 +2,7 @@
 // Design moderne avec animations et informations enrichies
 
 import { Link } from "@remix-run/react";
-import { Calendar, Car, Fuel, Zap } from "lucide-react";
+import { Calendar, Car, Fuel, Zap } from '~/lib/icons';
 import { getOptimizedModelImageUrl } from "~/utils/image-optimizer";
 import { normalizeTypeAlias } from "~/utils/url-builder.utils";
 

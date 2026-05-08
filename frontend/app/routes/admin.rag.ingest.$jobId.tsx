@@ -4,7 +4,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
-import { ArrowLeft, RefreshCw, Terminal } from "lucide-react";
 import { useEffect } from "react";
 import { DashboardShell } from "~/components/admin/patterns/DashboardShell";
 import {
@@ -13,6 +12,7 @@ import {
 } from "~/components/admin/patterns/StatusBadge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { ArrowLeft, RefreshCw, Terminal } from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
