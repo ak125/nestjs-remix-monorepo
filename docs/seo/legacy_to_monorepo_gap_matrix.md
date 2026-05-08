@@ -1,6 +1,6 @@
 # Legacy PHP → Monorepo Gap Matrix (SEO seo-v9 PR-1)
 
-> Generated: 2026-05-08T17:30:34.101Z
+> Generated: 2026-05-08T17:36:52.489Z
 > Plan référence : `/home/deploy/.claude/plans/apres-investigation-seo-on-iterative-spark.md`
 > Statut : LIVRABLE CANON PR-1. Mis à jour à chaque PR de la cascade seo-v9.
 
@@ -57,11 +57,32 @@
 
 **Justification empirique `R2IndexabilityGate`** : sans gate strict, R2 pourrait passer de 1 960 URLs (sitemap actuel) à 502 734 (×256) — risque de spam Google catastrophique. Gate non négociable avant tout branchement R2.
 
+## Findings clés (audit fonctionnel)
+
+### V4 est code mort de production
+
+**Évidence** : `DynamicSeoV4UltimateService.generateCompleteSeo()` n'est appelé QUE par `dynamic-seo.controller.ts` (4 endpoints admin/debug `/api/seo-dynamic-v4/*`). 0 appel par `rm-builder`, `gamme-rest`, `brand-rpc`, `vehicle-rpc` — les services applicatifs réels.
+
+**Impact** : La régression GSC 73% `/pieces/*` ne vient PAS du contrat strict V4 (jamais appelé en prod). Elle vient des 4 systèmes SEO parallèles qui produisent des sorties divergentes. Confirme empiriquement la motivation PR-2 (centraliser via chaîne unique). Scénario A (refactor majeur) confirmé : raccord léger impossible si V4 jamais branché.
+
+### Contrat V4 strict (14 variables Zod) n'aide pas à débuguer en prod
+
+**Évidence** : `SeoVariablesSchema.parse()` au top de `generateCompleteSeo()` (line 78) throw avant le try/catch. Les 14 champs requis (gamme, gammeMeta, marque, marqueMeta, marqueMetaTitle, modele, modeleMeta, type, typeMeta, annee, nbCh, carosserie, fuel, codeMoteur) sont rarement tous fournis quand l'endpoint est testé manuellement. V4 throw 500 générique sans message Zod détaillé.
+
+**Impact** : Pas un bug en prod (V4 jamais appelé en prod), mais bloque tout test manuel de V4. À PR-2 : soit défauts sensibles sur 8 champs metaXxx (typiquement = champ principal lowercased), soit error handler controller qui propage le détail Zod.
+
+### Sortie V4 ≠ sortie actuelle (divergent verdict)
+
+**Évidence** : Sample 2/2 URLs avec inputs complets : `diff_verdict = divergent` (≥2 hashes title/h1/content différents). `current_fingerprint.robots = ""` (endpoint actuel ne retourne pas de robots dans le payload SEO).
+
+**Impact** : Confirme que les 4 systèmes SEO parallèles produisent des sorties différentes — pas juste "V4 plus riche". À PR-2 : décider si V4 devient SoT et les autres adoptent ses sorties, ou si V4 est dépréciée au profit d'une 5e chaîne.
+
+
 ## Décision PR-2 (proposée à partir des findings)
 
 **Scénario A — refactor majeur**
 
-Couverture filename 29% — créer la majorité des 14 services cibles. Effort ~2 sprints. **Confirmer en PR-2a** par audit fonctionnel approfondi (filename mapping ne reflète pas tout : certains services existants couvrent partiellement plusieurs cibles).
+Couverture filename 29% **+ V4 confirmé code mort de production** (0 appel par services applicatifs réels). Créer la chaîne SEO + brancher tous les controllers actuels (rm-builder, gamme-rest, brand-rpc, vehicle-rpc) sur la chaîne. Effort ~2 sprints minimum. Voir "Findings clés" ci-dessus.
 
 **Manques prioritaires confirmés** :
 

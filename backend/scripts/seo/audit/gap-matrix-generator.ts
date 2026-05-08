@@ -145,6 +145,34 @@ ${lines.join('\n')}
 ${findingsSection}`;
 }
 
+/**
+ * Findings inscrits manuellement (post-audit volet 1, à enrichir au fur et à mesure
+ * que l'audit fonctionnel approfondi confirme/infirme les hypothèses du plan stratégique).
+ */
+export const KEY_EMPIRICAL_FINDINGS: Array<{ headline: string; evidence: string; impact: string }> = [
+  {
+    headline: 'V4 est code mort de production',
+    evidence:
+      "`DynamicSeoV4UltimateService.generateCompleteSeo()` n'est appelé QUE par `dynamic-seo.controller.ts` (4 endpoints admin/debug `/api/seo-dynamic-v4/*`). 0 appel par `rm-builder`, `gamme-rest`, `brand-rpc`, `vehicle-rpc` — les services applicatifs réels.",
+    impact:
+      'La régression GSC 73% `/pieces/*` ne vient PAS du contrat strict V4 (jamais appelé en prod). Elle vient des 4 systèmes SEO parallèles qui produisent des sorties divergentes. Confirme empiriquement la motivation PR-2 (centraliser via chaîne unique). Scénario A (refactor majeur) confirmé : raccord léger impossible si V4 jamais branché.',
+  },
+  {
+    headline: "Contrat V4 strict (14 variables Zod) n'aide pas à débuguer en prod",
+    evidence:
+      "`SeoVariablesSchema.parse()` au top de `generateCompleteSeo()` (line 78) throw avant le try/catch. Les 14 champs requis (gamme, gammeMeta, marque, marqueMeta, marqueMetaTitle, modele, modeleMeta, type, typeMeta, annee, nbCh, carosserie, fuel, codeMoteur) sont rarement tous fournis quand l'endpoint est testé manuellement. V4 throw 500 générique sans message Zod détaillé.",
+    impact:
+      "Pas un bug en prod (V4 jamais appelé en prod), mais bloque tout test manuel de V4. À PR-2 : soit défauts sensibles sur 8 champs metaXxx (typiquement = champ principal lowercased), soit error handler controller qui propage le détail Zod.",
+  },
+  {
+    headline: 'Sortie V4 ≠ sortie actuelle (divergent verdict)',
+    evidence:
+      'Sample 2/2 URLs avec inputs complets : `diff_verdict = divergent` (≥2 hashes title/h1/content différents). `current_fingerprint.robots = ""` (endpoint actuel ne retourne pas de robots dans le payload SEO).',
+    impact:
+      "Confirme que les 4 systèmes SEO parallèles produisent des sorties différentes — pas juste \"V4 plus riche\". À PR-2 : décider si V4 devient SoT et les autres adoptent ses sorties, ou si V4 est dépréciée au profit d'une 5e chaîne.",
+  },
+];
+
 function renderFindingsSection(f: AuditFindings): string {
   const coverageRatio = f.target_services_count > 0
     ? Math.round((f.services_mapped_to_targets / f.target_services_count) * 100)
@@ -191,6 +219,15 @@ ${diffLines}
 
 **Justification empirique \`R2IndexabilityGate\`** : sans gate strict, R2 pourrait passer de ${f.pieces_in_sitemap.toLocaleString('fr-FR')} URLs (sitemap actuel) à ${f.pieces_seo_safe.toLocaleString('fr-FR')} (×${r2Multiplier}) — risque de spam Google catastrophique. Gate non négociable avant tout branchement R2.
 
+## Findings clés (audit fonctionnel)
+
+${KEY_EMPIRICAL_FINDINGS.map((kf) => `### ${kf.headline}
+
+**Évidence** : ${kf.evidence}
+
+**Impact** : ${kf.impact}
+`).join('\n')}
+
 ## Décision PR-2 (proposée à partir des findings)
 
 **Scénario ${scenario.code} — ${scenario.label}**
@@ -215,23 +252,27 @@ ${scenario.rationale}
 }
 
 function decidePr2Scenario(coverageRatio: number): { code: string; label: string; rationale: string } {
+  // Verdict empirique consolidé itération PR-1 : V4 = code mort (0 appel applicatif réel).
+  // Donc même si la couverture filename suggère B/C, le scénario A s'impose car aucun
+  // service applicatif n'est réellement branché à la chaîne SEO V4.
+  // Le ratio reste informatif pour estimer le travail de refactor.
   if (coverageRatio < 40) {
     return {
       code: 'A',
       label: 'refactor majeur',
-      rationale: `Couverture filename ${coverageRatio}% — créer la majorité des 14 services cibles. Effort ~2 sprints. **Confirmer en PR-2a** par audit fonctionnel approfondi (filename mapping ne reflète pas tout : certains services existants couvrent partiellement plusieurs cibles).`,
+      rationale: `Couverture filename ${coverageRatio}% **+ V4 confirmé code mort de production** (0 appel par services applicatifs réels). Créer la chaîne SEO + brancher tous les controllers actuels (rm-builder, gamme-rest, brand-rpc, vehicle-rpc) sur la chaîne. Effort ~2 sprints minimum. Voir "Findings clés" ci-dessus.`,
     };
   }
   if (coverageRatio < 75) {
     return {
-      code: 'B',
-      label: 'complétion ciblée',
-      rationale: `Couverture filename ${coverageRatio}% — 5-7 services à créer + 2-3 à étendre + registries à introduire. Effort ~1.5 sprint. **Probablement plus de couverture fonctionnelle** que ce ratio brut ne suggère.`,
+      code: 'A→B',
+      label: 'refactor majeur (avec base existante à réutiliser)',
+      rationale: `Couverture filename ${coverageRatio}% (services existants à réutiliser : SeoSwitchesService, GammeResponseBuilderService, etc.) **mais V4 = code mort de production confirmé**. Le refactor doit brancher la chaîne sur les services applicatifs réels, pas juste compléter V4. Effort ~1.5-2 sprints.`,
     };
   }
   return {
-    code: 'C',
-    label: 'raccord léger',
-    rationale: `Couverture filename ${coverageRatio}% — juste compléter manques (variables marketing, R2IndexabilityGate, registries, fingerprint stub, robots policy centralisée). Effort ~1 sprint.`,
+    code: 'A→C',
+    label: 'raccord léger côté V4 + branchement applicatif majeur',
+    rationale: `Couverture filename ${coverageRatio}% côté V4 — V4 quasi-complet techniquement. **Mais V4 code mort** (0 appel applicatif). PR-2 = brancher V4 (ou son successeur) sur les services applicatifs, pas juste finir V4. Effort ~1-1.5 sprint.`,
   };
 }
