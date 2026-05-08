@@ -429,3 +429,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-v9-pr1-gap-matrix`
 - **Décision** : fix(seo-v9-pr1): sample-urls.json avec IDs Supabase réels (Nissan Almera + BMW Série 3) (+14 other commits)
 - **Sortie** : PR #398 | commits 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : fix(seo-v9-pr1): sample-urls.json — gammes vraiment dans le catalogue (pg_display=1) (+16 other commits)
+- **Sortie** : PR #398 | commits 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
