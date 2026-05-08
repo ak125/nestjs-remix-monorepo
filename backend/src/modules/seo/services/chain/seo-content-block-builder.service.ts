@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { type SurfaceKey } from '@repo/seo-role-contracts';
 
-import type { ResolvedLink } from './seo-internal-linking.service';
+import type { LinkResolutionResult } from './seo-internal-linking.service';
 import type { BreadcrumbListJsonLd } from './seo-ariane-breadcrumb.service';
 import type { SwitchVariant } from './seo-switch-selector.service';
 
@@ -77,8 +77,11 @@ export interface BuildBlocksInput {
   template: SeoChainTemplateData;
   /** Variantes switch sélectionnées (par alias → ligne brute). */
   variants: Record<number, SwitchVariant | null>;
-  /** Liens internes résolus (issu de `SeoInternalLinkingService`). */
-  links: Map<string, ResolvedLink>;
+  /**
+   * Liens internes résolus (ordering préservé depuis `resolveLinksBatch`).
+   * Issu de `SeoInternalLinkingService.resolveLinksBatch`.
+   */
+  links: LinkResolutionResult[];
 }
 
 /**
@@ -112,7 +115,7 @@ export class SeoContentBlockBuilder {
       }
     }
 
-    for (const link of input.links.values()) {
+    for (const link of input.links) {
       if (link.isLink) {
         blocks.push({ type: 'link', html: link.html, target: link.marker });
       }

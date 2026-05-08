@@ -4,7 +4,7 @@ import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { TABLES } from '@repo/database-types';
 import { type SurfaceKey } from '@repo/seo-role-contracts';
 
-import { PRIX_PAS_CHER, VOUS_PROPOSE } from '../../seo-v4.types';
+import { PRIX_PAS_CHER, SeoVariables, VOUS_PROPOSE } from '../../seo-v4.types';
 
 /**
  * Variables métier injectables dans les templates SEO.
@@ -14,30 +14,12 @@ import { PRIX_PAS_CHER, VOUS_PROPOSE } from '../../seo-v4.types';
  *
  * `useMeta=true` (titre/description/preview) → variantes texte sans `<b>`.
  * `useMeta=false` (h1/content) → variantes typographiées avec `<b>`.
+ *
+ * Note : alias direct vers `SeoVariables` (Zod schema source unique). Permet
+ * à `DynamicSeoV4UltimateService` de passer le résultat de `SeoVariablesSchema.parse`
+ * sans cast, et garantit que toute évolution du schéma propage automatiquement.
  */
-export interface TemplateVariables {
-  gamme: string;
-  gammeMeta: string;
-  marque: string;
-  marqueMeta: string;
-  marqueMetaTitle: string;
-  modele: string;
-  modeleMeta: string;
-  type: string;
-  typeMeta: string;
-  annee: string;
-  nbCh: number;
-  carosserie: string;
-  fuel: string;
-  codeMoteur: string;
-  /** Variables marketing legacy (PHP `$PrixPasCher[]` / `$VousPropose[]`). */
-  minPrice?: number;
-  articlesCount?: number;
-  familyName?: string;
-  seoScore?: number;
-  gammeLevel?: number;
-  isTopGamme?: boolean;
-}
+export type TemplateVariables = SeoVariables;
 
 export interface RenderTemplateInput {
   surfaceKey: SurfaceKey;

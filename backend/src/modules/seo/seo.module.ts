@@ -28,7 +28,6 @@ import { AiContentModule } from '../ai-content/ai-content.module';
 // ═══════════════════════════════════════════════════════════════════════════
 import { SeoService } from './seo.service';
 import { DynamicSeoV4UltimateService } from './dynamic-seo-v4-ultimate.service';
-import { SeoV4SwitchEngineService } from './services/seo-v4-switch-engine.service';
 import { SeoV4MonitoringService } from './services/seo-v4-monitoring.service';
 import { HreflangService } from './infrastructure/hreflang.service';
 import { ProductImageService } from './services/product-image.service';
@@ -204,7 +203,6 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
   providers: [
     // Core
     SeoService,
-    SeoV4SwitchEngineService,
     SeoV4MonitoringService,
     DynamicSeoV4UltimateService,
     HreflangService,

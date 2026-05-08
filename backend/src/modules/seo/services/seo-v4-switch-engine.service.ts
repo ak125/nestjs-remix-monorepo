@@ -1,12 +1,13 @@
 /**
  * SEO V4 Switch Engine Service
  *
- * Extracted from dynamic-seo-v4-ultimate.service.ts
- * Handles all switch/interpolation processing:
- * - CompSwitch (generic + gamme-specific + aliased)
- * - LinkGammeCar (internal links)
- * - FamilySwitch (alias 1-16)
- * - External gamme switches (batch processing)
+ * @deprecated PR-2c (plan seo-v9) — remplacé par `SeoSwitchSelector` +
+ * `SeoTemplateRenderer` + `SeoInternalLinkingService` (chain). Aucun consommateur
+ * actif depuis le refactor V4 → orchestrateur stateless. À supprimer en PR-10
+ * (cf. plan seo-v9 §5 « Phase D — Anti-thin-content + cleanup »).
+ *
+ * Conservé temporairement pour préserver l'historique git et permettre une
+ * comparaison shadow lors des PRs de branchement (PR-3+).
  */
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { TABLES } from '@repo/database-types';
 import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { FAMILY_SWITCH_DEFAULTS } from '../seo-v4.types';
 
+/** @deprecated PR-2c — voir doc bloc en haut de fichier. */
 @Injectable()
 export class SeoV4SwitchEngineService extends SupabaseBaseService {
   protected readonly logger = new Logger(SeoV4SwitchEngineService.name);

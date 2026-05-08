@@ -17,7 +17,10 @@ import {
   SeoSwitchSelector,
   type SwitchVariant,
 } from './seo-switch-selector.service';
-import { SeoInternalLinkingService } from './seo-internal-linking.service';
+import {
+  SeoInternalLinkingService,
+  type LinkResolutionResult,
+} from './seo-internal-linking.service';
 import {
   SeoArianeBreadcrumbService,
   type BreadcrumbItem,
@@ -84,11 +87,11 @@ export interface SeoChainInput {
  *
  * @see plan seo-v9 §3.4 — `DynamicSeoV4UltimateService` (orchestrateur)
  *
- * **Note PR-2c** : V4 (`DynamicSeoV4UltimateService.generateCompleteSeo()`) n'est
- * PAS refactoré pour appeler cet orchestrateur. V4 reste intact (compat 4
- * endpoints debug `/api/seo-dynamic-v4/*`). PR-3+ wire les controllers réels
- * (`rm-builder`, `gamme-rest`, `brand-rpc`, `vehicle-rpc`) via cet orchestrator
- * + feature flag `SEO_CHAIN_<surface>_MODE`.
+ * **Note PR-2c** : V4 (`DynamicSeoV4UltimateService.generateCompleteSeo()`) **EST**
+ * refactoré pour déléguer à cet orchestrateur (compat 4 endpoints debug
+ * `/api/seo-dynamic-v4/*` préservée via adapter). PR-3+ wire les controllers
+ * réels (`rm-builder`, `gamme-rest`, `brand-rpc`, `vehicle-rpc`) directement sur
+ * `SeoChainOrchestratorService.run()` + feature flag `SEO_CHAIN_<surface>_MODE`.
  */
 @Injectable()
 export class SeoChainOrchestratorService {
@@ -126,8 +129,10 @@ export class SeoChainOrchestratorService {
     // 4. linking (extrait markers depuis tous les champs hydratés)
     const allText = `${template.title} ${template.description} ${template.h1} ${template.preview} ${template.content}`;
     const markers = this.extractMarkers(allText);
-    const links = await this.linking.resolveMarkers({
+    const links = await this.linking.resolveLinksBatch({
       sourceSurfaceKey: input.surfaceKey,
+      sourceEntityId: input.pgId,
+      vehicleId: input.vehicleId,
       markers,
     });
 
@@ -341,9 +346,9 @@ export class SeoChainOrchestratorService {
     return out;
   }
 
-  private countLinks(links: Map<string, { isLink: boolean }>): number {
+  private countLinks(links: LinkResolutionResult[]): number {
     let n = 0;
-    for (const link of links.values()) if (link.isLink) n++;
+    for (const link of links) if (link.isLink) n++;
     return n;
   }
 
