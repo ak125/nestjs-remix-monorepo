@@ -11,6 +11,26 @@ d'imposer des objectifs aspirationnels.
 > performance, then set budgets just above those values."
 > — [web.dev/performance-budgets-101](https://web.dev/articles/performance-budgets-101)
 
+## Sémantique des unités (matrice anti-confusion)
+
+Les seuils `resourceSizes[].budget` sont en **kilooctets transferred per
+page** (gzipped/brotli sur le réseau, pour les 3 URLs Lighthouse cibles).
+**Ils ne sont pas comparables au bundle total raw** (`du -shc
+build/client/assets/*.js` = ~2,6 Mo en mai 2026).
+
+| Mesure | Sémantique | Comparable au budget `script: 1250` ? |
+|---|---|---|
+| `du build/client/assets/*.js` (raw) | Bundle entier non-compressé | ❌ Non |
+| `npm run bundle:report` `total.gzip` | Bundle entier gzip | ❌ Non (per-page only) |
+| Lighthouse `resource-summary.script.size` | Scripts chargés sur **une URL**, transferred bytes | ✅ Oui — c'est ce que le budget mesure |
+
+Toute communication / titre PR / handoff session **doit utiliser la
+sémantique correcte**. La confusion raw vs gzipped vs per-page a produit
+[PR #382](https://github.com/ak125/nestjs-remix-monorepo/pull/382)
+(recalibration arbitraire 1250 → 3500 KB, refusée 2026-05-07). Voir
+[ADR-051](https://github.com/ak125/governance-vault/blob/main/ledger/decisions/adr/ADR-051-frontend-bundle-budget-enforcement.md)
+pour la méthodologie d'arbitrage budget.
+
 ## Calibration courante
 
 Mesures de référence prises sur CI run
