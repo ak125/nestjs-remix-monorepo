@@ -253,4 +253,80 @@ describe('SeoChainOrchestratorService', () => {
       /families_below_threshold/,
     );
   });
+
+  // ─────────── Étape 6 plan rev 2 : freeze contrat orchestrator ───────────
+  // Snapshot tests sur 3 surfaces canon. Tout changement de format (clé,
+  // structure, casse, types) cassera le snapshot et obligera une mise à jour
+  // explicite via `--updateSnapshot`. Empêche les dérives invisibles dans
+  // les PRs futures.
+  describe('Snapshot freeze contrat output (Étape 6 plan v9 rev 2)', () => {
+    function strip(out: Record<string, unknown>) {
+      // renderedAt change à chaque run → on le neutralise pour stabiliser
+      // les snapshots. Le format ISO reste vérifié implicitement par les
+      // tests d'intégration ci-dessus.
+      const { metadata, ...rest } = out as {
+        metadata: Record<string, unknown>;
+      };
+      const { renderedAt: _renderedAt, ...metaRest } = metadata;
+      return { ...rest, metadata: metaRest };
+    }
+
+    it('freeze R1_GAMME_VEHICLE_ROUTER output shape', async () => {
+      const orchestrator = buildOrchestrator({
+        templateRow: {
+          sgc_id: 124,
+          sgc_title: '#Gamme# pour #VMarque# #VModele#',
+          sgc_descrip: 'Description #PrixPasCher#',
+          sgc_h1: '<h1>#Gamme#</h1>',
+          sgc_preview: 'Aperçu #Gamme#',
+          sgc_content: '<p>#FamilyContext#</p>',
+        },
+      });
+      const out = await orchestrator.run({
+        surfaceKey: 'R1_GAMME_VEHICLE_ROUTER',
+        pgId: 124,
+        typeId: 12345,
+        vehicleId: 12345,
+        variables: baseVars,
+        ids: {
+          gammeAlias: 'plaquettes-de-frein',
+          marqueAlias: 'renault',
+          modeleAlias: 'clio',
+          typeAlias: '1-5-dci-90',
+        },
+        baseUrl: 'https://www.automecanik.com',
+        breadcrumbs: [{ name: 'Accueil', url: 'https://www.automecanik.com/' }],
+      });
+      expect(strip(out as never)).toMatchSnapshot();
+    });
+
+    it('freeze R0_HOME output shape', async () => {
+      const orchestrator = buildOrchestrator({ templateRow: null });
+      const out = await orchestrator.run({
+        surfaceKey: 'R0_HOME',
+        pgId: 0,
+        typeId: 0,
+        variables: baseVars,
+        ids: {},
+        baseUrl: 'https://www.automecanik.com',
+        breadcrumbs: [{ name: 'Accueil', url: 'https://www.automecanik.com/' }],
+      });
+      expect(strip(out as never)).toMatchSnapshot();
+    });
+
+    it('freeze R7_BRAND_HUB output shape (noindex via threshold)', async () => {
+      const orchestrator = buildOrchestrator({ templateRow: null });
+      const out = await orchestrator.run({
+        surfaceKey: 'R7_BRAND_HUB',
+        pgId: 0,
+        typeId: 0,
+        variables: baseVars,
+        ids: { brandAlias: 'bosch' },
+        baseUrl: 'https://www.automecanik.com',
+        breadcrumbs: [{ name: 'Accueil', url: 'https://www.automecanik.com/' }],
+        indexability: { availableFamilies: 1 },
+      });
+      expect(strip(out as never)).toMatchSnapshot();
+    });
+  });
 });
