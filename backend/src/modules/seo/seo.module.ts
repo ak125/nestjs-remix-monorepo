@@ -28,7 +28,6 @@ import { AiContentModule } from '../ai-content/ai-content.module';
 // ═══════════════════════════════════════════════════════════════════════════
 import { SeoService } from './seo.service';
 import { DynamicSeoV4UltimateService } from './dynamic-seo-v4-ultimate.service';
-import { SeoV4SwitchEngineService } from './services/seo-v4-switch-engine.service';
 import { SeoV4MonitoringService } from './services/seo-v4-monitoring.service';
 import { HreflangService } from './infrastructure/hreflang.service';
 import { ProductImageService } from './services/product-image.service';
@@ -125,6 +124,33 @@ import { DiagnosticController } from './controllers/diagnostic.controller';
 import { SeoGeneratorController } from './controllers/seo-generator.controller';
 
 // ═══════════════════════════════════════════════════════════════════════════
+// REGISTRIES (PR-2a plan seo-v9 — catalogues SoT, pas de logique métier)
+// ═══════════════════════════════════════════════════════════════════════════
+import { SeoSurfaceRegistry } from './registries/seo-surface.registry';
+import { SeoVariantFamilyRegistry } from './registries/seo-variant-family.registry';
+import { SeoFeatureFlagRegistry } from './registries/seo-feature-flag.registry';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// POLICIES (PR-2b plan seo-v9 — services logique pure, pas de DB ni HTTP)
+// ═══════════════════════════════════════════════════════════════════════════
+import { SeoCanonicalService } from './services/policies/seo-canonical.service';
+import { R2IndexabilityGate } from './services/policies/r2-indexability-gate.service';
+import { SeoIndexabilityPolicyService } from './services/policies/seo-indexability-policy.service';
+import { SeoUnavailablePolicy } from './services/policies/seo-unavailable-policy.service';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CHAIN (PR-2c plan seo-v9 — chaîne SEO commune : 7 services + orchestrator)
+// ═══════════════════════════════════════════════════════════════════════════
+import { SeoSlugService } from './services/chain/seo-slug.service';
+import { SeoArianeBreadcrumbService } from './services/chain/seo-ariane-breadcrumb.service';
+import { SeoMetaRegistryService } from './services/chain/seo-meta-registry.service';
+import { SeoSwitchSelector } from './services/chain/seo-switch-selector.service';
+import { SeoTemplateRenderer } from './services/chain/seo-template-renderer.service';
+import { SeoInternalLinkingService as SeoChainInternalLinkingService } from './services/chain/seo-internal-linking.service';
+import { SeoContentBlockBuilder } from './services/chain/seo-content-block-builder.service';
+import { SeoChainOrchestratorService } from './services/chain/seo-chain-orchestrator.service';
+
+// ═══════════════════════════════════════════════════════════════════════════
 // INTERCEPTORS
 // ═══════════════════════════════════════════════════════════════════════════
 import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
@@ -177,7 +203,6 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
   providers: [
     // Core
     SeoService,
-    SeoV4SwitchEngineService,
     SeoV4MonitoringService,
     DynamicSeoV4UltimateService,
     HreflangService,
@@ -220,6 +245,24 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     DiagnosticService,
     SeoGeneratorService,
     SeoTitleEngineService,
+    // Registries (PR-2a plan seo-v9)
+    SeoSurfaceRegistry,
+    SeoVariantFamilyRegistry,
+    SeoFeatureFlagRegistry,
+    // Policies (PR-2b plan seo-v9)
+    SeoCanonicalService,
+    R2IndexabilityGate,
+    SeoIndexabilityPolicyService,
+    SeoUnavailablePolicy,
+    // Chain (PR-2c plan seo-v9)
+    SeoSlugService,
+    SeoArianeBreadcrumbService,
+    SeoMetaRegistryService,
+    SeoSwitchSelector,
+    SeoTemplateRenderer,
+    SeoChainInternalLinkingService,
+    SeoContentBlockBuilder,
+    SeoChainOrchestratorService,
 
     // Interceptors globaux
     {
@@ -275,6 +318,24 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     DiagnosticService,
     SeoGeneratorService,
     SeoTitleEngineService,
+    // Registries (PR-2a plan seo-v9)
+    SeoSurfaceRegistry,
+    SeoVariantFamilyRegistry,
+    SeoFeatureFlagRegistry,
+    // Policies (PR-2b plan seo-v9)
+    SeoCanonicalService,
+    R2IndexabilityGate,
+    SeoIndexabilityPolicyService,
+    SeoUnavailablePolicy,
+    // Chain (PR-2c plan seo-v9)
+    SeoSlugService,
+    SeoArianeBreadcrumbService,
+    SeoMetaRegistryService,
+    SeoSwitchSelector,
+    SeoTemplateRenderer,
+    SeoChainInternalLinkingService,
+    SeoContentBlockBuilder,
+    SeoChainOrchestratorService,
   ],
 })
 export class SeoModule {
