@@ -411,3 +411,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-e-l3-rag-mirror-readonly`
 - **Décision** : feat(rag): L3 mirror readonly enforcement + bootstrap guard (MVP-0 PR-E)
 - **Sortie** : PR #356 | commits 2ed2e9b7
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : feat(seo-v9-pr1): orchestrateur audit-v9-inventaire (5 volets + rapport) (+8 other commits)
+- **Sortie** : PR aucune | commits e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
