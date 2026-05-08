@@ -132,6 +132,14 @@ import { SeoVariantFamilyRegistry } from './registries/seo-variant-family.regist
 import { SeoFeatureFlagRegistry } from './registries/seo-feature-flag.registry';
 
 // ═══════════════════════════════════════════════════════════════════════════
+// POLICIES (PR-2b plan seo-v9 — services logique pure, pas de DB ni HTTP)
+// ═══════════════════════════════════════════════════════════════════════════
+import { SeoCanonicalService } from './services/policies/seo-canonical.service';
+import { R2IndexabilityGate } from './services/policies/r2-indexability-gate.service';
+import { SeoIndexabilityPolicyService } from './services/policies/seo-indexability-policy.service';
+import { SeoUnavailablePolicy } from './services/policies/seo-unavailable-policy.service';
+
+// ═══════════════════════════════════════════════════════════════════════════
 // INTERCEPTORS
 // ═══════════════════════════════════════════════════════════════════════════
 import { SeoHeadersInterceptor } from './interceptors/seo-headers.interceptor';
@@ -231,6 +239,11 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     SeoSurfaceRegistry,
     SeoVariantFamilyRegistry,
     SeoFeatureFlagRegistry,
+    // Policies (PR-2b plan seo-v9)
+    SeoCanonicalService,
+    R2IndexabilityGate,
+    SeoIndexabilityPolicyService,
+    SeoUnavailablePolicy,
 
     // Interceptors globaux
     {
@@ -290,6 +303,11 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     SeoSurfaceRegistry,
     SeoVariantFamilyRegistry,
     SeoFeatureFlagRegistry,
+    // Policies (PR-2b plan seo-v9)
+    SeoCanonicalService,
+    R2IndexabilityGate,
+    SeoIndexabilityPolicyService,
+    SeoUnavailablePolicy,
   ],
 })
 export class SeoModule {
