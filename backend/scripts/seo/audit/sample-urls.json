@@ -15,24 +15,23 @@
         "nbCh": 98,
         "fuel": "Essence"
       },
-      "category": "indexed_control"
+      "category": "to_verify"
     },
     {
-      "url": "https://www.automecanik.com/pieces/batterie/bmw/serie-3-e21/315-i.html",
+      "url": "https://www.automecanik.com/pieces/filtre-a-huile/nissan/almera-ii/1-8-phase-2.html",
       "surface_key": "R1_GAMME_VEHICLE_ROUTER",
-      "gamme_id": 1,
-      "vehicle_id": 11,
-      "pgId": 1,
-      "typeId": 11,
+      "gamme_id": 7,
+      "vehicle_id": 17243,
+      "pgId": 7,
+      "typeId": 17243,
       "variables": {
-        "gamme": "Batterie",
-        "marque": "BMW",
-        "modele": "Série 3 (E21)",
-        "type": "315 i",
-        "nbCh": 75,
+        "gamme": "Filtre à huile",
+        "marque": "NISSAN",
+        "modele": "ALMERA II",
+        "type": "1.8 (Phase 2)",
         "fuel": "Essence"
       },
-      "category": "crawled_not_indexed"
+      "category": "to_verify"
     }
   ]
 }
