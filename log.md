@@ -411,3 +411,51 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-e-l3-rag-mirror-readonly`
 - **Décision** : feat(rag): L3 mirror readonly enforcement + bootstrap guard (MVP-0 PR-E)
 - **Sortie** : PR #356 | commits 2ed2e9b7
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : feat(seo-v9-pr1): orchestrateur audit-v9-inventaire (5 volets + rapport) (+8 other commits)
+- **Sortie** : PR aucune | commits e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : feat(seo-v9-pr1): livrable canon legacy_to_monorepo_gap_matrix.md (baseline 10 lignes) (+12 other commits)
+- **Sortie** : PR #398 | commits 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : fix(seo-v9-pr1): sample-urls.json avec IDs Supabase réels (Nissan Almera + BMW Série 3) (+14 other commits)
+- **Sortie** : PR #398 | commits 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : fix(seo-v9-pr1): sample-urls.json — gammes vraiment dans le catalogue (pg_display=1) (+16 other commits)
+- **Sortie** : PR #398 | commits 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : fix(seo-v9-pr1): volet 4 — chiffres vérifiés via vue v_pieces_seo_safe (+18 other commits)
+- **Sortie** : PR #398 | commits beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : feat(seo-v9-pr1): matrice enrichie avec findings empiriques + décision PR-2 motivée (+20 other commits)
+- **Sortie** : PR #398 | commits 9b970255 99372469 beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : fix(seo-v9-pr1): 4 critiques review auto (regex faux positifs, silent failures, README, anti-rot) (+22 other commits)
+- **Sortie** : PR #398 | commits 86d77b1b a34af83e 9b970255 99372469 beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : fix(seo-v9-pr1): samples complets avec 14 variables SeoVariablesSchema requises (+24 other commits)
+- **Sortie** : PR #398 | commits 65e3cdac af66d534 86d77b1b a34af83e 9b970255 99372469 beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
