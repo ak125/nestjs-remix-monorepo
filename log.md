@@ -477,3 +477,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-v9-pr2c-renderer-switch`
 - **Décision** : refactor(seo): v4 delegates to chain orchestrator (PR-2c rev 2) (+5 other commits)
 - **Sortie** : PR #401 | commits 79c32c9c 93c63ffe d4278b8e c02a31d2 85731ace 8d66d310
+
+## 2026-05-08 — feat/seo-v9-pr2d-marketing-parity (auto)
+
+- **Branche** : `feat/seo-v9-pr2d-marketing-parity`
+- **Décision** : feat(seo-v9): PR-2c chain services + orchestrator (stacked sur 2b) (#401) (+2 other commits)
+- **Sortie** : PR aucune | commits efc4c9fa 85731ace 8d66d310
