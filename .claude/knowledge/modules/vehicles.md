@@ -15,6 +15,7 @@ primary_files:
 depends_on:
 - ConfigModule
 - DatabaseModule
+- SeoShadowObservatoryModule
 - CatalogModule
 - CacheModule
 ---
