@@ -441,3 +441,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-v9-pr1-gap-matrix`
 - **Décision** : fix(seo-v9-pr1): volet 4 — chiffres vérifiés via vue v_pieces_seo_safe (+18 other commits)
 - **Sortie** : PR #398 | commits beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : feat(seo-v9-pr1): matrice enrichie avec findings empiriques + décision PR-2 motivée (+20 other commits)
+- **Sortie** : PR #398 | commits 9b970255 99372469 beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
