@@ -1,6 +1,6 @@
 # Legacy PHP → Monorepo Gap Matrix (SEO seo-v9 PR-1)
 
-> Generated: 2026-05-08T17:11:20.908Z
+> Generated: 2026-05-08T17:16:15.095Z
 > Plan référence : `/home/deploy/.claude/plans/apres-investigation-seo-on-iterative-spark.md`
 > Statut : LIVRABLE CANON PR-1. Mis à jour à chaque PR de la cascade seo-v9.
 
@@ -27,3 +27,53 @@
 - **P0** : ne pas refaire (consolider l'existant).
 - **P1** : compléter en PR-2 ou cascade.
 - **P2** : différé (wiki éditorial, blog, R4).
+
+
+## Findings empiriques (run DEV)
+
+### Couverture services
+
+- **Services SEO existants** : 31
+- **Mappés à une cible v9 par filename** : 4/14 (29% brut)
+- Couverture fonctionnelle réelle probablement plus élevée (services existants couvrent partiellement plusieurs cibles — à inventorier précisément en PR-2a registry)
+
+### Diff sortie SEO V4 vs actuel
+
+- Sample : 2 URLs
+  - `v4_unavailable` : 2/2
+
+### Audit R2 fiche produit
+
+- **Route Remix R2 dédiée** : **ABSENTE** (équivalent `v7.products.fiche.php` non porté)
+- Conséquence : R2 traité comme R1 listing actuellement. Pas de fiche produit individuelle indexable. Cohérent avec l'option "R2 noindex par défaut" du legacy.
+
+### Volume R2 (3 sources Supabase croisées)
+
+| Source | Count | Ratio |
+|---|---|---|
+| `pieces` (raw)             | 4 135 954 | 100% |
+| `v_pieces_seo_safe` (vue)  | 502 734 | 12.2% |
+| `__sitemap_p_xml` (sitemap actuel) | 1 960 | 0.39% |
+
+**Justification empirique `R2IndexabilityGate`** : sans gate strict, R2 pourrait passer de 1 960 URLs (sitemap actuel) à 502 734 (×256) — risque de spam Google catastrophique. Gate non négociable avant tout branchement R2.
+
+## Décision PR-2 (proposée à partir des findings)
+
+**Scénario A — refactor majeur**
+
+Couverture filename 29% — créer la majorité des 14 services cibles. Effort ~2 sprints. **Confirmer en PR-2a** par audit fonctionnel approfondi (filename mapping ne reflète pas tout : certains services existants couvrent partiellement plusieurs cibles).
+
+**Manques prioritaires confirmés** :
+
+1. `R2IndexabilityGate` — absent (volet 4 montre volume × 256 potentiel sans gate)
+2. `SeoSurfaceRegistry` + `SeoVariantFamilyRegistry` + `SeoFeatureFlagRegistry` — registries non identifiés dans l'inventaire
+3. `seo_render_fingerprint` table — inexistante (pas de duplicate gate observable)
+4. `SeoUnavailablePolicy` 410/412 contextualisé — à raccorder au système 3 couches erreurs existant (auditer en PR-2)
+5. Variables marketing `#PrixPasCher#` / `#VousPropose#` / `#MinPrice#` — vérifier statut réel dans `SeoSwitchesService` (le doc switch les disait TODO)
+6. R0 home hub SEO — actuellement non branché à `___meta_tags_ariane`
+7. R3 contenu éditorial — doit venir du wiki canonique (ADR-031), pas clone PHP
+
+**Hors-scope PR-2** (différés) :
+- R2 fiche produit complète (PR-11 conditionnel post-stabilisation A-D)
+- Blog (PR-12)
+- R4 critères techniques + OEM cross-reference (≥ PR-13)

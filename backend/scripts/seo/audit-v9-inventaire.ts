@@ -15,7 +15,7 @@ import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { runInventoryVolet } from './audit/inventory-services';
 import { runR2RoutesAudit } from './audit/r2-routes-audit';
-import { runR2VolumeSample, makeSupabaseFromEnv } from './audit/r2-volume-sample';
+import { runR2VolumeSample, makeSupabaseFromEnv, countSitemapPiecesUrls } from './audit/r2-volume-sample';
 import { runDiffVolet } from './audit/diff-v4-vs-current';
 import { runPhpVsRemixComparison } from './audit/php-vs-remix-comparison';
 import { renderGapMatrixMarkdown, BASELINE_MATRIX_ROWS } from './audit/gap-matrix-generator';
@@ -108,7 +108,8 @@ async function main() {
   console.log('\n[Volet 4] Sample volume R2 indexable...');
   const supabase = makeSupabaseFromEnv();
   const r2_volume_stats = await runR2VolumeSample({ supabase });
-  console.log(`   total_pieces=${r2_volume_stats.total_pieces}, indexable=${r2_volume_stats.indexable_estimate}`);
+  const sitemap_p_count = await countSitemapPiecesUrls(supabase);
+  console.log(`   total_pieces=${r2_volume_stats.total_pieces}, indexable=${r2_volume_stats.indexable_estimate}, sitemap_p=${sitemap_p_count}`);
 
   console.log('\n[Volet 5] Comparaison PHP vs Remix...');
   const php_vs_remix_comparison = await runPhpVsRemixComparison({
@@ -132,9 +133,31 @@ async function main() {
   await mkdir(path.dirname(args.outputJson), { recursive: true });
   await writeFile(args.outputJson, JSON.stringify(report, null, 2), 'utf-8');
 
+  // Findings empiriques agrégés pour la matrice
+  const TARGET_SERVICES_COUNT = 14; // services cibles plan v9 (cf. seo-chain-architecture-seo-v9.md)
+  const mappedSet = new Set(
+    report.service_inventory.filter((s) => s.maps_to_target_service).map((s) => s.maps_to_target_service!),
+  );
+  const diffVerdicts: Record<string, number> = {};
+  for (const d of report.diff_samples) {
+    diffVerdicts[d.diff_verdict] = (diffVerdicts[d.diff_verdict] ?? 0) + 1;
+  }
+  const findings = {
+    source: (args.baseUrl.includes('localhost') ? 'DEV' : 'preprod') as 'DEV' | 'preprod',
+    services_total: report.service_inventory.length,
+    services_mapped_to_targets: mappedSet.size,
+    target_services_count: TARGET_SERVICES_COUNT,
+    diff_samples_count: report.diff_samples.length,
+    diff_verdicts: diffVerdicts,
+    r2_routes_found: report.r2_routes_audit.found,
+    pieces_total: report.r2_volume_stats.total_pieces,
+    pieces_seo_safe: report.r2_volume_stats.indexable_estimate,
+    pieces_in_sitemap: sitemap_p_count,
+  };
+
   console.log(`💾 Écriture du markdown → ${args.outputMd}`);
   await mkdir(path.dirname(args.outputMd), { recursive: true });
-  await writeFile(args.outputMd, renderGapMatrixMarkdown(report.gap_matrix, { generated_at }), 'utf-8');
+  await writeFile(args.outputMd, renderGapMatrixMarkdown(report.gap_matrix, { generated_at, findings }), 'utf-8');
 
   console.log('\n✅ PR-1 audit terminé');
   console.log('   → Décision PR-2 : voir verdict scénario A/B/C dans plan section 4 (PR-2).');
