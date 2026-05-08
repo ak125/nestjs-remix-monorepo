@@ -1,6 +1,6 @@
 # Legacy PHP → Monorepo Gap Matrix (SEO seo-v9 PR-1)
 
-> Generated: 2026-05-08T17:26:33.162Z
+> Generated: 2026-05-08T17:30:34.101Z
 > Plan référence : `/home/deploy/.claude/plans/apres-investigation-seo-on-iterative-spark.md`
 > Statut : LIVRABLE CANON PR-1. Mis à jour à chaque PR de la cascade seo-v9.
 
@@ -40,7 +40,7 @@
 ### Diff sortie SEO V4 vs actuel
 
 - Sample : 2 URLs
-  - `v4_unavailable` : 2/2
+  - `divergent` : 2/2
 
 ### Audit R2 fiche produit
 

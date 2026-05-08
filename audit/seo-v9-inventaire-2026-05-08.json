@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-08T17:26:33.162Z",
+  "generated_at": "2026-05-08T17:30:34.101Z",
   "gap_matrix": [
     {
       "php_file": "index.php",
@@ -592,8 +592,14 @@
         "canonical": "",
         "robots": ""
       },
-      "v4_fingerprint": null,
-      "diff_verdict": "v4_unavailable"
+      "v4_fingerprint": {
+        "title_hash": "7dbab6143c7ef0cc",
+        "h1_hash": "08a52cf1363654dd",
+        "content_hash": "3c61877f39681568",
+        "canonical": "",
+        "robots": ""
+      },
+      "diff_verdict": "divergent"
     },
     {
       "url": "https://www.automecanik.com/pieces/filtre-a-huile/nissan/almera-ii/1-8-phase-2.html",
@@ -605,8 +611,14 @@
         "canonical": "",
         "robots": ""
       },
-      "v4_fingerprint": null,
-      "diff_verdict": "v4_unavailable"
+      "v4_fingerprint": {
+        "title_hash": "9181edc7b21ed8d7",
+        "h1_hash": "9978a41a7a04b9f8",
+        "content_hash": "d25c3dab4c34f11d",
+        "canonical": "",
+        "robots": ""
+      },
+      "diff_verdict": "divergent"
     }
   ],
   "r2_routes_audit": {
