@@ -4,12 +4,13 @@
  * For more information, see https://remix.run/file-conventions/entry.client
  */
 
-import * as Sentry from "@sentry/remix";
 import { useLocation, useMatches, RemixBrowser } from "@remix-run/react";
+import * as Sentry from "@sentry/remix";
 import { startTransition, useEffect } from "react";
 import { hydrateRoot } from "react-dom/client";
-import { logger } from "~/utils/logger";
 import { sentryBeforeSend } from "~/utils/analytics-sanitize";
+import { logger } from "~/utils/logger";
+import { reportWebVitals } from "~/utils/web-vitals.client";
 
 // Sentry browser SDK — DSN injected at SSR time via `window.ENV.VITE_SENTRY_DSN`
 // (see root.tsx loader). When the DSN is absent, all Sentry calls are no-ops.
@@ -63,4 +64,7 @@ startTransition(() => {
       }
     },
   });
+  // Field Web Vitals reporter — pousse LCP/INP/CLS/FCP/TTFB vers
+  // Sentry.metrics (si dispo) → GA4 → console. Voir ~/utils/web-vitals.client.
+  reportWebVitals();
 });
