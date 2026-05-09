@@ -489,3 +489,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-v9-pr2d-marketing-parity`
 - **Décision** : feat(seo): marketing seed parity legacy V4 + V4 E2E test (PR-2d) (+4 other commits)
 - **Sortie** : PR #402 | commits 06f62afe 7cd4063f efc4c9fa 85731ace 8d66d310
+
+## 2026-05-09 — pr6-clean (auto)
+
+- **Branche** : `pr6-clean`
+- **Décision** : fix(seo-v9): pr-6 update vehicle-rpc legacy test for shadowObservatory dep (+2 other commits)
+- **Sortie** : PR aucune | commits c4808beb a8df0f53 c230abd4

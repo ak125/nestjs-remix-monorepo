@@ -2,7 +2,7 @@
 module: navigation
 sources:
 - backend/src/modules/navigation
-last_scan: '2026-05-08'
+last_scan: '2026-05-09'
 primary_files:
 - backend/src/modules/navigation/navigation.controller.ts
 - backend/src/modules/navigation/navigation.module.ts
