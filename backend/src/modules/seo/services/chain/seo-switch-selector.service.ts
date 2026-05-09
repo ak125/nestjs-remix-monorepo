@@ -103,7 +103,8 @@ export class SeoSwitchSelector extends SupabaseBaseService {
   async fetchVariants<TWhere extends Record<string, unknown>>(
     input: PickVariantInput<TWhere>,
   ): Promise<SwitchVariant[]> {
-    const table = this.families.resolveTable(input.family);
+    const config = this.families.getConfig(input.family);
+    const table = config.table;
     let query = this.supabase.from(table).select('*');
 
     for (const [col, val] of Object.entries(input.where)) {
@@ -111,6 +112,11 @@ export class SeoSwitchSelector extends SupabaseBaseService {
     }
     if (input.aliasColumn && typeof input.alias === 'number') {
       query = query.eq(input.aliasColumn, input.alias);
+    }
+    // Ordre stable obligatoire pour l'idempotence du seed sha256.
+    // Les 4 familles legacy n'ont pas `orderBy` → comportement inchangé.
+    if (config.orderBy) {
+      query = query.order(config.orderBy, { ascending: true });
     }
 
     const { data, error } = await query;
