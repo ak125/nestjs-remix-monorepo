@@ -495,3 +495,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `pr6-clean`
 - **Décision** : fix(seo-v9): pr-6 update vehicle-rpc legacy test for shadowObservatory dep (+2 other commits)
 - **Sortie** : PR aucune | commits c4808beb a8df0f53 c230abd4
+
+## 2026-05-09 — feat/retrofit-rm-builder-on-shadow-observatory (auto)
+
+- **Branche** : `feat/retrofit-rm-builder-on-shadow-observatory`
+- **Décision** : refactor(seo-v9): retrofit rm-builder sur SeoShadowObservatory (ADR-055)
+- **Sortie** : PR #410 | commits 0af63731
