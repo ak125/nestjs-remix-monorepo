@@ -50,10 +50,7 @@ export class R3GuideService {
    * sources, pas 20). Multi-instance : dedup local par replica ; le store
    * Redis partagé visibilise le résultat aux autres replicas après écriture.
    */
-  private readonly inflight = new Map<
-    string,
-    Promise<R3GuidePayload | null>
-  >();
+  private readonly inflight = new Map<string, Promise<R3GuidePayload | null>>();
 
   /** Tunable for tests — production code uses default. */
   private cacheTtlSeconds: number = R3_CACHE_TTL_SECONDS;
@@ -85,8 +82,7 @@ export class R3GuideService {
     const cacheKey = `${R3_CACHE_PREFIX}${pg_alias}`;
     const startedAt = Date.now();
 
-    const cached =
-      await this.cacheService.get<R3GuidePayload | null>(cacheKey);
+    const cached = await this.cacheService.get<R3GuidePayload | null>(cacheKey);
     if (cached !== null) {
       this.logger.debug(
         `[r3-cache] hit key=${cacheKey} duration_ms=${Date.now() - startedAt}`,
