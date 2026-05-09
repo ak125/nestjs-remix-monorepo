@@ -9,9 +9,9 @@ primary_files:
 - backend/src/modules/gamme-rest/gamme-rest-optimized.controller.ts
 - backend/src/modules/gamme-rest/gamme-rest-rpc-v2.controller.ts
 - backend/src/modules/gamme-rest/gamme-rest.module.ts
+- backend/src/modules/gamme-rest/services/__tests__/gamme-response-builder-seo-shadow.test.ts
 - backend/src/modules/gamme-rest/services/buying-guide-data.service.ts
 - backend/src/modules/gamme-rest/services/gamme-data-transformer.service.ts
-- backend/src/modules/gamme-rest/services/gamme-page-data.service.ts
 depends_on:
 - CatalogModule
 - DatabaseModule
