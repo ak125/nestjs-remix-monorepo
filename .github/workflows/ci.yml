@@ -755,7 +755,7 @@ jobs:
           SESSION_SECRET=${SESSION_SECRET}
           READ_ONLY=true
           # ADR-055 shadow activation: collect real preprod evidence before any
-          # mode=on decision. `on` remains blocked by backend boot guard.
+          # mode=on decision. Literal on remains blocked by backend boot guard.
           SEO_CHAIN_R7_MODE=shadow
           SEO_CHAIN_R8_MODE=shadow
           SEO_CHAIN_RM_MODE=shadow
