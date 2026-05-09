@@ -117,6 +117,25 @@ export class SeoShadowChainRunner {
           brandId: numericOrUndefined(ids.brandId),
         };
 
+      case 'R1_GAMME_VEHICLE_ROUTER':
+        // Retrofit rm-builder : ids/vars depuis `SeoContext` (cf. rm-builder.service.ts:598).
+        return {
+          surfaceKey: surface,
+          pgId: numericOrZero(ids.pgId),
+          typeId: numericOrZero(ids.typeId),
+          vehicleId: numericOrUndefined(ids.typeId),
+          variables: variables as never,
+          ids: {
+            gammeAlias: String(ids.gammeAlias ?? ''),
+            marqueAlias: String(ids.marqueAlias ?? ''),
+            modeleAlias: String(ids.modeleAlias ?? ''),
+            typeAlias: String(ids.typeAlias ?? ''),
+          },
+          baseUrl: SeoShadowChainRunner.BASE_URL,
+          requestedUrl: requestUrl,
+          breadcrumbs: [],
+        };
+
       default:
         throw new SeoShadowSurfaceNotWiredError(surface);
     }
@@ -125,7 +144,9 @@ export class SeoShadowChainRunner {
 
 export class SeoShadowSurfaceNotWiredError extends Error {
   constructor(surface: SurfaceKey) {
-    super(`SeoShadowChainRunner: surface ${surface} non câblée (PR-6 = R7+R8)`);
+    super(
+      `SeoShadowChainRunner: surface ${surface} non câblée (R7+R8 PR-6, R1_GAMME_VEHICLE_ROUTER retrofit RM)`,
+    );
     this.name = 'SeoShadowSurfaceNotWiredError';
   }
 }

@@ -7,8 +7,7 @@ import {
   type SeoContext,
   type SeoTemplates,
 } from '../../catalog/services/seo-template.service';
-import { SeoChainOrchestratorService } from '../../seo/services/chain/seo-chain-orchestrator.service';
-import { SeoFeatureFlagRegistry } from '../../seo/registries/seo-feature-flag.registry';
+import { SeoShadowObservatory } from '../../seo-shadow-observatory/seo-shadow-observatory.service';
 import {
   RmProduct,
   RmListing,
@@ -46,8 +45,7 @@ export class RmBuilderService extends SupabaseBaseService {
     private readonly cacheService: CacheService,
     private readonly seoTemplateService: SeoTemplateService,
     rpcGate: RpcGateService,
-    private readonly chainOrchestrator: SeoChainOrchestratorService,
-    private readonly chainFlags: SeoFeatureFlagRegistry,
+    private readonly shadowObservatory: SeoShadowObservatory,
   ) {
     super();
     this.rpcGate = rpcGate;
@@ -624,35 +622,12 @@ export class RmBuilderService extends SupabaseBaseService {
               preview: processed.preview,
             };
 
-            // PR-3 (plan seo-v9) — Shadow / on / off pour la chaîne SEO commune.
-            // off    : comportement legacy strictement préservé (default).
-            // shadow : exécute la chaîne en parallèle, log diff structuré, sert legacy.
-            // on     : sert la chaîne, fallback legacy si échec (résilience).
-            const chainMode = this.chainFlags.mode('RM');
-            let chainSeo: typeof legacySeo | null = null;
-            if (chainMode !== 'off') {
-              chainSeo = await this.computeChainSeoForRm(ctx).catch((err) => {
-                this.logger.warn(
-                  `[SEO_CHAIN_RM] mode=${chainMode} compute failed (pg=${ctx.pg_id}, type=${ctx.type_id}): ${
-                    err instanceof Error ? err.message : 'unknown'
-                  }`,
-                );
-                return null;
-              });
-            }
-
-            if (chainMode === 'on' && chainSeo) {
-              result.seo = chainSeo;
-              this.logger.debug(
-                `[SEO_CHAIN_RM] mode=on serving chain output (pg=${ctx.pg_id}, type=${ctx.type_id})`,
-              );
-            } else {
-              result.seo = legacySeo;
-            }
-
-            if (chainMode === 'shadow' && chainSeo) {
-              this.logSeoChainDiff(ctx, legacySeo, chainSeo);
-            }
+            // Retrofit ADR-055 — shadow observation via SeoShadowObservatoryModule (I1).
+            // Observatory.observe() est sync : retour immédiat, comparaison réelle
+            // dispatchée via setImmediate. Aucune mutation de result.seo possible
+            // depuis ce module (I3 — pas de branche mode === 'on').
+            result.seo = legacySeo;
+            this.fireShadowObservation(ctx, legacySeo);
           } catch (seoErr) {
             this.logger.warn(
               `SEO processing failed, fallback to raw: ${seoErr}`,
@@ -822,21 +797,44 @@ export class RmBuilderService extends SupabaseBaseService {
    * @returns le payload `seo` formaté comme la sortie `SeoTemplateService`,
    * ou `null` si la chaîne renvoie un title vide (fallback legacy).
    */
-  private async computeChainSeoForRm(ctx: SeoContext): Promise<{
-    h1: string;
-    title: string;
-    description: string;
-    content: string;
-    preview: string;
-  } | null> {
-    const baseUrl = process.env.SITE_URL ?? 'https://www.automecanik.com';
-
-    const out = await this.chainOrchestrator.run({
-      surfaceKey: 'R1_GAMME_VEHICLE_ROUTER',
-      pgId: ctx.pg_id,
-      typeId: ctx.type_id,
-      vehicleId: ctx.type_id,
-      variables: {
+  /**
+   * Fire-and-forget shadow observation R1 gamme×véhicule (retrofit ADR-055).
+   *
+   * NE PAS `await` cette méthode — `observe()` est sync par contrat (validé
+   * par `.ast-grep/rules/seo-shadow-no-await.yml`). La comparaison réelle
+   * court via `setImmediate` dans le module observatory.
+   */
+  private fireShadowObservation(
+    ctx: SeoContext,
+    legacy: {
+      h1: string;
+      title: string;
+      description: string;
+      content: string;
+      preview: string;
+    },
+  ): void {
+    this.shadowObservatory.observe({
+      surface: 'R1_GAMME_VEHICLE_ROUTER',
+      legacy: {
+        title: legacy.title,
+        description: legacy.description,
+        h1: legacy.h1,
+        content: legacy.content,
+        keywords: null,
+        canonical: null,
+        robots: null,
+      },
+      requestUrl: `https://www.automecanik.com/pieces/${ctx.gamme_alias}.${ctx.marque_alias}.${ctx.modele_alias}.${ctx.type_alias}.html`,
+      ids: {
+        pgId: ctx.pg_id,
+        typeId: ctx.type_id,
+        gammeAlias: ctx.gamme_alias,
+        marqueAlias: ctx.marque_alias,
+        modeleAlias: ctx.modele_alias,
+        typeAlias: ctx.type_alias,
+      },
+      vars: {
         gamme: ctx.gamme_name,
         gammeMeta: ctx.gamme_name,
         marque: ctx.marque_name,
@@ -846,73 +844,13 @@ export class RmBuilderService extends SupabaseBaseService {
         modeleMeta: ctx.modele_name,
         type: ctx.type_name,
         typeMeta: ctx.type_name,
-        annee: '',
         nbCh: Number.parseInt(ctx.power_ps ?? '0', 10) || 0,
-        carosserie: '',
-        fuel: '',
-        codeMoteur: '',
-        minPrice: ctx.min_price ?? undefined,
+        minPrice: ctx.min_price ?? 0,
         articlesCount: ctx.count ?? 0,
         gammeLevel: 1,
-        isTopGamme: false,
+        isTopGamme: 0,
       },
-      ids: {
-        gammeAlias: ctx.gamme_alias,
-        marqueAlias: ctx.marque_alias,
-        modeleAlias: ctx.modele_alias,
-        typeAlias: ctx.type_alias,
-      },
-      baseUrl,
-      breadcrumbs: [],
+      entityId: `${ctx.pg_id}:${ctx.type_id}`,
     });
-
-    if (!out.template.title) return null;
-
-    return {
-      h1: out.template.h1,
-      title: out.template.title,
-      description: out.template.description,
-      content: out.template.content,
-      preview: out.template.preview,
-    };
-  }
-
-  /**
-   * Log structuré de la divergence entre legacy SEO et chaîne SEO (mode shadow).
-   *
-   * Format : 1 ligne par champ avec match=true|false. Permet de quantifier
-   * facilement la divergence sur 1000 requêtes via `grep | jq` côté Sentry/log.
-   */
-  private logSeoChainDiff(
-    ctx: SeoContext,
-    legacy: {
-      h1: string;
-      title: string;
-      description: string;
-      content: string;
-      preview: string;
-    },
-    chain: {
-      h1: string;
-      title: string;
-      description: string;
-      content: string;
-      preview: string;
-    },
-  ): void {
-    const diff = {
-      flag: 'SEO_CHAIN_RM',
-      mode: 'shadow',
-      pg_id: ctx.pg_id,
-      type_id: ctx.type_id,
-      title_eq: legacy.title === chain.title,
-      description_eq: legacy.description === chain.description,
-      h1_eq: legacy.h1 === chain.h1,
-      content_eq: legacy.content === chain.content,
-      preview_eq: legacy.preview === chain.preview,
-      legacy_title_len: legacy.title.length,
-      chain_title_len: chain.title.length,
-    };
-    this.logger.log(`[SEO_CHAIN_RM_SHADOW] ${JSON.stringify(diff)}`);
   }
 }

@@ -16,5 +16,6 @@ import { z } from 'zod';
 export const SeoShadowEnvSchema = z.object({
   SEO_CHAIN_R7_MODE: z.enum(['off', 'shadow', 'on']).default('off'),
   SEO_CHAIN_R8_MODE: z.enum(['off', 'shadow', 'on']).default('off'),
+  SEO_CHAIN_RM_MODE: z.enum(['off', 'shadow', 'on']).default('off'),
   SEO_CHAIN_SHADOW_SAMPLE_RATE: z.coerce.number().min(0).max(1).default(0.01),
 });

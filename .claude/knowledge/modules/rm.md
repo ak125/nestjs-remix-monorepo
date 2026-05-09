@@ -12,7 +12,7 @@ primary_files:
 depends_on:
 - DatabaseModule
 - CatalogModule
-- SeoModule
+- SeoShadowObservatoryModule
 ---
 
 # Module Rm

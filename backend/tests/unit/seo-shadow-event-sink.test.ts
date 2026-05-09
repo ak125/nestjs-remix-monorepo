@@ -84,6 +84,16 @@ describe('SeoShadowEventSink', () => {
     );
   });
 
+  it('mappe R1_GAMME_VEHICLE_ROUTER → seo.shadow.r1_rm.divergence (retrofit ADR-055)', async () => {
+    const supa = buildSupabaseStub();
+    const sink = buildSink(supa);
+    await sink.write('R1_GAMME_VEHICLE_ROUTER', '124:12345', 'https://x.test/p', baseDiff);
+    const row = (supa.insert.mock.calls[0] as unknown[])[0] as Record<string, unknown>;
+    expect((row.payload as Record<string, unknown>).subtype).toBe(
+      'seo.shadow.r1_rm.divergence',
+    );
+  });
+
   it('severity=info quand policyDivergence=false', async () => {
     const supa = buildSupabaseStub();
     const sink = buildSink(supa);
