@@ -3,8 +3,8 @@
  * Single method composes 5 existing services into one typed R3GuidePayload.
  * Replaces 5 separate HTTP calls from the Remix route.
  *
- * Cache layer (PR-A 2026-05-09) :
- *   - Redis cache via CacheService (TTL secondes)
+ * Cache layer:
+ *   - Redis cache via CacheService (TTL en secondes)
  *   - Single-flight via inflight Map (anti-stampede)
  *   - Invalidation event-driven via @OnEvent('article.published'|'article.updated')
  *   - Instrumentation hit/miss/coalesced/duration via Logger structuré
@@ -64,9 +64,14 @@ export class R3GuideService {
   ) {}
 
   /**
-   * Tests-only override — never call from production code.
-   * Allows TTL régression tests with short windows (~100 ms) without
-   * sleeping for 30 minutes.
+   * Tests-only override — production code MUST NOT call this.
+   *
+   * `CacheService.set` calls `redisClient.setex(key, ttl, ...)` which expects
+   * an INTEGER number of seconds. Sub-second TTLs (e.g. `0.1`) only work when
+   * the underlying CacheService is stubbed — calling this with a non-integer
+   * against the real Redis would raise `ERR value is not an integer`.
+   *
+   * @internal Reserved for unit tests to avoid 30-minute sleeps.
    */
   setCacheTtlForTest(ttlSeconds: number): void {
     this.cacheTtlSeconds = ttlSeconds;
@@ -74,9 +79,13 @@ export class R3GuideService {
 
   /**
    * Public entry — Redis cache + single-flight + invalidation events.
-   *   1. Cache hit → return immediately (TTFB ~10-50 ms via Redis)
+   *   1. Cache hit → return immediately (no Supabase round-trip)
    *   2. Cache miss + inflight → coalesce on the running Promise
    *   3. Cache miss + no inflight → compute, store, dedup concurrent callers
+   *
+   * Negative results (article not found / `null`) are NOT cached —
+   * recomputed each call, by design. Trade-off: 404 storms re-execute the
+   * 9-fanout, but cached null risks delaying legitimate publishes.
    */
   async getR3GuidePayload(pg_alias: string): Promise<R3GuidePayload | null> {
     const cacheKey = `${R3_CACHE_PREFIX}${pg_alias}`;
@@ -101,7 +110,21 @@ export class R3GuideService {
       try {
         const payload = await this.computeLegacyPayload(pg_alias);
         if (payload !== null) {
-          await this.cacheService.set(cacheKey, payload, this.cacheTtlSeconds);
+          // Cache write is best-effort: a Redis blip must not 500 a request
+          // that already has a valid payload in hand. Inconsistent with
+          // CacheService.set rethrow semantics; isolate the failure here.
+          try {
+            await this.cacheService.set(
+              cacheKey,
+              payload,
+              this.cacheTtlSeconds,
+            );
+          } catch (cacheErr) {
+            this.logger.error(
+              `[r3-cache] set-failed key=${cacheKey} — payload returned uncached`,
+              cacheErr instanceof Error ? cacheErr.stack : String(cacheErr),
+            );
+          }
         }
         this.logger.log(
           `[r3-cache] miss key=${cacheKey} duration_ms=${Date.now() - computeStart} cached=${payload !== null}`,
@@ -131,7 +154,14 @@ export class R3GuideService {
   @OnEvent('article.updated')
   async onArticleChanged(payload: { pg_alias?: string } | undefined) {
     const pg_alias = payload?.pg_alias;
-    if (!pg_alias) return;
+    if (!pg_alias) {
+      // Loud no-op : a malformed event leaves the cache stale until TTL.
+      // Log so an operator can spot a broken emitter contract.
+      this.logger.warn(
+        `[r3-cache] article event received without pg_alias — invalidation skipped (payload=${JSON.stringify(payload)})`,
+      );
+      return;
+    }
     const cacheKey = `${R3_CACHE_PREFIX}${pg_alias}`;
     await this.cacheService.del(cacheKey);
     this.logger.log(`[r3-cache] invalidated key=${cacheKey} on article event`);

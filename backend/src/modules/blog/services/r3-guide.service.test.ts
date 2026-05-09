@@ -1,12 +1,12 @@
 /**
  * R3GuideService — cache, single-flight (anti-stampede), invalidation tests.
  *
- * Plan: /home/deploy/.claude/plans/automecanik-com-confidentialit-condition-greedy-harp.md (PR-A)
- *
- * Couvre les 3 invariants critiques du cache R3 :
+ * Couvre les invariants critiques du cache R3 :
  *   - TTL respecté (régression test seconds vs ms)
- *   - Single-flight : N appels concurrents => 1 seul `computeLegacyPayload`
+ *   - Single-flight : N appels concurrents ⇒ 1 seul `computeLegacyPayload`
  *   - Invalidation event-driven (`@OnEvent('article.published'|'article.updated')`)
+ *   - Cache write best-effort : `cacheService.set` qui throw ne masque pas le payload
+ *   - `onArticleChanged` log warn quand le payload n'a pas de pg_alias
  *
  * Pas d'I/O réseau ; mocks minimaux. CacheService est mocké via une Map
  * en mémoire avec TTL relatif émulé (Date.now()).
@@ -239,14 +239,48 @@ describe('R3GuideService — cache + single-flight + invalidation (PR-A)', () =>
       expect(dataService.getArticleByGamme).toHaveBeenCalledTimes(2);
     });
 
-    it('onArticleChanged is a no-op when payload omits pg_alias', async () => {
+    it('onArticleChanged skips invalidation and warns when payload omits pg_alias', async () => {
       const { service, cache } = await buildService();
       const delSpy = jest.spyOn(cache, 'del');
+      const warnSpy = jest
+        .spyOn(service['logger'], 'warn')
+        .mockImplementation(() => undefined);
 
       await service.onArticleChanged(undefined);
       await service.onArticleChanged({});
 
       expect(delSpy).not.toHaveBeenCalled();
+      // Both bad payloads must be flagged so an operator can spot a broken
+      // emitter contract (silent invalidation = stale cache up to TTL).
+      expect(warnSpy).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('cache write resilience (best-effort)', () => {
+    it('returns the computed payload even when cacheService.set throws', async () => {
+      const { service, cache, dataService } = await buildService();
+
+      // Simule un Redis blip pendant le SET (ECONNRESET, OOM, WRONGTYPE…).
+      // Le compute Supabase a réussi : 9 round-trips OK, on ne doit pas
+      // dégrader N coalesced callers en 500 alors que la donnée est en main.
+      jest
+        .spyOn(cache, 'set')
+        .mockRejectedValueOnce(new Error('redis ECONNRESET'));
+
+      const result = await service.getR3GuidePayload(PG_ALIAS);
+
+      expect(result).not.toBeNull();
+      expect(dataService.getArticleByGamme).toHaveBeenCalledTimes(1);
+    });
+
+    it('next call after a set failure recomputes (cache stayed empty)', async () => {
+      const { service, cache, dataService } = await buildService();
+      jest.spyOn(cache, 'set').mockRejectedValueOnce(new Error('redis blip'));
+
+      await service.getR3GuidePayload(PG_ALIAS); // miss + set fails
+      await service.getR3GuidePayload(PG_ALIAS); // cache empty → recompute
+
+      expect(dataService.getArticleByGamme).toHaveBeenCalledTimes(2);
     });
   });
 });

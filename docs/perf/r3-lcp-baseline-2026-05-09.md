@@ -2,7 +2,7 @@
 
 > Date mesure : 2026-05-09
 > Branche : `feat/lcp-r3-conseils-fix`
-> Plan : `/home/deploy/.claude/plans/automecanik-com-confidentialit-condition-greedy-harp.md`
+> PR : [#408](https://github.com/ak125/nestjs-remix-monorepo/pull/408)
 
 ## Contexte
 

@@ -1,9 +1,7 @@
 /**
  * web-vitals.client — Field Web Vitals reporter (LCP, INP, CLS, FCP, TTFB).
  *
- * Plan: /home/deploy/.claude/plans/automecanik-com-confidentialit-condition-greedy-harp.md (PR-C)
- *
- * Pousse chaque Web Vital vers (par ordre de priorité) :
+ * Pousse chaque Web Vital vers, en cascade :
  *   1. Sentry.metrics.distribution (si l'API existe dans la version SDK installée)
  *   2. window.gtag (GA4) - déjà câblé via root.tsx, RGPD consent géré
  *   3. console.info (toujours, pour debug + Sentry breadcrumbs)
@@ -11,7 +9,9 @@
  * Aucun appel n'est inventé : `Sentry.metrics?.distribution` est testé runtime
  * avant usage. Si la lib n'expose pas cette API (build minimal, version sans
  * Metrics, DSN absent → init noop), on tombe sur le fallback GA4/console
- * sans planter.
+ * sans planter. Le dispatch entier est aussi wrappé en try/catch : un reporter
+ * passif ne doit jamais corrompre l'app (extension navigateur qui hook
+ * `console`, CMP qui mock `gtag`, etc.).
  */
 
 import * as Sentry from '@sentry/remix';
@@ -95,10 +95,13 @@ function reportToConsole(metric: Metric): void {
 }
 
 function dispatchMetric(metric: Metric) {
-  // Try Sentry first, then GA4. Console always fires.
-  reportToSentry(metric);
-  reportToGtag(metric);
-  reportToConsole(metric);
+  try {
+    reportToSentry(metric);
+    reportToGtag(metric);
+    reportToConsole(metric);
+  } catch {
+    // Reporter passif — ne jamais propager dans une callback PerformanceObserver.
+  }
 }
 
 /**
