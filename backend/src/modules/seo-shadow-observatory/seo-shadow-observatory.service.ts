@@ -20,12 +20,16 @@ import {
 } from './types';
 
 /**
- * Mapping `surface → flag` (clé `SeoFeatureFlagRegistry`). PR-6 = R7 + R8.
+ * Mapping `surface → flag` (clé `SeoFeatureFlagRegistry`).
  * Étendre quand une surface est wirée (cf. README onboarding checklist).
+ *
+ * PR-6 (initial) : R7 + R8.
+ * Retrofit rm-builder : R1_GAMME_VEHICLE_ROUTER (flag `RM`).
  */
 const SURFACE_TO_FLAG: Partial<Record<SurfaceKey, SeoChainFlagKey>> = {
   R7_BRAND_HUB: 'R7',
   R8_VEHICLE: 'R8',
+  R1_GAMME_VEHICLE_ROUTER: 'RM',
 };
 
 /**

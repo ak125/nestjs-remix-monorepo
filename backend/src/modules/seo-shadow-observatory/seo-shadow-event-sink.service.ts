@@ -20,6 +20,8 @@ import type { DiffResult } from './types';
 const SURFACE_SUBTYPE: Partial<Record<SurfaceKey, string>> = {
   R7_BRAND_HUB: 'seo.shadow.r7.divergence',
   R8_VEHICLE: 'seo.shadow.r8.divergence',
+  // Retrofit rm-builder : R1 gamme×véhicule (legacy `/api/rm/page-v2`).
+  R1_GAMME_VEHICLE_ROUTER: 'seo.shadow.r1_rm.divergence',
 };
 
 const TABLE = '__seo_event_log';

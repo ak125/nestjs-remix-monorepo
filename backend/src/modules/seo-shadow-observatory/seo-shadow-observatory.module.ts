@@ -54,19 +54,24 @@ export class SeoShadowObservatoryModule implements OnModuleInit {
     const env = SeoShadowEnvSchema.parse({
       SEO_CHAIN_R7_MODE: this.cfg.get<string>('SEO_CHAIN_R7_MODE'),
       SEO_CHAIN_R8_MODE: this.cfg.get<string>('SEO_CHAIN_R8_MODE'),
+      SEO_CHAIN_RM_MODE: this.cfg.get<string>('SEO_CHAIN_RM_MODE'),
       SEO_CHAIN_SHADOW_SAMPLE_RATE: this.cfg.get<string>(
         'SEO_CHAIN_SHADOW_SAMPLE_RATE',
       ),
     });
-    if (env.SEO_CHAIN_R7_MODE === 'on' || env.SEO_CHAIN_R8_MODE === 'on') {
+    if (
+      env.SEO_CHAIN_R7_MODE === 'on' ||
+      env.SEO_CHAIN_R8_MODE === 'on' ||
+      env.SEO_CHAIN_RM_MODE === 'on'
+    ) {
       throw new Error(
-        `[SEO_SHADOW_BOOT_GUARD] mode=on forbidden in PR-6 (no on-branch shipped). ` +
-          `Detected R7=${env.SEO_CHAIN_R7_MODE} R8=${env.SEO_CHAIN_R8_MODE}. ` +
-          `Flip mode=on requires ADR-054 sign-off + dedicated PR — see governance-vault.`,
+        `[SEO_SHADOW_BOOT_GUARD] mode=on forbidden (no on-branch shipped). ` +
+          `Detected R7=${env.SEO_CHAIN_R7_MODE} R8=${env.SEO_CHAIN_R8_MODE} RM=${env.SEO_CHAIN_RM_MODE}. ` +
+          `Flip mode=on requires ADR-055 sign-off + dedicated PR — see governance-vault.`,
       );
     }
     this.logger.log(
-      `[SEO_SHADOW] boot OK — R7=${env.SEO_CHAIN_R7_MODE} R8=${env.SEO_CHAIN_R8_MODE} sample_rate=${env.SEO_CHAIN_SHADOW_SAMPLE_RATE}`,
+      `[SEO_SHADOW] boot OK — R7=${env.SEO_CHAIN_R7_MODE} R8=${env.SEO_CHAIN_R8_MODE} RM=${env.SEO_CHAIN_RM_MODE} sample_rate=${env.SEO_CHAIN_SHADOW_SAMPLE_RATE}`,
     );
   }
 }
