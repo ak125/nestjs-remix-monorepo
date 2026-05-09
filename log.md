@@ -501,3 +501,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/retrofit-rm-builder-on-shadow-observatory`
 - **Décision** : refactor(seo-v9): retrofit rm-builder sur SeoShadowObservatory (ADR-055)
 - **Sortie** : PR #410 | commits 0af63731
+
+## 2026-05-09 — feat/retrofit-rm-builder-on-shadow-observatory (auto)
+
+- **Branche** : `feat/retrofit-rm-builder-on-shadow-observatory`
+- **Décision** : ci: enable seo shadow modes in preprod (+2 other commits)
+- **Sortie** : PR aucune | commits 6b2e62fa ea77c6fd 0af63731
