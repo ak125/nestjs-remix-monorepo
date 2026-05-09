@@ -37,6 +37,12 @@ export default defineConfig({
 				manualChunks(id) {
 					// ─── Vendor chunks (node_modules) ────────────────────
 					if (id.includes('node_modules')) {
+						// Sentry SDK — loaded asynchronously post-hydration via dynamic
+						// import in entry.client.tsx. Isolated chunk avoids capture by
+						// later /react/ or /react-dom/ rules (e.g. transitive @sentry/react).
+						if (id.includes('/@sentry/')) {
+							return 'sentry-vendor';
+						}
 						// React core — stable, long-term cached
 						if (id.includes('/react-dom/') || id.includes('/react/') || id.includes('/scheduler/')) {
 							return 'react-vendor';
