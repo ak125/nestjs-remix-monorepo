@@ -15,7 +15,7 @@ import type { VariantFamilyKey } from '../../registries/seo-variant-family.regis
  * Ceci remplace le seed legacy `(typeId + pgId) % len` qui était sensible aux
  * renumérotations TecDoc V2 (cf. mémoire `tecdoc-integration`).
  */
-export interface SwitchSeedInput {
+interface SwitchSeedInput {
   surfaceKey: string;
   pgId: number;
   vehicleId?: number | null;
@@ -27,7 +27,7 @@ export interface SwitchVariant {
   [key: string]: unknown;
 }
 
-export interface PickVariantInput<TWhere extends Record<string, unknown>> {
+interface PickVariantInput<TWhere extends Record<string, unknown>> {
   family: VariantFamilyKey;
   /** Filtres SQL `eq()` (ex: `{ sgcs_pg_id: 124 }` ou `{ sis_pg_id: 124 }`). */
   where: TWhere;

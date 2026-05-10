@@ -7,7 +7,7 @@ import { z } from 'zod';
  *
  * Aligné sur l'audit PR-1 du plan `seo-v9` (inventaire DB seo_*).
  */
-export const VariantFamilyKeySchema = z.enum([
+const VariantFamilyKeySchema = z.enum([
   'ITEM_SWITCH', // __seo_item_switch (R1 catalogue, alias 1=title 2=descrip 3=h1)
   'TYPE_SWITCH', // __seo_type_switch (R8 véhicule, alias 1/2/10/11/12)
   'GAMME_CAR_SWITCH', // __seo_gamme_car_switch (variantes contenu gamme×véhicule)
@@ -16,7 +16,7 @@ export const VariantFamilyKeySchema = z.enum([
 ]);
 export type VariantFamilyKey = z.infer<typeof VariantFamilyKeySchema>;
 
-export interface VariantFamilyConfig {
+interface VariantFamilyConfig {
   table: string;
   /** Aliases observés en prod (cf. audit PR-1). */
   knownAliases: number[];
