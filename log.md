@@ -495,3 +495,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `pr6-clean`
 - **Décision** : fix(seo-v9): pr-6 update vehicle-rpc legacy test for shadowObservatory dep (+2 other commits)
 - **Sortie** : PR aucune | commits c4808beb a8df0f53 c230abd4
+
+## 2026-05-09 — feat/seo-v9-r7-router-wire (auto)
+
+- **Branche** : `feat/seo-v9-r7-router-wire`
+- **Décision** : docs(seo-batch): unblock R7 step in seo-gamme-audit skill (+2 other commits)
+- **Sortie** : PR #418 | commits cd329235 b94d51eb 46778759
+
+## 2026-05-10 — monorepo/pr5-url-immutability-gate (auto)
+
+- **Branche** : `monorepo/pr5-url-immutability-gate`
+- **Décision** : feat(seo): add R-SEO-09 URL immutability gate phase 1 surface guard (+1 other commit)
+- **Sortie** : PR #428 | commits 18cc6c59 22ff92fc

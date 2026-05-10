@@ -548,6 +548,26 @@ export type R8CatalogDelta = z.infer<typeof R8CatalogDeltaSchema>;
 
 // ── Governance Decision (central contract) ──────────────
 
+/**
+ * Map slot → srtp_id (uuid) du template pool sélectionné via SeoRoleTemplateSelector.
+ *
+ * PR-1 seo-v9 : 2 slots seulement (`meta_title`, `meta_description`).
+ * H1 reste produit par `buildR8H1()` (format optimisé avec années) — pas
+ * dans le pool. Élargir si PR-2 ajoute d'autres slots.
+ *
+ * `.partial().default({})` rend le contrat default-safe : pages historiques
+ * sans `variant_signature` (ou avec `{}` issu du `DEFAULT '{}'::jsonb` de la
+ * migration) passent le parse sans casser l'existant.
+ */
+export const R8VariantSignatureSchema = z
+  .object({
+    meta_title: z.string().uuid().nullable(),
+    meta_description: z.string().uuid().nullable(),
+  })
+  .partial()
+  .default({});
+export type R8VariantSignature = z.infer<typeof R8VariantSignatureSchema>;
+
 export const R8GovernanceDecisionSchema = z.object({
   decision: R8SeoDecisionSchema,
   sitemapIncluded: z.boolean(),
@@ -559,6 +579,8 @@ export const R8GovernanceDecisionSchema = z.object({
   scores: R8DiversityMetricsSchema,
   reasons: z.array(R8ReasonCodeSchema).default([]),
   warnings: z.array(z.string()).default([]),
+  /** Map slot → srtp_id (uuid) du template pool sélectionné. Default-safe : `{}` accepté pour pages historiques. */
+  variantSignature: R8VariantSignatureSchema,
 });
 export type R8GovernanceDecision = z.infer<typeof R8GovernanceDecisionSchema>;
 
