@@ -1,0 +1,208 @@
+{
+  "generated_at": "2026-05-07T22:49:06.407Z",
+  "source": "frontend/bundle-report.json (rollup-plugin-visualizer raw-data)",
+  "visualizer_coverage": {
+    "captured": [
+      "app-core",
+      "app-shell",
+      "app-ui-primitives"
+    ],
+    "missing_from_visualizer": [
+      "react-vendor",
+      "radix-vendor",
+      "lucide-vendor",
+      "html-parser-vendor",
+      "carousel-vendor",
+      "cmdk-vendor",
+      "manifest"
+    ],
+    "note": "Missing chunks indicate visualizer plugin missed them in dual server/client rollup pass. File-based flag checks still cover them."
+  },
+  "flags": {
+    "devtools_leak": [
+      "react-vendor-YRZrCjSJ.js"
+    ],
+    "duplicate_react_versions": false,
+    "react_dom_server_leak": false,
+    "jsx_dev_runtime_leak": false,
+    "proptypes_in_node_modules": true,
+    "html_parser_consumer_count": 0,
+    "framer_motion_in_node_modules": false,
+    "duplicate_utilities": false,
+    "manifest_size_kb": "not_found",
+    "manifest_bloat": false
+  },
+  "breakdown": {
+    "app-core": {
+      "total_modules": 58,
+      "total_size": 151231,
+      "total_gzip": 51135,
+      "top10": [
+        {
+          "moduleId": "/app/utils/pieces-vehicle.loader.server.ts",
+          "size": 10748,
+          "gzip": 3397
+        },
+        {
+          "moduleId": "/app/components/home/constants.ts",
+          "size": 9050,
+          "gzip": 3359
+        },
+        {
+          "moduleId": "/app/utils/pieces-route.utils.ts",
+          "size": 9028,
+          "gzip": 3353
+        },
+        {
+          "moduleId": "/app/types/gamme-page-contract.types.ts",
+          "size": 8827,
+          "gzip": 1814
+        },
+        {
+          "moduleId": "/app/utils/image-optimizer.ts",
+          "size": 8749,
+          "gzip": 2680
+        },
+        {
+          "moduleId": "/app/utils/family-theme.ts",
+          "size": 6894,
+          "gzip": 1560
+        },
+        {
+          "moduleId": "/app/utils/seo/pieces-schema.utils.ts",
+          "size": 6311,
+          "gzip": 1959
+        },
+        {
+          "moduleId": "/app/utils/seo.server.ts",
+          "size": 6081,
+          "gzip": 1850
+        },
+        {
+          "moduleId": "/app/utils/search-mappers.ts",
+          "size": 5868,
+          "gzip": 1642
+        },
+        {
+          "moduleId": "/app/utils/analytics.ts",
+          "size": 5605,
+          "gzip": 1228
+        }
+      ]
+    },
+    "app-ui-primitives": {
+      "total_modules": 27,
+      "total_size": 52853,
+      "total_gzip": 18075,
+      "top10": [
+        {
+          "moduleId": "/app/components/ui/combobox.tsx",
+          "size": 6416,
+          "gzip": 1888
+        },
+        {
+          "moduleId": "/app/components/ui/dropdown-menu.tsx",
+          "size": 5578,
+          "gzip": 1076
+        },
+        {
+          "moduleId": "/app/components/ui/ResponsiveImage.tsx",
+          "size": 3347,
+          "gzip": 1192
+        },
+        {
+          "moduleId": "/app/components/ui/sheet.tsx",
+          "size": 3163,
+          "gzip": 955
+        },
+        {
+          "moduleId": "/app/components/ui/checkbox.tsx",
+          "size": 3126,
+          "gzip": 1069
+        },
+        {
+          "moduleId": "/app/components/ui/filter-section.tsx",
+          "size": 2535,
+          "gzip": 801
+        },
+        {
+          "moduleId": "/app/components/ui/button.tsx",
+          "size": 2299,
+          "gzip": 812
+        },
+        {
+          "moduleId": "/app/components/ui/PublicBreadcrumb.tsx",
+          "size": 2145,
+          "gzip": 826
+        },
+        {
+          "moduleId": "/app/components/ui/input.tsx",
+          "size": 2074,
+          "gzip": 807
+        },
+        {
+          "moduleId": "/app/components/ui/textarea.tsx",
+          "size": 2072,
+          "gzip": 787
+        }
+      ]
+    },
+    "app-shell": {
+      "total_modules": 15,
+      "total_size": 12946,
+      "total_gzip": 5359,
+      "top10": [
+        {
+          "moduleId": "/app/components/layout/BottomNav.tsx",
+          "size": 3334,
+          "gzip": 1325
+        },
+        {
+          "moduleId": "/app/components/layout/ResponsiveGrid.tsx",
+          "size": 2286,
+          "gzip": 717
+        },
+        {
+          "moduleId": "/app/components/layout/Section.tsx",
+          "size": 2194,
+          "gzip": 764
+        },
+        {
+          "moduleId": "/app/components/layout/MobileBottomBar.tsx",
+          "size": 1236,
+          "gzip": 568
+        },
+        {
+          "moduleId": "/app/components/layout/SectionHeader.tsx",
+          "size": 1212,
+          "gzip": 507
+        },
+        {
+          "moduleId": "/app/components/layout/LazySection.tsx",
+          "size": 758,
+          "gzip": 375
+        },
+        {
+          "moduleId": "/app/components/layout/Reveal.tsx",
+          "size": 717,
+          "gzip": 402
+        },
+        {
+          "moduleId": "/app/hooks/useRootData.ts",
+          "size": 689,
+          "gzip": 332
+        },
+        {
+          "moduleId": "/app/components/layout/Container.tsx",
+          "size": 371,
+          "gzip": 253
+        },
+        {
+          "moduleId": "/app/hooks/useCartSidebar.ts",
+          "size": 149,
+          "gzip": 116
+        }
+      ]
+    }
+  }
+}

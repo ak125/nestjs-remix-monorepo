@@ -142,12 +142,22 @@ export default defineConfig({
 				});
 			},
 		}),
-		// Bundle analyzer — run with: ANALYZE=true npm run build
-		...(isAnalyze ? [visualizer({
-			filename: 'bundle-report.html',
-			open: false,
-			gzipSize: true,
-			brotliSize: true,
-		})] : []),
+		// Bundle analyzer — run with: ANALYZE=true npm run build.
+		// Outputs both HTML (visual inspection) and JSON raw-data
+		// (parsed by scripts/perf/vendor-breakdown.mjs for ADR-051 audits).
+		...(isAnalyze ? [
+			visualizer({
+				filename: 'bundle-report.html',
+				open: false,
+				gzipSize: true,
+				brotliSize: true,
+			}),
+			visualizer({
+				filename: 'bundle-report.json',
+				template: 'raw-data',
+				gzipSize: true,
+				brotliSize: true,
+			}),
+		] : []),
 	],
 });
