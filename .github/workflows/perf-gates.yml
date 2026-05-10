@@ -158,6 +158,19 @@ jobs:
           PAYBOX_SITE: "0000000"
           PAYBOX_HMAC_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
 
+      - name: Bundle freshness check
+        # ADR-051 : audit-reports/bundle-top10.json must stay in sync with the
+        # built assets. Fails the gate if the report is older than the build,
+        # forcing PRs that touch frontend/app/** to regenerate + commit it.
+        # Skipped if the report does not exist yet (early-adoption window).
+        if: steps.filter.outputs.ssr == 'true'
+        run: |
+          if [ -f audit-reports/bundle-top10.json ]; then
+            node scripts/perf/check-bundle-fresh.mjs
+          else
+            echo "::notice::audit-reports/bundle-top10.json not present — skipping freshness check (PR-1 not merged yet)"
+          fi
+
       - name: Run Lighthouse CI
         if: steps.filter.outputs.ssr == 'true'
         id: lighthouse
