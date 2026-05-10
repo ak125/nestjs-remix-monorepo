@@ -1,0 +1,644 @@
+{
+  "generated_at": "2026-05-08T17:36:52.489Z",
+  "gap_matrix": [
+    {
+      "php_file": "index.php",
+      "monorepo_equivalent": "CatalogModule.getHomeCatalog",
+      "status": "✅",
+      "gap": "Vérifier rendu Remix final R0",
+      "priority": "P1",
+      "proof_link": "backend/src/modules/catalog/"
+    },
+    {
+      "php_file": "products.gamme.php / v7.products.gamme.php",
+      "monorepo_equivalent": "GammeResponseBuilderService + __seo_gamme + SeoTitleEngineService",
+      "status": "✅",
+      "gap": "Robots simplifié pg_level=1=>index sinon noindex vs logique complète legacy",
+      "priority": "P1",
+      "proof_link": "backend/src/modules/gamme-rest/services/gamme-response-builder.service.ts"
+    },
+    {
+      "php_file": "products.car.gamme.php",
+      "monorepo_equivalent": "RPC get_pieces_for_type_gamme_v4 + raw SEO templates + NestJS processing",
+      "status": "✅",
+      "gap": "Comparaison sortie PHP vs Remix non finalisée",
+      "priority": "P1",
+      "proof_link": "rpc:get_pieces_for_type_gamme_v4"
+    },
+    {
+      "php_file": "__SEO_ITEM_SWITCH + __SEO_GAMME_CAR_SWITCH + __SEO_FAMILY_GAMME_CAR_SWITCH",
+      "monorepo_equivalent": "SeoSwitchesService (migration \"TERMINÉE\")",
+      "status": "✅",
+      "gap": "#PrixPasCher#, #VousPropose#, #MinPrice# encore TODO",
+      "priority": "P1",
+      "proof_link": "backend/src/modules/seo/services/seo-switches.service.ts"
+    },
+    {
+      "php_file": "constructeurs.type.php",
+      "monorepo_equivalent": "RPC build_vehicle_page_payload",
+      "status": "✅",
+      "gap": "Vérifier rendu Remix + indexabilité réelle",
+      "priority": "P1",
+      "proof_link": "rpc:build_vehicle_page_payload"
+    },
+    {
+      "php_file": "products.car.gamme.fiche.php / v7.products.fiche.php",
+      "monorepo_equivalent": "Listing RPC get_listing_products_for_build (prix/stock/score/images)",
+      "status": "⚠️",
+      "gap": "Fiche produit détaillée OEM/critères/composition pas prouvée",
+      "priority": "P1",
+      "proof_link": "rpc:get_listing_products_for_build"
+    },
+    {
+      "php_file": "410.page.php / 412.page.php",
+      "monorepo_equivalent": "CatalogDataIntegrityService 200/404/410 + système 3 couches erreurs 4xx existant (à auditer)",
+      "status": "⚠️",
+      "gap": "Page indisponible contextualisée 412/410 à formaliser ; SeoUnavailablePolicy doit RACCORDER, pas créer un middleware",
+      "priority": "P1",
+      "proof_link": "backend/src/modules/catalog/services/catalog-data-integrity.service.ts"
+    },
+    {
+      "php_file": "blog.advice.gamme.php / v7.blog.advice.gamme.php",
+      "monorepo_equivalent": "Tables SEO/blog connues, agents/plans",
+      "status": "⚠️",
+      "gap": "R3 doit venir du wiki canonique (ADR-031), pas clone PHP direct",
+      "priority": "P2",
+      "proof_link": "automecanik-wiki/exports/"
+    },
+    {
+      "php_file": "constructeurs.marque.php",
+      "monorepo_equivalent": "Données marque DB + payload véhicule + domain map",
+      "status": "⚠️",
+      "gap": "Hub marque R7 complet à vérifier côté Remix/API",
+      "priority": "P1",
+      "proof_link": "backend/src/modules/vehicles/services/brand-rpc.service.ts"
+    },
+    {
+      "php_file": "meta.conf.php",
+      "monorepo_equivalent": "SeoTitleEngineService + URL builders + canonical partiel",
+      "status": "⚠️",
+      "gap": "Slug/canonical/robots à centraliser par rôle (SeoCanonicalService + SeoIndexabilityPolicyService)",
+      "priority": "P1",
+      "proof_link": "backend/src/modules/seo/services/seo-title-engine.service.ts"
+    }
+  ],
+  "service_inventory": [
+    {
+      "path": "src/modules/admin/services/admin-gammes-seo.service.ts",
+      "public_methods": [
+        "resolveIdOrSlug",
+        "calculateSmartAction",
+        "getGammesList",
+        "getStats",
+        "updateGamme",
+        "batchUpdate",
+        "exportCsv",
+        "getFamilies",
+        "getAvailableActions",
+        "applyPredefinedAction",
+        "getThresholdsService",
+        "getAuditService",
+        "getGammeDetail",
+        "recalculateVLevel",
+        "getBadgesService"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/admin/services/brief-template.service.ts",
+      "public_methods": [
+        "createTemplate",
+        "getActiveTemplate",
+        "listTemplates",
+        "mergeTemplateWithOverrides",
+        "computeCoverageScore",
+        "computeConfidenceScore",
+        "computeOverridesHash",
+        "detectClones",
+        "bulkGenerateFromTemplate"
+      ],
+      "tables_read": [
+        "__seo_page_brief"
+      ],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/admin/services/buying-guide/buying-guide-seo-draft.service.ts",
+      "public_methods": [
+        "composeSeoContent",
+        "writeSeoContentDraft"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/admin/services/gamme-seo-audit.service.ts",
+      "public_methods": [
+        "logAction",
+        "getAuditHistory",
+        "getAuditStats"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/admin/services/gamme-seo-badges.service.ts",
+      "public_methods": [
+        "getVLevelGlobalStats",
+        "refreshAggregates",
+        "getGammeAggregates"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/admin/services/gamme-seo-thresholds.service.ts",
+      "public_methods": [
+        "getThresholds",
+        "updateThresholds",
+        "resetToDefaults",
+        "getDecisionMatrix"
+      ],
+      "tables_read": [
+        "___config"
+      ],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/admin/services/seo-cockpit.service.ts",
+      "public_methods": [
+        "getUnifiedDashboard",
+        "getExecutiveSummary",
+        "getCrawlActivity",
+        "getIndexChanges",
+        "getConsolidatedAlerts",
+        "getUrlsAtRisk",
+        "getContentStats",
+        "getAuditHistory",
+        "getAuditStats",
+        "refreshAllRisks",
+        "triggerMonitor"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/ai-content/prompt-template.service.ts",
+      "public_methods": [
+        "listTemplates",
+        "getTemplate",
+        "createTemplate",
+        "updateTemplate",
+        "deleteTemplate",
+        "testTemplate",
+        "renderPrompt"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/blog/services/blog-seo.service.ts",
+      "public_methods": [
+        "injectInternalLinks",
+        "injectSimpleLinks",
+        "getSeoItemSwitches",
+        "getGammeConseil",
+        "getApprovedImages",
+        "getSeoBrief",
+        "getInternalLinkStats",
+        "hasPublishedR6Guide"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/blog-metadata/blog-metadata.service.ts",
+      "public_methods": [
+        "getMetadata",
+        "getAllMetadata",
+        "getAvailableAliases",
+        "invalidateCache",
+        "invalidateAllCache"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/catalog/services/seo-template.service.ts",
+      "public_methods": [
+        "processTemplates",
+        "invalidateCache",
+        "invalidateAllCache"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/layout/services/meta-tags.service.ts",
+      "public_methods": [
+        "generateMetaTags",
+        "generateHtmlTags"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/metadata/services/optimized-metadata.service.ts",
+      "public_methods": [
+        "getPageMetadata",
+        "updatePageMetadata",
+        "deletePageMetadata",
+        "generateSitemap",
+        "clearCache",
+        "getAllMetadata",
+        "deleteMetadata",
+        "metadataExists",
+        "countMetadata"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/navigation/services/seo-menu.service.ts",
+      "public_methods": [
+        "getMenu",
+        "getSeoMenuConfig"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/products/services/cross-selling-seo.service.ts",
+      "public_methods": [
+        "generateAdvancedCrossSellingSeo",
+        "processWithSwitches",
+        "processSwitches",
+        "replaceVariables",
+        "getGammeSwitches",
+        "getFamilySwitches",
+        "getExternalSwitches",
+        "cleanSeoText",
+        "countVariablesReplaced",
+        "getDefaultCrossSeo",
+        "generateCrossKeywords"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/dynamic-seo-v4-ultimate.service.ts",
+      "public_methods": [
+        "clearExpiredCache",
+        "invalidateCache",
+        "generateCompleteSeo",
+        "auditSeoQuality",
+        "getMetrics",
+        "generateAbTestVariants",
+        "selectWinningVariant",
+        "trackInternalLinkPerformance",
+        "getCompleteMetricsReport"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": "DynamicSeoV4UltimateService (orchestrateur)",
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/infrastructure/robots-txt.service.ts",
+      "public_methods": [
+        "generate",
+        "generateMetaRobots",
+        "shouldIndex"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/infrastructure/seo-headers.service.ts",
+      "public_methods": [
+        "getDefaultHeaders",
+        "getProductHeaders",
+        "getBlogHeaders",
+        "getNoIndexHeaders",
+        "getHreflangHeaders",
+        "getPaginationHeaders",
+        "getImageHeaders",
+        "getAmpHeaders",
+        "getStaticHeaders",
+        "getApiHeaders"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": "SeoCanonicalService + SeoIndexabilityPolicyService",
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/infrastructure/seo-link-tracking.service.ts",
+      "public_methods": [
+        "trackClick",
+        "trackImpression",
+        "getMetricsByLinkType",
+        "getPerformanceReport",
+        "aggregateDailyMetrics",
+        "cleanupOldData"
+      ],
+      "tables_read": [
+        "seo_link_clicks"
+      ],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/seo.service.ts",
+      "public_methods": [
+        "getMetadata",
+        "updateMetadata",
+        "getRedirect",
+        "getSeoConfig",
+        "getPagesWithoutSeo",
+        "getSeoAnalytics"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/services/seo-generator.service.ts",
+      "public_methods": [
+        "getVLevel",
+        "getMaxTokens",
+        "saveR4Draft",
+        "saveR5Draft",
+        "listAvailableRagFiles"
+      ],
+      "tables_read": [
+        "__seo_reference",
+        "__seo_observable"
+      ],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/services/seo-kpis.service.ts",
+      "public_methods": [
+        "getDashboardKPIs"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/services/seo-monitoring.service.ts",
+      "public_methods": [
+        "checkAllSitemapsDaily",
+        "generateMonitoringReport",
+        "submitSitemapToSearchConsole",
+        "submitAllSitemaps",
+        "getCurrentReport",
+        "verifySitemapsAccessibility"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/services/seo-pilotage.service.ts",
+      "public_methods": [
+        "generateWeeklyReport",
+        "generateMonthlyReport",
+        "generateAutoDiagnosticsReport",
+        "diagnoseUrl"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/services/seo-title-engine.service.ts",
+      "public_methods": [
+        "resolve"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "draft",
+      "maps_to_target_service": "SeoTemplateRenderer",
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/services/seo-v4-monitoring.service.ts",
+      "public_methods": [
+        "auditSeoQuality",
+        "getMetrics",
+        "generateAbTestVariants",
+        "selectWinningVariant",
+        "trackInternalLinkPerformance",
+        "getCompleteMetricsReport"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo/services/seo-v4-switch-engine.service.ts",
+      "public_methods": [
+        "processExternalSwitchesEnhanced",
+        "processSingleGammeSwitch",
+        "processCompSwitch",
+        "processLinkGammeCar",
+        "processGammeSwitches",
+        "processFamilySwitchesEnhanced",
+        "processAllLinksEnhanced"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": "SeoSwitchSelector",
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo-logs/services/seo-audit-scheduler.service.ts",
+      "public_methods": [
+        "onModuleInit",
+        "onModuleDestroy",
+        "triggerManualAudit",
+        "getQueueStats",
+        "getRecentJobs",
+        "setupDailyCleanup",
+        "cleanOldJobs"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
+      "public_methods": [
+        "logStarted",
+        "logCompleted",
+        "getRunsHealth",
+        "logFailed"
+      ],
+      "tables_read": [
+        "__seo_event_log"
+      ],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/vehicles/services/seo/brand-seo.service.ts",
+      "public_methods": [
+        "getBrandSeo",
+        "processBrandSeoVariables",
+        "getProcessedBrandSeo",
+        "generateDefaultBrandSeo",
+        "updateBrandSeo"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    },
+    {
+      "path": "src/modules/vehicles/services/vehicle-meta.service.ts",
+      "public_methods": [
+        "getMetaTagsByTypeId",
+        "getMetaTagsByAlias"
+      ],
+      "tables_read": [],
+      "consumers": [],
+      "status": "production",
+      "maps_to_target_service": null,
+      "coverage_percent": 0
+    }
+  ],
+  "diff_samples": [
+    {
+      "url": "https://www.automecanik.com/pieces/balais-d-essuie-glace/nissan/almera-ii/1-5.html",
+      "surface_key": "R1_GAMME_VEHICLE_ROUTER",
+      "current_fingerprint": {
+        "title_hash": "a65599a794b7eeaf",
+        "h1_hash": "0d5ee0ab8101ea6c",
+        "content_hash": "de59b288b4d2d154",
+        "canonical": "",
+        "robots": ""
+      },
+      "v4_fingerprint": {
+        "title_hash": "7dbab6143c7ef0cc",
+        "h1_hash": "08a52cf1363654dd",
+        "content_hash": "3c61877f39681568",
+        "canonical": "",
+        "robots": ""
+      },
+      "diff_verdict": "divergent"
+    },
+    {
+      "url": "https://www.automecanik.com/pieces/filtre-a-huile/nissan/almera-ii/1-8-phase-2.html",
+      "surface_key": "R1_GAMME_VEHICLE_ROUTER",
+      "current_fingerprint": {
+        "title_hash": "0d380f308e9d6639",
+        "h1_hash": "8f984d4edc30cecd",
+        "content_hash": "a677d716ef21a0a8",
+        "canonical": "",
+        "robots": ""
+      },
+      "v4_fingerprint": {
+        "title_hash": "9181edc7b21ed8d7",
+        "h1_hash": "9978a41a7a04b9f8",
+        "content_hash": "d25c3dab4c34f11d",
+        "canonical": "",
+        "robots": ""
+      },
+      "diff_verdict": "divergent"
+    }
+  ],
+  "r2_routes_audit": {
+    "found": false,
+    "evidence": []
+  },
+  "r2_volume_stats": {
+    "total_pieces": 4135954,
+    "indexable_estimate": 502734,
+    "breakdown": {
+      "with_price": null,
+      "with_stock": null,
+      "with_image": 1583183,
+      "with_oem_ref": null
+    },
+    "errors": [],
+    "complete": true
+  },
+  "php_vs_remix_comparison": {
+    "available": false,
+    "samples": []
+  }
+}

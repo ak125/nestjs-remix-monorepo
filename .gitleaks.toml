@@ -1,21 +1,38 @@
 # Gitleaks configuration for AutoMecanik monorepo
 # https://github.com/gitleaks/gitleaks
+# Canon: ADR-043 (Plan F DevSecOps) Sprint 1 ticket #5.
 
 title = "AutoMecanik Gitleaks Config"
 
+# Use the upstream default ruleset as baseline (explicit > implicit).
+[extend]
+  useDefault = true
+
 [allowlist]
+  description = "Known false positives and documented mock/sample values"
   paths = [
+    # Sample env files only contain placeholders / docs
     '''\.env\.example$''',
     '''\.env\.template$''',
     '''\.env\.sample$''',
+    # Specifications and governance docs reference example values
     '''\.spec/''',
     '''governance/''',
+    # Self-reference (this file lists redacted patterns by design)
     '''\.gitleaks\.toml$''',
+    # npm lockfile contains integrity hashes that look entropic
     '''package-lock\.json$''',
   ]
   regexes = [
+    # CI placeholder string used in tests
     '''mock-key-for-ci''',
+    # Supabase project ref (public identifier, not a secret)
     '''cxpojprgwgubzjyqzmoq''',
+    # Mock Supabase URL used in tests/fixtures
     '''https://mock\.supabase\.co''',
+    # DEV RAG API key referenced in agents/rag-lead/AGENTS.md.
+    # TODO(devsecops): tech debt — should move to env var per
+    # MEMORY feedback_no_hardcoded_infra_in_agentsmd.md. Tracked
+    # for follow-up after ticket #5 (history audit).
     '''856528eb83bd8b36867bc0bbf8ead7796f69de30fa6888a6876b54f4d98be08a''',
   ]
