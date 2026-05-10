@@ -1,23 +1,11 @@
-import { RoleId } from '../../config/role-ids';
+import { RoleId, type WorkerPageType } from '../../config/role-ids';
 
-export type PageType =
-  | 'R1_pieces'
-  | 'R2_product'
-  | 'R3_conseils'
-  | 'R3_guide_howto'
-  | 'R4_reference'
-  | 'R5_diagnostic'
-  | 'R6_guide_achat'
-  | 'R7_brand'
-  | 'R8_vehicle';
-
-// NOTE : `PAGE_TYPE_TO_CANONICAL_ROLE` previously defined here was dead code
-// (zero importers across backend) AND diverged from the canonical mapping in
-// `backend/src/config/role-ids.ts` (`PAGE_TYPE_TO_ROLE`) on `R3_guide_howto` :
-// the dead copy mapped to R6_GUIDE_ACHAT, the canonical to R3_CONSEILS.
-// The canonical PAGE_TYPE_TO_ROLE is the single source of truth (now consumed
-// via `@repo/seo-roles` per PR-0A). If a PageType → RoleId conversion is needed
-// in worker code, import `pageTypeToRoleId` from the package.
+// PageType is the worker DB vocabulary kept for backwards-compat with
+// `__rag_content_refresh_log.page_type` and similar columns. Canon source =
+// `@repo/seo-roles` (re-exported via `backend/src/config/role-ids.ts`). For
+// PageType → RoleId conversion in worker code, import `pageTypeToRoleId` from
+// the package.
+export type PageType = WorkerPageType;
 
 /** Job data for gamme-based refresh (R1, R3, R4) */
 export interface ContentRefreshJobData {
