@@ -187,8 +187,15 @@ FROM __rag_readiness WHERE pg_alias = '{pg_alias}'
 ORDER BY canonical_role;
 ```
 
-### Étape 7b — R7 brand coverage (si table existe)
-Pas de table `__seo_r7_*` actuellement. Reporter "R7 non implémenté" et passer.
+### Étape 7b — R7 brand coverage
+```sql
+SELECT
+  count(*) FILTER (WHERE seo_decision = 'PUBLISH') AS r7_published,
+  count(*) AS r7_total,
+  avg(diversity_score)::numeric(5,2) AS r7_avg_score
+FROM __seo_r7_pages;
+```
+Si `r7_published = 0` → "R7 brand pages: aucune publication active". Sinon, reporter `r7_total` + `r7_published` + `r7_avg_score`. R7 est désormais branché dans `ExecutionRouter` (rôle dispatché comme R1-R8).
 
 ### Étape 7c — R8 vehicle pages
 ```sql

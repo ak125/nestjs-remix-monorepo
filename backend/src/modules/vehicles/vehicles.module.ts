@@ -58,10 +58,14 @@ import { BrandRpcService } from './services/brand-rpc.service';
 import { CatalogModule } from '../catalog/catalog.module';
 import { DatabaseModule } from '../../database/database.module';
 
+// PR-6 — observatory shadow R7/R8 (consommé par BrandRpcService + VehicleRpcService)
+import { SeoShadowObservatoryModule } from '../seo-shadow-observatory/seo-shadow-observatory.module';
+
 @Module({
   imports: [
     ConfigModule,
     DatabaseModule,
+    SeoShadowObservatoryModule, // PR-6 shadow observatory R7/R8
     forwardRef(() => CatalogModule), // 🔗 Pour le maillage interne (gammes populaires)
     CacheModule.registerAsync({
       inject: [ConfigService],

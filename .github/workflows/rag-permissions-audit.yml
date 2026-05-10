@@ -13,10 +13,30 @@ on:
       - 'rag/knowledge/**'
       - 'scripts/rag-sync/**'
       - 'scripts/wiki/**'
+      - 'scripts/wiki-generators/**'
+      - 'scripts/wiki-exports/**'
+      - 'scripts/raw-downloaders/**'
+      - 'sgconfig.yml'
+      - '.ast-grep/rules/no-direct-rag-knowledge-write.yml'
+      - '.github/workflows/rag-permissions-audit.yml'
   push:
     branches:
       - main
       - dev
+    paths:
+      - 'rag/knowledge/**'
+      - 'scripts/rag-sync/**'
+      - 'scripts/wiki/**'
+      - 'scripts/wiki-generators/**'
+      - 'scripts/wiki-exports/**'
+      - 'scripts/raw-downloaders/**'
+      - 'sgconfig.yml'
+      - '.ast-grep/rules/no-direct-rag-knowledge-write.yml'
+      - '.github/workflows/rag-permissions-audit.yml'
+
+# Minimum scope: PR diff inspection + checkout (ADR-043 Sprint 1 ticket #7).
+permissions:
+  contents: read
 
 jobs:
   rag-direct-write-guard:
@@ -62,7 +82,7 @@ jobs:
 
       - name: Run ast-grep rule
         run: |
-          npx --yes @ast-grep/cli@latest scan \
+          npx --yes --package @ast-grep/cli@0.42.1 ast-grep scan \
             --config sgconfig.yml \
             --rule .ast-grep/rules/no-direct-rag-knowledge-write.yml || {
             code=$?
