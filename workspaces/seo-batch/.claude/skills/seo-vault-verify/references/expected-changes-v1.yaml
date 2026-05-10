@@ -1,0 +1,192 @@
+# SEO Vault Verify — Manifeste canonique v1
+#
+# Source de vérité des assertions binaires vérifiées par le skill.
+# Toute modification passe en v2 (expected-changes-v2.yaml), historique préservé.
+#
+# Règles de matching : Unicode NFC, case-insensitive par défaut, whitespace collapse.
+---
+version: 1
+source_zip_sha256: PENDING_BASELINE  # rempli au premier audit via --freeze-baseline
+adr_reference: ADR-002
+
+# Fichiers régénérés — 8 items avec assertions détaillées
+files_regenerated:
+  - path: 00-Meta/README.md
+    must_contain:
+      - pattern: "ADR-002"
+      - pattern: "Kickoff-Week1"
+      - pattern: "pilier/maillage"
+      - pattern: "primaire"
+        near: "maillage"
+        window: 400
+      - pattern: "secondaire"
+        near: "autorité"
+        window: 400
+      - pattern: "playbook"
+    cross_ref_targets:
+      - ADR-002-maillage-interne-first
+      - Kickoff-Week1
+
+  - path: 00-Meta/Conventions.md
+    tags_required:
+      - "#pilier/maillage"
+      - "#pilier/autorite"
+    must_contain:
+      - pattern: "même discipline de maillage"
+      - pattern: "ADR-002"
+    tag_context:
+      - tag: "#pilier/maillage"
+        qualifier_pattern: "primaire"
+      - tag: "#pilier/autorite"
+        qualifier_pattern: "secondaire"
+
+  - path: 00-Meta/Glossary.md
+    sections_required:
+      - title: "Maillage interne"
+        min_terms: 11
+        term_markers: ["**", ":"]
+      - title: "Crawl & indexation"
+        min_terms: 6
+    must_contain:
+      - pattern: "PageRank interne"
+      - pattern: "orpheline"
+      - pattern: "feeding"
+      - pattern: "sculpture"
+      - pattern: "boilerplate dilutif"
+      - pattern: "profondeur depuis home"
+
+  - path: 00-Meta/Dataview-queries.md
+    sections_required:
+      - title: "Maillage interne"
+      - title: "Autorité externe opportuniste"
+      - title: "Activité récente"
+    must_contain:
+      - pattern: "gammes orphelines"
+      - pattern: "money pages sous-alimentées"
+      - pattern: "plans de feeding"
+      - pattern: "drafts"
+        near: "14 jours"
+        window: 200
+    dataview_blocks_min: 3
+
+  - path: 02-ADR/ADR-001-entity-architecture.md
+    must_contain:
+      - pattern: "corollaire maillage"
+      - pattern: "ADR-002"
+      - pattern: "niveau 4"
+        near: "orpheline"
+        window: 400
+      - pattern: "dépendance"
+        near: "ADR-002"
+        window: 400
+    tags_required:
+      - "#pilier/maillage"
+
+  - path: 03-Entities/Gammes/_template-gamme.md
+    frontmatter_keys_required:
+      - inbound-count
+      - outbound-count
+      - pr-interne
+      - depth-from-home
+      - orpheline
+    sections_required:
+      - title: "Maillage interne"
+    must_contain:
+      - pattern: "hubs sources"
+      - pattern: "money pages alimentées"
+
+  - path: 05-Content/_template-gamme-brief.md
+    sections_required:
+      - title: "Maillage interne associé"
+    must_contain:
+      - pattern: "10 liens internes entrants"
+      - pattern: "J+30"
+      - pattern: "plan de feeding"
+      - pattern: "blocs sortants"
+      - pattern: "anti-sur-optimisation"
+        near: "anchor"
+        window: 500
+
+  - path: 07-Authority/_template-linkable-asset.md
+    must_contain:
+      - pattern: "opportuniste"
+      - pattern: "Intégration au maillage interne"
+      - pattern: "p3"
+        near: "priorité"
+        window: 300
+      - pattern: "minimal"
+        near: "outreach"
+        window: 400
+      - pattern: "modéré"
+        near: "outreach"
+        window: 400
+      - pattern: "soutenu"
+        near: "outreach"
+        window: 400
+
+  - path: 08-Monitoring/_template-gsc-report.md
+    sections_required:
+      - title: "Performance par pilier"
+      - title: "Pilier 5"
+    must_contain:
+      - pattern: "orphelines"
+      - pattern: "money pages sous-alimentées"
+      - pattern: "PageRank médian"
+      - pattern: "profondeur"
+      - pattern: "% liens"
+        near: "4"
+        window: 200
+      - pattern: "feeding"
+        near: "positions"
+        window: 600
+
+# Fichiers INCHANGÉS — non-régression via SHA256
+# SHA256 = PENDING_BASELINE tant que pas gelé ; le script n'échoue pas dans ce cas
+files_unchanged:
+  - path: 01-Strategy/Kickoff-Week1.md
+    sha256_expected: PENDING_BASELINE
+  - path: 01-Strategy/Roadmap-90d.md
+    sha256_expected: PENDING_BASELINE
+  - path: 01-Strategy/Pillars.md
+    sha256_expected: PENDING_BASELINE
+  - path: 02-ADR/ADR-002-maillage-interne-first.md
+    sha256_expected: PENDING_BASELINE
+  - path: 02-ADR/_template-adr.md
+    sha256_expected: PENDING_BASELINE
+  - path: 03-Entities/Families/_template-famille.md
+    sha256_expected: PENDING_BASELINE
+  - path: 03-Entities/Vehicles/_template-vehicle.md
+    sha256_expected: PENDING_BASELINE
+  - path: 04-Audits/_playbook-audit-cwv.md
+    sha256_expected: PENDING_BASELINE
+  - path: 04-Audits/_playbook-audit-crawl-budget.md
+    sha256_expected: PENDING_BASELINE
+  - path: 04-Audits/_playbook-audit-thin-content.md
+    sha256_expected: PENDING_BASELINE
+  - path: 04-Audits/_playbook-audit-cannibalisation.md
+    sha256_expected: PENDING_BASELINE
+  - path: 04-Audits/_playbook-audit-maillage-interne.md
+    sha256_expected: PENDING_BASELINE
+  - path: 04-Audits/_playbook-audit-competitor-gap.md
+    sha256_expected: PENDING_BASELINE
+  - path: 04-Audits/_playbook-audit-schema.md
+    sha256_expected: PENDING_BASELINE
+  - path: 04-Audits/_template-audit.md
+    sha256_expected: PENDING_BASELINE
+  - path: 05-Content/_template-title-meta.md
+    sha256_expected: PENDING_BASELINE
+  - path: 06-Technical/_template-schema-spec.md
+    sha256_expected: PENDING_BASELINE
+  - path: 06-Technical/Schema-library/README.md
+    sha256_expected: PENDING_BASELINE
+
+# Agrégation cross-ref ADR-002
+cross_ref_aggregate:
+  adr_002_min_files_referencing: 5     # marge prudente, annoncé 17 mais prudence si prose
+  adr_002_max_files_referencing: 27
+
+# Normalisation Unicode (appliquée à tous les patterns)
+matching_rules:
+  unicode_normalization: NFC
+  case_sensitive_default: false
+  whitespace_collapse: true

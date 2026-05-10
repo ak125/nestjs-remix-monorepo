@@ -1,6 +1,6 @@
 import { Controller, Get, Query, Logger, UseGuards } from '@nestjs/common';
 import { SearchEnhancedExistingService } from '../services/search-enhanced-existing.service';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 
 @UseGuards(IsAdminGuard)
 @Controller('api/search-debug')

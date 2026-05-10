@@ -1,0 +1,54 @@
+{
+  "name": "@repo/seo-types",
+  "version": "1.0.0",
+  "description": "Shared SEO types and Zod schemas for the SEO department modules (Observability, On-page, Content ops, Intelligence, GEO/AEO).",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./observability": {
+      "types": "./dist/observability.d.ts",
+      "import": "./dist/observability.js",
+      "require": "./dist/observability.js"
+    },
+    "./onpage": {
+      "types": "./dist/onpage.d.ts",
+      "import": "./dist/onpage.js",
+      "require": "./dist/onpage.js"
+    },
+    "./intelligence": {
+      "types": "./dist/intelligence.d.ts",
+      "import": "./dist/intelligence.js",
+      "require": "./dist/intelligence.js"
+    },
+    "./geo-aeo": {
+      "types": "./dist/geo-aeo.d.ts",
+      "import": "./dist/geo-aeo.js",
+      "require": "./dist/geo-aeo.js"
+    },
+    "./content-ops": {
+      "types": "./dist/content-ops.d.ts",
+      "import": "./dist/content-ops.js",
+      "require": "./dist/content-ops.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.9.3"
+  }
+}

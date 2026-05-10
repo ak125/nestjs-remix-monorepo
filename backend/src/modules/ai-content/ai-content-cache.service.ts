@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
-import { getErrorMessage } from '../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 @Injectable()
 export class AiContentCacheService {

@@ -1,5 +1,5 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { ExternalCompatibilityScrapingService } from './external-compatibility-scraping.service';
 
 import {
@@ -7,7 +7,7 @@ import {
   VehicleInfo,
   CACHE_TTL_CONFIG,
 } from './external-compatibility.types';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 /**
  * External Compatibility Cache Service

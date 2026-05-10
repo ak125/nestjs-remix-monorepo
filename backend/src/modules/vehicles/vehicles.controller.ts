@@ -5,12 +5,13 @@ import {
   Query,
   Param,
   Body,
+  Req,
   Res,
   Logger,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { DomainNotFoundException } from '../../common/exceptions';
-import { Response } from 'express';
+import { DomainNotFoundException } from '@common/exceptions';
+import { Request, Response } from 'express';
 import { VehiclesService } from './vehicles.service';
 import { VehiclePaginationDto } from './dto/vehicles.dto';
 import { VehicleBrandsService } from './services/data/vehicle-brands.service';
@@ -350,13 +351,18 @@ export class VehiclesController {
    * Utilisé par le loader frontend /constructeurs/.../type.html
    */
   @Get('types/:typeId/page-data-rpc')
-  async getVehiclePageDataRpc(@Param('typeId') typeId: string) {
+  async getVehiclePageDataRpc(
+    @Param('typeId') typeId: string,
+    @Req() req: Request,
+  ) {
     const typeIdNum = parseInt(typeId, 10);
     this.logger.log(`⚡ GET /api/vehicles/types/${typeIdNum}/page-data-rpc`);
 
     try {
-      const result =
-        await this.vehicleRpcService.getVehiclePageDataOptimized(typeIdNum);
+      const result = await this.vehicleRpcService.getVehiclePageDataOptimized(
+        typeIdNum,
+        req.url,
+      );
 
       // Overlay R8 enriched content (non-blocking, ~5ms)
       const r8Content = await this.vehicleRpcService.getR8Content(typeIdNum);

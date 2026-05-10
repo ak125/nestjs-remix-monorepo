@@ -19,14 +19,14 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { UsersFinalService } from './users-final.service';
-import { AuthenticatedGuard } from '../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   AuthenticationException,
   OperationFailedException,
   DomainValidationException,
   DomainNotFoundException,
-} from '../../common/exceptions';
+} from '@common/exceptions';
 import {
   CreateUserDto,
   UpdateUserDto,

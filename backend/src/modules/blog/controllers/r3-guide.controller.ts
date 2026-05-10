@@ -8,8 +8,8 @@ import { R3GuideService } from '../services/r3-guide.service';
 import {
   DomainNotFoundException,
   OperationFailedException,
-} from '../../../common/exceptions';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+} from '@common/exceptions';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 @Controller('api/r3-guide')
 export class R3GuideController {

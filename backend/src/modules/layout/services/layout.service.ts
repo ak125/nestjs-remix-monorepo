@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { HeaderService, HeaderData } from './header.service';
 import { FooterService, FooterData } from './footer.service';
 import { QuickSearchService, QuickSearchData } from './quick-search.service';

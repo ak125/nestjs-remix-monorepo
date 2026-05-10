@@ -26,7 +26,7 @@ import {
   RiskFlag,
   AlertType,
 } from '../../../src/modules/seo/services/risk-flags-engine.service';
-import { RpcGateService } from '../../../src/security/rpc-gate/rpc-gate.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 
 // Minimal mock for RpcGateService (required dependency)
 const mockRpcGate = {

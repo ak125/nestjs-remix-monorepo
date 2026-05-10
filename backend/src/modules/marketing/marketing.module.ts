@@ -8,6 +8,8 @@ import { MarketingContentRoadmapController } from './controllers/marketing-conte
 // Hub controllers
 import { MarketingSocialPostsController } from './controllers/marketing-social-posts.controller';
 import { MarketingPipelineController } from './controllers/marketing-pipeline.controller';
+// ADR-036 Phase 1 controllers
+import { MarketingBriefsController } from './controllers/marketing-briefs.controller';
 // Existing services
 import { MarketingDataService } from './services/marketing-data.service';
 import { MarketingDashboardService } from './services/marketing-dashboard.service';
@@ -20,6 +22,8 @@ import { WeeklyPlanGeneratorService } from './services/weekly-plan-generator.ser
 import { MultiChannelCopywriterService } from './services/multi-channel-copywriter.service';
 import { BrandComplianceGateService } from './services/brand-compliance-gate.service';
 import { PublishQueueService } from './services/publish-queue.service';
+// ADR-036 Phase 1 services
+import { MarketingBriefsService } from './services/marketing-briefs.service';
 
 @Module({
   imports: [DatabaseModule, forwardRef(() => AiContentModule)],
@@ -29,6 +33,8 @@ import { PublishQueueService } from './services/publish-queue.service';
     MarketingContentRoadmapController,
     MarketingSocialPostsController,
     MarketingPipelineController,
+    // ADR-036 Phase 1
+    MarketingBriefsController,
   ],
   providers: [
     // Existing
@@ -43,6 +49,8 @@ import { PublishQueueService } from './services/publish-queue.service';
     MultiChannelCopywriterService,
     BrandComplianceGateService,
     PublishQueueService,
+    // ADR-036 Phase 1
+    MarketingBriefsService,
   ],
   exports: [MarketingDataService, MarketingHubDataService, UTMBuilderService],
 })

@@ -2,8 +2,9 @@
 module: seo
 sources:
 - backend/src/modules/seo
-last_scan: '2026-04-24'
+last_scan: '2026-05-10'
 primary_files:
+- backend/src/modules/seo/__tests__/dynamic-seo-v4-via-chain.test.ts
 - backend/src/modules/seo/config/hreflang.config.ts
 - backend/src/modules/seo/config/sitemap.config.ts
 - backend/src/modules/seo/constants/seo-templates.constants.ts
@@ -11,7 +12,6 @@ primary_files:
 - backend/src/modules/seo/controllers/keywords-dashboard.controller.ts
 - backend/src/modules/seo/controllers/r2-page.controller.ts
 - backend/src/modules/seo/controllers/reference.controller.ts
-- backend/src/modules/seo/controllers/robots-txt.controller.ts
 depends_on:
 - ConfigModule
 - DatabaseModule

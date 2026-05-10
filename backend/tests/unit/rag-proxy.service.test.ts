@@ -27,7 +27,7 @@ import { RagIngestionService } from '../../src/modules/rag-proxy/services/rag-in
 import { RagWebhookCompletionService } from '../../src/modules/rag-proxy/services/rag-webhook-completion.service';
 import { RagWebIngestDbService } from '../../src/modules/rag-proxy/services/rag-web-ingest-db.service';
 import { RagImageManagementService } from '../../src/modules/rag-proxy/services/rag-image-management.service';
-import { CacheService } from '../../src/cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 
 describe('RagProxyService', () => {
   let service: RagProxyService;

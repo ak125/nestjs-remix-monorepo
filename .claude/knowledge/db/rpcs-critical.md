@@ -20,7 +20,7 @@ port 5432, autocommit, `statement_timeout=0`). MCP Supabase ne le supporte pas.
 |---|---|---|
 | `match_keyword_text_to_vehicle(p_text)` | Extrait véhicules d'un keyword texte (cas anciens : 2cv, 4L, C15, Espace, Xantia, Saxo...) | PR #132. Remplace regex hardcodé du script `insert-missing-keywords.ts`. |
 | `extract_vehicle_keywords(pg_id)` / `_batch(text[])` | Batch : keyword → vehicles + type_ids | STABLE, cache-friendly. |
-| `sgpg_gatekeeper_*` | Gate R6 (symétrie R1) | PR #130. Protège Purchase Guide gamme contre insertion sans gate. |
+| `sgpg_gatekeeper_*` | Gate R6_GUIDE_ACHAT (R1_ROUTER distinct, pas symétrique) | PR #130. Protège Purchase Guide gamme contre insertion sans gate. |
 
 ## RPCs Véhicule & compatibilité
 

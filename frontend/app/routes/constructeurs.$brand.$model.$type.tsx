@@ -19,7 +19,6 @@ import {
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import {
-  AlertTriangle,
   Award,
   Car,
   CheckCircle,
@@ -29,14 +28,12 @@ import {
   FileText,
   HeadphonesIcon,
   Info,
-  ListChecks,
   Package,
   RotateCcw,
   Search,
   Shield,
   Star,
   Truck,
-  Wrench,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import brandColorsStyles from "~/styles/brand-colors.css?url";
@@ -47,11 +44,16 @@ import { ErrorGeneric } from "../components/errors";
 import { ModelContentV1Display } from "../components/model";
 import { HtmlContent } from "../components/seo/HtmlContent";
 import {
+  AntiErrorsSection,
   BreadcrumbSection,
   FAMILY_MICRO_DESCRIPTIONS,
   generateVehicleSchema,
   HeroSection,
+  HowtoSection,
+  R8EnrichedSection,
+  SeoIntroSection,
   transformRpcToLoaderData,
+  TrustSection,
   type LoaderData,
 } from "../components/vehicle/r8";
 import { hierarchyApi } from "../services/api/hierarchy.api";
@@ -76,6 +78,38 @@ export const links: LinksFunction = () => [
 // 🔄 Cache mémoire simple pour éviter les rechargements inutiles
 const loaderCache = new Map<string, { data: LoaderData; timestamp: number }>();
 const CACHE_TTL = 60000; // 1 minute
+
+// 📡 INC-2026-007 — Comble le blindspot __error_logs : notifie le backend
+// avant chaque throw 503 du loader. Fire-and-forget, jamais bloquant.
+async function notify503ToErrorLog(
+  url: string,
+  subject: string,
+  message: string,
+  metadata?: Record<string, unknown>,
+): Promise<void> {
+  const internalKey = process.env.INTERNAL_API_KEY;
+  if (!internalKey) return;
+
+  try {
+    await fetch(`${getInternalApiUrl("")}/api/internal/error-log`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Internal-Key": internalKey,
+      },
+      body: JSON.stringify({
+        status: 503,
+        url,
+        subject,
+        message,
+        metadata,
+      }),
+      signal: AbortSignal.timeout(500), // ne jamais bloquer le loader
+    }).catch(() => {});
+  } catch {
+    // best-effort, jamais bloquant
+  }
+}
 
 // Types, transform, schema, constants moved to components/vehicle/r8/
 // - r8.types.ts        : VehicleData, CatalogFamily, PopularPart, SEOData, R8Block, R8Content, LoaderData
@@ -210,6 +244,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
         throw new Response("Véhicule supprimé du catalogue", { status: 410 });
       }
       // Vrais erreurs serveur → 503 (Google réessaye) au lieu de 500
+      await notify503ToErrorLog(
+        `/constructeurs/${brand}/${model}/${type}`,
+        "LOADER_503_BACKEND_RPC_ERROR",
+        `Backend page-data-rpc returned HTTP ${rpcResponse.status} for type_id=${type_id}`,
+        { type_id, backend_status: rpcResponse.status },
+      );
       throw new Response("Service temporairement indisponible", {
         status: 503,
       });
@@ -223,6 +263,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
       (error.name === "AbortError" || error.name === "TimeoutError")
     ) {
       logger.error(`⏱️ [RPC] Timeout 10s pour type_id=${type_id}`);
+      await notify503ToErrorLog(
+        `/constructeurs/${brand}/${model}/${type}`,
+        "LOADER_503_RPC_TIMEOUT",
+        `Backend page-data-rpc timeout (10s) for type_id=${type_id}`,
+        { type_id, timeout_ms: 10000 },
+      );
       throw new Response("Service temporairement indisponible", {
         status: 503,
       });
@@ -233,6 +279,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
     }
     // Autres erreurs → 503 (Google réessaye) au lieu de 500
     logger.error(`❌ [RPC] Erreur fetch pour type_id=${type_id}:`, error);
+    await notify503ToErrorLog(
+      `/constructeurs/${brand}/${model}/${type}`,
+      "LOADER_503_RPC_FETCH_ERROR",
+      `Backend page-data-rpc fetch failed for type_id=${type_id}: ${error instanceof Error ? error.message : String(error)}`,
+      { type_id, error_name: error instanceof Error ? error.name : "unknown" },
+    );
     throw new Response("Service temporairement indisponible", { status: 503 });
   }
 
@@ -240,6 +292,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
     logger.error("❌ [RPC] Données invalides:", rpcResult);
     // 503 et non 410 : le véhicule peut exister mais le service a échoué.
     // 410 causerait une désindexation Google permanente.
+    await notify503ToErrorLog(
+      `/constructeurs/${brand}/${model}/${type}`,
+      "LOADER_503_RPC_INVALID_PAYLOAD",
+      `Backend returned 200 but payload invalid for type_id=${type_id}`,
+      {
+        type_id,
+        payload_success: rpcResult.success,
+        has_vehicle: !!rpcResult.data?.vehicle,
+      },
+    );
     throw new Response("Service temporairement indisponible", { status: 503 });
   }
 
@@ -545,40 +607,7 @@ export default function VehicleDetailPage() {
           </div>
         )}
 
-        {/* Description SEO — R8 enriched or fallback */}
-        <div
-          className="bg-white rounded-lg shadow-sm p-6 mb-8"
-          data-section="S_SEO_INTRO"
-        >
-          {r8Content && r8Content.blocks.length > 0 ? (
-            <div className="space-y-6">
-              {r8Content.blocks
-                .filter(
-                  (b) =>
-                    b.type === "vehicle_identity" ||
-                    b.type === "selection_help",
-                )
-                .map((block) => (
-                  <div key={block.id}>
-                    <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                      {block.title}
-                    </h2>
-                    <div className="prose prose-sm max-w-none text-gray-700">
-                      <HtmlContent
-                        html={block.renderedText}
-                        trackLinks={true}
-                      />
-                    </div>
-                  </div>
-                ))}
-            </div>
-          ) : (
-            <div className="prose max-w-none">
-              <HtmlContent html={seo.content} trackLinks={true} />
-              <HtmlContent html={seo.content2} trackLinks={true} />
-            </div>
-          )}
-        </div>
+        <SeoIntroSection r8Content={r8Content} seo={seo} />
 
         {/* 📦 CATALOGUE PRINCIPAL - Design inspiré de la page index */}
         {catalogFamilies.length > 0 &&
@@ -1069,150 +1098,11 @@ export default function VehicleDetailPage() {
         </div>
 
         {/* R8 enriched sections — variant_difference + maintenance_context */}
-        {r8Content?.blocks.some(
-          (b) =>
-            b.type === "variant_difference" || b.type === "maintenance_context",
-        ) && (
-          <div className="mb-12 space-y-6" data-section="S_R8_ENRICHED">
-            {r8Content.blocks
-              .filter(
-                (b) =>
-                  b.type === "variant_difference" ||
-                  b.type === "maintenance_context",
-              )
-              .map((block) => (
-                <div
-                  key={block.id}
-                  className={`rounded-2xl border p-6 ${
-                    block.type === "variant_difference"
-                      ? "bg-indigo-50 border-indigo-200"
-                      : "bg-blue-50 border-blue-200"
-                  }`}
-                >
-                  <div className="flex items-start gap-3 mb-3">
-                    {block.type === "variant_difference" ? (
-                      <Car
-                        size={24}
-                        className="text-indigo-600 flex-shrink-0 mt-0.5"
-                      />
-                    ) : (
-                      <Wrench
-                        size={24}
-                        className="text-blue-600 flex-shrink-0 mt-0.5"
-                      />
-                    )}
-                    <h2 className="text-xl font-bold text-gray-900">
-                      {block.title}
-                    </h2>
-                  </div>
-                  <div className="prose prose-sm max-w-none text-gray-700 ml-9">
-                    <HtmlContent html={block.renderedText} trackLinks={true} />
-                  </div>
-                </div>
-              ))}
-          </div>
-        )}
+        <R8EnrichedSection r8Content={r8Content} />
 
-        {/* Erreurs fréquentes à éviter */}
-        <div className="mb-12" data-section="S_ANTI_ERRORS">
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <AlertTriangle
-                size={24}
-                className="text-amber-600 flex-shrink-0 mt-0.5"
-              />
-              <h2 className="text-xl font-bold text-gray-900">
-                Erreurs fréquentes à éviter
-              </h2>
-            </div>
-            <ul className="space-y-3 ml-9">
-              <li className="flex items-start gap-2 text-gray-700">
-                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                <span>
-                  Vérifier l'année exacte ({vehicle.type_year_from}–
-                  {vehicle.type_year_to || "aujourd'hui"}) : les pièces peuvent
-                  différer d'une année à l'autre
-                </span>
-              </li>
-              <li className="flex items-start gap-2 text-gray-700">
-                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                <span>
-                  Puissance proche ≠ moteur identique : confirmez avec le CNIT
-                  ou le code moteur
-                  {vehicle.motor_codes_formatted
-                    ? ` (${vehicle.motor_codes_formatted})`
-                    : ""}
-                </span>
-              </li>
-              <li className="flex items-start gap-2 text-gray-700">
-                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                <span>
-                  En cas de doute entre deux motorisations, utilisez le VIN (17
-                  caractères, carte grise case E)
-                </span>
-              </li>
-              {vehicle.type_body && vehicle.type_body.includes("/") && (
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>
-                    Attention à la carrosserie ({vehicle.type_body}) : les
-                    pièces peuvent varier selon la version
-                  </span>
-                </li>
-              )}
-            </ul>
-          </div>
-        </div>
+        <AntiErrorsSection vehicle={vehicle} />
 
-        {/* Comment choisir sans se tromper */}
-        <div className="mb-12" data-section="S_HOWTO">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <ListChecks
-                size={24}
-                className="text-blue-600 flex-shrink-0 mt-0.5"
-              />
-              <h2 className="text-xl font-bold text-gray-900">
-                Comment choisir sans se tromper
-              </h2>
-            </div>
-            <ol className="space-y-3 ml-9 list-decimal list-inside">
-              <li className="text-gray-700">
-                Vérifier la période de production ({vehicle.type_year_from}–
-                {vehicle.type_year_to || "aujourd'hui"})
-              </li>
-              <li className="text-gray-700">
-                Confirmer le carburant ({vehicle.type_fuel}) et la puissance (
-                {vehicle.type_power_ps} ch)
-              </li>
-              <li className="text-gray-700">
-                Identifier le code moteur
-                {vehicle.motor_codes_formatted
-                  ? ` (${vehicle.motor_codes_formatted})`
-                  : ""}{" "}
-                ou le CNIT (carte grise case D.2)
-              </li>
-              <li className="text-gray-700">
-                Choisir la gamme dans le{" "}
-                <a
-                  href="#catalogue"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  catalogue ci-dessus
-                </a>
-              </li>
-              <li className="text-gray-700">
-                En cas de doute →{" "}
-                <a
-                  href="/contact"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  contacter notre assistance
-                </a>
-              </li>
-            </ol>
-          </div>
-        </div>
+        <HowtoSection vehicle={vehicle} />
 
         {/* ❓ FAQ dynamique avec Schema.org */}
         <div className="mb-12" data-section="S_FAQ">
@@ -1297,43 +1187,7 @@ export default function VehicleDetailPage() {
           </div>
         )}
 
-        {/* 🛡️ Badges de confiance */}
-        <div className="mb-12" data-section="S_TRUST">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-green-100 mb-3">
-                <Shield size={28} className="text-green-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Garantie 1 an</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Sur toutes nos pièces
-              </p>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-blue-100 mb-3">
-                <Truck size={28} className="text-blue-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Livraison 24-48h</h3>
-              <p className="text-sm text-gray-500 mt-1">Expédition rapide</p>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-purple-100 mb-3">
-                <HeadphonesIcon size={28} className="text-purple-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Conseil expert</h3>
-              <p className="text-sm text-gray-500 mt-1">Service client dédié</p>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-orange-100 mb-3">
-                <RotateCcw size={28} className="text-orange-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Retour 30 jours</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Satisfait ou remboursé
-              </p>
-            </div>
-          </div>
-        </div>
+        <TrustSection />
 
         {/* 🔗 CTA retour hub marque R7 (maillage R8→R7) */}
         <div className="mt-8 text-center">

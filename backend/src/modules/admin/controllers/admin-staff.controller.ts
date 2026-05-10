@@ -21,15 +21,15 @@ import {
   UseGuards,
   Logger,
 } from '@nestjs/common';
-import { OperationFailedException } from '../../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import {
   StaffService,
   CreateStaffDto,
   UpdateStaffDto,
 } from '../../staff/staff.service';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 
 @ApiTags('Admin Staff')
 @Controller('api/admin/staff')

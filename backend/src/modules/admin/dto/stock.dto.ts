@@ -4,10 +4,7 @@
  */
 
 import { z } from 'zod';
-import {
-  DomainValidationException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DomainValidationException, ErrorCodes } from '@common/exceptions';
 
 // =====================================
 // SCHEMAS STOCK MANAGEMENT

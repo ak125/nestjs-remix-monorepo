@@ -13,8 +13,8 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { MailService } from '../../../services/mail.service';
 import { ConfigService } from '@nestjs/config';
 import { TABLES } from '@repo/database-types';

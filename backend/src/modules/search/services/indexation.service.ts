@@ -1,7 +1,7 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { MeilisearchService } from './meilisearch.service';
 import { SupabaseIndexationService } from './supabase-indexation.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 export interface VehicleIndexData {
   id: number;

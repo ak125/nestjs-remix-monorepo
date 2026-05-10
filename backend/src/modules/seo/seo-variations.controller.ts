@@ -1,5 +1,5 @@
 import { Controller, Get, Query, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 /**
  * Contrôleur pour les variations SEO

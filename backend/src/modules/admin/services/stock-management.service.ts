@@ -16,9 +16,9 @@ import {
   Inject,
   forwardRef,
 } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../../cache/cache.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { CacheService } from '@cache/cache.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { StockMovementService } from './stock-movement.service';
 import { StockReportService } from './stock-report.service';
 

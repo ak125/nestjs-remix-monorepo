@@ -1,0 +1,95 @@
+id: seo-no-bare-role-literal
+language: typescript
+severity: warning
+message: |
+  Bare SEO role literal in OUTPUT context. Use canonical full name
+  (R3_CONSEILS, R6_GUIDE_ACHAT, R6_SUPPORT, etc.) or call normalizeRoleId()
+  first. Bare R3 / R6 / R9 / R3_GUIDE are FORBIDDEN_ROLE_IDS — they are
+  ambiguous (R6 = R6_GUIDE_ACHAT or R6_SUPPORT?) or deprecated (R9).
+
+  See .spec/00-canon/db-governance/legacy-canon-map.md and
+  packages/seo-roles/README.md.
+
+  If this is a legacy DB filter, test fixture, or mapping reference, add
+  the file to the `files` exclusion list below with a comment explaining why.
+note: |
+  Replace  '"R3"'  with  PageRole.R3_CONSEILS  (frontend)
+       or  RoleId.R3_CONSEILS  (backend)
+       or  normalizeRoleId(input)  if input is dynamic.
+
+  PR-3a (this rule) is `severity: warning` initially. Promotion to `error`
+  happens in PR-3b after 7 days of clean observation.
+files:
+  # ── Apply to frontend + backend TypeScript ──
+  - backend/src/**/*.ts
+  - frontend/app/**/*.ts
+  - frontend/app/**/*.tsx
+  # ── Regression test scope : the rule MUST trigger here when the fixture
+  # is renamed from .ts.disabled → .ts (validates ast-grep coverage). ──
+  - __regression__/**/*.ts
+ignores:
+  # ── SoT helpers : these files DEFINE the canon, must contain literals ──
+  - "**/role-ids.ts"
+  - "**/page-role.types.ts"
+  # ── Tests + fixtures : legacy literals are legitimate inputs ──
+  - "**/*.test.ts"
+  - "**/*.test.tsx"
+  - "**/*.spec.ts"
+  - "**/__tests__/**"
+  - "**/__fixtures__/**"
+  # ── Mappings de référence (audit confirmé légitime) ──
+  - "**/r0-page-contract.constants.ts"
+  - "**/r4-keyword-plan.constants.ts"
+  - "**/r5-diagnostic.constants.ts"
+  # ── Documented legacy fallbacks ──
+  - "**/seo-pilotage.service.ts"
+  - "**/admin-keyword-planner.controller.ts"
+  - "**/brief-gates.service.ts"
+  # ── Canon-defining Zod schemas (the legacy literal IS the schema definition) ──
+  - "**/page-contract-r3.schema.ts"
+  - "**/page-contract-r4.schema.ts"
+  - "**/page-contract-r5.schema.ts"
+  - "**/page-contract-r6.schema.ts"
+  - "**/page-contract-r8.schema.ts"
+  - "**/page-contract-shared.constants.ts"
+  - "**/admissibility-gate.constants.ts"
+  # ── Generated types (from Supabase introspection) ──
+  - "**/database.types.ts"
+  # ── Legitimate consumers of canon-defining types (audit confirmed) ──
+  # These files USE bare role literals as values of types defined in already-
+  # excluded canon-defining files (r5-diagnostic.constants, etc.).
+  # The literals here aren't OUTPUT leaks — they're typed constants matching
+  # internal switch / gate / interface contracts.
+  # Globs narrowed to specific paths so a future homonymous file in another
+  # module doesn't get silently exempted (PR-3b promotion to error stays sharp).
+  - "**/seo/validation/diagnostic.service.ts"      # SurfaceTarget = 'R3' | 'R4' | ...
+  - "**/seo/validation/quality-validator.service.ts" # type alias for legacy DB short forms
+  - "**/admin/services/content-quality-gate.service.ts" # internal gate context labels
+  - "**/admin/services/rag-safe-distill.service.ts" # SearchTargetRole canon-defining map
+  - "**/admin/services/conseil-enricher.service.ts" # log marker template (non-output)
+  # ── R6 buying-guide engine intentType/pageRole strict literal types ──
+  # `intentType: 'R6'` and `pageRole: 'R6_BUYING_GUIDE'` are strict TS literal
+  # types declared in r6-guide.interfaces.ts (backend) AND r6-guide.types.ts
+  # (frontend) for the R6GuidePayload contract. The service.ts emits them
+  # matching the type. A coordinated 3-file migration is required to drop
+  # these — out of scope for PR-3a-cleanup, tracked as future PR.
+  # NB : `target_role` literals (output payload, frontend type=string) WERE
+  # migrated to canonical in this PR (R6→R6_GUIDE_ACHAT, R1→R1_ROUTER).
+  - "**/blog/services/r6-guide.service.ts"
+  - "**/blog/interfaces/r6-guide.interfaces.ts"
+  - "**/types/r6-guide.types.ts"                   # frontend-only file
+  # ── Input DTOs accepting legacy roles (per "Legacy accepté en entrée") ──
+  - "**/rag-proxy/dto/search.dto.ts"
+  # NB : __regression__/ NOT excluded — that's where the regression
+  # fixture lives, the rule MUST trigger there to verify it works.
+rule:
+  all:
+    - any:
+        - pattern: '"R3"'
+        - pattern: "'R3'"
+        - pattern: '"R6"'
+        - pattern: "'R6'"
+        - pattern: '"R9"'
+        - pattern: "'R9'"
+        - pattern: '"R3_GUIDE"'
+        - pattern: "'R3_GUIDE'"

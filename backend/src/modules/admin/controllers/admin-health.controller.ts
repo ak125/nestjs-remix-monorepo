@@ -1,6 +1,6 @@
 import { Controller, Get, UseGuards, UseInterceptors } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { AdminResponseInterceptor } from '../../../common/interceptors/admin-response.interceptor';
 import { AdminHealthService } from '../services/admin-health.service';
 import { MailService } from '../../../services/mail.service';

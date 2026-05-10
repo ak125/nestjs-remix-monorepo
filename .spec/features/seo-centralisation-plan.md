@@ -1,3 +1,9 @@
+---
+title: "SEO Centralisation Plan — Cartographie complète"
+status: draft
+version: 1.0.0
+---
+
 # Cartographie SEO Complète - Site Automecanik
 
 > Document de référence pour la centralisation des blocs SEO

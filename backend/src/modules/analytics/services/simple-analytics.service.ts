@@ -1,11 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
-import {
-  getErrorMessage,
-  getErrorStack,
-} from '../../../common/utils/error.utils';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
 
 /**
  * 📊 SIMPLE ANALYTICS SERVICE - Configuration et Tracking Simplifié

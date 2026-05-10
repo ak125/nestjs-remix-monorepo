@@ -5,7 +5,7 @@ import { normalizeAlias } from '../../../common/utils/url-builder.utils';
 import { SupabaseIndexationService } from '../../search/services/supabase-indexation.service';
 import { BlogCacheService } from './blog-cache.service';
 import { BlogArticle } from '../interfaces/blog.interfaces';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { AdviceTransformService } from './advice-transform.service';
 import { AdviceEnrichmentService } from './advice-enrichment.service';
 

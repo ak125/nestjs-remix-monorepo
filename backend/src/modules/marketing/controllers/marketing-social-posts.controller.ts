@@ -10,7 +10,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { MarketingHubDataService } from '../services/marketing-hub-data.service';
 import { PublishQueueService } from '../services/publish-queue.service';
 import { BrandComplianceGateService } from '../services/brand-compliance-gate.service';

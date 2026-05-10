@@ -46,12 +46,12 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
 import { AuthService } from '../../../auth/auth.service';
 import { MailService } from '../../../services/mail.service';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import {
   OrdersService,
   CreateOrderData,

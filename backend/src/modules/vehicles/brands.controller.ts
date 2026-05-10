@@ -16,11 +16,13 @@ import {
   Body,
   Param,
   Query,
+  Req,
   Logger,
   ParseIntPipe,
   Header,
 } from '@nestjs/common';
-import { OperationFailedException } from '../../common/exceptions';
+import type { Request } from 'express';
+import { OperationFailedException } from '@common/exceptions';
 import { VehicleBrandsService } from './services/data/vehicle-brands.service';
 import { VehicleModelsService } from './services/data/vehicle-models.service';
 import { VehicleTypesService } from './services/data/vehicle-types.service';
@@ -395,12 +397,17 @@ export class BrandsController {
    * Utilisé par le loader frontend /constructeurs/{brand}.html
    */
   @Get(':id/page-data-rpc')
-  async getBrandPageDataRpc(@Param('id', ParseIntPipe) marqueId: number) {
+  async getBrandPageDataRpc(
+    @Param('id', ParseIntPipe) marqueId: number,
+    @Req() req: Request,
+  ) {
     this.logger.log(`⚡ GET /api/brands/${marqueId}/page-data-rpc`);
 
     try {
-      const result =
-        await this.brandRpcService.getBrandPageDataOptimized(marqueId);
+      const result = await this.brandRpcService.getBrandPageDataOptimized(
+        marqueId,
+        req.url,
+      );
 
       return {
         success: true,

@@ -21,10 +21,10 @@ import {
   UseGuards,
   Logger,
 } from '@nestjs/common';
-import { OperationFailedException } from '../../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import { Response } from 'express';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   AdminGammesSeoService,
   GammeSeoFilters,

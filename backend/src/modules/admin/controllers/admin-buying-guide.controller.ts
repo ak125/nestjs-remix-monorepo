@@ -6,8 +6,8 @@ import {
   Logger,
   BadRequestException,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { BuyingGuideEnricherService } from '../services/buying-guide-enricher.service';
 import { BuyingGuideEnrichRequestSchema } from '../dto/buying-guide-enrich.dto';
 

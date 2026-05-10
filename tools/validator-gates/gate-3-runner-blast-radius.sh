@@ -17,7 +17,11 @@ while IFS= read -r wf; do
   [[ ! -f "$wf" ]] && continue
 
   # Check 1: pull_request_target avec checkout = supply chain risk
-  if grep -q "pull_request_target" "$wf" 2>/dev/null && grep -q "actions/checkout" "$wf" 2>/dev/null; then
+  # Strip yaml comments before matching: a `#` comment like
+  # "# Pas de `actions/checkout` ici" is documentation, not a real `uses:`.
+  wf_uncommented=$(sed 's/[[:space:]]*#.*//' "$wf" 2>/dev/null)
+  if grep -q "pull_request_target" <<<"$wf_uncommented" \
+    && grep -qE "uses:[[:space:]]*actions/checkout" <<<"$wf_uncommented"; then
     echo "❌ CRITICAL: $wf uses pull_request_target with actions/checkout"
     critical=$((critical+1))
   fi

@@ -18,6 +18,8 @@ import {
 } from '@nestjs/common';
 import { DiagnosticEngineOrchestrator } from './diagnostic-engine.orchestrator';
 import { DiagnosticEngineDataService } from './diagnostic-engine.data-service';
+import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
+import { DiagnosticContentService } from './services/diagnostic-content.service';
 
 @Controller('api/diagnostic-engine')
 export class DiagnosticEngineController {
@@ -26,7 +28,112 @@ export class DiagnosticEngineController {
   constructor(
     private readonly orchestrator: DiagnosticEngineOrchestrator,
     private readonly dataService: DiagnosticEngineDataService,
+    private readonly maintenanceCalculator: MaintenanceCalculatorService,
+    private readonly diagnosticContent: DiagnosticContentService,
   ) {}
+
+  /**
+   * GET /api/diagnostic-engine/wizard-steps
+   * GET /api/diagnostic-engine/safety-config
+   * GET /api/diagnostic-engine/vocab-clusters
+   * GET /api/diagnostic-engine/signs
+   * GET /api/diagnostic-engine/faq
+   * GET /api/diagnostic-engine/controles-mensuels
+   *
+   * ADR-032 D1+D5 — contenu UI servi depuis submodule git wiki/.
+   * Source unique : `backend/content/automecanik-wiki/wiki/{diagnostic,support}/<slug>.md`.
+   */
+  @Get('wizard-steps')
+  getWizardSteps() {
+    return this.diagnosticContent.getWizardSteps();
+  }
+
+  @Get('safety-config')
+  getSafetyConfig() {
+    return this.diagnosticContent.getSafetyConfig();
+  }
+
+  @Get('vocab-clusters')
+  getVocabClusters() {
+    return this.diagnosticContent.getVocabClusters();
+  }
+
+  @Get('signs')
+  getSigns() {
+    return this.diagnosticContent.getSigns();
+  }
+
+  @Get('faq')
+  getFaq() {
+    return this.diagnosticContent.getFaq();
+  }
+
+  @Get('controles-mensuels')
+  getControlesMensuels() {
+    return this.diagnosticContent.getControlesMensuels();
+  }
+
+  /**
+   * GET /api/diagnostic-engine/maintenance-schedule
+   *
+   * ADR-032 D2/D3 — schedule fuel-aware par véhicule.
+   */
+  @Get('maintenance-schedule')
+  async maintenanceSchedule(
+    @Query('type_id') typeId?: string,
+    @Query('current_km') currentKm?: string,
+    @Query('fuel_type') fuelType?: string,
+  ) {
+    const tid = typeId ? parseInt(typeId, 10) : null;
+    const km = currentKm ? parseInt(currentKm, 10) : 0;
+    const items = await this.maintenanceCalculator.getSchedule(
+      tid,
+      km,
+      fuelType ?? null,
+    );
+    return { success: true, type_id: tid, current_km: km, items };
+  }
+
+  /**
+   * GET /api/diagnostic-engine/maintenance-alerts
+   *
+   * ADR-032 D7 — alertes regroupées par palier km (zéro hardcode des paliers).
+   */
+  /**
+   * GET /api/diagnostic-engine/calendar
+   *
+   * ADR-032 D9 — endpoint agrégé pour calendrier-entretien.tsx.
+   * Single fetch côté frontend (zéro hardcode des 3 sections : schedule,
+   * alerts paliers, contrôles mensuels).
+   */
+  @Get('calendar')
+  async maintenanceCalendar(
+    @Query('type_id') typeId?: string,
+    @Query('current_km') currentKm?: string,
+    @Query('fuel_type') fuelType?: string,
+  ) {
+    const tid = typeId ? parseInt(typeId, 10) : null;
+    const km = currentKm ? parseInt(currentKm, 10) : 0;
+    return this.maintenanceCalculator.getCalendar(tid, km, fuelType ?? null);
+  }
+
+  @Get('maintenance-alerts')
+  async maintenanceAlerts(
+    @Query('fuel_type') fuelType?: string,
+    @Query('milestones') milestones?: string,
+  ) {
+    const list = milestones
+      ? milestones
+          .split(',')
+          .map((s) => parseInt(s.trim(), 10))
+          .filter((n) => Number.isFinite(n))
+      : undefined;
+    const result = await this.maintenanceCalculator.getAlerts(
+      fuelType ?? null,
+      list,
+    );
+    return { success: true, milestones: result };
+  }
 
   /**
    * POST /api/diagnostic-engine/analyze
@@ -44,6 +151,42 @@ export class DiagnosticEngineController {
         success: false,
         error: result.error,
         hint: 'Voir le schema AnalyzeDiagnosticInput pour le format attendu.',
+      };
+    }
+
+    return {
+      success: true,
+      session_id: result.data!.session_id,
+      ...result.data!.evidence,
+    };
+  }
+
+  /**
+   * POST /api/diagnostic-engine/breakdown
+   *
+   * ADR-032 — endpoint urgence routière (panne immobilisante).
+   * Force `intent_type: 'breakdown'` et délègue à l'orchestrator standard
+   * (le `RiskSafetyEngine` priorise les rules safety_gate=stop_immediate
+   * via la priority haute du flag breakdown).
+   */
+  @Post('breakdown')
+  async breakdown(@Body() body: unknown) {
+    this.logger.log('POST /breakdown');
+
+    const input = (body && typeof body === 'object' ? body : {}) as Record<
+      string,
+      unknown
+    >;
+    const result = await this.orchestrator.analyze({
+      ...input,
+      intent_type: 'breakdown',
+    });
+
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error,
+        hint: 'Voir le schema AnalyzeDiagnosticInput pour le format attendu (intent_type forcé à breakdown).',
       };
     }
 

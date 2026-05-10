@@ -7,8 +7,8 @@ import {
 import type { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { ChatRequestDto, ChatResponseDto } from '../dto/chat.dto';
-import { ExternalServiceException } from '../../../common/exceptions';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { ExternalServiceException } from '@common/exceptions';
+import { getErrorMessage } from '@common/utils/error.utils';
 import { RagCircuitBreakerService } from './rag-circuit-breaker.service';
 
 @Injectable()

@@ -5,10 +5,7 @@ import { ReviewService, ReviewStats } from './review.service';
 import { QuoteService } from './quote.service';
 import { ClaimService } from './claim.service';
 import { FaqService, FAQStats } from './faq.service';
-import {
-  getErrorMessage,
-  getErrorStack,
-} from '../../../common/utils/error.utils';
+import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
 
 /** Shape of stats returned by ContactService.getStats() */
 interface ContactStats {

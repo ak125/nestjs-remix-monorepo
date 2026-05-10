@@ -1,0 +1,50 @@
+name: agents-md-validation
+
+on:
+  pull_request:
+    paths:
+      - 'agents/**/AGENTS.md'
+      - '**/CLAUDE.md'
+      - '.claude/rules/**'
+      - 'scripts/agents/**'
+      - '.github/workflows/agents-md-validation.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'agents/**/AGENTS.md'
+      - '**/CLAUDE.md'
+      - 'scripts/agents/**'
+
+# Minimum scope: read-only checkout + git diff (ADR-043 Sprint 1 ticket #7).
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate AGENTS.md / CLAUDE.md
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for git diff)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # OBLIGATOIRE — sans ça `git diff origin/main` retourne vide
+
+      - name: Lint validator with shellcheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: 'scripts/agents'
+          severity: error
+
+      - name: Self-test validator
+        run: bash scripts/agents/validate-agents-md.sh --self-test
+
+      - name: Validate diff vs base (anti-patterns sur lignes ajoutées)
+        if: github.event_name == 'pull_request'
+        # Use base.sha (unambiguous) au lieu de origin/<base_ref> :
+        # sur une PR forkée externe, `origin` peut pointer vers le fork
+        # → `git diff origin/main` retournerait vide silencieusement (gate passerait à tort).
+        run: bash scripts/agents/validate-agents-md.sh --diff ${{ github.event.pull_request.base.sha }}
+
+      - name: Validate full repo (structure check)
+        run: bash scripts/agents/validate-agents-md.sh --all

@@ -29,7 +29,11 @@ import { OrdersTable } from "../components/orders/OrdersTable";
 import { Separator } from "../components/ui/separator";
 
 import { type ActionData, type Order } from "../types/orders.types";
-import { getUserPermissions, getUserRole } from "../utils/permissions";
+import {
+  loadUserPermissions,
+  getUserRole,
+  type UserPermissions,
+} from "../utils/permissions";
 
 export const meta = () => [
   { title: "Commandes | Commercial" },
@@ -45,7 +49,10 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     return json<ActionData>({ error: "Acces refuse" }, { status: 403 });
   }
 
-  const permissions = getUserPermissions(user.level);
+  const permissions = await loadUserPermissions(
+    user.id,
+    request.headers.get("Cookie") ?? undefined,
+  );
   const formData = await request.formData();
   const intent = formData.get("intent") as string;
   const orderId = formData.get("orderId") as string;
@@ -149,7 +156,7 @@ interface LoaderData {
   total: number;
   currentPage: number;
   totalPages: number;
-  permissions: ReturnType<typeof getUserPermissions>;
+  permissions: UserPermissions;
   user: { level: number; email: string; role: ReturnType<typeof getUserRole> };
 }
 
@@ -159,7 +166,10 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     throw new Response("Acces refuse", { status: 403 });
   }
 
-  const permissions = getUserPermissions(user.level);
+  const permissions = await loadUserPermissions(
+    user.id,
+    request.headers.get("Cookie") ?? undefined,
+  );
   const userRole = getUserRole(user.level);
 
   try {

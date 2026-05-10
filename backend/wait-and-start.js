@@ -208,8 +208,38 @@ function watchEnvFile() {
   console.log('\n⏳ Waiting for initial TypeScript compilation to complete...');
   console.log(`   Looking for: ${mainJsPath}`);
 
+  // tsc emits dist/**/*.js with `require("@auth/...")` placeholders;
+  // tsc-alias rewrites them into relative paths AFTER tsc finishes.
+  // Booting nodemon before that race lands → MODULE_NOT_FOUND on @alias
+  // — and the failing file may be config/app.config.js, not main.js,
+  // so we cannot just check main.js. Use grep -rl to scan the whole dist/.
+  const ALIAS_GREP_PATTERN = "require([\"']@(auth|cache|common|config|database|security|modules)/";
+
+  const distHasAliasResidual = () => {
+    try {
+      // grep -l (any hit), -r (recursive), -E (regex), --include for .js only.
+      // Returns 0 if hit found, 1 if not. Use child_process.execSync.
+      const { execSync } = require('child_process');
+      execSync(
+        `grep -rlE '${ALIAS_GREP_PATTERN}' --include='*.js' ${path.join(__dirname, 'dist')}`,
+        { stdio: 'pipe' }
+      );
+      return true; // exit 0 = at least one file still has @alias residual
+    } catch (e) {
+      return false; // exit 1 = no match = dist/ is clean
+    }
+  };
+
   const intervalId = setInterval(() => {
     if (fs.existsSync(mainJsPath)) {
+      if (distHasAliasResidual()) {
+        // tsc compiled but tsc-alias has not transformed all files yet — wait.
+        elapsed += checkIntervalMs;
+        if (elapsed % 5000 === 0) {
+          console.log(`   Waiting for tsc-alias to finish (dist/ still has @alias residuals)… (${elapsed / 1000}s)`);
+        }
+        return;
+      }
       clearInterval(intervalId);
       console.log('✅ Compilation complete! Starting nodemon...\n');
       

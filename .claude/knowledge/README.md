@@ -15,6 +15,15 @@
 
 Si la question n'est pas couverte ici, lire `.claude/rules/*` puis grepper.
 
+### Voisins (pas dans ce dossier mais souvent utiles)
+
+- [`/log.md`](../../log.md) — **timeline append-only des sessions Claude** (date, branche, décision, PRs/commits). Lecture conseillée en début de session pour contexte récent.
+- `~/.claude/projects/.../memory/MEMORY.md` — **apprentissages persistants** (règles, gotchas, feedback). Auto-loadé chaque session, USER-only.
+- PR descriptions sur GitHub — **détails techniques** d'un changement.
+- `governance-vault/` — **décisions canon** (ADRs, incidents, retros).
+
+Distinction : `knowledge/` = STRUCTURE du codebase (où vit quoi) ; `log.md` = TIMELINE des sessions (quand quoi a été fait) ; `MEMORY.md` = APPRIS (règles persistantes) ; PRs = POURQUOI (détails) ; vault = CANON (décisions).
+
 ## Modules backend (auto-détectés, `backend/src/modules/*`)
 
 Les fichiers `modules/*.md` ont tous une section `Rôle` / `Pourquoi` /

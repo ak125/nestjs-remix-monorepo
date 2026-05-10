@@ -18,8 +18,8 @@ import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 
-import { IsAdminGuard } from '../../src/auth/is-admin.guard';
-import { AuthenticatedGuard } from '../../src/auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { InternalApiKeyGuard } from '../../src/auth/internal-api-key.guard';
 import { OptionalAuthGuard } from '../../src/auth/guards/optional-auth.guard';
 

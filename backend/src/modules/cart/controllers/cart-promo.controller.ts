@@ -8,7 +8,7 @@ import {
   Logger,
   BadRequestException,
 } from '@nestjs/common';
-import { OperationFailedException } from '../../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import {
   ApiTags,
   ApiOperation,

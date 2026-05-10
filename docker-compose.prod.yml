@@ -53,6 +53,16 @@ services:
       - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      # 🚨 Sentry — values inherited from `sops exec-env secrets/sentry.prod.sops.env`
+      # wrapping the deploy command (see deploy-prod.yml). Bare names = "inherit
+      # from host process env"; missing values keep the SDK in no-op mode.
+      - SENTRY_DSN
+      - VITE_SENTRY_DSN
+      - SENTRY_ENVIRONMENT
+      - SENTRY_TRACES_SAMPLE_RATE
+      - SENTRY_RELEASE
+      - SENTRY_SEND_PII
+      - SENTRY_ALLOW_DEBUG_ENDPOINT
 
     deploy:
       resources:

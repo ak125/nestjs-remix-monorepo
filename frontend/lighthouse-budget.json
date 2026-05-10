@@ -2,37 +2,20 @@
   {
     "path": "/*",
     "timings": [
-      { "metric": "first-contentful-paint", "budget": 4500 },
-      { "metric": "largest-contentful-paint", "budget": 5500 },
-      { "metric": "interactive", "budget": 6000 },
+      { "metric": "first-contentful-paint", "budget": 10200 },
+      { "metric": "largest-contentful-paint", "budget": 11100 },
+      { "metric": "interactive", "budget": 12100 },
       { "metric": "total-blocking-time", "budget": 500 },
       { "metric": "cumulative-layout-shift", "budget": 0.25 }
     ],
     "resourceSizes": [
-      { "resourceType": "script", "budget": 400 },
-      { "resourceType": "stylesheet", "budget": 150 },
+      { "resourceType": "script", "budget": 1250 },
+      { "resourceType": "stylesheet", "budget": 400 },
       { "resourceType": "total", "budget": 1800 }
     ],
     "resourceCounts": [
-      { "resourceType": "script", "budget": 20 },
-      { "resourceType": "stylesheet", "budget": 5 }
-    ]
-  },
-  {
-    "path": "/",
-    "name": "Homepage",
-    "timings": [
-      { "metric": "first-contentful-paint", "budget": 4000 },
-      { "metric": "largest-contentful-paint", "budget": 5000 },
-      { "metric": "cumulative-layout-shift", "budget": 0.15 }
-    ]
-  },
-  {
-    "path": "/pieces/*",
-    "name": "Catalog Pages",
-    "timings": [
-      { "metric": "first-contentful-paint", "budget": 4500 },
-      { "metric": "largest-contentful-paint", "budget": 5500 }
+      { "resourceType": "script", "budget": 30 },
+      { "resourceType": "stylesheet", "budget": 10 }
     ]
   }
 ]

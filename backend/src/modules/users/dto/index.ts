@@ -33,10 +33,7 @@ export * from './user-address.dto';
 // =====================================
 
 import { z } from 'zod';
-import {
-  DomainValidationException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DomainValidationException, ErrorCodes } from '@common/exceptions';
 
 /**
  * Fonction utilitaire générique pour valider avec Zod

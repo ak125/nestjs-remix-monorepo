@@ -3,8 +3,8 @@ import { TABLES } from '@repo/database-types';
 // 🎯 Service unifié pour les gammes - remplace gamme.service + catalog-gamme.service + pieces-gamme.service
 
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../../cache/cache.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { CacheService } from '@cache/cache.service';
 import { Gamme } from '../types/gamme.types';
 
 @Injectable()

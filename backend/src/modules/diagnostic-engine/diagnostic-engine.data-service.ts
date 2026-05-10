@@ -5,7 +5,7 @@
  * Pas de logique metier ici — juste des queries.
  */
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 // ── DB Row types (aligned on migration schema) ──────────
 

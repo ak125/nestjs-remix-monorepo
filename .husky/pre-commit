@@ -15,7 +15,26 @@ if [ -n "$BLOCKED" ]; then
   exit 1
 fi
 
+# Validateur AGENTS.md / CLAUDE.md (anti-pattern + structure).
+# Placé AVANT lint-staged et autres transformations : check bloquant doit
+# voir le contenu tel que stagé par l'utilisateur, pas une version
+# auto-formatée. Mémoire : feedback_no_hardcoded_infra_in_agentsmd.md
+if git diff --cached --name-only | grep -qE '(^|/)(AGENTS|CLAUDE)\.md$'; then
+  bash scripts/agents/validate-agents-md.sh --staged || exit 1
+fi
+
 npx lint-staged
+
+# Block zero-arg HeadersFunction with `s-maxage` in Remix routes.
+# Mémoire INC-2026-005-recurrence (2026-05-06) : a naive
+# `() => ({ "Cache-Control": "public, s-maxage=86400" })` lets Cloudflare
+# cache loader-thrown 5xx for 24h. Use buildCacheHeaders helper instead.
+STAGED_ROUTES=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E '^frontend/app/routes/.*\.(ts|tsx)$' || true)
+if [ -n "$STAGED_ROUTES" ]; then
+  # shellcheck disable=SC2086
+  bash scripts/lint/check-no-zero-arg-headers-with-s-maxage.sh $STAGED_ROUTES || exit 1
+fi
 
 # Refresh auto-generated YAML frontmatter + AUTO-GENERATED blocks in
 # .claude/knowledge/modules/*.md so last_scan + primary_files stay honest.
