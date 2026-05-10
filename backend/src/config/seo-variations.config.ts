@@ -190,3 +190,31 @@ export function selectVariationWithIndex<T>(
   const index = (typeId + pgId + offset) % variations.length;
   return { value: variations[index], index };
 }
+
+/**
+ * Substitution de placeholders `{key}` dans un template SEO.
+ *
+ * Comportement strict adapté aux surfaces meta (title/h1/description) :
+ * - placeholder absent ou valeur vide/null/undefined → chaîne vide (pas de
+ *   `{key}` literal qui leakerait en GSC)
+ * - whitespace collapse (multi-espaces → 1 espace)
+ * - trim final
+ *
+ * @example
+ * renderSeoTemplate('Pièces {brand} {model}', { brand: 'Renault', model: '' })
+ *   // → 'Pièces Renault'
+ */
+export function renderSeoTemplate(
+  template: string,
+  placeholders: Record<string, string | number | null | undefined>,
+): string {
+  return template
+    .replace(/\{(\w+)\}/g, (_, key) => {
+      const value = placeholders[key];
+      return value === null || value === undefined || value === ''
+        ? ''
+        : String(value);
+    })
+    .replace(/\s+/g, ' ')
+    .trim();
+}

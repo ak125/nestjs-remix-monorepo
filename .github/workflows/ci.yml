@@ -754,6 +754,11 @@ jobs:
           SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
           SESSION_SECRET=${SESSION_SECRET}
           READ_ONLY=true
+          # ADR-055 shadow activation: collect real preprod evidence before any
+          # mode=on decision. Literal on remains blocked by backend boot guard.
+          SEO_CHAIN_R7_MODE=shadow
+          SEO_CHAIN_R8_MODE=shadow
+          SEO_CHAIN_RM_MODE=shadow
           REDIS_URL=redis://redis-preprod:6379
           APP_URL=http://localhost:3200
           # RAG service disabled in preprod (4 rag-proxy services use

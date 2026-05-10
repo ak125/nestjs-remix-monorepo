@@ -75,10 +75,14 @@ COPY --chown=remix-api:nodejs --from=installer /app/frontend/build ./frontend/bu
 COPY --chown=remix-api:nodejs --from=installer /app/frontend/public ./frontend/public
 COPY --chown=remix-api:nodejs --from=installer /app/frontend/package.json ./frontend/package.json
 
-# Copier les packages internes nécessaires
-COPY --chown=remix-api:nodejs --from=installer /app/packages/design-tokens ./packages/design-tokens
-COPY --chown=remix-api:nodejs --from=installer /app/packages/database-types ./packages/database-types
-COPY --chown=remix-api:nodejs --from=installer /app/packages/seo-roles ./packages/seo-roles
+# Copier l'ensemble des packages internes (workspaces npm) en une seule étape :
+# le builder stage a fait `turbo run build`, donc chaque package/*/dist est prêt
+# et les symlinks node_modules/@repo|@fafa/* pointent vers packages/*. Cherry-pick
+# package par package ici cassait silencieusement le runtime à chaque nouveau
+# package interne (ex: @repo/seo-role-contracts ajouté par PR #399 → runtime crash
+# "Cannot find module" sur tous les deploys depuis 2026-05-08). Une COPY globale
+# élimine cette catégorie de régression.
+COPY --chown=remix-api:nodejs --from=installer /app/packages ./packages
 
 # 🛡️ RPC Safety Gate - Governance files
 # IMPORTANT: Copy to /app/backend/governance/ because start.sh does "cd backend"
