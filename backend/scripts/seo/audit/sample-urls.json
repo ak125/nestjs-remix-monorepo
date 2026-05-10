@@ -1,0 +1,54 @@
+{
+  "samples": [
+    {
+      "url": "https://www.automecanik.com/pieces/balais-d-essuie-glace/nissan/almera-ii/1-5.html",
+      "surface_key": "R1_GAMME_VEHICLE_ROUTER",
+      "gamme_id": 298,
+      "vehicle_id": 17242,
+      "pgId": 298,
+      "typeId": 17242,
+      "variables": {
+        "gamme": "Balais d'essuie-glace",
+        "gammeMeta": "balais d'essuie-glace",
+        "marque": "NISSAN",
+        "marqueMeta": "Nissan",
+        "marqueMetaTitle": "Nissan",
+        "modele": "ALMERA II",
+        "modeleMeta": "Almera II",
+        "type": "1.5",
+        "typeMeta": "1.5",
+        "annee": "2002",
+        "nbCh": 98,
+        "carosserie": "A trois volumes",
+        "fuel": "Essence",
+        "codeMoteur": "QG15DE"
+      },
+      "category": "to_verify"
+    },
+    {
+      "url": "https://www.automecanik.com/pieces/filtre-a-huile/nissan/almera-ii/1-8-phase-2.html",
+      "surface_key": "R1_GAMME_VEHICLE_ROUTER",
+      "gamme_id": 7,
+      "vehicle_id": 17243,
+      "pgId": 7,
+      "typeId": 17243,
+      "variables": {
+        "gamme": "Filtre à huile",
+        "gammeMeta": "filtre à huile",
+        "marque": "NISSAN",
+        "marqueMeta": "Nissan",
+        "marqueMetaTitle": "Nissan",
+        "modele": "ALMERA II",
+        "modeleMeta": "Almera II",
+        "type": "1.8 (Phase 2)",
+        "typeMeta": "1.8 Phase 2",
+        "annee": "2002",
+        "nbCh": 116,
+        "carosserie": "A trois volumes",
+        "fuel": "Essence",
+        "codeMoteur": "QG18DE"
+      },
+      "category": "to_verify"
+    }
+  ]
+}

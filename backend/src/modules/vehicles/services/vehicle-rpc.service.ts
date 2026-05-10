@@ -4,6 +4,8 @@ import { CacheService } from '@cache/cache.service';
 import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 
+import { SeoShadowObservatory } from '@modules/seo-shadow-observatory/seo-shadow-observatory.service';
+
 /**
  * Service RPC pour les pages vehicule /constructeurs/{marque}/{modele}/{type}.html
  *
@@ -28,6 +30,7 @@ export class VehicleRpcService extends SupabaseBaseService {
   constructor(
     private readonly cacheService: CacheService,
     rpcGate: RpcGateService,
+    private readonly shadowObservatory: SeoShadowObservatory,
   ) {
     super();
     this.rpcGate = rpcGate;
@@ -39,8 +42,11 @@ export class VehicleRpcService extends SupabaseBaseService {
 
   /**
    * Récupère les données page véhicule. Redis L1 (1h) + DB cache-first.
+   *
+   * `requestUrl` optionnel — si fourni, déclenche une observation shadow
+   * (SeoShadowObservatory, PR-6). Sync, non-bloquant pour le chemin réponse.
    */
-  async getVehiclePageDataOptimized(typeId: number) {
+  async getVehiclePageDataOptimized(typeId: number, requestUrl?: string) {
     const startTime = performance.now();
     const cacheKey = this.getCacheKey(typeId);
 
@@ -48,10 +54,12 @@ export class VehicleRpcService extends SupabaseBaseService {
     const cached =
       await this.cacheService.get<Record<string, unknown>>(cacheKey);
     if (cached) {
-      return {
+      const result = {
         ...cached,
         _cache: { hit: true, time: performance.now() - startTime },
       };
+      this.fireShadowObservation(typeId, requestUrl, result);
+      return result;
     }
 
     // L2: table __vehicle_page_cache via get_vehicle_page_data_cached (rebuild si miss)
@@ -85,13 +93,69 @@ export class VehicleRpcService extends SupabaseBaseService {
         this.logger.warn(`L1 cache set failed for type ${typeId}: ${err}`),
       );
 
-    return {
+    const result = {
       ...data,
       _performance: {
         totalTime: performance.now() - startTime,
         cacheHit: false,
       },
     };
+    this.fireShadowObservation(typeId, requestUrl, result);
+    return result;
+  }
+
+  /**
+   * Fire-and-forget shadow observation R8 (PR-6).
+   *
+   * NE PAS `await` cette méthode — `observe()` est sync par contrat (validé
+   * par `.ast-grep/rules/seo-shadow-no-await.yml`). La comparaison réelle
+   * court via `setImmediate` dans le module observatory.
+   *
+   * Limite connue : R8 canonical comparison désactivée (frontend Remix
+   * applique un redirect 301 que le backend ne reproduit pas).
+   * `policy_divergence` R8 reste piloté par `robots_eq` uniquement.
+   */
+  private fireShadowObservation(
+    typeId: number,
+    requestUrl: string | undefined,
+    result: Record<string, unknown>,
+  ): void {
+    if (!requestUrl) return;
+    const vehicle =
+      (result['vehicle'] as Record<string, unknown> | undefined) ?? undefined;
+    const seo =
+      (result['seo'] as Record<string, unknown> | undefined) ?? undefined;
+    const brandAlias = String(vehicle?.['marque_alias'] ?? '');
+    const modeleAlias = String(vehicle?.['modele_alias'] ?? '');
+    const typeAlias = String(vehicle?.['type_alias'] ?? '');
+    if (!brandAlias || !modeleAlias || !typeAlias) return;
+    this.shadowObservatory.observe({
+      surface: 'R8_VEHICLE',
+      legacy: {
+        title: (seo?.['title'] as string | null | undefined) ?? null,
+        description:
+          (seo?.['description'] as string | null | undefined) ?? null,
+        h1: (seo?.['h1'] as string | null | undefined) ?? null,
+        content: (seo?.['content'] as string | null | undefined) ?? null,
+        keywords: (seo?.['keywords'] as string | null | undefined) ?? null,
+        canonical: (seo?.['canonical'] as string | null | undefined) ?? null,
+        robots: (seo?.['robots'] as string | null | undefined) ?? null,
+      },
+      requestUrl,
+      ids: {
+        brandId: Number(vehicle?.['marque_id'] ?? 0),
+        brandAlias,
+        modeleAlias,
+        typeAlias,
+        typeId,
+      },
+      vars: {
+        VMarque: String(vehicle?.['marque_name'] ?? ''),
+        VModele: String(vehicle?.['modele_name'] ?? ''),
+        VType: String(vehicle?.['type_name'] ?? ''),
+      },
+      entityId: String(typeId),
+    });
   }
 
   /**
