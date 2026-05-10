@@ -6,7 +6,6 @@
  * Pattern tests T-A à T-F avec status PASS/FAIL/WARN
  */
 
-import { AlertTriangle, ChevronDown, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
@@ -23,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { AlertTriangle, ChevronDown, RefreshCw } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 import { StatusBadge, type StatusType } from "./StatusBadge";
 

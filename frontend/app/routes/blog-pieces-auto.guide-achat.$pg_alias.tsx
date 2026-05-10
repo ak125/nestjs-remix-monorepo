@@ -25,18 +25,6 @@ import {
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
 } from "@remix-run/react";
-import {
-  ArrowLeft,
-  BookOpen,
-  AlertTriangle,
-  Clock,
-  Shield,
-  Zap,
-  Heart,
-  Star,
-  CheckCircle2,
-  ExternalLink,
-} from "lucide-react";
 
 // V2 components
 
@@ -70,6 +58,18 @@ import { HeroBlog } from "~/components/heroes";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
+import {
+  ArrowLeft,
+  BookOpen,
+  AlertTriangle,
+  Clock,
+  Shield,
+  Zap,
+  Heart,
+  Star,
+  CheckCircle2,
+  ExternalLink,
+} from '~/lib/icons';
 
 // Utils
 import { type R6GuidePayload } from "~/types/r6-guide.types";

@@ -9,6 +9,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
+import { Alert } from "~/components/ui/alert";
 import {
   Shield,
   Users,
@@ -17,8 +18,7 @@ import {
   AlertCircle,
   MessageSquare,
   Mail,
-} from "lucide-react";
-import { Alert } from "~/components/ui/alert";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";

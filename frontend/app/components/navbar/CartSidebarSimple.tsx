@@ -13,11 +13,11 @@
  */
 
 import { Link } from "@remix-run/react";
-import { ShoppingBag, X } from "lucide-react";
 import { memo } from "react";
 
 import { Badge } from "~/components/ui/badge";
 import { useRootCart } from "~/hooks/useRootData";
+import { ShoppingBag, X } from '~/lib/icons';
 import { cn } from "../../lib/utils";
 import { Sheet, SheetContent, SheetClose, SheetTitle } from "../ui/sheet";
 

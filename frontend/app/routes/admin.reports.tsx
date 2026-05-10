@@ -4,16 +4,6 @@
 
 import { type LoaderFunction, json, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import {
-  BarChart3,
-  TrendingUp,
-  Download,
-  Eye,
-  Calendar,
-  PieChart,
-  AlertTriangle,
-  CheckCircle,
-} from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -23,6 +13,16 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import {
+  BarChart3,
+  TrendingUp,
+  Download,
+  Eye,
+  Calendar,
+  PieChart,
+  AlertTriangle,
+  CheckCircle,
+} from '~/lib/icons';
 import { getRemixApiService } from "~/server/remix-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

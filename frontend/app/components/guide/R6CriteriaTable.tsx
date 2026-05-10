@@ -3,11 +3,11 @@
  * Uses shadcn Tabs with criteria cards grouped by priority level.
  */
 
-import { ListChecks } from "lucide-react";
 import { useMemo } from "react";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Badge } from "~/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { ListChecks } from '~/lib/icons';
 import { type R6SelectionCriterion } from "~/types/r6-guide.types";
 import { annotateGlossaryTerms } from "./GlossaryTooltip";
 import { GuideCard } from "./GuideCard";

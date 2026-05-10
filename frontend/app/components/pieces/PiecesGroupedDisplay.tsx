@@ -10,8 +10,8 @@
  * - Tous les produits restent chargés (SEO préservé)
  */
 
-import { ChevronDown } from "lucide-react";
 import { useState, useCallback, memo } from "react";
+import { ChevronDown } from '~/lib/icons';
 import {
   type PieceData,
   type PiecesFilters,

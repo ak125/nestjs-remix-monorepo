@@ -9,6 +9,13 @@ import {
   type LoaderFunctionArgs,
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { useState } from "react";
+import { toast } from "sonner";
+
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Separator } from "~/components/ui/separator";
 import {
   ArrowLeft,
   CheckCircle,
@@ -22,14 +29,7 @@ import {
   Truck,
   User,
   XCircle,
-} from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Separator } from "~/components/ui/separator";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
 import {

@@ -5,8 +5,8 @@
  * Compatible avec votre structure Header
  */
 
-import { Search } from "lucide-react";
 import { memo } from "react";
+import { Search } from '~/lib/icons';
 
 interface QuickSearchTriggerProps {
   placeholder?: string;

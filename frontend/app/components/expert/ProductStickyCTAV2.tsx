@@ -15,6 +15,9 @@
  * - No cookie-cutter patterns
  */
 
+import { forwardRef, useState, useEffect, memo } from "react";
+import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
 import {
   ShoppingCart,
   Check,
@@ -22,10 +25,7 @@ import {
   Loader2,
   ShieldCheck,
   Zap,
-} from "lucide-react";
-import { forwardRef, useState, useEffect, memo } from "react";
-import { Button } from "~/components/ui/button";
-import { Skeleton } from "~/components/ui/skeleton";
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 // ============================================================================

@@ -4,6 +4,14 @@
  */
 import { type LoaderFunction, json, type MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { Badge } from "~/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import {
   BarChart3,
   TrendingUp,
@@ -13,15 +21,7 @@ import {
   ArrowUpRight,
   Clock,
   Zap,
-} from "lucide-react";
-import { Badge } from "~/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

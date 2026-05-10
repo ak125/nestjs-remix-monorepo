@@ -9,6 +9,7 @@
  */
 
 import { Link, useLocation } from '@remix-run/react';
+import { useState, useEffect } from 'react';
 import { 
   ChevronRight, 
   Home, 
@@ -21,8 +22,7 @@ import {
   AlertCircle,
   XCircle,
   ArrowLeft
-} from 'lucide-react';
-import { useState, useEffect } from 'react';
+} from '~/lib/icons';
 
 interface BreadcrumbItem {
   label: string;

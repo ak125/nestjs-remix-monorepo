@@ -1,7 +1,7 @@
 /**
  * ResultDisclaimer — Block 7: Professional disclaimer + allowed claims
  */
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck } from '~/lib/icons';
 
 interface Props {
   claims: string[];

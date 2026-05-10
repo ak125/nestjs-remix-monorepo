@@ -10,11 +10,11 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { ArrowLeft, Calendar, Car } from "lucide-react";
 import * as React from "react";
 
 import { BlogPiecesAutoNavigation } from "~/components/blog/BlogPiecesAutoNavigation";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { ArrowLeft, Calendar, Car } from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { CompactBlogHeader } from "../components/blog/CompactBlogHeader";

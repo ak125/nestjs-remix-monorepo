@@ -14,17 +14,6 @@ import {
   PAGE_TYPE_TO_ROLE,
   type WorkerPageType,
 } from "@repo/seo-roles";
-import {
-  RefreshCw,
-  Check,
-  X,
-  FileText,
-  CheckCircle2,
-  XCircle,
-  SkipForward,
-  Zap,
-  Filter,
-} from "lucide-react";
 import { useState } from "react";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import {
@@ -50,6 +39,17 @@ import {
 import { Input } from "~/components/ui/input";
 import { Select, SelectItem } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  RefreshCw,
+  Check,
+  X,
+  FileText,
+  CheckCircle2,
+  XCircle,
+  SkipForward,
+  Zap,
+  Filter,
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

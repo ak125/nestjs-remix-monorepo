@@ -1,9 +1,9 @@
 /**
  * ResultSummary — Block 2: Factual inputs confirmed + system suspects
  */
-import { CheckCircle2, Info } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { CheckCircle2, Info } from '~/lib/icons';
 
 interface Props {
   confirmed: string[];

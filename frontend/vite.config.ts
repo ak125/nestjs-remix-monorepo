@@ -61,6 +61,15 @@ export default defineConfig({
 						if (id.includes('/lucide-react/')) {
 							return 'lucide-vendor';
 						}
+						// TanStack Query — large state lib, isolate for cross-route caching.
+						// Pattern matches both @tanstack/react-query and @tanstack/query-core.
+						if (id.includes('/@tanstack/')) {
+							return 'query-vendor';
+						}
+						// Zod — schema validator used in forms + API DTOs across routes.
+						if (id.includes('/zod/')) {
+							return 'schema-vendor';
+						}
 						return; // other node_modules → Rollup default
 					}
 

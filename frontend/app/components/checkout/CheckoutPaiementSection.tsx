@@ -1,6 +1,6 @@
-import { Lock, ArrowRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
+import { Lock, ArrowRight } from '~/lib/icons';
 import { type CheckoutFieldErrors } from "~/schemas/checkout.schemas";
 import { type PaymentMethod } from "~/types/payment";
 

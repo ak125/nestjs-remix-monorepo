@@ -8,6 +8,9 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
+import { useState, useEffect } from "react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   Clock,
   CheckCircle,
@@ -20,10 +23,7 @@ import {
   Phone,
   Mail,
   AlertTriangle,
-} from "lucide-react";
-import { useState, useEffect } from "react";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

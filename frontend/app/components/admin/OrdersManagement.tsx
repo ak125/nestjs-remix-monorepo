@@ -1,4 +1,10 @@
 import { useFetcher } from "@remix-run/react";
+import { useEffect, useState } from "react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Select, SelectItem } from "~/components/ui/select";
 import {
   ShoppingCart,
   CheckCircle,
@@ -10,13 +16,7 @@ import {
   Download,
   Plus,
   Filter,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Select, SelectItem } from "~/components/ui/select";
+} from '~/lib/icons';
 
 type Order = {
   id: string | number;

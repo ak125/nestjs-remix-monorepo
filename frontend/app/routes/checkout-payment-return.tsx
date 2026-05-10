@@ -9,17 +9,17 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { useEffect } from "react";
+
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { Alert } from "~/components/ui/alert";
 import {
   CheckCircle,
   XCircle,
   Clock,
   AlertTriangle,
   HelpCircle,
-} from "lucide-react";
-import { useEffect } from "react";
-
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
-import { Alert } from "~/components/ui/alert";
+} from '~/lib/icons';
 import { trackPurchase } from "~/utils/analytics";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";

@@ -2,7 +2,7 @@
  * ResultSafety — Block 1: Safety alert & risk flags
  * Always visible if risk_flags is non-empty. Critical = red banner.
  */
-import { AlertTriangle, ShieldAlert } from "lucide-react";
+import { AlertTriangle, ShieldAlert } from '~/lib/icons';
 
 interface Props {
   riskLevel?: string;

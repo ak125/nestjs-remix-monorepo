@@ -22,7 +22,6 @@ import {
   useNavigation,
 } from "@remix-run/react";
 
-import { ChevronUp } from "lucide-react";
 import {
   Component,
   lazy,
@@ -32,6 +31,7 @@ import {
   type ErrorInfo,
   type ReactNode,
 } from "react";
+import { ChevronUp } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { getOptionalUser } from "./auth/unified.server";
 import { ErrorGeneric } from "./components/errors";

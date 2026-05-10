@@ -16,11 +16,11 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { Search, Car, ArrowRight } from "lucide-react";
 import { useState } from "react";
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { Alert } from "~/components/ui/alert";
+import { Search, Car, ArrowRight } from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";

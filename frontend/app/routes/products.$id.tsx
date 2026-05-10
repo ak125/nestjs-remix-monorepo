@@ -26,6 +26,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   ArrowLeft,
   Package,
@@ -34,8 +35,7 @@ import {
   Star,
   TrendingUp,
   ShoppingCart,
-} from "lucide-react";
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";

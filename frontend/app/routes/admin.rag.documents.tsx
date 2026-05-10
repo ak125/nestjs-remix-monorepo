@@ -9,17 +9,6 @@ import {
   useNavigate,
   useSearchParams,
 } from "@remix-run/react";
-import {
-  FileText,
-  Search,
-  Upload,
-  ChevronRight,
-  ShieldCheck,
-  BookOpen,
-  AlertTriangle,
-  Layers,
-  PackageOpen,
-} from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 import {
   DashboardShell,
@@ -40,6 +29,17 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Select, SelectItem } from "~/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "~/components/ui/tabs";
+import {
+  FileText,
+  Search,
+  Upload,
+  ChevronRight,
+  ShieldCheck,
+  BookOpen,
+  AlertTriangle,
+  Layers,
+  PackageOpen,
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

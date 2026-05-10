@@ -1,9 +1,9 @@
 /**
  * ResultMaintenance — Block 4: Maintenance recommendations with intervals
  */
-import { Calendar, Clock, ExternalLink, Wrench } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Calendar, Clock, ExternalLink, Wrench } from '~/lib/icons';
 import { type MaintenanceRecommendation } from "../types";
 
 interface Props {

@@ -21,7 +21,6 @@
  *   />
  */
 
-import { ChevronDown, ChevronRight, ChevronUp } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Checkbox } from "~/components/ui/checkbox";
 import {
@@ -32,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { ChevronDown, ChevronRight, ChevronUp } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 import { PaginationBar, type DataColumn } from "./ResponsiveDataTable";

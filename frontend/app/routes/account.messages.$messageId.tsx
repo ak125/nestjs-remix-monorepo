@@ -10,8 +10,8 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { ArrowLeft } from "lucide-react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { ArrowLeft } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUser } from "../auth/unified.server";

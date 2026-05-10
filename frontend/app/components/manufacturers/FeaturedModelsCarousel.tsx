@@ -6,8 +6,8 @@
  */
 
 import { Link } from "@remix-run/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { memo, useState } from "react";
+import { ChevronLeft, ChevronRight } from '~/lib/icons';
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
 import { VehicleImage } from "../ui/ResponsiveImage";

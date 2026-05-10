@@ -17,13 +17,13 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { Search, Car, AlertCircle, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { VehicleCard } from "~/components/vehicles/VehicleCard";
+import { Search, Car, AlertCircle, ArrowRight } from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 

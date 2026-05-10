@@ -1,6 +1,8 @@
 /**
  * Dashboard Design System Tab — extracted from admin._index.tsx
  */
+import { toast } from "sonner";
+import { Badge } from "~/components/ui/badge";
 import {
   Palette,
   Package,
@@ -10,9 +12,7 @@ import {
   Eye,
   CheckCircle,
   Target,
-} from "lucide-react";
-import { toast } from "sonner";
-import { Badge } from "~/components/ui/badge";
+} from '~/lib/icons';
 
 export function DashboardDesignTab() {
   return (

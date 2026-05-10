@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
-import { BookOpen, ArrowRight } from "lucide-react";
 import { memo } from "react";
 import { Card, CardContent } from "~/components/ui/card";
+import { BookOpen, ArrowRight } from '~/lib/icons';
 
 interface ReferenceEncartProps {
   reference: {

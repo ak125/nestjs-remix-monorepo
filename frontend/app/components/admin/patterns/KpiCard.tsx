@@ -10,9 +10,9 @@
  * - Couleurs sémantiques (variant → token)
  */
 
-import { type LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
+import { type LucideIcon, TrendingUp, TrendingDown } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 export interface KpiCardProps {

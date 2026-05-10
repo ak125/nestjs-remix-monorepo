@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   Calendar,
   CreditCard,
@@ -7,8 +8,7 @@ import {
   Phone,
   ShoppingCart,
   User,
-} from "lucide-react";
-import { memo } from "react";
+} from '~/lib/icons';
 import { type Order } from "../../types/orders.types";
 import {
   formatDate,

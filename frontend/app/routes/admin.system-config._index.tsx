@@ -16,6 +16,8 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
+import { useState, useEffect } from "react";
+import { Button } from "~/components/ui/button";
 import {
   Settings,
   Database,
@@ -33,9 +35,7 @@ import {
   Upload,
   Activity,
   RotateCcw,
-} from "lucide-react";
-import { useState, useEffect } from "react";
-import { Button } from "~/components/ui/button";
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import SystemBreadcrumb from "../components/admin/SystemBreadcrumb";

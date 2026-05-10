@@ -4,8 +4,8 @@
  */
 
 import { Link } from "@remix-run/react";
-import { type LucideIcon } from "lucide-react";
 import * as React from "react";
+import { type LucideIcon } from '~/lib/icons';
 
 interface Stat {
   icon: LucideIcon;

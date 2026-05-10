@@ -14,17 +14,6 @@
  * 4. Result displayed with celebration if compatible
  */
 
-import {
-  Search,
-  Car,
-  FileText,
-  Loader2,
-  ShieldCheck,
-  ShieldX,
-  AlertCircle,
-  Sparkles,
-  Info,
-} from "lucide-react";
 import { forwardRef, useState, useCallback, useEffect, memo } from "react";
 import { Button } from "~/components/ui/button";
 import {
@@ -36,6 +25,17 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import {
+  Search,
+  Car,
+  FileText,
+  Loader2,
+  ShieldCheck,
+  ShieldX,
+  AlertCircle,
+  Sparkles,
+  Info,
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 import { type VehicleInfoV2 } from "./CompatibilityBadgeV2";
 

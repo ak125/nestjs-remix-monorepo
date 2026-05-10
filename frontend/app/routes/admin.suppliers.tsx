@@ -7,6 +7,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Outlet, useLoaderData, Link } from "@remix-run/react";
+import { Badge } from "~/components/ui/badge";
 import {
   Building2,
   Users,
@@ -15,8 +16,7 @@ import {
   EyeOff,
   Star,
   Layers,
-} from "lucide-react";
-import { Badge } from "~/components/ui/badge";
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireAuth } from "../auth/unified.server";

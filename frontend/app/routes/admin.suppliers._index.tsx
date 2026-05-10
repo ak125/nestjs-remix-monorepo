@@ -6,10 +6,10 @@ import {
   useSearchParams,
   useNavigate,
 } from "@remix-run/react";
-import { Search, X, Trophy } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Search, X, Trophy } from '~/lib/icons';
 
 interface Equipementier {
   id: string;

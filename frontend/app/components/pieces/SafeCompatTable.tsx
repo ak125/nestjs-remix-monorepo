@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   Car,
   FileSearch,
@@ -5,8 +6,7 @@ import {
   ShieldCheck,
   PackageCheck,
   HelpCircle,
-} from "lucide-react";
-import { memo } from "react";
+} from '~/lib/icons';
 
 import {
   getDefaultSafeTableRows,

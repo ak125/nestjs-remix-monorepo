@@ -19,25 +19,6 @@ import {
   useSearchParams,
   Link,
 } from "@remix-run/react";
-import {
-  AlertTriangle,
-  ArrowUpDown,
-  CheckCircle,
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Eye,
-  EyeOff,
-  Filter,
-  History,
-  RefreshCw,
-  RotateCcw,
-  Save,
-  Search,
-  Settings,
-  Star,
-  XCircle,
-} from "lucide-react";
 import React, { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -62,6 +43,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  AlertTriangle,
+  ArrowUpDown,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Eye,
+  EyeOff,
+  Filter,
+  History,
+  RefreshCw,
+  RotateCcw,
+  Save,
+  Search,
+  Settings,
+  Star,
+  XCircle,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 

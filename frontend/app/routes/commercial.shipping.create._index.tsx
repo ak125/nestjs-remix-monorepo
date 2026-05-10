@@ -14,6 +14,8 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Form, useNavigation, Link } from "@remix-run/react";
+import { useState, useEffect } from "react";
+import { Button } from "~/components/ui/button";
 import {
   Package,
   Truck,
@@ -23,9 +25,7 @@ import {
   Clock,
   Printer,
   ArrowLeft,
-} from "lucide-react";
-import { useState, useEffect } from "react";
-import { Button } from "~/components/ui/button";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

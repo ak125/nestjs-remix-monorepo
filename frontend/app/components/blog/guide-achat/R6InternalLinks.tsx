@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
-import { ArrowUpRight } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { ArrowUpRight } from '~/lib/icons';
 
 const ROLE_BADGE: Record<string, { label: string; className: string }> = {
   R1: {

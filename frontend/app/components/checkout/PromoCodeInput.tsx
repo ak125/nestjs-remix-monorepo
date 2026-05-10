@@ -1,5 +1,5 @@
-import { Tag, X, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { Tag, X, Loader2 } from '~/lib/icons';
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat("fr-FR", {

@@ -17,9 +17,9 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { Search, Car, AlertCircle, ArrowRight, Info } from "lucide-react";
 import { useState } from "react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { Search, Car, AlertCircle, ArrowRight, Info } from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { Button } from "../components/ui/button";

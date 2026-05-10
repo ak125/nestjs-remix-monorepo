@@ -1,5 +1,6 @@
 // app/components/SeoWidget.tsx
 import { Link } from "@remix-run/react";
+import { memo } from "react";
 import {
   Search,
   Globe,
@@ -9,8 +10,7 @@ import {
   CheckCircle,
   Zap,
   Target,
-} from "lucide-react";
-import { memo } from "react";
+} from '~/lib/icons';
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 interface SeoStats {

@@ -16,6 +16,20 @@ import {
   useNavigate,
   useFetcher,
 } from "@remix-run/react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { Separator } from "~/components/ui/separator";
 import {
   Users,
   UserPlus,
@@ -35,21 +49,7 @@ import {
   UserCheck,
   UserX,
   Star,
-} from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { Separator } from "~/components/ui/separator";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => [
