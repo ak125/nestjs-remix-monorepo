@@ -9,7 +9,7 @@ import {
 import {
   OperationFailedException,
   DomainNotFoundException,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 import { RmBuilderService } from '../services/rm-builder.service';
 
 /**

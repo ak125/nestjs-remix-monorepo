@@ -8,8 +8,8 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { DatabaseException, ErrorCodes } from '../../common/exceptions';
-import { getErrorMessage } from '../../common/utils/error.utils';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 @Injectable()
 export class SeoMonitorSchedulerService implements OnModuleInit {
@@ -20,9 +20,22 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
   ) {}
 
   /**
-   * 🚀 Configure les jobs répétitifs au démarrage de l'app
+   * 🚀 Configure les jobs répétitifs au démarrage de l'app — non-bloquant.
+   *
+   * Les `await this.seoMonitorQueue.*` (clean, add) touchent Redis via Bull.
+   * Awaiter ici bloquerait `app.listen()` (NestJS exécute tous les
+   * `onModuleInit` durant `app.init()` appelé par `listen()` → /health muet
+   * → exit 124 sur perf-gates.yml). Cf. PR #224 / runs 25166916535 +
+   * 25172104783 (preuve via INIT_TRACE markers : ce service hangait avec
+   * abandoned-cart pour le même motif).
+   *
+   * Voir `.claude/rules/backend.md` § "Non-blocking onModuleInit".
    */
-  async onModuleInit() {
+  onModuleInit(): void {
+    void this.configureRepeatableJobs();
+  }
+
+  private async configureRepeatableJobs(): Promise<void> {
     this.logger.log('🚀 Initialisation scheduler monitoring SEO...');
 
     try {
@@ -34,6 +47,9 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
 
       // Configurer job échantillon aléatoire (toutes les 6h)
       await this.setupRandomSampleMonitoring();
+
+      // V0.A — Configurer job daily-fetch GSC/GA4/CWV/Links (04:00 UTC)
+      await this.setupDailyFetchJob();
 
       this.logger.log('✅ Scheduler monitoring SEO configuré');
       await this.logScheduledJobs();
@@ -113,6 +129,76 @@ export class SeoMonitorSchedulerService implements OnModuleInit {
     this.logger.log(
       '✅ Surveillance échantillon aléatoire: toutes les 6 heures',
     );
+  }
+
+  /**
+   * 🛰️ V0.A — Configure le job quotidien d'ingestion GSC/GA4/CWV/Links
+   *
+   * Cron 04:00 UTC quotidien. Le processor `SeoDailyFetchProcessor` consomme
+   * `daily-fetch` sur la queue `seo-monitor` et délègue aux 4 fetchers du
+   * `SeoMonitoringModule`. Date par défaut : J-3 (latence GSC/GA4 ~3 jours).
+   *
+   * Ref : `.claude/plans/utiliser-la-meilleure-approche-zippy-waterfall.md` § V0.A
+   */
+  private async setupDailyFetchJob(): Promise<void> {
+    await this.seoMonitorQueue.add(
+      'daily-fetch',
+      {
+        triggeredBy: 'scheduler',
+        task: 'all',
+      },
+      {
+        repeat: {
+          cron: '0 4 * * *', // 04:00 UTC quotidien
+        },
+        jobId: 'seo-daily-fetch',
+        removeOnComplete: 30, // ~1 mois d'historique
+        removeOnFail: 100, // debug
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 30_000, // 30s, puis 1min, puis 2min
+        },
+      },
+    );
+
+    this.logger.log('✅ Daily fetch GSC/GA4/CWV/Links: 04:00 UTC');
+  }
+
+  /**
+   * 🚀 V0.A — Déclenche manuellement un daily-fetch (debug / re-run / backfill)
+   */
+  async triggerManualDailyFetch(
+    opts: {
+      date?: string;
+      task?: 'all' | 'gsc' | 'ga4' | 'gsc_links';
+    } = {},
+  ) {
+    const job = await this.seoMonitorQueue.add(
+      'daily-fetch',
+      {
+        date: opts.date,
+        task: opts.task ?? 'all',
+        triggeredBy: 'api',
+      },
+      {
+        priority: 1,
+        removeOnComplete: 30,
+        removeOnFail: 100,
+        attempts: 1, // pas de retry pour déclenchement manuel
+      },
+    );
+
+    this.logger.log(
+      `🚀 Daily-fetch manuel : job #${job.id} (date=${opts.date ?? 'J-3'}, task=${opts.task ?? 'all'})`,
+    );
+
+    return {
+      jobId: job.id,
+      date: opts.date,
+      task: opts.task ?? 'all',
+      status: 'queued',
+    };
   }
 
   /**

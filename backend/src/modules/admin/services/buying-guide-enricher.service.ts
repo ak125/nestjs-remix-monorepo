@@ -220,6 +220,52 @@ export class BuyingGuideEnricherService {
       .map(([key]) => key);
 
     if (okSections.length === 0) {
+      // ── Metadata-only gatekeeper write ──
+      // Even when all RAG sections are skipped (anti-wiki / anti-dup / pollution),
+      // write the gate verdict so the row stops being NULL. NULL = "we don't know"
+      // is worse than {score, flags: [ALL_SECTIONS_SKIPPED]} = "known RAG-incomplete".
+      // The fn_invalidate_sgpg_gatekeeper trigger only fires on content changes,
+      // so this metadata-only write is safe.
+      const gatekeeper = this.qualityGates.computeGatekeeperScore({
+        sectionResults,
+        qualityFlags: uniqueFlags,
+        qualityScore,
+        antiWikiGate,
+      });
+      const gateOnlyPayload: Record<string, unknown> = {
+        sgpg_gatekeeper_score: gatekeeper.score,
+        sgpg_gatekeeper_flags: [...gatekeeper.flags, 'ALL_SECTIONS_SKIPPED'],
+        sgpg_gatekeeper_checks: {
+          ...gatekeeper.checks,
+          all_sections_skipped: true,
+        },
+        sgpg_source_verified: false,
+        sgpg_source_verified_by: 'pipeline:rag-enrich-skipped',
+        sgpg_source_verified_at: new Date().toISOString(),
+      };
+      const writeContext: WriteGuardContext | undefined = this.flags
+        .writeGuardEnabled
+        ? {
+            roleId: RoleId.R6_GUIDE_ACHAT,
+            correlationId: `enrich-skipped-${pgId}-${Date.now().toString(36)}`,
+          }
+        : undefined;
+      try {
+        await this.dbService.upsertBuyingGuide(
+          pgId,
+          gateOnlyPayload,
+          writeContext,
+        );
+        this.logger.log(
+          `Gatekeeper-only write for pgId=${pgId} (all sections skipped, RAG-incomplete cluster)`,
+        );
+      } catch (err) {
+        this.logger.error(
+          `Gatekeeper-only write failed for pgId=${pgId}: ${err instanceof Error ? err.message : err}`,
+        );
+        // Non-blocking: fall through to the early-return result
+      }
+
       return {
         pgId,
         sections: {},

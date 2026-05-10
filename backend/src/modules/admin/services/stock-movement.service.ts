@@ -8,8 +8,8 @@
 
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { TABLES } from '@repo/database-types';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import type { StockMovement } from './stock-management.service';
 
 @Injectable()

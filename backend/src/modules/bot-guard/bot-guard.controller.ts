@@ -8,7 +8,7 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { IsAdminGuard } from '../../auth/is-admin.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { BotGuardService } from './bot-guard.service';
 
 @Controller('admin/bot-guard')

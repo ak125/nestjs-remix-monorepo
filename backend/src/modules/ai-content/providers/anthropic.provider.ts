@@ -5,8 +5,8 @@ import {
   ExternalServiceException,
   ConfigurationException,
   ErrorCodes,
-} from '../../../common/exceptions';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+} from '@common/exceptions';
+import { getErrorMessage } from '@common/utils/error.utils';
 import {
   DEFAULT_ADVISOR_MODEL,
   DEFAULT_EXECUTOR_MODEL,

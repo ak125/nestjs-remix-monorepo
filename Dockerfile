@@ -17,7 +17,13 @@ WORKDIR /app
 # First install the dependencies (as they change less often)
 COPY --chown=node:node --from=builder /app/out/json/ .
 COPY --chown=node:node --from=builder /app/out/package-lock.json ./package-lock.json
-RUN --mount=type=cache,target=/root/.npm npm ci
+# --ignore-scripts skips postinstall hooks. Required because @ast-grep/cli
+# (devDep used by audit:ast) crashes its postinstall on Alpine musl
+# ("Failed to move @ast-grep/cli binary into place"). ast-grep is only
+# used in CI audit.yml on Ubuntu (where its binary works), not in Docker
+# build. No other package in this monorepo needs a postinstall step at
+# build time (husky `prepare` is a npm script, not postinstall hook).
+RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts
 
 # Build the project
 COPY --from=builder /app/out/full/ .
@@ -69,9 +75,14 @@ COPY --chown=remix-api:nodejs --from=installer /app/frontend/build ./frontend/bu
 COPY --chown=remix-api:nodejs --from=installer /app/frontend/public ./frontend/public
 COPY --chown=remix-api:nodejs --from=installer /app/frontend/package.json ./frontend/package.json
 
-# Copier les packages internes nécessaires
-COPY --chown=remix-api:nodejs --from=installer /app/packages/design-tokens ./packages/design-tokens
-COPY --chown=remix-api:nodejs --from=installer /app/packages/database-types ./packages/database-types
+# Copier l'ensemble des packages internes (workspaces npm) en une seule étape :
+# le builder stage a fait `turbo run build`, donc chaque package/*/dist est prêt
+# et les symlinks node_modules/@repo|@fafa/* pointent vers packages/*. Cherry-pick
+# package par package ici cassait silencieusement le runtime à chaque nouveau
+# package interne (ex: @repo/seo-role-contracts ajouté par PR #399 → runtime crash
+# "Cannot find module" sur tous les deploys depuis 2026-05-08). Une COPY globale
+# élimine cette catégorie de régression.
+COPY --chown=remix-api:nodejs --from=installer /app/packages ./packages
 
 # 🛡️ RPC Safety Gate - Governance files
 # IMPORTANT: Copy to /app/backend/governance/ because start.sh does "cd backend"

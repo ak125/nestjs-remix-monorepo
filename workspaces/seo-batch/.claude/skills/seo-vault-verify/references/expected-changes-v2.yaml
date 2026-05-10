@@ -1,0 +1,205 @@
+# SEO Vault Verify — Manifeste canonique v2 (baseline gelée 2026-04-25)
+#
+# v1 → v2 (2026-04-24) : calibration après audit one-shot.
+# Les 6 false positives de v1 sont corrigés avec evidence vault réel.
+# v2 baseline freeze (2026-04-25) : 18 SHA256 files_unchanged + source_zip_sha256
+# gelés sur la livraison `automecanik-seo-vault.zip` du 2026-04-24.
+#
+# Règles de matching : Unicode NFC, case-insensitive par défaut, whitespace collapse.
+---
+version: 2
+previous_version: 1
+source_zip_sha256: 368d0746636b6f804fd58106e6b0c689f308752af5076b57bc107df7549b6d0b
+adr_reference: ADR-002
+
+files_regenerated:
+  - path: 00-Meta/README.md
+    must_contain:
+      - pattern: "ADR-002"
+      - pattern: "Kickoff-Week1"
+      # v2 fix F1 : vault utilise `maillage-interne` (dash) pas `pilier/maillage` (slash).
+      # "pilier primaire" est présent mais séparé du nom de tag.
+      - pattern: "maillage-interne"
+      - pattern: "pilier primaire"
+      - pattern: "primaire"
+        near: "maillage"
+        window: 400
+      - pattern: "secondaire"
+        near: "autorité"
+        window: 400
+      - pattern: "playbook"
+    cross_ref_targets:
+      - ADR-002-maillage-interne-first
+      - Kickoff-Week1
+
+  - path: 00-Meta/Conventions.md
+    tags_required:
+      - "#pilier/maillage"
+      - "#pilier/autorite"
+    must_contain:
+      - pattern: "même discipline de maillage"
+      - pattern: "ADR-002"
+    tag_context:
+      - tag: "#pilier/maillage"
+        qualifier_pattern: "primaire"
+      - tag: "#pilier/autorite"
+        qualifier_pattern: "secondaire"
+
+  - path: 00-Meta/Glossary.md
+    sections_required:
+      # v2 fix F2 : vault utilise em-dash — pas colon : entre terme bold et définition
+      - title: "Maillage interne"
+        min_terms: 11
+        term_markers: ["**", "—"]
+      - title: "Crawl & indexation"
+        min_terms: 6
+        term_markers: ["**", "—"]
+    must_contain:
+      - pattern: "PageRank interne"
+      - pattern: "orpheline"
+      - pattern: "feeding"
+      - pattern: "sculpture"
+      - pattern: "boilerplate dilutif"
+      - pattern: "profondeur depuis home"
+
+  - path: 00-Meta/Dataview-queries.md
+    sections_required:
+      - title: "Maillage interne"
+      # v2 fix F3 : vault utilise "Autorité externe (opportuniste — ADR-002)"
+      - title: "Autorité externe"
+      - title: "Activité récente"
+    must_contain:
+      # v2 fix F3 : vault dit "Gammes marquées comme orphelines" et "Entités orphelines"
+      - pattern: "orphelines"
+      - pattern: "money pages sous-alimentées"
+      - pattern: "feeding"
+      - pattern: "draft"
+        near: "14"
+        window: 200
+    dataview_blocks_min: 3
+
+  - path: 02-ADR/ADR-001-entity-architecture.md
+    must_contain:
+      - pattern: "corollaire maillage"
+      - pattern: "ADR-002"
+      - pattern: "niveau 4"
+        near: "orpheline"
+        window: 400
+      - pattern: "dépendance"
+        near: "ADR-002"
+        window: 400
+    tags_required:
+      - "#pilier/maillage"
+
+  - path: 03-Entities/Gammes/_template-gamme.md
+    frontmatter_keys_required:
+      - inbound-count
+      - outbound-count
+      - pr-interne
+      - depth-from-home
+      - orpheline
+    sections_required:
+      - title: "Maillage interne"
+    must_contain:
+      # v2 fix F4 : vault dit "Hubs qui alimentent" et "Money pages que cette gamme alimente"
+      - pattern: "Hubs"
+        near: "alimentent"
+        window: 100
+      - pattern: "Money pages"
+        near: "alimente"
+        window: 300
+
+  - path: 05-Content/_template-gamme-brief.md
+    sections_required:
+      - title: "Maillage interne associé"
+    must_contain:
+      - pattern: "10 liens internes entrants"
+      - pattern: "J+30"
+      - pattern: "plan de feeding"
+      - pattern: "blocs sortants"
+      - pattern: "anti-sur-optimisation"
+        near: "anchor"
+        window: 500
+
+  - path: 07-Authority/_template-linkable-asset.md
+    must_contain:
+      - pattern: "opportuniste"
+      - pattern: "Intégration au maillage interne"
+      # v2 fix F5 : frontmatter utilise "priority: p3" (EN), pas "priorité: p3" (FR)
+      - pattern: "p3"
+        near: "priority"
+        window: 300
+      - pattern: "minimal"
+        near: "outreach"
+        window: 400
+      - pattern: "modéré"
+        near: "outreach"
+        window: 400
+      - pattern: "soutenu"
+        near: "outreach"
+        window: 400
+
+  - path: 08-Monitoring/_template-gsc-report.md
+    sections_required:
+      - title: "Performance par pilier"
+      - title: "Pilier 5"
+    must_contain:
+      - pattern: "orphelines"
+      - pattern: "money pages sous-alimentées"
+      # v2 fix F6 : vault dit "PageRank interne médian"
+      - pattern: "PageRank interne médian"
+      - pattern: "profondeur"
+      - pattern: "% liens"
+        near: "4"
+        window: 200
+      - pattern: "feeding"
+        near: "positions"
+        window: 600
+
+# Fichiers INCHANGÉS — non-régression via SHA256 (baseline gelée 2026-04-25)
+files_unchanged:
+  - path: 01-Strategy/Kickoff-Week1.md
+    sha256_expected: 4ac59db5038edcaa4004d74657fa0d24c48c7334b01f96650af96eebe2e046a0
+  - path: 01-Strategy/Roadmap-90d.md
+    sha256_expected: 6f99aa284b14937bae8e1dab04111fc94b63dfa3bd239bf5644d5b7c37c513c7
+  - path: 01-Strategy/Pillars.md
+    sha256_expected: fc9b0ec7b51fe44ce323eddcbaf6c3ccd884e72c604ce442116935d42a9c6e93
+  - path: 02-ADR/ADR-002-maillage-interne-first.md
+    sha256_expected: 65d7168fe7b3c8689b2c32a3340229a57b66f21430c0147c7cf48413be8f064e
+  - path: 02-ADR/_template-adr.md
+    sha256_expected: 1a5c854428038c7f069315cb7c534271e2abb9429556c72a9e35c05dd4590836
+  - path: 03-Entities/Families/_template-famille.md
+    sha256_expected: e203c769e10713af07ee18dd4e66f70891995bb752a59ecf0bad5ba5531e535b
+  - path: 03-Entities/Vehicles/_template-vehicle.md
+    sha256_expected: 56e6dd3c3dc87d216b545bc71ae59ca20c8c417beb6660e959dfae88163cbc7f
+  - path: 04-Audits/_playbook-audit-cwv.md
+    sha256_expected: 16e9bfdbec00e9e70683946767176ff5f7f3d48fed11c1a1112a47f56e4667b9
+  - path: 04-Audits/_playbook-audit-crawl-budget.md
+    sha256_expected: 8e0ca8d4ab6ac33a7be91bdad8dbb415ef46ed7304e1ac5405a7da8fcc58e8b1
+  - path: 04-Audits/_playbook-audit-thin-content.md
+    sha256_expected: b816b7022996eb0d683171ef4617f86b7b5a9dbd7b08a04f7e64c9d0f961833f
+  - path: 04-Audits/_playbook-audit-cannibalisation.md
+    sha256_expected: 60522ee37889e0e3d30134186a5daab57a6dce9bab856314f81c041ab6f4807d
+  - path: 04-Audits/_playbook-audit-maillage-interne.md
+    sha256_expected: e84e3c6c9a9677c557bb566ef7a06f3ff602098f8feda070e79520b1bbd87dd0
+  - path: 04-Audits/_playbook-audit-competitor-gap.md
+    sha256_expected: 7feaf1747226ed65f8c523b1cccdf4815a5d7ec82352305f52207f5669cb8795
+  - path: 04-Audits/_playbook-audit-schema.md
+    sha256_expected: d921bab0cd8f543ca44879876a07e8cf07b39e843bb5cab588299740b9c4e5d2
+  - path: 04-Audits/_template-audit.md
+    sha256_expected: 02eae89c76b402a27ba913edda36b92aa5af9b77bd4c504ac78644daa119cf2e
+  - path: 05-Content/_template-title-meta.md
+    sha256_expected: bf25ce9931c3abc508a83c0efa7fc3216a342d4921a90dcb1495fca31478d7db
+  - path: 06-Technical/_template-schema-spec.md
+    sha256_expected: 6fda24a6201e55f07ca7bae76c2e68d1bbbd2c6bc4f40af0eec10b7177a56231
+  - path: 06-Technical/Schema-library/README.md
+    sha256_expected: c4bcacf4bf48ef2e1ee5cdd30355f174dd6f0b9e656e74fee1d986d5d7c839da
+
+cross_ref_aggregate:
+  adr_002_min_files_referencing: 5
+  adr_002_max_files_referencing: 27
+
+matching_rules:
+  unicode_normalization: NFC
+  case_sensitive_default: false
+  whitespace_collapse: true

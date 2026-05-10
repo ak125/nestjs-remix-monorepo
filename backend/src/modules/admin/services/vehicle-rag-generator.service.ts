@@ -10,7 +10,7 @@ import {
 import { join } from 'node:path';
 import * as yaml from 'js-yaml';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { createHash } from 'node:crypto';
 import { RagProposalService } from './rag-proposal.service';
 

@@ -1,0 +1,21 @@
+# CODEOWNERS — protection des fichiers de gouvernance & contrats d'agent
+#
+# GitHub bloque le merge tant que les owners listés n'ont pas approuvé une PR
+# qui touche les paths concernés. Aligné avec :
+#   - feedback_no_hardcoded_infra_in_agentsmd.md (mémoire)
+#   - feedback_no_hybrid_workarounds.md
+#   - ADR-015 (vault single source of truth)
+#
+# Référence : https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Agents Paperclip — contrats à review owner
+/agents/                @ak125
+
+# Claude Code — config monorepo (auto-loaded par Claude)
+/CLAUDE.md              @ak125
+/.claude/rules/         @ak125
+
+# Validateur AGENTS.md / CLAUDE.md (gate pre-commit + CI)
+/scripts/agents/                                  @ak125
+/.github/workflows/agents-md-validation.yml       @ak125
+/.github/CODEOWNERS                               @ak125

@@ -11,8 +11,8 @@ import {
   Header,
   UseGuards,
 } from '@nestjs/common';
-import { DomainNotFoundException } from '../../../common/exceptions';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { DomainNotFoundException } from '@common/exceptions';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   DiagnosticService,
   SeoDiagnostic,

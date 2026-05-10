@@ -19,13 +19,13 @@ import {
   Logger,
   UseGuards,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   OperationFailedException,
   DomainNotFoundException,
   DomainValidationException,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 import {
   OptimizedBreadcrumbService,
   BreadcrumbItem,

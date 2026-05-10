@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { HomepageRpcService } from './homepage-rpc.service';
 import { CatalogHierarchyService } from './catalog-hierarchy.service';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 /**
  * 🔥 Service de préchauffage du cache au démarrage

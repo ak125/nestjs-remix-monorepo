@@ -3,8 +3,8 @@ import { TABLES } from '@repo/database-types';
 // 🏭 Service pour gérer les équipementiers (table pieces_marque)
 
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../../cache/cache.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { CacheService } from '@cache/cache.service';
 
 export interface Equipementier {
   pm_id: string;

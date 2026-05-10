@@ -3,7 +3,7 @@ import { SITE_ORIGIN } from '../../../config/app.config';
 import { CrawlBudgetSupabaseService } from './crawl-budget-supabase.service';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { CreateCrawlBudgetExperimentDto } from '../dto/crawl-budget-experiment.dto';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 /**
  * 🔌 Intégration Google Search Console API

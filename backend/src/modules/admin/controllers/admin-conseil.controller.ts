@@ -14,8 +14,8 @@ import {
   UseGuards,
   Logger,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { ConseilQualityScorerService } from '../services/conseil-quality-scorer.service';
 import { ConseilPriorityService } from '../services/conseil-priority.service';
 import type { PackLevel } from '../../../config/conseil-pack.constants';

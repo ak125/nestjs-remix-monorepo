@@ -1,9 +1,14 @@
 # Table canonique figee — legacy → canon
 
-> **Version** : 1.1.0
-> **Date** : 2026-03-14
+> **Version** : 1.2.0
+> **Date** : 2026-05-05
 > **Status** : BASELINE_AUDIT
 > **Complement de** : role-matrix.md V4, pipeline-phases.md V7, role-implementation-map.md V1.1.0
+>
+> **Changelog v1.2.0** (PR-4A) :
+> - Ajout `R6_SUPPORT` à la série canonique (alignement avec `backend/src/config/role-ids.ts` et `@repo/seo-roles`)
+> - Section §1.4 « Display labels FR canon » ajoutée (référence pour l'admin UI et les agents)
+> - Précision §1.5 que `R3` et `R6` bare sont **ambigus** et doivent être désambiguïsés via `assign_page_role_from_url()` (PL/pgSQL) ou label `"Legacy à qualifier"`
 
 ---
 
@@ -42,15 +47,18 @@ Aucune couche inferieure ne peut contredire une couche superieure.
 
 Les seuls roles metier canoniques sont :
 
-- `R0_HOME`
-- `R1_ROUTER`
-- `R2_PRODUCT`
-- `R3_CONSEILS`
-- `R4_REFERENCE`
-- `R5_DIAGNOSTIC`
-- `R6_GUIDE_ACHAT`
-- `R7_BRAND`
-- `R8_VEHICLE`
+- `R0_HOME` — Accueil / découverte
+- `R1_ROUTER` — Router gamme / compatibilité, transition vers R2
+- `R2_PRODUCT` — Transaction / produit / prix / stock / panier
+- `R3_CONSEILS` — Conseils pratiques / how-to prudent
+- `R4_REFERENCE` — Définition / désambiguïsation / lexique
+- `R5_DIAGNOSTIC` — Symptômes / causes / quick checks / urgence
+- `R6_GUIDE_ACHAT` — Choix avant achat / comparatif / critères
+- `R6_SUPPORT` — Support / légal / contact / mentions / CGV
+- `R7_BRAND` — Hub marque / constructeur / équipementier
+- `R8_VEHICLE` — Hub véhicule (type_id) / compatibilité pièces
+
+> **Note R6** : `R6_GUIDE_ACHAT` et `R6_SUPPORT` sont deux rôles canoniques distincts. Le suffixe court `R6` seul est **interdit** en sortie — il est ambigu entre les deux. La désambiguïsation passe par l'URL via la PL/pgSQL `assign_page_role_from_url()`. Voir §1.5.
 
 ## 1.2 Serie canonique de gouvernance
 
@@ -71,6 +79,34 @@ Tout nom non present dans la serie canonique :
 - doit etre soit **mappe** vers un role canonique,
 - soit **declare legacy**,
 - soit **supprime**.
+
+## 1.4 Display labels FR canon (admin UI, agents, docs)
+
+| Canon | Label FR canonique | Short label |
+|-------|--------------------|-------------|
+| `R0_HOME` | R0 · Accueil | R0 |
+| `R1_ROUTER` | R1 · Router gamme | R1 |
+| `R2_PRODUCT` | R2 · Produit | R2 |
+| `R3_CONSEILS` | R3 · Conseils | R3 |
+| `R4_REFERENCE` | R4 · Référence | R4 |
+| `R5_DIAGNOSTIC` | R5 · Diagnostic | R5 |
+| `R6_GUIDE_ACHAT` | R6 · Guide d'achat | R6 |
+| `R6_SUPPORT` | R6 · Support | R6 |
+| `R7_BRAND` | R7 · Marque | R7 |
+| `R8_VEHICLE` | R8 · Véhicule | R8 |
+| `R6` (bare, legacy) | R6 · Legacy à qualifier | R6 |
+
+Source de vérité TS : `packages/seo-roles/src/display.ts` (`getRoleDisplayLabel`, `getRoleShortLabel`). Référence consommée par : routes admin frontend (PR-1), agents R*, génération d'exports.
+
+## 1.5 Désambiguïsation R3 / R6 bare
+
+Les rôles courts `R3` et `R6` sont **interdits en sortie** (canon obligatoire). Trois mécanismes de résolution autorisés :
+
+1. **Via URL** : appel à la PL/pgSQL `assign_page_role_from_url(url)` côté DB. **Source unique pour URL→role**. Côté TS, l'adapter serveur sera exposé en **PR-4B** sous forme de `RoleDisambiguationService` (NestJS) et route Remix `api.seo.role-for-url.ts` — décalé par rapport à PR-0B initialement prévue, car la PL/pgSQL retourne aujourd'hui des rôles courts (`R6`, `R3`) bare-forbidden ; PR-4B patchera la fonction pour retourner canonical en sub-step 0 avant d'introduire l'adapter (un seul changement cohérent, pas de bridge bricolage). En attendant, aucun pattern URL n'est hardcodé en TypeScript.
+2. **Via fallback éditorial documenté** : `R3` bare → `R3_CONSEILS` par défaut (la majorité des `R3` legacy DB sont des contenus conseils, pas un mélange 50/50 comme R6).
+3. **Via label admin "Legacy à qualifier"** : pour `R6` bare quand aucun contexte URL n'est disponible. Le curateur humain tranche.
+
+**Règle invariante** : aucun rôle court ne doit être normalisé silencieusement vers un canonical sans soit (a) contexte URL résolu via SQL, soit (b) acceptation explicite du fallback éditorial documenté.
 
 ---
 

@@ -4,8 +4,8 @@
  */
 
 import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { StockManagementService } from '../services/stock-management.service';
 
 @Controller('api/admin')

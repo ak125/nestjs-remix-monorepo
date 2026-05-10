@@ -3,8 +3,8 @@ import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { MetricsService } from '../services/metrics.service';
 import { DatabaseMonitorService } from '../services/database-monitor.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 export interface MetricsJobData {
   type: 'performance' | 'business' | 'seo' | 'database_health' | 'maintenance';

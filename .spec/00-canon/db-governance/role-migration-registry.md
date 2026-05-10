@@ -18,9 +18,9 @@ Suivi exhaustif de chaque point de dette legacy dans le code, avec son statut de
 | `role-ids.ts` | enum | R9_GOVERNANCE | @deprecated | deprecate + blocked in output | P1+P5 | R0 |
 | `role-ids.ts` | mapping | R3_guide, R3_BLOG, etc. | LEGACY_ROLE_ALIASES (8 entries) | normalizeRoleId() | P1 | R0 |
 | `role-ids.ts` | guard | — | assertCanonicalRole() | blocking mode | P3+P5 | R0 |
-| `content-refresh.service.ts` | hardcode | R3_guide_howto, R3_conseils | PAGE_TYPE_TO_CANONICAL_ROLE | commente + logged | P1+P3 | R0 |
+| `content-refresh.service.ts` | hardcode | R3_guide_howto, R3_conseils | `pageTypeToRoleId` (`@repo/seo-roles`) | commente + logged | P1+P3 | R0 |
 | `buying-guide-enricher.service.ts` | query | R3_guide | R6_GUIDE_ACHAT | commente + logged | P1+P3 | R0 |
-| `content-refresh.types.ts` | union | PageType (7 values) | PAGE_TYPE_TO_CANONICAL_ROLE | bridge mapping | P1 | R0 |
+| `content-refresh.types.ts` | union | PageType (7 values) | `PAGE_TYPE_TO_ROLE` (`@repo/seo-roles`) | dead bridge supprimé PR #311 | P1 | R0 |
 
 ### Frontend
 

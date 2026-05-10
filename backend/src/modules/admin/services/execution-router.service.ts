@@ -6,8 +6,8 @@
  *
  * Fixes applied:
  * - R4/R5: single-target dispatch instead of batch-all
- * - R7_BRAND: explicit "not implemented" error
- * - dryRun: supported for R1/R2/R3-conseil (preview without DB write)
+ * - R7_BRAND: dispatch to R7BrandEnricherService.enrichSingle(marqueId)
+ * - dryRun: supported for R1/R2/R3-conseil/R5/R7/R8 (preview without DB write)
  *
  * @see execution-registry.constants.ts
  */
@@ -17,12 +17,13 @@ import { ModuleRef } from '@nestjs/core';
 import { EXECUTION_REGISTRY } from '../../../config/execution-registry.constants';
 import { RoleId, normalizeRoleId } from '../../../config/role-ids';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { ConfigService } from '@nestjs/config';
 import { BuyingGuideEnricherService } from '../services/buying-guide-enricher.service';
 import { ConseilEnricherService } from '../services/conseil-enricher.service';
 import { R2EnricherService } from '../services/r2-enricher.service';
 import { R8VehicleEnricherService } from '../services/r8-vehicle-enricher.service';
+import { R7BrandEnricherService } from '../services/r7-brand-enricher.service';
 import { DiagnosticService } from '../../seo/validation/diagnostic.service';
 import { R1EnricherService } from '../services/r1-enricher.service';
 import { ReferenceService } from '../../seo/services/reference.service';
@@ -101,6 +102,9 @@ export class ExecutionRouterService extends SupabaseBaseService {
       R8VehicleEnricherService: R8VehicleEnricherService as unknown as new (
         ...args: unknown[]
       ) => unknown,
+      R7BrandEnricherService: R7BrandEnricherService as unknown as new (
+        ...args: unknown[]
+      ) => unknown,
       DiagnosticService: DiagnosticService as unknown as new (
         ...args: unknown[]
       ) => unknown,
@@ -132,29 +136,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
       );
     }
 
-    // 2. R7_BRAND: not implemented in ExecutionRouter — skip gracefully
-    if (roleId === RoleId.R7_BRAND) {
-      this.logger.warn(
-        'R7_BRAND enricher not available in ExecutionRouter. Use /content-gen --r7 or r7-brand-execution agent.',
-      );
-      return {
-        roleId: request.roleId,
-        mode: 'blocked_no_write',
-        dryRun: request.dryRun ?? true,
-        totalTargets: request.targetIds.length,
-        results: request.targetIds.map((id) => ({
-          targetId: id,
-          status: 'skipped' as const,
-          data: {
-            reason:
-              'R7_BRAND enricher not implemented in pipeline. Use /content-gen --r7 or r7-brand-execution agent.',
-          },
-        })),
-        duration: Date.now() - start,
-      };
-    }
-
-    // 3. Lookup registry entry
+    // 2. Lookup registry entry
     const entry = EXECUTION_REGISTRY[roleId];
     if (!entry) {
       return this.errorResult(
@@ -238,8 +220,7 @@ export class ExecutionRouterService extends SupabaseBaseService {
     allowedModes: string[];
     timeoutMs: number;
   }> {
-    // Include R7 manually (not in registry but is a known role)
-    const registryRoles = Object.values(EXECUTION_REGISTRY).map((entry) => ({
+    return Object.values(EXECUTION_REGISTRY).map((entry) => ({
       roleId: entry.roleId,
       pageType: entry.pageType,
       enricherServiceKey: entry.enricherServiceKey,
@@ -247,17 +228,6 @@ export class ExecutionRouterService extends SupabaseBaseService {
       allowedModes: [...entry.allowedModes],
       timeoutMs: entry.stopPolicy.timeoutMs,
     }));
-
-    registryRoles.push({
-      roleId: RoleId.R7_BRAND,
-      pageType: 'R7_brand',
-      enricherServiceKey: 'not_implemented',
-      available: false,
-      allowedModes: [],
-      timeoutMs: 0,
-    });
-
-    return registryRoles;
   }
 
   // ── Private: dispatch per role ──
@@ -314,6 +284,27 @@ export class ExecutionRouterService extends SupabaseBaseService {
       case RoleId.R5_DIAGNOSTIC:
         // Single-target: generate diagnostics for one gamme only
         return this.dispatchR5Single(enricher, targetId, pgAlias, dryRun);
+
+      case RoleId.R7_BRAND: {
+        // R7 expects a marque_id (number), not a gamme pgId.
+        // Validation: strict numeric format + existence in auto_marque.
+        const resolved = await this.resolveMarqueId(targetId);
+        if (!resolved) {
+          return {
+            targetId,
+            status: 'failed',
+            reason: `Invalid or unknown marque_id: "${targetId}". R7_BRAND requires a numeric marque_id existing in auto_marque.`,
+          };
+        }
+        if (dryRun) {
+          return this.dryRunR7Preview(
+            targetId,
+            resolved.marqueId,
+            resolved.brand,
+          );
+        }
+        return enricher.enrichSingle!(resolved.marqueId);
+      }
 
       case RoleId.R8_VEHICLE: {
         // R8 expects a vehicle typeId, not a gamme pgId
@@ -771,6 +762,84 @@ export class ExecutionRouterService extends SupabaseBaseService {
     } catch {
       return null;
     }
+  }
+
+  // ── Private: resolve marque_id from targetId (R7_BRAND) ──
+
+  /**
+   * Strictly numeric `targetId` ⇒ `auto_marque` row.
+   *
+   * Rejects:
+   * - non-numeric formats: `"abc"`, `"30abc"`, `"+30"`, `"0x1E"`, `" 30"`, `""`
+   * - non-positive ids: `"0"`, `"-1"` (regex blocks `-1`; `<= 0` blocks `0`)
+   * - missing rows in `auto_marque`
+   *
+   * Note: `parseInt("30abc", 10) === 30` would silently inject — the strict
+   * regex `/^\d+$/` blocks that case.
+   */
+  private async resolveMarqueId(targetId: string): Promise<{
+    marqueId: number;
+    brand: { marque_alias: string; marque_name: string };
+  } | null> {
+    if (!/^\d+$/.test(targetId)) return null;
+
+    const marqueId = Number.parseInt(targetId, 10);
+    if (Number.isNaN(marqueId) || marqueId <= 0) return null;
+
+    try {
+      const { data } = await this.client
+        .from('auto_marque')
+        .select('marque_id, marque_alias, marque_name')
+        .eq('marque_id', marqueId)
+        .single();
+      if (!data) return null;
+      return {
+        marqueId,
+        brand: {
+          marque_alias: data.marque_alias ?? '',
+          marque_name: data.marque_name ?? '',
+        },
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  // ── Private: dryRun preview for R7_BRAND ──
+
+  /**
+   * Read-only preview: SELECT current `__seo_r7_pages` row state, no writes.
+   * Returns `status: 'ready'` so `inferStatus` maps to `'success'`.
+   */
+  private async dryRunR7Preview(
+    targetId: string,
+    marqueId: number,
+    brand: { marque_alias: string; marque_name: string },
+  ): Promise<unknown> {
+    const pageKey = `r7_brand_${marqueId}`;
+    const { data: existing } = await this.client
+      .from('__seo_r7_pages')
+      .select('id, seo_decision, diversity_score, updated_at')
+      .eq('page_key', pageKey)
+      .maybeSingle();
+
+    return {
+      targetId,
+      dryRun: true,
+      roleId: RoleId.R7_BRAND,
+      marqueId,
+      marqueAlias: brand.marque_alias,
+      marqueName: brand.marque_name,
+      pageKey,
+      exists: !!existing,
+      currentDecision: existing?.seo_decision ?? null,
+      currentScore: existing?.diversity_score ?? null,
+      lastUpdate: existing?.updated_at ?? null,
+      action: existing
+        ? 'would regenerate (page exists)'
+        : 'would create R7 brand page',
+      status: 'ready',
+    };
   }
 
   // ── Private: infer status from result ──

@@ -1,0 +1,87 @@
+# pre-push — block direct pushes to protected branches (main, dev)
+#
+# Per .claude/rules/deployment.md, pushes to main/dev trigger the DEV
+# pre-prod deploy workflow (.github/workflows/ci.yml deploy job). Direct
+# pushes bypass PR review and reduce CI gating to a single linear check;
+# they must go through reviewed PRs.
+#
+# Tag pushes (refs/tags/v*) for PROD deploy are allowed.
+#
+# Bypass: `git push --no-verify` (logged in reflog; reserve for documented
+# emergencies — e.g. revert + roll-forward when waiting on PR review is
+# itself the risk).
+#
+# Hook contract (git pre-push):
+#   - args: $1 = remote name, $2 = remote URL
+#   - stdin: one line per ref being pushed,
+#            "<local_ref> <local_sha> <remote_ref> <remote_sha>"
+
+zero=0000000000000000000000000000000000000000
+
+while IFS=' ' read -r local_ref local_sha remote_ref remote_sha; do
+  # ── Check 1 : block direct pushes to protected branches (main, dev) ────
+  case "$remote_ref" in
+    refs/heads/main | refs/heads/dev)
+      branch=${remote_ref#refs/heads/}
+      if [ "$local_sha" = "$zero" ]; then
+        op="deletion of"
+      elif [ "$remote_sha" = "$zero" ]; then
+        op="creation of"
+      else
+        op="direct push to"
+      fi
+      echo
+      echo "✗ Refused by .husky/pre-push: $op '$branch'."
+      echo
+      echo "  Per .claude/rules/deployment.md, pushes to $branch trigger the"
+      echo "  DEV pre-prod deploy and must go through a reviewed PR. Branch"
+      echo "  creation/deletion of $branch is also refused as defense-in-depth"
+      echo "  against accidental destructive operations."
+      echo
+      echo "  Open a PR instead:"
+      echo "    git push -u origin HEAD:refs/heads/<type>/<topic>"
+      echo "    gh pr create --base $branch"
+      echo
+      echo "  Tag pushes for PROD (refs/tags/v*) remain allowed."
+      echo "  Emergency bypass (leaves reflog trail): git push --no-verify"
+      exit 1
+      ;;
+  esac
+
+  # ── Check 2 : block direct modifications to rag/knowledge/ (L3 mirror) ──
+  # ADR-046 § Layer L3 RAG MIRROR read-only + ADR-050.
+  # rag/knowledge/ est généré par sync-wiki-exports-to-rag.py — toute modif
+  # directe contourne le pipeline L1→L2→L3 et casse la SoT wiki.
+  if [ "$local_sha" = "$zero" ]; then
+    continue  # deletion of branch, nothing to check
+  fi
+
+  if [ "$remote_sha" = "$zero" ]; then
+    # New branch on remote — compare against origin/main
+    range="origin/main..$local_sha"
+  else
+    range="$remote_sha..$local_sha"
+  fi
+
+  RAG_CHANGED=$(git diff --name-only "$range" -- 'rag/knowledge/' 2>/dev/null || true)
+  if [ -n "$RAG_CHANGED" ]; then
+    echo
+    echo "✗ Refused by .husky/pre-push: direct modification of rag/knowledge/ (L3 mirror)."
+    echo
+    echo "  ADR-046 § Layer L3 RAG MIRROR + ADR-050 : rag/knowledge/ est un mirror"
+    echo "  read-only généré automatiquement depuis automecanik-wiki/exports/rag/."
+    echo "  Toute modification directe contourne le pipeline L1→L2→L3 canonique."
+    echo
+    echo "  Fichiers modifiés :"
+    echo "$RAG_CHANGED" | sed 's/^/    /'
+    echo
+    echo "  Pour produire du contenu RAG, écrire dans automecanik-wiki/exports/rag/."
+    echo "  Le sync vers rag/knowledge/ est fait par scripts/rag-sync/sync-wiki-exports-to-rag.py"
+    echo "  (canon ADR-031 §D22)."
+    echo
+    echo "  Emergency bypass (incident postmortem requis) : git push --no-verify"
+    exit 1
+  fi
+done
+
+exit 0

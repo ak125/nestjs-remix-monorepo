@@ -8,7 +8,7 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { TABLES } from '@repo/database-types';
 import { CACHE_STRATEGIES } from '../../../config/cache-ttl.config';
 import {

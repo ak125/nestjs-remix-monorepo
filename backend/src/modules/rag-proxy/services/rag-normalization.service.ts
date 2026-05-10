@@ -2,7 +2,7 @@ import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RagFingerprintService } from './rag-fingerprint.service';
 import { RagFoundationGateService } from './rag-foundation-gate.service';
 import { FrontmatterValidatorService } from './frontmatter-validator.service';

@@ -11,10 +11,10 @@
  */
 import { Test, TestingModule } from '@nestjs/testing';
 import { VehicleRpcService } from '../../src/modules/vehicles/services/vehicle-rpc.service';
-import { CacheService } from '../../src/cache/cache.service';
-import { RpcGateService } from '../../src/security/rpc-gate/rpc-gate.service';
+import { CacheService } from '@cache/cache.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { ConfigService } from '@nestjs/config';
-import { DomainNotFoundException } from '../../src/common/exceptions';
+import { DomainNotFoundException } from '@common/exceptions';
 
 describe('VehicleRpcService', () => {
   let service: VehicleRpcService;
@@ -33,6 +33,10 @@ describe('VehicleRpcService', () => {
     get: jest.fn((_key: string, defaultValue?: any) => defaultValue),
   };
 
+  const mockShadowObservatory = {
+    observe: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -42,6 +46,12 @@ describe('VehicleRpcService', () => {
         { provide: CacheService, useValue: mockCacheService },
         { provide: RpcGateService, useValue: mockRpcGate },
         { provide: ConfigService, useValue: mockConfigService },
+        {
+          provide: (await import(
+            '../../src/modules/seo-shadow-observatory/seo-shadow-observatory.service'
+          )).SeoShadowObservatory,
+          useValue: mockShadowObservatory,
+        },
       ],
     }).compile();
 

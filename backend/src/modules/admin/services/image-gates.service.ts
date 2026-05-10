@@ -13,7 +13,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { getImagePenalty } from '../../../config/buying-guide-quality.constants';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import type {
   ExtendedGateResult,
   HardGateName,

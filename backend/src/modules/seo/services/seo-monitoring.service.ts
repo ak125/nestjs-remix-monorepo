@@ -1,10 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  ExternalServiceException,
-  ErrorCodes,
-} from '../../../common/exceptions';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { ExternalServiceException, ErrorCodes } from '@common/exceptions';
+import { getErrorMessage } from '@common/utils/error.utils';
 import { SITE_ORIGIN } from '../../../config/app.config';
 
 export interface SitemapStatus {

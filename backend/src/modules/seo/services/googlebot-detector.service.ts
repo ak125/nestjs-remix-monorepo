@@ -12,6 +12,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { getEffectiveSupabaseKey } from '@common/utils';
 
 export interface GooglebotInfo {
   isGooglebot: boolean;
@@ -76,16 +77,15 @@ export class GooglebotDetectorService {
   ];
 
   constructor(private readonly configService: ConfigService) {
-    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>(
-      'SUPABASE_SERVICE_ROLE_KEY',
-    );
+    const supabaseUrl = this.configService.get<string>('SUPABASE_URL') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const supabaseKey = getEffectiveSupabaseKey();
 
     if (!supabaseUrl || !supabaseKey) {
       this.logger.warn('Supabase credentials not configured');
     }
 
-    this.supabase = createClient(supabaseUrl || '', supabaseKey || '');
+    this.supabase = createClient(supabaseUrl, supabaseKey);
   }
 
   /**

@@ -1,5 +1,6 @@
 .turbo
 node_modules
+.worktrees/
 
 # compiled output
 /dist
@@ -62,6 +63,14 @@ frontend/.env*
 *.p12
 *-credentials.json
 *-serviceaccount.json
+
+# SOPS-encrypted env files in secrets/ are committed; plain .env there is not.
+# (These re-enable .env.* matching the SOPS naming convention.)
+!secrets/*.sops.env
+!secrets/README.md
+# age private keys must NEVER be committed
+secrets/*.key
+secrets/*.txt
 
 # temp directory
 .temp
@@ -183,15 +192,17 @@ frontend/*.pdf
 frontend/**/*.pdf
 backend/**/*.pdf
 backend/prisma/**/*.pdf
-# Python cache (scripts)
-scripts/**/__pycache__/
-scripts/**/*.pyc
+# Python cache (global)
+**/__pycache__/
+**/*.pyc
 
 # E2E test reports (generated)
 frontend/tests/e2e/reports/
 
 # Claude Code backups
 .claude/*.bak
+.claude/*.lock
+.claude/.session-log-state/
 
 # Cookies (curl debug artifacts)
 cookies.txt

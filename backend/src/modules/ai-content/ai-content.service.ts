@@ -22,8 +22,8 @@ import {
   ConfigurationException,
   OperationFailedException,
   ErrorCodes,
-} from '../../common/exceptions';
-import { getErrorMessage, getErrorStack } from '../../common/utils/error.utils';
+} from '@common/exceptions';
+import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
 
 @Injectable()
 export class AiContentService {

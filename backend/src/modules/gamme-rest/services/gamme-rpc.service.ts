@@ -1,12 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { GammeDataTransformerService } from './gamme-data-transformer.service';
-import { CacheService } from '../../../cache/cache.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
-import {
-  DomainNotFoundException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { CacheService } from '@cache/cache.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 import { GammeRpcAggregatedDataSchema } from './gamme-rpc.schema';
 
 interface SeoFragmentRow {
@@ -139,8 +136,13 @@ export class GammeRpcService extends SupabaseBaseService {
     });
 
     // 🛡️ Utilisation du wrapper callRpc avec RPC Safety Gate
+    // ADR-024 Phase 5a: bascule vers get_gamme_page_data_cached (cache-first
+    // sur __gamme_page_cache, rebuild-on-miss). Identité de payload garantie
+    // par construction (la fonction cached délègue à build_gamme_page_payload
+    // qui wrappe l'ancienne RPC). Hot path: ~5ms (cache hit), cold path: même
+    // qu'avant + UPSERT du cache pour le hit suivant.
     const rpcPromise = this.callRpc<Record<string, unknown>>(
-      'get_gamme_page_data_optimized',
+      'get_gamme_page_data_cached',
       { p_pg_id: pgIdNum },
       { source: 'api' },
     );
@@ -389,5 +391,70 @@ export class GammeRpcService extends SupabaseBaseService {
         ? seoFragments2[(hash + 1) % seoFragments2.length]?.sis_content || ''
         : '';
     return { fragment1, fragment2 };
+  }
+
+  // ========================================================================
+  // ADR-024 — R1 Gamme Page DB cache (table __gamme_page_cache)
+  // Phase 1 scaffolding — methods are not yet called by the controller.
+  // They will be wired in Phase 5 cleanup. Parity with VehicleRpcService.
+  // ========================================================================
+
+  async rebuildDbCache(pgId: number): Promise<boolean> {
+    const { data, error } = await this.callRpc<boolean>(
+      'rebuild_gamme_page_cache',
+      { p_pg_id: pgId },
+      { source: 'api' },
+    );
+    if (error) throw error;
+    await this.invalidateCache(String(pgId));
+    return Boolean(data);
+  }
+
+  async markDbCacheStale(
+    pgIds: number[],
+    reason: string,
+  ): Promise<{ marked: number }> {
+    if (!pgIds.length) return { marked: 0 };
+    const { error, count } = await this.client
+      .from('__gamme_page_cache')
+      .update({ stale: true, stale_reason: reason }, { count: 'exact' })
+      .in('pg_id', pgIds);
+    if (error) throw error;
+    for (const id of pgIds) await this.invalidateCache(String(id));
+    return { marked: count ?? pgIds.length };
+  }
+
+  async getDbCacheStats(): Promise<{
+    total: number;
+    stale: number;
+    oldest_built_at: string | null;
+    newest_built_at: string | null;
+  }> {
+    const [{ count: total }, { count: stale }, { data: oldestRaw }] =
+      await Promise.all([
+        this.client
+          .from('__gamme_page_cache')
+          .select('*', { count: 'exact', head: true }),
+        this.client
+          .from('__gamme_page_cache')
+          .select('*', { count: 'exact', head: true })
+          .eq('stale', true),
+        this.client
+          .from('__gamme_page_cache')
+          .select('built_at')
+          .order('built_at', { ascending: true })
+          .limit(1),
+      ]);
+    const { data: newestRaw } = await this.client
+      .from('__gamme_page_cache')
+      .select('built_at')
+      .order('built_at', { ascending: false })
+      .limit(1);
+    return {
+      total: total ?? 0,
+      stale: stale ?? 0,
+      oldest_built_at: oldestRaw?.[0]?.built_at ?? null,
+      newest_built_at: newestRaw?.[0]?.built_at ?? null,
+    };
   }
 }

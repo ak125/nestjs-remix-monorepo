@@ -8,6 +8,7 @@ import { CartModule } from '../modules/cart/cart.module';
 import { DatabaseModule } from '../database/database.module';
 import { MessagesModule } from '../modules/messages/messages.module';
 import { AuthModule } from '../auth/auth.module';
+import { CatalogModule } from '../modules/catalog/catalog.module';
 
 // Services spécialisés - TOUS SUPPRIMÉS car obsolètes
 // import { OrdersIntegrationService } from './integration/orders/orders-integration.service'; // Obsolète
@@ -22,6 +23,9 @@ import { AuthModule } from '../auth/auth.module';
     forwardRef(() => DatabaseModule),
     forwardRef(() => MessagesModule),
     forwardRef(() => AuthModule),
+    // CatalogModule exports HomepageRpcService — used by RemixApiService
+    // for direct DI calls in the home loader (eliminates HTTP loopback).
+    forwardRef(() => CatalogModule),
   ],
   controllers: [RemixController],
   providers: [

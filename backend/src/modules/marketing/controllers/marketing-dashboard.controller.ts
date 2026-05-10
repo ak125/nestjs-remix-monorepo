@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { MarketingDashboardService } from '../services/marketing-dashboard.service';
 
 @Controller('api/admin/marketing/dashboard')

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { EnricherYamlParser } from './enricher-yaml-parser.service';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';

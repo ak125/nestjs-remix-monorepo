@@ -5,9 +5,9 @@
 
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { FileUploadResult } from '../dto/upload.dto';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 @Injectable()
 export class SupabaseStorageService extends SupabaseBaseService {

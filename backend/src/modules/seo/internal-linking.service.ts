@@ -137,13 +137,28 @@ export class InternalLinkingService implements OnModuleInit {
   }
 
   /**
-   * 🚀 Initialisation du module - Cache warming des switches SEO
+   * 🚀 Initialisation du module - Cache warming non-bloquant
+   *
+   * Les preloads (preloadGammeCarSwitches + preloadPopularGammes ≈ 176 gammes)
+   * appellent des RPCs Supabase distantes qui peuvent prendre 60-280s sur
+   * runners CI lents. Awaiter ici bloque app.listen() et donc /health → exit
+   * 124 sur perf-gates.yml.
+   *
+   * Solution structurelle : fire-and-forget. Le serveur HTTP écoute
+   * immédiatement, le cache se peuple en parallèle. Premiers requests SEO =
+   * cache-miss (fallback live RPC déjà géré), suivants = warmed.
+   *
+   * `refreshCache()` appelle `warmCache()` directement (await-able) pour les
+   * cas où on a besoin d'attendre la fin du warming.
    */
-  async onModuleInit() {
+  onModuleInit(): void {
     this.logger.log(
-      '🚀 Initialisation InternalLinkingService avec préchargement...',
+      '🚀 Initialisation InternalLinkingService — préchargement en arrière-plan',
     );
+    void this.warmCache();
+  }
 
+  private async warmCache(): Promise<void> {
     try {
       await Promise.allSettled([
         this.preloadGammeCarSwitches(),
@@ -699,6 +714,9 @@ export class InternalLinkingService implements OnModuleInit {
     this.cacheStats.hits = 0;
     this.cacheStats.misses = 0;
 
-    await this.onModuleInit();
+    // Synchronous path: refreshCache() callers explicitly want to wait for
+    // the warming to finish (admin tools, tests). onModuleInit() uses the
+    // fire-and-forget variant for non-blocking app boot.
+    await this.warmCache();
   }
 }

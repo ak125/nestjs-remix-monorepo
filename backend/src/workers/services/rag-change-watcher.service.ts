@@ -13,7 +13,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { FeatureFlagsService } from '../../config/feature-flags.service';
 import { RoleId } from '../../config/role-ids';
 import type { PipelineChainJobData } from '../processors/pipeline-chain.processor';

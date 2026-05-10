@@ -10,8 +10,8 @@ import { SystemService } from './services/system.service';
 import { MetricsService } from './services/metrics.service';
 import { DatabaseMonitorService } from './services/database-monitor.service';
 import { HealthCheckService } from './services/health-check.service';
-import { IsAdminGuard } from '../../auth/is-admin.guard';
-import { getErrorMessage } from '../../common/utils/error.utils';
+import { IsAdminGuard } from '@auth/is-admin.guard';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 @Controller('system')
 @UseGuards(IsAdminGuard)

@@ -1,41 +1,44 @@
-# scripts/rag/ — Scripts domaine RAG
+# scripts/rag/ — Legacy, en cours de réorganisation (plan v3 ADR-031)
 
-Source de vérité : [`.spec/00-canon/repo-map.md`](../../.spec/00-canon/repo-map.md)
+> **Réorganisation 2026-05-03** : ce dossier est en cours de découpage thématique
+> selon le plan v3 (`/home/deploy/.claude/plans/je-comprend-rien-a-spicy-reddy.md`).
+> Les scripts ont migré vers les sous-dossiers qui correspondent à leur rôle dans
+> le pipeline ADR-031 (raw → wiki → wiki/exports/rag → rag).
 
-Ce répertoire contient les scripts opérant directement sur le corpus RAG :
-fichiers `.md` dans `/opt/automecanik/rag/knowledge/`, table `__rag_knowledge` Supabase, index Weaviate.
+## Migrations 2026-05-03
 
-## Règle de nommage
+| Avant | Maintenant |
+|---|---|
+| `scripts/rag/build-brand-rag.py` | [`scripts/wiki-generators/brand-fiche-generator.py`](../wiki-generators/) |
+| `scripts/rag/rag-enrich-from-web-corpus.py` | [`scripts/wiki-generators/gamme-from-web-corpus-generator.py`](../wiki-generators/) |
+| `scripts/rag/enrich-rag-bulk.py` | [`scripts/wiki-generators/gamme-from-db-template-generator.py`](../wiki-generators/) |
+| `scripts/rag/download-oem-corpus.py` | [`scripts/raw-downloaders/download-oem-corpus.py`](../raw-downloaders/) |
+| `scripts/rag/download-brand-oem-corpus.py` | [`scripts/raw-downloaders/download-brand-oem-corpus.py`](../raw-downloaders/) |
+| `scripts/rag/sync-from-wiki.py` | [`scripts/rag-sync/sync-wiki-exports-to-rag.py`](../rag-sync/) |
 
-`rag-*.py` pour les scripts d'opération RAG (enrichissement, ingestion, vérification).
+## Scripts restant ici (legacy, non classifiés)
 
-## Prérequis
+- `ingest-oem-enriched-gammes.py` — ingester legacy via API `/api/rag/internal/ingest/manual`. Lit `gammes/*.md` avec bloc `phase5_enrichment`. Pas dans la classification du plan v3 (ce n'est ni générateur, ni exporter, ni sync). À déprécier ou reclasser en `scripts/api-clients/` lors d'un prochain chantier.
 
-- `INTERNAL_API_KEY` (dans `backend/.env`) — auth machine-to-machine vers NestJS
-- `DATABASE_URL` — accès Supabase direct
-- Container `rag-api-prod` actif (pour reindex via pipeline API)
+## Suite (plan v3)
 
-## Scripts migrés (Phase F — 2026-04-04)
+- §Étape 5 commit suivant : redirection OUTPUT path des wiki-generators vers `automecanik-wiki/exports/rag/<cat>/`.
+- §Étape 6 : régénération via générateurs refactorisés.
+- §Étape 7 : workflow CI sync activé.
+- §Étape 8 : cleanup legacy contenu rag/knowledge/.
 
-| Script | Rôle |
-|--------|------|
-| `download-oem-corpus.py` | Télécharge corpus OEM depuis Wikipedia + sources web par gamme |
-| `rag-enrich-from-web-corpus.py` | Enrichit les fichiers `.md` gammes avec le corpus téléchargé (bloc `phase5_enrichment`) |
-| `ingest-oem-enriched-gammes.py` | Ingère les blocs `phase5_enrichment` (statut `oem_verified`) vers `__rag_knowledge` via `POST /api/rag/internal/ingest/manual` |
+## Référence
 
-Ces 3 scripts forment le **pipeline Phase F** orchestré par `/opt/automecanik/rag/scripts/pipeline/run-phase-f.sh`.
+- ADR-031 — Raw / Wiki / RAG / SEO Separation
+- Plan v3 — `/home/deploy/.claude/plans/je-comprend-rien-a-spicy-reddy.md`
 
-## Scripts encore dans `scripts/seo/` (migration chantier séparé)
+---
 
-Les scripts suivants opèrent sur le domaine RAG mais n'ont pas encore été migrés :
+## Historique (Phase F — 2026-04-04, hors-scope ce refactor)
 
-| Script | Rôle |
-|--------|------|
-| `rag-check.py` | Vérifie l'état des fichiers RAG |
-| `rag-enrich-from-db.py` | Enrichit les `.md` depuis la DB Supabase |
-| `rag-enrich-from-purchase-guide.py` | Enrichit depuis les purchase guides |
-| `rag-enrich-metier-templates.py` | Enrichit avec des templates métier |
-| `rag-fill-frontmatter-gaps.py` | Complète les frontmatters manquants |
-| `rag-upgrade-v4.py` | Migration vers format V4 |
-
-Migration complète des 26 scripts RAG = chantier séparé.
+Les 3 scripts qui formaient le pipeline Phase F (`download-oem-corpus.py`,
+`rag-enrich-from-web-corpus.py`, `ingest-oem-enriched-gammes.py`) sont
+désormais répartis : le 1er dans `raw-downloaders/`, le 2e dans
+`wiki-generators/`, le 3e reste ici. Le wrapper
+`/opt/automecanik/rag/scripts/pipeline/run-phase-f.sh` doit être mis à jour
+pour pointer les nouveaux paths (à faire dans une PR séparée si encore utilisé).

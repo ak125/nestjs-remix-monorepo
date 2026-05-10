@@ -2,6 +2,32 @@
 -- PHASE 0: Système de Rôles de Pages SEO
 -- Migration: 20260124_add_page_role
 -- ============================================
+--
+-- ⚠️  STATUS : NEVER APPLIED IN PRODUCTION (vérifié 2026-05-05 via MCP)
+--
+-- Cette migration repose sur une hypothèse architecturale obsolète :
+-- "la DB stocke directement le canon RoleId R0..R8".
+--
+-- L'architecture actuelle (PR-0A `@repo/seo-roles`, 2026-05) sépare :
+--   - DB : stocke worker page_types courts (R1, R3, R5...) ou worker
+--          vocab (R1_pieces, R3_guide_howto, ...)
+--   - TS : traduit vers canon RoleId via PAGE_TYPE_TO_ROLE / pageTypeToRoleId
+--   - UI : affiche canonical FR via getRoleDisplayLabel
+--
+-- Conséquences :
+--   1. Ne PAS appliquer cette migration. La colonne __seo_page.page_role
+--      n'existe pas en prod et ne doit pas être créée.
+--   2. La fonction assign_page_role_from_url() ne sera pas créée — la
+--      résolution URL→role canonical vit côté TS (pageTypeToRoleId du
+--      package @repo/seo-roles).
+--   3. L'ENUM seo_page_role existe en prod (créé par migration ultérieure
+--      20260126_create_seo_observable.sql, consommé par __seo_observable).
+--      NE PAS le drop.
+--
+-- Voir le contexte complet :
+--   .spec/00-canon/db-governance/pr4b-mcp-inventory-2026-05-05.md
+--
+-- ============================================
 
 -- 1. Créer l'enum pour les rôles
 DO $$ BEGIN

@@ -1,6 +1,6 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 // DatabaseException/ErrorCodes available if needed for future error handling
 import type { LegalDocument, LegalDocumentVersion } from './legal.service';
 

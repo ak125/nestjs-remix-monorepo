@@ -1,9 +1,6 @@
 import { Controller, Get, Param, ParseIntPipe, Logger } from '@nestjs/common';
 import { VehicleFilteredCatalogV4HybridService } from '../services/vehicle-filtered-catalog-v4-hybrid.service';
-import {
-  getErrorMessage,
-  getErrorStack,
-} from '../../../common/utils/error.utils';
+import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
 
 @Controller('api/catalog/families')
 export class VehicleFilteredCatalogV4Controller {

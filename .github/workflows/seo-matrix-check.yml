@@ -1,0 +1,48 @@
+name: 🛡️ SEO Matrix Determinism Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/src/config/operating-matrix.*'
+      - 'backend/src/config/execution-registry*'
+      - 'backend/src/config/field-catalog*'
+      - 'backend/src/config/role-ids*'
+      - 'backend/src/config/group-table-map*'
+      - '.claude/agents/**'
+      - 'scripts/seo/dump-agent-matrix.ts'
+      - 'audit-reports/seo-agent-matrix.json'
+      # Self-trigger : changes to this workflow (paths, permissions,
+      # node version) must re-run the workflow to validate them.
+      # Pattern canonique post-PR #228 (cf. perf-gates.yml).
+      - '.github/workflows/seo-matrix-check.yml'
+
+# La matrice est read-only par construction. Pas de PR comment auto, pas
+# d'accès écriture nécessaire. Least-privilege par défaut.
+permissions:
+  contents: read
+
+jobs:
+  determinism:
+    name: 🛡️ Matrix JSON determinism
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run matrix determinism check
+        # Régénère audit-reports/seo-agent-matrix.json et compare au committé.
+        # Si diff non vide → fail (le contributeur doit committer le JSON regen).
+        # Le Markdown porte un timestamp humain → exclu du check (cf. invariant
+        # R6 du plan : seul le JSON est strictement déterministe).
+        run: npm run audit:seo-matrix:check

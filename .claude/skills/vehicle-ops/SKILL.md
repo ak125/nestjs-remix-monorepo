@@ -1,9 +1,9 @@
 ---
 name: vehicle-ops
-description: "Vehicle operations: lookup, V-Level classification, compatibility RPC, cache, data quality. Anti-patterns DB (no FK, TEXT columns, type_display string)."
-argument-hint: "[diagnose|vlevel|cache|quality] [gamme-id or type-id]"
+description: "Vehicle operations: lookup, V-Level classification, compatibility RPC, cache, data quality, diagnostic & maintenance (ADR-032). Anti-patterns DB (no FK, TEXT columns, type_display string)."
+argument-hint: "[diagnose|vlevel|cache|quality|maintenance|dtc] [gamme-id or type-id]"
 allowed-tools: Read, Grep, Glob, Bash, mcp__claude_ai_Supabase__execute_sql
-version: "1.0"
+version: "1.1"
 ---
 
 # Vehicle Operations — v1.0
@@ -303,6 +303,85 @@ WHERE gamme_universelle = true
 - SAIN — 0 BLOQUANT, 0 HAUTE
 - [N] ISSUE(S) A CORRIGER — [N] BLOQUANT(s), [N] HAUTE(s)
 ```
+
+---
+
+## Diagnostic & Maintenance Operations (ADR-032)
+
+Section ajoutee 2026-04-29 par ADR-032 (governance-vault) pour couvrir le
+domaine diagnostic interactif + maintenance fuel-aware + DTC consolidation.
+
+### Canons par sous-domaine (NE PAS confondre)
+
+| Sous-domaine | Canon | Pipeline |
+|--------------|-------|----------|
+| Sessions / symptomes / causes interactifs | `__diag_*` (system, symptom, cause, symptom_cause_link, session) | `backend/src/modules/diagnostic-engine/` (slugs FR : freinage, batterie, embrayage, ...) |
+| Maintenance / intervalles / wear factors / risque | `kg_nodes` (`node_type='MaintenanceInterval'`) + RPCs `kg_*` | `MaintenanceCalculatorService` (PR ADR-032 PR-2) |
+| Safety rules cause-by-cause | `__diag_safety_rule` (21 rules) + `risk-safety.engine.ts` RULE_CAUSE_MAP | Diagnostic interactif uniquement |
+| Safety triggers KG observable | `kg_safety_triggers` + RPC `kg_check_safety_gate(p_observable_ids uuid[])` | Knowledge graph (futur turbo/EGR) |
+| DTC codes consolidation | Vue `v_dtc_lookup` (source ENUM : kg / seo_only / merged) + RPC `kg_get_dtc_lookup(p_code)` | `kg_nodes.dtc_code` source primaire |
+| Cases learning corpus | `__diag_session.result jsonb` (deja alimente via `saveSession()`) | Diagnostic interactif |
+| Cases learning corpus KG | RPC `kg_record_case(p_observable_ids uuid[], p_predicted_fault_id uuid)` | A wire dans service KG-driven futur (PAS dans diag-orchestrator) |
+
+### RPCs canoniques (extension PR-1 ADR-032)
+
+```sql
+-- Schedule entretien fuel-aware par vehicule
+kg_get_smart_maintenance_schedule(
+  p_engine_family_code TEXT DEFAULT NULL,  -- legacy compat
+  p_current_km INT DEFAULT 0,
+  p_profile_id UUID DEFAULT NULL,
+  p_last_maintenance_records JSONB DEFAULT '[]',
+  p_type_id INT DEFAULT NULL,              -- ADR-032 D2/D3 : derive fuel via auto_type.type_fuel
+  p_fuel_type TEXT DEFAULT NULL            -- override explicite
+)
+
+-- Alertes paliers km derivees (zero hardcode)
+kg_get_maintenance_alerts_by_milestone(
+  p_milestones INT[] DEFAULT ARRAY[10000,30000,60000,100000,150000],
+  p_fuel_type TEXT DEFAULT NULL
+) RETURNS TABLE(milestone_km INT, actions JSONB)
+
+-- DTC lookup consolide
+kg_get_dtc_lookup(p_code TEXT) RETURNS TABLE(code, description, system, severity, kg_node_id, source)
+```
+
+### Endpoints API (`@Controller('api/diagnostic-engine')`)
+
+| Endpoint | Source | Note |
+|----------|--------|------|
+| `GET /maintenance-schedule?type_id=X&current_km=Y` | `MaintenanceCalculatorService.getSchedule()` | Fuel-aware via `auto_type.type_fuel` |
+| `GET /maintenance-alerts?milestones=10000,30000,...` | `MaintenanceCalculatorService.getAlerts()` | Paliers parametrables |
+| `POST /breakdown` | Force `intent_type='breakdown'` puis `orchestrator.analyze()` | Urgence routiere (PR-3 ADR-032) |
+| `GET /calendar?type_id=X&current_km=Y` | `MaintenanceCalculatorService.getCalendar()` (Phase 4 PR-6) | Agrege schedule + alerts + controles-mensuels (wiki) + jointure wiki/gamme |
+
+### Anti-patterns diagnostic (BLOQUANT)
+
+| Anti-pattern | Pourquoi | Solution |
+|--------------|----------|----------|
+| `from('__diag_safety_rule')` SQL direct | Doit passer par RPC ou data-service | Utiliser `getSafetyRules()` ou (a venir) `kg_check_safety_gate` |
+| `this.supabase.rpc('kg_*')` direct | Bypass RPC Safety Gate (Q3) | Utiliser `this.callRpc<T>('kg_*', params, { source })` |
+| Wire `kg_record_case` dans diag-orchestrator | Univers disjoints (slugs vs UUIDs), pas de mapping | Conserver corpus diag dans `__diag_session.result`, wire kg_record_case ailleurs |
+| Creer table `__diag_dtc` | Vue `v_dtc_lookup` + RPC suffisent | Reutiliser kg_nodes.dtc_code + unnest seo_observable.dtc_codes[] |
+| Creer table `__diag_context_questions/safe_phrases/wizard_steps` | Contenu UI = wiki + exports markdown (ADR-031) | `automecanik-wiki/wiki/{diagnostic,support}/<slug>.md` + frontmatter YAML |
+| Hardcode constants TS dans calendrier-entretien.tsx (212 lignes) | Bricolage, pas dynamique | Loader Remix → `/api/diagnostic-engine/calendar` (Phase 5 PR-7) |
+| Fusionner `__diag_safety_rule` ↔ `kg_safety_triggers` | Sémantiques distinctes (cause-by-cause vs aggregate par observable UUIDs) | Conserver les 2 canons complementaires |
+
+### Quand proposer ce skill (etendu)
+
+| Contexte | Proposition |
+|----------|-------------|
+| Calendrier entretien dynamique pour vehicule | `/vehicle-ops maintenance [type-id]` |
+| Lookup code DTC | `/vehicle-ops dtc P0420` |
+| Wire un nouveau service consommant safety/DTC | Reference cette section pour eviter SQL direct |
+
+### Liens
+
+- Vault ADR-032 — Diagnostic & Maintenance Unification : `governance-vault/ledger/decisions/adr/ADR-032-diagnostic-maintenance-unification.md`
+- Memoires Claude Code : `diag-maintenance-canon-decisions.md`, `diag-safety-rule-canonical-distinct.md`, `diag-vs-kg-pipelines-disjoints.md`, `diag-intent-enum-canonical-only.md`, `seed-20260321-silent-fail.md`
+- Migrations : `backend/supabase/migrations/20260429_diag_maintenance_via_kg.sql` (PR #207 mergee)
+- Service : `backend/src/modules/diagnostic-engine/services/maintenance-calculator.service.ts` (PR #211)
+- ADRs lies : ADR-016 (vehicle page cache), ADR-022 (R8 RAG), ADR-026 (content separation), ADR-031 (4-layer architecture)
 
 ---
 

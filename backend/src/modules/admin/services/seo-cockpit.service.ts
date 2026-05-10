@@ -11,8 +11,8 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import { SeoMonitorSchedulerService } from '../../../workers/services/seo-monitor-scheduler.service';
 import { RiskFlagsEngineService } from '../../seo/services/risk-flags-engine.service';
 import { GooglebotDetectorService } from '../../seo/services/googlebot-detector.service';

@@ -15,7 +15,7 @@ import {
 import { ErrorService } from '../services/error.service';
 import { RedirectService } from '../services/redirect.service';
 import { ErrorLogService } from '../services/error-log.service';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 
 interface ErrorRecord {
   created_at: string;

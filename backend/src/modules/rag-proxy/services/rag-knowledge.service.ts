@@ -1,8 +1,8 @@
 import { Injectable, HttpException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SearchRequestDto, SearchResponseDto } from '../dto/search.dto';
-import { getErrorMessage } from '../../../common/utils/error.utils';
-import { ExternalServiceException } from '../../../common/exceptions';
+import { getErrorMessage } from '@common/utils/error.utils';
+import { ExternalServiceException } from '@common/exceptions';
 import { RAG_KNOWLEDGE_PATH } from '../../../config/rag.config';
 import { RagCircuitBreakerService } from './rag-circuit-breaker.service';
 import { RagCleanupService } from './rag-cleanup.service';

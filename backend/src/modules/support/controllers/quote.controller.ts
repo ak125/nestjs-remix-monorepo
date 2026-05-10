@@ -11,10 +11,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { QuoteService, QuoteRequest, Quote } from '../services/quote.service';
-import {
-  DomainNotFoundException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 
 @Controller('api/support/quotes')
 export class QuoteController {
