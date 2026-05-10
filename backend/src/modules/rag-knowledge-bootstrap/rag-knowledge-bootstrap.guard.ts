@@ -5,19 +5,35 @@
  *
  * Au boot NestJS :
  *   1. Vérifie l'existence de `<RAG_KNOWLEDGE_PATH>/.last-sync.json` (manifest produit
- *      par le cron sync-wiki-exports-to-rag).
+ *      par le cron sync-wiki-exports-to-rag — livré par PR #369 / Phase 3B PR-P).
  *   2. Vérifie que ce manifest n'est pas obsolète (> 24h).
  *
- * En production réelle (NODE_ENV=production hors APP_ENV=preprod/READ_ONLY=true),
- * fail-fast si manifest absent ou obsolète : un L3 stale signale soit un cron
- * mort, soit une migration incomplète, et le service ne doit pas démarrer dans
- * cet état (mémoire incident-images-2026-04-11).
+ * Modes (matrice explicite) :
  *
- * En dev/preprod, soft-warn (le manifest peut ne pas exister tant que Phase 3B
- * PR-P n'a pas livré le sync canon).
+ * | NODE_ENV     | APP_ENV / READ_ONLY  | RAG_L3_GUARD_ENFORCE | Comportement |
+ * |--------------|----------------------|----------------------|--------------|
+ * | production   | (other)              | true                 | fail-fast    |
+ * | production   | preprod / true       | (any)                | soft-warn    |
+ * | production   | (other)              | false / unset        | soft-warn    |
+ * | non-prod     | (any)                | (any)                | soft-warn    |
  *
- * Bypass : `SKIP_RAG_BOOTSTRAP_GUARD=true` (escape hatch dev/CI). À documenter
- * dans tout usage en preprod si activé.
+ * `RAG_L3_GUARD_ENFORCE=true` est l'**opt-in explicite** activé seulement quand
+ * Phase 3B est entièrement livrée : (a) cron sync-wiki-exports-to-rag écrit le
+ * manifest sur DEV VPS (PR #369 mergée), et (b) le manifest est délivré sur
+ * PROD VPS via le mécanisme de mirror (git pull `automecanik-rag` ou équivalent
+ * vérifié sur 49.12.233.2). Tant que ces deux préconditions ne sont pas
+ * empiriquement validées, la guard reste informative (warn-only) y compris
+ * en prod — pour ne pas casser les deploys avant que sa dépendance soit live.
+ *
+ * Précédent : PR #356 (introduction guard) déclarait dans son body « Tant que
+ * Phase 3B non livrée, le bootstrap guard reste soft-warn en dev/preprod » —
+ * mais activait fail-fast en prod par défaut. Conséquence empirique :
+ * deploy-prod.yml du tag v2026.05.10-lcp-r3-cache (run 25636043816) a thrown
+ * « manifest absent » et bloqué le rollout R3 LCP cache (PR #408). Ce flag
+ * encode l'intention explicite de l'auteur en config plutôt qu'en assumption.
+ *
+ * Bypass d'urgence : `SKIP_RAG_BOOTSTRAP_GUARD=true` (escape hatch dev/CI,
+ * NE PAS utiliser en prod — sert à débloquer perf-gates en CI ou dev local).
  *
  * Performance : 1 fs.statSync local au boot, < 5ms. Synchrone (memory backend.md
  * "Aucun await d'I/O distante dans onModuleInit" — fs sync local OK).
@@ -47,16 +63,19 @@ export class RagKnowledgeBootstrapGuardService implements OnModuleInit {
     const manifestPath = path.join(ragDir, MANIFEST_FILENAME);
     const isReadOnlyPreprod =
       process.env.APP_ENV === 'preprod' || process.env.READ_ONLY === 'true';
+    const enforceFailFast = process.env.RAG_L3_GUARD_ENFORCE === 'true';
     const shouldFailFast =
-      process.env.NODE_ENV === 'production' && !isReadOnlyPreprod;
+      process.env.NODE_ENV === 'production' &&
+      !isReadOnlyPreprod &&
+      enforceFailFast;
 
     if (!fs.existsSync(manifestPath)) {
-      const msg = `[RagKnowledgeBootstrapGuard] manifest absent: ${manifestPath}. Le cron sync-wiki-exports-to-rag doit avoir produit ce fichier (Phase 3B PR-P du plan refondation R-stack).`;
+      const msg = `[RagKnowledgeBootstrapGuard] manifest absent: ${manifestPath}. Le cron sync-wiki-exports-to-rag doit avoir produit ce fichier (Phase 3B PR-P / PR #369).`;
       if (shouldFailFast) {
         throw new Error(msg);
       }
       this.logger.warn(
-        `${msg} (dev/preprod : soft-warn — Phase 3B livre le sync)`,
+        `${msg} (warn-only : RAG_L3_GUARD_ENFORCE absent ou Phase 3B pas encore activée)`,
       );
       return;
     }
@@ -69,7 +88,9 @@ export class RagKnowledgeBootstrapGuardService implements OnModuleInit {
       if (shouldFailFast) {
         throw new Error(msg);
       }
-      this.logger.warn(`${msg} (dev/preprod : soft-warn)`);
+      this.logger.warn(
+        `${msg} (warn-only : RAG_L3_GUARD_ENFORCE absent ou Phase 3B pas encore activée)`,
+      );
       return;
     }
 
