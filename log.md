@@ -507,3 +507,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `monorepo/pr5-url-immutability-gate`
 - **Décision** : feat(seo): add R-SEO-09 URL immutability gate phase 1 surface guard (+1 other commit)
 - **Sortie** : PR #428 | commits 18cc6c59 22ff92fc
+
+## 2026-05-10 — cleanup masse local + backlog OPEN
+
+- **Branche** : `chore/log-session-cleanup-20260510`
+- **Décision** : Cleanup systématique via critères objectifs (ancestor-of-main, GONE upstream, session-log orphans, squash-merge SHAs) — 259 branches, 38 worktrees, 35 stashes purgés zéro perte de travail
+- **Sortie** : closed 8 PRs (#77 #425 #368 #187 #185 #182 #188 #85) | merged #377 #280 | auto-merge 6 (#301 #300 #160 #158 #128 #110)
