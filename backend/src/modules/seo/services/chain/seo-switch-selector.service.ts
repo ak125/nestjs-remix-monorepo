@@ -15,7 +15,7 @@ import type { VariantFamilyKey } from '../../registries/seo-variant-family.regis
  * Ceci remplace le seed legacy `(typeId + pgId) % len` qui était sensible aux
  * renumérotations TecDoc V2 (cf. mémoire `tecdoc-integration`).
  */
-export interface SwitchSeedInput {
+interface SwitchSeedInput {
   surfaceKey: string;
   pgId: number;
   vehicleId?: number | null;
@@ -27,7 +27,7 @@ export interface SwitchVariant {
   [key: string]: unknown;
 }
 
-export interface PickVariantInput<TWhere extends Record<string, unknown>> {
+interface PickVariantInput<TWhere extends Record<string, unknown>> {
   family: VariantFamilyKey;
   /** Filtres SQL `eq()` (ex: `{ sgcs_pg_id: 124 }` ou `{ sis_pg_id: 124 }`). */
   where: TWhere;
@@ -103,7 +103,8 @@ export class SeoSwitchSelector extends SupabaseBaseService {
   async fetchVariants<TWhere extends Record<string, unknown>>(
     input: PickVariantInput<TWhere>,
   ): Promise<SwitchVariant[]> {
-    const table = this.families.resolveTable(input.family);
+    const config = this.families.getConfig(input.family);
+    const table = config.table;
     let query = this.supabase.from(table).select('*');
 
     for (const [col, val] of Object.entries(input.where)) {
@@ -111,6 +112,11 @@ export class SeoSwitchSelector extends SupabaseBaseService {
     }
     if (input.aliasColumn && typeof input.alias === 'number') {
       query = query.eq(input.aliasColumn, input.alias);
+    }
+    // Ordre stable obligatoire pour l'idempotence du seed sha256.
+    // Les 4 familles legacy n'ont pas `orderBy` → comportement inchangé.
+    if (config.orderBy) {
+      query = query.order(config.orderBy, { ascending: true });
     }
 
     const { data, error } = await query;
