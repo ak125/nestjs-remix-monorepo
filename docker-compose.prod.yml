@@ -63,6 +63,13 @@ services:
       - SENTRY_RELEASE
       - SENTRY_SEND_PII
       - SENTRY_ALLOW_DEBUG_ENDPOINT
+      # 🩹 TEMPORARY (2026-05-10) — RAG L3 bootstrap guard escape hatch
+      # Le guard fail-fast sur manifest absent suppose que le cron sync-wiki-exports-to-rag
+      # est wired sur ce VPS. Sur PROD (49.12.233.2), le cron n'est pas encore déployé
+      # (Phase 3B PR-P du plan refondation R-stack, PR #369 PR-E.2 en cours).
+      # Sans ce flag : tout deploy PROD throw au boot avec "manifest absent" → rollback.
+      # SUPPRIMER cette ligne quand PR #369 a livré le manifest cron + le sync sur PROD.
+      - SKIP_RAG_BOOTSTRAP_GUARD=true
 
     deploy:
       resources:
