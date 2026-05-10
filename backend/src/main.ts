@@ -25,8 +25,10 @@ import session from 'express-session';
 import Redis from 'ioredis';
 import passport from 'passport';
 import { urlencoded, json } from 'body-parser';
+import compression from 'compression';
 import cors from 'cors';
 import crypto from 'crypto';
+import helmet from 'helmet';
 
 const redisStoreFactory = RedisStore(session);
 
@@ -75,20 +77,49 @@ async function bootstrap() {
       throw new Error('SESSION_SECRET requis en production');
     }
 
-    // SECURITE: Vérifier que SESSION_SECRET est configuré
-    const sessionSecret = process.env.SESSION_SECRET;
-    if (!sessionSecret || sessionSecret === '123') {
-      logger.warn(
-        'ALERTE SECURITE: SESSION_SECRET non configuré ou utilise la valeur par défaut!',
-      );
-      logger.warn('Générez un secret sécurisé avec: openssl rand -base64 32');
-      logger.warn('Ajoutez-le dans votre fichier .env');
+    // SECURITE: SESSION_SECRET fail-fast en non-DEV + détection placeholders.
+    // Référence STRIDE 03-sessions critique #3, ADR-043 Sprint 1 Plan F.
+    const sessionSecretRaw = process.env.SESSION_SECRET ?? '';
+    const sessionSecretNorm = sessionSecretRaw.trim();
+    const KNOWN_WEAK_PLACEHOLDERS = [
+      '123',
+      'changeme',
+      'change-me',
+      'secret',
+      'mysecret',
+      'insecure_dev_secret_change_me',
+      'your-secret-here',
+      'todo',
+      'xxxxx',
+    ];
+    const isWeakSecret =
+      !sessionSecretNorm ||
+      sessionSecretNorm.length < 32 ||
+      KNOWN_WEAK_PLACEHOLDERS.includes(sessionSecretNorm.toLowerCase());
 
-      if (process.env.NODE_ENV === 'production' && !readOnly) {
+    let sessionSecret = sessionSecretNorm;
+    if (isWeakSecret) {
+      // PROD/PREPROD: refuse de démarrer même en read-only — un secret faible
+      // expose toutes les sessions actives, indépendamment du mode RW/RO.
+      if (process.env.NODE_ENV === 'production') {
         throw new Error(
-          'SESSION_SECRET OBLIGATOIRE en production! Impossible de démarrer.',
+          `SESSION_SECRET ${sessionSecretNorm ? 'FAIBLE' : 'MANQUANT'} en production. ` +
+            `Génère un secret >= 32 caractères avec: openssl rand -base64 32`,
         );
       }
+
+      // DEV: génère un secret aléatoire runtime (sessions invalidées au restart,
+      // accepté en DEV). Plus jamais le hardcoded `INSECURE_DEV_SECRET_CHANGE_ME`
+      // qui était identique entre toutes les instances DEV — vector de spoofing.
+      sessionSecret = crypto.randomBytes(32).toString('base64');
+      logger.warn(
+        `[SECURITY] SESSION_SECRET ${sessionSecretNorm ? 'FAIBLE' : 'MANQUANT'} en DEV. ` +
+          `Secret aléatoire généré (32 bytes). Sessions perdues au restart.`,
+      );
+      logger.warn(
+        '[SECURITY] Pour des sessions persistantes, ajoute dans .env: ' +
+          'SESSION_SECRET=$(openssl rand -base64 32)',
+      );
     }
 
     app.use(
@@ -96,7 +127,7 @@ async function bootstrap() {
         store: redisStore,
         resave: false,
         saveUninitialized: false, // Session créée uniquement quand des données y sont écrites (login, panier)
-        secret: sessionSecret || 'INSECURE_DEV_SECRET_CHANGE_ME',
+        secret: sessionSecret,
         name: 'connect.sid', // ✅ Nom explicite du cookie
         cookie: {
           maxAge: 1000 * 60 * 60 * 24 * 30, // 30 jours
@@ -108,6 +139,22 @@ async function bootstrap() {
       }),
     );
     logger.log('Middleware de session initialisé');
+
+    // Compression middleware MUST be registered BEFORE useStaticAssets : Express
+    // applies middlewares in registration order, and the static-asset handler
+    // streams files directly without consulting downstream middleware. With
+    // compression registered after, every JS / CSS / font under /assets/* was
+    // served uncompressed (transferSize ≈ resourceSize on Lighthouse audits,
+    // see issue diagnosed in PRs #421 / #424 / #426 — none of those PRs moved
+    // script.size on the main Lighthouse run because compression was never
+    // applied to the static bundle).
+    app.use(
+      compression({
+        level: 6, // Bon équilibre vitesse/taille (défaut=6, max=9)
+        threshold: 1024, // Ne pas compresser les réponses < 1KB
+      }),
+    );
+    logger.log('Compression middleware enabled (level=6, threshold=1024)');
 
     expressApp.useStaticAssets(getPublicDir(), {
       immutable: true,
@@ -154,32 +201,17 @@ async function bootstrap() {
       next();
     });
 
-    try {
-      // Import dynamique pour éviter d alourdir le build si non nécessaire
-      const helmet = (await import('helmet')).default;
-      const compression = (await import('compression')).default;
-
-      // Compression AVANT Helmet — pour que toutes les réponses soient compressées
-      // Note: Brotli géré côté Caddy en production (meilleur ratio, 15-20% vs gzip)
-      app.use(
-        compression({
-          level: 6, // Bon équilibre vitesse/taille (défaut=6, max=9)
-          threshold: 1024, // Ne pas compresser les réponses < 1KB
-        }),
-      );
-
-      // Helmet avec nonce dynamique par requête (voir config/csp.config.ts)
-      const isDev = process.env.NODE_ENV !== 'production';
-      app.use((req: any, res: any, next: any) => {
-        helmet({
-          contentSecurityPolicy: {
-            directives: buildCSPDirectives(isDev, res.locals.cspNonce),
-          },
-        })(req, res, next);
-      });
-    } catch (e) {
-      logger.warn({ err: e }, 'Helmet/compression non chargés');
-    }
+    // Helmet avec nonce dynamique par requête (voir config/csp.config.ts).
+    // Compression a été déplacée plus haut (avant useStaticAssets) — elle ne
+    // peut plus rester optionnelle vu son impact perf empirique mesuré.
+    const isDev = process.env.NODE_ENV !== 'production';
+    app.use((req: any, res: any, next: any) => {
+      helmet({
+        contentSecurityPolicy: {
+          directives: buildCSPDirectives(isDev, res.locals.cspNonce),
+        },
+      })(req, res, next);
+    });
 
     // CORS sécurisé - restreint en production
     const corsOrigin = process.env.CORS_ORIGIN?.split(',').map((s) => s.trim());

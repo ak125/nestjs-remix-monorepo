@@ -2,9 +2,17 @@
  * R3GuideService — Page engine orchestrator for R3 conseil guide pages.
  * Single method composes 5 existing services into one typed R3GuidePayload.
  * Replaces 5 separate HTTP calls from the Remix route.
+ *
+ * Cache layer:
+ *   - Redis cache via CacheService (TTL en secondes)
+ *   - Single-flight via inflight Map (anti-stampede)
+ *   - Invalidation event-driven via @OnEvent('article.published'|'article.updated')
+ *   - Instrumentation hit/miss/coalesced/duration via Logger structuré
  */
 
 import { Injectable, Logger } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
+import { CacheService } from '../../../cache/cache.service';
 import { BlogArticleDataService } from './blog-article-data.service';
 import { BlogSeoService } from './blog-seo.service';
 import { BlogArticleRelationService } from './blog-article-relation.service';
@@ -26,11 +34,29 @@ import {
 import { PRIX_PAS_CHER } from '../../seo/seo-v4.types';
 import { InternalLinkingService } from '../../seo/internal-linking.service';
 
+/** Cache key prefix versionnée — bump v1→v2 invalide tous les payloads. */
+const R3_CACHE_PREFIX = 'r3-guide:v1:';
+
+/** TTL fresh window (seconds) — CacheService utilise ioredis SETEX en secondes. */
+const R3_CACHE_TTL_SECONDS = 30 * 60;
+
 @Injectable()
 export class R3GuideService {
   private readonly logger = new Logger(R3GuideService.name);
 
+  /**
+   * Single-flight in-memory dedup. N requêtes concurrentes en cache miss
+   * sur la même clé partagent un seul compute (1 round-trip Supabase × 9
+   * sources, pas 20). Multi-instance : dedup local par replica ; le store
+   * Redis partagé visibilise le résultat aux autres replicas après écriture.
+   */
+  private readonly inflight = new Map<string, Promise<R3GuidePayload | null>>();
+
+  /** Tunable for tests — production code uses default. */
+  private cacheTtlSeconds: number = R3_CACHE_TTL_SECONDS;
+
   constructor(
+    private readonly cacheService: CacheService,
     private readonly dataService: BlogArticleDataService,
     private readonly seoService: BlogSeoService,
     private readonly relationService: BlogArticleRelationService,
@@ -38,10 +64,117 @@ export class R3GuideService {
   ) {}
 
   /**
-   * Build the complete R3 Guide payload for a given pg_alias.
-   * Returns null if no article is found for the gamme.
+   * Tests-only override — production code MUST NOT call this.
+   *
+   * `CacheService.set` calls `redisClient.setex(key, ttl, ...)` which expects
+   * an INTEGER number of seconds. Sub-second TTLs (e.g. `0.1`) only work when
+   * the underlying CacheService is stubbed — calling this with a non-integer
+   * against the real Redis would raise `ERR value is not an integer`.
+   *
+   * @internal Reserved for unit tests to avoid 30-minute sleeps.
+   */
+  setCacheTtlForTest(ttlSeconds: number): void {
+    this.cacheTtlSeconds = ttlSeconds;
+  }
+
+  /**
+   * Public entry — Redis cache + single-flight + invalidation events.
+   *   1. Cache hit → return immediately (no Supabase round-trip)
+   *   2. Cache miss + inflight → coalesce on the running Promise
+   *   3. Cache miss + no inflight → compute, store, dedup concurrent callers
+   *
+   * Negative results (article not found / `null`) are NOT cached —
+   * recomputed each call, by design. Trade-off: 404 storms re-execute the
+   * 9-fanout, but cached null risks delaying legitimate publishes.
    */
   async getR3GuidePayload(pg_alias: string): Promise<R3GuidePayload | null> {
+    const cacheKey = `${R3_CACHE_PREFIX}${pg_alias}`;
+    const startedAt = Date.now();
+
+    const cached = await this.cacheService.get<R3GuidePayload | null>(cacheKey);
+    if (cached !== null) {
+      this.logger.debug(
+        `[r3-cache] hit key=${cacheKey} duration_ms=${Date.now() - startedAt}`,
+      );
+      return cached;
+    }
+
+    const existing = this.inflight.get(cacheKey);
+    if (existing) {
+      this.logger.debug(`[r3-cache] coalesced key=${cacheKey}`);
+      return existing;
+    }
+
+    const promise = (async () => {
+      const computeStart = Date.now();
+      try {
+        const payload = await this.computeLegacyPayload(pg_alias);
+        if (payload !== null) {
+          // Cache write is best-effort: a Redis blip must not 500 a request
+          // that already has a valid payload in hand. Inconsistent with
+          // CacheService.set rethrow semantics; isolate the failure here.
+          try {
+            await this.cacheService.set(
+              cacheKey,
+              payload,
+              this.cacheTtlSeconds,
+            );
+          } catch (cacheErr) {
+            this.logger.error(
+              `[r3-cache] set-failed key=${cacheKey} — payload returned uncached`,
+              cacheErr instanceof Error ? cacheErr.stack : String(cacheErr),
+            );
+          }
+        }
+        this.logger.log(
+          `[r3-cache] miss key=${cacheKey} duration_ms=${Date.now() - computeStart} cached=${payload !== null}`,
+        );
+        return payload;
+      } catch (err) {
+        this.logger.error(
+          `[r3-cache] miss-error key=${cacheKey} duration_ms=${Date.now() - computeStart}`,
+          err instanceof Error ? err.stack : String(err),
+        );
+        throw err;
+      } finally {
+        this.inflight.delete(cacheKey);
+      }
+    })();
+
+    this.inflight.set(cacheKey, promise);
+    return promise;
+  }
+
+  /**
+   * Invalidate the cached payload when an article is published/updated.
+   * Wire emitters in admin endpoints: `eventEmitter.emit('article.published', { pg_alias })`.
+   * If no event is wired, cache falls back to TTL expiration only.
+   */
+  @OnEvent('article.published')
+  @OnEvent('article.updated')
+  async onArticleChanged(payload: { pg_alias?: string } | undefined) {
+    const pg_alias = payload?.pg_alias;
+    if (!pg_alias) {
+      // Loud no-op : a malformed event leaves the cache stale until TTL.
+      // Log so an operator can spot a broken emitter contract.
+      this.logger.warn(
+        `[r3-cache] article event received without pg_alias — invalidation skipped (payload=${JSON.stringify(payload)})`,
+      );
+      return;
+    }
+    const cacheKey = `${R3_CACHE_PREFIX}${pg_alias}`;
+    await this.cacheService.del(cacheKey);
+    this.logger.log(`[r3-cache] invalidated key=${cacheKey} on article event`);
+  }
+
+  /**
+   * Original implementation extracted intact — composes 9 Supabase round-trips.
+   * Structural debt to be addressed in a separate plan
+   * (R3GuideService fanout reduction via PostgreSQL RPC).
+   */
+  private async computeLegacyPayload(
+    pg_alias: string,
+  ): Promise<R3GuidePayload | null> {
     // Step 1 — Resolve article by gamme (blocking)
     const { article, gammeData } =
       await this.dataService.getArticleByGamme(pg_alias);

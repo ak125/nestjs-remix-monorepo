@@ -30,6 +30,8 @@ import * as yaml from 'js-yaml';
 import {
   type CanonicalRoleId,
   classifyKeywordToRole,
+  DEPRECATED_OUTPUT_ROLES,
+  getForbiddenOverlap,
   RoleId,
 } from '@repo/seo-roles';
 
@@ -77,7 +79,37 @@ export type SearchIntent =
   | 'diagnostique'
   | 'navigationnelle';
 
-export type PageRole = 'R1' | 'R3_guide' | 'R3_conseils' | 'R4' | 'R5' | 'R6';
+/**
+ * Script-local cluster bucket alphabet — short DB-shape labels kept for
+ * backwards compatibility with `__seo_keyword_cluster.role_keywords` JSONB
+ * keys and the YAML `seo_cluster.role_keywords` frontmatter.
+ *
+ * `R3_guide` is REMOVED (PR-B, R3 Canon Hardening) : the canonical buying-guide
+ * role is `R6_GUIDE_ACHAT`, mapped to bucket `R6` here. Existing rows are
+ * migrated by `20260507_backfill_r3_guide_to_r6.sql` before this code ships.
+ */
+export type PageRole = 'R1' | 'R3_conseils' | 'R4' | 'R5' | 'R6';
+
+/**
+ * Build-time guard : if the bucket alphabet drifts back to a deprecated
+ * canonical output role (R3_GUIDE, R9_GOVERNANCE), startup fails fast.
+ *
+ * Bare `R6` and `R3` are NOT checked here : they are ambiguous in the canon
+ * (`FORBIDDEN_ROLE_IDS`) but have a stable, scoped meaning as script-local
+ * DB-shape bucket labels (R6 = R6_GUIDE_ACHAT content, R3_conseils = R3_CONSEILS).
+ * The mapping is enforced by `CANONICAL_TO_CLUSTER_BUCKET` and the canon
+ * delegate `PAGE_ROLE_TO_CANON` — drift would surface there.
+ */
+const PAGE_ROLE_VALUES: readonly PageRole[] = ['R1', 'R3_conseils', 'R4', 'R5', 'R6'];
+for (const role of PAGE_ROLE_VALUES) {
+  if (DEPRECATED_OUTPUT_ROLES.has(role as never)) {
+    throw new Error(
+      `[canon] PageRole "${role}" is a deprecated output role per ` +
+        `@repo/seo-roles/legacy.ts:DEPRECATED_OUTPUT_ROLES. ` +
+        `Drift detected — remove from PageRole.`,
+    );
+  }
+}
 
 interface ClassifiedKeyword extends KeywordRow {
   intent: SearchIntent;
@@ -133,9 +165,10 @@ interface ClusterBuildResult {
  * Other canonical roles (R0_HOME, R6_SUPPORT, R7_BRAND, R8_VEHICLE) have no
  * historical bucket and are dropped silently.
  *
- * Note : R6_GUIDE_ACHAT is NOT in this table — it is split locally into
- * `R3_guide` vs `R6` via `splitR6Bucket()` to preserve the legacy 2-bucket
- * shape. Fusion R3_guide → R6 planned in a follow-up PR.
+ * R6_GUIDE_ACHAT now maps directly to bucket `R6` (PR-B, R3 Canon Hardening).
+ * The historical `R3_guide` split is removed — `R3_guide` is forbidden as
+ * output per `@repo/seo-roles/legacy.ts:FORBIDDEN_ROLE_IDS` and existing rows
+ * are migrated by `20260507_backfill_r3_guide_to_r6.sql`.
  *
  * R2_PRODUCT is intentionally absent : transactional keywords are excluded
  * from `roleKeywords` and collected in `excludedTransactionalKeywords` for
@@ -146,20 +179,8 @@ const CANONICAL_TO_CLUSTER_BUCKET = {
   [RoleId.R3_CONSEILS]: 'R3_conseils',
   [RoleId.R4_REFERENCE]: 'R4',
   [RoleId.R5_DIAGNOSTIC]: 'R5',
+  [RoleId.R6_GUIDE_ACHAT]: 'R6',
 } as const satisfies Partial<Record<CanonicalRoleId, PageRole>>;
-
-/**
- * Local R3_guide vs R6 split — only invoked for keywords classified
- * `R6_GUIDE_ACHAT` by the canon. Transitional : preserves the historical
- * 2-bucket shape. To be removed in a follow-up PR when downstream consumers
- * migrate to a single `R6` bucket.
- */
-const R3_GUIDE_HEURISTIC =
-  /(?:^|\s)(comment\s+choisir|guide|meilleur|quel\s|quelle\s|critere)/i;
-
-function splitR6Bucket(normalized: string): 'R3_guide' | 'R6' {
-  return R3_GUIDE_HEURISTIC.test(normalized) ? 'R3_guide' : 'R6';
-}
 
 /**
  * Map canonical role → local SearchIntent label (4-value enum kept for DB
@@ -219,15 +240,6 @@ function generateSyntheticKeywords(
         `${gammeName} auto`,
       ],
     },
-    R3_guide: {
-      primary: `comment choisir ${gammeName}`,
-      secondary: [
-        `guide achat ${gammeName}`,
-        `meilleur ${gammeName}`,
-        `quel ${gammeName} choisir`,
-        `comparatif ${gammeName}`,
-      ],
-    },
     R3_conseils: {
       primary: `quand changer ${gammeName}`,
       secondary: [
@@ -280,7 +292,6 @@ function segmentByRole(
 ): SegmentByRoleResult {
   const buckets: Record<PageRole, ClassifiedKeyword[]> = {
     R1: [],
-    R3_guide: [],
     R3_conseils: [],
     R4: [],
     R5: [],
@@ -304,20 +315,8 @@ function segmentByRole(
       continue;
     }
 
-    // R6_GUIDE_ACHAT : split locally between R3_guide (informational pre-purchase)
-    // and R6 (investigation commerciale + brands) to preserve the legacy 2-bucket
-    // shape. Fusion R3_guide → R6 planned in a follow-up PR.
-    if (role === RoleId.R6_GUIDE_ACHAT) {
-      const normalized = kw.keyword
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '');
-      const bucket = splitR6Bucket(normalized);
-      buckets[bucket].push(kw);
-      continue;
-    }
-
-    // Other roles : direct lookup in canon → script bucket table.
+    // Direct lookup in canon → script bucket table.
+    // R6_GUIDE_ACHAT maps to bucket `R6` (no R3_guide split — see PR-B).
     // Roles without a script bucket (R0_HOME, R6_SUPPORT, R7_BRAND, R8_VEHICLE)
     // are dropped silently — they should not appear at gamme scope anyway.
     const bucket = (CANONICAL_TO_CLUSTER_BUCKET as Record<string, PageRole | undefined>)[role];
@@ -372,147 +371,27 @@ function deduplicateKeywords(
   });
 }
 
-// ── Forbidden overlap per role (from page-roles.md vocabulary) ───────────────
+// ── Forbidden overlap per role — delegates to canon @repo/seo-roles ──────────
 
-const FORBIDDEN_OVERLAP: Record<PageRole, string[]> = {
-  R1: [
-    // INTERDIT sur R1 (vient d'autres roles)
-    'bruit',
-    'usé',
-    'cassé',
-    'problème',
-    'symptôme',
-    'panne',
-    'défaillance',
-    'vibration',
-    'claquement',
-    'quand',
-    'pourquoi',
-    'comment diagnostiquer',
-    'définition',
-    "qu'est-ce que",
-    'composé de',
-    'glossaire',
-    'démontage',
-    'remontage',
-    'étapes de remplacement',
-    "guide d'achat",
-    'prix',
-    '€',
-    'en stock',
-    'livraison',
-    'ajouter au panier',
-  ],
-  R3_guide: [
-    // INTERDIT sur R3 general + guide-specific
-    'sélectionnez votre véhicule',
-    'filtrer par',
-    'trier par',
-    'tous les véhicules compatibles',
-    'démontage',
-    'remontage',
-    'étapes de remplacement',
-    'couple de serrage',
-    'essai routier',
-    'code DTC',
-    'code OBD',
-    'définition',
-    "qu'est-ce que",
-    'composé de',
-    'glossaire',
-    'prix',
-    '€',
-    'en stock',
-    'ajouter au panier',
-  ],
-  R3_conseils: [
-    // INTERDIT sur R3/conseils
-    'sélectionnez votre véhicule',
-    'filtrer par',
-    'tous les véhicules compatibles',
-    'définition',
-    "qu'est-ce que",
-    'composé de',
-    'au sens strict',
-    'glossaire',
-    'diagnostiquer',
-    'bruit anormal',
-    'code DTC',
-    'code OBD',
-    "guide d'achat",
-    'commander',
-    'ajouter au panier',
-    'prix',
-    '€',
-    'en stock',
-    'livraison',
-    'promotion',
-  ],
-  R4: [
-    // INTERDIT sur R4
-    'prix',
-    '€',
-    'euro',
-    'acheter',
-    'commander',
-    'ajouter au panier',
-    'livraison',
-    'en stock',
-    'promotion',
-    'sélectionnez votre véhicule',
-    'filtrer par',
-    'tous les véhicules compatibles',
-    'démontage',
-    'remontage',
-    'étapes de remplacement',
-    'symptôme',
-    'bruit anormal',
-    'panne',
-    'diagnostic',
-  ],
-  R5: [
-    // INTERDIT sur R5
-    'prix',
-    '€',
-    'euro',
-    'acheter',
-    'commander',
-    'ajouter au panier',
-    'livraison',
-    'en stock',
-    'promotion',
-    "guide d'achat",
-    'définition',
-    'composé de',
-    'glossaire',
-    'sélectionnez votre véhicule',
-  ],
-  R6: [
-    // INTERDIT sur R6 (guide d'achat / investigation commerciale)
-    'sélectionnez votre véhicule',
-    'filtrer par',
-    'tous les véhicules compatibles',
-    'démontage',
-    'remontage',
-    'étapes de remplacement',
-    'couple de serrage',
-    'symptôme',
-    'bruit anormal',
-    'panne',
-    'diagnostic',
-    'code DTC',
-    'code OBD',
-    'définition',
-    "qu'est-ce que",
-    'composé de',
-    'glossaire',
-    'ajouter au panier',
-    'commander',
-    'en stock',
-    'livraison',
-    'promotion',
-  ],
+/**
+ * Map script-local PageRole bucket → canonical RoleId for `getForbiddenOverlap`.
+ * Single source of truth lives in `@repo/seo-roles/forbidden-overlap.ts` (PR-A).
+ */
+const PAGE_ROLE_TO_CANON: Readonly<Record<PageRole, CanonicalRoleId>> = {
+  R1: RoleId.R1_ROUTER as CanonicalRoleId,
+  R3_conseils: RoleId.R3_CONSEILS as CanonicalRoleId,
+  R4: RoleId.R4_REFERENCE as CanonicalRoleId,
+  R5: RoleId.R5_DIAGNOSTIC as CanonicalRoleId,
+  R6: RoleId.R6_GUIDE_ACHAT as CanonicalRoleId,
 };
+
+function buildForbiddenOverlapMap(): Record<PageRole, string[]> {
+  const out = {} as Record<PageRole, string[]>;
+  for (const [bucket, canonRole] of Object.entries(PAGE_ROLE_TO_CANON) as Array<[PageRole, CanonicalRoleId]>) {
+    out[bucket] = [...getForbiddenOverlap(canonRole)];
+  }
+  return out;
+}
 
 // ── Cluster building ─────────────────────────────────────────────────────────
 
@@ -624,11 +503,8 @@ function buildCluster(
     pgAlias,
   );
 
-  // 5. Build forbidden overlap per role
-  const forbiddenOverlap: Record<PageRole, string[]> = {} as any;
-  for (const role of Object.keys(FORBIDDEN_OVERLAP) as PageRole[]) {
-    forbiddenOverlap[role] = FORBIDDEN_OVERLAP[role];
-  }
+  // 5. Build forbidden overlap per role — sourced from canon @repo/seo-roles
+  const forbiddenOverlap = buildForbiddenOverlapMap();
 
   const cluster: SeoCluster = {
     pgId,
@@ -782,13 +658,15 @@ async function populateBriefKeywords(
 
   const clusterId = clusterRow?.id || null;
 
-  // Map PageRole to brief page_role values
-  // R5 is excluded — __seo_page_brief check constraint allows R1, R3_guide, R3_conseils, R4, R6
-  const BRIEF_ROLES: PageRole[] = ['R1', 'R3_guide', 'R3_conseils', 'R4', 'R6'];
+  // Map PageRole to brief page_role values.
+  // R5 is excluded — __seo_page_brief CHECK constraint historically permits
+  // R1/R3_guide/R3_conseils/R4/R6, but R3_guide is sunset in PR-B (R3 Canon
+  // Hardening) — buying-guide content lives under R6 only. Backfill data
+  // migration : 20260507_backfill_r3_guide_to_r6.sql (already merged).
+  const BRIEF_ROLES: PageRole[] = ['R1', 'R3_conseils', 'R4', 'R6'];
 
   const roleMapping: Record<string, string> = {
     R1: 'R1',
-    R3_guide: 'R3_guide',
     R3_conseils: 'R3_conseils',
     R4: 'R4',
     R6: 'R6',
@@ -797,7 +675,6 @@ async function populateBriefKeywords(
   // Primary intent per role
   const roleIntentMap: Record<string, string> = {
     R1: 'acheter la bonne piece compatible',
-    R3_guide: 'choisir la bonne piece',
     R3_conseils: 'savoir quand et comment remplacer',
     R4: 'comprendre le role et la definition',
     R6: 'comparer et choisir la meilleure reference',

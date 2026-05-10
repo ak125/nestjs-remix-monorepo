@@ -55,9 +55,9 @@ export function promisifyLogout(req: Express.Request): Promise<void> {
   });
 }
 
-/** Promisify express session.destroy() */
+/** Promisify express session.destroy() — propagates Redis errors via reject(), aligned with promisifyLogout/Save/Regenerate. */
 export function promisifySessionDestroy(session: Session): Promise<void> {
-  return new Promise((resolve) => {
-    session.destroy(() => resolve());
+  return new Promise((resolve, reject) => {
+    session.destroy((err?: Error | null) => (err ? reject(err) : resolve()));
   });
 }

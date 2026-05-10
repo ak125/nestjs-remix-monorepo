@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { DatabaseModule } from '../../database/database.module';
 import { CatalogModule } from '../catalog/catalog.module';
+import { SeoShadowObservatoryModule } from '../seo-shadow-observatory/seo-shadow-observatory.module';
 import { RmBuilderService } from './services/rm-builder.service';
 import { RmController } from './controllers/rm.controller';
 
@@ -40,7 +41,11 @@ import { RmController } from './controllers/rm.controller';
  * - rm_health
  */
 @Module({
-  imports: [DatabaseModule, CatalogModule],
+  imports: [
+    DatabaseModule,
+    forwardRef(() => CatalogModule),
+    SeoShadowObservatoryModule, // Retrofit ADR-055 — shadow R1_GAMME_VEHICLE_ROUTER
+  ],
   providers: [RmBuilderService],
   controllers: [RmController],
   exports: [RmBuilderService],

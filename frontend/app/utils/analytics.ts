@@ -1,11 +1,28 @@
 /**
  * 📊 Analytics - Utilitaires pour le tracking des événements
  * Compatible Google Analytics (gtag.js) et console logs en dev
+ *
+ * Tous les nouveaux events passent par `safeGtag()` qui applique
+ * `sanitizeParams` (S10 RGPD : immat FR, emails, tels) avant gtag.
+ * Cf. `analytics-sanitize.ts` + plan SEO 2026 §S10.
  */
 
 import { logger } from "~/utils/logger";
+import { sanitizeParams } from "~/utils/analytics-sanitize";
 
 // GA4 Window augmentation: see frontend/env.d.ts (single source of truth)
+
+/**
+ * Wrapper interne : sanitize PII puis appelle `window.gtag('event', …)`.
+ * Tous les nouveaux trackers de ce fichier doivent passer par cette fonction.
+ *
+ * No-op silencieux si `window.gtag` indisponible (SSR, bot detection,
+ * consent denied — gestion côté `root.tsx`).
+ */
+function safeGtag(eventName: string, params: Record<string, unknown>): void {
+  if (typeof window === "undefined" || !window.gtag) return;
+  window.gtag("event", eventName, sanitizeParams(params));
+}
 
 /**
  * 👀 Tracker la vue d'un article
@@ -114,14 +131,15 @@ export function trackBookmark(
 
 /**
  * 🔍 Tracker une recherche
+ *
+ * Note RGPD : `query` est user-input → passe par `safeGtag` (sanitize
+ * immat FR, emails, tels) avant envoi à GA4.
  */
 export function trackSearch(query: string, resultsCount: number) {
-  if (typeof window !== "undefined" && window.gtag) {
-    window.gtag("event", "search", {
-      search_term: query,
-      results_count: resultsCount,
-    });
-  }
+  safeGtag("search", {
+    search_term: query,
+    results_count: resultsCount,
+  });
   logger.log("📊 Analytics: Search", { query, resultsCount });
 }
 
@@ -391,4 +409,107 @@ export function trackPurchase(
     });
   }
   logger.log("📊 Analytics: purchase", { transactionId, value });
+}
+
+// ============================================================================
+// V0.B — Diagnostic, lead generation, local intent (plan SEO 2026 § V0)
+// ============================================================================
+
+/**
+ * 🩺 Diagnostic : recherche d'un symptôme dans /diagnostic-auto
+ *
+ * Note RGPD : `query` est user-input (texte libre) → sanitize PII via `safeGtag`.
+ */
+export function trackSymptomSearch(
+  query: string,
+  intent?: "noise" | "warning_light" | "smell" | "vibration" | "leak" | "other",
+  resultsCount?: number,
+) {
+  safeGtag("symptom_search", {
+    search_term: query,
+    intent,
+    results_count: resultsCount,
+  });
+  logger.log("📊 Analytics: symptom_search", { query, intent, resultsCount });
+}
+
+/**
+ * 🎯 Diagnostic : parcours `/diagnostic-auto` complété (système identifié)
+ */
+export function trackDiagnosticCompleted(params: {
+  systemId: string;
+  symptomId?: string;
+  durationSeconds?: number;
+  resultsCount?: number;
+  ctaTaken?: "view_pieces" | "call" | "quote" | "exit";
+}) {
+  safeGtag("diagnostic_completed", {
+    system_id: params.systemId,
+    symptom_id: params.symptomId,
+    duration_seconds: params.durationSeconds,
+    results_count: params.resultsCount,
+    cta_taken: params.ctaTaken,
+  });
+  logger.log("📊 Analytics: diagnostic_completed", params);
+}
+
+/**
+ * 📞 CTA téléphone (clic sur lien `tel:`)
+ *
+ * Le numéro de téléphone du commerce (CTA) n'est pas user-input mais reste
+ * sanitize-safe par défense. La page d'origine, elle, peut contenir une URL
+ * avec query-string user-input → sanitize.
+ */
+export function trackCallClick(params: {
+  phone: string;
+  source: "header" | "footer" | "diagnostic" | "product" | "guide";
+  pageContext?: string;
+}) {
+  safeGtag("call_click", {
+    phone: params.phone,
+    source: params.source,
+    page_context: params.pageContext,
+  });
+  logger.log("📊 Analytics: call_click", params);
+}
+
+/**
+ * 📍 Intent local (clic GBP / direction / store locator)
+ *
+ * Cible Phase 1-2 ADR-036 (`local-business-agent` — zone 93).
+ */
+export function trackLocalStoreIntent(params: {
+  storeId: string;
+  action: "directions" | "call" | "view_hours" | "gbp_link";
+  source: "header" | "footer" | "local_landing" | "gbp";
+}) {
+  safeGtag("local_store_intent", {
+    store_id: params.storeId,
+    action: params.action,
+    source: params.source,
+  });
+  logger.log("📊 Analytics: local_store_intent", params);
+}
+
+/**
+ * 📝 Demande de devis / lead form submit
+ *
+ * Note RGPD : ne JAMAIS passer name/email/phone — passer un `formId` opaque
+ * + métadonnées non-PII. Le helper `safeGtag` sanitize en defense-in-depth
+ * si un champ leak.
+ */
+export function trackQuoteRequest(params: {
+  formId: string;
+  productCategory?: string;
+  vehicleId?: string;
+  estimatedValue?: number;
+}) {
+  safeGtag("quote_request", {
+    form_id: params.formId,
+    product_category: params.productCategory,
+    vehicle_id: params.vehicleId,
+    currency: "EUR",
+    value: params.estimatedValue,
+  });
+  logger.log("📊 Analytics: quote_request", params);
 }

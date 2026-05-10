@@ -33,6 +33,11 @@ import {
   SEO_R8_TRUST_SIGNAL_VARIATIONS,
   R8_SLOT_OFFSETS,
 } from '../../../config/seo-variations.config';
+import {
+  SeoRoleTemplateSelector,
+  type SeoRoleTemplatePickResult,
+} from '../../seo/services/chain/seo-role-template-selector.service';
+import type { R8VariantSignature } from '../../../config/page-contract-r8.schema';
 
 // ── Result ──
 
@@ -97,6 +102,15 @@ interface R8Neighbor {
   faq_signature: string;
   category_signature: string;
   diversity_score: number;
+  /**
+   * PR-1 seo-v9 R8 meta variant pool : map slot → srtp_id (uuid).
+   * Optionnel — pages historiques antérieures à PR-1 ont `{}` ou `null`.
+   * H1 non poolisé : `buildR8H1` reste source unique.
+   */
+  variant_signature?: {
+    meta_title?: string | null;
+    meta_description?: string | null;
+  } | null;
 }
 
 @Injectable()
@@ -111,6 +125,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     configService: ConfigService,
     private readonly textUtils: EnricherTextUtils,
     private readonly vehicleRagGenerator: VehicleRagGeneratorService,
+    private readonly seoRoleTemplate: SeoRoleTemplateSelector,
     @Optional() private readonly writeGate?: ContentWriteGateService,
     @Optional() private readonly featureFlags?: FeatureFlagsService,
   ) {
@@ -243,7 +258,9 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         neighbors,
       );
 
-      // Build H1 + meta
+      // H1 : reste produit par buildR8H1 (format optimisé avec plage d'années,
+      // déjà désambiguïsant). NON poolisé en PR-1 — pas de signal GSC démontré
+      // sur H1 spécifiquement.
       const h1 = buildR8H1({
         brand: v.brand_name || '',
         model: v.model_name || '',
@@ -252,16 +269,73 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         yearFrom: v.year_from || '',
         yearTo: v.year_to || null,
       });
+
+      // Meta title + description : PR-1 seo-v9 R8 meta variant pool.
+      // Sélection via __seo_role_template_pool + SeoSwitchSelector (sha256 seed).
+      // Fallback synchrone vers les templates hardcodés si le pool est vide
+      // ou en erreur DB → no-regression (warning émis pour détection seed ratée).
+      const placeholders = {
+        brand: v.brand_name || '',
+        model: v.model_name || '',
+        type: v.type_name || '',
+        power: v.power_ps ?? '',
+        fuel: v.fuel || '',
+        year_from: v.year_from ?? '',
+        year_to: v.year_to ?? '',
+      };
+      const seedFor = (): { vehicleId: number; pgId: number } => ({
+        vehicleId: typeId,
+        pgId: 0,
+      });
+      const [
+        metaTitlePick,
+        metaDescPick,
+      ]: Array<SeoRoleTemplatePickResult | null> = await Promise.all([
+        this.seoRoleTemplate.pick({
+          role: 'R8_VEHICLE',
+          slot: 'meta_title',
+          seed: seedFor(),
+          placeholders,
+        }),
+        this.seoRoleTemplate.pick({
+          role: 'R8_VEHICLE',
+          slot: 'meta_description',
+          seed: seedFor(),
+          placeholders,
+        }),
+      ]);
+
       const metaTitle =
+        metaTitlePick?.rendered ??
         `Pièces ${v.brand_name} ${v.model_name} ${v.type_name} ${v.power_ps}ch | AutoMecanik`.slice(
           0,
           75,
         );
       const metaDescription =
+        metaDescPick?.rendered ??
         `Catalogue complet de pièces auto pour ${h1}. ${families.length} familles de pièces compatibles. Livraison rapide.`.slice(
           0,
           170,
         );
+
+      // Warning structuré si fallback déclenché — détecte une seed migration ratée silencieuse
+      if (!metaTitlePick || !metaDescPick) {
+        const missing = [
+          !metaTitlePick ? 'meta_title' : null,
+          !metaDescPick ? 'meta_description' : null,
+        ]
+          .filter(Boolean)
+          .join(',');
+        this.logger.warn(
+          `[R8_META_POOL_FALLBACK] type_id=${typeId} missing_pool_slots=${missing}`,
+        );
+      }
+
+      const variantSignature: R8VariantSignature = {
+        meta_title: metaTitlePick?.id ?? null,
+        meta_description: metaDescPick?.id ?? null,
+      };
+
       const canonicalUrl = `/constructeurs/${(v.brand_alias || v.brand_name || '').toLowerCase()}/${(v.model_alias || v.model_name || '').toLowerCase()}/${typeId}.html`;
 
       // Full content
@@ -273,8 +347,23 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       const metrics = this.computeMetrics(blocks, neighbors, families);
       const fingerprints = this.computeFingerprints(contentMain, blocks);
 
+      // ── 3.b META COLLISION (PR-1 seo-v9 R8 meta variant pool) ──
+      // Pénalise semanticSimilarityScore si ≥2 voisins partagent le même
+      // template `meta_title` ou `meta_description`. La pénalité (≤ -10) peut
+      // basculer le score sous le seuil `min_semantic_diversity=65` du gate
+      // → `LOW_SEMANTIC_DIVERSITY` reason naturellement émis. Pas de
+      // pénalité H1 (5 templates × 18 frères → ⌈18/5⌉=4 collisions
+      // mathématiquement inévitables, faux positifs garantis).
+      const metaCollisionWarnings = this.applyMetaCollisionPenalty(
+        metrics,
+        neighbors,
+        variantSignature,
+      );
+
       // ── 4. GATE ──
       const { decision, reasons, warnings } = this.gate(metrics, blocks);
+      // Merge des warnings collision avec ceux du gate
+      warnings.push(...metaCollisionWarnings);
       const sitemapRules = R8_SITEMAP_RULES[decision];
 
       // ── 5. WRITE DB ──
@@ -322,6 +411,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         engineFamilyKey,
         decision,
         sitemapRules,
+        variantSignature,
       });
 
       if (!pageId) {
@@ -462,6 +552,8 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
 
   // ── Neighbors ──
 
+  // Sentinel : `R8Neighbor` augmenté avec `variant_signature` pour la
+  // détection de collision meta dans la fratrie (PR-1 seo-v9).
   private async fetchNeighbors(
     neighborFamilyKey: string,
     excludePageKey: string,
@@ -469,7 +561,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     const { data, error } = await this.client
       .from(R8_TABLES.pages)
       .select(
-        'id, page_key, content_main, faq_signature, category_signature, diversity_score',
+        'id, page_key, content_main, faq_signature, category_signature, diversity_score, variant_signature',
       )
       .eq('neighbor_family_key', neighborFamilyKey)
       .neq('page_key', excludePageKey)
@@ -900,6 +992,64 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     return createHash('sha256').update(text).digest('hex');
   }
 
+  // ── Meta collision penalty (PR-1 seo-v9 R8 meta variant pool) ──
+
+  /**
+   * Pour chaque slot meta sensible (`meta_title`, `meta_description`), compte
+   * les voisins de la fratrie (`neighbor_family_key`) qui partagent le même
+   * `srtp_id`. Si ≥ 2 collisions → pénalité de 5 pts sur
+   * `metrics.semanticSimilarityScore`. Les pénalités s'additionnent ; le score
+   * est plafonné à 0.
+   *
+   * Pas de pénalité H1 : pool 5 templates × 18 frères = ⌈18/5⌉=4 collisions
+   * inévitables (faux positifs garantis si pénalisé).
+   *
+   * @returns warnings texte à merger avec ceux du gate.
+   */
+  private applyMetaCollisionPenalty(
+    metrics: ReturnType<R8VehicleEnricherService['computeMetrics']>,
+    neighbors: R8Neighbor[],
+    variantSignature: R8VariantSignature,
+  ): string[] {
+    const warnings: string[] = [];
+
+    const sameMetaTitleCount = variantSignature.meta_title
+      ? neighbors.filter(
+          (n) =>
+            n.variant_signature?.meta_title === variantSignature.meta_title,
+        ).length
+      : 0;
+
+    const sameMetaDescCount = variantSignature.meta_description
+      ? neighbors.filter(
+          (n) =>
+            n.variant_signature?.meta_description ===
+            variantSignature.meta_description,
+        ).length
+      : 0;
+
+    if (sameMetaTitleCount >= 2) {
+      metrics.semanticSimilarityScore = Math.max(
+        0,
+        metrics.semanticSimilarityScore - 5,
+      );
+      warnings.push(
+        `META_TITLE_COLLISION_IN_FAMILY count=${sameMetaTitleCount}`,
+      );
+    }
+    if (sameMetaDescCount >= 2) {
+      metrics.semanticSimilarityScore = Math.max(
+        0,
+        metrics.semanticSimilarityScore - 5,
+      );
+      warnings.push(
+        `META_DESCRIPTION_COLLISION_IN_FAMILY count=${sameMetaDescCount}`,
+      );
+    }
+
+    return warnings;
+  }
+
   // ── Gate ──
 
   private gate(
@@ -987,6 +1137,7 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
     engineFamilyKey: string;
     decision: R8SeoDecision;
     sitemapRules: { sitemap: boolean; robots: string };
+    variantSignature: R8VariantSignature;
   }): Promise<string | null> {
     const v = params.vehicle;
     const row = {
@@ -1034,6 +1185,8 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
       robots_directive: params.sitemapRules.robots,
       published_at:
         params.decision === 'INDEX' ? new Date().toISOString() : null,
+      // PR-1 seo-v9 R8 meta variant pool : map slot -> srtp_id (uuid).
+      variant_signature: params.variantSignature,
     };
 
     // ── P1.5 v2.1: Route through WriteGate when enabled ──

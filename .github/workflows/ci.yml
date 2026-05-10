@@ -478,7 +478,7 @@ jobs:
 
             # Known bypass files (debug/internal)
             BYPASS_COUNT=$(echo "$DIRECT_RPC_FILES" | \
-              grep -c "googlebot-detector\|enhanced-config\|products.service\|products-catalog.service\|advice.service\|content-refresh.service\|admin-job-health\|conseil-priority.service\|rag-knowledge.service\|rag-image-management\|rm-builder.service\|buying-guide-data.service\|payment-data.service\|orders.service\|r1-keyword-plan-batch\|admin-keyword-planner.controller\|abandoned-cart-data.service\|gamme-rpc.service\|admin-supplier-stats.service" || echo "0")
+              grep -c "googlebot-detector\|enhanced-config\|products.service\|products-catalog.service\|advice.service\|content-refresh.service\|admin-job-health\|conseil-priority.service\|rag-knowledge.service\|rag-image-management\|rm-builder.service\|buying-guide-data.service\|payment-data.service\|orders.service\|r1-keyword-plan-batch\|admin-keyword-planner.controller\|abandoned-cart-data.service\|gamme-rpc.service\|admin-supplier-stats.service\|quality-history-snapshot.service" || echo "0")
 
             UNEXPECTED=$((DIRECT_RPC - BYPASS_COUNT))
 
@@ -547,16 +547,28 @@ jobs:
   gitleaks:
     name: 🔐 Secrets Detection
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      security-events: write
     steps:
       - name: Check out code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 🔐 Run gitleaks
+      - name: 🔐 Run gitleaks (incremental scan, blocking)
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐷 Run TruffleHog (verified secrets, blocking)
+        uses: trufflesecurity/trufflehog@v3.83.7
+        with:
+          path: ./
+          base: ${{ github.event.pull_request.base.sha || github.event.before }}
+          head: ${{ github.event.pull_request.head.sha || github.sha }}
+          extra_args: --results=verified,unknown
 
   migration-safety:
     name: 🗄️ Migration Safety
@@ -716,6 +728,13 @@ jobs:
           NODE_ENV: preprod
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # SESSION_SECRET propagation : depuis PR #339 (commit 6c7df152), main.ts:102
+          # fail-fast si SESSION_SECRET manquant ou < 32 chars en NODE_ENV=production.
+          # Le container preprod tourne en NODE_ENV=production (Dockerfile:39+63 +
+          # docker-compose.preprod.yml:9 override le NODE_ENV=preprod du shell CI),
+          # donc le fail-fast trigger ici. Source : audit-trail vault
+          # 2026-05-07-pr339-deploy-regression.md.
+          SESSION_SECRET: ${{ secrets.PREPROD_SESSION_SECRET }}
           READ_ONLY: "true"
         run: |
           docker pull massdoc/nestjs-remix-monorepo:preprod
@@ -733,7 +752,13 @@ jobs:
           NODE_ENV=preprod
           SUPABASE_URL=${SUPABASE_URL}
           SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+          SESSION_SECRET=${SESSION_SECRET}
           READ_ONLY=true
+          # ADR-055 shadow activation: collect real preprod evidence before any
+          # mode=on decision. Literal on remains blocked by backend boot guard.
+          SEO_CHAIN_R7_MODE=shadow
+          SEO_CHAIN_R8_MODE=shadow
+          SEO_CHAIN_RM_MODE=shadow
           REDIS_URL=redis://redis-preprod:6379
           APP_URL=http://localhost:3200
           # RAG service disabled in preprod (4 rag-proxy services use
