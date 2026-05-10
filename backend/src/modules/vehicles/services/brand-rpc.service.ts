@@ -1,8 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { CacheService } from '../../../cache/cache.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { CacheService } from '@cache/cache.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
+
+import { SeoShadowObservatory } from '@modules/seo-shadow-observatory/seo-shadow-observatory.service';
 
 /**
  * 🚀 Service RPC optimisé pour les pages marques constructeurs
@@ -34,6 +36,7 @@ export class BrandRpcService extends SupabaseBaseService {
   constructor(
     private readonly cacheService: CacheService,
     rpcGate: RpcGateService,
+    private readonly shadowObservatory: SeoShadowObservatory,
   ) {
     super();
     this.rpcGate = rpcGate;
@@ -47,9 +50,12 @@ export class BrandRpcService extends SupabaseBaseService {
   }
 
   /**
-   * ⚡ Récupère les données page marque avec cache
+   * ⚡ Récupère les données page marque avec cache.
+   *
+   * `requestUrl` optionnel — si fourni, déclenche une observation shadow
+   * (SeoShadowObservatory, PR-6). Sync, non-bloquant pour le chemin réponse.
    */
-  async getBrandPageDataOptimized(marqueId: number) {
+  async getBrandPageDataOptimized(marqueId: number, requestUrl?: string) {
     const startTime = performance.now();
     const cacheKey = this.getCacheKey(marqueId);
 
@@ -61,13 +67,15 @@ export class BrandRpcService extends SupabaseBaseService {
       this.logger.debug(
         `🎯 CACHE HIT brand ${marqueId} en ${cacheTime.toFixed(1)}ms`,
       );
-      return {
+      const result = {
         ...cached,
         _cache: {
           hit: true,
           time: cacheTime,
         },
       };
+      this.fireShadowObservation(marqueId, requestUrl, result);
+      return result;
     }
 
     // 2. Cache miss → Appel RPC
@@ -80,7 +88,52 @@ export class BrandRpcService extends SupabaseBaseService {
       this.logger.error(`Erreur cache brand ${marqueId}:`, err),
     );
 
+    this.fireShadowObservation(marqueId, requestUrl, result);
     return result;
+  }
+
+  /**
+   * Fire-and-forget shadow observation (PR-6).
+   *
+   * NE PAS `await` cette méthode — `observe()` est sync par contrat (validé
+   * par `.ast-grep/rules/seo-shadow-no-await.yml`). La comparaison réelle
+   * court via `setImmediate` dans le module observatory.
+   */
+  private fireShadowObservation(
+    marqueId: number,
+    requestUrl: string | undefined,
+    result: Record<string, unknown>,
+  ): void {
+    if (!requestUrl) return;
+    const brand =
+      (result['brand'] as Record<string, unknown> | undefined) ?? undefined;
+    const seo =
+      (result['seo'] as Record<string, unknown> | undefined) ?? undefined;
+    const brandAlias = String(brand?.['marque_alias'] ?? '');
+    const marqueName = String(brand?.['marque_name'] ?? '');
+    if (!brandAlias) return;
+    this.shadowObservatory.observe({
+      surface: 'R7_BRAND_HUB',
+      legacy: {
+        title: (seo?.['title'] as string | null | undefined) ?? null,
+        description:
+          (seo?.['description'] as string | null | undefined) ?? null,
+        h1: (seo?.['h1'] as string | null | undefined) ?? null,
+        content: (seo?.['content'] as string | null | undefined) ?? null,
+        keywords: (seo?.['keywords'] as string | null | undefined) ?? null,
+        canonical: (seo?.['canonical'] as string | null | undefined) ?? null,
+        robots: (seo?.['robots'] as string | null | undefined) ?? null,
+      },
+      requestUrl,
+      ids: {
+        brandId: marqueId,
+        brandAlias,
+      },
+      vars: {
+        VMarque: marqueName,
+      },
+      entityId: String(marqueId),
+    });
   }
 
   /**

@@ -63,6 +63,7 @@ import {
 // R1ContentPipelineService SUPPRIME — pipeline Groq remplace par skills /content-gen
 // ContentRefreshService SUPPRIME — pipeline auto remplace par skills /content-gen
 import { ConseilEnricherService } from './services/conseil-enricher.service'; // 🔄 R3 Conseils enricher
+import { CanonObservabilityService } from './services/canon-observability.service'; // 🛡️ Canon violation Sentry emitter
 import { PageBriefService } from './services/page-brief.service'; // 📋 Page Briefs CRUD + overlap
 import { BriefGatesService } from './services/brief-gates.service'; // 🚦 Pre-publish gates anti-cannibalisation
 import { HardGatesService } from './services/hard-gates.service'; // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
@@ -96,7 +97,12 @@ import { R8VehicleEnricherService } from './services/r8-vehicle-enricher.service
 import { R7BrandEnricherService } from './services/r7-brand-enricher.service'; // 🏭 R7 Brand page enricher (RAG + diversity scoring)
 import { BrandEditorialService } from './services/brand-editorial.service'; // 🏭 R7 Brand editorial content (FAQ/issues/maintenance)
 import { VehicleRagGeneratorService } from './services/vehicle-rag-generator.service'; // 🚗 Vehicle RAG .md generator (0 LLM)
+import { RagProposalService } from './services/rag-proposal.service'; // 📝 ADR-022 L1 propose-before-write
 import { AdminVehicleRagController } from './controllers/admin-vehicle-rag.controller'; // 🚗 Vehicle RAG generation endpoints
+import { AdminVehicleCacheController } from './controllers/admin-vehicle-cache.controller'; // 🚗 INC-2026-007 — Vehicle cache rebuild/invalidate/stats
+import { VehiclesModule } from '../vehicles/vehicles.module'; // 🚗 INC-2026-007 — pour VehicleRpcService
+import { OperatingMatrixModule } from '../../config/operating-matrix.module'; // 🛡️ Read-only governance matrix (registry × catalog × agents)
+import { GovernanceMatrixController } from './controllers/governance-matrix.controller'; // 🛡️ Admin REST exposure of SEO Operating Matrix
 
 // Services - Stock services pour le controller consolidé
 import { ConfigurationService } from './services/configuration.service';
@@ -138,6 +144,8 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     RagProxyModule, // 📖 Import pour accès à RagProxyService (enrichissement buying guide)
     SystemModule, // DB governance Phase 2 (DbGovernanceService)
     AiContentModule, // 🤖 Pour ConseilEnricher + BuyingGuideSEODraft (optional LLM polish)
+    VehiclesModule, // 🚗 INC-2026-007 — pour AdminVehicleCacheController (VehicleRpcService)
+    OperatingMatrixModule, // 🛡️ Read-only governance matrix (zero infra deps)
   ],
   controllers: [
     ConfigurationController,
@@ -175,12 +183,14 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     AdminR8VehicleController, // 🚗 R8 Vehicle enrichment - /api/admin/r8/enrich/:typeId
     AdminR7BrandController, // 🏭 R7 Brand enrichment - /api/admin/r7/enrich/:marqueId
     AdminVehicleRagController, // 🚗 Vehicle RAG generation - /api/admin/vehicle-rag/*
+    AdminVehicleCacheController, // 🚗 INC-2026-007 - /api/admin/vehicle-cache/* (rebuild, invalidate, stats)
     // AdminSupplierStatsController — not ready for prod
     AdminDbGovernanceController, // 📊 DB Governance Phase 2 - /api/admin/db-governance/*
     AdminPipelineController, // 🚀 Unified pipeline execution - /api/admin/pipeline/*
     AdminRagPipelineStatusController, // 📊 RAG pipeline dashboard - /api/admin/rag-pipeline/status
     InternalPipelineController, // 🚀 Internal pipeline (X-Internal-Key) - /api/internal/pipeline/*
     InternalSeoAuditController, // 📊 Internal SEO audit (X-Internal-Key) - /api/internal/seo/audit/*
+    GovernanceMatrixController, // 🛡️ SEO Operating Matrix - /api/admin/governance/seo-operating-matrix
   ],
   providers: [
     ConfigurationService,
@@ -207,6 +217,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     BuyingGuideDbService, // 📖 DB operations (anti-regression)
     BuyingGuideSeoDraftService, // 📖 SEO draft generation
     ConseilEnricherService, // 🔄 R3 Conseils S1-S8 enricher
+    CanonObservabilityService, // 🛡️ Canon violation Sentry emitter (R3 PR-E)
     PageBriefService, // 📋 Page Briefs CRUD + overlap detection
     BriefGatesService, // 🚦 Pre-publish gates anti-cannibalisation
     HardGatesService, // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
@@ -232,6 +243,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     R7BrandEnricherService, // 🏭 R7 Brand page enricher (RAG + diversity scoring, 0-LLM)
     BrandEditorialService, // 🏭 R7 Brand editorial content CRUD
     VehicleRagGeneratorService, // 🚗 Vehicle RAG .md generator (DB + gamme RAGs, 0-LLM)
+    RagProposalService, // 📝 ADR-022 L1 propose-before-write staging (__rag_proposals)
     // AdminSupplierStatsService — not ready for prod
     ExecutionRouterService, // 🚀 Unified enricher dispatch router (ExecutionRegistry-based)
     R2EnricherService, // 🏗️ R2 Product enricher (WriteGate-native, 0-LLM)

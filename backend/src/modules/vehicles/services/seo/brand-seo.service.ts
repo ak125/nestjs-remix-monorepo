@@ -12,6 +12,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { createClient } from '@supabase/supabase-js';
 import { TABLES } from '@repo/database-types';
+import { getEffectiveSupabaseKey } from '@common/utils';
 import {
   SEO_PRICE_VARIATIONS,
   selectVariation,
@@ -42,9 +43,10 @@ export class BrandSeoService {
   private supabase: SupabaseClient;
 
   constructor() {
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
     this.supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      process.env.SUPABASE_URL || '',
+      getEffectiveSupabaseKey(),
     );
     this.logger.log('✅ BrandSeoService initialisé');
   }

@@ -2,7 +2,7 @@ import { Controller, Get, Query, Param } from '@nestjs/common';
 import { HeaderService } from '../services/header.service';
 import { FooterService } from '../services/footer.service';
 import { QuickSearchService } from '../services/quick-search.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 @Controller('layout/sections')
 export class SectionController {

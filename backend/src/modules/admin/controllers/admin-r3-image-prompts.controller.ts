@@ -11,8 +11,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { R3ImagePromptService } from '../services/r3-image-prompt.service';
 import {
   GenerateImagePromptsDto,

@@ -20,6 +20,8 @@ import { RiskSafetyEngine } from './engines/risk-safety.engine';
 import { CatalogOrientationEngine } from './engines/catalog-orientation.engine';
 import { MaintenanceIntelligenceEngine } from './engines/maintenance-intelligence.engine';
 import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
+import { MaintenanceCalculatorService } from './services/maintenance-calculator.service';
+import { DiagnosticContentService } from './services/diagnostic-content.service';
 
 @Module({
   imports: [
@@ -36,8 +38,15 @@ import { RagEnrichmentEngine } from './engines/rag-enrichment.engine';
     CatalogOrientationEngine,
     MaintenanceIntelligenceEngine,
     RagEnrichmentEngine,
+    MaintenanceCalculatorService,
+    DiagnosticContentService,
   ],
-  exports: [DiagnosticEngineOrchestrator, DiagnosticEngineDataService],
+  exports: [
+    DiagnosticEngineOrchestrator,
+    DiagnosticEngineDataService,
+    MaintenanceCalculatorService,
+    DiagnosticContentService,
+  ],
 })
 export class DiagnosticEngineModule {
   private readonly logger = new Logger(DiagnosticEngineModule.name);

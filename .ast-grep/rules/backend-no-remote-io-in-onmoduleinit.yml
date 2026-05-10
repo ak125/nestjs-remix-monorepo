@@ -1,0 +1,69 @@
+id: backend-no-remote-io-in-onmoduleinit
+language: typescript
+severity: error
+message: |
+  Awaited remote I/O inside an `onModuleInit` hook blocks `app.listen()`
+  during NestJS init phase. NestJS v10 fires `onModuleInit` from
+  `app.init() → callInitHook()` invoked by `app.listen()` (cf.
+  node_modules/@nestjs/core/nest-application.js:90-103). Any await whose
+  network round-trip is slow or unreachable blocks listen() → /health
+  stays muet → exit 124 on perf-gates.yml + unready container in k8s.
+
+  Confirmed offenders to date (PR #224 timeline):
+    - this.supabase.* (RPCs Supabase)         — patched 5d503e1a
+    - this.<*Queue>.{add,getRepeatableJobs,removeRepeatableByKey}(...)
+        (Bull/BullMQ Redis ops)               — patched ce commit
+    - this.meilisearch.* / this.<*>.updateSettings(...) (Meilisearch HTTP)
+                                              — patched e489ecbe
+    - fetch(...)                              — direct HTTP
+
+  Pattern canonique (sync onModuleInit + void warmer):
+      onModuleInit(): void {
+        void this.<warmOrRecover>();
+      }
+      private async <warmOrRecover>(): Promise<void> {
+        try { /* current async body */ } catch (e) { this.logger.error(...); }
+      }
+
+  See .claude/rules/backend.md § "Non-blocking onModuleInit".
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/**/*.spec.ts
+  - backend/src/**/*.e2e-spec.ts
+  - backend/src/**/test-*.ts
+rule:
+  any:
+    # Awaited expression whose subtree references a known remote-I/O subject.
+    # Catches chained calls: `await this.supabase.from(...).select(...)`,
+    # `await this.meilisearch.index(...).updateSettings(...)`, etc.
+    - all:
+        - pattern: await $_
+        - has:
+            any:
+              - pattern: this.supabase
+              - pattern: this.meilisearch
+              - pattern: this.httpService
+            stopBy: end
+    # Bull / BullMQ queue ops: any identifier ending in `Queue` calling Redis
+    # (catches `this.emailQueue.add`, `this.seoMonitorQueue.getRepeatableJobs`,
+    # `this.auditQueue.removeRepeatableByKey`, etc.).
+    - all:
+        - pattern: await $_
+        - has:
+            regex: '\.(add|getRepeatableJobs|removeRepeatableByKey|getJob|getJobs|removeJobs|drain|empty|count|isReady)\b'
+            stopBy: end
+        - has:
+            regex: '\bthis\.[A-Za-z_$][A-Za-z0-9_$]*[Qq]ueue\b'
+            stopBy: end
+    # Direct global fetch
+    - pattern: await fetch($$$)
+  inside:
+    any:
+      - pattern:
+          context: "class C { async onModuleInit($$$) { $$$ } }"
+          selector: method_definition
+      - pattern:
+          context: "class C { onModuleInit($$$) { $$$ } }"
+          selector: method_definition
+    stopBy: end

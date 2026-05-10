@@ -13,6 +13,8 @@ import { CookieSerializer } from './cookie-serializer';
 import { IsAdminGuard } from './is-admin.guard';
 import { LocalAuthGuard } from './local-auth.guard';
 import { LocalStrategy } from './local.strategy';
+import { PermissionsService } from './permissions.service';
+import { PermissionsGuard } from './guards/permissions.guard';
 
 @Module({
   imports: [
@@ -41,7 +43,9 @@ import { LocalStrategy } from './local.strategy';
     LocalAuthGuard,
     CookieSerializer,
     IsAdminGuard,
+    PermissionsService,
+    PermissionsGuard,
   ],
-  exports: [AuthService],
+  exports: [AuthService, PermissionsService, PermissionsGuard],
 })
 export class AuthModule {}

@@ -19,7 +19,6 @@ import {
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import {
-  AlertTriangle,
   Award,
   Car,
   CheckCircle,
@@ -29,33 +28,38 @@ import {
   FileText,
   HeadphonesIcon,
   Info,
-  ListChecks,
   Package,
   RotateCcw,
   Search,
   Shield,
   Star,
   Truck,
-  Wrench,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { resolveSlogan } from "~/config/visual-intent";
 import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { ErrorGeneric } from "../components/errors";
-import { HeroSelection } from "../components/heroes";
-import {
-  ModelContentV1Display,
-  type ModelContentV1Data,
-} from "../components/model";
+import { ModelContentV1Display } from "../components/model";
 import { HtmlContent } from "../components/seo/HtmlContent";
+import {
+  AntiErrorsSection,
+  BreadcrumbSection,
+  FAMILY_MICRO_DESCRIPTIONS,
+  generateVehicleSchema,
+  HeroSection,
+  HowtoSection,
+  R8EnrichedSection,
+  SeoIntroSection,
+  transformRpcToLoaderData,
+  TrustSection,
+  type LoaderData,
+} from "../components/vehicle/r8";
 import { hierarchyApi } from "../services/api/hierarchy.api";
 import { brandColorsService } from "../services/brand-colors.service";
 import { isValidImagePath } from "../utils/image-optimizer";
 import { detectMalformedSegment } from "../utils/pieces-route.utils";
-import { stripHtmlForMeta } from "../utils/seo-clean.utils";
 import { normalizeTypeAlias } from "../utils/url-builder.utils";
 
 /**
@@ -75,130 +79,43 @@ export const links: LinksFunction = () => [
 const loaderCache = new Map<string, { data: LoaderData; timestamp: number }>();
 const CACHE_TTL = 60000; // 1 minute
 
-// 📝 Types de données (structure PHP + API /full)
-interface VehicleData {
-  marque_id: number;
-  marque_alias: string;
-  marque_name: string;
-  marque_name_meta: string;
-  marque_name_meta_title: string;
-  marque_logo: string;
-  marque_relfollow: number;
-  modele_id: number;
-  modele_alias: string;
-  modele_name: string;
-  modele_name_meta: string;
-  modele_relfollow: number;
-  modele_pic?: string;
-  type_id: number;
-  type_alias: string;
-  type_name: string;
-  type_name_meta: string;
-  type_power_ps: string;
-  type_body: string;
-  type_fuel: string;
-  type_month_from: string;
-  type_year_from: string;
-  type_month_to: string | null;
-  type_year_to: string | null;
-  type_relfollow: number;
-  power: string;
-  date: string;
-  // 🔧 Codes moteur (depuis API /full)
-  motor_codes?: string[];
-  motor_codes_formatted?: string;
-  // 🔧 Types mines / CNIT (depuis API /full)
-  mine_codes?: string[];
-  mine_codes_formatted?: string;
-  cnit_codes?: string[];
-  cnit_codes_formatted?: string;
-  // 📊 Données techniques formatées
-  power_formatted?: string;
-  cylinder_cm3?: number;
-  production_date_formatted?: string;
+// 📡 INC-2026-007 — Comble le blindspot __error_logs : notifie le backend
+// avant chaque throw 503 du loader. Fire-and-forget, jamais bloquant.
+async function notify503ToErrorLog(
+  url: string,
+  subject: string,
+  message: string,
+  metadata?: Record<string, unknown>,
+): Promise<void> {
+  const internalKey = process.env.INTERNAL_API_KEY;
+  if (!internalKey) return;
+
+  try {
+    await fetch(`${getInternalApiUrl("")}/api/internal/error-log`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Internal-Key": internalKey,
+      },
+      body: JSON.stringify({
+        status: 503,
+        url,
+        subject,
+        message,
+        metadata,
+      }),
+      signal: AbortSignal.timeout(500), // ne jamais bloquer le loader
+    }).catch(() => {});
+  } catch {
+    // best-effort, jamais bloquant
+  }
 }
 
-interface CatalogFamily {
-  mf_id: number;
-  mf_name: string;
-  mf_description: string;
-  mf_pic: string;
-  gammes: CatalogGamme[];
-}
-
-interface CatalogGamme {
-  pg_id: number;
-  pg_alias: string;
-  pg_name: string;
-}
-
-interface PopularPart {
-  cgc_pg_id: number;
-  pg_alias: string;
-  pg_name: string;
-  pg_name_meta: string;
-  pg_img: string;
-  addon_content: string;
-}
-
-interface _MetaTagsAriane {
-  mta_id: number;
-  mta_title: string;
-  mta_descrip: string;
-  mta_keywords: string;
-  mta_ariane: string;
-  mta_h1: string;
-  mta_content: string;
-  mta_alias: string;
-  mta_relfollow: number;
-}
-
-interface SEOData {
-  title: string;
-  description: string;
-  keywords: string;
-  h1: string;
-  content: string;
-  content2: string;
-  robots: string;
-  canonical: string;
-}
-
-// R8 enriched content (from __seo_r8_pages, optional overlay)
-interface R8Block {
-  id: string;
-  type: string;
-  title: string;
-  renderedText: string;
-  specificityWeight: number;
-}
-
-interface R8Content {
-  h1: string;
-  metaTitle: string;
-  metaDescription: string;
-  blocks: R8Block[];
-  seoDecision: string;
-  diversityScore: number;
-}
-
-interface LoaderData {
-  vehicle: VehicleData;
-  catalogFamilies: CatalogFamily[];
-  popularParts: PopularPart[];
-  seo: SEOData;
-  breadcrumb: {
-    items?: Array<{ name: string; url: string }>;
-    // Legacy support
-    brand: string;
-    model: string;
-    type: string;
-  };
-  // V1 Content - Encyclopedic content for model pages (optional)
-  modelContentV1?: ModelContentV1Data | null;
-  // R8 enriched content (from R8VehicleEnricherService, optional)
-  r8Content?: R8Content | null;
-}
+// Types, transform, schema, constants moved to components/vehicle/r8/
+// - r8.types.ts        : VehicleData, CatalogFamily, PopularPart, SEOData, R8Block, R8Content, LoaderData
+// - r8-transform.ts    : transformRpcToLoaderData (RPC → LoaderData, pure)
+// - r8-schema.ts       : generateVehicleSchema (Car + BreadcrumbList JSON-LD)
+// - r8-constants.ts    : FAMILY_MICRO_DESCRIPTIONS
 
 // ⚡ Contrôle de revalidation pour éviter les rechargements inutiles
 export function shouldRevalidate({
@@ -214,240 +131,6 @@ export function shouldRevalidate({
 
   // Ne recharger que si les paramètres de route changent
   return currentUrl.pathname !== nextUrl.pathname;
-}
-
-// ========================================
-// 🚀 RPC OPTIMISÉ - Transformation des données
-// ========================================
-
-/**
- * Transforme la réponse RPC en LoaderData
- * Compatible avec la structure existante de la page
- */
-function transformRpcToLoaderData(
-  rpcData: any,
-  params: { brand: string; model: string; type: string },
-): LoaderData {
-  const v = rpcData.vehicle;
-  const seoCustom = rpcData.seo_custom;
-
-  // Parsing des paramètres URL (pour fallback)
-  const brandParts = params.brand.split("-");
-  const marque_id = parseInt(brandParts[brandParts.length - 1]) || 0;
-  const marque_alias = brandParts.slice(0, -1).join("-");
-
-  const modelParts = params.model.split("-");
-  const modele_id = parseInt(modelParts[modelParts.length - 1]) || 0;
-  const modele_alias = modelParts.slice(0, -1).join("-");
-
-  const typeWithoutHtml = params.type.replace(".html", "");
-  const typeParts = typeWithoutHtml.split("-");
-  const type_id = parseInt(typeParts[typeParts.length - 1]) || 0;
-
-  // Formatage de la date (logique PHP)
-  let type_date = "";
-  if (!v.type_year_to) {
-    type_date = `du ${v.type_month_from}/${v.type_year_from}`;
-  } else {
-    type_date = `de ${v.type_year_from} à ${v.type_year_to}`;
-  }
-
-  // Données véhicule
-  const vehicleData: VehicleData = {
-    marque_id: v.marque_id || marque_id,
-    marque_alias: v.marque_alias || marque_alias,
-    marque_name: v.marque_name,
-    marque_name_meta: v.marque_name_meta || v.marque_name,
-    marque_name_meta_title: v.marque_name_meta_title || v.marque_name,
-    marque_logo: v.marque_logo || `${v.marque_alias}.webp`,
-    marque_relfollow: v.marque_relfollow || 1,
-    modele_id: v.modele_id || modele_id,
-    modele_alias: v.modele_alias || modele_alias,
-    modele_name: v.modele_name,
-    modele_name_meta: v.modele_name_meta || v.modele_name,
-    modele_relfollow: v.modele_relfollow || 1,
-    modele_pic: v.modele_pic,
-    type_id: v.type_id || type_id,
-    type_alias: normalizeTypeAlias(v.type_alias, v.type_name),
-    type_name: v.type_name,
-    type_name_meta: v.type_name_meta || v.type_name,
-    type_power_ps: v.type_power_ps,
-    type_body: v.type_body,
-    type_fuel: v.type_fuel,
-    type_month_from: v.type_month_from,
-    type_year_from: v.type_year_from,
-    type_month_to: v.type_month_to,
-    type_year_to: v.type_year_to,
-    type_relfollow: v.type_relfollow || 1,
-    power: v.type_power_ps,
-    date: type_date,
-    motor_codes: rpcData.motor_codes || [],
-    motor_codes_formatted: (rpcData.motor_codes || []).join(", "),
-    mine_codes: rpcData.mine_codes || [],
-    mine_codes_formatted: (rpcData.mine_codes || []).join(", "),
-    cnit_codes: rpcData.cnit_codes || [],
-    cnit_codes_formatted: (rpcData.cnit_codes || []).join(", "),
-    power_formatted: v.type_power_ps ? `${v.type_power_ps} ch` : "",
-    cylinder_cm3: v.type_liter
-      ? Math.round(parseFloat(v.type_liter) * 1000)
-      : undefined,
-    production_date_formatted: type_date,
-  };
-
-  // Système SEO avec switch dynamique
-  const getSeoSwitch = (alias: number, typeId: number): string => {
-    const switches: Record<number, string[]> = {
-      1: ["à prix discount", "pas cher", "à mini prix", "en promotion"],
-      2: ["et équipements", "et accessoires", "neuves", "d'origine"],
-      10: [
-        "Toutes les pièces auto",
-        "Trouvez toutes les pièces",
-        "Catalogue complet",
-        "Pièces détachées",
-      ],
-      11: [
-        "Toutes les références",
-        "L'ensemble des pièces",
-        "Toutes les gammes",
-        "Tous les produits",
-      ],
-      12: [
-        "nos fournisseurs certifiés",
-        "nos partenaires agréés",
-        "nos distributeurs",
-        "nos fournisseurs",
-      ],
-    };
-    const options = switches[alias] || [""];
-    return options[typeId % options.length];
-  };
-
-  // SEO (priorité aux données personnalisées)
-  let seoTitle: string;
-  let seoDescription: string;
-  let seoKeywords: string;
-  let h1: string;
-  let content: string;
-  let content2: string;
-
-  if (seoCustom) {
-    seoTitle =
-      seoCustom.mta_title ||
-      `Pièces ${vehicleData.marque_name_meta_title} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta}`;
-    seoDescription = seoCustom.mta_descrip || "";
-    seoKeywords =
-      seoCustom.mta_keywords ||
-      `${vehicleData.marque_name_meta}, ${vehicleData.modele_name_meta}, ${vehicleData.type_name_meta}`;
-    h1 =
-      seoCustom.mta_h1 ||
-      `${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name} ${vehicleData.type_power_ps} ch ${type_date}`;
-    content = seoCustom.mta_content || "";
-    content2 = "";
-  } else {
-    const comp_switch_title = getSeoSwitch(1, type_id);
-    const comp_switch_desc = getSeoSwitch(2, type_id);
-    seoTitle = `Pièces ${vehicleData.marque_name_meta_title} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta} ${comp_switch_title}`;
-    seoDescription = `Catalogue pièces détachées pour ${vehicleData.marque_name_meta} ${vehicleData.modele_name_meta} ${vehicleData.type_name_meta} ${vehicleData.type_power_ps} ch ${type_date} neuves ${comp_switch_desc}`;
-    seoKeywords = `${vehicleData.marque_name_meta}, ${vehicleData.modele_name_meta}, ${vehicleData.type_name_meta}, ${vehicleData.type_power_ps} ch, ${type_date}`;
-    h1 = `${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name} ${vehicleData.type_power_ps} ch ${type_date}`;
-    content = `Accédez au catalogue de pièces compatibles avec votre <b>${vehicleData.marque_name} ${vehicleData.modele_name} ${vehicleData.type_name}</b> ${vehicleData.type_power_ps} ch (${vehicleData.type_year_from}–${vehicleData.type_year_to || "aujourd'hui"}). Les gammes ci-dessous sont filtrées selon la motorisation, la période de production et la carrosserie. Pour confirmer la compatibilité, utilisez votre VIN / CNIT (carte grise) : cela évite les erreurs entre versions proches.`;
-    content2 = `En cas de doute, notre équipe valide la référence avant expédition.${vehicleData.motor_codes_formatted ? ` Code moteur connu : <strong>${vehicleData.motor_codes_formatted}</strong>.` : ""}`;
-  }
-
-  // Canonical URL (uses normalizeTypeAlias to handle null, empty, or "null" string values)
-  const canonicalLink = `https://www.automecanik.com/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}/${vehicleData.modele_alias}-${vehicleData.modele_id}/${vehicleData.type_alias}-${vehicleData.type_id}.html`;
-
-  // Catalogue (depuis RPC)
-  const catalogFamilies: CatalogFamily[] = (
-    rpcData.catalog?.families || []
-  ).map((f: any) => ({
-    mf_id: parseInt(f.mf_id),
-    mf_name: f.mf_name,
-    mf_description: f.mf_description || `Système ${f.mf_name.toLowerCase()}`,
-    mf_pic: f.mf_pic || `${f.mf_name.toLowerCase()}.webp`,
-    gammes: (f.gammes || []).map((g: any) => ({
-      pg_id: g.pg_id,
-      pg_alias: g.pg_alias,
-      pg_name: g.pg_name,
-    })),
-  }));
-
-  // Pièces populaires (depuis RPC)
-  const generateSeoContent = (
-    pgName: string,
-    vd: VehicleData,
-    tid: number,
-  ): string => {
-    const switches = ["Achetez", "Trouvez", "Commandez", "Choisissez"];
-    const qualities = ["d'origine", "de qualité", "certifiées", "garanties"];
-    return `${switches[tid % switches.length]} ${pgName} ${vd.marque_name_meta} ${vd.modele_name_meta} ${vd.type_name_meta}, ${qualities[(tid + 1) % qualities.length]} à prix bas.`;
-  };
-
-  const popularParts: PopularPart[] = (rpcData.popular_parts || []).map(
-    (p: any, idx: number) => ({
-      cgc_pg_id: p.pg_id,
-      pg_alias: p.pg_alias,
-      pg_name: p.pg_name,
-      pg_name_meta: p.pg_name_meta || p.pg_name.toLowerCase(),
-      pg_img: p.pg_img || null,
-      addon_content: generateSeoContent(p.pg_name, vehicleData, type_id + idx),
-    }),
-  );
-
-  // Validation SEO pour robots
-  const seoValidation = rpcData.seo_validation || {};
-  let pageRobots = "index, follow";
-  if (!seoValidation.is_indexable) {
-    pageRobots = "noindex, nofollow";
-  }
-
-  // Nouveaux véhicules TecDoc (60000-83456) : noindex jusqu'à validation SEO
-  if (type_id >= 60000 && type_id <= 83456) {
-    pageRobots = "noindex, nofollow";
-  }
-
-  // Blog content - RPC returns simple bsm_* fields, but ModelContentV1Data expects full structure
-  // For now, set to null. To get full model content, a separate API call would be needed.
-  const modelContentV1: ModelContentV1Data | null = null;
-
-  return {
-    vehicle: vehicleData,
-    catalogFamilies,
-    popularParts,
-    seo: {
-      title: seoTitle,
-      description: stripHtmlForMeta(seoDescription),
-      keywords: seoKeywords,
-      h1,
-      content,
-      content2,
-      robots: pageRobots,
-      canonical: canonicalLink,
-    },
-    breadcrumb: {
-      items: [
-        { name: "Accueil", url: "/" },
-        { name: "Constructeurs", url: "/constructeurs" },
-        {
-          name: vehicleData.marque_name,
-          url: `/constructeurs/${vehicleData.marque_alias}-${vehicleData.marque_id}.html`,
-        },
-        {
-          name: vehicleData.modele_name,
-          url: "",
-        },
-        {
-          name: `${vehicleData.type_name} ${vehicleData.type_power_ps} ch`,
-          url: "",
-        },
-      ],
-      brand: vehicleData.marque_name,
-      model: vehicleData.modele_name,
-      type: vehicleData.type_name,
-    },
-    modelContentV1,
-    r8Content: rpcData.r8_content || null,
-  };
 }
 
 // 🚀 Loader optimisé avec RPC (remplace 4 appels API → 1 seul)
@@ -561,6 +244,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
         throw new Response("Véhicule supprimé du catalogue", { status: 410 });
       }
       // Vrais erreurs serveur → 503 (Google réessaye) au lieu de 500
+      await notify503ToErrorLog(
+        `/constructeurs/${brand}/${model}/${type}`,
+        "LOADER_503_BACKEND_RPC_ERROR",
+        `Backend page-data-rpc returned HTTP ${rpcResponse.status} for type_id=${type_id}`,
+        { type_id, backend_status: rpcResponse.status },
+      );
       throw new Response("Service temporairement indisponible", {
         status: 503,
       });
@@ -574,6 +263,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
       (error.name === "AbortError" || error.name === "TimeoutError")
     ) {
       logger.error(`⏱️ [RPC] Timeout 10s pour type_id=${type_id}`);
+      await notify503ToErrorLog(
+        `/constructeurs/${brand}/${model}/${type}`,
+        "LOADER_503_RPC_TIMEOUT",
+        `Backend page-data-rpc timeout (10s) for type_id=${type_id}`,
+        { type_id, timeout_ms: 10000 },
+      );
       throw new Response("Service temporairement indisponible", {
         status: 503,
       });
@@ -584,6 +279,12 @@ export async function loader({ params }: LoaderFunctionArgs) {
     }
     // Autres erreurs → 503 (Google réessaye) au lieu de 500
     logger.error(`❌ [RPC] Erreur fetch pour type_id=${type_id}:`, error);
+    await notify503ToErrorLog(
+      `/constructeurs/${brand}/${model}/${type}`,
+      "LOADER_503_RPC_FETCH_ERROR",
+      `Backend page-data-rpc fetch failed for type_id=${type_id}: ${error instanceof Error ? error.message : String(error)}`,
+      { type_id, error_name: error instanceof Error ? error.name : "unknown" },
+    );
     throw new Response("Service temporairement indisponible", { status: 503 });
   }
 
@@ -591,6 +292,16 @@ export async function loader({ params }: LoaderFunctionArgs) {
     logger.error("❌ [RPC] Données invalides:", rpcResult);
     // 503 et non 410 : le véhicule peut exister mais le service a échoué.
     // 410 causerait une désindexation Google permanente.
+    await notify503ToErrorLog(
+      `/constructeurs/${brand}/${model}/${type}`,
+      "LOADER_503_RPC_INVALID_PAYLOAD",
+      `Backend returned 200 but payload invalid for type_id=${type_id}`,
+      {
+        type_id,
+        payload_success: rpcResult.success,
+        has_vehicle: !!rpcResult.data?.vehicle,
+      },
+    );
     throw new Response("Service temporairement indisponible", { status: 503 });
   }
 
@@ -648,101 +359,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
   return defer(loaderData as unknown as Record<string, unknown>);
 }
 
-// 🚗 Générer le breadcrumb structuré Schema.org
-// 🚗 Génère le schema @graph complet: Car + BreadcrumbList
-function generateVehicleSchema(
-  vehicle: VehicleData,
-  breadcrumb: LoaderData["breadcrumb"],
-) {
-  const baseUrl = "https://www.automecanik.com";
-  const canonicalUrl = `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}/${vehicle.type_alias}-${vehicle.type_id}.html`;
-
-  return {
-    "@context": "https://schema.org",
-    "@graph": [
-      // 1️⃣ Car - Véhicule complet avec toutes les specs
-      {
-        "@type": "Car",
-        "@id": `${canonicalUrl}#vehicle`,
-        name: `${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name}`,
-        brand: { "@type": "Brand", name: vehicle.marque_name },
-        manufacturer: { "@type": "Organization", name: vehicle.marque_name },
-        model: vehicle.modele_name,
-        vehicleConfiguration: vehicle.type_name,
-        // 📅 Année modèle
-        ...(vehicle.type_year_from && {
-          vehicleModelDate: vehicle.type_year_from,
-        }),
-        // 🔧 Moteur
-        vehicleEngine: {
-          "@type": "EngineSpecification",
-          name: vehicle.type_name,
-          ...(vehicle.type_power_ps && {
-            enginePower: {
-              "@type": "QuantitativeValue",
-              value: parseInt(vehicle.type_power_ps),
-              unitCode: "HP",
-            },
-          }),
-        },
-        // ⛽ Carburant
-        ...(vehicle.type_fuel && { fuelType: vehicle.type_fuel }),
-        // 🚗 Carrosserie
-        ...(vehicle.type_body && { bodyType: vehicle.type_body }),
-        // 📅 Période de production
-        ...(vehicle.type_year_from && {
-          additionalProperty: [
-            {
-              "@type": "PropertyValue",
-              name: "Période de production",
-              value: vehicle.type_year_to
-                ? `${vehicle.type_year_from}-${vehicle.type_year_to}`
-                : `depuis ${vehicle.type_year_from}`,
-            },
-          ],
-        }),
-        url: canonicalUrl,
-      },
-      // 2️⃣ BreadcrumbList - Fil d'ariane
-      {
-        "@type": "BreadcrumbList",
-        "@id": `${canonicalUrl}#breadcrumb`,
-        itemListElement: [
-          {
-            "@type": "ListItem",
-            position: 1,
-            name: "Accueil",
-            item: `${baseUrl}/`,
-          },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Constructeurs",
-            item: `${baseUrl}/constructeurs`,
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: breadcrumb.brand,
-            item: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`,
-          },
-          {
-            "@type": "ListItem",
-            position: 4,
-            name: breadcrumb.model,
-            item: `${baseUrl}/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}/${vehicle.modele_alias}-${vehicle.modele_id}.html`,
-          },
-          {
-            "@type": "ListItem",
-            position: 5,
-            name: `${breadcrumb.type} ${vehicle.type_power_ps} ch`,
-          },
-        ],
-      },
-    ],
-  };
-}
-
 // 🎯 Meta function avec SEO optimisé (logique PHP)
 export const meta: MetaFunction<typeof loader> = ({ data: rawData }) => {
   const data = rawData as LoaderData | undefined;
@@ -796,21 +412,6 @@ export const meta: MetaFunction<typeof loader> = ({ data: rawData }) => {
   }
 
   return result;
-};
-
-const FAMILY_MICRO_DESCRIPTIONS: Record<string, string> = {
-  Freinage: "Plaquettes, disques, etriers : securite & freinage",
-  Filtration: "Huile, air, carburant, habitacle : entretien moteur",
-  Distribution: "Courroie, galets, pompe a eau : fiabilite",
-  Suspension: "Amortisseurs, ressorts, rotules : tenue de route",
-  Moteur: "Pieces moteur, joints, composants internes",
-  Echappement: "Silencieux, catalyseurs, flexibles",
-  Embrayage: "Kit embrayage, volant moteur, butee",
-  Electrique: "Demarreur, alternateur, batterie : demarrage & charge",
-  Refroidissement: "Radiateur, thermostat, pompe a eau",
-  Direction: "Cremaillere, biellettes, rotules de direction",
-  Carrosserie: "Retroviseurs, pare-chocs, optiques",
-  Essuyage: "Balais, moteur, gicleurs d'essuie-glaces",
 };
 
 // 🎨 Composant principal avec logique PHP intégrée
@@ -903,104 +504,9 @@ export default function VehicleDetailPage() {
       className="min-h-screen bg-gray-50"
       data-brand={vehicle.marque_alias?.toLowerCase()}
     >
-      {/* 🍞 Fil d'Ariane - Au-dessus du hero */}
-      <nav
-        className="bg-white border-b border-gray-200 py-3"
-        aria-label="Breadcrumb"
-        data-section="S_BREADCRUMB"
-      >
-        <div className="container mx-auto px-4">
-          <ol
-            className="flex items-center gap-2 text-sm"
-            itemScope
-            itemType="https://schema.org/BreadcrumbList"
-          >
-            <li
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/ListItem"
-            >
-              <a
-                href="/"
-                itemProp="item"
-                className="hover:underline text-brand"
-              >
-                <span itemProp="name">Accueil</span>
-              </a>
-              <meta itemProp="position" content="1" />
-            </li>
-            <li>
-              <span className="text-gray-400">→</span>
-            </li>
-            <li
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/ListItem"
-            >
-              <a
-                href="/constructeurs"
-                itemProp="item"
-                className="hover:underline text-brand"
-              >
-                <span itemProp="name">Constructeurs</span>
-              </a>
-              <meta itemProp="position" content="2" />
-            </li>
-            <li>
-              <span className="text-gray-400">→</span>
-            </li>
-            <li
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/ListItem"
-            >
-              <a
-                href={`/constructeurs/${vehicle.marque_alias}-${vehicle.marque_id}.html`}
-                itemProp="item"
-                className="hover:underline text-brand"
-              >
-                <span itemProp="name">{breadcrumb.brand}</span>
-              </a>
-              <meta itemProp="position" content="3" />
-            </li>
-            <li>
-              <span className="text-gray-400">→</span>
-            </li>
-            <li
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/ListItem"
-            >
-              <span itemProp="name" className="text-gray-600">
-                {breadcrumb.model}
-              </span>
-              <meta itemProp="position" content="4" />
-            </li>
-            <li>
-              <span className="text-gray-400">→</span>
-            </li>
-            <li
-              itemProp="itemListElement"
-              itemScope
-              itemType="https://schema.org/ListItem"
-            >
-              <span itemProp="name" className="font-semibold text-gray-900">
-                {vehicle.type_name} {vehicle.type_power_ps} ch
-              </span>
-              <meta itemProp="position" content="5" />
-            </li>
-          </ol>
-        </div>
-      </nav>
+      <BreadcrumbSection vehicle={vehicle} breadcrumb={breadcrumb} />
 
-      {/* Hero Selection — H1 unique (image-matrix-v1 §7, gradient-only) */}
-      <div data-section="S_HERO">
-        <HeroSelection
-          title={`${vehicle.marque_name} ${vehicle.modele_name} ${vehicle.type_name} ${vehicle.type_power_ps} ch de ${vehicle.type_year_from} à ${vehicle.type_year_to || "aujourd'hui"}`}
-          subtitle={`${vehicle.type_fuel} · ${vehicle.type_body} · ${vehicle.type_year_from}–${vehicle.type_year_to || "Auj."}`}
-          slogan={resolveSlogan("selection")}
-        />
-      </div>
+      <HeroSection vehicle={vehicle} />
 
       {/* Vehicle image + specs (hors hero — SELECTION = gradient-only) */}
       <section className="bg-white border-b" data-section="S_IDENTITY">
@@ -1101,40 +607,7 @@ export default function VehicleDetailPage() {
           </div>
         )}
 
-        {/* Description SEO — R8 enriched or fallback */}
-        <div
-          className="bg-white rounded-lg shadow-sm p-6 mb-8"
-          data-section="S_SEO_INTRO"
-        >
-          {r8Content && r8Content.blocks.length > 0 ? (
-            <div className="space-y-6">
-              {r8Content.blocks
-                .filter(
-                  (b) =>
-                    b.type === "vehicle_identity" ||
-                    b.type === "selection_help",
-                )
-                .map((block) => (
-                  <div key={block.id}>
-                    <h2 className="text-lg font-semibold text-gray-900 mb-2">
-                      {block.title}
-                    </h2>
-                    <div className="prose prose-sm max-w-none text-gray-700">
-                      <HtmlContent
-                        html={block.renderedText}
-                        trackLinks={true}
-                      />
-                    </div>
-                  </div>
-                ))}
-            </div>
-          ) : (
-            <div className="prose max-w-none">
-              <HtmlContent html={seo.content} trackLinks={true} />
-              <HtmlContent html={seo.content2} trackLinks={true} />
-            </div>
-          )}
-        </div>
+        <SeoIntroSection r8Content={r8Content} seo={seo} />
 
         {/* 📦 CATALOGUE PRINCIPAL - Design inspiré de la page index */}
         {catalogFamilies.length > 0 &&
@@ -1625,150 +1098,11 @@ export default function VehicleDetailPage() {
         </div>
 
         {/* R8 enriched sections — variant_difference + maintenance_context */}
-        {r8Content?.blocks.some(
-          (b) =>
-            b.type === "variant_difference" || b.type === "maintenance_context",
-        ) && (
-          <div className="mb-12 space-y-6" data-section="S_R8_ENRICHED">
-            {r8Content.blocks
-              .filter(
-                (b) =>
-                  b.type === "variant_difference" ||
-                  b.type === "maintenance_context",
-              )
-              .map((block) => (
-                <div
-                  key={block.id}
-                  className={`rounded-2xl border p-6 ${
-                    block.type === "variant_difference"
-                      ? "bg-indigo-50 border-indigo-200"
-                      : "bg-blue-50 border-blue-200"
-                  }`}
-                >
-                  <div className="flex items-start gap-3 mb-3">
-                    {block.type === "variant_difference" ? (
-                      <Car
-                        size={24}
-                        className="text-indigo-600 flex-shrink-0 mt-0.5"
-                      />
-                    ) : (
-                      <Wrench
-                        size={24}
-                        className="text-blue-600 flex-shrink-0 mt-0.5"
-                      />
-                    )}
-                    <h2 className="text-xl font-bold text-gray-900">
-                      {block.title}
-                    </h2>
-                  </div>
-                  <div className="prose prose-sm max-w-none text-gray-700 ml-9">
-                    <HtmlContent html={block.renderedText} trackLinks={true} />
-                  </div>
-                </div>
-              ))}
-          </div>
-        )}
+        <R8EnrichedSection r8Content={r8Content} />
 
-        {/* Erreurs fréquentes à éviter */}
-        <div className="mb-12" data-section="S_ANTI_ERRORS">
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <AlertTriangle
-                size={24}
-                className="text-amber-600 flex-shrink-0 mt-0.5"
-              />
-              <h2 className="text-xl font-bold text-gray-900">
-                Erreurs fréquentes à éviter
-              </h2>
-            </div>
-            <ul className="space-y-3 ml-9">
-              <li className="flex items-start gap-2 text-gray-700">
-                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                <span>
-                  Vérifier l'année exacte ({vehicle.type_year_from}–
-                  {vehicle.type_year_to || "aujourd'hui"}) : les pièces peuvent
-                  différer d'une année à l'autre
-                </span>
-              </li>
-              <li className="flex items-start gap-2 text-gray-700">
-                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                <span>
-                  Puissance proche ≠ moteur identique : confirmez avec le CNIT
-                  ou le code moteur
-                  {vehicle.motor_codes_formatted
-                    ? ` (${vehicle.motor_codes_formatted})`
-                    : ""}
-                </span>
-              </li>
-              <li className="flex items-start gap-2 text-gray-700">
-                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                <span>
-                  En cas de doute entre deux motorisations, utilisez le VIN (17
-                  caractères, carte grise case E)
-                </span>
-              </li>
-              {vehicle.type_body && vehicle.type_body.includes("/") && (
-                <li className="flex items-start gap-2 text-gray-700">
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full mt-2 flex-shrink-0" />
-                  <span>
-                    Attention à la carrosserie ({vehicle.type_body}) : les
-                    pièces peuvent varier selon la version
-                  </span>
-                </li>
-              )}
-            </ul>
-          </div>
-        </div>
+        <AntiErrorsSection vehicle={vehicle} />
 
-        {/* Comment choisir sans se tromper */}
-        <div className="mb-12" data-section="S_HOWTO">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-            <div className="flex items-start gap-3 mb-4">
-              <ListChecks
-                size={24}
-                className="text-blue-600 flex-shrink-0 mt-0.5"
-              />
-              <h2 className="text-xl font-bold text-gray-900">
-                Comment choisir sans se tromper
-              </h2>
-            </div>
-            <ol className="space-y-3 ml-9 list-decimal list-inside">
-              <li className="text-gray-700">
-                Vérifier la période de production ({vehicle.type_year_from}–
-                {vehicle.type_year_to || "aujourd'hui"})
-              </li>
-              <li className="text-gray-700">
-                Confirmer le carburant ({vehicle.type_fuel}) et la puissance (
-                {vehicle.type_power_ps} ch)
-              </li>
-              <li className="text-gray-700">
-                Identifier le code moteur
-                {vehicle.motor_codes_formatted
-                  ? ` (${vehicle.motor_codes_formatted})`
-                  : ""}{" "}
-                ou le CNIT (carte grise case D.2)
-              </li>
-              <li className="text-gray-700">
-                Choisir la gamme dans le{" "}
-                <a
-                  href="#catalogue"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  catalogue ci-dessus
-                </a>
-              </li>
-              <li className="text-gray-700">
-                En cas de doute →{" "}
-                <a
-                  href="/contact"
-                  className="text-blue-600 hover:underline font-medium"
-                >
-                  contacter notre assistance
-                </a>
-              </li>
-            </ol>
-          </div>
-        </div>
+        <HowtoSection vehicle={vehicle} />
 
         {/* ❓ FAQ dynamique avec Schema.org */}
         <div className="mb-12" data-section="S_FAQ">
@@ -1853,43 +1187,7 @@ export default function VehicleDetailPage() {
           </div>
         )}
 
-        {/* 🛡️ Badges de confiance */}
-        <div className="mb-12" data-section="S_TRUST">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-green-100 mb-3">
-                <Shield size={28} className="text-green-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Garantie 1 an</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Sur toutes nos pièces
-              </p>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-blue-100 mb-3">
-                <Truck size={28} className="text-blue-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Livraison 24-48h</h3>
-              <p className="text-sm text-gray-500 mt-1">Expédition rapide</p>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-purple-100 mb-3">
-                <HeadphonesIcon size={28} className="text-purple-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Conseil expert</h3>
-              <p className="text-sm text-gray-500 mt-1">Service client dédié</p>
-            </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-5 text-center hover:shadow-lg transition-shadow">
-              <div className="inline-flex p-3 rounded-full bg-orange-100 mb-3">
-                <RotateCcw size={28} className="text-orange-600" />
-              </div>
-              <h3 className="font-bold text-gray-900">Retour 30 jours</h3>
-              <p className="text-sm text-gray-500 mt-1">
-                Satisfait ou remboursé
-              </p>
-            </div>
-          </div>
-        </div>
+        <TrustSection />
 
         {/* 🔗 CTA retour hub marque R7 (maillage R8→R7) */}
         <div className="mt-8 text-center">

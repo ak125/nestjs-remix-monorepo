@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { MarketingHubDataService } from '../services/marketing-hub-data.service';
 import { WeeklyPlanGeneratorService } from '../services/weekly-plan-generator.service';
 import { MultiChannelCopywriterService } from '../services/multi-channel-copywriter.service';

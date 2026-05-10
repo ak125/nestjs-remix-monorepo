@@ -21,8 +21,8 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { AdminResponseInterceptor } from '../../../common/interceptors/admin-response.interceptor';
 import type { AdminApiResponse } from '@repo/database-types';
 import { SeoCockpitService } from '../services/seo-cockpit.service';

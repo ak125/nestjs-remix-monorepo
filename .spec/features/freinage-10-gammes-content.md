@@ -1,3 +1,9 @@
+---
+title: "Freinage — Content 10 Gammes (suite)"
+status: draft
+version: 1.0.0
+---
+
 # CONTENU DES 10 GAMMES FREINAGE (Suite)
 
 ## 1. INTERRUPTEUR FEUX STOP (ID: 806)

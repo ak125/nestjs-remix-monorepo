@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SupabaseBaseService } from './supabase-base.service';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseException, ErrorCodes } from '../../common/exceptions';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 /**
  * 🎫 SERVICE DE DONNÉES CODES PROMO

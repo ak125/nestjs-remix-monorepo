@@ -5,7 +5,7 @@
  * Un seul vocabulaire (EN), sources de vérité explicites, fail-fast au chargement.
  * Remplace l'ancien shim `normalizeBrandRag` qui tolérait FR/EN silencieusement.
  *
- * Alimenté par : scripts/rag/build-brand-rag.py (Wikidata + DB RPC + Wikipedia REST).
+ * Alimenté par : scripts/wiki-generators/brand-fiche-generator.py (Wikidata + DB RPC + Wikipedia REST).
  * Lu par : R7BrandEnricherService.loadBrandRag → composeBlocks.
  */
 

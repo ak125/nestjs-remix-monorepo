@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { ExternalServiceException, ErrorCodes } from '../common/exceptions';
+import { ExternalServiceException, ErrorCodes } from '@common/exceptions';
 import { sleep } from './promise-helpers';
 
 /**

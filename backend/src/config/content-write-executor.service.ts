@@ -17,6 +17,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { getEffectiveSupabaseKey } from '@common/utils';
 import type {
   ResourceGroup,
   WriteLockHandle,
@@ -52,7 +53,8 @@ export class ContentWriteExecutor {
     private readonly featureFlags: FeatureFlagsService,
   ) {
     const url = this.config.get<string>('SUPABASE_URL') || '';
-    const key = this.config.get<string>('SUPABASE_SERVICE_ROLE_KEY') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const key = getEffectiveSupabaseKey();
     this.supabase = createClient(url, key);
   }
 
@@ -184,22 +186,55 @@ export class ContentWriteExecutor {
         }
       }
 
-      // ── Step H: Write ──
-      const { error } = await this.supabase
+      // ── Step H: Write (UPDATE-then-INSERT fallback) ──
+      //
+      // Strategy: UPDATE then check rowCount. If 0 rows affected, the row
+      // doesn't exist yet — fall back to INSERT. This handles the "fresh
+      // seed" case where a new gamme has no pre-existing row (discovered
+      // 2026-04-24 on pg=3859 kit-de-freins-arriere: R1 enricher reported
+      // slotsWritten but content was silently dropped because .update().eq()
+      // no-ops when row is absent).
+      const { error: updateError, count: updatedCount } = await this.supabase
         .from(writeTarget.table)
-        .update(mergedPayload)
+        .update(mergedPayload, { count: 'exact' })
         .eq(writeTarget.pkField, pkValue);
 
-      if (error) {
+      if (updateError) {
         this.logger.error(
-          `ContentWriteExecutor: write failed for ${target}:${pkValue} — ${error.message}`,
+          `ContentWriteExecutor: update failed for ${target}:${pkValue} — ${updateError.message}`,
         );
         return {
           written: false,
-          reason: `db_error: ${error.message}`,
+          reason: `db_error: ${updateError.message}`,
           fieldsWritten: [],
           mergeDetails,
         };
+      }
+
+      // Fallback INSERT if no row was updated
+      if ((updatedCount ?? 0) === 0) {
+        const insertPayload = {
+          ...mergedPayload,
+          [writeTarget.pkField]: pkValue,
+        };
+        const { error: insertError } = await this.supabase
+          .from(writeTarget.table)
+          .insert(insertPayload);
+
+        if (insertError) {
+          this.logger.error(
+            `ContentWriteExecutor: insert fallback failed for ${target}:${pkValue} — ${insertError.message}`,
+          );
+          return {
+            written: false,
+            reason: `db_error_insert: ${insertError.message}`,
+            fieldsWritten: [],
+            mergeDetails,
+          };
+        }
+        this.logger.log(
+          `ContentWriteExecutor: inserted new row for ${target}:${pkValue} (row was absent)`,
+        );
       }
 
       const fieldsWritten = Object.keys(mergedPayload);

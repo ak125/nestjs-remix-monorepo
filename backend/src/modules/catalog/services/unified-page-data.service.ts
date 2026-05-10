@@ -3,10 +3,10 @@
 // 🎯 Utilise get_pieces_for_type_gamme_v3 (SEO intégré côté PostgreSQL)
 
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
-import { CacheService } from '../../../cache/cache.service';
-import { RpcGateService } from '../../../security/rpc-gate/rpc-gate.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
+import { CacheService } from '@cache/cache.service';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
 import {
   decodeHtmlEntities,
   stripHtmlForMeta,

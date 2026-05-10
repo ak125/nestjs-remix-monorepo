@@ -15,6 +15,12 @@ import {
 } from "@remix-run/node";
 import { useLoaderData, useSearchParams, useFetcher } from "@remix-run/react";
 import {
+  ROLE_BADGE_COLORS,
+  getRoleDisplayLabel,
+  getRoleShortLabel,
+  normalizeRoleId,
+} from "@repo/seo-roles";
+import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
@@ -225,19 +231,19 @@ export async function action({ request }: ActionFunctionArgs) {
 
 // ── Helper components ──
 
-const roleBadgeColors: Record<string, string> = {
-  R1: "bg-blue-100 text-blue-700",
-  R3_guide: "bg-purple-100 text-purple-700",
-  R3_conseils: "bg-teal-100 text-teal-700",
-  R4: "bg-orange-100 text-orange-700",
-};
-
 function RoleBadge({ role }: { role: string }) {
+  // Normalize legacy DB value (R1, R3_guide, R3_conseils, ...) to canonical RoleId
+  const canonical = normalizeRoleId(role);
+  const colorClass = canonical
+    ? ROLE_BADGE_COLORS[canonical]
+    : "bg-gray-100 text-gray-700";
+  // Always display canonical FR label, never raw legacy
   return (
     <Badge
-      className={`text-xs ${roleBadgeColors[role] ?? "bg-gray-100 text-gray-700"}`}
+      className={`text-xs ${colorClass ?? "bg-gray-100 text-gray-700"}`}
+      title={getRoleDisplayLabel(role)}
     >
-      {role}
+      {getRoleShortLabel(role)}
     </Badge>
   );
 }

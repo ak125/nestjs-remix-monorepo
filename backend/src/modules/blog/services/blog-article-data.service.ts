@@ -13,7 +13,7 @@ import {
   DomainNotFoundException,
   DomainValidationException,
   ErrorCodes,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 
 /**
  * 📦 BlogArticleDataService - Accès aux données articles

@@ -14,7 +14,7 @@ import { Logger } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { Job } from 'bull';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { FeatureFlagsService } from '../../config/feature-flags.service';
 import {
   ExecutionRouterService,

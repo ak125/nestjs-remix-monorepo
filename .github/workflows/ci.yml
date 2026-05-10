@@ -50,6 +50,12 @@ jobs:
       - name: 🔬 Lint
         run: npm run lint
 
+      # Cloudflare cache poisoning guard: zero-arg HeadersFunction with
+      # `s-maxage` lets Cloudflare cache 5xx for 24h (INC-2026-005-recurrence
+      # 2026-05-06). Use ~/utils/cache-control#buildCacheHeaders instead.
+      - name: 🛡️ Cache-Control discipline (Remix routes)
+        run: bash scripts/lint/check-no-zero-arg-headers-with-s-maxage.sh
+
   typecheck:
     name: ʦ TypeScript
     runs-on: ubuntu-latest
@@ -229,6 +235,10 @@ jobs:
         env:
           SUPABASE_URL: "https://mock.supabase.co"
           SUPABASE_SERVICE_ROLE_KEY: "mock-key-for-ci"
+          # PR-2 : strict mode for SEO role normalization — throws on schema
+          # parse failure instead of soft fallback. Catches regressions in CI
+          # that would otherwise pass silently in prod (where soft is the default).
+          SEO_ROLE_STRICT: "true"
 
       - name: 📊 Backend coverage summary
         if: always()
@@ -468,7 +478,7 @@ jobs:
 
             # Known bypass files (debug/internal)
             BYPASS_COUNT=$(echo "$DIRECT_RPC_FILES" | \
-              grep -c "googlebot-detector\|enhanced-config\|products.service\|products-catalog.service\|advice.service\|content-refresh.service\|admin-job-health\|conseil-priority.service\|rag-knowledge.service\|rag-image-management\|rm-builder.service\|buying-guide-data.service\|payment-data.service\|orders.service\|r1-keyword-plan-batch\|admin-keyword-planner.controller\|abandoned-cart-data.service\|gamme-rpc.service\|admin-supplier-stats.service" || echo "0")
+              grep -c "googlebot-detector\|enhanced-config\|products.service\|products-catalog.service\|advice.service\|content-refresh.service\|admin-job-health\|conseil-priority.service\|rag-knowledge.service\|rag-image-management\|rm-builder.service\|buying-guide-data.service\|payment-data.service\|orders.service\|r1-keyword-plan-batch\|admin-keyword-planner.controller\|abandoned-cart-data.service\|gamme-rpc.service\|admin-supplier-stats.service\|quality-history-snapshot.service" || echo "0")
 
             UNEXPECTED=$((DIRECT_RPC - BYPASS_COUNT))
 
@@ -537,16 +547,28 @@ jobs:
   gitleaks:
     name: 🔐 Secrets Detection
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      security-events: write
     steps:
       - name: Check out code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: 🔐 Run gitleaks
+      - name: 🔐 Run gitleaks (incremental scan, blocking)
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐷 Run TruffleHog (verified secrets, blocking)
+        uses: trufflesecurity/trufflehog@v3.83.7
+        with:
+          path: ./
+          base: ${{ github.event.pull_request.base.sha || github.event.before }}
+          head: ${{ github.event.pull_request.head.sha || github.sha }}
+          extra_args: --results=verified,unknown
 
   migration-safety:
     name: 🗄️ Migration Safety
@@ -697,12 +719,23 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: 🧪 Deploy to PREPROD
+      - name: 🧪 Deploy to PREPROD (read-only hardening — ADR-028 Option D)
         env:
+          # ADR-028 Option D : couches 1+2 (privilege downgrade + anon key only).
+          # Le backend supporte ce mode depuis PR #246 (SupabaseBaseService READ_ONLY
+          # mode + ANON_KEY fallback, commit dfd81673). RLS protection enforce les
+          # writes restantes (couche 3, ADR-021, 204 objets DB hardenizés).
           NODE_ENV: preprod
-          ALLOW_PROD_ENV_COPY: "1"
-          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          # SESSION_SECRET propagation : depuis PR #339 (commit 6c7df152), main.ts:102
+          # fail-fast si SESSION_SECRET manquant ou < 32 chars en NODE_ENV=production.
+          # Le container preprod tourne en NODE_ENV=production (Dockerfile:39+63 +
+          # docker-compose.preprod.yml:9 override le NODE_ENV=preprod du shell CI),
+          # donc le fail-fast trigger ici. Source : audit-trail vault
+          # 2026-05-07-pr339-deploy-regression.md.
+          SESSION_SECRET: ${{ secrets.PREPROD_SESSION_SECRET }}
+          READ_ONLY: "true"
         run: |
           docker pull massdoc/nestjs-remix-monorepo:preprod
 
@@ -712,29 +745,77 @@ jobs:
           # Copier docker-compose.preprod.yml
           cp $GITHUB_WORKSPACE/docker-compose.preprod.yml $PREPROD_DIR/
 
-          # Copier le .env de prod (controle par flag)
-          if [ "${ALLOW_PROD_ENV_COPY:-0}" = "1" ] && [ -f ~/production/.env ]; then
-            echo "⚠️  ALLOW_PROD_ENV_COPY=1 enabled: copying production env (should be temporary)"
-            cp ~/production/.env "$PREPROD_DIR/.env"
-          else
-            echo "ℹ️  Skipping prod env copy (default safe mode)"
-          fi
+          # Génération in-place .env.preprod minimal (anon key only, READ_ONLY=true).
+          # Plus de copie de ~/production/.env (ALLOW_PROD_ENV_COPY supprimé).
+          # Plus de SUPABASE_SERVICE_ROLE_KEY distribuée au conteneur preprod.
+          cat > "$PREPROD_DIR/.env" <<EOF
+          NODE_ENV=preprod
+          SUPABASE_URL=${SUPABASE_URL}
+          SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+          SESSION_SECRET=${SESSION_SECRET}
+          READ_ONLY=true
+          # ADR-055 shadow activation: collect real preprod evidence before any
+          # mode=on decision. Literal on remains blocked by backend boot guard.
+          SEO_CHAIN_R7_MODE=shadow
+          SEO_CHAIN_R8_MODE=shadow
+          SEO_CHAIN_RM_MODE=shadow
+          REDIS_URL=redis://redis-preprod:6379
+          APP_URL=http://localhost:3200
+          # RAG service disabled in preprod (4 rag-proxy services use
+          # configService.getOrThrow<string>('RAG_SERVICE_URL') and 'RAG_API_KEY'
+          # at constructor — both crash without sentinel values).
+          # Default URL documented in
+          # backend/src/config/env-validation.ts::OPTIONAL_ENV_VARS_WITH_DEFAULTS.
+          # Sentinel API key is intentionally non-functional ; rag-proxy services
+          # cannot reach a real RAG instance from preprod read-only mode anyway.
+          RAG_SERVICE_URL=http://disabled:8000
+          RAG_API_KEY=disabled-preprod-readonly
+          EOF
 
           cd $PREPROD_DIR
 
-          # Inject Supabase keys from GitHub Secrets (overrides .env values)
-          if [ -n "$SUPABASE_SECRET_KEY" ] && [ -f ".env" ]; then
-            sed -i "s|^SUPABASE_SERVICE_ROLE_KEY=.*|SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SECRET_KEY}|" .env
-            sed -i "s|^SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=${SUPABASE_PUBLISHABLE_KEY}|" .env
-            echo "✅ Supabase keys injected from GitHub Secrets"
-          fi
+          echo "✅ .env.preprod generated (anon key only, no SERVICE_ROLE_KEY, READ_ONLY=true)"
+
+          # Source the just-generated .env into the shell. docker-compose.preprod.yml
+          # uses bare `environment: - SUPABASE_URL` style refs which inherit from the
+          # shell at compose-invocation time and OVERRIDE env_file when shell has no
+          # value. CI's job-level `env:` block already sets SUPABASE_*, but explicit
+          # sourcing here makes the deploy step robust to manual reruns from a shell
+          # that doesn't have those vars (e.g. `sudo -u deploy ... --force-recreate`
+          # outside of CI). Discovered post-PR-B redeploy 2026-05-06: a manual rerun
+          # had stripped SUPABASE_ANON_KEY from container, surfaced via Sentry as
+          # repeated 401 "Invalid API key" — which is exactly what observability is for.
+          set -a
+          # shellcheck disable=SC1091
+          . "$PREPROD_DIR/.env"
+          set +a
 
           # Arreter anciens conteneurs
           docker stop nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
           docker rm nestjs-remix-monorepo-preprod redis-preprod 2>/dev/null || true
 
-          # Demarrer preprod
-          docker compose -f docker-compose.preprod.yml up -d
+          # 🚨 Sentry secrets injection via SOPS exec-env wrapper.
+          # docker-compose.preprod.yml declares `environment: - SENTRY_DSN` etc.
+          # which inherit from this shell's env. sops exec-env decrypts the SOPS
+          # file in memory and exports the variables to the wrapped command.
+          # If sops or the age key is unavailable on this runner, fall back to
+          # plain `docker compose up` (Sentry SDK no-ops, deploy still succeeds).
+          SOPS_FILE="$GITHUB_WORKSPACE/secrets/sentry.dev.sops.env"
+          AGE_KEY_FILE="${SOPS_AGE_KEY_FILE:-$HOME/.config/sops/age/keys.txt}"
+          if command -v sops >/dev/null 2>&1 \
+             && [ -f "$SOPS_FILE" ] \
+             && [ -r "$AGE_KEY_FILE" ]; then
+            echo "✅ Injecting Sentry secrets via sops exec-env"
+            export SOPS_AGE_KEY_FILE="$AGE_KEY_FILE"
+            sops exec-env "$SOPS_FILE" \
+              'docker compose -f docker-compose.preprod.yml up -d'
+          else
+            echo "::warning::sops binary, secrets file, or age key missing on runner — Sentry SDK will start in no-op mode"
+            echo "  sops:        $(command -v sops || echo 'NOT FOUND')"
+            echo "  SOPS_FILE:   $SOPS_FILE ($([ -f "$SOPS_FILE" ] && echo present || echo absent))"
+            echo "  age key:     $AGE_KEY_FILE ($([ -r "$AGE_KEY_FILE" ] && echo readable || echo unreadable))"
+            docker compose -f docker-compose.preprod.yml up -d
+          fi
 
           # Health check avec retry (max 2 min)
           echo "⏳ Waiting for PREPROD to start..."
@@ -851,6 +932,14 @@ jobs:
           check_timing "$BASE/" "Homepage" 2000
           check_timing "$BASE/pieces/catalogue" "/pieces/catalogue" 2000
           check_timing "$BASE/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html" "R2 Product Page" 3000
+          # ADR-024 R1 gamme perf gate (parity R2). Backed by __gamme_page_cache (Phase 1) +
+          # SSR cache-first read path (Phase 5a). Hot-path target ~5ms (PK lookup),
+          # cold-path/legacy ceiling 3000ms. Top 5 G1 gammes covering bulk of indexed traffic.
+          check_timing "$BASE/pieces/plaquette-de-frein-402.html"        "R1 Gamme (plaquette-de-frein)"  3000
+          check_timing "$BASE/pieces/disque-de-frein-82.html"            "R1 Gamme (disque-de-frein)"     3000
+          check_timing "$BASE/pieces/filtre-a-huile-7.html"              "R1 Gamme (filtre-a-huile)"      3000
+          check_timing "$BASE/pieces/filtre-a-air-8.html"                "R1 Gamme (filtre-a-air)"        3000
+          check_timing "$BASE/pieces/courroie-de-distribution-306.html"  "R1 Gamme (courroie-distribution)" 3000
 
       - name: ⏱️ API Timing Gate (blocking)
         run: |
@@ -1035,107 +1124,13 @@ jobs:
           echo "> Non-blocking: violations signalees mais ne bloquent pas le pipeline." >> $GITHUB_STEP_SUMMARY
 
   # ============================================
-  # AUTO-DEPLOY to PROD (after PREPROD passes)
-  # ============================================
-  # Utilise docker-compose.ci-deploy.yml (monorepo + redis uniquement)
-  # Les autres services (remotion, minio, lighthouse) sont geres manuellement
-
-  deploy-prod:
-    name: 🚀 Deploy to PROD
-    runs-on: [self-hosted, Linux, X64]
-    needs: [lighthouse]
-    if: ${{ (github.ref == 'refs/heads/main') && github.event_name == 'push' }}
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v4
-
-      - name: 🔍 Validate production env vars
-        run: |
-          PROD_DIR=~/production
-          if [ ! -f "$PROD_DIR/.env" ]; then
-            echo "❌ FATAL: .env file missing at $PROD_DIR/.env"
-            exit 1
-          fi
-          source "$PROD_DIR/.env"
-          REQUIRED_VARS="SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY SYSTEMPAY_SITE_ID PAYBOX_SITE PAYBOX_HMAC_KEY PAYBOX_CALLBACK_MODE SESSION_SECRET"
-          for var in $REQUIRED_VARS; do
-            if [ -z "${!var}" ]; then
-              echo "❌ FATAL: Missing required env var: $var"
-              exit 1
-            fi
-          done
-          echo "✅ All required environment variables present"
-
-      - name: 🏷️ Promote preprod → production
-        run: |
-          docker tag massdoc/nestjs-remix-monorepo:preprod massdoc/nestjs-remix-monorepo:production
-          echo "✅ Image retagged: preprod → production"
-
-      - name: 🐳 Push production image to DockerHub
-        run: |
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-          docker push massdoc/nestjs-remix-monorepo:production
-          echo "✅ Image pushed to DockerHub"
-
-      - name: 🚀 Deploy PROD
-        run: |
-          PROD_DIR=~/production
-
-          # Copier le compose CI dedie (monorepo + redis uniquement)
-          cp $GITHUB_WORKSPACE/docker-compose.ci-deploy.yml $PROD_DIR/
-
-          cd $PROD_DIR
-
-          # Arreter et supprimer le container monorepo (redis reste up)
-          docker stop nestjs-remix-monorepo-prod 2>/dev/null || true
-          docker rm nestjs-remix-monorepo-prod 2>/dev/null || true
-
-          # Demarrer avec le compose dedie
-          docker compose -f docker-compose.ci-deploy.yml up -d
-
-          # Health check via docker exec (pas de port mapping sur l'hote)
-          echo "⏳ Waiting for PROD to start..."
-          HEALTHY=0
-          for i in {1..24}; do
-            if docker exec nestjs-remix-monorepo-prod wget -qO- http://localhost:3000/health > /dev/null 2>&1; then
-              echo "✅ PROD is healthy after $((i*5))s"
-              HEALTHY=1
-              break
-            fi
-            echo "Attempt $i/24 - waiting 5s..."
-            sleep 5
-          done
-
-          if [ "$HEALTHY" != "1" ]; then
-            echo "❌ PROD health check failed after 2 minutes"
-            docker logs nestjs-remix-monorepo-prod --tail 100
-            exit 1
-          fi
-
-          echo "✅ PROD deployed successfully"
-
-          # Cleanup vieilles images
-          docker image prune -f
-
-      - name: 📊 Deploy summary
-        if: always()
-        run: |
-          STATUS=$(docker inspect --format='{{.State.Status}}' nestjs-remix-monorepo-prod 2>/dev/null || echo "unknown")
-          HEALTH=$(docker inspect --format='{{.State.Health.Status}}' nestjs-remix-monorepo-prod 2>/dev/null || echo "unknown")
-          echo "## 🚀 PROD Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Commit:** \`${GITHUB_SHA::7}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Image:** massdoc/nestjs-remix-monorepo:production" >> $GITHUB_STEP_SUMMARY
-          echo "- **Container:** $STATUS (health: $HEALTH)" >> $GITHUB_STEP_SUMMARY
-
-  # ============================================
   # Notifications (Phase 3)
   # ============================================
 
   notify-failure:
     name: 🔔 Notify on Failure
     runs-on: ubuntu-latest
-    needs: [lint, typecheck, test, test-frontend, security, core-build, import-firewall, rpc-gate-check, governance-check, gitleaks, migration-safety, build, deploy, e2e-smoke, lighthouse, deploy-prod]
+    needs: [lint, typecheck, test, test-frontend, security, core-build, import-firewall, rpc-gate-check, governance-check, gitleaks, migration-safety, build, deploy, e2e-smoke, lighthouse]
     if: ${{ failure() && github.ref == 'refs/heads/main' }}
     steps:
       - name: 🔔 Send Slack notification

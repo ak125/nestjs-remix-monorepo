@@ -1,0 +1,71 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__claude_ai_Supabase__execute_sql",
+      "mcp__claude_ai_Supabase__list_tables",
+      "mcp__claude_ai_Supabase__get_project",
+      "mcp__claude_ai_Supabase__get_project_url"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-bash-guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-file-guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__supabase__apply_migration|mcp__supabase__execute_sql|mcp__claude_ai_Supabase__apply_migration|mcp__claude_ai_Supabase__execute_sql",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-supabase-guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent|TeamCreate",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/pretool-agent-guard.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/posttool-lint-check.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /opt/automecanik/app/scripts/claude-hooks/stop-log-session-suggest.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

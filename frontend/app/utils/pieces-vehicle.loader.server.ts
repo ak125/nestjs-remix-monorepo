@@ -74,11 +74,24 @@ export async function piecesVehicleLoader({
     rawType,
   );
   if (malformedReason) {
-    logger.log(`🚫 [404] URL mal formée (${malformedReason}): ${url.pathname}`);
+    // 410 Gone pour patterns générés par sitemap legacy / TecDoc V1 orphelins
+    // (désindexation GSC plus rapide que 404)
+    // 404 conservé pour patterns récupérables (URL tapée, lien externe mal encodé)
+    const PERMANENT_MALFORMED = new Set([
+      "type_prefix_fallback", // /type-{id}.html : alias fallback quand type_alias était NULL
+      "missing_alias", // /-{id}.html : slug vide, alias n'existait pas
+      "null_in_url", // /null-{id}.html : null littéral
+      "repeated_id", // /12563-12563.html : bug sitemap pagination
+      "repeated_id_multi", // /12563-12563-12563.html
+    ]);
+    const status = PERMANENT_MALFORMED.has(malformedReason) ? 410 : 404;
+    logger.log(
+      `🚫 [${status}] URL mal formée (${malformedReason}): ${url.pathname}`,
+    );
     throw new Response(
       JSON.stringify({ reason: malformedReason, url: url.pathname }),
       {
-        status: 404,
+        status,
         headers: {
           "Content-Type": "application/json",
           "X-Robots-Tag": "noindex, follow",
@@ -141,12 +154,15 @@ export async function piecesVehicleLoader({
     vehicleValidationFailed = true;
   }
 
-  // SEO: Si validation vehicule echouee -> 404 avec page utile
-  // Raison: 301 vers page gamme cree des "pages avec redirection" dans GSC (43.9k URLs)
-  // 404 dit a Google "cette page n'existe pas" -> desindexation propre
+  // SEO: Si validation vehicule echouee -> 410 Gone (désindexation GSC rapide)
+  // Raison TecDoc V2 remap : ~3,545 type_ids orphelins (100001-134362) héritent du
+  // sitemap V1. Ces IDs ne seront jamais restaurés -> 410 permanent.
+  // Historique : 301 vers gamme créait 43.9k "pages avec redirection" dans GSC,
+  // 404 signalait juste "peut-être temporaire" (désindexation lente, >6 mois).
+  // 410 = "definitely gone" -> désindexation GSC en semaines, pas mois.
   if (vehicleValidationFailed) {
     logger.log(
-      `🚫 [404] Validation véhicule échouée: /pieces/${gammeData.alias}-${gammeId}.html`,
+      `🚫 [410] Validation véhicule échouée (type orphelin): /pieces/${gammeData.alias}-${gammeId}.html`,
     );
     throw new Response(
       JSON.stringify({
@@ -156,7 +172,7 @@ export async function piecesVehicleLoader({
         gammeUrl: `/pieces/${gammeData.alias}-${gammeId}.html`,
       }),
       {
-        status: 404,
+        status: 410,
         headers: {
           "Content-Type": "application/json",
           "X-Robots-Tag": "noindex, follow",

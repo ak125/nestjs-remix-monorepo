@@ -12,7 +12,7 @@
  */
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { FeatureFlagsService } from '../../../config/feature-flags.service';
 import { ContentWriteGateService } from '../../../config/content-write-gate.service';
 import { R4LintGatesService, R4LintInput } from './r4-lint-gates.service';

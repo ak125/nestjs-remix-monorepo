@@ -1,0 +1,32 @@
+id: no-anthropic-direct-import-in-scripts
+language: python
+# Phase 1 PR-B (ADR-046 § Layer L4 GENERATORS) :
+# - Aucun script `scripts/seo/` ou `scripts/rag/` ne doit importer Anthropic directement.
+# - Le passage canon est via le skill `/content-gen` (Claude Code) ou via les
+#   AnthropicProvider du backend (`backend/src/modules/ai-content/providers/anthropic.provider.ts`).
+# - Évite la prolifération d'appels API Anthropic non gouvernés (rate limit, cost,
+#   audit trail) — voir mémoire feedback_no_groq.md "Anthropic uniquement via
+#   provider canon".
+severity: error
+message: |
+  Import direct du SDK Anthropic interdit dans scripts/seo/ et scripts/rag/.
+
+  Pour générer du contenu via Claude :
+    - Préférer le skill Claude Code `/content-gen --r{N}` (pas d'API key, pas de coût)
+    - Ou passer par AnthropicProvider canon (backend/src/modules/ai-content/providers/anthropic.provider.ts)
+      avec gouvernance rate-limit + observabilité Sentry
+
+  Si vous avez un cas légitime (POC, debugging) :
+    - Rangez le script hors `scripts/seo/` et `scripts/rag/`
+    - Ou demandez ADR fils (cf. ADR-046 § Layer L4)
+files:
+  - scripts/seo/**/*.py
+  - scripts/rag/**/*.py
+ignores:
+  - scripts/**/test_*.py
+  - scripts/**/*_test.py
+rule:
+  any:
+    - pattern: 'import anthropic'
+    - pattern: 'from anthropic import $$$'
+    - pattern: 'from anthropic.$$$ import $$$'

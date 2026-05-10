@@ -2,13 +2,21 @@ import { Controller, Get, Post, Body, Param, Logger } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthService } from '../auth.service';
 import { ModuleAccessDto, BulkModuleAccessDto } from '../dto/module-access.dto';
+import { PermissionsService } from '../permissions.service';
+import {
+  BASE_USER_PERMISSIONS,
+  UserPermissions,
+} from '../dto/user-permissions.dto';
 
 @ApiTags('auth')
 @Controller()
 export class AuthPermissionsController {
   private readonly logger = new Logger(AuthPermissionsController.name);
 
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly permissionsService: PermissionsService,
+  ) {}
 
   /**
    * POST /auth/module-access
@@ -63,40 +71,24 @@ export class AuthPermissionsController {
 
   /**
    * GET /auth/user-permissions/:userId
-   * Obtenir toutes les permissions d'un utilisateur (optimisé pour cache frontend)
+   * Returns the canonical UserPermissions shape (15 booleans) consumed by
+   * the frontend. Single source of truth for per-action permissions.
    */
   @Get('auth/user-permissions/:userId')
-  async getUserPermissions(@Param('userId') userId: string) {
+  async getUserPermissions(
+    @Param('userId') userId: string,
+  ): Promise<UserPermissions> {
     try {
-      const modules = [
-        'commercial',
-        'admin',
-        'seo',
-        'expedition',
-        'inventory',
-        'finance',
-        'reports',
-      ];
-      const permissions: Record<string, { read: boolean; write: boolean }> = {};
-
-      await Promise.all(
-        modules.map(async (module) => {
-          const [readAccess, writeAccess] = await Promise.all([
-            this.authService.checkModuleAccess(userId, module, 'read'),
-            this.authService.checkModuleAccess(userId, module, 'write'),
-          ]);
-
-          permissions[module] = {
-            read: readAccess.hasAccess,
-            write: writeAccess.hasAccess,
-          };
-        }),
-      );
-
-      return permissions;
+      const user = await this.authService.getUserById(userId);
+      if (!user || user.isActive === false) {
+        return BASE_USER_PERMISSIONS;
+      }
+      const level = parseInt(String(user.level ?? 0), 10) || 0;
+      return this.permissionsService.getPermissions(level);
     } catch (error: unknown) {
-      this.logger.error(`Error fetching user permissions: ${error}`);
-      return {};
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error fetching user permissions: ${message}`);
+      return BASE_USER_PERMISSIONS;
     }
   }
 }

@@ -7,7 +7,8 @@ import {
   Logger,
   BadRequestException,
 } from '@nestjs/common';
-import { OperationFailedException } from '../../../common/exceptions';
+import { Throttle } from '@nestjs/throttler';
+import { OperationFailedException } from '@common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PaymentService } from '../services/payment.service';
 import { CyberplusService } from '../services/cyberplus.service';
@@ -38,7 +39,12 @@ export class PaymentCallbackController {
   /**
    * POST /api/payments/callback/cyberplus
    * Webhook Cyberplus/BNP Paribas
+   *
+   * Rate limit: 30/min/IP via named throttler `payment_callback` (ADR-043
+   * Sprint 1 ticket #6, STRIDE 01-paiement critique #2). Gateway retries
+   * idempotently on 429 (HMAC signature dedups).
    */
+  @Throttle({ payment_callback: { limit: 30, ttl: 60000 } })
   @Post('callback/cyberplus')
   @ApiOperation({
     summary: 'Callback Cyberplus pour notifications de paiement',

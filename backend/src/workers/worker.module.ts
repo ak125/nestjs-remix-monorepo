@@ -5,6 +5,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { BullModule } from '@nestjs/bull';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { getAppConfig } from '../config/app.config';
 
 // Processors
 // import { SitemapProcessor } from './processors/sitemap.processor'; // DESACTIVE temporairement
@@ -12,6 +13,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EmailProcessor } from './processors/email.processor';
 import { SeoMonitorProcessor } from './processors/seo-monitor.processor';
 // VideoExecutionProcessor — SUPPRIMÉ 2026-04-10 (MediaFactory supprimé)
+
+// SEO daily-fetch processor (orchestre GSC/GA4/CWV/Links daily) — V0.A
+import { SeoDailyFetchProcessor } from '../modules/seo-monitoring/processors/seo-daily-fetch.processor';
+import { SeoMonitoringModule } from '../modules/seo-monitoring/seo-monitoring.module';
 
 // Services Workers
 import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.service';
@@ -39,26 +44,44 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     }),
 
     // Configuration BullMQ
+    //
+    // Priorité config Redis : REDIS_URL > getAppConfig() (host/port avec
+    // fallback 'localhost'). Aligné sur cache.service.ts et main.ts. Le
+    // fallback host est 'localhost' (jamais le hostname Docker 'redis'),
+    // sinon le runner CI — qui expose le service redis sur localhost et
+    // ne résout pas 'redis' en DNS — bloque ioredis en retry forever, qui
+    // bloque les `await emailQueue.add(...)` dans onModuleInit, qui bloque
+    // app.listen() (NestJS v10 fire les onModuleInit dans app.init() appelé
+    // par listen — cf. node_modules/@nestjs/core/nest-application.js:90-103),
+    // qui produit exit 124 sur perf-gates.yml.
     BullModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        redis: {
-          host: configService.get('REDIS_HOST', 'redis'),
-          port: configService.get('REDIS_PORT', 6379),
-          password: configService.get('REDIS_PASSWORD'),
-          db: configService.get('REDIS_DB', 0),
-        },
-        defaultJobOptions: {
+      useFactory: (configService: ConfigService) => {
+        const url = configService.get<string>('REDIS_URL');
+        const defaultJobOptions = {
           attempts: 3,
           backoff: {
-            type: 'exponential',
+            type: 'exponential' as const,
             delay: 5000,
           },
           removeOnComplete: 50,
           removeOnFail: 50,
           timeout: 300_000, // P0: 5 minutes max per job — prevents zombie processing
-        },
-      }),
+        };
+        if (url) {
+          return { redis: url, defaultJobOptions };
+        }
+        const appConfig = getAppConfig();
+        return {
+          redis: {
+            host: appConfig.redis.host ?? 'localhost',
+            port: appConfig.redis.port ?? 6379,
+            password: configService.get<string>('REDIS_PASSWORD'),
+            db: configService.get<number>('REDIS_DB', 0),
+          },
+          defaultJobOptions,
+        };
+      },
       inject: [ConfigService],
     }),
 
@@ -79,6 +102,9 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     // Modules for AgenticProcessor dependencies
     RagProxyModule,
     FeatureFlagsModule, // Used by RunManagerService (agentic budget guard + flags)
+
+    // V0.A — SEO daily-fetch processor needs GSC/GA4/CWV/Links fetcher services
+    SeoMonitoringModule,
   ],
 
   providers: [
@@ -87,6 +113,7 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     // CacheProcessor, // DESACTIVE
     EmailProcessor,
     SeoMonitorProcessor,
+    SeoDailyFetchProcessor, // V0.A — daily GSC/GA4/CWV/Links ingestion (cron 04:00 UTC)
     // VideoExecutionProcessor — SUPPRIMÉ 2026-04-10
 
     // Agentic engine processor + dependencies (Agent-Native — state management only)

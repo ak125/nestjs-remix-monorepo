@@ -1,6 +1,6 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 /**
  * Service pour les données techniques des produits :

@@ -7,8 +7,8 @@ import {
   BadRequestException,
   ParseIntPipe,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { R8VehicleEnricherService } from '../services/r8-vehicle-enricher.service';
 
 @Controller('api/admin/r8')

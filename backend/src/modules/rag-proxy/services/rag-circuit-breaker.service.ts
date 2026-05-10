@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ExternalServiceException } from '../../../common/exceptions';
+import { ExternalServiceException } from '@common/exceptions';
 
 /** Simple circuit breaker state for the RAG external service. */
 interface CircuitBreakerState {

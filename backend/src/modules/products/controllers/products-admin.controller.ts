@@ -9,16 +9,16 @@ import {
   UseInterceptors,
   UseGuards,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
-import { OperationFailedException } from '../../../common/exceptions';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
+import { OperationFailedException } from '@common/exceptions';
 import { AdminResponseInterceptor } from '../../../common/interceptors/admin-response.interceptor';
 import { ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsService } from '../products.service';
 import { ProductsCatalogService } from '../services/products-catalog.service';
 import { ProductsAdminService } from '../services/products-admin.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 @ApiTags('Products Admin')
 @Controller('api/products')

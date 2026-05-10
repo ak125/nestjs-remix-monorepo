@@ -1,3 +1,9 @@
+---
+title: "Freinage — Content 4 Gammes (plaquettes, disques, étriers, mâchoires)"
+status: draft
+version: 1.0.0
+---
+
 # CONTENU DES 4 GAMMES FREINAGE
 
 ## 1. PLAQUETTES DE FREIN (ID: 402)

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { CartDataService } from './cart-data.service';
 import { OrdersService, CreateLegacyOrderData } from './orders.service';
-import { DatabaseException, ErrorCodes } from '../../common/exceptions';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 /**
  * Service principal qui compose tous les services spécialisés

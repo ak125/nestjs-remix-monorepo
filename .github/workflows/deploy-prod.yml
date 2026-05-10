@@ -135,7 +135,35 @@ jobs:
           docker stop nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
           docker rm nestjs-remix-caddy nestjs-remix-monorepo-prod 2>/dev/null || true
 
-          docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod
+          # 🚨 Sentry secrets injection via SOPS exec-env wrapper (parity with
+          # ci.yml preprod deploy step). docker-compose.prod.yml declares
+          # `environment: - SENTRY_DSN` etc. which inherit from this shell's env.
+          # If sops/age unavailable on this runner, fall back to plain
+          # `docker compose up` — Sentry SDK no-ops, deploy still succeeds.
+          # Source ~/production/.env first so bare `environment: - VAR` refs
+          # for SUPABASE_*, INTERNAL_API_KEY, etc. inherit from the shell
+          # (not just env_file, which is overridden by `environment: -` listings).
+          set -a
+          # shellcheck disable=SC1091
+          . "$PROD_DIR/.env"
+          set +a
+
+          SOPS_FILE="$GITHUB_WORKSPACE/secrets/sentry.prod.sops.env"
+          AGE_KEY_FILE="${SOPS_AGE_KEY_FILE:-$HOME/.config/sops/age/keys.txt}"
+          if command -v sops >/dev/null 2>&1 \
+             && [ -f "$SOPS_FILE" ] \
+             && [ -r "$AGE_KEY_FILE" ]; then
+            echo "✅ Injecting Sentry secrets via sops exec-env"
+            export SOPS_AGE_KEY_FILE="$AGE_KEY_FILE"
+            sops exec-env "$SOPS_FILE" \
+              'docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod'
+          else
+            echo "::warning::sops binary, secrets file, or age key missing on runner — Sentry SDK will start in no-op mode for PROD"
+            echo "  sops:        $(command -v sops || echo 'NOT FOUND')"
+            echo "  SOPS_FILE:   $SOPS_FILE ($([ -f "$SOPS_FILE" ] && echo present || echo absent))"
+            echo "  age key:     $AGE_KEY_FILE ($([ -r "$AGE_KEY_FILE" ] && echo readable || echo unreadable))"
+            docker compose -f docker-compose.prod.yml -f docker-compose.caddy.yml up -d --no-deps monorepo_prod caddy redis_prod
+          fi
           docker compose -f docker-compose.imgproxy.yml up -d --force-recreate
 
           echo "Waiting for containers to start (60s)..."

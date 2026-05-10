@@ -14,9 +14,9 @@ import {
   UseGuards,
   Logger,
 } from '@nestjs/common';
-import { OperationFailedException } from '../../../common/exceptions';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { OperationFailedException } from '@common/exceptions';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { ReportingService, ReportFilters } from '../services/reporting.service';
 
 @Controller('api/admin/reports')

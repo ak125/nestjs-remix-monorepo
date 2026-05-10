@@ -3,7 +3,7 @@
 // 🎯 Remplace process_seo_template() PL/pgSQL (5-7s → <50ms)
 
 import { Injectable, Logger } from '@nestjs/common';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import {
   SEO_PRICE_VARIATIONS,
   SEO_PROPOSE_VARIATIONS,

@@ -5,13 +5,10 @@ import {
   BusinessRuleException,
   DomainValidationException,
   ErrorCodes,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 import { NotificationService } from './notification.service';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import {
-  getErrorMessage,
-  getErrorStack,
-} from '../../../common/utils/error.utils';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
 
 export interface Claim {
   id: string;

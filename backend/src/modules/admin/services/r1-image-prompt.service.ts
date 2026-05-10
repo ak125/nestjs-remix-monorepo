@@ -3,7 +3,7 @@
  * de chaque page gamme R1. Utilise des builders par slot + RAG contexte.
  */
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { SLOT_BUILDERS, SLOT_META, SLOT_IDS } from './r1-image-prompt-builders';
 import { RagGammeReaderService } from './rag-gamme-reader.service';
 

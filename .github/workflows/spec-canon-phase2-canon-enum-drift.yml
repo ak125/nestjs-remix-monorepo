@@ -1,0 +1,151 @@
+name: 📐 Phase 2 Canon Enum Drift Check (ADR-048 sprint 2 P0)
+
+# Detecte les ecarts entre les 6 enums canoniques de phase2-canon.md
+# (execution_mode, section_eligibility, evidence_grade, qa_decision,
+# write_mode, publication_decision) et leur implementation dans backend/src/.
+#
+# Mode warn-only initial (cohérent ADR-048 strategie escalade J+30) — les
+# findings `error` sont surfaces via ::error:: annotations CI mais n'echouent
+# pas la PR. Promo `--strict` apres 30j si signal clair.
+#
+# Pattern aligne avec spec-canon-{repo-map,prompt-registry}-drift.yml (PR #358
+# + #366) : set -euo pipefail, JSON shape validation, error annotations
+# distinct du warning, pas de `|| true` swallow, timeout-minutes job.
+#
+# Baseline 2026-05-07 : 29/29 valeurs canon alive in backend/src/ (100% coverage).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.spec/00-canon/phase2-canon.md'
+      - 'backend/src/config/execution-registry.types.ts'
+      - 'backend/src/config/execution-registry.constants.ts'
+      - 'backend/src/config/content-section-policy.ts'
+      - 'backend/src/config/execution-plan-resolver.service.ts'
+      - 'backend/src/config/evidence-grading.constants.ts'
+      - 'backend/src/workers/types/content-refresh.types.ts'
+      - 'scripts/spec-canon/check-phase2-canon-enum-drift.py'
+      - '.github/workflows/spec-canon-phase2-canon-enum-drift.yml'
+
+  push:
+    branches: [main]
+    paths:
+      - '.spec/00-canon/phase2-canon.md'
+      - 'backend/src/config/execution-registry.*'
+      - 'backend/src/config/content-section-policy.ts'
+      - 'backend/src/config/evidence-grading.constants.ts'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-phase2-canon-enum-drift:
+    name: Phase 2 Canon Enum Drift Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Run drift check
+        id: drift_check
+        run: |
+          set -euo pipefail
+          if ! python3 scripts/spec-canon/check-phase2-canon-enum-drift.py --json > /tmp/phase2-canon-drift.json 2>/tmp/phase2-canon-drift.stderr; then
+            echo "::warning::check-phase2-canon-enum-drift.py exit non-zero (errors detectes, mode warn-only -- voir step summary + annotations)"
+          fi
+          if ! python3 -c "import json; d=json.load(open('/tmp/phase2-canon-drift.json')); assert 'summary' in d and 'findings' in d, 'JSON shape invalide'" 2>/tmp/json-validation.err; then
+            echo "::error::JSON output du script invalide. stderr script :"
+            cat /tmp/phase2-canon-drift.stderr || true
+            echo "JSON validation error :"
+            cat /tmp/json-validation.err || true
+            exit 1
+          fi
+          cat /tmp/phase2-canon-drift.json
+          ERROR_COUNT=$(python3 -c "import json; print(json.load(open('/tmp/phase2-canon-drift.json'))['summary']['error'])")
+          MISSING_COUNT=$(python3 -c "import json; print(json.load(open('/tmp/phase2-canon-drift.json'))['stats']['values_missing_in_backend'])")
+          ALIVE_COUNT=$(python3 -c "import json; print(json.load(open('/tmp/phase2-canon-drift.json'))['stats']['values_alive_in_backend'])")
+          TOTAL_COUNT=$(python3 -c "import json; print(json.load(open('/tmp/phase2-canon-drift.json'))['stats']['total_values_checked'])")
+          echo "error_count=$ERROR_COUNT" >> "$GITHUB_OUTPUT"
+          echo "missing_count=$MISSING_COUNT" >> "$GITHUB_OUTPUT"
+          echo "alive_count=$ALIVE_COUNT" >> "$GITHUB_OUTPUT"
+          echo "total_count=$TOTAL_COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Surface missing canon values as annotations
+        if: always() && steps.drift_check.outputs.error_count != '0'
+        run: |
+          set -euo pipefail
+          python3 -c "
+          import json
+          d = json.load(open('/tmp/phase2-canon-drift.json'))
+          for f in d['findings']:
+              if f['severity'] == 'error':
+                  print(f'::error file={f.get(\"file\", \"?\")}::{f[\"rule\"]}: {f[\"message\"]}')"
+
+      - name: Generate step summary
+        if: always()
+        run: |
+          set -euo pipefail
+          echo "# 📐 Phase 2 Canon Enum Drift Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Vérifie que les 6 enums canoniques de \`.spec/00-canon/phase2-canon.md\` (execution_mode, section_eligibility, evidence_grade, qa_decision, write_mode, publication_decision) sont implémentés dans \`backend/src/\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Stats** : ${{ steps.drift_check.outputs.alive_count }}/${{ steps.drift_check.outputs.total_count }} alive, **${{ steps.drift_check.outputs.missing_count }} missing**." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if ! python3 scripts/spec-canon/check-phase2-canon-enum-drift.py >> "$GITHUB_STEP_SUMMARY" 2>/tmp/summary-stderr.log; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**⚠️ Script exit non-zero (errors detectés -- voir annotations CI).**" >> "$GITHUB_STEP_SUMMARY"
+            if [ -s /tmp/summary-stderr.log ]; then
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+              cat /tmp/summary-stderr.log >> "$GITHUB_STEP_SUMMARY"
+              echo '```' >> "$GITHUB_STEP_SUMMARY"
+              echo "::warning::check-phase2-canon-enum-drift.py stderr present, voir step summary"
+            fi
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "---" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Mode** : warn-only (ADR-048 escalade J+30). Missing canon value = signal de drift" >> "$GITHUB_STEP_SUMMARY"
+          echo "(canon évolué sans implémentation, ou implémentation renommée sans MAJ canon)," >> "$GITHUB_STEP_SUMMARY"
+          echo "pas blocage CI. Promo \`--strict\` à évaluer post-30j." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment PR with missing values report (if drift detected)
+        if: github.event_name == 'pull_request' && steps.drift_check.outputs.missing_count != '0'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const drift = JSON.parse(fs.readFileSync('/tmp/phase2-canon-drift.json', 'utf8'));
+              const missing = (drift.findings || []).filter(f => f.rule && f.rule.endsWith('.canon-value-not-implemented'));
+              if (missing.length === 0) return;
+              const lines = missing.map(f => `- enum \`${f.enum}\` valeur \`${f.value}\``);
+              const stats = drift.stats || {};
+              const body = [
+                '## 📐 Phase 2 Canon — Valeurs non implémentées détectées',
+                '',
+                `\`.spec/00-canon/phase2-canon.md\` définit **${missing.length} valeur(s) canon** non trouvée(s) comme string literal dans \`backend/src/\` :`,
+                '',
+                ...lines,
+                '',
+                `**Stats** : ${stats.values_alive_in_backend || '?'}/${stats.total_values_checked || '?'} alive, ${stats.values_missing_in_backend || '?'} missing.`,
+                '',
+                '> Mode warn-only (ADR-048 escalade J+30). Pour fixer : implémenter la valeur dans `backend/src/` OU retirer du canon (commit signé).',
+              ].join('\n');
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } catch (e) {
+              core.warning(`drift report unavailable: ${e.message}`);
+            }

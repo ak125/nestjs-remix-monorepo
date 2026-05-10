@@ -1,10 +1,10 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { SupabaseBaseService } from '../../database/services/supabase-base.service';
-import { DatabaseException, ErrorCodes } from '../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 import { TABLES } from '@repo/database-types';
-import { RpcGateService } from '../../security/rpc-gate/rpc-gate.service';
-import { CacheService } from '../../cache/cache.service';
-import { getErrorMessage } from '../../common/utils/error.utils';
+import { RpcGateService } from '@security/rpc-gate/rpc-gate.service';
+import { CacheService } from '@cache/cache.service';
+import { getErrorMessage } from '@common/utils/error.utils';
 // 📁 backend/src/modules/catalog/catalog.service.ts
 // 🏗️ Service principal pour le catalogue - Orchestrateur des données
 
@@ -60,19 +60,30 @@ export class CatalogService
   }
 
   /**
-   * 🚀 Initialisation du module - Préchargement intelligent
+   * 🚀 Initialisation du module - Préchargement non-bloquant
+   *
+   * Les preloads (mainCategories + autoBrands + globalStats) appellent des
+   * RPCs Supabase distantes qui peuvent prendre 60-280s sur runners CI lents.
+   * Awaiter ici bloque app.listen() et donc /health → exit 124 sur perf-gates.yml.
+   *
+   * Solution structurelle : fire-and-forget. Le serveur HTTP écoute
+   * immédiatement, le cache se peuple en parallèle. Premiers requests =
+   * cache-miss (fallback live RPC déjà géré), suivants = warmed.
    */
-  async onModuleInit() {
-    this.logger.log('🚀 Initialisation CatalogService avec préchargement...');
+  onModuleInit(): void {
+    this.logger.log(
+      '🚀 Initialisation CatalogService — préchargement en arrière-plan',
+    );
+    void this.warmCacheInBackground();
+  }
 
+  private async warmCacheInBackground(): Promise<void> {
     try {
-      // Préchargement parallèle des données critiques
       await Promise.allSettled([
         this.preloadMainCategories(),
         this.preloadAutoBrands(),
         this.preloadGlobalStats(),
       ]);
-
       this.logger.log('✅ Préchargement du catalogue terminé avec succès');
     } catch (error) {
       this.logger.error('❌ Erreur préchargement catalogue:', error);

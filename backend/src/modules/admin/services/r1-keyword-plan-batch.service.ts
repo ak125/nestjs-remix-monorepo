@@ -12,7 +12,7 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { EnricherYamlParser } from './enricher-yaml-parser.service';
 import {
   R1KeywordPlanGatesService,

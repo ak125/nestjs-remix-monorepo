@@ -10,6 +10,8 @@ import { GammeRpcService } from './gamme-rpc.service';
 import { BuyingGuideDataService } from './buying-guide-data.service';
 import { ReferenceService } from '../../seo/services/reference.service';
 import { SeoTitleEngineService } from '../../seo/services/seo-title-engine.service';
+import { SeoChainOrchestratorService } from '../../seo/services/chain/seo-chain-orchestrator.service';
+import { SeoFeatureFlagRegistry } from '../../seo/registries/seo-feature-flag.registry';
 import { buildPieceVehicleUrlRaw } from '../../../common/utils/url-builder.utils';
 import { stripHtmlForMeta } from '../../../utils/html-entities';
 // ⚠️ IMAGES: Utiliser image-urls.utils.ts - NE PAS définir de constantes locales
@@ -77,6 +79,8 @@ export class GammeResponseBuilderService {
     private readonly referenceService: ReferenceService,
     private readonly seoTitleEngine: SeoTitleEngineService,
     private readonly relatedResources: R1RelatedResourcesService,
+    private readonly chainOrchestrator: SeoChainOrchestratorService,
+    private readonly chainFlags: SeoFeatureFlagRegistry,
   ) {}
 
   /**
@@ -159,12 +163,64 @@ export class GammeResponseBuilderService {
       gammeStats,
       brandNames,
     });
-    const pageTitle = this.transformer.contentCleaner(seoResolved.title);
-    const pageDescription = stripHtmlForMeta(seoResolved.description);
-    const pageKeywords = this.transformer.contentCleaner(seoResolved.keywords);
-    const pageH1 = this.transformer.contentCleaner(seoResolved.h1);
-    // sg_content contains intentional HTML (H2, ul, li, details) — do NOT strip tags
-    let pageContent = seoResolved.content || '';
+    const legacyTitle = this.transformer.contentCleaner(seoResolved.title);
+    const legacyDescription = stripHtmlForMeta(seoResolved.description);
+    const legacyKeywords = this.transformer.contentCleaner(
+      seoResolved.keywords,
+    );
+    const legacyH1 = this.transformer.contentCleaner(seoResolved.h1);
+    const legacyContent = seoResolved.content || '';
+
+    // PR-5 (plan seo-v9) — Shadow / on / off pour la chaîne SEO commune.
+    // Surface = R1_GAMME_ROUTER (catalogue gamme sans contexte véhicule).
+    const chainMode = this.chainFlags.mode('GAMME');
+    let chainSeo: {
+      title: string;
+      description: string;
+      keywords: string;
+      h1: string;
+      content: string;
+    } | null = null;
+    if (chainMode !== 'off') {
+      chainSeo = await this.computeChainSeoForGamme({
+        pgIdNum,
+        pgAlias,
+        pgNameSite,
+        pgNameMeta,
+        articlesCount: gammeStats.products_total ?? 0,
+      }).catch((err) => {
+        this.logger.warn(
+          `[SEO_CHAIN_GAMME] mode=${chainMode} compute failed (pg=${pgIdNum}): ${
+            err instanceof Error ? err.message : 'unknown'
+          }`,
+        );
+        return null;
+      });
+    }
+
+    const useChain = chainMode === 'on' && chainSeo !== null;
+    const pageTitle = useChain ? chainSeo!.title : legacyTitle;
+    const pageDescription = useChain
+      ? chainSeo!.description
+      : legacyDescription;
+    const pageKeywords = useChain ? chainSeo!.keywords : legacyKeywords;
+    const pageH1 = useChain ? chainSeo!.h1 : legacyH1;
+    // sg_content contains intentional HTML — do NOT strip tags
+    let pageContent = useChain ? chainSeo!.content : legacyContent;
+
+    if (chainMode === 'shadow' && chainSeo) {
+      this.logSeoChainDiffGamme(
+        pgIdNum,
+        {
+          title: legacyTitle,
+          description: legacyDescription,
+          keywords: legacyKeywords,
+          h1: legacyH1,
+          content: legacyContent,
+        },
+        chainSeo,
+      );
+    }
 
     // 🖼️ Inject approved R1 editorial images into sg_content
     // If pageContent is empty, load it directly from __seo_gamme
@@ -945,4 +1001,107 @@ export class GammeResponseBuilderService {
    * Matches slot to H2 by keyword, inserts <figure> after the H2.
    */
   // injectR1Images removed — images are now structured data in r1Images map
+
+  // ────────────────────────────────────────────────────────────────────
+  // PR-5 (plan seo-v9) — branchement chaîne SEO commune en shadow/on
+  // ────────────────────────────────────────────────────────────────────
+
+  /**
+   * Construit un `SeoChainInput` pour la surface R1_GAMME_ROUTER (catalogue
+   * gamme SANS contexte véhicule) + appelle `SeoChainOrchestratorService.run()`.
+   *
+   * @returns le payload `seo` formaté pour fusion avec la sortie legacy, ou
+   * `null` si chain renvoie title vide (fallback legacy).
+   */
+  private async computeChainSeoForGamme(input: {
+    pgIdNum: number;
+    pgAlias: string;
+    pgNameSite: string;
+    pgNameMeta: string;
+    articlesCount: number;
+  }): Promise<{
+    title: string;
+    description: string;
+    keywords: string;
+    h1: string;
+    content: string;
+  } | null> {
+    const baseUrl = process.env.SITE_URL ?? 'https://www.automecanik.com';
+
+    const out = await this.chainOrchestrator.run({
+      surfaceKey: 'R1_GAMME_ROUTER',
+      pgId: input.pgIdNum,
+      typeId: 0, // pas de véhicule pour R1_GAMME_ROUTER
+      vehicleId: null,
+      variables: {
+        gamme: input.pgNameSite,
+        gammeMeta: input.pgNameMeta || input.pgNameSite,
+        // Variables véhicule vides (R1_GAMME_ROUTER n'a pas de véhicule).
+        marque: '',
+        marqueMeta: '',
+        marqueMetaTitle: '',
+        modele: '',
+        modeleMeta: '',
+        type: '',
+        typeMeta: '',
+        annee: '',
+        nbCh: 0,
+        carosserie: '',
+        fuel: '',
+        codeMoteur: '',
+        articlesCount: input.articlesCount,
+        gammeLevel: 1,
+        isTopGamme: false,
+      },
+      ids: { pgAlias: input.pgAlias },
+      baseUrl,
+      breadcrumbs: [],
+    });
+
+    if (!out.template.title) return null;
+
+    return {
+      title: out.template.title,
+      description: out.template.description,
+      keywords: out.template.keywords,
+      h1: out.template.h1,
+      content: out.template.content,
+    };
+  }
+
+  /**
+   * Log structuré de la divergence legacy vs chain pour mode shadow.
+   * Format : 1 ligne JSON, indexable Sentry/grep/jq.
+   */
+  private logSeoChainDiffGamme(
+    pgId: number,
+    legacy: {
+      title: string;
+      description: string;
+      keywords: string;
+      h1: string;
+      content: string;
+    },
+    chain: {
+      title: string;
+      description: string;
+      keywords: string;
+      h1: string;
+      content: string;
+    },
+  ): void {
+    const diff = {
+      flag: 'SEO_CHAIN_GAMME',
+      mode: 'shadow',
+      pg_id: pgId,
+      title_eq: legacy.title === chain.title,
+      description_eq: legacy.description === chain.description,
+      keywords_eq: legacy.keywords === chain.keywords,
+      h1_eq: legacy.h1 === chain.h1,
+      content_eq: legacy.content === chain.content,
+      legacy_title_len: legacy.title.length,
+      chain_title_len: chain.title.length,
+    };
+    this.logger.log(`[SEO_CHAIN_GAMME_SHADOW] ${JSON.stringify(diff)}`);
+  }
 }

@@ -1,0 +1,125 @@
+name: wiki-readiness-check
+
+# ADR-033 plan rev 6 §9 / plan rev 3 PR-F — Aggregates the 6 criterion C1-C6
+# that gate Partie 3 consumers (DB / RAG / SEO / blog / diagnostic / chatbot).
+# Returns READY only when all 6 PASS simultaneously. As long as this returns
+# NOT_READY, no Partie 3 branchement happens — big-bang quand la chaîne est
+# prête (garde-fou utilisateur #12).
+#
+# Schedule : Monday 04:00 UTC, after the daily diag-canon-slugs-export
+# (02:00 UTC) and the wiki-validate weekly drift detection (Monday 03:00 UTC).
+# Output : weekly report in workflow run summary + artifact retained 90d.
+#
+# Required env :
+#   - AUTOMECANIK_WIKI_PATH (in CI : checkout automecanik-wiki at runtime)
+#   - AUTOMECANIK_RAG_PATH (in CI : checkout automecanik-rag at runtime)
+#   - AUTOMECANIK_MONOREPO_PATH (in CI : ${GITHUB_WORKSPACE}/monorepo)
+#
+# Refs :
+#   - plan rev 6 §9 — 6 criterion C1-C6
+#   - plan rev 3 PR-F : /home/deploy/.claude/plans/mvp-et-raw-et-wobbly-brooks.md
+#   - companion : scripts/wiki/wiki-readiness-check.py
+
+on:
+  schedule:
+    # Lundi 04:00 UTC, après diag-canon-slugs-export (02:00 UTC) et
+    # wiki-validate scheduled (lundi 03:00 UTC). Permet de capturer un
+    # snapshot hebdomadaire de l'état Phase 2/3 sans polluer les autres jours.
+    - cron: '0 4 * * 1'
+  pull_request:
+    paths:
+      - 'scripts/wiki/wiki-readiness-check.py'
+      - '.github/workflows/wiki-readiness-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  readiness-check:
+    name: 🚦 Wiki readiness check (6 criteria C1-C6)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout monorepo
+        uses: actions/checkout@v4
+        with:
+          path: monorepo
+
+      - name: Checkout automecanik-wiki
+        uses: actions/checkout@v4
+        with:
+          repository: ak125/automecanik-wiki
+          path: automecanik-wiki
+          fetch-depth: 0  # need git log for C3 freshness check
+
+      - name: Checkout automecanik-rag
+        uses: actions/checkout@v4
+        with:
+          repository: ak125/automecanik-rag
+          path: automecanik-rag
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python deps
+        run: |
+          python3 -m pip install --quiet pyyaml jsonschema
+
+      - name: Run readiness check
+        id: check
+        env:
+          AUTOMECANIK_WIKI_PATH: ${{ github.workspace }}/automecanik-wiki
+          AUTOMECANIK_RAG_PATH: ${{ github.workspace }}/automecanik-rag
+          AUTOMECANIK_MONOREPO_PATH: ${{ github.workspace }}/monorepo
+        run: |
+          # Don't fail the workflow if NOT_READY — this is informational on schedule.
+          # On PR triggers, fail to surface regression.
+          set +e
+          python3 monorepo/scripts/wiki/wiki-readiness-check.py \
+            --wiki-path "${AUTOMECANIK_WIKI_PATH}" \
+            --rag-path "${AUTOMECANIK_RAG_PATH}" \
+            --monorepo-path "${AUTOMECANIK_MONOREPO_PATH}" | tee readiness-output.txt
+          EXIT_CODE=$?
+          python3 monorepo/scripts/wiki/wiki-readiness-check.py \
+            --wiki-path "${AUTOMECANIK_WIKI_PATH}" \
+            --rag-path "${AUTOMECANIK_RAG_PATH}" \
+            --monorepo-path "${AUTOMECANIK_MONOREPO_PATH}" \
+            --json > readiness-report.json || true
+          echo "verdict=$(jq -r .verdict readiness-report.json)" >> "$GITHUB_OUTPUT"
+          # Fail PR / dispatch on NOT_READY ; informational on schedule
+          if [ "${{ github.event_name }}" != "schedule" ] && [ ${EXIT_CODE} -ne 0 ]; then
+            echo "::error::wiki readiness check returned NOT_READY (exit ${EXIT_CODE})"
+            exit ${EXIT_CODE}
+          fi
+
+      - name: Append summary
+        if: always()
+        run: |
+          {
+            echo "## 🚦 Wiki Readiness Check (ADR-033 plan rev 6 §9)"
+            echo ""
+            echo "**Verdict** : \`${{ steps.check.outputs.verdict }}\`"
+            echo ""
+            echo "When verdict = \`READY\`, Partie 3 consumers can be unlocked (DB/RAG/SEO/blog/diagnostic/chatbot)."
+            echo "Tant que \`NOT_READY\`, garde-fou utilisateur #12 applies — pas de bricolage hybride transitoire."
+            echo ""
+            echo "<details><summary>Full output</summary>"
+            echo ""
+            echo "\`\`\`"
+            cat readiness-output.txt
+            echo "\`\`\`"
+            echo ""
+            echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload readiness report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wiki-readiness-${{ github.run_id }}
+          path: |
+            readiness-output.txt
+            readiness-report.json
+          retention-days: 90

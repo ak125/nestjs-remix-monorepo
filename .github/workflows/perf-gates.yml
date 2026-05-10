@@ -3,17 +3,30 @@ name: 🎯 Performance Gates
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'frontend/**'
-      - 'backend/src/**'
-      - 'packages/**'
+    # Pattern "required-but-skippable" (PR #364 unblock) :
+    # - Le workflow run TOUJOURS sur PR pour pouvoir produire le check
+    #   "CWV Performance Check" exigé par branch protection main.
+    # - Le job lighthouse a un step early qui détecte les paths via
+    #   dorny/paths-filter. Si aucun path frontend/SSR-relevant n'est touché,
+    #   les steps lourds (build + lhci) sont skippés et le job émet success.
+    # - Conserve la propriété anti-Dependabot regression (#279-#283 du
+    #   2026-05-04) : aucune execution lighthouse pour les bumps dev-deps.
+    # - Évite le blocage des PRs scripts-only (ex: #364 PR-D docstring)
+    #   qui n'auraient pas trigger le workflow auparavant et restaient
+    #   bloquées sur "14 of 14 expected" en branch protection.
 
-# Thresholds (from lighthouse-budget.json):
-# - LCP: ≤2500ms (Google "Good")
-# - CLS: ≤0.1 (Google "Good")
-# - TTFB: ≤800ms (critical for SEO)
-# - TBT: ≤300ms (proxy for INP)
-# - FCP: ≤2000ms
+# Thresholds : voir frontend/lighthouse-budget.json (calibré sur baseline
+# mesuré, anti-régression). Documentation + procédure de mise à jour dans
+# frontend/lighthouse-budget.README.md.
+
+# `pull-requests: write` requis par le step "Comment PR with Results" pour
+# poster le récap performance. Sans cette permission le workflow échoue
+# avec "Resource not accessible by integration" même quand l'audit lui-même
+# passe (cf. PR #224 run 25176006026). Les autres permissions restent à
+# `read` par défaut (least-privilege).
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   lighthouse:
@@ -35,27 +48,66 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Path filter au niveau job (vs workflow-level) pour permettre au job
+      # de produire un check status "success" même quand les paths ne match
+      # pas. Pattern "required-but-skippable" (cf. on.pull_request comment).
+      - name: Detect SSR-relevant changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            ssr:
+              - 'frontend/app/**'
+              - 'frontend/public/**'
+              - 'frontend/vite.config.ts'
+              - 'frontend/tsconfig.json'
+              - 'backend/src/**'
+              - 'packages/*/src/**'
+              - '.github/workflows/perf-gates.yml'
+              - 'frontend/lighthouse-budget.json'
+
+      - name: Skip notice (no SSR-relevant changes)
+        if: steps.filter.outputs.ssr != 'true'
+        run: |
+          echo "::notice::No SSR-relevant paths changed — skipping lighthouse audit (success)."
+          echo "Touched paths : $(git diff --name-only origin/${{ github.base_ref }}...HEAD | head -20)"
+
       - name: Setup Node.js
+        if: steps.filter.outputs.ssr == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
+        if: steps.filter.outputs.ssr == 'true'
         run: npm ci
 
       - name: Build
+        if: steps.filter.outputs.ssr == 'true'
         run: npm run build
         env:
           NODE_ENV: production
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY }}
+          # Fallback aux mocks quand les secrets ne sont pas exposés (PRs Dependabot
+          # et forks — politique GitHub 2021 anti-exfiltration). Le build TypeScript
+          # n'exécute pas Nest donc les valeurs n'ont pas besoin d'être réelles.
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mock.supabase.co' }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY || 'ci-mock-anon-key' }}
 
       - name: Start server
+        if: steps.filter.outputs.ssr == 'true'
         run: |
           npm run start &
           echo "⏳ Waiting for server to start..."
-          timeout 60 bash -c 'until curl -s http://localhost:3000/health > /dev/null 2>&1; do sleep 2; done'
+          # 300s needed because backend does cache warming (176 gammes + hierarchy + homepage)
+          # at onApplicationBootstrap. In local dev this takes ~5s; in CI runners with
+          # remote Supabase, cold RPCs, and slow network it can take 60-180s — and
+          # occasionally up to ~280s under load (observed exit 124 at 180s on PR #190
+          # while server logs showed "Démarrage du serveur" + "Redis connecté" with
+          # no further output, indicating the cache-warm onApplicationBootstrap was
+          # still in progress). Job-level timeout-minutes:15 still caps total runtime
+          # if cold-path is genuinely broken.
+          timeout 300 bash -c 'until curl -s http://localhost:3000/health > /dev/null 2>&1; do sleep 2; done'
           echo "✅ Server is ready"
         env:
           NODE_ENV: production
@@ -75,9 +127,30 @@ jobs:
           RAG_SERVICE_URL: http://disabled:8000
           RAG_API_KEY: ci-mock-rag-api-key-not-for-production-use
           REDIS_URL: redis://localhost:6379
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # ADR-028 Option D : READ_ONLY=true permet le boot en mode read-only.
+          # EnvValidation + SupabaseBaseService respectent ce contrat depuis les PRs
+          # #246/#274/#276/#277 (mergées 2026-05-03), MAIS de nombreux services
+          # backend créent leur propre client via `createClient(url, key)` sans
+          # passer par SupabaseBaseService — ils plantent au boot si SERVICE_ROLE_KEY
+          # est vide ("supabaseKey is required" depuis @supabase/supabase-js).
+          # Refactorer ces ~30 services pour respecter ADR-028 est hors scope de ce
+          # fix CI (PR de suivi à prévoir).
+          # Solution courante : mocks aux trois variables (pattern déjà adopté par
+          # le job `🧪 Backend Tests` de ci.yml lignes 230-231). Ces mocks sont des
+          # string literals CI-only et n'exposent aucun secret prod. READ_ONLY=true
+          # garantit qu'aucune écriture ne sortira du process Nest même si le client
+          # se croit "service_role" — `__write_log_redirect` + RLS hardening (ADR-021)
+          # protègent côté DB. Lighthouse ne fait que des HTTP GET sur les pages SSR
+          # cachées, les RPCs DB live sont court-circuitées par le warmer cache
+          # homepage / hierarchy.
+          # Bénéfice transverse : sur les PRs Dependabot et forks, GitHub n'expose
+          # pas les Actions secrets (politique 2021 anti-exfiltration). Sans
+          # fallback mocks, le job échouait systématiquement (cf #279, #280, #281,
+          # #282, #283 — tous bloqués par cette même cause).
+          READ_ONLY: "true"
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mock.supabase.co' }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY || 'ci-mock-anon-key' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY || 'ci-mock-service-role-key-not-for-production-use' }}
           SESSION_SECRET: ci-perf-test-session-secret-not-for-production-use
           SYSTEMPAY_SITE_ID: "00000000"
           SYSTEMPAY_CERTIFICATE_PROD: "ci-mock-systempay-certificate-prod-not-for-production-use"
@@ -86,19 +159,24 @@ jobs:
           PAYBOX_HMAC_KEY: "0000000000000000000000000000000000000000000000000000000000000000"
 
       - name: Run Lighthouse CI
+        if: steps.filter.outputs.ssr == 'true'
         id: lighthouse
-        uses: treosh/lighthouse-ci-action@v10
+        uses: treosh/lighthouse-ci-action@v12
         with:
           urls: |
             http://localhost:3000/
             http://localhost:3000/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html
-            http://localhost:3000/constructeurs/renault.html
+            http://localhost:3000/constructeurs/renault-140.html
           budgetPath: ./frontend/lighthouse-budget.json
-          uploadArtifacts: true
+          # uploadArtifacts: false — l'action treosh/lighthouse-ci-action@v12 utilise
+          # actions/upload-artifact@v3 en interne, déprécié par GitHub depuis 2024.
+          # `temporaryPublicStorage: true` suffit pour récupérer le rapport via le
+          # lien retourné par l'action (cf. lighthouseLinks dans Comment PR step).
+          uploadArtifacts: false
           temporaryPublicStorage: true
 
       - name: Check CWV Thresholds
-        if: always()
+        if: always() && steps.filter.outputs.ssr == 'true'
         run: |
           echo "🎯 Performance Gate Results"
           echo "=========================="
@@ -114,8 +192,8 @@ jobs:
           echo "Budget violations will cause automatic failure."
 
       - name: Comment PR with Results
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v8
+        if: github.event_name == 'pull_request' && steps.filter.outputs.ssr == 'true'
+        uses: actions/github-script@v9
         with:
           script: |
             const lighthouseLinks = '${{ steps.lighthouse.outputs.links }}';

@@ -7,7 +7,7 @@ import {
   UseGuards,
   BadRequestException,
 } from '@nestjs/common';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import {
   SeoGeneratorService,
   GeneratedR4,

@@ -63,6 +63,13 @@ const ROLE_CONFIG: Record<
     color: "bg-green-50 text-green-700 border-green-200",
     label: "Guide achat",
   },
+  // Canon RoleId form (PR-3a-cleanup migrated target_role: 'R6' → 'R6_GUIDE_ACHAT'
+  // in r6-guide.service.ts; keeping 'R6' for backwards compat with legacy rows).
+  R6_GUIDE_ACHAT: {
+    icon: BookOpen,
+    color: "bg-green-50 text-green-700 border-green-200",
+    label: "Guide achat",
+  },
 };
 
 const DEFAULT_ROLE = {

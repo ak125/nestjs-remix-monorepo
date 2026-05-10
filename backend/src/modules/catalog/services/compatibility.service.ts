@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 /**
  * 🎯 COMPATIBILITY SERVICE V2

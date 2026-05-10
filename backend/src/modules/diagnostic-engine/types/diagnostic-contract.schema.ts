@@ -20,6 +20,7 @@ export const DiagnosticIntentEnum = z.enum([
   'maintenance_check',
   'revision_check',
   'preventive_check',
+  'breakdown', // ADR-032 D-intents : urgence routière (panne immobilisante)
 ]);
 export type DiagnosticIntent = z.infer<typeof DiagnosticIntentEnum>;
 

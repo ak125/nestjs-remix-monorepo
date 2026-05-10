@@ -8,8 +8,8 @@ import { R6GuideService } from '../services/r6-guide.service';
 import {
   DomainNotFoundException,
   OperationFailedException,
-} from '../../../common/exceptions';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+} from '@common/exceptions';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 @Controller('api/r6-guide')
 export class R6GuideController {

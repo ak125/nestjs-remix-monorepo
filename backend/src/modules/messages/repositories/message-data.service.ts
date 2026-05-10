@@ -1,7 +1,7 @@
 import { TABLES } from '@repo/database-types';
 import { Injectable } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import { DatabaseException, ErrorCodes } from '../../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DatabaseException, ErrorCodes } from '@common/exceptions';
 
 // Interface pour le message moderne
 export interface ModernMessage {

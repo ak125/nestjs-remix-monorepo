@@ -4,7 +4,7 @@ import {
   DomainNotFoundException,
   DomainValidationException,
   AuthenticationException,
-} from '../common/exceptions';
+} from '@common/exceptions';
 import { Request } from 'express';
 import { UserDataConsolidatedService } from '../modules/users/services/user-data-consolidated.service';
 import { OrdersService } from '../database/services/orders.service';
