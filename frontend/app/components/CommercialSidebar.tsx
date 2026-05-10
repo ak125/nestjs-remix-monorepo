@@ -1,4 +1,8 @@
 import { Link, useLocation } from "@remix-run/react";
+import * as React from "react";
+import { memo } from "react";
+
+import { Badge } from "~/components/ui/badge";
 import {
   Home,
   ShoppingCart,
@@ -11,11 +15,7 @@ import {
   LogOut,
   TrendingUp,
   AlertTriangle,
-} from "lucide-react";
-import * as React from "react";
-import { memo } from "react";
-
-import { Badge } from "~/components/ui/badge";
+} from '~/lib/icons';
 import { Button } from "./ui/button";
 
 function cn(...classes: (string | undefined | false | null)[]): string {

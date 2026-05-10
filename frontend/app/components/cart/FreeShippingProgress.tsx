@@ -1,4 +1,4 @@
-import { Sparkles, Truck } from "lucide-react";
+import { Sparkles, Truck } from '~/lib/icons';
 import { formatPrice, FREE_SHIPPING_THRESHOLD } from "./cart-utils";
 
 export function FreeShippingProgress({

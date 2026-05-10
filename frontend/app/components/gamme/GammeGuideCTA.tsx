@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
-import { ArrowRight, BookOpen } from "lucide-react";
 import { Section } from "~/components/layout";
+import { ArrowRight, BookOpen } from '~/lib/icons';
 
 interface GammeGuideCTAProps {
   gammeName: string;

@@ -11,6 +11,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
+import { Alert } from "~/components/ui/alert";
 import {
   ArrowLeft,
   Car,
@@ -19,8 +20,7 @@ import {
   Calendar,
   Settings,
   Info,
-} from "lucide-react";
-import { Alert } from "~/components/ui/alert";
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";

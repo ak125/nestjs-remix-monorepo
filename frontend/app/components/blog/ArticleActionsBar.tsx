@@ -2,9 +2,9 @@
  * ArticleActionsBar — Share + Bookmark actions for blog articles
  */
 
-import { Share2, Bookmark } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Share2, Bookmark } from '~/lib/icons';
 import { trackShareArticle, trackBookmark } from "~/utils/analytics";
 
 interface ArticleActionsBarProps {

@@ -6,8 +6,8 @@
  * ✅ Synchronisé avec PiecesGridView (barre fiabilité, couleurs)
  */
 
-import { Truck } from "lucide-react";
 import React, { useState } from "react";
+import { Truck } from '~/lib/icons';
 
 import { logger } from "~/utils/logger";
 import { useCart } from "../../hooks/useCart";

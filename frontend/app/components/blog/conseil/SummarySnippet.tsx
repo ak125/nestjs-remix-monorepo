@@ -4,7 +4,7 @@
  * Placed after S1, before the lead. Only renders with >= 3 points.
  */
 
-import { ListOrdered } from "lucide-react";
+import { ListOrdered } from '~/lib/icons';
 import { type GammeConseil, extractSummaryPoints } from "./section-config";
 
 interface SummarySnippetProps {

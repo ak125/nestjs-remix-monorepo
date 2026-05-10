@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle } from '~/lib/icons';
 
 import { Button } from "../ui/button";
 

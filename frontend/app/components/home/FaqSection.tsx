@@ -1,7 +1,7 @@
 import { Await } from "@remix-run/react";
-import { HelpCircle, Search, Shield, Stethoscope, Truck } from "lucide-react";
 import { Suspense } from "react";
 import { FAQ_DATA } from "~/components/home/constants";
+import { HelpCircle, Search, Shield, Stethoscope, Truck } from '~/lib/icons';
 
 function getFaqIcon(question: string) {
   const q = question.toLowerCase();

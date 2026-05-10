@@ -9,18 +9,6 @@ import {
   Link,
   useNavigation,
 } from "@remix-run/react";
-import {
-  Search,
-  Plus,
-  Edit,
-  Trash2,
-  AlertTriangle,
-  Eye,
-  Activity,
-  Database,
-  Link as LinkIcon,
-  RefreshCw,
-} from "lucide-react";
 import { useState } from "react";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import { Badge } from "~/components/ui/badge";
@@ -47,6 +35,18 @@ import {
 } from "~/components/ui/select";
 import { Switch } from "~/components/ui/switch";
 import { useTableUrlState } from "~/hooks/useTableUrlState";
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  Eye,
+  Activity,
+  Database,
+  Link as LinkIcon,
+  RefreshCw,
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 
 // --- Types ---

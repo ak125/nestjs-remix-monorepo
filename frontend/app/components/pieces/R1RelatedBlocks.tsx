@@ -4,7 +4,7 @@
  * Max 3 blocs, max 3 liens par bloc.
  */
 import { Link } from "@remix-run/react";
-import { AlertTriangle, BookOpen, Wrench, ArrowRight } from "lucide-react";
+import { AlertTriangle, BookOpen, Wrench, ArrowRight } from '~/lib/icons';
 
 interface RelatedLink {
   kind: string;

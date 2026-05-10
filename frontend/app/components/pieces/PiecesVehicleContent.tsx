@@ -4,7 +4,6 @@
  */
 
 import { Await, Link, useLoaderData, useLocation } from "@remix-run/react";
-import { ShoppingCart } from "lucide-react";
 import {
   lazy,
   Suspense,
@@ -41,6 +40,7 @@ import { usePiecesFilters } from "~/hooks/use-pieces-filters";
 import { openCartSidebar } from "~/hooks/useCartSidebar";
 import { useRootCart } from "~/hooks/useRootData";
 import { useSeoLinkTracking } from "~/hooks/useSeoLinkTracking";
+import { ShoppingCart } from '~/lib/icons';
 import { isValidPosition } from "~/utils/pieces-filters.utils";
 import { buildPiecesBreadcrumbs } from "~/utils/url-builder.utils";
 

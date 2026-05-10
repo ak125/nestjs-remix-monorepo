@@ -12,8 +12,8 @@
  */
 
 import { Link } from "@remix-run/react";
-import { BookOpen, Clock, ArrowRight, Newspaper } from "lucide-react";
 import { useEffect, memo } from "react";
+import { BookOpen, Clock, ArrowRight, Newspaper } from '~/lib/icons';
 import { useSeoLinkTracking } from "../../hooks/useSeoLinkTracking";
 import { type BlogArticle } from "../../types/pieces-route.types";
 

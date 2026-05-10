@@ -5,6 +5,24 @@ import {
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import { getRoleDisplayLabel, getRoleShortLabel } from "@repo/seo-roles";
+import { useEffect, useState } from "react";
+import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
+import {
+  DashboardShell,
+  KpiGrid,
+} from "~/components/admin/patterns/DashboardShell";
+import { KpiCard } from "~/components/admin/patterns/KpiCard";
+import {
+  StatusBadge,
+  type StatusType,
+} from "~/components/admin/patterns/StatusBadge";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Progress } from "~/components/ui/progress";
+import { Select, SelectItem } from "~/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   Activity,
   AlertTriangle,
@@ -27,25 +45,7 @@ import {
   Wrench,
   XCircle,
   Zap,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
-import {
-  DashboardShell,
-  KpiGrid,
-} from "~/components/admin/patterns/DashboardShell";
-import { KpiCard } from "~/components/admin/patterns/KpiCard";
-import {
-  StatusBadge,
-  type StatusType,
-} from "~/components/admin/patterns/StatusBadge";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Progress } from "~/components/ui/progress";
-import { Select, SelectItem } from "~/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+} from '~/lib/icons';
 import { getFamilyTheme } from "~/utils/family-theme";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

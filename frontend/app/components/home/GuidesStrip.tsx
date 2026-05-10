@@ -6,7 +6,7 @@ import {
   Play,
   ArrowRight,
   Wrench,
-} from "lucide-react";
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 type ResourceCard = {

@@ -1,7 +1,7 @@
 import { type MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
-import { Phone, Mail, MapPin, Clock, MessageCircle, FileText, HelpCircle } from "lucide-react";
 import { Button } from '~/components/ui/button';
+import { Phone, Mail, MapPin, Clock, MessageCircle, FileText, HelpCircle } from '~/lib/icons';
 
 export const meta: MetaFunction = () => {
   return [

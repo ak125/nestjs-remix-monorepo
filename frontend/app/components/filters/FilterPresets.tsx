@@ -7,8 +7,8 @@
  * Stockage: localStorage pour persistence côté client
  */
 
-import { ChevronDown, Save, Trash2, Star } from "lucide-react";
 import { useState, useEffect, memo } from "react";
+import { ChevronDown, Save, Trash2, Star } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 
 export interface FilterPreset {

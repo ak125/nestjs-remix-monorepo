@@ -1,4 +1,4 @@
-import { Truck } from "lucide-react";
+import { Truck } from '~/lib/icons';
 
 const FREE_SHIPPING_THRESHOLD = 150;
 

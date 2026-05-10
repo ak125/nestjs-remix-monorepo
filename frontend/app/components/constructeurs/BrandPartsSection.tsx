@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
-import { Package, TrendingUp } from "lucide-react";
 import { PartImage } from "~/components/ui/ResponsiveImage";
+import { Package, TrendingUp } from '~/lib/icons';
 
 interface Part {
   pg_id: number;

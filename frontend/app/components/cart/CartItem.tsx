@@ -3,8 +3,8 @@
  * Version améliorée avec gestion du stock et validation
  */
 
-import { Trash2, Plus, Minus, AlertTriangle } from "lucide-react";
 import { useState, useCallback, memo } from "react";
+import { Trash2, Plus, Minus, AlertTriangle } from '~/lib/icons';
 import { type CartItem as CartItemType } from "~/schemas/cart.schemas";
 import { Button } from "../../components/ui/button";
 import { Card, CardContent } from "../../components/ui/card";

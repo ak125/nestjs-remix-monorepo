@@ -1,10 +1,3 @@
-import {
-  Info,
-  Settings,
-  AlertTriangle,
-  CheckCircle,
-  Wrench,
-} from "lucide-react";
 import { useMemo, memo } from "react";
 
 import {
@@ -13,6 +6,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "~/components/ui/accordion";
+import {
+  Info,
+  Settings,
+  AlertTriangle,
+  CheckCircle,
+  Wrench,
+} from '~/lib/icons';
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { HtmlContent } from "../seo/HtmlContent";
 

@@ -3,9 +3,9 @@
  * Provides the shared shell: gradient header (icon + label + h2) + body + optional sources badge.
  */
 
-import { type LucideIcon, FileText } from "lucide-react";
 import { type ReactNode } from "react";
 import { slugifyTitle } from "~/components/blog/conseil/section-config";
+import { type LucideIcon, FileText } from '~/lib/icons';
 
 interface GuideCardProps {
   title: string;

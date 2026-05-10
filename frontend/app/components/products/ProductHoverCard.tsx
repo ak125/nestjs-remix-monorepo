@@ -11,14 +11,14 @@
  */
 
 import { Link } from "@remix-run/react";
+import { memo } from "react";
 import {
   ExternalLink,
   Package,
   ShoppingCart,
   Star,
   TrendingUp,
-} from "lucide-react";
-import { memo } from "react";
+} from '~/lib/icons';
 
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";

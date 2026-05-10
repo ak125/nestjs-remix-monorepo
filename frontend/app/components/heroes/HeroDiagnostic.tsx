@@ -8,7 +8,7 @@
  * @see .spec/00-canon/image-matrix-v1.md §2, §7
  */
 
-import { type LucideIcon, Wrench } from "lucide-react";
+import { type LucideIcon, Wrench } from '~/lib/icons';
 
 interface HeroDiagnosticProps {
   /** Titre H1 principal */

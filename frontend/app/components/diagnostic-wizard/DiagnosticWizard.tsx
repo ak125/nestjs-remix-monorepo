@@ -8,6 +8,9 @@
  * Slice 11: Enhanced UX — transitions, loading progress, print, stepper
  */
 /* eslint-disable no-restricted-syntax */ // print:hidden is intentional (print media query)
+import { useReducer, useCallback, useEffect, useState, useRef } from "react";
+import { Button } from "~/components/ui/button";
+import { Progress } from "~/components/ui/progress";
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,10 +18,7 @@ import {
   Link2,
   Check,
   Printer,
-} from "lucide-react";
-import { useReducer, useCallback, useEffect, useState, useRef } from "react";
-import { Button } from "~/components/ui/button";
-import { Progress } from "~/components/ui/progress";
+} from '~/lib/icons';
 import { useDiagnosticVehicleSelector } from "./hooks/use-diagnostic-vehicle-selector";
 import { DiagnosticResults } from "./results/DiagnosticResults";
 import { StepSymptom } from "./steps/StepSymptom";

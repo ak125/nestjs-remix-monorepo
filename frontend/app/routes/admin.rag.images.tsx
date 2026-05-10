@@ -4,17 +4,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import {
-  Image,
-  Copy,
-  Check,
-  ArrowLeft,
-  Filter,
-  Upload,
-  Link2,
-  Loader2,
-  Trash2,
-} from "lucide-react";
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -32,6 +21,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  Image,
+  Copy,
+  Check,
+  ArrowLeft,
+  Filter,
+  Upload,
+  Link2,
+  Loader2,
+  Trash2,
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

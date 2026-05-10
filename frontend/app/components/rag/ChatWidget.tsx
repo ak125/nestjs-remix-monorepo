@@ -8,10 +8,10 @@
  * - Intégration avec l'API RAG
  */
 
-import { MessageCircle, X, Minimize2 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 
 import { useVehiclePersistence } from "~/hooks/useVehiclePersistence";
+import { MessageCircle, X, Minimize2 } from '~/lib/icons';
 import { classifyChatIntent } from "~/utils/chat-intent.utils";
 import ChatInput from "./ChatInput";
 import ChatMessage, { type ChatMessageData } from "./ChatMessage";

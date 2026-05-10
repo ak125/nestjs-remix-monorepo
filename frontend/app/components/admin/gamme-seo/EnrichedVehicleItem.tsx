@@ -1,8 +1,8 @@
-import { Copy, ExternalLink } from "lucide-react";
 import { memo } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { type EnrichedVehicleType } from "~/hooks/useVehicleEnrichment";
+import { Copy, ExternalLink } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { type VLevelItem } from "./types";
 

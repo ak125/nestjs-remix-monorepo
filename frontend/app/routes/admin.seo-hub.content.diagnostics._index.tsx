@@ -14,22 +14,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link, Form, useNavigation } from "@remix-run/react";
-import {
-  AlertTriangle,
-  Edit,
-  Eye,
-  Filter,
-  MoreVertical,
-  Plus,
-  Search,
-  Trash2,
-  Check,
-  StopCircle,
-  AlertCircle,
-  Zap,
-  RefreshCw,
-  ExternalLink,
-} from "lucide-react";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import {
   Accordion,
@@ -67,6 +51,22 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { useTableUrlState } from "~/hooks/useTableUrlState";
+import {
+  AlertTriangle,
+  Edit,
+  Eye,
+  Filter,
+  MoreVertical,
+  Plus,
+  Search,
+  Trash2,
+  Check,
+  StopCircle,
+  AlertCircle,
+  Zap,
+  RefreshCw,
+  ExternalLink,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

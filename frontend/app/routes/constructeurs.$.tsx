@@ -16,8 +16,8 @@ import {
   isRouteErrorResponse,
   Link,
 } from "@remix-run/react";
-import { Car, ChevronRight, Fuel, Gauge, Calendar } from "lucide-react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { Car, ChevronRight, Fuel, Gauge, Calendar } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { normalizeTypeAlias } from "~/utils/url-builder.utils";

@@ -7,6 +7,7 @@
  * Remplace les badges manuels incohérents dans le codebase
  */
 
+import { Badge } from "~/components/ui/badge";
 import {
   CheckCircle2,
   XCircle,
@@ -14,8 +15,7 @@ import {
   Clock,
   Info,
   type LucideIcon,
-} from "lucide-react";
-import { Badge } from "~/components/ui/badge";
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 export type StatusType =

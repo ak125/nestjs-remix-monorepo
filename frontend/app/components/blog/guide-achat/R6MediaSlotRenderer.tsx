@@ -1,5 +1,5 @@
-import { Info, AlertTriangle, Lightbulb, Wallet } from "lucide-react";
 import { Alert } from "~/components/ui/alert";
+import { Info, AlertTriangle, Lightbulb, Wallet } from '~/lib/icons';
 import { type R6MediaSlotFrontend } from "~/types/r6-guide.types";
 
 const CALLOUT_CONFIG: Record<string, { variant: string; icon: typeof Info }> = {

@@ -12,6 +12,8 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { Button } from "~/components/ui/button";
 import {
   TrendingUp,
   Star,
@@ -22,9 +24,7 @@ import {
   Calendar,
   Filter,
   Download,
-} from "lucide-react";
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
-import { Button } from "~/components/ui/button";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { getReviewStats } from "../services/api/review.api";
 

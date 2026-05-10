@@ -3,8 +3,8 @@
  * Affiche uniquement les KPIs viables (garde-fous stricts).
  * Retourne null si aucun KPI ne passe les seuils.
  */
-import { Car, Calendar, Factory, Tag } from "lucide-react";
 import { memo } from "react";
+import { Car, Calendar, Factory, Tag } from '~/lib/icons';
 
 interface R1KpiCoverageProps {
   proofData?: {

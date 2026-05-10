@@ -22,7 +22,6 @@ import {
   isRouteErrorResponse,
   type ShouldRevalidateFunction,
 } from "@remix-run/react";
-import { ArrowLeft, Tag, BookOpen, ExternalLink } from "lucide-react";
 import { lazy, Suspense, useEffect, useRef } from "react";
 
 // Components
@@ -51,6 +50,7 @@ import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
 import { resolveSlogan } from "~/config/visual-intent";
+import { ArrowLeft, Tag, BookOpen, ExternalLink } from '~/lib/icons';
 
 // Conseil components
 

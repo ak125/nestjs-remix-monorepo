@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from "@remix-run/react";
-import { Phone } from "lucide-react";
+import { Phone } from '~/lib/icons';
 
 /**
  * Layout tunnel auth : header navy premium + footer navy

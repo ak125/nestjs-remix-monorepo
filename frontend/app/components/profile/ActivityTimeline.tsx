@@ -3,8 +3,8 @@
  * Affiche les activités récentes (connexions, commandes, modifications)
  */
 
-import { Clock, Package, User, Shield, MapPin } from "lucide-react";
 import { memo } from "react";
+import { Clock, Package, User, Shield, MapPin } from '~/lib/icons';
 
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";

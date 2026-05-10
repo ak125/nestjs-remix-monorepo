@@ -3,10 +3,10 @@
  * Inclut les champs F1/F2/F3 (FAQ SEO) pour repondre aux requetes People Also Ask
  */
 
-import { CreditCard } from "lucide-react";
 
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { CreditCard } from '~/lib/icons';
 
 const CARTE_GRISE_FIELDS = [
   {

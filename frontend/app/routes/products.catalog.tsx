@@ -28,6 +28,8 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { useState } from "react";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   ArrowLeft,
   Search,
@@ -36,9 +38,7 @@ import {
   Grid,
   List,
   TrendingUp,
-} from "lucide-react";
-import { useState } from "react";
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";

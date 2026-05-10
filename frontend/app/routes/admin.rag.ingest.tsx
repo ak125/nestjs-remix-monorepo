@@ -4,15 +4,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
-import {
-  Upload,
-  RefreshCw,
-  Info,
-  Globe,
-  FlaskConical,
-  Eye,
-  ClipboardPaste,
-} from "lucide-react";
 import { useEffect, useState } from "react";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import { DashboardShell } from "~/components/admin/patterns/DashboardShell";
@@ -26,6 +17,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Select, SelectItem } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  Upload,
+  RefreshCw,
+  Info,
+  Globe,
+  FlaskConical,
+  Eye,
+  ClipboardPaste,
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

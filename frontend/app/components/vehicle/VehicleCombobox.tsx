@@ -1,8 +1,8 @@
 // 📁 frontend/app/components/vehicle/VehicleCombobox.tsx
 // 🚗 Combobox intelligent pour sélection rapide de véhicule
 
-import { Car, ChevronDown, Search, X } from "lucide-react";
 import { memo, useEffect, useRef, useState } from "react";
+import { Car, ChevronDown, Search, X } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import {
   enhancedVehicleApi,

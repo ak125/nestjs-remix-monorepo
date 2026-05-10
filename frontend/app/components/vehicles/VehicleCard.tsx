@@ -4,8 +4,8 @@
  * Affichage d'une carte véhicule avec toutes les informations essentielles
  */
 
-import { Car, Fuel, Zap, Calendar } from "lucide-react";
 import { memo } from "react";
+import { Car, Fuel, Zap, Calendar } from '~/lib/icons';
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 interface VehicleCardProps {

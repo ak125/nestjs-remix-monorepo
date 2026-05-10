@@ -4,6 +4,10 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { useState, useCallback, useEffect } from "react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   Image,
   ExternalLink,
@@ -14,11 +18,7 @@ import {
   XCircle,
   ChevronDown,
   ChevronUp,
-} from "lucide-react";
-import { useState, useCallback, useEffect } from "react";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
+} from '~/lib/icons';
 import { type R1PromptRow } from "~/types/admin-r1.types";
 import { type R1RelatedBlock as RelatedBlock } from "~/types/r1-related.types";
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";

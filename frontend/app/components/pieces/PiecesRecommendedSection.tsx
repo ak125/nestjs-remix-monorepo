@@ -7,8 +7,8 @@
  * - Grille responsive 3 colonnes
  */
 
-import { Star } from "lucide-react";
 import { useMemo, memo } from "react";
+import { Star } from '~/lib/icons';
 
 import {
   type GammeData,

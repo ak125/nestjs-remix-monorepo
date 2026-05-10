@@ -4,8 +4,8 @@
  * Placed after SourcesDisclaimer, before ArticleActionsBar.
  */
 
-import { ExternalLink } from "lucide-react";
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import { ExternalLink } from '~/lib/icons';
 import { type GammeConseil, slugifyTitle } from "./section-config";
 
 interface MetaLinksSectionProps {

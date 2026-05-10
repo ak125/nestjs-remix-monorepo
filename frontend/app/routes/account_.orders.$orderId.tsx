@@ -11,6 +11,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   ArrowLeft,
   Package,
@@ -20,9 +21,8 @@ import {
   Truck,
   MessageSquare,
   RotateCcw,
-} from "lucide-react";
+} from '~/lib/icons';
 
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireAuth } from "../auth/unified.server";

@@ -15,21 +15,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useFetcher, Link } from "@remix-run/react";
-import {
-  ArrowLeft,
-  ArrowRight,
-  Wand2,
-  FileText,
-  AlertTriangle,
-  Check,
-  Loader2,
-  BookOpen,
-  Stethoscope,
-  Search,
-  ChevronRight,
-  Edit,
-  Save,
-} from "lucide-react";
 import { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
@@ -49,6 +34,21 @@ import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Separator } from "~/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Wand2,
+  FileText,
+  AlertTriangle,
+  Check,
+  Loader2,
+  BookOpen,
+  Stethoscope,
+  Search,
+  ChevronRight,
+  Edit,
+  Save,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

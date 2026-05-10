@@ -1,4 +1,5 @@
 import { Form, Link } from "@remix-run/react";
+import { Button } from "~/components/ui/button";
 import {
   Award,
   Bell,
@@ -9,9 +10,8 @@ import {
   Package,
   Settings,
   Truck,
-} from "lucide-react";
-import { Button } from "~/components/ui/button";
-import type { MenuSection } from "./account.types";
+} from '~/lib/icons';
+import  { type MenuSection } from "./account.types";
 
 const MENU_SECTIONS: MenuSection[] = [
   {

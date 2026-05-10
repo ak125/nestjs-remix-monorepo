@@ -1,6 +1,10 @@
 /**
  * ResultHypotheses — Block 3: Scored hypotheses with evidence
  */
+import { useState } from "react";
+import { Badge } from "~/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Progress } from "~/components/ui/progress";
 import {
   ChevronDown,
   ChevronUp,
@@ -8,11 +12,7 @@ import {
   ThumbsUp,
   ThumbsDown,
   Wrench,
-} from "lucide-react";
-import { useState } from "react";
-import { Badge } from "~/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Progress } from "~/components/ui/progress";
+} from '~/lib/icons';
 import { type Hypothesis } from "../types";
 
 interface Props {

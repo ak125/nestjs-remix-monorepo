@@ -1,4 +1,5 @@
 import { Link } from "@remix-run/react";
+import { memo } from "react";
 import {
   Disc,
   Filter,
@@ -8,8 +9,7 @@ import {
   Droplets,
   Car,
   Wrench,
-} from "lucide-react";
-import { memo } from "react";
+} from '~/lib/icons';
 
 interface Category {
   name: string;

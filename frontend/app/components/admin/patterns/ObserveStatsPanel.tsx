@@ -1,7 +1,7 @@
-import { Eye, ShieldAlert, BarChart3 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Eye, ShieldAlert, BarChart3 } from '~/lib/icons';
 import { KpiGrid } from "./DashboardShell";
 import { KpiCard } from "./KpiCard";
 

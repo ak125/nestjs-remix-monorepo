@@ -9,7 +9,6 @@
  * Pattern Senior: UX type Stripe/Notion
  */
 
-import { Filter, X, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -21,6 +20,7 @@ import {
   SheetTrigger,
   SheetFooter,
 } from "~/components/ui/sheet";
+import { Filter, X, RotateCcw } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 export interface FilterBarProps {

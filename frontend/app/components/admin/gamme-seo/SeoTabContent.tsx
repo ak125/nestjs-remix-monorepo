@@ -4,15 +4,6 @@
  */
 
 import { useFetcher } from "@remix-run/react";
-import {
-  AlertCircle,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  Globe,
-  Save,
-  XCircle,
-} from "lucide-react";
 import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -26,6 +17,15 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Globe,
+  Save,
+  XCircle,
+} from '~/lib/icons';
 import { type GammeDetail, type SeoFormState } from "./types";
 import { getCharCountClass, getCharCountStatus } from "./utils";
 

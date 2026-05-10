@@ -7,8 +7,8 @@
  * - Indicateur de chargement
  */
 
-import { Send, Loader2 } from "lucide-react";
 import { type KeyboardEvent, useState, useRef, useEffect, memo } from "react";
+import { Send, Loader2 } from '~/lib/icons';
 
 interface ChatInputProps {
   onSend: (message: string) => void;

@@ -10,8 +10,8 @@
  * - eco: Éco-responsable
  */
 
-import { Shield, Package, Truck, CheckCircle, Leaf } from "lucide-react";
 import { memo } from "react";
+import { Shield, Package, Truck, CheckCircle, Leaf } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 export type BadgeType =

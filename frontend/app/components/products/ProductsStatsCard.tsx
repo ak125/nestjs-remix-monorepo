@@ -10,6 +10,7 @@
  * - Progressive Enhancement ready
  */
 
+import { memo } from "react";
 import {
   Package,
   CheckCircle,
@@ -18,8 +19,7 @@ import {
   Star,
   Crown,
   type LucideIcon,
-} from "lucide-react";
-import { memo } from "react";
+} from '~/lib/icons';
 import { cn } from "../../lib/utils";
 import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";

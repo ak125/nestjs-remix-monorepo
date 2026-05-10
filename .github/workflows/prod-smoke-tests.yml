@@ -5,6 +5,11 @@ on:
     - cron: '0 */6 * * *'
   workflow_dispatch:
 
+# Minimum scope: self-hosted runner queries local docker container, no
+# GitHub API writes needed. ADR-043 Sprint 1 ticket #7.
+permissions:
+  contents: read
+
 env:
   CONTAINER: nestjs-remix-monorepo-prod
   CADDY_CURL: curl -sk --max-time 15 --resolve www.automecanik.com:443:127.0.0.1

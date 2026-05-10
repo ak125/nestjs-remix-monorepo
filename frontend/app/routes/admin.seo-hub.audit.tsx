@@ -14,15 +14,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
-import {
-  Calendar,
-  Clock,
-  Filter,
-  History,
-  RefreshCw,
-  Settings,
-  User,
-} from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -39,6 +30,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  Calendar,
+  Clock,
+  Filter,
+  History,
+  RefreshCw,
+  Settings,
+  User,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { Car, CheckCircle, ArrowRight } from "lucide-react";
+import { Car, CheckCircle, ArrowRight } from '~/lib/icons';
 import {
   type VehicleCookie,
   getVehicleBreadcrumbData,

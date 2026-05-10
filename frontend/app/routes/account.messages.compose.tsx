@@ -12,9 +12,9 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { Send, Paperclip, ArrowLeft } from "lucide-react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
+import { Send, Paperclip, ArrowLeft } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { requireUserWithRedirect } from "../auth/unified.server";

@@ -3,11 +3,11 @@
  * Grid responsive avec cartes véhicules élégantes (shadcn/ui)
  */
 
-import { Car, Fuel, Gauge, Calendar, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import LazySection from "~/components/layout/LazySection";
 import { Badge } from "~/components/ui/badge";
 import { Card } from "~/components/ui/card";
+import { Car, Fuel, Gauge, Calendar, ChevronDown } from '~/lib/icons';
 
 export interface CompatibleVehicle {
   type_id: number;

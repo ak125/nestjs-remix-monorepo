@@ -11,6 +11,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   Package,
   Clock,
@@ -18,9 +19,8 @@ import {
   XCircle,
   Truck,
   ShoppingBag,
-} from "lucide-react";
+} from '~/lib/icons';
 
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { logger } from "~/utils/logger";
 import { requireAuth } from "../auth/unified.server";
 import { AccountLayout } from "../components/account/AccountNavigation";

@@ -1,9 +1,9 @@
 import { json, type LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData, useSearchParams } from "@remix-run/react";
-import { Link2, ExternalLink, TrendingUp } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Link2, ExternalLink, TrendingUp } from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {

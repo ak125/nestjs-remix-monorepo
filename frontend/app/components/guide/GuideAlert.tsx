@@ -4,12 +4,12 @@
  * severity="warning" → amber, table-friendly, symptom list
  */
 
-import { ShieldAlert, AlertTriangle } from "lucide-react";
 import {
   type GammeConseil,
   normalizeDangerHtml,
 } from "~/components/blog/conseil/section-config";
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import { ShieldAlert, AlertTriangle } from '~/lib/icons';
 import { GuideCard } from "./GuideCard";
 
 interface GuideAlertProps {

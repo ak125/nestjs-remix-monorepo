@@ -2,6 +2,8 @@
  * NewsletterCTA — CTA newsletter + contact/catalogue
  */
 import { Link, Form } from "@remix-run/react";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
 import {
   Mail,
   Sparkles,
@@ -10,9 +12,7 @@ import {
   MessageCircle,
   ExternalLink,
   ArrowRight,
-} from "lucide-react";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+} from '~/lib/icons';
 
 export function NewsletterCTA() {
   return (

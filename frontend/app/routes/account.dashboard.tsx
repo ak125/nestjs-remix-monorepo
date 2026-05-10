@@ -4,13 +4,13 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { User, ShoppingBag, Mail, Key } from "lucide-react";
 import { z } from "zod";
 
 import AccountDashboard from "~/components/account/AccountDashboard";
 
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
+import { User, ShoppingBag, Mail, Key } from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { getProxyHeaders } from "~/utils/proxy-headers.server";

@@ -3,8 +3,8 @@
  * Renders S_GARAGE sections with amber/professional styling.
  */
 
-import { Car, Wrench } from "lucide-react";
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Car, Wrench } from '~/lib/icons';
 import { type GammeConseil, slugifyTitle } from "./section-config";
 
 interface GarageCalloutProps {

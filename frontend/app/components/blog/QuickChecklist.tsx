@@ -2,7 +2,7 @@
  * QuickChecklist — "En 60 secondes : 5 contrôles avant de remplacer une pièce"
  * Contenu actionnable court (SEO + UX confiance)
  */
-import { CheckCircle2, Clock } from "lucide-react";
+import { CheckCircle2, Clock } from '~/lib/icons';
 
 const CHECKS = [
   "Vérifiez la batterie (tension > 12,4V moteur arrêté)",

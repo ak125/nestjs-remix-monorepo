@@ -10,6 +10,7 @@
  */
 
 import { Form, useNavigate, useSearchParams } from "@remix-run/react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import {
   Search,
   X,
@@ -18,8 +19,7 @@ import {
   Loader2,
   Sparkles,
   Zap,
-} from "lucide-react";
-import { useState, useEffect, useRef, useCallback, memo } from "react";
+} from '~/lib/icons';
 
 import { logger } from "~/utils/logger";
 import {

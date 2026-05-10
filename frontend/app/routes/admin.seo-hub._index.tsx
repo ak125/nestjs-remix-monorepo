@@ -15,6 +15,16 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useFetcher } from "@remix-run/react";
+import { useState } from "react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import {
   Activity,
   AlertTriangle,
@@ -29,17 +39,7 @@ import {
   Eye,
   Bug,
   Link as LinkIcon,
-} from "lucide-react";
-import { useState } from "react";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

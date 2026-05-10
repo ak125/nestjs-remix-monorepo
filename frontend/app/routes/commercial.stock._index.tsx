@@ -13,6 +13,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, useSearchParams, Form, Link } from "@remix-run/react";
+import { useState } from "react";
 import {
   Package,
   AlertTriangle,
@@ -22,8 +23,7 @@ import {
   FileText,
   Download,
   Search,
-} from "lucide-react";
-import { useState } from "react";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { Badge } from "../components/ui/badge";

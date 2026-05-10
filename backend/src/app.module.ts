@@ -99,6 +99,17 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
           ttl: 3600000, // 1 heure
           limit: 2000, // 2000 req/heure par IP
         },
+        {
+          // ADR-043 Sprint 1 ticket #6 — payment callbacks (STRIDE 01-paiement
+          // critique #2). Apply via @Throttle({ payment_callback: {...} }) on
+          // /api/paybox/callback + /api/payments/callback/cyberplus. Gateway IPN
+          // sends ~1-2 callbacks per transaction → 30/min/IP is generous for
+          // legitimate flow, tight for crypto-compute DoS. On 429, gateways
+          // retry idempotently (HMAC signature dedups).
+          name: 'payment_callback',
+          ttl: 60000, // 1 minute
+          limit: 30,
+        },
       ],
       // 🛡️ Skip internal calls (Remix SSR + Docker containers + Admin users)
       skipIf: (context) => {

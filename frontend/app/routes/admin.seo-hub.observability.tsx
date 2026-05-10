@@ -25,17 +25,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Link, useLoaderData, useSearchParams } from "@remix-run/react";
-import {
-  AlertCircle,
-  Clock,
-  ExternalLink,
-  Gauge,
-  LineChart as LineChartIcon,
-  TrendingDown,
-  TrendingUp,
-  Users,
-  Zap,
-} from "lucide-react";
 import { useMemo } from "react";
 import {
   CartesianGrid,
@@ -71,6 +60,16 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import {
+  AlertCircle,
+  Clock,
+  ExternalLink,
+  Gauge,
+  LineChart as LineChartIcon,
+  TrendingUp,
+  Users,
+  Zap,
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";

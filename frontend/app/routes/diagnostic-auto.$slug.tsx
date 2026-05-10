@@ -23,6 +23,25 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+
+// UI Components
+import {
+  SectionImage,
+  SectionWithImage,
+} from "~/components/content/SectionImage";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { HeroDiagnostic } from "~/components/heroes";
+import Container from "~/components/layout/Container";
+import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import {
+  resolveSlogan,
+  getSectionImageConfig,
+  resolveAltText,
+} from "~/config/visual-intent";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -43,26 +62,7 @@ import {
   Cpu,
   AlertOctagon,
   type LucideIcon,
-} from "lucide-react";
-
-// UI Components
-import {
-  SectionImage,
-  SectionWithImage,
-} from "~/components/content/SectionImage";
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
-import { HeroDiagnostic } from "~/components/heroes";
-import Container from "~/components/layout/Container";
-import { HtmlContent } from "~/components/seo/HtmlContent";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
-import {
-  resolveSlogan,
-  getSectionImageConfig,
-  resolveAltText,
-} from "~/config/visual-intent";
+} from '~/lib/icons';
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
 import { logger } from "~/utils/logger";

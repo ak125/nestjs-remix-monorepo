@@ -4,16 +4,6 @@
 
 import { type LoaderFunction, type MetaFunction, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import {
-  BarChart3,
-  Download,
-  FileText,
-  TrendingUp,
-  Users,
-  ShoppingCart,
-  AlertTriangle,
-  CheckCircle,
-} from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import {
@@ -24,6 +14,16 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import {
+  BarChart3,
+  Download,
+  FileText,
+  TrendingUp,
+  Users,
+  ShoppingCart,
+  AlertTriangle,
+  CheckCircle,
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 
 export const meta: MetaFunction = () => {

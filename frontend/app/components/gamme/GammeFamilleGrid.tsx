@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
-import { ArrowRight } from "lucide-react";
 import { Reveal, Section, SectionHeader } from "~/components/layout";
 import { Badge } from "~/components/ui/badge";
+import { ArrowRight } from '~/lib/icons';
 import { getFamilyTheme } from "~/utils/family-theme";
 
 interface FamilleItem {

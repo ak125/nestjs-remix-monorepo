@@ -18,6 +18,7 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import {
   Car,
   Wrench,
@@ -26,10 +27,9 @@ import {
   ChevronRight,
   TrendingUp,
   Package,
-} from "lucide-react";
+} from '~/lib/icons';
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
-import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import brandColorsStyles from "~/styles/brand-colors.css?url";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
