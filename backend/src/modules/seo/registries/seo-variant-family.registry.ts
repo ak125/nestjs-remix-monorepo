@@ -7,20 +7,27 @@ import { z } from 'zod';
  *
  * Aligné sur l'audit PR-1 du plan `seo-v9` (inventaire DB seo_*).
  */
-export const VariantFamilyKeySchema = z.enum([
+const VariantFamilyKeySchema = z.enum([
   'ITEM_SWITCH', // __seo_item_switch (R1 catalogue, alias 1=title 2=descrip 3=h1)
   'TYPE_SWITCH', // __seo_type_switch (R8 véhicule, alias 1/2/10/11/12)
   'GAMME_CAR_SWITCH', // __seo_gamme_car_switch (variantes contenu gamme×véhicule)
   'FAMILY_GAMME_CAR_SWITCH', // __seo_family_gamme_car_switch (variantes par famille)
+  'ROLE_TEMPLATE_POOL', // __seo_role_template_pool (slot-based, role × slot × lang)
 ]);
 export type VariantFamilyKey = z.infer<typeof VariantFamilyKeySchema>;
 
-export interface VariantFamilyConfig {
+interface VariantFamilyConfig {
   table: string;
   /** Aliases observés en prod (cf. audit PR-1). */
   knownAliases: number[];
   /** Description fonctionnelle. */
   purpose: string;
+  /**
+   * Colonne SQL d'ordre stable. Quand présent, `SeoSwitchSelector.fetchVariants()`
+   * applique `.order(orderBy, asc)` pour rendre l'idx sha256 reproductible.
+   * Absent → ordre PG non déterministe (legacy switch tables sans contrainte).
+   */
+  orderBy?: string;
 }
 
 const VARIANT_FAMILIES: Record<VariantFamilyKey, VariantFamilyConfig> = {
@@ -43,6 +50,13 @@ const VARIANT_FAMILIES: Record<VariantFamilyKey, VariantFamilyConfig> = {
     table: '__seo_family_gamme_car_switch',
     knownAliases: [],
     purpose: 'Variantes par famille produit (mfId)',
+  },
+  ROLE_TEMPLATE_POOL: {
+    table: '__seo_role_template_pool',
+    knownAliases: [],
+    orderBy: 'srtp_order',
+    purpose:
+      'Pool slot-based (role × slot × lang). Différent du pattern alias-based des 4 familles legacy. Sélection via SeoSwitchSelector + seed sha256.',
   },
 };
 

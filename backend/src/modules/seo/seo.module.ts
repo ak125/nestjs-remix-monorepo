@@ -149,6 +149,7 @@ import { SeoTemplateRenderer } from './services/chain/seo-template-renderer.serv
 import { SeoInternalLinkingService as SeoChainInternalLinkingService } from './services/chain/seo-internal-linking.service';
 import { SeoContentBlockBuilder } from './services/chain/seo-content-block-builder.service';
 import { SeoChainOrchestratorService } from './services/chain/seo-chain-orchestrator.service';
+import { SeoRoleTemplateSelector } from './services/chain/seo-role-template-selector.service';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // INTERCEPTORS
@@ -263,6 +264,8 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     SeoChainInternalLinkingService,
     SeoContentBlockBuilder,
     SeoChainOrchestratorService,
+    // R8 meta variant pool (PR-1 seo-v9 R8 meta diversification)
+    SeoRoleTemplateSelector,
 
     // Interceptors globaux
     {
@@ -336,6 +339,8 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     SeoChainInternalLinkingService,
     SeoContentBlockBuilder,
     SeoChainOrchestratorService,
+    // R8 meta variant pool (PR-1 seo-v9 R8 meta diversification) — exporté pour AdminModule (R8VehicleEnricherService)
+    SeoRoleTemplateSelector,
   ],
 })
 export class SeoModule {
