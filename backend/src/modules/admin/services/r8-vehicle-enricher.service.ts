@@ -287,9 +287,10 @@ export class R8VehicleEnricherService extends SupabaseBaseService {
         vehicleId: typeId,
         pgId: 0,
       });
-      const [metaTitlePick, metaDescPick]: Array<
-        SeoRoleTemplatePickResult | null
-      > = await Promise.all([
+      const [
+        metaTitlePick,
+        metaDescPick,
+      ]: Array<SeoRoleTemplatePickResult | null> = await Promise.all([
         this.seoRoleTemplate.pick({
           role: 'R8_VEHICLE',
           slot: 'meta_title',

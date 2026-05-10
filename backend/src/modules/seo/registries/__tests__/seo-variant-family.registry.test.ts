@@ -54,6 +54,8 @@ describe('SeoVariantFamilyRegistry', () => {
     expect(registry.getConfig('ITEM_SWITCH').orderBy).toBeUndefined();
     expect(registry.getConfig('TYPE_SWITCH').orderBy).toBeUndefined();
     expect(registry.getConfig('GAMME_CAR_SWITCH').orderBy).toBeUndefined();
-    expect(registry.getConfig('FAMILY_GAMME_CAR_SWITCH').orderBy).toBeUndefined();
+    expect(
+      registry.getConfig('FAMILY_GAMME_CAR_SWITCH').orderBy,
+    ).toBeUndefined();
   });
 });

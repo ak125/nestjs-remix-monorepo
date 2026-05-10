@@ -134,7 +134,7 @@ describe('R8VariantSignatureSchema (Zod ↔ DB consistency)', () => {
     expect((parsed as Record<string, unknown>).h1).toBeUndefined();
   });
 
-  it("R8GovernanceDecisionSchema inclut variantSignature", () => {
+  it('R8GovernanceDecisionSchema inclut variantSignature', () => {
     const shape = R8GovernanceDecisionSchema.shape;
     expect(shape.variantSignature).toBeDefined();
   });
