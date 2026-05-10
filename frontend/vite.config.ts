@@ -30,6 +30,19 @@ export default defineConfig({
 		commonjsOptions: {
 			include: [/frontend/, /backend/, /node_modules/],
 		},
+		// Strip <link rel="modulepreload"> for sentry-vendor : the Sentry SDK
+		// is dynamically imported in entry.client.tsx behind a first-interaction
+		// trigger (PR #424). Vite's default behaviour preloads dynamic-import
+		// chunks eagerly, which defeats the lazy contract — the browser fetches
+		// sentry-vendor.js on initial page load even though initObservability()
+		// hasn't fired. Filtering it out of the preload list restores the
+		// intended behaviour : zero bytes for read-only sessions, ~150 KB only
+		// transferred when the user actually interacts. All other dynamic
+		// chunks keep their default preload (instant nav for lazy routes).
+		modulePreload: {
+			resolveDependencies: (_filename, deps) =>
+				deps.filter((dep) => !dep.includes('sentry-vendor')),
+		},
 		rollupOptions: {
 			output: {
 				// Vendor chunking — only pure third-party node_modules (never @remix-run/*, react-router)

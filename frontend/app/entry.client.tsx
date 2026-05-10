@@ -127,10 +127,13 @@ const initObservability = async (): Promise<void> => {
   window.removeEventListener("unhandledrejection", onRejection);
 };
 
+// Trigger events deliberately exclude `scroll` : Lighthouse audits scroll the
+// page programmatically while measuring CLS, which would have falsely fired
+// the trigger during audits. Real users still get init on the first
+// click / key / touch — typically within the first second of engagement.
 const interactionEvents = [
   "pointerdown",
   "keydown",
-  "scroll",
   "touchstart",
 ] as const;
 
