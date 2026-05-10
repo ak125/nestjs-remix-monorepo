@@ -4,7 +4,6 @@
  * variant="after" → sky checklist with rodage-prose
  */
 
-import { Info, ClipboardCheck, Clipboard, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -12,6 +11,7 @@ import {
   stripHtml,
 } from "~/components/blog/conseil/section-config";
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Info, ClipboardCheck, Clipboard, Check } from '~/lib/icons';
 import { GuideCard } from "./GuideCard";
 
 interface GuideChecklistProps {

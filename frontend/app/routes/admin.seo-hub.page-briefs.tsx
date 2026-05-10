@@ -20,16 +20,6 @@ import {
   getRoleShortLabel,
   normalizeRoleId,
 } from "@repo/seo-roles";
-import {
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
-  Clock,
-  ClipboardList,
-  FileText,
-  Filter,
-  TrendingUp,
-} from "lucide-react";
 import { Fragment, useState } from "react";
 import { Badge } from "~/components/ui/badge";
 import {
@@ -39,6 +29,16 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  ClipboardList,
+  FileText,
+  Filter,
+  TrendingUp,
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

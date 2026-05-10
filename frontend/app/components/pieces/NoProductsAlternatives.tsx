@@ -1,8 +1,8 @@
 import { Link } from "@remix-run/react";
-import { Search, ArrowRight, Car, Package } from "lucide-react";
 import { memo } from "react";
 import { ErrorSearchBar } from "~/components/errors/ErrorSearchBar";
 import { PopularCategories } from "~/components/errors/PopularCategories";
+import { Search, ArrowRight, Car, Package } from '~/lib/icons';
 
 interface AlternativeGamme {
   pg_id: number;

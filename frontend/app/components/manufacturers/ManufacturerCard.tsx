@@ -6,8 +6,8 @@
  */
 
 import { Link } from "@remix-run/react";
-import { Car, ArrowRight } from "lucide-react";
 import { memo } from "react";
+import { Car, ArrowRight } from '~/lib/icons';
 import { BrandLogoClient } from "../BrandLogoClient";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";

@@ -15,6 +15,8 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Form, Link, useNavigation } from "@remix-run/react";
+import { useState } from "react";
+import { Button } from "~/components/ui/button";
 import {
   RotateCcw,
   Package,
@@ -28,9 +30,7 @@ import {
   Printer,
   Search,
   Filter,
-} from "lucide-react";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
+} from '~/lib/icons';
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>

@@ -1,3 +1,5 @@
+import { memo } from "react";
+import { Alert } from "~/components/ui/alert";
 import {
   Check,
   Circle,
@@ -6,9 +8,7 @@ import {
   Package,
   Truck,
   XCircle,
-} from "lucide-react";
-import { memo } from "react";
-import { Alert } from "~/components/ui/alert";
+} from '~/lib/icons';
 import { type Order } from "../../types/orders.types";
 import { type UserPermissions } from "../../utils/permissions";
 

@@ -14,8 +14,8 @@
  * ```
  */
 
-import { X, RotateCcw } from "lucide-react";
 import { memo } from "react";
+import { X, RotateCcw } from '~/lib/icons';
 import { type PiecesFilters } from "../../types/pieces-route.types";
 
 interface ActiveFiltersChipsProps {

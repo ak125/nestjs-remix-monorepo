@@ -12,11 +12,11 @@ import {
   useActionData,
   useNavigation,
 } from "@remix-run/react";
-import { CheckCircle, XCircle } from "lucide-react";
 import { useState } from "react";
 import { Alert } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { PublicBreadcrumb } from "~/components/ui/PublicBreadcrumb";
+import { CheckCircle, XCircle } from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

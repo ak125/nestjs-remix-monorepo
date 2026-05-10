@@ -1,5 +1,5 @@
-import { ShoppingCart, ArrowRight, Sparkles } from "lucide-react";
 import { Card } from "~/components/ui/card";
+import { ShoppingCart, ArrowRight, Sparkles } from '~/lib/icons';
 
 interface CTAButtonProps {
   anchor: string;

@@ -16,11 +16,11 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { Star, ArrowLeft, Send } from "lucide-react";
 import { useState } from "react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
 import { Alert } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { Star, ArrowLeft, Send } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createReview } from "../services/api/review.api";
 

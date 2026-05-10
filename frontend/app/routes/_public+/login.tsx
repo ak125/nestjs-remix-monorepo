@@ -13,12 +13,12 @@ import {
   useNavigation,
   useSearchParams,
 } from "@remix-run/react";
-import { AlertCircle, CheckCircle2, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { GoogleSignInButton } from "~/components/auth/GoogleSignInButton";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { AlertCircle, CheckCircle2, Eye, EyeOff } from '~/lib/icons';
 import { loginSchema } from "~/schemas/auth";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";
 import { getProxyHeaders } from "~/utils/proxy-headers.server";

@@ -1,6 +1,9 @@
 // 📁 frontend/app/components/catalog/ProductCatalog.tsx
 // 🎨 Catalogue moderne de pièces automobiles avec design récupéré
 
+import { useState } from 'react';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
 import { 
   Search, 
   Filter, 
@@ -15,10 +18,7 @@ import {
   Disc,
   Settings,
   Zap
-} from 'lucide-react';
-import { useState } from 'react';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
+} from '~/lib/icons';
 
 // ========================================
 // 🎯 TYPES POUR LE CATALOGUE

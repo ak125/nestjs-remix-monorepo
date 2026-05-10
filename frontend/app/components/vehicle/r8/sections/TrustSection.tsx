@@ -1,7 +1,7 @@
 // 🛡️ R8 Vehicle — S_TRUST
 // Trust badges: warranty, shipping, support, returns.
 
-import { HeadphonesIcon, RotateCcw, Shield, Truck } from "lucide-react";
+import { HeadphonesIcon, RotateCcw, Shield, Truck } from '~/lib/icons';
 
 export function TrustSection() {
   return (

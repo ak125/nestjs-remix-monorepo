@@ -7,16 +7,16 @@
  * - États de chargement séparés (content / images)
  * - Double-clic protégé par disabled
  */
+import { useState } from "react";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   ClipboardCopy,
   ExternalLink,
   ImageIcon,
   Loader2,
   Sparkles,
-} from "lucide-react";
-import { useState } from "react";
-import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+} from '~/lib/icons';
 
 interface GammeRow {
   pg_id: number;

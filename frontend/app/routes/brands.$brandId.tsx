@@ -14,10 +14,10 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link, useParams } from "@remix-run/react";
-import { ArrowLeft, Car, Calendar, Settings } from "lucide-react";
+import { Alert } from "~/components/ui/alert";
+import { ArrowLeft, Car, Calendar, Settings } from '~/lib/icons';
 
 // SEO Page Role (Phase 5 - Quasi-Incopiable)
-import { Alert } from "~/components/ui/alert";
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { PageRole, createPageRoleMeta } from "~/utils/page-role.types";

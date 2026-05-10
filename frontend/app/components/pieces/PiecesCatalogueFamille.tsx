@@ -9,8 +9,8 @@
  */
 
 import { Await } from "@remix-run/react";
-import { ChevronDown, Eye, Package } from "lucide-react";
 import { Suspense, useState, memo } from "react";
+import { ChevronDown, Eye, Package } from '~/lib/icons';
 
 import { hierarchyApi } from "../../services/api/hierarchy.api";
 

@@ -8,8 +8,8 @@
  * - Tiered: { tiers: [{ label, quality_signals, recognized_brands }], alert_signs }
  */
 
-import { Award, Shield, AlertTriangle, Star } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { Award, Shield, AlertTriangle, Star } from '~/lib/icons';
 import { type R6BrandsGuideSection } from "~/types/r6-guide.types";
 
 /** Tiered format from newer V2 pipeline */

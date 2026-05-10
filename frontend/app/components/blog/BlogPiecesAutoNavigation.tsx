@@ -1,5 +1,5 @@
 import { Link, useLocation, useParams } from "@remix-run/react";
-import { Wrench, BookOpen, Car, Home } from "lucide-react";
+import { Wrench, BookOpen, Car, Home } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 // Fonction pour formater un slug en nom lisible

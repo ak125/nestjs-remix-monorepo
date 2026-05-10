@@ -11,8 +11,8 @@
  */
 
 import { useSearchParams, useNavigate } from "@remix-run/react";
-import { Search, Filter, X } from "lucide-react";
 import { useState, useEffect, memo } from "react";
+import { Search, Filter, X } from '~/lib/icons';
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";

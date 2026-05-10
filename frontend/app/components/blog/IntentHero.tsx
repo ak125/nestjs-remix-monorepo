@@ -4,6 +4,7 @@
  * Parcours : Diagnostiquer → Réparer → Choisir → Comprendre
  */
 import { Link } from "@remix-run/react";
+import { Card, CardContent } from "~/components/ui/card";
 import {
   Stethoscope,
   Wrench,
@@ -12,8 +13,7 @@ import {
   ArrowRight,
   BookMarked,
   Eye,
-} from "lucide-react";
-import { Card, CardContent } from "~/components/ui/card";
+} from '~/lib/icons';
 
 interface IntentHeroProps {
   stats?: {

@@ -23,9 +23,9 @@ import {
   redirect,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { ArrowLeft, Car, Search } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { Alert } from "~/components/ui/alert";
+import { ArrowLeft, Car, Search } from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

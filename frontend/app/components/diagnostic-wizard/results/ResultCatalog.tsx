@@ -3,9 +3,9 @@
  * Hidden if ready_for_catalog === false AND no suggested gammes.
  * Shows with caution if gammes present.
  */
-import { ShoppingCart, ExternalLink, ShieldCheck, ShieldX } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { ShoppingCart, ExternalLink, ShieldCheck, ShieldX } from '~/lib/icons';
 import { type EvidencePack } from "../types";
 
 interface Props {

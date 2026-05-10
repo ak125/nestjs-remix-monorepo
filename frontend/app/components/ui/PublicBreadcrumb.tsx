@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { Home, ChevronRight } from "lucide-react";
+import { Home, ChevronRight } from '~/lib/icons';
 import {
   Breadcrumb,
   BreadcrumbList,

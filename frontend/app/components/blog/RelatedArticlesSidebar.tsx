@@ -4,8 +4,8 @@
  */
 
 import { Link } from "@remix-run/react";
-import { Eye, Calendar } from "lucide-react";
 import { Card } from "~/components/ui/card";
+import { Eye, Calendar } from '~/lib/icons';
 
 interface RelatedArticle {
   id: string;

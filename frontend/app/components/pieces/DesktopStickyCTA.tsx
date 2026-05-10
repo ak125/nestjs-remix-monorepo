@@ -3,8 +3,8 @@
  * Complète MobileStickyBar (md:hidden) côté desktop (hidden md:flex).
  * Apparaît après scroll > 500px pour ne pas gêner le Hero.
  */
-import { Car, ChevronUp, Search } from "lucide-react";
 import { memo, useEffect, useState } from "react";
+import { Car, ChevronUp, Search } from '~/lib/icons';
 
 const DesktopStickyCTA = memo(function DesktopStickyCTA() {
   const [visible, setVisible] = useState(false);

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   Car,
   CheckCircle,
@@ -8,8 +9,7 @@ import {
   Factory,
   HelpCircle,
   Package,
-} from "lucide-react";
-import { memo } from "react";
+} from '~/lib/icons';
 
 interface TOCItem {
   id: string;

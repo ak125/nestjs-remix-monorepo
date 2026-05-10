@@ -11,6 +11,8 @@
  * Killer Feature: "Compatibilité Instantanée + Résolution 10s"
  */
 
+import { forwardRef, useState, useEffect, memo } from "react";
+import { Button } from "~/components/ui/button";
 import {
   ShieldCheck,
   ShieldX,
@@ -19,9 +21,7 @@ import {
   Car,
   Loader2,
   Sparkles,
-} from "lucide-react";
-import { forwardRef, useState, useEffect, memo } from "react";
-import { Button } from "~/components/ui/button";
+} from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 // ============================================================================

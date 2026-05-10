@@ -52,6 +52,12 @@ export class AuthService {
 
   private readonly googleClientSecret: string;
 
+  // ADR-043 Sprint 1 ticket #8 — login lockout (STRIDE 02-admin/03-sessions
+  // important #12). Window TTL is set in CacheService.incrementLoginAttempts
+  // (15 min). Threshold is read from env LOGIN_LOCKOUT_MAX_ATTEMPTS to allow
+  // tightening per environment without redeploy; defaults to a conservative 5.
+  private readonly maxLoginAttempts: number;
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly userDataService: UserDataConsolidatedService,
@@ -65,8 +71,15 @@ export class AuthService {
     this.googleClient = this.googleClientId
       ? new OAuth2Client(this.googleClientId)
       : null;
+
+    const envMax = parseInt(
+      this.configService.get<string>('LOGIN_LOCKOUT_MAX_ATTEMPTS') || '5',
+      10,
+    );
+    this.maxLoginAttempts = Number.isFinite(envMax) && envMax > 0 ? envMax : 5;
+
     this.logger.log(
-      `AuthService initialized - Google Sign-In ${this.googleClientId ? 'enabled' : 'disabled (no GOOGLE_CLIENT_ID)'}`,
+      `AuthService initialized - Google Sign-In ${this.googleClientId ? 'enabled' : 'disabled (no GOOGLE_CLIENT_ID)'} - login lockout threshold ${this.maxLoginAttempts}/15min`,
     );
   }
 
@@ -77,6 +90,22 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<AuthUser | null> {
+    // Normalize email for lockout key — case-insensitive to avoid bypass via
+    // alternating capitalization (Test@x.com vs test@x.com).
+    const lockoutKey = (email || '').trim().toLowerCase();
+
+    // Lockout gate (STRIDE important #12) — fail fast before any DB lookup
+    // or password hash compute, so brute force can't even probe timing.
+    const attempts = await this.cacheService.getLoginAttempts(lockoutKey);
+    if (attempts >= this.maxLoginAttempts) {
+      this.logger.warn(
+        `Login lockout active for ${lockoutKey} (${attempts}/${this.maxLoginAttempts} attempts) — rejecting`,
+      );
+      throw new UnauthorizedException(
+        'Trop de tentatives. Compte temporairement verrouillé. Réessayez dans 15 minutes.',
+      );
+    }
+
     try {
       this.logger.debug(`Authenticating user: ${email}`);
 
@@ -85,6 +114,7 @@ export class AuthService {
 
       if (!resolved) {
         this.logger.warn(`User not found in any table: ${email}`);
+        await this.cacheService.incrementLoginAttempts(lockoutKey);
         return null;
       }
 
@@ -98,6 +128,7 @@ export class AuthService {
       );
       if (!isPasswordValid) {
         this.logger.warn(`Invalid password for user: ${email}`);
+        await this.cacheService.incrementLoginAttempts(lockoutKey);
         return null;
       }
 
@@ -151,8 +182,15 @@ export class AuthService {
       // Vérifier que l'utilisateur est actif
       if (!authUser.isActive) {
         this.logger.warn(`Inactive user tried to login: ${email}`);
+        // Inactive account is a real existing identity — count it as a
+        // failed attempt so attackers can't pivot to brute force the rest
+        // of the username space without consequence.
+        await this.cacheService.incrementLoginAttempts(lockoutKey);
         throw new UnauthorizedException('Compte désactivé');
       }
+
+      // Successful login resets the lockout counter for this identity.
+      await this.cacheService.clearLoginAttempts(lockoutKey);
 
       this.logger.log(
         `Authentication successful for ${email} (source: ${authSource}, admin: ${authUser.isAdmin})`,

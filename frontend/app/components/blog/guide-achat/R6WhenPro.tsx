@@ -3,8 +3,8 @@
  * PAS de procedure : juste quand et pourquoi.
  */
 
-import { Wrench } from "lucide-react";
 import { Card, CardContent } from "~/components/ui/card";
+import { Wrench } from '~/lib/icons';
 import { type R6WhenProCase } from "~/types/r6-guide.types";
 
 interface Props {

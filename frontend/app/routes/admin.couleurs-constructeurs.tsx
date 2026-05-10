@@ -7,7 +7,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { ChevronLeft, Car } from "lucide-react";
+import { ChevronLeft, Car } from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 import { brandColorsService } from "../services/brand-colors.service";

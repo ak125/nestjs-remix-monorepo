@@ -1,5 +1,5 @@
-import { AlertTriangle, Info } from "lucide-react";
 import { Section, SectionHeader } from "~/components/layout";
+import { AlertTriangle, Info } from '~/lib/icons';
 
 interface GammeContentProps {
   gammeName: string;

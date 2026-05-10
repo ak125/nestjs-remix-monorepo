@@ -4,11 +4,11 @@
  * Systems loaded dynamically from API.
  * Error handling with retry on fetch failures.
  */
-import { AlertTriangle, CheckCircle2, Cog, RefreshCw, X } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { AlertTriangle, CheckCircle2, Cog, RefreshCw, X } from '~/lib/icons';
 import {
   type WizardState,
   type WizardAction,

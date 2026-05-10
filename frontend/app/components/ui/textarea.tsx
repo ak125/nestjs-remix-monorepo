@@ -1,5 +1,5 @@
-import { AlertCircle } from "lucide-react";
 import * as React from "react";
+import { AlertCircle } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 export interface TextareaProps

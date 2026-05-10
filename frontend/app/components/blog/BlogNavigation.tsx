@@ -1,6 +1,6 @@
 import { Link, useLocation } from "@remix-run/react";
-import { Wrench, ShoppingCart, Car, Home, BookOpen } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { Wrench, ShoppingCart, Car, Home, BookOpen } from '~/lib/icons';
 import { cn } from "~/lib/utils";
 
 interface NavigationItem {

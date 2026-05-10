@@ -1,3 +1,4 @@
+import { useState, useMemo, memo } from "react";
 import {
   ChevronDown,
   ChevronUp,
@@ -6,8 +7,7 @@ import {
   Search,
   Settings,
   RefreshCw,
-} from "lucide-react";
-import { useState, useMemo, memo } from "react";
+} from '~/lib/icons';
 
 import { pluralizePieceName } from "~/lib/seo-utils";
 import { HtmlContent } from "../seo/HtmlContent";

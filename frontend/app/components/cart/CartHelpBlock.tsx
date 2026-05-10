@@ -1,6 +1,6 @@
 import { Link } from "@remix-run/react";
-import { Phone, Stethoscope } from "lucide-react";
 import { SITE_CONFIG } from "~/config/site";
+import { Phone, Stethoscope } from '~/lib/icons';
 
 export function CartHelpBlock() {
   const { phone } = SITE_CONFIG.contact;

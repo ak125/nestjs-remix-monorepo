@@ -9,6 +9,10 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
+import { ErrorGeneric } from "~/components/errors";
+import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import {
   ArrowLeft,
   Mail,
@@ -25,11 +29,7 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-} from "lucide-react";
-import { ErrorGeneric } from "~/components/errors";
-import { HtmlContent } from "~/components/seo/HtmlContent";
-import { Alert } from "~/components/ui/alert";
-import { Badge } from "~/components/ui/badge";
+} from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

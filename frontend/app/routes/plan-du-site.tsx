@@ -4,6 +4,7 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
+import Container from "~/components/layout/Container";
 import {
   Home,
   Wrench,
@@ -17,8 +18,7 @@ import {
   MapPin,
   Package,
   Search,
-} from "lucide-react";
-import Container from "~/components/layout/Container";
+} from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 
 export const meta: MetaFunction = () => [

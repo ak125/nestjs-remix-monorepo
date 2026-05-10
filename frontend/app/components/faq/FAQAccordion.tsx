@@ -22,8 +22,8 @@
  * />
  */
 
-import { Search } from "lucide-react";
 import { useState, memo } from "react";
+import { Search } from '~/lib/icons';
 import {
   Accordion,
   AccordionContent,

@@ -8,6 +8,8 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { Alert } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import {
   Shield,
   CheckCircle,
@@ -19,9 +21,7 @@ import {
   Server,
   MonitorSpeaker,
   Award,
-} from "lucide-react";
-import { Alert } from "~/components/ui/alert";
-import { Badge } from "~/components/ui/badge";
+} from '~/lib/icons';
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 
 export const meta: MetaFunction = () =>

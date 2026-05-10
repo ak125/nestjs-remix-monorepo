@@ -11,6 +11,7 @@
  */
 
 import { Link, Form } from "@remix-run/react";
+import { memo } from "react";
 import {
   Plus,
   Upload,
@@ -21,8 +22,7 @@ import {
   BarChart3,
   Settings,
   type LucideIcon,
-} from "lucide-react";
-import { memo } from "react";
+} from '~/lib/icons';
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";

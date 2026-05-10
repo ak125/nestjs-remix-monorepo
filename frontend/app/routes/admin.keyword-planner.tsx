@@ -10,22 +10,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { useFetcher, useLoaderData, useRevalidator } from "@remix-run/react";
-import {
-  AlertTriangle,
-  CheckCircle2,
-  ChevronRight,
-  ClipboardCopy,
-  Database,
-  ExternalLink,
-  FileUp,
-  ImageIcon,
-  Loader2,
-  MoreVertical,
-  Sparkles,
-  Target,
-  Upload,
-  Zap,
-} from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { GammeActionBar } from "~/components/admin/GammeActionBar";
@@ -67,6 +51,22 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { Textarea } from "~/components/ui/textarea";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronRight,
+  ClipboardCopy,
+  Database,
+  ExternalLink,
+  FileUp,
+  ImageIcon,
+  Loader2,
+  MoreVertical,
+  Sparkles,
+  Target,
+  Upload,
+  Zap,
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

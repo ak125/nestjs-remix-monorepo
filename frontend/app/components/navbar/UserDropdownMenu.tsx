@@ -14,6 +14,7 @@
  */
 
 import { Link } from "@remix-run/react";
+import { memo } from "react";
 import {
   Bell,
   LogOut,
@@ -22,8 +23,7 @@ import {
   Settings,
   Shield,
   User,
-} from "lucide-react";
-import { memo } from "react";
+} from '~/lib/icons';
 
 import { Badge } from "../ui/badge";
 import {

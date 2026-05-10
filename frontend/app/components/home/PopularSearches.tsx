@@ -1,5 +1,5 @@
 import { Link } from "@remix-run/react";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp } from '~/lib/icons';
 
 const POPULAR = [
   {

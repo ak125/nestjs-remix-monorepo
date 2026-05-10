@@ -3,9 +3,9 @@
  * Renders a pre-formatted HTML table (Symptôme / Cause / Action) with violet styling.
  */
 
-import { Stethoscope } from "lucide-react";
 import { type GammeConseil } from "~/components/blog/conseil/section-config";
 import { HtmlContent } from "~/components/seo/HtmlContent";
+import { Stethoscope } from '~/lib/icons';
 import { GuideCard } from "./GuideCard";
 
 interface MiniDiagnosticTableProps {

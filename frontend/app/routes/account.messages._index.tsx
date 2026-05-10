@@ -6,8 +6,8 @@ import {
   useRouteError,
   isRouteErrorResponse,
 } from "@remix-run/react";
-import { Mail, MailOpen, Package } from "lucide-react";
 import { ErrorGeneric } from "~/components/errors/ErrorGeneric";
+import { Mail, MailOpen, Package } from '~/lib/icons';
 import { logger } from "~/utils/logger";
 import { requireUser } from "../auth/unified.server";
 import { Alert, AlertDescription } from "../components/ui/alert";

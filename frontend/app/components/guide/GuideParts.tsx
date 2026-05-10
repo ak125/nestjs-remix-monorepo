@@ -4,8 +4,8 @@
  */
 
 import { Link } from "@remix-run/react";
-import { Package, ArrowRight } from "lucide-react";
 import { type GammeConseil } from "~/components/blog/conseil/section-config";
+import { Package, ArrowRight } from '~/lib/icons';
 import { GuideCard } from "./GuideCard";
 
 interface GuidePartsProps {

@@ -3,9 +3,9 @@
  * Two modes: "ranges" (sourced price tiers) or "factors" (variation factors).
  */
 
-import { DollarSign, Info } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
+import { DollarSign, Info } from '~/lib/icons';
 import { type R6PriceGuideSection } from "~/types/r6-guide.types";
 
 interface Props {

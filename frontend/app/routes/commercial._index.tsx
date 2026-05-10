@@ -11,7 +11,7 @@ import {
   redirect,
 } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
-import { ShoppingCart, Truck, CheckCircle, TrendingUp } from "lucide-react";
+import { ShoppingCart, Truck, CheckCircle, TrendingUp } from '~/lib/icons';
 import { getInternalApiUrl } from "~/utils/internal-api.server";
 import { logger } from "~/utils/logger";
 import { createNoIndexMeta } from "~/utils/meta-helpers";

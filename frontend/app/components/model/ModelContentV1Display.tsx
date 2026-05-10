@@ -17,6 +17,8 @@
  * {modelContentV1 && <ModelContentV1Display content={modelContentV1} />}
  */
 
+import { useState, memo } from "react";
+import { HtmlContent } from "~/components/seo/HtmlContent";
 import {
   Book,
   History,
@@ -24,9 +26,7 @@ import {
   Wrench,
   FileText,
   ChevronDown,
-} from "lucide-react";
-import { useState, memo } from "react";
-import { HtmlContent } from "~/components/seo/HtmlContent";
+} from '~/lib/icons';
 import {
   MotorisationsTable,
   type MotorisationEntry,

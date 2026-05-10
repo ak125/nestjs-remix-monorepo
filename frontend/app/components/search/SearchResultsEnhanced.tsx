@@ -10,8 +10,8 @@
  * - ✅ Images WebP optimisées (90% plus légères !)
  */
 
-import { Package, Zap, Award, AlertCircle } from "lucide-react";
 import { memo } from "react";
+import { Package, Zap, Award, AlertCircle } from '~/lib/icons';
 
 import { logger } from "~/utils/logger";
 import { AddToCartButton } from "../cart/AddToCartButton";

@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
-import { CheckCircle, Clock, SearchCheck, User } from "lucide-react";
 import { Section } from "~/components/layout";
 import { Badge } from "~/components/ui/badge";
+import { CheckCircle, Clock, SearchCheck, User } from '~/lib/icons';
 
 export default function GammeDiagnosticCTA() {
   return (

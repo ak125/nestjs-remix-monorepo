@@ -4,20 +4,6 @@ import {
   type MetaFunction,
 } from "@remix-run/node";
 import { Link, useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
-import {
-  FileText,
-  ShieldCheck,
-  AlertTriangle,
-  Upload,
-  Brain,
-  RefreshCw,
-  Image,
-  Activity,
-  CheckCircle2,
-  XCircle,
-  SkipForward,
-  FilePen,
-} from "lucide-react";
 import { AdminDataTable, type DataColumn } from "~/components/admin/patterns";
 import {
   DashboardShell,
@@ -31,6 +17,20 @@ import {
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  FileText,
+  ShieldCheck,
+  AlertTriangle,
+  Upload,
+  Brain,
+  RefreshCw,
+  Image,
+  Activity,
+  CheckCircle2,
+  XCircle,
+  SkipForward,
+  FilePen,
+} from '~/lib/icons';
 import { getInternalApiUrlFromRequest } from "~/utils/internal-api.server";
 import { createNoIndexMeta } from "~/utils/meta-helpers";
 

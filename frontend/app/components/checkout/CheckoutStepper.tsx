@@ -1,4 +1,4 @@
-import { Check, ShoppingCart, ClipboardList, CreditCard } from "lucide-react";
+import { Check, ShoppingCart, ClipboardList, CreditCard } from '~/lib/icons';
 
 type Step = "cart" | "shipping" | "checkout";
 

@@ -3,10 +3,10 @@
  * Steps through R6DecisionNode[] one question at a time, showing a final verdict.
  */
 
-import { RotateCcw, CheckCircle2, AlertTriangle, Search } from "lucide-react";
 import { useState, useCallback } from "react";
 import { Button } from "~/components/ui/button";
 import { Progress } from "~/components/ui/progress";
+import { RotateCcw, CheckCircle2, AlertTriangle, Search } from '~/lib/icons';
 import { type R6DecisionNode } from "~/types/r6-guide.types";
 import { GuideCard } from "./GuideCard";
 import { SoftCTA } from "./SoftCTA";

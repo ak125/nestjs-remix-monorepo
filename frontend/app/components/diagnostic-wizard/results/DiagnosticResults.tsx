@@ -4,8 +4,8 @@
  * Renders EvidencePack from API into visual blocks.
  * Order: Safety → Summary → Hypotheses → RAG Facts → Maintenance → Catalog → Missing → Disclaimer
  */
-import { Loader2, RefreshCw } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { Loader2, RefreshCw } from '~/lib/icons';
 import { type WizardState, type WizardAction } from "../types";
 import { ResultCatalog } from "./ResultCatalog";
 import { ResultDisclaimer } from "./ResultDisclaimer";

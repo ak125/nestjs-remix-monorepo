@@ -2,11 +2,11 @@
  * StepVehicle — Step 1: Vehicle + usage context
  * Hybrid selector: Combobox for brand/model, free text for year/km
  */
-import { Car, Gauge, Route } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Combobox } from "~/components/ui/combobox";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Car, Gauge, Route } from '~/lib/icons';
 import { type useDiagnosticVehicleSelector } from "../hooks/use-diagnostic-vehicle-selector";
 import { type WizardState, type WizardAction } from "../types";
 

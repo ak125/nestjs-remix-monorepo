@@ -4,7 +4,6 @@
  * Fallback: generic card for S3 (and any future types).
  */
 
-import { FileText } from "lucide-react";
 import { SectionImage } from "~/components/content/SectionImage";
 import {
   GuideAlert,
@@ -18,6 +17,7 @@ import {
 import { annotateGlossaryTerms } from "~/components/guide/GlossaryTooltip";
 import { HtmlContent } from "~/components/seo/HtmlContent";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
+import { FileText } from '~/lib/icons';
 import { GarageCallout } from "./GarageCallout";
 import {
   type GammeConseil,

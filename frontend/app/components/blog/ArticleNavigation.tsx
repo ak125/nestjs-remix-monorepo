@@ -1,6 +1,6 @@
 import { Link } from '@remix-run/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from '~/lib/icons';
 
 interface ArticlePreview {
   id: string;

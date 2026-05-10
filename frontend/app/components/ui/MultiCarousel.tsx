@@ -1,8 +1,8 @@
 // 🎨 Composant MultiCarousel moderne et performant
 // Carousel responsive avec animations fluides et accessibilité
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { ChevronLeft, ChevronRight } from '~/lib/icons';
 
 interface MultiCarouselProps {
   children: React.ReactNode;

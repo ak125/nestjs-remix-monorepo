@@ -1,5 +1,5 @@
-import { Package, Clock, CheckCircle, Euro } from "lucide-react";
 import { memo } from "react";
+import { Package, Clock, CheckCircle, Euro } from '~/lib/icons';
 import { Badge } from "../ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 

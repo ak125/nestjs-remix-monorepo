@@ -1,8 +1,8 @@
 /**
  * ArticleBadges — Affiche les badges calculés backend-side
  */
-import { TrendingUp, Award, RefreshCw, Sparkles } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
+import { TrendingUp, Award, RefreshCw, Sparkles } from '~/lib/icons';
 
 type BlogBadgeType = "nouveau" | "populaire" | "mis-a-jour" | "guide-complet";
 
