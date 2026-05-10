@@ -9,13 +9,14 @@ import {
   Res,
   Req,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { PayboxService } from '../services/paybox.service';
 import { PaymentDataService } from '../repositories/payment-data.service';
 import { PayboxCallbackGateService } from '../services/paybox-callback-gate.service';
 import { MailService } from '../../../services/mail.service';
 import { CartDataService } from '../../../database/services/cart-data.service';
-import { CacheService } from '../../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import * as crypto from 'crypto';
 import { PaymentStatus, PaymentMethod } from '../entities/payment.entity';
 import { normalizeOrderId } from '../utils/normalize-order-id';
@@ -41,7 +42,13 @@ export class PayboxCallbackController {
   /**
    * IPN - Instant Payment Notification
    * Appelé par Paybox pour notifier le résultat du paiement
+   *
+   * Rate limit: 30/min/IP via named throttler `payment_callback` (ADR-043
+   * Sprint 1 ticket #6, STRIDE 01-paiement critique #2). Generous for
+   * legitimate gateway IPN; tight for crypto-compute DoS. Gateway retries
+   * idempotently on 429 (HMAC signature dedups).
    */
+  @Throttle({ payment_callback: { limit: 30, ttl: 60000 } })
   @Post('callback')
   async handleCallback(
     @Query() query: Record<string, string>,

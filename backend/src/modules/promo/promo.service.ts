@@ -1,6 +1,6 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PromoDataService } from '../../database/services/promo-data.service';
-import { CacheService } from '../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import { z } from 'zod';
 
 // 🎯 SCHEMAS ZOD pour validation stricte des types

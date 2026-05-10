@@ -28,7 +28,7 @@
 ### Ce que R4 N'EST PAS
 
 - Pas une page produit → R1 `/pieces/{slug}-{pgId}.html`
-- Pas un guide d'achat → R1 purchase guide (sgpg)
+- Pas un guide d'achat → R6_GUIDE_ACHAT
 - Pas un article conseils → R3 `/blog-pieces-auto/conseils/{alias}`
 - Pas un diagnostic de panne → R5 `/diagnostic-auto/{slug}`
 - Pas une page marketing — zéro CTA commercial, zéro prix promotionnel

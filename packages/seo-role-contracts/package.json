@@ -1,0 +1,30 @@
+{
+  "name": "@repo/seo-role-contracts",
+  "version": "0.1.0",
+  "description": "SoT comportemental R-stack — Zod RoleContract canon (sections, longueurs, intents, schemas Schema.org, thresholds, promotion gate). Séparé de @repo/seo-roles qui détient l'identité (RoleId, normalize). Cf. ADR-046 § L1.5 CONTRACTS + ADR-047 (vault).",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "@repo/seo-roles": "*",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.9.3"
+  }
+}

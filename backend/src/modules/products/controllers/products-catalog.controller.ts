@@ -7,7 +7,7 @@ import {
   Logger,
   UseInterceptors,
 } from '@nestjs/common';
-import { OperationFailedException } from '../../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 import { ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { ProductsCatalogService } from '../services/products-catalog.service';

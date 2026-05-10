@@ -4,9 +4,9 @@
  */
 
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { DomainConflictException, ErrorCodes } from '../../common/exceptions';
+import { DomainConflictException, ErrorCodes } from '@common/exceptions';
 import { UserDataConsolidatedService } from './services/user-data-consolidated.service';
-import { CacheService } from '../../cache/cache.service';
+import { CacheService } from '@cache/cache.service';
 import {
   User,
   CreateUserDto,

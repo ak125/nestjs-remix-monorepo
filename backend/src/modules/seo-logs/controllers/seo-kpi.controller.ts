@@ -1,10 +1,10 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 const execAsync = promisify(exec);
 

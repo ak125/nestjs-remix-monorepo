@@ -13,6 +13,7 @@ import type {
   WriteReceiptEntry,
 } from './execution-registry.types';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { getEffectiveSupabaseKey } from '@common/utils';
 
 @Injectable()
 export class WriteGuardLedgerService {
@@ -21,7 +22,8 @@ export class WriteGuardLedgerService {
 
   constructor(private readonly config: ConfigService) {
     const url = this.config.get<string>('SUPABASE_URL') || '';
-    const key = this.config.get<string>('SUPABASE_SERVICE_ROLE_KEY') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const key = getEffectiveSupabaseKey();
     this.supabase = createClient(url, key);
   }
 

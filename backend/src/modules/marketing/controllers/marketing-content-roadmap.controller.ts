@@ -10,7 +10,7 @@ import {
   UseGuards,
   ParseIntPipe,
 } from '@nestjs/common';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { MarketingContentRoadmapService } from '../services/marketing-content-roadmap.service';
 
 @Controller('api/admin/marketing/content-roadmap')

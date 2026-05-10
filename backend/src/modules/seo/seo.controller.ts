@@ -10,10 +10,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { SeoService } from './seo.service';
-import { AuthenticatedGuard } from '../../auth/authenticated.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { UrlCompatibilityService } from './validation/url-compatibility.service';
 import { SeoKpisService } from './services/seo-kpis.service';
-import { OperationFailedException } from '../../common/exceptions';
+import { OperationFailedException } from '@common/exceptions';
 
 interface MetadataDto {
   page_url: string;

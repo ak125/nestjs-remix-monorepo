@@ -10,7 +10,17 @@
     "rootDir": "./src",
     "noEmit": false,
     "useUnknownInCatchVariables": true,
-    "lib": ["DOM", "ES2023"]
+    "lib": ["DOM", "ES2023"],
+    "baseUrl": ".",
+    "paths": {
+      "@auth/*": ["src/auth/*"],
+      "@cache/*": ["src/cache/*"],
+      "@common/*": ["src/common/*"],
+      "@config/*": ["src/config/*"],
+      "@database/*": ["src/database/*"],
+      "@security/*": ["src/security/*"],
+      "@modules/*": ["src/modules/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/exports.js"]
 }

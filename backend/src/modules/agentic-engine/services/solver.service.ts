@@ -13,7 +13,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AgenticDataService } from './agentic-data.service';
 import { EvidenceLedgerService } from './evidence-ledger.service';
 import type { AgenticBranch, AgenticRun } from '../types/run-state.schema';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 export interface SolveResult {
   success: boolean;

@@ -6,7 +6,7 @@ import {
   DatabaseException,
   OperationFailedException,
   ErrorCodes,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 
 /**
  * 🏗️ Contrôleur pour la hiérarchie des conseils par famille

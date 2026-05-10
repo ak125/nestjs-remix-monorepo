@@ -10,7 +10,7 @@ import {
 import {
   DomainValidationException,
   OperationFailedException,
-} from '../common/exceptions';
+} from '@common/exceptions';
 import { Request } from 'express';
 import { ErrorService } from '../modules/errors/services/error.service';
 import { RedirectService } from '../modules/errors/services/redirect.service';

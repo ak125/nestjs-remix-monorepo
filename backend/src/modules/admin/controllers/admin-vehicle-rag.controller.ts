@@ -9,8 +9,8 @@ import {
   BadRequestException,
   ParseIntPipe,
 } from '@nestjs/common';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { VehicleRagGeneratorService } from '../services/vehicle-rag-generator.service';
 
 @Controller('api/admin/vehicle-rag')

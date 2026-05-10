@@ -1,0 +1,5 @@
+# ast-grep scan config — turns rules in .claude/rules/ into mechanical guards.
+# Severity starts at "warning" for new rules; promote to "error" once the codebase is clean.
+# Run via:   npx ast-grep scan
+ruleDirs:
+  - .ast-grep/rules

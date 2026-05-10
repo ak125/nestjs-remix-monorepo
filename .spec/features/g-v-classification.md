@@ -1,3 +1,9 @@
+---
+title: "G-V Classification — Système V-Level v5.0"
+status: draft
+version: 5.0.0
+---
+
 # Systeme de Classification V-Level v5.0
 
 > **Version :** v5.0 (2026-02-10)

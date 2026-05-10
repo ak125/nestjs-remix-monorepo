@@ -1,11 +1,8 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  ExternalServiceException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { ExternalServiceException, ErrorCodes } from '@common/exceptions';
 import { sleep } from '../../../utils/promise-helpers';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+import { getErrorMessage } from '@common/utils/error.utils';
 
 /**
  * Chrome DevTools MCP Client

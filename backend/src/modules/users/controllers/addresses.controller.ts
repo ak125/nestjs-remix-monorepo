@@ -17,7 +17,7 @@ import {
   ApiTags,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AuthenticatedGuard } from '../../../auth/authenticated.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { User } from '../../../common/decorators/user.decorator';
 import { AddressesService } from '../services/addresses.service';
 import {

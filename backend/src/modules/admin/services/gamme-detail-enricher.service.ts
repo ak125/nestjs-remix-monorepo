@@ -10,11 +10,8 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
-import {
-  DomainNotFoundException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
+import { DomainNotFoundException, ErrorCodes } from '@common/exceptions';
 import {
   GammeSeoBadgesService,
   GammeAggregatesResult,

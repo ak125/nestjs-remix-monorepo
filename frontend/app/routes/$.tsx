@@ -366,7 +366,13 @@ function resolveKnownPattern(pathname: string): string | null {
   }
 
   // Trailing .html sur des URLs non-pièces → retirer le .html
-  if (pathname.endsWith(".html") && !pathname.startsWith("/pieces/")) {
+  // Exclusion : /pieces-{supplier}.html (legacy équipementier) reste tel quel
+  // pour être capté directement en 410 par checkIfOldLink (évite un 301 intermédiaire)
+  if (
+    pathname.endsWith(".html") &&
+    !pathname.startsWith("/pieces/") &&
+    !/^\/pieces-[a-z0-9-]+\.html$/i.test(pathname)
+  ) {
     return pathname.slice(0, -5);
   }
 
@@ -411,6 +417,7 @@ async function checkIfOldLink(pathname: string): Promise<boolean> {
       /\/[0-9]{4}\/old\//, // Patterns avec année et "old"
       /^\/piece\//, // URLs legacy /piece/* (~90K URLs à désindexer)
       /^\/pieces\/[^/]+\/[^/]+\/[^/]+\/[^/]+\.html\//, // Extra segments après .html (legacy pagination)
+      /^\/pieces-[a-z0-9-]+\.html$/i, // URLs legacy équipementier /pieces-{supplier}.html (ex: /pieces-purflux.html)
       /^\/reference-auto\//, // Anciennes pages référence
     ];
 

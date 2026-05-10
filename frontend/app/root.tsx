@@ -135,6 +135,17 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     cart: cartPromise,
     isBot,
     cspNonce: ((context as Record<string, unknown>)?.cspNonce as string) || "",
+    // Public runtime env exposed to the browser via `window.ENV` (see <script>
+    // injection below). Same image runs in DEV/PROD with different values, so
+    // these MUST be read at request time, not inlined at build time.
+    ENV: {
+      VITE_SENTRY_DSN: process.env.VITE_SENTRY_DSN || "",
+      SENTRY_ENVIRONMENT:
+        process.env.SENTRY_ENVIRONMENT ||
+        process.env.APP_ENV ||
+        process.env.NODE_ENV ||
+        "development",
+    },
   });
 };
 
@@ -395,6 +406,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
         <Meta />
         <Links />
+        {/* Runtime ENV exposed to the browser. Must run BEFORE entry.client.tsx
+            so Sentry can pick up the DSN at hydration. JSON.stringify is safe
+            for this minimal set (no user-controlled keys). */}
+        {data?.ENV ? (
+          <script
+            nonce={nonce}
+            suppressHydrationWarning
+            dangerouslySetInnerHTML={{
+              __html: `window.ENV = ${JSON.stringify(data.ENV)};`,
+            }}
+          />
+        ) : null}
         {/* 🚀 LCP Phase 2: Fonts self-hosted — @font-face dans global.css, preloads dans links() */}
         {/* 🚀 LCP: Animations CSS — non-render-blocking (not needed for first paint) */}
         <link

@@ -10,6 +10,7 @@ import { Controller, Get, Logger, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { InternalApiKeyGuard } from '../../../auth/internal-api-key.guard';
+import { getEffectiveSupabaseKey } from '@common/utils';
 
 interface GammeRow {
   pg_id: string;
@@ -44,9 +45,10 @@ export class InternalSeoAuditController {
   private readonly supabase: SupabaseClient;
 
   constructor(private readonly configService: ConfigService) {
-    const url = this.configService.get<string>('SUPABASE_URL');
-    const key = this.configService.get<string>('SUPABASE_SERVICE_ROLE_KEY');
-    this.supabase = createClient(url!, key!);
+    const url = this.configService.get<string>('SUPABASE_URL') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const key = getEffectiveSupabaseKey();
+    this.supabase = createClient(url, key);
   }
 
   /**

@@ -7,7 +7,7 @@
  * R3 Risk Score → anti-cannibalization R1↔R3
  */
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import type {
   GateResult,
   AuditResult,

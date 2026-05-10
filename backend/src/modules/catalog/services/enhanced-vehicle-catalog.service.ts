@@ -2,7 +2,7 @@
 // 🚗 Service Vehicle Catalog Simplifié (sans dépendances circulaires)
 
 import { Injectable, Logger } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 /**
  * 🚗 ENHANCED VEHICLE CATALOG SERVICE (VERSION SIMPLIFIÉE)

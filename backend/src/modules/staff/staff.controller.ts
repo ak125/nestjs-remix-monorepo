@@ -21,10 +21,10 @@ import {
 import {
   OperationFailedException,
   DomainValidationException,
-} from '../../common/exceptions';
+} from '@common/exceptions';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
-import { AuthenticatedGuard } from '../../auth/authenticated.guard';
-import { IsAdminGuard } from '../../auth/is-admin.guard';
+import { AuthenticatedGuard } from '@auth/authenticated.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 import { StaffService, CreateStaffDto, UpdateStaffDto } from './staff.service';
 
 @ApiTags('Staff Management')

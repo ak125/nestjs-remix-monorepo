@@ -10,6 +10,11 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import {
+  getRoleDisplayLabel,
+  PAGE_TYPE_TO_ROLE,
+  type WorkerPageType,
+} from "@repo/seo-roles";
+import {
   RefreshCw,
   Check,
   X,
@@ -155,14 +160,16 @@ const REFRESH_STATUS: Record<string, StatusType> = {
   skipped: "NEUTRAL",
 };
 
-const PAGE_TYPE_LABELS: Record<string, string> = {
-  R1_pieces: "R1 Pieces",
-  R3_conseils: "R3 Conseils",
-  R3_guide_howto: "R3 Guide How-To",
-  R4_reference: "R4 Reference",
-  R5_diagnostic: "R5 Diagnostic",
-  R6_guide_achat: "R6 Guide Achat",
-};
+// __rag_content_refresh_log.page_type lives across worker page types except
+// product/brand/vehicle pages (handled by separate refresh pipelines).
+const NON_RAG_REFRESH_PAGE_TYPES: ReadonlySet<WorkerPageType> = new Set([
+  "R2_product",
+  "R7_brand",
+  "R8_vehicle",
+]);
+const RAG_REFRESH_FILTER_PAGE_TYPES = (
+  Object.keys(PAGE_TYPE_TO_ROLE) as WorkerPageType[]
+).filter((pt) => !NON_RAG_REFRESH_PAGE_TYPES.has(pt));
 
 // ── Helpers ──
 
@@ -441,7 +448,7 @@ export default function AdminContentRefresh() {
       header: "Page Type",
       render: (_val, row) => (
         <Badge variant="outline" className="text-xs font-mono">
-          {PAGE_TYPE_LABELS[row.page_type] || row.page_type}
+          {getRoleDisplayLabel(row.page_type)}
         </Badge>
       ),
     },
@@ -716,11 +723,11 @@ export default function AdminContentRefresh() {
                 className="h-9 rounded-md border border-input bg-background px-3 text-sm"
               >
                 <SelectItem value="">Tous</SelectItem>
-                <SelectItem value="R1_pieces">R1 Pieces</SelectItem>
-                <SelectItem value="R3_conseils">R3 Conseils</SelectItem>
-                <SelectItem value="R3_guide_howto">R3 Guide How-To</SelectItem>
-                <SelectItem value="R4_reference">R4 Reference</SelectItem>
-                <SelectItem value="R5_diagnostic">R5 Diagnostic</SelectItem>
+                {RAG_REFRESH_FILTER_PAGE_TYPES.map((pt) => (
+                  <SelectItem key={pt} value={pt}>
+                    {getRoleDisplayLabel(pt)}
+                  </SelectItem>
+                ))}
               </Select>
             </div>
             <div className="flex items-end gap-2">

@@ -1,9 +1,6 @@
 import { Controller, Get, Query, Logger } from '@nestjs/common';
 import { SupportAnalyticsService } from '../services/support-analytics.service';
-import {
-  DomainValidationException,
-  ErrorCodes,
-} from '../../../common/exceptions';
+import { DomainValidationException, ErrorCodes } from '@common/exceptions';
 
 @Controller('api/support/analytics')
 export class SupportAnalyticsController {

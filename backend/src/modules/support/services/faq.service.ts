@@ -5,7 +5,7 @@ import {
   DomainValidationException,
   BusinessRuleException,
   ErrorCodes,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 
 export interface FAQ {
   id: string;

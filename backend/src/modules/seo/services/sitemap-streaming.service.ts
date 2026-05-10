@@ -15,6 +15,7 @@ import * as path from 'path';
 import { gzipAsync } from '../../../utils/promise-helpers';
 import { createHash } from 'crypto';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { getEffectiveSupabaseKey } from '@common/utils';
 import { SITE_ORIGIN } from '../../../config/app.config';
 import {
   StreamingConfig,
@@ -61,10 +62,9 @@ export class SitemapStreamingService {
     };
 
     // Initialiser le client Supabase
-    const supabaseUrl = this.configService.get<string>('SUPABASE_URL');
-    const supabaseKey = this.configService.get<string>(
-      'SUPABASE_SERVICE_ROLE_KEY',
-    );
+    const supabaseUrl = this.configService.get<string>('SUPABASE_URL') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const supabaseKey = getEffectiveSupabaseKey();
 
     if (!supabaseUrl || !supabaseKey) {
       this.logger.warn(
@@ -72,7 +72,7 @@ export class SitemapStreamingService {
       );
     }
 
-    this.supabase = createClient(supabaseUrl || '', supabaseKey || '');
+    this.supabase = createClient(supabaseUrl, supabaseKey);
 
     this.ensureOutputDirectory();
     this.logger.log('🗜️ SitemapStreamingService initialized');

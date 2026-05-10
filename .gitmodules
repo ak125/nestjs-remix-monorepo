@@ -1,0 +1,4 @@
+[submodule "backend/content/automecanik-wiki"]
+	path = backend/content/automecanik-wiki
+	url = https://github.com/ak125/automecanik-wiki
+	branch = main

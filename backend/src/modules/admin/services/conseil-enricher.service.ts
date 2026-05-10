@@ -1,5 +1,5 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 import { RagProxyService } from '../../rag-proxy/rag-proxy.service';
 import { RagFoundationGateService } from '../../rag-proxy/services/rag-foundation-gate.service';
 import { AiContentService } from '../../ai-content/ai-content.service';
@@ -24,6 +24,12 @@ import type { RagMergePatch } from '../../rag-proxy/services/pdf-rag-classifier.
 import { ContentWriteGateService } from '../../../config/content-write-gate.service';
 import { RoleId } from '../../../config/role-ids';
 import type { ResourceGroup } from '../../../config/execution-registry.types';
+import {
+  RoleId as CanonRoleId,
+  getForbiddenOverlap,
+  tokenizeAndStem,
+} from '@repo/seo-roles';
+import { CanonObservabilityService } from './canon-observability.service';
 
 // ── Section type constants matching DB values ──
 
@@ -87,24 +93,65 @@ const GENERIC_PHRASES = [
   'afin de préserver',
 ];
 
-// ── Quality gate penalties ──
+// ── Two-gate architecture (R3 Canon Hardening, PR-C 2026-05-07) ─────────────
+//
+// Pre-PR-C : a single `validateQuality` returned a numeric score 0-100. Some
+// flags carried `severity: 'BLOQUANT'` *labels* (MISSING_PROCEDURE penalty=35)
+// but the only effective gate was `score >= 70` — so a label-bloquant flag
+// could still pass if other quality scores were high enough. The label was
+// misleading.
+//
+// Post-PR-C : two distinct gates are evaluated sequentially.
+//
+//   1. **CanonGate** (binary, hard) — checks role purity. Any violation
+//      blocks the write outright with `reason: CANON_BLOCK:...`. Scope :
+//        - MISSING_PROCEDURE        : R3 must materialise procedural content
+//        - S4_DIAGNOSTIC_FALLBACK   : S4 wired to diagnosticTree → R3 drift
+//          on R5 territory, never acceptable
+//        - FORBIDDEN_OVERLAP_R5_R6  : token-stem match against canon
+//          `getForbiddenOverlap(R3_CONSEILS)` from `@repo/seo-roles@>=0.5.0`
+//
+//   2. **QualityGate** (numeric, soft) — editorial polish penalties. Score
+//      0-100 ; write iff `score >= QUALITY_WRITE_THRESHOLD` (70). Scope :
+//      MISSING_ERRORS, FAQ_TOO_SMALL, GENERIC_PHRASES, NO_NUMBERS_IN_S2,
+//      S3_TOO_SHORT, S2_PADDED_TABLE.
+//
+// The `severity: 'BLOQUANT'` label is intentionally removed — a flag is in
+// CanonGate (binary) or QualityGate (numeric), never a hybrid.
 
 interface QualityFlag {
   id: string;
-  severity: 'BLOQUANT' | 'WARNING';
   penalty: number;
 }
 
+/** Hard-block flags evaluated by CanonGate (no penalty — binary). */
+const CANON_FLAGS: ReadonlySet<string> = new Set([
+  'MISSING_PROCEDURE',
+  'S4_DIAGNOSTIC_FALLBACK',
+  'FORBIDDEN_OVERLAP_R5_R6',
+]);
+
+/** Soft-penalty flags evaluated by QualityGate (numeric). */
 const QUALITY_FLAGS: QualityFlag[] = [
-  { id: 'MISSING_PROCEDURE', severity: 'BLOQUANT', penalty: 35 },
-  { id: 'MISSING_ERRORS', severity: 'WARNING', penalty: 10 },
-  { id: 'FAQ_TOO_SMALL', severity: 'WARNING', penalty: 14 },
-  { id: 'GENERIC_PHRASES', severity: 'WARNING', penalty: 18 },
-  { id: 'NO_NUMBERS_IN_S2', severity: 'WARNING', penalty: 8 },
-  { id: 'S3_TOO_SHORT', severity: 'WARNING', penalty: 10 },
-  { id: 'S4_DIAGNOSTIC_FALLBACK', severity: 'WARNING', penalty: 12 },
-  { id: 'S2_PADDED_TABLE', severity: 'WARNING', penalty: 8 },
+  { id: 'MISSING_ERRORS', penalty: 10 },
+  { id: 'FAQ_TOO_SMALL', penalty: 14 },
+  { id: 'GENERIC_PHRASES', penalty: 18 },
+  { id: 'NO_NUMBERS_IN_S2', penalty: 8 },
+  { id: 'S3_TOO_SHORT', penalty: 10 },
+  { id: 'S2_PADDED_TABLE', penalty: 8 },
 ];
+
+const QUALITY_WRITE_THRESHOLD = 70;
+
+interface CanonViolation {
+  flag: string;
+  evidence: string;
+}
+
+interface CanonGateResult {
+  passed: boolean;
+  violations: CanonViolation[];
+}
 
 // ── Result interfaces ──
 
@@ -193,6 +240,8 @@ export class ConseilEnricherService extends SupabaseBaseService {
     private readonly foundationGate?: RagFoundationGateService,
     @Optional()
     private readonly writeGate?: ContentWriteGateService,
+    @Optional()
+    private readonly canonObservability?: CanonObservabilityService,
   ) {
     super(configService);
   }
@@ -626,11 +675,41 @@ export class ConseilEnricherService extends SupabaseBaseService {
       };
     }
 
-    // 6. Validate quality
-    const quality = this.validateQuality(actions, existing, contract);
+    // 6. Two-gate validation (PR-C R3 Canon Hardening) :
+    //    a) CanonGate — binary, hard-block on role purity violations
+    //    b) QualityGate — numeric, soft penalties (write iff score >= 70)
+
+    const canon = this.runCanonGate(actions, existing);
+    if (!canon.passed) {
+      const flagsList = canon.violations.map((v) => v.flag);
+      const reason = `CANON_BLOCK:${canon.violations
+        .map((v) => `${v.flag}@${v.evidence}`)
+        .join('|')}`;
+      this.logger.warn(`[R3] Canon block ${pgId}: ${flagsList.join(',')}`);
+
+      // Sentry observability — emit one structured event per violation. No-op
+      // if SENTRY_DSN unset (local dev). See `canon-observability.service.ts`.
+      this.canonObservability?.recordViolations(
+        CanonRoleId.R3_CONSEILS,
+        pgAlias,
+        canon.violations,
+        'enricher',
+      );
+
+      return {
+        status: 'failed',
+        score: 0,
+        flags: flagsList,
+        sectionsCreated: 0,
+        sectionsUpdated: 0,
+        reason,
+      };
+    }
+
+    const quality = this.runQualityGate(actions, existing, contract);
 
     // 7. Write to DB if quality passes
-    if (quality.score >= 70) {
+    if (quality.score >= QUALITY_WRITE_THRESHOLD) {
       const { created, updated } = await this.writeSections(
         pgId,
         pgAlias,
@@ -662,7 +741,7 @@ export class ConseilEnricherService extends SupabaseBaseService {
       flags: quality.flags,
       sectionsCreated: 0,
       sectionsUpdated: 0,
-      reason: 'QUALITY_BELOW_THRESHOLD',
+      reason: `QUALITY_LOW:${quality.score}`,
     };
   }
 
@@ -1767,7 +1846,95 @@ export class ConseilEnricherService extends SupabaseBaseService {
 
   // ── Quality Validation ──
 
-  private validateQuality(
+  /**
+   * Canon gate — binary, hard-block. Evaluates role purity.
+   *
+   * @returns `{ passed: false, violations: [...] }` if any canon flag fires ;
+   * the caller must abort the write with `reason: CANON_BLOCK:...`.
+   */
+  private runCanonGate(
+    actions: SectionAction[],
+    existing: Map<
+      string,
+      {
+        sgc_id: string;
+        sgc_title: string;
+        sgc_content: string;
+        sgc_order: number;
+      }
+    >,
+  ): CanonGateResult {
+    const violations: CanonViolation[] = [];
+
+    const recordViolation = (flag: string, evidence: string): void => {
+      // Sanity guard : only canon-classified flags belong in CanonGate output.
+      // Catches drift if a future edit adds a non-canon flag here by mistake.
+      if (!CANON_FLAGS.has(flag)) {
+        this.logger.warn(
+          `[R3 canon] Skipping non-canon flag "${flag}" emitted from CanonGate`,
+        );
+        return;
+      }
+      violations.push({ flag, evidence });
+    };
+
+    // C1. MISSING_PROCEDURE — R3 must materialise procedural content. The DB
+    // view (S4 section being written or already substantial) is what counts
+    // here ; upstream contract availability is a different concern.
+    const hasS4InActions = actions.some(
+      (a) => a.type === SECTION_TYPES.S4_DEPOSE && a.action !== 'skip',
+    );
+    const existingS4 = existing.get(SECTION_TYPES.S4_DEPOSE);
+    const s4Substantial =
+      existingS4 &&
+      (existingS4.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
+    if (!hasS4InActions && !s4Substantial) {
+      recordViolation(
+        'MISSING_PROCEDURE',
+        `S4_DEPOSE absent (action=${hasS4InActions}, db=${s4Substantial ?? false})`,
+      );
+    }
+
+    // C2. S4_DIAGNOSTIC_FALLBACK — S4 wired to diagnosticTree means R3 is
+    // drifting onto R5 territory. Promoted from QualityGate WARNING (-12) to
+    // canon-hard because the drift compounds with future re-enrichments.
+    const s4Action = actions.find((a) => a.type === SECTION_TYPES.S4_DEPOSE);
+    if (s4Action?.ragField === 'diagnosticTree_fallback') {
+      recordViolation(
+        'S4_DIAGNOSTIC_FALLBACK',
+        `S4 ragField=${s4Action.ragField}`,
+      );
+    }
+
+    // C3. FORBIDDEN_OVERLAP_R5_R6 — token-stem match against canon
+    // forbidden_overlap for R3_CONSEILS. Replaces the legacy local
+    // FORBIDDEN_OVERLAP map ; canon SoT lives in @repo/seo-roles@>=0.5.0.
+    const forbidden = getForbiddenOverlap(CanonRoleId.R3_CONSEILS);
+    if (forbidden.length > 0) {
+      const forbiddenStems = tokenizeAndStem(forbidden.join(' '));
+      const writeActions = actions.filter((a) => a.action !== 'skip');
+      for (const action of writeActions) {
+        const contentStems = tokenizeAndStem(action.content);
+        for (const stem of forbiddenStems) {
+          if (contentStems.has(stem)) {
+            recordViolation(
+              'FORBIDDEN_OVERLAP_R5_R6',
+              `${action.type}:stem=${stem}`,
+            );
+            break; // one violation per section is enough — keeps evidence tight
+          }
+        }
+      }
+    }
+
+    return { passed: violations.length === 0, violations };
+  }
+
+  /**
+   * Quality gate — numeric, soft penalties. Editorial polish only. Canon
+   * violations are evaluated separately by {@link runCanonGate}.
+   */
+  private runQualityGate(
     actions: SectionAction[],
     existing: Map<
       string,
@@ -1781,18 +1948,6 @@ export class ConseilEnricherService extends SupabaseBaseService {
     contract: PageContract,
   ): { score: number; flags: string[] } {
     const flags: string[] = [];
-
-    // MISSING_PROCEDURE: flag if no S4 in current actions AND no substantial S4 exists in DB
-    const hasS4InActions = actions.some(
-      (a) => a.type === SECTION_TYPES.S4_DEPOSE && a.action !== 'skip',
-    );
-    const existingS4 = existing.get(SECTION_TYPES.S4_DEPOSE);
-    const s4Substantial =
-      existingS4 &&
-      (existingS4.sgc_content?.length || 0) >= MIN_SECTION_CONTENT_LENGTH;
-    if (!hasS4InActions && !s4Substantial) {
-      flags.push('MISSING_PROCEDURE');
-    }
 
     // MISSING_ERRORS: S5 should have at least 3 items
     const s5Action = actions.find((a) => a.type === SECTION_TYPES.S5);
@@ -1838,19 +1993,14 @@ export class ConseilEnricherService extends SupabaseBaseService {
       flags.push('S3_TOO_SHORT');
     }
 
-    // S4_DIAGNOSTIC_FALLBACK: S4 uses diagnostic tree instead of real procedure steps
-    const s4Action = actions.find((a) => a.type === SECTION_TYPES.S4_DEPOSE);
-    if (s4Action?.ragField === 'diagnosticTree_fallback') {
-      flags.push('S4_DIAGNOSTIC_FALLBACK');
-    }
-
-    // S2_PADDED_TABLE: S2_DIAG table has >50% padded rows (reused cause/check fallbacks)
+    // S2_PADDED_TABLE: S2_DIAG table has >50% padded rows (reused fallbacks)
     const s2dAction = actions.find((a) => a.type === SECTION_TYPES.S2_DIAG);
     if (s2dAction?.ragField === 'padded_table') {
       flags.push('S2_PADDED_TABLE');
     }
 
-    // Calculate score
+    // Calculate score (canon flags are NOT in QUALITY_FLAGS — they hard-block
+    // upstream of this method, never penalise the score)
     const penalty = flags.reduce((sum, flagId) => {
       const flagDef = QUALITY_FLAGS.find((f) => f.id === flagId);
       return sum + (flagDef?.penalty || 5);

@@ -44,15 +44,56 @@ if os.path.exists(env_path):
 SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
 SUPABASE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '')
 RAG_GAMMES = '/opt/automecanik/rag/knowledge/gammes'
+ALIAS_EXPANSIONS_YAML = '/opt/automecanik/app/config/rag-alias-expansions.yaml'
 
 STOP_WORDS = {'a', 'de', 'd', 'du', 'le', 'la', 'les', 'l', 'un', 'une', 'des', 'en', 'et', 'ou', 'pour'}
+
+# Module-level cache — loaded once at first call
+_ALIAS_EXPANSIONS_CACHE: Optional[dict[str, list[str]]] = None
+
+
+def load_alias_expansions() -> dict[str, list[str]]:
+    """Load the centralized SEO alias dictionary (config/rag-alias-expansions.yaml).
+
+    Merged with variants[].aliases from RAG .md at matching time (additive, idempotent).
+    Cached at module level — loaded once per process.
+    """
+    global _ALIAS_EXPANSIONS_CACHE
+    if _ALIAS_EXPANSIONS_CACHE is not None:
+        return _ALIAS_EXPANSIONS_CACHE
+    if not os.path.exists(ALIAS_EXPANSIONS_YAML):
+        _ALIAS_EXPANSIONS_CACHE = {}
+        return _ALIAS_EXPANSIONS_CACHE
+    try:
+        import yaml
+        with open(ALIAS_EXPANSIONS_YAML, encoding='utf-8') as f:
+            data = yaml.safe_load(f) or {}
+        if not isinstance(data, dict):
+            _ALIAS_EXPANSIONS_CACHE = {}
+            return _ALIAS_EXPANSIONS_CACHE
+        _ALIAS_EXPANSIONS_CACHE = {
+            slug: [str(a) for a in (aliases or []) if a]
+            for slug, aliases in data.items()
+            if isinstance(slug, str)
+        }
+    except Exception as e:
+        print(f"  [WARN] Failed to load {ALIAS_EXPANSIONS_YAML}: {e}")
+        _ALIAS_EXPANSIONS_CACHE = {}
+    return _ALIAS_EXPANSIONS_CACHE
 
 
 # ─── HELPERS ───────────────────────────────────────────────────────────
 
 def normalize_kw(text: str) -> str:
-    """Lowercase, no accents, single spaces, trimmed."""
+    """Lowercase, no accents, single spaces, trimmed.
+
+    Replaces apostrophes/hyphens/underscores with spaces BEFORE splitting so
+    "Filtre d'habitacle" → core words ['filtre', 'habitacle'] (not "d'habitacle").
+    Critical for gammes with apostrophe in pg_name (filtre-d-habitacle, etc.).
+    """
     text = text.lower().strip()
+    # Strip apostrophes (straight, curly, typographic) + hyphens + underscores
+    text = re.sub(r"[‘’‛'\-_]", ' ', text)
     text = re.sub(r'\s+', ' ', text)
     text = unicodedata.normalize('NFD', text)
     return ''.join(c for c in text if unicodedata.category(c) != 'Mn')
@@ -113,12 +154,21 @@ def resolve_gamme_from_db_by_slug(slug: str) -> Optional[dict]:
 
 
 def load_gamme_rag(pg_alias: str) -> dict:
-    """Load gamme RAG file → extract aliases + must_not_contain + confusion_with."""
+    """Load gamme RAG file → extract aliases + must_not_contain + confusion_with.
+
+    Also merges in aliases from config/rag-alias-expansions.yaml (centralized SEO dict).
+    """
     result = {
         'aliases': set(),
         'must_not_contain': set(),
         'confusion_terms': set(),
     }
+
+    # Merge centralized alias-expansions dict (additive, independent of RAG .md)
+    expansions = load_alias_expansions().get(pg_alias, [])
+    for alias in expansions:
+        result['aliases'].add(normalize_kw(alias))
+
     rag_path = os.path.join(RAG_GAMMES, f'{pg_alias}.md')
     if not os.path.exists(rag_path):
         return result
@@ -319,9 +369,58 @@ def upsert_to_db(table: str, records: list[dict], conflict_cols: str, dry_run: b
     return inserted
 
 
+# ─── SUGGEST ALIASES (R-SEO-KW-05) ─────────────────────────────────────
+
+def emit_alias_suggestions(
+    pg_alias: str,
+    rejects: list[dict],
+    csv_filename: str,
+    threshold_vol: int = 50,
+) -> None:
+    """Print a YAML block of candidate aliases for rag-alias-expansions.yaml.
+
+    Only emits rejects with reason 'no_core_match' AND volume >= threshold_vol,
+    sorted by volume desc. The other reject reasons (exclude:*, confusion:*)
+    are intentional and should NOT become aliases.
+    """
+    candidates = [
+        r for r in rejects
+        if r.get('reason') == 'no_core_match' and (r.get('volume') or 0) >= threshold_vol
+    ]
+    if not candidates:
+        print(f"\n  [SUGGEST] No rejects above threshold vol={threshold_vol}.")
+        return
+
+    candidates.sort(key=lambda r: -(r.get('volume') or 0))
+    total_vol = sum(r.get('volume') or 0 for r in candidates)
+    seen_norms: set[str] = set()
+
+    print(f"\n  [SUGGEST] {len(candidates)} candidates, vol cumule={total_vol}/mois")
+    print(f"  [SUGGEST] YAML pret-a-coller dans config/rag-alias-expansions.yaml :")
+    print()
+    print(f"{pg_alias}:")
+    print(f"  # suggested from {csv_filename} ({len(candidates)} rejets, vol {total_vol})")
+    for r in candidates:
+        norm = r.get('normalized') or ''
+        if norm in seen_norms:
+            continue
+        seen_norms.add(norm)
+        kw = r.get('keyword') or norm
+        vol = r.get('volume') or 0
+        print(f"  - {norm}  # vol={vol}  raw='{kw}'")
+    print()
+
+
 # ─── MAIN PIPELINE ─────────────────────────────────────────────────────
 
-def process_file(filepath: str, pg_id_override: Optional[int], dry_run: bool, verbose: bool) -> dict:
+def process_file(
+    filepath: str,
+    pg_id_override: Optional[int],
+    dry_run: bool,
+    verbose: bool,
+    suggest_aliases: bool = False,
+    suggest_threshold_vol: int = 50,
+) -> dict:
     print(f"\n{'='*60}")
     print(f"  {os.path.basename(filepath)}")
     print(f"{'='*60}")
@@ -379,6 +478,7 @@ def process_file(filepath: str, pg_id_override: Optional[int], dry_run: bool, ve
     print(f"  [3/4] Filtre pertinence gamme (RAG)...")
     relevant = []
     reject_counts = Counter()
+    rejects_detail: list[dict] = []  # {keyword, normalized, volume, reason}
     for row in deduped:
         is_rel, reason = check_relevance(
             row['normalized'],
@@ -391,9 +491,21 @@ def process_file(filepath: str, pg_id_override: Optional[int], dry_run: bool, ve
             relevant.append(row)
         else:
             reject_counts[reason.split(':')[0]] += 1
+            rejects_detail.append({**row, 'reason': reason})
 
     print(f"        {len(deduped)} → {len(relevant)} pertinents")
     print(f"        Rejets: {dict(reject_counts)}")
+
+    # R-SEO-KW-05 : --suggest-aliases imprime un bloc YAML pret-a-coller
+    # pour les rejets no_core_match au-dessus du threshold de volume.
+    # Ne touche pas la DB (le flag implique souvent --dry-run).
+    if suggest_aliases:
+        emit_alias_suggestions(
+            pg_alias=pg_alias,
+            rejects=rejects_detail,
+            csv_filename=os.path.basename(filepath),
+            threshold_vol=suggest_threshold_vol,
+        )
 
     if verbose and len(relevant) > 0:
         print(f"        Echantillon:")
@@ -438,6 +550,18 @@ def main():
     parser.add_argument('--pg-id', type=int, help='Override pg_id (skip slug detection)')
     parser.add_argument('--dry-run', action='store_true', help='Validate without writing')
     parser.add_argument('--verbose', action='store_true', help='Show details')
+    parser.add_argument(
+        '--suggest-aliases',
+        action='store_true',
+        help='Print YAML block of candidate aliases for rag-alias-expansions.yaml '
+             '(rejects with reason=no_core_match above --threshold-vol). R-SEO-KW-05.',
+    )
+    parser.add_argument(
+        '--threshold-vol',
+        type=int,
+        default=50,
+        help='Min monthly volume for --suggest-aliases candidates (default: 50)',
+    )
     args = parser.parse_args()
 
     if not SUPABASE_URL or not SUPABASE_KEY:
@@ -459,7 +583,17 @@ def main():
     print(f"{'DRY RUN' if args.dry_run else 'LIVE'} mode")
     print(f"{len(files)} fichier(s)")
 
-    results = [process_file(f, args.pg_id, args.dry_run, args.verbose) for f in files]
+    results = [
+        process_file(
+            f,
+            args.pg_id,
+            args.dry_run,
+            args.verbose,
+            suggest_aliases=args.suggest_aliases,
+            suggest_threshold_vol=args.threshold_vol,
+        )
+        for f in files
+    ]
 
     ok = [r for r in results if r.get('status') == 'success']
     skip = [r for r in results if r.get('status') != 'success']

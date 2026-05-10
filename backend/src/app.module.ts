@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { LoggerModule } from 'nestjs-pino';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { loggerConfig } from './config/logger.config';
 import { RequestIdMiddleware } from './modules/mcp-validation/middleware/request-id.middleware';
 // import { ScheduleModule } from '@nestjs/schedule'; // ❌ DÉSACTIVÉ - Conflit de version avec @nestjs/common v10
@@ -31,6 +32,7 @@ import { ProductsModule } from './modules/products/products.module'; // ✅ NOUV
 import { VehiclesModule } from './modules/vehicles/vehicles.module'; // 🚗 MODULE VEHICLES - Pour sélecteur véhicule (inclut VehicleBrandsService)
 import { InvoicesModule } from './modules/invoices/invoices.module'; // 🧾 NOUVEAU - Module factures !
 import { SeoModule } from './modules/seo/seo.module'; // 🔍 NOUVEAU - Module SEO avec services intégrés !
+import { SeoMonitoringModule } from './modules/seo-monitoring/seo-monitoring.module'; // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion
 import { SearchModule } from './modules/search/search.module'; // 🔍 NOUVEAU - Module de recherche optimisé v3.0 !
 import { SystemModule } from './modules/system/system.module'; // ⚡ NOUVEAU - Module system monitoring !
 import { BlogModule } from './modules/blog/blog.module'; // 📚 NOUVEAU - Module blog avec tables __blog_* intégrées !
@@ -56,6 +58,7 @@ import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module
 import { AiContentModule } from './modules/ai-content/ai-content.module';
 // import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module'; // DEV ONLY - Experimental
 import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module';
+import { RagKnowledgeBootstrapModule } from './modules/rag-knowledge-bootstrap/rag-knowledge-bootstrap.module'; // 🛡️ ADR-046/050 — fail-fast L3 mirror state au boot
 import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Dockerfile: shared-types copié (2026-02-02)
 import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 NOUVEAU - Module marketing avec backlinks, content roadmap et KPIs !
 // MediaFactoryModule — SUPPRIMÉ 2026-04-10 (prototype P1, axios vuln critique, 0 usage prod)
@@ -68,6 +71,9 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
  */
 @Module({
   imports: [
+    // 🚨 Sentry — DI bridge so Sentry-aware filters/services can be injected.
+    // The actual SDK init happens in `instrument.ts` (loaded via main.ts).
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -92,6 +98,17 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
           name: 'long',
           ttl: 3600000, // 1 heure
           limit: 2000, // 2000 req/heure par IP
+        },
+        {
+          // ADR-043 Sprint 1 ticket #6 — payment callbacks (STRIDE 01-paiement
+          // critique #2). Apply via @Throttle({ payment_callback: {...} }) on
+          // /api/paybox/callback + /api/payments/callback/cyberplus. Gateway IPN
+          // sends ~1-2 callbacks per transaction → 30/min/IP is generous for
+          // legitimate flow, tight for crypto-compute DoS. On 429, gateways
+          // retry idempotently (HMAC signature dedups).
+          name: 'payment_callback',
+          ttl: 60000, // 1 minute
+          limit: 30,
         },
       ],
       // 🛡️ Skip internal calls (Remix SSR + Docker containers + Admin users)
@@ -174,6 +191,7 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
     VehiclesModule, // Module vehicle principal pour sélecteur véhicule (inclut gestion marques via VehicleBrandsService)
     InvoicesModule, // 🧾 NOUVEAU - Module factures avec cache et stats !
     SeoModule, // 🔍 NOUVEAU - Module SEO avec SeoService et SitemapService !
+    SeoMonitoringModule, // 📊 Phase 1 — Observability GSC/GA4/CWV daily ingestion (cf. ADR-025)
     SearchModule, // 🔍 NOUVEAU - Module de recherche optimisé v3.0 avec Meilisearch !
     BlogModule, // 📚 NOUVEAU - Module blog avec conseils, guides et glossaire intégrés !
     SystemModule, // ⚡ NOUVEAU - Module system monitoring et métriques !
@@ -205,6 +223,7 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
     ...(process.env.LLM_POLISH_ENABLED === 'true' ? [AiContentModule] : []),
     // KnowledgeGraphModule,   // DEV ONLY - AI-COS reasoning experimental
     ...(process.env.RAG_ENABLED === 'true' ? [RagProxyModule] : []),
+    RagKnowledgeBootstrapModule, // 🛡️ ADR-046/050 fail-fast L3 mirror state — toujours actif (gate independent of RAG_ENABLED)
     RmModule, // ✅ RÉACTIVÉ - Fix Dockerfile shared-types (2026-02-02)
   ],
   controllers: [

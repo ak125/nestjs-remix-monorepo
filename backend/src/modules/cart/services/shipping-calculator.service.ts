@@ -11,7 +11,7 @@
  * Seuil livraison gratuite : 150€ TTC
  */
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
+import { SupabaseBaseService } from '@database/services/supabase-base.service';
 
 interface ShippingTier {
   minWeightG: number;
@@ -51,18 +51,59 @@ export class ShippingCalculatorService
     super();
   }
 
-  async onModuleInit(): Promise<void> {
-    await this.loadAllZoneTiers();
+  /**
+   * Préchargement non-bloquant des paliers tarifaires.
+   *
+   * `loadAllZoneTiers()` fait 4 RPCs Supabase séquentielles (1 par zone).
+   * Awaiter ici bloquerait `app.listen()` (NestJS exécute tous les
+   * `onModuleInit` sérialement durant la phase init). Sur runner CI à
+   * froid → `/health` muet → exit 124 sur `perf-gates.yml`.
+   *
+   * Fire-and-forget : le serveur écoute immédiatement, le cache se peuple
+   * en parallèle. Les premiers calculs avant que le cache soit prêt
+   * passent par `fallbackTier` (déjà géré ligne 62 — même fallback que
+   * pour table vide / erreur RPC).
+   *
+   * Voir `.claude/rules/backend.md` § "Non-blocking onModuleInit".
+   */
+  onModuleInit(): void {
+    this.logger.log(
+      '🚀 Initialisation ShippingCalculatorService — chargement paliers en arrière-plan',
+    );
+    void this.loadAllZoneTiers();
   }
 
   /**
    * Charger les paliers de TOUTES les zones depuis la DB (cache mémoire)
+   *
+   * ADR-028 Option D — dual-fallback distinct (Principe 3) :
+   * - `[READ_ONLY]` early-exit : décision environnementale attendue (preprod
+   *   anon-only, tables `___xtr_delivery_*` revoked from anon par ADR-021)
+   * - `[RLS BLOCKED]` try/catch : erreur DB inattendue, signale un drift
+   *
+   * Préfixes log distincts → Loki LogQL queries séparées, alerting differential.
    */
   private async loadAllZoneTiers(): Promise<void> {
     const fallbackTier: ShippingTier[] = [
       { minWeightG: 0, maxWeightG: 999999, feeTTC: 15.9, feeHT: 13.25 },
     ];
 
+    // Fallback environnemental — décision READ_ONLY explicite, pas un drift
+    if (this.isReadOnlyMode) {
+      this.logger.warn(
+        {
+          metric: 'readonly.skipped',
+          operation: 'loadAllZoneTiers',
+        },
+        '[READ_ONLY] Shipping tiers forced to hardcoded fallback — DB tables RLS service_role-only (ADR-021 + ADR-028 Option D)',
+      );
+      for (const zone of Object.keys(ZONE_TABLES)) {
+        this.zoneTiers.set(zone as ShippingZone, fallbackTier);
+      }
+      return;
+    }
+
+    // Fallback technique — erreur DB inattendue, signale un drift
     for (const [zone, table] of Object.entries(ZONE_TABLES)) {
       try {
         const { data, error } = await this.supabase
@@ -72,7 +113,7 @@ export class ShippingCalculatorService
 
         if (error || !data || data.length === 0) {
           this.logger.warn(
-            `Zone ${zone}: impossible de charger (${error?.message || 'table vide'}). Fallback.`,
+            `[RLS BLOCKED] Zone ${zone}: impossible de charger (${error?.message || 'table vide'}). Fallback.`,
           );
           this.zoneTiers.set(zone as ShippingZone, fallbackTier);
           continue;

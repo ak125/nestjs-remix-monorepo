@@ -14,10 +14,10 @@ import {
   OperationFailedException,
   DomainValidationException,
   DomainNotFoundException,
-} from '../../../common/exceptions';
+} from '@common/exceptions';
 import { AdviceService, AdviceFilters } from '../services/advice.service';
 import { OptionalAuthGuard } from '../../../auth/guards/optional-auth.guard';
-import { IsAdminGuard } from '../../../auth/is-admin.guard';
+import { IsAdminGuard } from '@auth/is-admin.guard';
 
 /**
  * 💡 AdviceController - Contrôleur spécialisé pour les conseils automobiles

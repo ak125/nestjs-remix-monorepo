@@ -11,6 +11,13 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src/', '<rootDir>/tests/'],
   moduleNameMapper: {
+    '^@auth/(.*)$': '<rootDir>/src/auth/$1',
+    '^@cache/(.*)$': '<rootDir>/src/cache/$1',
+    '^@common/(.*)$': '<rootDir>/src/common/$1',
+    '^@config/(.*)$': '<rootDir>/src/config/$1',
+    '^@database/(.*)$': '<rootDir>/src/database/$1',
+    '^@security/(.*)$': '<rootDir>/src/security/$1',
+    '^@modules/(.*)$': '<rootDir>/src/modules/$1',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^src/(.*)$': '<rootDir>/src/$1',
     '^@repo/database-types$': '<rootDir>/tests/__mocks__/@repo/database-types.ts',
