@@ -25,8 +25,10 @@ import session from 'express-session';
 import Redis from 'ioredis';
 import passport from 'passport';
 import { urlencoded, json } from 'body-parser';
+import compression from 'compression';
 import cors from 'cors';
 import crypto from 'crypto';
+import helmet from 'helmet';
 
 const redisStoreFactory = RedisStore(session);
 
@@ -138,6 +140,22 @@ async function bootstrap() {
     );
     logger.log('Middleware de session initialisé');
 
+    // Compression middleware MUST be registered BEFORE useStaticAssets : Express
+    // applies middlewares in registration order, and the static-asset handler
+    // streams files directly without consulting downstream middleware. With
+    // compression registered after, every JS / CSS / font under /assets/* was
+    // served uncompressed (transferSize ≈ resourceSize on Lighthouse audits,
+    // see issue diagnosed in PRs #421 / #424 / #426 — none of those PRs moved
+    // script.size on the main Lighthouse run because compression was never
+    // applied to the static bundle).
+    app.use(
+      compression({
+        level: 6, // Bon équilibre vitesse/taille (défaut=6, max=9)
+        threshold: 1024, // Ne pas compresser les réponses < 1KB
+      }),
+    );
+    logger.log('Compression middleware enabled (level=6, threshold=1024)');
+
     expressApp.useStaticAssets(getPublicDir(), {
       immutable: true,
       maxAge: '1y',
@@ -183,32 +201,17 @@ async function bootstrap() {
       next();
     });
 
-    try {
-      // Import dynamique pour éviter d alourdir le build si non nécessaire
-      const helmet = (await import('helmet')).default;
-      const compression = (await import('compression')).default;
-
-      // Compression AVANT Helmet — pour que toutes les réponses soient compressées
-      // Note: Brotli géré côté Caddy en production (meilleur ratio, 15-20% vs gzip)
-      app.use(
-        compression({
-          level: 6, // Bon équilibre vitesse/taille (défaut=6, max=9)
-          threshold: 1024, // Ne pas compresser les réponses < 1KB
-        }),
-      );
-
-      // Helmet avec nonce dynamique par requête (voir config/csp.config.ts)
-      const isDev = process.env.NODE_ENV !== 'production';
-      app.use((req: any, res: any, next: any) => {
-        helmet({
-          contentSecurityPolicy: {
-            directives: buildCSPDirectives(isDev, res.locals.cspNonce),
-          },
-        })(req, res, next);
-      });
-    } catch (e) {
-      logger.warn({ err: e }, 'Helmet/compression non chargés');
-    }
+    // Helmet avec nonce dynamique par requête (voir config/csp.config.ts).
+    // Compression a été déplacée plus haut (avant useStaticAssets) — elle ne
+    // peut plus rester optionnelle vu son impact perf empirique mesuré.
+    const isDev = process.env.NODE_ENV !== 'production';
+    app.use((req: any, res: any, next: any) => {
+      helmet({
+        contentSecurityPolicy: {
+          directives: buildCSPDirectives(isDev, res.locals.cspNonce),
+        },
+      })(req, res, next);
+    });
 
     // CORS sécurisé - restreint en production
     const corsOrigin = process.env.CORS_ORIGIN?.split(',').map((s) => s.trim());

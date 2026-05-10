@@ -8,9 +8,10 @@
  *      par le cron sync-wiki-exports-to-rag).
  *   2. Vérifie que ce manifest n'est pas obsolète (> 24h).
  *
- * En production (NODE_ENV=production), fail-fast si manifest absent ou obsolète :
- * un L3 stale signale soit un cron mort, soit une migration incomplète, et le
- * service ne doit pas démarrer dans cet état (mémoire incident-images-2026-04-11).
+ * En production réelle (NODE_ENV=production hors APP_ENV=preprod/READ_ONLY=true),
+ * fail-fast si manifest absent ou obsolète : un L3 stale signale soit un cron
+ * mort, soit une migration incomplète, et le service ne doit pas démarrer dans
+ * cet état (mémoire incident-images-2026-04-11).
  *
  * En dev/preprod, soft-warn (le manifest peut ne pas exister tant que Phase 3B
  * PR-P n'a pas livré le sync canon).
@@ -58,11 +59,14 @@ export class RagKnowledgeBootstrapGuardService implements OnModuleInit {
     const ragDir =
       process.env.RAG_KNOWLEDGE_PATH ?? '/opt/automecanik/rag/knowledge';
     const manifestPath = path.join(ragDir, MANIFEST_FILENAME);
-    const isProd = process.env.NODE_ENV === 'production';
+    const isReadOnlyPreprod =
+      process.env.APP_ENV === 'preprod' || process.env.READ_ONLY === 'true';
+    const shouldFailFast =
+      process.env.NODE_ENV === 'production' && !isReadOnlyPreprod;
 
     if (!fs.existsSync(manifestPath)) {
       const msg = `[RagKnowledgeBootstrapGuard] manifest absent: ${manifestPath}. Le cron sync-wiki-exports-to-rag doit avoir produit ce fichier (Phase 3B PR-P du plan refondation R-stack).`;
-      if (isProd) {
+      if (shouldFailFast) {
         throw new Error(msg);
       }
       this.logger.warn(
@@ -76,7 +80,7 @@ export class RagKnowledgeBootstrapGuardService implements OnModuleInit {
 
     if (ageHours > STALE_THRESHOLD_HOURS) {
       const msg = `[RagKnowledgeBootstrapGuard] manifest stale (age=${ageHours.toFixed(1)}h > ${STALE_THRESHOLD_HOURS}h). Le cron sync est probablement en panne — investiguer avant restart.`;
-      if (isProd) {
+      if (shouldFailFast) {
         throw new Error(msg);
       }
       this.logger.warn(`${msg} (dev/preprod : soft-warn)`);
