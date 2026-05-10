@@ -1,0 +1,33 @@
+name: R-SEO-09 URL Immutability Gate
+
+# Phase 1 surface guard — détecte les modifications de la surface URL canonique
+# (Remix routes + canonical-url builders) et bloque la PR.
+# Référence canon : governance-vault rules-seo-pagerole.md / R-SEO-09.
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/app/routes/**'
+      - 'backend/src/seo/**'
+      - 'backend/src/sitemap/**'
+      - '.claude/canon-mirrors/url-immutability.md'
+      - 'scripts/seo/check-url-immutability.sh'
+      - '.github/workflows/seo-url-immutability.yml'
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  url-immutability:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history pour git diff vs base
+
+      - name: Set BASE_REF to PR base
+        run: echo "BASE_REF=origin/${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+
+      - name: Run R-SEO-09 surface guard
+        run: bash scripts/seo/check-url-immutability.sh pr
