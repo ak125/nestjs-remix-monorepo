@@ -6,6 +6,8 @@ node_modules
 /dist
 /node_modules
 /build
+packages/*/dist/
+packages/*/*.tsbuildinfo
 
 # Logs
 logs
