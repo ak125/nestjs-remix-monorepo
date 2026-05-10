@@ -63,6 +63,7 @@ import {
 // R1ContentPipelineService SUPPRIME — pipeline Groq remplace par skills /content-gen
 // ContentRefreshService SUPPRIME — pipeline auto remplace par skills /content-gen
 import { ConseilEnricherService } from './services/conseil-enricher.service'; // 🔄 R3 Conseils enricher
+import { CanonObservabilityService } from './services/canon-observability.service'; // 🛡️ Canon violation Sentry emitter
 import { PageBriefService } from './services/page-brief.service'; // 📋 Page Briefs CRUD + overlap
 import { BriefGatesService } from './services/brief-gates.service'; // 🚦 Pre-publish gates anti-cannibalisation
 import { HardGatesService } from './services/hard-gates.service'; // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)
@@ -216,6 +217,7 @@ import { InternalSeoAuditController } from './controllers/internal-seo-audit.con
     BuyingGuideDbService, // 📖 DB operations (anti-regression)
     BuyingGuideSeoDraftService, // 📖 SEO draft generation
     ConseilEnricherService, // 🔄 R3 Conseils S1-S8 enricher
+    CanonObservabilityService, // 🛡️ Canon violation Sentry emitter (R3 PR-E)
     PageBriefService, // 📋 Page Briefs CRUD + overlap detection
     BriefGatesService, // 🚦 Pre-publish gates anti-cannibalisation
     HardGatesService, // 🚦 Hard gates (attribution, no_guess, scope, contradiction, seo)

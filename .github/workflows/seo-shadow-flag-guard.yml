@@ -1,0 +1,41 @@
+name: SEO shadow flag guard
+
+# Defense-in-depth (cf. plan seo-v9 PR-6 §5.4 + §4.7) :
+#   - Boot guard Zod refuse `mode=on` au démarrage NestJS.
+#   - Cette CI rule refuse qu'`SEO_CHAIN_R<n>_MODE=on` apparaisse dans la
+#     config commit (env files, docker-compose, autres workflows, secrets).
+#   - ADR-054 (à ouvrir post-merge) formalise le sign-off pour le flip futur.
+#
+# Les trois couches sont indépendantes — il faut trois modifications coordonnées
+# (code + ADR + ENV) pour activer `on` en prod.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  no-mode-on-in-config:
+    name: Refuser SEO_CHAIN_R*_MODE=on dans la config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan config files
+        run: |
+          set -e
+          echo "🔎 Recherche d'un flip mode=on commité accidentellement…"
+          # `|| true` : grep retourne 1 si pas de match — c'est le cas vouluo.
+          MATCHES=$(grep -RInE "SEO_CHAIN_R[0-9]+_MODE=on" \
+              .env* docker-compose*.y*ml .github/workflows/ secrets/ 2>/dev/null \
+              | grep -v ":[[:space:]]*#" || true)
+          if [ -n "$MATCHES" ]; then
+            echo "::error::Flip mode=on détecté en config — interdit en PR-6 (cf. ADR-054 governance-vault)."
+            echo "$MATCHES"
+            exit 1
+          fi
+          echo "✅ Aucun flip mode=on en config."

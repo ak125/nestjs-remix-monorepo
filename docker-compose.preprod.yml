@@ -11,6 +11,10 @@ services:
       - DATABASE_URL
       - SUPABASE_SERVICE_ROLE_KEY
       - SUPABASE_URL
+      # SESSION_SECRET : required by main.ts:102 fail-fast (PR #339, NODE_ENV=production
+      # >= 32 chars non-placeholder). Injected via secrets.PREPROD_SESSION_SECRET → .env
+      # heredoc in ci.yml deploy job → loaded by env_file + shell `. .env`.
+      - SESSION_SECRET
       - USE_UNIFIED_RPC=true
       # 🛡️ RPC Safety Gate - ENFORCE P1 (2026-02-03)
       - RPC_GATE_MODE=enforce

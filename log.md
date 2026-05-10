@@ -381,3 +381,129 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/observability-sentry-prod`
 - **Décision** : feat(observability): extend Sentry+SOPS to PROD via deploy-prod.yml wrapper (PR-D)
 - **Sortie** : PR #334 | commits f433640a
+
+## 2026-05-07 — feat/seo-roles-canon-pr-a-classification (auto)
+
+- **Branche** : `feat/seo-roles-canon-pr-a-classification`
+- **Décision** : feat(seo-roles): intents + forbidden-overlap + text-normalize @0.5.0 (R3 PR-A)
+- **Sortie** : PR #342 | commits 9f58b1ca
+
+## 2026-05-07 — feat/r3-canon-observability-pr-e (auto)
+
+- **Branche** : `feat/r3-canon-observability-pr-e`
+- **Décision** : feat(seo-r3): conseil-enricher 2-gate canon refactor (r3 canon hardening pr-c)
+- **Sortie** : PR aucune | commits 35ae7726
+
+## 2026-05-07 — feat/r3-canon-observability-pr-e (auto)
+
+- **Branche** : `feat/r3-canon-observability-pr-e`
+- **Décision** : feat(seo-r3): canon violation sentry counter (r3 canon hardening pr-e) (+2 other commits)
+- **Sortie** : PR aucune | commits 10e247bd 09177259 35ae7726
+
+## 2026-05-07 — feat/adr-048-repo-map-drift-detector (auto)
+
+- **Branche** : `feat/adr-048-repo-map-drift-detector`
+- **Décision** : feat(spec-canon): repo-map.md drift detector + CI workflow (ADR-048 sprint 2 P1)
+- **Sortie** : PR #358 | commits 7b031164
+
+## 2026-05-07 — feat/pr-e-l3-rag-mirror-readonly (auto)
+
+- **Branche** : `feat/pr-e-l3-rag-mirror-readonly`
+- **Décision** : feat(rag): L3 mirror readonly enforcement + bootstrap guard (MVP-0 PR-E)
+- **Sortie** : PR #356 | commits 2ed2e9b7
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : feat(seo-v9-pr1): orchestrateur audit-v9-inventaire (5 volets + rapport) (+8 other commits)
+- **Sortie** : PR aucune | commits e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : feat(seo-v9-pr1): livrable canon legacy_to_monorepo_gap_matrix.md (baseline 10 lignes) (+12 other commits)
+- **Sortie** : PR #398 | commits 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : fix(seo-v9-pr1): sample-urls.json avec IDs Supabase réels (Nissan Almera + BMW Série 3) (+14 other commits)
+- **Sortie** : PR #398 | commits 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : fix(seo-v9-pr1): sample-urls.json — gammes vraiment dans le catalogue (pg_display=1) (+16 other commits)
+- **Sortie** : PR #398 | commits 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : fix(seo-v9-pr1): volet 4 — chiffres vérifiés via vue v_pieces_seo_safe (+18 other commits)
+- **Sortie** : PR #398 | commits beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : feat(seo-v9-pr1): matrice enrichie avec findings empiriques + décision PR-2 motivée (+20 other commits)
+- **Sortie** : PR #398 | commits 9b970255 99372469 beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : fix(seo-v9-pr1): 4 critiques review auto (regex faux positifs, silent failures, README, anti-rot) (+22 other commits)
+- **Sortie** : PR #398 | commits 86d77b1b a34af83e 9b970255 99372469 beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr1-gap-matrix (auto)
+
+- **Branche** : `feat/seo-v9-pr1-gap-matrix`
+- **Décision** : fix(seo-v9-pr1): samples complets avec 14 variables SeoVariablesSchema requises (+24 other commits)
+- **Sortie** : PR #398 | commits 65e3cdac af66d534 86d77b1b a34af83e 9b970255 99372469 beb9eda9 44a035c5 57021f0b fb988099 60bc790b ce003574 7f2ee66c 823f88c1 d9fa7ced 75c5e45b e71c56db 24a3f45b 336af298 0ca47b59 80ca710a db687ebb 209ab2a0 5e1b91d9 8241d404
+
+## 2026-05-08 — feat/seo-v9-pr2b-policies (auto)
+
+- **Branche** : `feat/seo-v9-pr2b-policies`
+- **Décision** : feat(seo): 4 services policies SEO (PR-2b/v9, stacked sur 2a) (+1 other commit)
+- **Sortie** : PR #400 | commits 85731ace 8d66d310
+
+## 2026-05-08 — feat/seo-v9-pr2c-renderer-switch (auto)
+
+- **Branche** : `feat/seo-v9-pr2c-renderer-switch`
+- **Décision** : feat(seo): chain services + orchestrator (PR-2c/v9, stacked sur 2b) (+3 other commits)
+- **Sortie** : PR #401 | commits d4278b8e c02a31d2 85731ace 8d66d310
+
+## 2026-05-08 — feat/seo-v9-pr2c-renderer-switch (auto)
+
+- **Branche** : `feat/seo-v9-pr2c-renderer-switch`
+- **Décision** : refactor(seo): v4 delegates to chain orchestrator (PR-2c rev 2) (+5 other commits)
+- **Sortie** : PR #401 | commits 79c32c9c 93c63ffe d4278b8e c02a31d2 85731ace 8d66d310
+
+## 2026-05-08 — feat/seo-v9-pr2d-marketing-parity (auto)
+
+- **Branche** : `feat/seo-v9-pr2d-marketing-parity`
+- **Décision** : feat(seo-v9): PR-2c chain services + orchestrator (stacked sur 2b) (#401) (+2 other commits)
+- **Sortie** : PR aucune | commits efc4c9fa 85731ace 8d66d310
+
+## 2026-05-08 — feat/seo-v9-pr2d-marketing-parity (auto)
+
+- **Branche** : `feat/seo-v9-pr2d-marketing-parity`
+- **Décision** : feat(seo): marketing seed parity legacy V4 + V4 E2E test (PR-2d) (+4 other commits)
+- **Sortie** : PR #402 | commits 06f62afe 7cd4063f efc4c9fa 85731ace 8d66d310
+
+## 2026-05-09 — pr6-clean (auto)
+
+- **Branche** : `pr6-clean`
+- **Décision** : fix(seo-v9): pr-6 update vehicle-rpc legacy test for shadowObservatory dep (+2 other commits)
+- **Sortie** : PR aucune | commits c4808beb a8df0f53 c230abd4
+
+## 2026-05-09 — feat/seo-v9-r7-router-wire (auto)
+
+- **Branche** : `feat/seo-v9-r7-router-wire`
+- **Décision** : docs(seo-batch): unblock R7 step in seo-gamme-audit skill (+2 other commits)
+- **Sortie** : PR #418 | commits cd329235 b94d51eb 46778759
+
+## 2026-05-10 — monorepo/pr5-url-immutability-gate (auto)
+
+- **Branche** : `monorepo/pr5-url-immutability-gate`
+- **Décision** : feat(seo): add R-SEO-09 URL immutability gate phase 1 surface guard (+1 other commit)
+- **Sortie** : PR #428 | commits 18cc6c59 22ff92fc

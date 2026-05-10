@@ -14,6 +14,10 @@ import { EmailProcessor } from './processors/email.processor';
 import { SeoMonitorProcessor } from './processors/seo-monitor.processor';
 // VideoExecutionProcessor — SUPPRIMÉ 2026-04-10 (MediaFactory supprimé)
 
+// SEO daily-fetch processor (orchestre GSC/GA4/CWV/Links daily) — V0.A
+import { SeoDailyFetchProcessor } from '../modules/seo-monitoring/processors/seo-daily-fetch.processor';
+import { SeoMonitoringModule } from '../modules/seo-monitoring/seo-monitoring.module';
+
 // Services Workers
 import { SeoMonitorSchedulerService } from './services/seo-monitor-scheduler.service';
 
@@ -98,6 +102,9 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     // Modules for AgenticProcessor dependencies
     RagProxyModule,
     FeatureFlagsModule, // Used by RunManagerService (agentic budget guard + flags)
+
+    // V0.A — SEO daily-fetch processor needs GSC/GA4/CWV/Links fetcher services
+    SeoMonitoringModule,
   ],
 
   providers: [
@@ -106,6 +113,7 @@ import { AdminJobHealthService } from '../modules/admin/services/admin-job-healt
     // CacheProcessor, // DESACTIVE
     EmailProcessor,
     SeoMonitorProcessor,
+    SeoDailyFetchProcessor, // V0.A — daily GSC/GA4/CWV/Links ingestion (cron 04:00 UTC)
     // VideoExecutionProcessor — SUPPRIMÉ 2026-04-10
 
     // Agentic engine processor + dependencies (Agent-Native — state management only)

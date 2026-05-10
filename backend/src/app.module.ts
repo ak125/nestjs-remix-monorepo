@@ -58,6 +58,7 @@ import { WorkerModule } from './workers/worker.module'; // 🔄 NOUVEAU - Module
 import { AiContentModule } from './modules/ai-content/ai-content.module';
 // import { KnowledgeGraphModule } from './modules/knowledge-graph/knowledge-graph.module'; // DEV ONLY - Experimental
 import { RagProxyModule } from './modules/rag-proxy/rag-proxy.module';
+import { RagKnowledgeBootstrapModule } from './modules/rag-knowledge-bootstrap/rag-knowledge-bootstrap.module'; // 🛡️ ADR-046/050 — fail-fast L3 mirror state au boot
 import { RmModule } from './modules/rm/rm.module'; // ✅ RÉACTIVÉ - Fix Dockerfile: shared-types copié (2026-02-02)
 import { MarketingModule } from './modules/marketing/marketing.module'; // 📊 NOUVEAU - Module marketing avec backlinks, content roadmap et KPIs !
 // MediaFactoryModule — SUPPRIMÉ 2026-04-10 (prototype P1, axios vuln critique, 0 usage prod)
@@ -97,6 +98,17 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
           name: 'long',
           ttl: 3600000, // 1 heure
           limit: 2000, // 2000 req/heure par IP
+        },
+        {
+          // ADR-043 Sprint 1 ticket #6 — payment callbacks (STRIDE 01-paiement
+          // critique #2). Apply via @Throttle({ payment_callback: {...} }) on
+          // /api/paybox/callback + /api/payments/callback/cyberplus. Gateway IPN
+          // sends ~1-2 callbacks per transaction → 30/min/IP is generous for
+          // legitimate flow, tight for crypto-compute DoS. On 429, gateways
+          // retry idempotently (HMAC signature dedups).
+          name: 'payment_callback',
+          ttl: 60000, // 1 minute
+          limit: 30,
         },
       ],
       // 🛡️ Skip internal calls (Remix SSR + Docker containers + Admin users)
@@ -211,6 +223,7 @@ import { DiagnosticEngineModule } from './modules/diagnostic-engine/diagnostic-e
     ...(process.env.LLM_POLISH_ENABLED === 'true' ? [AiContentModule] : []),
     // KnowledgeGraphModule,   // DEV ONLY - AI-COS reasoning experimental
     ...(process.env.RAG_ENABLED === 'true' ? [RagProxyModule] : []),
+    RagKnowledgeBootstrapModule, // 🛡️ ADR-046/050 fail-fast L3 mirror state — toujours actif (gate independent of RAG_ENABLED)
     RmModule, // ✅ RÉACTIVÉ - Fix Dockerfile shared-types (2026-02-02)
   ],
   controllers: [

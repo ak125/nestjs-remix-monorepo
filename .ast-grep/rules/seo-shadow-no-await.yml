@@ -1,0 +1,33 @@
+id: seo-shadow-no-await
+language: typescript
+severity: error
+message: |
+  Ne JAMAIS `await` un appel à `<...>.observe(...)` du `SeoShadowObservatory`.
+
+  L'API `observe()` est SYNCHRONE par contrat — elle valide l'input via Zod,
+  consulte le sampler/breaker, puis dispatche le travail réel via
+  `setImmediate(() => runComparison(...))`. La non-bloquance du chemin
+  réponse HTTP en dépend. Un `await` accidentel (a) annule le bénéfice du
+  setImmediate et (b) propage une erreur potentielle au caller — ce qui peut
+  faire crasher la requête HTTP servie en legacy intact.
+
+  Pattern correct :
+      this.shadowObservatory.observe({ surface: 'R7_BRAND_HUB', ... });
+      return brandPayload;
+
+  Pattern interdit :
+      await this.shadowObservatory.observe({ ... });   // ❌
+      void this.shadowObservatory.observe({ ... });    // ❌ (inutile, déjà sync)
+
+  Voir plan seo-v9 PR-6 §4.1 + §5.4b + ADR-054 (à ouvrir post-merge).
+files:
+  - backend/src/**/*.ts
+ignores:
+  - backend/src/**/*.spec.ts
+  - backend/src/**/*.e2e-spec.ts
+  - backend/src/**/test-*.ts
+rule:
+  any:
+    - pattern: await $X.shadowObservatory.observe($$$)
+    - pattern: await this.shadowObservatory.observe($$$)
+    - pattern: await $X.shadowObservatory.observe($$$).$M($$$)

@@ -68,7 +68,7 @@ export default registerAs('payment', (): PaymentConfig => {
         siteId: process.env.SYSTEMPAY_SITE_ID || '',
         certificate: process.env.SYSTEMPAY_CERTIFICATE_TEST || '',
         hmacKey: process.env.SYSTEMPAY_HMAC_KEY || '',
-        signatureMethod: 'SHA1',
+        signatureMethod: 'HMAC',
         certificateTest: process.env.SYSTEMPAY_CERTIFICATE_TEST || '',
         mode: PaymentMode.TEST,
         apiUrl:
@@ -104,9 +104,16 @@ export default registerAs('payment', (): PaymentConfig => {
       ? process.env.SYSTEMPAY_CERTIFICATE_PROD!
       : process.env.SYSTEMPAY_CERTIFICATE_TEST!;
 
-  const signatureMethod = (process.env.SYSTEMPAY_SIGNATURE_METHOD || 'SHA1') as
+  const signatureMethod = (process.env.SYSTEMPAY_SIGNATURE_METHOD || 'HMAC') as
     | 'SHA1'
     | 'HMAC';
+
+  if (signatureMethod === 'SHA1') {
+    logger.warn(
+      'SYSTEMPAY_SIGNATURE_METHOD=SHA1 — legacy CGI signing, deprecated by ' +
+        'DSP2. Migrate to HMAC (HMAC-SHA-256) per ADR-043 Sprint 1 ticket #9.',
+    );
+  }
 
   const hmacKey = process.env.SYSTEMPAY_HMAC_KEY || '';
 
