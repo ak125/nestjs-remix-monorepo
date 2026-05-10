@@ -3,6 +3,10 @@ name: "\U0001F512 DEV Safety Gates"
 on:
   pull_request:
 
+# Minimum scope: PR checkout + validator scripts (ADR-043 Sprint 1 ticket #7).
+permissions:
+  contents: read
+
 jobs:
   dev-safety-blocking:
     name: "\U0001F512 DEV Safety (Blocking)"

@@ -29,6 +29,7 @@ import { ConfigService } from '@nestjs/config';
 import { SupabaseClient, createClient } from '@supabase/supabase-js';
 import { AuthenticatedGuard } from '@auth/authenticated.guard';
 import { IsAdminGuard } from '@auth/is-admin.guard';
+import { getEffectiveSupabaseKey } from '@common/utils';
 import {
   QualityHistorySnapshotService,
   SnapshotKind,
@@ -45,7 +46,8 @@ export class QualityHistoryController {
     configService: ConfigService,
   ) {
     const url = configService.get<string>('SUPABASE_URL') || '';
-    const key = configService.get<string>('SUPABASE_SERVICE_ROLE_KEY') || '';
+    // ADR-028 Option D — fallback to ANON_KEY in read-only mode (RLS protects writes)
+    const key = getEffectiveSupabaseKey();
     if (!url || !key) {
       this.logger.warn(
         'QualityHistoryController: Supabase env missing — service will fail on first call',

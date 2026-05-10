@@ -280,14 +280,16 @@ ${formFields}
     this.logger.log(`   HMAC-SHA256: ${signatureHmac}`);
     this.logger.log(`   SHA1 (legacy): ${signatureSha1}`);
 
-    // Choisir la méthode configurée (SHA1 legacy ou HMAC)
-    const method = this.paymentConfig.systempay.signatureMethod || 'SHA1';
+    // Choisir la méthode configurée (HMAC default DSP2, SHA1 legacy opt-in)
+    const method = this.paymentConfig.systempay.signatureMethod || 'HMAC';
     if (method === 'HMAC') {
       this.logger.log('Using HMAC-SHA256 signature method');
       return signatureHmac;
     }
 
-    this.logger.log('Using legacy SHA1 signature method');
+    this.logger.warn(
+      'Using legacy SHA1 signature method — deprecated by DSP2, migrate to HMAC',
+    );
     return signatureSha1;
   }
 
