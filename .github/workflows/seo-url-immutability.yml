@@ -8,9 +8,7 @@ on:
   pull_request:
     paths:
       - 'frontend/app/routes/**'
-      - 'backend/src/seo/**'
-      - 'backend/src/sitemap/**'
-      - '.claude/canon-mirrors/url-immutability.md'
+      - 'backend/src/modules/seo/**'
       - 'scripts/seo/check-url-immutability.sh'
       - '.github/workflows/seo-url-immutability.yml'
 

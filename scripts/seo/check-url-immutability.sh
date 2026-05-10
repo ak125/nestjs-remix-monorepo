@@ -11,13 +11,13 @@
 # ## Scope MVP — Phase 1 (intentionnellement étroit)
 # Hard-block sur changements détectés dans la **surface URL canonique** :
 #   - frontend/app/routes/**/*.tsx (Remix : filename = URL pattern)
-#   - backend/src/seo/**/canonical-url*.ts (URL builders)
-#   - .claude/canon-mirrors/url-immutability.md (mirror vault R-SEO-09)
+#   - backend/src/modules/seo/**/seo-canonical*.ts (canonical service)
+#   - backend/src/modules/seo/**/canonical*.ts (URL builders, aliases canon)
 #
 # Warn-only sur la **surface URL adjacente** :
-#   - backend/src/sitemap/**/*.ts (sitemap generators — peuvent ajouter, pas
+#   - backend/src/modules/seo/**/sitemap*.ts (peuvent ajouter, pas
 #     supprimer ; warning visible reviewer)
-#   - backend/src/seo/**/redirect*.ts (redirects — pareil)
+#   - backend/src/modules/seo/**/redirect*.ts (redirects — pareil)
 #
 # Phase 2 (follow-up post-observation) : étendre via signal empirique
 # (regression GSC, position drop, manual flag).
@@ -43,22 +43,32 @@ if [[ "$MODE" != "pr" && "$MODE" != "audit" ]]; then
 fi
 
 # Surfaces protégées (regex extended, anchored to start of relative path).
+# Confirmé empiriquement contre arbre réel monorepo (review PR-5) :
+#   - backend/src/modules/seo/services/policies/seo-canonical.service.ts
+#   - backend/src/modules/seo/services/* (canonical aliases / route builders)
 HARD_BLOCK_PATTERNS=(
   '^frontend/app/routes/.+\.tsx$'
-  '^backend/src/seo/.*canonical-url.*\.ts$'
-  '^\.claude/canon-mirrors/url-immutability\.md$'
+  '^backend/src/modules/seo/.*seo-canonical.*\.ts$'
+  '^backend/src/modules/seo/.*canonical.*\.ts$'
 )
 
 WARN_PATTERNS=(
-  '^backend/src/sitemap/.+\.ts$'
-  '^backend/src/seo/.*redirect.*\.ts$'
+  '^backend/src/modules/seo/.*sitemap.*\.ts$'
+  '^backend/src/modules/seo/.*redirect.*\.ts$'
 )
 
-git fetch origin main --quiet 2>/dev/null || true
+# Fail-fast si BASE_REF inconnu — silent-pass = sécurité fictive.
+BASE_REF_LOCAL="${BASE_REF#origin/}"
+git fetch origin "$BASE_REF_LOCAL" --quiet 2>/dev/null || true
+if ! git rev-parse --verify "$BASE_REF" >/dev/null 2>&1; then
+  echo "::error:: BASE_REF '$BASE_REF' not resolvable. Fetch failed or ref missing." >&2
+  exit 2
+fi
 
 # Detect changed files vs base (added/modified/renamed/deleted).
+# For renames (R100), git diff emits "R100\told\tnew" → preserve $3 as new path.
 mapfile -t CHANGED < <(git diff --name-status "$BASE_REF...HEAD" 2>/dev/null \
-  | awk '{print $1"\t"$2}' || true)
+  | awk '{ if ($1 ~ /^R/) print $1"\t"$3; else print $1"\t"$2 }' || true)
 
 if [[ ${#CHANGED[@]} -eq 0 ]]; then
   echo "OK: no changes vs $BASE_REF"
@@ -71,10 +81,6 @@ WARNS=()
 for entry in "${CHANGED[@]}"; do
   status="${entry%%	*}"
   file="${entry#*	}"
-  # Renames look like "R100\told\tnew" — extract the new path
-  if [[ "$status" =~ ^R ]]; then
-    file="${file##*	}"
-  fi
   for pat in "${HARD_BLOCK_PATTERNS[@]}"; do
     if [[ "$file" =~ $pat ]]; then
       HARD_BLOCKS+=("[$status] $file")
