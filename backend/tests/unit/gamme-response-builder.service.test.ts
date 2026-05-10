@@ -164,6 +164,8 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
     } as any;
 
     const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
+    const chainOrchestrator = { run: jest.fn() } as any;
+    const chainFlags = { mode: jest.fn(() => 'off') } as any;
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
@@ -171,6 +173,8 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       referenceService,
       seoTitleEngine,
       relatedResources,
+      chainOrchestrator,
+      chainFlags,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -217,6 +221,8 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
     } as any;
 
     const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
+    const chainOrchestrator = { run: jest.fn() } as any;
+    const chainFlags = { mode: jest.fn(() => 'off') } as any;
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
@@ -224,6 +230,8 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       referenceService,
       seoTitleEngine,
       relatedResources,
+      chainOrchestrator,
+      chainFlags,
     );
 
     const result = await service.buildRpcV2Response('479');
@@ -270,6 +278,8 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
     } as any;
 
     const relatedResources = { getRelatedResources: jest.fn(() => Promise.resolve({ links: [], blocks: [] })) } as any;
+    const chainOrchestrator = { run: jest.fn() } as any;
+    const chainFlags = { mode: jest.fn(() => 'off') } as any;
     const service = new GammeResponseBuilderService(
       transformer,
       rpcService,
@@ -277,6 +287,8 @@ describe('GammeResponseBuilderService buying guide fallback', () => {
       referenceService,
       seoTitleEngine,
       relatedResources,
+      chainOrchestrator,
+      chainFlags,
     );
 
     const result = await service.buildRpcV2Response('479');

@@ -19,7 +19,9 @@ import { CwvFetcherService } from './services/cwv-fetcher.service';
 import { GscLinksFetcherService } from './services/gsc-links-fetcher.service';
 import { AuditFindingsService } from './services/audit-findings.service';
 import { RContentAuditorService } from './services/r-content-auditor.service';
+import { QualityHistorySnapshotService } from './services/quality-history-snapshot.service';
 import { SeoMonitoringController } from './controllers/seo-monitoring.controller';
+import { QualityHistoryController } from './controllers/quality-history.controller';
 
 @Module({
   imports: [ConfigModule],
@@ -32,8 +34,9 @@ import { SeoMonitoringController } from './controllers/seo-monitoring.controller
     GscLinksFetcherService,
     AuditFindingsService,
     RContentAuditorService,
+    QualityHistorySnapshotService, // ADR-050 Phase 0 baseline
   ],
-  controllers: [SeoMonitoringController],
+  controllers: [SeoMonitoringController, QualityHistoryController],
   exports: [
     GoogleCredentialsService,
     GscDailyFetcherService,
@@ -42,6 +45,7 @@ import { SeoMonitoringController } from './controllers/seo-monitoring.controller
     GscLinksFetcherService,
     AuditFindingsService,
     RContentAuditorService,
+    QualityHistorySnapshotService, // exposé pour PR-T (re-enrich pre/post snapshot)
   ],
 })
 export class SeoMonitoringModule {}

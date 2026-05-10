@@ -33,6 +33,10 @@ describe('VehicleRpcService', () => {
     get: jest.fn((_key: string, defaultValue?: any) => defaultValue),
   };
 
+  const mockShadowObservatory = {
+    observe: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -42,6 +46,12 @@ describe('VehicleRpcService', () => {
         { provide: CacheService, useValue: mockCacheService },
         { provide: RpcGateService, useValue: mockRpcGate },
         { provide: ConfigService, useValue: mockConfigService },
+        {
+          provide: (await import(
+            '../../src/modules/seo-shadow-observatory/seo-shadow-observatory.service'
+          )).SeoShadowObservatory,
+          useValue: mockShadowObservatory,
+        },
       ],
     }).compile();
 
