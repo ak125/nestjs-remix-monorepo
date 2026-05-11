@@ -115,7 +115,8 @@ export class RagMirrorFreshnessService {
       };
     }
 
-    const syncedAtStr = typeof parsed.synced_at === 'string' ? parsed.synced_at : null;
+    const syncedAtStr =
+      typeof parsed.synced_at === 'string' ? parsed.synced_at : null;
     if (!syncedAtStr) {
       return {
         ...baseResult,
@@ -145,7 +146,10 @@ export class RagMirrorFreshnessService {
       syncedAt: syncedAtStr,
       ageHours,
       staleThresholdHours: this.staleThresholdHours,
-      schemaVersion: typeof parsed.schema_version === 'string' ? parsed.schema_version : null,
+      schemaVersion:
+        typeof parsed.schema_version === 'string'
+          ? parsed.schema_version
+          : null,
       topicCounts:
         parsed.topic_counts && typeof parsed.topic_counts === 'object'
           ? (parsed.topic_counts as Record<string, number>)
