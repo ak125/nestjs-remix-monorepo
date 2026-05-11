@@ -2276,6 +2276,7 @@
       ".gitignore",
       "audit-reports/seo-agent-matrix.json",
       "package-lock.json",
+      "scripts/audit/build-db-usage-map.js",
       "scripts/audit/build-deep-inventory.js",
       "scripts/check-no-client-localhost.sh",
       "scripts/cleanup/audit-compare-baseline.js",
@@ -2285,7 +2286,7 @@
       "scripts/validate-specs.sh"
     ]
   },
-  "runtime_files_count": 1116,
+  "runtime_files_count": 1117,
   "runtime_files": [
     ".dependency-cruiser.cjs",
     ".github/workflows/agent-exit-contract-hash.yml",
@@ -3395,6 +3396,7 @@
     "frontend/app/routes/unauthorized.tsx",
     "frontend/app/routes/vehicles.tsx",
     "package-lock.json",
+    "scripts/audit/build-db-usage-map.js",
     "scripts/audit/build-deep-inventory.js",
     "scripts/check-no-client-localhost.sh",
     "scripts/cleanup/audit-compare-baseline.js",
