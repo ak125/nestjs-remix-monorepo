@@ -95,6 +95,17 @@ const initObservability = async (): Promise<void> => {
     tracesSampleRate: 0.1,
     replaysSessionSampleRate: 0,
     replaysOnErrorSampleRate: 0,
+    // Ne remonter que les erreurs issues du JS qu'on a buildé (`/assets/*.js`).
+    // Drop le bruit des scripts inline injectés hors de notre code : beacon
+    // bot Cloudflare (`/cdn-cgi/challenge-platform/...` → `Cannot read
+    // properties of null (reading 'document')` quand une extension détache son
+    // iframe caché), extensions navigateur, tags tiers. `allowUrls` matche le
+    // filename de la dernière frame significative ; nos chunks sont tous sous
+    // `/assets/`, les erreurs des `<script>` inline ont pour filename l'URL de
+    // la page (.html) → filtrées. Géré par `eventFiltersIntegration` (default
+    // integration — l'array `integrations` ci-dessous fusionne avec les
+    // défauts, ne les remplace pas).
+    allowUrls: [/\/assets\//],
     integrations: [
       Sentry.browserTracingIntegration({
         useEffect,
@@ -131,11 +142,7 @@ const initObservability = async (): Promise<void> => {
 // page programmatically while measuring CLS, which would have falsely fired
 // the trigger during audits. Real users still get init on the first
 // click / key / touch — typically within the first second of engagement.
-const interactionEvents = [
-  "pointerdown",
-  "keydown",
-  "touchstart",
-] as const;
+const interactionEvents = ["pointerdown", "keydown", "touchstart"] as const;
 
 let initStarted = false;
 const triggerInit = (): void => {
