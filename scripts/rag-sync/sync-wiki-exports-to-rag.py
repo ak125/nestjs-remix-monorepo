@@ -27,9 +27,11 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import os
 import shutil
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 
@@ -155,6 +157,35 @@ def main() -> int:
     if not args.apply:
         summary += " (dry-run; pass --apply to commit)"
     print(summary, file=sys.stderr)
+
+    # PR-E.2 — produit le manifest `.last-sync.json` lu par le runtime
+    # NestJS (RagMirrorFreshnessService) pour fail-fast / health endpoint.
+    # Compte les fichiers présents par topic dans le mirror après sync.
+    if args.apply:
+        manifest_path = target_root / ".last-sync.json"
+        topic_counts: dict[str, int] = {}
+        for topic_dir in sorted(p for p in target_root.iterdir() if p.is_dir()):
+            topic_counts[topic_dir.name] = sum(
+                1 for f in topic_dir.rglob("*") if f.is_file() and f.suffix in SUPPORTED_EXTS
+            )
+        manifest = {
+            "schema_version": "1.0.0",
+            "synced_at": datetime.now(timezone.utc).isoformat(),
+            "source": str(source),
+            "stats": {
+                "exports_total": len(files),
+                "written": written,
+                "skipped": skipped,
+                "failed": failed,
+            },
+            "topic_counts": topic_counts,
+        }
+        try:
+            manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+            print(f"manifest written: {manifest_path}", file=sys.stderr)
+        except OSError as e:
+            print(f"manifest write FAILED: {e}", file=sys.stderr)
+            # Le sync lui-même a réussi, ne pas faire échouer le run pour le manifest
 
     return 1 if failed else 0
 

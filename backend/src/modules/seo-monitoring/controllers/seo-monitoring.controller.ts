@@ -25,6 +25,7 @@ import {
 } from '../services/audit-findings.service';
 import { RContentAuditorService } from '../services/r-content-auditor.service';
 import { SeoMonitoringRunsService } from '../services/seo-monitoring-runs.service';
+import { RagMirrorFreshnessService } from '../services/rag-mirror-freshness.service';
 
 @Controller('api/admin/seo-monitoring')
 export class SeoMonitoringController {
@@ -38,6 +39,7 @@ export class SeoMonitoringController {
     private readonly auditFindings: AuditFindingsService,
     private readonly rContentAuditor: RContentAuditorService,
     private readonly runsService: SeoMonitoringRunsService,
+    private readonly ragMirrorFreshness: RagMirrorFreshnessService,
     configService: ConfigService,
   ) {
     const url = configService.get<string>('SUPABASE_URL') || '';
@@ -66,8 +68,10 @@ export class SeoMonitoringController {
   /**
    * V0.A — GET /cron/health
    *
-   * Last successful + last failed run par source d'ingestion.
-   * Source : `__seo_event_log` (event_type ENUM + payload JSONB).
+   * Last successful + last failed run par source d'ingestion + état du
+   * mirror RAG (PR-E.2 — ADR-046 § Layer L3 RAG MIRROR read-only).
+   * Source : `__seo_event_log` (event_type ENUM + payload JSONB) + manifest
+   * `rag/knowledge/.last-sync.json` (cron sync-wiki-exports-to-rag.py).
    * Utilisé pour monitoring externe (Slack alerting / dashboard / readiness probe).
    */
   @Get('cron/health')
@@ -90,9 +94,12 @@ export class SeoMonitoringController {
       };
     });
 
-    const overall = sources.every((s) => s.status === 'healthy')
-      ? 'healthy'
-      : 'stale';
+    // PR-E.2 — fraîcheur du mirror L3 RAG (ADR-046)
+    const ragMirror = await this.ragMirrorFreshness.checkFreshness();
+
+    const sourcesHealthy = sources.every((s) => s.status === 'healthy');
+    const ragMirrorHealthy = ragMirror.status === 'healthy';
+    const overall = sourcesHealthy && ragMirrorHealthy ? 'healthy' : 'stale';
 
     return {
       overall,
@@ -100,6 +107,7 @@ export class SeoMonitoringController {
       checked_at: new Date().toISOString(),
       stale_threshold_hours: staleThresholdHours,
       sources,
+      rag_mirror: ragMirror,
     };
   }
 
