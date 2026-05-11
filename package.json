@@ -39,7 +39,9 @@
     "audit:baseline:strict": "node scripts/cleanup/audit-compare-baseline.js --strict",
     "audit:all": "npm run audit:ast && npm run audit:madge && npm run audit:depcruise && npm run audit:knip",
     "audit:seo-matrix": "tsx scripts/seo/dump-agent-matrix.ts",
-    "audit:seo-matrix:check": "npm run audit:seo-matrix && git diff --exit-code -- audit-reports/seo-agent-matrix.json"
+    "audit:seo-matrix:check": "npm run audit:seo-matrix && git diff --exit-code -- audit-reports/seo-agent-matrix.json",
+    "audit:inventory": "node scripts/audit/build-deep-inventory.js",
+    "audit:inventory:check": "npm run audit:inventory && git diff --exit-code -- audit/*.json"
   },
   "keywords": [],
   "author": "",

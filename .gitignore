@@ -222,6 +222,10 @@ aicos-dashboard/
 # Test cookies (session tokens — never commit)
 tests-curl/.cookies
 
+# Deep-audit cache (PR-0a) — big & churny, regenerated via `npm run audit:inventory`.
+# The curated artefacts (audit/*.json, audit/*.md) ARE versioned.
+audit/cache/
+
 # ============================================
 # Large files protection (2026-03-16)
 # GitHub rejects >100MB, warns >50MB
