@@ -1,0 +1,151 @@
+{
+  "_generated_by": "scripts/audit/build-deep-inventory.js",
+  "count": 15,
+  "cycles": [
+    {
+      "members": [
+        "backend/src/auth/auth.module.ts",
+        "backend/src/modules/users/users.module.ts"
+      ],
+      "domain": [
+        "auth",
+        "users"
+      ],
+      "suggested_fix": "extract-shared-types",
+      "priority": 2
+    },
+    {
+      "members": [
+        "backend/src/modules/admin/services/admin-gammes-seo.service.ts",
+        "backend/src/modules/admin/services/gamme-detail-enricher.service.ts"
+      ],
+      "domain": "admin",
+      "suggested_fix": "invert-dep",
+      "priority": 2
+    },
+    {
+      "members": [
+        "backend/src/modules/admin/services/stock-management.service.ts",
+        "backend/src/modules/admin/services/stock-movement.service.ts"
+      ],
+      "domain": "admin",
+      "suggested_fix": "invert-dep",
+      "priority": 2
+    },
+    {
+      "members": [
+        "backend/src/modules/admin/services/stock-management.service.ts",
+        "backend/src/modules/admin/services/stock-report.service.ts"
+      ],
+      "domain": "admin",
+      "suggested_fix": "invert-dep",
+      "priority": 2
+    },
+    {
+      "members": [
+        "backend/src/modules/blog/services/advice.service.ts",
+        "backend/src/modules/blog/services/advice-enrichment.service.ts"
+      ],
+      "domain": "blog",
+      "suggested_fix": "invert-dep",
+      "priority": 2
+    },
+    {
+      "members": [
+        "backend/src/modules/blog/services/constructeur.service.ts",
+        "backend/src/modules/blog/services/constructeur-search.service.ts"
+      ],
+      "domain": "blog",
+      "suggested_fix": "invert-dep",
+      "priority": 2
+    },
+    {
+      "members": [
+        "backend/src/modules/products/services/cross-selling.service.ts",
+        "backend/src/modules/products/services/cross-selling-seo.service.ts"
+      ],
+      "domain": "products",
+      "suggested_fix": "invert-dep",
+      "priority": 2
+    },
+    {
+      "members": [
+        "backend/src/modules/products/services/cross-selling.service.ts",
+        "backend/src/modules/products/services/cross-selling-source.service.ts"
+      ],
+      "domain": "products",
+      "suggested_fix": "invert-dep",
+      "priority": 2
+    },
+    {
+      "members": [
+        "backend/src/modules/rag-proxy/rag-proxy.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-ingestion.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-redis-job.service.ts"
+      ],
+      "domain": "rag-proxy",
+      "suggested_fix": "invert-dep",
+      "priority": 3
+    },
+    {
+      "members": [
+        "backend/src/modules/rag-proxy/rag-proxy.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-webhook-completion.service.ts"
+      ],
+      "domain": "rag-proxy",
+      "suggested_fix": "invert-dep",
+      "priority": 2
+    },
+    {
+      "members": [
+        "backend/src/modules/rag-proxy/services/rag-cleanup.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-gamme-detection.service.ts",
+        "backend/src/modules/rag-proxy/services/rag-knowledge.service.ts"
+      ],
+      "domain": "rag-proxy",
+      "suggested_fix": "invert-dep",
+      "priority": 3
+    },
+    {
+      "members": [
+        "backend/src/modules/support/services/legal.service.ts",
+        "backend/src/modules/support/services/legal-page.service.ts"
+      ],
+      "domain": "support",
+      "suggested_fix": "invert-dep",
+      "priority": 2
+    },
+    {
+      "members": [
+        "backend/src/modules/support/services/legal.service.ts",
+        "backend/src/modules/support/services/legal-version.service.ts"
+      ],
+      "domain": "support",
+      "suggested_fix": "invert-dep",
+      "priority": 2
+    },
+    {
+      "members": [
+        "backend/src/workers/types/content-refresh.types.ts",
+        "backend/src/modules/admin/services/brief-gates.service.ts",
+        "backend/src/config/content-section-policy.ts"
+      ],
+      "domain": [
+        "admin",
+        "config",
+        "workers"
+      ],
+      "suggested_fix": "extract-shared-types",
+      "priority": 3
+    },
+    {
+      "members": [
+        "frontend/app/root.tsx",
+        "frontend/app/hooks/useRootData.ts"
+      ],
+      "domain": "frontend-shared",
+      "suggested_fix": "invert-dep",
+      "priority": 2
+    }
+  ]
+}
