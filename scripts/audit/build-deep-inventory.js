@@ -187,16 +187,28 @@ function lastModifiedMap() {
 
 function runJson(cmd, args, label) {
   log(`[build-deep-inventory] running ${label}…`);
-  let stdout;
+  // stderr is *evidence*, not noise: capture it, tee it to audit/cache/tool-<label>.stderr.log
+  // (gitignored, but published as a CI artefact), echo it to our own stderr, and fold it
+  // into the failure message. An audit pipeline that silently eats a tool's stderr can't be
+  // trusted to explain its own false positives / negatives.
+  const slug = label.replace(/[^A-Za-z0-9]+/g, '-').toLowerCase();
+  let stdout = '';
+  let stderr = '';
+  let failure = null;
   try {
-    stdout = execFileSync(cmd, args, { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] });
+    stdout = execFileSync(cmd, args, { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] });
   } catch (e) {
-    // many of these tools exit non-zero when they find issues — keep stdout
+    // many of these tools exit non-zero when they find issues — keep stdout/stderr
     stdout = (e.stdout || '').toString();
-    if (!stdout) die(`${label} produced no output (and failed): ${e.message}`);
+    stderr = (e.stderr || '').toString();
+    failure = e;
   }
+  try { fs.mkdirSync(CACHE_DIR, { recursive: true }); fs.writeFileSync(path.join(CACHE_DIR, `tool-${slug}.stderr.log`), stderr); } catch { /* best effort */ }
+  if (stderr.trim()) log(`[build-deep-inventory] ${label} stderr:\n${stderr.trimEnd()}`);
+  const tail = stderr.trim() ? `\n--- ${label} stderr ---\n${stderr.trimEnd()}` : '';
+  if (!stdout) die(`${label} produced no output${failure ? ` (exit ${failure.status ?? '?'}): ${failure.message}` : ''}${tail}`);
   try { return JSON.parse(stdout); }
-  catch (e) { die(`${label} did not return valid JSON: ${e.message}`); }
+  catch (e) { die(`${label} did not return valid JSON: ${e.message}${tail}`); }
 }
 
 // ---------------------------------------------------------------------------
