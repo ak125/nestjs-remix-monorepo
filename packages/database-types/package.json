@@ -29,7 +29,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist *.tsbuildinfo",
     "typecheck": "tsc --noEmit",
     "generate:types": "echo 'Run: supabase gen types typescript --project-id YOUR_PROJECT_ID > src/types.ts'",
     "generate:zod": "tsx scripts/generate-zod-schemas.ts"
