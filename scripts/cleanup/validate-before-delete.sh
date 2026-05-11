@@ -104,15 +104,18 @@ for g in "${NEVER_AUTO_DELETE_GLOBS[@]}"; do
 done
 
 # ---- 0b / 2 / 3. audit/ artefacts cross-check (when present) ----
+# NB: the JSON path and $REL are passed to `node -e` via process.argv, never spliced
+# into the JS source — a path/basename containing a quote, backtick or ${...} must not
+# be able to alter the probe (this script gets run on arbitrary repo paths).
 RUNTIME_JSON="$REPO_ROOT/audit/runtime-entrypoints.json"
 DYN_JSON="$REPO_ROOT/audit/dynamic-import-edges.json"
 if [[ -f "$RUNTIME_JSON" ]] && command -v node >/dev/null 2>&1; then
-  if node -e "const j=require('$RUNTIME_JSON'); process.exit((j.runtime_files||[]).includes('$REL')?0:1)" 2>/dev/null; then
+  if node -e 'const j=require(process.argv[1]); process.exit((j.runtime_files||[]).includes(process.argv[2])?0:1)' "$RUNTIME_JSON" "$REL"; then
     report_hit "[RUNTIME-ENTRYPOINT] '$REL' is listed in audit/runtime-entrypoints.json — DO NOT delete."
   fi
 fi
 if [[ -f "$DYN_JSON" ]] && command -v node >/dev/null 2>&1; then
-  if node -e "const j=require('$DYN_JSON'); process.exit((j.edges||[]).some(e=>e.to==='$REL')?0:1)" 2>/dev/null; then
+  if node -e 'const j=require(process.argv[1]); process.exit((j.edges||[]).some((e)=>e.to===process.argv[2])?0:1)' "$DYN_JSON" "$REL"; then
     report_hit "[DYNAMIC-IMPORT] '$REL' is the target of a dynamic import (audit/dynamic-import-edges.json)."
   fi
 fi
