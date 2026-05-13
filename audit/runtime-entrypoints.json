@@ -1198,6 +1198,7 @@
       "RagKnowledgeBootstrapModule",
       "RagKnowledgeService",
       "RagMdMergerService",
+      "RagMirrorFreshnessService",
       "RagNormalizationService",
       "RagPhase2aShadowAuditService",
       "RagPipelineService",
@@ -1819,6 +1820,7 @@
       "backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts",
       "backend/src/modules/seo-monitoring/services/quality-history-snapshot.service.ts",
       "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
+      "backend/src/modules/seo-monitoring/services/rag-mirror-freshness.service.ts",
       "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
       "backend/src/modules/seo-shadow-observatory/seo-shadow-chain-runner.service.ts",
       "backend/src/modules/seo-shadow-observatory/seo-shadow-diff-engine.service.ts",
@@ -2286,7 +2288,7 @@
       "scripts/validate-specs.sh"
     ]
   },
-  "runtime_files_count": 1117,
+  "runtime_files_count": 1118,
   "runtime_files": [
     ".dependency-cruiser.cjs",
     ".github/workflows/agent-exit-contract-hash.yml",
@@ -2748,6 +2750,7 @@
     "backend/src/modules/seo-monitoring/services/gsc-links-fetcher.service.ts",
     "backend/src/modules/seo-monitoring/services/quality-history-snapshot.service.ts",
     "backend/src/modules/seo-monitoring/services/r-content-auditor.service.ts",
+    "backend/src/modules/seo-monitoring/services/rag-mirror-freshness.service.ts",
     "backend/src/modules/seo-monitoring/services/seo-monitoring-runs.service.ts",
     "backend/src/modules/seo-shadow-observatory/seo-shadow-chain-runner.service.ts",
     "backend/src/modules/seo-shadow-observatory/seo-shadow-diff-engine.service.ts",
