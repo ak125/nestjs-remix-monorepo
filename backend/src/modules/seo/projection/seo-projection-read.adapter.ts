@@ -21,16 +21,20 @@ import { z } from 'zod';
 
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
-
 // ────────────────────────────────────────────────────────────────────────────
 // Zod schemas — strict validation du payload RPC
 // ────────────────────────────────────────────────────────────────────────────
 
 const EntityIdSchema = z
   .string()
-  .regex(/^(gamme|vehicle|constructeur|diagnostic):[a-z0-9][a-z0-9-]*[a-z0-9]$/);
+  .regex(
+    /^(gamme|vehicle|constructeur|diagnostic):[a-z0-9][a-z0-9-]*[a-z0-9]$/,
+  );
 
-const RoleSchema = z.string().regex(/^R[0-9]_[A-Z_]+$/).nullable();
+const RoleSchema = z
+  .string()
+  .regex(/^R[0-9]_[A-Z_]+$/)
+  .nullable();
 
 const SourceSchema = z
   .object({
@@ -64,7 +68,6 @@ export const ProjectionPayloadSchema = z
   .strict();
 
 export type ProjectionPayload = z.infer<typeof ProjectionPayloadSchema>;
-
 
 // ────────────────────────────────────────────────────────────────────────────
 // Adapter

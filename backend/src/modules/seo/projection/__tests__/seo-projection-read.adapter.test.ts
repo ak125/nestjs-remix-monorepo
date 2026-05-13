@@ -13,9 +13,7 @@ import {
   SeoProjectionReadAdapter,
 } from '../seo-projection-read.adapter';
 
-
 const ADAPTER_SRC = join(__dirname, '..', 'seo-projection-read.adapter.ts');
-
 
 // Test instance sans wiring DI (méthodes testées sont pures ou mockent supabase)
 function makeAdapter(rpcMock: jest.Mock): SeoProjectionReadAdapter {
@@ -24,14 +22,17 @@ function makeAdapter(rpcMock: jest.Mock): SeoProjectionReadAdapter {
   ) as SeoProjectionReadAdapter & { supabase: unknown };
   (adapter as unknown as { supabase: unknown }).supabase = { rpc: rpcMock };
   // Logger stub
-  (adapter as unknown as { readLogger: { warn: jest.Mock; error: jest.Mock; log: jest.Mock } }).readLogger = {
+  (
+    adapter as unknown as {
+      readLogger: { warn: jest.Mock; error: jest.Mock; log: jest.Mock };
+    }
+  ).readLogger = {
     warn: jest.fn(),
     error: jest.fn(),
     log: jest.fn(),
   };
   return adapter;
 }
-
 
 function validRpcPayload(overrides: Record<string, unknown> = {}): unknown {
   return {
@@ -61,7 +62,6 @@ function validRpcPayload(overrides: Record<string, unknown> = {}): unknown {
   };
 }
 
-
 // ────────────────────────────────────────────────────────────────────────────
 // Zod schema validation
 // ────────────────────────────────────────────────────────────────────────────
@@ -74,7 +74,11 @@ describe('ProjectionPayloadSchema', () => {
 
   it('rejects support entity_type', () => {
     const parsed = ProjectionPayloadSchema.safeParse(
-      validRpcPayload({ entity_id: 'support:retours', entity_type: 'support', slug: 'retours' }),
+      validRpcPayload({
+        entity_id: 'support:retours',
+        entity_type: 'support',
+        slug: 'retours',
+      }),
     );
     expect(parsed.success).toBe(false);
   });
@@ -94,7 +98,10 @@ describe('ProjectionPayloadSchema', () => {
   });
 
   it('rejects extra fields', () => {
-    const parsed = ProjectionPayloadSchema.safeParse({ ...(validRpcPayload() as object), extra: 'oops' });
+    const parsed = ProjectionPayloadSchema.safeParse({
+      ...(validRpcPayload() as object),
+      extra: 'oops',
+    });
     expect(parsed.success).toBe(false);
   });
 
@@ -115,14 +122,15 @@ describe('ProjectionPayloadSchema', () => {
   });
 });
 
-
 // ────────────────────────────────────────────────────────────────────────────
 // getActiveProjection behaviour
 // ────────────────────────────────────────────────────────────────────────────
 
 describe('SeoProjectionReadAdapter.getActiveProjection', () => {
   it('returns success for valid payload', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: validRpcPayload(), error: null });
+    const rpc = jest
+      .fn()
+      .mockResolvedValue({ data: validRpcPayload(), error: null });
     const adapter = makeAdapter(rpc);
     const result = await adapter.getActiveProjection('gamme:filtre-a-huile');
     expect(result.status).toBe('success');
@@ -181,9 +189,13 @@ describe('SeoProjectionReadAdapter.getActiveProjection', () => {
   });
 
   it('passes role filter to RPC when provided', async () => {
-    const rpc = jest.fn().mockResolvedValue({ data: validRpcPayload(), error: null });
+    const rpc = jest
+      .fn()
+      .mockResolvedValue({ data: validRpcPayload(), error: null });
     const adapter = makeAdapter(rpc);
-    await adapter.getActiveProjection('gamme:filtre-a-huile', { role: 'R3_CONSEILS' });
+    await adapter.getActiveProjection('gamme:filtre-a-huile', {
+      role: 'R3_CONSEILS',
+    });
     expect(rpc).toHaveBeenCalledWith('get_active_seo_projection', {
       p_entity_id: 'gamme:filtre-a-huile',
       p_role: 'R3_CONSEILS',
@@ -201,7 +213,6 @@ describe('SeoProjectionReadAdapter.getActiveProjection', () => {
   });
 });
 
-
 // ────────────────────────────────────────────────────────────────────────────
 // Architectural guards — adapter must use RPC, NEVER direct table SELECT
 // ────────────────────────────────────────────────────────────────────────────
@@ -212,14 +223,18 @@ describe('PR-7a architectural guards', () => {
   function codeOnly(text: string): string {
     return text
       .split('\n')
-      .filter((line) => !line.trim().startsWith('*') && !line.trim().startsWith('//'))
+      .filter(
+        (line) => !line.trim().startsWith('*') && !line.trim().startsWith('//'),
+      )
       .join('\n');
   }
 
   it('uses callRpc<T>() wrapper canonique (RPC Safety Gate)', () => {
     // RPC Safety Gate canon : ne JAMAIS appeler `.rpc()` direct sur supabase.
     // Tout passe par `this.callRpc<T>` (SupabaseBaseService wrapper).
-    expect(src).toMatch(/this\.callRpc<[^>]+>\(\s*['"]get_active_seo_projection['"]/);
+    expect(src).toMatch(
+      /this\.callRpc<[^>]+>\(\s*['"]get_active_seo_projection['"]/,
+    );
     expect(src).not.toMatch(/this\.supabase\.rpc\(/);
   });
 
