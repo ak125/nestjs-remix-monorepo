@@ -237,3 +237,7 @@ audit/cache/
 .github/*.7z
 .github/*.pdf
 .github/*.CMD
+
+# Repository Control Plane (ADR-058) — PR-C
+# audit/registry/cache/ is per-script transient cache, jetable
+audit/registry/cache/
