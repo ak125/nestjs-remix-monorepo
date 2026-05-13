@@ -543,3 +543,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feature/seo-projection-frontend-wiring`
 - **Décision** : feat(seo/projection): frontend wiring + rollout + guards (pr-7b)
 - **Sortie** : PR #486 | commits bc3cc401
+
+## 2026-05-14 — feature/seo-projection-frontend-wiring (auto)
+
+- **Branche** : `feature/seo-projection-frontend-wiring`
+- **Décision** : fix(seo/projection): use callRpc<T> wrapper canonique (rpc safety gate) (+2 other commits)
+- **Sortie** : PR #486 | commits 85953658 b440cebb 701a1fad
