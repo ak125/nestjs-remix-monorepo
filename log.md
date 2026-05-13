@@ -567,3 +567,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/canon-mirrors-precommit-hook`
 - **Décision** : feat(canon-mirrors): pre-commit hook blocks manual edits (ADR-061 §3)
 - **Sortie** : PR aucune | commits c725253e
+
+## 2026-05-14 — feat/pr-4-frontend-utils-batch-1 (auto)
+
+- **Branche** : `feat/pr-4-frontend-utils-batch-1`
+- **Décision** : chore(cleanup): drop 4 frontend dead utils (PR-4 batch 1)
+- **Sortie** : PR aucune | commits c24a3fe5
