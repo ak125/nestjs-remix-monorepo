@@ -121,10 +121,14 @@ export class SeoProjectionReadAdapter extends SupabaseBaseService {
       }
     }
 
-    const { data, error } = await this.supabase.rpc('get_active_seo_projection', {
-      p_entity_id: entityId,
-      p_role: options.role ?? null,
-    });
+    // Uses canonical `callRpc<T>` wrapper (RPC Safety Gate). Never direct supabase.rpc.
+    const { data, error } = await this.callRpc<unknown>(
+      'get_active_seo_projection',
+      {
+        p_entity_id: entityId,
+        p_role: options.role ?? null,
+      },
+    );
 
     if (error) {
       this.readLogger.warn(

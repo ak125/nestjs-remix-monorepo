@@ -216,8 +216,11 @@ describe('PR-7a architectural guards', () => {
       .join('\n');
   }
 
-  it('uses .rpc() — RPC path canonique', () => {
-    expect(src).toMatch(/this\.supabase\.rpc\(['"]get_active_seo_projection['"]/);
+  it('uses callRpc<T>() wrapper canonique (RPC Safety Gate)', () => {
+    // RPC Safety Gate canon : ne JAMAIS appeler `.rpc()` direct sur supabase.
+    // Tout passe par `this.callRpc<T>` (SupabaseBaseService wrapper).
+    expect(src).toMatch(/this\.callRpc<[^>]+>\(\s*['"]get_active_seo_projection['"]/);
+    expect(src).not.toMatch(/this\.supabase\.rpc\(/);
   });
 
   it('NEVER calls .from() on projection tables directly (ADR-059 No Direct Page SQL)', () => {
