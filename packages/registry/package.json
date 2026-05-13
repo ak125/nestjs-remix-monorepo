@@ -1,0 +1,29 @@
+{
+  "name": "@repo/registry",
+  "version": "0.1.0",
+  "description": "Zod schemas for Repository Control Plane (ADR-058 V1). 3-layer registry : Layer 1 auto (audit/registry/*.json) + Layer 2 overlay manuel (.spec/00-canon/repository-registry/*.yaml) + Layer 3 projection canonique générée (canonical.json). Schema versioning SemVer, status UNKNOWN + sourceConfidence pour classification jamais forcée.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist *.tsbuildinfo",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test src/**/*.test.ts"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.9.3"
+  }
+}
