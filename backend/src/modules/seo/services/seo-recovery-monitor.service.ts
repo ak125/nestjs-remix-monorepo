@@ -84,10 +84,7 @@ export class SeoRecoveryMonitorService extends SupabaseBaseService {
   }
 
   async getReport(): Promise<SeoRecoveryReport> {
-    const urlPattern = this.envStr(
-      'SEO_RECOVERY_URL_PATTERN',
-      '/pieces/%',
-    );
+    const urlPattern = this.envStr('SEO_RECOVERY_URL_PATTERN', '/pieces/%');
     const baselineFrom = this.envStr(
       'SEO_RECOVERY_BASELINE_FROM',
       '2026-04-13',
@@ -113,17 +110,28 @@ export class SeoRecoveryMonitorService extends SupabaseBaseService {
     const now = new Date();
     const dayOfWeek = (now.getUTCDay() + 6) % 7; // Mon=0, Sun=6
     const weekStart = new Date(
-      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - dayOfWeek),
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() - dayOfWeek,
+      ),
     );
     const weekStartIso = weekStart.toISOString().slice(0, 10);
     const today = now.toISOString().slice(0, 10);
-    const current = await this.aggregateWindow(urlPattern, weekStartIso, today);
+    const current = await this.aggregateWindow(
+      urlPattern,
+      weekStartIso,
+      today,
+    );
 
     // 3. Verdict
-    const baselineDaily = baseline.weeklyImpressions / Math.max(baseline.days, 1);
+    const baselineDaily =
+      baseline.weeklyImpressions / Math.max(baseline.days, 1);
     const currentDaily = current.weeklyImpressions / Math.max(current.days, 1);
     const recoveryRatio =
-      baselineDaily > 0 ? Number((currentDaily / baselineDaily).toFixed(3)) : null;
+      baselineDaily > 0
+        ? Number((currentDaily / baselineDaily).toFixed(3))
+        : null;
 
     let status: RecoveryStatus;
     let message: string;
@@ -168,7 +176,7 @@ export class SeoRecoveryMonitorService extends SupabaseBaseService {
     };
   }
 
-  private async aggregateWindow(
+  protected async aggregateWindow(
     urlPattern: string,
     from: string,
     to: string,
