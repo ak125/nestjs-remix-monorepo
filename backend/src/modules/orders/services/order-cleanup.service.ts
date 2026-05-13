@@ -20,6 +20,7 @@ export class OrderCleanupService extends SupabaseBaseService {
    * Toutes les 15 min : marquer les processing orphelins comme failed.
    * Conditionné à order_id IS NULL + updated_at < 15 min (inactivité réelle).
    */
+  // INERT-OK-NO-SCHEDULER — TODO: migrer vers BullMQ (queue `seo-monitor` ou nouvelle), cf. PR #487
   @Cron('0 */15 * * * *')
   async cleanupOrphanProcessing(): Promise<void> {
     try {
@@ -53,6 +54,7 @@ export class OrderCleanupService extends SupabaseBaseService {
   /**
    * Toutes les heures : purger les idempotency keys et resume tokens expirés.
    */
+  // INERT-OK-NO-SCHEDULER — TODO: migrer vers BullMQ (queue `seo-monitor` ou nouvelle), cf. PR #487
   @Cron(CronExpression.EVERY_HOUR)
   async purgeExpired(): Promise<void> {
     try {
