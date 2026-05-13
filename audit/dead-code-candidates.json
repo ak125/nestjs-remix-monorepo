@@ -1,11 +1,11 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
-  "count": 333,
+  "count": 331,
   "by_confidence": {
     "high": 22,
     "medium": 217,
-    "low": 94
+    "low": 92
   },
   "candidates": [
     {
@@ -723,38 +723,6 @@
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
         "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/blog-metadata/blog-metadata.controller.ts",
-      "domain": "blog-metadata",
-      "kind": "controller",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/blog-metadata/blog-metadata.service.ts",
-      "domain": "blog-metadata",
-      "kind": "service",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },

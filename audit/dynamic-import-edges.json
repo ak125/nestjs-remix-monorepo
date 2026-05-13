@@ -1,6 +1,6 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
-  "count": 20,
+  "count": 19,
   "edges": [
     {
       "from": "backend/src/modules/admin/services/execution-router.service.ts",
@@ -10,11 +10,6 @@
     {
       "from": "backend/src/modules/admin/services/execution-router.service.ts",
       "to": "path",
-      "kind": "import()"
-    },
-    {
-      "from": "backend/src/modules/rag-proxy/services/pdf-text-extractor.service.ts",
-      "to": "pdf-parse",
       "kind": "import()"
     },
     {

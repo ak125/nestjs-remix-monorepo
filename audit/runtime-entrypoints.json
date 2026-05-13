@@ -502,7 +502,6 @@
       "backend/src/modules/ai-content/ai-content.module.ts",
       "backend/src/modules/analytics/analytics.module.ts",
       "backend/src/modules/api.module.ts",
-      "backend/src/modules/blog-metadata/blog-metadata.module.ts",
       "backend/src/modules/blog/blog.module.ts",
       "backend/src/modules/bot-guard/bot-guard.module.ts",
       "backend/src/modules/cart/cart.module.ts",
@@ -608,7 +607,6 @@
     "nestjs_unreachable_modules": [
       "backend/src/config/marketing-matrix.module.ts",
       "backend/src/modules/agentic-engine/agentic-engine.module.ts",
-      "backend/src/modules/blog-metadata/blog-metadata.module.ts",
       "backend/src/modules/knowledge-graph/knowledge-graph.module.ts",
       "backend/src/modules/mcp-validation/mcp-validation.module.ts",
       "backend/src/modules/rm/rm.module.ts",
@@ -1543,7 +1541,6 @@
       "backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
       "backend/src/modules/analytics/services/simple-analytics.service.ts",
       "backend/src/modules/api.module.ts",
-      "backend/src/modules/blog-metadata/blog-metadata.module.ts",
       "backend/src/modules/blog/blog.module.ts",
       "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
       "backend/src/modules/blog/controllers/advice.controller.ts",
@@ -2288,7 +2285,7 @@
       "scripts/validate-specs.sh"
     ]
   },
-  "runtime_files_count": 1118,
+  "runtime_files_count": 1117,
   "runtime_files": [
     ".dependency-cruiser.cjs",
     ".github/workflows/agent-exit-contract-hash.yml",
@@ -2473,7 +2470,6 @@
     "backend/src/modules/analytics/controllers/simple-analytics.controller.ts",
     "backend/src/modules/analytics/services/simple-analytics.service.ts",
     "backend/src/modules/api.module.ts",
-    "backend/src/modules/blog-metadata/blog-metadata.module.ts",
     "backend/src/modules/blog/blog.module.ts",
     "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",
     "backend/src/modules/blog/controllers/advice.controller.ts",

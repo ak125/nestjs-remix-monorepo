@@ -2,7 +2,7 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "888 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "885 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
@@ -14,10 +14,10 @@
     "rpc_with_callsites": 15,
     "trigger_functions": 26,
     "candidate_orphan_rpc": 141,
-    "dynamic_from_callsites": 888,
+    "dynamic_from_callsites": 885,
     "dynamic_rpc_callsites": 3,
     "migrations_scanned": 216,
-    "backend_files_scanned": 1014
+    "backend_files_scanned": 1011
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -7975,18 +7975,6 @@
     {
       "file": "backend/src/modules/ai-content/prompt-template.service.ts",
       "line": 198
-    },
-    {
-      "file": "backend/src/modules/blog-metadata/blog-metadata.service.ts",
-      "line": 57
-    },
-    {
-      "file": "backend/src/modules/blog-metadata/blog-metadata.service.ts",
-      "line": 118
-    },
-    {
-      "file": "backend/src/modules/blog-metadata/blog-metadata.service.ts",
-      "line": 163
     },
     {
       "file": "backend/src/modules/blog/controllers/advice-hierarchy.controller.ts",

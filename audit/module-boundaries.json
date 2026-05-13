@@ -103,14 +103,6 @@
       "loc_total": 11829,
       "has_barrel": false
     },
-    "blog-metadata": {
-      "dirs": [
-        "backend/src/modules/blog-metadata"
-      ],
-      "files_count": 3,
-      "loc_total": 445,
-      "has_barrel": false
-    },
     "bot-guard": {
       "dirs": [
         "backend/src/modules/bot-guard"
@@ -1163,6 +1155,11 @@
       "from": "backend-core",
       "to": "system",
       "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "uncategorized",
+      "count": 2
     },
     {
       "from": "backend-core",
