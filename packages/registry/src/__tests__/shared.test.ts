@@ -52,17 +52,23 @@ describe("SourceConfidenceSchema (3 levels)", () => {
   });
 });
 
-describe("DomainIdSchema (D1..D8 + UNKNOWN)", () => {
-  test("accepts D1..D8 and UNKNOWN", () => {
-    for (const d of ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "UNKNOWN"]) {
+describe("DomainIdSchema (D1..D15 + UNKNOWN, aligned domain-map.md v1.4.2)", () => {
+  test("accepts D1..D15 and UNKNOWN", () => {
+    const all = [
+      "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8",
+      "D9", "D10", "D11", "D12", "D13", "D14", "D15",
+      "UNKNOWN",
+    ];
+    for (const d of all) {
       assert.equal(DomainIdSchema.parse(d), d);
     }
   });
 
   test("rejects out-of-range domain IDs", () => {
     assert.throws(() => DomainIdSchema.parse("D0"));
-    assert.throws(() => DomainIdSchema.parse("D9"));
-    assert.throws(() => DomainIdSchema.parse("D10"));
+    assert.throws(() => DomainIdSchema.parse("D16"));
+    assert.throws(() => DomainIdSchema.parse("D99"));
+    assert.throws(() => DomainIdSchema.parse("d1")); // case-sensitive
   });
 });
 

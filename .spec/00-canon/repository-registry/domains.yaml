@@ -1,0 +1,187 @@
+# .spec/00-canon/repository-registry/domains.yaml
+#
+# Layer 2 overlay — canonical domain registry for the Repository Control Plane
+# (ADR-058). Sourced from .spec/00-canon/db-governance/domain-map.md v1.4.2
+# (2026-03-14).
+#
+# Edit this file when domain-map.md is updated. Out-of-band changes (here vs
+# domain-map.md) will be caught by future cross-canon drift detection (V1.5+).
+
+schemaVersion: "1.0.0"
+
+entries:
+  - id: D1
+    name: Catalog Core
+    description: |
+      Core catalog tables (pieces, gammes, brands, categories). P0 critical
+      domain — 75 GB, 22 tables, hot path for catalog serving.
+    criticality: P0
+    globs:
+      - "backend/src/modules/catalog/**"
+      - "backend/src/modules/pieces/**"
+    owner: "@ak125/catalog-team"
+
+  - id: D2
+    name: Legacy/XTR Migration
+    description: |
+      PrestaShop migration data + legacy backend/src/rm/ module (DEV-only per
+      ADR-004). Status archive_review per domain-map.md.
+    criticality: P2
+    globs:
+      - "backend/src/rm/**"
+    owner: "__unassigned__"
+
+  - id: D3
+    name: SEO & Sitemap
+    description: |
+      SEO V4/v9 chain, monitoring, role canon (R0..R8 per ADR-040), shadow
+      mode observatory (ADR-055). High-volume URL generation, GSC integration.
+    criticality: P1
+    globs:
+      - "backend/src/modules/seo/**"
+      - "backend/src/modules/seo-monitoring/**"
+      - "backend/src/modules/seo-shadow-observatory/**"
+      - "packages/seo-roles/**"
+      - "packages/seo-role-contracts/**"
+      - "packages/seo-types/**"
+    owner: "@ak125/seo-team"
+
+  - id: D4
+    name: Vehicle / Compatibility
+    description: |
+      Vehicle catalog (TecDoc-derived, 53.9K types), V-Level classification
+      (T=keywords, V=vehicles), compatibility RPC. P0 — drives R8 vehicle pages.
+    criticality: P0
+    globs:
+      - "backend/src/modules/vehicle/**"
+      - "backend/src/modules/diagnostic/**"
+    owner: "@ak125/vehicle-team"
+
+  - id: D5
+    name: Blog / Content
+    description: |
+      Blog articles, content management, editorial workflows.
+    criticality: P2
+    globs:
+      - "backend/src/modules/blog/**"
+    owner: "@ak125/content-team"
+
+  - id: D6
+    name: RAG & AI Engine
+    description: |
+      RAG pipeline (3 layers, propose-before-write ADR-022), AI content
+      generation, agentic engine orchestration.
+    criticality: P1
+    globs:
+      - "backend/src/modules/rag/**"
+      - "backend/src/modules/ai-content/**"
+      - "backend/src/modules/agentic-engine/**"
+      - "rag/**"
+    owner: "@ak125/rag-team"
+
+  - id: D7
+    name: Knowledge Graph & Diagnostic
+    description: |
+      __diag_* canonical tables (ADR-032), kg_* graph entities, diagnostic
+      symptom→system mapping (13 systèmes, 62 symptômes).
+    criticality: P2
+    globs:
+      - "backend/src/modules/knowledge-graph/**"
+    owner: "@ak125"
+
+  - id: D8
+    name: Read Model / Serving (RM)
+    description: |
+      Frontend serving layer (Remix routes, admin dashboard, public catalog
+      pages). Read-model projections from D1/D4.
+    criticality: P1
+    globs:
+      - "frontend/app/routes/**"
+      - "backend/src/modules/admin/**"
+    owner: "@ak125/frontend-team"
+
+  - id: D9
+    name: Import / ETL / Normalisation
+    description: |
+      Data import pipelines, ETL workers, normalization (TecDoc ingest, etc.).
+    criticality: P2
+    globs:
+      - "backend/src/workers/**"
+    owner: "@ak125"
+
+  - id: D10
+    name: Quality, Monitoring & Observabilité
+    description: |
+      Quality history (ADR-050), drift detection, Sentry/OTel enrichers,
+      cache modules, observability.
+    criticality: P1
+    globs:
+      - "backend/src/modules/cache/**"
+      - "backend/src/observability/**"
+    owner: "@ak125"
+
+  - id: D11
+    name: Commerce & Users
+    description: |
+      Payments (Paybox/SystemPay, HMAC), cart, orders, auth (Redis sessions,
+      Passport), users. P0 critical — money path.
+    criticality: P0
+    globs:
+      - "backend/src/modules/payments/**"
+      - "backend/src/modules/cart/**"
+      - "backend/src/modules/orders/**"
+      - "backend/src/auth/**"
+      - "backend/src/modules/users/**"
+    owner: "@ak125/payments-team"
+
+  - id: D12
+    name: Marketing & Video
+    description: |
+      Marketing operating layer (ADR-036 Phase 1+), video pipelines, GBP posts,
+      LEAD/LOCAL/RETENTION G1 agents.
+    criticality: P3
+    globs:
+      - "workspaces/marketing/**"
+    owner: "@ak125/marketing-team"
+
+  - id: D13
+    name: Config & System
+    description: |
+      Configuration, Docker, CI workflows, monorepo scaffolding, shared
+      packages cross-cutting infra.
+    criticality: P1
+    globs:
+      - "backend/src/config/**"
+      - "docker/**"
+      - ".github/workflows/**"
+      - "scripts/**"
+      - "packages/database-types/**"
+      - "packages/shared-types/**"
+    owner: "@ak125"
+
+  - id: D14
+    name: Gamme Aggregates & V-Level
+    description: |
+      Cross-cutting gamme aggregates (241 rows), V-Level v5.0 scoring
+      (V3=champion / V4/V5 sibling / V2 top10). Powers R1/R2/R8 indexability.
+    criticality: P1
+    globs:
+      - "backend/src/modules/gamme-aggregates/**"
+    owner: "@ak125/seo-team"
+
+  - id: D15
+    name: Security & Governance
+    description: |
+      Vault governance (ADR-015), CODEOWNERS, agents AGENTS.md, .claude/rules,
+      Repository Control Plane itself (ADR-058). Security-sensitive paths.
+    criticality: P0
+    globs:
+      - "agents/**"
+      - "CLAUDE.md"
+      - ".claude/rules/**"
+      - ".github/CODEOWNERS"
+      - ".github/workflows/agents-md-validation.yml"
+      - "packages/registry/**"
+      - "scripts/registry/**"
+      - "scripts/agents/**"
+    owner: "@ak125"

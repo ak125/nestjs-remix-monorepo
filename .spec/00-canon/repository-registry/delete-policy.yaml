@@ -1,0 +1,88 @@
+# .spec/00-canon/repository-registry/delete-policy.yaml
+#
+# Layer 2 overlay — delete policy for the Repository Control Plane (ADR-058).
+#
+# Policies :
+#   - FREE         : deletion allowed (default, not enumerated here)
+#   - ADR_REQUIRED : deletion requires a vault ADR documenting the rationale
+#   - LOCKED       : deletion forbidden (infrastructure / safety-critical)
+#
+# Entries here express the GOVERNANCE intent : files matching these globs are
+# considered SoT / safety-critical / canon, hence protected.
+
+schemaVersion: "1.0.0"
+
+entries:
+  # Repository Control Plane artefacts (PR-C output + canon overlay)
+  - glob: "audit/registry/**"
+    policy: ADR_REQUIRED
+    reason: |
+      Repository Control Plane Layer 1 + Layer 3 artefacts (ADR-058).
+      Source de vérité = couple Layer 1 auto + Layer 2 overlay. Deletion
+      of any audit/registry/*.json without ADR would break the canonical
+      projection and the CI block-new gate (PR-G).
+
+  - glob: ".spec/00-canon/repository-registry/**"
+    policy: ADR_REQUIRED
+    reason: |
+      Repository Control Plane Layer 2 overlay (ADR-058). Deletion breaks
+      ownership/domain resolution in the canonical projection (Layer 3).
+
+  # Canon SoT — vault references locally mirrored
+  - glob: ".spec/00-canon/**"
+    policy: ADR_REQUIRED
+    reason: |
+      Canon SoT path per ADR-015 §5. Modifications and deletions require
+      a vault ADR documenting the change.
+
+  # Governance DB tables (SEO + diagnostic + knowledge graph)
+  - glob: "__seo_*"
+    policy: ADR_REQUIRED
+    reason: |
+      SEO governance tables (event log, role canon, shadow observatory state).
+      ADR-055 SEO Shadow Mode + ADR-050 quality history. Deletion would lose
+      audit trail.
+
+  - glob: "__diag_*"
+    policy: ADR_REQUIRED
+    reason: |
+      Diagnostic canonical tables (ADR-032). Slugs system_id / symptom_id,
+      complementary to kg_check_safety_gate.
+
+  - glob: "kg_*"
+    policy: ADR_REQUIRED
+    reason: |
+      Knowledge Graph canonical tables (UUIDs, complementary to __diag_*
+      slugs). Deletion impacts AI orchestrator + R8 vehicle enrichment.
+
+  # Critical infra paths
+  - glob: ".github/CODEOWNERS"
+    policy: LOCKED
+    reason: |
+      Canonical ownership protection. Modifications via PR with @ak125
+      approval only ; deletion forbidden (would unblock all CODEOWNERS-gated paths).
+
+  - glob: ".husky/**"
+    policy: LOCKED
+    reason: |
+      Git hooks orchestrating governance enforcement (pre-commit knowledge
+      refresh, commit-msg lint, pre-push). Deletion disables silent guards.
+
+  - glob: "agents/**/AGENTS.md"
+    policy: ADR_REQUIRED
+    reason: |
+      Agent contracts (ADR-037, ADR-038). Each AGENTS.md is the canonical
+      contract between the agent and the runtime.
+
+  - glob: "CLAUDE.md"
+    policy: ADR_REQUIRED
+    reason: |
+      Canonical project memory loaded by Claude Code. Major edits should
+      follow ADR pattern.
+
+  # Payments — money path, P0
+  - glob: "backend/src/modules/payments/services/paybox-callback-gate.service.ts"
+    policy: LOCKED
+    reason: |
+      Paybox HMAC validation gate. timingSafeEqual + normalizeOrderId
+      (ADR-014). Deletion or bypass = injection vector.
