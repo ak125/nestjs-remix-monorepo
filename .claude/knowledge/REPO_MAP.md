@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 424a208dabd9cbb6c5021a7aaf078d4eba01acef76befca857196c6a1f293525
+source_sha256: 68945f8c764f2142dedc73bee660023809955056550e5496b729da32fcc9ed7c
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -18,13 +18,13 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 
 | Layer | Count |
 |---|---|
-| Files (Layer 1) | 2138 |
+| Files (Layer 1) | 2131 |
 | DB tables (Layer 1) | 232 |
 | DB RPC (Layer 1) | 180 |
 | Dependencies (Layer 1) | 232 |
 | Runtime entrypoints (Layer 1) | 470 |
 
-Source sotFingerprint: `6668fd3fe4c5`.
+Source sotFingerprint: `9abb15e308f4`.
 
 ## Comment l'utiliser
 
@@ -125,26 +125,26 @@ Source sotFingerprint: `6668fd3fe4c5`.
 
 ### D13 — Config & System
 
-- **Files**: 145 (config=55, service=45, script=39, test=6)
+- **Files**: 139 (config=49, service=45, script=39, test=6)
 - **Runtime entrypoints**: 4
-- **Top owners**: @ak125 (145)
-- **Status**: LIVE=15, UNKNOWN=130
+- **Top owners**: @ak125 (139)
+- **Status**: LIVE=15, UNKNOWN=124
 
 ### D15 — Security & Governance
 
-- **Files**: 25 (service=19, test=4, script=2)
-- **Top owners**: @ak125 (25)
-- **Status**: LIVE=2, UNKNOWN=23
+- **Files**: 31 (service=19, script=8, test=4)
+- **Top owners**: @ak125 (31)
+- **Status**: LIVE=2, UNKNOWN=29
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 572 (service=325, config=112, test=72, controller=42, script=21)
+- **Files**: 565 (service=318, config=112, test=73, controller=41, script=21)
 - **DB tables**: 232
 - **DB RPC**: 180
 - **Runtime entrypoints**: 68
-- **Top owners**: __unassigned__ (572)
+- **Top owners**: __unassigned__ (565)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md), [`config`](modules/config.md), [`errors`](modules/errors.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`staff`](modules/staff.md), [`substitution`](modules/substitution.md), [`suppliers`](modules/suppliers.md), [`support`](modules/support.md), [`system`](modules/system.md), [`upload`](modules/upload.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=159, UNKNOWN=413
+- **Status**: LIVE=158, UNKNOWN=407
 
 ## Voir aussi
 
