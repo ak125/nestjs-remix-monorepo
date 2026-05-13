@@ -170,8 +170,15 @@ export class AnthropicProvider implements AIProvider {
         cacheCreation: message.usage.cache_creation_input_tokens ?? undefined,
       };
 
+      // hit-rate = cacheRead / (cacheRead + input). High = cache is doing its
+      // job. Low after warm-up = ttl expiry or system prompt changing each call.
+      const cachedInput = usage.cacheRead ?? 0;
+      const hitRate =
+        cachedInput + usage.input > 0
+          ? Math.round((cachedInput / (cachedInput + usage.input)) * 100)
+          : 0;
       this.logger.log(
-        `Generated ${content.length} chars (in=${usage.input} out=${usage.output} tokens)`,
+        `Generated ${content.length} chars (in=${usage.input} out=${usage.output} cacheR=${cachedInput} cacheC=${usage.cacheCreation ?? 0} hit=${hitRate}%)`,
       );
 
       return { content, usage };
