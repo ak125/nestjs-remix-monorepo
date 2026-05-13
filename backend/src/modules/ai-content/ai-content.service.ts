@@ -155,7 +155,7 @@ export class AiContentService {
   private async executeWithFailover(
     systemPrompt: string,
     userPrompt: string,
-    options: { temperature?: number; maxTokens?: number },
+    options: { temperature?: number; maxTokens: number },
   ): Promise<{
     content: string;
     usage: AiTokenUsage | null;
