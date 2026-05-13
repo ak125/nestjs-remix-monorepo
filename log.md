@@ -532,8 +532,26 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : feat(registry): canonical projection Layer 3 + freshness CI Phase 1 + 4 invariants (ADR-058 PR-E) (+6 other commits)
 - **Sortie** : PR #462 | commits a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
 
-## 2026-05-13 — feat/registry-pr-f-llm-entrypoint (auto)
+## 2026-05-13 — feat/registry-pr-g-block-new (auto)
 
-- **Branche** : `feat/registry-pr-f-llm-entrypoint`
-- **Décision** : feat(registry): LLM entrypoint REPO_MAP.md + CLAUDE.md step 0 + cross-language hook (ADR-058 PR-F) (+8 other commits)
-- **Sortie** : PR #463 | commits 9ac2f75b 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+- **Branche** : `feat/registry-pr-g-block-new`
+- **Décision** : feat(registry): CI Phase 2 block-new gate + pre-push hook (ADR-058 PR-G) (+8 other commits)
+- **Sortie** : PR #464 | commits 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-g-block-new (auto)
+
+- **Branche** : `feat/registry-pr-g-block-new`
+- **Décision** : chore(registry): regen canonical + REPO_MAP after merge main (PR-G recovery) (+12 other commits)
+- **Sortie** : PR #482 | commits 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-g-block-new (auto)
+
+- **Branche** : `feat/registry-pr-g-block-new`
+- **Décision** : fix(registry-new-file-gate): invoke node direct (npm wrapper pollutes JSON stdout) (+14 other commits)
+- **Sortie** : PR #482 | commits 3eb76950 5368dec1 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-g-block-new (auto)
+
+- **Branche** : `feat/registry-pr-g-block-new`
+- **Décision** : fix(check-new-files): sanitize argv ref + execFileSync (CodeQL injection guard) (+16 other commits)
+- **Sortie** : PR #482 | commits f0c6f729 b05435e8 3eb76950 5368dec1 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38

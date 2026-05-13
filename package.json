@@ -56,7 +56,8 @@
     "registry:build:canonical": "node scripts/registry/build-canonical-registry.js",
     "registry:build:llm-map": "node scripts/registry/build-llm-repo-map.js",
     "registry": "npm run registry:build && npm run registry:build:canonical && npm run registry:build:llm-map",
-    "registry:validate-invariants": "tsx scripts/registry/validate-invariants.ts"
+    "registry:validate-invariants": "tsx scripts/registry/validate-invariants.ts",
+    "registry:check-new-files": "node scripts/registry/check-new-files.js"
   },
   "keywords": [],
   "author": "",
