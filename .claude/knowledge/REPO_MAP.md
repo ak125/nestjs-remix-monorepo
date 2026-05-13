@@ -3,7 +3,7 @@ title: Repository Map
 kind: registry-index
 generated_at: "1970-01-01T00:00:00.000Z"
 source: audit/registry/canonical.json
-source_sha256: 68945f8c764f2142dedc73bee660023809955056550e5496b729da32fcc9ed7c
+source_sha256: cad0d0e9044f6ccfdb852c4970d073cb7959296b8852b9f3a8a035dc083b77c9
 schema_version: "1.0.0"
 do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-058 PR-F)
 ---
@@ -24,7 +24,7 @@ do_not_edit: true   # généré par scripts/registry/build-llm-repo-map.js (ADR-
 | Dependencies (Layer 1) | 232 |
 | Runtime entrypoints (Layer 1) | 470 |
 
-Source sotFingerprint: `9abb15e308f4`.
+Source sotFingerprint: `b5a155efe459`.
 
 ## Comment l'utiliser
 
@@ -132,19 +132,19 @@ Source sotFingerprint: `9abb15e308f4`.
 
 ### D15 — Security & Governance
 
-- **Files**: 31 (service=19, script=8, test=4)
-- **Top owners**: @ak125 (31)
-- **Status**: LIVE=2, UNKNOWN=29
+- **Files**: 32 (service=19, script=8, test=5)
+- **Top owners**: @ak125 (32)
+- **Status**: LIVE=2, UNKNOWN=30
 
 ### UNKNOWN — Unknown (overlay non résolu)
 
-- **Files**: 565 (service=318, config=112, test=73, controller=41, script=21)
+- **Files**: 564 (service=318, config=112, test=72, controller=41, script=21)
 - **DB tables**: 232
 - **DB RPC**: 180
 - **Runtime entrypoints**: 68
-- **Top owners**: __unassigned__ (565)
+- **Top owners**: __unassigned__ (564)
 - **Knowledge prose**: [`bot-guard`](modules/bot-guard.md), [`config`](modules/config.md), [`errors`](modules/errors.md), [`layout`](modules/layout.md), [`mcp-validation`](modules/mcp-validation.md), [`metadata`](modules/metadata.md), [`navigation`](modules/navigation.md), [`search`](modules/search.md), [`shipping`](modules/shipping.md), [`staff`](modules/staff.md), [`substitution`](modules/substitution.md), [`suppliers`](modules/suppliers.md), [`support`](modules/support.md), [`system`](modules/system.md), [`upload`](modules/upload.md), [`vehicles`](modules/vehicles.md)
-- **Status**: LIVE=158, UNKNOWN=407
+- **Status**: LIVE=158, UNKNOWN=406
 
 ## Voir aussi
 

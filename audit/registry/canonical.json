@@ -73767,20 +73767,21 @@
     {
       "deletePolicy": "FREE",
       "derivedFrom": [
-        "depcruise"
+        "depcruise",
+        "manual"
       ],
-      "domain": "UNKNOWN",
+      "domain": "D15",
       "id": "tests/registry/rpc-parser.test.ts",
       "importedBy": [],
       "imports": [],
       "kind": "test",
       "loc": 186,
-      "owner": "__unassigned__",
+      "owner": "@ak125",
       "path": "tests/registry/rpc-parser.test.ts",
-      "risk": "low",
+      "risk": "medium",
       "runtime": false,
       "schemaVersion": "1.0.0",
-      "sourceConfidence": "medium",
+      "sourceConfidence": "high",
       "status": "UNKNOWN"
     }
   ],
@@ -73790,7 +73791,7 @@
     "inputHashes": {
       ".spec/00-canon/repository-registry/delete-policy.yaml": "2e698ddddc3d11c244c710271a02e376ce471812c53290439a55220bf6c7aff6",
       ".spec/00-canon/repository-registry/domains.yaml": "ce4ab75a1801d51b99cbae0260d06f34bb4ab96deab5d3b737d875ad7de854ec",
-      ".spec/00-canon/repository-registry/ownership.yaml": "5b96df0e9e7c379569ff74734f34adc3cedf33f41294123013c854a7e0f578ee",
+      ".spec/00-canon/repository-registry/ownership.yaml": "bfa6e851c7e440f095b647b3fee5f763a314b1bb8c25faf861bef31e85869274",
       ".spec/00-canon/repository-registry/status-overrides.yaml": "6acccd32de6d9c15b47621ab22d9f2d3e34861ea8b6b1a3cd559f68a9fa32e02",
       "audit/registry/db.json": "5ad13b576f9fd9146f5e8255980349ce1c8fa9c1be054e5039f56ba65a70964d",
       "audit/registry/deps.json": "0b01ca94e9a39e3e8b19f00152e9c4f4c71fa963048593734003e39a058c79af",
@@ -73798,7 +73799,7 @@
       "audit/registry/rpc.json": "49db3255cb4f1d0dd03e557d153eb1226957309cdbb18094d453e843661e9ef3",
       "audit/registry/runtime.json": "2544b19a806a610c7b7d3ef1f23a78146a9b7b219755f7907c1c944999a49f0a"
     },
-    "sotFingerprint": "9abb15e308f4"
+    "sotFingerprint": "b5a155efe459"
   },
   "runtime": [
     {
