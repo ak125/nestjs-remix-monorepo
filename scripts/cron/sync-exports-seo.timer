@@ -1,0 +1,12 @@
+[Unit]
+Description=Hourly trigger — sync wiki exports/seo + immutable snapshot (ADR-059 PR-5b)
+Documentation=https://github.com/ak125/governance-vault/blob/main/ledger/decisions/adr/ADR-059-seo-runtime-projection.md
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+RandomizedDelaySec=300s
+Unit=sync-exports-seo.service
+
+[Install]
+WantedBy=timers.target
