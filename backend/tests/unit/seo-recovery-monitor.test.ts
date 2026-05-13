@@ -32,7 +32,6 @@ class TestableRecoveryService extends SeoRecoveryMonitorService {
     super(config);
   }
 
-  // @ts-expect-error override private to control test data
   protected async aggregateWindow(
     _urlPattern: string,
     from: string,
