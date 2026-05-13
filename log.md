@@ -549,3 +549,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/registry-pr-g-block-new`
 - **Décision** : fix(registry-new-file-gate): invoke node direct (npm wrapper pollutes JSON stdout) (+14 other commits)
 - **Sortie** : PR #482 | commits 3eb76950 5368dec1 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-g-block-new (auto)
+
+- **Branche** : `feat/registry-pr-g-block-new`
+- **Décision** : fix(check-new-files): sanitize argv ref + execFileSync (CodeQL injection guard) (+16 other commits)
+- **Sortie** : PR #482 | commits f0c6f729 b05435e8 3eb76950 5368dec1 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
