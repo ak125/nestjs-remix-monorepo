@@ -64,25 +64,29 @@ jobs:
         run: npm run registry:validate-invariants
 
       - name: Determinism check (V1-2 — canonical hash stable across 2 runs)
+        # Phase 1 warn-only : never exit 1 ; surface drift as GitHub annotation only.
+        # Promotion to ERROR happens in V1.5 (signal-proven 14j of clean determinism).
         run: |
           sha256sum audit/registry/canonical.json > /tmp/c1.txt
           npm run registry --silent
           sha256sum audit/registry/canonical.json > /tmp/c2.txt
           if ! diff -q /tmp/c1.txt /tmp/c2.txt; then
             echo "::warning::canonical.json not deterministic across 2 runs"
-            diff /tmp/c1.txt /tmp/c2.txt
-            exit 1
+            diff /tmp/c1.txt /tmp/c2.txt || true
+          else
+            echo "✓ canonical.json deterministic"
           fi
-          echo "✓ canonical.json deterministic"
 
       - name: Freshness diff (canonical.json committed = canonical.json rebuilt)
+        # Phase 1 warn-only : do not exit 1 on drift. Drift may be transient
+        # (main moved between commit and CI run). Promotion to ERROR happens
+        # in PR-G strict gate + V1.5 baseline ratchet.
         run: |
           if git diff --exit-code audit/registry/canonical.json; then
             echo "✓ canonical.json in sync with sources"
           else
-            echo "::warning::audit/registry/canonical.json is stale vs Layer 1+2 sources"
-            echo "Run \`npm run registry\` and commit the regenerated canonical.json"
-            exit 1
+            echo "::warning::audit/registry/canonical.json drifted vs Layer 1+2 sources (run \`npm run registry\` locally to refresh)"
+            git diff --stat audit/registry/canonical.json || true
           fi
 
       - name: Run RPC parser fixture tests

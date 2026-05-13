@@ -2917,9 +2917,7 @@
       "status": "LIVE"
     },
     {
-      "dependsOn": [
-        "runtime:backend/src/modules/upload/services/supabase-storage.service.ts"
-      ],
+      "dependsOn": [],
       "id": "runtime:backend/src/modules/upload/upload.module.ts",
       "kind": "nestjs-module",
       "path": "backend/src/modules/upload/upload.module.ts",
