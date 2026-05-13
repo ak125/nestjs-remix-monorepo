@@ -507,3 +507,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `monorepo/pr5-url-immutability-gate`
 - **Décision** : feat(seo): add R-SEO-09 URL immutability gate phase 1 surface guard (+1 other commit)
 - **Sortie** : PR #428 | commits 18cc6c59 22ff92fc
+
+## 2026-05-13 — feat/registry-pr-b-schemas (auto)
+
+- **Branche** : `feat/registry-pr-b-schemas`
+- **Décision** : feat(registry): add @repo/registry package — Zod schemas V1 (ADR-058 PR-B)
+- **Sortie** : PR #457 | commits 0504fd38
