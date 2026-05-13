@@ -531,3 +531,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/registry-pr-e-canonical`
 - **Décision** : feat(registry): canonical projection Layer 3 + freshness CI Phase 1 + 4 invariants (ADR-058 PR-E) (+6 other commits)
 - **Sortie** : PR #462 | commits a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-d-canon-overlay (auto)
+
+- **Branche** : `feat/registry-pr-d-canon-overlay`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/registry-pr-d-canon-overlay (+8 other commits)
+- **Sortie** : PR #474 | commits 9f4c6a9b be6cd0d5 c13a0d1a 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
