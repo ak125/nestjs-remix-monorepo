@@ -133,7 +133,18 @@ export class AnthropicProvider implements AIProvider {
         model,
         max_tokens: options.maxTokens || 4096,
         temperature: options.temperature ?? 0.7,
-        system: systemPrompt,
+        // Prompt cache on the system block: identical system prompts across
+        // calls (templates, anti-hallucination rules, advisor escalation 2nd
+        // pass) are billed at ~0.1× after the first hit. Min-size threshold
+        // applies (Sonnet 4 / Opus 4 = 1024 tokens) — below it, the API
+        // silently skips caching, no error.
+        system: [
+          {
+            type: 'text',
+            text: systemPrompt,
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
         messages: [
           {
             role: 'user',
