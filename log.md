@@ -519,3 +519,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/registry-pr-c-data-layer`
 - **Décision** : feat(registry): 5 Layer 1 builders + RPC parse modes + CI warn-only (ADR-058 PR-C) (+2 other commits)
 - **Sortie** : PR #458 | commits b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feature/sync-exports-seo-systemd (auto)
+
+- **Branche** : `feature/sync-exports-seo-systemd`
+- **Décision** : feat(scripts/cron): scheduler systemd + immutable snapshots (pr-5b)
+- **Sortie** : PR aucune | commits 87ed1b44
