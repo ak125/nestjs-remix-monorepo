@@ -63,6 +63,17 @@ module.exports = {
       to: { path: '^backend/src/' },
     },
     {
+      name: 'frontend-not-to-seo-projection-supabase-direct',
+      severity: 'error',
+      comment:
+        'ADR-059 §"No Direct Page SQL" — frontend ne doit JAMAIS importer @supabase/* dans des fichiers qui touchent à la projection SEO. Lecture exclusivement via frontend/app/services/seo/projection-read.client.ts qui fetch le backend HTTP endpoint /api/seo-projection/:entity_id. Tables __seo_entity_*, mv_seo_*, __seo_projection_* ne doivent JAMAIS être adressées directement depuis Remix loaders.',
+      from: {
+        path: '^frontend/app/(routes|services/seo|services/projection|services/api).*',
+        pathNot: 'services/seo/projection-read\\.client\\.ts$',
+      },
+      to: { path: '^node_modules/@supabase/' },
+    },
+    {
       name: 'backend-not-to-frontend',
       severity: 'error',
       comment:

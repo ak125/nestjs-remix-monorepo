@@ -1,0 +1,26 @@
+id: frontend-no-direct-seo-table
+language: TypeScript
+severity: error
+message: |
+  ADR-059 §"No Direct Page SQL" : les loaders Remix ne doivent JAMAIS
+  appeler `.from('__seo_*')` ou `.from('mv_seo_*')` directement.
+  Tout passe par `fetchActiveProjection()` (frontend/app/services/seo/projection-read.client.ts)
+  qui fetch le backend HTTP endpoint via l'adapter PR-7a.
+note: |
+  Si vous voyez ce message en CI, c'est qu'un loader Remix tente un
+  SELECT direct sur les tables de projection ou les MVs. Refactor pour
+  passer par le client HTTP : `import { fetchActiveProjection } from '~/services/seo/projection-read.client'`.
+files:
+  - frontend/app/**/*.ts
+  - frontend/app/**/*.tsx
+rule:
+  any:
+    - pattern: $X.from('__seo_entity_facts')
+    - pattern: $X.from('__seo_entity_fact_versions')
+    - pattern: $X.from('__seo_entity_sources')
+    - pattern: $X.from('__seo_content_blocks')
+    - pattern: $X.from('__seo_content_block_versions')
+    - pattern: $X.from('__seo_projection_runs')
+    - pattern: $X.from('__seo_projection_conflicts')
+    - pattern: $X.from('mv_seo_entity_facts_current')
+    - pattern: $X.from('mv_seo_content_blocks_current')
