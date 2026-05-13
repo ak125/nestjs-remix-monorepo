@@ -54,7 +54,8 @@
     "registry:seed-ownership": "node scripts/registry/seed-ownership.js --write",
     "registry:validate": "node scripts/registry/validate-overlay.js",
     "registry:build:canonical": "node scripts/registry/build-canonical-registry.js",
-    "registry": "npm run registry:build && npm run registry:build:canonical",
+    "registry:build:llm-map": "node scripts/registry/build-llm-repo-map.js",
+    "registry": "npm run registry:build && npm run registry:build:canonical && npm run registry:build:llm-map",
     "registry:validate-invariants": "tsx scripts/registry/validate-invariants.ts"
   },
   "keywords": [],

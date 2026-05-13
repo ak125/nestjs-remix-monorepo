@@ -6,6 +6,18 @@
 
 ## Hiérarchie de lecture
 
+### Registry Lookup First (ADR-058 PR-F)
+
+**Pour toute question de type « qui possède X », « quel domaine », « où vit Y », « est-ce que Z est runtime » :**
+
+0a. **[`REPO_MAP.md`](REPO_MAP.md)** — index unifié par domaine D1..D15 (généré depuis `audit/registry/canonical.json`). ~6KB, lecture rapide humaine.
+
+0b. **[`audit/registry/canonical.json`](../../audit/registry/canonical.json)** — Source of Truth machine-readable (Layer 1 auto + Layer 2 overlay couplés). Query programmatique via `jq` ou Node.
+
+Si la réponse n'est pas dans REPO_MAP ni canonical, passer à la prose ci-dessous. **Grep en dernier recours.**
+
+### Prose détaillée
+
 1. `README.md` (ce fichier) — index + règles de navigation
 2. `modules/<name>.md` — pour toute question portant sur un module backend NestJS
 3. `db/*.md` — pour les questions sur les tables, RPCs, migrations Supabase
