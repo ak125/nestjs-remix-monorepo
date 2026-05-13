@@ -543,3 +543,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feature/seo-projection-read-rpc`
 - **Décision** : feat(seo/projection): read rpc + adapter (pr-7a)
 - **Sortie** : PR #485 | commits 603f4318
+
+## 2026-05-14 — feature/seo-projection-read-rpc (auto)
+
+- **Branche** : `feature/seo-projection-read-rpc`
+- **Décision** : fix(seo/projection): use callRpc<T> wrapper canonique (rpc safety gate) (+2 other commits)
+- **Sortie** : PR #485 | commits b90b4b81 7adea5b6 ceed0f0b
