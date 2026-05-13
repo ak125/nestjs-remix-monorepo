@@ -45,6 +45,7 @@
     "ast_grep_errors_delta = 0 means any new blocking rule violation fails CI immediately.",
     "cycles_delta = 0 because any new cycle indicates coupling going the wrong direction.",
     "unused_files tolerates +5 to accommodate genuinely new files (e.g. new controller) that knip hasn't yet traced transitively.",
-    "After each cleanup PR merges, refresh this baseline via `npm run audit:baseline:refresh` and commit the new counts."
+    "After each cleanup PR merges, refresh this baseline via `npm run audit:baseline:refresh` and commit the new counts.",
+    "Since PR #449, --refresh prints a stderr warning listing any metric whose +delta exceeds threshold before writing — Ctrl-C if unintentional."
   ]
 }
