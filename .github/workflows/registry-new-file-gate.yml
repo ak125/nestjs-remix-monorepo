@@ -49,9 +49,12 @@ jobs:
 
       - name: Check new files (the actual gate)
         id: gate
+        # Invoke node directly (NOT `npm run`) — npm prefixes stdout with the
+        # script header "> nestjs-remix-monorepo@1.0.0 registry:check-new-files"
+        # which pollutes JSON output and breaks downstream jq parse.
         run: |
           set -e
-          npm run registry:check-new-files -- --base origin/main --json > /tmp/gate-report.json
+          node scripts/registry/check-new-files.js --base origin/main --json > /tmp/gate-report.json
           cat /tmp/gate-report.json | jq -c '{ok, missing_owner, missing_domain, missing_both, totalNew}'
 
       - name: Surface failures (if any)
