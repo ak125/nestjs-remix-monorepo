@@ -561,3 +561,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/ci-workspace-invariants`
 - **Décision** : feat(ci): workspace mini-monorepo check (ADR-061 §6)
 - **Sortie** : PR aucune | commits 9331cadd
+
+## 2026-05-14 — feat/canon-mirrors-precommit-hook (auto)
+
+- **Branche** : `feat/canon-mirrors-precommit-hook`
+- **Décision** : feat(canon-mirrors): pre-commit hook blocks manual edits (ADR-061 §3)
+- **Sortie** : PR aucune | commits c725253e
