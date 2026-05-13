@@ -2,22 +2,22 @@
   "_generated_by": "scripts/audit/build-db-usage-map.js",
   "note": "Candidates only — never a \"dead\" verdict. A real DROP table/function goes through the RPC Gate + a vault ADR, never from this map.",
   "important_caveats": [
-    "888 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
+    "886 `.from(<non-literal>)` callsites exist in backend/src — a literal-only scan UNDER-counts table usage; treat candidate_orphan_tables as \"needs manual check\", not \"dead\".",
     "Migration parsing is regex-based and tracks last CREATE vs last DROP per object (date-prefixed filenames ≈ chronological); re-create-after-drop edge cases may slip through.",
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
   "summary": {
-    "tables_seen": 232,
-    "tables_with_callsites": 172,
+    "tables_seen": 229,
+    "tables_with_callsites": 169,
     "candidate_orphan_tables": 60,
     "rpc_seen": 182,
     "rpc_with_callsites": 15,
     "trigger_functions": 26,
     "candidate_orphan_rpc": 141,
-    "dynamic_from_callsites": 888,
+    "dynamic_from_callsites": 886,
     "dynamic_rpc_callsites": 3,
     "migrations_scanned": 216,
-    "backend_files_scanned": 1014
+    "backend_files_scanned": 1008
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -1493,15 +1493,6 @@
       "rls_present": false,
       "in_knowledge_db": false
     },
-    "__substitution_logs": {
-      "used_by": [
-        "backend/src/modules/substitution/services/substitution-logger.service.ts"
-      ],
-      "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": false,
-      "in_knowledge_db": false
-    },
     "__ux_captures": {
       "used_by": [],
       "used_by_count": 0,
@@ -2397,24 +2388,6 @@
         "backend/src/modules/seo/services/sitemap-v10.service.ts"
       ],
       "used_by_count": 2,
-      "in_migrations": [],
-      "rls_present": false,
-      "in_knowledge_db": false
-    },
-    "v_substitution_daily": {
-      "used_by": [
-        "backend/src/modules/substitution/services/substitution-logger.service.ts"
-      ],
-      "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": false,
-      "in_knowledge_db": false
-    },
-    "v_substitution_funnel": {
-      "used_by": [
-        "backend/src/modules/substitution/services/substitution-logger.service.ts"
-      ],
-      "used_by_count": 1,
       "in_migrations": [],
       "rls_present": false,
       "in_knowledge_db": false
@@ -10183,14 +10156,6 @@
     {
       "file": "backend/src/modules/staff/services/staff-data.service.ts",
       "line": 250
-    },
-    {
-      "file": "backend/src/modules/substitution/services/substitution-logger.service.ts",
-      "line": 212
-    },
-    {
-      "file": "backend/src/modules/substitution/services/substitution-logger.service.ts",
-      "line": 253
     },
     {
       "file": "backend/src/modules/suppliers/suppliers.service.ts",

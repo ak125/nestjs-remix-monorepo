@@ -536,7 +536,6 @@
       "backend/src/modules/seo/seo.module.ts",
       "backend/src/modules/shipping/shipping.module.ts",
       "backend/src/modules/staff/staff.module.ts",
-      "backend/src/modules/substitution/substitution.module.ts",
       "backend/src/modules/suppliers/suppliers.module.ts",
       "backend/src/modules/support/support.module.ts",
       "backend/src/modules/system/system.module.ts",
@@ -612,7 +611,6 @@
       "backend/src/modules/knowledge-graph/knowledge-graph.module.ts",
       "backend/src/modules/mcp-validation/mcp-validation.module.ts",
       "backend/src/modules/rm/rm.module.ts",
-      "backend/src/modules/substitution/substitution.module.ts",
       "backend/src/modules/upload/upload.module.ts"
     ],
     "nestjs_controllers": [
@@ -1911,7 +1909,6 @@
       "backend/src/modules/staff/staff.controller.ts",
       "backend/src/modules/staff/staff.module.ts",
       "backend/src/modules/staff/staff.service.ts",
-      "backend/src/modules/substitution/substitution.module.ts",
       "backend/src/modules/suppliers/suppliers-modern.controller.ts",
       "backend/src/modules/suppliers/suppliers.controller.ts",
       "backend/src/modules/suppliers/suppliers.module.ts",
@@ -2288,7 +2285,7 @@
       "scripts/validate-specs.sh"
     ]
   },
-  "runtime_files_count": 1118,
+  "runtime_files_count": 1117,
   "runtime_files": [
     ".dependency-cruiser.cjs",
     ".github/workflows/agent-exit-contract-hash.yml",
@@ -2841,7 +2838,6 @@
     "backend/src/modules/staff/staff.controller.ts",
     "backend/src/modules/staff/staff.module.ts",
     "backend/src/modules/staff/staff.service.ts",
-    "backend/src/modules/substitution/substitution.module.ts",
     "backend/src/modules/suppliers/suppliers-modern.controller.ts",
     "backend/src/modules/suppliers/suppliers.controller.ts",
     "backend/src/modules/suppliers/suppliers.module.ts",

@@ -682,17 +682,6 @@
       "loc_total": 957,
       "has_barrel": false
     },
-    "substitution": {
-      "dirs": [
-        "backend/src/modules/substitution",
-        "backend/src/modules/substitution/controllers",
-        "backend/src/modules/substitution/services",
-        "backend/src/modules/substitution/types"
-      ],
-      "files_count": 6,
-      "loc_total": 1433,
-      "has_barrel": false
-    },
     "suppliers": {
       "dirs": [
         "backend/src/modules/suppliers",
@@ -1163,6 +1152,11 @@
       "from": "backend-core",
       "to": "system",
       "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "uncategorized",
+      "count": 2
     },
     {
       "from": "backend-core",
