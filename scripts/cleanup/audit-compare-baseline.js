@@ -206,6 +206,26 @@ function main() {
   const current = { knip, madge, depcruise, ast_grep };
 
   if (refresh) {
+    const { rows: deltaRows, hasFailure: hasRegression } = computeDelta(
+      current,
+      baseline,
+      baseline.thresholds,
+      false,
+    );
+    if (hasRegression) {
+      const regressions = deltaRows.filter((r) => r.status === 'REGRESSION');
+      process.stderr.write(
+        `\n[audit-compare] WARNING: refresh proceeding despite ${regressions.length} metric regression(s) beyond threshold:\n`,
+      );
+      for (const r of regressions) {
+        process.stderr.write(
+          `    ${r.metric}: ${r.baseline} -> ${r.current} (delta +${r.delta}, threshold +${r.threshold})\n`,
+        );
+      }
+      process.stderr.write(
+        `    The new baseline will bank these regressions. Abort (Ctrl-C) and rerun without --refresh if unintentional.\n\n`,
+      );
+    }
     const refreshed = refreshBaseline(baseline, current);
     fs.writeFileSync(BASELINE_PATH, JSON.stringify(refreshed, null, 2) + '\n');
     process.stdout.write(`[audit-compare] baseline refreshed at ${BASELINE_PATH}\n`);
