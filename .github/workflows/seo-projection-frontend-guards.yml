@@ -1,0 +1,50 @@
+name: seo-projection-frontend-guards
+
+# ADR-059 §"No Direct Page SQL" — enforce mécaniquement que les loaders
+# Remix ne touchent JAMAIS __seo_entity_* / mv_seo_* / __seo_projection_*.
+# Lecture exclusivement via fetchActiveProjection() (HTTP vers backend adapter).
+
+on:
+  pull_request:
+    paths:
+      - 'frontend/app/**'
+      - 'backend/src/modules/seo/projection/**'
+      - '.ast-grep/rules/frontend-no-direct-seo-table.yml'
+      - '.dependency-cruiser.cjs'
+      - '.github/workflows/seo-projection-frontend-guards.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'frontend/app/**'
+      - '.ast-grep/rules/frontend-no-direct-seo-table.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  ast-grep:
+    name: ast-grep frontend-no-direct-seo-table
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ast-grep
+        run: npm install -g @ast-grep/cli
+      - name: Scan frontend for direct SEO table access
+        run: |
+          ast-grep scan --config sgconfig.yml --rule .ast-grep/rules/frontend-no-direct-seo-table.yml frontend/
+
+  depcruise:
+    name: depcruise frontend-not-to-seo-projection-supabase-direct
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install deps
+        run: npm ci --ignore-scripts
+      - name: Run dependency-cruiser on frontend
+        run: |
+          npx depcruise --config .dependency-cruiser.cjs frontend/app/ \
+            --output-type err-long \
+            || (echo "::error::depcruise violation — see ADR-059 §No Direct Page SQL"; exit 1)
