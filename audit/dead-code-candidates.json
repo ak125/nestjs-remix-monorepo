@@ -1,11 +1,11 @@
 {
   "_generated_by": "scripts/audit/build-deep-inventory.js",
   "note": "Candidates only. Deletion requires the full conditions (#0–#8) incl. validate-before-delete.sh + build/tests + human review.",
-  "count": 333,
+  "count": 326,
   "by_confidence": {
     "high": 22,
-    "medium": 217,
-    "low": 94
+    "medium": 216,
+    "low": 88
   },
   "candidates": [
     {
@@ -1935,119 +1935,6 @@
       "precheck_verdict": {
         "c0_not_never_auto_delete": true,
         "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/upload/dto/index.ts",
-      "domain": "upload",
-      "kind": "other",
-      "confidence": "medium",
-      "derived_from": [
-        "knip",
-        "depcruise-no-dependents"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": true,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/upload/services/file-validation.service.ts",
-      "domain": "upload",
-      "kind": "service",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/upload/services/image-processing.service.ts",
-      "domain": "upload",
-      "kind": "service",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/upload/services/upload-analytics.service.ts",
-      "domain": "upload",
-      "kind": "service",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/upload/services/upload-optimization.service.ts",
-      "domain": "upload",
-      "kind": "service",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/upload/services/upload.service.ts",
-      "domain": "upload",
-      "kind": "service",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
-        "c2_zero_dynamic_import": true,
-        "c3_zero_runtime_use": true
-      },
-      "reason": "knip unused"
-    },
-    {
-      "path": "backend/src/modules/upload/upload.controller.ts",
-      "domain": "upload",
-      "kind": "controller",
-      "confidence": "low",
-      "derived_from": [
-        "knip"
-      ],
-      "precheck_verdict": {
-        "c0_not_never_auto_delete": true,
-        "c1_zero_static_import": false,
         "c2_zero_dynamic_import": true,
         "c3_zero_runtime_use": true
       },

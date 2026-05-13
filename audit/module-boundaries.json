@@ -507,6 +507,19 @@
       "loc_total": 35,
       "has_barrel": false
     },
+    "pkg-registry": {
+      "dirs": [
+        "packages/registry/src",
+        "packages/registry/src/__tests__",
+        "packages/registry/src/canonical",
+        "packages/registry/src/entries",
+        "packages/registry/src/overlay",
+        "packages/registry/src/shared"
+      ],
+      "files_count": 23,
+      "loc_total": 1366,
+      "has_barrel": true
+    },
     "pkg-seo-types": {
       "dirs": [
         "packages/seo-types/src"
@@ -568,6 +581,8 @@
         "scripts/db",
         "scripts/marketing",
         "scripts/mcp-server",
+        "scripts/registry",
+        "scripts/registry/lib",
         "scripts/testing",
         "scripts/ui-audit",
         "scripts/ui-audit/analyzer",
@@ -576,8 +591,8 @@
         "scripts/ui-audit/rules",
         "scripts/ui-governance"
       ],
-      "files_count": 58,
-      "loc_total": 11208,
+      "files_count": 64,
+      "loc_total": 12393,
       "has_barrel": true
     },
     "search": {
@@ -752,21 +767,21 @@
         "services/remotion-renderer/src/compositions/components",
         "services/remotion-renderer/src/lib",
         "services/remotion-renderer/src/routes",
-        "services/remotion-renderer/src/types"
+        "services/remotion-renderer/src/types",
+        "tests/registry"
       ],
-      "files_count": 108,
-      "loc_total": 21635,
+      "files_count": 109,
+      "loc_total": 21821,
       "has_barrel": true
     },
     "upload": {
       "dirs": [
-        "backend/src/modules/upload",
         "backend/src/modules/upload/dto",
         "backend/src/modules/upload/services"
       ],
-      "files_count": 10,
-      "loc_total": 3580,
-      "has_barrel": true
+      "files_count": 2,
+      "loc_total": 231,
+      "has_barrel": false
     },
     "users": {
       "dirs": [
@@ -1163,6 +1178,11 @@
       "from": "backend-core",
       "to": "system",
       "count": 1
+    },
+    {
+      "from": "backend-core",
+      "to": "uncategorized",
+      "count": 2
     },
     {
       "from": "backend-core",

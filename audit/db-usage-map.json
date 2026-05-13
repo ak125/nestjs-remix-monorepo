@@ -7,8 +7,8 @@
     "RLS-only / dashboard / external-cron / RPC-internal usage is invisible here — see per-candidate caveats."
   ],
   "summary": {
-    "tables_seen": 232,
-    "tables_with_callsites": 172,
+    "tables_seen": 231,
+    "tables_with_callsites": 171,
     "candidate_orphan_tables": 60,
     "rpc_seen": 182,
     "rpc_with_callsites": 15,
@@ -17,7 +17,7 @@
     "dynamic_from_callsites": 888,
     "dynamic_rpc_callsites": 3,
     "migrations_scanned": 216,
-    "backend_files_scanned": 1014
+    "backend_files_scanned": 1006
   },
   "tables": {
     "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7": {
@@ -2330,15 +2330,6 @@
     "system_config": {
       "used_by": [
         "backend/src/modules/admin/services/configuration.service.ts"
-      ],
-      "used_by_count": 1,
-      "in_migrations": [],
-      "rls_present": false,
-      "in_knowledge_db": false
-    },
-    "upload_analytics": {
-      "used_by": [
-        "backend/src/modules/upload/services/upload-analytics.service.ts"
       ],
       "used_by_count": 1,
       "in_migrations": [],

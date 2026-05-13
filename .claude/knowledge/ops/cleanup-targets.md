@@ -39,7 +39,7 @@ Source d'évidence : [`audit/runtime-entrypoints.json#nestjs_unreachable_modules
 
 | Module | Fichiers | 1er commit | Importeurs statiques | Doc humaine | Verdict |
 |---|---|---|---|---|---|
-| `modules/upload/` | 10 | 2025-08-28 | **aucun** | `.claude/knowledge/modules/upload.md` | **clearly dead** — candidat delete |
+| `modules/upload/` | ~~10~~ → **2** | 2025-08-28 | **rag-proxy** importe `SupabaseStorageService` (`../upload/services/supabase-storage.service`) | `.claude/knowledge/modules/upload.md` | **`partial` — 8 dropped, 2 retained** (PR-3b-2 2026-05-13) ; storage util conservé pour rag-proxy (+ `upload.dto.ts` pour `FileUploadResult`) |
 | `modules/agentic-engine/` | 14 | 2026-03-09 | **aucun** | knowledge note seule | **clearly dead** — candidat delete |
 | `modules/mcp-validation/` | **19** | 2026-01-26 | **aucun** | knowledge note seule | **clearly dead** — candidat delete (plus gros bucket) |
 | `modules/substitution/` | 6 | 2026-01-12 | **aucun import statique** ; **mais** `@Controller('api/substitution') @Get('check')` consommé par `frontend/app/routes/pieces.$slug.tsx:206` (HTTP runtime — TS ne voit pas l'edge) | knowledge note + ref `.claude/knowledge/integrations/parts-feed.md` | **`http_live` — retention requise** (canari PR-3b-1 PR #466 closed 2026-05-13 ; le drop aurait cassé `/pieces/:slug` en prod). Allowlist via `validate-before-delete.sh` (le check `[HTTP-ROUTE-CALLER]` du prereq-2 fire automatiquement). |
