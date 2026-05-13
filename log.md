@@ -531,3 +531,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/registry-pr-e-canonical`
 - **Décision** : feat(registry): canonical projection Layer 3 + freshness CI Phase 1 + 4 invariants (ADR-058 PR-E) (+6 other commits)
 - **Sortie** : PR #462 | commits a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-f-llm-entrypoint (auto)
+
+- **Branche** : `feat/registry-pr-f-llm-entrypoint`
+- **Décision** : feat(registry): LLM entrypoint REPO_MAP.md + CLAUDE.md step 0 + cross-language hook (ADR-058 PR-F) (+8 other commits)
+- **Sortie** : PR #463 | commits 9ac2f75b 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
