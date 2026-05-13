@@ -21,17 +21,15 @@ jobs:
         with:
           node-version: "20"
       - name: Install ajv-cli
-        run: npm install -g ajv-cli@5 ajv-formats@3
+        run: npm install -g ajv-cli@5
       - name: Validate pipelines.registry.json
         run: |
           ajv validate \
-            -c ajv-formats \
             -s .spec/00-canon/repository-registry/_schema/pipelines.registry.schema.json \
             -d .spec/00-canon/repository-registry/pipelines.registry.json
       - name: Validate projections.registry.json
         run: |
           ajv validate \
-            -c ajv-formats \
             -s .spec/00-canon/repository-registry/_schema/projections.registry.schema.json \
             -d .spec/00-canon/repository-registry/projections.registry.json
       - name: Setup Python
