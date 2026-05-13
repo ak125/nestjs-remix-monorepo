@@ -23,11 +23,13 @@ on:
         description: Max staleHours allowed before failing
         required: false
         default: '36'
-  pull_request:
-    paths:
-      - scripts/ci/check-sitemap-freshness.sh
-      - .github/workflows/sitemap-freshness-slo.yml
-      - backend/src/modules/seo/services/sitemap-v10-freshness.service.ts
+
+# Note: this workflow used to also run on `pull_request` to validate the
+# script syntax. That was removed because the probe targets the deployed
+# PROD endpoint — pre-merge runs always 404 by design (the endpoint isn't
+# deployed yet) and were blocking the merge of the very PR that ships the
+# endpoint. The script is unit-coverable via the backend Jest suite +
+# manual `workflow_dispatch` after deploy.
 
 permissions:
   contents: read
