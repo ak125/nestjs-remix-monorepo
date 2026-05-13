@@ -43,7 +43,14 @@
     "audit:seo-matrix:check": "npm run audit:seo-matrix && git diff --exit-code -- audit-reports/seo-agent-matrix.json",
     "audit:db-usage": "node scripts/audit/build-db-usage-map.js",
     "audit:inventory": "node scripts/audit/build-deep-inventory.js && node scripts/audit/build-db-usage-map.js",
-    "audit:inventory:check": "npm run audit:inventory && git diff --exit-code -- audit/*.json"
+    "audit:inventory:check": "npm run audit:inventory && git diff --exit-code -- audit/*.json",
+    "registry:build:files": "node scripts/registry/build-files-registry.js",
+    "registry:build:runtime": "node scripts/registry/build-runtime-registry.js",
+    "registry:build:deps": "node scripts/registry/build-deps-registry.js",
+    "registry:build:db": "node scripts/registry/build-db-registry.js",
+    "registry:build:rpc": "node scripts/registry/build-rpc-registry.js",
+    "registry:build": "npm run registry:build:files && npm run registry:build:runtime && npm run registry:build:deps && npm run registry:build:db && npm run registry:build:rpc",
+    "registry:test:rpc-parser": "tsx --test tests/registry/rpc-parser.test.ts"
   },
   "keywords": [],
   "author": "",
