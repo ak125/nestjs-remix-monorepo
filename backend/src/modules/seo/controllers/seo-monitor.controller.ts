@@ -14,10 +14,17 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { SeoMonitorSchedulerService } from '../../../workers/services/seo-monitor-scheduler.service';
+import {
+  SeoRecoveryMonitorService,
+  SeoRecoveryReport,
+} from '../services/seo-recovery-monitor.service';
 
 @Controller('api/seo/monitor')
 export class SeoMonitorController {
-  constructor(private readonly schedulerService: SeoMonitorSchedulerService) {}
+  constructor(
+    private readonly schedulerService: SeoMonitorSchedulerService,
+    private readonly recoveryMonitor: SeoRecoveryMonitorService,
+  ) {}
 
   /**
    * 📊 GET /api/seo/monitor/stats
@@ -31,6 +38,22 @@ export class SeoMonitorController {
       success: true,
       data: stats,
     };
+  }
+
+  /**
+   * 🩺 GET /api/seo/monitor/recovery-status
+   * Observable recovery report after the traffic-drop incident
+   * 2026-04-22 → 2026-05-13. Compares current-week GSC impressions
+   * on `/pieces/*` against the pre-incident W17 baseline and emits
+   * a `status` field consumed by the daily CI watchdog
+   * (.github/workflows/seo-recovery-watchdog.yml).
+   *
+   * Public read-only — same security profile as `/stats`. Configurable
+   * via SEO_RECOVERY_* env vars (see service docstring).
+   */
+  @Get('recovery-status')
+  async getRecoveryStatus(): Promise<SeoRecoveryReport> {
+    return this.recoveryMonitor.getReport();
   }
 
   /**

@@ -58,6 +58,7 @@ import { RiskFlagsEngineService } from './services/risk-flags-engine.service';
 import { GooglebotDetectorService } from './services/googlebot-detector.service';
 import { KeywordsDashboardService } from './services/keywords-dashboard.service';
 import { LogIngestionService } from './services/log-ingestion.service';
+import { SeoRecoveryMonitorService } from './services/seo-recovery-monitor.service';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // SERVICES SITEMAP (ex seo-sitemap)
@@ -228,6 +229,7 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     GooglebotDetectorService,
     KeywordsDashboardService,
     LogIngestionService,
+    SeoRecoveryMonitorService,
     // Sitemap
     SitemapV10XmlService,
     SitemapV10DataService,
