@@ -519,3 +519,27 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/registry-pr-c-data-layer`
 - **Décision** : feat(registry): 5 Layer 1 builders + RPC parse modes + CI warn-only (ADR-058 PR-C) (+2 other commits)
 - **Sortie** : PR #458 | commits b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-d-canon-overlay (auto)
+
+- **Branche** : `feat/registry-pr-d-canon-overlay`
+- **Décision** : feat(registry): Layer 2 overlay manuel + seed/validate + DomainId D1..D15 (ADR-058 PR-D) (+4 other commits)
+- **Sortie** : PR #460 | commits 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-e-canonical (auto)
+
+- **Branche** : `feat/registry-pr-e-canonical`
+- **Décision** : feat(registry): canonical projection Layer 3 + freshness CI Phase 1 + 4 invariants (ADR-058 PR-E) (+6 other commits)
+- **Sortie** : PR #462 | commits a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-d-canon-overlay (auto)
+
+- **Branche** : `feat/registry-pr-d-canon-overlay`
+- **Décision** : Merge remote-tracking branch 'origin/main' into feat/registry-pr-d-canon-overlay (+8 other commits)
+- **Sortie** : PR #474 | commits 9f4c6a9b be6cd0d5 c13a0d1a 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-d-canon-overlay (auto)
+
+- **Branche** : `feat/registry-pr-d-canon-overlay`
+- **Décision** : chore(registry): rebuild canonical against new main (sync race fix) (+12 other commits)
+- **Sortie** : PR #474 | commits c901b065 ec17c941 2bc5f803 666d7f46 9f4c6a9b be6cd0d5 c13a0d1a 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
