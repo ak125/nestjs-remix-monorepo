@@ -1,0 +1,50 @@
+name: 🛰️ Sitemap freshness SLO
+
+# Hits the public GET /api/sitemap/v10/freshness endpoint and fails if the
+# sitemap is older than the threshold OR if the BullMQ scheduler is no longer
+# registered. Prevents recurrence of the silent-stale class of bug that caused
+# the traffic-drop incident 2026-04-22 → 2026-05-13 (see PR #487).
+#
+# Schedule rationale:
+#  - Backend cron fires at 03:00 UTC (SitemapV10SchedulerService).
+#  - SEO daily-fetch cron fires at 04:00 UTC.
+#  - This SLO check fires at 06:00 UTC, leaving 3h margin for the regen to finish.
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 06:00 UTC daily
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Freshness endpoint URL to probe
+        required: false
+        default: https://www.automecanik.com/api/sitemap/v10/freshness
+      warn_threshold_hours:
+        description: Max staleHours allowed before failing
+        required: false
+        default: '36'
+  pull_request:
+    paths:
+      - scripts/ci/check-sitemap-freshness.sh
+      - .github/workflows/sitemap-freshness-slo.yml
+      - backend/src/modules/seo/services/sitemap-v10-freshness.service.ts
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Probe and assert
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x scripts/ci/check-sitemap-freshness.sh
+
+      - name: Run freshness check
+        env:
+          SEO_FRESHNESS_URL: ${{ inputs.url || 'https://www.automecanik.com/api/sitemap/v10/freshness' }}
+          SEO_FRESHNESS_WARN_HOURS: ${{ inputs.warn_threshold_hours || '36' }}
+        run: ./scripts/ci/check-sitemap-freshness.sh
