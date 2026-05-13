@@ -131,10 +131,7 @@ export class SitemapV10SchedulerService implements OnModuleInit {
    * (04:00 UTC GSC/GA4) pour que sitemap soit frais avant l'ingestion KPI.
    */
   private getCron(): string {
-    return this.configService.get<string>(
-      'SEO_SITEMAP_CRON',
-      '0 3 * * *',
-    );
+    return this.configService.get<string>('SEO_SITEMAP_CRON', '0 3 * * *');
   }
 
   private isEnabled(): boolean {
