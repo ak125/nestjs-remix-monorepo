@@ -110,7 +110,22 @@ done
 RUNTIME_JSON="$REPO_ROOT/audit/runtime-entrypoints.json"
 DYN_JSON="$REPO_ROOT/audit/dynamic-import-edges.json"
 if [[ -f "$RUNTIME_JSON" ]] && command -v node >/dev/null 2>&1; then
-  if node -e 'const j=require(process.argv[1]); process.exit((j.runtime_files||[]).includes(process.argv[2])?0:1)' "$RUNTIME_JSON" "$REL"; then
+  # The runtime_files list is broad and includes files of NestJS modules that
+  # are NOT reachable from app.module.ts (the entrypoints.nestjs_unreachable_modules
+  # list). For Step B drops of those subtrees, the runtime-entrypoint check must
+  # not blanket-reject — by definition, an unreachable module file is not runtime.
+  if node -e '
+    const j = require(process.argv[1]);
+    const rel = process.argv[2];
+    const runtime = j.runtime_files || [];
+    if (!runtime.includes(rel)) process.exit(1);
+    const unreachable = (j.entrypoints && j.entrypoints.nestjs_unreachable_modules) || [];
+    const subtreeDirs = unreachable
+      .filter((p) => p.startsWith("backend/src/modules/"))
+      .map((p) => p.replace(/[^/]+\.module\.ts$/, ""));
+    if (subtreeDirs.some((d) => rel.startsWith(d))) process.exit(1);
+    process.exit(0);
+  ' "$RUNTIME_JSON" "$REL"; then
     report_hit "[RUNTIME-ENTRYPOINT] '$REL' is listed in audit/runtime-entrypoints.json — DO NOT delete."
   fi
 fi
