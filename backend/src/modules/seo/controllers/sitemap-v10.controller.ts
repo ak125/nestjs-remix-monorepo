@@ -11,7 +11,14 @@
  * - POST /api/sitemap/v10/ping             → Ping Google
  */
 
-import { Controller, Get, Post, Param, Logger, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Logger,
+  UseGuards,
+} from '@nestjs/common';
 import {
   SitemapV10Service,
   TemperatureBucket,
