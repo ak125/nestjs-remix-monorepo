@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/ak125/nestjs-remix-monorepo/.spec/00-canon/repository-registry/_schema/pipelines.registry.schema.json",
   "title": "Pipelines Registry Canon",
   "description": "Registry machine-readable des pipelines content/SEO/RAG. Statut READY/PARTIAL/MISSING. Réf ADR-058.",
