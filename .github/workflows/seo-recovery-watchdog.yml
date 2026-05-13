@@ -38,6 +38,34 @@ jobs:
         run: chmod +x scripts/ci/check-seo-recovery.sh
 
       - name: Run watchdog
+        id: probe
         env:
           SEO_RECOVERY_URL: ${{ inputs.url || 'https://www.automecanik.com/api/seo/monitor/recovery-status' }}
         run: ./scripts/ci/check-seo-recovery.sh
+
+      # Notify Sentry on failure so the existing alert rule (single-recipient
+      # email mirror, cf. memory `sentry-vps-bootstrap-20260506`) surfaces this
+      # in the user's mailbox without requiring a separate SMTP setup. Skipped
+      # silently if the SENTRY_DSN secret is not configured in the repo.
+      - name: Notify Sentry (on failure)
+        if: failure() && env.SENTRY_DSN != ''
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          python3 -m pip install --quiet sentry-sdk
+          python3 - <<'PY'
+          import os, sentry_sdk
+          sentry_sdk.init(
+              dsn=os.environ['SENTRY_DSN'],
+              environment='production',
+              release='seo-recovery-watchdog',
+              traces_sample_rate=0.0,
+          )
+          sentry_sdk.set_tag('watchdog', 'seo-recovery')
+          sentry_sdk.set_tag('workflow_run', os.environ.get('GITHUB_RUN_ID', ''))
+          sentry_sdk.capture_message(
+              'seo-recovery-watchdog FAILED — pieces impressions recovery stalled or below target',
+              level='error',
+          )
+          sentry_sdk.flush(timeout=5)
+          PY
