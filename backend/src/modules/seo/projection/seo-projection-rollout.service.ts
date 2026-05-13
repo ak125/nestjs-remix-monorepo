@@ -18,7 +18,6 @@
  */
 import { Injectable, Logger } from '@nestjs/common';
 
-
 // ────────────────────────────────────────────────────────────────────────────
 // Circuit breaker (anti runtime-critical dependency)
 // ────────────────────────────────────────────────────────────────────────────
@@ -30,14 +29,12 @@ const CACHE_TTL_MS = 5 * 60_000; // 5 min — per ADR-059 §"GrowthBook advisory
 export const FALLBACK_DEFAULT_FLAG_VALUE = false;
 export const FLAG_NAME = 'seo_projection_read_v1';
 
-
 type CircuitState = 'closed' | 'open';
 
 interface CachedFlag {
   value: boolean;
   fetched_at: number;
 }
-
 
 export interface RolloutDecision {
   /** Effective value to use at call site. */
@@ -48,13 +45,11 @@ export interface RolloutDecision {
   last_error: string | null;
 }
 
-
 /**
  * Pluggable lookup function : remplaçable par un vrai GrowthBook client SDK
  * en DI ou PR followup. Doit retourner un boolean ou throw.
  */
 export type FlagLookupFn = (flagName: string) => Promise<boolean>;
-
 
 @Injectable()
 export class SeoProjectionRolloutService {

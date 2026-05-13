@@ -26,7 +26,6 @@ import {
 
 import { SeoProjectionReadAdapter } from './seo-projection-read.adapter';
 
-
 @Controller('api/seo-projection')
 export class SeoProjectionReadController {
   private readonly readLogger = new Logger(SeoProjectionReadController.name);

@@ -15,21 +15,22 @@ import {
   SeoProjectionRolloutService,
 } from '../seo-projection-rollout.service';
 
-
 const SERVICE_SRC = join(__dirname, '..', 'seo-projection-rollout.service.ts');
-
 
 function makeService(): SeoProjectionRolloutService {
   const svc = new SeoProjectionRolloutService();
   // Logger stub (avoid Nest DI for unit tests)
-  (svc as unknown as { rolloutLogger: { warn: jest.Mock; error: jest.Mock; log: jest.Mock } }).rolloutLogger = {
+  (
+    svc as unknown as {
+      rolloutLogger: { warn: jest.Mock; error: jest.Mock; log: jest.Mock };
+    }
+  ).rolloutLogger = {
     warn: jest.fn(),
     error: jest.fn(),
     log: jest.fn(),
   };
   return svc;
 }
-
 
 describe('SeoProjectionRolloutService — advisory-only contract', () => {
   it('FALLBACK_DEFAULT_FLAG_VALUE is false (legacy path)', () => {
@@ -104,7 +105,6 @@ describe('SeoProjectionRolloutService — advisory-only contract', () => {
   });
 });
 
-
 describe('PR-7b architectural guards (rollout service)', () => {
   const src = readFileSync(SERVICE_SRC, 'utf-8');
 
@@ -122,7 +122,12 @@ describe('PR-7b architectural guards (rollout service)', () => {
   });
 
   it('NEVER imports LLM SDKs', () => {
-    const forbidden = ["from 'anthropic'", "from '@anthropic-ai", "from 'openai'", "from 'groq-sdk'"];
+    const forbidden = [
+      "from 'anthropic'",
+      "from '@anthropic-ai",
+      "from 'openai'",
+      "from 'groq-sdk'",
+    ];
     for (const needle of forbidden) {
       expect(src).not.toContain(needle);
     }
