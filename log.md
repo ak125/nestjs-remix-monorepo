@@ -538,8 +538,8 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : feat(registry): LLM entrypoint REPO_MAP.md + CLAUDE.md step 0 + cross-language hook (ADR-058 PR-F) (+8 other commits)
 - **Sortie** : PR #463 | commits 9ac2f75b 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
 
-## 2026-05-13 — fix/seo-sitemap-auto-regeneration-cron (auto)
+## 2026-05-13 — feature/seo-projection-workers (auto)
 
-- **Branche** : `fix/seo-sitemap-auto-regeneration-cron`
-- **Décision** : fix(seo): restore automatic sitemap regeneration via BullMQ repeatable job
-- **Sortie** : PR #487 | commits af70edb3
+- **Branche** : `feature/seo-projection-workers`
+- **Décision** : feat(seo/projection): bullmq workers + contract check (pr-6b)
+- **Sortie** : PR #483 | commits 1a4dfb89
