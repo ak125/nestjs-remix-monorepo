@@ -55,7 +55,8 @@
     "registry:validate": "node scripts/registry/validate-overlay.js",
     "registry:build:canonical": "node scripts/registry/build-canonical-registry.js",
     "registry": "npm run registry:build && npm run registry:build:canonical",
-    "registry:validate-invariants": "tsx scripts/registry/validate-invariants.ts"
+    "registry:validate-invariants": "tsx scripts/registry/validate-invariants.ts",
+    "registry:check-new-files": "node scripts/registry/check-new-files.js"
   },
   "keywords": [],
   "author": "",
