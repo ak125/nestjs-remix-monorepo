@@ -74,6 +74,8 @@ import { HubsVehicleService } from './services/sitemap-v10-hubs-vehicle.service'
 import { SitemapV10ScoringService } from './services/sitemap-v10-scoring.service';
 import { SitemapDeltaService } from './services/sitemap-delta.service';
 import { SitemapStreamingService } from './services/sitemap-streaming.service';
+import { SitemapV10SchedulerService } from './services/sitemap-v10-scheduler.service';
+import { SitemapRegenerateProcessor } from './processors/sitemap-regenerate.processor';
 import { SitemapHygieneService } from './services/sitemap-hygiene.service';
 import { SitemapVehiclePiecesValidator } from './services/sitemap-vehicle-pieces-validator.service';
 
@@ -241,6 +243,9 @@ import { PageRoleValidationInterceptor } from './interceptors/page-role-validati
     SitemapStreamingService,
     SitemapHygieneService,
     SitemapVehiclePiecesValidator,
+    // Régénération nocturne BullMQ (fix traffic-drop 2026-04-22 → 2026-05-13)
+    SitemapV10SchedulerService,
+    SitemapRegenerateProcessor,
     // Content
     ReferenceService,
     DiagnosticService,
