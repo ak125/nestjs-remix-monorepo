@@ -46,7 +46,36 @@ jobs:
         run: chmod +x scripts/ci/check-sitemap-freshness.sh
 
       - name: Run freshness check
+        id: probe
         env:
           SEO_FRESHNESS_URL: ${{ inputs.url || 'https://www.automecanik.com/api/sitemap/v10/freshness' }}
           SEO_FRESHNESS_WARN_HOURS: ${{ inputs.warn_threshold_hours || '36' }}
         run: ./scripts/ci/check-sitemap-freshness.sh
+
+      # Notify Sentry on failure so the existing alert rule (single-recipient
+      # email mirror, cf. memory `sentry-vps-bootstrap-20260506`) surfaces this
+      # in the user's mailbox without requiring a separate SMTP setup. Skipped
+      # silently if the SENTRY_DSN secret is not configured in the repo —
+      # ergo this workflow merges cleanly even before SENTRY_DSN is added.
+      - name: Notify Sentry (on failure)
+        if: failure() && env.SENTRY_DSN != ''
+        env:
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+        run: |
+          python3 -m pip install --quiet sentry-sdk
+          python3 - <<'PY'
+          import os, sentry_sdk
+          sentry_sdk.init(
+              dsn=os.environ['SENTRY_DSN'],
+              environment='production',
+              release='sitemap-freshness-watchdog',
+              traces_sample_rate=0.0,
+          )
+          sentry_sdk.set_tag('watchdog', 'sitemap-freshness-slo')
+          sentry_sdk.set_tag('workflow_run', os.environ.get('GITHUB_RUN_ID', ''))
+          sentry_sdk.capture_message(
+              'sitemap-freshness-slo watchdog FAILED — sitemap is stale or scheduler missing',
+              level='error',
+          )
+          sentry_sdk.flush(timeout=5)
+          PY
