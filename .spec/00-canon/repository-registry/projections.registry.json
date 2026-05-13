@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "schema_url": "./_schema/projections.registry.schema.json",
+  "generated_at": null,
+  "projections": [
+    {
+      "projection_id": "seo_runtime_v1",
+      "status": "PLANNED",
+      "source": "wiki/exports/seo/",
+      "fed_by_pipeline": "exports_seo_to_db_projection",
+      "tables": [
+        "__seo_projection_runs",
+        "__seo_entity_facts",
+        "__seo_entity_fact_versions",
+        "__seo_entity_sources",
+        "__seo_content_blocks",
+        "__seo_content_block_versions",
+        "__seo_projection_conflicts"
+      ],
+      "materialized_views": [
+        "mv_seo_entity_facts_current",
+        "mv_seo_content_blocks_current"
+      ],
+      "runner": "backend/src/modules/seo/projection/seo-projection-write.worker.ts",
+      "refresh_worker": "backend/src/modules/seo/projection/seo-projection-refresh.worker.ts",
+      "rpc": "get_active_seo_projection",
+      "consumers": [
+        "R3_CONSEILS",
+        "R4_REFERENCE",
+        "R6_GUIDE_ACHAT",
+        "R7_BRAND",
+        "R8_VEHICLE"
+      ],
+      "consumers_non_seo": [],
+      "projection_contract_version": "1.0.0",
+      "rollout_flag": "growthbook:seo_projection_read_v1",
+      "owner_pr": "PR-6",
+      "adr": "ADR-058"
+    }
+  ]
+}
