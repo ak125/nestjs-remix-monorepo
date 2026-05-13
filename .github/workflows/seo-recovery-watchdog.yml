@@ -1,0 +1,43 @@
+name: 🩺 SEO recovery watchdog
+
+# Probes GET /api/seo/monitor/recovery-status daily and fails if recovery
+# is stalled (status=degraded or failed). Automates the 7-14 day monitoring
+# window that follows PR #487 (sitemap regen restoration).
+#
+# Schedule rationale:
+#  - Backend daily-fetch cron fetches GSC at 04:00 UTC.
+#  - This watchdog fires at 07:00 UTC, giving the fetch 3h headroom.
+#
+# When to disable:
+#  - Once `status=recovered` has held for 7 consecutive days, comment out
+#    the schedule trigger or delete this workflow. Re-enable manually if
+#    a similar incident pattern reappears.
+
+on:
+  schedule:
+    - cron: '0 7 * * *' # 07:00 UTC daily
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Recovery endpoint URL to probe
+        required: false
+        default: https://www.automecanik.com/api/seo/monitor/recovery-status
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Probe recovery status
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Make script executable
+        run: chmod +x scripts/ci/check-seo-recovery.sh
+
+      - name: Run watchdog
+        env:
+          SEO_RECOVERY_URL: ${{ inputs.url || 'https://www.automecanik.com/api/seo/monitor/recovery-status' }}
+        run: ./scripts/ci/check-seo-recovery.sh
