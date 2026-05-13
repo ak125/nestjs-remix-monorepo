@@ -65,9 +65,11 @@ export class SitemapV10FreshnessService {
     private readonly seoMonitorQueue: Queue | null,
   ) {
     this.outputDir =
-      this.configService.get<string>('SITEMAP_OUTPUT_DIR') || '/var/www/sitemaps';
+      this.configService.get<string>('SITEMAP_OUTPUT_DIR') ||
+      '/var/www/sitemaps';
     this.warnHours = parseInt(
-      this.configService.get<string>('SEO_SITEMAP_FRESHNESS_WARN_HOURS') || '36',
+      this.configService.get<string>('SEO_SITEMAP_FRESHNESS_WARN_HOURS') ||
+        '36',
       10,
     );
   }
@@ -107,7 +109,9 @@ export class SitemapV10FreshnessService {
     const schedulerRegistered = await this.checkSchedulerRegistered();
 
     const isHealthy =
-      staleHours !== null && staleHours <= warnThresholdHours && fileLastModifiedAt !== null;
+      staleHours !== null &&
+      staleHours <= warnThresholdHours &&
+      fileLastModifiedAt !== null;
     if (!isHealthy && !reason) {
       if (staleHours === null) {
         reason = 'sitemap.xml missing';
