@@ -41,7 +41,21 @@
 
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
+const { execFileSync } = require("child_process");
+
+// Validate git ref name : prevent command-injection via argv `--base` (CodeQL).
+// Allows alphanumerics, slash, dot, dash, underscore, tilde — covers
+// `origin/main`, `main~5`, `refs/heads/foo-bar`, sha hex, etc. Rejects
+// spaces, shell metachars, control chars.
+const GIT_REF_RE = /^[A-Za-z0-9_./~^-]+$/;
+function validateRef(ref) {
+  if (typeof ref !== "string" || !GIT_REF_RE.test(ref) || ref.length > 200) {
+    throw new Error(
+      `Invalid git ref "${ref}" — must match ${GIT_REF_RE} (≤ 200 chars)`
+    );
+  }
+  return ref;
+}
 const yaml = require("js-yaml");
 const micromatch = require("micromatch");
 
@@ -150,28 +164,35 @@ function classify(filePath, overlay) {
 }
 
 function getNewFiles(baseRef) {
-  // git diff --diff-filter=A --name-only <base>..HEAD
+  // Validate argv input BEFORE passing to child process — CodeQL command-injection guard
+  const safeRef = validateRef(baseRef);
+
+  // execFileSync uses arg array (no shell), so even if validation slips,
+  // the ref would be a literal argv not a shell-interpreted string.
   try {
-    const out = execSync(
-      `git diff --diff-filter=A --name-only ${baseRef}..HEAD`,
+    const out = execFileSync(
+      "git",
+      ["diff", "--diff-filter=A", "--name-only", `${safeRef}..HEAD`],
       { encoding: "utf8", cwd: MONOREPO_ROOT }
     );
     return out.split("\n").filter(Boolean);
   } catch (err) {
     // Fallback : if baseRef inaccessible, try a merge-base
     try {
-      const mb = execSync(`git merge-base HEAD ${baseRef}`, {
-        encoding: "utf8",
-        cwd: MONOREPO_ROOT,
-      }).trim();
-      const out = execSync(
-        `git diff --diff-filter=A --name-only ${mb}..HEAD`,
+      const mb = execFileSync(
+        "git",
+        ["merge-base", "HEAD", safeRef],
+        { encoding: "utf8", cwd: MONOREPO_ROOT }
+      ).trim();
+      const out = execFileSync(
+        "git",
+        ["diff", "--diff-filter=A", "--name-only", `${mb}..HEAD`],
         { encoding: "utf8", cwd: MONOREPO_ROOT }
       );
       return out.split("\n").filter(Boolean);
     } catch (err2) {
       throw new Error(
-        `Cannot compute new files diff vs ${baseRef}: ${err.message}`
+        `Cannot compute new files diff vs ${safeRef}: ${err.message}`
       );
     }
   }
