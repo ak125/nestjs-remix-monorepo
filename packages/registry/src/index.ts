@@ -82,3 +82,12 @@ export {
   type CanonicalRegistry,
   type CanonicalMeta,
 } from "./canonical/canonical-registry";
+
+// ── Architecture contract (PR-2) ──
+export {
+  ArchitectureContractSchema,
+  BoundarySchema,
+  DepcruiseEmitSchema,
+  LayerSchema,
+  type ArchitectureContract,
+} from "./canonical/architecture-contract";
