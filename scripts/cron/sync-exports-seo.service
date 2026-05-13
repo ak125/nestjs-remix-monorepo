@@ -1,0 +1,35 @@
+[Unit]
+Description=ADR-059 PR-5b — sync wiki exports/seo + immutable tar.zst snapshot
+Documentation=https://github.com/ak125/governance-vault/blob/main/ledger/decisions/adr/ADR-059-seo-runtime-projection.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+NotifyAccess=main
+WatchdogSec=300s
+TimeoutStartSec=600s
+WorkingDirectory=/opt/automecanik/app
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/python3 -m scripts.cron.sync_exports_seo \
+    --wiki-root /opt/automecanik/automecanik-wiki \
+    --object-store /opt/automecanik/object-store
+
+# Hardening : ce service ne doit jamais écrire ailleurs que wiki/exports/seo/
+# (via builder) et object-store/exports-snapshots/ (via snapshot tool).
+ProtectSystem=strict
+ReadWritePaths=/opt/automecanik/automecanik-wiki /opt/automecanik/object-store
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sync-exports-seo
+
+[Install]
+WantedBy=multi-user.target
