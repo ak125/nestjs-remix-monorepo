@@ -44,11 +44,18 @@ export const SEO_PROJECTION_MATERIALIZED_VIEWS = [
   'mv_seo_content_blocks_current',
 ] as const;
 
-@Processor({ name: SEO_PROJECTION_REFRESH_QUEUE, concurrency: REFRESH_CONCURRENCY })
+@Processor(SEO_PROJECTION_REFRESH_QUEUE)
 export class SeoProjectionRefreshProcessor extends SupabaseBaseService {
-  private readonly refreshLogger = new Logger(SeoProjectionRefreshProcessor.name);
+  private readonly refreshLogger = new Logger(
+    SeoProjectionRefreshProcessor.name,
+  );
 
-  @Process('refresh')
+  /**
+   * Single-flight strict : `concurrency: REFRESH_CONCURRENCY` (= 1) sur le
+   * `@Process` (et non sur le `@Processor` — non supporté par @nestjs/bull v3).
+   * Pattern canon trouvé dans `backend/src/workers/processors/agentic.processor.ts`.
+   */
+  @Process({ name: 'refresh', concurrency: REFRESH_CONCURRENCY })
   async handleRefresh(job: Job<RefreshJobData>): Promise<RefreshJobResult> {
     const startedAt = Date.now();
     const parsed = RefreshJobDataSchema.safeParse(job.data);
@@ -110,7 +117,9 @@ export class SeoProjectionRefreshProcessor extends SupabaseBaseService {
    * Pour PR-6b skeleton : on log l'intent ; l'implémentation effective de
    * la RPC SQL est différée. Le contrat de cette méthode reste stable.
    */
-  private async refreshMaterializedViewConcurrently(viewName: string): Promise<void> {
+  private async refreshMaterializedViewConcurrently(
+    viewName: string,
+  ): Promise<void> {
     this.refreshLogger.log(
       `REFRESH MATERIALIZED VIEW CONCURRENTLY ${viewName} (skeleton — RPC backing pending)`,
     );

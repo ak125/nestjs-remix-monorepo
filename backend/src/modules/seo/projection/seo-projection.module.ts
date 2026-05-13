@@ -34,9 +34,6 @@ import { SeoProjectionWriteProcessor } from './seo-projection-write.processor';
     SeoProjectionWriteProcessor,
     SeoProjectionRefreshProcessor,
   ],
-  exports: [
-    BullModule,
-    SeoProjectionConflictService,
-  ],
+  exports: [BullModule, SeoProjectionConflictService],
 })
 export class SeoProjectionModule {}

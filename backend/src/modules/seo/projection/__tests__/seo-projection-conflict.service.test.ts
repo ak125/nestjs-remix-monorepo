@@ -6,7 +6,9 @@ import { SeoProjectionConflictService } from '../seo-projection-conflict.service
 describe('SeoProjectionConflictService.classifyDiff', () => {
   // Helper minimal : on instantie sans wiring DI (les méthodes pures n'utilisent
   // pas this.supabase). Le service réel est testé en intégration ailleurs.
-  const svc = Object.create(SeoProjectionConflictService.prototype) as SeoProjectionConflictService;
+  const svc = Object.create(
+    SeoProjectionConflictService.prototype,
+  ) as SeoProjectionConflictService;
 
   it('safe_apply when current is null', () => {
     const r = svc.classifyDiff(null, 'new-value', 'fact');

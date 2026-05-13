@@ -15,7 +15,10 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { SupabaseBaseService } from '../../../database/services/supabase-base.service';
 
-export type ConflictKind = 'fact_value_diff' | 'block_content_diff' | 'source_diff';
+export type ConflictKind =
+  | 'fact_value_diff'
+  | 'block_content_diff'
+  | 'source_diff';
 
 export interface ConflictRecord {
   entity_id: string;
@@ -29,7 +32,9 @@ export interface ConflictRecord {
 
 @Injectable()
 export class SeoProjectionConflictService extends SupabaseBaseService {
-  private readonly conflictLogger = new Logger(SeoProjectionConflictService.name);
+  private readonly conflictLogger = new Logger(
+    SeoProjectionConflictService.name,
+  );
 
   async recordConflict(record: ConflictRecord): Promise<void> {
     const { error } = await this.supabase

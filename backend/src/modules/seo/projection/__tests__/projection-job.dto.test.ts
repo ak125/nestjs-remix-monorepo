@@ -8,9 +8,9 @@ import {
 
 const BASE_WRITE = {
   projection_contract_version: '1.0.0',
-  exports_snapshot_hash:
-    'sha256:' + 'a'.repeat(64),
-  exports_snapshot_uri: '/opt/automecanik/object-store/exports-snapshots/abc.tar.zst',
+  exports_snapshot_hash: 'sha256:' + 'a'.repeat(64),
+  exports_snapshot_uri:
+    '/opt/automecanik/object-store/exports-snapshots/abc.tar.zst',
   builder_version: '1.0.0',
   pipeline_version: '1.0.0',
   extractor_version: '1.0.0',

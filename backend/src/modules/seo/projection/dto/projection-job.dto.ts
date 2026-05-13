@@ -17,9 +17,12 @@ const Sha256Schema = z.string().regex(/^sha256:[a-f0-9]{64}$/, {
 
 const EntityIdSchema = z
   .string()
-  .regex(/^(gamme|vehicle|constructeur|diagnostic):[a-z0-9][a-z0-9-]*[a-z0-9]$/, {
-    message: 'entity_id must be <entity_type>:<slug-singular>',
-  });
+  .regex(
+    /^(gamme|vehicle|constructeur|diagnostic):[a-z0-9][a-z0-9-]*[a-z0-9]$/,
+    {
+      message: 'entity_id must be <entity_type>:<slug-singular>',
+    },
+  );
 
 export const WriteJobDataSchema = z
   .object({
@@ -61,7 +64,12 @@ export type RefreshJobData = z.infer<typeof RefreshJobDataSchema>;
 
 export const WriteJobResultSchema = z
   .object({
-    status: z.enum(['success', 'failed', 'skipped_read_only', 'aborted_contract_mismatch']),
+    status: z.enum([
+      'success',
+      'failed',
+      'skipped_read_only',
+      'aborted_contract_mismatch',
+    ]),
     run_id: z.string().uuid().nullable(),
     entities_processed: z.number().int().nonnegative(),
     conflicts_count: z.number().int().nonnegative(),

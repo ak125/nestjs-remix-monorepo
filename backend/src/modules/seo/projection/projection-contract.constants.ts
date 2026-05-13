@@ -53,12 +53,18 @@ export function assertCompatibleProjectionContract(
   const jobMatch = SEMVER_RE.exec(jobContractVersion);
   const runnerMatch = SEMVER_RE.exec(runnerContractVersion);
   if (!jobMatch || !runnerMatch) {
-    throw new ProjectionContractMismatchError(jobContractVersion, runnerContractVersion);
+    throw new ProjectionContractMismatchError(
+      jobContractVersion,
+      runnerContractVersion,
+    );
   }
   const jobMajor = Number(jobMatch[1]);
   const runnerMajor = Number(runnerMatch[1]);
   if (jobMajor !== runnerMajor) {
-    throw new ProjectionContractMismatchError(jobContractVersion, runnerContractVersion);
+    throw new ProjectionContractMismatchError(
+      jobContractVersion,
+      runnerContractVersion,
+    );
   }
 }
 

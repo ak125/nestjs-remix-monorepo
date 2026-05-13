@@ -27,7 +27,10 @@ describe('PR-6b architectural guards (static file analysis)', () => {
       // Strings dans commentaires/docstrings autorisées.
       const codeOnly = writeSrc
         .split('\n')
-        .filter((line) => !line.trim().startsWith('*') && !line.trim().startsWith('//'))
+        .filter(
+          (line) =>
+            !line.trim().startsWith('*') && !line.trim().startsWith('//'),
+        )
         .join('\n');
       expect(codeOnly).not.toMatch(/REFRESH\s+MATERIALIZED\s+VIEW/i);
       expect(codeOnly).not.toMatch(/refreshMaterializedView/);
@@ -35,10 +38,14 @@ describe('PR-6b architectural guards (static file analysis)', () => {
 
     it('enqueues refresh job AFTER COMMIT (after updateRunStatus success)', () => {
       // L'enqueue refresh doit apparaître après l'UPDATE status='success'.
-      const updateIdx = writeSrc.indexOf("updateRunStatus(runId, 'success'");
+      // Pattern résilient au prettier multiline (signature peut être reformatée).
+      const successUpdateMatch = writeSrc.match(
+        /updateRunStatus\([^)]*?['"]success['"][^)]*?\)/s,
+      );
       const enqueueIdx = writeSrc.indexOf('this.refreshQueue.add');
-      expect(updateIdx).toBeGreaterThan(0);
-      expect(enqueueIdx).toBeGreaterThan(updateIdx);
+      expect(successUpdateMatch).not.toBeNull();
+      expect(successUpdateMatch!.index).toBeGreaterThan(0);
+      expect(enqueueIdx).toBeGreaterThan(successUpdateMatch!.index!);
     });
 
     it('uses sha256 jobId for idempotency', () => {
@@ -59,7 +66,10 @@ describe('PR-6b architectural guards (static file analysis)', () => {
       // Scan code-only (les docstrings d'interdiction sont autorisées).
       const codeOnly = writeSrc
         .split('\n')
-        .filter((line) => !line.trim().startsWith('*') && !line.trim().startsWith('//'))
+        .filter(
+          (line) =>
+            !line.trim().startsWith('*') && !line.trim().startsWith('//'),
+        )
         .join('\n');
       expect(codeOnly).not.toMatch(/\bgit\s+push\b/);
       expect(codeOnly).not.toMatch(/\bspawn.*git/);
@@ -70,7 +80,10 @@ describe('PR-6b architectural guards (static file analysis)', () => {
     it('contains NO replay logic (= PR-6c)', () => {
       const codeOnly = writeSrc
         .split('\n')
-        .filter((line) => !line.trim().startsWith('*') && !line.trim().startsWith('//'))
+        .filter(
+          (line) =>
+            !line.trim().startsWith('*') && !line.trim().startsWith('//'),
+        )
         .join('\n');
       expect(codeOnly).not.toMatch(/replay_projection\.py/);
       expect(codeOnly).not.toMatch(/tar\.zst/);
@@ -84,7 +97,10 @@ describe('PR-6b architectural guards (static file analysis)', () => {
     it('never INSERT or UPDATE projection tables', () => {
       const codeOnly = refreshSrc
         .split('\n')
-        .filter((line) => !line.trim().startsWith('*') && !line.trim().startsWith('//'))
+        .filter(
+          (line) =>
+            !line.trim().startsWith('*') && !line.trim().startsWith('//'),
+        )
         .join('\n');
       expect(codeOnly).not.toMatch(/\.insert\(/);
       expect(codeOnly).not.toMatch(/\.update\(/);
@@ -92,7 +108,8 @@ describe('PR-6b architectural guards (static file analysis)', () => {
 
     it('only mentions REFRESH ... CONCURRENTLY (never bare REFRESH)', () => {
       // Si REFRESH est présent, doit toujours être suivi de CONCURRENTLY
-      const refreshOccurrences = refreshSrc.match(/REFRESH\s+MATERIALIZED\s+VIEW[^;]*/gi) ?? [];
+      const refreshOccurrences =
+        refreshSrc.match(/REFRESH\s+MATERIALIZED\s+VIEW[^;]*/gi) ?? [];
       for (const occ of refreshOccurrences) {
         expect(occ).toMatch(/CONCURRENTLY/i);
       }
@@ -117,7 +134,10 @@ describe('PR-6b architectural guards (static file analysis)', () => {
     const moduleSrc = read('seo-projection.module.ts');
 
     it('registers exactly 2 queues (write + refresh)', () => {
-      const matches = moduleSrc.match(/\{\s*name:\s*SEO_PROJECTION_(WRITE|REFRESH)_QUEUE\s*\}/g) ?? [];
+      const matches =
+        moduleSrc.match(
+          /\{\s*name:\s*SEO_PROJECTION_(WRITE|REFRESH)_QUEUE\s*\}/g,
+        ) ?? [];
       expect(matches).toHaveLength(2);
     });
 
@@ -163,13 +183,16 @@ describe('PR-6b architectural guards (static file analysis)', () => {
       'seo-projection-refresh.processor.ts',
       'seo-projection-conflict.service.ts',
     ];
-    it.each(files)('%s declares no @Controller / no @Get / no @Post', (file) => {
-      const src = read(file);
-      expect(src).not.toMatch(/@Controller\b/);
-      expect(src).not.toMatch(/@Get\(/);
-      expect(src).not.toMatch(/@Post\(/);
-      expect(src).not.toMatch(/@Put\(/);
-      expect(src).not.toMatch(/@Delete\(/);
-    });
+    it.each(files)(
+      '%s declares no @Controller / no @Get / no @Post',
+      (file) => {
+        const src = read(file);
+        expect(src).not.toMatch(/@Controller\b/);
+        expect(src).not.toMatch(/@Get\(/);
+        expect(src).not.toMatch(/@Post\(/);
+        expect(src).not.toMatch(/@Put\(/);
+        expect(src).not.toMatch(/@Delete\(/);
+      },
+    );
   });
 });

@@ -124,7 +124,12 @@ export class SeoProjectionWriteProcessor extends SupabaseBaseService {
       }
 
       // ── Step 3 : UPDATE run status='success'
-      await this.updateRunStatus(runId, 'success', entitiesProcessed, conflictsCount);
+      await this.updateRunStatus(
+        runId,
+        'success',
+        entitiesProcessed,
+        conflictsCount,
+      );
     } catch (err) {
       this.writeLogger.error(`job ${job.id} failed: ${(err as Error).message}`);
       await this.updateRunStatus(
@@ -147,7 +152,9 @@ export class SeoProjectionWriteProcessor extends SupabaseBaseService {
     // Idempotent jobId : sha256 dedup si même run enqueue 2× pendant debounce
     const refreshJobId =
       'refresh:' +
-      createHash('sha256').update(`${runId}|${data.exports_snapshot_hash}`).digest('hex');
+      createHash('sha256')
+        .update(`${runId}|${data.exports_snapshot_hash}`)
+        .digest('hex');
     await this.refreshQueue.add(
       'refresh',
       {
@@ -195,7 +202,10 @@ export class SeoProjectionWriteProcessor extends SupabaseBaseService {
     return (row as { id: string }).id;
   }
 
-  private async recordAbortedRun(data: WriteJobData, message: string): Promise<void> {
+  private async recordAbortedRun(
+    data: WriteJobData,
+    message: string,
+  ): Promise<void> {
     await this.supabase.from('__seo_projection_runs').insert({
       status: 'aborted_contract_mismatch',
       projection_contract_version: data.projection_contract_version,
@@ -228,7 +238,10 @@ export class SeoProjectionWriteProcessor extends SupabaseBaseService {
     if (errorMessage) {
       patch.error_message = errorMessage;
     }
-    await this.supabase.from('__seo_projection_runs').update(patch).eq('id', runId);
+    await this.supabase
+      .from('__seo_projection_runs')
+      .update(patch)
+      .eq('id', runId);
   }
 
   /**
@@ -249,7 +262,8 @@ export class SeoProjectionWriteProcessor extends SupabaseBaseService {
   }
 
   // Used by tests for direct field access without import surface.
-  public static readonly runnerContractVersion = RUNNER_PROJECTION_CONTRACT_VERSION;
+  public static readonly runnerContractVersion =
+    RUNNER_PROJECTION_CONTRACT_VERSION;
 }
 
 // Hard-coded smoke guard to lock the architectural constraint at compile-time :

@@ -19,8 +19,12 @@ describe('assertCompatibleProjectionContract', () => {
   });
 
   it('accepts same MAJOR with different MINOR (forward-compat)', () => {
-    expect(() => assertCompatibleProjectionContract('1.5.3', '1.0.0')).not.toThrow();
-    expect(() => assertCompatibleProjectionContract('1.0.99', '1.0.0')).not.toThrow();
+    expect(() =>
+      assertCompatibleProjectionContract('1.5.3', '1.0.0'),
+    ).not.toThrow();
+    expect(() =>
+      assertCompatibleProjectionContract('1.0.99', '1.0.0'),
+    ).not.toThrow();
   });
 
   it('rejects MAJOR mismatch (anti-drift)', () => {
