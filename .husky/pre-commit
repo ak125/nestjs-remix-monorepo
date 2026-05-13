@@ -52,6 +52,28 @@ if command -v python3 >/dev/null 2>&1 \
   fi
 fi
 
+# Repository Control Plane (ADR-058) — Layer 2 overlay validation + Layer 1/3 no-manual-edit guard
+# Lightweight pre-commit checks per ADR-058 §Stratégie hooks :
+#   - validate-overlay : Zod check on .spec/00-canon/repository-registry/*.yaml (< 1s)
+#   - no-manual-edit-generated : refuse git add on audit/registry/*.json sauf
+#     (a) npm_lifecycle_event ∈ registry:* AND (b) reproducible from current SoT
+# These run only when relevant files are staged.
+if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^\.spec/00-canon/repository-registry/.*\.yaml$'; then
+  if command -v npm >/dev/null 2>&1 && [ -f scripts/registry/validate-overlay.js ]; then
+    npm run registry:validate --silent || {
+      echo ""
+      echo "ERROR (ADR-058): Layer 2 overlay validation failed."
+      echo "Fix the YAML errors above (or revert) before committing."
+      exit 1
+    }
+  fi
+fi
+if git diff --cached --name-only --diff-filter=ACMR | grep -qE '^audit/registry/[a-z]+\.json$'; then
+  if [ -x scripts/registry/check-no-manual-edit-generated.sh ]; then
+    bash scripts/registry/check-no-manual-edit-generated.sh || exit 1
+  fi
+fi
+
 # Fast deterministic gate: ast-grep rules in .ast-grep/rules/
 # Warnings do not block commits; only `severity: error` rules fail here.
 # For full audit run: npm run audit:all (see package.json scripts)
