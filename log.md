@@ -537,3 +537,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/registry-pr-g-block-new`
 - **Décision** : feat(registry): CI Phase 2 block-new gate + pre-push hook (ADR-058 PR-G) (+8 other commits)
 - **Sortie** : PR #464 | commits 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
+
+## 2026-05-13 — feat/registry-pr-g-block-new (auto)
+
+- **Branche** : `feat/registry-pr-g-block-new`
+- **Décision** : chore(registry): regen canonical + REPO_MAP after merge main (PR-G recovery) (+12 other commits)
+- **Sortie** : PR #482 | commits 0653d797 00fe3be6 60209305 5828f494 27d515d8 77d4b57a a1d79d5b 658018c4 66d9e64f b08d3e90 b281943b f067e9ec 0504fd38
