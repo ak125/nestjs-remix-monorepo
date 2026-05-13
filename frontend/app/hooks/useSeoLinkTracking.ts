@@ -21,6 +21,7 @@
 
 import { useLocation } from "@remix-run/react";
 import { useCallback, useEffect, useRef } from "react";
+import { postJsonBeacon } from "~/utils/beacon";
 import { logger } from "~/utils/logger";
 
 // Types de liens supportés
@@ -136,7 +137,7 @@ const impressionQueue: Map<
 > = new Map();
 let impressionTimeout: NodeJS.Timeout | null = null;
 
-async function flushImpressions() {
+function flushImpressions() {
   if (typeof window === "undefined") return;
 
   const impressions = Array.from(impressionQueue.values());
@@ -146,25 +147,16 @@ async function flushImpressions() {
 
   const sessionId = getSessionId();
 
-  // Envoyer les impressions groupées
-  try {
-    await Promise.all(
-      impressions.map(({ linkType, count, pageUrl }) =>
-        fetch("/api/seo/track-impression", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            linkType,
-            pageUrl,
-            linkCount: count,
-            sessionId,
-          }),
-        }),
-      ),
-    );
-  } catch (error) {
-    // Silencieux en cas d'erreur - ne pas bloquer l'UX
-    logger.debug("[SEO Tracking] Impression tracking failed:", error);
+  // sendBeacon (with fetch keepalive fallback) survives page unload, so the
+  // server no longer sees `BadRequestError: request aborted` from raw-body
+  // when the user navigates away mid-debounce.
+  for (const { linkType, count, pageUrl } of impressions) {
+    postJsonBeacon("/api/seo/track-impression", {
+      linkType,
+      pageUrl,
+      linkCount: count,
+      sessionId,
+    });
   }
 }
 
