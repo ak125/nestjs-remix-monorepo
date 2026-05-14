@@ -47,6 +47,21 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: frontend/bundle-stats.config.json
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: frontend/bundle-stats.README.md
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
+  - glob: scripts/perf/**
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
   - glob: CLAUDE.md
     domain: D15
     owner: '@ak125'
