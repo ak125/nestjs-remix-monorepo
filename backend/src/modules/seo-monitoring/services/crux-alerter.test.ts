@@ -18,7 +18,10 @@ async function buildService(): Promise<CruxAlerterService> {
       CruxAlerterService,
       {
         provide: ConfigService,
-        useValue: { get: () => undefined },
+        useValue: {
+          get: (k: string) =>
+            k === 'SUPABASE_URL' ? 'https://mock.supabase.co' : undefined,
+        },
       },
     ],
   }).compile();
