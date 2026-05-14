@@ -238,11 +238,6 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: medium
     risk: high
-  - glob: backend/supabase/migrations/*seo_crux*
-    domain: D3
-    owner: '@ak125/seo-team'
-    sourceConfidence: high
-    risk: medium
   - glob: backend/src/modules/users/**
     domain: D11
     owner: '@ak125/auth-team'
