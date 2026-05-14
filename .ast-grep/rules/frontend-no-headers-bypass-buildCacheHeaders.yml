@@ -1,0 +1,54 @@
+id: frontend-no-headers-bypass-buildCacheHeaders
+language: typescript
+severity: error
+message: |
+  Routes Remix : un `headers: HeadersFunction` qui pose lui-même un
+  `cache-control` (avec ou sans `s-maxage`) court-circuite le helper
+  `buildCacheHeaders` et ré-ouvre la régression PR #320 / INC-2026-005
+  (Cloudflare cache une 5xx pendant `s-maxage` = 24h car les `errorHeaders`
+  ne sont pas inspectés).
+
+  Refactor obligatoire :
+
+      import { buildCacheHeaders } from "~/utils/cache-control";
+      export const headers = buildCacheHeaders(
+        "public, max-age=60, s-maxage=86400, stale-while-revalidate=3600",
+      );
+
+  Si une dérogation est strictement nécessaire (route éphémère, test, etc.),
+  ajoute le commentaire d'exemption juste au-dessus :
+
+      // CACHE-HEADERS-OK (#NNN | INC-YYYY-NNN | ADR-NNN) — raison courte
+      export const headers: HeadersFunction = ...
+
+  La règle sœur `cache-headers-ok-requires-reference` valide la forme du
+  commentaire.
+
+  Voir :
+    - frontend/app/utils/cache-control.ts (helper)
+    - frontend-no-zero-arg-headers-with-s-maxage.yml (règle voisine)
+    - INC-2026-005 (PR #320) — root cause du bug 30 400 5xx GSC
+files:
+  - frontend/app/routes/**/*.tsx
+  - frontend/app/routes/**/*.ts
+rule:
+  all:
+    # Un export `headers` qui pose un objet contenant une clé cache-control,
+    # quel que soit le nombre d'arguments de l'arrow function.
+    - any:
+        - pattern: "export const headers: HeadersFunction = ($$$ARGS) => ({ $$$PROPS })"
+        - pattern: "export const headers = (($$$ARGS) => ({ $$$PROPS })) as HeadersFunction"
+        - pattern: "export const headers: HeadersFunction = function ($$$ARGS) { $$$BODY }"
+    # Dont le corps mentionne explicitement cache-control (insensible à la casse
+    # est impossible en regex ast-grep, donc on couvre les 3 conventions usuelles).
+    - has:
+        any:
+          - regex: '"[Cc]ache-[Cc]ontrol"'
+          - regex: "'[Cc]ache-[Cc]ontrol'"
+          - regex: '`[Cc]ache-[Cc]ontrol`'
+        stopBy: end
+    # Et qui N'appelle PAS buildCacheHeaders dans le scope local.
+    - not:
+        has:
+          regex: 'buildCacheHeaders\('
+          stopBy: end

@@ -56,6 +56,12 @@ jobs:
       - name: 🛡️ Cache-Control discipline (Remix routes)
         run: bash scripts/lint/check-no-zero-arg-headers-with-s-maxage.sh
 
+      # PR-1 INC-2026-005 closure : CACHE-HEADERS-OK exemptions must cite a
+      # traceable reference (#NNN | INC-YYYY-NNN | ADR-NNN) + reason. Sister
+      # to the ast-grep rule frontend-no-headers-bypass-buildCacheHeaders.yml.
+      - name: 🛡️ CACHE-HEADERS-OK exemptions traceable
+        run: bash scripts/lint/check-cache-headers-ok-references.sh
+
   typecheck:
     name: ʦ TypeScript
     runs-on: ubuntu-latest
