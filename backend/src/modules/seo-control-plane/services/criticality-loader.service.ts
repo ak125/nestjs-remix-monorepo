@@ -35,7 +35,7 @@ import {
  * Dans les deux cas remonter 5 niveaux → racine monorepo.
  */
 const CANON_RELATIVE_PATH =
-  '../../../../../../.spec/00-canon/repository-registry/seo-criticality.yaml';
+  '../../../../../.spec/00-canon/repository-registry/seo-criticality.yaml';
 
 @Injectable()
 export class CriticalityLoaderService implements OnModuleInit {

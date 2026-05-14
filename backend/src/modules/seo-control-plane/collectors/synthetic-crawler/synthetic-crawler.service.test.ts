@@ -81,16 +81,30 @@ function makeConfigService(
   } as unknown as ConfigService;
 }
 
-function makeSupabaseStub(spyInsert: jest.Mock): {
-  getServiceRoleClient: () => unknown;
-} {
-  return {
-    getServiceRoleClient: () => ({
-      from: (_table: string) => ({
-        insert: spyInsert,
-      }),
-    }),
-  };
+/**
+ * Build a SyntheticCrawlerService with the Supabase base init bypassed.
+ * SupabaseBaseService's constructor tries to validate SUPABASE_URL /
+ * SUPABASE_SERVICE_ROLE_KEY and create a real client — we skip the whole
+ * inheritance chain and patch a fake `supabase` field with a stub `from`.
+ */
+function buildSvc(
+  crit: CriticalityLoaderService,
+  cfg: ConfigService,
+  spyInsert: jest.Mock,
+): SyntheticCrawlerService {
+  const svc = Object.create(
+    SyntheticCrawlerService.prototype,
+  ) as SyntheticCrawlerService;
+  // assign private/protected fields without invoking real Supabase init
+  Object.assign(svc, {
+    logger: { log: jest.fn(), warn: jest.fn(), error: jest.fn() },
+    criticality: crit,
+    cfg,
+    supabase: {
+      from: (_table: string) => ({ insert: spyInsert }),
+    },
+  });
+  return svc;
 }
 
 describe('SyntheticCrawlerService', () => {
@@ -138,10 +152,10 @@ describe('SyntheticCrawlerService', () => {
     globalThis.fetch = fetchMock as unknown as typeof globalThis.fetch;
 
     const insertSpy = jest.fn().mockResolvedValue({ error: null });
-    const svc = new SyntheticCrawlerService(
+    const svc = buildSvc(
       crit,
       makeConfigService({ SEO_CP_SAMPLE_SIZE: 3, SEO_CP_CONCURRENCY: 1 }),
-      makeSupabaseStub(insertSpy) as never,
+      insertSpy,
     );
 
     await svc.run({ triggeredBy: 'test' });
@@ -199,10 +213,10 @@ describe('SyntheticCrawlerService', () => {
     ) as unknown as typeof globalThis.fetch;
 
     const insertSpy = jest.fn().mockResolvedValue({ error: null });
-    const svc = new SyntheticCrawlerService(
+    const svc = buildSvc(
       crit,
       makeConfigService({ SEO_CP_SAMPLE_SIZE: 5, SEO_CP_CONCURRENCY: 2 }),
-      makeSupabaseStub(insertSpy) as never,
+      insertSpy,
     );
 
     const result = await svc.run({ triggeredBy: 'test' });
@@ -244,11 +258,12 @@ describe('SyntheticCrawlerService', () => {
     globalThis.fetch = mockFetch(
       responses,
     ) as unknown as typeof globalThis.fetch;
+
     const insertSpy = jest.fn().mockResolvedValue({ error: null });
-    const svc = new SyntheticCrawlerService(
+    const svc = buildSvc(
       crit,
       makeConfigService({ SEO_CP_SAMPLE_SIZE: 5 }),
-      makeSupabaseStub(insertSpy) as never,
+      insertSpy,
     );
     const result = await svc.run({ triggeredBy: 'test' });
     expect(result.sample_size_effective).toBe(0);
@@ -264,11 +279,7 @@ describe('SyntheticCrawlerService', () => {
       ) as unknown as typeof globalThis.fetch;
 
     const insertSpy = jest.fn().mockResolvedValue({ error: null });
-    const svc = new SyntheticCrawlerService(
-      crit,
-      makeConfigService(),
-      makeSupabaseStub(insertSpy) as never,
-    );
+    const svc = buildSvc(crit, makeConfigService(), insertSpy);
 
     const result = await svc.run({ triggeredBy: 'test' });
     expect(result.skipped).toBe('no_sitemap');
@@ -295,28 +306,24 @@ describe('SyntheticCrawlerService', () => {
       headers: {},
     });
 
-    const buildSvc = (insertSpy: jest.Mock): SyntheticCrawlerService => {
+    const runOnce = async (): Promise<string[]> => {
       globalThis.fetch = mockFetch(
         new Map(responses),
       ) as unknown as typeof globalThis.fetch;
-      return new SyntheticCrawlerService(
+      const spy = jest.fn().mockResolvedValue({ error: null });
+      const svc = buildSvc(
         crit,
         makeConfigService({ SEO_CP_SAMPLE_SIZE: 5, SEO_CP_CONCURRENCY: 1 }),
-        makeSupabaseStub(insertSpy) as never,
+        spy,
       );
+      await svc.run({ triggeredBy: 'test', seed: 42 });
+      return (spy.mock.calls[0]?.[0] as Array<{ url: string }>)
+        .map((r) => r.url)
+        .sort();
     };
 
-    const spyA = jest.fn().mockResolvedValue({ error: null });
-    await buildSvc(spyA).run({ triggeredBy: 'test', seed: 42 });
-    const spyB = jest.fn().mockResolvedValue({ error: null });
-    await buildSvc(spyB).run({ triggeredBy: 'test', seed: 42 });
-
-    const urlsA = (spyA.mock.calls[0]?.[0] as Array<{ url: string }>)
-      .map((r) => r.url)
-      .sort();
-    const urlsB = (spyB.mock.calls[0]?.[0] as Array<{ url: string }>)
-      .map((r) => r.url)
-      .sort();
+    const urlsA = await runOnce();
+    const urlsB = await runOnce();
     expect(urlsA).toEqual(urlsB);
   });
 });

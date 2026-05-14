@@ -48,14 +48,19 @@ interface UrlCandidate {
 }
 
 @Injectable()
-export class SyntheticCrawlerService {
-  private readonly logger = new Logger(SyntheticCrawlerService.name);
+export class SyntheticCrawlerService extends SupabaseBaseService {
+  // override base logger to use this service's name in logs
+  protected readonly logger = new Logger(SyntheticCrawlerService.name);
+  // local alias avoiding base's optional `configService` typing
+  private readonly cfg: ConfigService;
 
   constructor(
     private readonly criticality: CriticalityLoaderService,
-    private readonly configService: ConfigService,
-    private readonly supabase: SupabaseBaseService,
-  ) {}
+    configService: ConfigService,
+  ) {
+    super(configService);
+    this.cfg = configService;
+  }
 
   /**
    * Exécute un run complet : sitemap fetch → stratification → probe pool →
@@ -152,10 +157,7 @@ export class SyntheticCrawlerService {
 
   /** Lit + parse le sitemap PROD, retourne les URLs candidate-classifiées. */
   private async collectCandidates(): Promise<UrlCandidate[]> {
-    const base = this.configService.get<string>(
-      'SEO_CP_PROD_BASE',
-      PROD_BASE_DEFAULT,
-    );
+    const base = this.cfg.get<string>('SEO_CP_PROD_BASE', PROD_BASE_DEFAULT);
     const indexXml = await this.fetchText(`${base}/sitemap.xml`, 15_000);
     const subUrls: string[] = [];
     for (const m of indexXml.matchAll(/<loc>([^<]+)<\/loc>/g)) {
@@ -220,14 +222,8 @@ export class SyntheticCrawlerService {
     runId: string,
     seed: number,
   ): Promise<SyntheticSnapshot[]> {
-    const concurrency = this.configService.get<number>(
-      'SEO_CP_CONCURRENCY',
-      10,
-    );
-    const timeoutMs = this.configService.get<number>(
-      'SEO_CP_TIMEOUT_MS',
-      15_000,
-    );
+    const concurrency = this.cfg.get<number>('SEO_CP_CONCURRENCY', 10);
+    const timeoutMs = this.cfg.get<number>('SEO_CP_TIMEOUT_MS', 15_000);
     const results: SyntheticSnapshot[] = [];
     let i = 0;
 
@@ -340,12 +336,13 @@ export class SyntheticCrawlerService {
     }
   }
 
-  /** INSERT batch dans __seo_snapshot_synthetic. */
+  /**
+   * INSERT batch dans __seo_snapshot_synthetic. `this.supabase` est exposé
+   * par SupabaseBaseService et utilise déjà le service-role key.
+   */
   private async persist(snapshots: SyntheticSnapshot[]): Promise<void> {
     if (snapshots.length === 0) return;
-    // Cast public type to insert payload (created_at can be omitted, default NOW)
-    const client = this.supabase.getServiceRoleClient();
-    const { error } = await client
+    const { error } = await this.supabase
       .from('__seo_snapshot_synthetic')
       .insert(snapshots);
     if (error) throw new Error(`Supabase insert error: ${error.message}`);
@@ -354,7 +351,7 @@ export class SyntheticCrawlerService {
   // ── helpers ───────────────────────────────────────────────────────────────
 
   private defaultSampleSize(): number {
-    return this.configService.get<number>('SEO_CP_SAMPLE_SIZE', 500);
+    return this.cfg.get<number>('SEO_CP_SAMPLE_SIZE', 500);
   }
 
   private async fetchText(url: string, timeoutMs: number): Promise<string> {
