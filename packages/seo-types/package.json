@@ -34,6 +34,11 @@
       "types": "./dist/content-ops.d.ts",
       "import": "./dist/content-ops.js",
       "require": "./dist/content-ops.js"
+    },
+    "./crux": {
+      "types": "./dist/crux.d.ts",
+      "import": "./dist/crux.js",
+      "require": "./dist/crux.js"
     }
   },
   "scripts": {

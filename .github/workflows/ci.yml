@@ -649,6 +649,11 @@ jobs:
           # donc le fail-fast trigger ici. Source : audit-trail vault
           # 2026-05-07-pr339-deploy-regression.md.
           SESSION_SECRET: ${{ secrets.PREPROD_SESSION_SECRET }}
+          # ADR-063 — CrUX API key for CWV field monitoring (backend-only, optional).
+          # When unset, the CrUX fetcher logs a warning and skips runs (V1 graceful
+          # degrade ; cron `seo-monitor` continues without CrUX step). Production
+          # requires the GH secret `CRUX_API_KEY` to be set on the repository.
+          CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
           READ_ONLY: "true"
         run: |
           docker pull massdoc/nestjs-remix-monorepo:preprod
@@ -684,6 +689,8 @@ jobs:
           # cannot reach a real RAG instance from preprod read-only mode anyway.
           RAG_SERVICE_URL=http://disabled:8000
           RAG_API_KEY=disabled-preprod-readonly
+          # ADR-063 — CrUX API key (optional, blank-allowed = graceful degrade)
+          CRUX_API_KEY=${CRUX_API_KEY}
           EOF
 
           cd $PREPROD_DIR
