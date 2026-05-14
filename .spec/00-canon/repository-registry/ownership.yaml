@@ -47,6 +47,16 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: frontend/lighthouse-ci.config.json
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: medium
+  - glob: frontend/lighthouse-ci.README.md
+    domain: D13
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: CLAUDE.md
     domain: D15
     owner: '@ak125'
