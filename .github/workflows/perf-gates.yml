@@ -55,8 +55,7 @@ jobs:
               - 'frontend/**'
               - 'packages/**'
               - '.github/workflows/perf-gates.yml'
-              - 'scripts/perf/bundle-stats.mjs'
-              - 'frontend/bundle-stats.config.json'
+              - 'frontend/.size-limit.json'
 
       - name: Skip notice (no frontend-relevant changes)
         if: steps.filter.outputs.frontend != 'true'
@@ -94,32 +93,25 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://mock.supabase.co' }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_KEY || 'ci-mock-anon-key' }}
 
-      - name: Bundle stats gate
+      - name: Bundle size gate (size-limit, gzip)
         if: steps.filter.outputs.frontend == 'true'
-        run: node scripts/perf/bundle-stats.mjs
+        # size-limit (Andrey Sitnik) — standard industriel (React, Redux,
+        # MobX, Prettier, Lodash). Source de vérité unique :
+        # frontend/.size-limit.json. Gzip natif. Exit non-zero sur dépassement
+        # → vrai gate, pas warn-only comme l'ancien inline bash de ci.yml.
+        # Voir frontend/size-limit.README.md pour philosophie + calibration.
+        run: |
+          npm run size 2>&1 | tee size-limit-output.txt
 
-      - name: Comment PR with bundle stats
-        if: github.event_name == 'pull_request' && steps.filter.outputs.frontend == 'true' && always()
-        uses: actions/github-script@v9
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            // Reuse the step summary written by bundle-stats.mjs if present.
-            let body = '## 🎯 Performance Gate Results — Bundle stats\n\n';
-            const summary = process.env.GITHUB_STEP_SUMMARY && fs.existsSync(process.env.GITHUB_STEP_SUMMARY)
-              ? fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8')
-              : '';
-            if (summary.includes('Bundle stats')) {
-              body += summary.split('## 📦 Bundle stats')[1].split('\n').slice(1).join('\n');
-            } else {
-              body += '_Bundle stats summary not available — check job logs._\n';
-            }
-            body += '\n---\n*Déterministe — mesuré sur `frontend/build/client/assets/`. Variance CI éliminée par construction.*\n';
-            body += '*CWV utilisateurs réels : voir CrUX dashboard (chantier ADR séparé).*\n';
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body,
-            });
+      - name: Generate step summary
+        if: steps.filter.outputs.frontend == 'true' && always()
+        run: |
+          echo "## 📦 Bundle size — size-limit (gzip)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Déterministe, mesuré directement sur \`frontend/build/client/assets/\` — pas de Lighthouse, pas de Chrome, pas de mocks." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          cat size-limit-output.txt | grep -E "^[[:space:]]*(Size|Size limit|Time|Loading)|^[[:space:]]+[A-Z]" >> "$GITHUB_STEP_SUMMARY" || cat size-limit-output.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "_CWV utilisateurs réels : monitoring CrUX (chantier ADR séparé, hors scope ce gate)._" >> "$GITHUB_STEP_SUMMARY"

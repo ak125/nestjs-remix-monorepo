@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Initial load JS (shared vendors + entry + app-core), gzip",
+    "path": [
+      "build/client/assets/react-vendor-*.js",
+      "build/client/assets/radix-vendor-*.js",
+      "build/client/assets/root-*.js",
+      "build/client/assets/entry.client-*.js",
+      "build/client/assets/app-core-*.js"
+    ],
+    "limit": "210 KB",
+    "gzip": true
+  },
+  {
+    "name": "Total JS (all chunks), gzip",
+    "path": "build/client/assets/*.js",
+    "limit": "1000 KB",
+    "gzip": true
+  },
+  {
+    "name": "Total CSS, gzip",
+    "path": "build/client/assets/*.css",
+    "limit": "60 KB",
+    "gzip": true
+  },
+  {
+    "name": "sentry-vendor chunk, gzip",
+    "path": "build/client/assets/sentry-vendor-*.js",
+    "limit": "180 KB",
+    "gzip": true
+  },
+  {
+    "name": "react-vendor chunk, gzip",
+    "path": "build/client/assets/react-vendor-*.js",
+    "limit": "110 KB",
+    "gzip": true
+  }
+]
