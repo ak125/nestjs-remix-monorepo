@@ -174,6 +174,19 @@ jobs:
           # lien retourné par l'action (cf. lighthouseLinks dans Comment PR step).
           uploadArtifacts: false
           temporaryPublicStorage: true
+          # runs: 3 — anti-flake budget assertion (alignement ci.yml:1109 PREPROD).
+          # Lighthouse-CI agrège les N runs avec `median` par défaut pour les
+          # budget assertions → une violation TBT ponctuelle (CPU steal du
+          # runner partagé) ne fait plus tomber le check ; il faut une majorité
+          # de runs > seuil. Recommandation canonique upstream :
+          #   https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/troubleshooting.md
+          #   "Increase the number of runs to mitigate result variance".
+          # Empirie repo : flake rate 13% (13/100 dernières runs perf-gates au
+          # 2026-05-14, mesure historique TBT home calibré 125ms vs spike
+          # observé 1823ms = 14.5x sur runner contention). ci.yml PREPROD avec
+          # runs:3 ne flake jamais. Coût : step ~2min → ~6min, total job
+          # ~4min → ~9min, sous timeout-minutes:15 (marge 6min).
+          runs: 3
 
       - name: Check CWV Thresholds
         if: always() && steps.filter.outputs.ssr == 'true'
