@@ -24,7 +24,7 @@ import {
   classifyRoute,
   type SeoCriticality,
   type TierId,
-} from '@repo/registry';
+} from '@repo/registry/runtime';
 
 /**
  * Resolution path : depuis backend/dist runtime, remonter à la racine repo

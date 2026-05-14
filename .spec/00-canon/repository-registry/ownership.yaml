@@ -258,6 +258,11 @@ entries:
     owner: '@ak125/auth-team'
     sourceConfidence: medium
     risk: high
+  - glob: backend/src/types/registry-runtime.d.ts
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: backend/supabase/migrations/*seo_crux*
     domain: D3
     owner: '@ak125/seo-team'
