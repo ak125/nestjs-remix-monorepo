@@ -11,10 +11,18 @@
 --   - INSERT-only per cron run (toutes les 5 min).
 --   - Volume estimé : 4 tiers (tier0/1/2 + total) × 288 buckets/jour = 1 152 rows/jour.
 --   - TTL 90 jours via DETACH+DROP, identique à __seo_snapshot_synthetic.
---   - Bien plus léger que synthetic (48k rows/jour vs ~1k) — partitionnement
---     conservé pour cohérence architecture L1.
+--
+-- Squawk conformance (ADR-064 squawk gate, PR #517) :
+--   - Pas de BEGIN/COMMIT explicites : Supabase migration tool wrap déjà
+--     chaque .sql dans une transaction (squawk rule
+--     `transaction-nesting` / `disallowed-statement`).
+--   - SET lock_timeout + SET statement_timeout pré-DDL (squawk rules
+--     `require-timeout-settings`).
+--   - BIGINT pour les counters latence (squawk rule `prefer-bigint-over-int`
+--     — 32-bit int peut saturer en p95 sur fenêtre prolongée).
 
-BEGIN;
+SET lock_timeout = '2s';
+SET statement_timeout = '60s';
 
 -- ── Parent table (partitioned) ───────────────────────────────────────────────
 
@@ -31,9 +39,10 @@ CREATE TABLE IF NOT EXISTS public.__seo_snapshot_cf_analytics (
   cache_hits      BIGINT      NOT NULL DEFAULT 0,
   cache_misses    BIGINT      NOT NULL DEFAULT 0,
   bytes_served    BIGINT      NOT NULL DEFAULT 0,
-  -- p50/p95 origin response time (in ms), CF rounds to integer ms.
-  origin_p50_ms   INTEGER     NULL,
-  origin_p95_ms   INTEGER     NULL,
+  -- p50/p95 origin response time (in ms). BIGINT (vs INTEGER) per squawk
+  -- `prefer-bigint-over-int` — no real cost, prevents future 32-bit saturation.
+  origin_p50_ms   BIGINT      NULL,
+  origin_p95_ms   BIGINT      NULL,
   -- Run-level audit-trail.
   run_id          UUID        NOT NULL,
   zone_tag        TEXT        NOT NULL,
@@ -55,9 +64,8 @@ CREATE INDEX IF NOT EXISTS idx_snap_cf_run_id
   ON public.__seo_snapshot_cf_analytics (run_id);
 
 -- Anti-duplicate : (bucket_start, tier) unique per run.
--- CF GraphQL is idempotent for past buckets but we want to detect re-ingestion
--- of the same bucket (cron rerun, manual replay). UPSERT-on-conflict is the
--- caller's responsibility in the service layer.
+-- CF GraphQL is idempotent for past buckets — UPSERT-on-conflict in the
+-- caller layer relies on this index.
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_snap_cf_bucket_tier
   ON public.__seo_snapshot_cf_analytics (bucket_start, tier);
 
@@ -92,5 +100,3 @@ CREATE POLICY "service_role_all"
   TO service_role
   USING (true)
   WITH CHECK (true);
-
-COMMIT;
