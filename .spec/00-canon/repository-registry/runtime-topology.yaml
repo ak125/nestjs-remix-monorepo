@@ -68,16 +68,226 @@ schemaVersion: "1.0.0"
 adr: ADR-058
 
 entrypoints:
-  # V1 STUB — single entry to prove schema integrity (test §4.1) and
-  # cross-contracts (§4.2 L1 / §4.3 domains / §4.4 ownership / §4.5 layer).
-  # Path chosen so that all 4 cross-contract tests pass with the current
+  # V1 SAMPLE — 28 entries from L1 audit/registry/runtime.json (470 total),
+  # selected so ALL 9 cross-contract tests pass against the current
   # ownership.yaml + domains.yaml + architecture.yaml + L1 runtime.json.
-  # Will be enriched to ~30 sample entries (multi-kind, multi-layer)
-  # in a follow-up commit within PR-5.
+  #
+  # Selection criteria:
+  #   - Status LIVE only
+  #   - Path covered by an ownership.yaml glob   (test §4.4a)
+  #   - Owner present in ownership.yaml          (test §4.4b)
+  #   - Domain declared in domains.yaml, ≠ UNKNOWN (test §4.3)
+  #   - Layer matches inferLayerFromPath(path)   (test §4.5)
+  #
+  # Diversification: 8 nestjs-module + 10 nestjs-controller + 10 remix-route.
+  #
+  # V1 GAPS — intentionally deferred (require ownership.yaml extension first):
+  #   - 1 `worker` entry (backend/src/workers/main.ts)
+  #   - 5 `other`  entries (backend/src/{main,main.server}.ts;
+  #                         frontend/app/{entry.client,entry.server,root}.tsx)
+  # These critical entrypoints lack ownership.yaml glob coverage today. Adding
+  # them to canon V1 would force ownership.yaml mutations — out of plan §4
+  # NO MODIFY scope. See audit-reports/runtime-contract-v1-coverage-2026-05-14.md
+  # for the gap analysis and proposed remediation.
+
+  # ── nestjs-module (8 entries — backend boundaries: auth, config, modules) ──
   - id: "runtime:backend/src/auth/auth.module.ts"
     kind: nestjs-module
     path: "backend/src/auth/auth.module.ts"
-    layer: backend                            # FK architecture.yaml#layers[].id; == inferLayerFromPath(path)
-    domain: D11                               # Commerce & Users (declared in domains.yaml; matches ownership.yaml glob)
-    owner: "@ak125/auth-team"                 # FK ownership.yaml owner for backend/src/auth/**
+    layer: backend
+    domain: D11
+    owner: "@ak125/auth-team"
+    status: LIVE
+  - id: "runtime:backend/src/config/operating-matrix.module.ts"
+    kind: nestjs-module
+    path: "backend/src/config/operating-matrix.module.ts"
+    layer: backend
+    domain: D13
+    owner: "@ak125"
+    status: LIVE
+  - id: "runtime:backend/src/modules/ai-content/ai-content.module.ts"
+    kind: nestjs-module
+    path: "backend/src/modules/ai-content/ai-content.module.ts"
+    layer: backend
+    domain: D6
+    owner: "@ak125/rag-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/cart/cart.module.ts"
+    kind: nestjs-module
+    path: "backend/src/modules/cart/cart.module.ts"
+    layer: backend
+    domain: D11
+    owner: "@ak125/payments-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts"
+    kind: nestjs-module
+    path: "backend/src/modules/diagnostic-engine/diagnostic-engine.module.ts"
+    layer: backend
+    domain: D4
+    owner: "@ak125/vehicle-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/knowledge-graph/knowledge-graph.module.ts"
+    kind: nestjs-module
+    path: "backend/src/modules/knowledge-graph/knowledge-graph.module.ts"
+    layer: backend
+    domain: D7
+    owner: "@ak125"
+    status: LIVE
+  - id: "runtime:backend/src/modules/payments/payments.module.ts"
+    kind: nestjs-module
+    path: "backend/src/modules/payments/payments.module.ts"
+    layer: backend
+    domain: D11
+    owner: "@ak125/payments-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/rag-proxy/rag-proxy.module.ts"
+    kind: nestjs-module
+    path: "backend/src/modules/rag-proxy/rag-proxy.module.ts"
+    layer: backend
+    domain: D6
+    owner: "@ak125/rag-team"
+    status: LIVE
+
+  # ── nestjs-controller (10 entries — HTTP surface: auth, admin, payments, catalog, marketing, seo) ──
+  - id: "runtime:backend/src/auth/controllers/auth-login.controller.ts"
+    kind: nestjs-controller
+    path: "backend/src/auth/controllers/auth-login.controller.ts"
+    layer: backend
+    domain: D11
+    owner: "@ak125/auth-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/admin/controllers/admin-gammes-seo-update.controller.ts"
+    kind: nestjs-controller
+    path: "backend/src/modules/admin/controllers/admin-gammes-seo-update.controller.ts"
+    layer: backend
+    domain: D8
+    owner: "@ak125/admin-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts"
+    kind: nestjs-controller
+    path: "backend/src/modules/admin/controllers/admin-rag-ingest.controller.ts"
+    layer: backend
+    domain: D8
+    owner: "@ak125/admin-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/admin/controllers/seo-cockpit.controller.ts"
+    kind: nestjs-controller
+    path: "backend/src/modules/admin/controllers/seo-cockpit.controller.ts"
+    layer: backend
+    domain: D8
+    owner: "@ak125/admin-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/cart/controllers/cart-analytics.controller.ts"
+    kind: nestjs-controller
+    path: "backend/src/modules/cart/controllers/cart-analytics.controller.ts"
+    layer: backend
+    domain: D11
+    owner: "@ak125/payments-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/catalog/controllers/pieces-clean.controller.ts"
+    kind: nestjs-controller
+    path: "backend/src/modules/catalog/controllers/pieces-clean.controller.ts"
+    layer: backend
+    domain: D1
+    owner: "@ak125/catalog-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts"
+    kind: nestjs-controller
+    path: "backend/src/modules/marketing/controllers/marketing-backlinks.controller.ts"
+    layer: backend
+    domain: D12
+    owner: "@ak125/marketing-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/payments/controllers/paybox-callback.controller.ts"
+    kind: nestjs-controller
+    path: "backend/src/modules/payments/controllers/paybox-callback.controller.ts"
+    layer: backend
+    domain: D11
+    owner: "@ak125/payments-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/products/cross-selling.controller.ts"
+    kind: nestjs-controller
+    path: "backend/src/modules/products/cross-selling.controller.ts"
+    layer: backend
+    domain: D1
+    owner: "@ak125/catalog-team"
+    status: LIVE
+  - id: "runtime:backend/src/modules/seo/controllers/robots-txt.controller.ts"
+    kind: nestjs-controller
+    path: "backend/src/modules/seo/controllers/robots-txt.controller.ts"
+    layer: backend
+    domain: D3
+    owner: "@ak125/seo-team"
+    status: LIVE
+
+  # ── remix-route (10 entries — frontend pages: catch-all, account, admin, blog, commercial) ──
+  - id: "runtime:frontend/app/routes/$.tsx"
+    kind: remix-route
+    path: "frontend/app/routes/$.tsx"
+    layer: frontend
+    domain: D8
+    owner: "@ak125/frontend-team"
+    status: LIVE
+  - id: "runtime:frontend/app/routes/account.tsx"
+    kind: remix-route
+    path: "frontend/app/routes/account.tsx"
+    layer: frontend
+    domain: D8
+    owner: "@ak125/frontend-team"
+    status: LIVE
+  - id: "runtime:frontend/app/routes/admin.invoices.tsx"
+    kind: remix-route
+    path: "frontend/app/routes/admin.invoices.tsx"
+    layer: frontend
+    domain: D8
+    owner: "@ak125/admin-team"
+    status: LIVE
+  - id: "runtime:frontend/app/routes/admin.r1-qa.tsx"
+    kind: remix-route
+    path: "frontend/app/routes/admin.r1-qa.tsx"
+    layer: frontend
+    domain: D8
+    owner: "@ak125/admin-team"
+    status: LIVE
+  - id: "runtime:frontend/app/routes/admin.seo-hub.content.diagnostics.tsx"
+    kind: remix-route
+    path: "frontend/app/routes/admin.seo-hub.content.diagnostics.tsx"
+    layer: frontend
+    domain: D8
+    owner: "@ak125/admin-team"
+    status: LIVE
+  - id: "runtime:frontend/app/routes/admin.system-overview.tsx"
+    kind: remix-route
+    path: "frontend/app/routes/admin.system-overview.tsx"
+    layer: frontend
+    domain: D8
+    owner: "@ak125/admin-team"
+    status: LIVE
+  - id: "runtime:frontend/app/routes/blog-pieces-auto.conseils._index.tsx"
+    kind: remix-route
+    path: "frontend/app/routes/blog-pieces-auto.conseils._index.tsx"
+    layer: frontend
+    domain: D8
+    owner: "@ak125/frontend-team"
+    status: LIVE
+  - id: "runtime:frontend/app/routes/commercial.shipping.create._index.tsx"
+    kind: remix-route
+    path: "frontend/app/routes/commercial.shipping.create._index.tsx"
+    layer: frontend
+    domain: D8
+    owner: "@ak125/frontend-team"
+    status: LIVE
+  - id: "runtime:frontend/app/routes/forgot-password.tsx"
+    kind: remix-route
+    path: "frontend/app/routes/forgot-password.tsx"
+    layer: frontend
+    domain: D8
+    owner: "@ak125/frontend-team"
+    status: LIVE
+  - id: "runtime:frontend/app/routes/products.ranges.tsx"
+    kind: remix-route
+    path: "frontend/app/routes/products.ranges.tsx"
+    layer: frontend
+    domain: D8
+    owner: "@ak125/frontend-team"
     status: LIVE

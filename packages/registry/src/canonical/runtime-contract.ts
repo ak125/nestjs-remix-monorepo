@@ -48,17 +48,24 @@ const ContractDomainSchema = DomainIdSchema.refine(
 // L1 id format = `runtime:<path>` (verified on audit/registry/runtime.json
 // 470 entries). Strict format match enables the cross-contract test §4.2 to
 // validate that every L2 entry id exists in L1.
+//
+// Path character class (`[a-zA-Z0-9._\-/+\[\]$]`) accepts the standard POSIX
+// path chars PLUS Remix flat-routes special characters:
+//   - `$`        = splat / dynamic param   (e.g., `routes/$.tsx`, `routes/$action.tsx`)
+//   - `+`        = pathless group          (e.g., `routes/_public+/_layout.tsx`)
+//   - `[`, `]`   = escaped/optional segments (e.g., `routes/[.well-known].tsx`)
+// All 470 paths in L1 fit this character class (verified 2026-05-14).
 const RuntimeIdSchema = z
   .string()
   .regex(
-    /^runtime:[a-zA-Z0-9._\-/]+$/,
+    /^runtime:[a-zA-Z0-9._\-/+\[\]$]+$/,
     "id must be `runtime:<path>` (matches L1 audit/registry/runtime.json format)",
   );
 
 const RuntimePathSchema = z
   .string()
   .regex(
-    /^[a-zA-Z0-9._\-/]+$/,
+    /^[a-zA-Z0-9._\-/+\[\]$]+$/,
     "path must be a monorepo-relative POSIX path (no leading slash, no spaces)",
   );
 
