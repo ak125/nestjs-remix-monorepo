@@ -102,3 +102,14 @@ export {
   TableNameSchema,
   type DbContract,
 } from "./canonical/db-contract";
+
+// ── SEO criticality tiers (PR-2D foundation, ADR-062 proposed) ──
+export {
+  SeoCriticalitySchema,
+  TierIdSchema,
+  AlertingChannelSchema,
+  classifyRoute,
+  type SeoCriticality,
+  type TierId,
+  type AlertingChannel,
+} from "./canonical/seo-criticality";
