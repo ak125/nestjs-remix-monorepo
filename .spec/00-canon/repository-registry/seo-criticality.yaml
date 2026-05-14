@@ -1,0 +1,93 @@
+# .spec/00-canon/repository-registry/seo-criticality.yaml
+#
+# Layer 2 overlay — SEO criticality tiers pour le SEO Production Control Plane
+# (ADR-062, status: proposed).
+#
+# Sourced from feedback_seo_routes_need_criticality_tiers (2026-05-14) :
+# > Toutes les routes SEO ne valent pas pareil business-wise. Tier0/1/2/excluded
+# > dans registry overlay, sampling/SLO/alerting différenciés ; admin/* = excluded
+# > jamais tier2.
+#
+# Lu par (futurs, dans PR-2A..C) :
+#   - Synthetic Crawler (L1)         : sampling pondéré (60% tier0 / 30% tier1 / 10% tier2)
+#   - Multi-source SLO (L2)          : objectif différencié 99.7% / 99.0% / 98.0%
+#   - Alerting Actions (L3)          : routing PagerDuty / Slack / log-only
+#   - prod-smoke-tests.yml           : pondération du sample seed quotidien
+#   - scripts/seo/gsc-5xx-evidence-batch.ts : stratification du sample
+#
+# Discipline 4-layer : ce fichier appartient au Layer 4 Governance.
+# Aucun composant runtime n'écrit ici — édition manuelle uniquement, validée
+# par packages/registry CLI (`npm run registry:validate`).
+#
+# Anti-pattern : ne JAMAIS classer admin/* en tier2 ("ancillary"). admin/*
+# est sous authentification, jamais indexé → excluded, point.
+
+schemaVersion: "1.0.0"
+
+# Objectif SLO par tier — exprimé en fraction de requêtes non-5xx sur fenêtre
+# 1h glissante (4-source pondéré : runtime + synthetic + edge + GSC).
+# Window 1h pour absorber un blip transitoire sans alerter, mais détecter un
+# stampede en moins d'un cycle GSC crawl (J-2 à J-7).
+slo_window_minutes: 60
+
+tiers:
+  tier0:
+    # Business-critical : revenu direct, expérience client, pages indexées
+    # ciblées par Google Shopping / Search. Tout downtime ici = perte GMV
+    # immédiate (cf. INC-2026-005 : 30 400 pages 5xx × 8 jours = drop traffic).
+    slo: 0.997
+    sampling_weight: 0.60
+    alerting:
+      breach_threshold_minutes: 5  # alerte si SLO breach persiste > 5 min
+      channel: pagerduty
+      auto_issue: true              # GitHub issue auto si breach > 30 min
+    routes:
+      - pieces/*
+      - constructeurs/*
+
+  tier1:
+    # Secondary : autorité topique, long-tail, indexé mais pas revenu direct.
+    # Downtime tolérable courte durée. Sample plus large pour catch les drift.
+    slo: 0.990
+    sampling_weight: 0.30
+    alerting:
+      breach_threshold_minutes: 15
+      channel: slack
+      auto_issue: false
+    routes:
+      - blog/*
+      - blog-pieces-auto/*
+      - guides/*
+
+  tier2:
+    # Ancillary : pages support, navigation, sitemaps. Pages indexées mais
+    # rarement crawlées. SLO bas, log-only.
+    slo: 0.980
+    sampling_weight: 0.10
+    alerting:
+      breach_threshold_minutes: 60
+      channel: log
+      auto_issue: false
+    routes:
+      - support/*
+
+# Allowlist inverse : ces patterns NE FONT PAS PARTIE du SEO Control Plane.
+# Auth, technique, jamais indexé → exclus du synthetic crawler, du SLO et du
+# warmup post-purge. Erreurs 4xx/5xx ici NE déclenchent PAS d'alerte SEO.
+excluded:
+  routes:
+    - admin/*               # auth-only, jamais indexé
+    - api/*                 # contrat backend, monitoring séparé
+    - __test/*              # routes E2E DEV-only (triple ENV guard, cf. PR #510)
+    - _build/*              # assets Vite
+    - healthz
+    - robots.txt
+    - sitemap*.xml          # sitemap index + sub-sitemaps (eux-mêmes monitorés à part)
+    - .well-known/*
+
+# Métadonnées de gouvernance — ne pas éditer manuellement (mis à jour par CI).
+metadata:
+  adr_reference: ADR-062
+  introduced_in_pr: TBD  # PR-2D foundation, à compléter après merge
+  last_review: "2026-05-14"
+  next_review_due: "2026-08-14"   # trimestriel
