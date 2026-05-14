@@ -699,3 +699,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-cf-analytics-collector`
 - **Décision** : fix(seo-cp): squawk-conform migration cf_analytics (drop BEGIN/COMMIT, BIGINT, SET timeouts) (+4 other commits)
 - **Sortie** : PR #520 | commits 9e67a8d4 be4723e1 adf76ba3 f240f3b5 8701fdf4
+
+## 2026-05-14 — feat/seo-cp-runtime-logs-collector (auto)
+
+- **Branche** : `feat/seo-cp-runtime-logs-collector`
+- **Décision** : feat(seo-cp): runtime-logs collector L1 — PR-2A-3 (ADR-064)
+- **Sortie** : PR #524 | commits 106f6816
