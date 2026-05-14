@@ -47,6 +47,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: .squawk.toml
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: high
   - glob: frontend/.size-limit.json
     domain: D13
     owner: '@ak125'
@@ -238,6 +243,16 @@ entries:
     owner: '@ak125/seo-team'
     sourceConfidence: medium
     risk: high
+  - glob: backend/src/modules/seo-control-plane/**
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: high
+  - glob: backend/supabase/migrations/*seo_snapshot*
+    domain: D3
+    owner: '@ak125/seo-team'
+    sourceConfidence: high
+    risk: medium
   - glob: backend/src/modules/users/**
     domain: D11
     owner: '@ak125/auth-team'
