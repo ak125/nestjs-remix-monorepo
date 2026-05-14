@@ -67,6 +67,11 @@ entries:
     owner: '@ak125'
     sourceConfidence: high
     risk: high
+  - glob: audit-reports/**
+    domain: D15
+    owner: '@ak125'
+    sourceConfidence: high
+    risk: low
   - glob: audit/unreachable-modules/**
     domain: D15
     owner: '@ak125'

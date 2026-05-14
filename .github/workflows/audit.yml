@@ -79,6 +79,32 @@ jobs:
       # RATCHET DEADLINE — mechanical expiration via env var + date check.
       # After the deadline, the STEP fails visibly (red ✘ in the CI summary, ::error::
       # in the log), but the WORKFLOW still passes because `continue-on-error: true` is
+      # V1. The visible failure is the social signal forcing PR-W3b to land. PR-W3b
+      # removes `continue-on-error: true` to make this gate workflow-blocking.
+      #
+      # TODO_REMOVE_IN: PR-W3b
+      #   - Delete `continue-on-error: true` below.
+      #   - Delete the `REGISTRY_TESTS_WARN_ONLY_UNTIL` env block.
+      #   - Delete the date-check `if` line in the run script.
+      #   Refusing this PR after the deadline means knowingly accepting permanent dead code.
+      - name: 📋 @repo/registry contract tests (architecture + db, warn-only)
+        if: always()
+        continue-on-error: true
+        env:
+          REGISTRY_TESTS_WARN_ONLY_UNTIL: "2026-06-15"
+        run: |
+          # 1) Mechanical ratchet — after the deadline, the step fails visibly.
+          if [ "$(date +%F)" \> "$REGISTRY_TESTS_WARN_ONLY_UNTIL" ]; then
+            echo "::error::warn-only deadline ($REGISTRY_TESTS_WARN_ONLY_UNTIL) expired — open PR-W3b to remove continue-on-error: true and make this gate workflow-blocking."
+            exit 2
+          fi
+
+          # 2) Run the workspace test suite (node:test via tsx).
+          npm -w @repo/registry test
+
+      # RATCHET DEADLINE — mechanical expiration via env var + date check.
+      # After the deadline, the STEP fails visibly (red ✘ in the CI summary, ::error::
+      # in the log), but the WORKFLOW still passes because `continue-on-error: true` is
       # V1. The visible failure is the social signal forcing PR-3b to land. PR-3b removes
       # `continue-on-error: true` to make this gate workflow-blocking.
       # ADRs/comments without auto-expiration always become permanent dead code; the
