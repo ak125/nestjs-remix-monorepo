@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import yaml from "js-yaml";
@@ -20,117 +21,123 @@ function loadCanon(): SeoCriticality {
 }
 
 describe("seo-criticality.yaml — canon file integrity", () => {
-  it("parses cleanly with Zod (no surperRefine breach)", () => {
-    expect(() => loadCanon()).not.toThrow();
+  test("parses cleanly with Zod (no surperRefine breach)", () => {
+    assert.doesNotThrow(() => loadCanon());
   });
 
-  it("has 3 tiers + excluded section", () => {
+  test("has 3 tiers + excluded section", () => {
     const c = loadCanon();
-    expect(c.tiers.tier0).toBeDefined();
-    expect(c.tiers.tier1).toBeDefined();
-    expect(c.tiers.tier2).toBeDefined();
-    expect(c.excluded.routes.length).toBeGreaterThan(0);
+    assert.ok(c.tiers.tier0 !== undefined);
+    assert.ok(c.tiers.tier1 !== undefined);
+    assert.ok(c.tiers.tier2 !== undefined);
+    assert.ok(c.excluded.routes.length > 0);
   });
 
-  it("sampling weights sum to 1.0 ± 0.01", () => {
+  test("sampling weights sum to 1.0 ± 0.01", () => {
     const c = loadCanon();
     const sum =
       c.tiers.tier0.sampling_weight +
       c.tiers.tier1.sampling_weight +
       c.tiers.tier2.sampling_weight;
-    expect(Math.abs(sum - 1.0)).toBeLessThan(0.01);
+    assert.ok(Math.abs(sum - 1.0) < 0.01);
   });
 
-  it("SLO is strictly decreasing tier0 > tier1 > tier2", () => {
+  test("SLO is strictly decreasing tier0 > tier1 > tier2", () => {
     const c = loadCanon();
-    expect(c.tiers.tier0.slo).toBeGreaterThan(c.tiers.tier1.slo);
-    expect(c.tiers.tier1.slo).toBeGreaterThan(c.tiers.tier2.slo);
+    assert.ok(c.tiers.tier0.slo > c.tiers.tier1.slo);
+    assert.ok(c.tiers.tier1.slo > c.tiers.tier2.slo);
   });
 
-  it("breach_threshold_minutes is strictly increasing", () => {
+  test("breach_threshold_minutes is strictly increasing", () => {
     const c = loadCanon();
-    expect(c.tiers.tier0.alerting.breach_threshold_minutes).toBeLessThan(
-      c.tiers.tier1.alerting.breach_threshold_minutes,
+    assert.ok(
+      c.tiers.tier0.alerting.breach_threshold_minutes <
+        c.tiers.tier1.alerting.breach_threshold_minutes,
     );
-    expect(c.tiers.tier1.alerting.breach_threshold_minutes).toBeLessThan(
-      c.tiers.tier2.alerting.breach_threshold_minutes,
+    assert.ok(
+      c.tiers.tier1.alerting.breach_threshold_minutes <
+        c.tiers.tier2.alerting.breach_threshold_minutes,
     );
   });
 
-  it("admin/* is in excluded, never in any tier (anti-pattern guard)", () => {
+  test("admin/* is in excluded, never in any tier (anti-pattern guard)", () => {
     const c = loadCanon();
-    expect(c.excluded.routes).toContain("admin/*");
+    assert.ok(c.excluded.routes.includes("admin/*"));
     const allTierRoutes = [
       ...c.tiers.tier0.routes,
       ...c.tiers.tier1.routes,
       ...c.tiers.tier2.routes,
     ];
-    expect(allTierRoutes.some((r) => r.includes("admin"))).toBe(false);
+    assert.equal(allTierRoutes.some((r) => r.includes("admin")), false);
   });
 
-  it("api/* is in excluded (auth-only contract, monitored separately)", () => {
+  test("api/* is in excluded (auth-only contract, monitored separately)", () => {
     const c = loadCanon();
-    expect(c.excluded.routes).toContain("api/*");
+    assert.ok(c.excluded.routes.includes("api/*"));
   });
 
-  it("references ADR-064 in metadata", () => {
+  test("references ADR-064 in metadata", () => {
     const c = loadCanon();
-    expect(c.metadata.adr_reference).toBe("ADR-064");
+    assert.equal(c.metadata.adr_reference, "ADR-064");
   });
 });
 
 describe("classifyRoute()", () => {
   const config: SeoCriticality = loadCanon();
 
-  it("classifies /pieces/foo-1.html as tier0", () => {
-    expect(classifyRoute(config, "/pieces/foo-1.html")).toBe("tier0");
+  test("classifies /pieces/foo-1.html as tier0", () => {
+    assert.equal(classifyRoute(config, "/pieces/foo-1.html"), "tier0");
   });
 
-  it("classifies /constructeurs/bmw-33/serie-3-..-..html as tier0", () => {
-    expect(
+  test("classifies /constructeurs/bmw-33/serie-3-..-..html as tier0", () => {
+    assert.equal(
       classifyRoute(config, "/constructeurs/bmw-33/serie-3-33028/328-i-58077.html"),
-    ).toBe("tier0");
+      "tier0",
+    );
   });
 
-  it("classifies /blog/post-x as tier1", () => {
-    expect(classifyRoute(config, "/blog/post-x")).toBe("tier1");
+  test("classifies /blog/post-x as tier1", () => {
+    assert.equal(classifyRoute(config, "/blog/post-x"), "tier1");
   });
 
-  it("classifies /blog-pieces-auto/conseils/amortisseur as tier1", () => {
-    expect(classifyRoute(config, "/blog-pieces-auto/conseils/amortisseur")).toBe("tier1");
+  test("classifies /blog-pieces-auto/conseils/amortisseur as tier1", () => {
+    assert.equal(
+      classifyRoute(config, "/blog-pieces-auto/conseils/amortisseur"),
+      "tier1",
+    );
   });
 
-  it("classifies /support/contact as tier2", () => {
-    expect(classifyRoute(config, "/support/contact")).toBe("tier2");
+  test("classifies /support/contact as tier2", () => {
+    assert.equal(classifyRoute(config, "/support/contact"), "tier2");
   });
 
-  it("classifies /admin/dashboard as excluded (never any tier)", () => {
-    expect(classifyRoute(config, "/admin/dashboard")).toBe("excluded");
+  test("classifies /admin/dashboard as excluded (never any tier)", () => {
+    assert.equal(classifyRoute(config, "/admin/dashboard"), "excluded");
   });
 
-  it("classifies /api/catalog/families as excluded", () => {
-    expect(classifyRoute(config, "/api/catalog/families")).toBe("excluded");
+  test("classifies /api/catalog/families as excluded", () => {
+    assert.equal(classifyRoute(config, "/api/catalog/families"), "excluded");
   });
 
-  it("classifies /__test/force-503 as excluded", () => {
-    expect(classifyRoute(config, "/__test/force-503")).toBe("excluded");
+  test("classifies /__test/force-503 as excluded", () => {
+    assert.equal(classifyRoute(config, "/__test/force-503"), "excluded");
   });
 
-  it("classifies /sitemap.xml as excluded", () => {
-    expect(classifyRoute(config, "/sitemap.xml")).toBe("excluded");
+  test("classifies /sitemap.xml as excluded", () => {
+    assert.equal(classifyRoute(config, "/sitemap.xml"), "excluded");
   });
 
-  it("classifies /robots.txt as excluded", () => {
-    expect(classifyRoute(config, "/robots.txt")).toBe("excluded");
+  test("classifies /robots.txt as excluded", () => {
+    assert.equal(classifyRoute(config, "/robots.txt"), "excluded");
   });
 
-  it("returns null for uncovered routes (caller must default)", () => {
-    expect(classifyRoute(config, "/totally-unknown-path")).toBeNull();
+  test("returns null for uncovered routes (caller must default)", () => {
+    assert.equal(classifyRoute(config, "/totally-unknown-path"), null);
   });
 });
 
 describe("SeoCriticalitySchema — anti-pattern guards", () => {
-  it("rejects admin/* placed in a tier", () => {
+  test("rejects admin/* placed in a tier", () => {
     const bad: unknown = {
       schemaVersion: "1.0.0",
       slo_window_minutes: 60,
@@ -163,13 +170,13 @@ describe("SeoCriticalitySchema — anti-pattern guards", () => {
       },
     };
     const r = SeoCriticalitySchema.safeParse(bad);
-    expect(r.success).toBe(false);
+    assert.equal(r.success, false);
     if (!r.success) {
-      expect(r.error.issues.some((i) => i.message.includes("admin"))).toBe(true);
+      assert.ok(r.error.issues.some((i) => i.message.includes("admin")));
     }
   });
 
-  it("rejects SLO not strictly decreasing", () => {
+  test("rejects SLO not strictly decreasing", () => {
     const bad: unknown = {
       schemaVersion: "1.0.0",
       slo_window_minutes: 60,
@@ -202,10 +209,10 @@ describe("SeoCriticalitySchema — anti-pattern guards", () => {
       },
     };
     const r = SeoCriticalitySchema.safeParse(bad);
-    expect(r.success).toBe(false);
+    assert.equal(r.success, false);
   });
 
-  it("rejects sampling weights not summing to 1.0", () => {
+  test("rejects sampling weights not summing to 1.0", () => {
     const bad: unknown = {
       schemaVersion: "1.0.0",
       slo_window_minutes: 60,
@@ -238,6 +245,6 @@ describe("SeoCriticalitySchema — anti-pattern guards", () => {
       },
     };
     const r = SeoCriticalitySchema.safeParse(bad);
-    expect(r.success).toBe(false);
+    assert.equal(r.success, false);
   });
 });
