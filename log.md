@@ -657,3 +657,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/adr-063-cwv-ingestion-v2`
 - **Décision** : fix(seo-crux): jest moduleNameMapper for @repo/seo-types workspace symlink (+3 other commits)
 - **Sortie** : PR #518 | commits f03a0252 26c34086 ea602630 dd75d842
+
+## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
+
+- **Branche** : `feat/adr-063-cwv-ingestion-v2`
+- **Décision** : test(seo-crux): skip fake-timer retry+circuit-breaker tests (CI timeout) (+5 other commits)
+- **Sortie** : PR #518 | commits f07a4990 44181f8c f03a0252 26c34086 ea602630 dd75d842
