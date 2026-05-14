@@ -675,3 +675,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/rpc-contract-v1-clean`
 - **Décision** : refactor(registry): promote AccessSurfaceSchema to shared (PR-R prep)
 - **Sortie** : PR aucune | commits e55ddfbf
+
+## 2026-05-14 — feat/rpc-contract-v1-clean (auto)
+
+- **Branche** : `feat/rpc-contract-v1-clean`
+- **Décision** : feat(registry): rpc contract V1 scaffold + 20 test cases + generator (PR-R §1-§5) (+2 other commits)
+- **Sortie** : PR aucune | commits 63867907 0d67e059 e55ddfbf
