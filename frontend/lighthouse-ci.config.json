@@ -1,0 +1,24 @@
+{
+  "_comment": "Lighthouse-CI assertions config — voir frontend/lighthouse-ci.README.md.",
+  "_philosophy": "Gate ERROR sur métriques déterministes (bundle/asset shape, identiques run-to-run). Gate WARN sur métriques timing (synthétiques, noisy sur runner partagé). CWV PROD = monitoring séparé via CrUX (chantier ADR à venir, hors scope ce gate).",
+  "ci": {
+    "collect": {
+      "numberOfRuns": 3
+    },
+    "assert": {
+      "assertions": {
+        "resource-summary:script:size": ["error", { "maxNumericValue": 1280000 }],
+        "resource-summary:stylesheet:size": ["error", { "maxNumericValue": 409600 }],
+        "resource-summary:total:size": ["error", { "maxNumericValue": 1843200 }],
+        "resource-summary:script:count": ["error", { "maxNumericValue": 30 }],
+        "resource-summary:stylesheet:count": ["error", { "maxNumericValue": 10 }],
+
+        "first-contentful-paint": ["warn", { "maxNumericValue": 10200, "aggregationMethod": "median" }],
+        "largest-contentful-paint": ["warn", { "maxNumericValue": 11100, "aggregationMethod": "median" }],
+        "interactive": ["warn", { "maxNumericValue": 12100, "aggregationMethod": "median" }],
+        "total-blocking-time": ["warn", { "maxNumericValue": 500, "aggregationMethod": "median" }],
+        "cumulative-layout-shift": ["warn", { "maxNumericValue": 0.25, "aggregationMethod": "median" }]
+      }
+    }
+  }
+}

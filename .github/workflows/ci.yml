@@ -1103,10 +1103,12 @@ jobs:
             http://localhost:3200/
             http://localhost:3200/search?q=plaquette
             http://localhost:3200/pieces/catalogue
-          budgetPath: ./frontend/lighthouse-budget.json
+          # configPath unifié avec perf-gates.yml — séparation error (resources
+          # déterministes) vs warn (timings synthétiques noisy). numberOfRuns: 3
+          # défini dans la config (cf. frontend/lighthouse-ci.config.json).
+          configPath: ./frontend/lighthouse-ci.config.json
           uploadArtifacts: true
           temporaryPublicStorage: true
-          runs: 3
 
       - name: Lighthouse summary
         if: always()

@@ -15,9 +15,10 @@ on:
     #   qui n'auraient pas trigger le workflow auparavant et restaient
     #   bloquées sur "14 of 14 expected" en branch protection.
 
-# Thresholds : voir frontend/lighthouse-budget.json (calibré sur baseline
-# mesuré, anti-régression). Documentation + procédure de mise à jour dans
-# frontend/lighthouse-budget.README.md.
+# Thresholds : voir frontend/lighthouse-ci.config.json (full LHCI assertions
+# config — gate ERROR sur métriques structurelles déterministes, gate WARN sur
+# métriques timing synthétiques noisy). Documentation + philosophie + procédure
+# de mise à jour dans frontend/lighthouse-ci.README.md.
 
 # `pull-requests: write` requis par le step "Comment PR with Results" pour
 # poster le récap performance. Sans cette permission le workflow échoue
@@ -64,7 +65,7 @@ jobs:
               - 'backend/src/**'
               - 'packages/*/src/**'
               - '.github/workflows/perf-gates.yml'
-              - 'frontend/lighthouse-budget.json'
+              - 'frontend/lighthouse-ci.config.json'
 
       - name: Skip notice (no SSR-relevant changes)
         if: steps.filter.outputs.ssr != 'true'
@@ -167,26 +168,17 @@ jobs:
             http://localhost:3000/
             http://localhost:3000/pieces/plaquette-de-frein-402/renault-140/megane-iii-140049/1-5-dci-100413.html
             http://localhost:3000/constructeurs/renault-140.html
-          budgetPath: ./frontend/lighthouse-budget.json
+          # configPath = full LHCI assertions config (vs ancien budgetPath limité).
+          # Sépare gate ERROR (resources, déterministe) de gate WARN (timings,
+          # synthétique noisy). numberOfRuns: 3 et aggregationMethod median
+          # sont définis dedans (cf. frontend/lighthouse-ci.config.json).
+          configPath: ./frontend/lighthouse-ci.config.json
           # uploadArtifacts: false — l'action treosh/lighthouse-ci-action@v12 utilise
           # actions/upload-artifact@v3 en interne, déprécié par GitHub depuis 2024.
           # `temporaryPublicStorage: true` suffit pour récupérer le rapport via le
           # lien retourné par l'action (cf. lighthouseLinks dans Comment PR step).
           uploadArtifacts: false
           temporaryPublicStorage: true
-          # runs: 3 — anti-flake budget assertion (alignement ci.yml:1109 PREPROD).
-          # Lighthouse-CI agrège les N runs avec `median` par défaut pour les
-          # budget assertions → une violation TBT ponctuelle (CPU steal du
-          # runner partagé) ne fait plus tomber le check ; il faut une majorité
-          # de runs > seuil. Recommandation canonique upstream :
-          #   https://github.com/GoogleChrome/lighthouse-ci/blob/main/docs/troubleshooting.md
-          #   "Increase the number of runs to mitigate result variance".
-          # Empirie repo : flake rate 13% (13/100 dernières runs perf-gates au
-          # 2026-05-14, mesure historique TBT home calibré 125ms vs spike
-          # observé 1823ms = 14.5x sur runner contention). ci.yml PREPROD avec
-          # runs:3 ne flake jamais. Coût : step ~2min → ~6min, total job
-          # ~4min → ~9min, sous timeout-minutes:15 (marge 6min).
-          runs: 3
 
       - name: Check CWV Thresholds
         if: always() && steps.filter.outputs.ssr == 'true'
