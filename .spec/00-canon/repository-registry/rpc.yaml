@@ -69,17 +69,196 @@ schemaVersion: "1.0.0"
 adr: ADR-058
 
 rpcs:
-  # V1 STUB — single entry to prove schema integrity (test §4.1) and
-  # cross-contracts. Path chosen so that the L1 cross-check passes.
-  # Will be enriched to ~25 sample entries (multi-domain, multi-status)
-  # in a follow-up commit within PR-R.
+  # V1 SAMPLE — 18 RPCs from L1 audit/registry/rpc.json (180 total),
+  # selected so ALL 7 cross-contract tests pass against current
+  # ownership.yaml + domains.yaml + AccessSurfaceSchema.
+  # Selection criteria :
+  #   - Status LIVE only (assumed by heuristic — V2 may need DEPRECATED audit)
+  #   - Name matches a heuristic domain rule (regex-based dispatch)
+  #   - accessSurface inferred from name pattern (governance/seo/cwv/rag → +service_role)
+  #   - securityDefinerExpected = L1 securityDefiner flag (extracted from migrations)
+  #   - Owner = @ak125 universal default (granular per-team owners V2)
+  # Diversification: 8 of 15 domains covered (D1, D3, D4, D6, D7, D10, D11, D15).
+  #
+  # V1 GAPS — domains with no V1 RPC (intentionally deferred):
+  #   - D2 (Legacy/XTR), D5 (Blog/Content), D8 (Read Model), D9 (Import/ETL),
+  #     D12 (Marketing), D13 (Config), D14 (Gamme cross-cutting)
+  #   These domains either have no public RPC, or RPCs not yet covered by
+  #   heuristic regex. V2 will extend coverage with explicit per-domain audit.
+  #
+  # V1 ACCESS SURFACES — used (not RESERVED):
+  #   - backend       : NestJS controllers/services (universal)
+  #   - service_role  : Supabase service_role key bypass RLS (governance + RAG)
+  # RESERVED V1 (test §4.5 RESERVED_V1):
+  #   - rpc, anon, edge_function, worker, frontend, authenticated
+
+  # ── D15 Security & Governance (3 RPCs — governance metrics) ──
   - id: "public.__gov_m1_table_sizes"
     name: "__gov_m1_table_sizes"
-    domain: D15                          # Security & Governance (governance metrics RPC)
+    domain: D15
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: true
+  - id: "public.__gov_m2_index_sizes"
+    name: "__gov_m2_index_sizes"
+    domain: D15
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: true
+  - id: "public.__gov_m3_stale_stats"
+    name: "__gov_m3_stale_stats"
+    domain: D15
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: true
+
+  # ── D3 SEO & Sitemap (3 RPCs) ──
+  - id: "public.__seo_brand_editorial_set_updated_at"
+    name: "__seo_brand_editorial_set_updated_at"
+    domain: D3
     owner: "@ak125"
     status: LIVE
     accessSurface:
       - backend
       - service_role
     securityDefinerExpected: false
-    notes: "Governance metrics RPC — returns table size distribution. Used by audit.yml CI for size invariant tracking."
+  - id: "public.__seo_observable_updated_at"
+    name: "__seo_observable_updated_at"
+    domain: D3
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+  - id: "public.backfill_seo_keywords_type_ids"
+    name: "backfill_seo_keywords_type_ids"
+    domain: D3
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+
+  # ── D4 Vehicle / Compatibility (3 RPCs) ──
+  - id: "public.build_vehicle_page_payload"
+    name: "build_vehicle_page_payload"
+    domain: D4
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: true
+  - id: "public.extract_vehicle_keywords"
+    name: "extract_vehicle_keywords"
+    domain: D4
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: false
+  - id: "public.get_alternative_gammes_for_vehicle"
+    name: "get_alternative_gammes_for_vehicle"
+    domain: D4
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: false
+
+  # ── D10 Quality, Monitoring & Observabilité (1 RPC) ──
+  - id: "public.get_cwv_summary_by_role"
+    name: "get_cwv_summary_by_role"
+    domain: D10
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+
+  # ── D1 Catalog Core (3 RPCs — pieces lookup) ──
+  - id: "public.get_piece_detail"
+    name: "get_piece_detail"
+    domain: D1
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: true
+  - id: "public.get_pieces_for_type_gamme_v3"
+    name: "get_pieces_for_type_gamme_v3"
+    domain: D1
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: true
+  - id: "public.get_pieces_for_type_gamme_v4"
+    name: "get_pieces_for_type_gamme_v4"
+    domain: D1
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: true
+
+  # ── D7 Knowledge Graph & Diagnostic (1 RPC) ──
+  - id: "public.kg_generate_explainable_diagnostic"
+    name: "kg_generate_explainable_diagnostic"
+    domain: D7
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: false
+
+  # ── D6 RAG & AI Engine (3 RPCs — RAG sync orchestration) ──
+  - id: "public.kg_rag_file_needs_sync"
+    name: "kg_rag_file_needs_sync"
+    domain: D6
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+  - id: "public.kg_rag_get_node_id"
+    name: "kg_rag_get_node_id"
+    domain: D6
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+  - id: "public.kg_rag_record_sync"
+    name: "kg_rag_record_sync"
+    domain: D6
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+      - service_role
+    securityDefinerExpected: false
+
+  # ── D11 Commerce & Users (1 RPC — payment atomicity) ──
+  - id: "public.mark_order_paid_atomic"
+    name: "mark_order_paid_atomic"
+    domain: D11
+    owner: "@ak125"
+    status: LIVE
+    accessSurface:
+      - backend
+    securityDefinerExpected: true
+    notes: "Atomic payment confirmation — must be SECURITY DEFINER to bypass RLS for cross-table state mutation. Critical path."
