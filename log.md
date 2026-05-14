@@ -621,3 +621,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-criticality-tiers`
 - **Décision** : chore(registry): renumber ADR-062 → ADR-064 (062 + 063 already taken) (+3 other commits)
 - **Sortie** : PR #515 | commits 815d3307 7fbe8bd1 24e425ab e118d599
+
+## 2026-05-14 — feat/adr-063-cwv-monitoring-crux-api (auto)
+
+- **Branche** : `feat/adr-063-cwv-monitoring-crux-api`
+- **Décision** : fix(seo-crux): reword down.sql comment to avoid migration-safety false positive (+3 other commits)
+- **Sortie** : PR #514 | commits ac7fd3ad feb1d4b0 5d1a7535 15092a48
