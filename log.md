@@ -628,20 +628,20 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : fix(seo-crux): reword down.sql comment to avoid migration-safety false positive (+3 other commits)
 - **Sortie** : PR #514 | commits ac7fd3ad feb1d4b0 5d1a7535 15092a48
 
-## 2026-05-14 — feat/pr-5-runtime-contract-v1 (auto)
+## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
 
-- **Branche** : `feat/pr-5-runtime-contract-v1`
-- **Décision** : feat(registry): add inferLayerFromPath helper (PR-5 prep) (+1 other commit)
-- **Sortie** : PR aucune | commits a84ff2a8 68144b2a
+- **Branche** : `feat/seo-cp-synthetic-crawler`
+- **Décision** : feat(seo-cp): synthetic crawler L1 — PR-2A-1 SEO Production Control Plane
+- **Sortie** : PR #516 | commits 78e38791
 
-## 2026-05-14 — feat/pr-5-runtime-contract-v1 (auto)
+## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
 
-- **Branche** : `feat/pr-5-runtime-contract-v1`
-- **Décision** : feat(registry): runtime contract V1 scaffold + schema integrity tests (PR-5 §1+§2+§4.1) (+4 other commits)
-- **Sortie** : PR aucune | commits 99424438 38903907 90da8c75 a84ff2a8 68144b2a
+- **Branche** : `feat/seo-cp-synthetic-crawler`
+- **Décision** : fix(seo-cp): extend SupabaseBaseService + correct path resolution (+2 other commits)
+- **Sortie** : PR #516 | commits 764670e0 d148698d 78e38791
 
-## 2026-05-14 — feat/pr-5-runtime-contract-v1 (auto)
+## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
 
-- **Branche** : `feat/pr-5-runtime-contract-v1`
-- **Décision** : test(registry): cross-contract L1 + domains tests for runtime contract (PR-5 §4.2+§4.3) (+7 other commits)
-- **Sortie** : PR aucune | commits 3e7577d4 351878b4 35340f1e 99424438 38903907 90da8c75 a84ff2a8 68144b2a
+- **Branche** : `feat/seo-cp-synthetic-crawler`
+- **Décision** : fix(seo-cp): add -- APPROVED: comments to DROP statements (CI migration safety gate) (+4 other commits)
+- **Sortie** : PR #516 | commits b2489e5e d8002a36 824d0dfc 7e84c3ee dba46e79
