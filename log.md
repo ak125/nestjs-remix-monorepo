@@ -670,14 +670,8 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Décision** : test(seo-crux): minimize to sync-only coverage (3 tests) (+7 other commits)
 - **Sortie** : PR #518 | commits 08142888 e5c6864b f07a4990 44181f8c f03a0252 26c34086 ea602630 dd75d842
 
-## 2026-05-14 — feat/rpc-contract-v1-clean (auto)
+## 2026-05-14 — feat/adr-063-cwv-alerting (auto)
 
-- **Branche** : `feat/rpc-contract-v1-clean`
-- **Décision** : refactor(registry): promote AccessSurfaceSchema to shared (PR-R prep)
-- **Sortie** : PR aucune | commits e55ddfbf
-
-## 2026-05-14 — feat/rpc-contract-v1-clean (auto)
-
-- **Branche** : `feat/rpc-contract-v1-clean`
-- **Décision** : feat(registry): rpc contract V1 scaffold + 20 test cases + generator (PR-R §1-§5) (+2 other commits)
-- **Sortie** : PR aucune | commits 63867907 0d67e059 e55ddfbf
+- **Branche** : `feat/adr-063-cwv-alerting`
+- **Décision** : feat(seo-crux): alerter service (pr-4 adr-063)
+- **Sortie** : PR #525 | commits a6f3b25f
