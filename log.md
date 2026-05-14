@@ -645,3 +645,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/seo-cp-synthetic-crawler`
 - **Décision** : fix(seo-cp): add -- APPROVED: comments to DROP statements (CI migration safety gate) (+4 other commits)
 - **Sortie** : PR #516 | commits b2489e5e d8002a36 824d0dfc 7e84c3ee dba46e79
+
+## 2026-05-14 — feat/adr-063-cwv-ingestion-v2 (auto)
+
+- **Branche** : `feat/adr-063-cwv-ingestion-v2`
+- **Décision** : fix(seo-crux): prettier formatting + jest transformIgnore for @repo/seo-types (+1 other commit)
+- **Sortie** : PR #518 | commits ea602630 dd75d842
