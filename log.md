@@ -627,3 +627,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/adr-063-cwv-monitoring-crux-api`
 - **Décision** : fix(seo-crux): reword down.sql comment to avoid migration-safety false positive (+3 other commits)
 - **Sortie** : PR #514 | commits ac7fd3ad feb1d4b0 5d1a7535 15092a48
+
+## 2026-05-14 — feat/seo-cp-synthetic-crawler (auto)
+
+- **Branche** : `feat/seo-cp-synthetic-crawler`
+- **Décision** : feat(seo-cp): synthetic crawler L1 — PR-2A-1 SEO Production Control Plane
+- **Sortie** : PR #516 | commits 78e38791
