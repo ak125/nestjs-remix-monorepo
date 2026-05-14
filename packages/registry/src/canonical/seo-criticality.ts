@@ -4,7 +4,7 @@ import { z } from 'zod';
  * SEO Criticality Tiers — Zod schema for
  * `.spec/00-canon/repository-registry/seo-criticality.yaml`.
  *
- * Source of truth for the SEO Production Control Plane (ADR-062, proposed)
+ * Source of truth for the SEO Production Control Plane (ADR-064, proposed)
  * Layer 4 Governance. Read at boot by :
  *   - Synthetic Crawler (L1) for sampling weights
  *   - Multi-source SLO (L2) for tier thresholds

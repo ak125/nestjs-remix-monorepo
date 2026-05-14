@@ -73,9 +73,9 @@ describe("seo-criticality.yaml — canon file integrity", () => {
     expect(c.excluded.routes).toContain("api/*");
   });
 
-  it("references ADR-062 in metadata", () => {
+  it("references ADR-064 in metadata", () => {
     const c = loadCanon();
-    expect(c.metadata.adr_reference).toBe("ADR-062");
+    expect(c.metadata.adr_reference).toBe("ADR-064");
   });
 });
 
@@ -156,7 +156,7 @@ describe("SeoCriticalitySchema — anti-pattern guards", () => {
       },
       excluded: { routes: ["api/*"] },
       metadata: {
-        adr_reference: "ADR-062",
+        adr_reference: "ADR-064",
         introduced_in_pr: "TBD",
         last_review: "2026-05-14",
         next_review_due: "2026-08-14",
@@ -195,7 +195,7 @@ describe("SeoCriticalitySchema — anti-pattern guards", () => {
       },
       excluded: { routes: ["admin/*"] },
       metadata: {
-        adr_reference: "ADR-062",
+        adr_reference: "ADR-064",
         introduced_in_pr: "TBD",
         last_review: "2026-05-14",
         next_review_due: "2026-08-14",
@@ -231,7 +231,7 @@ describe("SeoCriticalitySchema — anti-pattern guards", () => {
       },
       excluded: { routes: ["admin/*"] },
       metadata: {
-        adr_reference: "ADR-062",
+        adr_reference: "ADR-064",
         introduced_in_pr: "TBD",
         last_review: "2026-05-14",
         next_review_due: "2026-08-14",

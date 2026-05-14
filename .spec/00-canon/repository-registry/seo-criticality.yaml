@@ -1,7 +1,7 @@
 # .spec/00-canon/repository-registry/seo-criticality.yaml
 #
 # Layer 2 overlay — SEO criticality tiers pour le SEO Production Control Plane
-# (ADR-062, status: proposed).
+# (ADR-064, status: proposed).
 #
 # Sourced from feedback_seo_routes_need_criticality_tiers (2026-05-14) :
 # > Toutes les routes SEO ne valent pas pareil business-wise. Tier0/1/2/excluded
@@ -87,7 +87,7 @@ excluded:
 
 # Métadonnées de gouvernance — ne pas éditer manuellement (mis à jour par CI).
 metadata:
-  adr_reference: ADR-062
+  adr_reference: ADR-064
   introduced_in_pr: TBD  # PR-2D foundation, à compléter après merge
   last_review: "2026-05-14"
   next_review_due: "2026-08-14"   # trimestriel
