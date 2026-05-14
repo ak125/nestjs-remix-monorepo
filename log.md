@@ -573,3 +573,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-4-frontend-utils-batch-1`
 - **Décision** : chore(cleanup): drop 4 frontend dead utils (PR-4 batch 1)
 - **Sortie** : PR aucune | commits c24a3fe5
+
+## 2026-05-14 — refactor/registry-zod-validator-extract (auto)
+
+- **Branche** : `refactor/registry-zod-validator-extract`
+- **Décision** : refactor(ci): extract Zod validator to tsx script, remove inline heredoc + build dependency
+- **Sortie** : PR #503 | commits 47dea57f
+
+## 2026-05-14 — refactor/registry-zod-validator-extract (auto)
+
+- **Branche** : `refactor/registry-zod-validator-extract`
+- **Décision** : refactor(registry): convert @repo/registry to source-only workspace (+2 other commits)
+- **Sortie** : PR #503 | commits 90f20f13 9afc7674 47dea57f
