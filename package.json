@@ -67,7 +67,8 @@
     "depcruise:integrity-test": "tsx --test tests/registry/depcruise-integrity.test.ts",
     "db-contract:build": "npm -w @repo/registry run build:db-contract",
     "runtime-contract:build": "npm -w @repo/registry run build:runtime-contract",
-    "dep-governance:build": "npm -w @repo/registry run build:dep-governance"
+    "dep-governance:build": "npm -w @repo/registry run build:dep-governance",
+    "rpc-contract:build": "npm -w @repo/registry run build:rpc-contract"
   },
   "keywords": [],
   "author": "",

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { DomainIdSchema } from '../shared/domain';
 import { OwnerIdSchema } from '../shared/owner';
+import { AccessSurfaceSchema as SharedAccessSurfaceSchema } from '../shared/access-surface';
 
 // V1 MINIMAL — 3 top-level fields only: schemaVersion, adr, tables[].
 // Everything else (column DDL, RLS state, deletePolicy, RPC signatures,
@@ -33,16 +34,9 @@ const TableNameSchema = z
   .string()
   .regex(/^[a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*$/, 'table name must be schema.name (lowercase)');
 
-const AccessSurfaceSchema = z.enum([
-  'backend',
-  'rpc',
-  'frontend',
-  'anon',
-  'authenticated',
-  'service_role',
-  'edge_function',
-  'worker',
-]);
+// Alias for backward compatibility with existing db-contract consumers.
+// Single source of truth = AccessSurfaceSchema in shared/access-surface.ts (PR-R).
+const AccessSurfaceSchema = SharedAccessSurfaceSchema;
 
 const CriticalitySchema = z.enum(['critical', 'high', 'normal']);
 

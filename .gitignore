@@ -249,3 +249,4 @@ audit/registry/cache/
 .spec/00-canon/_schema/db.schema.json
 .spec/00-canon/_schema/runtime-topology.schema.json
 .spec/00-canon/_schema/dep-governance.schema.json
+.spec/00-canon/_schema/rpc.schema.json
