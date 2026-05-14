@@ -51,6 +51,7 @@
     "registry:build:rpc": "node scripts/registry/build-rpc-registry.js",
     "registry:build": "npm run registry:build:files && npm run registry:build:runtime && npm run registry:build:deps && npm run registry:build:db && npm run registry:build:rpc",
     "registry:test:rpc-parser": "tsx --test tests/registry/rpc-parser.test.ts",
+    "registry:validate:zod": "tsx scripts/registry/validate-zod-schemas.ts",
     "registry:seed-ownership": "node scripts/registry/seed-ownership.js --write",
     "registry:validate": "node scripts/registry/validate-overlay.js",
     "registry:build:canonical": "node scripts/registry/build-canonical-registry.js",
