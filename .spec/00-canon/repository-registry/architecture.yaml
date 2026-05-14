@@ -19,9 +19,9 @@
 #    × runtime observability  → use OTel config / Sentry tags
 #    × queue/cache mapping    → use `runtime-topology.yaml` (PR-4)
 #    × SEO flows / role canon → use existing seo-role-contracts (PR-F SEO)
-#    × projection graph       → use `db.yaml` (PR-3)
+#    × projection graph       → see `db.yaml`
 #    × RAG flows              → use ADR-046 wiki-exports SoT
-#    × DB schema / RLS        → use `db.yaml` (PR-3)
+#    × DB schema / RLS        → see `db.yaml`
 #
 #  If you're tempted to add a section that isn't an architectural invariant —
 #  open a NEW contract file instead.

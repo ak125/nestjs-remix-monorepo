@@ -25,6 +25,7 @@ on:
       - "audit-reports/phase0-baseline.json"
       - ".github/workflows/audit.yml"
       - ".spec/00-canon/repository-registry/architecture.yaml"
+      - ".spec/00-canon/repository-registry/db.yaml"
       - ".dependency-cruiser.generated.cjs"
 
 permissions:
@@ -67,6 +68,13 @@ jobs:
       - name: 🏛️ Architecture contract — regenerate artifacts
         if: always()
         run: npm run architecture:build
+
+      - name: 🗄️ DB contract — regenerate IDE schema mirror (PR-3a)
+        # Mirror of architecture:build pattern. Pure regen — if Zod parse
+        # throws, that surfaces a real bug in db.yaml. No committed artifact
+        # in PR-3a; PR-3b will add the artifact + freshness gate.
+        if: always()
+        run: npm run db-contract:build
 
       # RATCHET DEADLINE — mechanical expiration via env var + date check.
       # After the deadline, the STEP fails visibly (red ✘ in the CI summary, ::error::

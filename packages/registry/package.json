@@ -11,6 +11,7 @@
   },
   "scripts": {
     "build:architecture": "tsx src/bin/build-architecture-artifacts.ts",
+    "build:db-contract": "tsx src/bin/build-db-contract-artifacts.ts",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test src/**/*.test.ts"
   },

@@ -597,3 +597,15 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/perf-gates-bundle-stats-no-lighthouse`
 - **Décision** : fix(perf-gates): use turbo build at root, not -w frontend (workspace deps) (+2 other commits)
 - **Sortie** : PR #506 | commits dbb88af1 d2f291a8 8b2dfd70
+
+## 2026-05-14 — feat/db-contract-v1 (auto)
+
+- **Branche** : `feat/db-contract-v1`
+- **Décision** : feat(db-contract): §2 add canon db.yaml — 8 P0/P1 tables (V1 minimal) (+1 other commit)
+- **Sortie** : PR aucune | commits 82a7cede 48330a0d
+
+## 2026-05-14 — feat/db-contract-v1 (auto)
+
+- **Branche** : `feat/db-contract-v1`
+- **Décision** : feat(db-contract): §6 size invariants + doctrine pointer cleanup (+6 other commits)
+- **Sortie** : PR #511 | commits 3a654957 f9aa65a7 e1bc4a24 c27b7035 106c0bb6 82a7cede 48330a0d

@@ -246,3 +246,4 @@ audit/registry/cache/
 # `npm run architecture:build` on every run. Not committed to avoid PR noise /
 # merge conflicts. Fresh checkouts: run the build once for IDE $schema resolution.
 .spec/00-canon/_schema/architecture.schema.json
+.spec/00-canon/_schema/db.schema.json

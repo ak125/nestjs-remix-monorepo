@@ -91,3 +91,14 @@ export {
   LayerSchema,
   type ArchitectureContract,
 } from "./canonical/architecture-contract";
+
+// ── DB contract (PR-3a) ──
+export {
+  DbContractSchema,
+  TableSchema,
+  AccessSurfaceSchema,
+  CriticalitySchema,
+  OwnerSchema,
+  TableNameSchema,
+  type DbContract,
+} from "./canonical/db-contract";
