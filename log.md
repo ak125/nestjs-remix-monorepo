@@ -573,3 +573,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `feat/pr-4-frontend-utils-batch-1`
 - **Décision** : chore(cleanup): drop 4 frontend dead utils (PR-4 batch 1)
 - **Sortie** : PR aucune | commits c24a3fe5
+
+## 2026-05-14 — fix/perf-gates-bundle-stats-no-lighthouse (auto)
+
+- **Branche** : `fix/perf-gates-bundle-stats-no-lighthouse`
+- **Décision** : fix(ci): remplace Lighthouse-CI synthétique par bundle-stats déterministe
+- **Sortie** : PR #506 | commits 8b2dfd70
