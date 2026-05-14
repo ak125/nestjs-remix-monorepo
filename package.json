@@ -58,7 +58,10 @@
     "registry:build:llm-map": "node scripts/registry/build-llm-repo-map.js",
     "registry": "npm run registry:build && npm run registry:build:canonical && npm run registry:build:llm-map",
     "registry:validate-invariants": "tsx scripts/registry/validate-invariants.ts",
-    "registry:check-new-files": "node scripts/registry/check-new-files.js"
+    "registry:check-new-files": "node scripts/registry/check-new-files.js",
+    "architecture:build": "npm -w @repo/registry run build:architecture",
+    "architecture:test": "tsx --test tests/registry/architecture-generator.test.ts",
+    "depcruise:integrity-test": "tsx --test tests/registry/depcruise-integrity.test.ts"
   },
   "keywords": [],
   "author": "",
