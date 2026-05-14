@@ -3,6 +3,6 @@
 
 BEGIN;
 
-DROP TABLE IF EXISTS public.__seo_snapshot_synthetic CASCADE;
+DROP TABLE IF EXISTS public.__seo_snapshot_synthetic CASCADE;  -- APPROVED: rollback only — down.sql is the inverse of the matching up.sql, never executed in normal flow
 
 COMMIT;

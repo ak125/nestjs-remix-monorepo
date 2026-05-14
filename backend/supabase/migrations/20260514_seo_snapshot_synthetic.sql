@@ -93,7 +93,7 @@ END $$;
 
 ALTER TABLE public.__seo_snapshot_synthetic ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "service_role_all" ON public.__seo_snapshot_synthetic;
+DROP POLICY IF EXISTS "service_role_all" ON public.__seo_snapshot_synthetic;  -- APPROVED: idempotent re-create on rerun, new policy is recreated immediately below (no policy gap)
 CREATE POLICY "service_role_all"
   ON public.__seo_snapshot_synthetic
   FOR ALL
