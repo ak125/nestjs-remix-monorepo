@@ -49,6 +49,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build @repo/registry (dist required by Zod validation step)
+        run: npm run -w @repo/registry build
+
       - name: Run upstream audit producers (provide inputs for builders)
         run: npm run audit:inventory
 
