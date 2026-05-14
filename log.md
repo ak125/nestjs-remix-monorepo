@@ -579,3 +579,9 @@ Une entrée = 3 à 4 lignes. Heading H2 par session = greppable + naviguable.
 - **Branche** : `fix/perf-gates-bundle-stats-no-lighthouse`
 - **Décision** : fix(ci): remplace Lighthouse-CI synthétique par bundle-stats déterministe
 - **Sortie** : PR #506 | commits 8b2dfd70
+
+## 2026-05-14 — fix/perf-gates-bundle-stats-no-lighthouse (auto)
+
+- **Branche** : `fix/perf-gates-bundle-stats-no-lighthouse`
+- **Décision** : fix(perf-gates): use turbo build at root, not -w frontend (workspace deps) (+2 other commits)
+- **Sortie** : PR #506 | commits dbb88af1 d2f291a8 8b2dfd70
